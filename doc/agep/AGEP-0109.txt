@@ -43,8 +43,9 @@ server interfaces includes:
 ================  ===============
 Service		  Default Port(s)
 ================  ===============
-Venue Server	  8000, 8002, 8004, 8006
-Beacon Server	  (233.4.200.21:10002,10004), beacon.dast.nlanr.net:10004
+Venue Server	  TCP: 8000, 8002, 8004, 8006
+Beacon Server	  UDP: (233.4.200.21:10002,10004) 
+                  TCP: beacon.dast.nlanr.net:10004
 ================  ===============
 
 Additionally, these optional interfaces provide richer collaboration:
@@ -52,7 +53,7 @@ Additionally, these optional interfaces provide richer collaboration:
 ================= ===============
 Service		  Default Port(s)
 ================= ===============
-Venue Client [*]_ 1 dynamically assigned
+Venue Client [*]_ TCP: 1 dynamically assigned
 Bridge Server	  Each stream uses a statically configured or dynamically assigned port 
 ================= ===============
 
@@ -62,9 +63,9 @@ firewall on the local machine be configured to allow access [*]_.
 ================== ===============
 Service		   Default Port(s)
 ================== ===============
-Services	   one dynamically assigned port per service
-Service Manager	   11000
-Node Service	   12000 and 1 dynamically assigned port
+Services	   TCP: one dynamically assigned port per service
+Service Manager	   TCP: 11000
+Node Service	   TCP: 12000 and 1 dynamically assigned port
 ================== ===============
 
 .. [*] Disabling incoming connections to the Venue Client is possible and doesn't significantly hinder collaboration. Personal data sharing is not possible if incoming connections are not allowed.
@@ -114,32 +115,32 @@ server are all running on the same machine, *host.domain*.
 Meeting Room Venue
 ''''''''''''''''''
 
-============ ===================== ============
-Media        Multicast Groups	   Bridge Ports
-============ ===================== ============
+============ ===================== ================
+Media        Multicast Groups	   TCP Bridge Ports
+============ ===================== ================
 static video 224.1.2.3/1234,1235   9000,9001
 static audio 224.1.2.3/1236,1237   9002,9003
-============ ===================== ============
+============ ===================== ================
 
 Laboratory #1 Venue
 '''''''''''''''''''
 
-============ ===================== ============
-Media        Multicast Groups	   Bridge Ports
-============ ===================== ============
+============ ===================== ================
+Media        Multicast Groups	   TCP Bridge Ports
+============ ===================== ================
 static video 224.1.2.4/1234,1235   9004,9005
 static audio 224.1.2.4/1236,1237   9006,9007
-============ ===================== ============
+============ ===================== ================
 
 Laboratory #2 Venue
 '''''''''''''''''''
 
-============ ===================== ============
-Media        Multicast Groups	   Bridge Ports
-============ ===================== ============
+============ ===================== ================
+Media        Multicast Groups	   TCP Bridge Ports
+============ ===================== ================
 static video 224.1.2.5/1234,1235   9008,9009
 static audio 224.1.2.5/1236,1237   9010,9011
-============ ===================== ============
+============ ===================== ================
 
 Beacon Service
 ''''''''''''''
@@ -153,7 +154,7 @@ Summary Configuration
 
 Incoming **to host.domain** from outside the firewall:
 
-- Ports: 8000, 8002, 8004, 8006, 9000-9011
+- TCP Ports: 8000, 8002, 8004, 8006, 9000-9011
 
 Multicast Groups (All hosts on the local network should be able to send and 
 receive traffic via these multicast groups):
