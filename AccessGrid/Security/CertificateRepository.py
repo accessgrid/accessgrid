@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.14 2004-05-04 21:01:24 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.15 2004-05-17 17:14:04 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.14 2004-05-04 21:01:24 olson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.15 2004-05-17 17:14:04 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -344,11 +344,25 @@ class CertificateRepository:
 
             if invalidRepo:
                 #
-                # The repository is corrupted somehow.
-                #
-                # Rename it, log an error, and raise an exception.#
+                # The repository index is corrupted somehow.
                 #
 
+                #
+                # Attempt to recover from the files making up the repo.
+                #
+
+                recovered = self.RecoverFromDirectory()
+
+                if recovered:
+                    #
+                    # Whee, that worked.
+                    #
+
+                    return
+                
+                #
+                # Rename it, log an error, and raise an exception.
+                #
 
                 #
                 # Close an opened db, otherwise the rename will fail due
@@ -368,6 +382,182 @@ class CertificateRepository:
                     log.exception("Error in attempt to move aside corrupted repository")
                     
                     raise Exception("Cannot open repository, and cannot initialize new repository")
+
+    def RecoverFromDirectory(self):
+        """
+        Attempt to recover a repository index from the flat-files
+        in the repository.
+        """
+
+        #
+        # First check that the directory appears to be a repository.
+        #
+
+        log.info("Recovering repository from %s", self.dir)
+        if not os.path.isdir(self.dir):
+            log.info("Recovery failed: %s is not a directory", self.dir)
+            return 0
+
+        for f in ("user_files", "privatekeys", "requests", "certificates"):
+            p = os.path.join(self.dir, f)
+            if not os.path.isdir(p):
+                log.info("Recovery failed: %s is not a directory", p)
+                return 0
+
+        #
+        # Looks like a repo.
+        #
+        # We'll create a new empty db.
+        #
+
+        self.db = bsddb.hashopen(self.dbPath, 'n')
+        self.db.sync()
+
+        #
+        # First scan the privatekeys.
+        #
+
+        privatekeys = {}
+        for f in os.listdir(os.path.join(self.dir, "privatekeys")):
+            m = re.match("(.*).pem", f)
+            if m:
+                p = os.path.join(self.dir, "privatekeys", f)
+                hash = m.group(1)
+                privatekeys[hash] = p
+                log.info("Found private key %s", hash)
+                self.RecoverPrivateKey(hash, p)
+
+        #
+        # Now scan the certificates directory. Recall that this is organized
+        # as subject-hash/issuer-serial-hash.
+        #
+        # We pass down a dictionary of recovery state information.
+        #
+
+        recoveryState = {'firstCert': 1,
+                         'privatekeys': privatekeys,
+                         }
+
+        for subj_hash in os.listdir(os.path.join(self.dir, "certificates")):
+            if not(len(subj_hash) == 32 and re.search("^[0-9a-f]*$", subj_hash)):
+                continue
+
+            log.info("Probing subject hash dir %s", subj_hash)
+            subj_dir = os.path.join(self.dir, "certificates", subj_hash)
+
+            for issuer_serial_hash in os.listdir(subj_dir):
+                if not(len(subj_hash) == 32 and re.search("^[0-9a-f]*$", subj_hash)):
+                    continue
+
+                log.info("Have issuer-serial hash %s", issuer_serial_hash)
+
+                cert_path = os.path.join(subj_dir, issuer_serial_hash, "cert.pem")
+                if os.path.isfile(cert_path):
+                    log.info("Have certificate %s", cert_path)
+
+                    self.RecoverCert(cert_path, recoveryState)
+
+        return 1
+
+    def RecoverPrivateKey(self, hash, path):
+        """
+        Recover privatekey information for the repo db.
+        """
+
+        #
+        # Try to load it to see if it's encrypted.
+        #
+
+        try:
+            keyText = open(path).read()
+            pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, keyText, "")
+
+            #
+            # Not encrypted
+            #
+            self.SetPrivatekeyMetadata(hash, "System.encrypted", "0")
+
+        except crypto.Error:
+            #
+            # Encrypted.
+            #
+            
+            self.SetPrivatekeyMetadata(hash, "System.encrypted", "1")
+
+        except IOError:
+
+            log.info("Couldn't open private key file %s", path)
+            
+
+    def RecoverCert(self, path, recoveryState):
+        """
+        Recover certificate information for the repo db.
+
+        @param path: pathname ot the certificate being recovered
+        @param recoverState: dictionary used for maintaining state between
+        calls to RecoverCert.
+        """
+        
+        try:
+            cert = Certificate(path, repo = self)
+
+        except:
+
+            log.exception("error loading certificate from %s", path)
+            return
+
+        log.info("Recovering certificate %s", str(cert.GetSubject()))
+
+        cert.SetMetadata("System.importTime", str(time.time()))
+        cert.SetMetadata("System.certImportedFrom", path)
+
+        #
+        # See if there is a private key.
+        #
+
+        mhash = cert.GetModulusHash()
+        pkeyPath = self.GetPrivateKeyPath(mhash)
+
+        if recoveryState['privatekeys'].has_key(mhash):
+
+            pkeyPath = recoveryState['privatekeys'][mhash]
+
+            log.info("Private key found for certificate at %s", pkeyPath)
+        
+            cert.SetMetadata("System.keyImportedFrom", pkeyPath)
+            cert.SetMetadata("System.hasKey", "1")
+
+            #
+            # This means it's an identity cert.
+            #
+            # We're breaking a boundary here, setting an AG.CertificateManager
+            # value. That's okay for now.
+            #
+
+            cert.SetMetadata("AG.CertificateManager.certType", "identity")
+
+            #
+            # We can't tell which one should be default, so we pick the first
+            # we see.
+            #
+
+            if recoveryState['firstCert']:
+                log.info("Setting cert as default")
+                cert.SetMetadata("AG.CertificateManager.isDefaultIdentity", "1")
+                recoveryState['firstCert'] = 0
+            else:
+                cert.SetMetadata("AG.CertificateManager.isDefaultIdentity", "0")
+
+            
+        else:
+            cert.SetMetadata("System.hasKey", "0")
+
+            #
+            # Call certs without keys trustedCA certs.
+            #
+
+            cert.SetMetadata("AG.CertificateManager.certType", "trustedCA")
+
 
     def LockMetadata(self):
         """
