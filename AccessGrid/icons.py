@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: icons.py,v 1.28 2003-05-13 15:01:57 lefvert Exp $
+# RCS-ID:      $Id: icons.py,v 1.29 2003-05-19 16:09:46 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -10698,5 +10698,42 @@ catalog['Bullet'].getData = getBulletData
 catalog['Bullet'].getImage = getBulletImage
 catalog['Bullet'].getBitmap = getBulletBitmap
 catalog['Bullet'].getIcon = getBulletIcon
+
+
+#----------------------------------------------------------------------
+def getDefaultNodeData():
+    return zlib.decompress(
+'x\xda\x01:\x01\xc5\xfe\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x13\
+\x00\x00\x00\x13\x08\x06\x00\x00\x00rP6\xcc\x00\x00\x00\x04sBIT\x08\x08\x08\
+\x08|\x08d\x88\x00\x00\x00\xf1IDATx\x9c\xcd\x94=n\xc2@\x10\x85\xbfE[\xd1G\
+\xb9\x08\x17\x80*]$\xd2\xa6C\x88\x9e+\xe4\x14\xe6\x0e\xe9\x91\x90\xe8#y\x0f\
+\x12\xa5\xa2\xa1})\xec\x95=\xc6\xb3\x08D\xc1H\xab\xa7\xb7\xf3\xbb3\x1e\x07I\
+\x02\x08!\x90\xa5\xbd*\xca\x98}\xcc\n\xa9n4)\xb5\\\xae\x93g\x1fM\xba\x94H)\
+\x99\xec^\x921\xfb\x89\xa7(%\xf1\xeeb.\x7f\xec9\x92 \xed.\x9c<{\x00\xe5\xb3?\
+N\xd5\xe7\xedp\\^U\x96O\xf6\xc7)\x00\xbf\x7f\xdf\x00d\x0e]\xf3\x7f\xd6k\xc3\
+\x01\xea\xba\xa9\xa6\xaa:\xecz6\x90\x1c\xe0t8\x18\x9eqL\xdc`\xf7\xc8\xf3\x06\
+\x8bo\x8b3\x00\xaf/\x1f79\xcef\xc1\xf0\xcd&4\xf3\x06\xf4\xf5\x1e\r^;\xab\xcf\
+\xa5AIr\x9f\x99?\xc4\xf96\x1a,\xfd\x04\x9ew\x00\x0f\r\xc6p\xdf\x18\xec\xe1|\
+\x1b\r\x96\xec\x83\n\x1d\xed\xefb/\xb9[\xd8?h\x85\xca\x8c\x03\xae3\x83\x00\
+\x00\x00\x00IEND\xaeB`\x82\xf3\x0f\x81\x1d' )
+
+def getDefaultNodeBitmap():
+    return wxBitmapFromImage(getDefaultNodeImage())
+
+def getDefaultNodeImage():
+    stream = cStringIO.StringIO(getDefaultNodeData())
+    return wxImageFromStream(stream)
+
+def getDefaultNodeIcon():
+    icon = wxEmptyIcon()
+    icon.CopyFromBitmap(getDefaultNodeBitmap())
+    return icon
+
+index.append('DefaultNode')
+catalog['DefaultNode'] = ImageClass()
+catalog['DefaultNode'].getData = getDefaultNodeData
+catalog['DefaultNode'].getImage = getDefaultNodeImage
+catalog['DefaultNode'].getBitmap = getDefaultNodeBitmap
+catalog['DefaultNode'].getIcon = getDefaultNodeIcon
 
 
