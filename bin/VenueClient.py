@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.26 2003-02-06 15:15:44 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.27 2003-02-06 19:41:14 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -138,12 +138,10 @@ class VenueClientUI(wxApp, VenueClient):
             self.frame.contentListPanel.AddParticipant(event.data)
 
         elif event.eventType == Event.EXIT:
-            print '----------- I get EXIT event'
             if(event.data.publicId != self.profile.publicId):
                 self.frame.contentListPanel.RemoveParticipant(event.data)
                                  
         elif event.eventType == Event.ADD_DATA:
-            print '------ add data: ', event.data.name
             self.frame.contentListPanel.AddData(event.data)
 
         elif event.eventType == Event.REMOVE_DATA:
@@ -235,14 +233,11 @@ class VenueClientUI(wxApp, VenueClient):
             self.frame.contentListPanel.AddService(service)
 
         exits = venueState.connections.values()
-        print '--------getting exits'
         for exit in exits:
-            print '--------got an exit!'
-            print exit.name
             self.frame.venueListPanel.list.AddVenueDoor(exit)
 
         # Start text client
-#        self.textClient =
+        #        self.textClient =
 
     def ExitVenue(self ):
         """
@@ -250,7 +245,6 @@ class VenueClientUI(wxApp, VenueClient):
         This method calls the venue client method and then
         performs its own operations when the client exits a venue.
         """
-        print '----------- I send exit venue event'
         VenueClient.ExitVenue( self )
                                      
     def GoToNewVenue(self, uri):
@@ -262,7 +256,6 @@ class VenueClientUI(wxApp, VenueClient):
             venueUri = uri
 
         try:  # temporary solution until exceptions work as should
-            print '---------------- try'
             self.client = Client.Handle(venueUri).get_proxy()
             self.frame.CleanUp()
             self.OnExit()
