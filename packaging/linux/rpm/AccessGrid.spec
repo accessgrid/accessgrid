@@ -11,6 +11,7 @@
 %define gnomedir	%{sharedir}/gnome/apps
 %define kdedir		%{sharedir}/applnk
 %define buildroot	/usr/src/redhat/BUILD/AccessGrid-2.2
+%define debug_package	%{nil}
 
 #
 # The following defines the AccessGrid rpm
@@ -31,6 +32,7 @@ Source:		%{name}-%{version}.tar.gz
 BuildRoot:	%{buildroot}
 Requires:	wxPythonGTK-py2.2
 Requires:	globus-accessgrid
+Requires:	xawtv
 Requires:	glibc >= 2.2.5-43
 Obsoletes:	AccessGrid-2.0alpha
 Obsoletes:	AccessGrid-2.0beta
@@ -93,6 +95,8 @@ mv bin usr/bin
 %defattr(-,root,root)
 %{prefix}/lib
 /etc/AccessGrid
+/etc/init.d/agns
+/etc/init.d/agsm
 %{sharedir}/%{name}/ag.ico
 %defattr(0755,root,root)
 %{prefix}/bin/AGServiceManager.py
