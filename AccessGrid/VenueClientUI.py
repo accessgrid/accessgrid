@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.73 2004-08-25 14:10:40 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.74 2004-09-03 13:30:04 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.73 2004-08-25 14:10:40 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.74 2004-09-03 13:30:04 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3562,7 +3562,7 @@ class TextClientPanel(wxPanel):
         # Someone is writing a message
         else:
             # Set names bold
-            pointSize = wxDEFAULT
+            pointSize = wxNORMAL_FONT.GetPointSize()
 
             # Fix for osx
             if IsOSX():
@@ -3580,7 +3580,7 @@ class TextClientPanel(wxPanel):
             textAttr.SetFont(f)
             self.textOutput.SetDefaultStyle(textAttr)
             self.textOutput.AppendText('\"' + message+'\"\n')
-
+            
         if IsWindows():
             # Scrolling is not correct on windows when I use
             # wxTE_RICH flag in text output window.
