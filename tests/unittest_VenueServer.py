@@ -34,8 +34,8 @@ import threading
 from AccessGrid.Descriptions import VenueDescription
 from AccessGrid.VenueServer import VenueServer
 from AccessGrid.Venue import Venue
-from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid import Toolkit
+from AccessGrid.Security import X509Subject
 
 class VenueServerTestSuite(unittest.TestSuite):
     """A TestSuite that creates a server for use by VenueServerTestCase."""
@@ -54,7 +54,6 @@ class VenueServerTestSuite(unittest.TestSuite):
         # initialize toolkit and environment
         app = Toolkit.CmdlineApplication()
         app.Initialize()
-        app.InitGlobusEnvironment()
         # server
         venueServer = VenueServer()
         venueServer.SetStorageLocation("testData")
@@ -118,10 +117,10 @@ class VenueServerTestCase(unittest.TestCase):
         venueServer.SetEncryptAllMedia(original)
 
     def testAddRemoveAdministrator(self):
-        venueServer.AddAdministrator("testAdmin")
-        assert "testAdmin" in venueServer.GetAdministrators()
-        venueServer.RemoveAdministrator("testAdmin")
-        assert "testAdmin" not in venueServer.GetAdministrators()
+        venueServer.authManager.FindRole("Administrators").AddSubject(X509Subject.CreateSubjectFromString("testAdmin"))
+        assert "testAdmin" in venueServer.authManager.FindRole("Administrators").GetSubjectListAsStrings()
+        venueServer.authManager.FindRole("Administrators").RemoveSubject("testAdmin")
+        assert "testAdmin" not in venueServer.authManager.FindRole("Administrators").GetSubjectListAsStrings()
 
     # Test not finished yet
     # def testGetSetDefaultVenue(self):
