@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.165 2004-08-30 18:10:38 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.166 2004-09-03 16:00:09 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.165 2004-08-30 18:10:38 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.166 2004-09-03 16:00:09 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -635,56 +635,25 @@ class VenueServer(AuthorizationMixIn):
         else:
             return
         
-        # Grab a copy of the venues to dump
-        # This is a critical section so we lock around it
-#        self.simpleLock.acquire()
-#        venuesToDump = self.venues.copy()
-#        self.simpleLock.release()
-
-        # Before we backup we copy the previous backup to a safe place
-        # We only do this once, ie, if the file exists, we don't copy
-        # over it.
-        if os.path.isfile(self.persistenceFilename):
-            nfn = self.persistenceFilename + '.bak'
-            if not os.path.exists(nfn):
-                try:
-                    os.rename(self.persistenceFilename, nfn)
-                except OSError:
-                    log.exception("Couldn't rename backup file.")
-                    return 0
-	    else:
-		log.info("Not creating backup file, it already exists.")
-	else:
-	    log.warn("Backup file name exists but is not a file.")
-
         # Open the persistent store
         store = file(self.persistenceFilename, "w")
         store.write("# AGTk %s\n" % (Version.GetVersion()))
 
         try:
                        
-#            for venuePath in venuesToDump.keys():
             for venuePath in self.venues.keys():
                 # Change out the uri for storage,
                 # we don't bother to store the path since this is
                 # a copy of the real list we're going to dump anyway
-#                venueUri = venuesToDump[venuePath].uri
 
                 try:            
-                    # Store the venue.
-#                    store.write(venuesToDump[venuePath].AsINIBlock())
-		
 		    self.simpleLock.acquire()
                     store.write(self.venues[venuePath].AsINIBlock())
 		    self.simpleLock.release()
                 except:
 		    self.simpleLock.release()
                     log.exception("Exception Storing Venue!")
-#                    venuesToDump[venuePath].uri = venueUri
                     return 0
-
-#                venuesToDump[venuePath].uri = venueUri
-#                venuesToDump[venuePath].dataStore.StorePersistentData()
 
             # Close the persistent store
             store.close()
