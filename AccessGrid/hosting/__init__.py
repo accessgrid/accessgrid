@@ -5,18 +5,19 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.11 2004-04-07 23:48:07 eolson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.12 2004-04-09 18:39:03 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 AG Hosting environment tools.
 """
-__revision__ = "$Id: __init__.py,v 1.11 2004-04-07 23:48:07 eolson Exp $"
+__revision__ = "$Id: __init__.py,v 1.12 2004-04-09 18:39:03 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
 import os
+import urlparse
 
 # mechanisms to support multiple hosting environments and to set defaults
 __hostingImpl = "SOAPpy"
@@ -98,6 +99,22 @@ def ListHostingImpls():
             if e != 'CVS':
                 retList.append(e)
     return retList
+
+def PathFromURL(URL):
+    """
+    """
+    if URL[0:5] == 'httpg':
+        return urlparse.urlparse(URL[6:])[2]
+    else:
+        return urlparse.urlparse(URL)[2]
+
+def IdFromURL(URL):
+    """
+    """
+    path = PathFromURL(URL)
+    id = path.split('/')[-1]
+
+    return id
 
 # Set the default
 SetHostingImpl(__hostingImpl)
