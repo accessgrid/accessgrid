@@ -156,7 +156,7 @@ os.chdir(os.path.join(BuildDir, "tests"))
 if os.environ.has_key('PYTHONPATH'):
     oldpath = os.environ['PYTHONPATH']
 else:
-    oldpath = None
+    oldpath = ''
 
 # setup a new python path
 os.environ['PYTHONPATH'] = os.path.join(os.path.abspath(os.path.join(DestDir,
