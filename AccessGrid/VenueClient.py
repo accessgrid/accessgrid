@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.129 2004-02-24 17:22:38 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.130 2004-02-24 23:31:48 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,12 +13,11 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.129 2004-02-24 17:22:38 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.130 2004-02-24 23:31:48 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting.pyGlobus import Client
 import sys
-import urlparse
 import string
 import threading
 import cPickle
@@ -30,7 +29,7 @@ from pyGlobus.io import GSITCPSocketException
 
 from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
-from AccessGrid.hosting.pyGlobus import Client
+
 from AccessGrid.EventClient import EventClient
 from AccessGrid.TextClient import TextClient
 from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache
@@ -575,7 +574,7 @@ class VenueClient(ServiceBase):
             #haveValidNodeService = 0
 
             try:
-                self.profile.capabilities = Client.Handle( self.nodeServiceUri ).get_proxy().GetCapabilities()
+                self.profile.capabilities = Client.Handle( self.nodeServiceUri ).GetProxy().GetCapabilities()
                 
             except Exception, e:
                 # This is a non fatal error, users should be notified
@@ -587,7 +586,7 @@ class VenueClient(ServiceBase):
             # Enter the venue
             #
             self.venueUri = URL
-            self.venueProxy = Client.Handle( URL ).get_proxy()
+            self.venueProxy = Client.Handle( URL ).GetProxy()
 
             log.debug("EnterVenue: Invoke venue enter")
             (venueState, self.privateId, self.streamDescList ) = self.venueProxy.Enter( self.profile )
@@ -791,7 +790,7 @@ class VenueClient(ServiceBase):
         #
         for profile in self.followerProfiles.values():
             try:
-                Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue(self.venueUri, 0)
+                Client.Handle( profile.venueClientURL ).GetProxy().EnterVenue(self.venueUri, 0)
             except:
                 raise Exception("LeadFollowers::Exception while leading follower")
 
@@ -927,7 +926,7 @@ class VenueClient(ServiceBase):
         # request permission to follow the leader
         # (response will come in via the LeadResponse method)
         log.debug('Follow: Requesting permission to follow this leader: %s' %leaderProfile.name)
-        Client.Handle( leaderProfile.venueClientURL ).get_proxy().RequestLead( self.profile )
+        Client.Handle( leaderProfile.venueClientURL ).GetProxy().RequestLead( self.profile )
 
     def UnFollow( self, leaderProfile ):
         """
@@ -935,7 +934,7 @@ class VenueClient(ServiceBase):
         """
 
         log.debug('UnFollow: Trying to unfollow: %s' %leaderProfile.name)
-        Client.Handle( leaderProfile.venueClientURL ).get_proxy().UnLead( self.profile )
+        Client.Handle( leaderProfile.venueClientURL ).GetProxy().UnLead( self.profile )
         self.leaderProfile = None
 
     def RequestLead( self, followerProfile):
@@ -983,9 +982,9 @@ class VenueClient(ServiceBase):
             self.followerProfiles[clientProfile.publicId] = clientProfile
 
             # send the response
-            Client.Handle( clientProfile.venueClientURL ).get_proxy().LeadResponse(self.profile, 1)
+            Client.Handle( clientProfile.venueClientURL ).GetProxy().LeadResponse(self.profile, 1)
         else:
-            Client.Handle( clientProfile.venueClientURL ).get_proxy().LeadResponse(self.profile, 0)
+            Client.Handle( clientProfile.venueClientURL ).GetProxy().LeadResponse(self.profile, 0)
             log.debug("SendLeadResponse: Rejecting lead request for %s" %clientProfile.name)
 
     def LeadResponse(self, leaderProfile, isAuthorized):
@@ -1057,7 +1056,7 @@ class VenueClient(ServiceBase):
         for followerProfile in followerProfileList:
             log.debug("Lead: Requesting permission to lead this client: %s", followerProfile.name )
             self.pendingFollowers[followerProfile.publicId] = followerProfile
-            Client.Handle( followerProfile.venueClientURL ).get_proxy().RequestFollow( self.profile )
+            Client.Handle( followerProfile.venueClientURL ).GetProxy().RequestFollow( self.profile )
 
 
     def RequestFollow( self, leaderProfile):
@@ -1101,7 +1100,7 @@ class VenueClient(ServiceBase):
             self.leaderProfile = leaderProfile
 
             # send the response
-            Client.Handle( self.leaderProfile.venueClientURL ).get_proxy().FollowResponse(self.profile,1)
+            Client.Handle( self.leaderProfile.venueClientURL ).GetProxy().FollowResponse(self.profile,1)
         else:
             log.debug("SendFollowResponse: Rejecting follow request for: %s", leaderProfile.name)
 
@@ -1230,11 +1229,22 @@ class VenueClient(ServiceBase):
     def DestroyApplication(self,appId):
         self.venueProxy.DestroyApplication(appId)
         
-    def AddService(self,serviceDescription):
-        self.venueProxy.AddService(serviceDescription)
-            
-            
+    def UpdateApplication(self,appDescription):
+        self.venueProxy.UpdateApplication(appDescription)
         
+    def AddService(self,serviceDescription):
+        try:
+            self.venueProxy.AddService(serviceDescription)
+        except Exception,e:
+            if isinstance(e,faultType) and e.faultstring == "ServiceAlreadyPresent":
+                raise ServiceAlreadyPresent
+            raise
+                
+
+
+    def UpdateService(self,serviceDescription):
+        self.venueProxy.UpdateService(serviceDescription)
+            
     def RemoveService(self,serviceDescription):
         self.venueProxy.RemoveService(serviceDescription)
         
@@ -1393,7 +1403,7 @@ class VenueClient(ServiceBase):
             else:
                 log.debug("GetPersonalData: This is somebody else's data")
                 try:
-                    dataDescriptionList = Client.Handle(url).get_proxy().GetDataDescriptions()
+                    dataDescriptionList = Client.Handle(url).GetProxy().GetDataDescriptions()
                 except:
                     log.exception("GetPersonalData: GetDataDescriptions call failed")
                     raise GetDataDescriptionsError()
