@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.156 2004-04-06 18:54:35 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.157 2004-04-07 13:13:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.156 2004-04-06 18:54:35 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.157 2004-04-07 13:13:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -87,7 +87,7 @@ class VenueClient:
     """    
     defaultNodeServiceUri = "https://localhost:11000/NodeService"
     
-    def __init__(self, profile=None, pnode=0, port=0):
+    def __init__(self, profile=None, pnode=0, port=0, progressCB=None):
         """
         This client class is used on shared and personal nodes.
         """
@@ -106,9 +106,9 @@ class VenueClient:
         self.heartbeatTask = None
         self.provider = None
 
-        # For states that matter
-        self.state = None
-
+        if progressCB: 
+            if pnode:   progressCB("Starting personal node.")
+            else:       progressCB("Starting web service.")
         self.__StartWebService(pnode, port)
         self.__InitVenueData()
         self.isInVenue = 0
@@ -137,6 +137,7 @@ class VenueClient:
         self.requests = [] 
 
         # Create personal data store
+        if progressCB: progressCB("Starting personal data store")
         self.__CreatePersonalDataStore()
 
         # Manage the currently-exiting state
@@ -153,8 +154,12 @@ class VenueClient:
         self.profileCachePath = os.path.join(self.userConf.GetConfigDir(),
                                              self.profileCachePrefix)
         self.cache = ClientProfileCache(self.profileCachePath)
-
-
+        
+        # attributes for reconnect
+        self.maxReconnects = 3
+        self.reconnectTimeout = 10
+        
+        
         
     ##########################################################################
     #
@@ -285,6 +290,7 @@ class VenueClient:
             uri = self.server.RegisterObject(nsi, path="/NodeService")
             log.debug("__StartWebService: node service: %s",
                       uri)
+            self.SetNodeUrl(self.server.FindURLForObject(ns))
             
         self.server.RunInThread()
         
@@ -314,16 +320,70 @@ class VenueClient:
         return self.server.FindURLForObject(self)
         
     def __Heartbeat(self):
+        
         if self.eventClient != None:
             try:
                 self.eventClient.Send(HeartbeatEvent(self.venueId,
                                                      self.privateId))
             except:
-                log.exception("Heartbeat: Heartbeat exception is caught, exit venue.")
-                self.ExitVenue()
-                for s in self.observers:
-                    s.HandleError(DisconnectError())
+                log.exception("Heartbeat: Heartbeat exception is caught.")
+                
+                # If the event client connection has broken,
+                # reconnect the venue client
+                if not self.eventClient.connected:
+                    self.__Reconnect()
+                
+    def __Reconnect(self):
+    
+        """
+        Reconnect to venue
+        """
+        numTries = 0
+        
+        log.info("Try to reconnect to venue")
+        
+        venueUri = self.venueUri
 
+        # Client no longer in venue
+        self.isInVenue = 0
+        
+        # Exit the venue (internally)
+        self.__ExitVenue()
+
+        # Try to enter the venue
+        while not self.isInVenue and numTries < self.maxReconnects:
+            
+            try:
+                self.__EnterVenue(venueUri)
+                self.failedHeartbeats = 0
+            
+                # If we're connected, stop trying
+                if self.isInVenue:
+                    break
+            except:
+                log.exception("Exception reconnecting to venue")
+            
+            time.sleep(self.reconnectTimeout)
+            numTries += 1
+        
+        if self.isInVenue:
+            # Update observers
+            
+            for s in self.observers:
+                s.ExitVenue()
+
+            for s in self.observers:
+                try:
+                    # enterSuccess is true if we entered.
+                    s.EnterVenue(venueUri)
+                except:
+                    log.exception("Exception in observer")
+
+        else:
+            log.info("Failed to reconnect")
+            self.ExitVenue()
+            for s in self.observers:
+                s.HandleError(DisconnectError())
 
     # end Private Methods
     #
@@ -346,6 +406,14 @@ class VenueClient:
         log.debug("RemoveUserEvent: Got Remove User Event")
 
         profile = event.data
+        
+        # Handle removal of self
+        if profile.publicId == self.profile.publicId:
+            # Get out and stay out
+            self.ExitVenue()
+            for s in self.observers:
+                s.HandleError(DisconnectError())
+            return
 
         self.venueState.RemoveUser(profile)
         for s in self.observers:
@@ -355,13 +423,8 @@ class VenueClient:
 
         # Remove client from the list of clients who have
         # been requested for personal data
-
-        
-        try:
-            index = self.requests.index(profile.publicId)
+        if profile.publicId in self.requests:
             del self.requests[index]
-        except:
-            pass
         
     def ModifyUserEvent(self, event):
         log.debug("ModifyUserEvent: Got Modify User Event")
@@ -583,42 +646,8 @@ class VenueClient:
     #
     # Enter/Exit
     #
-                    
-    # Back argument is true if going to a previous venue (used in UI).
-    def EnterVenue(self, URL):
-        """
-        EnterVenue puts this client into the specified venue.
-
-        URL : url to the venue
-        """
-        log.debug("EnterVenue; url=%s", URL)
-        
-        # Initialize a string of warnings that can be displayed to the user.
-        self.warningString = ''
-       
-        app = Toolkit.Application.instance()
-
-        #
-        # Turn this block off when fatulHandler support gets finished.
-        #
-        if not app.certificateManager.HaveValidProxy():
-            log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
-            app.certificateManager.CreateProxy()
-
-
-        enterSuccess = 1
-        try:
-            # Get capabilities from your node
-            errorInNode = 0
-
-            try:
-                self.profile.capabilities = self.nodeService.GetCapabilities()
-            except:
-                # This is a non fatal error, users should be notified
-                # but still enter the venue
-                log.info("EnterVenue: Error getting node capabilities")
-                errorInNode = 1
-                        
+    
+    def __EnterVenue(self,URL):
             #
             # Enter the venue
             #
@@ -632,8 +661,6 @@ class VenueClient:
             
             self.venueUri = URL
             self.venueId = self.venueState.GetUniqueId()
-
-            host, port = venueState.eventLocation
 
             # Retreive stream descriptions
             #
@@ -677,7 +704,7 @@ class VenueClient:
             self.eventClient.Send(ConnectEvent(self.venueState.uniqueId,
                                                self.privateId))
                                
-            self.heartbeatTask = self.houseKeeper.AddTask(self.__Heartbeat, 5)
+            self.heartbeatTask = self.houseKeeper.AddTask(self.__Heartbeat, 25)
             self.heartbeatTask.start()
 
             #
@@ -693,6 +720,50 @@ class VenueClient:
             self.textClient.Connect(self.venueState.uniqueId, self.privateId)
             self.textClient.RegisterOutputCallback(self.AddTextEvent)
             
+            log.debug("Setting isInVenue flag.")
+            # Finally, set the flag that we are in a venue
+            self.isInVenue = 1
+
+    
+                    
+    # Back argument is true if going to a previous venue (used in UI).
+    def EnterVenue(self, URL):
+        """
+        EnterVenue puts this client into the specified venue.
+
+        URL : url to the venue
+        """
+        log.debug("EnterVenue; url=%s", URL)
+        
+        # Initialize a string of warnings that can be displayed to the user.
+        self.warningString = ''
+       
+        app = Toolkit.Application.instance()
+
+        #
+        # Turn this block off when fatulHandler support gets finished.
+        #
+        if not app.certificateManager.HaveValidProxy():
+            log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
+            app.certificateManager.CreateProxy()
+
+
+        enterSuccess = 1
+        try:
+            # Get capabilities from your node
+            errorInNode = 0
+
+            try:
+                self.profile.capabilities = self.nodeService.GetCapabilities()
+            except:
+                # This is a non fatal error, users should be notified
+                # but still enter the venue
+                log.info("EnterVenue: Error getting node capabilities")
+                errorInNode = 1
+
+            # Enter the venue
+            self.__EnterVenue(URL)
+
             # 
             # Update the node service with stream descriptions
             #
@@ -710,10 +781,6 @@ class VenueClient:
             log.debug("Updating client profile cache.")
             for client in self.venueState.clients.values():
                 self.UpdateProfileCache(client)
-
-            log.debug("Setting isInVenue flag.")
-            # Finally, set the flag that we are in a venue
-            self.isInVenue = 1
 
             #
             # Return a string of warnings that can be displayed to the user 
@@ -744,8 +811,11 @@ class VenueClient:
             #self.warningString = str(e.faultstring)
 
         for s in self.observers:
-            # enterSuccess is true if we entered.
-            s.EnterVenue(URL, self.warningString, enterSuccess)
+            try:
+                # enterSuccess is true if we entered.
+                s.EnterVenue(URL, self.warningString, enterSuccess)
+            except:
+                log.exception("Exception in observer")
 
         try:
             self.LeadFollowers()
@@ -767,12 +837,7 @@ class VenueClient:
             except:
                 raise Exception("LeadFollowers::Exception while leading follower")
 
-    def ExitVenue( self ):
-        """
-        ExitVenue removes this client from the specified venue.
-        """
-        log.info("ExitVenue")
-
+    def __ExitVenue(self):
         # Clear the list of personal data requests.
         self.requests = []
        
@@ -784,14 +849,50 @@ class VenueClient:
         self.exiting = 1
         self.exitingLock.release()
 
-        # Tell UI and others that we are exiting.
-        for s in self.observers:
-            s.ExitVenue()
-
         # Stop sending heartbeats
         if self.heartbeatTask != None:
             log.info("ExitVenue: Stopping heartbeats")
             self.heartbeatTask.stop()
+
+        try:
+            if self.eventClient:
+                log.debug("ExitVenue: Stop event client obj")
+                self.eventClient.Stop()
+                log.debug("ExitVenue: Remove event client reference")
+                self.eventClient = None
+        except:
+            log.exception("ExitVenue: Can not stop event client")
+
+        log.info("ExitVenue: Stopping text client")
+        try:
+          if self.textClient:
+            # Stop the text client
+            log.debug("ExitVenue: Sending client disconnect event.")
+            self.textClient.Disconnect(self.venueState.uniqueId,
+                                       self.privateId)
+            log.debug("ExitVenue: Remove text client reference")
+            self.textClient = None
+          
+        except:
+            log.exception("ExitVenue: On text client exiting")
+        
+        self.__InitVenueData()
+        self.isInVenue = 0
+        self.exitingLock.acquire()
+        self.exiting = 0
+        self.exitingLock.release()
+
+        
+        
+    def ExitVenue( self ):
+        """
+        ExitVenue removes this client from the specified venue.
+        """
+        log.info("ExitVenue")
+
+        # Tell UI and others that we are exiting.
+        for s in self.observers:
+            s.ExitVenue()
 
         #
         # Exit the venue
@@ -828,28 +929,6 @@ class VenueClient:
             log.exception("ExitVenue: Can not send client exiting event to event client")
         
         try:
-            if self.eventClient:
-                log.debug("ExitVenue: Stop event client obj")
-                self.eventClient.Stop()
-                log.debug("ExitVenue: Remove event client reference")
-                self.eventClient = None
-        except:
-            log.exception("ExitVenue: Can not stop event client")
-
-        log.info("ExitVenue: Stopping text client")
-        try:
-          if self.textClient:
-            # Stop the text client
-            log.debug("ExitVenue: Sending client disconnect event.")
-            self.textClient.Disconnect(self.venueState.uniqueId,
-                                       self.privateId)
-            log.debug("ExitVenue: Remove text client reference")
-            self.textClient = None
-          
-        except:
-            log.exception("ExitVenue: On text client exiting")
-        
-        try:
             self.__venueProxy.Exit( self.privateId )
             
         except Exception:
@@ -862,22 +941,8 @@ class VenueClient:
             self.nodeService.SetStreams([])
         except Exception:
             log.info("ExitVenue: Error stopping node services")
-
-        #
-        # Save personal data
-        #
-        # This is done in the data store
-        #
-        #if self.dataStore:
-        #    file = open(self.personalDataFile, 'w')
-        #    cPickle.dump(self.dataStore.GetDataDescriptions(), file)
-        #    file.close()
-        
-        self.__InitVenueData()
-        self.isInVenue = 0
-        self.exitingLock.acquire()
-        self.exiting = 0
-        self.exitingLock.release()
+            
+        self.__ExitVenue()
 
          
     #
