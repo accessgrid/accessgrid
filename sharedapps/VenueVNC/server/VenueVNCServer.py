@@ -16,6 +16,7 @@ from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid import DataStore
 from AccessGrid.GUID import GUID
 from AccessGrid.DataStoreClient import GetVenueDataStore
+from AccessGrid.Toolkit import CmdlineApplication
 
 from AccessGrid.ClientProfile import ClientProfile
 
@@ -237,6 +238,9 @@ if __name__ == "__main__":
         depth = eval(sys.argv[4]);
     else:
         depth = 24;
+
+    app = CmdlineApplication().instance()
+    app.Initialize("VncServer")
 
     appObj=VNCServerAppObject(venueURL,displayID,geometry,depth);
 
