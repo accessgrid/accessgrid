@@ -49,7 +49,7 @@ build_base = "/tmp/snap"
 build_tag = time.strftime("%Y-%m%d-%H%M%S")
 
 # The version and release that goes into the RPM.
-build_version = "2.0beta"
+build_version = "2.1"
 build_release = time.strftime("%Y%m%d%H%M%S")
 default_spec_dir = "/usr/src/redhat/SPECS"
 spec_dir = default_spec_dir
@@ -103,7 +103,7 @@ if rpm_srcdir != default_rpm_srcdir:
 os.makedirs(build_dir)
 os.chdir(build_dir)
 
-cvsroot = ":pserver:anonymous@fl-cvs.mcs.anl.gov:/cvsroot"
+cvsroot = ":pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl"
 
 os.environ['CVSROOT'] = cvsroot
 
