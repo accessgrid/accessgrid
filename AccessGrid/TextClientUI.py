@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClientUI.py,v 1.10 2003-02-28 21:22:38 lefvert Exp $
+# RCS-ID:      $Id: TextClientUI.py,v 1.11 2003-03-12 20:11:03 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -171,7 +171,7 @@ class TextClientUI(wxPanel):
         self.sash.SetMinimumSizeY(20)
         self.textInput = wxTextCtrl(self.sash, self.textInputId, "", \
                                     size = wxSize(10,50), \
-                                    style=wxTE_PROCESS_ENTER|wxHSCROLL|wxTE_MULTILINE)
+                                    style= wxHSCROLL|wxTE_MULTILINE) #wxTE_PROCESS_ENTER|wxHSCROLL|wxTE_MULTILINE)
         self.__set_properties()
         self.__setEvents()
 
@@ -212,8 +212,11 @@ class TextClientUI(wxPanel):
         self.textInput.Clear() 
 
     def __set_properties(self):
+        font = wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana")
         self.textInput.SetToolTipString("Write your message here")
         self.textOutput.SetToolTipString("Text chat for this venue")
+        self.textInput.SetFont(font)
+        self.textOutput.SetFont(font)
         self.Show(true)
         
     def LocalInput(self, event):
