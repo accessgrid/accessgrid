@@ -2,8 +2,10 @@ import array
 import time
 import sys
 import struct
+
 from common.RTPSensor import RTPSensor
 from common import common
+
 
 class L16_to_L8(RTPSensor):
     def __init__(self, from_address, from_port, to_address, to_port):
@@ -21,12 +23,13 @@ class L16_to_L8(RTPSensor):
         self.destination.send_ctrl(0, None)
         self.last_ts = 0
         self.buffer = ""
+        self.StartSignalLoop()
         
     def do_RTP(self, session, event):
-    
         packet = common.make_rtp_packet(event.data)
         data = common.rtp_packet_getdata(packet)
-        
+
+
         # require l16-16k mono as input
         if packet.pt != 112:
             common.free_rtp_packet(packet)
@@ -40,7 +43,7 @@ class L16_to_L8(RTPSensor):
             args.append(s[i])
             
         sdata = apply(struct.pack,args)
-        
+
         if self.buffer:
             self.buffer = self.buffer + sdata
             sdata = self.buffer
@@ -61,13 +64,29 @@ class L16_to_L8(RTPSensor):
             self.last_ts = self.last_ts + 160
         except Exception, e:
             print "Exception sending data, ", e
-            
+
         self.destination.send_ctrl(packet.ts, None)
         self.destination.update()
-
+      
         common.free_rtp_packet(event.data)
-        
 
+
+    def StartSignalLoop(self):
+        '''
+        Start loop that can get interrupted from signals and
+        shut down service properly.
+        '''
+        
+        self.flag = 1
+        while self.flag:
+            try:
+                time.sleep(0.5)
+            except IOError:
+                self.flag = 0
+                self.log.debug("l16_to_18_transcoder.StartSignalLoop: Signal loop interrupted, exiting.")
+                self.Stop()
+
+              
 if __name__ == "__main__":
     import sys
     
@@ -78,4 +97,4 @@ if __name__ == "__main__":
 
     tcoder = L16_to_L8(from_addr, from_port, to_addr, to_port)
     tcoder.Start()
-    
+      
