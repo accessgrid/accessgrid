@@ -68,8 +68,6 @@ class NodeTestCase(unittest.TestCase):
         nsurl = server.RegisterObject(AGNodeServiceI(nodeService),
                                       path="/NodeService")
         
-        print "URL " , server.FindURLForObject(nodeService)
-
         print "NS URL: %s" % nsurl
         
         # Tell the world where to find the service
@@ -82,8 +80,6 @@ class NodeTestCase(unittest.TestCase):
         smurl = server.RegisterObject(AGServiceManagerI(serviceManager),
                                       path="/ServiceManager")
                                       
-        print "URL ", server.FindURLForObject(serviceManager)
-
         print "SM URL: %s" % smurl
         
         serviceManager = AGServiceManagerIW(smurl)
@@ -103,7 +99,7 @@ class NodeTestCase(unittest.TestCase):
         serviceFileList = os.listdir(servicesDir)
         halfTheServices = len(serviceFileList) / 2
         for i in range(halfTheServices):
-            print "removing service dir ", serviceFileList[i]
+            print "Removing service dir ", serviceFileList[i]
             
             dir = os.path.join(servicesDir,serviceFileList[i])
             
@@ -132,13 +128,14 @@ class NodeTestCase(unittest.TestCase):
     def test_120_GetResources(self):
         global nodeService
         
+        print "Testing get resources"
         smList = nodeService.GetServiceManagers()
         for sm in smList:
             rList = AGServiceManagerIW(sm.uri).GetResources()
             for r in rList:
-                print "Resource: ", r.resource
+                print "    Resource: ", r.resource
         
-    def test_140_GetAvailableServices(self):
+    def test_130_GetAvailableServices(self):
         
         global serviceManager, server, smurl
         
@@ -147,28 +144,31 @@ class NodeTestCase(unittest.TestCase):
         nsDir = AGTkConfig.instance().GetNodeServicesDir()
         svcFileList = os.listdir(nsDir)
         
-        print "Number of service files:", len(svcFileList)
-        print "Number of reported services:", len(svcList)
+        print "Testing available services"
+        print "- Number of service files:", len(svcFileList)
+        print "- Number of reported services:", len(svcList)
         assert len(svcList) == len(svcFileList)
         
-    def test_130_AddServices(self):
+    def test_140_AddServices(self):
         
         global nodeService, server, smurl, serviceManager
         
         serviceMgrDesc = AGServiceManagerDescription("test",
                                 smurl)
-                                
         svcList = serviceManager.GetAvailableServices()
+                                
+        print "Testing addition of services"
+        print "- Number of known services:", len(svcList)
         for svc in svcList:
             nodeService.AddService(svc,smurl,None,[])
         
         installedSvcList = nodeService.GetServices()
-        print "*\n*\n*\n*\n"
+
+        print "- Number of installed services:", len(installedSvcList)
+
         for svc in installedSvcList:
-            print "svc = ", svc.name, svc.servicePackageFile
+            print "    Service = ", svc.name, svc.servicePackageFile
         
-        print "Number of known services:", len(svcList)
-        print "Number of installed services:", len(installedSvcList)
         assert len(svcList) == len(installedSvcList)
         
     def test_150_SetIdentity(self):
@@ -214,6 +214,18 @@ class NodeTestCase(unittest.TestCase):
         smList = nodeService.GetServiceManagers()
         NumSavedServiceManagers = len(smList)
         
+        # Store the configuration as a new name
+        print "Testing store of new node configuration"
+        nodeConfigDir = os.path.join(UserConfig.instance().GetConfigDir(),
+                                     "nodeConfig")
+        files = os.listdir(nodeConfigDir)
+        if ConfigName in files:
+            os.remove(os.path.join(nodeConfigDir,ConfigName))
+        nodeService.StoreConfiguration(ConfigName)
+        
+        # Try to overwrite the configuration by writing
+        # it a second time
+        print "Testing store of existing node configuration"
         nodeService.StoreConfiguration(ConfigName)
         
     def test_450_RemoveServices(self):
@@ -230,7 +242,8 @@ class NodeTestCase(unittest.TestCase):
 
         installedSvcList = nodeService.GetServices()
         
-        print "Number of installed services:", len(installedSvcList)
+        print "Testing removal of services"
+        print "- Number of services after removal:", len(installedSvcList)
         assert len(installedSvcList) == 0
         
     def test_500_RemoveServiceManagers(self):
@@ -243,7 +256,8 @@ class NodeTestCase(unittest.TestCase):
                           
         smList = nodeService.GetServiceManagers()
         
-        print "Number of service managers after Removal: ", len(smList)
+        print "Testing removal of service managers"
+        print "- Number of service managers after Removal: ", len(smList)
         
         assert len(smList) == 0
         
@@ -256,8 +270,9 @@ class NodeTestCase(unittest.TestCase):
         svcList = nodeService.GetServices()
         smList = nodeService.GetServiceManagers()
         
-        print "Number of services loaded/saved: ", len(svcList),NumSavedServices
-        print "Number of service managers loaded/saved", len(smList),NumSavedServiceManagers
+        print "Testing load node configuration"
+        print "- Number of services loaded/saved: ", len(svcList),NumSavedServices
+        print "- Number of service managers loaded/saved", len(smList),NumSavedServiceManagers
         
         assert len(smList) == NumSavedServiceManagers
         assert len(svcList) == NumSavedServices
