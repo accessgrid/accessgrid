@@ -105,32 +105,27 @@ def RetrieveCertificate(token):
 
     return (success, retString)
 
-def RetrieveCACertificate():
+def RetrieveCACertificates():
+    """
+    Return the list of (cacert, signingpolicy) pairs for this server.
+    """
+    
     try:
         fh = open(os.path.join(ca_dir, "cacert.pem"))
-        txt = fh.read()
+        cert = fh.read()
+        fh.close()
+        fh = open(os.path.join(ca_dir, "cacert.policy"))
+        policy = fh.read()
         fh.close()
     except IOError:
         return (0, "Error reading cert file")
     
-    return (1, txt)
+    return (1, [[cert, policy]])
     
-def RetrieveSigningPolicy():
-    try:
-        fh = open(os.path.join(ca_dir, "cacert.policy"))
-        txt = fh.read()
-        fh.close()
-    except IOError:
-        return (0, "Error reading signing policy")
-    
-    return (1, txt)
-    
-
 server = CGIXMLRPCRequestHandler()
 server.register_function(RequestCertificate)
 server.register_function(RetrieveCertificate)
-server.register_function(RetrieveCACertificate)
-server.register_function(RetrieveSigningPolicy)
+server.register_function(RetrieveCACertificates)
 server.handle_request()
 
 
