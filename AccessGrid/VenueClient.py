@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.151 2004-03-22 16:36:03 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.152 2004-03-22 19:53:45 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.151 2004-03-22 16:36:03 olson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.152 2004-03-22 19:53:45 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -48,8 +48,8 @@ from AccessGrid.Descriptions import CreateServiceDescription
 from AccessGrid.Descriptions import CreateApplicationDescription
 from AccessGrid.Venue import VenueIW, ServiceAlreadyPresent
 from AccessGrid.AGNodeService import AGNodeServiceIW
+from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
-
 
 class EnterVenueException(Exception):
     pass
@@ -106,8 +106,7 @@ class VenueClient:
         # For states that matter
         self.state = None
 
-        # takes time
-        self.__CreateVenueClientWebService(pnode, port)
+        self.__StartWebService(pnode, port)
         self.__InitVenueData()
         self.isInVenue = 0
         self.isIdentitySet = 0
@@ -151,6 +150,7 @@ class VenueClient:
         self.profileCachePath = os.path.join(self.userConf.GetConfigDir(),
                                              self.profileCachePrefix)
         self.cache = ClientProfileCache(self.profileCachePath)
+
 
         
     ##########################################################################
@@ -254,7 +254,7 @@ class VenueClient:
                                  "local clock can cause authorization to fail."
 
 
-    def __CreateVenueClientWebService(self, pnode=0, port=0):
+    def __StartWebService(self, pnode=0, port=0):
         from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
         if port == 0:
             port = NetworkAddressAllocator().AllocatePort()
@@ -265,7 +265,7 @@ class VenueClient:
 
         if(self.profile != None):
             self.profile.venueClientURL = uri
-            log.debug("__CreateVenueClientWebService: venueclient: %s", uri)
+            log.debug("__StartWebService: venueclient: %s", uri)
                       
 
         if pnode:
@@ -274,16 +274,41 @@ class VenueClient:
             sm = AGServiceManager(self.server)
             smi = AGServiceManagerI(sm)
             uri = self.server.RegisterObject(smi, path="/ServiceManager")
-            log.debug("__CreateVenueClientWebService: service manager: %s",
+            log.debug("__StartWebService: service manager: %s",
                       uri)
             from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
             ns = AGNodeService()
             nsi = AGNodeServiceI(ns)
             uri = self.server.RegisterObject(nsi, path="/NodeService")
-            log.debug("__CreateVenueClientWebService: node service: %s",
+            log.debug("__StartWebService: node service: %s",
                       uri)
             
         self.server.RunInThread()
+        
+        # Save the location of the venue client url
+        # for other apps to communicate with the venue client
+        self.urlFile = os.path.join(UserConfig.instance().GetTempDir(),
+                               "venueClientUrl%d" % (os.getpid()))
+        try:
+            fileH = open(self.urlFile,"w")
+            fileH.write(self.GetWebServiceUrl())
+            fileH.close()
+        except:
+            log.exception("Error writing web service url file")
+
+        
+    def __StopWebService(self):
+        if self.server:
+            self.server.Stop()
+            
+        # Remove the file
+        try:
+            os.remove(self.urlFile)
+        except:
+            log.exception("Error removing url file")
+            
+    def GetWebServiceUrl(self):
+        return self.server.FindURLForObject(self)
         
     def __Heartbeat(self):
         if self.eventClient != None:
@@ -1142,9 +1167,11 @@ class VenueClient:
         if self.transferEngine:
             self.transferEngine.stop()
 
-#         if self.server:
-#             self.server.Stop()
-
+        self.__StopWebService()
+        
+        if self.server:
+            self.server.Stop()
+             
         if self.dataStore:
             self.dataStore.Shutdown()
 
@@ -1480,6 +1507,23 @@ class VenueClient:
                 isVenueAdministrator = 1
                 
         return isVenueAdministrator
+        
+
+# Retrieve a list of urls of (presumably) running venue clients
+def GetVenueClientUrls():
+
+    urlList = []
+
+    fileList = os.listdir(UserConfig.instance().GetTempDir())
+    for filepath in fileList:
+        if filepath.startswith("venueClientUrl"):
+            f = open(os.path.join(UserConfig.instance().GetTempDir(),filepath),"r")
+            venueClientUrl = f.read()
+            f.close()
+            
+            urlList.append(venueClientUrl)
+
+    return urlList
                                     
 
 class VenueClientI(SOAPInterface):
