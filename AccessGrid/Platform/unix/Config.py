@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.22 2004-05-05 21:50:48 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.23 2004-05-06 04:48:51 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.22 2004-05-05 21:50:48 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.23 2004-05-06 04:48:51 eolson Exp $"
 
 import os
 import mimetypes
@@ -715,7 +715,115 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
             short_extension = extension[1:]
         homedir = os.environ['HOME']
 
-        # --- BEGIN GNOME REGISTRATION ---
+        # --- .DESKTOP FILES BASE INFORMATION --- (KDE)
+
+        # User
+        kdeMimeInfo = """[Desktop Entry]
+Version=%s
+Encoding=UTF-8
+Hidden=false
+Icon=ag.ico
+Type=MimeType
+Patterns=%s
+MimeType=%s
+Comment=%s
+        """ % (str(GetVersion()), "*" + extension, mimeType, description) 
+        #   ("2.2", "*.agpkg", "application/x-ag-pkg", "Access Grid Package")
+
+        kdeAppInfo="""[Desktop Entry]
+Version=%s
+Encoding=UTF-8
+MultipleArgs=false
+Terminal=1
+Icon=ag.ico
+Exec=%s
+Type=Application
+MimeType=%s
+Name=%s
+Comment=%s
+        """ % (str(GetVersion()), cmds[1], mimeType, cmds[0], cmds[2])
+        #    ("2.2", "/usr/bin/agpm.py", "application/x-ag-pkg", "Access Grid Package Manager" or "agpm.py", comment)
+
+
+        # --- GNOME BASE INFORMATION ---
+
+        defAppId = cmds[0] # use verb for the defaultAppId
+
+        gnomeAppInfo="""
+%s
+        requires_terminal=true
+        command=%s
+        can_open_multiple_files=false
+        name=%s
+        mime_types=%s
+        """ % (defAppId, cmds[1], defAppId, mimeType)
+        #  %("agpm.py", "/usr/bin/agpm.py", "agpm.py", application/x-ag-pkg")
+
+        gnomeKeyInfo = """
+%s
+	default_application_id=%s
+        category=Misc
+        default_component_iid=
+        description=%s
+        icon_filename=
+        default_action_type=application
+        short_list_application_user_removals=
+        short_list_application_user_additions=%s
+        use_category_default=no
+        """ % (mimeType, defAppId, description, defAppId)
+        #     ("x-ag-pkg", "agpm.py", "Access Grid Package", "agpm.py")
+
+        gnomeMimeInfo="%s\n        ext: %s\n" % (mimeType, short_extension)  
+        #                                       ("x-ag-pkg", "agpkg")
+
+
+        # --- KDE USER REGISTRATION ---
+
+        # First find the user and system app paths.
+        # query them since applnk-redhat can't work for everybody.
+        f = os.popen("kde-config --path apps")
+        result = f.read()
+        f.close()
+        pathList = result.split(":")
+        kdeSystemApps = ""
+        kdeUserApps = ""
+        # if kde-config failed, the paths should stay == ""
+        for path in pathList:
+            if path.find(homedir) != -1:
+                kdeUserApps = path # expecting /home/user/.kde/share/applnk[-redhat]
+            elif path.find("kde") != -1:  # expecting /var/lib/menu/kde/Applications/
+                kdeSystemApps = path  # Unused, sym links here from another dir.
+
+        # Find the user and system mime paths.
+        f = os.popen("kde-config --path mime")
+        result = f.read()
+        f.close()
+        pathList = result.split(":")
+        kdeSystemMime = ""
+        kdeUserMime = ""
+        # if kde-config failed, the paths should stay == ""
+        for path in pathList:
+            if path.find(homedir) != -1:
+                kdeUserMime = path # expecting /home/user/.kde/share/applnk[-redhat]
+            elif path.find("mimelnk") != -1:  # expecting /usr/share/mimelnk/
+                kdeSystemMime = path
+
+        userMimeFile = os.path.join(kdeUserMime, "agpkg.desktop")
+        userAppFile = os.path.join(kdeUserApps, "agpm.desktop")
+
+        # Copy KDE files into place
+        if len(userMimeFile) > 0 and os.path.exists(userMimeFile):
+            mimeFd = open(userMimeFile, "w")
+            mimeFd.write(kdeMimeInfo)
+            mimeFd.close()
+
+        if len(userAppFile) > 0 and os.path.exists(kdeUserApps):
+            appFd = open(userAppFile, "w")
+            appFd.write(kdeAppInfo)
+            appFd.close()
+
+
+        # --- GNOME USER REGISTRATION ---
 
         # if gnome files exist, register with them.
         gnomeDir = os.path.join(homedir, ".gnome")
@@ -727,47 +835,71 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
         if os.path.exists(gnomeAppDir):
             log.info("registering file type " + extension + " with gnome")
 
-            defAppId = cmds[0] # use verb for the defaultAppId
-
-            appInfo="""
-%s
-        requires_terminal=true
-        command=%s
-        can_open_multiple_files=false
-        name=%s
-        mime_types=%s
-            """ % (defAppId, cmds[1], defAppId, mimeType)
-          #  %("agpm.py", "/usr/bin/agpm.py", "agpm.py", application/x-ag-pkg")
             f = open(gnomeAppFile, "a")
-            f.write(appInfo)
+            f.write(gnomeAppInfo)
             f.close()
 
-            keyInfo = """
-%s
-	default_application_id=%s
-        category=Misc
-        default_component_iid=
-        description=%s
-        icon_filename=
-        default_action_type=application
-        short_list_application_user_removals=
-        short_list_application_user_additions=%s
-        use_category_default=no
-            """ % (mimeType, defAppId, description, defAppId)
-            #     ("x-ag-pkg", "agpm.py", "Access Grid Package", "agpm.py")
             f = open(gnomeKeysFile, "a")
-            f.write(keyInfo)
+            f.write(gnomeKeyInfo)
             f.close()
 
-            mimeInfo="%s\n        ext: %s\n" % (mimeType, short_extension)  # ("x-ag-pkg", "agpkg"
             f = open(gnomeMimeFile, "a")
-            f.write(mimeInfo)
+            f.write(gnomeMimeInfo)
             f.close()
 
         else:
             log.info("gnome directory " + gnomeAppDir + " not found, not registering file type " + extension + " with gnome")
 
-        # --- END GNOME REGISTRATION ---
+
+        """
+        registerSystem = 1
+        if registerSystem:
+
+        # --- KDE SYSTEM REGISTRATION ---
+
+            # general paths
+            genSystemAppDir = "/usr/share/applications"
+            genSystemAppFile = os.path.join(genSystemAppDir, "agpm.desktop")
+            genSystemMimeDir = "/usr/share/mimelnk/application"
+            genSystemMimeFile = os.path.join(genSystemMimeDir, "agpkg.desktop")
+
+            if len(genSystemAppFile) > 0 and os.path.exists(genSystemAppDir):
+                appFd = open(genSystemAppFile, "w" )
+                appFd.write(kdeAppInfo)
+                appFd.close()
+
+            if len(genSystemMimeFile) > 0 and os.path.exists(genSystemMimeDir):
+                mimeFd = open(genSystemMimeFile, "w" )
+                mimeFd.write(kdeMimeInfo)
+                mimeFd.close()
+
+        # --- GNOME SYSTEM REGISTRATION ---
+
+            gnomeSystemMimeDir = "/usr/share/mime-info"
+            gnomeSystemMimeFile = os.path.join(gnomeSystemMimeDir, "accessgrid.mime")
+            gnomeSystemKeysFile = os.path.join(gnomeSystemMimeDir, "accessgrid.keys")
+            gnomeSystemAppDir = "/usr/share/application-registry"
+            gnomeSystemAppFile = os.path.join(gnomeSystemAppDir, "accessgrid.applications")
+            if os.path.exists(gnomeSystemMimeDir):
+                # Keys
+                f = open(gnomeSystemKeysFile, "a")
+                f.write(gnomeKeyInfo)
+                f.close()
+                # Mime
+                f = open(gnomeSystemMimeFile, "a")
+                f.write(gnomeMimeInfo)
+                f.close()
+            else:
+                log.info("gnomeSystemMimeDir does not exist: " + gnomeSystemMimeDir)
+                print "ARG"
+            if os.path.exists(gnomeSystemAppDir):
+                # Application
+                f = open(gnomeSystemAppFile, "a")
+                f.write(gnomeAppInfo)
+                f.close()
+            else:
+                log.info("gnomeSystemAppDir does not exist: " + gnomeSystemAppDir)
+        """
     
     def GetMimeCommands(self, mimeType = None, ext = None):
         """
