@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.5 2003-04-24 22:16:19 turam Exp $
+; RCS-ID: $Id: agtk.iss,v 1.6 2003-04-29 23:02:40 judson Exp $
 ;
 
 #define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
@@ -116,7 +116,7 @@ Source: Scripts\AGServiceManager.py; DestDir: {app}
 Source: Scripts\SetupVideo.py; DestDir: {app}; Components: Video_Producer
 Source: Scripts\VenueManagement.py; DestDir: {app}; Components: Venue_Server
 Source: Scripts\VenueServer.py; DestDir: {app}; Components: Venue_Server
-Source: Scripts\VenuesServerRegistry.py; DestDir: {app}; Components: Venue_Server
+;Source: Scripts\VenuesServerRegistry.py; DestDir: {app}; Components: Venue_Server
 
 ; Default node configuration
 Source: share\AccessGrid\nodeConfig\defaultWindows; DestDir: {commonappdata}\AccessGrid\nodeConfig; Flags: confirmoverwrite
