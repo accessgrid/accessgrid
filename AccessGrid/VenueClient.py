@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.184 2004-07-26 21:42:16 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.185 2004-07-27 15:52:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.184 2004-07-26 21:42:16 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.185 2004-07-27 15:52:23 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -122,7 +122,7 @@ class VenueClient:
         self.isInVenue = 0
         self.isIdentitySet = 0
 
-        self.streamDescList = None
+        self.streamDescList = []
         self.transport = "multicast"
         
         # attributes for follow/lead
