@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.21 2004-05-05 19:05:45 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.22 2004-05-05 21:50:48 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.21 2004-05-05 19:05:45 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.22 2004-05-05 21:50:48 turam Exp $"
 
 import os
 import mimetypes
@@ -24,6 +24,7 @@ import AccessGrid.Config
 
 from AccessGrid.Platform import AGTK_USER, AGTK_LOCATION
 from AccessGrid.Version import GetVersion
+from AccessGrid.Types import AGVideoResource
 
 log = Log.GetLogger(Log.Platform)
 Log.SetDefaultLevel(Log.Platform, Log.INFO)
@@ -619,6 +620,52 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
         default route points to.
         """
         return None
+        
+    def GetResources(self):
+    
+        deviceList = dict()
+        
+        videodevpath = '/proc/video/dev'
+        v4lctlexe = '/usr/bin/v4lctl'
+        
+        if os.path.exists(videodevpath):
+            # Get list of devices
+            cmd = "ls /proc/video/dev | grep video"
+            fh = os.popen(cmd,'r')
+            for line in fh.readlines():
+                device = os.path.join('/dev',line.strip())
+                deviceList[device] = None
+            fh.close()
+
+            # Determine ports for devices
+            if os.path.exists(v4lctlexe):
+                portString = ""
+                for d in deviceList.keys():
+                    cmd = "v4lctl list -c %s" % d
+                    fh = os.popen(cmd)
+                    for line in fh.readlines():
+                        if line.startswith('input'):
+                            portString = line.split('|')[-1]
+                            deviceList[d] = portString.strip()
+                            break
+            else:
+                log.info("%s not found; can't get ports", v4lctlexe)
+        else:
+            log.info("%s does not exist; no video devices detected",
+                     videodevpath)
+        
+
+        # Force x11 onto the list
+        deviceList['x11'] = 'x11'
+
+        # Create resource objects
+        resourceList = list()
+        for device,portString in deviceList.items():
+            r = AGVideoResource('video', device, 'producer',
+                                portString.split())
+            resourceList.append(r)
+        
+        return resourceList
 
 class MimeConfig(AccessGrid.Config.MimeConfig):
     """

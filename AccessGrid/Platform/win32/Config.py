@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.37 2004-05-04 19:32:50 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.38 2004-05-05 21:49:40 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.37 2004-05-04 19:32:50 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.38 2004-05-05 21:49:40 turam Exp $"
 
 import os
 import sys
@@ -22,6 +22,7 @@ import AccessGrid.Config
 from AccessGrid import Log
 from AccessGrid.Platform import AGTK_USER, AGTK_LOCATION
 from AccessGrid.Version import GetVersion
+from AccessGrid.Types import AGVideoResource
 
 log = Log.GetLogger(Log.Toolkit)
 
@@ -947,6 +948,43 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
         # Otherwise, return the lowest-metric default route.
         #
         return def_routes[0][1]
+        
+    def GetResources(self):
+        """ 
+        Return a list of the resources available on the system
+        """
+    
+        deviceList = list()
+        
+        try:
+            # Get the name of the video key in the registry
+            key = "SYSTEM\\ControlSet001\\Control\\MediaResources\\msvideo"
+            videoKey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key)
+
+            # Get the number of subkeys (devices) in the key
+            (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(videoKey)
+
+            for i in range(nSubKeys):
+                # Open the key
+                sVal = _winreg.EnumKey(videoKey, 0)
+                sKey = _winreg.OpenKey(videoKey, sVal)
+                (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(sKey)
+
+                # Find the device name among the key's values
+                for i in range(0, nValues):
+                    (vName, vData, vType) = _winreg.EnumValue(sKey, i)
+                    if vName == "FriendlyName":
+                        deviceList.append(vData)
+                    
+        except Exception:
+            log.exception("Exception getting video devices")
+            raise
+    
+        resourceList = list()
+        for d in deviceList:
+            r = AGVideoResource('video',d,'producer',['external-in'])
+            resourceList.append(r)
+        return resourceList
     
 class MimeConfig(AccessGrid.Config.MimeConfig):
     """
