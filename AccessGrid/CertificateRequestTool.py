@@ -919,6 +919,9 @@ class CertificateStatusDialog(wxDialog):
         self.importButton = wxButton(self, -1, "Import certificate")
         self.importButton.Enable(0)
 
+        self.deleteButton = wxButton(self, -1, "Delete request")
+        self.deleteButton.Enable(0)
+
         self.getStatusButton = wxButton(self, -1, "Update Status")
         self.closeButton = wxButton(self, wxID_CLOSE, "Close")
         self.newRequestButton = wxButton(self, wxNewId(), "Create New Request")
@@ -937,6 +940,7 @@ class CertificateStatusDialog(wxDialog):
                                      
     def __setEvents(self):
         EVT_BUTTON(self, self.importButton.GetId(), self.OnImportCertificate)
+        EVT_BUTTON(self, self.deleteButton.GetId(), self.OnDeleteRequest)
         EVT_BUTTON(self, self.getStatusButton.GetId(), self.OnUpdateStatus)
         EVT_BUTTON(self, self.closeButton.GetId(), self.OnClose)
         EVT_BUTTON(self, self.newRequestButton.GetId(), self.RequestCertificate)
@@ -949,9 +953,13 @@ class CertificateStatusDialog(wxDialog):
         sizer.Add(self.info, 0, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10)
 
         hs = wxBoxSizer(wxHORIZONTAL)
+        vs = wxBoxSizer(wxVERTICAL)
         
         hs.Add(self.list, 1, wxEXPAND|wxALL, 10)
-        hs.Add(self.importButton, 0, wxALL, 10)
+        hs.Add(vs, 0, wxEXPAND)
+        
+        vs.Add(self.importButton, 0, wxALL | wxEXPAND, 2)
+        vs.Add(self.deleteButton, 0, wxALL | wxEXPAND, 2)
 
         sizer.Add(hs, 1, wxEXPAND)
         
@@ -997,56 +1005,76 @@ class CertificateStatusDialog(wxDialog):
                 
             else:
                 self.importButton.Enable(0)
+
+        self.deleteButton.Enable(1)
             
+    def OnDeleteRequest(self, event):
+        print "delete, sel is ", self.selectedItem
+
+        if self.selectedItem is None:
+            return
+
+        try:
+            certMgr = Toolkit.GetApplication().GetCertificateManager()
+            req = self.reqList[self.selectedItem][0]
+            log.debug("Removing request %s", req.GetSubject())
+            certMgr.GetCertificateRepository().RemoveCertificateRequest(req)
+        except:
+            log.exception("Error removing cert request")
+
+        self.AddCertificates()
+        
     def OnImportCertificate(self, event):
 
         print "import, sel is ", self.selectedItem
-        if self.selectedItem is not None:
-            item = self.reqList[self.selectedItem]
-            status = self.certStatus[self.selectedItem]
+        if self.selectedItem is None:
+            return
+        
+        item = self.reqList[self.selectedItem]
+        status = self.certStatus[self.selectedItem]
 
-            cert = status[1]
+        cert = status[1]
 
-            #
-            # Write the cert out to a tempfile, then import.
-            #
+        #
+        # Write the cert out to a tempfile, then import.
+        #
 
-            hash = md5.new(cert).hexdigest()
-            tempfile = os.path.join(Platform.GetTempDir(), "%s.pem" % (hash))
+        hash = md5.new(cert).hexdigest()
+        tempfile = os.path.join(Platform.GetTempDir(), "%s.pem" % (hash))
 
+        try:
             try:
-                try:
-                    fh = open(tempfile, "w")
-                    fh.write(cert)
-                    fh.close()
+                fh = open(tempfile, "w")
+                fh.write(cert)
+                fh.close()
 
-                    certMgr = Toolkit.GetApplication().GetCertificateManager()
-                    impCert = certMgr.ImportRequestedCertificate(tempfile)
+                certMgr = Toolkit.GetApplication().GetCertificateManager()
+                impCert = certMgr.ImportRequestedCertificate(tempfile)
 
-                    MessageDialog(self,
-                                  "Successfully imported certificate for\n" +
-                                  str(impCert.GetSubject()),
-                                  "Import Successful")
-                    self.AddCertificates()
+                MessageDialog(self,
+                              "Successfully imported certificate for\n" +
+                              str(impCert.GetSubject()),
+                              "Import Successful")
+                self.AddCertificates()
 
-                except RepoInvalidCertificate, e:
-                    log.exception("Invalid certificate")
-                    msg = e[0]
-                    ErrorDialog(self,
-                                "The import of your approved certificate failed:\n"+
-                                msg,
-                                "Import Failed")
-                    
+            except RepoInvalidCertificate, e:
+                log.exception("Invalid certificate")
+                msg = e[0]
+                ErrorDialog(self,
+                            "The import of your approved certificate failed:\n"+
+                            msg,
+                            "Import Failed")
 
-                except:
-                    log.exception("Import of requested cert failed")
-                    ErrorDialog(self,
-                                "The import of your approved certificate failed.",
-                                "Import Failed")
 
-            finally:
-                os.unlink(tempfile)
-                
+            except:
+                log.exception("Import of requested cert failed")
+                ErrorDialog(self,
+                            "The import of your approved certificate failed.",
+                            "Import Failed")
+
+        finally:
+            os.unlink(tempfile)
+
             
 
     def RequestCertificate(self, event):
@@ -1092,8 +1120,13 @@ class CertificateStatusDialog(wxDialog):
             self.list.SetItemData(row, row)
             row = row+1
 
-        self.list.SetColumnWidth(0, wxLIST_AUTOSIZE)
-        self.list.SetColumnWidth(1, wxLIST_AUTOSIZE)
+        if len(self.reqList) == 0:
+            self.list.SetColumnWidth(0, wxLIST_AUTOSIZE_USEHEADER)
+            self.list.SetColumnWidth(1, wxLIST_AUTOSIZE_USEHEADER)
+        else:
+            self.list.SetColumnWidth(0, wxLIST_AUTOSIZE)
+            self.list.SetColumnWidth(1, wxLIST_AUTOSIZE)
+            
         self.list.SetColumnWidth(2, wxLIST_AUTOSIZE_USEHEADER)
         self.list.SetColumnWidth(3, wxLIST_AUTOSIZE_USEHEADER)
 

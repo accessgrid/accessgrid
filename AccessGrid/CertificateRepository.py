@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.10 2003-08-19 22:20:12 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.11 2003-08-20 20:05:33 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -603,6 +603,33 @@ class CertificateRepository:
 
         return desc
         
+    def RemoveCertificateRequest(self, req):
+        """
+        Remove the specificed certificate request from the repository.
+        """
+
+        hash = req.GetModulusHash()
+
+        path = os.path.join(self.dir, "requests", "%s.pem" % (hash))
+
+        try:
+            os.unlink(path)
+        except:
+            log.exception("error removing certificate file %s", path)
+
+        #
+        # Remove any metadata.
+        #
+
+        metaPrefix = "|".join(["request", hash])
+
+        try:
+            for key in self.db.keys():
+                if key.startswith(metaPrefix):
+                    del self.db[key]
+                    print "Delete ", key
+        finally:
+            self.db.sync()
 
     #
     # Certificate database querying methods
