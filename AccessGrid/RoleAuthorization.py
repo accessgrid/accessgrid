@@ -6,7 +6,7 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: RoleAuthorization.py,v 1.5 2003-08-13 14:38:49 lefvert Exp $ 
+# RCS_ID:      $Id: RoleAuthorization.py,v 1.6 2003-08-13 23:57:31 eolson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -702,7 +702,7 @@ class RoleClient:
         self.venue = None
         self.connected = 0
         if len(URL):
-            self.ConnectToVenue()
+            self.ConnectToVenue(URL)
 
     def ConnectToVenue(self, URL):
         #log.debug("Connect to server %s" %URL)
