@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.26 2004-05-18 15:59:40 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.27 2004-05-26 14:44:18 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.26 2004-05-18 15:59:40 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.27 2004-05-26 14:44:18 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # standard imports
@@ -325,9 +325,10 @@ class VenueClientController:
         
         """
         
-        if not myVenuesDict or not isinstance(myVenuesDict,dict):
+        if myVenuesDict == None or not isinstance(myVenuesDict,dict):
+            log.exception("Incorrect param to EditMyVenuesCB")
             raise ValueError
-        
+                
         try:
             self.__venueClientApp.SetMyVenues(myVenuesDict)
         except:
