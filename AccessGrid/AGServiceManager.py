@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.20 2003-04-20 00:28:51 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.21 2003-04-23 19:33:13 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
