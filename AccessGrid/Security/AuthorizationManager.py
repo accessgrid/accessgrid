@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.19 2004-05-12 18:54:50 lefvert Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.20 2004-05-27 22:21:31 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.19 2004-05-12 18:54:50 lefvert Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.20 2004-05-27 22:21:31 turam Exp $"
 
 # External Imports
 import os
@@ -1154,7 +1154,7 @@ class AuthorizationManagerIW(SOAPIWrapper):
 
         self.proxy.IsAuthorized(s, a)
 
-class AuthorizationMixIn(AuthorizationManager):
+class AuthorizationMixIn:
    """
    This allows object to inherit Authorization.
    """
