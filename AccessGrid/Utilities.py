@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.33 2003-05-23 21:39:24 olson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.34 2003-05-28 19:10:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -141,12 +141,6 @@ def GetResourceList( resourceFile ):
     device = None
     portnames = None
 
-    # Generate the file if it doesn't exist
-    if not os.path.exists(resourceFile):
-        installDir=GetInstallDir()
-        setupVideo = '"' + os.path.join(installDir,"SetupVideo.py") + '"' 
-        os.spawnv( os.P_WAIT, sys.executable, [ sys.executable, setupVideo ] )
-    
     # Read the file if it exists
     if os.path.exists(resourceFile):
         for line in fileinput.input(files = [resourceFile ] ):
