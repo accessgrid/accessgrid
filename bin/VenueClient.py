@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.213 2003-09-16 20:01:33 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.214 2003-09-16 22:03:34 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -667,9 +667,8 @@ class VenueClientUI(VenueClientEventSubscriber):
                 MessageDialog(None, text, "Notification")
             else:
                 log.debug("warningString: %s" %warningString)
-                text = "You have not entered the venue located at %s.\nAn error occurred.  Please, try again." % URL
-                ErrorDialog(None, text, "Enter Venue Error",
-                          style = wxOK  | wxICON_ERROR)
+                text = "Can not connect to venue located at %s.  Please, try again." % URL
+                MessageDialog(None, text, "Can not enter venue")
             return
 
         # Set a connected flag (We have to sort this out better...)
