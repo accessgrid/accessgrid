@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.26 2003-10-13 16:53:32 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.27 2003-10-13 20:42:31 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.26 2003-10-13 16:53:32 judson Exp $"
+__revision__ = "$Id: TextClient.py,v 1.27 2003-10-13 20:42:31 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -307,8 +307,9 @@ class TextClient:
     def Input(self, text):
         """
         """
-        event = TextEvent(self.venueId, None, 0, (text, self.profile))
-        self.textProcessor.Input(event)
+        if len(text) != 0:
+            event = TextEvent(self.venueId, None, 0, (text, self.profile))
+            self.textProcessor.Input(event)
         
     def Stop(self):
         self.log.debug("TextClient.Stop")
