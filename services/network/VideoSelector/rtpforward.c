@@ -91,7 +91,6 @@ static void rtp_event_handler(struct rtp *session, rtp_event *e)
       int j = 0;
       
       // Check if participant is added to list.
-      //printf("check if participant %ul is added to list \n", p->ssrc);
       for(i; i<len_ssrclist; i++){
 	if(ssrclist[i].ssrc == (unsigned long)p->ssrc){
 	  j = 1;
@@ -100,14 +99,13 @@ static void rtp_event_handler(struct rtp *session, rtp_event *e)
       
       // If not; add participant to list.
       if(j == 0){
-	ssrclist[len_ssrclist].name = "DEFAULT NAME";
+	ssrclist[len_ssrclist].name = "(*** no name set, click 'Refresh' ***)";
 	ssrclist[len_ssrclist].ssrc = (unsigned long) p->ssrc;
      	len_ssrclist ++;
       }
       
       // Check if we are allowed to forward participant.
       if (p->ssrc == (uint32_t)allowed_ssrc) {
-	//printf("we can send participant %ul\n", p->ssrc);
 	rtp_send_data(data->session, p->ts, p->pt, p->m, p->cc, p->csrc, 
 		      p->data, p->data_len, p->extn, p->extn_len, 
 		      p->extn_type);
@@ -117,9 +115,23 @@ static void rtp_event_handler(struct rtp *session, rtp_event *e)
       rtp_send_ctrl(data->session, ++ts, NULL);
       rtp_update(data->session);
       break;
-    case SOURCE_CREATED:
-    case SOURCE_DELETED:
+    case SOURCE_CREATED: break;
+    case SOURCE_DELETED: break;
     case RX_SDES:
+      r = (rtcp_sdes_item*)e->data;
+      // Check if participant is added to list.
+      i = 0;
+      j = 0;
+      // Check if this is name info.
+      for(i; i<len_ssrclist; i++){
+	if((ssrclist[i].ssrc == (unsigned long)e->ssrc) && (r->type == 2)){
+	  char* cname =  rtp_get_sdes(session, e->ssrc, 2);
+	  ssrclist[i].name = (char*) malloc(strlen(cname)+1);
+	  strcpy(ssrclist[i].name, cname);
+	}
+      }
+      break;
+      
     case RX_BYE:
     case RX_SR:
     case RX_RR:
@@ -154,7 +166,7 @@ void* start(void* address)
 
   data.selected = 0;
   
-  printf("from address %s, from port %d, to address %s, to port%d ", addr->fromAddr, addr->fport, addr->toAddr, addr->tport);
+  printf("from address %s, from port %d, to address %s, to port %d \n", addr->fromAddr, addr->fport, addr->toAddr, addr->tport);
   
   from_addr = addr->fromAddr ; from_port = addr->fport;
   to_addr = addr->toAddr; to_port = addr->tport;
@@ -181,7 +193,7 @@ void* start(void* address)
   if (from_session && data.session) {
     /* Run main loop */
     uint32_t my_ssrc = rtp_my_ssrc(data.session);
-
+    /*
     const char 	*username  = "Malcovich Malcovitch";
     const char	*telephone = "1-800-RTP-DEMO";
     const char	*toolname  = "RTPdemo";
@@ -198,6 +210,7 @@ void* start(void* address)
 		 email, strlen(email));
     rtp_set_sdes(data.session, my_ssrc, RTCP_SDES_CNAME,
 		 cname, strlen(cname));
+    */
 
     while(send) {
       /* Send control packets */

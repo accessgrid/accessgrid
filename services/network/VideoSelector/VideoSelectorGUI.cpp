@@ -44,13 +44,15 @@ public:
   Fl_Scroll *swindow;
   char* test;
   void update();
-  void create(struct address addr);
+  void create();
   void applyCB(Fl_Widget* w);
   void selectCB(Fl_Widget* w, void* data);
   void closeCB(Fl_Widget* w);
+  void idleCB();
   static void static_applyCB(Fl_Widget *w, void* v){((VideoSelectorGUI*)v)->applyCB(w);}
   static void static_selectCB(Fl_Widget *w, void* v){((VideoSelectorGUI*)v)->selectCB(w, v);}
   static void static_closeCB(Fl_Widget *w, void* v){((VideoSelectorGUI*)v)->closeCB(w);}
+  static void static_idleCB(void* v){((VideoSelectorGUI*)v)->idleCB();}
 };
 
 /*
@@ -58,29 +60,25 @@ public:
   and update the UI.
  */ 
 void VideoSelectorGUI::update(){
+  int x = 40;
+  int y = 10;
+  int dy = 20; 
+  int i = 0;
+  int len = 0;
+  
   swindow->clear();
   swindow->redraw();
   swindow->begin();
   
-  int x = 80;
-  int y = 10;
-  y = y + 40;
-  x = 10;
-  int dx = 20; 
-  int i = 0;
-  
-  
-  int len = 0;
   len = GetParticipants(pList);
-
+  
   for(i; i < len; i ++){
     ssrcList[i] = (char*)pList[i].ssrc;
-    Fl_Check_Button* b = new Fl_Check_Button(0, y, 130, 30, pList[i].name);
+    Fl_Check_Button* b = new Fl_Check_Button(x, y, 300, 30, pList[i].name);
     b->callback(static_selectCB, (void*) pList[i].ssrc);
     b->type(102);
-    y = y + dx;
+    y = y + dy;
   }
-
   swindow->end();
   swindow->redraw();
 }
@@ -88,18 +86,17 @@ void VideoSelectorGUI::update(){
 /*
   Initial creation of ui components.
 */
-void VideoSelectorGUI::create(struct address addr){
+void VideoSelectorGUI::create(){
   Fl_Window *window = new Fl_Window(400,460);
   x = 80;
   y = 10;
   char* participantList[100];
   test = "this is a member";
-  
- 
+   
   window->size_range(400, 400, 600, 600);
 
   // Scroll window containing participants
-  swindow = new Fl_Scroll(0, y, 400, 300);
+  swindow = new Fl_Scroll(0, y, 400, 380);
   Fl_Group* o = new Fl_Group(x, y, 380, 280);
   o->box(FL_THIN_UP_FRAME);
   
@@ -118,13 +115,10 @@ void VideoSelectorGUI::create(struct address addr){
   
   window->end();
   window->show();
-
-  pthread_t t;
-  
+    
  
-
-  // pthread_create(&t, NULL, start, argv[1], atoi(argv[2]), argv[3], atoi(argv[4]));
-  pthread_create(&t, NULL, start, (void*)&addr);
+  // For some reason, the idle callback causes a segfault.
+  //Fl::add_idle(static_idleCB);
 }
 
 /*
@@ -158,6 +152,10 @@ void VideoSelectorGUI::closeCB(Fl_Widget *w){
   exit(0);
 }
 
+void VideoSelectorGUI::idleCB(){
+  update();
+}
+
 /*
   ------------------------------------------------
   Main 
@@ -167,7 +165,7 @@ void VideoSelectorGUI::closeCB(Fl_Widget *w){
 int main(int argc, char ** argv) {
   // Parse arguments
   if (argc != 5) {
-    printf("Usage: ./Selector address port address port\n");
+    printf("Usage: ./Selector from_address from_port to_address to_port\n");
     exit(-1);
   }
 
@@ -177,10 +175,14 @@ int main(int argc, char ** argv) {
   a.toAddr = argv[3];
   a.tport = atoi(argv[4]);
   
+  // Start packet forwarding.
+  pthread_t t;
+  pthread_create(&t, NULL, start, (void*)&a);
+  
   // Start the program
   VideoSelectorGUI v;
-  v.create(a);
-  v.update();
+  v.create();
+    
   return Fl::run();
   pthread_exit(NULL);
 }
