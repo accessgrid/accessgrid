@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.20 2003-04-28 18:24:43 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.21 2003-05-28 22:04:25 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -21,10 +21,13 @@ from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Descriptions import AGServiceManagerDescription
 
 from AccessGrid import PersonalNode
+from AccessGrid import Toolkit
 
 # default arguments
 port = 11000
 logFile = "./agns.log"
+identityCert = None
+identityKey = None
 
 def Shutdown():
     global running
@@ -54,11 +57,14 @@ def Usage():
     print "    -p|--port <int> : <port number to listen on>"
     print "    -l|--logFile <filename> : log file name"
     print "    --pnode <arg> : initialize as part of a Personal Node configuration"
+    print "    --cert <filename>: identity certificate"
+    print "    --key <filename>: identity certificate's private key"
 
 # Parse command line options
 try:
     opts, args = getopt.getopt(sys.argv[1:], "p:l:hd",
-                               ["port=", "logfile=", "debug", "pnode=", "help"])
+                               ["port=", "logfile=", "debug", "pnode=",
+                               "help", "key=", "cert="])
 except getopt.GetoptError:
     Usage()
     sys.exit(2)
@@ -74,6 +80,10 @@ for o, a in opts:
         logFile = a
     elif o == "--pnode":
         pnode = a
+    elif o == "--key":
+        identityKey = a
+    elif o == "--cert":
+        identityCert = a
     elif o in ("-h", "--help"):
         Usage()
         sys.exit(0)
@@ -96,6 +106,32 @@ if pnode is not None:
     serviceManageURL =  personalNode.RunPhase1(pnode)
 
     log.debug("Got service mgr %s", serviceManageURL)
+
+else:
+    if identityCert is not None or identityKey is not None:
+        #
+        # Sanity check on identity cert stuff
+        #
+
+        if identityCert is None or identityKey is None:
+            log.critical("Both a certificate and key must be provided")
+            print "Both a certificate and key must be provided"
+            sys.exit(0)
+            
+        #
+        # Init toolkit with explicit identity.
+        #
+
+        app = Toolkit.ServiceApplicationWithIdentity(identityCert, identityKey)
+
+    else:
+        #
+        # Init toolkit with standard environment.
+        #
+
+        app = Toolkit.CmdlineApplication()
+
+    app.Initialize()
 
 # Create a Node Service
 nodeService = AGNodeService()
