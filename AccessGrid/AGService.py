@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.11 2003-03-19 23:09:48 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.12 2003-04-09 15:40:14 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -72,13 +72,16 @@ class AGService( ServiceBase ):
 
 
    def Stop( self ):
-      """Stop the service"""
-      try:
-         self.started = 0
-         self.processManager.terminate_all_processes()
-      except:
-         print "Exception in AGService.Stop ", sys.exc_type, sys.exc_value
-         raise faultType("AGService.Stop failed : ", str( sys.exc_value ) )
+       """Stop the service"""
+       try:
+           self.started = 0
+           self.processManager.terminate_all_processes()
+       except Exception, e:
+           log.exception("Exception in AGService.Stop")
+           print "Exception in AGService.Stop ", sys.exc_type, sys.exc_value
+           raise e
+           # raise faultType("AGService.Stop failed : ", str( sys.exc_value ) )
+           
    Stop.soap_export_as = "Stop"
 
 
