@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.15 2003-04-03 16:36:43 olson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.16 2003-04-03 16:51:47 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -73,6 +73,7 @@ else:
 try:
     import _winreg
     import win32api
+    from win32com.shell import shell, shellcon
 except:
     pass
 
@@ -157,6 +158,19 @@ def GetTempDir():
 
     if sys.platform == WIN:
         return win32api.GetTempPath()
+    else:
+        return "/tmp"
+
+
+def GetSystemTempDir():
+    """
+    Return a directory in which temporary files may be written.
+    The system temp dir is guaranteed to not be tied to any particular user.
+    """
+
+    if sys.platform == WIN:
+        winPath = os.getenv("SystemRoot")
+        return os.path.join(winPath, "TEMP")
     else:
         return "/tmp"
 
