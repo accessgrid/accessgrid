@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.110 2003-03-26 17:35:28 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.111 2003-03-26 18:35:16 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -339,14 +339,16 @@ class VenueClientFrame(wxFrame):
         #self.Layout()
 
     def UnFollow(self, event):
-        wxLogDebug("VenueClientUIClasses: In UnFollow")
-        if self.personToFollow != None :
-            #try:
-                self.app.UnFollow(self.personToFollow)
-                self.personToFollow = None
+        wxLogDebug("VenueClientUIClasses: In UnFollow we are being lead by %s" %self.app.leaderProfile.name)
+        if self.app.leaderProfile != None :
+            try:
+                self.app.UnFollow(self.app.leaderProfile)
                 self.meMenu.Remove(self.ID_ME_UNFOLLOW)
-            #except:
-           #     wxLogError("VenueClientUIClasses: Can not stop following %s" %self.personToFollow.name)
+            except:
+                wxLogError("VenueClientUIClasses: Can not stop following %s" %self.app.leaderProfile.name)
+
+        else:
+            wxLogDebug("You are trying to stop following somebody you are not following")
         
     def Follow(self, event):
         wxLogDebug("VenueClientUIClasses: In Follow")
@@ -356,19 +358,26 @@ class VenueClientFrame(wxFrame):
         name = personToFollow.name
         wxLogDebug("VenueClientUIClasses: You are trying to follow :%s url:%s " %(name, url))
 
-        if(self.personToFollow == personToFollow):
+        if(self.app.leaderProfile == personToFollow):
             text = "You are already following "+name
             title = "Notification"
             dlg = wxMessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
+            
+        elif (self.app.pendingLeader == personToFollow):
+            text = "You have already sent a request to follow "+name+". Please, wait for answer."
+            title = "Notification"
+            dlg = wxMessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()  
 
         else:
             try:
                 self.app.Follow(personToFollow)
-                self.meMenu.Append(self.ID_ME_UNFOLLOW,"Stop following %s" %name,
-                                   "%s will not lead anymore" %name)
-                self.personToFollow = personToFollow
+                #self.meMenu.Append(self.ID_ME_UNFOLLOW,"Stop following %s" %name,
+                #                   "%s will not lead anymore" %name)
+                #self.personToFollow = personToFollow
                 
             except:
                 wxLogError("VenueClientUIClasses: Can not follow %s" %personToFollow.name)
@@ -420,6 +429,19 @@ class VenueClientFrame(wxFrame):
 
     def NotifyUnLeadDialog(self, clientProfile):
         text = clientProfile.name+" has stopped following you"
+        title = "Notification"
+        dlg = wxMessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+    def NotifyLeadDialog(self, clientProfile, isAuthorized):
+        if isAuthorized:
+            text = "You are now following "+clientProfile.name
+            self.meMenu.Append(self.ID_ME_UNFOLLOW,"Stop following %s" % clientProfile.name,
+                               "%s will not lead anymore" % clientProfile.name)
+        else:
+            text = clientProfile.name+" does not want you as a follower, the request is denied."
+
         title = "Notification"
         dlg = wxMessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
         dlg.ShowModal()
