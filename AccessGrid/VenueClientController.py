@@ -3,12 +3,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.14 2004-04-05 18:46:09 judson Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.15 2004-04-06 00:47:35 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.14 2004-04-05 18:46:09 judson Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.15 2004-04-06 00:47:35 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -28,7 +28,7 @@ from AccessGrid.AppDb import AppDb
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Descriptions import ServiceDescription, DataDescription
 from AccessGrid.Descriptions import ApplicationDescription
-from AccessGrid.Platform.Config import UserConfig, MimeConfig
+from AccessGrid.Platform.Config import UserConfig, MimeConfig, AGTkConfig
 from AccessGrid.Platform import IsWindows, Config
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.VenueClient import NetworkLocationNotFound
@@ -46,7 +46,6 @@ class VenueClientController:
     def __init__(self):
     
         self.history = []
-        self.userConf = UserConfig.instance()
         
         # Initiate venue client app
         self.__venueClientApp = VenueClientApp()
@@ -1117,6 +1116,7 @@ class VenueClientController:
 
         localFilePath = None
         name = None
+        appDir = None
 
         # If objDesc is data, download the filename specified in it.
         if isinstance(objDesc, DataDescription):
@@ -1174,7 +1174,16 @@ class VenueClientController:
                 name = self.__venueClientApp.GetNameForMimeType(objDesc.mimeType)
                 if name != None:
                     appName = '_'.join(name.split(' '))
-                    appDir = os.path.join(self.userConf.GetSharedAppDir(), appName)
+                    
+                    # Get the app dir
+                    if os.access(os.path.join(UserConfig.instance().GetSharedAppDir(), appName),os.R_OK):
+                        appDir = os.path.join(UserConfig.instance().GetSharedAppDir(), appName)
+                    elif os.path.join(AGTkConfig.instance().GetSharedAppDir(), appName):
+                        appDir = os.path.join(AGTkConfig.instance().GetSharedAppDir(), appName)
+                    else:
+                        raise Exception, "Couldn't find shared app client"
+                        
+                    command = os.path.join(appDir,command)
                     try:
                         os.chdir(appDir)
                     except:
@@ -1278,8 +1287,9 @@ class VenueClientApp:
         # Venue History
         self.history = []
         
-        # Application Database
-        self.appDatabase = AppDb()
+        # Application Databases
+        self.userAppDatabase = AppDb()
+        self.systemAppDatabase = AppDb(path=AGTkConfig.instance().GetConfigDir())
 
         # Mime Config
         self.mimeConfig = Config.MimeConfig.instance()
@@ -1342,7 +1352,9 @@ class VenueClientApp:
     # 
     
     def GetInstalledApps(self):
-        appDescList = self.appDatabase.ListAppsAsAppDescriptions()
+        appDescList = list()
+        appDescList += self.userAppDatabase.ListAppsAsAppDescriptions()
+        appDescList += self.systemAppDatabase.ListAppsAsAppDescriptions()
         return appDescList
         
         
@@ -1368,12 +1380,21 @@ class VenueClientApp:
             commandList = self.mimeConfig.GetMimeCommands(ext = ext)
         elif isinstance(objDesc,ApplicationDescription):
             # Application commands are retrieved from the app db
-            commandList = self.appDatabase.GetCommands(objDesc.mimeType)
+            commandList = dict()
+            commandList.update(self.userAppDatabase.GetCommands(objDesc.mimeType))
+            commandList.update(self.systemAppDatabase.GetCommands(objDesc.mimeType))
             
         return commandList
 
     def GetNameForMimeType(self,mimeType):
-        name = self.appDatabase.GetNameForMimeType(mimeType)
+        """
+        Get the name for the given mime type
+        """
+        
+        # Check the user app db first, the system app db second
+        name = self.userAppDatabase.GetNameForMimeType(mimeType)
+        if not name:
+            name = self.systemAppDatabase.GetNameForMimeType(mimeType)
         return name
     
     #
