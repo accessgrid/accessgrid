@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.35 2003-02-14 22:31:47 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.36 2003-02-17 17:09:40 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -105,6 +105,7 @@ class VenueServer(ServiceBase.ServiceBase):
                 print "Loading Venue: %s" % vURL
                 self.venues[vURL] = store[vURL]
                 self.venues[vURL].SetMulticastAddressAllocator(self.multicastAddressAllocator)
+                self.venues[vURL].Start()
                 venuePath = "%s/%s" % (self.venuePathPrefix,
                                        self.venues[vURL].uniqueId)
                 # Somehow we have to register this venue as a new service
@@ -126,7 +127,7 @@ class VenueServer(ServiceBase.ServiceBase):
             self.venues[self.defaultVenue]._bind_to_service(defaultVenue)
         else:
             self.defaultVenue = self.AddVenue(self.defaultVenueDescription)
-            
+
 
         # The houseKeeper is a task that is doing garbage collection and
         # other general housekeeping tasks for the Venue Server.
