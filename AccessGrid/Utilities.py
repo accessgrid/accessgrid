@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.15 2003-02-12 23:06:07 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.16 2003-02-14 20:45:12 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -210,3 +210,15 @@ def SubmitBug():
         o = open("out.html", "w")
         o.write(out)
         o.close()
+#
+# We use this import to get a reliable hostname; should be made more
+# general later (in the event we are using something other than hosting.pyGlobus
+#
+
+try:
+    import AccessGrid.hosting.pyGlobus.Utilities
+    GetHostname = AccessGrid.hosting.pyGlobus.Utilities.GetHostname
+except ImportError:
+    import socket
+    GetHostname = socket.getfqdn()
+
