@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.26 2004-03-24 22:38:34 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.27 2004-03-28 05:21:49 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.26 2004-03-24 22:38:34 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.27 2004-03-28 05:21:49 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1998,7 +1998,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         """
         
         wxCallAfter(self.textClientPanel.OutputText, name, text)
-
+        
     def EnterVenue(self, URL, warningString="", enterSuccess=1):
         """
         This method calls the venue client method and then
@@ -2017,15 +2017,15 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             #   catching an exception with vc redesign.
             if warningString == "NotAuthorized":
                 text = "You are not authorized to enter the venue located at %s.\n." % URL
-                MessageDialog(None, text, "Notification")
+                wxCallAfter(MessageDialog, None, text, "Notification")
             elif warningString.startswith("Authorization failure connecting to server"):
                 text = warningString
-                MessageDialog(None, text, "Authorization failure")
+                wxCallAfter(self.Notify, text, "Authorization failure")
                 log.debug(warningString)
             else:
                 log.debug("warningString: %s" %warningString)
                 text = "Can not connect to venue located at %s.  Please, try again." % URL
-                MessageDialog(None, text, "Can not enter venue")
+                wxCallAfter(self.Notify, text, "Can not enter venue")
             return
 
         # initialize flag in case of failure
@@ -2125,7 +2125,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             #
             if warningString != '': 
                 message = "Following non fatal problems have occured when you entered the venue:\n" + warningString
-                MessageDialog(None, message, "Notification")
+                wxCallAfter(self.Notify, message, "Notification")
                 
                 wxCallAfter(self.statusbar.SetStatusText, 
                             "Entered %s successfully" %self.venueClient.GetVenueName())
@@ -2136,7 +2136,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         if not enterUISuccess:
             text = "You have not entered the venue located at %s.\nAn error occured.  Please, try again."%URL
-            self.Error(text, "Enter Venue Error")
+            wxCallAfter(self.Error, text, "Enter Venue Error")
+            
 
     def ExitVenue(self):
         wxCallAfter(self.__CleanUp)
