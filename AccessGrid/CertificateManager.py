@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.33 2003-09-22 15:58:38 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.34 2003-10-13 20:56:33 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.33 2003-09-22 15:58:38 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.34 2003-10-13 20:56:33 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -553,12 +553,13 @@ class CertificateManager(object):
         
     def InitEnvironment(self):
         """
-        Configure the process environment to correspond to the chosen configuration.
+        Configure the process environment to correspond to the chosen
+        configuration.
 
-        This method does not attempt to remedy any
-        problems in the configuration; rather, if the situation is not
-        to its liking, it raises an exception telling the caller what
-        the problem is. It is safe to reinvoke this method as needed.
+        This method does not attempt to remedy any problems in the
+        configuration; rather, if the situation is not to its liking,
+        it raises an exception telling the caller what the problem
+        is. It is safe to reinvoke this method as needed.
 
         If there are no identity certificates present, raise the
         NoCertificates exception.
@@ -586,12 +587,13 @@ class CertificateManager(object):
 
             X509_USER_CERT: user's certificate
             X509_USER_KEY: user's private key
-            X509_RUN_AS_SERVER: set to override any lingering proxy cert setting
+            X509_RUN_AS_SERVER: set to override any lingering proxy
+                                cert setting
 
 
-        This method sets self.defaultIdentity as a side effect. It should be
-        viewed as the current appropriate mechanism for setting defaultIdentity.
-        
+        This method sets self.defaultIdentity as a side effect. It
+        should be viewed as the current appropriate mechanism for
+        setting defaultIdentity.
         """
 
         #
@@ -640,7 +642,8 @@ class CertificateManager(object):
 
     def _InitializeCADir(self):
         """
-        Initialize the app's trusted CA certificate directory from the cert repo.
+        Initialize the app's trusted CA certificate directory from the
+        cert repo.
 
         We first clear out all state, then copy the certs and signing_policy
         files from each of the certificates in the repo marked as being
@@ -680,13 +683,13 @@ class CertificateManager(object):
 
     def _InitEnvWithProxy(self):
         """
-        Set up the runtime environment for using a globus proxy to defaultIdentity.
+        Set up the runtime environment for using a globus proxy to
+        defaultIdentity.
 
         For now, when we're just doing single identities, we write the
         proxy out to the location where Globus is expecting it.
 
         Later we'll think about using a per-cert location.
-
         """
 
         defaultIdentity = self.defaultIdentity
