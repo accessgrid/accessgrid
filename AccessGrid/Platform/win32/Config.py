@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.9 2004-03-29 19:08:42 olson Exp $
+# RCS-ID:      $Id: Config.py,v 1.10 2004-04-09 13:40:00 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.9 2004-03-29 19:08:42 olson Exp $"
+__revision__ = "$Id: Config.py,v 1.10 2004-04-09 13:40:00 judson Exp $"
 
 import os
 import sys
@@ -20,7 +20,7 @@ from pyGlobus import utilc
 
 import AccessGrid.Config
 from AccessGrid import Log
-from AccessGrid.Platform import AGTK_USER, AGTK_INSTALL, AGTK_LOCATION
+from AccessGrid.Platform import AGTK_USER, AGTK_LOCATION
 from AccessGrid.Version import GetVersion
 
 log = Log.GetLogger(Log.Toolkit)
@@ -47,15 +47,15 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
     Toolkit. This object provides primarily read-only access to configuration
     data that is created when the toolkit is installed.
 
-    @var version: The version of this installation.
-    @var installDir: The directory this toolkit is installed in.
-    @var docDir: The directory for documentation for the toolkit.
-    @var appDir: The directory for system installed shared applications
-    @var nodeServicesDir: the directory for system installed node services
-    @var servicesDir: the directory for system installed services
-    @var pkgCacheDir: The directory of shared application and node
+    @ivar version: The version of this installation.
+    @ivar installDir: The directory this toolkit is installed in.
+    @ivar docDir: The directory for documentation for the toolkit.
+    @ivar appDir: The directory for system installed shared applications
+    @ivar nodeServicesDir: the directory for system installed node services
+    @ivar servicesDir: the directory for system installed services
+    @ivar pkgCacheDir: The directory of shared application and node
     service packages for all users of this installation.
-    @var configDir: The directory for installation configuration.
+    @ivar configDir: The directory for installation configuration.
 
     @type appDir: string
     @type nodeServicesDir: string
@@ -116,9 +116,11 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         return self.version
 
     def _GetInstallBase(self):
+        global AGTK_LOCATION
+        
         if self.installBase == None:
             try:
-                self.installBase = os.environ[AGTK_INSTALL]
+                self.installBase = os.environ[AGTK_LOCATION]
             except:
                 try:
                     AGTK = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE,
@@ -139,27 +141,19 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         return self.installBase
         
     def GetConfigDir(self):
-        global AGTK_LOCATION
-        
-        if self.configDir == None:
-            # Get the config dir set
-            try:
-                self.configDir = os.environ[AGTK_LOCATION]
-            except:
-                try:
-                    base = shell.SHGetFolderPath(0,
-                                                 shellcon.CSIDL_COMMON_APPDATA,
-                                                 0, 0)
-                    self.configDir = os.path.join(base, "AccessGrid")
-                except:
-                    raise Exception, "AGTk installation corrupt: Cannot find config dir"
-        # Check the installation
-        if not os.path.exists(self.configDir):
+        if self.installBase == None:
+            self._GetInstallBase()
+
+        self.configDir = os.path.join(self.installBase, "config")
+
+        if self.configDir is not None and not os.path.exists(self.configDir):
             raise Exception, "AGTkConfig: config dir does not exist."
-        
+
         return self.configDir
 
-    def GetInstallDir(self):
+    GetInstallDir = _GetInstallBase
+    
+    def GetBinDir(self):
         if self.installBase == None:
             self._GetInstallBase()
 
@@ -251,12 +245,23 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
     This object encapsulates the information required to correctly configure
     Globus and pyGlobus for use with the Access Grid Toolkit.
 
-    @var location: the location of the globus installation
-    @var caCertDir: the directory of Certificate Authority Certificates
-    @var hostname: the Hostname for the globus configuration
-    @var proxyFile: THe filename for the globus proxy
-    @var certFile: The filename of the X509 certificate.
-    @var keyFile: The filename of the X509 key.
+    HKCU\Software\Globus
+    HKCU\Software\Globus\GSI
+    HKCU\Software\Globus\GSI\x509_user_proxy = {%TEMP%|{win}\temp}\proxy
+    HKCU\Software\Globus\GSI\x509_user_key =
+                                        {userappdata}\globus\userkey.pem
+    HKCU\Software\Globus\GSI\x509_user_cert =
+                                       {userappdata}\globus\usercert.pem
+    HKCU\Software\Globus\GSI\x509_cert_dir =
+                                 {app}\config\certificates
+    HKCU\Environment\GLOBUS_LOCATION = {app}
+
+    @ivar location: the location of the globus installation
+    @ivar caCertDir: the directory of Certificate Authority Certificates
+    @ivar hostname: the Hostname for the globus configuration
+    @ivar proxyFile: THe filename for the globus proxy
+    @ivar certFile: The filename of the X509 certificate.
+    @ivar keyFile: The filename of the X509 key.
     """
     theGlobusConfigInstance = None
     
@@ -294,88 +299,103 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
 
         self._Initialize()
         
+#     def _Initialize(self):
+#         """
+#         This does globus environment initialization.
+#         """
+#         self._InitializeRegistry()
+
+#         self._InitializeHostname()
+
+#     def _InitializeHostname(self):
+#         """
+#         Ensure that we have a valid Globus hostname.
+
+#         If GLOBUS_HOSTNAME is set, we will do nothing further.
+
+#         Otherwise, we will inspect the hostname as returned by the
+#         socket.getfqdn() call. If it appears to be valid (where valid
+#         means that it maps to an IP address and we can locally bind to
+#         that address), we needn't do anythign, since the globus
+#         hostname calls will return the right thing.
+
+#         Otherwise, we need to get our IP address using
+#         SystemConfig.GetLocalIPAddress()
+#         """
+#         self.hostname = os.getenv("GLOBUS_HOSTNAME")
+#         if self.hostname is not None:
+#             log.debug("Using GLOBUS_HOSTNAME=%s as set in the environment",
+#                       self.hostname)
+#             return
+
+#         hostname = socket.getfqdn()
+
+#         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#         try:
+#             sock.bind((hostname, 0))
+
+#             #
+#             # This worked, so we are okay.
+#             #
+
+#             log.debug("System hostname of %s is valid", hostname) 
+#             return
+        
+#         except socket.error:
+#             pass
+
+#         #
+#         # Binding to our hostname didn't work. Retrieve our IP address
+#         # and use that.
+#         #
+
+#         try:
+#             myip = SystemConfig.instance().GetLocalIPAddress()
+#             log.debug("retrieved local IP address %s", myip)
+#         except:
+#             myip = "127.0.0.1"
+#             log.exception("Failed to determine local IP address, using %s",
+#                           myip)
+
+#         import AccessGrid.Utilities
+#         AccessGrid.Utilities.setenv("GLOBUS_HOSTNAME", myip)
+
+    def _GetGlobusKey(self):
+        try:
+            gkey = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+                                   "Software\Globus")
+            gsikey = _winreg.OpenKey(gkey, "GSI")
+            return gsikey
+        except:
+            log.exception("Couldn't retrieve globus key from registry.")
+            # third, Create the keys
+            try:
+                gkey = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER,
+                                         "Software\Globus")
+                gsikey = _winreg.CreateKey(gkey, "GSI")
+                return gsikey
+            except:
+                log.exception("Couldn't initialize the globus registry keys.")
+            return None
+
+#    def _InitializeRegistry(self):
     def _Initialize(self):
         """
-        This is a placeholder for doing per user initialization that
-        should happen the first time the user runs any toolkit
-        application. For now, I'm putting globus registry crud in
-        here, later there might be other stuff.
-
-        """
-
-        self._InitializeRegistry()
-
-        self._InitializeHostname()
-
-    def _InitializeHostname(self):
-        """
-        Ensure that we have a valid Globus hostname.
-
-        If GLOBUS_HOSTNAME is set, we will do nothing further.
-
-        Otherwise, we will inspect the hostname as returned by the
-        socket.getfqdn() call. If it appears to be valid (where valid means that
-        it maps to an IP address and we can locally bind to that address),
-        we needn't do anythign, since the globus hostname calls will return the right
-        thing.
-
-        Otherwise, we need to get our IP address using SystemConfig.GetLocalIPAddress()
-        """
-
-
-        ghost = os.getenv("GLOBUS_HOSTNAME")
-        if ghost is not None:
-            log.debug("Using GLOBUS_HOSTNAME=%s as set in the environment", ghost)
-            return
-
-        hostname = socket.getfqdn()
-
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            sock.bind((hostname, 0))
-
-            #
-            # This worked, so we are okay.
-            #
-
-            log.debug("System hostname of %s is valid", hostname) 
-            return
-        
-        except socket.error:
-            pass
-
-        #
-        # Binding to our hostname didn't work. Retrieve our IP address
-        # and use that.
-        #
-
-        try:
-            myip = SystemConfig.instance().GetLocalIPAddress()
-            log.debug("retrieved local IP address %s", myip)
-        except:
-            myip = "127.0.0.1"
-            log.exception("Failed to determine local IP address, using %s", myip)
-
-        import AccessGrid.Utilities
-        AccessGrid.Utilities.setenv("GLOBUS_HOSTNAME", myip)
-
-    def _InitializeRegistry(self):
-        """
         right now we just want to check and see if registry settings
-        are in place for:
-
-        HKCU\Software\Globus
-        HKCU\Software\Globus\GSI
-        HKCU\Software\Globus\GSI\x509_user_proxy = {%TEMP%|{win}\temp}\proxy
-        HKCU\Software\Globus\GSI\x509_user_key =
-                                           {userappdata}\globus\userkey.pem
-        HKCU\Software\Globus\GSI\x509_user_cert =
-                                          {userappdata}\globus\usercert.pem
-        HKCU\Software\Globus\GSI\x509_cert_dir =
-                                    {commonappdata}\AccessGrid\certificates
-        HKCU\Environment\GLOBUS_LOCATION = {commonappdata}\AccessGrid
+        are in place for the various parts.
         """
-        # First try to setup GLOBUS_LOCATION, if it's not already set
+        # First, get the paths to stuff we need
+        uappdata = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
+        agtkdata = AGTkConfig.instance().GetConfigDir()
+        gloc = AGTkConfig.instance().GetInstallDir()
+        
+        # second, create the values
+        self.keyFileName = os.path.join(uappdata, "globus", "userkey.pem")
+        self.certFileName = os.path.join(uappdata, "globus", "usercert.pem")
+        self.proxyFileName = os.path.join(win32api.GetTempPath(), "proxy")
+        self.caCertDir = os.path.join(agtkdata, "config", "CAcertificates")
+        
+        # Third try to setup GLOBUS_LOCATION, if it's not already set
         try:
             key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment")
             (self.location, type) = _winreg.QueryValueEx(key,
@@ -384,83 +404,105 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             if self.initIfNeeded:
                 log.info("GLOBUS_LOCATION not set, setting...")
                 # Set Globus Location
-                try:
-                    key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
-                                          "Environment", 0,
-                                          _winreg.KEY_ALL_ACCESS)
-                    base = shell.SHGetFolderPath(0,
-                                                 shellcon.CSIDL_COMMON_APPDATA,
-                                                 0, 0)
-                    self.location = os.path.join(base, "AccessGrid")
-                    _winreg.SetValueEx(key, "GLOBUS_LOCATION", 0,
-                                       _winreg.REG_EXPAND_SZ, self.location)
-                except WindowsError:
-                    log.exception("Couldn't setup GLOBUS_LOCATION.")
-                    return 0
-            
+                self.SetLocation(loc)
+
+        # Check GLOBUS_HOSTNAME
+        self.SetHostname()
+        
         # After globus location comes the all important x509_*
+
         try:
-            # I really want these each in their own try block to figure out
-            # which ones are broken.
-            gkey = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
-                                   "Software\Globus")
-            gsikey = _winreg.OpenKey(gkey, "GSI")
-            (self.proxyFileName, type) = _winreg.QueryValueEx(gsikey,
-                                                             "x509_user_proxy")
             (self.keyFileName, type) = _winreg.QueryValueEx(gsikey,
-                                                            "x509_user_key")
-            (self.certFileName, type) = _winreg.QueryValueEx(gsikey,
-                                                             "x509_user_cert")
-            (self.caCertDir, type) = _winreg.QueryValueEx(gsikey,
-                                                          "x509_cert_dir")
+                                                             "x509_user_key")
         except WindowsError:
             if self.initIfNeeded:
-                log.info("Globus not initialized, doing that now...")
-                try:
-                    # Now we initialize everything to the default locations
-                    
-                    # First, get the paths to stuff we need
-                    uappdata = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA,
-                                                     0, 0)
-                    cappdata = shell.SHGetFolderPath(0,
-                                                 shellcon.CSIDL_COMMON_APPDATA,
-                                                     0, 0)
-            
-                    # second, create the values
-                    self.keyFileName = os.path.join(uappdata, "globus",
-                                                    "userkey.pem")
-                    self.certFileName = os.path.join(uappdata, "globus",
-                                                     "usercert.pem")
+                log.info("Globus user key registry entry not initialized.")
+                self.SetKeyFileName(self.keyFileName)
 
-                    self.proxyFileName = os.path.join(win32api.GetTempPath(),
-                                                      "proxy")
-                    
-                    self.caCertDir = os.path.join(cappdata, "AccessGrid",
-                                                  "certificates")
-                    
-                    # third, Create the keys
-                    gkey = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER,
-                                             "Software\Globus")
-                    gsikey = _winreg.CreateKey(gkey, "GSI")
-                    
-                    # Set the values
-                    #
-                    # RDO 2004-0326: don't do this, since we're likely to
-                    # remove it later on.
-                    #
-                    #_winreg.SetValueEx(gsikey, "x509_user_proxy", 0,
-                    #                   _winreg.REG_EXPAND_SZ,
-                    #                   self.proxyFileName)
-                    _winreg.SetValueEx(gsikey, "x509_user_key", 0,
-                                       _winreg.REG_EXPAND_SZ, self.keyFileName)
-                    _winreg.SetValueEx(gsikey, "x509_user_cert", 0,
-                                       _winreg.REG_EXPAND_SZ,
-                                       self.certFileName)
-                    _winreg.SetValueEx(gsikey, "x509_cert_dir", 0,
-                                       _winreg.REG_EXPAND_SZ, self.caCertDir)
-                except WindowsError:
-                    log.exception("Couldn't initialize globus environment.")
-                    return 0
+        try:
+            (self.certFileName, type) = _winreg.QueryValueEx(gsikey,
+                                                             "x509_user_cert")
+        except WindowsError:
+            if self.initIfNeeded:
+                log.info("Globus user cert registry entry not initialized.")
+                self.SetCertFileName(self.certFileName)
+
+        try:
+            (self.caCertDir, type) = _winreg.QueryValueEx(gsikey,
+                                                             "x509_cert_dir")
+        except WindowsError:
+            if self.initIfNeeded:
+                log.info("Globus proxy registry entry not initialized.")
+                self.SetCACertDir(cacertdir)
+
+    def SetHostname(self, hn=None):
+        """
+        Ensure that we have a valid Globus hostname.
+
+        If GLOBUS_HOSTNAME is set, we will do nothing further.
+
+        Otherwise, we will inspect the hostname as returned by the
+        socket.getfqdn() call. If it appears to be valid (where valid
+        means that it maps to an IP address and we can locally bind to
+        that address), we needn't do anythign, since the globus
+        hostname calls will return the right thing.
+
+        Otherwise, we need to get our IP address using
+        SystemConfig.GetLocalIPAddress()
+        """
+        try:
+            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment")
+            (self.hostname, type) = _winreg.QueryValueEx(key,
+                                                         "GLOBUS_HOSTNAME")
+        except WindowsError:
+            log.info("GLOBUS_HOSTNAME not set, setting...")
+
+        if self.hostname is not None and hn == self.hostname:
+            log.debug("Using GLOBUS_HOSTNAME=%s as set in the environment",
+                      self.hostname)
+            return
+
+        elif hn is not None:
+            self.hostname = hn
+        else:
+            hostname = socket.getfqdn()
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                sock.bind((hostname, 0))
+                # This worked, so we are okay.
+                log.debug("System hostname of %s is valid", hostname) 
+                return
+            except socket.error:
+                log.exception("Error setting globus hostname.")
+
+            # Binding to our hostname didn't work. Retrieve our IP address
+            # and use that.
+            try:
+                self.hostname = SystemConfig.instance().GetLocalIPAddress()
+                log.debug("retrieved local IP address %s", myip)
+            except:
+                self.hostname = "127.0.0.1"
+                log.exception("Failed to determine local IP address, using %s",
+                              self.hostname)
+
+        # Do the actual setting
+        try:
+            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment", 0,
+                                  _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(key, "GLOBUS_HOSTNAME", 0,
+                               _winreg.REG_EXPAND_SZ, self.hostname)
+        except WindowsError:
+            log.exception("Couldn't setup GLOBUS_LOCATION.")
+            return 0
+
+        # This propogates the change to all running apps
+        self.SendSettingChange()
+        
+    def GetHostname(self):
+        if self.hostname is None:
+            self.SetHostname()
+
+        return self.hostname
     
     def GetLocation(self):
         if self.location is not None and not os.path.exists(self.location):
@@ -468,43 +510,114 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
 
         return self.location
 
+    def SetLocation(self, location):
+        try:
+            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment", 0,
+                                  _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(key, "GLOBUS_LOCATION", 0,
+                               _winreg.REG_EXPAND_SZ, location)
+            self.location = location
+            return 1
+        except WindowsError:
+            log.exception("Couldn't setup GLOBUS_LOCATION.")
+            return 0
+
+        # This propogates the change to all running apps
+        self.SendSettingChange()
+        
+
     def GetCACertDir(self):
         if self.caCertDir is not None and not os.path.exists(self.caCertDir):
             raise Exception, "GlobusConfig: CA Certificate dir does not exist."
 
         return self.caCertDir
     
+    def SetCACertDir(self, cacertdir):
+        gkey = self._GetGlobusKey()
+        try:
+            _winreg.SetValueEx(gsikey, "x509_cert_dir", 0,
+                               _winreg.REG_EXPAND_SZ, cacertdir)
+            self.caCertDir = cacertdir
+        except:
+            log.exception("Couldn't set the x509_cert_dir registry value.")
+            self.caCertDir = None
+
+        # This propogates the change to all running apps
+        self.SendSettingChange()
+            
     def GetProxyFileName(self):
-        if self.proxyFileName is not None and not os.path.exists(self.proxyFileName):
+        if self.proxyFileName is not None and \
+               not os.path.exists(self.proxyFileName):
             raise Exception, "GlobusConfig: proxy file does not exist."
 
         return self.proxyFileName
     
+    def SetProxyFilename(self, filename):
+        gkey = self._GetGlobusKey()
+        try:
+            _winreg.SetValueEx(gsikey, "x509_user_proxy", 0,
+                               _winreg.REG_EXPAND_SZ, filename)
+            self.proxyFileName = filename
+        except:
+            log.exception("Couldn't set the x509_user_proxy registry value.")
+            self.proxyFileName = None
+
+        # This propogates the change to all running apps
+        self.SendSettingChange()
+            
     def GetCertFileName(self):
-        if self.certFileName is not None and not os.path.exists(self.certFileName):
+        if self.certFileName is not None and \
+               not os.path.exists(self.certFileName):
             raise Exception, "GlobusConfig: certificate file does not exist."
 
         return self.certFileName
 
+    def SetCertFileName(self, filename):
+        gkey = self._GetGlobusKey()
+        try:
+            _winreg.SetValueEx(gsikey, "x509_user_cert", 0,
+                               _winreg.REG_EXPAND_SZ, filename)
+            self.certFileName = filename
+        except:
+            log.exception("Couldn't set the x509_user_cert registry value.")
+            self.certFileName = None
+
+        # This propogates the change to all running apps
+        self.SendSettingChange()
+            
     def GetKeyFileName(self):
-        if self.keyFileName is not None and not os.path.exists(self.keyFileName):
+        if self.keyFileName is not None and \
+               not os.path.exists(self.keyFileName):
             raise Exception, "GlobusConfig: key file does not exist."
 
         return self.keyFileName
 
+    def SetKeyFileName(self, filename):
+        gkey = self._GetGlobusKey()
+        try:
+            _winreg.SetValueEx(gsikey, "x509_user_key", 0,
+                               _winreg.REG_EXPAND_SZ, filename)
+            self.keyFileName = filename
+        except:
+            log.exception("Couldn't set the x509_user_key registry value.")
+            self.keyFileName = None
+
+        # This propogates the change to all running apps
+        self.SendSettingChange()
+            
 class UserConfig(AccessGrid.Config.UserConfig):
     """
     A user config object encapsulates all of the configuration data for
     a running instance of the Access Grid Toolkit software.
 
-    @var profile: the user profile
-    @var tempDir: a temporary directory for files for this user
-    @var appDir: The directory for system installed shared applications
-    @var nodeServicesDir: the directory for system installed node services
-    @var servicesDir: the directory for system installed services
-    @var pkgCacheDir: The directory of shared application and node
+    @ivar profile: the user profile
+    @ivar tempDir: a temporary directory for files for this user
+    @ivar appDir: The directory for system installed shared applications
+    @ivar nodeServicesDir: the directory for system installed node services
+    @ivar servicesDir: the directory for system installed services
+    @ivar pkgCacheDir: The directory of shared application and node
     service packages for all users of this installation.
-    @var configDir: The directory for installation configuration.
+    @ivar configDir: The directory for installation configuration.
 
     @type profileFile: the filename of the client profile
     @type tempDir: string
