@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: ag-2.0beta.iss,v 1.17 2003-04-08 21:00:10 olson Exp $
+; RCS-ID: $Id: ag-2.0beta.iss,v 1.18 2003-04-09 13:15:46 olson Exp $
 ;
 
 #define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
@@ -7,6 +7,10 @@
 #define AppName "Access Grid Toolkit"
 #define AppVersionLong "2.0 Beta 3"
 #define AppVersionShort "2.0b3"
+;
+; This doesn't work.
+; #define AppConfigDir "{commonappdata}\AccessGrid"
+;
 
 [_ISTool]
 EnableISX=true
@@ -116,7 +120,7 @@ Source: Scripts\VenueServer.py; DestDir: {app}; Components: Venue_Server
 Source: Scripts\VenuesServerRegistry.py; DestDir: {app}; Components: Venue_Server
 
 ; Default node configuration
-Source: share\AccessGrid\nodeConfig\defaultWindows; DestDir: {commonappdata}; Flags: confirmoverwrite
+Source: share\AccessGrid\nodeConfig\defaultWindows; DestDir: {commonappdata}\AccessGrid; Flags: confirmoverwrite
 
 ; AG Icon for programs and stuff
 Source: share\AccessGrid\agicons.exe; DestDir: {app}\config
@@ -169,7 +173,7 @@ Name: {group}\Documentation\License; IconFilename: {app}\config\ag.ico; Filename
 
 [Registry]
 Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}; Flags: uninsdeletekey
-Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: ConfigPath; ValueData: {app}\config; Flags: uninsdeletekey
+Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: ConfigPath; ValueData: {commonappdata}\AccessGrid; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: UserConfigPath; ValueData: %USERPROFILE%\Application Data\Access Grid Toolkit\config; Flags: uninsdeletekey
 
 [Types]
@@ -197,23 +201,23 @@ Name: {commonappdata}\AccessGrid; Components: Venue_Client
 Name: {app}\include
 
 [INI]
-Filename: {app}\config\defaultWindows; Section: node; Key: servicemanagers; String: servicemanager0
-Filename: {app}\config\defaultWindows; Section: service1; Key: packagename; String: VideoConsumerService.zip
-Filename: {app}\config\defaultWindows; Section: service1; Key: resource; String: None
-Filename: {app}\config\defaultWindows; Section: service1; Key: executable; String: {app}\vic.exe
-Filename: {app}\config\defaultWindows; Section: service1; Key: serviceconfig; String: serviceconfig1
-Filename: {app}\config\defaultWindows; Section: service0; Key: packagename; String: AudioService.zip
-Filename: {app}\config\defaultWindows; Section: service0; Key: resource; String: None
-Filename: {app}\config\defaultWindows; Section: service0; Key: executable; String: {app}\rat.exe
-Filename: {app}\config\defaultWindows; Section: service0; Key: serviceconfig; String: serviceconfig0
-Filename: {app}\config\defaultWindows; Section: servicemanager0; Key: url; String: https://localhost:12000/ServiceManager
-Filename: {app}\config\defaultWindows; Section: servicemanager0; Key: services; String: service0 service1
-Filename: {app}\config\defaultWindows; Section: servicemanager0; Key: name; String: localhost:12000
-Filename: {app}\config\defaultWindows; Section: serviceconfig1
-Filename: {app}\config\defaultWindows; Section: serviceconfig0
+Filename: {commonappdata}\AccessGrid\defaultWindows; Section: node; Key: servicemanagers; String: servicemanager0
+Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service1; Key: packagename; String: VideoConsumerService.zip
+Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service1; Key: resource; String: None
+Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service1; Key: executable; String: {app}\vic.exe
+Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service1; Key: serviceconfig; String: serviceconfig1
+Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service0; Key: packagename; String: AudioService.zip
+Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service0; Key: resource; String: None
+Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service0; Key: executable; String: {app}\rat.exe
+Filename: {commonappdata}\AccessGrid\defaultWindows; Section: service0; Key: serviceconfig; String: serviceconfig0
+Filename: {commonappdata}\AccessGrid\defaultWindows; Section: servicemanager0; Key: url; String: https://localhost:12000/ServiceManager
+Filename: {commonappdata}\AccessGrid\defaultWindows; Section: servicemanager0; Key: services; String: service0 service1
+Filename: {commonappdata}\AccessGrid\defaultWindows; Section: servicemanager0; Key: name; String: localhost:12000
+Filename: {commonappdata}\AccessGrid\defaultWindows; Section: serviceconfig1
+Filename: {commonappdata}\AccessGrid\defaultWindows; Section: serviceconfig0
 
-Filename: {app}\config\AGNodeService.cfg; Section: Node Configuration; Key: servicesDirectory; String: {app}\services
-Filename: {app}\config\AGNodeService.cfg; Section: Node Configuration; Key: configDirectory; String: {app}\config
-Filename: {app}\config\AGNodeService.cfg; Section: Node Configuration; Key: defaultNodeConfiguration; String: defaultWindows
+Filename: {commonappdata}\AccessGrid\AGNodeService.cfg; Section: Node Configuration; Key: servicesDirectory; String: {app}\services
+Filename: {commonappdata}\AccessGrid\AGNodeService.cfg; Section: Node Configuration; Key: configDirectory; String: {commonappdata}\AccessGrid
+Filename: {commonappdata}\AccessGrid\AGNodeService.cfg; Section: Node Configuration; Key: defaultNodeConfiguration; String: defaultWindows
 
-Filename: {app}\config\AGServiceManager.cfg; Section: Service Manager; Key: servicesDirectory; String: {app}\local_services
+Filename: {commonappdata}\AccessGrid\AGServiceManager.cfg; Section: Service Manager; Key: servicesDirectory; String: {app}\local_services
