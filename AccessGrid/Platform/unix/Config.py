@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.19 2004-04-28 16:11:56 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.20 2004-05-04 19:32:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.19 2004-04-28 16:11:56 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.20 2004-05-04 19:32:50 turam Exp $"
 
 import os
 import mimetypes
@@ -398,7 +398,6 @@ class UserConfig(AccessGrid.Config.UserConfig):
         self.GetTempDir()
         self.GetProfile()
         self.GetLogDir()
-        self.SetRTPDefaults()
 
         # These are new and so can fail
         try:
@@ -419,25 +418,6 @@ class UserConfig(AccessGrid.Config.UserConfig):
             self.profileFilename = os.path.join(self.GetConfigDir(), "profile")
             
         return self.profileFilename
-
-    def SetRTPDefaults(self):
-        """
-        Set registry values used by vic and rat for identification
-        """
-        if self.profileFilename == None:
-            raise Exception, "Can't set RTP Defaults without a valid profile."
-        """
-    rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
-                     %s\n*rtpNote: %s\n"
-    rtpDefaultsFile=open( os.path.join(os.environ["HOME"], ".RTPdefaults"),"w")
-    rtpDefaultsFile.write( rtpDefaultsText % ( profile.name,
-    profile.email,
-    profile.location,
-    profile.phoneNumber,
-    profile.publicId ) )
-    rtpDefaultsFile.close()
-        """
-        pass
 
     def GetConfigDir(self):
         global AGTK_USER

@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.36 2004-04-27 17:26:15 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.37 2004-05-04 19:32:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.36 2004-04-27 17:26:15 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.37 2004-05-04 19:32:50 turam Exp $"
 
 import os
 import sys
@@ -500,7 +500,6 @@ class UserConfig(AccessGrid.Config.UserConfig):
         self.GetTempDir()
         self.GetProfile()
         self.GetLogDir()
-        self.SetRTPDefaults()
 
         # These are new and so can fail
         try:
@@ -548,47 +547,6 @@ class UserConfig(AccessGrid.Config.UserConfig):
             self.profileFilename = os.path.join(self.GetConfigDir(), "profile")
             
         return self.profileFilename
-
-    def SetRTPDefaults(self):
-        """
-        Set registry values used by vic and rat for identification
-        """
-        if self.profileFilename == None:
-            raise Exception, "Can't set RTP Defaults without a valid profile."
-        pass
-#         #
-#         # Set RTP defaults according to the profile
-#         #
-#         k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
-#                             r"Software\Mbone Applications\common",
-#                             0,
-#                             _winreg.KEY_SET_VALUE)
-
-#         # Vic reads these values (with '*')
-#         _winreg.SetValueEx(k, "*rtpName", 0,
-#                            _winreg.REG_SZ, self.profile.name)
-#         _winreg.SetValueEx(k, "*rtpEmail", 0,
-#                            _winreg.REG_SZ, self.profile.email)
-#         _winreg.SetValueEx(k, "*rtpPhone", 0,
-#                            _winreg.REG_SZ, self.profile.phoneNumber)
-#         _winreg.SetValueEx(k, "*rtpLoc", 0,
-#                            _winreg.REG_SZ, self.profile.location)
-#         _winreg.SetValueEx(k, "*rtpNote", 0,
-#                            _winreg.REG_SZ, str(self.profile.publicId) )
-
-#         # Rat reads these (without '*')
-#         _winreg.SetValueEx(k, "rtpName", 0,
-#                            _winreg.REG_SZ, self.profile.name)
-#         _winreg.SetValueEx(k, "rtpEmail", 0,
-#                            _winreg.REG_SZ, self.profile.email)
-#         _winreg.SetValueEx(k, "rtpPhone", 0,
-#                            _winreg.REG_SZ, self.profile.phoneNumber)
-#         _winreg.SetValueEx(k, "rtpLoc", 0,
-#                            _winreg.REG_SZ, self.profile.location)
-#         _winreg.SetValueEx(k, "rtpNote", 0,
-#                            _winreg.REG_SZ, str(self.profile.publicId) )
-
-#         _winreg.CloseKey(k)
 
     def GetConfigDir(self):
         if self.configDir == None:
