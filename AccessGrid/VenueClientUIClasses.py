@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.187 2003-05-15 19:50:31 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.188 2003-05-16 16:02:28 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -811,12 +811,15 @@ class VenueClientFrame(wxFrame):
                 dlg = MessageDialog(self, message)
                 log.debug(message)
             else:
-                if commands.has_key('open'):
-                    log.debug("executing cmd: %s" % commands['open'])
-                    if commands['open'][0:6] == "WX_DDE":
-                        pid = wxExecute(commands['open'])
-                    else:
-                        pid = wxShell(commands['open'])
+                try:
+                    if commands.has_key('open'):
+                        log.debug("executing cmd: %s" % commands['open'])
+                        if commands['open'][0:6] == "WX_DDE":
+                            pid = wxExecute(commands['open'])
+                        else:
+                            pid = wxShell(commands['open'])
+                except Exception, e:
+                    MessageDialog(None, "Could not open file", "Open Error", style = wxOK|wxICON_ERROR)
         else:
             self.__showNoSelectionDialog("Please, select the data you want to open")     
     
@@ -884,7 +887,10 @@ class VenueClientFrame(wxFrame):
         id = self.contentListPanel.tree.GetSelection()
         app =  self.contentListPanel.tree.GetItemData(id).GetData()
         if(app != None and isinstance(app, ApplicationDescription)):
-            self.app.JoinApp( app )
+            try:
+                self.app.JoinApp( app )
+            except Exception, e:
+                MessageDialog(None, "Could not join application", "Join Application Error", style = wxOK|wxICON_ERROR)
         else:
             self.__showNoSelectionDialog("Please, select the application you want to join")     
     
