@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.125 2004-03-18 19:39:35 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.126 2004-03-23 17:59:13 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.125 2004-03-18 19:39:35 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.126 2004-03-23 17:59:13 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -256,6 +256,7 @@ class VenueServer(AuthorizationMixIn):
             self.SetDefaultVenue(self.defaultVenue)
         else:
             log.debug("Creating default venue")
+            self.defaultVenue = ''
             uri = self.AddVenue(self.defaultVenueDesc)
             v = self.hostingEnvironment.FindObjectForURL(uri)
         # End of Loading of Venues from persistence
@@ -634,7 +635,7 @@ class VenueServer(AuthorizationMixIn):
         # If this is the first venue, set it as the default venue
         if len(self.venues) == 1 and self.defaultVenue == '':
             self.SetDefaultVenue(oid)
-
+        
         # return the URL to the new venue
         return venue.uri
 
