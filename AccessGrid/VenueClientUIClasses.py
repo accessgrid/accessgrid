@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.215 2003-06-27 16:11:07 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.216 2003-06-27 17:02:51 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -28,9 +28,9 @@ log = logging.getLogger("AG.VenueClientUIClasses")
 
 from AccessGrid import icons
 from AccessGrid import Toolkit
-from AccessGrid.VenueClient import VenueClient, EnterVenueException
+from AccessGrid.VenueClient2 import VenueClient, EnterVenueException
 from AccessGrid import Utilities
-from AccessGrid.UIUtilities import AboutDialog, MessageDialog, GetMimeCommands
+from AccessGrid.UIUtilities import AboutDialog, MessageDialog, GetMimeCommands, ErrorDialog
 from AccessGrid.ClientProfile import *
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription
@@ -498,16 +498,16 @@ class VenueClientFrame(wxFrame):
 
     def UnFollow(self, event):
 
-        log.debug("VenueClientUIClasses: In UnFollow we are being lead by %s" %self.app.leaderProfile.name)
-        if self.app.leaderProfile != None :
+        log.debug("VenueClientUIClasses: In UnFollow we are being lead by %s" %self.app.venueClient.leaderProfile.name)
+        if self.app.venueClient.leaderProfile != None :
            
             try:
               
-                self.app.UnFollow(self.app.leaderProfile)
+                self.app.venueClient.UnFollow(self.app.venueClient.leaderProfile)
                 self.meMenu.Remove(self.ID_ME_UNFOLLOW)
             except:
                
-                log.exception("VenueClientUIClasses: Can not stop following %s" %self.app.leaderProfile.name)
+                log.exception("VenueClientUIClasses: Can not stop following %s" %self.app.venueClient.leaderProfile.name)
 
         else:
             log.debug("You are trying to stop following somebody you are not following")
@@ -520,12 +520,12 @@ class VenueClientFrame(wxFrame):
         name = personToFollow.name
         log.debug("VenueClientUIClasses: You are trying to follow :%s url:%s " %(name, url))
 
-        if(self.app.leaderProfile == personToFollow):
+        if(self.app.venueClient.leaderProfile == personToFollow):
             text = "You are already following "+name
             title = "Notification"
             MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
             
-        elif (self.app.pendingLeader == personToFollow):
+        elif (self.app.venueClient.pendingLeader == personToFollow):
             text = "You have already sent a request to follow "+name+". Please, wait for answer."
             title = "Notification"
             dlg = wxMessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
@@ -534,7 +534,7 @@ class VenueClientFrame(wxFrame):
 
         else:
             try:
-                self.app.Follow(personToFollow)
+                self.app.venuceClient.Follow(personToFollow)
             except:
                 log.exception("VenueClientUIClasses: Can not follow %s" %personToFollow.name)
                 text = "You can not follow "+name
@@ -571,20 +571,20 @@ class VenueClientFrame(wxFrame):
         self.textClientPanel.CloseTextConnection()
 
     def SetTextLocation(self, event = None):
-        textLoc = tuple(self.app.venueState.GetTextLocation())
-        id = self.app.venueState.uniqueId
-        self.textClientPanel.SetLocation(self.app.privateId, textLoc, id)
+        textLoc = tuple(self.app.venueClient.venueState.GetTextLocation())
+        id = self.app.venueClient.venueState.uniqueId
+        self.textClientPanel.SetLocation(self.app.venueClient.privateId, textLoc, id)
       
     def AuthorizeLeadDialog(self, clientProfile):
         idPending = None
         idLeading = None
 
-        if(self.app.pendingLeader!=None):
-            idPending = self.app.pendingLeader.publicId
+        if(self.app.venueClient.pendingLeader!=None):
+            idPending = self.app.venueClient.pendingLeader.publicId
           
 
-        if(self.app.leaderProfile!=None):
-            idLeading = self.app.leaderProfile.publicId
+        if(self.app.venueClient.leaderProfile!=None):
+            idLeading = self.app.venueClient.leaderProfile.publicId
           
           
         if(clientProfile.publicId != idPending and clientProfile.publicId != idLeading):
@@ -592,15 +592,15 @@ class VenueClientFrame(wxFrame):
             title = "Authorize follow"
             dlg = wxMessageDialog(self, text, title, style = wxYES_NO| wxYES_DEFAULT|wxICON_QUESTION)
             if(dlg.ShowModal() == wxID_YES):
-                self.app.SendLeadResponse(clientProfile, true)
+                self.app.venueClient.SendLeadResponse(clientProfile, true)
 
             else:
-                self.app.SendLeadResponse(clientProfile, false)
+                self.app.venueClient.SendLeadResponse(clientProfile, false)
 
             dlg.Destroy()
 
         else:
-            self.app.SendLeadResponse(clientProfile, false)
+            self.app.venueClient.SendLeadResponse(clientProfile, false)
 
     def NotifyUnLeadDialog(self, clientProfile):
         text = clientProfile.name+" has stopped following you"
@@ -732,7 +732,7 @@ class VenueClientFrame(wxFrame):
 
     def AddToMyVenues(self, event):
         id = wxNewId()
-        url = self.app.venueUri
+        url = self.app.venuceClient.venueUri
                       
         if url is not None:
             if(url not in self.myVenuesDict.values()):
@@ -774,10 +774,10 @@ class VenueClientFrame(wxFrame):
     def OpenSetNodeUrlDialog(self, event = None):
 
         setNodeUrlDialog = UrlDialog(self, -1, "Set node service URL", \
-                                     self.app.nodeServiceUri, "Please, specify node service URL")
+                                     self.app.venueClient.nodeServiceUri, "Please, specify node service URL")
 
         if setNodeUrlDialog.ShowModal() == wxID_OK:
-            self.app.SetNodeUrl(setNodeUrlDialog.address.GetValue())
+            self.app.venueClient.SetNodeUrl(setNodeUrlDialog.address.GetValue())
        
         setNodeUrlDialog.Destroy()
 
@@ -788,8 +788,8 @@ class VenueClientFrame(wxFrame):
         # then there isn't a data upload service available.
         #
 
-        log.debug("Trying to upload to '%s'" % (self.app.dataStoreUploadUrl))
-        if self.app.dataStoreUploadUrl is None or self.app.dataStoreUploadUrl == "":
+        log.debug("Trying to upload to '%s'" % (self.app.venueClient.dataStoreUploadUrl))
+        if self.app.venueClient.dataStoreUploadUrl is None or self.app.venueClient.dataStoreUploadUrl == "":
         
             MessageDialog(self,
                           "Cannot add data: Venue does not have an operational\ndata storage server.",
@@ -811,7 +811,7 @@ class VenueClientFrame(wxFrame):
     def OpenMyProfileDialog(self, event = None):
         profileDialog = ProfileDialog(NULL, -1,
                                   'Please, fill in your profile information')
-        profileDialog.SetProfile(self.app.profile)
+        profileDialog.SetProfile(self.app.venueClient.profile)
                 
         if (profileDialog.ShowModal() == wxID_OK):
             profile = profileDialog.GetNewProfile()
@@ -833,18 +833,18 @@ class VenueClientFrame(wxFrame):
     def OpenNodeMgmtApp(self, event):
         frame = NodeManagementClientFrame(self, -1, "Access Grid Node Management")
         log.debug("open node management")
-        frame.AttachToNode( self.app.nodeServiceUri )
+        frame.AttachToNode( self.app.venueClient.nodeServiceUri )
         if frame.Connected(): # Right node service uri
             frame.UpdateUI()
             frame.Show(true)
 
         else: # Not right node service uri
             setNodeUrlDialog = UrlDialog(self, -1, "Set node service URL", \
-                                         self.app.nodeServiceUri, "Please, specify node service URL")
+                                         self.app.venueClient.nodeServiceUri, "Please, specify node service URL")
             
             if setNodeUrlDialog.ShowModal() == wxID_OK:
-                self.app.SetNodeUrl(setNodeUrlDialog.address.GetValue())
-                frame.AttachToNode( self.app.nodeServiceUri )
+                self.app.venueClient.SetNodeUrl(setNodeUrlDialog.address.GetValue())
+                frame.AttachToNode( self.app.venueClient.nodeServiceUri )
                 
                 if frame.Connected(): # try again
                     frame.Update()
@@ -874,7 +874,7 @@ class VenueClientFrame(wxFrame):
                           
     def OpenDataProfileDialog(self, event):
         profileDialog = ProfileDialog(NULL, -1, 'Profile')
-        profileDialog.SetProfile(self.app.profile)
+        profileDialog.SetProfile(self.app.venueClient.profile)
         profileDialog.ShowModal()
         profileDialog.Destroy()
               
@@ -1099,7 +1099,7 @@ class VenueAddressBar(wxSashLayoutWindow):
         venueUri = self.__fixSpaces(url)
         self.AddChoice(venueUri)
         wxBeginBusyCursor()
-        self.application.EnterVenue(venueUri, true)
+        self.application.venueClient.EnterVenue(venueUri, true)
         wxEndBusyCursor()
 
     def __fixSpaces(self, url):
@@ -1260,7 +1260,7 @@ class VenueList(wxScrolledWindow):
         if(self.exitsDict.has_key(id)):
             description = self.exitsDict[id]
             wxBeginBusyCursor()
-            self.app.EnterVenue(description.uri, false)
+            self.app.venueClient.EnterVenue(description.uri, false)
             wxEndBusyCursor()
         else:
             text = "The exit is no longer valid "+name
@@ -1776,12 +1776,12 @@ class ContentListPanel(wxPanel):
 
         if item:
             try:
-                dataDescriptionList = self.app.GetPersonalData(item)
+                dataDescriptionList = self.app.venueClient.GetPersonalData(item)
                 if dataDescriptionList:
                     for data in dataDescriptionList:
                         self.AddData(data)
             except:
-                ErrorDialog(None, text, "%s's data could not be retrieved."%item.name ,
+                ErrorDialog(None, "%s's data could not be retrieved."%item.name ,
                             style = wxOK  | wxICON_ERROR)
                 
     def OnDoubleClick(self, event):
@@ -1796,7 +1796,7 @@ class ContentListPanel(wxPanel):
                 pass
 
             elif isinstance(item,ClientProfile):
-                if item.publicId == self.app.profile.publicId:
+                if item.publicId == self.app.venueClient.profile.publicId:
                     self.parent.OpenMyProfileDialog(None)
                 else:
                     self.parent.OpenParticipantProfile(None)
@@ -1849,8 +1849,8 @@ class ContentListPanel(wxPanel):
                 
             elif isinstance(item,ClientProfile):
                 log.debug("Is this me? public is = %s, my id = %s "
-                          % (item.publicId, self.app.profile.publicId))
-                if(item.publicId == self.app.profile.publicId):
+                          % (item.publicId, self.app.venueClient.profile.publicId))
+                if(item.publicId == self.app.venueClient.profile.publicId):
                     log.debug("This is me")
                     self.PopupMenu(self.parent.meMenu, wxPoint(self.x, self.y))
          
@@ -2115,7 +2115,7 @@ class TextClientPanel(wxPanel):
         # you say and not the correct name.
         #
         #if textPayload.sender == GetDefaultIdentityDN():
-        if profile.name == self.app.profile.name:
+        if profile.name == self.app.venueClient.profile.name:
             self.textMessage =  "You say, \"%s\"\n" % (message)
         elif(textPayload.sender != None):
             self.textMessage = "%s says, \"%s\"\n" % (profile.name, message)
@@ -2150,7 +2150,7 @@ class TextClientPanel(wxPanel):
             # Both text message and profile is sent in the data parameter of TextPayload
             # to use the profile information for text output.
             textEvent = TextEvent(self.venueId, None, 0,
-                                  (self.TextInput.GetValue(), self.app.profile))
+                                  (self.TextInput.GetValue(), self.app.venueClient.profile))
             try:
                 self.Processor.Input(textEvent)
                 self.TextInput.Clear()

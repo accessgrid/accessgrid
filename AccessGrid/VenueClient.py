@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.74 2003-06-27 16:21:16 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.75 2003-06-27 17:02:51 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ from AccessGrid.Descriptions import DataDescription, ConnectionDescription
 from AccessGrid.Utilities import LoadConfig
 from AccessGrid import DataStore
 from AccessGrid.Platform import GetUserConfigDir
-
+from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
 
 class EnterVenueException(Exception):
     pass
@@ -73,6 +73,7 @@ class VenueClient( ServiceBase):
         self.pendingFollowers = dict()
         self.followerProfiles = dict()
         self.urlToFollow = None
+        self.eventSubscribers = []
                
         # attributes for personal data store
         self.personalDataStorePrefix = "personalDataStore"
@@ -97,7 +98,17 @@ class VenueClient( ServiceBase):
 
     def Heartbeat(self):
         if self.eventClient != None:
-            self.eventClient.Send(HeartbeatEvent(self.venueId, self.privateId))
+            isSuccess = AG_TRUE
+            try:
+                self.eventClient.Send(HeartbeatEvent(self.venueId, self.privateId))
+                isSuccess = AG_TRUE
+            except:
+                log.exception("AccessGrid::VenueClient:Heartbeat: Heartbeat exception is caught, exit venue.")
+                isSuccess = AG_FALSE
+
+            # Send whether Heartbeat succeeded or failed to UI.
+            for s in self.eventSubscribers:
+                s.Heartbeat(isSuccess)
             
                                   
     def SetProfile(self, profile):
@@ -160,6 +171,12 @@ class VenueClient( ServiceBase):
                     file.close()
                 except:
                     log.exception("Personal data could not be added")
+
+    # General EventHandler
+    # handler should have functions, AddUser, RemoveUser, etc.
+    def AddEventSubscriber(self, handler):
+        if handler != None:
+            self.eventSubscribers.append(handler)
                     
     #
     # Event Handlers
@@ -170,6 +187,8 @@ class VenueClient( ServiceBase):
         data = event.data
         
         self.venueState.AddUser(data)
+        for s in self.eventSubscribers:
+            s.AddUserEvent(event)
 
     def RemoveUserEvent(self, event):
         log.debug("Got Remove User Event")
@@ -177,6 +196,8 @@ class VenueClient( ServiceBase):
         data = event.data
 
         self.venueState.RemoveUser(data)
+        for s in self.eventSubscribers:
+            s.RemoveUserEvent(event)
 
         log.debug("Got Remove User Event...done")
         
@@ -186,6 +207,8 @@ class VenueClient( ServiceBase):
         data = event.data
 
         self.venueState.ModifyUser(data)
+        for s in self.eventSubscribers:
+            s.ModifyUserEvent(event)
 
     def AddDataEvent(self, event):
         log.debug("Got Add Data Event")
@@ -193,74 +216,105 @@ class VenueClient( ServiceBase):
         data = event.data
 
         self.venueState.AddData(data)
+        for s in self.eventSubscribers:
+            s.AddDataEvent(event)
 
     def UpdateDataEvent(self, event):
         log.debug("Got Update Data Event")
 
         data = event.data
-        self.venueState.UpdateData(data)
+        # Venue data (personal data handled in VenueClientUIClasses)
+        if data.type == "None" or data.type == None:
+            self.venueState.UpdateData(data)
+
+        for s in self.eventSubscribers:
+            s.UpdateDataEvent(event)
 
     def RemoveDataEvent(self, event):
         log.debug("Got Remove Data Event")
 
         data = event.data
-        self.venueState.RemoveData(data)
+        # Venue data (personal data handled in VenueClientUIClasses)
+        if data.type == "None" or data.type == None:
+            self.venueState.RemoveData(data)
+
+        for s in self.eventSubscribers:
+            s.RemoveDataEvent(event)
 
     def AddServiceEvent(self, event):
         log.debug("Got Add Service Event")
 
         data = event.data
         self.venueState.AddService(data)
+        for s in self.eventSubscribers:
+            s.AddServiceEvent(event)
 
     def RemoveServiceEvent(self, event):
         log.debug("Got Remove Service Event")
 
         data = event.data
         self.venueState.RemoveService(data)
+        for s in self.eventSubscribers:
+            s.RemoveServiceEvent(event)
 
     def AddApplicationEvent(self, event):
         log.debug("Got Add Application Event")
 
         data = event.data
         self.venueState.AddApplication(data)
+        for s in self.eventSubscribers:
+            s.AddApplicationEvent(event)
 
     def RemoveApplicationEvent(self, event):
         log.debug("Got Remove Application Event")
 
         data = event.data
         self.venueState.RemoveApplication(data)
+        for s in self.eventSubscribers:
+            s.RemoveApplicationEvent(event)
 
     def AddConnectionEvent(self, event):
         log.debug("Got Add Connection Event")
 
         data = event.data
         self.venueState.AddConnection(data)
+        for s in self.eventSubscribers:
+            s.AddConnectionEvent(event)
 
     def RemoveConnectionEvent(self, event):
         log.debug("Got Remove Connection Event")
 
         data = event.data
         self.venueState.RemoveConnection(data)
+        for s in self.eventSubscribers:
+            s.RemoveConnectionEvent(event)
 
     def SetConnectionsEvent(self, event):
         log.debug("Got Set Connections Event")
 
         data = event.data
         self.venueState.SetConnections(data)
+        for s in self.eventSubscribers:
+            s.SetConnectionEvent(event)
 
     def AddStreamEvent(self, event):
         log.debug("Got Add Stream Event")
         data = event.data
         if self.nodeServiceUri != None:
             Client.Handle(self.nodeServiceUri).GetProxy().AddStream(data)
+        for s in self.eventSubscribers:
+            s.AddStreamEvent(event)
     
     def RemoveStreamEvent(self, event):
         log.debug("Got Remove Stream Event")
         data = event.data
         if self.nodeServiceUri != None:
             Client.Handle(self.nodeServiceUri).GetProxy().RemoveStream(data)
+        for s in self.eventSubscribers:
+            s.RemoveStreamEvent(event)
         
-    def EnterVenue(self, URL):
+    # Back argument is true if going to a previous venue (used in UI).
+    def EnterVenue(self, URL, back=AG_FALSE):
         """
         EnterVenue puts this client into the specified venue.
         """
@@ -463,6 +517,9 @@ class VenueClient( ServiceBase):
 
         if errorInNode:
             self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences-My Node" from the main menu'
+
+        for s in self.eventSubscribers:
+            s.EnterVenue(URL, back, self.warningString) # back is true if user just hit the back button.
             
         return self.warningString
         
@@ -492,6 +549,10 @@ class VenueClient( ServiceBase):
         self.exiting = 1
         self.exitingLock.release()
 
+        # Tell UI and others that we are exiting.
+        for s in self.eventSubscribers:
+            s.RemoveStreamEvent()
+
         # Stop sending heartbeats
         if self.heartbeatTask != None:
             log.info(" Stopping heartbeats")
@@ -519,7 +580,7 @@ class VenueClient( ServiceBase):
         # special "I'm disconnecting and it's okay" event that
         # doesn't trigger the RemoveUser logic.
         # 
-        
+
         # Stop the event client
         log.info(" Stopping event client")
         try:
@@ -803,6 +864,9 @@ class VenueClient( ServiceBase):
             log.debug("AccessGrid.VenueClient::Leader has rejected request to lead you: %s", leaderProfile.name)
         self.pendingLeader = None
 
+        for s in self.eventSubscribers:
+            s.LeadReponse(leaderProfile, isAuthorized)
+
     LeadResponse.soap_export_as = "LeadResponse"
 
     def UnLead(self, clientProfile):
@@ -918,4 +982,15 @@ class VenueClient( ServiceBase):
         self.pendingLeader = None
 
     FollowResponse.soap_export_as = "FollowResponse"
+
+    def SetNodeUrl(self, url):
+        """
+        This method sets the node service url
+
+        **Arguments:**
+        
+        *url* The string including the new node url address
+        """
+        log.debug("Set node service url:  %s" %url)
+        self.venueClient.nodeServiceUri = url
 

@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.171 2003-06-27 16:09:42 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.172 2003-06-27 17:02:51 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -49,7 +49,7 @@ from AccessGrid.GUID import GUID
 from AccessGrid.VenueClient import VenueClient
 from AccessGrid.Platform import GetUserConfigDir
 
-class VenueClientUI(wxApp, VenueClient):
+class VenueClientUI(wxApp):
     """
     VenueClientUI is a wrapper for the base VenueClient.
     It updates its UI when it enters or exits a venue or
@@ -73,8 +73,9 @@ class VenueClientUI(wxApp, VenueClient):
             except OSError, e:
                 log.exception("bin.VenueClient::__init__: Could not create base path")
 
+        self.venueClient = VenueClient()
+        self.venueClient.AddEventSubscriber(self)
         wxApp.__init__(self, false)
-        VenueClient.__init__(self)
 
     def OnInit(self):
         """
@@ -128,7 +129,7 @@ class VenueClientUI(wxApp, VenueClient):
         #
         # Tell the UI about installed applications
         #
-        self.frame.SetInstalledApps( self.GetInstalledApps() )
+        self.frame.SetInstalledApps( self.venueClient.GetInstalledApps() )
         self.frame.EnableAppMenu( false )
 
         #
@@ -142,7 +143,7 @@ class VenueClientUI(wxApp, VenueClient):
         if self.isPersonalNode:
             def setSvcCallback(svcUrl, self = self):
                 log.debug("bin.VenueClient::OnInit: setting node service URI to %s from PersonalNode", svcUrl)
-                self.nodeServiceUri = svcUrl
+                self.venueClient.nodeServiceUri = svcUrl
 
             self.personalNode = PersonalNode.PersonalNodeManager(setSvcCallback, self.debugMode)
             self.personalNode.Run()
@@ -155,21 +156,21 @@ class VenueClientUI(wxApp, VenueClient):
         his or her information.
         """
         profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile')
-        profileDialog.SetProfile(self.profile)
+        profileDialog.SetProfile(self.venueClient.profile)
 
         if (profileDialog.ShowModal() == wxID_OK):
-            self.profile = profileDialog.GetNewProfile()
+            self.venueClient.profile = profileDialog.GetNewProfile()
             
             #
             # Change profile based on values filled in to the profile dialog
             #
-            self.ChangeProfile(self.profile)
+            self.ChangeProfile(self.venueClient.profile)
             profileDialog.Destroy()
 
             #
             # Start the main wxPython thread
             #
-            self.__startMainLoop(self.profile)
+            self.__startMainLoop(self.venueClient.profile)
 
         else:
             profileDialog.Destroy()
@@ -187,8 +188,8 @@ class VenueClientUI(wxApp, VenueClient):
         
         """
         
-        self.SetProfile(profile)
-        self.frame.venueAddressBar.SetAddress(self.profile.homeVenue)
+        self.venueClient.SetProfile(profile)
+        self.frame.venueAddressBar.SetAddress(self.venueClient.profile.homeVenue)
         self.frame.Show(true)
         log.debug("bin.VenueClient::__startMainLoop: start wxApp main loop/thread")
         self.MainLoop()
@@ -260,14 +261,14 @@ class VenueClientUI(wxApp, VenueClient):
         when the program starts next time this profile information will be loaded
         automatically.
         """
-        self.profile = ClientProfile(self.profileFile)
+        self.venueClient.profile = ClientProfile(self.profileFile)
 
-        if self.profile.IsDefault():  # not your profile
+        if self.venueClient.profile.IsDefault():  # not your profile
             log.debug("the profile is the default profile - open profile dialog")
             self.__openProfileDialog()
         else:
             # self.profile.publicId = str(GUID())
-            self.__startMainLoop(self.profile)
+            self.__startMainLoop(self.venueClient.profile)
 
     #
     # Methods to support follow
@@ -298,10 +299,7 @@ class VenueClientUI(wxApp, VenueClient):
         *iaAuthorized* Boolean value set to true if request is approved, else false.
         
         """
-        VenueClient.LeadResponse(self, leaderProfile, isAuthorized)
         wxCallAfter(self.frame.NotifyLeadDialog, leaderProfile, isAuthorized)
-
-    LeadResponse.soap_export_as = "LeadResponse"
 
 
     def NotifyUnLead(self, clientProfile):
@@ -360,12 +358,11 @@ class VenueClientUI(wxApp, VenueClient):
         #
 
         newEvent = Events.Event(event.eventType, event.venue, profile)
-        VenueClient.AddUserEvent(self, event)
 
         wxCallAfter(self.frame.contentListPanel.AddParticipant, profile)
         log.debug("  add user: %s" %(profile.name))
 
-    def Heartbeat(self):
+    def Heartbeat(self, isSuccess):
         '''
         Note: Overridden from VenueClient
         This method sends a heartbeat to indicate that the client
@@ -373,10 +370,7 @@ class VenueClientUI(wxApp, VenueClient):
         received properly, the client will exit the venue.
         '''
         
-        try:
-            VenueClient.Heartbeat(self)
-        except:
-            log.exception("bin::VenueClient:Heartbeat: Heartbeat exception is caught, exit venue.")
+        if not isSuccess:
             wxCallAfter(self.HandleServerConnectionFailure)
                                         
     def HandleServerConnectionFailure(self):
@@ -384,7 +378,7 @@ class VenueClientUI(wxApp, VenueClient):
         self.frame.CleanUp()
         self.frame.venueAddressBar.SetTitle("You are not in a venue",
                                             'Click "Go" to connect to the venue, which address is displayed in the address bar') 
-        self.ExitVenue()
+        self.venueClient.ExitVenue()
         MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", "Lost Connection")
 
     def RemoveUserEvent(self, event):
@@ -400,7 +394,6 @@ class VenueClientUI(wxApp, VenueClient):
 
         user = event.data
         wxCallAfter(self.frame.statusbar.SetStatusText, "%s just left the venue" %user.name)
-        VenueClient.RemoveUserEvent(self, event)
 
         wxCallAfter(self.frame.contentListPanel.RemoveParticipant, user)
         log.debug("  remove user: %s" %(user.name))
@@ -418,7 +411,6 @@ class VenueClientUI(wxApp, VenueClient):
 
         user = event.data
         wxCallAfter(self.frame.statusbar.SetStatusText, "%s just changed profile information" %user.name)
-        VenueClient.ModifyUserEvent(self, event)
         log.debug("EVENT - Modify participant: %s" %(user.name))
         wxCallAfter(self.frame.contentListPanel.ModifyParticipant, user)
 
@@ -441,7 +433,6 @@ class VenueClientUI(wxApp, VenueClient):
             wxCallAfter(self.frame.statusbar.SetStatusText, "file '%s' just got added to venue" %data.name)
             
             # Just change venuestate for venue data.
-            VenueClient.AddDataEvent(self, event)
         else:
             # Personal data is handled in VenueClientUIClasses to find out who the data belongs to
             pass
@@ -461,10 +452,6 @@ class VenueClientUI(wxApp, VenueClient):
         """
         data = event.data
         
-        if data.type == "None" or data.type == None:
-            # Just change venuestate for venue data.
-            VenueClient.UpdateDataEvent(self, event)
-
         log.debug("EVENT - Update data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.UpdateData, data)
 
@@ -480,10 +467,9 @@ class VenueClientUI(wxApp, VenueClient):
         """
 
         data = event.data
+        # Handle venue data (personal data is in VenueClientUIClasses)
         if data.type == "None" or data.type == None:
             wxCallAfter(self.frame.statusbar.SetStatusText, "file '%s' just got added to venue" %data.name)
-            # Just change venuestate for venue data.
-            VenueClient.RemoveDataEvent(self, event)
         else:
             # Personal data is handled in VenueClientUIClasses to find out who the data belongs to
             pass
@@ -506,7 +492,6 @@ class VenueClientUI(wxApp, VenueClient):
         wxCallAfter(self.frame.statusbar.SetStatusText, "Application '%s' just got added to the venue" %app.name)
         log.debug("EVENT - Add application: %s, Mime Type: %s" %(app.name, app.mimeType))
         wxCallAfter(self.frame.contentListPanel.AddApplication, app)
-        VenueClient.AddApplicationEvent(self, event)
 
     def RemoveApplicationEvent(self, event):
         """
@@ -522,7 +507,6 @@ class VenueClientUI(wxApp, VenueClient):
         wxCallAfter(self.frame.statusbar.SetStatusText, "Application '%s' just got removed from the venue" %app.name)
         log.debug("EVENT - Remove application: %s" %(app.name))
         wxCallAfter(self.frame.contentListPanel.RemoveApplication, app)
-        VenueClient.RemoveApplicationEvent(self, event)
 
     def AddServiceEvent(self, event):
         """
@@ -536,7 +520,6 @@ class VenueClientUI(wxApp, VenueClient):
         """
         service = event.data
         wxCallAfter(self.frame.statusbar.SetStatusText, "Service '%s' just got added to the venue" %service.name)
-        VenueClient.AddServiceEvent(self, event)
         log.debug("EVENT - Add service: %s" %(service.name))
         wxCallAfter(self.frame.contentListPanel.AddService, service)
 
@@ -552,7 +535,6 @@ class VenueClientUI(wxApp, VenueClient):
         """
         service = event.data
         wxCallAfter(self.frame.statusbar.SetStatusText, "Service '%s' just got removed from the venue" %service.name)
-        VenueClient.RemoveServiceEvent(self, event)
         log.debug("EVENT - Remove service: %s" %(service.name))
         wxCallAfter(self.frame.contentListPanel.RemoveService, service)
 
@@ -568,7 +550,6 @@ class VenueClientUI(wxApp, VenueClient):
         """
         connection = event.data
         wxCallAfter(self.frame.statusbar.SetStatusText, "A new exit, '%s', just got added to the venue" %connection.name)  
-        VenueClient.AddConnectionEvent(self, event)
         log.debug("EVENT - Add connection: %s" %(connection.name))
         wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, connection)
 
@@ -583,7 +564,6 @@ class VenueClientUI(wxApp, VenueClient):
         *connections* A list of ConnectionDescriptions representing all the exits in the venue.
         """
         connections = event.data
-        VenueClient.SetConnectionsEvent(self, event)
         log.debug("EVENT - Set connections")
         wxCallAfter(self.frame.venueListPanel.CleanUp)
 
@@ -591,7 +571,7 @@ class VenueClientUI(wxApp, VenueClient):
             log.debug("EVENT - Add connection: %s" %(connection.name))
             wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, connection)
 
-    def EnterVenue(self, URL, back = false):
+    def EnterVenue(self, URL, back = false, warningString=""):
         """
         Note: Overridden from VenueClient
         This method calls the venue client method and then
@@ -606,7 +586,7 @@ class VenueClientUI(wxApp, VenueClient):
         log.debug("bin.VenueClient::EnterVenue: Enter venue with url: %s"
                   % URL)
 
-        wxCallAfter(self.frame.statusbar.SetStatusText, "trying to enter venue at %s"%URL)
+        #wxCallAfter(self.frame.statusbar.SetStatusText, "trying to enter venue at %s"%URL)
         #
         # Check to see if we have a valid grid proxy
         # If not, run grid proxy init
@@ -619,29 +599,27 @@ class VenueClientUI(wxApp, VenueClient):
             #   
             # Add current uri to the history if the go button is pressed
             #
-            self.__setHistory(self.venueUri, back)
+            self.__setHistory(self.venueClient.venueUri, back)
             
             #
             # if this venue url has a valid web service then enter venue
             #
-            self.venueUri = URL
+            self.venueClient.venueUri = URL
       
-            self.clientHandle = Client.Handle(self.venueUri)
+            self.clientHandle = Client.Handle(self.venueClient.venueUri)
             self.client = self.clientHandle.GetProxy()
             
-            # Tell super class to enter venue
-            warningString = VenueClient.EnterVenue( self, URL )
-            wxCallAfter(self.frame.statusbar.SetStatusText, "Entered venue %s successfully" %self.venueState.name)
+            wxCallAfter(self.frame.statusbar.SetStatusText, "Entered venue %s successfully" %self.venueClient.venueState.name)
 
-            self.dataStore.SetEventDistributor(self.eventClient, self.venueState.uniqueId)
+            self.venueClient.dataStore.SetEventDistributor(self.venueClient.eventClient, self.venueClient.venueState.uniqueId)
                       
             # clean up ui from current venue before entering a new venue
-            if self.venueUri != None:
+            if self.venueClient.venueUri != None:
                 log.debug("clean up frame")
                 wxCallAfter(self.frame.CleanUp)
 
             # Get current state of the venue
-            venueState = self.venueState
+            venueState = self.venueClient.venueState
             wxCallAfter(self.frame.venueAddressBar.SetTitle,
                             venueState.name, venueState.description) 
 
@@ -693,7 +671,6 @@ class VenueClientUI(wxApp, VenueClient):
             log.debug("Set text location and address bar")
             wxCallAfter(self.frame.SetTextLocation)
             wxCallAfter(self.frame.FillInAddress, None, URL)
-            self.venueUri = URL
             
             # Venue data storage location
             # self.upload_url = self.client.GetUploadDescriptor()
@@ -715,7 +692,7 @@ class VenueClientUI(wxApp, VenueClient):
             # Call EnterVenue on users that are following you.
             # This should be done last for UI update reasons.
             log.debug("Lead followers")
-            self.LeadFollowers()
+            self.venueClient.LeadFollowers()
             
             log.debug("Entered venue")
             
@@ -726,7 +703,7 @@ class VenueClientUI(wxApp, VenueClient):
                 message = "Following non fatal problems have occured when you entered the venue:\n" + warningString
                 MessageDialog(None, message, "Notification")
                 
-                wxCallAfter(self.frame.statusbar.SetStatusText, "Entered %s successfully" %self.venueState.name)
+                wxCallAfter(self.frame.statusbar.SetStatusText, "Entered %s successfully" %self.venueClient.venueState.name)
        
         except Exception, e:
             log.exception("bin.VenueClient::EnterVenue failed")
@@ -734,8 +711,6 @@ class VenueClientUI(wxApp, VenueClient):
             ErrorDialog(None, text, "Enter Venue Error",
                           style = wxOK  | wxICON_ERROR)
              
-    EnterVenue.soap_export_as = "EnterVenue"
-
     def ExitVenue(self):
         """
         Note: Overridden from VenueClient
@@ -749,7 +724,6 @@ class VenueClientUI(wxApp, VenueClient):
         #
 
         wxCallAfter(self.frame.CloseTextConnection)
-        VenueClient.ExitVenue(self)
 
     def __setHistory(self, uri, back):
         """
@@ -801,7 +775,7 @@ class VenueClientUI(wxApp, VenueClient):
             # Go to last venue in the history list
             #
             uri = self.history[l - 1]
-            self.EnterVenue(uri, true)
+            self.venueClient.EnterVenue(uri, true)
 
     def OnExit(self):
         """
@@ -815,8 +789,8 @@ class VenueClientUI(wxApp, VenueClient):
         # Do this before terminating services, since we need
         # to message them to shut down their services first
         #
-        if self.isInVenue:
-            self.ExitVenue()
+        if self.venueClient.isInVenue:
+            self.venueClient.ExitVenue()
 
         #
         # If we're running as a personal node, terminate the services.
@@ -1030,7 +1004,7 @@ class VenueClientUI(wxApp, VenueClient):
         log.debug("Upload personal files")
         try:
             my_identity = GetDefaultIdentityDN()
-            self.dataStore.UploadLocalFiles(fileList, my_identity, self.profile.publicId)
+            self.venueClient.dataStore.UploadLocalFiles(fileList, my_identity, self.venueClient.profile.publicId)
 
         except DataStore.DuplicateFile, e:
             title = "Add Personal Data Error"
@@ -1051,7 +1025,7 @@ class VenueClientUI(wxApp, VenueClient):
         long-term transfers and to allow for live updates of a download status.
         
         """
-        url = self.dataStoreUploadUrl
+        url = self.venueClient.dataStoreUploadUrl
         method = self.get_ident_and_upload
 
         #
@@ -1137,8 +1111,8 @@ class VenueClientUI(wxApp, VenueClient):
         This uses the DataStore HTTP upload engine code.
         """
 
-        log.debug("Upload files - no dialog. upload_url=%s", self.dataStoreUploadUrl)
-        upload_url = self.dataStoreUploadUrl
+        log.debug("Upload files - no dialog. upload_url=%s", self.venueClient.dataStoreUploadUrl)
+        upload_url = self.venueClient.dataStoreUploadUrl
 
         error_msg = None
         try:
@@ -1178,11 +1152,11 @@ class VenueClientUI(wxApp, VenueClient):
 
             if data.type == None or data.type == 'None':
                 # Venue data
-                Client.Handle(self.dataStoreLocation).GetProxy().RemoveFiles(dataList)
+                Client.Handle(self.venueClient.dataStoreLocation).GetProxy().RemoveFiles(dataList)
                 
-            elif(data.type == self.profile.publicId):
+            elif(data.type == self.venueClient.profile.publicId):
                 # My data
-                self.dataStore.RemoveFiles(dataList)
+                self.venueClient.dataStore.RemoveFiles(dataList)
 
             else:
                 # Somebody else's personal data
@@ -1263,15 +1237,15 @@ class VenueClientUI(wxApp, VenueClient):
         
         *profile* The ClientProfile including the new profile information
         """
-        self.profile = profile
-        self.profile.Save(self.profileFile)
+        self.venueClient.profile = profile
+        self.venueClient.profile.Save(self.profileFile)
         log.debug("Save profile")
 
         # use profile from path
-        self.profile = ClientProfile(self.profileFile)
-        self.SetProfile(self.profile)
+        self.venueClient.profile = ClientProfile(self.profileFile)
+        self.venueClient.SetProfile(self.venueClient.profile)
 
-        if(self.venueUri != None):
+        if(self.venuceClient.venueUri != None):
             log.debug("Update client profile in venue")
 
             try:
@@ -1282,17 +1256,6 @@ class VenueClientUI(wxApp, VenueClient):
                 ErrorDialog(None, "Your profile could not be changed", "Change Profile Error", style = wxOK | wxICON_ERROR)
         else:
             log.debug("Can not update client profile in venue - not connected")
-
-    def SetNodeUrl(self, url):
-        """
-        This method sets the node service url
-
-        **Arguments:**
-        
-        *url* The string including the new node url address
-        """
-        log.debug("Set node service url:  %s" %url)
-        self.nodeServiceUri = url
 
     #
     # Application Integration code
@@ -1337,12 +1300,12 @@ class VenueClientUI(wxApp, VenueClient):
 
 
     def SetVideoEnabled(self, enableFlag):
-        if self.nodeServiceUri:
-            Client.Handle(self.nodeServiceUri).GetProxy().SetServiceEnabledByMediaType("video",enableFlag)
+        if self.venueClient.nodeServiceUri:
+            Client.Handle(self.venueClient.nodeServiceUri).GetProxy().SetServiceEnabledByMediaType("video",enableFlag)
 
     def SetAudioEnabled(self, enableFlag):
-        if self.nodeServiceUri:
-            Client.Handle(self.nodeServiceUri).GetProxy().SetServiceEnabledByMediaType("audio",enableFlag)
+        if self.venueClient.nodeServiceUri:
+            Client.Handle(self.venueClient.nodeServiceUri).GetProxy().SetServiceEnabledByMediaType("audio",enableFlag)
 
     def RemoveApp(self,app):
         """
@@ -1354,6 +1317,9 @@ class VenueClientUI(wxApp, VenueClient):
         """
         self.client.DestroyApplication( app.id )
         log.debug("Destroying application: %s" % app.name)
+
+    def RemoveStreamEvent(self):
+        pass
 
 if __name__ == "__main__":
 
