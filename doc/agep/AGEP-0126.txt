@@ -1,0 +1,225 @@
+=====================================
+Community Service Design 1.0
+=====================================
+ 
+:version: $Revision: 1.1 $
+:author: Ivan R. Judson <judson@mcs.anl.gov>
+:status: Draft
+:contact: ag-tech@mcs.anl.gov
+
+Abstract
+========
+
+FILL IN ABSTRACT
+
+Overview
+========
+
+Introducing a new service that helps organize users and resources into
+logically related groups called communities. Communities are made up
+of members that trust one another. In Grid lingo, a community looks
+very similar to a Virtual Organization.
+
+The community service serves to provide an aggregation of services
+that represent a community.  These services broadly include, account
+management services and a publish/subscribe service for members of the
+community to advertise node service packages, shared application
+client packages, application service clients, application services,
+venue servers, network services, node services, and other community
+services. Also, the community service provides a query interface
+through which users can search for these various software and service
+registrations.
+
+The community service provides two classes of interfaces, the client
+interface and the administrative interface. The client interface is
+used to requets accounts, retrieve account information, register and
+search for software and services. The administrative interface
+provides a means by which to approve or deny account requests, and
+explicitly expire software and service registrations.
+
+The existing Virtual Venue Client can be used by end users to interact
+with communitie services either interactively involving the user, or
+programmatically -- to find software that provides some collaborative
+capability.
+
+Use Cases
+=========
+
+User requests an account from a community service
+User retrieves account information from a community service
+
+Administrator views account requests
+Administrator approves account
+Administrator denies account
+
+User retrieves information about a community
+
+User advertises a new shared application package to a community
+User advertises a new node service package to a community
+User advertises a new application service client to a community
+
+Service provider advertises a new venue server to a community
+Service provider advertises a new network service to a community
+Service provider advertises a new community service to a community
+Service provider advertises a new Access Grid node to a community
+
+User searches for a new shared application package from a community service
+Administrator searches for a new network service to add to a venue on their venue server
+
+User retrieves community information for a community
+
+Requirements
+============
+1) Account Request including:
+	i. Account Information
+	ii. Credential Information
+
+When the request is made:
+	i. validate the request 
+        	(Check account information and credential validity)
+	ii. put into a request queue, with it's token.
+
+2) Retrieve Account Information
+		
+3) Retrieve Community Information
+	i. get information about the community (Community Description)
+	ii. get account information (policy, request endpoint)
+	iii. get CA certificates for trusted CA's (if pki based credentials are used)
+
+4) Retrieve Account Requests
+
+5) Approve an account request,
+	i. Convert Account Request to Account Description (assigning it an ID)
+	ii. Deal with credential type, generating 
+	iii. Store Account Request, token, and cert & jabber info in a user database of some sort.
+	iv. send email saying the account was approved.
+
+6) Deny an account request
+	i. Deny account, pick reason from a list of "standard reasons" or write custom reason
+	ii. Store Account Request, token in denied accounts db, with reason
+	iii. send email stating the denial
+			
+7) Publish/Subscribe Service for
+	a. Node Service Packages
+	b. Shared Application Clients
+	c. Application Service Clients
+	
+	d. Venue Servers
+	e. Network Services
+	f. Community Service
+	g. Node Services
+
+8) Search for services, packages, etc
+   Allow searching the community server for node services, shared
+   	app clients, users, etc
+		
+Design
+======
+
+Specifications
+==============
+
+token:GUID RequestAccount(AccountRequest:AccountRequest, 
+                          Credential:Credential)
+	
+Account Request
+	name (first, middle, last)
+	email
+	phone
+	address
+	city
+	state/province
+	zip/postal
+	country
+        institution
+
+Credential
+	type: <>
+	data: <>
+	
+
+AccountInformation:AccountInformation GetAccountInformation(token:GUID)
+		
+AccountInformation
+	Account Description:AccountDescription
+	Account ID:GUID
+	Credential Response 
+		type: <>
+		data: <>
+	
+CommunityDescription:CommunityDescription GetCommunityInformation()
+		
+Community Information
+	Description : CommunityDescription,
+	Account Information (policy, account request service description)
+        Trusted Authority List
+        	Trusted Authority Entry
+                	type: <>
+                        data : <>
+
+AccountRequestList GetAccountRequests(pattern:string)
+		
+ApproveAccount(token:GUID)
+
+DenyAccount(token:GUID, reason:ReasonDescription)
+		
+ReasonDescription
+	id:GUID
+	short_desc:string
+	explanation:string
+	<optional> policy : string
+
+	
+ExpireTime:double Publish(Description)
+Expire(id:DescriptionId)
+ExpireTime:double Subscribe(Pattern, SubscriberUpdateEndpoint)
+	
+Description
+	type =
+	description = string
+	id = string
+	
+ServiceDescription(Description)
+	type =  VenueServer | NetworkService | CommunityService
+	location = ServiceLocation
+            (venue server and community service are wsdl endpoints)
+            (network service is wsdl endpoint for control interface?)
+	
+SoftwareDescription(Description)
+        type = NodeService | SharedApplicationClient |  
+               ApplicationServiceClient
+	mimetype = string
+	...
+
+SubscriberupdateEndpoint
+	i. Update(Description, Expire Time)
+		
+DescriptionList Search(pattern)
+	
+	
+Related AGEPs
+=============
+
+FILL IN RELATED AGEPS
+
+References
+==========
+
+FILL IN REFERENCES
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
