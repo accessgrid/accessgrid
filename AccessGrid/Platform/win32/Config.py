@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.48 2004-09-09 05:19:40 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.49 2004-09-09 17:09:37 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.48 2004-09-09 05:19:40 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.49 2004-09-09 17:09:37 judson Exp $"
 
 import os
 import sys
@@ -1069,8 +1069,7 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
                 (vName, vData, vType) = _winreg.EnumValue(fwKey, i)
                 if path == vName:
                     # Set the flag to the value passed in
-                    (p, e, d) = vData[len(vName)+1:-1].split(":")
-                    print "%s %s %s" % (p, e, d)
+                    (p, e, d) = vData[len(vName)+1:].split(":")
                     vData = ":".join([vName, p, enStr, d])
                     break
                 else:
@@ -1081,9 +1080,7 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
                 vName = path
 
             if vData == None:
-                vData = "%s:*:%s:AccessGrid Software(%s)" % (path,
-                                                             enStr,
-                                                             path)
+                vData = "%s:*:%s:AG Tools" % (path, enStr)
                 
             # Put the value back in the registry
             _winreg.SetValueEx(fwKey, vName, 0,_winreg.REG_SZ, vData)
