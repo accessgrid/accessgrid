@@ -14,49 +14,12 @@
 """
 """
 
-__revision__ = "$Id: VenueClientObserver.py,v 1.2 2004-02-24 18:36:21 turam Exp $"
+__revision__ = "$Id: VenueClientObserver.py,v 1.3 2004-03-11 20:14:27 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 
-class PassiveVenueClientObserver:
 
-    # User Methods
-    def AddUser(self,profile):                      pass
-    def RemoveUser(self,profile):                   pass
-    def ModifyUser(self,profile):                   pass
-    
-    # Data Methods
-    def AddData(self,dataDescription):              pass
-    def RemoveData(self,dataDescription):           pass
-    def UpdateData(self,dataDescription):           pass
-    
-    # Service Methods
-    def AddService(self,serviceDescription):        pass
-    def RemoveService(self,serviceDescription):     pass
-    def UpdateService(self,serviceDescription):     pass
-    
-    # Application Methods
-    def AddApplication(self,appDescription):        pass
-    def RemoveApplication(self,appDescription):     pass
-    def UpdateApplication(self,appDescription):     pass
-    
-    # Exit/Connection Methods
-    def AddConnection(self,connDescription):        pass
-    def RemoveConnection(self,connDescription):     pass
-    def SetConnections(self,connDescriptionList):   pass
-    
-    # Stream methods
-    def AddStream(self, streamDesc):                pass
-    def RemoveStream(self, streamDesc):             pass
-    def ModifyStream(self, streamDesc):             pass
-
-    def AddText(self,name,text):                    pass
-    
-    def EnterVenue(self, URL, warningString="", enterSuccess=1): pass
-    def ExitVenue(self):                            pass
-    
-    
-class RestrictiveVenueClientObserver:
+class VenueClientObserver:
 
     # User Methods
     def AddUser(self,profile):
@@ -125,11 +88,9 @@ class RestrictiveVenueClientObserver:
 
     def ExitVenue(self):
 		raise Exception("VenueClientObserver.ExitVenue not implemented")
-
-
-VenueClientObserver = RestrictiveVenueClientObserver
-
-
+        
+    def HandleError(self,err):
+        raise Exception("VenueClientObserver.Exception not implemented")
 
 
 class TestVenueClientObserver(VenueClientObserver):
