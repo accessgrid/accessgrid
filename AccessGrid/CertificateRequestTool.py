@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.21 2003-09-16 07:20:17 judson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.22 2003-09-16 22:15:35 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -951,7 +951,7 @@ class SubmitReqWindow(TitledPage):
         self.password = password
         self.request = requestType
         
-        self.info =  "Click 'Finish' to submit %s certificate request for %s to Argonne.  A confirmation e-mail will be sent, within 2 business days, to %s.  \n\nPlease contact agdev_ca@mcs.anl.gov if you have questions."%(self.request, self.name, self.email)
+        self.info =  "Click 'Finish' to submit %s certificate request for %s to Argonne.  A confirmation e-mail will be sent, within 2 business days, to %s.  \n\nPlease contact agdev-ca@mcs.anl.gov if you have questions."%(self.request, self.name, self.email)
        
         self.text.SetValue(self.info)
         
