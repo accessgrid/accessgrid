@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.14 2003-04-08 16:35:27 olson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.15 2003-04-08 21:04:48 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -88,6 +88,15 @@ log.addHandler(hdlr)
 if debugMode:
     log.addHandler(logging.StreamHandler())
 
+if pnode is not None:
+
+    log.debug("Starting personal node")
+
+    personalNode = PersonalNode.PN_NodeService(Shutdown)
+    serviceManageURL =  personalNode.RunPhase1(pnode)
+
+    log.debug("Got service mgr %s", serviceManageURL)
+
 # Create a Node Service
 nodeService = AGNodeService()
 
@@ -105,16 +114,11 @@ nodeService._bind_to_service( service )
 
 if pnode is not None:
 
-    def setSvcMgr(url, mgr = nodeService):
-        mgr.AddServiceManager(AGServiceManagerDescription(url, url))
-    
-    def getMyURL(url = nodeService.get_handle()):
-        return url
+    log.debug("Starting personal node, phase 2")
 
-    log.debug("Starting personal node")
+    personalNode.RunPhase2(nodeService.GetHandle())
 
-    personalNode = PersonalNode.PN_NodeService(setSvcMgr, getMyURL, Shutdown)
-    personalNode.Run(pnode)
+    log.debug("Personal node done")
 
 # Tell the world where to find the service
 log.info("Starting service; URI: %s", nodeService.get_handle())
