@@ -231,7 +231,7 @@ if sys.platform == 'linux2' or sys.platform == 'darwin':
     print "cmd = ", cmd
     os.system(cmd)
 
-    cmd = "cp QuickBridge %s" % (os.path.join(DestDir,'bin'))
+    cmd = "cp QuickBridge %s" % (os.path.join(DestDir,'bin','QuickBridge'))
     print "cmd = ", cmd
     os.system(cmd)
 
