@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.150 2003-04-22 21:00:49 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.151 2003-04-22 21:11:40 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -783,13 +783,10 @@ class VenueClientFrame(wxFrame):
             areYouSureDialog = wxMessageDialog(self, text, \
                                                '', wxOK |  wxCANCEL |wxICON_INFORMATION)
             if(areYouSureDialog.ShowModal() == wxID_OK):
-                self.app.RemoveService(service)
-            
+                self.app.RemoveApp( app )
         else:
             self.__showNoSelectionDialog("Please, select the application you want to delete")       
             
-        
-        self.app.RemoveApp( app )
             
     def CleanUp(self):
         self.venueListPanel.CleanUp()
