@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.164 2004-03-22 16:36:27 olson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.165 2004-03-22 19:45:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.164 2004-03-22 16:36:27 olson Exp $"
+__revision__ = "$Id: Venue.py,v 1.165 2004-03-22 19:45:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -31,6 +31,7 @@ from AccessGrid import Log
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
+from AccessGrid.Security.AuthorizationManager import AuthorizationManagerI
 from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
@@ -1660,6 +1661,11 @@ class Venue(AuthorizationMixIn):
 
         # register the app with the hosting environment
         self.server.hostingEnvironment.RegisterObject(appI, path=path)
+
+        # register the authorization interface and serve it.
+        self.server.hostingEnvironment.RegisterObject(
+                                  AuthorizationManagerI(app.authManager),
+                                  path=path+'/Authorization')
 
         # pull the url back out and put it in the app object
         appURL = self.server.hostingEnvironment.FindURLForObject(app)

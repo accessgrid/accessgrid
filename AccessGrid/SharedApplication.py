@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.8 2004-03-22 19:04:13 eolson Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.9 2004-03-22 19:45:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.8 2004-03-22 19:04:13 eolson Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.9 2004-03-22 19:45:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -24,6 +24,7 @@ from AccessGrid.Descriptions import ApplicationDescription
 
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 
+from AccessGrid.Toolkit import Application
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
@@ -78,7 +79,19 @@ class SharedApplication(AuthorizationMixIn):
         # Do not keep track of connected users at this time.
         # self.AddRequiredRole(Role.Role("AppUsers"))
         self.AddRequiredRole(Role.Role("Administrators"))
-        
+
+        self.authManager.AddRoles(self.GetRequiredRoles())
+
+        # Get the silly default subject this really should be fixed
+        certMgr = Application.instance().GetCertificateManager()
+        di = certMgr.GetDefaultIdentity().GetSubject()
+        ds = X509Subject.CreateSubjectFromString(di)
+        admins = self.authManager.FindRole("Administrators")
+        admins.AddSubject(ds)
+                                                                                
+        # Default to admins
+        self.authManager.SetDefaultRoles([admins])
+
         self.name = name
         self.description = description
         self.mimeType = mimeType
@@ -91,6 +104,9 @@ class SharedApplication(AuthorizationMixIn):
             self.id = str(GUID.GUID())
         else:
             self.id = id
+
+        ai = SharedApplicationI(self)
+        self.authManager.AddActions(ai._GetMethodActions())
 
         # Create the data channel
         self.__CreateDataChannel()
