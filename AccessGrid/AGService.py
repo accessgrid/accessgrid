@@ -7,7 +7,6 @@ from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 
 from AccessGrid.Types import *
 from AccessGrid.AGParameter import *
-from AccessGrid.NetworkLocation import *
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.AuthorizationManager import AuthorizationManager
@@ -24,7 +23,6 @@ class AGService( ServiceBase ):
       self.resource = AGResource()
       self.executable = None
 
-      self.location = MulticastNetworkLocation()
       self.inputStreamConfiguration = None
       self.outputStreamConfiguration = None
       self.capabilities = []
@@ -208,7 +206,6 @@ class AGService( ServiceBase ):
          m = map( lambda cap:cap.type, self.capabilities )
          print streamDescription.capability.type
          if streamDescription.capability.type in m:
-            self.location = streamDescription.location
             self.streamDescription = streamDescription
       except:
          print "Exception in ConfigureStream ", sys.exc_type, sys.exc_value
