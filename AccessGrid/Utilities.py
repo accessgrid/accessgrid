@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.26 2003-04-25 03:55:24 olson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.27 2003-04-25 08:37:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -26,13 +26,14 @@ log = logging.getLogger("AG.Utilities")
 
 try:
     import _winreg
+    from AccessGrid.Platform import Win32RegisterMimeType
 except:
     pass
 
 from wxPython.wx import wxTheMimeTypesManager as mtm
 from wxPython.wx import wxFileTypeInfo
 
-from AccessGrid.Platform import Win32RegisterMimeType
+from AccessGrid.Platform import GetInstallDir
 
 def LoadConfig(fileName, config={}):
     """
@@ -132,6 +133,10 @@ def GetResourceList( resourceFile ):
         device: o100vc.dll - Osprey Capture Card 1
         portnames:  external-in 
 
+    Note: there's a bad assumption here: the caller specifies the resources
+    file; if it's not found, we generate the resource file in the location
+    that the system expects.  This should be fixed, and it's on my list. -Tom
+
     """
     from AccessGrid.Types import Capability, AGVideoResource
     import fileinput
@@ -142,10 +147,16 @@ def GetResourceList( resourceFile ):
     oDeviceMatch = re.compile("^device: (.*)")
     oPortnameMatch = re.compile("^portnames:  (.*[^\s])")
 
-    print "resource file = ", resourceFile
-
     device = None
     portnames = None
+
+    # Generate the file if it doesn't exist
+    if not os.path.exists(resourceFile):
+        installDir=GetInstallDir()
+        setupVideo = '"' + os.path.join(installDir,"SetupVideo.py") + '"' 
+        os.spawnv( os.P_WAIT, sys.executable, [ sys.executable, setupVideo ] )
+    
+    # Read the file if it exists
     if os.path.exists(resourceFile):
         for line in fileinput.input(files = [resourceFile ] ):
             match = oDeviceMatch.match(line)
@@ -159,7 +170,7 @@ def GetResourceList( resourceFile ):
                 resources.append( AGVideoResource( Capability.VIDEO, device,
                                                    Capability.PRODUCER, portnames ) )
     else:
-        print "Video resources file not found; run device discovery script"
+        print "Video resources file not found; run SetupVideo.py"
 
     return resources
 
