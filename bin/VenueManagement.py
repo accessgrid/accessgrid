@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.67 2003-05-23 21:01:58 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.68 2003-05-30 16:54:40 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -26,6 +26,7 @@ from AccessGrid.Platform import GPI
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid import Toolkit
 
+import webbrowser
 import logging, logging.handlers
 log = logging.getLogger("AG.VenueManagement")
 
@@ -45,7 +46,9 @@ class VenueManagementClient(wxApp):
     """
     ID_FILE_EXIT = wxNewId()
     ID_HELP_ABOUT = wxNewId()
-    
+    ID_HELP_MANUAL =  wxNewId()
+
+    manual_url = "http://www-unix.mcs.anl.gov/~lefvert/PROJECTS/ACCESS_GRID/MANUALS/VENUE_MANAGEMENT/VenueManagementManualFrame2-2.htm" 
     server = None
     serverUrl = None
     currentVenueClient = None
@@ -53,6 +56,7 @@ class VenueManagementClient(wxApp):
     encrypt = false
     administrators = {}
     venueList = []
+    help_open = 0
 
     def OnInit(self):
         sys.stdout = sys.__stdout__
@@ -77,16 +81,22 @@ class VenueManagementClient(wxApp):
         EVT_MENU(self, self.ID_FILE_EXIT, self.Exit)
         EVT_CLOSE(self, self.OnCloseWindow)
         EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialog)
-
+        EVT_MENU(self, self.ID_HELP_MANUAL,
+                 lambda event, url=self.manual_url: self.OpenHelpURL(url))
+        
     def __setMenuBar(self):
         self.frame.SetMenuBar(self.menubar)
 
         self.fileMenu = wxMenu()
         self.fileMenu.Append(self.ID_FILE_EXIT,"&Exit", "Quit Venue Management")
         self.menubar.Append(self.fileMenu, "&File")
-
+        
         self.helpMenu = wxMenu()
+        self.helpMenu.Append(self.ID_HELP_MANUAL, "Venue Management &Help",
+                             "Venue Management Manual")
+        self.helpMenu.AppendSeparator()
         self.helpMenu.Append(self.ID_HELP_ABOUT, "&About\t", "Information about the application")
+        
         self.menubar.Append(self.helpMenu, "&Help")
 
     def __setLogger(self):
@@ -112,6 +122,18 @@ class VenueManagementClient(wxApp):
         box.Add(self.address, 0, wxEXPAND|wxALL)
         box.Add(self.tabs, 1, wxEXPAND)
         self.frame.SetSizer(box)
+
+    def OpenHelpURL(self, url):
+        """
+        """
+        needNewWindow = not self.help_open
+        
+        if needNewWindow:
+            self.help_open = 1
+            self.browser = webbrowser.get()
+            
+        self.browser.open(url, needNewWindow)
+
 
     def OpenAboutDialog(self, event):
         aboutDialog = AboutDialog(self.frame, wxSIMPLE_BORDER)
