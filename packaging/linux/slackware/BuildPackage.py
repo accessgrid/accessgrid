@@ -59,13 +59,13 @@ cmd = "sh Slack.build-globus"
 print "cmd = ", cmd     
 os.system(cmd)      
 os.chdir(StartDir)    
-cmd = "cp globus-accessgrid-2.4-i486-1.tgz %s" % (RpmDir,)   
+cmd = "cp globus-accessgrid-2.4-i486-2.tgz %s" % (RpmDir,)   
 print "cmd = ", cmd     
 os.system(cmd)      
 
 # Now that the globus pkg has been copied to the "RpmDir" for packaging,
 # remove it from here
-cmd = "rm -f globus-accessgrid-2.4-i486-1.tgz"
+cmd = "rm -f globus-accessgrid-2.4-i486-2.tgz"
 os.system(cmd)
 
 #

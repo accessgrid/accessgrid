@@ -1,7 +1,7 @@
 
 name=globus-accessgrid
 version=2.4
-release=1
+release=2
 arch=i486
 here=`pwd`
 
@@ -32,7 +32,7 @@ fi
 
 
 export GLOBUS_LOCATION=${pkgdir}${prefix}
-${GPT_LOCATION}/sbin/gpt-build globus-data-management-client-2.4.3-src_bundle.tar.gz gcc32pthr
+${GPT_LOCATION}/sbin/gpt-build globus-data-management-client-2.4.3-src_bundle.tar.gz gcc32dbgpthr
 ${GPT_LOCATION}/sbin/gpt-verify
 
 # Fix der_chop from openssl from using the not right /usr/local/bin/perl and instead use /usr/bin/perl
@@ -106,3 +106,9 @@ cd ${here}
 [ -n "${pkgdir}" -a "${pkgdir}" != / ] && rm -rf ${pkgdir}
 
 
+#########################################################
+# Changes
+#
+# release 2, 2004.09.11
+# Changed flavor from gcc32pthr to gcc32dbgpthr
+#
