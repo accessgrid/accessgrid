@@ -1,0 +1,12 @@
+[ClientProfile]
+phone = +1 888 959 5555
+name = Sus
+location = Nowhere, Fast
+home = https://localhost:8000/VenueServer
+venueclienturl = 
+icon = 
+type = user
+id = 000000f34e7f5cc3008c00dd000b0037aa1
+techsupportinfo = 
+email = john@mail.com
+
