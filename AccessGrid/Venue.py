@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.60 2003-03-24 20:26:12 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.61 2003-03-25 15:32:48 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -67,7 +67,7 @@ class Venue(ServiceBase.ServiceBase):
         self.encryptMedia = server.GetEncryptAllMedia()
 
         self.uniqueId = str(GUID())
-        self.uri = self.server.MakeVenueURI(self.uniqueId)
+        self.uri = self.server.MakeVenueURL(self.uniqueId)
         log.info("URI %s", self.uri)
 
         self.server.eventService.AddChannel(self.uniqueId)
@@ -178,7 +178,7 @@ class Venue(ServiceBase.ServiceBase):
             self.server.textService.RemoveChannel(self.uniqueId)
         
         self.uniqueId = id
-        self.uri = self.server.MakeVenueURI(id)
+        self.uri = self.server.MakeVenueURL(id)
         log.info("URI %s", self.uri)
 
         self.server.eventService.AddChannel(self.uniqueId)
