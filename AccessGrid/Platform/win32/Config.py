@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.40 2004-05-13 18:56:21 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.41 2004-05-13 20:15:02 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.40 2004-05-13 18:56:21 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.41 2004-05-13 20:15:02 lefvert Exp $"
 
 import os
 import sys
@@ -547,6 +547,11 @@ class UserConfig(AccessGrid.Config.UserConfig):
         oldPath = os.path.join(self.baseDir, "profile")
         newPath = os.path.join(self.configDir, "profile")
         self._CopyFile(oldPath, newPath)
+
+        oldPath = os.path.join(self.baseDir, "myVenues.txt")
+        newPath = os.path.join(self.configDir, "myVenues.txt")
+        self._CopyFile(oldPath, newPath)
+        
         
         oldPath = os.path.join(self.baseDir, "certRepo")
         newPath = os.path.join(self.configDir, "certRepo")
