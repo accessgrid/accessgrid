@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.6 2003-02-10 15:22:16 leggett Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.7 2003-02-14 22:39:54 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -25,7 +25,7 @@ def SignalHandler(signum, frame):
     all of it's Venues. Then it stops the hostingEnvironment.
     """
     global running
-    venueServer.Shutdown(None, 0)
+    venueServer.Shutdown(0)
     running = 0
 
 def AuthCallback(server, g_handle, remote_user, context):
