@@ -31,70 +31,45 @@ import sys
 import shutil
 import getopt
 import re
+from optparse import OptionParser
 
 
 # Borrowed from Platform.py
 WIN = 'win32'
 LINUX = 'linux2'
 
+parser = OptionParser()
+parser.add_option("-a", "--agdir", dest="srcdir", metavar="SRCDIR",
+                  default="..",
+                  help="Location of the AGTk Sources")
+parser.add_option("-d", "--dst", dest="destdir", metavar="DSTDIR",
+                  default="",
+                  help="Location of the destination configuration.")
+parser.add_option("-v", "--verbose", dest="verbose", action="store_true",
+                  default=0, help="Run with verbose output.")
 
-def PrintUsage():
-    print """
- CvsSetup.py [-a] <AG source location> [-d] <destination config directory>
-
- -a (--agdir)   (optional) set the location of the AccessGrid source tree.
- -d (--dst)     (required) set the destination to put config files.
- -v                        set verbose mode on.
-"""
-
-
-# Defaults
-AG_BASE_DIR = ".."  # At least try one default location for AG source: 
-                    #    default works if executed from AccessGrid/bin 
-DST_CONFIG_DIR = ""
-INITIAL_DIR = os.getcwd()
-verbose = 0
-print ""
-
-try:
-    opts, args = getopt.getopt(sys.argv[1:], "a:d:vq", ["agdir=", "dst=", "verbose"] )
-except:
-    # print help information and exit
-    PrintUsage()
-    sys.exit(2)
-
-for o, a in opts:
-    if o in ("-a", "--agdir"):
-        AG_BASE_DIR = a
-        print "    AccessGrid source directory: ",AG_BASE_DIR
-    if o in ("-d", "--dst"):
-        DST_CONFIG_DIR = a
-        print "    Destination config location: ",DST_CONFIG_DIR
-    if o in ("-v", "--verbose"):
-        print "    verbose mode enabled: "
-        verbose = 1
-
+options, args = parser.parse_args()
 
 # Create destination directory if it doesn't exist.
 
-if DST_CONFIG_DIR != "":
-    if not os.path.exists( DST_CONFIG_DIR ):
-        os.mkdir(DST_CONFIG_DIR)
+if options.destdir != "":
+    if not os.path.exists( options.destdir ):
+        os.mkdir(options.destdir)
 
 # Make sure a destination was specified.
 
-if DST_CONFIG_DIR == "" or not os.path.exists( DST_CONFIG_DIR ):
+if options.destdir == "" or not os.path.exists( options.destdir ):
     PrintUsage()
-    if DST_CONFIG_DIR == "":
+    if options.destdir == "":
         print "Error: You did not specify a destination directory.\n"
-    elif not os.path.exists( DST_CONFIG_DIR ):
-        print "Error: destination directory does not exist:",DST_CONFIG_DIR
+    elif not os.path.exists( options.destdir ):
+        print "Error: destination directory does not exist:",options.destdir
     sys.exit()
 
 
 # Make sure we can find AG source.
 
-file_to_find = os.path.join(AG_BASE_DIR, "AccessGrid", "Version.py")
+file_to_find = os.path.join(options.srcdir, "AccessGrid", "Version.py")
 if not (os.path.exists( file_to_find )):
     PrintUsage()
     print "Cannot find AccessGrid source location.", file_to_find, " not found." 
@@ -102,15 +77,15 @@ if not (os.path.exists( file_to_find )):
 
 # Make sure we can find destination directory.
 
-if not os.path.exists( DST_CONFIG_DIR ):
+if not os.path.exists( options.destdir ):
     PrintUsage()
-    print "Cannot find destination config location.", DST_CONFIG_DIR, " not found." 
+    print "Cannot find destination config location.", options.destdir, " not found." 
     sys.exit()
 
 
 # Get absolute paths for when we need to pass them to python.exe later.
-ABS_DST_CONFIG_DIR = os.path.abspath(DST_CONFIG_DIR)
-ABS_AG_BASE_DIR = os.path.abspath(AG_BASE_DIR)
+ABS_DST_CONFIG_DIR = os.path.abspath(options.destdir)
+ABS_AG_BASE_DIR = os.path.abspath(options.srcdir)
 
 # Overview: 
 # python packaging/makeServicePackages.py DST_CONFIG_DIR/AccessGrid/services
@@ -125,10 +100,10 @@ print ""
 
 
 # New config using AGTkConfig
-os.environ['AGTK_INSTALL'] = os.path.join( os.path.abspath(AG_BASE_DIR), "bin" )
-os.environ['AGTK_LOCATION'] = os.path.abspath(DST_CONFIG_DIR)
+os.environ['AGTK_INSTALL'] = os.path.join( os.path.abspath(options.srcdir), "bin" )
+os.environ['AGTK_LOCATION'] = os.path.abspath(options.destdir)
 # Add to PYTHONPATH
-sys.path.insert(0, os.path.abspath(AG_BASE_DIR))
+sys.path.insert(0, os.path.abspath(options.srcdir))
 
 from AccessGrid.Platform.Config import AGTkConfig
 # Create directory structure
@@ -137,34 +112,34 @@ agtkConfig = AGTkConfig.instance(initIfNeeded=1)
 
 # Make directories
 
-dir = os.path.join(DST_CONFIG_DIR,"services")
+dir = os.path.join(options.destdir,"services")
 if not os.path.exists(dir):
     os.mkdir (dir)
-    if verbose:
+    if options.verbose:
         print "   mkdir",dir
 
-dir = os.path.join(DST_CONFIG_DIR,"local_services")
+dir = os.path.join(options.destdir,"local_services")
 if not os.path.exists(dir):
     os.mkdir (dir)
-    if verbose:
+    if options.verbose:
         print "   mkdir",dir
 
-dir = os.path.join(DST_CONFIG_DIR,"nodeConfig")
+dir = os.path.join(options.destdir,"nodeConfig")
 if not os.path.exists(dir):
     os.mkdir (dir)
-    if verbose:
+    if options.verbose:
         print "   mkdir",dir
 
 
 # create services
 # python packaging/makeServicePackages.py AccessGrid/services
 
-mk_service_exec = sys.executable + " " + os.path.join( AG_BASE_DIR, "packaging", "makeServicePackages.py" )
+mk_service_exec = sys.executable + " " + os.path.join( options.srcdir, "packaging", "makeServicePackages.py" )
 service_input_dir = "\"" + os.path.join( ABS_AG_BASE_DIR, "services", "node") + "\""
 service_output_dir = "\"" + os.path.join( ABS_DST_CONFIG_DIR, "services") + "\""
 mk_command = mk_service_exec + " " + service_input_dir + " " + service_output_dir
 #mk_command = mk_service_exec + " " + service_input_dir
-if verbose:
+if options.verbose:
     print "   ",mk_command
 os.system(mk_command)
 
@@ -173,9 +148,9 @@ os.system(mk_command)
 # Copy default configuration files
 
 if sys.platform == WIN:
-    win_config_src = os.path.join( AG_BASE_DIR, "packaging", "config", "defaultWindows")
-    win_config_dst = os.path.join( DST_CONFIG_DIR, "nodeConfig", "defaultWindows")
-    #if verbose:
+    win_config_src = os.path.join( options.srcdir, "packaging", "config", "defaultWindows")
+    win_config_dst = os.path.join( options.destdir, "nodeConfig", "defaultWindows")
+    #if options.verbose:
         #print "    copying file ", win_config_src, "to ", win_config_dst
     #shutil.copyfile( win_config_src, win_config_dst )
 
@@ -183,7 +158,7 @@ if sys.platform == WIN:
     executable_path_replace = re.compile('c:\\\\program files\\\\access grid toolkit\\\\')
 
     print "\n    Creating file", win_config_dst, "from", win_config_src
-    if verbose:
+    if options.verbose:
         print "        removing \"c:\\program files\\access grid toolkit\\\" from rat and vic paths"
 
     file = open(win_config_src) 
@@ -200,9 +175,9 @@ if sys.platform == WIN:
 
 # copy defaultLinux file if we are using linux
 if sys.platform == LINUX:
-    unix_config_src = os.path.join( AG_BASE_DIR, "packaging", "config", "defaultLinux")
-    unix_config_dst = os.path.join( DST_CONFIG_DIR, "nodeConfig", "defaultLinux")
-    if verbose:
+    unix_config_src = os.path.join( options.srcdir, "packaging", "config", "defaultLinux")
+    unix_config_dst = os.path.join( options.destdir, "nodeConfig", "defaultLinux")
+    if options.verbose:
         print "    copying file ", unix_config_src, "to ", unix_config_dst
 
     shutil.copyfile( unix_config_src, unix_config_dst )
@@ -220,15 +195,15 @@ def BackupFile(filename, backup_filename):
     # Copy file to backup if needed.
 
     if os.path.exists(filename):
-        if verbose:
+        if options.verbose:
             print "    copying file ", filename, "to ", backup_filename
         shutil.copyfile(filename, backup_filename)
 
 
 # Create empty "videoresources" file
 
-config_file = os.path.join(DST_CONFIG_DIR, "videoresources")
-bak_file = os.path.join(DST_CONFIG_DIR, "videoresources.bak")
+config_file = os.path.join(options.destdir, "videoresources")
+bak_file = os.path.join(options.destdir, "videoresources.bak")
 
 BackupFile(config_file, bak_file)
 
@@ -289,27 +264,27 @@ elif sys.platform == LINUX:
     print "          On linux: if you've installed the vic and rat rpm packages,"
     print "          they should already be in your path.\n"
 
-print "       set AGTK_INSTALL to", os.path.join( os.path.abspath(AG_BASE_DIR), "bin" )
-print "       set PYTHONPATH to", os.path.abspath(AG_BASE_DIR)
-print "       set AGTK_LOCATION to", os.path.abspath(DST_CONFIG_DIR)
+print "       set AGTK_INSTALL to", os.path.join( os.path.abspath(options.srcdir), "bin" )
+print "       set PYTHONPATH to", os.path.abspath(options.srcdir)
+print "       set AGTK_LOCATION to", os.path.abspath(options.destdir)
 print ""
 
 fh = open("env-init.sh", "w")
-fh.write("export AGTK_INSTALL=%s\n" % (os.path.join( os.path.abspath(AG_BASE_DIR), "bin")))
-fh.write("export PYTHONPATH=%s\n" % os.path.abspath(AG_BASE_DIR))
-fh.write("export AGTK_LOCATION=%s\n" % os.path.abspath(DST_CONFIG_DIR))
+fh.write("export AGTK_INSTALL=%s\n" % (os.path.join( os.path.abspath(options.srcdir), "bin")))
+fh.write("export PYTHONPATH=%s\n" % os.path.abspath(options.srcdir))
+fh.write("export AGTK_LOCATION=%s\n" % os.path.abspath(options.destdir))
 fh.close()
 
 fh = open("env-init.csh", "w")
-fh.write("setenv AGTK_INSTALL %s\n" % (os.path.join( os.path.abspath(AG_BASE_DIR), "bin")))
-fh.write("setenv PYTHONPATH %s\n" % os.path.abspath(AG_BASE_DIR))
-fh.write("setenv AGTK_LOCATION %s\n" % os.path.abspath(DST_CONFIG_DIR))
+fh.write("setenv AGTK_INSTALL %s\n" % (os.path.join( os.path.abspath(options.srcdir), "bin")))
+fh.write("setenv PYTHONPATH %s\n" % os.path.abspath(options.srcdir))
+fh.write("setenv AGTK_LOCATION %s\n" % os.path.abspath(options.destdir))
 fh.close()
 
 fh = open("env-init.bat", "w")
-fh.write("set AGTK_INSTALL=%s\n" % (os.path.join( os.path.abspath(AG_BASE_DIR), "bin")))
-fh.write("set PYTHONPATH=%s\n" % os.path.abspath(AG_BASE_DIR))
-fh.write("set AGTK_LOCATION=%s\n" % os.path.abspath(DST_CONFIG_DIR))
+fh.write("set AGTK_INSTALL=%s\n" % (os.path.join( os.path.abspath(options.srcdir), "bin")))
+fh.write("set PYTHONPATH=%s\n" % os.path.abspath(options.srcdir))
+fh.write("set AGTK_LOCATION=%s\n" % os.path.abspath(options.destdir))
 fh.close()
 
 print "Wrote csh config to env-init.csh, bash config to env-init.sh"
