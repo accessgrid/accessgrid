@@ -6,14 +6,14 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.136 2003-09-25 22:04:27 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.137 2003-09-26 15:20:55 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Venue.py,v 1.136 2003-09-25 22:04:27 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.137 2003-09-26 15:20:55 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -31,6 +31,7 @@ from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid.hosting import AccessControl
 
 from AccessGrid import AppService
+from AccessGrid import DataStore
 from AccessGrid import NetService
 from AccessGrid.Types import Capability
 from AccessGrid.Descriptions import StreamDescription, CreateStreamDescription
@@ -291,13 +292,13 @@ class Venue(ServiceBase.ServiceBase):
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
     """
-    def __init__(self, server, name, description, roleManager, id=None):
+    def __init__(self, server, name, description, roleManager, 
+                 dataStoreLocation, id=None):
         """
         Venue constructor.
         """
 
         log.debug("------------ STARTING VENUE")
-        self.dataStoreProxy = None
         self.server = server
         self.name = name
         self.description = description
@@ -340,7 +341,7 @@ class Venue(ServiceBase.ServiceBase):
         self.clientsBeingRemoved = {}
         self.clientsBeingRemovedLock = ServerLock("clientRemove")
 
-        #self.dataStore = None
+        self.dataStore = None
         self.producerCapabilities = []
         self.consumerCapabilities = []
 
@@ -363,6 +364,38 @@ class Venue(ServiceBase.ServiceBase):
                                                   self.EventServiceClientExits)
 
 
+
+
+        #
+        # Create the directory to hold the venue's data.
+        #
+
+        log.debug("data store location: %s" % dataStoreLocation)
+        
+        if dataStoreLocation is None or not os.path.exists(dataStoreLocation):
+            log.warn("Creating venue: Data storage path %s not valid",
+                     dataStoreLocation)
+            self.dataStorePath = None
+        else:
+            self.dataStorePath = os.path.join(dataStoreLocation, self.uniqueId)
+            if not os.path.exists(self.dataStorePath):
+                try:
+                    os.mkdir(self.dataStorePath)
+                except OSError:
+                    log.exception("Could not create venueStoragePath.")
+                    self.dataStorePath = None
+
+
+        # Start the data store
+        if self.dataStorePath is None or not os.path.isdir(self.dataStorePath):
+            log.warn("Not starting datastore for venue: %s does not exist %s",
+                      self.uniqueId, self.dataStorePath)
+
+        self.dataStore = DataStore.DataStore(self, self.dataStorePath,
+                                             str(self.uniqueId),
+                                             self.server.dataTransferServer)
+        log.info("Have upload url: %s", self.dataStore.GetUploadDescriptor())
+        
        
         #self.StartApplications()
 
@@ -545,7 +578,7 @@ class Venue(ServiceBase.ServiceBase):
         """
       
         try:
-            dList = self.dataStoreProxy.GetDataDescriptions()
+            dList = self.dataStore.GetDataDescriptions()
         except:
             log.exception("Venue::AsVenueState: Failed to connect to datastore.")
             dList = []
@@ -585,19 +618,6 @@ class Venue(ServiceBase.ServiceBase):
             log.debug("Restarted app id=%s handle=%s",
                       appImpl.GetId(), appHandle)
 
-
-    def SetDataStore(self, dataStoreUrl):
-        """
-        Set the Data Store for the Venue. 
-
-        **Arguments:**
-
-            *dataStore* Url to data store service.
-
-        """
-        self.dataStoreProxy = Client.Handle(dataStoreUrl).GetProxy()
-              
-    SetDataStore.soap_export_as = "SetDataStore"
 
     def CleanupClients(self):
         """
@@ -752,9 +772,8 @@ class Venue(ServiceBase.ServiceBase):
         """
                
         try:
-            # Shut down data store in data service
-            dataService = Client.Handle(self.server.dataServiceUrl).GetProxy()
-            dataService.UnRegisterVenue(self.uniqueId)
+            # Shut down data store
+            self.dataStore.Shutdown()
         except:
             log.exception("Venue.ShutDown Could not shut down data store")
 
@@ -1851,38 +1870,6 @@ class Venue(ServiceBase.ServiceBase):
         
     UpdateClientProfile.soap_export_as = "UpdateClientProfile"
 
-    def GetDataStoreInformation(self):
-        """
-        Retrieve an upload descriptor and a URL to the Venue's DataStore 
-        
-        **Arguments:**
-        
-        **Raises:**
-        
-        **Returns:**
-        
-            *(upload description, url)* the upload descriptor to the Venue's DataStore
-            and the url to the DataStore SOAP service.
-            
-        """
-
-        if self.dataStoreProxy is None:
-            return ""
-        else:
-
-            descriptor = ""
-            location = ""
-            
-            try:
-                descriptor = self.dataStoreProxy.GetUploadDescriptor()
-                location = self.dataStoreProxy.GetLocation()
-            except:
-                log.exception("Venue.GetDataStoreInformation Could not get data store location")
-            
-            return descriptor, location
-        
-    GetDataStoreInformation.soap_export_as = "GetDataStoreInformation"
-
     def wsAddData(self, dataDescriptionStruct ):
         """
         Interface to Add data to the Venue.
@@ -2007,7 +1994,11 @@ class Venue(ServiceBase.ServiceBase):
         if(dataDescription.type is None or dataDescription.type == "None"):
             list = []
             list.append(dataDescription)
-            self.dataStoreProxy.RemoveFiles(list)
+            self.dataStore.RemoveFiles(list)
+            self.server.eventService.Distribute( self.uniqueId,
+                                                 Event( Event.REMOVE_DATA,
+                                                        self.uniqueId,
+                                                        dataDescription ) )
 
         else:
             log.info("Venue.RemoveData tried to remove non venue data. That should not happen")
@@ -2015,6 +2006,18 @@ class Venue(ServiceBase.ServiceBase):
         return dataDescription
 
 
+    def UpdateData(self, dataDescription):
+        """
+        Replace the current description for dataDescription.name with
+        this one.
+        """
+
+        log.debug("Distribute UPDATE_DATA event %s", dataDescription)
+
+        self.server.eventService.Distribute( self.uniqueId,
+                                      Event( Event.UPDATE_DATA,
+                                             self.uniqueId,
+                                             dataDescription ) )
     def GetUploadDescriptor(self):
         """
         Retrieve the upload descriptor from the Venue's datastore.
@@ -2033,9 +2036,9 @@ class Venue(ServiceBase.ServiceBase):
         """
         returnValue = ''
 
-        if self.dataStoreProxy is not None:
+        if self.dataStore is not None:
             try:
-                returnValue = self.dataStoreProxy.GetUploadDescriptor()
+                returnValue = self.dataStore.GetUploadDescriptor()
             except:
                 log.exception("Venue.GetUploadDescription Failed to connect to datastore")
                 

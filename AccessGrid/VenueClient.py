@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.118 2003-09-24 21:37:30 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.119 2003-09-26 15:20:55 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.118 2003-09-24 21:37:30 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.119 2003-09-26 15:20:55 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -33,7 +33,7 @@ from AccessGrid.TextClient import TextClient
 from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache
 from AccessGrid.Types import *
 from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
-from AccessGrid.Events import DisconnectEvent, ClientExitingEvent
+from AccessGrid.Events import DisconnectEvent, ClientExitingEvent, RemoveDataEvent
 from AccessGrid.scheduler import Scheduler
 from AccessGrid.hosting import AccessControl
 from AccessGrid import Platform
@@ -165,8 +165,7 @@ class VenueClient( ServiceBase):
                 # the client.
                 log.debug("VenueClient.Heartbeat: We do not have event subsribers, so exit venue.")
                 self.ExitVenue()
-            
-                                  
+
     def SetProfile(self, profile):
         self.profile = profile
         if(self.profile != None):
@@ -208,13 +207,13 @@ class VenueClient( ServiceBase):
                 self.personalDataStorePath = None
                 
         if self.personalDataStorePath:
-            self.dataStore = DataStore.DataStore(self.personalDataStorePath, self.personalDataStorePrefix)
-                   
             self.transferEngine = DataStore.GSIHTTPTransferServer(('',
                                                                    self.personalDataStorePort))
             self.transferEngine.run()
-            self.transferEngine.RegisterPrefix(self.personalDataStorePrefix, self)
-            self.dataStore.SetTransferEngine(self.transferEngine)
+            self.dataStore = DataStore.DataStore(self, self.personalDataStorePath, 
+                                                 self.personalDataStorePrefix,
+                                                 self.transferEngine)
+                   
 
             #
             # load personal data from file
@@ -456,6 +455,13 @@ class VenueClient( ServiceBase):
                 if callerDN != None and callerDN != self.leaderProfile.distinguishedName:
                     raise AuthorizationFailedError("Unauthorized leader tried to lead venue client")
 
+            try:
+                Client.Handle( URL ).IsValid()
+            except:
+                log.exception("No reachable venue at given venue URL")
+                raise EnterVenueException("No reachable venue at given venue URL")
+
+
             # Exit the venue you are currently in before entering a new venue
             if self.isInVenue:
                 self.ExitVenue()
@@ -598,13 +604,9 @@ class VenueClient( ServiceBase):
             self.heartbeatTask.start()
 
             #
-            # Send eventClient to personal dataStore and get
-            # personaldatastore information
+            # Get personaldatastore information
             #
-            self.dataStore.SetEventDistributor(self.eventClient,
-                                               self.venueState.uniqueId)
             self.dataStoreUploadUrl = self.venueProxy.GetUploadDescriptor()
-            #self.dataStoreUploadUrl,self.dataStoreLocation = Client.Handle( URL ).get_proxy().GetDataStoreInformation()
         
             #
             # Connect the venueclient to the text stuff, hook into UI later
@@ -628,8 +630,6 @@ class VenueClient( ServiceBase):
             for client in self.venueState.clients.values():
                 self.UpdateProfileCache(client)
 
-            self.dataStore.SetEventDistributor(self.eventClient, self.venueState.uniqueId)
-                 
             # Finally, set the flag that we are in a venue
             self.isInVenue = 1
 
@@ -674,6 +674,11 @@ class VenueClient( ServiceBase):
         
     EnterVenue.soap_export_as = "EnterVenue"
 
+    def GetEventChannelId(self):
+        return self.venueState.GetUniqueId()
+
+    def SendEvent(self,event):
+        self.eventClient.Send(event)
 
     def __CheckForInvalidClock(self):
         """
@@ -895,6 +900,19 @@ class VenueClient( ServiceBase):
         
     GetDataStoreInformation.soap_export_as = "GetDataStoreInformation"
 
+    def GetDataDescriptions(self):
+        '''
+        Retreive data in the DataStore as a list of DataDescriptions.
+        
+        **Returns**
+            *dataDescriptionList* A list of DataDescriptions representing data currently in the DataStore
+        '''
+        dataDescriptionList = self.dataStore.GetDataDescriptions()
+        
+        return dataDescriptionList
+
+    GetDataDescriptions.soap_export_as = "GetDataDescriptions"
+
     def RemoveData(self, data, ownerProfile):
         """
         This method removes a data from the venue. If the data is personal, this method
@@ -917,6 +935,7 @@ class VenueClient( ServiceBase):
         elif(data.type == self.profile.publicId):
             # My data
             self.dataStore.RemoveFiles(dataList)
+            self.eventClient.Send(RemoveDataEvent(self.GetEventChannelId(), data))
             
         else:
             # Ignore this until we have authorization in place.
@@ -958,12 +977,7 @@ class VenueClient( ServiceBase):
             else:
                 log.debug("bin.VenueClient.GetPersonalData: This is somebody else's data")
                 try:
-                    uploadDescriptor, dataStoreUrl = Client.Handle(url).get_proxy().GetDataStoreInformation()
-                except:
-                    raise GetDataStoreInfoError()
-                    
-                try:
-                    dataDescriptionList = Client.Handle(dataStoreUrl).get_proxy().GetDataDescriptions()
+                    dataDescriptionList = Client.Handle(url).get_proxy().GetDataDescriptions()
                 except:
                     raise GetDataDescriptionsError()
                 
@@ -1225,13 +1239,28 @@ class VenueClient( ServiceBase):
         # Set the streams to use the selected transport
         for stream in self.streamDescList:
             if stream.__dict__.has_key('networkLocations'):
+                found = 0
+                multicastLoc = None
                 for netloc in stream.networkLocations:
                     # use the stream if it's the right transport and
                     # if multicast OR the provider matches
                     if netloc.type == self.transport and (self.transport == 'multicast' or netloc.profile.name == self.provider.name):
                         log.debug("UpdateNodeService: Setting stream %s to %s",
                                   stream.id, self.transport)
-                        stream.location = netloc
+                        stream.location = netloc   
+                        found = 1
+                        
+                    # find the multicast network location
+                    if netloc.type == "multicast":
+                        multicastLoc = netloc
+
+                if not found:
+                    log.debug("UpdateNodeService: chosen transport not found for stream")
+                    log.debug("  - transport: %s", self.transport)
+                    log.debug("  - stream: %s %d", stream.location.host, stream.location.port)
+                    log.debug("  - defaulting to multicast")
+                    self.transport = "multicast"
+                    stream.location = multicastLoc
 
         # Send streams to the node service
         Client.Handle( self.nodeServiceUri ).GetProxy().SetStreams( self.streamDescList )

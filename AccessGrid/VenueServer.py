@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.104 2003-09-24 16:11:27 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.105 2003-09-26 15:20:55 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.104 2003-09-24 16:11:27 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.105 2003-09-26 15:20:55 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -32,10 +32,7 @@ from AccessGrid import Toolkit
 from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.hosting import AccessControl
 from AccessGrid.hosting.pyGlobus import ServiceBase
-from AccessGrid.DataStore import DataService
-
 from AccessGrid.hosting.pyGlobus import Client
-from AccessGrid import NetService
 
 from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
 from AccessGrid.Utilities import GetHostname, PathFromURL
@@ -111,7 +108,6 @@ class VenueServer(ServiceBase.ServiceBase):
     configDefaults = {
             "VenueServer.eventPort" : 8002,
             "VenueServer.textPort" : 8004,
-            "VenueServer.dataServiceUrl" : '',
             "VenueServer.dataPort" : 8006,
             "VenueServer.administrators" : '',
             "VenueServer.encryptAllMedia" : 1,
@@ -150,9 +146,10 @@ class VenueServer(ServiceBase.ServiceBase):
         self.venues = {}
         self.services = []
         self.configFile = configFile
+        self.dataStorageLocation = None
+        self.dataPort = 0
         self.eventPort = 0
         self.textPort = 0
-        self.internalDataService = None
                
         # Create a role manager so it can be used when loading persistent data. 
         self.roleManager = RoleManager()
@@ -184,17 +181,21 @@ class VenueServer(ServiceBase.ServiceBase):
         self.addressMask = int(self.addressMask)
         self.multicastAddressAllocator.SetAddressMask(self.addressMask)
 
-        if self.dataServiceUrl != '':
-            # Connect to a remote data service
+        # Check for and if necessary create the data store directory
+        if not os.path.exists(self.dataStorageLocation):
             try:
-                dataServiceProxy = Client.Handle(self.dataServiceUrl).GetProxy()
-            except:
-                log.info('Can not connect to remote data service at %s', self.dataServiceUrl)
-                self.dataServiceUrl = None
-                
-        else:
-            self.internalDataService = DataService(self.dataStorageLocation, self.dataPort, 8600)
-            self.dataServiceUrl = self.internalDataService.GetHandle()
+                os.mkdir(self.dataStorageLocation)
+            except OSError:
+                log.exception("Could not create VenueServer Data Store.")
+                self.dataStorageLocation = None
+
+        # Start Venue Server wide services
+        self.dataTransferServer = GSIHTTPTransferServer(('',
+                                                         int(self.dataPort)),
+                                                        numThreads = 4,
+                                                        sslCompat = 0)
+        self.dataTransferServer.run()
+
 
         self.eventService = EventService((self.hostname, int(self.eventPort)))
         self.eventService.start()
@@ -256,9 +257,9 @@ class VenueServer(ServiceBase.ServiceBase):
         self.config["VenueServer.administrators"] = ":".join(admin_role.GetSubjectListAsStrings())
 
         # Some simple output to advertise the location of the service
-        print("Server URL: %s \nEvent Port: %d Text Port: %d" %
+        print("Server URL: %s \nEvent Port: %d Text Port: %d Data Port: %d" %
               ( self.service.GetHandle(), int(self.eventPort),
-                int(self.textPort) ) )
+                int(self.textPort), int(self.dataPort) ) )
 
     def BindRoleManager(self):
         """ This method you to bind a role manager to our service object. """
@@ -341,7 +342,7 @@ class VenueServer(ServiceBase.ServiceBase):
                 desc = re.sub("<CR>", "\r", desc)
                 desc = re.sub("<LF>", "\n", desc)
                 
-                v = Venue(self, cp.get(sec, 'name'), desc, roleManager, id=sec)
+                v = Venue(self, cp.get(sec, 'name'), desc, roleManager, self.dataStorageLocation, id=sec)
                 # Make sure the venue Role Manager knows about the VenueServer role manager.
                 v.GetRoleManager().RegisterExternalRoleManager("VenueServer", self.roleManager)
                 v.encryptMedia = cp.getint(sec, 'encryptMedia')
@@ -421,25 +422,15 @@ class VenueServer(ServiceBase.ServiceBase):
                 else:
                     log.debug("No streams to load for venue %s", sec)
 
-                    
-                # Register with data service
-                privateId = v.AddNetService(NetService.DataStoreNetService.TYPE)
-                (eventServiceLocation, channelId) = v.GetEventServiceLocation()
-
-                dataStoreUrl = None
-                try:
-                    dataService = Client.Handle(self.dataServiceUrl).GetProxy()
-                    dataStoreUrl = dataService.RegisterVenue(privateId, eventServiceLocation, v.uniqueId)
-                    v.SetDataStore(dataStoreUrl)
-                except:
-                    log.exception("VenueServer Can not connect to data store %s"%self.dataServiceUrl)
-
                 # Deal with data if there is any
                 try:
                     dataList = cp.get(sec, 'data')
                 except ConfigParser.NoOptionError:
                     dataList = ""
 
+
+#FIXME
+                """
                 # Handle data lists found in venue persistence
                 # (data was persisted with venues in 2.0, so this is 
                 # for backward compatibility)
@@ -475,6 +466,8 @@ class VenueServer(ServiceBase.ServiceBase):
                                 Client.Handle(dataStoreUrl).GetProxy().SetDescription(f[0],dd)
 
                                 break
+
+                """
 
                 # Deal with apps if there are any
                 try:
@@ -1324,9 +1317,9 @@ class VenueServer(ServiceBase.ServiceBase):
         # Create a new Venue object pass it the server
         # Usually the venueDesc will not have Role information 
         #   and defaults will be used.
-      
+
         venue = Venue(self, venueDesc.name, venueDesc.description,
-                      venueDesc.roleManager)
+                      venueDesc.roleManager, self.dataStorageLocation )
 
         # Make sure new venue knows about server's external role manager.
         if "VenueServer" not in venue.GetRoleManager().GetExternalRoleManagerList():
@@ -1358,19 +1351,6 @@ class VenueServer(ServiceBase.ServiceBase):
         if(len(self.venues) == 1):
             self.SetDefaultVenue(venue.uri)
 
-            
-        # Register with the venue
-        privateId = venue.AddNetService(NetService.DataStoreNetService.TYPE)
-        (eventServiceLocation, channelId) = venue.GetEventServiceLocation()
-
-       
-        try:
-            dataService = Client.Handle(self.dataServiceUrl).GetProxy()
-            dataStoreUrl = dataService.RegisterVenue(privateId, eventServiceLocation, venue.uniqueId)
-            venue.SetDataStore(dataStoreUrl)
-        except:
-            log.exception("VenueServer Can not connect to data store %s"%self.dataServiceUrl)
-                                
         # return the URL to the new venue
         return venue.uri
 
@@ -1687,9 +1667,8 @@ class VenueServer(ServiceBase.ServiceBase):
         self.textService.Stop()
         log.info("                         event")
         self.eventService.Stop()
-        if self.internalDataService:
-            log.info("                         data service")
-            self.internalDataService.Shutdown()
+        log.info("                         data")
+        self.dataTransferServer.stop()
 
         self.hostingEnvironment.Stop()
         del self.hostingEnvironment
