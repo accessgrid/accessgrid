@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.44 2004-03-12 05:23:11 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.45 2004-03-12 21:19:04 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.44 2004-03-12 05:23:11 judson Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.45 2004-03-12 21:19:04 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -27,6 +27,8 @@ from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 
 log = Log.GetLogger(Log.ServiceManager)
+hdlr = Log.StreamHandler()
+Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
 class AGServiceManager:
     """
