@@ -108,7 +108,7 @@ static void rtp_event_handler(struct rtp *session, rtp_event *e)
 
       // Check if we are allowed to forward participant.
       if (p->ssrc == (uint32_t)allowed_ssrc) {
-	rtp_send_data(data->session, NULL, p->pt, p->m, p->cc, p->csrc, 
+	rtp_send_data(data->session, 0, p->pt, p->m, p->cc, p->csrc, 
 		      p->data, p->data_len, p->extn, p->extn_len, 
 		      p->extn_type);
       }
