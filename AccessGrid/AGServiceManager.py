@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.45 2004-03-12 21:19:04 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.46 2004-03-12 21:32:23 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.45 2004-03-12 21:19:04 judson Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.46 2004-03-12 21:32:23 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -131,7 +131,7 @@ class AGServiceManager:
             serviceDescription.resource = resource
 
         except:
-            log.exception("Service Manager failed to retrieve service implementation for %s", serviceDescription.name)
+            log.exception("Service Manager failed to retrieve service implementation for %s", servicePackageUri)
             raise Exception("AGServiceManager.AddService failed: " + str( sys.exc_value ) )
 
         #
