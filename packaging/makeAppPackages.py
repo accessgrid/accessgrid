@@ -39,9 +39,17 @@ print "THINGS: ", things
 
 for thing in things:
     os.chdir(os.path.join(inputDir, thing))
-    
-    Desc = thing + ".app"
-    ImplPy = thing + ".py"
+
+    appfilter = re.compile("*.app", re.IGNORECASE)
+    files = filter(appfilter.search, os.listdir(os.path.join(inputDir, thing)))
+
+    if len(files) > 1:
+        print "Ambiguous shared app: %s, more than one .app file (%s)" % (thing, files)
+        continue
+
+    else:
+        Desc = file[0]
+        ImplPy = Desc.split('.')[-1] + ".py"
 
     if not os.path.isfile(Desc):
         continue
