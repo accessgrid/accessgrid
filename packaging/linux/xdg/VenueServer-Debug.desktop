@@ -2,8 +2,8 @@
 Name=Venue Server (Debug)
 Comment=Run the venue server software in debug mode
 TryExec=VenueServer.py
-Exec=VenueServer.py -d
+Exec=/bin/sh -c "VenueServer.py -d; sleep 2"
 Icon=/usr/share/AccessGrid/ag.ico
-Terminal=1
+Terminal=true
 Type=Application
 Categories=X-Access-Grid-Services

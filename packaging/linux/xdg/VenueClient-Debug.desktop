@@ -2,7 +2,7 @@
 Name=Venue Client (Debug)
 Comment=Run the venue client software in debug mode
 TryExec=VenueClient.py
-Exec=VenueClient.py --personalNode -d
+Exec=/bin/sh -c "VenueClient.py --personalNode -d; sleep 2"
 Icon=/usr/share/AccessGrid/ag.ico
 Terminal=true
 Type=Application
