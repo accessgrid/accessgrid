@@ -40,7 +40,7 @@ log.debug("Test debug")
 log.warn("Test warn")
 """
 
-import os
+import tempfile
 import sys
 import logging
 import logging.handlers as handlers
@@ -429,7 +429,8 @@ class LevelHandler(logging.handlers.BufferingHandler):
 
 # 0. Initialize logging, storing in log data memory
 #defLogHandler = StreamHandler()
-defLogHandler = FileHandler(os.tempfil("AGErr"))
+(fd, fn) = tempfile.mkstemp("log", "AGErr")
+defLogHandler = FileHandler(fn)
 defLogHandler.setFormatter(GetFormatter())
 # This is set to 4096 to get around pythonw limitations!!!
 # http://mail.python.org/pipermail/python-list/2004-June/227268.html
