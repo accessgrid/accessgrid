@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.70 2004-05-12 21:03:14 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.71 2004-05-12 21:20:35 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.70 2004-05-12 21:03:14 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.71 2004-05-12 21:20:35 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -35,6 +35,7 @@ from AccessGrid.Descriptions import CreateCapability
 from AccessGrid.Descriptions import CreateResource
 from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.Descriptions import CreateStreamDescription
+from AccessGrid.Descriptions import CreateParameter
 
 from AccessGrid.AGServicePackageRepository import AGServicePackageRepository
 
@@ -789,7 +790,7 @@ class AGNodeServiceI(SOAPInterface):
         return self.impl.GetServiceManagers()
 
     def AddService( self, serviceDescStruct, serviceManagerUri, 
-                    resourceStruct, serviceConfig ):
+                    resourceStruct, serviceConfigStruct ):
         """
         Interface to add a service
 
@@ -812,6 +813,10 @@ class AGNodeServiceI(SOAPInterface):
             resource = CreateResource(resourceStruct)
         else:
             resource = None
+            
+        serviceConfig = []
+        for parm in serviceConfigStruct:
+            serviceConfig.append(CreateParameter(parm))
             
         return self.impl.AddService(serviceDescription, serviceManagerUri, 
                     resource, serviceConfig )
