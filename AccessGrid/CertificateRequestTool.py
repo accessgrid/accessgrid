@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.23 2003-10-13 14:55:30 judson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.24 2003-10-15 20:37:14 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -128,7 +128,7 @@ class CertificateRequestTool(wxWizard):
         """
         log = logging.getLogger("AG.CertificateRequestTool")
         log.setLevel(logging.DEBUG)
-        logFile="CertificateRequestTool.log"
+        logFile = os.path.join(Platform.GetUserConfigDir(), "CertificateRequestTool.log")
         hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
         logFormat = "%(asctime)s %(levelname)-5s %(message)s (%(filename)s)"
         hdlr.setFormatter(logging.Formatter(logFormat))
