@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.51 2003-02-24 19:56:10 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.52 2003-02-24 22:53:17 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,8 +29,9 @@ from AccessGrid.VenueClientUIClasses import SaveFileDialog, UploadFilesDialog
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Utilities import formatExceptionInfo, HaveValidProxy 
 from AccessGrid.UIUtilities import ErrorDialog
+from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN 
 
-from AccessGrid.TextClientUI import TextClientUI
+#from AccessGrid.TextClientUI import TextClientUI
 from AccessGrid import DataStore
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
  
@@ -54,7 +55,7 @@ class VenueClientUI(wxApp, VenueClient):
         self.client = None
         self.gotClient = false
         self.clientHandle = None
-        self.textClient = None
+    #    self.textClient = None
         self.venueUri = None
         return true
 
@@ -117,25 +118,6 @@ class VenueClientUI(wxApp, VenueClient):
         """
        
         self.SetProfile(profile)
-        
-        #if self.GoToNewVenue(self.profile.homeVenue):
-        #    self.frame.Show(true)
-        #    self.MainLoop()
-        
-        #else:
-        #    validVenue = false
-            
-        #    while not validVenue:
-        #        connectToVenueDialog = UrlDialogCombo(NULL, -1, "Please, enter venue or venue server URL", list = self.frame.myVenuesList)
-        #        if(connectToVenueDialog.ShowModal() == wxID_OK):
-        #            if self.GoToNewVenue(connectToVenueDialog.address.GetValue()):
-        #                self.frame.Show(true)
-        #                self.MainLoop()
-        #                notValidVenue = true
-        #          
-        #        else:
-        #            break
-
         self.frame.venueAddressBar.SetAddress(self.profile.homeVenue)
         self.frame.Show(true)
         self.MainLoop()
@@ -254,20 +236,8 @@ class VenueClientUI(wxApp, VenueClient):
             wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, exit)
 
         # Start text client
-        textLoc = tuple(self.venueState.GetTextLocation())
-        try:
-            self.textClient = TextClientUI(None, -1, "",
-                                           location = textLoc,
-                                           venueId = self.venueState.uniqueId)
-            self.textClient.Show(1)
-        except:
-#            wxCallAfter(ErrorDialog, self.frame, "Trying to open text client!")
-            ErrorDialog( self.frame, "Trying to open text client!")
-            print formatExceptionInfo()
-        #
-        # Find the upload location. HACK for now, this should come in
-        # thru the venue description.
-        #
+        wxCallAfter(self.frame.OpenChat)
+
         self.upload_url = self.client.GetUploadDescriptor()
 
     def ExitVenue(self):
@@ -276,11 +246,6 @@ class VenueClientUI(wxApp, VenueClient):
         This method calls the venue client method and then
         performs its own operations when the client exits a venue.
         """
-        try:
-            self.textClient.Close()
-        except:
-            (name, args, tb) = formatExceptionInfo()
-
         VenueClient.ExitVenue(self)
         
     def GoToNewVenue(self, uri):
@@ -331,8 +296,8 @@ class VenueClientUI(wxApp, VenueClient):
         This method performs all processing which needs to be
         done as the application is about to exit.
         """
-        if self.textClient != None:
-            wxCallAfter(self.textClient.Stop)
+        #if self.textClient != None:
+        #    wxCallAfter(self.textClient.Stop)
 
         # We need to test to see if we're in a Venue!?
         if self.venueUri != None:
@@ -469,8 +434,6 @@ class VenueClientUI(wxApp, VenueClient):
                                   wxOK  | wxICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
-            
-
 
     def UploadFiles(self, file_list):
         """
@@ -623,6 +586,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
         This method adds a service to the venue
         """
+        print '---------- add servic'
         self.client.AddService(service)
         
     def RemoveData(self, data):
