@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.101 2003-08-22 15:17:14 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.102 2003-08-22 16:32:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -727,8 +727,6 @@ class VenueClient( ServiceBase):
             log.debug("   sending client disconnect event.")
             self.textClient.Disconnect(self.venueState.uniqueId,
                                        self.privateId)
-            log.debug("   stop text client")
-            self.textClient.Stop()
             log.debug("   remove reference")
             self.textClient = None
         except:
