@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.4 2004-03-12 05:23:12 judson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.5 2004-03-12 22:21:32 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.4 2004-03-12 05:23:12 judson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.5 2004-03-12 22:21:32 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -45,6 +45,8 @@ import operator
 import cStringIO
 from AccessGrid import Log
 from AccessGrid import Utilities
+
+import ProxyGen
 
 log = Log.GetLogger(Log.CertificateRepository)
 
@@ -379,6 +381,8 @@ class CertificateRepository:
         # We try to load the key without a passphrase first.
         #
 
+        print "pkey file is ", keyFile
+        
         pkey = None
         if keyFile is not None:
             keyText = open(keyFile).read()
@@ -407,6 +411,23 @@ class CertificateRepository:
                     raise Exception, "This private key requires a passphrase"
 
                 passphrase = passphraseCB(0)
+
+                if passphrase is None:
+                    raise RepoBadPassphrase
+                
+                print "Got pp ", passphrase
+
+                if type(passphrase) == list:
+                    #
+                    # Convert from list-of-numbers to a string.
+                    #
+                    # Replace this when pyOpenSSL fixed to understand lists.
+                    #
+
+                    if type(passphrase[0]) == int:
+                        passphrase = "".join(map(lambda a: chr(a), passphrase))
+                    else:
+                        passphrase = "".join(passphrase)
 
                 try:
                     pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, keyText,
@@ -1228,9 +1249,12 @@ class Certificate:
         return self.cert.is_expired()
 
     def IsGlobusProxy(self):
-        name = self.GetSubject().get_name_components()
-        lastComp = name[-1]
-        return lastComp[0] == "CN" and lastComp[1] == "proxy"
+        #
+        # Delegate this to ProxyGen, which can talk to the underlying
+        # globus.
+        #
+
+        return ProxyGen.IsGlobusProxy(self)
 
     def WriteCertificate(self, file):
         """
