@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.52 2004-04-01 23:33:01 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.53 2004-04-05 20:34:38 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.52 2004-04-01 23:33:01 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.53 2004-04-05 20:34:38 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -22,7 +22,8 @@ from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.NetworkLocation import ProviderProfile
 from AccessGrid.Types import Capability
-from AccessGrid.Types import AGResource, ServiceConfiguration
+from AccessGrid.Types import AGResource, AGVideoResource
+from AccessGrid.Types import ServiceConfiguration
 
 from AccessGrid.ClientProfile import ClientProfile
 class ObjectDescription:
@@ -643,9 +644,15 @@ def CreateAGServiceDescription(svcDescStruct):
 
 
 def CreateResource(rscStruct):
-    rsc = AGResource(rscStruct.type,
-                     rscStruct.resource,
-                     rscStruct.role)
+    if rscStruct.type == 'video':
+        rsc = AGVideoResource(rscStruct.type,
+                              rscStruct.resource,
+                              rscStruct.role,
+                              rscStruct.portTypes)
+    else:
+        rsc = AGResource(rscStruct.type,
+                         rscStruct.resource,
+                         rscStruct.role)
     return rsc
 
 def CreateServiceConfiguration(serviceConfigStruct):
