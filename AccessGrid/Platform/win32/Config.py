@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.49 2004-09-09 17:09:37 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.50 2004-09-10 03:43:28 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.49 2004-09-09 17:09:37 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.50 2004-09-10 03:43:28 turam Exp $"
 
 import os
 import sys
@@ -991,25 +991,39 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
         deviceList = list()
         
         try:
-            # Get the name of the video key in the registry
-            key = "SYSTEM\\ControlSet001\\Control\\MediaResources\\msvideo"
-            videoKey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key)
+            vfwscanexe = os.path.join(AGTkConfig.instance().GetBinDir(),
+                                      'vfwscan.exe')
+            if os.path.exists(vfwscanexe):
+                log.info("Using vfwscan to get devices")
+                f = os.popen(vfwscanexe,'r')
+                deviceList = f.readlines()
+                f.close()
 
-            # Get the number of subkeys (devices) in the key
-            (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(videoKey)
+                deviceList = map( lambda d: d.strip(), deviceList)
+            else:
+                log.info("Retrieving devices from registry")
+                
+                # Get the name of the video key in the registry
+                key = "SYSTEM\\ControlSet001\\Control\\MediaResources\\msvideo"
+                videoKey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key)
 
-            for i in range(nSubKeys):
-                # Open the key
-                sVal = _winreg.EnumKey(videoKey, 0)
-                sKey = _winreg.OpenKey(videoKey, sVal)
-                (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(sKey)
+                # Get the number of subkeys (devices) in the key
+                (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(videoKey)
 
-                # Find the device name among the key's values
-                for i in range(0, nValues):
-                    (vName, vData, vType) = _winreg.EnumValue(sKey, i)
-                    if vName == "FriendlyName":
-                        deviceList.append(vData)
+                for i in range(nSubKeys):
+                    # Open the key
+                    sVal = _winreg.EnumKey(videoKey, 0)
+                    sKey = _winreg.OpenKey(videoKey, sVal)
+                    (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(sKey)
+
+                    # Find the device name among the key's values
+                    for i in range(0, nValues):
+                        (vName, vData, vType) = _winreg.EnumValue(sKey, i)
+                        if vName == "FriendlyName":
+                            deviceList.append(vData)
                     
+            log.info("GetResources: %s", deviceList)
+
         except Exception:
             log.exception("Exception getting video devices")
             raise
