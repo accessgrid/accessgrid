@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.8 2003-02-25 22:21:44 olson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.9 2003-03-13 21:37:39 leggett Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -44,7 +44,7 @@ def GetSystemConfigDir():
         configDir, type = _winreg.QueryValueEx(AG20,"ConfigPath")
 
     elif sys.platform == 'linux2': 
-        configDir = "/etc/AccessGrid/config"
+        configDir = "/etc/AccessGrid"
 
     return configDir
 
