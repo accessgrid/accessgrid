@@ -25,6 +25,9 @@ parser.add_option("--verbose", action="store_true", dest="verbose",
 parser.add_option("-p", "--pythonversion", dest="pyver",
                   metavar="PYTHONVERSION", default="2.3",
                   help="Which version of python to build the installer for.")
+parser.add_option("-n", dest="buildnum",
+                  metavar="BUILDNUM", 
+                  help="Build (or release) number")
 
 options, args = parser.parse_args()
 
@@ -33,6 +36,7 @@ BuildDir = options.builddir
 DestDir = options.destdir
 metainfo = options.metainfo
 version = options.version
+buildnum = options.buildnum
 
 
 print "In rpm/build_package.py"
@@ -67,7 +71,7 @@ os.system(cmd)
 print "** Building AccessGrid RPMs"
 # - build the targz file for the AG rpms
 os.chdir(DestDir)
-tar_dst_filename = "AccessGrid-%s.tar.gz" % (version,)
+tar_dst_filename = "AccessGrid-%s-%s.tar.gz" % (version,buildnum)
 
 rpm_srcdir = "/usr/src/redhat/SOURCES"
 tar_command = "tar czhf %s ." % ( os.path.join(rpm_srcdir, tar_dst_filename), )

@@ -5,19 +5,21 @@
 # Author:      Eric Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Version.py,v 1.6 2004-04-06 02:24:27 judson Exp $
+# RCS-ID:      $Id: Version.py,v 1.7 2004-05-25 22:29:04 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Version.py,v 1.6 2004-04-06 02:24:27 judson Exp $"
+__revision__ = "$Id: Version.py,v 1.7 2004-05-25 22:29:04 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Call GetVersion() to get AGTK version information.
 MAJOR_VERSION = 2
 MINOR_VERSION = 2
 POINT_VERSION = 0
+
+BUILD_NUMBER = 4
 
 class Version:
     """
@@ -114,12 +116,21 @@ def GetVersion():
     
     return ver
 
+def GetBuildNumber():
+    """ Use this to get the build number """
+    global BUILD_NUMBER
+    return BUILD_NUMBER
+
 #
 # yes, this is a hack, but it works :-)
 #
 
 if __name__ == "__main__":
-    print GetVersion()
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == '--build':
+        print GetBuildNumber()
+    else:
+        print GetVersion()
 
 
 
