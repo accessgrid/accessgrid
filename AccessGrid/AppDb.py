@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.16 2004-03-22 22:31:43 turam Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.17 2004-03-23 19:35:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ used by client software that wants to keep track of what AG specific
 tools are appropriate for specific data types. It also keeps track of
 how to invoke those tools.
 """
-__revision__ = "$Id: AppDb.py,v 1.16 2004-03-22 22:31:43 turam Exp $"
+__revision__ = "$Id: AppDb.py,v 1.17 2004-03-23 19:35:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -290,7 +290,12 @@ class AppDb:
         if name == None and extension == None and mimeType == None:
             return (0, "Not enough information to remove mime type.")
 
-        if name != None:
+        privName = None
+        nameStr = None
+        extStr = None
+        mimeStr = None
+
+        if name != None and self._GetPrivName(name) != None:
             namekey = self._GetPrivName(name)
             privName = self.defaultSeparator.join(["priv_names", namekey])
             name = self.AppDb[privName]
@@ -299,7 +304,7 @@ class AppDb:
             nameStr = self.defaultSeparator.join(["name", namekey])
             ext = self.GetExtForMimeType(mt)
             extStr = self.defaultSeparator.join(["extension", ext])
-        elif mimeType != None:
+        elif mimeType != None and self.GetNameForMimeType(mimeType) != None:
             mimeStr = self.defaultSeparator.join([mimeType, "None"])
             name = self.GetNameForMimeType(mimeType)
             namekey = self._GetPrivName(name)
@@ -307,7 +312,7 @@ class AppDb:
             nameStr = self.defaultSeparator.join(["name", namekey])
             ext = self.GetExtForMimeType(mimeType)
             extStr = self.defaultSeparator.join(["extension", ext])
-        elif extension != None:
+        elif extension != None and None != self.GetNameForMimeType(self.GetMimeType(extenstion=extension)):
             mimeType = self.GetMimeType(extension = extension)
             mimeStr = self.defaultSeparator.join([mimeType, "None"])
             name = self.GetNameForMimeType(mimeType)
@@ -317,17 +322,21 @@ class AppDb:
             ext = self.GetExtForMimeType(mimeType)
             extStr = self.defaultSeparator.join(["extension", extension])
 
-        if self.AppDb.has_key(privName):
-            del self.AppDb[privName]
+        if privName != None:
+            if self.AppDb.has_key(privName):
+                del self.AppDb[privName]
 
-        if self.AppDb.has_key(nameStr):
-            del self.AppDb[nameStr]
+        if nameStr != None:
+            if self.AppDb.has_key(nameStr):
+                del self.AppDb[nameStr]
 
-        if self.AppDb.has_key(extStr):
-            del self.AppDb[extStr]
+        if extStr != None:
+            if self.AppDb.has_key(extStr):
+                del self.AppDb[extStr]
 
-        if self.AppDb.has_key(mimeStr):
-            del self.AppDb[mimeStr]
+        if mimeStr != None:
+            if self.AppDb.has_key(mimeStr):
+                del self.AppDb[mimeStr]
 
         self._Flush()
 
