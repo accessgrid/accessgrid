@@ -2,12 +2,12 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.57 2004-04-07 19:03:33 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.58 2004-04-08 18:13:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 from distutils.core import setup
-from distutils.spawn import spawn
+from distutils.spawn import spawn, find_executable
 from distutils.sysconfig import get_config_vars
 
 import os
@@ -35,7 +35,7 @@ if dest is not None:
     if sys.platform == 'win32':
         ep = os.path.join(os.path.dirname(sys.executable), "Scripts", "epydoc.py")
     else:
-        ep = "epydoc.py"
+        ep = find_executable("epydoc")
 
     cmd = [sys.executable, ep, "--html", "-o",
            os.path.join("doc", "Developer"),
@@ -77,7 +77,6 @@ linux_scripts = [ r"bin/VenueServer.py",
                   r"bin/BridgeServer.py",
                   r"bin/certmgr.py",
                   r"bin/agpm.py",
-                  r"services/network/QuickBridge/QuickBridge",
                   ]
 
 linux_data = [('etc/init.d',
