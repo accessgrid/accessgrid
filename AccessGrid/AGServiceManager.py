@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.21 2003-04-23 19:33:13 olson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.22 2003-04-24 19:18:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -41,9 +41,9 @@ class AGServiceManager( ServiceBase ):
     to deliver them
     """
 
-    def __init__( self ):
-        self.name = None
-        self.description = None
+    def __init__( self, server ):
+        self.server = server
+
         self.resources = []
         # note: services dict is keyed on pid
         self.services = dict()
@@ -64,6 +64,13 @@ class AGServiceManager( ServiceBase ):
             self.__ReadConfigFile( configFile )
 
         self.__DiscoverResources()
+
+    def Shutdown(self):
+        log.info("Remove services")
+        self.RemoveServices()
+        log.info("Stop network interface")
+        self.server.stop()
+    Shutdown.soap_export_as = "Shutdown"
 
     ####################
     ## AUTHORIZATION methods
@@ -258,7 +265,7 @@ class AGServiceManager( ServiceBase ):
                 if service.uri == serviceToRemove.uri:
 
                     pid = key
-                    Client.Handle( service.uri ).get_proxy().Stop()
+                    Client.Handle( service.uri ).get_proxy().Shutdown()
 
                     #
                     # Kill service
