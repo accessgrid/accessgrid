@@ -8,6 +8,7 @@ from AccessGrid.VenueClientUIClasses import VenueClient
 from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog, ConnectToVenueDialog, WelcomeDialog
 import AccessGrid.ClientProfile
 from AccessGrid.Descriptions import DataDescription
+from AccessGrid.Events import Event
 
 class VenueClientUI(wxApp, VenueClient):
     """
@@ -49,8 +50,7 @@ class VenueClientUI(wxApp, VenueClient):
         self.profile = ClientProfile(self.profilePath)
                   
         if self.profile.IsDefault():  # not your profile
-            self.__openProfileDialog()
-
+            self.__openProfileDialog(self.profile)
         else:
             self.__startMainLoop(self.profile)
 
@@ -150,9 +150,38 @@ class VenueClientUI(wxApp, VenueClient):
         elif event.eventType == Event.UPDATE_VENUE_STATE:
             print 'update venue state'
 
-       # else:
-         #   print 'HEARTBEAT!'
+    def AddUserEvent(self, data):
+        self.frame.contentListPanel.Addparticipant(data)
+        pass
     
+    def RemoveUserEvent(self, data):
+        self.frame.contentListPanel.RemoveParticipant(data)
+        pass
+    
+    def ModifyUserEvent(self, data):
+        self.frame.contentListPanel.ModifyParticipant(data)
+        pass
+
+    def AddDataEvent(self, data):
+        self.frame.contentListPanel.AddData(data)
+        pass
+
+    def RemoveDataEvent(self, data):
+        self.frame.contentListPanel.RemoveData(data)
+        pass
+
+    def AddServiceEvent(self, data):
+        self.frame.contentListPanel.AddService(data)
+        pass
+
+    def RemoveServiceEvent(self, data):
+        self.frame.contentListPanel.RemoveService(data)
+        pass
+
+    def AddConnectionEvent(self, data):
+        self.frame.venueListPanel.list.AddVenueDoor(data)
+        pass
+
     def EnterVenue(self, URL):
         """
         Note: Overloaded from VenueClient
