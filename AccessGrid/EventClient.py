@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.3 2003-02-06 14:44:55 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.4 2003-02-14 20:43:32 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ from pyGlobus import ioc
 
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import HeartbeatEvent
-from AccessGrid.hosting.pyGlobus.utilities import CreateTCPAttrAlwaysAuth
+from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 class EventClient(Thread):
     """
     The Event Client maintains a client side connection to the Event

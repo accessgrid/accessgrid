@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClientUI.py,v 1.2 2003-02-10 14:47:37 judson Exp $
+# RCS-ID:      $Id: TextClientUI.py,v 1.3 2003-02-14 20:44:52 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ from threading import Thread
 
 from pyGlobus.io import GSITCPSocket
 from AccessGrid.Utilities import formatExceptionInfo
-from AccessGrid.hosting.pyGlobus.utilities import CreateTCPAttrAlwaysAuth
+from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 
 class SimpleTextProcessor:
     def __init__(self, socket, textOut):
