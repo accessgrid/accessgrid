@@ -6,13 +6,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.11 2003-03-14 16:49:25 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.12 2003-03-14 17:55:33 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 import sys
 import signal, time, os
 import logging, logging.handlers
+import getopt
 
 from AccessGrid.AGServiceManager import AGServiceManager
 from AccessGrid.hosting.pyGlobus.Server import Server
