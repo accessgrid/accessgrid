@@ -1,0 +1,26 @@
+
+
+certmgr.py tests
+
+
+- Move .AccessGrid/Config/certRepo away
+- Start certmgr.py
+    - May have imported identity certificates from .AccessGrid/certRepo or .globus;
+        otherwise, there will be no identity certificates
+    - Should have imported CA certificates from the system CA certificates directory
+    
+- Import an identity certificate
+    - The identity certificate should be shown by the 'list' command when in id mode
+- Set the default identity certificate ('default n')
+    - The specified certificate should be shown as 'default'
+- Delete the default identity certificate
+    - If another certificate is present in the repo, it will be designated 'default'
+- Import a CA certificate
+    - The CA certificate should be shown by the 'list' command when in ca mode
+
+- Import an identity certificate for which the CA certificate is not loaded
+    - Import should succeed, but emit a warning that the CA certificate could not be found
+
+
+
+
