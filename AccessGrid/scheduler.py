@@ -5,13 +5,13 @@
 # Author:      From the Python Cookbook
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: scheduler.py,v 1.8 2004-03-09 16:53:06 turam Exp $
+# RCS-ID:      $Id: scheduler.py,v 1.9 2004-06-01 20:02:35 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: scheduler.py,v 1.8 2004-03-09 16:53:06 turam Exp $"
+__revision__ = "$Id: scheduler.py,v 1.9 2004-06-01 20:02:35 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -77,12 +77,9 @@ class Scheduler:
 
     def StopAllTasks( self ):
         for task in self._tasks:
-            print 'Stopping task', task
             task.stop()
         for task in self._tasks:
-            print 'Waiting on task', task
             task.join()
-            print 'Stopped'
 
 if __name__ == '__main__':
 
