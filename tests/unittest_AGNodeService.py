@@ -14,7 +14,6 @@
 Unittest for AGNodeService
 
 No external connections are made for this level of test.
-Temporarily requires a kill (unix: cntrl-Z, "kill %") to stop the server and the test.
 
 Note that PyUnit (and JUnit as well) execute setUp() and tearDown() once for
 EACH test and make it difficult to setUp and tearDown something across multiple
@@ -46,7 +45,7 @@ class AGNodeServiceTestSuite(unittest.TestSuite):
     """A TestSuite that starts a service for use by AGNodeServiceTestCase."""
 
     # Signal handler to catch signals and shutdown
-    def SignalHandler(signum, frame, arg=None):
+    def SignalHandler(self, signum, frame):
         """
         SignalHandler catches signals and shuts down the VenueServer (and
         all of it's Venues. Then it stops the hostingEnvironment.
@@ -54,7 +53,7 @@ class AGNodeServiceTestSuite(unittest.TestSuite):
         print "SignalHandler"
         global running
         global server
-        server.stop()
+        server.Stop()
         # shut down the node service, saving config or whatever
         running = 0
 
@@ -102,11 +101,12 @@ class AGNodeServiceTestSuite(unittest.TestSuite):
 
         # Run the service
         server.run_in_thread()
-        # Keep the main thread busy so we can catch signals
-        #running = 1
-        #while running:
-            #time.sleep(1)
-        #server.stop() 
+        # A standard AGNodeService would do the following:
+            # Keep the main thread busy so we can catch signals
+            #running = 1
+            #while running:
+                #time.sleep(1)
+            #server.Stop() 
 
 
 class AGNodeServiceTestCase(unittest.TestCase):
@@ -161,10 +161,12 @@ class AGNodeServiceTestCase(unittest.TestCase):
     def testGetCapabilites(self):
         nodeService.GetCapabilities()
 
-    # Cleanup things set up in the test suite init above
-
+    # Cleanup things set up in the test suite init above.
+    #   Unittest suites don't have a proper way to cleanup things used 
+    #   in the entire suite.
     def testZEnd(self):
-        server.stop() 
+        nodeService.Stop()
+        server.Stop() 
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
