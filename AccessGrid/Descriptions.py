@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.61 2004-07-26 17:15:30 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.62 2004-07-27 06:40:59 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.61 2004-07-26 17:15:30 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.62 2004-07-27 06:40:59 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -536,7 +536,11 @@ def CreateClientProfile( clientProfileStruct ):
     clientProfile.publicId = clientProfileStruct.publicId
     clientProfile.techSupportInfo = clientProfileStruct.techSupportInfo
     clientProfile.venueClientURL = clientProfileStruct.venueClientURL
-    clientProfile.connectionId = clientProfileStruct.connectionId
+    if hasattr(clientProfileStruct,'connectionId'):
+        clientProfile.connectionId = clientProfileStruct.connectionId
+    else:
+        # Pre-2.3 venue client (legacy, remove when breaking compatability)
+        clientProfile.connectionId = clientProfileStruct.venueClientURL
 
     # convert capabilities from structtypes to objects
     capList = []
