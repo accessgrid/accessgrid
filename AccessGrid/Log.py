@@ -429,7 +429,7 @@ class LevelHandler(logging.handlers.BufferingHandler):
 
 # 0. Initialize logging, storing in log data memory
 #defLogHandler = StreamHandler()
-fn = tempfile.mktemp(".log", "AGErrors-")
+fn = tempfile.mktemp(".aglog")
 defLogHandler = FileHandler(fn)
 defLogHandler.setFormatter(GetFormatter())
 # This is set to 4096 to get around pythonw limitations!!!
