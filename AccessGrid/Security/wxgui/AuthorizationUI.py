@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.19 2004-06-02 03:27:11 judson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.20 2004-07-08 02:25:19 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.19 2004-06-02 03:27:11 judson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.20 2004-07-08 02:25:19 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -225,7 +225,7 @@ class AuthorizationUIPanel(wxPanel):
             self.tree.SortChildren(self.root)
 
         cookie = 1
-        firstItem, stupidCookie = self.tree.GetFirstChild(self.root, cookie)
+        firstItem, stupidCookie = self.tree.GetFirstChild(self.root)
         self.tree.SelectItem(firstItem)
 
         currentItem = self.tree.GetSelection()
@@ -906,7 +906,7 @@ class CreateActionDialog(wxDialog):
         box = wxBoxSizer(wxVERTICAL)
         sizer = wxBoxSizer(wxHORIZONTAL)
 
-        box.Add(10,10)
+        box.Add(wxSize(10,10))
         box.Add(self.infoText, 0, wxEXPAND|wxALL, 5)
         
         sizer = wxBoxSizer(wxHORIZONTAL)
@@ -958,7 +958,7 @@ class AddPersonDialog(wxDialog):
         box = wxBoxSizer(wxVERTICAL)
         sizer = wxBoxSizer(wxHORIZONTAL)
         
-        box.Add(5,5)
+        box.Add(wxSize(5,5))
         box.Add(self.infoText, 0, wxEXPAND|wxALL, 5)
         
         sizer = wxBoxSizer(wxHORIZONTAL)
@@ -1010,7 +1010,7 @@ class CreateRoleDialog(wxDialog):
         box = wxBoxSizer(wxVERTICAL)
         sizer = wxBoxSizer(wxHORIZONTAL)
 
-        box.Add(5,5)
+        box.Add(wxSize(5,5))
         box.Add(self.infoText, 0, wxEXPAND|wxALL, 5)
         
         sizer = wxBoxSizer(wxHORIZONTAL)
@@ -1141,13 +1141,13 @@ class AddPeopleDialog(wxDialog):
         box = wxBoxSizer(wxHORIZONTAL)
         sizer = wxBoxSizer(wxVERTICAL)
 
-        sizer.Add(10,10)
+        sizer.Add(wxSize(10,10))
         tempSizer =  wxBoxSizer(wxHORIZONTAL)
         tempSizer.Add(self.dnText)
         
         tempSizer.Add(wxStaticLine(self, -1), 1, wxALIGN_CENTER)
         sizer.Add(tempSizer, 0, wxEXPAND)
-        sizer.Add(10,10)
+        sizer.Add(wxSize(10,10))
 
         tempSizer = wxBoxSizer(wxHORIZONTAL)
         tempSizer.Add(wxStaticText(self, -1, "Name: "), 0, wxALIGN_CENTER)
@@ -1155,23 +1155,23 @@ class AddPeopleDialog(wxDialog):
         tempSizer.Add(self.addButton1, 0, wxALIGN_CENTER | wxLEFT, 5)
         sizer.Add(tempSizer, 0, wxEXPAND)
 
-        sizer.Add(10,10)
+        sizer.Add(wxSize(10,10))
         tempSizer =  wxBoxSizer(wxHORIZONTAL)
         tempSizer.Add(self.peopleText)
         tempSizer.Add(wxStaticLine(self, -1), 1, wxALIGN_CENTER)
         sizer.Add(tempSizer, 0, wxEXPAND)
-        sizer.Add(10,10)
+        sizer.Add(wxSize(10,10))
 
         tempSizer = wxBoxSizer(wxHORIZONTAL)
         tempSizer.Add(self.list, 1, wxEXPAND)
         tempSizer.Add(self.addButton2, 0, wxALIGN_CENTER | wxLEFT, 5)
         sizer.Add(tempSizer, 1, wxEXPAND)
             
-        sizer.Add(10,10)
+        sizer.Add(wxSize(10,10))
         box.Add(sizer, 3, wxEXPAND|wxLEFT|wxBOTTOM|wxTOP, 5)
         
         tempSizer = wxBoxSizer(wxVERTICAL)
-        tempSizer.Add(10,10)
+        tempSizer.Add(wxSize(10,10))
         tempSizer.Add(self.selections, 0, wxEXPAND|wxBOTTOM, 5)
         tempSizer.Add(self.addList, 1, wxEXPAND)
         tempSizer.Add(self.removeUserButton, 0, wxEXPAND|wxTOP, 5)
@@ -1185,7 +1185,7 @@ class AddPeopleDialog(wxDialog):
         tempSizer.Add(self.okButton, 0, wxCENTER | wxALL, 5)
         tempSizer.Add(self.cancelButton, 0, wxCENTER| wxALL, 5)
         mainSizer.Add(tempSizer, 0, wxALIGN_CENTER)
-        mainSizer.Add(10,10)
+        mainSizer.Add(wxSize(10,10))
         
         self.SetAutoLayout(1)
         self.SetSizer(mainSizer)
