@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.22 2004-03-19 17:41:05 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.23 2004-03-19 22:44:38 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.22 2004-03-19 17:41:05 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.23 2004-03-19 22:44:38 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -799,8 +799,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         # Open the dialog
         f = AuthorizationUIDialog(None, -1, "Manage Roles", log)
-        authUrl = venueUri +"Authorization"
-        f.ConnectToAuthManager(authUrl)
+        f.ConnectToAuthManager(venueUri)
         if f.ShowModal() == wxID_OK:
             f.panel.Apply()
         f.Destroy()
