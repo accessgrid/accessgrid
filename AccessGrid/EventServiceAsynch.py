@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.7 2003-05-28 13:25:45 olson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.8 2003-06-26 21:06:45 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -28,6 +28,8 @@ from pyGlobus import ioc, io
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth, CreateTCPAttrDefault
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import ConnectEvent, DisconnectEvent
+from AccessGrid.Events import Event, AddPersonalDataEvent
+from AccessGrid.Events import RemovePersonalDataEvent, UpdatePersonalDataEvent
 from AccessGrid.GUID import GUID
 
 log = logging.getLogger("AG.EventService")
@@ -278,7 +280,7 @@ class EventService:
             log.exception("Body of QueueHandler threw exception")
 
     def HandleEvent(self, event, conn, channel):
-
+       
         logEvent("Handle event type %s", event.eventType)
         if event.eventType == ConnectEvent.CONNECT:
             log.debug("EventConnection: Adding client %s to venue %s",
@@ -292,6 +294,37 @@ class EventService:
             if channel != None:
                 self.RemoveChannelConnection(channel, conn)
 
+        if event.eventType == AddPersonalDataEvent.ADD_PERSONAL_DATA:
+            log.debug("EventService:ConnectionHandlet: ADD_PERSONAL_DATA, venue id: %s, data: %s",
+                      event.venue, event.data)
+            
+            #if self.channel != None:
+            self.Distribute(event.venue,
+                            Event( Event.ADD_DATA,
+                                   event.venue,
+                                   event.data))
+
+        if event.eventType == RemovePersonalDataEvent.REMOVE_PERSONAL_DATA:
+            log.debug("EventService.ConnectionHandlet: REMOVE_PERSONAL_DATA, venue id: %s, data: %s",
+                      event.venue, event.data)
+            
+            #if self.channel != None:
+            self.Distribute(event.venue,
+                            Event( Event.REMOVE_DATA,
+                                   event.venue,
+                                   event.data))
+
+        if event.eventType == UpdatePersonalDataEvent.UPDATE_PERSONAL_DATA:
+            log.debug("EventService:ConnectionHandlet: ADD_PERSONAL_DATA, venue id: %s, data: %s",
+                      event.venue, event.data)
+            
+            #if self.channel != None:
+            self.Distribute(event.venue,
+                            Event( Event.UPDATE_DATA,
+                                   event.venue,
+                                   event.data))
+            
+             
         # Pass this event to the callback registered for this
         # event.eventType
         if self.callbacks.has_key((event.venue, event.eventType)):
@@ -342,6 +375,7 @@ class EventService:
         """
         Distribute sends the data to all connections.
         """
+
         logEvent("EventService: Sending Event %s", data)
 
         # This should be more generic
