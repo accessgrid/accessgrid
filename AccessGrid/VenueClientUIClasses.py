@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.45 2003-02-25 22:03:00 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.46 2003-02-25 22:25:34 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -332,6 +332,23 @@ class VenueClientFrame(wxFrame):
         setNodeUrlDialog.Destroy()
                 
     def OpenAddDataDialog(self, event = None):
+
+        #
+        # Verify that we have a valid upload URL. If we don't have one,
+        # then there isn't a data upload service available.
+        #
+
+        print "Tyring to upload to '%s'" % (self.app.upload_url)
+        if self.app.upload_url is None or self.app.upload_url == "":
+        
+            dlg = wxMessageDialog(self,
+                                 "Cannot add data: Venue does not have an operational\ndata storage server.",
+                                  "Cannot upload",
+                                  wxOK | wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+        
         dlg = wxFileDialog(self, "Choose a file:", style = wxOPEN | wxMULTIPLE)
 
         if dlg.ShowModal() == wxID_OK:
