@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.87 2003-09-04 21:52:39 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.88 2003-09-05 19:07:11 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1286,7 +1286,7 @@ class VenueParamFrame(wxDialog):
                                style = wxLB_SORT)
         if isinstance(self, ModifyVenueFrame):
             self.modifyRolesButton = wxButton(self, self.ID_MODIFY_ROLES, "Modify Roles",
-                                 size = wxSize(90, 10))
+                                              style = wxBU_EXACTFIT )
             self.rolesText = wxStaticText(self, -1, "Manage access to venue including which users are allowed to Enter and which users allowed to Administrate.")
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton =  wxButton(self, wxID_CANCEL, "Cancel")
@@ -1356,10 +1356,10 @@ class VenueParamFrame(wxDialog):
 
             #rolesSizer.Add(self.modifyRolesButton, 2, wxEXPAND | wxRIGHT , 14)
             #rolesSizer.Add(self.rolesText, 2, wxEXPAND|wxLEFT , 14)
-            roleFrameSizer = wxFlexGridSizer(1, 2, 5, 5)
-            roleFrameSizer.Add(self.modifyRolesButton, 0, wxEXPAND|wxRIGHT, 14)
-            roleFrameSizer.Add(self.rolesText, 2, wxEXPAND|wxLEFT , 14)
-            rolesSizer.Add(roleFrameSizer, 2, wxALL, 6)
+            roleFrameSizer = wxFlexGridSizer(1, 2, 10, 10)
+            roleFrameSizer.Add(self.modifyRolesButton, 0, wxEXPAND)
+            roleFrameSizer.Add(self.rolesText, 0, wxEXPAND)
+            rolesSizer.Add(roleFrameSizer, 0, wxALL, 5)
 
         buttonSizer =  wxBoxSizer(wxHORIZONTAL)
         buttonSizer.Add(20, 20, 1)
