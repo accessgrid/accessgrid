@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.24 2004-12-17 20:30:49 leggett Exp $
+ * $Id: QuickBridge.c,v 1.25 2004-12-17 20:35:01 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -600,10 +600,10 @@ void process_session( Session *head, fd_set *readfds, u_long myip )
 	      //printf("\nready to receive data on s->ucfd[%d]!\n",i);
 	      sourceaddrlen = sizeof( sourceaddr );
 	      memset( (char *)&sourceaddr,0, sourceaddrlen );
-	      debug( 9, "Before recvfrom( )\n" );
+	      //debug( 9, "Before recvfrom( )\n" );
 	      //nr = recvfrom( s->ucfd[i], recvbuf, MSGBUFSIZE, 0,
 	      //(struct sockaddr *)&sourceaddr, &sourceaddrlen );
-	      debug( 2, "\nreading from ucfd[%d], got data from %s:%d\n", i, inet_ntoa( sourceaddr.sin_addr ), ntohs( sourceaddr.sin_port ) );
+	      //debug( 2, "\nreading from ucfd[%d], got data from %s:%d\n", i, inet_ntoa( sourceaddr.sin_addr ), ntohs( sourceaddr.sin_port ) );
 	      if ( debugFlag > 0 )
 		{
 		  ucrecvfromcalls[i] = ucrecvfromcalls[i] + 1;
@@ -633,7 +633,7 @@ void process_session( Session *head, fd_set *readfds, u_long myip )
 			}
 		      else
 			{
-			  debug( 2, "did not find address in ucmemarray\n" );
+			  //debug( 2, "did not find address in ucmemarray\n" );
 			  /*add entry to array*/
 			  if ( ( s->numunicastmem < max_unicast_mem ) && 
 			       is_auth( sourceaddr.sin_addr.s_addr ) )
@@ -648,14 +648,14 @@ void process_session( Session *head, fd_set *readfds, u_long myip )
 			    }
 			  else
 			    {
-			      debug( 1, "Not auth or too many unicast members, can't add another!\n" );
+			      //debug( 1, "Not auth or too many unicast members, can't add another!\n" );
 			      do_send=0;
 			    }
 			}//end of else 
 		    }
 		  else
 		    {
-		      debug( 2, "Discarding packet from local host\n" );
+		      //debug( 2, "Discarding packet from local host\n" );
 		    } //end of updating ucmemarray values 
 		  
 		  /*now step thru array and send to all unicast members, except current source*/
@@ -668,20 +668,20 @@ void process_session( Session *head, fd_set *readfds, u_long myip )
 			  if ( remoteunicastaddress != sourceaddr.sin_addr.s_addr )
 			    {
 			      s->ucaddr[i].sin_addr.s_addr = remoteunicastaddress;
-			      debug( 2, "sending to %s\n", inet_ntoa( s->ucmemarray[stopcond].addr ) );
+			      //debug( 2, "sending to %s\n", inet_ntoa( s->ucmemarray[stopcond].addr ) );
 			      ns = sendto( s->ucfd[i], recvbuf, nr, 0, (struct sockaddr *)&s->ucaddr[i],
 					   sizeof( s->ucaddr[i] ) );
 			    }
 			  else
 			    {
-			      debug( 4, "not resending to ORIGINATOR! or array entry = 0\n" );
+			      //debug( 4, "not resending to ORIGINATOR! or array entry = 0\n" );
 			    }
 			}//end of for (stopcond=0;....
 		      
 		      if ( s->use_multicast && s->forward_unicast )
 			{
 			  /*sent to the multicast group*/
-			  debug( 2, "sending to %s\n", inet_ntoa( s->mcaddr[i].sin_addr ) );
+			  //debug( 2, "sending to %s\n", inet_ntoa( s->mcaddr[i].sin_addr ) );
 			  ns = sendto( s->mcfd[i], recvbuf, nr, 0, (struct sockaddr *)&s->mcaddr[i],
 				       sizeof( s->mcaddr[i] ) );
 			  if ( debugFlag > 0 )
