@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.17 2004-03-10 23:17:07 eolson Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.18 2004-03-18 14:07:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.17 2004-03-10 23:17:07 eolson Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.18 2004-03-18 14:07:27 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -39,6 +39,10 @@ def GetVenueDataStore(venueURL):
     vproxy = Client.Handle(venueURL).GetProxy()
 
     ds = vproxy.GetDataStoreInformation()
+    
+    # Catch failed return
+    if not ds:
+        return None
 
     upload = ds[0]
     store = ds[1]
