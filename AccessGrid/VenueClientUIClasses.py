@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.244 2003-08-22 19:52:28 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.245 2003-09-05 16:28:03 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -2239,10 +2239,17 @@ class TextClientPanel(wxPanel):
         to make it clear for users where to write messages.'''
        
         key = event.GetKeyCode()
-        self.TextInput.SetFocus()
+        ctrlKey = event.ControlDown()
+       
+        # If ctrl key is pressed, do not enter text
+        # automatically into the text output field.
+        if ctrlKey:
+            event.Skip()
+            return
         
-        if(44 < key < 255):
-            self.TextInput.AppendText(chr(key)) 
+        self.TextInput.SetFocus()
+        if(44 < key < 255) and not ctrlKey:
+            self.TextInput.AppendText(chr(key))
                                     
     def ClearTextWidgets(self):
         """
@@ -2276,6 +2283,7 @@ class TextClientPanel(wxPanel):
                   % self.TextInput.GetValue())
 
         text = self.TextInput.GetValue()
+     
         try:
             self.app.venueClient.textClient.Input(text)
             self.TextInput.Clear()
