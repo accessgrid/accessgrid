@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.46 2004-12-17 23:54:59 leggett Exp $
+ * $Id: QuickBridge.c,v 1.47 2004-12-18 00:14:41 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -1284,6 +1284,13 @@ int main( int argc, char *argv[] )
       tv.tv_sec = 0;
       tv.tv_usec = 0; 
       nfds = select( maxfds, &readfds, NULL, NULL, &tv );
+      for ( i = 0; i <= maxfds; i++ )
+	{
+	  if ( FD_ISSET( i, &readfds ) )
+	    {
+	      printf( "FD %d IS READY\n", i );
+	    }
+	}
 
       process_session( s, &readfds, myip );
 
