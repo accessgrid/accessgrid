@@ -1,6 +1,25 @@
 #
 # Certificate Request Service Client
 #
+
+
+"""
+Sample code using a proxy.
+
+xmlrpc_urllib_transport is available at
+http://starship.python.net/crew/jjkunce/python/xmlrpc_urllib_transport.py
+
+from xmlrpc_urllib_transport import UrllibTransport
+import xmlrpclib
+import os
+os.environ['HTTP_PROXY']= 'http://localhost:3128'
+
+transport = UrllibTransport()
+url = "http://www-unix.mcs.anl.gov/~judson/certReqServer.cgi"
+proxy = xmlrpclib.ServerProxy(url, transport = transport, verbose=1)
+
+"""
+
 from xmlrpclib import ServerProxy
 
 import logging
