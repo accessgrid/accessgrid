@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.103 2004-08-27 19:04:32 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.104 2004-09-03 16:16:47 judson Exp $
 ;
 
 ; Set externally
@@ -113,7 +113,6 @@ Source: SharedApplications\*.agpkg; DestDir: {app}\SharedApplications
 Source: install\agicons.exe; DestDir: {app}\install
 Source: install\msvcr70.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
 ; end system files
-Source: install\msvcr71.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
 
 [Icons]
 Name: {group}\View README; Filename: {app}\README.txt; Flags: createonlyiffileexists; Comment: Read the ReadMe.
@@ -142,6 +141,7 @@ Name: {group}\Uninstall the AGTk; Filename: {uninstallexe}; Comment: Uninstall t
 Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Access Grid Venue Client; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\VenueClient.py"" --personalNode"; WorkingDir: %APPDATA%\AccessGrid; Tasks: quicklaunchicon
 
 Name: {commondesktop}\Access Grid Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\VenueClient.py"" --personalNode"; IconFilename: {app}\install\agicons.exe; WorkingDir: %APPDATA%\AccessGrid; Tasks: desktopicon; Comment: Run the Venue Client!
+Name: {group}\Manage Certificates; Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe; Parameters: """{app}\bin\CertificateManager.py"""; WorkingDir: %APPDATA%\AccessGrid; IconFilename: {app}\install\agicons.exe
 
 [Registry]
 Root: HKLM; Subkey: SOFTWARE\{#AppName}; ValueType: none; Flags: uninsdeletekey
