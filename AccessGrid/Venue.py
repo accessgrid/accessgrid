@@ -6,14 +6,14 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.134 2003-09-17 23:46:08 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.135 2003-09-18 17:22:47 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Venue.py,v 1.134 2003-09-17 23:46:08 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.135 2003-09-18 17:22:47 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -690,8 +690,8 @@ class Venue(ServiceBase.ServiceBase):
         
         # log.debug("Got Client Heartbeat for %s at %s." % (privateId, now))
 
-        if event.venue is not self.uniqueId:
-            log.info("ClientHeartbeat: Received heartbeat for a different venue %s", event.venue)
+        if str(event.venue) != str(self.uniqueId):
+            log.info("ClientHeartbeat: %s received heartbeat for a different venue %s", self.uniqueId, event.venue)
        
         if self.clients.has_key(privateId):
             self.heartbeatLock.acquire()
