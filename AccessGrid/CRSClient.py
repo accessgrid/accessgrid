@@ -22,14 +22,13 @@ class CRSClient:
 
     def RequestCertificate(self, emailAddress, certReq):
         """
-        certificateToken = CRSClient.RequestCertificate(emailAddress, certificateRequest)
+        certificateToken = CRSClient.RequestCertificate(certificateRequest)
 
-            emailAddress is the email address to which a confirmation email will be sent.
             certificateRequest is the PEM-formatted certificate request.
 
             certificateToken is a unique token used to retrieve the certificate
                 when it's ready.
-                
+
         """
 
         log.debug("request certificate")
@@ -43,7 +42,7 @@ class CRSClient:
         # this should also remove the token from the directory so
         # we don't have to request status for this cert again
         #
-            
+
         return token
 
     def RetrieveCertificate(self, token):
@@ -67,24 +66,17 @@ class CRSClient:
 
 if __name__ == "__main__":
     req = """-----BEGIN CERTIFICATE REQUEST-----\nMIIB0TCCAToCADBgMRQwEgYDVQQKEwtBY2Nlc3MgR3JpZDEdMBsGA1UECxMUYWdk\nZXYtY2EubWNzLmFubC5nb3YxEjAQBgNVBAsTCW15LmRvbWFpbjEVMBMGA1UEAxMM\nUm9iZXJ0IE9sc29uMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC5lvEXiR5R\na6QOJJpRpOXz4R0DxnTVBOvTKvPijSmcc6IbNnNimS7oE/4U+IJtQblOGGdqRwLX\nHOmVY3nDQ60yhQ34ynME3Sr3ntAp6zFp5Ek7LgjOWyEP3hIVWh0Paa36FHn6nCvm\nDYz/1/Ns9c17zK/fWy+PYKMz8Vz0cs2O1wIDAQABoDIwMAYJKoZIhvcNAQkOMSMw\nITARBglghkgBhvhCAQEEBAMCBPAwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQQF\nAAOBgQB5HQyPLAR7XaD6S3Rsso/Q9cbPSxHeWJE4ehF5Ohp+0yAuBpc3L7/LlDkX\nvHri5JGXrGzJGf0/cqzzduh0S/ejMGksNiupsSPlHzkVhQNtAvD6A9OT+25wMyHI\nzSidh+6OJkSBLVb2tkEK5wd844MLE+m0lgTKbNX2C9UAZmfkKw==\n-----END CERTIFICATE REQUEST-----\n"""
+    email = "olson+catext@mcs.anl.gov"
 
-    import os, sys
+    import os
 
     w, r = os.popen4("openssl req -noout -text")
     w.write(req)
     w.close()
     print r.read()
 
-    w, r = os.popen4("openssl req -noout -subject")
-    w.write(req)
-    w.close()
-    print r.read()
-
-    email = "olson+catest@mcs.anl.gov"
     submitServerURL = "http://www-unix.mcs.anl.gov/~judson/certReqServer.cgi"
     print "Sending..."
     certificateClient = CRSClient(submitServerURL)
-    print "sent"
     requestId = certificateClient.RequestCertificate(email, req)
-    print "Got id ", requestId
-    
+    print "Sent, got id ", requestId
