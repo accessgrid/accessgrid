@@ -136,15 +136,15 @@ class VenueClientUI(wxApp, VenueClient):
 
         data = venueState.data.values()
         for d in data:
-            self.frame.venueListPanel.list.AddData(d)
+            self.frame.contentListPanel.AddData(d)
 
         nodes = venueState.nodes.values()
         for node in nodes:
-            self.frame.venueListPanel.list.AddNode(node)
+            self.frame.contentListPanel.AddNode(node)
 
         services = venueState.services.values()
         for service in services:
-            self.frame.venueListPanel.list.AddService(service)
+            self.frame.contentListPanel.AddService(service)
 
         exits = venueState.connections.values()
         for exit in exits:
