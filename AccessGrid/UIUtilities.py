@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.40 2003-10-20 18:51:19 judson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.41 2003-11-06 22:41:50 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.40 2003-10-20 18:51:19 judson Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.41 2003-11-06 22:41:50 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import isWindows, isLinux, isOSX
@@ -32,7 +32,7 @@ from AccessGrid import icons
 from AccessGrid.Utilities import SubmitBug, VENUE_CLIENT_LOG
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Version import GetVersion
-from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.Platform import GetUserConfigDir, GetSharedDocDir
 from AccessGrid.ClientProfile import ClientProfile
 
 class MessageDialog:
@@ -201,25 +201,55 @@ class ProgressDialog(wxProgressDialog):
         self.count = self.count + 1
 
 class AboutDialog(wxDialog):
-    version = str(GetVersion())
-        
+            
     def __init__(self, parent):
-        wxDialog.__init__(self, parent, -1, self.version)
-        self.panel = wxPanel(self, -1)
-                
+        wxDialog.__init__(self, parent, -1, str(GetVersion()) )
+
+        version = str(GetVersion())       
         bmp = icons.getAboutBitmap()
+        info = "Version: %s \nPlease visit www.accessgrid.org for more information" %version
+        self.ReadLicenseFile()
+        
+        self.SetSize(wxSize(bmp.GetWidth()+20, 400))
+                
+        self.panel = wxPanel(self, -1)
+        self.image = wxStaticBitmap(self.panel, -1, bmp,
+                                    size = wxSize(bmp.GetWidth(), bmp.GetHeight()))
+        self.text = wxStaticText(self.panel, -1, info)
+        self.license = wxTextCtrl(self.panel, -1, self.licenseText,
+                                  size = wxSize(bmp.GetWidth()-10, 100),
+                                  style = wxTE_MULTILINE)
+        self.okButton = wxButton(self.panel, wxID_OK, "Ok" )
+        self.panel.SetBackgroundColour("WHITE")
 
-        info = "Version: %s \nCopyright@2001-2003 by University of Chicago, \nAll rights reserved\nPlease visit www.accessgrid.org for more information" %self.version
-        self.SetSize(wxSize(bmp.GetWidth(),bmp.GetHeight()))
-        self.panel.SetSize(wxSize(bmp.GetWidth(),bmp.GetHeight()))
-        self.image = wxStaticBitmap(self.panel, -1, bmp, size = wxSize(bmp.GetWidth(), bmp.GetHeight()))
-        self.text = wxStaticText(self.panel, -1, info, pos = wxPoint(80,100))
-        self.Layout()
-                            
-    #def ProcessLeftDown(self, evt):
-    #    self.Hide()
-    #    return false
+        self.__layout()
 
+    def ReadLicenseFile(self):
+        '''
+        Read COPYING.txt file from shared document directory.
+        '''
+        path = os.path.join(GetSharedDocDir(), '../COPYING.txt')
+        licenseFile = file(os.path.normpath(path))
+        self.licenseText = licenseFile.read() 
+        licenseFile.close()
+               
+    def __layout(self):
+        '''
+        Handle UI layout.
+        '''
+        boxSizer = wxBoxSizer(wxVERTICAL)
+        boxSizer.Add(5,5)
+        boxSizer.Add(self.image, 0 ,wxALIGN_CENTER)
+        boxSizer.Add(self.text, 0 ,wxALIGN_LEFT | wxALL, 10)
+        boxSizer.Add(self.license, 1 ,wxALIGN_CENTER |wxEXPAND| wxLEFT | wxRIGHT| wxBOTTOM, 10)
+        boxSizer.Add(wxStaticLine(self.panel, -1), 0, wxALL | wxEXPAND, 10)
+        boxSizer.Add(self.okButton, 0, wxALIGN_CENTER|wxBOTTOM, 10)
+        
+        self.panel.SetAutoLayout(1)
+        self.panel.SetSizer(boxSizer)
+        self.panel.Layout()
+        
+        
 class AppSplash(wxSplashScreen):
     def __init__(self):
         bmp = icons.getAboutBitmap()
@@ -304,7 +334,7 @@ if __name__ == "__main__":
     app = wxPySimpleApp()
 
     #ProgressDialogTest()
-    #AboutDialogTest()
+    AboutDialogTest()
 
 
     # Test for bug report
@@ -313,8 +343,8 @@ if __name__ == "__main__":
     #b.Destroy()
 
     # Test for error dialog (includes bug report)
-    e = ErrorDialog(None, "test", "Enter Venue Error",
-                    style = wxOK  | wxICON_ERROR)
+    #e = ErrorDialog(None, "test", "Enter Venue Error",
+    #                style = wxOK  | wxICON_ERROR)
     
     
     app.MainLoop()
