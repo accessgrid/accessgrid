@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.12 2003-03-21 20:43:55 leggett Exp $
+# RCS-ID:      $Id: setup.py,v 1.13 2003-03-27 16:26:17 leggett Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -50,18 +50,18 @@ setup(
 
 # Data Files list -- these are things like the services, etc.
     data_files = [('etc/init.d',
-                   [r"etc/init.d/agns",
-                    r"etc/init.d/agsm"
+                   [r"packaging/linux/init.d/agns",
+                    r"packaging/linux/init.d/agsm"
                     ]
                    ),
                   ('etc/AccessGrid',
-                   [r"etc/AccessGrid/AGNodeService.cfg",
-                    r"etc/AccessGrid/AGServiceManager.cfg"
+                   [r"packaging/config/AGNodeService.cfg",
+                    r"packaging/config/AGServiceManager.cfg"
                     ]
                    ),
                   ('share/AccessGrid/nodeConfig',
-                   [r"etc/AccessGrid/defaultLinux",
-                    r"etc/AccessGrid/defaultWindows"
+                   [r"packaging/config/defaultLinux",
+                    r"packaging/config/defaultWindows"
                     ]
                    ),
                   ('var/lib/ag/local_services',
