@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.10 2003-03-24 20:26:12 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.11 2003-03-25 21:38:46 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -42,11 +42,11 @@ class ConnectionHandler(StreamRequestHandler):
         
         # loop getting data and handing it to the server
         self.running = 1
-        while(self.running == 1):
+        while(self.running):
             try:
                 # Get the size of the pickled event data
                 size = int(self.rfile.readline())
-
+                    
                 # Get the pickled event data
                 pdata = self.rfile.read(size, size)
                 
@@ -91,10 +91,11 @@ class ConnectionHandler(StreamRequestHandler):
             except:
                 log.debug("ConnectionHandler.handle Client disconnected!")
                 self.running = 0
-                # Find the connection and remove it
-                for v in self.server.connections.keys():
-                    if self in self.server.connections[v]:
-                        self.server.connections[v].remove(self)
+
+        # When we're all done, clean up this connection
+        for v in self.server.connections.keys():
+            if self in self.server.connections[v]:
+                self.server.connections[v].remove(self)
                     
 class EventService(ThreadingGSITCPSocketServer, Thread):
     """
@@ -110,19 +111,6 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         self.connections = {}
         ThreadingGSITCPSocketServer.__init__(self, server_address, 
                                                 RequestHandlerClass)
-
-
-#     def ConnectCallback(self, cv, handle, result):
-#         print "In connect callback"
-#         return
-
-#     def WriteCallback(self, cv, handle, result, buf, length):
-#         print "In write callback"
-#         return
-
-#     def ReadCallBack(self, cv, handle, result, buf, length):
-#         return
-
     def run(self):
         """
         run is defined to override the Thread.run method so Thread.start works.
@@ -184,6 +172,7 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
                     c.wfile.write(pdata)           
                 except:
                     log.exception("EventService.Distribute Client disconnected!")
+                    self.connections.remove(c)
             
     def GetLocation(self):
         """
