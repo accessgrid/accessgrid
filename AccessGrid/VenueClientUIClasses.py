@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.208 2003-05-28 21:59:47 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.209 2003-05-30 16:46:21 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -123,7 +123,8 @@ class VenueClientFrame(wxFrame):
         self.ag_url = "http://www.accessgrid.org/"
         self.flag_url = "http://www.mcs.anl.gov/fl/research/accessgrid"
         self.fl_url = "http://www.mcs.anl.gov/fl/"
-	self.app = app
+        self.manual_url = "http://www-unix.mcs.anl.gov/~lefvert/PROJECTS/ACCESS_GRID/MANUALS/VENUE_CLIENT/VenueClientManualFrame2-2.htm"
+        self.app = app
         self.parent = parent
         self.myVenuesFile = os.path.join(self.app.accessGridPath, "myVenues.txt" )
 	self.menubar = wxMenuBar()
@@ -438,6 +439,8 @@ class VenueClientFrame(wxFrame):
                  lambda event, url=self.flag_url: self.OpenHelpURL(url))
         EVT_MENU(self, self.ID_HELP_FL,
                  lambda event, url=self.fl_url: self.OpenHelpURL(url))
+        EVT_MENU(self, self.ID_HELP_MANUAL,
+                 lambda event, url=self.manual_url: self.OpenHelpURL(url))
 
         EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.Follow)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_JOIN, self.JoinApp)
@@ -479,7 +482,6 @@ class VenueClientFrame(wxFrame):
     def OpenHelpURL(self, url):
         """
         """
-
         needNewWindow = not self.help_open
         
         if needNewWindow:
@@ -489,12 +491,16 @@ class VenueClientFrame(wxFrame):
         self.browser.open(url, needNewWindow)
 
     def UnFollow(self, event):
+
         log.debug("VenueClientUIClasses: In UnFollow we are being lead by %s" %self.app.leaderProfile.name)
         if self.app.leaderProfile != None :
+           
             try:
+              
                 self.app.UnFollow(self.app.leaderProfile)
                 self.meMenu.Remove(self.ID_ME_UNFOLLOW)
             except:
+               
                 log.exception("VenueClientUIClasses: Can not stop following %s" %self.app.leaderProfile.name)
 
         else:
@@ -569,10 +575,12 @@ class VenueClientFrame(wxFrame):
 
         if(self.app.pendingLeader!=None):
             idPending = self.app.pendingLeader.publicId
+          
 
         if(self.app.leaderProfile!=None):
             idLeading = self.app.leaderProfile.publicId
-               
+          
+          
         if(clientProfile.publicId != idPending and clientProfile.publicId != idLeading):
             text = "Do you want "+clientProfile.name+" to follow you?"
             title = "Authorize follow"
