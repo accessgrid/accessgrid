@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.39 2004-06-02 03:27:01 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.40 2004-06-02 03:40:18 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.39 2004-06-02 03:27:01 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.40 2004-06-02 03:40:18 eolson Exp $"
 
 import os
 import mimetypes
@@ -716,38 +716,47 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
         bakMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.bak")
         tmpMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.tmp")
 
-        # Backup old files
-        shutil.copyfile(mimeFile, bakMimeFile)
-        shutil.copyfile(mailcapFile, bakMailcapFile)
+        if os.path.exists(mimeFile):
+            # Backup old file
+            shutil.copyfile(mimeFile, bakMimeFile)
 
-        # MimeType file: read line by line and remove the mimeType
-        fr = open(mimeFile, "r")
-        fw = open(tmpMimeFile, "w")
-        line = fr.readline()
-        while len(line) > 0:
-            if not line.startswith(mimeType):
-                fw.write(line)
+            # MimeType file: read line by line and remove the mimeType
+            fr = open(mimeFile, "r")
+            fw = open(tmpMimeFile, "w")
             line = fr.readline()
-        fr.close()
-        fw.close()
+            while len(line) > 0:
+                if not line.startswith(mimeType):
+                    fw.write(line)
+                line = fr.readline()
+            fr.close()
+            fw.close()
 
-        # Mailcap file: read line by line and remove mimeType
-        fr = open(mailcapFile, "r")
-        fw = open(tmpMailcapFile, "w")
-        line = fr.readline()
-        while len(line) > 0:
-            if not line.startswith(mimeType):
-                fw.write(line)
+            # Now copy tmp file into place
+            shutil.copyfile(tmpMimeFile, mimeFile)
+
+            # Remove tmp file
+            os.remove(tmpMimeFile)
+
+        if os.path.exists(mailcapFile):
+            # Backup old file
+            shutil.copyfile(mailcapFile, bakMailcapFile)
+
+            # Mailcap file: read line by line and remove mimeType
+            fr = open(mailcapFile, "r")
+            fw = open(tmpMailcapFile, "w")
             line = fr.readline()
-        fr.close()
-        fw.close()
+            while len(line) > 0:
+                if not line.startswith(mimeType):
+                    fw.write(line)
+                line = fr.readline()
+            fr.close()
+            fw.close()
 
-        # Now copy tmp files into place
-        shutil.copyfile(tmpMimeFile, mimeFile)
-        shutil.copyfile(tmpMailcapFile, mailcapFile)
-        # Remove tmp files
-        os.remove(tmpMimeFile)
-        os.remove(tmpMailcapFile)
+            # Now copy tmp file into place
+            shutil.copyfile(tmpMailcapFile, mailcapFile)
+
+            # Remove tmp file
+            os.remove(tmpMailcapFile)
         
     
     def RegisterMimeType(self, mimeType, extension, fileType, description,
