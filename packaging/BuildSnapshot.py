@@ -87,16 +87,14 @@ if options.metainfo is not None:
 else:
     metainfo = "Snapshot %s" % BuildTime
 
-dirtag = metainfo.replace(' ', '-')
-
 # Create the dest dir stamped with the same time stamp
-DestDir = os.path.join(SourceDir, "dist-%s" % dirtag)
+DestDir = os.path.join(SourceDir, "dist-%s" % BuildTime)
 
 # The directory we're building from
 if options.nocheckout:
     BuildDirName = "AccessGrid"
 else:
-    BuildDirName = "AccessGrid-%s" % dirtag
+    BuildDirName = "AccessGrid-%s" % BuildTime
 BuildDir = os.path.join(SourceDir,BuildDirName)
 
 #

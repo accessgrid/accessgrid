@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.72 2004-05-04 17:31:31 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.73 2004-05-05 02:06:09 judson Exp $
 ;
 
 ; Set externally
@@ -33,7 +33,7 @@ AppVerName={#AppVersion}-{#VersionInformation}
 AppVersion={#AppVersion}
 SourceDir={#BuildDir}
 OutputDir={#SourceDir}
-OutputBaseFilename={#AppNameShort}-{#AppVersion}-{#VersionInformation}-python-2.{#PythonSubVersion}
+OutputBaseFilename={#AppNameShort}-{#AppVersion}-{#VersionInformation}-Py-2.{#PythonSubVersion}
 
 AppName={#AppName}
 AppCopyright=Copyright © 2003-2004 Argonne National Laboratory / University of Chicago. All Rights Reserved.
