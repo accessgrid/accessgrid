@@ -57,7 +57,7 @@ class CertificateRequestTool(wxWizard):
         
         self.step = 1
         self.maxStep = 4
-        self.SetPageSize(wxSize(450, 80))
+        self.SetPageSize(wxSize(400, 80))
 
         self.page0 = IntroWindow(self, "Welcome to the Certificate Request Wizard", )
         self.page1 = SelectCertWindow(self, "Select Certificate Type")
