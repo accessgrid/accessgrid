@@ -3,12 +3,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.10 2004-03-18 14:17:05 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.11 2004-03-19 04:55:24 judson Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.10 2004-03-18 14:17:05 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.11 2004-03-19 04:55:24 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -1314,7 +1314,6 @@ class VenueClientApp:
     """
 
     def __init__(self):
-        
         # MyVenues
         self.myVenuesDict = dict()
         self.userConf = UserConfig.instance()
@@ -1339,7 +1338,7 @@ class VenueClientApp:
         """
         This method synchs the saved venues list to disk
         """
-        myVenuesFileH = open(self.myVenuesFile, 'w')
+        myVenuesFileH = open(self.myVenuesFile, 'aw')
         cPickle.dump(self.myVenuesDict, myVenuesFileH)
         myVenuesFileH.close()
         
@@ -1350,17 +1349,18 @@ class VenueClientApp:
         **Arguments:**
         
         """
-        try:
-            myVenuesFileH = open(self.myVenuesFile, 'r')
-        except:
-            myVenuesFileH = None
-            log.exception("Failed to load MyVenues file")
+        if os.path.exists(self.myVenuesFile):
+            try:
+                myVenuesFileH = open(self.myVenuesFile, 'r')
+            except:
+                myVenuesFileH = None
+                log.exception("Failed to load MyVenues file")
+            else:
+                self.myVenuesDict = cPickle.load(myVenuesFileH)
+                myVenuesFileH.close()
         else:
-            self.myVenuesDict = cPickle.load(myVenuesFileH)
+            log.debug("There is no personal venues file to load.")
 
-        if myVenuesFileH:
-            myVenuesFileH.close()
-        
     def AddToMyVenues(self,name,url):
         self.myVenuesDict[name] = url
         self.__SaveMyVenuesToFile()
