@@ -29,13 +29,13 @@ class CertificateManagerDialog(wxDialog):
         sizer.Add(self.notebook, 1, wxEXPAND)
 
         self.proxyBrowser = ProxyBrowser(self.notebook, -1, self.certMgr)
-        self.notebook.AddPage(self.proxyBrowser, "Proxy Certs")
+        self.notebook.AddPage(self.proxyBrowser, "Globus proxies")
 
         self.identBrowser = IdentityBrowser(self.notebook, -1, self.certMgr)
-        self.notebook.AddPage(self.identBrowser, "Identity Certs")
+        self.notebook.AddPage(self.identBrowser, "Certificates")
 
         self.caBrowser = CABrowser(self.notebook, -1, self.certMgr)
-        self.notebook.AddPage(self.caBrowser, "CA Certs")
+        self.notebook.AddPage(self.caBrowser, "Trusted CA Certificates")
 
         self.statusBrowser = CertificateStatusBrowser(self.notebook, -1, self.certMgr)
         self.notebook.AddPage(self.statusBrowser, "Certificate Requests")
