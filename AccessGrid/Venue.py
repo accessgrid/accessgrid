@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.84 2003-04-29 19:40:37 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.85 2003-04-29 19:43:31 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -452,6 +452,7 @@ class Venue(ServiceBase.ServiceBase):
                 dataDescription = CreateDataDescription(dataDescriptionStruct)
             except:
                 raise BadDataDescription
+
             return self.AddData(dataDescription)
 
     wsAddData.soap_export_as = "AddData"
@@ -484,13 +485,14 @@ class Venue(ServiceBase.ServiceBase):
 
     wsGetData.soap_export_as = "GetData"
 
-    def wsAddService(self, serviceDescriptionStruct ):
+    def wsAddService(self, servDescStruct ):
         if not self._authorize():
             raise NotAuthorized
         else:
-            print "-- creating service description from struct"
-            serviceDescription = CreateServiceDescription(serviceDescriptionStruct)
-            print "-- done with that"
+            try:
+                serviceDescription = CreateServiceDescription(servDescStruct)
+            except:
+                raise BadDataDescription
             return self.AddService(serviceDescription)
         
     wsAddService.soap_export_as = "AddService"

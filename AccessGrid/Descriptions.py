@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.28 2003-04-29 19:40:37 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.29 2003-04-29 19:43:31 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -65,7 +65,7 @@ class ObjectDescription:
     def GetURI(self):
         return self.uri
 
-class BadServiceDescription(Exception):
+class BadDataDescription(Exception):
     pass
 
 class DataDescription(ObjectDescription):
