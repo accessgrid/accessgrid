@@ -2,7 +2,7 @@
 # Name:        AuthorizationManager.py
 # Purpose:     The class that does the authorization work.
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.31 2004-09-10 15:33:24 judson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.32 2004-09-10 20:39:02 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.31 2004-09-10 15:33:24 judson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.32 2004-09-10 20:39:02 judson Exp $"
 
 # External Imports
 import os
@@ -349,7 +349,6 @@ class AuthorizationManager:
             raise RoleAlreadyPresent
 
         return role
-    
 
     def RemoveRole(self, role):
         """
