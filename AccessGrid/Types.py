@@ -3,13 +3,13 @@
 # Purpose:     
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.55 2004-09-08 00:14:10 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.56 2004-11-16 23:01:15 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.55 2004-09-08 00:14:10 turam Exp $"
+__revision__ = "$Id: Types.py,v 1.56 2004-11-16 23:01:15 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -219,19 +219,30 @@ class AGServicePackage:
             filenameList = zf.namelist()
             for filename in filenameList:
                 try:
-                    # create subdir if needed
+                    # create subdirs if needed
                     pathparts = string.split(filename, '/')
-                    if len(pathparts) == 2:
-                        temp_dir = os.path.join(path, pathparts[0])
+                    if len(pathparts) > 1:
+                        temp_dir = str(path)
+                        for i in range(len(pathparts) - 1):
+                            temp_dir = os.path.join(temp_dir, pathparts[i])
+                        #print "Creating dir if needed:", temp_dir
                         if not os.access(temp_dir, os.F_OK):
-                            os.mkdir(temp_dir)
+                            os.makedirs(temp_dir)
+
                     destfilename = os.path.join(path,filename)
 
                     # Extract the file
-                    filecontent = zf.read( filename )
-                    f = open( destfilename, "wb" )
-                    f.write( filecontent )
-                    f.close()
+                    # Treat directory names different than files.
+                    if os.path.isdir(destfilename):
+                        pass  # skip if dir already exists
+                    elif destfilename.endswith("/"):
+                        os.makedirs(destfilename) # create dir if needed
+                    else: # It's a file so extract it
+                        filecontent = zf.read( filename )
+                        f = open( destfilename, "wb" )
+                        f.write( filecontent )
+                        f.close()
+
                     #print "setting permissions on file", destfilename
                     
                     # Mark the file executable (indiscriminately)
