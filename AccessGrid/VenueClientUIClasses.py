@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.84 2003-03-20 20:24:48 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.85 2003-03-20 21:18:50 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -209,10 +209,10 @@ class VenueClientFrame(wxFrame):
                                            "Lead this node", wxITEM_CHECK)
         # until implemented
         self.nodeMenu.Enable(self.ID_NODE_LEAD, false)
-        self.nodeMenu.Enable(self.ID_NODE_FOLLOW, false)
+        #self.nodeMenu.Enable(self.ID_NODE_FOLLOW, false)
         self.nodeMenu.Enable(self.ID_NODE_MANAGE, false)
         self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
-        self.participantMenu.Enable(self.ID_PARTICIPANT_FOLLOW, false)
+        #self.participantMenu.Enable(self.ID_PARTICIPANT_FOLLOW, false)
         self.serviceMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
         self.serviceMenu.Enable(self.ID_VENUE_SERVICE_DELETE, false)
         self.meMenu.Enable(self.ID_ME_DATA, false) 
@@ -313,12 +313,26 @@ class VenueClientFrame(wxFrame):
 
 
     def Follow(self, event):
-        print 'follow'
-        #treeId = self.contentListPanel.tree.GetSelection()
-        #personToFollow = self.contentListPanel.tree.GetItemData(treeId).GetData()
-        #print personToFollow.venueClientURL
-        #self.Follow(personToFollow.venueClientURL)
+        #unfollow everybody else!!!
+        wxLogDebug("In Follow")
+        id = self.contentListPanel.tree.GetSelection()
+        personToFollow = self.contentListPanel.tree.GetItemData(id).GetData()
+        url = personToFollow.venueClientURL
+        wxLogDebug("Follow name:%s url:%s " %(personToFollow.name, url))
 
+        
+        #call his lead method with my profile
+        followHandle = Client.Handle(url)
+        if(followHandle.IsValid()):
+            wxLogDebug("the follow handler is valid")
+            try:
+                personToFollowProxy = self.clientHandle.get_proxy()
+                personToFollowProxy.Lead(self.profile)
+                wxLogDebug("You are following %s" %personToFollow.name)
+                
+            except:
+                wxLogError("Can not follow %s" %personToFollow.name)
+                
     def __fillTempHelp(self, x):
         if x == '\\':
             x = '/'
@@ -875,7 +889,7 @@ class ExitPanel(wxPanel):
 	#self.button.SetBitmapFocus(bitmapSelect)
 	#self.button.SetToolTipString(profile.description)
         #self.label = wxStaticText(self, -1, profile.name)
-        self.SetToolTipString("tool tip")
+        self.SetToolTipString(profile.description)
         self.label = wxTextCtrl(self, self.id, "", size= wxSize(30,10),
                                 style = wxNO_BORDER|wxTE_MULTILINE|wxTE_RICH)
         self.label.SetValue(profile.name)
@@ -1246,7 +1260,7 @@ class TextClientPanel(wxPanel):
         self.TextOutput = wxTextCtrl(self, wxNewId(), "",
                                      style= wxTE_MULTILINE|wxTE_READONLY)
         self.TextOutput.SetToolTipString("Text chat")
-        self.label = wxStaticText(self, -1, "Your message:", size = wxSize(80,20))
+        self.label = wxStaticText(self, -1, "Your message:", size = wxSize(95,20))
         self.display = wxButton(self, self.ID_BUTTON, "Display", style = wxBU_EXACTFIT)
         self.textInputId = wxNewId()
         self.TextInput = wxTextCtrl(self, self.textInputId, "",
