@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.200 2004-12-08 17:56:08 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.201 2004-12-10 14:25:20 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.200 2004-12-08 17:56:08 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.201 2004-12-10 14:25:20 judson Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -99,9 +99,9 @@ class VenueClient:
        
         self.defaultNodeServiceUri = self.preferences.GetPreference(Preferences.NODE_URL) 
         
-        if pnode == 0:
-            pnode = int(self.preferences.GetPreference(Preferences.STARTUP_MEDIA))
-            self.isPersonalNode = pnode
+#        if pnode == 0:
+#            pnode = int(self.preferences.GetPreference(Preferences.STARTUP_MEDIA))
+#            self.isPersonalNode = pnode
 
         self.capabilities = []
         self.nodeServiceUri = self.defaultNodeServiceUri
@@ -345,13 +345,14 @@ class VenueClient:
             if self.heartBeatTimer is not None:
                 self.heartBeatTimer.cancel()
 
-            self.nextTimeout = self.__venueProxy.UpdateLifetime(self.privateId,
-                                                       self.heartBeatTimeout)
+            self.nextTimeout = self.__venueProxy.UpdateLifetime(
+                self.privateId,self.heartBeatTimeout)
             log.debug("Next Heartbeat needed before: %d", self.nextTimeout)
             
             self.heartBeatTimer = threading.Timer(self.nextTimeout - 5.0,
-                                        self.Heartbeat)
+                                                  self.Heartbeat)
             self.heartBeatTimer.start()
+                
         except Exception, e:
             log.exception("Error sending heartbeat, reconnecting.")
             self.__Reconnect()
@@ -855,7 +856,10 @@ class VenueClient:
     def __ExitVenue(self):
         # Clear the list of personal data requests.
         self.requests = []
-       
+
+        # Cancel the heartbeat
+        self.heartBeatTimer.cancel()
+
         self.exitingLock.acquire()
         if self.exiting:
             log.debug("ExitVenue: already exiting, returning.")

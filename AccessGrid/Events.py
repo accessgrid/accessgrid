@@ -1,23 +1,21 @@
 #-----------------------------------------------------------------------------
 # Name:        Events.py
 # Purpose:     Event classes for event infrastructure.
-#
-# Author:      Thomas D. Uram, Ivan R. Judson
-#
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.25 2004-08-18 20:17:09 lefvert Exp $
+# RCS-ID:      $Id: Events.py,v 1.26 2004-12-10 14:25:20 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Events.py,v 1.25 2004-08-18 20:17:09 lefvert Exp $"
+__revision__ = "$Id: Events.py,v 1.26 2004-12-10 14:25:20 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
 import struct
 
 class Event:
+    ALL = "ALL"
     ENTER = "Enter"
     EXIT = "Exit"
     MODIFY_USER = "Modify user"

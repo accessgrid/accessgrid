@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.175 2004-12-08 17:56:08 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.176 2004-12-10 14:25:20 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.175 2004-12-08 17:56:08 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.176 2004-12-10 14:25:20 judson Exp $"
 
 # Standard stuff
 import sys
@@ -19,12 +19,7 @@ import string
 import threading
 import time
 import ConfigParser
-try:
-   # Needed for performance reporting thread.
-   # First available in python 2.3
-   import csv
-except:
-   pass
+import csv
 
 from AccessGrid.Toolkit import Service
 from AccessGrid import Log
@@ -48,8 +43,6 @@ from AccessGrid.GUID import GUID
 from AccessGrid.Venue import Venue, VenueI
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.DataStore import HTTPTransferServer
-#from AccessGrid.EventServiceAsynch import EventService
-#from AccessGrid.TextServiceAsynch import TextService
 from AccessGrid.scheduler import Scheduler
 
 from AccessGrid.Descriptions import ConnectionDescription, StreamDescription
@@ -108,8 +101,6 @@ class VenueServer(AuthorizationMixIn):
     """
 
     configDefaults = {
-            "VenueServer.eventPort" : 8002,
-            "VenueServer.textPort" : 8004,
             "VenueServer.dataPort" : 8006,
             "VenueServer.encryptAllMedia" : 1,
             "VenueServer.houseKeeperFrequency" : 300,
@@ -140,8 +131,6 @@ class VenueServer(AuthorizationMixIn):
 
         """
         # Set attributes
-        self.eventPort = -1
-        self.textPort = -1
         self.dataPort = -1
         self.encryptAllMedia = 1
         self.houseKeeperFrequency = 300
@@ -149,13 +138,13 @@ class VenueServer(AuthorizationMixIn):
         self.serverPrefix = "VenueServer"
         self.venuePathPrefix = "Venues"
         self.dataStorageLocation = "Data"
-        self.backupServer = ''
         self.addressAllocationMethod = MulticastAddressAllocator.RANDOM
         self.baseAddress = MulticastAddressAllocator.SDR_BASE_ADDRESS
         self.addressMask = MulticastAddressAllocator.SDR_MASK_SIZE
         self.performanceReportFile = ''
         self.performanceReportFrequency = 0
         self.authorizationPolicy = None
+        self.services = dict()
         
         # Basic variable initializations
         self.perfFile = None
@@ -217,7 +206,7 @@ class VenueServer(AuthorizationMixIn):
             self.configFile = classpath[-1]+'.cfg'
 
         # Read in and process a configuration
-        self.InitFromFile(LoadConfig(self.configFile, self.configDefaults))
+        self._InitFromFile(LoadConfig(self.configFile, self.configDefaults))
 
         # Initialize the multicast address allocator
         self.multicastAddressAllocator.SetAllocationMethod(
@@ -245,11 +234,6 @@ class VenueServer(AuthorizationMixIn):
                                                       int(self.dataPort)) )
         self.dataTransferServer.run()
 
-#        self.eventService = EventService((self.hostname, int(self.eventPort)))
-#        self.eventService.start()
-
-#        self.textService = TextService((self.hostname, int(self.textPort)))
-#        self.textService.start()
         # End of server wide services initialization
 
         # Try to open the persistent store for Venues. If we fail, we
@@ -364,9 +348,38 @@ class VenueServer(AuthorizationMixIn):
         
         
         # Some simple output to advertise the location of the service
-        print("Server: %s \nEvent Port: %d Text Port: %d Data Port: %d" %
-              ( venueServerUri, int(self.eventPort),
-                int(self.textPort), int(self.dataPort) ) )
+        print("Server: %s \nData Port: %d" % ( venueServerUri,
+                                               int(self.dataPort) ) )
+
+    def _InitFromFile(self, config):
+        """
+        """
+        self.config = config
+        for k in config.keys():
+            (section, option) = string.split(k, '.')
+          
+            if option == "authorizationPolicy" and config[k] is not None:
+               log.debug("Reading authorization policy.")
+               pol = config[k]
+               pol  = re.sub("<CRLF>", "\r\n", pol )
+               pol  = re.sub("<CR>", "\r", pol )
+               pol  = re.sub("<LF>", "\n", pol )
+               try:
+                  self.authManager.ImportPolicy(pol)
+                  setattr(self, option, pol)
+               except:
+                  log.exception("Invalid authorization policy import")
+                  setattr(self, option, config[k])
+            elif option == "administrators" and len(config[k]) > 0:
+               aName = Role.Administrators.GetName()
+
+               if self.authManager.FindRole(aName) is None:
+                  self.authManager.AddRole(Role.Administrators)
+
+               for a in config[k].split(':'):
+                  self.authManager.AddSubjectToRole(a, aName)
+            else:
+                setattr(self, option, config[k])
 
     def LoadPersistentVenues(self, filename):
         """This method loads venues from a persistent store.
@@ -524,37 +537,6 @@ class VenueServer(AuthorizationMixIn):
                         v.AddService(ServiceDescription(name, description, uri,
                                                         mimeType))
 
-
-    def InitFromFile(self, config):
-        """
-        """
-        self.config = config
-        for k in config.keys():
-            (section, option) = string.split(k, '.')
-          
-            if option == "authorizationPolicy" and config[k] is not None:
-               log.debug("Reading authorization policy.")
-               pol = config[k]
-               pol  = re.sub("<CRLF>", "\r\n", pol )
-               pol  = re.sub("<CR>", "\r", pol )
-               pol  = re.sub("<LF>", "\n", pol )
-               try:
-                  self.authManager.ImportPolicy(pol)
-                  setattr(self, option, pol)
-               except:
-                  log.exception("Invalid authorization policy import")
-                  setattr(self, option, config[k])
-            elif option == "administrators" and len(config[k]) > 0:
-               aName = Role.Administrators.GetName()
-
-               if self.authManager.FindRole(aName) is None:
-                  self.authManager.AddRole(Role.Administrators)
-
-               for a in config[k].split(':'):
-                  self.authManager.AddSubjectToRole(a, aName)
-            else:
-                setattr(self, option, config[k])
-
     def MakeVenueURL(self, uniqueId):
         """
         Helper method to make a venue URI from a uniqueId.
@@ -603,17 +585,9 @@ class VenueServer(AuthorizationMixIn):
         
         # This blocks anymore checkpoints from happening
         log.info("Shutting down services...")
-        log.info("                         text")
-#         try:
-#             self.textService.Stop()
-#         except IOError, e:
-#             log.exception("Exception shutting down text.", e)
-#         log.info("                         event")
-#         try:
-#             self.eventService.Stop()
-#         except IOError, e:
-#             log.exception("Exception shutting down event.", e)
-#         log.info("                         data")
+
+        # Send shutting down event to signal to services
+        
         try:
             self.dataTransferServer.stop()
         except IOError, e:
@@ -674,8 +648,6 @@ class VenueServer(AuthorizationMixIn):
             log.exception("Exception Checkpointing!")
             return 0
 
-#	del venuesToDump
-
         log.info("Checkpointing completed at: %s", time.asctime())
 
         # Get authorization policy.
@@ -684,11 +656,6 @@ class VenueServer(AuthorizationMixIn):
         pol  = re.sub("\r", "<CR>", pol )
         pol  = re.sub("\n", "<LF>", pol )
         self.config["VenueServer.authorizationPolicy"] = pol
-        
-        # For now I'm removing the administrators key,
-        # since we're moving away from it
-        if self.config.has_key("VenueServer.administrators"):
-           del self.config["VenueServer.administrators"]
         
         # Finally we save the current config
         SaveConfig(self.configFile, self.config)
@@ -700,8 +667,7 @@ class VenueServer(AuthorizationMixIn):
     def AddVenue(self, venueDesc, authPolicy = None):
         """
         The AddVenue method takes a venue description and creates a new
-        Venue Object, complete with a event service, then makes it
-        available from this Venue Server.
+        Venue Object, then makes it available from this Venue Server.
         """
         # Create a new Venue object pass it the server
         # Usually the venueDesc will not have Role information 
@@ -986,27 +952,6 @@ class VenueServer(AuthorizationMixIn):
         for v in self.venues:
             v.RegenerateEncryptionKeys()
             
-    def SetBackupServer(self, server):
-        """
-        Turn on or off server wide default for venue media encryption.
-        """
-        # BEGIN Critical Section
-        self.simpleLock.acquire()
-
-        self.backupServer = server
-        self.config["backupServer"] = server
-
-        # END Critical Section
-        self.simpleLock.release()
-
-        return self.backupServer
-
-    def GetBackupServer(self):
-        """
-        Get the server wide default for venue media encryption.
-        """
-        return self.backupServer
-
     def SetAddressAllocationMethod(self,  addressAllocationMethod):
         """
         Set the method used for multicast address allocation:
@@ -1082,7 +1027,58 @@ class VenueServer(AuthorizationMixIn):
         for thrd in threading.enumerate():
             log.debug("Thread %s", thrd)
 
+    def RegisterService(self, serviceDescription):
+        """
+        Registers a service with the venue.
+        
+        @Param serviceDescription: A service description.
+        """
+        serviceDescription.SetConnectionId(str(GUID()))
+        serviceDescription.SetPrivateId(str(GUID()))
+        
+        log.debug("Register service %s", serviceDescription)
 
+        self.services[serviceDescription.GetPrivateId()] = serviceDescription
+
+        return serviceDescription.GetPrivateId()
+    
+    def UnregisterService(self, serviceDescription):
+        """
+        Removes a service from the venue
+        
+        @Param serviceDescription: A network service description.
+        """
+        privId = serviceDescription.GetPrivateId()
+        if self.services.has_key(privId):
+            i_sd = self.services[privId]
+            if serviceDescription == i_sd:
+                del self.services[privId]
+                # Send remove event
+        else:
+            return -1
+
+    def Subscribe(self, privId, event):
+       if self.eventSubscriptions.has_key(privId):
+          if not event in self.eventSubscriptions[privId]:
+             self.eventSubscriptions[privId].append(event)
+          else:
+             return -2
+       else:
+          return -1
+             
+    def Unsubscribe(self, privId, event):
+       if self.eventSubscriptions.has_key(privId):
+          if not event in self.eventSubscriptions[privId]:
+             return -2
+          else:
+             self.eventSubscriptions[privId].remove(event)
+       else:
+          return -1
+
+    def DistributeEvent(self, event, channel, connid = None):
+        log.debug("Distributing Event: %s on Channel: %s for Conn: %s", event,
+                  channel, connid)
+    
 class VenueServerI(SOAPInterface, AuthorizationIMixIn):
     """
     This is the SOAP interface to the venue server.
@@ -1452,41 +1448,6 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
             log.exception("Failed to regenerate all encryption keys.")
             raise
             
-    def SetBackupServer(self, server):
-        """
-        Interface for setting a fallback venue server.
-
-        **Arguments:**
-            *server* The string hostname of the server.
-        **Raises:**
-        **Returns:**
-            *server* the return value from SetBackupServer
-        """
-        try:
-            returnValue = self.impl.SetBackupServer(server)
-
-            return returnValue
-        except:
-            log.exception("SetBackupServer: exception")
-            raise
-    
-    def GetBackupServer(self):
-        """
-        Interface to retrieve the value of the backup server name.
-
-        **Arguments:**
-        **Raises:**
-        **Returns:**
-            the string hostname of the back up server or "".
-        """
-        try:
-            returnValue = self.impl.GetBackupServer()
-
-            return returnValue
-        except:
-            log.exception("GetBackupServer: exception")
-            raise
-
     def SetBaseAddress(self, address):
         """
         Interface for setting the base address for the allocation pool.
@@ -1561,6 +1522,29 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         """
         self.impl.DumpDebugInfo(flag)
 
+    def RegisterService(self, serviceDescription):
+        """
+        Register a service with the venue server, this provides server wide
+        functionality. The two we're considering atm are event and text.
+        """
+        sd = CreateServiceDescription(serviceDescription)
+        return self.impl.RegisterService(sd)
+       
+    def UnregisterService(self, serviceDescription):
+        """
+        Unregister a service with the venue server, this provides server wide
+        functionality. The two we're considering atm are event and text.
+        """
+        sd = CreateServiceDescription(serviceDescription)
+        return self.impl.UnregisterService(sd)
+
+    def Subscribe(self, privId, event):
+       evt = CreateEvent(event)
+       return self.impl.Subscribe(privId, evt)
+    
+    def Unsubscribe(self, privId, event):
+       evt = CreateEvent(event)
+       return self.impl.Unsubscribe(privId, evt)
 
 class VenueServerIW(SOAPIWrapper, AuthorizationIWMixIn):
     """
@@ -1625,12 +1609,6 @@ class VenueServerIW(SOAPIWrapper, AuthorizationIWMixIn):
     def RegenerateEncryptionKeys(self):
         return self.proxy.RegenerateEncryptionKeys()
     
-    def SetBackupServer(self, serverURL):
-        return self.proxy.SetBackupServer(serverURL)
-
-    def GetBackupServer(self):
-        return self.proxy.GetBackupServer()
-
     def SetBaseAddress(self, address):
         return self.proxy.SetBaseAddress(address)
 
@@ -1643,4 +1621,16 @@ class VenueServerIW(SOAPIWrapper, AuthorizationIWMixIn):
     def GetAddressMask(self):
         return self.proxy.GetAddressMask()
     
+    def RegisterService(self, serviceDescription):
+       return self.proxy.RegisterService(serviceDescription)
+       
+    def UnregisterService(self, serviceDescription):
+       return self.proxy.UnregisterService(serviceDescription)
+    
+    def Subscribe(self, privId, event):
+       return self.proxy.Subscribe(privId, evt)
+    
+    def Unsubscribe(self, privId, event):
+       evt = CreateEvent(event)
+       return self.proxy.Unsubscribe(privId, evt)
     

@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.79 2004-12-08 16:48:06 judson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.80 2004-12-10 14:25:20 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.79 2004-12-08 16:48:06 judson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.80 2004-12-10 14:25:20 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -298,12 +298,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # Retrieve the cert mgr GUI from the application.
         #
 
-        self.cmui = None
-        try:
-            mgr = app.GetCertificateManager()
-        except:
-            log.exception("VenueClientFrame.__SetMenubar: Cannot retrieve \
-                           certificate mgr user interface, continuing")
+#        self.cmui = None
+#        try:
+#            mgr = app.GetCertificateManager()
+#        except:
+#            log.exception("VenueClientFrame.__SetMenubar: Cannot retrieve \
+#                           certificate mgr user interface, continuing")
 
 #        self.cmui = CertificateManagerWXGUI()
 #        self.cmui.SetCertificateManager(mgr)
