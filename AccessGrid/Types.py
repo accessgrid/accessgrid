@@ -3,13 +3,13 @@
 # Purpose:     
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.51 2004-05-12 21:02:27 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.52 2004-07-26 16:50:38 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.51 2004-05-12 21:02:27 turam Exp $"
+__revision__ = "$Id: Types.py,v 1.52 2004-07-26 16:50:38 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -17,6 +17,7 @@ import zipfile
 import sys
 
 from AccessGrid import Log
+from AccessGrid.ServiceCapability import ServiceCapability
 log = Log.GetLogger(Log.Types)
 
 class AGResource:
@@ -54,7 +55,8 @@ class Capability:
         self.role = role
         self.type = type
         self.parms = dict()
-
+        self.xml = ''
+        
     def __repr__(self):
         string = "%s %s" % (self.role, self.type)
         return string
@@ -127,7 +129,7 @@ class AGServicePackage:
         import string
         import StringIO
         from AccessGrid.Descriptions import AGServiceDescription
-        
+
         if self.serviceDesc:
             return self.serviceDesc
 
@@ -151,19 +153,25 @@ class AGServicePackage:
             # read config from string io
             c = ConfigParser.ConfigParser()
             c.readfp( sp )
-
-            #
+            
             # read sections and massage into data structure
-            #
             capabilities = []
             capabilitySectionsString = c.get( "ServiceDescription", "capabilities" )
             capabilitySections = string.split( capabilitySectionsString, ' ' )
+            cap = None
             for section in capabilitySections:
                 cap = Capability( c.get( section, "role" ), c.get( section, "type" ) )
-                capabilities.append( cap )
+                if c.has_option(section, "xml"):
+                    # new capability
+                    newCap = ServiceCapability.CreateServiceCapability(c.get(section, "xml"))
+                    cap.xml = newCap.ToXML()
+                    
+                capabilities.append(cap)
+                            
             version = 0
             if c.has_option("ServiceDescription","version"):
                 version = c.getfloat("ServiceDescription","version")
+            
             serviceDescription = AGServiceDescription( c.get( "ServiceDescription", "name" ),
                                                      c.get( "ServiceDescription", "description" ),
                                                      None,
@@ -179,7 +187,7 @@ class AGServicePackage:
             raise InvalidServiceDescription(sys.exc_value)
             
         self.serviceDesc = serviceDescription
-            
+                    
         return serviceDescription
         
     def SetServiceDescription(self,serviceDesc):
