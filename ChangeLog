@@ -1,3 +1,144 @@
+2003-10-21  judson
+	* packaging/windows/agtk.iss 1.29:
+		Updated to need less external stuff and use more internal stuff
+		 Fixes support new user initialization.
+
+	* packaging/makeAppPackages.py 1.1:
+		script to make .shared_app_pkg's from shared applications in
+		cvs.
+
+	* AccessGrid/Platform.py 1.57:
+		Finished agpm auto-registration, shared app registration
+		debugging.
+
+	* tests/testSOAP.py 1.1:
+		New script for testing SOAP server performance.
+
+	* bin/agpm.py 1.3:
+		Fixed cleanup stuff.
+
+	* AccessGrid/VenueClientUIClasses.py 1.298:
+		Added some logging to track down stuff.
+
+2003-10-20  judson
+	* AccessGrid/VenueServer.py 1.108:
+		formatting fixes.
+
+	* AccessGrid/Venue.py 1.140:
+		fixed formatting.
+
+	* bin/agpm.py 1.2:
+		Added package arguments.
+
+	* AccessGrid/UIUtilities.py 1.40:
+		Removed unused import.
+
+	* AccessGrid/Platform.py 1.56:
+		Autoinstalling shared packages and registering agpm for
+		packages.
+
+2003-10-20  lefvert
+	* AccessGrid/VenueClient.py 1.124:
+		Added log statement to easier debug personal data exceptions.
+
+2003-10-20  turam
+	* AccessGrid/VenueClient.py 1.123:
+		Don't update node service for a modify-stream event; this'll prevent
+		"programmatic" restarts of the media tools when a stream is modified.
+
+	* AccessGrid/Venue.py 1.141:
+		Brute-force cleanup of network locations that do not correspond to a known
+		net service
+
+	* bin/BridgeServer.py 1.16:
+		Create bridges only if event client is connected
+
+	* packaging/redhat/AccessGrid.spec 1.58:
+	* packaging/redhat/install.sh 1.13:
+		Update revision
+
+	* setup.py 1.42:
+		Add agpm.py to list of scripts; Change email from ag-dev to ag-info
+
+2003-10-17  judson
+	* AccessGrid/Platform.py 1.55:
+		Put commented code in place for making the package manager
+		registered with the environment.
+
+	* bin/RegisterApp.py 1.14:
+	* bin/agpm.py 1.1:
+		Renamed registerapp to agpm
+
+2003-10-16  turam
+	* services/node/VideoProducerService.py 1.15:
+		Applied Frank Sweetser's patch to video producer:
+		
+		    I've attached a patch to VideoConsumer.py in CVS that makes two changes
+		
+			- a fix to the "port" configuration entry that fixes a crash for me
+		
+			- adds a "quality" configuration entry that lets you set the
+			  corresponding setting in vic
+		
+		
+		Need to test tomorrow.
+
+2003-10-16  judson
+	* doc/VirtualVenuesDesign.doc 1.15:
+		And now I saved it too.
+
+	* doc/VirtualVenuesDesign.doc 1.14:
+		Finished asynchronous service picture.
+
+2003-10-15  turam
+	* services/network/QuickBridge/QuickBridge.c 1.5:
+		Remove print in signal handler
+
+2003-10-15  eolson
+	* setup.py 1.41:
+		
+		Update to fix documentation install.
+
+	* AccessGrid/CertificateRequestTool.py 1.24:
+		
+		Write the log file in the UserConfigDir instead of the current directory.
+		Address bug #741, error writing log file.
+
+2003-10-15  judson
+	* doc/VirtualVenuesDesign.doc 1.12:
+		Added a couple of class diagrams for event/text service, trying
+		to make them clearer.
+
+	* doc/VirtualVenuesDesign.doc 1.13:
+		Added another picture.
+
+2003-10-14  turam
+	* packaging/redhat/AccessGrid.spec 1.56:
+	* packaging/redhat/install.sh 1.12:
+		Update release
+
+	* AccessGrid/VenueClient.py 1.122:
+	* AccessGrid/VenueClientUIClasses.py 1.297:
+	* bin/VenueClient.py 1.234:
+		Handle ModifyStream events
+
+	* packaging/redhat/AccessGrid.spec 1.57:
+		Remove reference to DataService.py
+
+	* setup.py 1.39:
+		Remove references to contents.htm and tableOfContents.htm, which have been
+		removed
+
+	* setup.py 1.40:
+		Replace long list of docs with glob call
+
+	* bin/BridgeServer.py 1.15:
+		Fix up re-registration
+
+2003-10-14  olson
+	* AccessGrid/Venue.py 1.139:
+		add datastore methods again
+
 2003-10-14  judson
 	* bin/VenueClient.py 1.232:
 		Added progress messages.
@@ -9,6 +150,9 @@
 		installing send_settingchange (figured out how to do it in
 		python).
 
+	* bin/VenueClient.py 1.235:
+		Fixed a startup condition.
+
 	* AccessGrid/PersonalNodePipes.py 1.4:
 	* AccessGrid/PersonalNodeWin32.py 1.4:
 	* AccessGrid/UIUtilities.py 1.39:
@@ -19,6 +163,25 @@
 		find) a valid default globus configuration. This now means we
 		don't have to run globus_init for non-admin users, it should
 		automatically configure for them.
+
+	* bin/VenueClient.py 1.233:
+		Fixed typo.
+
+	* bin/VenueClient.py 1.236:
+		Final modification to allow the user to optionally startup as a non-personal node if they don't have any identity yet.
+		This allows them to get to the help menu to send a bug report and the certificate management menu to import certs.
+
+	* AccessGrid/Platform.py 1.54:
+		Moved code invoked send setting change now.
+
+	* README 1.5:
+	* README-developers 1.2:
+	* TODO 1.5:
+	* VERSION 1.5:
+		Updated for 2.1.2 release.
+
+	* packaging/windows/agtk.iss 1.28:
+		Fixed client manual install path.
 
 	* AccessGrid/CertificateManagerWXGUI.py 1.31:
 		Removed a print statement.
