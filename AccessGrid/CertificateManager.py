@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.27 2003-08-19 22:20:12 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.28 2003-08-20 18:28:41 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -439,10 +439,18 @@ class CertificateManager(object):
 
     def ImportRequestedCertificate(self, userCert):
         repo = self.GetCertificateRepository()
+
+        defID = self.GetDefaultIdentity()
+        
         impCert = repo.ImportRequestedCertificate(userCert)
         log.debug("imported requested cert %s", impCert.GetSubject())
         
         impCert.SetMetadata("AG.CertificateManager.certType", "identity")
+
+        if defID is None:
+            self.SetDefaultIdentity(impCert)
+            self.GetUserInterface().InitGlobusEnvironment()
+        
         return impCert
         
     def ImportIdentityCertificatePEM(self, repo, userCert, userKey, passphraseCB):

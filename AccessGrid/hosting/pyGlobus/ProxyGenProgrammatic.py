@@ -18,7 +18,6 @@ def CreateGlobusProxy(passphrase, certFile, keyFile, certDir, outFile, bits, hou
     hours - lifetime (in hours) of generated proxy certificate
     """
 
-    print "Invoking gpi, dest=", outFile
     security.grid_proxy_init(verbose = 1,
                               certDir = certDir,
                               certFile = certFile,

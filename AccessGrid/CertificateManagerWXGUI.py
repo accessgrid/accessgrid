@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.18 2003-08-19 22:20:12 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.19 2003-08-20 18:28:41 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -356,12 +356,18 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
             # Have input, try to create proxy.
             #
 
+
             try:
                 # passphrase comes back as a unicode
                 passphrase = str(passphrase)
                 bits = int(bits)
                 lifetime = int(lifetime)
-                self.certificateManager.CreateProxyCertificate(passphrase, bits, lifetime)
+                try:
+                    wxBeginBusyCursor()
+                    self.certificateManager.CreateProxyCertificate(passphrase, bits, lifetime)
+                finally:
+                    wxEndBusyCursor()
+
                 print "Proxy created"
                 break
             except:
@@ -373,6 +379,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
                 if rc != wxID_YES:
                     return 0
+                
         return 1
 
     def CreateCertificateRequestCB(self, name, email, domain, password):
@@ -812,7 +819,7 @@ class TrustedCertDialog(wxDialog):
         self.browser = cpanel = RepositoryBrowser(self, -1, self.certMgr, RepositoryBrowser.TYPE_CA)
         sizer.Add(cpanel, 1, wxEXPAND)
 
-        b = wxButton(self, -1, "OK")
+        b = wxButton(self, -1, "Close")
         EVT_BUTTON(self, b.GetId(), self.OnOK)
         sizer.Add(b, 0, wxALIGN_CENTER)
 
@@ -984,7 +991,7 @@ class IdentityCertDialog(wxDialog):
         self.browser = cpanel = RepositoryBrowser(self, -1, self.certMgr, RepositoryBrowser.TYPE_IDENTITY)
         sizer.Add(cpanel, 1, wxEXPAND)
 
-        b = wxButton(self, -1, "OK")
+        b = wxButton(self, -1, "Close")
         EVT_BUTTON(self, b.GetId(), self.OnOK)
         sizer.Add(b, 0, wxALIGN_CENTER)
 

@@ -16,7 +16,7 @@ from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid import CertificateRepository
 from AccessGrid import Toolkit
-from AccessGrid.CertificateRepository import RepoDoesNotExist
+from AccessGrid.CertificateRepository import RepoDoesNotExist, RepoInvalidCertificate
 from AccessGrid.CRSClient import CRSClient
 from AccessGrid import Platform
 
@@ -919,7 +919,7 @@ class CertificateStatusDialog(wxDialog):
         self.importButton = wxButton(self, -1, "Import certificate")
         self.importButton.Enable(0)
 
-        self.getStatusButton = wxButton(self, -1, "Check Status")
+        self.getStatusButton = wxButton(self, -1, "Update Status")
         self.closeButton = wxButton(self, wxID_CLOSE, "Close")
         self.newRequestButton = wxButton(self, wxNewId(), "Create New Request")
         self.certReqDict = {}
@@ -1000,7 +1000,8 @@ class CertificateStatusDialog(wxDialog):
             
     def OnImportCertificate(self, event):
 
-        if self.selectedItem:
+        print "import, sel is ", self.selectedItem
+        if self.selectedItem is not None:
             item = self.reqList[self.selectedItem]
             status = self.certStatus[self.selectedItem]
 
@@ -1027,6 +1028,15 @@ class CertificateStatusDialog(wxDialog):
                                   str(impCert.GetSubject()),
                                   "Import Successful")
                     self.AddCertificates()
+
+                except RepoInvalidCertificate, e:
+                    log.exception("Invalid certificate")
+                    msg = e[0]
+                    ErrorDialog(self,
+                                "The import of your approved certificate failed:\n"+
+                                msg,
+                                "Import Failed")
+                    
 
                 except:
                     log.exception("Import of requested cert failed")
@@ -1086,6 +1096,8 @@ class CertificateStatusDialog(wxDialog):
         self.list.SetColumnWidth(1, wxLIST_AUTOSIZE)
         self.list.SetColumnWidth(2, wxLIST_AUTOSIZE_USEHEADER)
         self.list.SetColumnWidth(3, wxLIST_AUTOSIZE_USEHEADER)
+
+        self.CheckStatus()
                                 
     def CheckStatus(self):
         """
