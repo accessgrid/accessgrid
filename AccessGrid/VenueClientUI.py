@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.24 2004-03-22 20:06:53 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.25 2004-03-23 17:57:52 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.24 2004-03-22 20:06:53 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.25 2004-03-23 17:57:52 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -126,7 +126,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_VENUE_SERVICE_ADD = wxNewId()
     ID_VENUE_APPLICATION = wxNewId() 
     ID_VENUE_APPLICATION_MONITOR = wxNewId()
-    ID_VENUE_SAVE_TEXT = wxNewId() 
+    ID_VENUE_SAVE_TEXT = wxNewId()
+    ID_VENUE_PROPERTIES = wxNewId()
     ID_VENUE_OPEN_CHAT = wxNewId()
     ID_VENUE_CLOSE = wxNewId()
     ID_PROFILE = wxNewId()
@@ -285,6 +286,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.venue.Append(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES,"Administrate Roles...",
                              "Change venue authorization settings.")
         self.venue.AppendSeparator()
+        self.venue.Append(self.ID_VENUE_PROPERTIES,"Properties...",
+                          "View information about the venue.")
+        
+        self.venue.AppendSeparator()
         self.venue.Append(self.ID_VENUE_CLOSE,"&Exit", "Exit venue")
         
         self.menubar.Append(self.venue, "&Venue")
@@ -420,6 +425,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         EVT_MENU(self, self.ID_VENUE_DATA_ADD, self.AddDataCB)
         EVT_MENU(self, self.ID_VENUE_SERVICE_ADD, self.AddServiceCB)
         EVT_MENU(self, self.ID_VENUE_SAVE_TEXT, self.SaveTextCB)
+        EVT_MENU(self, self.ID_VENUE_PROPERTIES, self.OpenVenuePropertiesCB)
         EVT_MENU(self, self.ID_VENUE_ADMINISTRATE_VENUE_ROLES,
                  self.ModifyVenueRolesCB)
         EVT_MENU(self, self.ID_VENUE_CLOSE, self.ExitCB)
@@ -793,6 +799,17 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 log.exception("VenueClientFrame.SaveText: Can not save text.")
                 self.Error("Text could not be saved.", "Save Text")
 
+
+    def OpenVenuePropertiesCB(self, event):
+        """
+        Displays venue properties dialog.
+        """
+        streams = self.venueClient.GetVenueStreams()
+        venuePropertiesDialog = VenuePropertiesDialog(self, -1,
+                                                      'Properties')
+        venuePropertiesDialog.PopulateList(streams)
+        venuePropertiesDialog.ShowModal()
+       
     def ModifyAppRolesCB(self, event):
         appUrl = event.uri
                 
@@ -4484,8 +4501,62 @@ class ServicePropertiesDialog(wxDialog):
         self.descriptionCtrl.SetValue(serviceDescription.description)
         self.__SetEditable(false)
         self.cancelButton.Destroy()
+
+         
+################################################################################
+
+class VenuePropertiesDialog(wxDialog):
+    def __init__(self, parent, id, title):
+        wxDialog.__init__(self, parent, id, title)
+        self.list = wxListCtrl(self, wxNewId(), size = wxSize(50, 50),style=wxLC_REPORT)
+
+        self.list.InsertColumn(0, "Host")
+        self.list.InsertColumn(1, "Port")
+        self.list.InsertColumn(2, "Time to Live")
+        self.list.InsertColumn(3, "Type")
+
+        self.list.SetColumnWidth(0, 100)
+        self.list.SetColumnWidth(1, 100)
+        self.list.SetColumnWidth(2, 100)
+               
+        self.__Layout()
+
+    def PopulateList(self, streamList):
+        '''
+        Enter correct values into the listctrl.
+        '''
        
- 
+        j = 0
+
+        for stream in streamList:
+            self.list.InsertStringItem(j, 'item')
+            self.list.SetStringItem(j, 0, str(stream.location.host))
+            self.list.SetStringItem(j, 1, str(stream.location.port))
+            self.list.SetStringItem(j, 2, str(stream.location.ttl))
+            if stream.static:
+                self.list.SetStringItem(j, 3, 'static')
+            else:
+                self.list.SetStringItem(j, 3, 'not static')
+                
+            j = j + 1
+                
+    def __Layout(self):
+        '''
+        Handle UI layout.
+        '''
+        mainSizer = wxBoxSizer(wxVERTICAL)
+        sizer = wxStaticBoxSizer(wxStaticBox(self, -1, "Multicast Addresses"), wxVERTICAL)
+        sizer.Add(self.list, 1, wxEXPAND| wxALL, 10)
+        
+        mainSizer.Add(sizer, 1, wxEXPAND| wxALL, 10)
+        
+        self.SetSizer(mainSizer)
+        #sizer.Fit(self)
+        self.SetAutoLayout(1)
+      
+
+        
+
  
 ################################################################################
 
@@ -4502,10 +4573,13 @@ class DataDropTarget(wxFileDropTarget):
 
 if __name__ == "__main__":
     pp = wxPySimpleApp()
-    n = AddAppDialog(None, -1, "Start Application Session", 
-                     ApplicationDescription("test", "test", "test", "test", "test"))
-    if n.ShowModal() == wxID_OK:
-        print n.GetName()
+    n = VenuePropertiesDialog(None, -1, 'Properties')
+    n.ShowModal()
+    
+    #n = AddAppDialog(None, -1, "Start Application Session", 
+    #                 ApplicationDescription("test", "test", "test", "test", "test"))
+    #if n.ShowModal() == wxID_OK:
+    #    print n.GetName()
     
     
     if n:
