@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.80 2003-08-19 19:19:08 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.81 2003-08-20 22:31:13 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1422,12 +1422,16 @@ class VenueParamFrame(wxDialog):
         # Get Static Streams
         sap = self.staticAddressingPanel
         if(sap.staticAddressingButton.GetValue()==1):
+
+            # Get the venue name to use as the stream name
+            venueName = self.title.GetValue()
+
             # Static Video
             svml = MulticastNetworkLocation(sap.GetVideoAddress(),
                                             int(sap.GetVideoPort()),
                                             int(sap.GetVideoTtl()))
             staticVideoCap = Capability(Capability.PRODUCER, Capability.VIDEO)
-            streams.append(StreamDescription("Static Video",
+            streams.append(StreamDescription(venueName,
                                                   svml, staticVideoCap,
                                                   0, None, 1))
             # Static Audio
@@ -1435,7 +1439,7 @@ class VenueParamFrame(wxDialog):
                                             int(sap.GetAudioPort()),
                                             int(sap.GetAudioTtl()))
             staticAudioCap = Capability(Capability.PRODUCER, Capability.AUDIO)
-            streams.append(StreamDescription("Static Audio",
+            streams.append(StreamDescription(venueName,
                                                   saml, staticAudioCap,
                                                   0, None, 1))
 
