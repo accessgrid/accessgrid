@@ -102,6 +102,7 @@ class PersonalNodeManager:
     def startServiceManager(self):
 
         path = os.path.join(Platform.GetInstallDir(), "AGServiceManager.py")
+        path = win32api.GetShortPathName(path)
 
         arg = "python %s --pnode %s -d" % (path,  self.serviceManagerArg)
 
@@ -121,6 +122,7 @@ class PersonalNodeManager:
 
     def startNodeService(self):
         path = os.path.join(Platform.GetInstallDir(), "AGNodeService.py")
+        path = win32api.GetShortPathName(path)
 
         arg = "python %s --pnode %s -d" % (path, self.nodeServiceArg)
 
@@ -249,6 +251,7 @@ class PN_NodeService:
             log.debug("NS: Other return: %s", ret)
 
         log.debug("NS: Terminating")
+        deleteNodeServiceURL()
         self.terminateCallback()
 
 class PN_ServiceManager:
@@ -289,7 +292,7 @@ class PN_ServiceManager:
         # Create a thread to wait for termination
         #
 
-        self.thread = threading.Thread(target=self.waitForEnd)
+        self.thread = threading.Thread(target=self.waitForEndMult)
         self.thread.start()
 
     def waitForEnd(self):
@@ -313,6 +316,7 @@ class PN_ServiceManager:
             log.debug("SM: Other return: %s", ret)
 
         log.debug("SM: Terminating")
+        deleteServiceManagerURL()
         self.terminateCallback()
 
 def readServiceManagerURL():
@@ -330,11 +334,12 @@ def deleteServiceManagerURL():
     try:
         k = _winreg.OpenKey(RegHive, RegBase, 0, _winreg.KEY_ALL_ACCESS)
         _winreg.DeleteValue(k, ServiceManagerURIKey)
+        
     except EnvironmentError:
         #
         # It's okay for this to fail.
         #
-        pass
+        log.exception("Ignoring exception on deleteServiceManagerURL()")
     
     k.Close()
 
@@ -358,7 +363,7 @@ def deleteNodeServiceURL():
         #
         # It's okay for this to fail.
         #
-        pass
+        log.exception("Ignoring exception on deleteServiceManagerURL()")
     
     k.Close()
 
