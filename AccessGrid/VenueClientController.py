@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.24 2004-05-12 18:40:46 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.25 2004-05-17 17:15:34 judson Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.24 2004-05-12 18:40:46 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.25 2004-05-17 17:15:34 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # standard imports
@@ -1352,10 +1352,16 @@ class VenueClientApp:
     # 
     
     def GetInstalledApps(self):
-        appDescList = list()
-        appDescList += self.userAppDatabase.ListAppsAsAppDescriptions()
-        appDescList += self.systemAppDatabase.ListAppsAsAppDescriptions()
-        return appDescList
+        adm = dict()
+
+        for app in self.userAppDatabase.ListAppsAsAppDescriptions():
+            adm[app.GetName()] = app
+            
+        for app in self.systemAppDatabase.ListAppsAsAppDescriptions():
+            if not adm.has_key(app.GetName()):
+                adm[app.GetName()] = app
+                
+        return adm.values()
         
         
     #
