@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.52 2004-03-10 23:17:07 eolson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.53 2004-03-12 00:32:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.52 2004-03-10 23:17:07 eolson Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.53 2004-03-12 00:32:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -28,6 +28,9 @@ from AccessGrid.Types import Capability, ServiceConfiguration
 from AccessGrid.AGParameter import ValueParameter, RangeParameter
 from AccessGrid.AGParameter import OptionSetParameter, CreateParameter
 from AccessGrid.Descriptions import AGServiceManagerDescription
+from AccessGrid.AGNodeService import AGNodeServiceIW
+from AccessGrid.AGServiceManager import AGServiceManagerIW
+from AccessGrid.AGService import AGServiceIW
 from AccessGrid import icons
 from AccessGrid import Platform
 from AccessGrid.UIUtilities import AboutDialog
@@ -572,7 +575,7 @@ class NodeManagementClientFrame(wxFrame):
 
         # Get proxy to the node service, if the url validates
         try:
-            self.nodeServiceHandle = Client.Handle( nodeServiceUri )
+            self.nodeServiceHandle = AGNodeServiceIW( nodeServiceUri )
             self.nodeServiceHandle.IsValid()
             self.SetTitle( "Access Grid Node Management - Connected" )
         except:
@@ -584,7 +587,7 @@ class NodeManagementClientFrame(wxFrame):
         """
         Load a configuration for the node service
         """
-        configs = self.nodeServiceHandle.GetProxy().GetConfigurations()
+        configs = self.nodeServiceHandle.GetConfigurations()
 
         d = wxSingleChoiceDialog( self, "Select a configuration file to load", "Load Configuration Dialog", configs.data )
         ret = d.ShowModal()
@@ -597,7 +600,7 @@ class NodeManagementClientFrame(wxFrame):
                 return
 
             try:
-                self.nodeServiceHandle.GetProxy().LoadConfiguration( conf )
+                self.nodeServiceHandle.LoadConfiguration( conf )
             except Exception, e:
                 log.exception("NodeManagementClientFrame.LoadConfiguration: Can not load configuration from node service")
                 self.Error(e.faultstring)
@@ -611,7 +614,7 @@ class NodeManagementClientFrame(wxFrame):
         """
 
         # Get known configurations from the Node Service
-        configs = self.nodeServiceHandle.GetProxy().GetConfigurations().data
+        configs = self.nodeServiceHandle.GetConfigurations().data
 
         # Prompt user to name the configuration
         d = StoreConfigDialog(self,-1,"Store Configuration", configs )
@@ -629,14 +632,14 @@ class NodeManagementClientFrame(wxFrame):
 
                 # Store the configuration
                 try:
-                    self.nodeServiceHandle.GetProxy().StoreConfiguration( configName )
+                    self.nodeServiceHandle.StoreConfiguration( configName )
                 except Exception,e:
                     log.exception("NodeManagementClientFrame.StoreConfiguration: Can not store configuration in node service")
                     self.Error(e.faultstring)
 
                 # Set the default configuration
                 if isDefault:
-                    self.nodeServiceHandle.GetProxy().SetDefaultConfiguration( configName )
+                    self.nodeServiceHandle.SetDefaultConfiguration( configName )
 
         d.Destroy()
 
@@ -696,7 +699,7 @@ class NodeManagementClientFrame(wxFrame):
             uri = 'https://%s:%s/ServiceManager' % (host,port)
             name = '%s:%s' % (host,port)
             try:
-                self.nodeServiceHandle.GetProxy().AddServiceManager( AGServiceManagerDescription( name, uri ) )
+                self.nodeServiceHandle.AddServiceManager( AGServiceManagerDescription( name, uri ) )
             except Exception, e:
                 log.exception("NodeManagementClientFrame.AddHost: Can not add service manager to node service")
                 self.Error(e.faultstring)
@@ -728,7 +731,7 @@ class NodeManagementClientFrame(wxFrame):
         index = -1
         for i in range( self.hostList.GetSelectedItemCount() ):
             index = self.hostList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-            self.nodeServiceHandle.GetProxy().RemoveServiceManager( self.serviceManagers[index] )
+            self.nodeServiceHandle.RemoveServiceManager( self.serviceManagers[index] )
 
         # Update the service manager list
         self.UpdateHostList()
@@ -754,8 +757,9 @@ class NodeManagementClientFrame(wxFrame):
         # Add service managers to the list
         i = 0
 
-        self.serviceManagers = self.nodeServiceHandle.GetProxy().GetServiceManagers()
+        self.serviceManagers = self.nodeServiceHandle.GetServiceManagers()
         for serviceManager in self.serviceManagers:
+            print "name = ", serviceManager.name
             item = self.hostList.InsertStringItem( i, serviceManager.name )
 
             # Retain selection in host list
@@ -778,7 +782,7 @@ class NodeManagementClientFrame(wxFrame):
         index = self.hostList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
         uri = self.serviceManagers[index]
         try:
-            Client.Handle(uri).IsValid
+            AGServiceManagerIW(uri).IsValid()
         except:
             log.exception("NodeManagementClientFrame.ServiceManagerSelectedCB: Service manager is valid call failed.")
             self.Error("Service Manager is unreachable (%s)" % uri)
@@ -808,7 +812,7 @@ class NodeManagementClientFrame(wxFrame):
         serviceManager = self.serviceManagers[index]
 
         # Get services available
-        availServices =  self.nodeServiceHandle.GetProxy().GetAvailableServices()
+        availServices =  self.nodeServiceHandle.GetAvailableServices()
         availServiceNames = map( lambda serviceDesc: serviceDesc.name, availServices )
 
         #
@@ -835,7 +839,7 @@ class NodeManagementClientFrame(wxFrame):
             # Prompt for resource to assign
             #
             resourceToAssign = None
-            resources = Client.Handle( serviceManager.uri ).GetProxy().GetResources().data
+            resources = AGServiceManagerIW( serviceManager.uri ).GetResources().data
             if len(resources) > 0:
 
                 applicableResources1 = []
@@ -877,7 +881,7 @@ class NodeManagementClientFrame(wxFrame):
                 #
                 if serviceToAdd == None:
                     raise Exception("Can't add NULL service")
-                self.nodeServiceHandle.GetProxy().AddService( serviceToAdd.servicePackageUri,
+                self.nodeServiceHandle.AddService( serviceToAdd.servicePackageUri,
                                serviceManager.uri,
                                resourceToAssign,
                                None )
@@ -905,7 +909,7 @@ class NodeManagementClientFrame(wxFrame):
             for i in range( self.serviceList.GetSelectedItemCount() ):
                 index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
                 log.debug("NodeManagementClientFrame.EnableService: Enabling Service: %s" %self.services[index].name)
-                self.nodeServiceHandle.GetProxy().SetServiceEnabled(self.services[index].uri, 1)
+                self.nodeServiceHandle.SetServiceEnabled(self.services[index].uri, 1)
 
             # Update the services list
             self.UpdateServiceList()
@@ -918,9 +922,9 @@ class NodeManagementClientFrame(wxFrame):
         """
         Enable all known services
         """
-        services = self.nodeServiceHandle.GetProxy().GetServices()
+        services = self.nodeServiceHandle.GetServices()
         for service in services:
-            self.nodeServiceHandle.GetProxy().SetServiceEnabled(service.uri,1)
+            self.nodeServiceHandle.SetServiceEnabled(service.uri,1)
 
         self.UpdateServiceList()
 
@@ -939,7 +943,7 @@ class NodeManagementClientFrame(wxFrame):
             index = -1
             for i in range( self.serviceList.GetSelectedItemCount() ):
                 index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-                self.nodeServiceHandle.GetProxy().SetServiceEnabled(self.services[index].uri,0)
+                self.nodeServiceHandle.SetServiceEnabled(self.services[index].uri,0)
 
             # Update the service list
             self.UpdateServiceList()
@@ -952,9 +956,9 @@ class NodeManagementClientFrame(wxFrame):
         """
         Disable all known services
         """
-        svcs = self.nodeServiceHandle.GetProxy().GetServices()
+        svcs = self.nodeServiceHandle.GetServices()
         for svc in svcs:
-            self.nodeServiceHandle.GetProxy().SetServiceEnabled(svc.uri,0)
+            self.nodeServiceHandle.SetServiceEnabled(svc.uri,0)
 
         self.UpdateServiceList()
 
@@ -972,7 +976,7 @@ class NodeManagementClientFrame(wxFrame):
         index = -1
         for i in range( self.serviceList.GetSelectedItemCount() ):
             index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-            Client.Handle( self.services[index].serviceManagerUri ).GetProxy().RemoveService( self.services[index] )
+            AGServiceManagerIW( self.services[index].serviceManagerUri ).RemoveService( self.services[index] )
 
         # Update the service list
         self.UpdateServiceList()
@@ -995,14 +999,14 @@ class NodeManagementClientFrame(wxFrame):
 
         # Trap service unreachable
         try:
-            Client.Handle( self.services[index].uri ).IsValid()
+            AGServiceIW( self.services[index].uri ).IsValid()
         except:
             log.exception("NodeManagementClientFrame.GetServiceConfiguration.")
             self.Error("Service is unreachable")
             return
             
         # Get configuration
-        config = Client.Handle( self.services[index].uri ).GetProxy().GetConfiguration()
+        config = AGServiceIW( self.services[index].uri ).GetConfiguration()
         if config == None or len(config) == 0 or config=="None":
             self.Error("No configurable parameters for service")
             return
@@ -1037,7 +1041,7 @@ class NodeManagementClientFrame(wxFrame):
         index = self.serviceList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
 
         # Send the modified configuration to the service
-        Client.Handle( self.services[index].uri ).GetProxy().SetConfiguration( serviceConfig )
+        AGServiceIW( self.services[index].uri ).SetConfiguration( serviceConfig )
 
 
     def UpdateServiceList( self, event=None ):
@@ -1054,12 +1058,12 @@ class NodeManagementClientFrame(wxFrame):
 
         if len(self.serviceManagers) > 0 and index >= 0:
             for index in indices:
-                self.services = Client.Handle( self.serviceManagers[index].uri ).GetProxy().GetServices()
+                self.services = AGServiceManagerIW( self.serviceManagers[index].uri ).GetServices()
                 for svc in self.services:
                     itemindex = self.serviceList.InsertStringItem( i, svc.name )
                     self.serviceList.SetItemImage( itemindex, 0, 0 )
                     try:
-                        if Client.Handle( svc.uri ).GetProxy().GetEnabled() == 1:
+                        if AGServiceIW( svc.uri ).GetEnabled() == 1:
                             self.serviceList.SetStringItem( i,1, "Enabled" )
                         else:
                             self.serviceList.SetStringItem( i,1, "Disabled" )
@@ -1095,7 +1099,7 @@ class NodeManagementClientFrame(wxFrame):
                              Capability( Capability.CONSUMER, Capability.VIDEO ),
                              0, None, 0 ) )
         try:
-            self.nodeServiceHandle.GetProxy().SetStreams( streamDs )
+            self.nodeServiceHandle.SetStreams( streamDs )
         except Exception, e:
             log.exception("NodeManagementClientFrame.GotoTestRoom.")
             self.Error(e.faultstring)
@@ -1112,7 +1116,7 @@ class NodeManagementClientFrame(wxFrame):
                              MulticastNetworkLocation( "233.2.171.251", 59986, 127 ),
                              Capability( Capability.CONSUMER, Capability.VIDEO ),
                              0, None, 0 ) )
-        self.nodeServiceHandle.GetProxy().SetStreams( streamDs )
+        self.nodeServiceHandle.SetStreams( streamDs )
 
         self.UpdateServiceList()
 
@@ -1126,7 +1130,7 @@ class NodeManagementClientFrame(wxFrame):
                              MulticastNetworkLocation( "224.2.211.167", 16964, 127 ),
                              Capability( Capability.CONSUMER, Capability.AUDIO ),
                              0, None, 0 ) )
-        self.nodeServiceHandle.GetProxy().SetStreams( streamDs )
+        self.nodeServiceHandle.SetStreams( streamDs )
         self.UpdateServiceList()
 
     def GotoLocal( self, event=None ):
@@ -1135,7 +1139,7 @@ class NodeManagementClientFrame(wxFrame):
                              MulticastNetworkLocation( "localhost", 55524, 127 ),
                              Capability( Capability.CONSUMER, Capability.VIDEO ),
                              0, None, 0 ) )
-        self.nodeServiceHandle.GetProxy().SetStreams( streamDs )
+        self.nodeServiceHandle.SetStreams( streamDs )
 
         self.UpdateServiceList()
 
