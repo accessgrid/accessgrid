@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.7 2004-02-24 21:30:50 judson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.8 2004-03-01 20:03:37 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 AG Hosting environment tools.
 """
-__revision__ = "$Id: __init__.py,v 1.7 2004-02-24 21:30:50 judson Exp $"
+__revision__ = "$Id: __init__.py,v 1.8 2004-03-01 20:03:37 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -41,13 +41,13 @@ def SetHostingImpl(choice):
         Server = getattr(s,"SecureServer")
         InsecureServer = getattr(s,"InsecureServer")
         GetSOAPContext = getattr(s,"GetSOAPContext")
-    except ImportError:
-        return None
+    except ImportError: 
+        raise
     try:
         c = __import__(nic, globals(), locals(), ["Client"])
         Client = getattr(c, "Client")
     except ImportError:
-        return None
+        raise
     try:
         t = __import__(nit, globals(), locals(), ["Decorate",
                                                   "Reconstitute",
@@ -56,7 +56,7 @@ def SetHostingImpl(choice):
         Reconstitute = getattr(t, "Reconstitute")
         IWrapper = getattr(t, "IWrapper")
     except ImportError:
-        return None
+        raise
     
     return 1
 
