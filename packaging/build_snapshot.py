@@ -21,21 +21,6 @@ from optparse import OptionParser
 SourceDir = os.environ['AGBUILDROOT']
 
 #
-# Get the version via popen
-#
-try:
-    cmd = "%s %s" % (sys.executable, os.path.join(SourceDir, "AccessGrid",
-                                                  "AccessGrid", "Version.py"))
-    po = os.popen(cmd)
-except IOError:
-    print "Error getting AGTk Version."
-
-version = po.read()
-po.close()
-
-version = version[:-1]
-
-#
 # Parse command line options
 #
 
@@ -107,6 +92,21 @@ if not options.nocheckout:
         print "BUILD: Checking out code with command: ", cvs_cmd
 
     os.system(cvs_cmd)
+
+#
+# Get the version via popen
+#
+try:
+    cmd = "%s %s" % (sys.executable, os.path.join(BuildDir, "AccessGrid",
+                                                  "Version.py"))
+    po = os.popen(cmd)
+except IOError:
+    print "Error getting AGTk Version."
+
+version = po.read()
+po.close()
+
+version = version[:-1]
 
 #
 # Go to that checkout to build stuff
