@@ -6,10 +6,9 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.38 2003-02-10 23:08:34 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.39 2003-02-11 22:20:24 lefvert Exp $
 # Copyright:   (c) 2002-2003
-# Licence:     See COPYING.TXT
-#-----------------------------------------------------------------------------
+# Licence:     See COPYING.TXT -----------------------------------------------------------------------------
 import threading
 import os
 
@@ -19,12 +18,12 @@ from pyGlobus.io import GSITCPSocketException
 
 import AccessGrid.Types
 import AccessGrid.ClientProfile
+from AccessGrid.Platform import GPI 
 from AccessGrid.VenueClient import VenueClient, EnterVenueException
 from AccessGrid.VenueClientUIClasses import WelcomeDialog
 from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
 from AccessGrid.VenueClientUIClasses import UrlDialog
 from AccessGrid.Descriptions import DataDescription
-from AccessGrid.Events import Event
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.UIUtilities import ErrorDialog
 
@@ -132,7 +131,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time a venue participant changes
         its profile.  Appropriate gui updates are made in client.
         """
-        self.frame.contentListPanel.ModifyParticipant(data)
+        wxCallAfter(self.frame.contentListPanel.ModifyParticipant, data)
         pass
 
     def AddDataEvent(self, data):
@@ -141,7 +140,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time new data is added to the venue.
         Appropriate gui updates are made in client.
         """
-        self.frame.contentListPanel.AddData(data)
+        wxCallAfter(self.frame.contentListPanel.AddData, data)
         pass
 
     def RemoveDataEvent(self, data):
@@ -150,7 +149,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time data is removed from the venue.
         Appropriate gui updates are made in client.
         """
-        self.frame.contentListPanel.RemoveData(data)
+        wxCallAfter(self.frame.contentListPanel.RemoveData, data)
         pass
 
     def AddServiceEvent(self, data):
@@ -159,7 +158,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time a service is added to the venue.
         Appropriate gui updates are made in client.
         """
-        self.frame.contentListPanel.AddService(data)
+        wxCallAfter(self.frame.contentListPanel.AddService,data)
         pass
 
     def RemoveServiceEvent(self, data):
@@ -168,7 +167,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time a service is removed from the venue.
         Appropriate gui updates are made in client.
         """
-        self.frame.contentListPanel.RemoveService(data)
+        wxCallAfter(self.frame.contentListPanel.RemoveService, data)
         pass
 
     def AddConnectionEvent(self, data):
@@ -177,7 +176,20 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time a new exit is added to the venue.
         Appropriate gui updates are made in client.
         """
-        self.frame.venueListPanel.list.AddVenueDoor(data)
+        wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, data)
+        pass
+
+    def SetConnectionsEvent(self, data):
+        """
+        Note: Overloaded from VenueClient
+        This method is called every time a new exit is added to the venue.
+        Appropriate gui updates are made in client.
+        """
+        wxCallAfter(self.frame.venueListPanel.CleanUp)
+        
+        for connection in data:
+            wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, connection)
+
         pass
 
     def EnterVenue(self, URL):
@@ -188,7 +200,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
         VenueClient.EnterVenue( self, URL )
         venueState = self.venueState
-        self.frame.SetLabel(venueState.description.name)
+        wxCallAfter(self.frame.SetLabel, venueState.description.name)
         name = self.profile.name
         title = self.venueState.description.name
         description = self.venueState.description.description
@@ -198,24 +210,24 @@ class VenueClientUI(wxApp, VenueClient):
         users = venueState.users.values()
         for user in users:
             if(user.profileType == 'user'):
-                self.frame.contentListPanel.AddParticipant(user)
+                wxCallAfter(self.frame.contentListPanel.AddParticipant, user)
             else:
-                self.frame.contentListPanel.AddNode(user)
+                wxCallAfter(self.frame.contentListPanel.AddNode, user)
 
         data = venueState.data.values()
         for d in data:
-            self.frame.contentListPanel.AddData(d)
+            wxCallAfter(self.frame.contentListPanel.AddData, d)
 
         nodes = venueState.nodes.values()
         for node in nodes:
-            self.frame.contentListPanel.AddNode(node)
+            wxCallAfter(self.frame.contentListPanel.AddNode, node)
         services = venueState.services.values()
         for service in services:
-            self.frame.contentListPanel.AddService(service)
+            wxCallAfter(self.frame.contentListPanel.AddService, service)
 
         exits = venueState.connections.values()
         for exit in exits:
-            self.frame.venueListPanel.list.AddVenueDoor(exit)
+            wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, exit)
 
         # Start text client
         textLoc = tuple(self.venueState.GetTextLocation())
@@ -223,7 +235,7 @@ class VenueClientUI(wxApp, VenueClient):
             self.textClient = TextClientUI(self.frame, -1, "", location = textLoc)
             self.textClient.Show(true)
         except:
-            ErrorDialog(self.frame, "Trying to open text client!")
+            wxCallAfter(ErrorDialog, self.frame, "Trying to open text client!")
 
     def ExitVenue(self):
         """
@@ -236,7 +248,8 @@ class VenueClientUI(wxApp, VenueClient):
         except:
             (name, args, tb) = formatExceptionInfo()
 
-        VenueClient.ExitVenue( self )
+        VenueClient.ExitVenue(self)
+       # os._exit(1)
             
                                      
     def GoToNewVenue(self, uri):
@@ -251,20 +264,36 @@ class VenueClientUI(wxApp, VenueClient):
         except: # no, it is a venue
             venueUri = uri
 
-        try:  
+        try:
             self.client = Client.Handle(venueUri).get_proxy()
             if oldUri != None:
-                self.frame.CleanUp()
+                wxCallAfter(self.frame.CleanUp)
                 self.ExitVenue()
+            
             self.EnterVenue(venueUri)
             return true
         
-        except GSITCPSocketException:
-            return false
+        except GSITCPSocketException:  # no proxy
+            GPI() # create proxy
+
+            try:
+                self.client = Client.Handle(venueUri).get_proxy()
+                if oldUri != None:
+                    wxCallAfter(self.frame.CleanUp)
+                    self.ExitVenue()
+                self.EnterVenue(venueUri)
+                return true
+
+            except EnterVenueException:
+                if oldUri != None:
+                    self.EnterVenue(oldUri) # go back to venue where we came from
+                    return true
+                else:
+                    return false
         
         except EnterVenueException:
             if oldUri != None:
-                self.EnterVenue(oldUri)
+                self.EnterVenue(oldUri) # go back to venue where we came from
             else:
                 return false
     
@@ -312,6 +341,9 @@ class VenueClientUI(wxApp, VenueClient):
             self.client.UpdateClientProfile(profile)
 
     def SetNodeUrl(self, url):
+        """
+        This method sets the node service url
+        """
         self.SetNodeServiceUri(url)
                      
 if __name__ == "__main__":
