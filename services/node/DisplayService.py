@@ -163,6 +163,7 @@ if __name__ == '__main__':
    
    # Create a local hosting environment
    hn = SystemConfig.instance().GetHostname()
+   hn = 'localhost'
    server = Server((hn, int(sys.argv[1])))
 
    # Create the display service
