@@ -5,13 +5,13 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.16 2004-03-10 23:17:07 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.17 2004-03-11 13:08:42 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.16 2004-03-10 23:17:07 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.17 2004-03-11 13:08:42 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -148,7 +148,7 @@ class WXGUIApplication(Application):
     def __init__(self):
         Application.__init__(self)
 
-        from CertificateManagerWXGUI import CertificateManagerWXGUI
+        from AccessGrid.Security.wxgui.CertificateManagerWXGUI import CertificateManagerWXGUI
         self.gui = CertificateManagerWXGUI()
         self.certificateManager = CertificateManager.CertificateManager(self.userConfigDir,
                                                                         self.gui)
