@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.1 2003-02-06 14:48:36 judson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.2 2003-02-06 20:47:04 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -26,8 +26,8 @@ from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.NetworkLocation import *
 from AccessGrid import icons
 
-import gc
-gc.set_debug( gc.DEBUG_LEAK )
+#import gc
+#gc.set_debug( gc.DEBUG_LEAK )
 
 ###
 ### MENU DEFS

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.14 2003-02-06 14:44:55 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.15 2003-02-06 20:47:04 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,6 +20,9 @@ from AccessGrid.Types import *
 from AccessGrid.Events import Event, HeartbeatEvent
 from AccessGrid.scheduler import Scheduler
 
+class EnterVenueException(Exception):
+    pass
+        
 class VenueClient( ServiceBase ):
     """
     This is the client side object that maintains a stateful
@@ -153,6 +156,7 @@ class VenueClient( ServiceBase ):
                 
         except:
             print "Exception in EnterVenue : ", sys.exc_type, sys.exc_value
+            raise EnterVenueException("Enter Failed!")
         
     def ExitVenue( self ):
         """

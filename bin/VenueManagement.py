@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.19 2003-02-06 19:39:34 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.20 2003-02-06 20:45:47 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,6 +17,7 @@ from AccessGrid.Descriptions import VenueDescription
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.Utilities import formatExceptionInfo 
 from AccessGrid.UIUtilities import *
+from AccessGrid import icons
 
 from pyGlobus.io import GSITCPSocketException
 
@@ -32,6 +33,7 @@ class VenueManagementClient(wxApp):
     
     def OnInit(self):
         self.frame = wxFrame(NULL, -1, "Venue Management" )
+        self.frame.SetIcon(icons.getAGIconIcon())
 	self.address = VenueServerAddress(self.frame, self)
 	self.tabs = VenueManagementTabs(self.frame, -1, self)
         self.tabs.Enable(false)
@@ -1160,5 +1162,7 @@ class DigitValidator(wxPyValidator):
         # gets to the text control
         return
 
-app = VenueManagementClient(0)
-app.MainLoop()  
+if __name__ == "__main__":
+    wxInitAllImageHandlers()
+    app = VenueManagementClient(0)
+    app.MainLoop()  

@@ -1,6 +1,6 @@
 from wxPython.wx import *
 from AccessGrid import icons
-from AccessGrid.VenueClient import VenueClient
+from AccessGrid.VenueClient import VenueClient, EnterVenueException
 import threading
 from AccessGrid import Utilities
 from AccessGrid.UIUtilities import AboutDialog, ErrorDialog
@@ -166,7 +166,6 @@ class VenueClientFrame(wxFrame):
         if frame.Connected():
             frame.Update()
         frame.Show(true)
-        self.SetTopWindow(frame)
                 
     def OpenDataProfileDialog(self, event):
         self.contentList.tree.GetSelection()
@@ -609,7 +608,14 @@ class ContentListPanel(wxPanel):
         self.dataDict.clear()
         self.serviceDict.clear()
         self.nodeDict.clear()
-
+                    
+    def __doLayout(self):
+        sizer1 = wxBoxSizer(wxVERTICAL)
+        sizer1.Add(self.text, 0, wxALL, 20)
+        sizer1.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
+        self.SetSizer(sizer1)
+        sizer1.Fit(self)
+        self.SetAutoLayout(1)
       
 class ConnectToServerDialog(wxDialog):
     def __init__(self, parent, id, title):

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.26 2003-02-04 20:08:39 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.27 2003-02-06 20:47:04 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -434,6 +434,8 @@ class VenueServer(ServiceBase.ServiceBase):
         state that is lost (the longer the time between checkpoints, the more
         that can be lost).
         """
+        print "Checkpointing"
+        
         try:
             store = shelve.open(self.persistenceFilename)
 

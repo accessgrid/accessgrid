@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.27 2003-02-06 19:41:14 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.28 2003-02-06 20:45:47 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,12 +17,17 @@ from wxPython.wx import *
 from pyGlobus.io import GSITCPSocketException
 
 import AccessGrid.Types
-import AccessGrid.Utilities
-from AccessGrid.VenueClientUIClasses import VenueClient
-from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog, ConnectToVenueDialog, WelcomeDialog
 import AccessGrid.ClientProfile
+from AccessGrid.VenueClient import VenueClient, EnterVenueException
+from AccessGrid.VenueClientUIClasses import WelcomeDialog
+from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
+from AccessGrid.VenueClientUIClasses import ConnectToVenueDialog
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Events import Event
+from AccessGrid.Utilities import formatExceptionInfo
+from AccessGrid.UIUtilities import ErrorDialog
+
+from AccessGrid.TextClientUI import TextClientUI
 
 class VenueClientUI(wxApp, VenueClient):
     """
@@ -82,97 +87,12 @@ class VenueClientUI(wxApp, VenueClient):
     def __startMainLoop(self, profile):
         self.gotClient = true
         self.SetProfile(profile)
-        uri = self.profile.homeVenue
-        
-        try: # is this a server
-            venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
-            
-        except: # no, it is a venue
-            venueUri = uri
-            
-        try:
-            self.client = Client.Handle(venueUri).get_proxy()
-            self.EnterVenue(venueUri)
-        except GSITCPSocketException:
-            ErrorDialog(self.frame, sys.exc_info()[1][0])    
-        except: # the address is incorrect
-            # open a dialog and connect that way
-            connectToVenueDialog = ConnectToVenueDialog(NULL, -1, 'Connect to server')
-            if (connectToVenueDialog.ShowModal() == wxID_OK):
-                uri = connectToVenueDialog.address.GetValue()
-                try: # is this a server
-                    venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
 
-                except: # no, it is a venue
-                    venueUri = uri
+        self.GoToNewVenue(self.profile.homeVenue)
 
-                try:
-                    self.client = Client.Handle(venueUri).get_proxy()
-                    self.EnterVenue(venueUri)
-                    connectToVenueDialog.Destroy()
-                    self.frame.Show(true)
-                    self.MainLoop()
-                except GSITCPSocketException:
-                    ErrorDialog(self.frame, sys.exc_info()[1][0])                        
-                except:
-                    print "Exception in __startMainLoop : ", sys.exc_type, sys.exc_value   
-                    text = "Could not establish connection to venue."
-                    noConnectionDialog = wxMessageDialog(NULL, text ,'', wxOK | wxICON_INFORMATION)
-                    noConnectionDialog.ShowModal()
-                    noConnectionDialog.Destroy()
-            else:
-                connectToVenueDialog.Destroy()
+        self.frame.Show(true)
+        self.MainLoop()
 
-        else:
-            self.frame.Show(true)
-            self.MainLoop()
-            
-    def CoherenceCallback(self, event):
-        """
-        Note: Overloaded from VenueClient
-        This method calls the venue client method and then
-        performs its own operations based on coherence events.
-        """
-        VenueClient.CoherenceCallback(self, event)
-        if event.eventType == Event.ENTER :
-            self.frame.contentListPanel.AddParticipant(event.data)
-
-        elif event.eventType == Event.EXIT:
-            if(event.data.publicId != self.profile.publicId):
-                self.frame.contentListPanel.RemoveParticipant(event.data)
-                                 
-        elif event.eventType == Event.ADD_DATA:
-            self.frame.contentListPanel.AddData(event.data)
-
-        elif event.eventType == Event.REMOVE_DATA:
-            self.frame.contentListPanel.RemoveData(event.data)
-            
-        elif event.eventType == Event.ADD_SERVICE:
-            self.frame.contentListPanel.AddService(event.data)
-
-        elif event.eventType == Event.REMOVE_SERVICE:
-            self.frame.contentListPanel.RemoveService(event.data)
-                        
-        elif event.eventType == Event.ADD_CONNECTION:
-            self.frame.venueListPanel.list.AddVenueDoor(event.data)
-         
-        elif event.eventType == Event.REMOVE_CONNECTION:
-            print 'remove connection'
-
-        elif event.eventType == Event.MODIFY_USER:
-            self.frame.contentListPanel.ModifyParticipant(event.data)
-
-        elif event.eventType == Event.UPDATE_VENUE_STATE:
-            print 'update venue state'
-
-    def AddUserEvent(self, data):
-        self.frame.contentListPanel.Addparticipant(data)
-        pass
-    
-    def RemoveUserEvent(self, data):
-        self.frame.contentListPanel.RemoveParticipant(data)
-        pass
-    
     def ModifyUserEvent(self, data):
         self.frame.contentListPanel.ModifyParticipant(data)
         pass
@@ -207,12 +127,11 @@ class VenueClientUI(wxApp, VenueClient):
        
         venueState = self.venueState
         self.frame.SetLabel(venueState.description.name)
-       # text = self.profile.name + ', welcome to:\n' + self.venueState.description.name\
-        #       + '\n' +self.venueState.description.description
         name = self.profile.name
         title = self.venueState.description.name
         description = self.venueState.description.description
-        welcomeDialog = WelcomeDialog(NULL, -1, 'Enter Venue', name, title, description)
+        welcomeDialog = WelcomeDialog(NULL, -1, 'Enter Venue', name,
+                                      title, description)
 
         users = venueState.users.values()
         for user in users:
@@ -237,37 +156,53 @@ class VenueClientUI(wxApp, VenueClient):
             self.frame.venueListPanel.list.AddVenueDoor(exit)
 
         # Start text client
-        #        self.textClient =
+        textLoc = tuple(self.venueState.GetTextLocation())
+        try:
+            self.textClient = TextClientUI(self.frame, -1, "", location = textLoc)
+            self.textClient.Show(true)
+        except:
+            ErrorDialog(self.frame, "Trying to open text client!")
 
-    def ExitVenue(self ):
+    def ExitVenue(self):
         """
         Note: Overloaded from VenueClient
         This method calls the venue client method and then
         performs its own operations when the client exits a venue.
         """
+        print '----------- I send exit venue event'
+        try:
+            self.textClient.Close()
+        except:
+            (name, args, tb) = formatExceptionInfo()
+#            print "Hm: %s %s" % (name, args)
+            
         VenueClient.ExitVenue( self )
                                      
     def GoToNewVenue(self, uri):
-        oldUri = self.venueUri
+        if self.venueUri != None:
+            oldUri = self.venueUri
+        else:
+            oldUri = None
+            
         try: # is this a server
             venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
-
+            print "URI: %s" % venueUri
         except: # no, it is a venue
             venueUri = uri
 
         try:  # temporary solution until exceptions work as should
             self.client = Client.Handle(venueUri).get_proxy()
-            self.frame.CleanUp()
-            self.OnExit()
+            if oldUri != None:
+                print "Cleaning up Old Venue! <%s>" % oldUri
+                self.frame.CleanUp()
+                self.OnExit()
             self.EnterVenue(venueUri)
-                
-        except:
-            print "Exception in VenueClient::GoToNewVenue : ", sys.exc_type, sys.exc_value   
-            text = "Could not establish connection to venue."
-            noConnectionDialog = wxMessageDialog(NULL, text ,'', wxOK | wxICON_INFORMATION)
-            noConnectionDialog.ShowModal()
-            noConnectionDialog.Destroy()
-            self.EnterVenue(oldUri)
+        except GSITCPSocketException:
+            ErrorDialog(self.frame, sys.exc_info()[1][0])
+        except EnterVenueException:
+            ErrorDialog(self.frame, "GoToNewVenue:")
+            if oldUri != None:
+                self.EnterVenue(oldUri)
 
     def OnExit(self):
         """
