@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.112 2003-09-17 20:45:40 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.113 2003-09-17 21:07:09 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.112 2003-09-17 20:45:40 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.113 2003-09-17 21:07:09 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -54,6 +54,9 @@ class GetDataStoreInfoError(Exception):
     pass
 
 class GetDataDescriptionsError(Exception):
+    pass
+
+class NotAuthorizedError(Exception):
     pass
 
 log = logging.getLogger("AG.VenueClient")
@@ -837,7 +840,7 @@ class VenueClient( ServiceBase):
 
         dataList = []
         dataList.append(data)
-        
+    
         if data.type == None or data.type == 'None':
             # Venue data
             self.venueProxy.RemoveData(data)
@@ -849,7 +852,7 @@ class VenueClient( ServiceBase):
             
         else:
             # Ignore this until we have authorization in place.
-            pass
+            raise NotAuthorizedError
             
             # Somebody else's personal data
 
