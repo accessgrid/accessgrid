@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.25 2003-09-10 20:36:54 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.26 2003-09-29 20:56:27 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -137,7 +137,7 @@ else:
 
 # Start up the logging
 log = logging.getLogger("AG")
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.WARN)
 hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
 fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
 hdlr.setFormatter(fmt)

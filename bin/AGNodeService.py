@@ -6,14 +6,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.32 2003-09-22 14:12:08 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.33 2003-09-29 20:56:27 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.32 2003-09-22 14:12:08 judson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.33 2003-09-29 20:56:27 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -140,7 +140,7 @@ else:
 
 # Start up the logging
 log = logging.getLogger("AG")
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.WARN)
 hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
 fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
 hdlr.setFormatter(fmt)
