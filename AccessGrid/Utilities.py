@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.14 2003-02-11 23:19:48 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.15 2003-02-12 23:06:07 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -137,7 +137,7 @@ def GetResourceList():
                 device = match.groups()[0]
             match = oPortnameMatch.match(line)
             if match != None:
-                portnames = match.groups()
+                portnames = string.split( match.groups()[0], ' '  )
 
                 # assume that, if we have portnames, we already have a device
                 resources.append( AGVideoResource( Capability.VIDEO, device, portnames ) )
