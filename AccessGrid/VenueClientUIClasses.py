@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.124 2003-04-03 21:33:53 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.125 2003-04-03 22:58:45 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1641,15 +1641,15 @@ class SaveFileDialog(wxDialog):
 class UploadFilesDialog(wxDialog):
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title,
-                          size = wxSize(300, 100))
+                          size = wxSize(350, 130))
 
         self.Centre()
         self.button = wxButton(self, wxNewId(), "Cancel")
-        self.text = wxStaticText(self, -1, "")
+        self.text = wxStaticText(self, -1, "", size = wxSize(100, 20))
 
         self.cancelFlag = 0
 
-        self.progress = wxGauge(self, wxNewId(), 100,
+        self.progress = wxGauge(self, wxNewId(), 100,  size = wxSize(100, 20),
                                 style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH)
 
         EVT_BUTTON(self, self.button.GetId(), self.OnButton)
@@ -1658,11 +1658,11 @@ class UploadFilesDialog(wxDialog):
         self.currentFile = None
         #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
         self.Layout()
-
+       
     def Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add(10,10)
-        sizer.Add(self.text, 1, wxEXPAND|wxALL, 5)
+        sizer.Add(5,5)
+        sizer.Add(self.text, 0, wxEXPAND|wxALL, 5)
         sizer.Add(self.progress, 0, wxEXPAND|wxALL, 5)
         sizer.Add(self.button, 0, wxCENTER|wxALL, 5)
 
