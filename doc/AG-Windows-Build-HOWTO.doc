@@ -1,0 +1,187 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang1033
+{\fonttbl
+{\f0\fnil\fcharset0\fprq0\fttruetype Arial;}
+{\f1\fnil\fcharset0\fprq0\fttruetype NULL;}
+{\f2\fnil\fcharset0\fprq0\fttruetype Times New Roman;}
+{\f3\fnil\fcharset0\fprq0\fttruetype Courier;}
+{\f4\fnil\fcharset0\fprq0\fttruetype Symbol;}
+{\f5\fnil\fcharset0\fprq0\fttruetype Dingbats;}
+{\f6\fnil\fcharset0\fprq0\fttruetype Courier New;}}
+{\colortbl
+\red0\green0\blue0;
+\red255\green255\blue255;}
+{\stylesheet
+{\s5\fi-431\li720 Dashed List;}
+{\s2\fi-431\li720 Box List;}
+{\s21\tx1584\sbasedon16\snext15 Section Heading;}
+{\s17\sl240\slmult1\tx431\sbasedon9\snext15 Numbered Heading 2;}
+{\s20\f6\sbasedon15 Plain Text;}
+{\s12\fi-431\li720 Implies List;}
+{\s26\fi-431\li720\sbasedon19 Upper Case List;}
+{\s7\fi-431\li720 Hand List;}
+{\s27\fi-431\li720\sbasedon19 Upper Roman List;}
+{\s15\sl240\slmult1\f2\fs24 Normal;}
+{\s1\li1440\ri1440\sa120\sbasedon15 Block Text;}
+{\s14\fi-431\li720\sbasedon15 Lower Roman List;}
+{\s11\fi-431\li720 Heart List;}
+{\s13\fi-431\li720\sbasedon19 Lower Case List;}
+{\s24\fi-431\li720 Tick List;}
+{\s8\sl240\slmult1\sb440\sa60\f0\fs34\b\sbasedon15\snext15 Heading 1;}
+{\s9\sl240\slmult1\sb440\sa60\f0\fs28\b\sbasedon15\snext15 Heading 2;}
+{\s10\sb440\sa60\f0\fs24\b\sbasedon15\snext15 Heading 3;}
+{\s19\fi-431\li720 Numbered List;}
+{\s23\fi-431\li720 Star List;}
+{\s16\sl240\slmult1\tx431\sbasedon8\snext15 Numbered Heading 1;}
+{\s6\fi-431\li720 Diamond List;}
+{\s18\tx431\sbasedon10\snext15 Numbered Heading 3;}
+{\s4\tx1584\sbasedon16\snext15 Chapter Heading;}
+{\s22\fi-431\li720 Square List;}
+{\s25\fi-431\li720 Triangle List;}
+{\s3\fi-431\li720 Bullet List;}}
+{\*\listtable
+{\list\listtemplateid662081189{\listlevel\levelnfc0\levelstartat1\levelspace0\levelfollow0{\leveltext\'02\'00.;}{\levelnumbers\'01;}}{\listlevel\levelnfc0\levelstartat1\levelspace0\levelfollow0{\leveltext\'04\'00.\'01.;}{\levelnumbers\'01\'03;}}{\listlevel\levelnfc0\levelstartat1\levelspace0\levelfollow0{\leveltext\'02\'00.;}{\levelnumbers\'01;}}{\listlevel\levelnfc0\levelstartat1\levelspace0\levelfollow0{\leveltext\'02\'00.;}{\levelnumbers\'01;}}{\listlevel\levelnfc0\levelstartat1\levelspace0\levelfollow0{\leveltext\'02\'00.;}{\levelnumbers\'01;}}{\listlevel\levelnfc0\levelstartat1\levelspace0\levelfollow0{\leveltext\'02\'00.;}{\levelnumbers\'01;}}{\listlevel\levelnfc0\levelstartat1\levelspace0\levelfollow0{\leveltext\'02\'00.;}{\levelnumbers\'01;}}{\listlevel\levelnfc0\levelstartat1\levelspace0\levelfollow0{\leveltext\'02\'00.;}{\levelnumbers\'01;}}{\listlevel\levelnfc0\levelstartat1\levelspace0\levelfollow0{\leveltext\'02\'00.;}{\levelnumbers\'01;}}\listid1314830010}
+{\list\listtemplateid389715648\listsimple{\listlevel\levelnfc0\levelstartat1\levelspace0\levelfollow0\fi-431\li720{\leveltext\'02\'00.;}{\levelnumbers\'01;}}\listid897059950}
+{\list\listtemplateid2019197158\listsimple{\listlevel\levelnfc23\levelstartat0\levelspace0\levelfollow0\fi-431\li720{\leveltext\'01\'b7 ;}{\levelnumbers;}\f4}\listid63668384}}
+{\*\listoverridetable
+{\listoverride\listoverridecount0\listid1314830010\levelnfc0\levelstartat1\levelspace0\levelfollow0{\leveltext\'02\'00.;}{\levelnumbers\'01;}\ls1}
+{\listoverride\listoverridecount0\listid1314830010\levelnfc0\levelstartat1\levelspace0\levelfollow0{\leveltext\'04\'00.\'01.;}{\levelnumbers\'01\'03;}\ls2}
+{\listoverride\listoverridecount0\listid897059950\levelnfc0\levelstartat1\levelspace0\levelfollow0\fi-431\li720{\leveltext\'02\'00.;}{\levelnumbers\'01;}\ls3}
+{\listoverride\listoverridecount0\listid1314830010\levelnfc0\levelstartat1\levelspace0\levelfollow0{\leveltext\'04\'00.\'01.;}{\levelnumbers\'01\'03;}\ls4}
+{\listoverride\listoverridecount0\listid63668384\levelnfc23\levelstartat0\levelspace0\levelfollow0\fi-431\li720{\leveltext\'01\'b7 ;}{\levelnumbers;}\f4\ls5}}
+
+\kerning0\cf0\viewkind1\paperw12240\paperh15840\margl1440\margr1440\widowctl
+\sectd\sbknone\colsx360\pgncont
+\pard\plain\qj\sb440\sa60\s8\sl240\slmult1{\f0\fs34\b\lang1033{\*\listtag0}Access Grid Windows Package mini-HOWTO}
+\par\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Author: Ti Leggett <leggett@mcs.anl.gov>}
+\par\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Date: March 28, 2003}
+\par{\listtext\pard\qj\sb440\sa60 1.	}\pard\plain{\qj\sb440\sa60\s16\f0\fs34\b\lang1033{\*\listtag0}{\*\abilist\abilistid1314830010\abilistparentid0\abilistlevel1\abistartat1{\abifieldfont Arial}{\abilistdecimal }{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnlvlbody\pndec{\pntxtb }{\pntxta .}}\ls1\ilvl0\sl240\slmult1\tx431{\f0\fs34\b\lang1033{\*\listtag0}Preface}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}This document will attempt to describe how to build a Windows installer of the Access Grid 2.0 software. It will briefly describe the tools we use to generate the installer and then describe in detail how we use the tools to build our Windows installer.}
+\par{\listtext\pard\qj\sb440\sa60 2.	}\pard\plain{\qj\sb440\sa60\s16\f0\fs34\b\lang1033{\*\listtag0}{\*\abilist\abilistid1314830010\abilistlevel1\abistartat1{\abifieldfont Arial}{\abilistdecimal }{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnlvlbody\pndec{\pntxtb }{\pntxta .}}\ls1\ilvl0\sl240\slmult1\tx431{\f0\fs34\b\lang1033{\*\listtag0}Inno Setup}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Inno Setup is a free, open source windows package that allows anyone to make a coherent and rather attractive and modern windows installer. It's quite flexible on what it can handle and report, and there is also a scripting language for doing more complex tasks. Inno Setup uses a plain text file with keywords and predefined constants to layout how the installer will look and function as well as what exactly goes into the installer.}
+\par\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}There is also a third party tool called ISTool which is a GUI front end for Inno Setup that helps hide the underlying source file to make the installer build process a bit easier}
+\par{\listtext\pard\qj\sb440\sa60 3.	}\pard\plain{\qj\sb440\sa60\s16\f0\fs34\b\lang1033{\*\listtag0}{\*\abilist\abilistid1314830010\abilistlevel1\abistartat1{\abifieldfont Arial}{\abilistdecimal }{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnlvlbody\pndec{\pntxtb }{\pntxta .}}\ls1\ilvl0\sl240\slmult1\tx431{\f0\fs34\b\lang1033{\*\listtag0}The Access Grid 2.0 Inno Setup File}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Inno Setup has several sections that distinctly define sets of things to do. With the Access Grid installer we make use of only some of those. I'm not going to describe each section and what it does, but instead will only highlight special cases or "interesting" things that we do to make the process easier.}
+\par{\listtext\pard\qj\sb440\sa60 3.1.	}\pard\plain{\qj\sb440\sa60\s17\f0\fs28\b\lang1033{\*\listtag0}{\*\abilist\abilistid1159778532\abilistparentid1314830010\abilistlevel2\abistartat1{\abifieldfont Arial}{\abilistdecimal }{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnprev\pnlvl9\pndec{\pntxtb }{\pntxta .}}\ls2\ilvl1\sl240\slmult1\tx431{\f0\fs28\b\lang1033{\*\listtag0}[Setup] Section}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}The }{\f3\fs24\lang1033{\*\listtag0}[Setup]}{\f2\fs24\lang1033{\*\listtag0} section is where we define that metadata that defines the installer, the look of it, where the top level directory is, what the output filename is, etc. For any given build of the installer there should need to be modifications of only a few of the fields. These fields are handled by preprocessing directives that are at the top of the file and are easily identifiable by starting with }{\f3\fs24\lang1033{\*\listtag0}#define}{\f2\fs24\lang1033{\*\listtag0}. }{\f2\fs24\lang1033{\*\listtag0}All the other fields can generally be left alone.}
+\par{\listtext\pard\qj\sb440\sa60 3.2.	}\pard\plain{\qj\sb440\sa60\s17\f0\fs28\b\lang1033{\*\listtag0}{\*\abilist\abilistid1159778532\abilistlevel2\abistartat1{\abifieldfont Arial}{\abilistdecimal }{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnprev\pnlvl9\pndec{\pntxtb }{\pntxta .}}\ls2\ilvl1\sl240\slmult1\tx431{\f0\fs28\b\lang1033{\*\listtag0}[Run] Section}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}The }{\f3\fs24\lang1033{\*\listtag0}[Run]}{\f2\fs24\lang1033{\*\listtag0} section lists those commands that can or will be run after the user has installed the package. Commands can be run all the time or can be optionally run. If the command has the latter option, the user will be presented with a list of check boxes to choose what they would like to run after the install. Something of note, if you would like to run a command that isn't a true windows executable (read .exe or .com) it must be executed from a shell as in:}
+\par\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}Filename: \{app\}\\config\\Postinstall.py; Flags: shellexec}
+\par{\listtext\pard\qj\sb440\sa60 3.3.	}\pard\plain{\qj\sb440\sa60\s17\f0\fs28\b\lang1033{\*\listtag0}{\*\abilist\abilistid1159778532\abilistlevel2\abistartat1{\abifieldfont Arial}{\abilistdecimal }{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnprev\pnlvl9\pndec{\pntxtb }{\pntxta .}}\ls2\ilvl1\sl240\slmult1\tx431{\f0\fs28\b\lang1033{\*\listtag0}[_ISToolPreCompile] Section}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}The }{\f3\fs24\lang1033{\*\listtag0}[_ISToolPreCompile]}{\f2\fs24\lang1033{\*\listtag0} is where we define commands that we want }{\f2\fs24\i\lang1033{\*\listtag0}prior}{\f2\fs24\lang1033{\*\listtag0} to building the installer. We use this as a way to setup our build tree so it is sane and in a way the Inno Setup installer file thinks it should be. I explain below how we use this for our install process.}
+\par{\listtext\pard\qj\sb440\sa60 4.	}\pard\plain{\qj\sb440\sa60\s16\f0\fs34\b\lang1033{\*\listtag0}{\*\abilist\abilistid1314830010\abilistlevel1\abistartat1{\abifieldfont Arial}{\abilistdecimal }{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnlvlbody\pndec{\pntxtb }{\pntxta .}}\ls1\ilvl0\sl240\slmult1\tx431{\f0\fs34\b\lang1033{\*\listtag0}Packaging the Access Grid Toolkit}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Once you have an understanding of the above you need to actually make the installer. The process of doing this is as follows:}
+\par{\listtext\pard\qj\fi-431\li720 1.	}\pard\plain{\qj\fi-431\li720\s15\f2\fs24\lang1033{\*\listtag0}{\*\abilist\abilistid897059950\abilistparentid0\abilistlevel1\abistartat1{\abifieldfont NULL}{\abilistdecimal .}{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnlvlbody\pndec{\pntxtb }{\pntxta .}}\fn-431\li720\ls3\ilvl0\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Remove any previous CVS checkout}
+\par}{\listtext\pard\qj\fi-431\li720 2.	}\pard\plain{\qj\fi-431\li720\s15\f2\fs24\lang1033{\*\listtag0}{\*\abilist\abilistid897059950\abilistparentid0\abilistlevel1\abistartat1{\abifieldfont NULL}{\abilistdecimal .}{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnlvlbody\pndec{\pntxtb }{\pntxta .}}\fn-431\li720\ls3\ilvl0\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Checkout the Access Grid Toolkit from CVS}
+\par}{\listtext\pard\qj\fi-431\li720 3.	}\pard\plain{\qj\fi-431\li720\s15\f2\fs24\lang1033{\*\listtag0}{\*\abilist\abilistid897059950\abilistparentid0\abilistlevel1\abistartat1{\abifieldfont NULL}{\abilistdecimal .}{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnlvlbody\pndec{\pntxtb }{\pntxta .}}\fn-431\li720\ls3\ilvl0\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Checkout ag-vic and ag-rat from CVS}
+\par}{\listtext\pard\qj\fi-431\li720 4.	}\pard\plain{\qj\fi-431\li720\s15\f2\fs24\lang1033{\*\listtag0}{\*\abilist\abilistid897059950\abilistparentid0\abilistlevel1\abistartat1{\abifieldfont NULL}{\abilistdecimal .}{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnlvlbody\pndec{\pntxtb }{\pntxta .}}\fn-431\li720\ls3\ilvl0\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Build the ag-rat solution}
+\par}{\listtext\pard\qj\fi-431\li720 5.	}\pard\plain{\qj\fi-431\li720\s15\f2\fs24\lang1033{\*\listtag0}{\*\abilist\abilistid897059950\abilistparentid0\abilistlevel1\abistartat1{\abifieldfont NULL}{\abilistdecimal .}{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnlvlbody\pndec{\pntxtb }{\pntxta .}}\fn-431\li720\ls3\ilvl0\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Build the ag-vic solution}
+\par}{\listtext\pard\qj\fi-431\li720 6.	}\pard\plain{\qj\fi-431\li720\s15\f2\fs24\lang1033{\*\listtag0}{\*\abilist\abilistid897059950\abilistparentid0\abilistlevel1\abistartat1{\abifieldfont NULL}{\abilistdecimal .}{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnlvlbody\pndec{\pntxtb }{\pntxta .}}\fn-431\li720\ls3\ilvl0\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Open the Access Grid .iss file and edit to reflect your source and output paths, and change any versions that might need updating}
+\par}{\listtext\pard\qj\fi-431\li720 7.	}\pard\plain{\qj\fi-431\li720\s15\f2\fs24\lang1033{\*\listtag0}{\*\abilist\abilistid897059950\abilistparentid0\abilistlevel1\abistartat1{\abifieldfont NULL}{\abilistdecimal .}{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnlvlbody\pndec{\pntxtb }{\pntxta .}}\fn-431\li720\ls3\ilvl0\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Build the installer}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}That's pretty straight forward. However step 4 actually does some things internally to note.}
+\par\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}In order to make things clean and to avoid as much the ramifications of things being removed from, disappearing from, or being added to CVS, we use python's distutils module to make a sane tree from which to grab our files. The installer really shouldn't be grabbing anything out of the CVS tree. In our case we run two scripts that sanitize the build tree: }{\f3\fs24\lang1033{\*\listtag0}makeServicePackages.py}{\f2\fs24\lang1033{\*\listtag0} and }{\f3\fs24\lang1033{\*\listtag0}Prebuild.cmd}{\f2\fs24\lang1033{\*\listtag0}. I'll explain what both of these scripts do in detail.}
+\par{\listtext\pard\qj\sb440\sa60 4.1.	}\pard\plain{\qj\sb440\sa60\s17\f0\fs28\b\lang1033{\*\listtag0}{\*\abilist\abilistid1400258615\abilistlevel2\abistartat1{\abifieldfont Arial}{\abilistdecimal }{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnprev\pnlvl9\pndec{\pntxtb }{\pntxta .}}\ls4\ilvl1\sl240\slmult1\tx431{\f0\fs28\b\lang1033{\*\listtag0}Building rat and vic}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}The windows installer depends on rat and vic being there, so before doing anything you should build them in either Visual Studio 6 or Visual Studio .NET.}
+\par{\listtext\pard\qj\sb440\sa60 4.2.	}\pard\plain{\qj\sb440\sa60\s17\f0\fs28\b\lang1033{\*\listtag0}{\*\abilist\abilistid1400258615\abilistparentid1314830010\abilistlevel2\abistartat1{\abifieldfont Arial}{\abilistdecimal }{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnprev\pnlvl9\pndec{\pntxtb }{\pntxta .}}\ls4\ilvl1\sl240\slmult1\tx431{\f0\fs28\b\lang1033{\*\listtag0}makeServicePackages.py}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}The purpose of this script is to make the zip file services from the currently checked out service files and descriptions. This script takes on argument: the path to where the service files are located. Internally it has a list of which services it is looking for to make service zip files, so if you have a new service that needs to be packaged in, you'll need to add your service name to the list. Here's the script:}
+\par\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}import sys}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}import os}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}import zipfile}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}"""}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}Make Access Grid service packages}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}Looks in specified input directory for same-named .svc and}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}implementation files, and zips them into the specified output}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}directory.}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}"""}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}if len(sys.argv) < 2:}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    print "Usage : ", sys.argv[0], " <serviceDir>"}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}inputDir = sys.argv[1]}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}outputDir = sys.argv[1]}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}services = ["AudioService", "VideoConsumerService", "VideoProducerService"]}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}if not os.path.isdir(inputDir):}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    print "The following directory does not exist: ", inputDir}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}os.chdir(inputDir)}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}for service in services:}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    servDesc = service + ".svc"}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    servImplPy = service + ".py"}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    servImplWin = service + ".exe"}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    servImplLin = service}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    if not os.path.isfile(servDesc):}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}        continue}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    }
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    # if associated file found, zip em up together in the outputDir}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    serviceZipFile = service + ".zip"}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    print "Writing Package File:", serviceZipFile}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    zf = zipfile.ZipFile( serviceZipFile, "w" )}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    zf.write( servDesc )}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    # check for various implementations}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    if os.path.isfile(servImplPy):}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}        zf.write(servImplPy)}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    if os.path.isfile(servImplWin):}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}        zf.write(servImplWin)}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    if os.path.isfile(servImplLin):}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}        zf.write(servImplLin)}
+\par\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f3\fs24\lang1033{\*\listtag0}    zf.close()}
+\par\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}It's pretty straightforward. The only tricky part is that it must change to the service directory so that the zipped up service files have no paths associated with them. This script should be run before }{\f3\fs24\lang1033{\*\listtag0}Prebuild.cmd}{\f2\fs24\lang1033{\*\listtag0}.}
+\par{\listtext\pard\qj\sb440\sa60 4.3.	}\pard\plain{\qj\sb440\sa60\s17\f0\fs28\b\lang1033{\*\listtag0}{\*\abilist\abilistid1400258615\abilistlevel2\abistartat1{\abifieldfont Arial}{\abilistdecimal }{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnprev\pnlvl9\pndec{\pntxtb }{\pntxta .}}\ls4\ilvl1\sl240\slmult1\tx431{\f0\fs28\b\lang1033{\*\listtag0}Prebuild.cmd}
+\par}\pard\plain\s15\sl240\slmult1{\f2\fs24\b\lang1033{\*\listtag0}NOTE:}{\f2\fs24\lang1033{\*\listtag0} You should never have to modify this file or even look at it. Unless you're very curious, I would skip this section.}
+\par\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}This is the script that will clean up any previous build attempt and use python's distuils to build and install the Access Grid package into a temporary build root. This build root should contain }{\f2\fs24\i\lang1033{\*\listtag0}all}{\f2\fs24\lang1033{\*\listtag0} the files that will be needed by installer. As of today, here is what the }{\f3\fs24\lang1033{\*\listtag0}Prebuild.cmd}{\f2\fs24\lang1033{\*\listtag0} script looks like (I've removed comments and '@' signs for clarity):}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f2\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}set VSINSTALLDIR=}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}reg.exe query HKLM\\SOFTWARE\\Microsoft\\VisualStudio\\7.0\\Setup\\VS /v EnvironmentDirectory > msid.txt}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}for /F "skip=1 tokens=3*" %%i IN (msid.txt) DO set VSINSTALLDIR=%%i %%j}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}if exist msid.txt del msid.txt}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}set VCINSTALLDIR=}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}reg.exe query HKLM\\SOFTWARE\\Microsoft\\VisualStudio\\7.0\\Setup\\VS /v ProductDir > msid.txt}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}for /F "skip=1 tokens=3*" %%i IN (msid.txt) DO set VCINSTALLDIR=%%i %%j}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}if exist msid.txt del msid.txt}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}set DevEnvDir=%VSINSTALLDIR%}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}set MSVCDir=%VCINSTALLDIR%\\VC7}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}set PATH=%DevEnvDir%;%MSVCDir%\\BIN;%VCINSTALLDIR%\\Common7\\Tools;%VCINSTALLDIR%\\Common7\\Tools\\bin\\prerelease;%VCINSTALLDIR%\\Common7\\Tools\\bin;%FrameworkSDKDir%\\bin;%FrameworkDir%\\%FrameworkVersion%;%PATH%;}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}set INCLUDE=%MSVCDir%\\ATLMFC\\INCLUDE;%MSVCDir%\\INCLUDE;%MSVCDir%\\PlatformSDK\\include\\prerelease;%MSVCDir%\\PlatformSDK\\include;%FrameworkSDKDir%\\include;%INCLUDE%}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}set LIB=%MSVCDir%\\ATLMFC\\LIB;%MSVCDir%\\LIB;%MSVCDir%\\PlatformSDK\\lib\\prerelease;%MSVCDir%\\PlatformSDK\\lib;%FrameworkSDKDir%\\lib;%LIB%}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}set AGDIR=%1}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}set RATDIR=%AGDIR%\\..\\ag-rat}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}set VICDIR=%AGDIR%\\..\\ag-vic}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}devenv %RATDIR%\\rat\\rat.sln /rebuild Release}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}devenv %VICDIR%\\vic\\vic.sln /rebuild Release}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}rmdir /s /q %AGDIR%\\Release}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}rmdir /s /q %AGDIR%\\build}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}cd %AGDIR%}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}echo Building AG}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}python setup.py build}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f3\fs24\lang1033{\*\listtag0}python setup.py install --prefix=%AGDIR%\\Release --no-compile}
+\par\pard\plain\qj\s15\sl240\slmult1\keep\keepn{\f2\fs24\strike\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}This script does a few things:}
+\par{\listtext\pard\qj\fi-431\li720\bullet 	}\pard\plain{\qj\fi-431\li720\s15\f2\fs24\lang1033{\*\listtag0}{\*\abilist\abilistid63668384\abilistparentid0\abilistlevel1\abistartat0{\abifieldfont Symbol}{\abilistdecimal NULL}{\abilistdelim %L}{\abiliststyle Bullet List}}{\*\pn\pnql\pnstart0\pnlvlblt{\pntxtb\bullet}}\ls5\ilvl0\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Finds out where VisualStudio .NET is installed and sets up the evironment to do command line builds}
+\par}{\listtext\pard\qj\fi-431\li720\bullet 	}\pard\plain{\qj\fi-431\li720\s15\f2\fs24\lang1033{\*\listtag0}{\*\abilist\abilistid63668384\abilistparentid0\abilistlevel1\abistartat0{\abifieldfont Symbol}{\abilistdecimal NULL}{\abilistdelim %L}{\abiliststyle Bullet List}}{\*\pn\pnql\pnstart0\pnlvlblt{\pntxtb\bullet}}\ls5\ilvl0\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Builds the rat and vic solutions}
+\par}{\listtext\pard\qj\fi-431\li720\bullet 	}\pard\plain{\qj\fi-431\li720\s15\f2\fs24\lang1033{\*\listtag0}{\*\abilist\abilistid63668384\abilistparentid0\abilistlevel1\abistartat0{\abifieldfont Symbol}{\abilistdecimal NULL}{\abilistdelim %L}{\abiliststyle Bullet List}}{\*\pn\pnql\pnstart0\pnlvlblt{\pntxtb\bullet}}\ls5\ilvl0\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Cleans up any previous Access Grid build attempt}
+\par}{\listtext\pard\qj\fi-431\li720\bullet 	}\pard\plain{\qj\fi-431\li720\s15\f2\fs24\lang1033{\*\listtag0}{\*\abilist\abilistid63668384\abilistparentid0\abilistlevel1\abistartat0{\abifieldfont Symbol}{\abilistdecimal NULL}{\abilistdelim %L}{\abiliststyle Bullet List}}{\*\pn\pnql\pnstart0\pnlvlblt{\pntxtb\bullet}}\ls5\ilvl0\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Rebuilds the Access Grid package and installs it into our temporary build root (which, you should recall, is the }{\f3\fs24\lang1033{\*\listtag0}SourceDir}{\f2\fs24\lang1033{\*\listtag0} list in the }{\f3\fs24\lang1033{\*\listtag0}[Setup]}{\f2\fs24\lang1033{\*\listtag0} section of the .iss file)}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}The script takes exactly one argument and that's the top level directory of the Access Grid module.}
+\par\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}
+\par}\pard\plain\qj\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}The first action this script does is to get the location of VisualStudio .NET from the registry and set up the environment. Next, it calls the VS.NET command line compiler to build ag-rat and ag-vic. It then removes any previous build attempts, changes to the CVS module, and then uses python's distutils to build and install the package into our temporary build root. If there are any files that are not in your temporary build root that you would like to add or if paths have changed in CVS where files are, you need to edit }{\f3\fs24\lang1033{\*\listtag0}setup.py}{\f2\fs24\lang1033{\*\listtag0} to add your files. After }{\f3\fs24\lang1033{\*\listtag0}Prebuild.cmd}{\f2\fs24\lang1033{\*\listtag0} has run successfully, the installer should continue into its packaging stage, compressing the files and making the installer.}
+\par{\listtext\pard\sb440\sa60 5.	}\pard\plain{\sb440\sa60\s16\f0\fs34\b\lang1033{\*\listtag0}{\*\abilist\abilistid1314830010\abilistlevel1\abistartat1{\abifieldfont Arial}{\abilistdecimal }{\abilistdelim %L.}{\abiliststyle Numbered List}}{\*\pn\pnql\pnstart1\pnlvlbody\pndec{\pntxtb }{\pntxta .}}\ls1\ilvl0\sl240\slmult1\tx431{\f0\fs34\b\lang1033{\*\listtag0}Links}
+\par}\pard\plain\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Inno Setup :: }{\f2\fs24\lang1033{\*\listtag0}http://www.jrsoftware.org/isinfo.php}
+\par\pard\plain\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}ISTool :: }{\f2\fs24\lang1033{\*\listtag0}http://www.istool.org/}
+\par\pard\plain\s15\sl240\slmult1{\f2\fs24\lang1033{\*\listtag0}Python distutils :: }{\f2\fs24\lang1033{\*\listtag0}http://www.python.org/dev/doc/devel/dist/dist.html}}
