@@ -6,7 +6,7 @@ class DataStoreFileChooser:
     def __init__(self, datastoreClient, pattern = "*", message = "", caption = ""):
 
         self.datastoreClient = datastoreClient
-        
+
         filenames = self.datastoreClient.QueryMatchingFiles(pattern)
         print "Got filenames ", filenames
         self.dlg = wxSingleChoiceDialog(None, message, caption, filenames)

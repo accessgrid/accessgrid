@@ -1,4 +1,3 @@
-
 import sys
 import os
 import tempfile
@@ -29,7 +28,7 @@ def GetVenueDataStore(venueURL):
     dsc = DataStoreClient(upload, store)
 
     return dsc
-    
+
 
 class DataStoreFileReader:
     """
@@ -52,7 +51,7 @@ class DataStoreFileReader:
             ext = name[dot + 1:]
         except ValueError:
             ext = ""
-        
+
         self.localFile = tempfile.mktemp(ext)
 
         try:
@@ -110,10 +109,10 @@ class DataStoreFileReader:
 
     def __iter__(self):
         return self.fh.__iter__()
-                 
+
 class DataStoreFileWriter:
     """
-    This is a file handle lookalike class that manages the writing 
+    This is a file handle lookalike class that manages the writing
     to a venue-based file.
     """
 
@@ -137,7 +136,7 @@ class DataStoreFileWriter:
         os.mkdir(self.tempdir)
         self.localFile = os.path.join(self.tempdir, name)
         print "Creating local file ", self.localFile
-        
+
         self.fh = open(self.localFile, "w")
         self.open = 1
 
@@ -190,7 +189,7 @@ class DataStoreFileWriter:
 
     def __iter__(self):
         return self.fh.__iter__()
-                 
+
 
 class DataStoreClient:
     """
@@ -222,7 +221,7 @@ class DataStoreClient:
         # this will break with duplicate names, so we need
         # to fix that when that becomes possible.
         #
-        
+
         for desc in descList:
             ddict = desc._asdict
             self.dataCache.append(ddict)
@@ -336,7 +335,7 @@ class DataStoreShell(cmd.Cmd):
 
     def do_EOF(self, arg):
         return 1
-        
+
     def do_quit(self, arg):
         return 1
 
@@ -347,7 +346,7 @@ class DataStoreShell(cmd.Cmd):
         for file in arg.split():
             self.pageFile(file, "more")
         return 0
-    
+
     def do_less(self, arg):
         for file in arg.split():
             self.pageFile(file, "less")
@@ -441,8 +440,8 @@ class DataStoreShell(cmd.Cmd):
             fh.write(l)
         fh.close()
         self.dsc.LoadData()
-            
-        
+
+
     #
     # Impls
     #
@@ -454,7 +453,7 @@ class DataStoreShell(cmd.Cmd):
             ext = file[dot + 1:]
         except ValueError:
             ext = ""
-        
+
         localFile = tempfile.mktemp(ext)
 
         try:
@@ -488,7 +487,7 @@ class DataStoreShell(cmd.Cmd):
             args.append("*")
 
         files = self.dsc.QueryMatchingFilesMultiple(args)
-            
+
         files.sort()
         for f in files:
             if verb and url:
@@ -502,7 +501,7 @@ class DataStoreShell(cmd.Cmd):
                 print "%-20s %s" % (f, data['uri'])
             else:
                 print f
-    
+
 class RemoteFileObj:
     """
     Class to represent an individual file or directory from
@@ -511,7 +510,7 @@ class RemoteFileObj:
 
     TYPE_DIR = "dir"
     TYPE_FILE = "file"
-    
+
     def __init__(self, name, url, size, type):
         self.name = name
         self.size = size
@@ -523,7 +522,7 @@ class RemoteFileObj:
             ret = "Directory: "
         else:
             ret = "File:      "
-        
+
         ret += "%s %s %s" % (self.name, self.size, self.url)
 
         return ret
@@ -561,7 +560,7 @@ class FtpDataStoreClient:
                 filename = parts[-1]
 
                 url = self._getURL(pathbase + filename)
-                
+
                 if directory:
                     obj = RemoteFileObj(filename,
                                         url,
@@ -605,4 +604,3 @@ if __name__ == "__main__":
     else:
         url = sys.argv[1]
     testData(url)
-
