@@ -46,6 +46,8 @@ parser.add_option("-s", "--srcdir", dest="srcdir", metavar="SRCDIR",
                   help="Location of dependency sources (ag-media should reside here)")
 parser.add_option("-v", "--verbose", dest="verbose", action="store_true",
                   default=0, help="Run with verbose output.")
+parser.add_option("-q", "--quiet", dest="quiet", action="store_true",
+                  default=0, help="Run in quiet mode with only error output.")
 
 options, args = parser.parse_args()
 
@@ -53,8 +55,8 @@ options, args = parser.parse_args()
 
 file_to_find = os.path.join(options.agsrcdir, "AccessGrid", "Version.py")
 if not (os.path.exists( file_to_find )):
-    PrintUsage()
-    print "Cannot find AccessGrid source location.", file_to_find, " not found." 
+    parser.print_help()
+    print "Cannot find AG source dir.", file_to_find, " not found." 
     sys.exit()
 
 # Get absolute paths for when we need to pass them to python.exe later.
@@ -152,10 +154,14 @@ if sys.platform == WIN:
     file.close()
     new_file.close()
 
-# copy defaultLinux file if we are using linux
+# copy defaultLinux or defaultDarwin file
+if sys.platform == LINUX:
+    defaultNodeCfgFile = "defaultLinux"
+elif sys.platform == OSX:
+    defaultNodeCfgFile = "defaultDarwin"
 if sys.platform == LINUX or sys.platform == OSX:
-    unix_config_src = os.path.join( options.agsrcdir, "packaging", "config", "defaultLinux")
-    unix_config_dst = os.path.join( nodeConfigPath, "defaultLinux")
+    unix_config_src = os.path.join( options.agsrcdir, "packaging", "config", defaultNodeCfgFile)
+    unix_config_dst = os.path.join( nodeConfigPath, defaultNodeCfgFile)
     if options.verbose:
         print "    copying file ", unix_config_src, "to ", unix_config_dst
 
@@ -194,32 +200,33 @@ nsfile.write("configDirectory = " + os.path.join("Config", "nodeConfig") + "\n")
 if sys.platform == WIN:
     nsfile.write("defaultNodeConfiguration = defaultWindows\n\n")
 elif sys.platform == LINUX or sys.platform == OSX:
-    nsfile.write("defaultNodeConfiguration = defaultLinux\n\n")
+    nsfile.write("defaultNodeConfiguration = %s\n\n" % defaultNodeCfgFile)
 nsfile.close()
 
 agtk_location = os.path.join(os.path.abspath(options.agsrcdir))
 python_path = os.path.abspath(options.agsrcdir)
 
 # Tell users how to use the new configuration files.
-print "\n    --------------------------------------------------------------"
-print ""
-print "    To use this configuration:\n"
-print "       Make sure media-related programs (vic, rat, etc.) are in your path."
 from AccessGrid.Platform import isOSX, isLinux, isWindows
-if isWindows():
-    print "          On Windows: copying the vic and rat related binaries (if needed, "
-    print "          from a real install) into their own directory before adding them "
-    print "          to your path is recommended.  If you don't want to bother modifying "
-    print "          your path, copying them into AccessGrid/bin is a quick fix.\n"
-elif isLinux() or isOSX():
-    print "          On linux: if you've installed the vic and rat rpm packages,"
-    print "          they should already be in your path.\n"
-else:
-    print "Error, your platform is not defined.  Please add it to CvsSetup.py"
+if not options.quiet:
+    print "\n    --------------------------------------------------------------"
+    print ""
+    print "    To use this configuration:\n"
+    print "       Make sure media-related programs (vic, rat, etc.) are in your path."
+    if isWindows():
+        print "          On Windows: copying the vic and rat related binaries (if needed, "
+        print "          from a real install) into their own directory before adding them "
+        print "          to your path is recommended.  If you don't want to bother modifying "
+        print "          your path, copying them into AccessGrid/bin is a quick fix.\n"
+    elif isLinux() or isOSX():
+        print "          On linux: if you've installed the vic and rat rpm packages,"
+        print "          they should already be in your path.\n"
+    else:
+        print "Error, your platform is not defined.  Please add it to CvsSetup.py"
 
-print "       set AGTK_LOCATION to", agtk_location
-print "       set PYTHONPATH to", python_path
-print ""
+    print "       set AGTK_LOCATION to", agtk_location
+    print "       set PYTHONPATH to", python_path
+    print ""
 
 if isLinux() or isOSX():
 
@@ -253,14 +260,16 @@ else
 endif
 """ % locals())
     fh.close()
-    print "Wrote csh config to env-init.csh, bash config to env-init.sh"
+    if not options.quiet:
+        print "Wrote csh config to env-init.csh, bash config to env-init.sh"
     
 elif isWindows():
     fh = open("env-init.bat", "w")
     fh.write("set AGTK_LOCATION=%s\n" % (agtk_location))
     fh.write("set PYTHONPATH=%s\n" % (python_path))
     fh.close()
-    print "Wrote win32 batchfile init to env-init.bat"
+    if not options.quiet:
+        print "Wrote win32 batchfile init to env-init.bat"
 else:
     print "Error, a script appropriate for your platform has not been defined.  Please add it to CvsSetup.py"
 
