@@ -63,7 +63,7 @@ def RunClient(*args, **kw):
     for i in range(iter):
         try:
             if verbose:
-                print "Entering Venue: %s" % URL
+                print "Entering Venue: %s" % venueUri
             client.EnterVenue(venueUri)
             print "Client %d Entered %s" % (id, client.venueState.name)
         except:
