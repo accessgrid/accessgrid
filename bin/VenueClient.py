@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.69 2003-03-20 23:14:27 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.70 2003-03-20 23:48:39 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -241,6 +241,10 @@ class VenueClientUI(wxApp, VenueClient):
         """
         wxCallAfter(wxLogDebug, "EVENT- Enter venue with url: %s" %(URL))
 
+        # Make people you lead go to this venue
+        print '--------- Get followers'
+        self.__getFollowers(URL)
+
         # clean up ui from last venue
         if self.oldUri != None:
             wxCallAfter(wxLogDebug, "clean up frame and exit")
@@ -306,9 +310,7 @@ class VenueClientUI(wxApp, VenueClient):
         self.upload_url = self.client.GetUploadDescriptor()
         wxCallAfter(wxLogDebug, "Get upload url %s" %self.upload_url)
 
-        # Make people you lead go to this venue
-        print '--------- Get followers'
-        self.__getFollowers(URL)
+        
 
     def ExitVenue(self):
         """
@@ -425,14 +427,14 @@ class VenueClientUI(wxApp, VenueClient):
 
     def __getFollowers(self, venueUrl):
         wxLogDebug('Tell followers to go to url:%s ' %venueUrl)
-        for id in self.followerProfiles.keys():
-            url = self.followerProfiles[id].venueClientURL
+        for person in self.followerProfiles.values():
+            url = person.venueClientURL
             followerHandle = Client.Handle(url)
             if(followerHandle.IsValid()):
                 wxLogDebug("the follower handler is valid")
                 followerProxy = self.clientHandle.get_proxy()
                 followerProxy.EnterVenue(venueUri)
-                                                    
+
     def OnExit(self):
         """
         This method performs all processing which needs to be
