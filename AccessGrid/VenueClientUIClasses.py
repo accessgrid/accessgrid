@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.108 2003-03-25 21:46:22 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.109 2003-03-26 15:36:30 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ import os.path
 import logging, logging.handlers
 import cPickle
 import threading
-
+#https://vv2.mcs.anl.gov:8880/Venues/000000f42ad619f1008c00dd000b0037fdf
 from wxPython.wx import *
 
 from AccessGrid import icons
@@ -56,9 +56,9 @@ class VenueClientFrame(wxFrame):
     ID_VENUE_DATA_ADD = NewId() 
     ID_VENUE_DATA_SAVE = NewId() 
     ID_VENUE_DATA_DELETE = NewId() 
-    ID_VENUE_SERVICE = NewId() 
-    ID_VENUE_SERVICE_ADD = NewId()
-    ID_VENUE_SERVICE_DELETE = NewId()
+    #ID_VENUE_SERVICE = NewId() 
+    #ID_VENUE_SERVICE_ADD = NewId()
+    #ID_VENUE_SERVICE_DELETE = NewId()
     ID_VENUE_APPLICATION = NewId() 
     ID_VENUE_APPLICATION_ADD = NewId()
     ID_VENUE_APPLICATION_DELETE = NewId()
@@ -81,13 +81,15 @@ class VenueClientFrame(wxFrame):
     ID_NODE_MANAGE = NewId()
     ID_ME_PROFILE = NewId()
     ID_ME_DATA = NewId()
+    ID_ME_UNFOLLOW = NewId()
 
-   
+    #https://vv2.mcs.anl.gov:8880/Venues/000000f42704a7fa008c00dd000b00371fc
 
     textClientPanel = None
     textClientStandAlone = None
     myVenuesDict = {}
     myVenuesMenuIds = []
+    personToFollow = None
          
     def __init__(self, parent, id, title, app = None):
         wxFrame.__init__(self, parent, id, title)
@@ -160,13 +162,13 @@ class VenueClientFrame(wxFrame):
                              "Save data to local disk")
 	self.dataMenu.Append(self.ID_VENUE_DATA_DELETE,"Delete", "Remove data")
         self.venue.AppendMenu(self.ID_VENUE_DATA,"&Data", self.dataMenu)
-	self.serviceMenu = wxMenu()
-	self.serviceMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
-                                "Add service to the venue")
-        self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete",
-                                "Remove service")
-        self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",
-                              self.serviceMenu)
+	#self.serviceMenu = wxMenu()
+	#self.serviceMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
+        #                        "Add service to the venue")
+        #self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete",
+        #                        "Remove service")
+        #self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",
+        #                      self.serviceMenu)
 
 	self.applicationMenu = wxMenu()
 	self.applicationMenu.Append(self.ID_VENUE_APPLICATION_ADD,"Add...",
@@ -231,18 +233,19 @@ class VenueClientFrame(wxFrame):
         #self.nodeMenu.Enable(self.ID_NODE_FOLLOW, false)
         self.nodeMenu.Enable(self.ID_NODE_MANAGE, false)
         self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
-        self.serviceMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
-        self.serviceMenu.Enable(self.ID_VENUE_SERVICE_DELETE, false)
+        #self.serviceMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
+        #self.serviceMenu.Enable(self.ID_VENUE_SERVICE_DELETE, false)
         self.applicationMenu.Enable(self.ID_VENUE_APPLICATION_ADD, false)
         self.applicationMenu.Enable(self.ID_VENUE_APPLICATION_DELETE, false)
-        self.meMenu.Enable(self.ID_ME_DATA, false) 
+        self.meMenu.Enable(self.ID_ME_DATA, false)
+        
       
     def HideMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
         self.menubar.Enable(self.ID_VENUE_DATA_SAVE, false)
         self.menubar.Enable(self.ID_VENUE_DATA_DELETE, false)
-        self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
-        self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, false)
+        #self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
+        #self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, false)
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
                  
     def ShowMenu(self):
@@ -261,8 +264,8 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_VENUE_DATA_ADD, self.OpenAddDataDialog)
         EVT_MENU(self, self.ID_VENUE_DATA_SAVE, self.SaveData)
         EVT_MENU(self, self.ID_VENUE_DATA_DELETE, self.RemoveData)
-        EVT_MENU(self, self.ID_VENUE_SERVICE_ADD, self.OpenAddServiceDialog)
-        EVT_MENU(self, self.ID_VENUE_SERVICE_DELETE, self.RemoveService)
+        #EVT_MENU(self, self.ID_VENUE_SERVICE_ADD, self.OpenAddServiceDialog)
+        #EVT_MENU(self, self.ID_VENUE_SERVICE_DELETE, self.RemoveService)
         EVT_MENU(self, self.ID_VENUE_CLOSE, self.Exit)
         EVT_MENU(self, self.ID_PROFILE, self.OpenProfileDialog)
         EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialog)
@@ -271,6 +274,7 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_MYVENUE_ADD, self.AddToMyVenues)
         EVT_MENU(self, self.ID_MYVENUE_EDIT, self.EditMyVenues)
         EVT_MENU(self, self.ID_ME_PROFILE, self.OpenParticipantProfile)
+        EVT_MENU(self, self.ID_ME_UNFOLLOW, self.UnFollow)
         EVT_MENU(self, self.ID_ME_DATA, self.OpenAddPersonalDataDialog)
         EVT_MENU(self, self.ID_PARTICIPANT_PROFILE, self.OpenParticipantProfile)
         EVT_MENU(self, self.ID_NODE_PROFILE, self.OpenParticipantProfile)
@@ -332,7 +336,15 @@ class VenueClientFrame(wxFrame):
 	#self.SetAutoLayout(1)
         #self.Layout()
 
-
+    def UnFollow(self, event):
+        wxLogDebug("VenueClientUIClasses: In UnFollow")
+        if self.personToFollow != None :
+            try:
+                self.app.UnFollow(self.personToFollow)
+                self.personToFollow = None
+            except:
+                wxLogError("VenueClientUIClasses: Can stop following %s" %personToFollow.name)
+        
     def Follow(self, event):
         wxLogDebug("VenueClientUIClasses: In Follow")
         id = self.contentListPanel.tree.GetSelection()
@@ -342,11 +354,16 @@ class VenueClientFrame(wxFrame):
 
         try:
             self.app.Follow(personToFollow)
+            self.meMenu.Append(self.ID_ME_UNFOLLOW,"Stop following %s" %personToFollow.name,
+                               "%s will not lead anymore" %personToFollow.name)
+            self.personToFollow = personToFollow
             
         except:
-                wxLogDebug("Exception in bin/VenueClient.py : %s %s" % 
-                           ( sys.exc_type, str(sys.exc_value) ) )
-                wxLogError("VenueClientUIClasses: Can not follow %s" %personToFollow.name)
+            wxLogError("VenueClientUIClasses: Can not follow %s" %personToFollow.name)
+
+
+    
+        
 
         
     def __fillTempHelp(self, x):
@@ -384,16 +401,23 @@ class VenueClientFrame(wxFrame):
     def AuthorizeLeadDialog(self, clientProfile):
         text = "Do you want "+clientProfile.name+" to follow you?"
         title = "Authorize follow"
-        dlg = wxMessageDialog(self, text, title, style = wxOK| wxCANCEL|wxICON_QUESTION)
-        if(dlg.ShowModal() == wxID_OK):
+        dlg = wxMessageDialog(self, text, title, style = wxYES_NO| wxYES_DEFAULT|wxICON_QUESTION)
+        if(dlg.ShowModal() == wxID_YES):
             self.app.SendLeadResponse(clientProfile, true)
 
         else:
             self.app.SendLeadResponse(clientProfile, false)
 
         dlg.Destroy()
-        
-       
+
+    def NotifyUnLeadDialog(self, clientProfile):
+        text = clientProfile.name+" is not following you anymore?"
+        title = "Stop follow"
+        dlg = wxMessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+               
     def OpenAddPersonalDataDialog(self, event):
         dlg = wxFileDialog(self, "Choose a file:", style = wxOPEN | wxMULTIPLE)
 
@@ -558,12 +582,12 @@ class VenueClientFrame(wxFrame):
 
         profileDialog.Destroy()
 
-    def OpenAddServiceDialog(self, event):
-        addServiceDialog = AddServiceDialog(self, -1, 'Please, fill in service details')
-        if (addServiceDialog.ShowModal() == wxID_OK):
-            self.app.AddService(addServiceDialog.GetNewProfile())
+    #def OpenAddServiceDialog(self, event):
+    #    addServiceDialog = AddServiceDialog(self, -1, 'Please, fill in service details')
+    #    if (addServiceDialog.ShowModal() == wxID_OK):
+    #        self.app.AddService(addServiceDialog.GetNewProfile())
 
-        addServiceDialog.Destroy()
+    #    addServiceDialog.Destroy()
 
     def OpenConnectToVenueDialog(self, event = None):
         connectToVenueDialog = UrlDialogCombo(self, -1, 'Connect to server', list = self.myVenuesDict)
@@ -610,12 +634,6 @@ class VenueClientFrame(wxFrame):
         profileDialog.ShowModal()
         profileDialog.Destroy()
               
-    def OpenServiceProfileDialog(self, event):
-        print 'open service profile'
-
-    def OpenParticipantProfileDialog(self, event):
-        print 'open participant profile'
-
     def OpenAboutDialog(self, event):
         aboutDialog = AboutDialog(self, wxSIMPLE_BORDER)
         aboutDialog.Popup()
@@ -661,15 +679,15 @@ class VenueClientFrame(wxFrame):
         else:
             self.__showNoSelectionDialog("Please, select the data you want to delete")
 
-    def RemoveService(self, event):
-        id = self.contentListPanel.tree.GetSelection()
-        service =  self.contentListPanel.tree.GetItemData(id).GetData()
+    #def RemoveService(self, event):
+    #    id = self.contentListPanel.tree.GetSelection()
+    #    service =  self.contentListPanel.tree.GetItemData(id).GetData()
         
-        if(service != None):
-            self.app.RemoveService(service)
+    #    if(service != None):
+    #        self.app.RemoveService(service)
 
-        else:
-            self.__showNoSelectionDialog("Please, select the service you want to delete")       
+    #   else:
+    #       self.__showNoSelectionDialog("Please, select the service you want to delete")       
 
     def __showNoSelectionDialog(self, text):
         MessageDialog(self, text)
@@ -981,7 +999,7 @@ class ContentListPanel(wxPanel):
     '''
     participantDict = {}
     dataDict = {}
-    serviceDict = {}
+    #serviceDict = {}
     nodeDict = {}
     applicationDict = {}
     personalDataDict = {}
@@ -1011,7 +1029,8 @@ class ContentListPanel(wxPanel):
         #self.participantFollowId = imageList.Add(icons.getParticipantFollowBitmap())
         #self.participantLeadId = imageList.Add(icons.getParticipantLeadBitmap())
         self.defaultDataId = imageList.Add(icons.getDefaultDataBitmap())
-	self.serviceId = imageList.Add(icons.getDefaultServiceBitmap())
+	#self.serviceId = imageList.Add(icons.getDefaultServiceBitmap())
+        self.applicationId = imageList.Add(icons.getDefaultServiceBitmap())
         self.nodeId = imageList.Add(icons.getDefaultNodeBitmap())
         #self.nodeFollowId = imageList.Add(icons.getNodeFollowBitmap())
         #self.nodeLeadId = imageList.Add(icons.getNodeLeadBitmap())
@@ -1147,23 +1166,23 @@ class ContentListPanel(wxPanel):
         if(id != None):
             self.tree.Delete(id)
                           
-    def AddService(self, profile):
-        service = self.tree.AppendItem(self.services, profile.name,\
-                                       self.serviceId, self.serviceId)
-        self.tree.SetItemData(service, wxTreeItemData(profile)) 
-        self.serviceDict[profile.name] = service
-        self.tree.Expand(self.services)
-      
-    def RemoveService(self, profile):
-        if(self.serviceDict.has_key(profile.name)):
-            id = self.serviceDict[profile.name]
-            del self.serviceDict[profile.name]
-            if(id != None):
-                self.tree.Delete(id)
+    #def AddService(self, profile):
+    #    service = self.tree.AppendItem(self.services, profile.name,\
+    #                                  self.serviceId, self.serviceId)
+    #  self.tree.SetItemData(service, wxTreeItemData(profile)) 
+    #  self.serviceDict[profile.name] = service
+    #  self.tree.Expand(self.services)
+    
+    #def RemoveService(self, profile):
+    #    if(self.serviceDict.has_key(profile.name)):
+    #        id = self.serviceDict[profile.name]
+    #        del self.serviceDict[profile.name]
+    #        if(id != None):
+    #            self.tree.Delete(id)
 
     def AddApplication(self, profile):
         application = self.tree.AppendItem(self.applications, profile.name,
-                                           self.serviceId, self.serviceId)
+                                           self.applicationId, self.applicationId)
         self.tree.SetItemData(application, wxTreeItemData(profile)) 
         self.applicationDict[profile.name] = application
         self.tree.Expand(self.applications)
@@ -1193,9 +1212,9 @@ class ContentListPanel(wxPanel):
 	self.data = self.tree.AppendItem(self.root, "Data", index, index) 
 	self.tree.SetItemBold(self.data)
              
-	self.services = self.tree.AppendItem(self.root, "Services", index,
-                                             index)
-	self.tree.SetItemBold(self.services)
+	#self.services = self.tree.AppendItem(self.root, "Services", index,
+        #                                     index)
+	#self.tree.SetItemBold(self.services)
              
 	self.applications = self.tree.AppendItem(self.root, "Applications",
                                              index, index)
@@ -1206,7 +1225,7 @@ class ContentListPanel(wxPanel):
              
         self.tree.Expand(self.participants)
         self.tree.Expand(self.data)
-        self.tree.Expand(self.services)
+        #self.tree.Expand(self.services)
         self.tree.Expand(self.nodes)
         
     def __setProperties(self):
@@ -1231,7 +1250,7 @@ class ContentListPanel(wxPanel):
         if key == WXK_DELETE:
             treeId = self.tree.GetSelection()
             dataItem = self.tree.GetItemData(treeId).GetData()
-            serviceItem = self.tree.GetItemData(treeId).GetData()
+            #serviceItem = self.tree.GetItemData(treeId).GetData()
 
             # data
             for object in self.dataDict:
@@ -1240,10 +1259,10 @@ class ContentListPanel(wxPanel):
                     break
 
             # service
-            for object in self.serviceDict:
-                if serviceItem != None and serviceItem.name == object:
-                    self.app.RemoveService(serviceItem)
-                    break
+            #for object in self.serviceDict:
+            #    if serviceItem != None and serviceItem.name == object:
+            #        self.app.RemoveService(serviceItem)
+            #        break
                 
     def OnRightClick(self, event):
         self.x = event.GetX()
@@ -1255,9 +1274,9 @@ class ContentListPanel(wxPanel):
         if text == 'Data' or item != None and self.dataDict.has_key(item.name):
             self.PopupMenu(self.parent.dataMenu, wxPoint(self.x, self.y))
 
-        elif text == 'Services' or item != None and \
-                 self.serviceDict.has_key(item.name):
-            self.PopupMenu(self.parent.serviceMenu, wxPoint(self.x, self.y))
+        #elif text == 'Services' or item != None and \
+        #         self.serviceDict.has_key(item.name):
+        #    self.PopupMenu(self.parent.serviceMenu, wxPoint(self.x, self.y))
 
         elif text == 'Applications' or item != None and \
                  self.applicationDict.has_key(item.name):
@@ -1294,28 +1313,22 @@ class ContentListPanel(wxPanel):
         for index in self.nodeDict.values():
             self.tree.Delete(index)
         
-        for index in self.serviceDict.values():
-            self.tree.Delete(index)
+        #for index in self.serviceDict.values():
+        #    self.tree.Delete(index)
         
         for index in self.dataDict.values():
-            self.tree.Delete(index)                                   
+            self.tree.Delete(index)
+
+        for index in self.applicationDict.values():
+            self.tree.Delete(index)       
         
         self.participantDict.clear()
         self.dataDict.clear()
-        self.serviceDict.clear()
+        # self.serviceDict.clear()
         self.nodeDict.clear()
+        self.applicationDict.clear()
                             
-  #  def __doLayout(self):
-  #      sizer1 = wxBoxSizer(wxVERTICAL)
-  #      sizer1.Add(self.text, 0, wxALL, 20)
-  #      sizer1.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
-  #      self.SetSizer(sizer1)
-  #      sizer1.Fit(self)
-  #      self.SetAutoLayout(1)
-
-
-
-
+ 
 class TextClientPanel(wxPanel):
     aboutText = """PyText 1.0 -- a simple text client in wxPython and pyGlobus.
     This has been developed as part of the Access Grid project."""
@@ -1985,25 +1998,25 @@ class TextValidator(wxPyValidator):
 
 
  
-class AddServiceDialog(wxDialog):
-    def __init__(self, parent, id, title):
-        wxDialog.__init__(self, parent, id, title)
-        self.Centre()
-        self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
-        self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,20))
-        self.descriptionText = wxStaticText(self, -1, "Description:", style=wxALIGN_LEFT)
-        self.descriptionCtrl = wxTextCtrl(self, -1, "")
-        self.uriText = wxStaticText(self, -1, "Location URL:", style=wxALIGN_LEFT | wxTE_MULTILINE )
-        self.uriCtrl = wxTextCtrl(self, -1, "")
-        self.typeText = wxStaticText(self, -1, "Mime Type:")
-        self.typeCtrl = wxTextCtrl(self, -1, "")
-        self.okButton = wxButton(self, wxID_OK, "Ok")
-        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
-        self.__setProperties()
-        self.Layout()
-
+'''class AddServiceDialog(wxDialog):
+def __init__(self, parent, id, title):
+    wxDialog.__init__(self, parent, id, title)
+    self.Centre()
+    self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
+    self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,20))
+    self.descriptionText = wxStaticText(self, -1, "Description:", style=wxALIGN_LEFT)
+    self.descriptionCtrl = wxTextCtrl(self, -1, "")
+    self.uriText = wxStaticText(self, -1, "Location URL:", style=wxALIGN_LEFT | wxTE_MULTILINE )
+    self.uriCtrl = wxTextCtrl(self, -1, "")
+    self.typeText = wxStaticText(self, -1, "Mime Type:")
+    self.typeCtrl = wxTextCtrl(self, -1, "")
+    self.okButton = wxButton(self, wxID_OK, "Ok")
+    self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+    self.__setProperties()
+    self.Layout()
+    
     def GetNewProfile(self):
-        service = ServiceDescription('service', 'service', 'uri', 'icon', 'storagetype')
+        service = ServiceDescription("service", "service", "uri", "icon", "storagetype")
         service.SetName(self.nameCtrl.GetValue())
         service.SetDescription(self.descriptionCtrl.GetValue())
         service.SetURI(self.uriCtrl.GetValue())
@@ -2039,7 +2052,7 @@ class AddServiceDialog(wxDialog):
         self.SetSizer(sizer1)
         sizer1.Fit(self)
         self.SetAutoLayout(1)
-
+'''
 
 class DataDropTarget(wxFileDropTarget):
     def __init__(self, application):
