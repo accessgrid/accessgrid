@@ -1,17 +1,23 @@
 #-----------------------------------------------------------------------------
 # Name:        AuthorizationUI.py
 # Purpose:     Roles Management UI
+#
+# Author:      Susanne Lefvert 
+#
+#
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.1 2004-03-12 05:35:24 judson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.2 2004-03-15 20:08:48 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.1 2004-03-12 05:35:24 judson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.2 2004-03-15 20:08:48 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
+import copy
+import xml.dom.minidom
 
 from wxPython.wx import *
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
@@ -22,7 +28,7 @@ from AccessGrid.Platform import isWindows, isLinux
 from AccessGrid.ClientProfile import ClientProfileCache
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
 from AccessGrid.Security.X509Subject import X509Subject    
-from AccessGrid.Security.Role import Role
+from AccessGrid.Security.Role import Role, DefaultIdentityNotRemovable
 
 class AuthorizationUIPanel(wxPanel):
     '''
@@ -37,13 +43,12 @@ class AuthorizationUIPanel(wxPanel):
         self.x = -1
         self.y = -1
         self.currentRole = None
-        self.roleToSubjectDict = {}
-        self.roleToActionDict = {}
         self.allActions = []
+        self.allRoles = []
         self.dragItem = None
         self.copyItem = None
         self.authClient = None
-
+        self.changed = 0
         
         # Create ui componentes
         self.rolePanel = wxPanel(self, -1)
@@ -51,19 +56,10 @@ class AuthorizationUIPanel(wxPanel):
         self.tree = wxTreeCtrl(self.rolePanel, wxNewId(), wxDefaultPosition, 
                                wxDefaultSize, style = wxTR_HAS_BUTTONS |
                                wxTR_NO_LINES | wxTR_HIDE_ROOT)
-
         
-        self.staticBox = wxStaticBox(self.actionPanel, -1, "")
-        self.createRoleButton = wxButton(self.rolePanel, wxNewId(), "Create Role")
-        self.removeRoleButton = wxButton(self.rolePanel, wxNewId(), "Remove Role")
-
-       
-            
+        self.staticBox = None
         self.actionList = wxCheckListBox(self.actionPanel, -1)
-        self.createActionButton = wxButton(self.actionPanel, wxNewId(), "Create Action")
-        self.removeActionButton = wxButton(self.actionPanel, wxNewId(), "Remove Action")
-
-       
+               
         self.__setMenus()
         self.__setEvents()
        
@@ -92,51 +88,28 @@ class AuthorizationUIPanel(wxPanel):
         try:
             self.authClient = AuthorizationManagerIW(authUrl)
         except Exception, e:
-            log.exception("VenueManagementTabs.__init__:Couldn't get authorization manager at\n%s. Shut down."%(authUrl))
+            self.log.exception("AuthorizationUIPanel.ConnectToAuthManager:Couldn't get authorization manager at\n%s. Shut down."%(authUrl))
             MessageDialog(None, "Can not connect.", "Error")
             return
 
         roles = []
+
+        #
+        # Get roles
+        #
         try:
-            roles = self.authClient.ListRoles()
+            self.allRoles = self.authClient.ListRoles()
+                           
         except:
-            log.exception("VenueManagementTabs.__init__: Failed to list roles.")
-
-        # Get all subjects for each role.
-        for role in roles:
-            errorList = []
-            try:
-                self.roleToSubjectDict[role] = self.authClient.ListSubjects(role)
-                
-            except:
-                self.log.exception("AuthorizationUIPanel.__init__: List subjects in role failed.")
-                self.roleToSubjectDict[role] = []
-                errorList.append(role.name)
-
-            if errorList!=[]:
-                MessageDialog(None, "Failed to laod people for roles:\n%s"%errorList, "Error")
+            self.log.exception("AuthorizationUIPanel.ConnectToAuthManager:Failed to list roles.")
         
-
-        self.__AddCachedSubjects()
-               
-        # Get all actions for each role.
-        for role in self.roleToSubjectDict.keys():
-            errorList = []
-            try:
-                actions = self.authClient.ListActions(None, role)
-                self.roleToActionDict[role] = actions
-                
-            except:
-                self.log.exception("AuthorizationUIPanel.__init__: List actions for role failed.")
-                self.roleToActionDict[role] = []
-                errorList.append(role.name)
-
-            if errorList != []:
-                MessageDialog(None, "Failed to load actions for roles:\n %s" %errorList, "Error")
-
+        #
+        # Get Actions
+        #
         try:
+           
             self.allActions = self.authClient.ListActions()
-
+                                                 
             actions = []
             for action in self.allActions:
                 actions.append(action.name)
@@ -144,10 +117,11 @@ class AuthorizationUIPanel(wxPanel):
             self.actionList.InsertItems(actions, 0)
             
         except:
-            self.log.exception("AuthorizationUIPanel.__init__: List actions failed.")
+            self.log.exception("AuthorizationUIPanel.ConnectToAuthManager: List actions failed.")
             self.allActions = []
             MessageDialog(None, "Failed to load actions", "Error")
 
+        self.__AddCachedSubjects()
         self.__initTree()
 
     def __AddCachedSubjects(self):
@@ -164,7 +138,7 @@ class AuthorizationUIPanel(wxPanel):
         
         roleExists = 0
         
-        for role in self.roleToSubjectDict.keys():
+        for role in self.allRoles:
             if self.cacheRole == role.name:
                 roleExists = 1
                 self.cacheRole = role
@@ -172,9 +146,9 @@ class AuthorizationUIPanel(wxPanel):
         # If role is not already added; Create role.
         if not roleExists:
             try:
-                self.cacheRole = self.authClient.AddRole(self.cacheRole)
-                self.roleToSubjectDict[self.cacheRole] = []
-                    
+                self.cacheRole = Role(self.cacheRole)
+                self.allRoles.append(self.cacheRole)
+                self.changed = 1   
             except:
                 self.log.exception("AuthorizationUIPanel.CreateRole: Failed to add role")
                
@@ -184,23 +158,18 @@ class AuthorizationUIPanel(wxPanel):
             cachedSubjects.append(subject)
        
         # Only add subjects that are new in the cache.
-        subjects =  self.roleToSubjectDict[self.cacheRole]
+        subjects = self.cacheRole.subjects
                 
         sList = []
                 
         for subject in cachedSubjects:
             if not subject in subjects:
-                sList.append(subject)
-
-        if sList is not []:
-            try:
-                self.authClient.AddSubjectsToRole(sList, self.cacheRole)
-                l = self.roleToSubjectDict[self.cacheRole]
-                l = l + sList
-                self.roleToSubjectDict[self.cacheRole] = l
-            except:
-                log.exception("AuthorizationUIPanel.__AddCachedSubjects: AddSubjectToRole failed")
-              
+                try:
+                    self.cacheRole.AddSubject(subject)
+                    self.changed = 1
+                except:
+                    self.log.exception("AuthorizationUIPanel.__AddCachedSubjects: AddSubjectToRole failed")
+                     
     def __initTree(self):
         '''
         Adds items to the tree
@@ -208,7 +177,7 @@ class AuthorizationUIPanel(wxPanel):
         # Add items to the tree
         self.root = self.tree.AddRoot("", -1, -1)
         
-        for role in self.roleToSubjectDict.keys():
+        for role in self.allRoles:
             # Add role
             roleId = self.tree.AppendItem(self.root, role.name, -1, -1)
             self.roleToTreeIdDict[role] = roleId
@@ -216,7 +185,7 @@ class AuthorizationUIPanel(wxPanel):
             self.tree.SetItemData(roleId, wxTreeItemData(role))
 
             # For each role, add people.
-            for person in self.roleToSubjectDict[role]:
+            for person in role.subjects:
                 personId = self.tree.AppendItem(roleId, person.name, -1, -1)
                 self.tree.SetItemData(personId, wxTreeItemData(person))
 
@@ -232,20 +201,15 @@ class AuthorizationUIPanel(wxPanel):
         self.tree.SelectItem(firstItem)
 
         currentItem = self.tree.GetSelection()
-        self.staticBox.SetLabel("Actions for %s"%self.tree.GetItemText(currentItem))
+        if self.staticBox:
+            self.staticBox.SetLabel("Actions for %s"%self.tree.GetItemText(currentItem))
             
     def __setEvents(self):
         '''
         Set events for this panel
         '''
         EVT_RIGHT_DOWN(self.tree, self.OnRightClick)
-      
        
-        EVT_BUTTON(self, self.removeRoleButton.GetId(), self.RemoveRole)
-        EVT_BUTTON(self,self.createRoleButton.GetId(), self.CreateRole)
-        EVT_BUTTON(self,self.createActionButton.GetId(), self.CreateAction)
-        EVT_BUTTON(self,self.removeActionButton.GetId(), self.RemoveAction)
-
         #EVT_TREE_END_LABEL_EDIT(self.tree, self.tree.GetId(), self.EndRename)
         EVT_TREE_BEGIN_DRAG(self.tree, self.tree.GetId(), self.BeginDrag)
         EVT_TREE_END_DRAG(self.tree, self.tree.GetId(), self.EndDrag)
@@ -261,43 +225,22 @@ class AuthorizationUIPanel(wxPanel):
         EVT_MENU(self, self.ID_PERSON_PASTE, self.Paste)
 
         EVT_MENU(self, self.ID_ROLE_ADDPERSON, self.AddPerson)
+        EVT_MENU(self, self.ID_ROLE_ADDROLE, self.CreateRole)
+        EVT_MENU(self, self.ID_ROLE_REMOVEROLE, self.RemoveRole)
 
     def __participantInRole(self, roleId, person):
         '''
         Check to see if person/group is added to a role already
         '''
         role = self.tree.GetItemData(roleId).GetData()
-        list = self.roleToSubjectDict[role]
+        list = role.subjects
 
         for l in list:
             if l.name == person.name:
                 return 1
 
         return 0
-                   
-    def __rmParticipantFromDict(self, role, person):
-        '''
-        Remove a participant from the role dictionary
-        '''
-        list = self.roleToSubjectDict[role]
-        list.remove(person)
-
-        index = 0
-        for item in list:
-            if item.name == person.name:
-                del list[index]
-                return
-                
-            index = index + 1
-
-    def __addParticipantToDict(self, role, person):
-        '''
-        Add a participant to the role dictionary
-        '''
-        list = self.roleToSubjectDict[role]
-        list.append(person)
-        self.roleToSubjectDict[role] = list
-
+    
     def __isRole(self, treeId):
         '''
         Check to see if a tree id is a role
@@ -305,16 +248,24 @@ class AuthorizationUIPanel(wxPanel):
 
         role = self.tree.GetItemData(treeId).GetData()
 
-        for r in self.roleToSubjectDict.keys():
-            if r.name == role.name:
-                return 1
-        return 0
+        return role in self.allRoles
+    
+    def __listActions(self, role):
+        actions = []
+        
+        for a in self.allActions:
+            for r in a.GetRoles():
+                if r.name == role.name:
+                    actions.append(a)
+        return actions
             
     def __setMenus(self):
         '''
         Initiate menues that are shown when user right-clicks a tree item
         '''
         self.ID_ROLE_ADDPERSON = wxNewId()
+        self.ID_ROLE_ADDROLE = wxNewId()
+        self.ID_ROLE_REMOVEROLE = wxNewId()
       
         self.ID_PERSON_ADDPERSON = wxNewId()
         self.ID_PERSON_ADDROLE = wxNewId()
@@ -328,7 +279,12 @@ class AuthorizationUIPanel(wxPanel):
         
         self.roleMenu = wxMenu()
         self.roleMenu.Append(self.ID_ROLE_ADDPERSON,"Add Person",
-                             "Add participant to this role")
+                             "Add participant to selected role")
+        self.roleMenu.AppendSeparator()
+        self.roleMenu.Append(self.ID_ROLE_ADDROLE,"Create Role",
+                             "Create a new role")
+        self.roleMenu.Append(self.ID_ROLE_REMOVEROLE,"Remove Role",
+                             "Remove selected role")
         #self.roleMenu.Append(self.ID_ROLE_ADDPERSON,"Create Role",
         #                     "Create new role")
      
@@ -358,36 +314,27 @@ class AuthorizationUIPanel(wxPanel):
         sizer  = wxStaticBoxSizer(staticBox,
                                   wxVERTICAL)
         sizer.Add(self.tree, 1, wxEXPAND|wxALL, 4)
-
-        buttonSizer = wxBoxSizer(wxHORIZONTAL)
-        buttonSizer.Add(self.createRoleButton, 1, wxEXPAND|wxALL, 4)
-        buttonSizer.Add(self.removeRoleButton, 1, wxEXPAND|wxALL, 4)
-
-        sizer.Add(buttonSizer, 0, wxEXPAND)
-
         self.rolePanel.SetSizer(sizer)
 
         # Action Panel
+        self.staticBox = wxStaticBox(self.actionPanel, -1, "Actions")
         sizer  = wxStaticBoxSizer(self.staticBox,
                                   wxVERTICAL)
         sizer.Add(self.actionList, 1, wxEXPAND|wxALL, 4)
-              
-        buttonSizer = wxBoxSizer(wxHORIZONTAL)
-        buttonSizer.Add(self.createActionButton, 1, wxEXPAND|wxALL, 4)
-        buttonSizer.Add(self.removeActionButton, 1, wxEXPAND|wxALL, 4)
-
-        sizer.Add(buttonSizer, 0, wxEXPAND)
-
         self.actionPanel.SetSizer(sizer)
 
         # The frame
+        mainSizer =  wxBoxSizer(wxVERTICAL)
+        
         sizer = wxBoxSizer(wxHORIZONTAL)
         
         sizer.Add(self.rolePanel, 5, wxEXPAND| wxALL, 5)
         sizer.Add(self.actionPanel, 3, wxEXPAND | wxALL, 5)
-        
+
+        mainSizer.Add(sizer, 1, wxEXPAND)
+              
         self.SetAutoLayout(1)
-        self.SetSizer(sizer)
+        self.SetSizer(mainSizer)
         self.actionPanel.Layout()
         self.Layout()
 
@@ -402,8 +349,7 @@ class AuthorizationUIPanel(wxPanel):
         '''
         Paste last copied item
         '''
-        
-        
+                
         if self.copyItem and self.copyItem.IsOk():
             person = self.tree.GetItemData(self.copyItem).GetData()
             selectedItem = self.tree.GetSelection()
@@ -424,20 +370,10 @@ class AuthorizationUIPanel(wxPanel):
             role = self.tree.GetItemData(roleId).GetData()
 
             if not self.__participantInRole(roleId, person):
-
-                # Add the person to the new role.
-                try:
-                    self.authClient.AddSubjectToRole(person, role)
-                except:
-                    self.log.exception("AuthorizationUI.Paste: Add subject to role failed.")
-                    MessageDialog(self, "Add %s to %s failed"%(person.name, role.name), "Error") 
-                    return
-                
+                self.changed = 1
                 personId = self.tree.AppendItem(roleId, person.name)
                 self.tree.SetItemData(personId, wxTreeItemData(person))
-
-                # Add copied item to dictionary
-                self.__addParticipantToDict(role, person)
+                role.AddSubject(person)
 
             else:
                 MessageDialog(self, "%s is already added to %s"%(person.name, role.name), "Error") 
@@ -467,39 +403,13 @@ class AuthorizationUIPanel(wxPanel):
         if currentAction:
             if checked:
                 # Add action
-                try:
-                    self.authClient.AddRoleToAction(self.currentRole, currentAction)
-                except:
-                    self.log.exception("AuthorizationUIPanel.CheckAction: Add role to action failed.")
-                    MessageDialog(self, "Add %s to %s failed"%(currentAction.name,
-                                                               self.currentRole.name), "Error") 
-                    # Uncheck list item
-                    self.actionList.Check(index, 0)
-                    return
+                self.changed = 1
+                currentAction.AddRole(self.currentRole)
                 
-                actions = self.roleToActionDict[self.currentRole]
-                actions.append(currentAction)
-                
-
             else:
                 # Remove action
-                try:
-                    self.authClient.RemoveRoleFromAction(self.currentRole,
-                                                         currentAction)
-                except:
-                    self.log.exception("AuthorizationUIPanel.CheckAction: Remoe role from action failed.")
-                    MessageDialog(self, "Remove %s from %s failed"%(currentAction.name,
-                                                               self.currentRole.name), "Error") 
-                    
-                    # Check list item
-                    self.actionList.Check(index, 1)
-                    return
-                
-                actions = self.roleToActionDict[self.currentRole]
-                
-                for action in actions:
-                    if action.name == currentAction.name:
-                        actions.remove(action)
+                self.changed = 1
+                currentAction.RemoveRole(self.currentRole)
 
     def OnSelect(self, event):
         '''
@@ -509,7 +419,7 @@ class AuthorizationUIPanel(wxPanel):
         if selectedItem.IsOk():
             role = self.tree.GetItemData(selectedItem).GetData()
             if not self.__isRole(selectedItem):
-                # This is actually a person; Get parent onstead.
+                # This is actually a person; Get parent instead.
                 selectedItem = self.tree.GetItemParent(selectedItem)
                 role = self.tree.GetItemData(selectedItem).GetData()
                             
@@ -520,10 +430,11 @@ class AuthorizationUIPanel(wxPanel):
                 
             if self.__isRole(selectedItem):
                 self.currentRole = role
-                
-                for action in self.roleToActionDict[role]:
+
+                actions = self.__listActions(role)
+                for action in actions:
                     index = self.actionList.FindString(action.name)
-                
+                    
                     # Check correct actions for this role.
                     if index is not wxNOT_FOUND:
                         self.actionList.Check(index, 1)
@@ -566,41 +477,24 @@ class AuthorizationUIPanel(wxPanel):
             #If participant is not already present in the role, add it
             if not self.__participantInRole(parent,item):
 
-                errorFlag = 0
-                # Delete item from role
+                # Remove subject from role
                 try:
-                    self.authClient.RemoveSubjectFromRole(item, oldRole)
-                                       
+                    oldRole.RemoveSubject(item)
                 except:
-                    self.log.exception("AuthorizationUI.EndDrag: Remove subject failed.")
-                    errorFlag = 1
-                    message = wxMessageDialog(self, "Failed to add %s to %s"%(item.name, role.name), "Error",  style = wxOK|wxICON_INFORMATION)
+                    message = wxMessageDialog(self, "You can not remove yourself from role %s."%(role.name), "Error",  style = wxOK|wxICON_INFORMATION)
                     # Do not use modal; it hangs the dialog.
                     message.Show()
                     return
-                                    
-                # Add item to role
                     
-                try:
-                    # Only add if we could remove
-                    if not errorFlag:
-                        self.authClient.AddSubjectToRole(item, role)
-                        
-                except:
-                    self.log.exception("AuthorizationUI.EndDrag: Add subject failed.")
-                    # We might want to add subject to old role if this fails.
-                    message = wxMessageDialog(self, "Failed to add %s to %s"%(item.name, role.name), "Error",  style = wxOK|wxICON_INFORMATION)
-                    # Do not use modal; it hangs the dialog.
-                    message.Show()
-                    return
+                # Add subject to role
+                role.AddSubject(item)
                     
                 # Update tree
+                self.changed = 1
                 self.tree.Delete(self.dragItem)
                 itemId = self.tree.AppendItem(parent, item.name)
                 self.tree.SetItemData(itemId, wxTreeItemData(item))
-                self.__rmParticipantFromDict(oldRole, item)
-                self.__addParticipantToDict(role, item)
-                
+                                
             else:
                 event.Skip()
                 message = wxMessageDialog(self, "%s is already added to %s"%(item.name, role.name), "Error",  style = wxOK|wxICON_INFORMATION)
@@ -614,28 +508,23 @@ class AuthorizationUIPanel(wxPanel):
 
         # Open dialog for user input.
         createRoleDialog = CreateRoleDialog(self, -1, 'Create Role')
+        newRole = None
                 
         if createRoleDialog.ShowModal() == wxID_OK:
             name =  createRoleDialog.GetName()
             # Add role
 
-            for role in self.roleToSubjectDict.keys():
+            for role in self.allRoles:
                 if role.name == name:
                     MessageDialog(self, "A role named %s already exists."%(name), "Error") 
                     return None
-            
-            try:
-                newRole = self.authClient.AddRole(name)
-            except:
-                self.log.exception("AuthorizationUIPanel.CreateRole: Failed to add role")
-                MessageDialog(self, "Create new role %s failed"%(name), "Error") 
-                return None
-        
+                        
+            self.changed = 1
+            newRole = Role(name)
             roleId = self.tree.AppendItem(self.root, newRole.name, -1, -1)
             self.tree.SetItemBold(roleId)
             self.tree.SetItemData(roleId, wxTreeItemData(newRole))
-            self.roleToSubjectDict[newRole] = []
-            self.roleToActionDict[newRole] = []
+            self.allRoles.append(newRole)
             self.roleToTreeIdDict[newRole] = roleId
             
         return newRole
@@ -650,14 +539,11 @@ class AuthorizationUIPanel(wxPanel):
 
         if actionDialog.ShowModal() == wxID_OK:
             actionName = actionDialog.GetName()
-            try:
-                action = self.authClient.AddAction(actionName)
-                self.allActions.append(action)
-                self.actionList.InsertItems([action.name], 0)
-            except:
-                self.log.exception("AuthorizationUIPanel.CreateAction: Create action failed")
-                MessageDialog(self, "Create action %s failed"%(actionName), "Error") 
-                           
+            action = Action(name)
+            self.allActions.append(action)
+            self.actionList.InsertItems([action.name], 0)
+            self.changed = 1
+            
         actionDialog.Destroy()
         
 
@@ -679,14 +565,38 @@ class AuthorizationUIPanel(wxPanel):
         if message.ShowModal() == wxID_YES:
             for action in self.allActions:
                 if action.name == text:
-                    try:
-                        self.authClient.RemoveAction(action.name)
-                        self.actionList.Delete(itemToRemove)
-                    except:
-                        self.log.exception("AuthorizationUIPanel.RemoveAction: Remove action failed")
-                        MessageDialog(self, "Remove action %s failed"%(action.name), "Error") 
-                        return
-                                               
+                    self.actionList.Delete(itemToRemove)
+                    self.changed = 1
+            
+    def Apply(self, event = None):
+        if not self.changed:
+            # Ignore if user didn't change anything 
+            return
+
+        domImpl = xml.dom.minidom.getDOMImplementation()
+        authDoc = domImpl.createDocument(xml.dom.minidom.EMPTY_NAMESPACE,
+                                         "AuthorizationPolicy", None)
+        authP = authDoc.documentElement
+
+        for r in self.allRoles:
+            authP.appendChild(r.ToXML(authDoc))
+        
+        for a in self.allActions:
+            authP.appendChild(a.ToXML(authDoc))
+
+        rval = authDoc.toxml()
+
+        # Update authorization manager
+        try:
+            if self.changed:
+                self.authClient.ImportPolicy(rval)
+                actions = self.authClient.ListActions()
+                
+        except:
+            self.log.exception("AuthorizationUIPanel.Apply:Couldn't update authorization manager.")
+            MessageDialog(None, "Set authorizaton failed", "Error")
+    
+       
     def AddPerson(self, event):
         '''
         Adds a new person to the tree
@@ -710,23 +620,14 @@ class AuthorizationUIPanel(wxPanel):
         if addPersonDialog.ShowModal() == wxID_OK:
             # Get subject
             subject =  X509Subject(addPersonDialog.GetName())
-                        
-            # Add subject to role
-            try:
-                self.authClient.AddSubjectToRole(subject, activeRole)
-            except:
-                self.log.exception("AuthorizationUIPanel.AddPerson: SetSubjectInRole failed.")
-                MessageDialog(self, "Add %s to %s failed"%(subject.name,
-                                                           activeRole.name), "Error") 
-                return
-
-            # Save subject in dictionary.
-            subjects = self.roleToSubjectDict[activeRole]
-            subjects.append(subject)
-            self.roleToSubjectDict[activeRole] = subjects
+            self.changed = 1
             
+            # Save subject
+            activeRole.AddSubject(subject)
+                        
             # Insert subject in tree
-            subjectId = self.tree.AppendItem(self.roleToTreeIdDict[activeRole], subject.name)
+            index = self.roleToTreeIdDict[activeRole]
+            subjectId = self.tree.AppendItem(index, subject.name)
             self.tree.SetItemData(subjectId, wxTreeItemData(subject))
 
         addPersonDialog.Destroy()  
@@ -746,20 +647,18 @@ class AuthorizationUIPanel(wxPanel):
                                       style = wxICON_QUESTION | wxYES_NO | wxNO_DEFAULT)
                 
             if message.ShowModal() == wxID_YES:
-                # Remove subject from role
-                try:
-                    self.authClient.RemoveSubjectFromRole(item, role)
-                except:
-                    self.log.exception("AuthorizationUIPanel.AddPerson: SetSubjectInRole failed.")
-                    MessageDialog(self, "Remove %s from %s failed"%(item.name,
-                                                                    role.name),
-                                  "Error")
-                    return
+                self.changed = 1
 
-                # delete item from tree and dictionary
-                self.tree.Delete(treeId)
-                self.__rmParticipantFromDict(role, item)
-            
+                try:
+                    role.RemoveSubject(item)
+
+                    # delete item from tree and dictionary
+                    self.tree.Delete(treeId)
+
+                except DefaultIdentityNotRemovable:
+                    MessageDialog(self, "You are not allowed to remove yourself from role %s"%role.name)
+                    
+                               
         else:
             MessageDialog(self, "Please select the person you want to remove")
             
@@ -773,7 +672,7 @@ class AuthorizationUIPanel(wxPanel):
         if treeId.IsOk() and treeId != self.root:
             role = self.tree.GetItemData(treeId).GetData()
 
-            if not self.roleToSubjectDict.has_key(role):
+            if not role in self.allRoles:
                 MessageDialog(self, "Select the role you want to remove.", "Notification")
                 return
             
@@ -782,17 +681,12 @@ class AuthorizationUIPanel(wxPanel):
                                           style = wxICON_QUESTION | wxYES_NO | wxNO_DEFAULT)
                 
                 if message.ShowModal() == wxID_YES:
-                    try:
-                        self.authClient.RemoveRole(role.name)
-                    except:
-                        log.exception("AuthorizationUIPanel.RemoveRole: Remove role failed.")
-                        MessageDialog(self, "Failed to remove %s"%role.name, "Notification")
-                        return
+                    self.changed = 1
+                    
                     # delete item from tree and dictionary
                     self.tree.Delete(treeId)
-                    del self.roleToSubjectDict[role]
-                    del self.roleToTreeIdDict[role]
-                        
+                    self.allRoles.remove(role)
+                                            
             else:
                 MessageDialog(self, "Please select the participant you want to remove")
 
@@ -817,8 +711,8 @@ class AuthorizationUIPanel(wxPanel):
 
         else:
             MessageDialog(self, "Please select the role or participant you want to rename")
-      
-    def EndRename(self, event):
+
+     def EndRename(self, event):
         """
         Is called when user finished renaming a participant/group
         """
@@ -1207,12 +1101,35 @@ class AddPeopleDialog(wxDialog):
         for item in list:
             self.list.InsertStringItem(0, item)
 
-class AuthorizationUIFrame(wxFrame):
-    def __init__(self, parent, id, title, am, log):
-        wxFrame.__init__(self, parent, id, title, size = wxSize(1000,400))
+class AuthorizationUIDialog(wxDialog):
+    def __init__(self, parent, id, title, log):
+        wxDialog.__init__(self, parent, id, title,
+                          size = wxSize(1000,400),
+                          style=wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
         self.panel = AuthorizationUIPanel(self, -1, log)
-        self.panel.ConnectToAuthManager("https://localhost:8880/VenueServer/Authorization")
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+
+        self.__layout()
+               
+    def ConnectToAuthManager(self, url):
+        self.panel.ConnectToAuthManager(url)
+
+    def Apply(self, url):
+        self.panel.Apply()
+
+    def __layout(self):
+        mainSizer = wxBoxSizer(wxVERTICAL)
+        mainSizer.Add(self.panel, 1, wxEXPAND)
         
+        buttonSizer = wxBoxSizer(wxHORIZONTAL)
+        buttonSizer.Add(self.okButton, 0, wxALL, 5)
+        buttonSizer.Add(self.cancelButton, 0, wxALL, 5)
+        mainSizer.Add(buttonSizer, 0, wxCENTER)
+
+        self.SetAutoLayout(1)
+        self.SetSizer(mainSizer)
+        self.Layout()
 
 
 def InitLogging(debug = 1, l = None):
@@ -1228,7 +1145,8 @@ def InitLogging(debug = 1, l = None):
         """
 
         logFormat = "%(name)-17s %(asctime)s %(levelname)-5s %(message)s"
-        log = Log.GetLogger(Log.AuthorizationUI)
+        log = logging.getLogger('AuthorizationUI')
+        log.setLevel(logging.DEBUG)
         
         # Log to file
         if l == None:
@@ -1236,16 +1154,15 @@ def InitLogging(debug = 1, l = None):
         else:
             logFile = l
       
-        fileHandler = Log.FileHandler(logFile)
-        fileHandler.setFormatter(Log.Formatter(logFormat))
-        fileHandler.setLevel(Log.DEBUG)
-        Log.HandleLoggers(fileHandler, Log.GetDefaultLoggers())
+        fileHandler = logging.FileHandler(logFile)
+        fileHandler.setFormatter(logging.Formatter(logFormat))
+        log.addHandler(fileHandler)
 
         # If debug mode is on, log to command window too
         if debug:
-            hdlr = Log.StreamHandler()
-            hdlr.setFormatter(Log.Formatter(logFormat))
-            Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
+            hdlr = logging.StreamHandler()
+            hdlr.setFormatter(logging.Formatter(logFormat))
+            log.addHandler(hdlr)
 
         return log
     
@@ -1256,7 +1173,7 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         uri = sys.argv[1]
     else:
-        uri = "https://localhost:8880/VenueServer/Authorization"
+        uri = "https://localhost:8000/VenueServer/Authorization"
         
     try:
         am = AuthorizationManagerIW(uri)
@@ -1264,11 +1181,9 @@ if __name__ == "__main__":
         print "Couldn't get authorization manager: ", e
         sys.exit(1)
 
-   
-    #p1 = am.GetPolicy()
     #am.TestImportExport(p1)
     #p2 = am.GetPolicy()
-
+    #am.ImportPolicy(p2)
     #if p1 == p2:
     #    print "Policies the same!"
     #else:
@@ -1291,8 +1206,11 @@ if __name__ == "__main__":
     #actionDialog.Destroy()
     
     
-    f = AuthorizationUIFrame(None, -1, "Manage Roles", am, log)
-    f.Show()
+    f = AuthorizationUIDialog(None, -1, "Manage Roles", log)
+    f.ConnectToAuthManager("https://localhost:8000/VenueServer/Authorization")
+    if f.ShowModal() == wxID_OK:
+        f.panel.Apply()
+    f.Destroy()
     wxapp.SetTopWindow(f)
     wxapp.MainLoop()
 
