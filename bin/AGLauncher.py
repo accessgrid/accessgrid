@@ -75,7 +75,7 @@ class LauncherFrame(wxFrame):
         self.mainButtonList=[];
         self.mainButtonActions=[];
         self.mainButtonList.append(wxButton(self,self.BUTTON_VC_ID,"Venue Client"));
-        self.mainButtonActions.append([self.RunPython,"%s/bin/VenueClient.py"%(agtk_location),[]]);
+        self.mainButtonActions.append([self.RunPython,"%s/bin/VenueClient.py"%(agtk_location),['--personalNode']]);
         self.mainButtonList.append(wxButton(self,self.BUTTON_CM_ID,"Certificate Management"));
         self.mainButtonActions.append([self.RunPython,"%s/bin/CertificateManager.py"%(agtk_location),[]]);
         self.mainButtonList.append(wxButton(self,self.BUTTON_NS_ID,"Node Service"));
@@ -116,7 +116,7 @@ class LauncherFrame(wxFrame):
         self.debugButtonList=[];
         self.debugButtonActions=[];
         self.debugButtonList.append(wxButton(self,self.BUTTON_VCD_ID,"Venue Client (Debug)"));
-        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/VenueClient.py"%(agtk_location),["-d"]]);
+        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/VenueClient.py"%(agtk_location),["-d",'--personalNode']]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_CMD_ID,"Certificate Management (Debug)"));
         self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/CertificateManager.py"%(agtk_location),["-d"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_NSD_ID,"Node Service (Debug)"));
