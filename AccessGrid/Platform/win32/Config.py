@@ -3,18 +3,19 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.39 2004-05-07 15:45:43 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.40 2004-05-13 18:56:21 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.39 2004-05-07 15:45:43 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.40 2004-05-13 18:56:21 lefvert Exp $"
 
 import os
 import sys
 import socket
 import re
+import shutil
 
 from pyGlobus import utilc
 
@@ -134,7 +135,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
             
         # Check the installation
         if not os.path.exists(self.installBase):
-            raise IOError("AGTkConfig: installation base does not exist.")
+            raise IOError("AGTkConfig: installation base does not exist %s." %self.installBase)
         
         return self.installBase
         
@@ -151,7 +152,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
                 os.mkdir(self.configDir)
 
         if self.configDir is not None and not os.path.exists(self.configDir):
-            raise IOError("AGTkConfig: config dir does not exist.")
+            raise IOError("AGTkConfig: config dir does not exist %s." %self.configDir)
 
         return self.configDir
 
@@ -165,7 +166,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
         # Check the installation
         if self.installDir is not None and not os.path.exists(self.installDir):
-            raise IOError("AGTkConfig: install dir does not exist.")
+            raise IOError("AGTkConfig: install dir does not exist %s."%self.installDir)
 
         return self.installDir
 
@@ -183,7 +184,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
         # Check the installation
         if self.docDir is not None and not os.path.exists(self.docDir):
-            raise IOError("AGTkConfig: doc dir does not exist.")
+            raise IOError("AGTkConfig: doc dir does not exist %s."%self.docDir)
 
         return self.docDir
 
@@ -202,9 +203,10 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
                     log.exception("Couldn't make log dir.")
 
         # Check the installation
+        
         if self.logDir is not None and \
                not os.path.exists(self.logDir):
-            raise IOError("AGTkConfig: log dir does not exist.")
+            raise IOError("AGTkConfig: log dir does not exist %s."%self.logDir)
  
         return self.logDir
     
@@ -223,7 +225,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
         # Check the installation
         if self.appDir is not None and not os.path.exists(self.appDir):
-            raise IOError("AGTkConfig: app dir does not exist.")
+            raise IOError("AGTkConfig: app dir does not exist %s." %self.appDir)
 
         return self.appDir
 
@@ -244,7 +246,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         # Check the installation
         if self.nodeServicesDir is not None and \
                not os.path.exists(self.nodeServicesDir):
-            raise IOError("AGTkConfig: node service dir does not exist.")
+            raise IOError("AGTkConfig: node service dir does not exist %s."%self.nodeServicesDir)
 
         return self.nodeServicesDir
 
@@ -265,7 +267,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         # Check the installation
         if self.servicesDir is not None and \
                not os.path.exists(self.servicesDir):
-            raise IOError("AGTkConfig: services dir does not exist.")
+            raise IOError("AGTkConfig: services dir does not exist %s."%self.servicesDir)
 
         return self.servicesDir
 
@@ -479,7 +481,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
         if UserConfig.theUserConfigInstance is not None:
             raise Exception, "Only one instance of User Config is allowed."
-
+                
         UserConfig.theUserConfigInstance = self
 
         self.initIfNeeded = initIfNeeded
@@ -516,16 +518,67 @@ class UserConfig(AccessGrid.Config.UserConfig):
         except:
             log.warn("No Service Dir!")
 
+        if self.initIfNeeded:
+            self._Migrate()
+
+    def _CopyFile(self, oldFile, newFile):
+        '''
+        Move oldFile to newFile if newFile none existent.
+        '''
+        # Never overwrite new configs
+        if not os.path.exists(newFile) and os.path.exists(oldFile):
+            log.debug('copy %s to %s' %(oldFile, newFile))
+            shutil.copyfile(oldFile, newFile)
+               
+
+    def _CopyDir(self, oldDir, newDir):
+        '''
+        Move oldDir to newDir if newDir none existent.
+        '''
+        # Never overwrite new configs
+        if not os.path.exists(newDir) and os.path.exists(oldDir):
+            log.debug('copy %s to %s' %(oldDir, newDir))
+            shutil.copytree(oldDir, newDir)
+
+    def _Migrate(self):
+        '''
+        Make sure old info gets moved to new location.
+        '''
+        oldPath = os.path.join(self.baseDir, "profile")
+        newPath = os.path.join(self.configDir, "profile")
+        self._CopyFile(oldPath, newPath)
+        
+        oldPath = os.path.join(self.baseDir, "certRepo")
+        newPath = os.path.join(self.configDir, "certRepo")
+        self._CopyDir(oldPath, newPath)
+
+        oldPath = os.path.join(self.baseDir, "trustedCACerts")
+        newPath = os.path.join(self.configDir, "trustedCACerts")
+        self._CopyDir(oldPath, newPath)
+        
+        oldPath = os.path.join(self.baseDir, "personalDataStore")
+        newPath = os.path.join(self.configDir, "personalDataStore")
+        self._CopyDir(oldPath, newPath)
+        
+        oldPath = os.path.join(self.baseDir, "profileCache")
+        newPath = os.path.join(self.configDir, "profileCache")
+        self._CopyDir(oldPath, newPath)
+        
+        oldPath = os.path.join(self.baseDir, "nodeConfig")
+        newPath = os.path.join(self.configDir, "nodeConfig")
+        self._CopyDir(oldPath, newPath)
+
     def GetBaseDir(self):
         global AGTK_USER
-
+       
         try:
             self.baseDir = os.environ[AGTK_USER]
-
+                        
             # Create directory if it doesn't exist
             if self.initIfNeeded:
                 if not os.path.exists(self.baseDir):
                     os.mkdir(self.baseDir)
+                                 
         except:
             try:
                 base = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
@@ -563,7 +616,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
         # Check the installation
         if self.configDir is not None and \
                not os.path.exists(self.configDir):
-            raise Exception, "AGTkConfig: config dir does not exist."
+            raise Exception, "AGTkConfig: config dir does not exist %s."%self.configDir
 
         return self.configDir
         
@@ -592,7 +645,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
         # Check the installation
         if self.logDir is not None and \
                not os.path.exists(self.logDir):
-            raise Exception, "AGTkConfig: log dir does not exist." 
+            raise Exception, "AGTkConfig: log dir does not exist %s."%self.logDir 
 
         return self.logDir
 
@@ -608,7 +661,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
         # Check the installation
         if self.appDir is not None and not os.path.exists(self.appDir):
-            raise Exception, "AGTkConfig: app dir does not exist."
+            raise Exception, "AGTkConfig: app dir does not exist %s."%self.appDir
 
         return self.appDir
 
@@ -626,7 +679,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
         # Check the installation
         if self.nodeServicesDir is not None and \
                not os.path.exists(self.nodeServicesDir):
-            raise Exception, "AGTkConfig: node service dir does not exist."
+            raise Exception, "AGTkConfig: node service dir does not exist %s."%self.nodeServicesDir
 
         # check to make it if needed
         return self.nodeServicesDir
@@ -645,7 +698,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
         # Check the installation
         if self.servicesDir is not None and \
                not os.path.exists(self.servicesDir):
-            raise Exception, "AGTkConfig: services dir does not exist."
+            raise Exception, "AGTkConfig: services dir does not exist %s."%self.servicesDir
 
         return self.servicesDir
 
