@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.30 2004-07-15 20:22:25 turam Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.31 2004-07-16 14:02:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.30 2004-07-15 20:22:25 turam Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.31 2004-07-16 14:02:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -771,20 +771,10 @@ if __name__ == "__main__":
   from AccessGrid import Toolkit
 
   app = Toolkit.CmdlineApplication()
-  app.Initialize()
-  app.InitGlobusEnvironment()
-
-  certMgr = app.GetCertificateManager()
-  if not certMgr.HaveValidProxy():
-      certMgr.CreateProxy()
-  
-  hdlr = Log.StreamHandler()
-  hdlr.setLevel(Log.DEBUG)
-  Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
-  
+  app.Initialize("TextServiceAsynch-Main")
 
   port = 6600
-  log.debug("TextServiceAsynch: Creating new TextService at %d.", port)
+  print "TextServiceAsynch: Creating new TextService at %d." % port
   textService = TextService(('', port))
   textService.AddChannel("Test")
   textService.start()

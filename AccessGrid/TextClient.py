@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.36 2004-07-14 20:40:54 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.37 2004-07-16 14:03:51 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.36 2004-07-14 20:40:54 judson Exp $"
+__revision__ = "$Id: TextClient.py,v 1.37 2004-07-16 14:03:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -322,6 +322,7 @@ if __name__ == "__main__":
     import sys
     import string
     import socket, time
+    from optparse import Option
     from AccessGrid import Toolkit
     from AccessGrid import ClientProfile
     from AccessGrid.GUID import GUID
@@ -329,26 +330,34 @@ if __name__ == "__main__":
     last_one = 0
     
     app = Toolkit.CmdlineApplication()
-    app.Initialize("TextClient-Main")
 
-    if len(sys.argv) > 3:
-        host = sys.argv[1]
-        port = int(sys.argv[2])
-        channel = sys.argv[3]
-        count = int(sys.argv[4])
-    elif len(sys.argv) > 2:
-        host = ''
-        port = 6600
-        channel = sys.argv[1]
-        count = int(sys.argv[2])
-    elif len(sys.argv) == 2:
-        host = ''
-        port = 6600
-        channel = "Test"
-        count = int(sys.argv[1])
+    hostOption = Option("--host", dest="host", default="''", type="string",
+                        help="The host to connect to.")
+    portOption = Option("-p", "--port", dest="port", default=5500, type="int",
+                        help="The port to connect to.")
+    channelOption = Option("--channel", dest="channel", default="Test",
+                           type="string", help = "The channel to connect to.")
+    countOption = Option("--count", dest="count", default=10, type="int",
+                         help="The number of messages to send.")
+
+    app.AddCmdLineOption(hostOption)
+    app.AddCmdLineOption(portOption)
+    app.AddCmdLineOption(channelOption)
+    app.AddCmdLineOption(countOption)
+
+    try:
+        app.Initialize("TextClient-Main")
+    except:
+        print "Error initizlizing toolkit, exiting."
+        sys.exit(-1)
+
+    host = app.GetOption("host")
+    port = app.GetOption("port")
+    channel = app.GetOption("channel")
+    count = app.GetOption("count")
         
-    print "TextClient: Creating connection to service at: %s %d." % (host, port)
-
+    print "TextClient: Creating connection to service at: %s %d." % (host,
+                                                                     port)
     def out(string):
         global last_one
         parts = string.split(" ")
