@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.37 2004-06-02 00:55:43 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.38 2004-06-02 01:52:22 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.37 2004-06-02 00:55:43 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.38 2004-06-02 01:52:22 eolson Exp $"
 
 import os
 import mimetypes
@@ -949,7 +949,8 @@ Comment=%s
 
     def GetMimeType(self, extension = None):
         fauxFn = ".".join(["Faux", extension])
-        mimetypes.init()
+        mimeFile = os.path.join(os.environ['HOME'],".mime.types")
+        mimetypes.init([mimeFile])
         
         # This is always a tuple so this is Ok
         mimeType = mimetypes.guess_type(fauxFn)[0]
