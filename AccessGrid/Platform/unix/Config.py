@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.29 2004-05-13 20:35:15 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.30 2004-05-14 16:12:55 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.29 2004-05-13 20:35:15 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.30 2004-05-14 16:12:55 lefvert Exp $"
 
 import os
 import mimetypes
@@ -413,6 +413,10 @@ class UserConfig(AccessGrid.Config.UserConfig):
             self.GetServicesDir()
         except:
             print "No Service Dir!"
+
+        # Move old config files to new location.
+        if self.initIfNeeded:
+            self._Migrate()
 
     def GetProfile(self):
         if self.profileFilename == None:
