@@ -2,18 +2,19 @@
 # Name:        MulticastAddressAllocator.py
 # Purpose:     This class manages multicast address allocation.
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.19 2004-09-07 13:48:59 judson Exp $
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.20 2005-02-11 21:21:24 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: MulticastAddressAllocator.py,v 1.19 2004-09-07 13:48:59 judson Exp $"
+__revision__ = "$Id: MulticastAddressAllocator.py,v 1.20 2005-02-11 21:21:24 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
 import socket
 import struct
+import array
 from random import Random
 
 from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
@@ -53,7 +54,14 @@ class MulticastAddressAllocator(NetworkAddressAllocator):
             self.baseAddress = struct.unpack("<L",
                                         socket.inet_aton(baseAddress))[0]
 
-        self.addressMask = socket.htonl(~((1<<(32-self.addressMaskSize))-1))
+        self._CalcAddressMask()
+
+    def _CalcAddressMask(self):
+        # Calculate address mask in host-independent fashion
+        arr = array.array('l',[~((1<<(32-self.addressMaskSize))-1)])
+        arr.byteswap()
+        self.addressMask = arr[0]
+        
 
     def SetBaseAddress(self, baseAddress):
         self.baseAddress = struct.unpack("<L",
@@ -66,7 +74,7 @@ class MulticastAddressAllocator(NetworkAddressAllocator):
     # These don't mean what they did before! IRJ-2002-2-22
     def SetAddressMask(self, addressMaskSize = 24):
         self.addressMaskSize = addressMaskSize
-        self.addressMask = socket.htonl(~((1<<(32-self.addressMaskSize))-1))
+        self._CalcAddressMask()
         return self.addressMaskSize
 
     def GetAddressMask( self ):
@@ -117,3 +125,5 @@ if __name__ == "__main__":
     print "%d random addresses with mask %d:" % (iter,mask)
     for i in range(0, iter):
         print multicastAddressAllocator.AllocateAddress()
+
+
