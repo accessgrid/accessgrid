@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: AccessControl.py,v 1.12 2003-08-12 15:55:43 eolson Exp $
+# RCS-ID:      $Id: AccessControl.py,v 1.13 2003-08-13 17:51:04 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ Access Control mechanisms for the AG system.
 # ServiceObject.
 #
 
-import sys, types
+import sys, types, string
 import logging
 log = logging.getLogger("AG.hosting.AccessControl")
 
@@ -58,6 +58,9 @@ else:
 
 AUTH_X509 = "x509"
 AUTH_ANONYMOUS = "anonymous"
+
+class InvalidSubjectTypeError(Exception):
+    pass
 
 class Subject:
     """
@@ -147,7 +150,13 @@ class Role:
                 if s == subject:
                     return 
             else:
-                raise "UnknownSubjectTypeError"
+                # Soap errors when sending the type of a variable
+                #  as a string so strip out not alpha characters.
+                strng = ""
+                for a in str(type(subj)):
+                    if not a in string.punctuation or a == "_":
+                        strng += a
+                raise InvalidSubjectTypeError(strng)
                
         self.subjects.append(subject)
 
@@ -189,7 +198,13 @@ class Role:
                 # print "match on obj ", self.GetSubject()
                 subjectStringList.append(subj.GetName())
             else:
-                raise "InvalidSubjectError"
+                # Soap errors when sending the type of a variable
+                #  as a string so strip out not alpha characters.
+                strng = ""
+                for a in str(type(subj)):
+                    if not a in string.punctuation or a == "_":
+                        strng += a
+                raise InvalidSubjectTypeError(strng)
         return subjectStringList
 
 
