@@ -1,12 +1,10 @@
 #-----------------------------------------------------------------------------
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
-#
 # Author:      Ivan R. Judson
-#
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.11 2003-01-16 22:31:58 judson Exp $
-# Copyright:   (c) 2002
+# RCS-ID:      $Id: VenueServer.py,v 1.12 2003-01-17 17:26:35 judson Exp $
+# Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
@@ -38,29 +36,17 @@ class VenueServer(ServiceBase.ServiceBase):
     The Virtual Venue Server object is:
 
     configFile : string
-    
     config : dictionary of Key/Value pairs that holds configuration parameters.
-    
     adminstrators : list of strings (each is a DN of a adminsitrative user)
-    
     dataStorage : string
-    
     defaultVenue : VenueURL
-    
     hostingEnvironment : AccessGrid.hosting.pyGlobus.Server
-    
     multicastAddressAllocator : AccessGrid.MulticastAddressAllocator
-    
     venues : a list of Venues Objects that are being made available
-    
     services : a list of service descriptions, these are either network or
                application services that are available so any venue hosted
                by this venue server can add these to the services available
                from within that venue
-    
-    store : persistent data storage for the virtual venues, this enables
-            virtual venues to be persistent across server shutdowns & restarts
-    
     houseKeeper : Scheduler
     """
 
@@ -105,18 +91,17 @@ class VenueServer(ServiceBase.ServiceBase):
         # Try to open the persistent store for Venues. If we fail, we
         # open a temporary store, but it'll be empty.
         try:
-            self.store = shelve.open(
+            store = shelve.open(
                 self.config['VenueServer.persistenceData'])
 
             # If we've successfully opened the store, we load Venues
             # from it.
-            for vURL in self.store.keys():
+            for vURL in store.keys():
                 print "Loading Venue: %s" % vURL
-                self.venues[vURL] = self.store[vURL]
+                self.venues[vURL] = store[vURL]
+            store.close()
         except:
-            print "Corrupt persistence database detected."
-            self.store = shelve.open(self.config['VenueServer.persistenceData']
-                                     + '.new')
+            print "Corrupt persistence database detected.", sys.exc_type, sys.exc_value
 
         # The houseKeeper is a task that is doing garbage collection and
         # other general housekeeping tasks for the Venue Server.
@@ -184,7 +169,6 @@ class VenueServer(ServiceBase.ServiceBase):
             venuePath = "Venues/%s" % venueID
             venueURL = self.hostingEnvironment.get_url_base() + "/" + venuePath
             venueDescription.uri = venueURL
-            print "******************* uri = ", venueDescription.uri
 
             # Create a new Venue object, pass it the coherenceService,
             #       the server's Multicast Address Allocator, and the server's
@@ -235,7 +219,7 @@ class VenueServer(ServiceBase.ServiceBase):
         RemoveVenue removes a venue from the VenueServer.
         """
         venue = self.venues[URL]
-        # remove from server
+        venue.Shutdown()
         del self.venues[URL]
 
     RemoveVenue.pass_connection_info = 1
@@ -322,6 +306,7 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         try:
             venueDescriptionList = map( lambda venue: venue.GetDescription( connectionInfo ), self.venues.values() )
+
             for venue in venueDescriptionList:
                 print "  ---- venue ", venue.name, venue.description, venue.uri
         except:
@@ -377,8 +362,9 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         for vURL in self.venues.keys():
             self.venues[vURL].Shutdown()
-        self.cp.write(file(self.configFile, 'w+'))
-        self.store.close()
+
+        self.Checkpoint()
+
         self.hostingEnvironment.stop()
 
     Shutdown.pass_connection_info = 1
@@ -394,8 +380,17 @@ class VenueServer(ServiceBase.ServiceBase):
         state that is lost (the longer the time between checkpoints, the more 
         that can be lost).
         """
-        self.store.close()
-        self.store = shelve.open(self.config['VenueServer.persistenceData'])
+        try:
+            store = shelve.open(self.config['VenueServer.persistenceData'])
+
+            for vURL in self.venues.keys():
+                venue = self.venues[vURL]
+                store[vURL] = venue
+
+            store.close()
+        except:
+            print "Corrupt persistence database detected.", sys.exc_type, sys.exc_value
+
         self.cp.write(file(self.configFile, 'w+'))
 
     Checkpoint.soap_export_as = "Checkpoint"
