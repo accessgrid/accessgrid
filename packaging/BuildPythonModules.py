@@ -50,8 +50,11 @@ if PYVER=="2.2":
     print "Building Logging 0.4.7"
     SetupModule("logging-0.4.7", SOURCE, DEST)
 
-    print "Building Optik 1.4.1"
-    SetupModule("Optik-1.4.1", SOURCE, DEST)
+    try:
+        print "Building Optik 1.4.1"
+        SetupModule("Optik-1.4.1", SOURCE, DEST)
+    except:
+        print "Warning: " + SOURCE + "/Optik-1.4.1 not found, ignoring"
 
 
 print "Building fpconst 0.7.0"
