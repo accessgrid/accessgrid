@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.67 2003-04-28 00:44:58 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.68 2003-04-28 18:07:57 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -57,6 +57,9 @@ class NotAuthorized(Exception):
     pass
 
 class InvalidVenueURL(Exception):
+    pass
+
+class RemoveVenueException(Exception):
     pass
 
 class VenueServer(ServiceBase.ServiceBase):
@@ -407,10 +410,21 @@ class VenueServer(ServiceBase.ServiceBase):
         if not self._authorize():
             raise NotAuthorized
 
+        # Get the venue from the id (from the URL)
         id = self.IdFromURL(URL)
-        
         venue = self.venues[id]
+
+        # Stop the web service interface
+        try:
+            self.hostingEnvironment.UnbindService(venue)
+        except:
+            log.exception("Couldn't unbind venue.")
+            raise RemoveVenueException("Counldn't unbind venue.")
+
+        # Shutdown the venue
         self.venues[id].Shutdown()
+
+        # Clean it out of the venueserver
         del self.venues[id]
         
     RemoveVenue.soap_export_as = "RemoveVenue"
