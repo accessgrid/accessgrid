@@ -1,6 +1,7 @@
 import sys
 import os
 import zipfile
+import re
 
 """
 Make Access Grid service packages
@@ -32,10 +33,13 @@ absOutputDir = os.path.abspath(outputDir)
 if not os.path.exists(absOutputDir):
     os.makedirs(absOutputDir)
     
-services = ["AudioService", "VideoConsumerService", "VideoProducerService", "VideoService"]
 if not os.path.isdir(inputDir):
     print "The following directory does not exist: ", inputDir
 
+svcexp = re.compile(".*svc$", re.IGNORECASE)
+services = map(lambda x: os.path.splitext(x)[0],
+               filter(svcexp.search, os.listdir(inputDir)))
+print "SERVICES: ", services
 sdir = os.getcwd()
 
 os.chdir(inputDir)
