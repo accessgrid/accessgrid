@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.43 2004-04-27 17:24:28 judson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.44 2004-04-28 16:30:38 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.43 2004-04-27 17:24:28 judson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.44 2004-04-28 16:30:38 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3015,7 +3015,7 @@ class ContentListPanel(wxPanel):
                         self.FindUnregistered(item)
                     else:
                         # Notify user of no application client
-                        self.Notify("You have no client for this Shared Application.", 
+                        self.parent.Notify("You have no client for this Shared Application.", 
                                     "Notification")
                 
     def OnRightClick(self, event):
