@@ -22,10 +22,12 @@ from AccessGrid import Events
 from AccessGrid import EventClient
 from AccessGrid import Toolkit
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
+from AccessGrid.Platform import IsWindows, IsLinux, IsOSX
 from AccessGrid import DataStore
 from AccessGrid.GUID import GUID
 from AccessGrid.DataStoreClient import GetVenueDataStore
 from AccessGrid.Toolkit import CmdlineApplication
+from AccessGrid.Platform.ProcessManager import ProcessManager
 
 from AccessGrid.ClientProfile import ClientProfile
 
@@ -38,10 +40,6 @@ class VNCAppServerException(Exception):
     
 class vncServer:
     def __init__(self,vncserverexe,displayID,geometry="1024x768",depth=24):
-        if sys.platform == "win32":
-            print "ERROR! Invalid system type"
-            print "MUST RUN vncServer on a posix-compliant system!"
-            raise VNCServerException("Invalid System Type - POSIX Required");
             
         # Initialize the vncserver executable
         self.vncserverexe = vncserverexe
@@ -49,78 +47,109 @@ class vncServer:
         # Initialize the contact string, construct it from the hostname and the
         # display ID
         hostname=SystemConfig.instance().GetHostname()
-        self.contactString="%s%s"%(hostname,displayID);
-        self.displayID=displayID;
-
+        if IsWindows():
+            self.contactString="%s"%(hostname,)
+        elif IsOSX():
+            self.contactString="%s"%(hostname,)
+        elif IsLinux():
+            self.contactString="%s%s"%(hostname,displayID)
+            
+        self.displayID=displayID
+        
         # Initialize internal representation of the desired geometry
-        self.geometry={};
-        (tmpWidth,tmpHeight)=geometry.split('x');
-        self.geometry["Width"]=eval(tmpWidth);
-        self.geometry["Height"]=eval(tmpHeight);
+        self.geometry={}
+        (tmpWidth,tmpHeight)=geometry.split('x')
+        self.geometry["Width"]=eval(tmpWidth)
+        self.geometry["Height"]=eval(tmpHeight)
 
         # And depth
-        self.depth=depth;
+        self.depth=depth
 
         # Initialize other random bits, mostly path/file names
-        self.guid=str(GUID());
-        self.passwdFilename=os.path.join(UserConfig.instance().GetTempDir(),"passwd-%s.vnc"%(self.guid));
-        self.logFilename=os.path.join(UserConfig.instance().GetTempDir(),"Xvnc-%s.log"%(self.guid));
-        self.lockFilename=os.path.join(UserConfig.instance().GetTempDir(),"Xvnc-%s.lock"%(self.guid));
+        self.guid=str(GUID())
+        self.passwdFilename=os.path.join(UserConfig.instance().GetTempDir(),"passwd-%s.vnc"%(self.guid))
+        self.logFilename=os.path.join(UserConfig.instance().GetTempDir(),"Xvnc-%s.log"%(self.guid))
+        self.lockFilename=os.path.join(UserConfig.instance().GetTempDir(),"Xvnc-%s.lock"%(self.guid))
         
-        # Set the name of the VNC server executable
-        self.exe = "Xvnc"
-
         # No child process running...
-        self.pid_set=0;
+        self.pid_set=0
 
         # Initialize the password file.
         self.genPassword()
         
+        self.processManager = ProcessManager()
+        
     def genPassword(self):
         import random
         
-        f = file(self.passwdFilename,'wb')
+        self.password = ''
         for i in range(8):
-            f.write('%x' % random.randint(0,256) )
+            self.password += '%x' % random.randint(0,256)
+
+        print "password = ", self.password
+        f = file(self.passwdFilename,'wb')
+        f.write(self.password)
         f.close()
 
     def getAuthFile(self):
-        return self.passwdFilename;
+        return self.passwdFilename
 
     def getContactString(self):
-        return self.contactString;
+        return self.contactString
 
     def getGeometry(self):
-        return "%dx%d"%(self.geometry["Width"],self.geometry["Height"]);
+        return "%dx%d"%(self.geometry["Width"],self.geometry["Height"])
 
     def getDepth(self):
-        return "%d"%(self.depth);
+        return "%d"%(self.depth)
 
     def isRunning(self):
         try:
-            import posix;
             if self.pid_set:
-                if posix.access(self.lockFilename,posix.O_RDONLY):
-                    return 1;
+                if os.access(self.lockFilename,os.O_RDONLY):
+                    return 1
                 else:
-                    posix.waitpid(self.pid_set,posix.WNOHANG);
-                    self.pid_set=0;
-                    return 0;
+                    os.waitpid(self.pid_set,os.WNOHANG)
+                    self.pid_set=0
+                    return 0
             else:
-                return 0;
+                return 0
         except:
             print "Exception ", sys.exc_type, sys.exc_value
             
         
     def start(self):
         if self.isRunning():
-            raise VNCServerException("Start attempted while already running");
+            raise VNCServerException("Start attempted while already running")
         try:
-            import posix;
+            if IsWindows():
+                args = [
+                        'Password='+self.password,
+                        'AlwaysShared=1',
+                        ]
+                print "starting vnc server: %s %s" % (self.vncserverexe,args)
+                p = self.processManager.StartProcess(self.vncserverexe,args)
+                print "p = ", p
+            elif IsOSX():
+                args = [
+                        '-rfbauth='+self.passwdFilename,
+                        ]
+                print "starting vnc server: %s %s" % (self.vncserverexe,args)
+                p = self.processManager.StartProcess(self.vncserverexe,args)
+                print "p = ", p
 
-            self.pid_set=posix.fork();
-            if self.pid_set:
-                time.sleep(2);
+            elif IsLinux():
+                args = [
+                        self.displayID,
+                        '-geometry', '%dx%d' % (self.geometry['Width'],self.geometry['Height']),
+                        '-depth', self.depth,
+                        '-rfbauth', self.passwdFilename,
+                        ]
+                self.processManager.StartProcess(self.vncserverexe,args)
+                
+                print "sleeping...",
+                time.sleep(2)
+                print "done"
                 # set paths to find config files
                 venuevnc_path = os.path.join(os.environ["HOME"], ".venuevnc")
                 xstartup = os.path.join(venuevnc_path, "xstartup")
@@ -134,103 +163,87 @@ class vncServer:
                         "#xrdb $HOME/.Xresources\n" +     \
                         "xsetroot -solid grey\n" +        \
                         "xterm -geometry 80x24+10+10 -ls -title \"VenueVNC Desktop\" &\n" +    \
-                        "twm &\n"
+                        "mwm &\n"
                     f.write(defaultStartup)
                     f.close()
                     #print "chmod %s 755" % xstartup
-                    os.system("chmod 755 %s " % xstartup)
+                    os.chmod(xstartup,0755)
 
+                os.environ["DISPLAY"] = self.displayID
                 if os.path.exists(xstartup):
                     print "Running", xstartup
-                    posix.system("env DISPLAY=%s sh %s &"%(self.displayID, xstartup));
+                    self.processManager.StartProcess(xstartup,[])
                 else:
-                    posix.system("env DISPLAY=%s twm &"%(self.displayID));
-                    print "TWM Running...";
-                return 0;
-            else:
-                self.pid_set=posix.getpid();
-                posix.close(posix.open(self.lockFilename,posix.O_CREAT));
-                
-                # execute the vnc server
-                execline="/bin/bash -c '%s %s -geometry %dx%d -depth %d -alwaysshared -rfbauth %s >& %s 2>&1'"%(self.vncserverexe,
-                                                                                                                self.displayID,self.geometry["Width"],
-                                                                                                                self.geometry["Height"],self.depth,
-                                                                                                                self.passwdFilename,self.logFilename);
-                posix.system(execline);
-                posix.unlink(self.lockFilename);
-                posix._exit(0)
+                    print "Running MWM..."
+                    self.processManager.StartProcess('mwm',[])
         except:
             print "Exception ", sys.exc_type, sys.exc_value
 
     def stop(self):
-        import posix;
         if self.pid_set:
-            if posix.access(self.lockFilename,posix.O_RDONLY):
-                posix.kill(self.pid_set,9);
-                posix.unlink(self.lockFilename);
-                posix.waitpid(self.pid_set,posix.WNOHANG);
-                self.pid_set=0;
-                return 0;
+            if os.access(self.lockFilename,os.O_RDONLY):
+                self.processManager.TerminateAllProcesses()
+                os.unlink(self.lockFilename)
+                self.pid_set=0
+                return 0
             else:
-                posix.waitpid(self.pid_set,posix.WNOHANG);
-                self.pid_set=0;
-                return 0;
+                #posix.waitpid(self.pid_set,posix.WNOHANG)
+                self.pid_set=0
+                return 0
         else:
-            return 0;
+            return 0
 
     def destroy(self):
-        self.stop();
+        self.stop()
         try:
-            import posix;
-            posix.unlink(self.passwdFilename);
-            posix.unlink(self.logFilename);
+            os.unlink(self.passwdFilename)
+            #os.unlink(self.logFilename)
         except:
             print "Exception ", sys.exc_type, sys.exc_value
 
 class VNCServerAppObject:
-    def __init__(self,venueUrl,vncserverexe,displayID=":9",geometry="1024x768",depth=24,name="VenueVNC"):
+    def __init__(self,venueUrl,vncserverexe,displayID,geometry,depth,name):
         self.running = 0
         print venueUrl
         # Attach to venue server
-        self.venueProxy=Client.SecureHandle(venueUrl).GetProxy();
+        self.venueProxy=Client.SecureHandle(venueUrl).GetProxy()
         # Create VNC server
-        self.vncServer=vncServer(vncserverexe,displayID,geometry,depth);
-        self.vncServer.start();
+        self.vncServer=vncServer(vncserverexe,displayID,geometry,depth)
+        self.vncServer.start()
         
         # Create the App object
         self.appDescription=self.venueProxy.CreateApplication(name,
                                                       "VNC Server at %s"%(self.vncServer.getContactString()),
-                                                      "application/x-ag-venuevnc");
+                                                      "application/x-ag-venuevnc")
 
         # Attach to it
-        self.appProxy=Client.SecureHandle(self.appDescription.uri).GetProxy();
+        self.appProxy=Client.SecureHandle(self.appDescription.uri).GetProxy()
 
-        print "App URL = %s"%(self.appDescription.uri);
+        print "App URL = %s"%(self.appDescription.uri)
 
         # Join the App Object
-        #  ** NEW METHOD **
-        (self.publicID,self.privateID)=self.appProxy.Join();
+        (self.publicID,self.privateID)=self.appProxy.Join()
 
         # Load the password so it can be uploaded to the app object.
         pwd_file = file(self.vncServer.getAuthFile(), 'rb')
         pwd = pwd_file.read()
         pwd_file.close()
         # Upload the auth file to the app object
-        self.appProxy.SetData(self.privateID,"VNC_Pwd",base64.encodestring(pwd));
+        self.appProxy.SetData(self.privateID,"VNC_Pwd",base64.encodestring(pwd))
 
         # Set the contact string
-        self.appProxy.SetData(self.privateID,"VNC_Contact",self.vncServer.getContactString());
+        self.appProxy.SetData(self.privateID,"VNC_Contact",self.vncServer.getContactString())
         # Set the geometry
-        self.appProxy.SetData(self.privateID,"VNC_Geometry",self.vncServer.getGeometry());
+        self.appProxy.SetData(self.privateID,"VNC_Geometry",self.vncServer.getGeometry())
         # Set the depth
-        self.appProxy.SetData(self.privateID,"VNC_Depth",self.vncServer.getDepth());
+        self.appProxy.SetData(self.privateID,"VNC_Depth",self.vncServer.getDepth())
 
-        self.appProxy.Leave(self.privateID);
+        self.appProxy.Leave(self.privateID)
 
     def run(self):
         self.running = 1
         while self.running:
-            time.sleep(1);
+            time.sleep(1)
 
     def shutdown(self):
         # Stop while loop
@@ -243,49 +256,71 @@ class VNCServerAppObject:
 
 if __name__ == "__main__":
 
-    # Find vnc server executable in user's path
-    exe = 'Xvnc'
-    vncserverexe = None
-    pathList = os.environ["PATH"].split(os.pathsep)
-    pathList.insert(0,'.')
-    for path in pathList:
-        f = os.path.join(path,exe)
-        if os.path.exists(f):
-            vncserverexe = f
-            break
-    if not vncserverexe:
-        print "Couldn't find %s executable; exiting." % (exe,)
-        sys.exit(1)
-
     app = CmdlineApplication().instance()
     app.AddCmdLineOption( Option("-v", "--venueUrl", type="string", dest="venueUrl",
                         default='https://localhost:8000/Venues/default', metavar="VENUE_URL",
                         help="Set the venue in which the VenueVNC application should be started.") )
-    app.AddCmdLineOption( Option("--display", type="string", dest="display",
-                        default=":1", metavar="DISPLAY",
-                        help="Set the display the VNC server should run on.") )
     app.AddCmdLineOption( Option("-n", "--name", type="string", dest="name",
                         default=None, metavar="NAME",
-                        help="Set the port the service manager should run on.") )
+                        help="Set the name by which the server will be identified in the venue.") )
+    app.AddCmdLineOption( Option("--vncserverexe", type="string", dest="vncserverexe",
+                        default=None, metavar="VNC_SERVER_EXE",
+                        help="Set the VNC server executable to use") )
+
+    app.AddCmdLineOption( Option("--display", type="string", dest="display",
+                        default=":9", metavar="DISPLAY",
+                        help="Set the display the VNC server should run on. (non-Windows only)") )
     app.AddCmdLineOption( Option("-g", "--geometry", type="string", dest="geometry",
-                        default='1024x768', metavar="GEOMETRY",
-                        help="Set the port the service manager should run on.") )
+                        default="1024x768", metavar="GEOMETRY",
+                        help="Set the geometry of the VNC server. (non-Windows only)") )
     app.AddCmdLineOption( Option("--depth", type="int", dest="depth",
                         default=24, metavar="DEPTH",
-                        help="Set the port the service manager should run on.") )
+                        help="Set the bit depth to use for the server. (non-Windows only)") )
 
     app.Initialize("VenueVNCServer")
     
+    # Use the vnc executable specified on the command line, or...
+    vncserverexe = app.GetOption('vncserverexe')
+    if vncserverexe and not os.path.exists(vncserverexe):
+        print "Couldn't find vnc server executable %s ; exiting." % (vncserverexe,)
+        sys.exit(1)
+        
+    # search for it in the current dir, the expected install dir, and the user's path
+    if not vncserverexe:
+        # Find vnc server executable in user's path
+        if IsWindows():
+            expectedPath = 'c:\\program files\\realvnc\\vnc4'
+            exe = 'winvnc4.exe'
+        elif IsOSX():
+            expectedPath = '/Applications/OSXvnc.app/'
+            exe = 'OSXvnc-server'
+        elif IsLinux():
+            expectedPath = '/usr/bin'
+            exe = 'Xvnc'
+        vncserverexe = None
+        pathList = ['.',expectedPath]
+        pathList += os.environ["PATH"].split(os.pathsep)
+        for path in pathList:
+            f = os.path.join(path,exe)
+            if os.path.exists(f):
+                vncserverexe = f
+                break
+        print "found vncserverexe = ", vncserverexe
+        sys.exit(1)
+
+    if not vncserverexe or not os.path.exists(vncserverexe):
+        print "Couldn't find %s executable; exiting." % (exe,)
+        sys.exit(1)
+
     if not app.GetOption('name'):
         timestamp = time.strftime("%I:%M:%S %p %B %d, %Y")
         name = "VenueVNC - %s" % (timestamp)
-
 
     appObj=VNCServerAppObject(app.GetOption('venueUrl'),vncserverexe,
                               app.GetOption('display'),
                               app.GetOption('geometry'),
                               app.GetOption('depth'),
-                              name=name);
+                              name)
 
     def SignalHandler(signum, frame):
         print "Caught Signal", signum, ".  Shutting down and removing VNC service from venue."
@@ -300,4 +335,4 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, SignalHandler)
     signal.signal(signal.SIGTERM, SignalHandler)
 
-    appObj.run();
+    appObj.run()
