@@ -138,6 +138,9 @@ fh_orig = open(fh_orig_filename, "r")
 fh_new_filename = os.path.join(spec_dir, "AccessGrid.spec")
 fh_new = open(fh_new_filename, "w")
 
+print "Original Spec File: %s" % fh_orig_filename
+print "New Spec File: %s" % fh_new_filename
+
 #
 # Read lines, replacing the version and release with what we want.
 #
@@ -153,7 +156,6 @@ for l in fh_orig:
 fh_orig.close()
 fh_new.close()
 
-#os.chdir("/usr/src/redhat/SPECS")
 os.chdir(spec_dir)
 
 rpm_command = "rpm -ba AccessGrid.spec"
