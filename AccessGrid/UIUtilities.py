@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.42 2003-11-06 23:01:30 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.43 2003-11-06 23:08:24 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.42 2003-11-06 23:01:30 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.43 2003-11-06 23:08:24 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import isWindows, isLinux, isOSX
@@ -204,13 +204,11 @@ class AboutDialog(wxDialog):
             
     def __init__(self, parent):
         wxDialog.__init__(self, parent, -1, str(GetVersion()) )
-        print 'in about dialog'
         version = str(GetVersion())       
         bmp = icons.getAboutBitmap()
         info = "Version: %s \nPlease visit www.accessgrid.org for more information" %version
         self.ReadLicenseFile()
 
-        print bmp.GetWidth()
         
         self.SetSize(wxSize(bmp.GetWidth()+20, 400))
         
@@ -244,8 +242,8 @@ class AboutDialog(wxDialog):
         Handle UI layout.
         '''
         sizer = wxBoxSizer(wxHORIZONTAL)
-        self.SetSizer(sizer)
-        sizer.Add(self.panel)
+        
+        sizer.Add(self.panel, 1, wxEXPAND)
         
         boxSizer = wxBoxSizer(wxVERTICAL)
         boxSizer.Add(5,5)
@@ -254,10 +252,12 @@ class AboutDialog(wxDialog):
         boxSizer.Add(self.license, 1 ,wxALIGN_CENTER |wxEXPAND| wxLEFT | wxRIGHT| wxBOTTOM, 10)
         boxSizer.Add(wxStaticLine(self.panel, -1), 0, wxALL | wxEXPAND, 10)
         boxSizer.Add(self.okButton, 0, wxALIGN_CENTER|wxBOTTOM, 10)
-        
+
+        self.panel.SetSizer(boxSizer)
+                
         self.SetAutoLayout(1)
-        self.SetSizer(boxSizer)
-        boxSizer.Fit(self)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
         
         
 class AppSplash(wxSplashScreen):
