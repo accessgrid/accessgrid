@@ -5,12 +5,13 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.5 2003-05-15 03:03:20 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.6 2003-05-16 18:10:54 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys, os
 import time
+import string
 
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
@@ -45,7 +46,12 @@ class AudioService( AGService ):
          options = []
          if self.streamDescription.name and len(self.streamDescription.name.strip()) > 0:
             options.append( "-C" )
-            options.append( self.streamDescription.name )
+            if sys.platform == 'linux2':
+                # Rat doesn't like spaces in linux command line arguments.
+                stream_description_no_spaces = string.replace(self.streamDescription.name, " ", "_")
+                options.append( stream_description_no_spaces )
+            else:
+                options.append(self.streamDescription.name)
          options.append( "-f" )
          options.append( "L16-16K-Mono" )
          # Check whether the network location has a "type" attribute
