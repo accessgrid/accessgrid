@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.19 2003-10-22 21:27:15 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.20 2004-02-24 21:21:48 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1002,7 +1002,7 @@ class NodeClient:
         # Is the service manager running on the specified machine and port?
 
         # Remove current services from service manager
-        Client.Handle(mgrUri).get_proxy().RemoveServices()
+        Client.Handle(mgrUri).GetProxy().RemoveServices()
                       
     def GetCaptureCards(self, machine, port):
         '''

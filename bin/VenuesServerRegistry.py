@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenuesServerRegistry.py,v 1.3 2003-02-10 15:22:16 leggett Exp $
+# RCS-ID:      $Id: VenuesServerRegistry.py,v 1.4 2004-02-24 21:21:48 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,12 +15,12 @@
 
                          
 if __name__ == "__main__":
-    from AccessGrid.hosting.pyGlobus import Server, ServiceBase
+    from AccessGrid.hosting import SecureServer as Server
     from AccessGrid.VenueServerRegistry import VenueServerRegistry
     import ConfigParser
 
     hostingEnvironment = Server.Server(8800)
-    venueServerRegistryService = hostingEnvironment.create_service(VenueServerRegistry)
+    venueServerRegistryService = hostingEnvironment.registerObject(VenueServerRegistry)
 
     print "Service running at: %s" % venueServerRegistryService.get_handle()
 

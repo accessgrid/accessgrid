@@ -7,7 +7,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/02/02
-# RCS-ID:      $Id: Win32NodeService.py,v 1.3 2003-03-14 15:18:12 judson Exp $
+# RCS-ID:      $Id: Win32NodeService.py,v 1.4 2004-02-24 21:21:48 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,10 +22,7 @@ if sys.platform != "win32":
     sys.exit(1)
     
 from AccessGrid.AGNodeService import AGNodeService
-from AccessGrid.hosting.pyGlobus.Server import Server
-
-def AuthCallback(server, g_handle, remote_user, context):
-    return 1
+from AccessGrid.hosting.Server import SecureServer as Server
 
 class Win32NodeService(win32serviceutil.ServiceFramework):
     _svc_name_ = "AGNodeService"
@@ -33,27 +30,49 @@ class Win32NodeService(win32serviceutil.ServiceFramework):
     _defaultPort = 11000
 
     def __init__(self,args):
+        # Initilialize Logging
         self.ntl = logging.handlers.NTEventLogHandler("AG Node Service")
         self.log = logging.getLogger("AG.NodeService")
         self.log.setLevel(logging.DEBUG)
         self.log.addHandler(self.ntl)
+
+        # Initialize Win32 Service stuff
         win32serviceutil.ServiceFramework.__init__(self, args)
         self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
+
+        # Make a node service
         self.nodeService = AGNodeService()
-        self.server = Server(self._defaultPort, auth_callback=AuthCallback)
-        self.service = self.server.CreateServiceObject("NodeService")
-        self.nodeService._bind_to_service(self.service)
+
+        # Make a hosting environment
+        self.server = Server(self._defaultPort)
+
+        # Make a node service service
+        self.server.RegisterObject(self.nodeService, path='/NodeService')
+
+        # Tell the world we're here
         self.log.info("Created Node Service.")
 
     def SvcStop(self):
+        # Service status report
         self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
+
+        # Wait for a stop event
         win32event.SetEvent(self.hWaitStop)
+
+        # Stop the server
         self.server.stop()
+
+        # Tell the world
         self.log.info("Stopping Node Service.")
 
     def SvcDoRun(self):
+        # Run the service
         self.server.run_in_thread()
+        
+        # Tell the world
         self.log.info("Starting service; URI: ", self.nodeService.get_handle())
+
+        # Wait for a stop
         win32event.WaitForSingleObject(self.hWaitStop, win32event.INFINITE)
 
 if __name__ == '__main__':

@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.38 2004-02-19 17:59:02 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.39 2004-02-24 21:21:48 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.38 2004-02-19 17:59:02 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.39 2004-02-24 21:21:48 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -30,9 +30,8 @@ import threading
 #
 
 if sys.platform == "win32":
-
     from pyGlobus import utilc, gsic, ioc
-    from AccessGrid.hosting.pyGlobus import Utilities
+    from AccessGrid.Security.pyGlobus import Utilities
     utilc.globus_module_activate(gsic.get_module())
     utilc.globus_module_activate(ioc.get_module())
     Utilities.CreateTCPAttrAlwaysAuth()
@@ -41,9 +40,11 @@ if sys.platform == "win32":
 # Back to your normal imports.
 #
 
+from AccessGrid.hosting import Server
+from AccessGrid.NetUtilities import GetHostname
 from AccessGrid.VenueServer import VenueServer
 from AccessGrid.Platform import GetUserConfigDir
-from AccessGrid import Toolkit
+from AccessGrid.Toolkit import CmdlineApplication
 
 # defaults
 log = None
@@ -61,16 +62,6 @@ def SignalHandler(signum, frame):
     global venueServer
     print "Got Signal!!!!"
     venueServer.Shutdown()
-
-# Authorization callback for the server
-def AuthCallback(server, g_handle, remote_user, context):
-    """
-    This is the authorization callback for globus. It's effectively
-    allowing all calls.
-    """
-    global log
-    log.debug("Server gets identity %s", remote_user)
-    return 1
 
 def Usage():
     """
@@ -92,8 +83,6 @@ def main():
     port = 8000
     configFile = None
     logFile = os.path.join(GetUserConfigDir(), "VenueServer.log")
-    identityCert = None
-    identityKey = None
 
     # Parse command line options
     try:
@@ -134,18 +123,8 @@ def main():
         Usage()
         sys.exit(0)
 
-    if identityCert is not None or identityKey is not None:
-        # Sanity check on identity cert stuff
-        if identityCert is None or identityKey is None:
-            print "Both a certificate and key must be provided"
-            sys.exit(0)
-
-        # Init toolkit with explicit identity.
-        app = Toolkit.ServiceApplicationWithIdentity(identityCert, identityKey)
-
-    else:
-        # Init toolkit with standard environment.
-        app = Toolkit.CmdlineApplication()
+    # Init toolkit with standard environment.
+    app = CmdlineApplication()
 
     app.Initialize()
     app.InitGlobusEnvironment()
@@ -166,13 +145,15 @@ def main():
         log.addHandler(hdlr)
 
     me = app.GetDefaultIdentityDN()
+    hostname = GetHostname()
+    
     log.debug("VenueServer running as %s", me)
 
     # Second thing we do is create a hosting environment
-    hostingEnvironment = Server.Server(port, auth_callback=AuthCallback)
-
+    server = Server((hostname, port), debug = debugMode)
+    
     # Then we create a VenueServer, giving it the hosting environment
-    venueServer = VenueServer(hostingEnvironment, configFile)
+    venueServer = VenueServer(server, configFile)
 
     # We register signal handlers for the VenueServer. In the event of
     # a signal we just try to shut down cleanly.n
@@ -182,18 +163,18 @@ def main():
     log.debug("Starting Hosting Environment.")
 
     # We start the execution
-    hostingEnvironment.RunInThread()
+    server.RunInThread()
 
     # We run in a stupid loop so there is still a main thread
     # We might be able to simply join the hostingEnvironmentThread, but
     # we have to be able to catch signals.
-    while hostingEnvironment.IsRunning():
+    while server.IsRunning():
         time.sleep(1)
 
     log.debug("After main loop!")
 
     # Stop the hosting environment
-    hostingEnvironment.Stop()
+    server.Stop()
 
     log.debug("Stopped Hosting Environment, exiting.")
 

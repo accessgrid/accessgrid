@@ -14,7 +14,7 @@ from AccessGrid import NetService
 from AccessGrid import Platform
 from AccessGrid import Toolkit
 from AccessGrid import Utilities
-from AccessGrid.hosting.pyGlobus import Client
+from AccessGrid.hosting import Client
 from AccessGrid.Events import Event, ConnectEvent, HeartbeatEvent
 from AccessGrid.EventClient import EventClient, EventClientWriteDataException
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator

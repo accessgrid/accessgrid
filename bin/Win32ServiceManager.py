@@ -7,7 +7,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/02/02
-# RCS-ID:      $Id: Win32ServiceManager.py,v 1.3 2003-03-14 15:18:12 judson Exp $
+# RCS-ID:      $Id: Win32ServiceManager.py,v 1.4 2004-02-24 21:21:48 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,15 +17,12 @@ import win32event
 import logging, logging.handlers
 
 from AccessGrid.AGServiceManager import AGServiceManager
-from AccessGrid.hosting.pyGlobus.Server import Server
-
-def AuthCallback(server, g_handle, remote_user, context):
-    return 1
+from AccessGrid.hosting.Server import SecureServer as Server
 
 class Win32ServiceManager(win32serviceutil.ServiceFramework):
     _svc_name_ = "AGServiceManager"
     _svc_display_name_ = "Access Grid Service Manager"
-    defaultPort = 12000
+    _defaultPort = 12000
 
     def __init__(self,args):
         # Initialize Logging
@@ -34,7 +31,7 @@ class Win32ServiceManager(win32serviceutil.ServiceFramework):
         self.log.setLevel(logging.DEBUG)
         self.log.addHandler(ntl)
 
-        # Initialize Service
+        # Initialize Win32 Service stuff
         win32serviceutil.ServiceFramework.__init__(self, args)
         self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
         
@@ -42,11 +39,10 @@ class Win32ServiceManager(win32serviceutil.ServiceFramework):
         self.serviceManager = AGServiceManager()
         
         # Make a hosting environment
-        self.server = Server(self.defaultPort, auth_callback=AuthCallback)
+        self.server = Server(self._defaultPort)
         
         # Make a Service Manager Service
-        self.service = self.server.CreateServiceObject("ServiceManager")
-        self.serviceManager._bind_to_service(self.service)
+        self.server.RegisterObject(self.serviceManager, path='/ServiceManager')
         
         # tell the world we are here
         self.log.info("Created Service Manager.")

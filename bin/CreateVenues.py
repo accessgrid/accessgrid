@@ -6,21 +6,21 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CreateVenues.py,v 1.12 2003-09-22 14:12:08 judson Exp $
+# RCS-ID:      $Id: CreateVenues.py,v 1.13 2004-02-24 21:21:48 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This program is used to create venues for the venue server.
 """
-__revision__ = "$Id: CreateVenues.py,v 1.12 2003-09-22 14:12:08 judson Exp $"
+__revision__ = "$Id: CreateVenues.py,v 1.13 2004-02-24 21:21:48 judson Exp $"
 
 import ConfigParser
 import sys
 import string
 import logging
 
-from AccessGrid.hosting.pyGlobus import Client
+from AccessGrid.hosting import Client
 from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
 from AccessGrid.Descriptions import Capability, StreamDescription 
 from AccessGrid.NetworkLocation import MulticastNetworkLocation

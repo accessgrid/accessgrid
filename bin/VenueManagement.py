@@ -6,16 +6,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.111 2004-02-19 17:59:02 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.112 2004-02-24 21:21:48 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.111 2004-02-19 17:59:02 eolson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.112 2004-02-24 21:21:48 judson Exp $"
 
-from AccessGrid.hosting.pyGlobus import Client
-import webbrowser
 import string
 import time
 import re
@@ -26,6 +24,11 @@ from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
 
 from pyGlobus.io import GSITCPSocketException
+
+from AccessGrid.hosting import Client
+
+from AccessGrid.VenueServer import VenueServerIW
+from AccessGrid.Venue import VenueIW
 
 from AccessGrid.Descriptions import StreamDescription, ConnectionDescription
 from AccessGrid.Descriptions import VenueDescription, CreateVenueDescription
@@ -38,10 +41,7 @@ from AccessGrid.Platform import GetUserConfigDir, GetSharedDocDir
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog
 from AccessGrid.Utilities import VENUE_MANAGEMENT_LOG
 from AccessGrid import Toolkit
-from AccessGrid.hosting.AccessControl import RoleManager
-from AccessGrid.Venue import RegisterDefaultVenueRoles
-from AccessGrid.RoleAuthorization import AddPeopleDialog, RoleClient
-from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
+from AccessGrid.AuthorizationUI import AddPeopleDialog
 
 log = logging.getLogger("AG.VenueManagement")
 
@@ -62,7 +62,9 @@ class VenueManagementClient(wxApp):
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
       
-        self.manual_url = os.path.join(GetSharedDocDir(), "VenueManagementManual", "VenueManagementManualHTML.htm")
+        self.manual_url = os.path.join(GetSharedDocDir(),
+                                       "VenueManagementManual",
+                                       "VenueManagementManualHTML.htm")
         self.server = None
         self.serverUrl = None
         self.currentVenueClient = None
@@ -179,115 +181,120 @@ class VenueManagementClient(wxApp):
         if not certMgt.HaveValidProxy():
             log.debug("VenueManagementClient.ConnectToServer:: no valid proxy")
             certMgt.CreateProxy()
-
-        handle = Client.Handle(URL)
-
-        if(1):
             
-            try:
-                wxBeginBusyCursor()
-                log.debug("VenueManagementClient.ConnectToServer: Connect to server")
-                self.server = handle.get_proxy()
-                log.debug("VenueManagementClient.ConnectToServer: Get venues from server")
-                self.venueList = {}
-                vl = self.server.GetVenues()
-                for v in vl:
-                    self.venueList[v.uri] = CreateVenueDescription(v)
-
-                self.serverUrl = URL
-
-                vp = self.tabs.venuesPanel
-                vlp = vp.venuesListPanel
-
-                # Clear out old ones
-                vlp.venuesList.Clear()
-                vp.venueProfilePanel.ClearAllFields()
-
-                # Get default venue
-                defaultVenueUrl = self.server.GetDefaultVenue()
+        try:
+            wxBeginBusyCursor()
+            log.debug("VenueManagementClient.ConnectToServer: Connect to server")
+            self.server = VenueServerIW(URL)
+            log.debug("VenueManagementClient.ConnectToServer: Get venues from server")
+            self.venueList = {}
+            vl = self.server.GetVenues()
+            for v in vl:
+                self.venueList[v.uri] = v
                 
-                # Fill in venues
-                self.tabs.Enable(true)
-                if len(self.venueList) != 0 :
-                    for venue in self.venueList.values():
-                        log.debug("VenueManagementClient.ConnectToServer: Add venue %s" % venue.name)
-                        vlp.venuesList.Append(venue.name, venue)
+            self.serverUrl = URL
 
-                        # Set default venue
-                        if venue.uri == defaultVenueUrl:
-                            vlp.SetDefaultVenue(venue, init = true)
-
-                    currentVenue = vlp.venuesList.GetClientData(0)
-                    vp.venueProfilePanel.ChangeCurrentVenue(currentVenue)
-                    vlp.venuesList.SetSelection(0)
-
-                else:
-                    log.debug("VenueManagementClient.ConnectToServer: No venues in server")
-                    vp.venueProfilePanel.ChangeCurrentVenue(None)
-
+            vp = self.tabs.venuesPanel
+            vlp = vp.venuesListPanel
+            
+            # Clear out old ones
+            vlp.venuesList.Clear()
+            vp.venueProfilePanel.ClearAllFields()
+            
+            # Get default venue
+            defaultVenueUrl = self.server.GetDefaultVenue()
+            
+            # Fill in venues
+            self.tabs.Enable(true)
+            if len(self.venueList) != 0 :
+                for venue in self.venueList.values():
+                    log.debug("VenueManagementClient.ConnectToServer: Add venue %s" % venue.name)
+                    vlp.venuesList.Append(venue.name, venue)
+                    
+                    # Set default venue
+                    if venue.uri == defaultVenueUrl:
+                        vlp.SetDefaultVenue(venue, init = true)
+                        
+                currentVenue = vlp.venuesList.GetClientData(0)
+                vp.venueProfilePanel.ChangeCurrentVenue(currentVenue)
+                vlp.venuesList.SetSelection(0)
+            else:
+                log.debug("VenueManagementClient.ConnectToServer: No venues in server")
+                vp.venueProfilePanel.ChangeCurrentVenue(None)
+                
                 # fill in administrators
-                administratorList = self.server.GetAdministrators()
-                s = ""
-                for admin in administratorList:
-                    s = s+" "+admin
+#                 administratorList = self.server.GetAdministrators()
+#                 s = ""
+#                 for admin in administratorList:
+#                     s = s+" %s" % admin
 
-                log.debug("VenueManagementClient.ConnectToServer: Add administrators")
-                alp = self.tabs.configurationPanel.administratorsListPanel
-                alp.administratorsList.Clear()
-                if len(administratorList) != 0 :
-                    for admin in administratorList:
-                        cn = self.GetCName(admin)
-                        alp.administratorsList.Append(cn, admin)
-                        alp.administratorsList.SetSelection(0)
+#                 log.debug("VenueManagementClient.ConnectToServer: Add administrators")
+#                 alp = self.tabs.configurationPanel.administratorsListPanel
+#                 alp.administratorsList.Clear()
+#                 if len(administratorList) != 0 :
+#                     for admin in administratorList:
+#                         cn = self.GetCName(admin)
+#                         alp.administratorsList.Append(cn, admin)
+#                         alp.administratorsList.SetSelection(0)
 
-                # fill in multicast address
-                ip = self.server.GetBaseAddress()
-                mask = str(self.server.GetAddressMask())
-                method = self.server.GetAddressAllocationMethod()
+            # fill in multicast address
+            ip = self.server.GetBaseAddress()
+            mask = str(self.server.GetAddressMask())
+            method = self.server.GetAddressAllocationMethod()
+            
+            dp = self.tabs.configurationPanel.detailPanel
+            dp.ipAddress.SetLabel(ip+'/'+mask)
 
-                dp = self.tabs.configurationPanel.detailPanel
-                dp.ipAddress.SetLabel(ip+'/'+mask)
+            if method == MulticastAddressAllocator.RANDOM:
+                log.debug("VenueManagementClient.ConnectToServer: Set multicast address to: RANDOM")
+                dp.ipAddress.Enable(false)
+                dp.changeButton.Enable(false)
+                dp.randomButton.SetValue(true)
+            else:
+                log.debug("VenueManagementClient.ConnectToServer: Set multicast address to: INTERVAL, ip: %s, mask: %s" %(ip, mask))
+                dp.ipAddress.Enable(true)
+                dp.changeButton.Enable(true)
+                dp.intervalButton.SetValue(true)
 
-                if method == MulticastAddressAllocator.RANDOM:
-                    log.debug("VenueManagementClient.ConnectToServer: Set multicast address to: RANDOM")
-                    dp.ipAddress.Enable(false)
-                    dp.changeButton.Enable(false)
-                    dp.randomButton.SetValue(true)
-                else:
-                    log.debug("VenueManagementClient.ConnectToServer: Set multicast address to: INTERVAL, ip: %s, mask: %s" %(ip, mask))
-                    dp.ipAddress.Enable(true)
-                    dp.changeButton.Enable(true)
-                    dp.intervalButton.SetValue(true)
+            # fill in address
+            if self.address.addressText.FindString(self.serverUrl) == wxNOT_FOUND:
+                log.debug("VenueManagementClient.ConnectToServer: Set address: %s" %self.serverUrl)
+                self.address.addressText.Append(self.serverUrl)
 
-                # fill in address
-                if self.address.addressText.FindString(self.serverUrl) == wxNOT_FOUND:
-                    log.debug("VenueManagementClient.ConnectToServer: Set address: %s" %self.serverUrl)
-                    self.address.addressText.Append(self.serverUrl)
-
-                # fill in encryption
-                key = self.server.GetEncryptAllMedia()
-                log.debug("VenueManagementClient.ConnectToServer: Set server encryption key: %s" % key)
-                dp.encryptionButton.SetValue(key)
-                self.encrypt = key
-                wxEndBusyCursor()
-
-            except Exception, e:
-                wxEndBusyCursor() 
-                if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
-                        text = "You and are not authorized to administrate this server.\n"
-                        MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
-                        log.info("VenueManagementClient.ConnectToServer: Not authorized to administrate the server.")
-                else:
-                    log.exception("VenueManagementClient.ConnectToServer: Can not connect")
-                    text = "You were unable to connect to a venue server located at\n%s." % URL
-                    MessageDialog(None, text, "Unable To Connect", style=wxOK|wxICON_INFORMATION)
-
-            except:
-                wxEndBusyCursor() 
-                log.exception("VenueManagementClient.ConnectToServer: Can not connect")
-                text = "You were unable to connect to a venue server located at\n%s." % URL
-                MessageDialog(None, text, "Unable To Connect", style=wxOK|wxICON_INFORMATION)
+            # fill in encryption
+            key = self.server.GetEncryptAllMedia()
+            log.debug("VenueManagementClient.ConnectToServer: Set server encryption key: %s" % key)
+            dp.encryptionButton.SetValue(key)
+            self.encrypt = key
+            wxEndBusyCursor()
+            
+        except Exception, e:
+            wxEndBusyCursor()
+            print "Couldn't Connect: ", e
+            if e.string == "NotAuthorized":
+                text = "You and are not authorized to administrate this \
+                        server.\n"
+                MessageDialog(None, text, "Authorization Error",
+                              wxOK|wxICON_WARNING)
+                log.info("VenueManagementClient.ConnectToServer: \
+                          Not authorized to administrate the server.")
+            else:
+                log.exception("VenueManagementClient.ConnectToServer: \
+                               Can not connect")
+                text = "You were unable to connect to a venue server \
+                        located at\n%s." % URL
+                MessageDialog(None, text, "Unable To Connect",
+                              style=wxOK|wxICON_INFORMATION)
                 
+        except:
+            wxEndBusyCursor() 
+            log.exception("VenueManagementClient.ConnectToServer: \
+                           Can not connect")
+            text = "You were unable to connect to a venue server \
+                    located at\n%s." % URL
+            MessageDialog(None, text, "Unable To Connect",
+                          style=wxOK|wxICON_INFORMATION)
+            
     def GetCName(self, distinguishedName):
         index = distinguishedName.find("CN=")
         if(index > -1):
@@ -308,7 +315,7 @@ class VenueManagementClient(wxApp):
             log.debug("VenueManagementClient.SetCurrentVenue: Set current venue to: %s, %s" % (str(venue.name),
                                                          str(venue.uri)))
             self.currentVenue = venue
-            self.currentVenueClient = Client.Handle(venue.uri).get_proxy()
+            self.currentVenueClient = VenueIW(venue.uri)
 
     def SetVenueEncryption(self, venue, value = 0, key = ''):
         self.SetCurrentVenue(venue)
@@ -522,7 +529,7 @@ class VenueProfilePanel(wxPanel):
             # clear the exit list
             self.exits.Clear()
 
-            for e in venue.connections.values():
+            for e in venue.connections:
                 self.exits.Append(e.name, e)
 
             self.exitsLabel.Show()
@@ -665,20 +672,27 @@ class VenueListPanel(wxPanel):
                         self.defaultVenue = None
 
                 except Exception, e:
-                    if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
-                            text = "You are not a server administrator and are not authorized to delete venues from this server.\n"
-                            MessageDialog(None, text, "Not Authorized", style=wxOK|wxICON_WARNING)
-                            log.info("DeleteVenue: Not authorized to delete venue from server.")
+                    if e.string == "NotAuthorized":
+                        text = "You and are not authorized to administrate \
+                                this server.\n"
+                        MessageDialog(None, text, "Authorization Error",
+                                      wxOK|wxICON_WARNING)
+                        log.info("VenueManagementClient.ConnectToServer: \
+                                  Not authorized to administrate the server.")
                     else:
-                        log.exception("VenueListPanel.DeleteVenue: Could not delete venue %s" %venueToDelete.name)
+                        log.exception("VenueListPanel.DeleteVenue: Could not \
+                                       delete venue %s" %venueToDelete.name)
                         text = "The venue could not be deleted" + venueToDelete.name
-                        ErrorDialog(None, text, "Delete Venue Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
-
+                        ErrorDialog(None, text, "Delete Venue Error",
+                                    style = wxOK  | wxICON_ERROR,
+                                    logFile = VENUE_MANAGEMENT_LOG)
                 except:
-                    log.exception("VenueListPanel.DeleteVenue: Could not delete venue %s" %venueToDelete.name)
+                    log.exception("VenueListPanel.DeleteVenue: Could \
+                                   not delete venue %s" %venueToDelete.name)
                     text = "The venue could not be deleted" + venueToDelete.name
                     ErrorDialog(None, text, "Delete Venue Error",
-                                style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                                style = wxOK  | wxICON_ERROR,
+                                logFile = VENUE_MANAGEMENT_LOG)
                  
                 else:
                     self.venuesList.Delete(index)
@@ -688,31 +702,26 @@ class VenueListPanel(wxPanel):
                         venue = self.venuesList.GetClientData(0)
 
                         try:
-                            log.debug("VenueListPanel.DeleteVenue: Change current venue")
+                            log.debug("VenueListPanel.DeleteVenue: \
+                                       Change current venue")
                             self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
 
                         except:
-                            log.exception("VenueListPanel.DeleteVenue: Could not change current venue")
+                            log.exception("VenueListPanel.DeleteVenue: \
+                                           Could not change current venue")
                     else:
                         self.parent.venueProfilePanel.ChangeCurrentVenue()
 
     def AddVenue(self, venue):
-        # ICKY ICKY ICKY
-        venue.connections = venue.connections.values()
-        #
         # Check to see if a venue with the same name is already added.
-        # The string can either be venue's name or venue's name and a default indicator.
-        #
+        # The string can either be venue's name or venue's name and a
+        # default indicator.
         if(self.venuesList.FindString(venue.name) == wxNOT_FOUND):
             newUri = self.application.server.AddVenue(venue)
             venue.uri = newUri
 
             if newUri:
                 exits = venue.connections
-                venue.connections = {}
-                for e in exits:
-                    venue.connections[e.uri] = e
-
                 self.venuesList.Append(venue.name, venue)
                 self.venuesList.Select(self.venuesList.FindString(venue.name))
                 self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
@@ -775,13 +784,9 @@ class VenueListPanel(wxPanel):
                 
         else:
             if venue.uri != None:
-                # ICKY HACK
-                connectionDict = venue.connections
-                venue.connections = venue.connections.values()
                 self.application.server.ModifyVenue(venue.uri, venue)
                 self.venuesList.SetClientData(item, venue)
                 self.venuesList.SetString(item, venue.name)
-                venue.connections = connectionDict
                 self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
 
                 # Set default venue
@@ -911,26 +916,42 @@ class AdministratorsListPanel(wxPanel):
 
                 try:
                     self.application.DeleteAdministrator(adminToDelete)
-
                 except Exception, e:
-                    if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
-                            text = "You are not a server administrator and are not authorized to delete administrators.\n"
-                            MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
-                            log.info("AdministratorsListPanel.DeleteAdministrator: Not authorized to delete administrators from server.")
-                    elif isinstance(e, faultType) and str(e.faultstring) == "AdministratorRemovingSelf":
-                            text = "You are not allowed to remove yourself from the administrator list.\n"
-                            MessageDialog(None, text, "Remove Self Error", wxOK|wxICON_WARNING)
-                            log.info("AdministratorsListPanel.DeleteAdministrator: Cannot remove self from server administrator list.")
+                    if e.string == "NotAuthorized":
+                        text = "You are not a server administrator and are \
+                                not authorized to delete administrators.\n"
+                        MessageDialog(None, text, "Authorization Error",
+                                      wxOK|wxICON_WARNING)
+                        log.info("AdministratorsListPanel.DeleteAdministrator:\
+                                  Not authorized to delete administrators \
+                                  from server.")
+                    elif e.string == "AdministratorRemovingSelf":
+                        text = "You are not allowed to remove yourself from \
+                                the administrator list.\n"
+                        MessageDialog(None, text, "Remove Self Error",
+                                      wxOK|wxICON_WARNING)
+                        log.info("AdministratorsListPanel.DeleteAdministrator:\
+                                  Cannot remove self from server administrator\
+                                  list.")
                     else:
-                        log.exception("AdministratorsListPanel.DeleteAdministrator: Could not delete administrator")
-                        text = "The administrator %s could not be deleted" %adminToDelete
-                        ErrorDialog(None, text, "Delete Administrator Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                        log.exception("AdministratorsListPanel.\
+                                       DeleteAdministrator: Could not \
+                                       delete administrator")
+                        text = "The administrator %s could not be \
+                                deleted" % adminToDelete
+                        ErrorDialog(None, text, "Delete Administrator Error",
+                                    style = wxOK  | wxICON_ERROR,
+                                    logFile = VENUE_MANAGEMENT_LOG)
 
                 except:
-                    log.exception("AdministratorsListPanel.DeleteAdministrator: Could not delete administrator")
-                    text = "The administrator %s could not be deleted" %adminToDelete
+                    log.exception("AdministratorsListPanel.\
+                                   DeleteAdministrator: Could not delete \
+                                   administrator")
+                    text = "The administrator %s could not be \
+                            deleted" % adminToDelete
                     ErrorDialog(None, text, "Delete Administrator Error",
-                                style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                                style = wxOK  | wxICON_ERROR,
+                                logFile = VENUE_MANAGEMENT_LOG)
                   
                 else:
                     self.administratorsList.Delete(index)
@@ -954,19 +975,25 @@ class AdministratorsListPanel(wxPanel):
         try:
             self.application.AddAdministrator(data)
         except Exception, e:
-            if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
-                    text = "You are not a server administrator and are not authorized to add an administrator.\n"
-                    MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
-                    log.info("AdministratorsListPanel.InsertAdministrator: Not authorized to add administrator to server.")
+            if e.string == "NotAuthorized":
+                text = "You are not a server administrator and are not authorized to add an administrator.\n"
+                MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+                log.info("AdministratorsListPanel.InsertAdministrator: Not \
+                          authorized to add administrator to server.")
             else:
-                log.exception("AdministratorsListPanel.InsertAdministrator: Can not insert administrator")
-                text = "The administrator %s could not be added" %data
-                ErrorDialog(None, text, "Add Administrator Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                log.exception("AdministratorsListPanel.InsertAdministrator: \
+                               Can not insert administrator")
+                text = "The administrator %s could not be added" % data
+                ErrorDialog(None, text, "Add Administrator Error",
+                            style = wxOK  | wxICON_ERROR,
+                            logFile = VENUE_MANAGEMENT_LOG)
         except:
-            log.exception("AdministratorsListPanel.InsertAdministrator: Can not insert administrator")
+            log.exception("AdministratorsListPanel.InsertAdministrator: \
+                           Can not insert administrator")
             text = "The administrator %s could not be added" %data
             ErrorDialog(None, text, "Add Administrator Error",
-                        style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                        style = wxOK  | wxICON_ERROR,
+                        logFile = VENUE_MANAGEMENT_LOG)
            
         else:
             self.administratorsList.Append(self.application.GetCName(data),
@@ -980,11 +1007,11 @@ class AdministratorsListPanel(wxPanel):
             self.application.ModifyAdministrator(oldName, newName)
 
         except Exception, e:
-            if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+            if e.string == "NotAuthorized":
                 text = "You are not a server administrator and are not authorized to modify an administrator.\n"
                 MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
                 log.info("AdministratorsListPanel.ModifyAdministrator: Not authorized to modify administrator to server.")
-            elif isinstance(e, faultType) and str(e.faultstring) == "AdministratorRemovingSelf":
+            elif e.string == "AdministratorRemovingSelf":
                 text = "When modifying an administrator, you are not allowed to remove yourself the list.\n"
                 MessageDialog(None, text, "Remove Self Error", wxOK|wxICON_WARNING)
                 log.info("AdministratorsListPanel.ModifyAdministrator: When modifying a server administrator, user is not allowed to remove self list.")
@@ -1067,7 +1094,7 @@ class DetailPanel(wxPanel):
             log.debug("DetailPanel.ClickedOnEncrypt: Set encryption")
             self.application.SetEncryption(event.Checked())
         except Exception, e:
-             if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+             if e.string == "NotAuthorized":
                  self.encryptionButton.SetValue(not event.Checked())
                  text = "You are not an administrator on this server and are not authorized to change the media encryption flag.\n"
                  MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
@@ -1094,7 +1121,7 @@ class DetailPanel(wxPanel):
             self.ipAddress.Enable(true)
             self.changeButton.Enable(true)
             self.intervalButton.SetValue(true)
-            if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+            if e.string == "NotAuthorized":
                 text = "You are not an administrator on this server and are not authorized to set multicast addressing to random.\n"
                 MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
                 log.info("DetailPanel.ClickedOnRandom: Not authorized to set server multicast addressing to random.")
@@ -1125,7 +1152,7 @@ class DetailPanel(wxPanel):
             self.ipAddress.Enable(false)
             self.changeButton.Enable(false)
             self.randomButton.SetValue(true)
-            if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+            if e.string == "NotAuthorized":
                 text = "You are not an administrator on this server and are not authorized to set multicast addressing to interval.\n"
                 MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
                 log.info("DetailPanel.ClickedOnInterval: Not authorized to set server's multicast address to interval.")
@@ -1156,7 +1183,7 @@ class DetailPanel(wxPanel):
 
         except Exception, e:
             self.ipAddress.SetLabel(oldIpAddress)
-            if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+            if e.string == "NotAuthorized":
                 text = "You are not an administrator on this server and are not authorized to set the multicast address.\n"
                 MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
                 log.info("DetailPanel.SetAddress: Not authorized to set server's multicast address.")
@@ -1308,7 +1335,8 @@ class VenueParamFrame(wxDialog):
         self.exits = wxListBox(self, -1, size = wxSize(250, 100),
                                style = wxLB_SORT)
         if isinstance(self, ModifyVenueFrame):
-            self.modifyRolesButton = wxButton(self, self.ID_MODIFY_ROLES, "Modify Roles",
+            self.modifyRolesButton = wxButton(self, self.ID_MODIFY_ROLES,
+                                              "Modify Roles",
                                               style = wxBU_EXACTFIT )
             self.rolesText = wxStaticText(self, -1, "Manage access to venue including which users are allowed to Enter and which users allowed to Administrate.")
         self.okButton = wxButton(self, wxID_OK, "Ok")
@@ -1418,24 +1446,24 @@ class VenueParamFrame(wxDialog):
 
     def LoadLocalVenues(self):
         self.__loadVenues(self.application.serverUrl)
-        """
-        for venue in self.application.venueList:
-            if(venue.name != self.title.GetValue()):
-                cd = ConnectionDescription(venue.name, venue.description,
-                                           venue.uri)
-                self.venues.Append(cd.name, cd)
-        """
 
     def OpenRoleAuthorizationDialog(self, event = None):
         self.rolesDict = None
         try:
-            addPeopleDialog = AddPeopleDialog(self, -1, "Modify Roles", self.venue.uri)
+            am = self.application.server.GetAuthorizationManager()
+        except Exception, e:
+            print "Couldn't make authorization interface: ", e
+        
+        try:
+            addPeopleDialog = AddPeopleDialog(self, -1, "Modify Roles", am)
             if addPeopleDialog.ShowModal() == wxID_OK:
                 # Get new role configuration
                 self.rolesDict = addPeopleDialog.GetInfo()
+                print "Got info ", self.rolesDict
             addPeopleDialog.Destroy()
         except Exception, e:
-            if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+            print "Couldn't do authorization: ", e
+            if e.string == "NotAuthorized":
                     text = "You are not authorized to modify roles for this venue.\n"
                     MessageDialog(None, text, "Not Authorized", style=wxOK|wxICON_WARNING)
                     log.info("OpenModifyVenueRolesDialog: Not authorized to administrate roles in this venue %s." % self.venue.uri)
@@ -1445,34 +1473,23 @@ class VenueParamFrame(wxDialog):
                 ErrorDialog(None, text, "Venue Role Administration Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
 
     def __loadVenues(self, URL):
-        validVenue = false
         self.currentVenueUrl = self.address.GetValue() # used in except:
         try:
             wxBeginBusyCursor()
             log.debug("VenueParamFrame.__LoadVenues: Load venues from: %s " % URL)
-
-            server = Client.Handle(URL)
+            server = VenueServerIW(URL)
             
-            if(1):
-                venueList = []
-                vl = server.get_proxy().GetVenues()
-                for v in vl:
-                    venueList.append(CreateVenueDescription(v))
-                
-                log.debug("VenueParamFrame.__LoadVenues: Got venues from server")
-                validVenue = true
-                self.venues.Clear()
-
-                for venue in venueList:
-                    if(venue.name != self.title.GetValue()):
-                        cd = ConnectionDescription(venue.name,
-                                                   venue.description,
-                                                   venue.uri)
-                        self.venues.Append(cd.name, cd)
-
-                self.currentVenueUrl = URL
-                self.address.SetValue(URL)
-
+            venueList = []
+            vl = server.GetVenues()
+            self.venues.Clear()
+            cdl = map(lambda x: ConnectionDescription(x.name,
+                                                      x.description,
+                                                      x.uri), vl)
+            map(lambda x: self.venues.Append(x.name, x), cdl)
+            
+            self.currentVenueUrl = URL
+            self.address.SetValue(URL)
+            
             wxEndBusyCursor()
 
         except:
@@ -1557,9 +1574,7 @@ class VenueParamFrame(wxDialog):
         # Make a venue description
         venue = VenueDescription(self.title.GetValue(),
                                  self.description.GetValue(),
-                                 # Roles are None -- modified separately
-                                 None, encryptTuple, exitsList,
-                                 streams)
+                                 encryptTuple, exitsList, streams)
         self.venue = venue
 
 class EncryptionPanel(wxPanel):
@@ -1800,7 +1815,7 @@ class AddVenueFrame(VenueParamFrame):
                     log.debug("AddVenueFrame.OnOk: Add venue.")
                     self.parent.AddVenue(self.venue)
                 except Exception, e:
-                    if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+                    if e.string == "NotAuthorized":
                             text = "You are not a server administrator and are not authorized to add venues to this server.\n"
                             MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
                             log.info("AddVenueFrame.OnOK: Not authorized to add venue to server.")
@@ -1862,7 +1877,7 @@ class ModifyVenueFrame(VenueParamFrame):
                         log.exception("ModifyVenueFrame.OnOk: Can not set roles for venue")
 
                 except Exception, e:
-                    if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+                    if e.string == "NotAuthorized":
                             text = "You are not authorized to modify this venue.\n"
                             MessageDialog(None, text, "Authorization Error", style=wxOK|wxICON_WARNING)
                             log.info("ModifyVenueFrame.OnOK: Not authorized to modify venue.")
@@ -1914,7 +1929,8 @@ class ModifyVenueFrame(VenueParamFrame):
             log.debug("ModifyVenueFrame.__loadCurrentVenueInfo: Key is None")
             self.encryptionPanel.ClickEncryptionButton(None, false)
 
-        for e in self.venue.connections.values():
+        for e in self.venue.connections:
+            print e
             self.exits.Append(e.name, e)
             
         if(len(self.venue.streams)==0):
