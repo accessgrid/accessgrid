@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.263 2003-09-16 21:09:51 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.264 2003-09-16 21:41:24 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.263 2003-09-16 21:09:51 turam Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.264 2003-09-16 21:41:24 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -744,15 +744,16 @@ class VenueClientFrame(wxFrame):
                 name = ""
                 if (dialog.ShowModal() == wxID_OK):
                     name = dialog.address.GetValue()
+                    text = "Go to: " + url
+                    self.myVenues.Append(id, name, text)
+                    self.myVenuesMenuIds.append(id)
+                    self.myVenuesDict[name] = url
+                    EVT_MENU(self, id, self.GoToMenuAddress)
+            
+                    self.SaveMyVenuesToFile()
+
                 dialog.Destroy()
 
-                text = "Go to: " + url
-                self.myVenues.Append(id, name, text)
-                self.myVenuesMenuIds.append(id)
-                self.myVenuesDict[name] = url
-                EVT_MENU(self, id, self.GoToMenuAddress)
-            
-                self.SaveMyVenuesToFile()
                                                
             else:
                 for n in self.myVenuesDict.keys():
