@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.38 2004-09-10 03:58:53 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.39 2004-10-21 17:53:52 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.38 2004-09-10 03:58:53 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.39 2004-10-21 17:53:52 turam Exp $"
 
 import re
 import os
@@ -774,10 +774,10 @@ class CertificateManager(object):
         Do not modify the default identity keys in the repository.
         """
 
-        self.defaultIdentity = CertificateRepository.Certificate(certFile,
+        defaultCert = CertificateRepository.Certificate(certFile,
                                                                  keyFile,
                                                                  self.certRepo)
-        dI = CertificateRepository.CertificateDescriptor(self.defaultIdentity,
+        self.defaultIdentity = CertificateRepository.CertificateDescriptor(defaultCert,
                                                          self.certRepo)
 
         log.debug("Cert: %s, Key: %s", certFile, keyFile)
@@ -789,7 +789,7 @@ class CertificateManager(object):
 
         self.certRepo.LockMetadata()
 
-        if dI.HasEncryptedPrivateKey():
+        if self.defaultIdentity.HasEncryptedPrivateKey():
             self._InitEnvWithProxy()
         else:
             self._InitEnvWithCert()
@@ -1168,6 +1168,7 @@ class CertificateManager(object):
         elif len(defaultIdCerts) > 1:
             log.warn("Found multiple (%s) default identities, using the first",
                      len(defaultIdCerts))
+            defaultId = defaultIdCerts[0]
         else:
             defaultId = defaultIdCerts[0]
 
