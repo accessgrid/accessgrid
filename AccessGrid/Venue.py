@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.200 2004-05-17 22:19:40 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.201 2004-05-18 02:43:15 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.200 2004-05-17 22:19:40 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.201 2004-05-18 02:43:15 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1399,6 +1399,7 @@ class Venue(AuthorizationMixIn):
 
     def RegenerateEncryptionKeys(self):
         self.key = AllocateEncryptionKey()
+        return self.key
         
     def SetDescription(self, description):
         """
@@ -2476,7 +2477,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         collaborations by restarting simple media tools.
         """
         try:
-            self.impl.RegenerateEncryptionKeys()
+            return self.impl.RegenerateEncryptionKeys()
         except:
             log.exception("Failed to regenerate encryption keys.", e)
             raise
