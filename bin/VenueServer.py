@@ -4,11 +4,11 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.13 2003-03-14 14:52:29 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.14 2003-03-21 18:04:29 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
-
+import os
 import sys
 import getopt
 import signal
