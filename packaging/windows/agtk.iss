@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.64 2004-04-07 20:48:29 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.65 2004-04-07 20:51:16 judson Exp $
 ;
 
 ; Set externally
@@ -164,8 +164,8 @@ DirExists=The directory:%n%n%1%n%nalready exists and appears to have an {#AppNam
 WelcomeLabel2=This will install the {#AppName} {#AppVersion}-{#VersionInformation} on your computer.%n%nIt is strongly recommended that you uninstall any previous version of the {#AppName} before continuing.%n%nIt is also strongly recommended that you close all other applications you have running before continuing with this installation.%n%nThese steps will help prevent any conflicts during the installation process.
 
 [Run]
-Filename: {reg:HKLM\Software\Python\PythonCore\{#PythonVersion}\InstallPath,|C:\Python22}\python.exe:; WorkingDir: {app}\bin; Description: Setup what video devices will produce video streams; Flags: runminimized nowait shellexec; Parameters: SetupVideo.pyw
-Filename: {reg:HKLM\Software\Python\PythonCore\{#PythonVersion}\InstallPath,|C:\Python22}\python.exe:; WorkingDir: {userappdata}; Description: Update environment; Flags: runminimized nowait shellexec; Parameters: "-c ""import AccessGrid.Platform; AccessGrid.Platform.Win32SendSettingChange()"""; StatusMsg: Updating Environment
+Filename: {reg:HKLM\Software\Python\PythonCore\{#PythonVersion}\InstallPath,|C:\Python22}\python.exe; WorkingDir: {app}\bin; Description: Setup what video devices will produce video streams; Flags: runminimized nowait shellexec; Parameters: SetupVideo.pyw
+Filename: {reg:HKLM\Software\Python\PythonCore\{#PythonVersion}\InstallPath,|C:\Python22}\python.exe; WorkingDir: {userappdata}; Description: Update environment; Flags: runminimized nowait shellexec; Parameters: "-c ""import AccessGrid.Platform; AccessGrid.Platform.Win32SendSettingChange()"""; StatusMsg: Updating Environment
 
 [UninstallDelete]
 Name: {app}; Type: filesandordirs
