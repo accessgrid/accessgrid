@@ -146,9 +146,9 @@ class ProxyBrowser(CertificateBrowserBase):
             min = int(left / 60)
             sec = left % 60
 
-            valid += "%02d:%02d:%02d left" % (hour, min, sec)
+            validity += "%02d:%02d:%02d left" % (hour, min, sec)
 
-        return cert, [name, issuer, valid]
+        return cert, [name, issuer, validity]
 
     def _getListColumns(self):
         return ["Proxy for", "Issuer", "Validity"]
