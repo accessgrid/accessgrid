@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.69 2003-05-27 19:42:37 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.70 2003-05-27 19:44:13 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -463,11 +463,11 @@ class VenueClient( ServiceBase):
             try:
                 nodeHandle = Client.Handle(self.nodeServiceUri)
 
-                if nodeHandle.IsValid():
-                    log.info(" Stopping node services")
-                    nodeHandle.GetProxy().StopServices()
-                    nodeHandle.GetProxy().SetStreams([])
-            except Client.InvalidHandleException:
+                #if nodeHandle.IsValid():
+                log.info(" Stopping node services")
+                nodeHandle.GetProxy().StopServices()
+                nodeHandle.GetProxy().SetStreams([])
+            except Exception, e:
                 log.info("don't have a node service")
 
         self.__InitVenueData__()
