@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.65 2004-04-27 17:15:38 judson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.66 2004-05-04 16:59:30 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.65 2004-04-27 17:15:38 judson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.66 2004-05-04 16:59:30 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2012,7 +2012,9 @@ class HTTPUploadEngine:
         error_reasons = []
 
         log.debug("Reading response, headers are %s", resp.msg.headers)
-        result = resp.read()
+
+        clen = int(resp.getheader("Content-Length"))
+        result = resp.read(clen)
         
         return_code = -1
 
