@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.141 2004-08-04 19:37:58 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.142 2004-08-05 20:26:24 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.141 2004-08-04 19:37:58 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.142 2004-08-05 20:26:24 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -1119,10 +1119,10 @@ class DetailPanel(wxPanel):
         else:
             self.encryptionTitle.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
 
-        self.randomButton = wxRadioButton(self, self.ID_RANDOM,
+        self.randomButton = wxCheckBox(self, self.ID_RANDOM,
                                           "Standard Range")
-        self.intervalButton = wxRadioButton(self, self.ID_INTERVAL,
-                                            "Custom Range: ")
+        self.intervalButton = wxCheckBox(self, self.ID_INTERVAL,
+                                         "Custom Range: ")
         self.ipAddress = wxStaticText(self, -1, "224.2.128.0/17")
         self.changeButton = wxButton(self, self.ID_CHANGE, "Change")
         self.encryptionButton = wxCheckBox(self, self.ID_ENCRYPT,
@@ -1265,7 +1265,7 @@ class DetailPanel(wxPanel):
         serviceSizer = wxBoxSizer(wxVERTICAL)
 
         serviceSizer.Add(self.multicastTitle,0,wxEXPAND|wxALL,5)
-        serviceSizer.Add(self.line1,1,wxEXPAND)
+        serviceSizer.Add(self.line1,0,wxEXPAND)
         serviceSizer.Add(self.randomButton,0,wxEXPAND|wxALL,5)
 
         flexSizer = wxBoxSizer(wxHORIZONTAL)
