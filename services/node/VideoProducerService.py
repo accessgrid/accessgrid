@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.12 2003-08-12 14:18:47 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.13 2003-09-08 15:45:19 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -68,7 +68,6 @@ class VideoProducerService( AGService ):
       self.configuration.append( self.bandwidth )
       self.configuration.append( self.framerate )
 
-
    def Start( self ):
       """Start service"""
       try:
@@ -86,7 +85,7 @@ class VideoProducerService( AGService ):
          #
          startupfile = os.path.join(Platform.GetTempDir(),
             'VideoProducerService_%d.vic' % ( os.getpid() ) )
-         
+
          f = open(startupfile,"w")
          f.write( vicstartup % (self.bandwidth.value,
                                  self.framerate.value, 
@@ -166,8 +165,25 @@ class VideoProducerService( AGService ):
       self.log.info("VideoProducerService.SetResource : %s" % resource.resource )
       self.resource = resource
       if "portTypes" in self.resource.__dict__.keys():
+
+          # Find the config element that refers to "port"
+          try:
+            index = self.configuration.index(self.port)
+            found = 1
+          except ValueError:
+            found = 0
+
+          # Create the port parameter as an option set parameter, now
+          # that we have multiple possible values for "port"
           self.port = OptionSetParameter( "port", self.resource.portTypes[0], 
                                                            self.resource.portTypes )
+
+          # Replace or append the "port" element
+          if found:
+            self.configuration[index] = self.port
+          else:
+            self.configuration.append(self.port)
+
    SetResource.soap_export_as = "SetResource"
 
    def SetIdentity(self, profile):
@@ -176,8 +192,6 @@ class VideoProducerService( AGService ):
       """
       Platform.SetRtpDefaults( profile )
    SetIdentity.soap_export_as = "SetIdentity"
-
-
 
 def AuthCallback(server, g_handle, remote_user, context):
     return 1
