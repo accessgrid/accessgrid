@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.19 2004-07-27 19:09:40 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.20 2004-09-07 18:51:12 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.19 2004-07-27 19:09:40 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.20 2004-09-07 18:51:12 turam Exp $"
 
 import os
 import sys
@@ -488,7 +488,7 @@ class SystemConfig:
         Retrieve the SNTP time and compare this clock against it.
         """
         try:
-            rtime = self._GetSNTPTime()
+            rtime = self._GetSNTPTime('ntp-1.accessgrid.org')
         except:
             rtime = None
 
