@@ -6,7 +6,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.36 2003-08-22 17:45:09 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.37 2003-08-22 18:01:47 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -170,6 +170,7 @@ class DataService(ServiceBase):
                 
         # Set event channel for data store
         dataStore.SetEventDistributor(eventClient, channelId)
+        dataStore.privateId = privateId
                       
         # Start sending heartbeats to venue
         threading.Thread(target=dataStore.HeartbeatThread).start()
@@ -482,7 +483,7 @@ class DataStore(ServiceBase):
                 log.exception("Unable to send datastore heartbeat")
                 
             time.sleep(10)
-        self.log.debug("DataStore Heartbeat thread exiting")
+        log.debug("DataStore Heartbeat thread exiting")
 
 
             
@@ -504,6 +505,8 @@ class DataStore(ServiceBase):
         self.cbLock.acquire()
         self.callbackClass.SetEventDistributor(eventDistributor, channelId)
         self.LoadPersistentInfo()
+        self.eventClient = eventDistributor
+        self.channelId = channelId
         self.cbLock.release()
         
     def GetLocation(self):
