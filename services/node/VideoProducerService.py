@@ -2,10 +2,11 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.37 2004-09-09 22:08:57 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.38 2004-09-29 21:44:20 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+import re
 import sys, os
 try:    import _winreg
 except: pass
@@ -156,6 +157,8 @@ class VideoProducerService( AGService ):
         Abuse registry to get correct mapping from vfw names
         to video sources
         """
+        h261width = 352
+        h261height = 288
         
         self.log.info("Mapping windows device: %s", deviceStr)
         if deviceStr.find('Videum') >= 0:
@@ -181,6 +184,8 @@ class VideoProducerService( AGService ):
                 key = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER,
                                         keyStr)
                 _winreg.SetValueEx(key,'Source',0,_winreg.REG_DWORD,int(devnum))
+                _winreg.SetValueEx(key,'Height',0,_winreg.REG_DWORD,int(h261height))
+                _winreg.SetValueEx(key,'Width',0,_winreg.REG_DWORD,int(h261width))
                 _winreg.CloseKey(key)
                 
 

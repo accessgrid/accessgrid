@@ -2,10 +2,11 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.20 2004-09-10 16:55:41 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.21 2004-09-29 21:44:20 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+import re
 import sys, os
 try:    import _winreg
 except: pass
@@ -176,6 +177,9 @@ class VideoService( AGService ):
         to video sources
         """
         
+        h261width = 352
+        h261height = 288
+
         self.log.info("Mapping windows device: %s", deviceStr)
         if deviceStr.find('Videum') >= 0:
             self.log.info("- videum")
@@ -200,6 +204,8 @@ class VideoService( AGService ):
                 key = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER,
                                         keyStr)
                 _winreg.SetValueEx(key,'Source',0,_winreg.REG_DWORD,int(devnum))
+                _winreg.SetValueEx(key,'Height',0,_winreg.REG_DWORD,int(h261height))
+                _winreg.SetValueEx(key,'Width',0,_winreg.REG_DWORD,int(h261width))
                 _winreg.CloseKey(key)
                 
     def Start( self ):
