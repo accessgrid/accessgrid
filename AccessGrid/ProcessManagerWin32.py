@@ -1,0 +1,74 @@
+import string
+import win32process
+import win32api
+import win32con
+
+class ProcessManagerWin32:
+    def __init__(self):
+        self.processes = []
+
+    def start_process(self, command, arglist):
+        """
+        Start a new process.
+        Command is the name of the command to be started. It can either be a full pathname
+        or a command name to be found on the default path.
+        Arglist is a list of the arguments to the command.
+        On windows, these will  all be joined together into a string
+        to be passed to CreateProcess.
+        """
+
+        cmdline = command
+        for arg in arglist:
+            arg = str(arg)
+            if arg.find(" ") != -1:
+                #
+                # If there are spaces, quote the arg
+                #
+                arg = '"' + arg + '"'
+
+            cmdline += " " + arg
+
+        try:
+
+            startup_info = win32process.STARTUPINFO()
+
+            print "cmdline is ", cmdline
+
+            info = win32process.CreateProcess(
+                None,                   # AppName
+                cmdline,                # Command line
+                None,                   # Process security
+                None,                   # Thread security
+                0,                      # Inherit handles? 
+                win32process.NORMAL_PRIORITY_CLASS,
+                None,                   # New environment
+                None,                   # Current directory
+                startup_info)
+
+            print "info is ", info
+
+            self.processes.append(info[0])
+
+        except win32process.error, e:
+            print "process creation failed: ", e
+
+    def terminate_all_processes(self):
+        for phandle in self.processes:
+            try:
+                win32process.TerminateProcess(phandle, 0)
+            except win32process.error, e:
+                print "couldn't terminate process: ", e
+        self.processes = []
+
+if __name__ == "__main__":
+
+    import time
+
+    mgr = ProcessManagerWin32()
+    mgr.start_process("notepad", [r"\boot.ini"])
+
+    time.sleep(5)
+
+    mgr.terminate_all_processes()
+
+    
