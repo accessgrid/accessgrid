@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: icons.py,v 1.6 2003-02-10 14:47:35 judson Exp $
+# RCS-ID:      $Id: icons.py,v 1.7 2003-02-10 21:24:29 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -2692,5 +2692,62 @@ catalog['About'].getData = getAboutData
 catalog['About'].getImage = getAboutImage
 catalog['About'].getBitmap = getAboutBitmap
 catalog['About'].getIcon = getAboutIcon
+
+
+#----------------------------------------------------------------------
+def getEmptyData():
+    return zlib.decompress(
+'x\xda\xeb\x0c\xf0s\xe7\xe5\x92\xe2b``\xe0\xf5\xf4p\t\x02\xd2\n@,\xcc\xc1\
+\x06$?N\xe1\xff\x0e\xa4X\x8a\x9d<C8\x80\xa0\x86#\xa5\x03\xc8\xd7\xf4tq\x0c\
+\xa9\x98\xf3\xf6\x9c!#\x03\x03\xc7a\x83\x03\xfb\x9f+2\xf7]q\xb8\xec\x19\xd4~\
+\xf6\xa9\x0c\x03\x04<`M`\xbc[\xc2\xa2\xe4o\xb9\xd7\x0b\xc4\xf7t\xf5sY\xe7\
+\x94\xd0\x04\x00\xa4\xc1\x1d\x04' )
+
+def getEmptyBitmap():
+    return wxBitmapFromImage(getEmptyImage())
+
+def getEmptyImage():
+    stream = cStringIO.StringIO(getEmptyData())
+    return wxImageFromStream(stream)
+
+def getEmptyIcon():
+    icon = wxEmptyIcon()
+    icon.CopyFromBitmap(getEmptyBitmap())
+    return icon
+
+index.append('Empty')
+catalog['Empty'] = ImageClass()
+catalog['Empty'].getData = getEmptyData
+catalog['Empty'].getImage = getEmptyImage
+catalog['Empty'].getBitmap = getEmptyBitmap
+catalog['Empty'].getIcon = getEmptyIcon
+
+
+#----------------------------------------------------------------------
+def getEmptyData():
+    return zlib.decompress(
+"x\xda\xeb\x0c\xf0s\xe7\xe5\x92\xe2b``\xe0\xf5\xf4p\t\x02\xd2\x8c \xcc\xc1\
+\x06$\xe5E\x8ft\x02)\x96b'\xcf\x10\x0e \xa8\xe1H\xe9\x00+tq\x0c\xa9\x98\x93\
+\xfc\xe3\xff\xff\xff\xf5\x0c\x9c\xbf\x99\xffj\xb5=\xee\x02J0x\xba\xfa\xb9\
+\xacsJh\x02\x00\xc0\x19\x15\x82" )
+
+def getEmptyBitmap():
+    return wxBitmapFromImage(getEmptyImage())
+
+def getEmptyImage():
+    stream = cStringIO.StringIO(getEmptyData())
+    return wxImageFromStream(stream)
+
+def getEmptyIcon():
+    icon = wxEmptyIcon()
+    icon.CopyFromBitmap(getEmptyBitmap())
+    return icon
+
+index.append('Empty')
+catalog['Empty'] = ImageClass()
+catalog['Empty'].getData = getEmptyData
+catalog['Empty'].getImage = getEmptyImage
+catalog['Empty'].getBitmap = getEmptyBitmap
+catalog['Empty'].getIcon = getEmptyIcon
 
 
