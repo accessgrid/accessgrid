@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.14 2003-09-16 07:20:17 judson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.15 2003-09-19 21:16:03 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.14 2003-09-16 07:20:17 judson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.15 2003-09-19 21:16:03 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -661,14 +661,38 @@ class CertificateRepository:
         """
 
         certDir = os.path.join(self.dir, "certificates")
+
+        if not os.path.isdir(certDir):
+            log.error("Certificate Repository error: %s is not a directory",
+                      certDir)
+            return
+        
         subjHashes = os.listdir(certDir)
         for subjHash in subjHashes:
             subjHashDir = os.path.join(certDir, subjHash)
+
+            if not os.path.isdir(subjHashDir):
+                log.info("Found a non-directory %s in cert dir %s",
+                         subjHash, certDir)
+                continue
+            
             isHashes = os.listdir(subjHashDir)
             for isHash in isHashes:
-                certFile = os.path.join(subjHashDir, isHash, "cert.pem")
-                desc = CertificateDescriptor(Certificate(certFile, repo = self), self)
-                yield desc
+
+                isHashDir = os.path.join(subjHashDir, isHash)
+                if not os.path.isdir(isHashDir):
+                    log.info("Found a non-directory %s in subject hash dir %s",
+                             isHash, subjHashDir)
+                    continue
+                
+                certFile = os.path.join(isHashDir, "cert.pem")
+
+                if os.path.isfile(certFile):
+                    desc = CertificateDescriptor(Certificate(certFile, repo = self), self)
+                    yield desc
+                else:
+                    log.info("Expected to find a cert.pem at %s, but did not",
+                             isHashDir)
 
     def _GetCertificateRequests(self):
         """
