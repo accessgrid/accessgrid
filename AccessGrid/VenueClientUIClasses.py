@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.86 2003-03-20 21:27:41 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.87 2003-03-20 22:43:17 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -320,8 +320,6 @@ class VenueClientFrame(wxFrame):
         url = personToFollow.venueClientURL
         wxLogDebug("VenueClientUIClasses: Follow name:%s url:%s " %(personToFollow.name, url))
 
-        
-        #call his lead method with my profiley
         try:
             self.app.Follow(personToFollow)
             
@@ -710,7 +708,7 @@ class VenueListPanel(wxSashLayoutWindow):
 	self.parent = parent
         self.app = app
         self.panel = wxPanel(self, -1)
-	self.list = VenueList(self.panel, app)
+	self.list = VenueList(self.panel, self, app)
         self.minimizeButton = wxButton(self.panel, self.ID_MINIMIZE, "<<", \
                                        wxDefaultPosition, wxSize(17,21), wxBU_EXACTFIT )
 	self.maximizeButton = wxButton(self.panel, self.ID_MAXIMIZE, ">>", \
@@ -738,6 +736,10 @@ class VenueListPanel(wxSashLayoutWindow):
     def __addEvents(self):
         EVT_BUTTON(self, self.ID_MINIMIZE, self.OnClick) 
         EVT_BUTTON(self, self.ID_MAXIMIZE, self.OnClick) 
+
+    def FixDoorsLayout(self):
+        print '----------- fix doors layout'
+        wxLayoutAlgorithm().LayoutWindow(self, self.panel)
 
     def Layout(self):
         panelSizer = wxBoxSizer(wxHORIZONTAL)
@@ -787,11 +789,11 @@ class VenueList(wxScrolledWindow):
     The venueList is a scrollable window containing all exits to current venue.
     
     '''   
-    def __init__(self, parent, app):
+    def __init__(self, parent, grandParent, app):
         self.app = app
         wxScrolledWindow.__init__(self, parent, -1, style = wxRAISED_BORDER )
         #\ |wxSB_HORIZONTAL| wxSB_VERTICAL)
-        
+        self.grandParent = grandParent
         self.doorsAndLabelsList = []
         self.exitsDict = {}
         self.Layout()
@@ -842,7 +844,7 @@ class VenueList(wxScrolledWindow):
         #self.Layout()
         self.EnableScrolling(true, true)
         self.box.SetVirtualSizeHints(self)
-        self.parent.Layout()
+        self.grandParent.FixDoorsLayout()
         # wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
                       
     def RemoveVenueDoor(self):
