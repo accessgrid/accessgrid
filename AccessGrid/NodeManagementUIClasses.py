@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.67 2004-07-28 22:42:18 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.68 2004-08-11 19:54:26 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.67 2004-07-28 22:42:18 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.68 2004-08-11 19:54:26 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -226,10 +226,11 @@ class ServiceListCtrl( wxListCtrl ):
                   size=wxDefaultSize, style=wxLC_REPORT):
         listId = wxNewId()
         wxListCtrl.__init__(self, parent, listId, pos, size, style=style)
+
         self.InsertColumn( 0, "Service Name", width=100 )
         self.InsertColumn( 1, "Resource", width=wxLIST_AUTOSIZE )
         self.InsertColumn( 2, "Status", width=wxLIST_AUTOSIZE )
-
+        
         bmap = icons.getDefaultServiceBitmap()
         imageList = wxImageList( bmap.GetWidth(), bmap.GetHeight() )
         imageList.Add( bmap )
@@ -244,16 +245,18 @@ class ServiceListCtrl( wxListCtrl ):
             EVT_SIZE(self, self.OnSize)
 
         self.Layout()
-
+       
     def OnSize(self, event):
         """
         Sets correct column widths.
         """
         w,h = self.GetSize()
         numCols = self.GetColumnCount()
+       
         for i in range(numCols):
-            self.SetColumnWidth(i, w * self.colWidths[i] )
-            
+            self.SetColumnWidth(i, w * self.colWidths[i] - 5)
+
+                   
     def OnColEndDrag(self,event):
         """
         Sets correct column widths after drag
@@ -462,13 +465,17 @@ class NodeManagementClientFrame(wxFrame):
 
         mainsz = wxBoxSizer( wxVERTICAL )
         self.SetSizer( mainsz )
+       
+        mainPanel = wxPanel(self, -1)
+        s = wxBoxSizer(wxHORIZONTAL)
+        mainPanel.SetSizer(s)
+        
+        mainsz.Add(mainPanel, 1, wxEXPAND)
+                
+        self.splitter = wxSplitterWindow(mainPanel ,-1,style=wxSP_3D)
 
-        hortizontalSizer = wxBoxSizer( wxHORIZONTAL )
-        mainsz.Add( hortizontalSizer, -1, wxEXPAND )
-        
-        self.splitter = wxSplitterWindow(self,-1,style=wxSP_3D)
-        self.splitter.SetSize(self.GetSize())
-        
+        s.Add(self.splitter, 1, wxEXPAND|wxALL, 5)
+                
         #
         # Create Hosts panel
         #
@@ -476,11 +483,10 @@ class NodeManagementClientFrame(wxFrame):
         hostPanel = wxPanel( self.splitter, -1 )
         statBox = wxStaticBox(hostPanel, -1, "ServiceManagers")
         statBoxSizer = wxStaticBoxSizer( statBox, wxVERTICAL )
-        hortizontalSizer.Add( hostPanel, -1, wxEXPAND )
         hostPanel.SetSizer( statBoxSizer )
         self.hostList = wxListCtrl( hostPanel, -1, style=wxLC_LIST )
         
-        statBoxSizer.Add( self.hostList, -1, wxEXPAND )
+        statBoxSizer.Add( self.hostList, -1, wxEXPAND | wxALL, 5)
         
         # Handle events in the service managers list
         EVT_LIST_ITEM_RIGHT_CLICK(self, self.hostList.GetId(), self.PopupHostMenu)
@@ -494,17 +500,15 @@ class NodeManagementClientFrame(wxFrame):
         servicesPanel = wxPanel( self.splitter, -1)
         statBox = wxStaticBox(servicesPanel, -1, "Services")
         statBoxSizer = wxStaticBoxSizer( statBox, wxVERTICAL )
-        hortizontalSizer.Add( servicesPanel, -1, wxEXPAND )
         servicesPanel.SetSizer( statBoxSizer )
         self.serviceList = ServiceListCtrl( servicesPanel, wxNewId(), 
                                             style=wxLC_REPORT )
-
-        statBoxSizer.Add( self.serviceList, -1, wxEXPAND )
-
+        
+        statBoxSizer.Add( self.serviceList, 1, wxEXPAND | wxALL, 5)
+        
         # Create the status bar
         self.CreateStatusBar(2)
         self.SetStatusText("This is the statusbar",1)
-
 
         # Handle events in the services list
         EVT_LIST_ITEM_RIGHT_CLICK(self, self.serviceList.GetId(), self.PopupServiceMenu)
@@ -530,18 +534,10 @@ class NodeManagementClientFrame(wxFrame):
         self.menuBar = menuBar
         
         self.EnableMenus(false)
-        
-        
-        EVT_SIZE(self, self.OnSize)
+            
         self.splitter.SetMinimumPaneSize(10)
-        self.splitter.SplitVertically(hostPanel,servicesPanel,130)
-        
-
-    def OnSize(self,event):
-        self.splitter.SetSize(self.GetSize())
-        self.serviceList.OnSize(None)
-        
-
+        self.splitter.SplitVertically(hostPanel,servicesPanel, 130)
+                    
     def Connected(self):
         try:
             self.nodeServiceHandle.IsValid()
