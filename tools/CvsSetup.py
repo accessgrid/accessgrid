@@ -123,6 +123,18 @@ ABS_AG_BASE_DIR = os.path.abspath(AG_BASE_DIR)
 
 print ""
 
+
+# New config using AGTkConfig
+os.environ['AGTK_INSTALL'] = os.path.join( os.path.abspath(AG_BASE_DIR), "bin" )
+os.environ['AGTK_LOCATION'] = os.path.abspath(DST_CONFIG_DIR)
+# Add to PYTHONPATH
+sys.path.insert(0, os.path.abspath(AG_BASE_DIR))
+
+from AccessGrid.Platform.Config import AGTkConfig
+# Create directory structure
+agtkConfig = AGTkConfig.instance(initIfNeeded=1)
+
+
 # Make directories
 
 dir = os.path.join(DST_CONFIG_DIR,"services")
@@ -227,8 +239,8 @@ vsfile.close()
 
 # Create AGNodeService.cfg
 
-config_file = os.path.join(DST_CONFIG_DIR, "AGNodeService.cfg")
-bak_file = os.path.join(DST_CONFIG_DIR, "AGNodeService.cfg.bak")
+config_file = os.path.join(AGTkConfig.instance().GetConfigDir(), "AGNodeService.cfg")
+bak_file = os.path.join(AGTkConfig.instance().GetConfigDir(), "AGNodeService.cfg.bak")
 
 BackupFile(config_file, bak_file)
 
@@ -245,8 +257,8 @@ nsfile.close()
 
 # Create AGServiceManager.cfg
 
-config_file = os.path.join(DST_CONFIG_DIR, "AGServiceManager.cfg")
-bak_file = os.path.join(DST_CONFIG_DIR, "AGServiceManager.cfg.bak")
+config_file = os.path.join(AGTkConfig.instance().GetConfigDir(), "AGServiceManager.cfg")
+bak_file = os.path.join(AGTkConfig.instance().GetConfigDir(), "AGServiceManager.cfg.bak")
 
 BackupFile(config_file, bak_file)
 
@@ -254,17 +266,6 @@ smfile = open(config_file, 'w', )
 smfile.write("[Service Manager]\n")
 smfile.write("servicesDirectory = local_services\n\n")
 smfile.close()
-
-# New config using AGTkConfig
-os.environ['AGTK_INSTALL'] = os.path.join( os.path.abspath(AG_BASE_DIR), "bin" )
-os.environ['AGTK_LOCATION'] = os.path.abspath(DST_CONFIG_DIR)
-# Add to PYTHONPATH
-sys.path.insert(0, os.path.abspath(AG_BASE_DIR))
-
-from AccessGrid.Platform.Config import AGTkConfig
-# Create directory structure
-agtkConfig = AGTkConfig.instance(initIfNeeded=1)
-
 
 # Tell users how to use the new configuration files.
 
