@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.8 2003-02-21 23:54:16 leggett Exp $
+# RCS-ID:      $Id: setup.py,v 1.9 2003-03-12 02:26:42 leggett Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -44,7 +44,8 @@ setup(
                r"bin/AGNodeService.py",
                r"bin/AGServiceManager.py",
                r"bin/NodeManagement.py",
-               r"bin/VenuesServerRegistry.py"
+               r"bin/VenuesServerRegistry.py",
+               r"bin/RunMe.py"
               ],
 
 # Data Files list -- these are things like the services, etc.
