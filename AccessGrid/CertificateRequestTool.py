@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.24 2003-10-15 20:37:14 eolson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.25 2004-02-23 16:55:09 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -20,11 +20,12 @@ from wxPython.wizard import *
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid import CertificateRepository
+from AccessGrid import CertificateManager
 from AccessGrid import Toolkit
 from AccessGrid.CertificateRepository import RepoDoesNotExist, RepoInvalidCertificate
 from AccessGrid.CRSClient import CRSClient
 from AccessGrid import Platform
-from AccessGrid import NetUtilities
+from AccessGrid import NetUtilities, Utilities
 
 import string
 import time
@@ -34,6 +35,19 @@ import os.path
 
 import logging, logging.handlers
 log = logging.getLogger("AG.CertificateRequestTool")
+
+#
+# Service type names and descriptions
+#
+
+ServiceTypes = [("Venue Server", "VenueServer"),
+                ("Node Service", "NodeService"),
+                ("Service Manager", "ServiceManager"),
+                ("Venue Data Store", "DataStoreService"),
+                ("Bridging Service", "BridgeService"),
+                ("Other", None),
+                ]
+                 
 
 class CertificateRequestTool(wxWizard):
     '''
@@ -171,31 +185,36 @@ class CertificateRequestTool(wxWizard):
 
                 next = page.GetNext()
 
+                password = ""
+
                 if next and isinstance(next, SubmitReqWindow):
-                    name = ""
-                    email = ""
-                    domain = ""
-                    request = ""
-                    password = ""
 
                     if isinstance(page, IdentityCertWindow):
                         name = page.firstNameCtrl.GetValue() +" "+page.lastNameCtrl.GetValue()
                         email = page.emailCtrl.GetValue()
                         domain = page.domainCtrl.GetValue()
-                        request = "identity"
+
                         password = page.passwordCtrl.GetValue()
+                        #
+                        # If you don't do the following, password is actually
+                        # a unicode string, not a string, and openssl will
+                        # bitterly complain.
+                        #
+                        password = str(password)
+                        certInfo = CertificateManager.IdentityCertificateRequestInfo(name, domain, email)
                         
                     elif  isinstance(page, HostCertWindow):
-                        name = page.hostCtrl.GetValue()
+                        host = page.hostCtrl.GetValue()
                         email = page.emailCtrl.GetValue()
-                        request = "host"
+                        certInfo = CertificateManager.HostCertificateRequestInfo(host, email)
                         
                     elif  isinstance(page, ServiceCertWindow):
-                        name = page.serviceCtrl.GetValue()+" on "+page.hostCtrl.GetValue()
+                        name = page.serviceCtrl.GetValue()
+                        host = page.hostCtrl.GetValue()
                         email = page.emailCtrl.GetValue()
-                        request = "service"
+                        certInfo = CertificateManager.ServiceCertificateRequestInfo(name, host, email)
 
-                    next.SetText(name, email, domain, request, password)
+                    next.SetText(certInfo, password)
                     next.SetPrev(page)
                 
         elif dir == backward:
@@ -737,24 +756,67 @@ class ServiceCertWindow(TitledPage):
         self.emailId = wxNewId()
             
         self.text = wxStaticText(self, -1, "The e-mail address will be used for verification, please make sure it is valid.")
-        self.serviceText = wxStaticText(self, -1, "Service Name:")
+        self.serviceText = wxStaticText(self, -1, "Service Type:")
+        self.serviceDropdown = wxComboBox(self, -1, "",
+                                          style = wxCB_DROPDOWN | wxCB_READONLY,
+                                          choices = map(lambda x: x[0], ServiceTypes))
         self.hostText = wxStaticText(self, -1, "Machine Name:")
         self.emailText = wxStaticText(self, -1, "E-mail:")
         self.serviceCtrl = wxTextCtrl(self, self.serviceId,
                                       validator = ServiceCertValidator())
+        self.serviceNameText = wxStaticText(self, -1, "Service Name:")
+        self.serviceCtrl.Enable(0)
+        self.serviceNameText.Enable(0)
         self.emailCtrl = wxTextCtrl(self, self.emailId,
                                     validator = ServiceCertValidator())
+
+        self.serviceName = None
+        self.userTyped = 0
+        
         try:
-            self.hostName = os.environ['HOSTNAME']
+            self.hostName = Utilities.GetHostname()
         except:
             self.hostName = ''
         self.hostCtrl = wxTextCtrl(self, self.hostId, self.hostName,
                                    validator = ServiceCertValidator())
 
-        EVT_TEXT(self.serviceCtrl, self.serviceId, self.EnterText)
+
+        EVT_COMBOBOX(self.serviceDropdown, self.serviceDropdown.GetId(),
+                     self.OnServiceSelected)
+
+        EVT_TEXT(self.serviceCtrl, self.serviceId, self.OnServiceText)
         EVT_TEXT(self.emailCtrl, self.emailId, self.EnterText)
         EVT_TEXT(self.hostCtrl, self.hostId , self.EnterText)
+        EVT_CHAR(self.serviceCtrl, self.OnServiceChar)
         self.Layout()
+
+    def OnServiceChar(self, event):
+        self.userTyped = 1
+        event.Skip()
+        
+    def OnServiceSelected(self, event):
+
+        try:
+            which = ServiceTypes[event.GetSelection()]
+
+            self.serviceName = which[1]
+
+            if which[0] == "Other":
+                self.serviceCtrl.Enable(1)
+                self.serviceNameText.Enable(1)
+                if not self.userTyped:
+                    self.serviceCtrl.SetValue("")
+            else:
+                self.serviceCtrl.Enable(0)
+                self.serviceNameText.Enable(0)
+                if not self.userTyped:
+                    self.serviceCtrl.SetValue(self.serviceName)
+        except:
+            log.exception("hm, OnServiceSelected fails.")
+
+    def OnServiceText(self, event):
+        self.EnterText(event)
+        self.serviceName = self.serviceCtrl.GetValue()
 
     def EnterText(self, event):
         '''
@@ -771,11 +833,13 @@ class ServiceCertWindow(TitledPage):
         self.sizer.Add(self.text, 0, wxALL, 5)
         self.sizer.Add(10, 10) 
         gridSizer = wxFlexGridSizer(2, 2, 6, 6)
-        gridSizer.Add(self.serviceText)
+        gridSizer.Add(self.serviceText, 0, wxALIGN_CENTER_VERTICAL)
+        gridSizer.Add(self.serviceDropdown, 0, wxEXPAND)
+        gridSizer.Add(self.serviceNameText, 0, wxALIGN_CENTER_VERTICAL)
         gridSizer.Add(self.serviceCtrl, 0, wxEXPAND)
-        gridSizer.Add(self.hostText)
+        gridSizer.Add(self.hostText, 0, wxALIGN_CENTER_VERTICAL)
         gridSizer.Add(self.hostCtrl, 0, wxEXPAND)
-        gridSizer.Add(self.emailText)
+        gridSizer.Add(self.emailText, 0, wxALIGN_CENTER_VERTICAL)
         gridSizer.Add(self.emailCtrl, 0, wxEXPAND)
         gridSizer.AddGrowableCol(1)
 
@@ -940,34 +1004,38 @@ class SubmitReqWindow(TitledPage):
         self.Layout()
 
 
-    def SetText(self, name, email, domain, requestType, password):
+    def SetText(self, certInfo, password):
         '''
         Sets the text based on previous page
         '''
         # Parameters for requesting a certificate
-        self.name = name
-        self.email = email
-        self.domain = domain
+        self.certInfo = certInfo
         self.password = password
-        self.request = requestType
+
+        reqType = certInfo.GetType()
+        reqName = certInfo.GetName()
+        reqEmail = certInfo.GetEmail()
         
-        self.info =  "Click 'Finish' to submit %s certificate request for %s to Argonne.  A confirmation e-mail will be sent, within 2 business days, to %s.  \n\nPlease contact agdev-ca@mcs.anl.gov if you have questions."%(self.request, self.name, self.email)
-       
+        
+        self.info =  """Click 'Finish' to submit %s certificate request for %s to Argonne.  A confirmation e-mail will be sent, within 2 business days, to %s.
+
+Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName, reqEmail)
+
         self.text.SetValue(self.info)
         
         requestStart = 25
-        nameStart = 50 + len(self.request)
-        emailStart = 127 + len(self.request) + len(self.name)
+        nameStart = 50 + len(reqType)
+        emailStart = 127 + len(reqType) + len(reqName)
 
         self.text.SetInsertionPoint(0)
-        self.text.SetStyle(nameStart, nameStart+len(self.name),
+        self.text.SetStyle(nameStart, nameStart+len(reqName),
                                wxTextAttr(wxNullColour,
                                           font = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)))
         self.text.SetInsertionPoint(0)
-        self.text.SetStyle(emailStart, emailStart+len(self.email),
+        self.text.SetStyle(emailStart, emailStart+len(reqEmail),
                            wxTextAttr(wxNullColour, font = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)))
         self.text.SetInsertionPoint(0)
-        self.text.SetStyle(requestStart, requestStart+len(self.request),
+        self.text.SetStyle(requestStart, requestStart+len(reqType),
                            wxTextAttr(wxNullColour, font = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)))
 
         self.text.Refresh()
@@ -987,15 +1055,18 @@ class SubmitReqWindow(TitledPage):
 
         success = false
 
+        print "validating, request: ", self.certInfo
+
+
         try:
-            pinfo = self.proxyPanel.GetInfo()
-            success = self.parent.createIdentityCertCB(str(self.name),
-                                                       str(self.email),
-                                                       str(self.domain),
-                                                       str(self.password),
-                                                       pinfo[0],
-                                                       pinfo[1],
-                                                       pinfo[2])
+            proxyInfo = self.proxyPanel.GetInfo()
+            certMgr = Toolkit.GetApplication().GetCertificateManager()
+            gui = certMgr.GetUserInterface()
+            success = gui.RequestCertificate(self.certInfo,
+                                             self.password,
+                                             proxyInfo[0],
+                                             proxyInfo[1],
+                                             proxyInfo[2])
         finally:
             wxEndBusyCursor()
             self.Refresh()
@@ -1215,11 +1286,12 @@ class CertificateStatusDialog(wxDialog):
             self.certStatus[row] = ("Unknown")
             requestDescriptor, token, server, creationTime = reqItem
 
-            #
-            # For now we're just doing identity certificates.
-            #
+            typeMeta = requestDescriptor.GetMetadata("AG.CertificateManager.requestType")
 
-            type = "Identity"
+            if typeMeta is None or typeMeta == "":
+                type = "Identity"
+            else:
+                type = typeMeta[0].upper() + typeMeta[1:]
             subject = str(requestDescriptor.GetSubject())
 
             if creationTime is not None:
@@ -1326,6 +1398,10 @@ class CertificateStatusDialog(wxDialog):
 if __name__ == "__main__":
     pp = wxPySimpleApp()
 
+    h = logging.StreamHandler()
+    h.setLevel(logging.DEBUG)
+    logging.root.addHandler(h)
+
     from AccessGrid import Toolkit
     app = Toolkit.WXGUIApplication()
     app.Initialize()
@@ -1334,7 +1410,7 @@ if __name__ == "__main__":
     testURL = "http://www-unix.mcs.anl.gov/~judson/certReqServer.cgi"
     certificateClient = CRSClient(testURL)
     # nrOfReq = certificateClient.GetRequestedCertificates().keys()
-    nrOfReq = 1
+    nrOfReq = 0
     if nrOfReq > 0:
         # Show pending requests
         certStatus = CertificateStatusDialog(None, -1, "Certificate Status Dialog")
@@ -1342,5 +1418,5 @@ if __name__ == "__main__":
 
     else:
         # Show certificate request wizard
-        certReq = CertificateRequestTool(None, certificateType = "IDENTITY")
+        certReq = CertificateRequestTool(None, certificateType = "SERVICE")
         certReq.Destroy()
