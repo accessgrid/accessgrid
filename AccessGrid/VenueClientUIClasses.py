@@ -96,8 +96,7 @@ class VenueClientFrame(wxFrame):
                                    "ImportantPaper.doc", "ImportantPaper.doc",)
 	self.tool2Id = self.toolbar.AddSimpleTool(21, icons.getPowerPointBitmap(), \
                                    "Presentation.ppt", "Presentation.ppt",)
-        print self.tool1Id
-	
+       	
     def __setProperties(self):
         self.SetTitle("Access Grid - The Lobby")
 	bitmap = icons.getDefaultParticipantBitmap()
@@ -124,6 +123,9 @@ class VenueClientFrame(wxFrame):
 
     
     def OnExit(self, event):
+        '''
+        Called when the window is closed using the built in close button
+        '''
         self.Close()
 	      
     def UpdateLayout(self):
@@ -181,10 +183,8 @@ class VenueClientFrame(wxFrame):
 
     def OpenAboutDialog(self, event):
         aboutDialog = AboutDialog(self, wxSIMPLE_BORDER)
-       # aboutDialog.SetPosition(self.GetPosition())
         aboutDialog.Popup()
-                                              
-
+        
     def RemoveData(self, event):
         id = self.contentListPanel.tree.GetSelection()
         data =  self.contentListPanel.tree.GetItemData(id).GetData()
@@ -375,14 +375,13 @@ class VenueList(wxScrolledWindow):
         print 'remove venue door'
 
     def CleanUp(self):
-        
         for item in self.doorsAndLabelsList:
             self.column.Remove(item)
             item.Destroy()
 
         self.exitsDict.clear()
         del self.doorsAndLabelsList[0:]
-
+        
 
 class ContentListPanel(wxPanel):                   
     '''ContentListPanel.
@@ -483,9 +482,11 @@ class ContentListPanel(wxPanel):
        
     def RemoveData(self, profile):
         id = self.dataDict[profile.name]
+        
         if(id != None):
+            del self.dataDict[profile.name]
             self.tree.Delete(id)
-               
+                          
     def AddService(self, profile):
         service = self.tree.AppendItem(self.services, profile.name,\
                                        self.serviceId, self.serviceId)
@@ -495,7 +496,9 @@ class ContentListPanel(wxPanel):
       
     def RemoveService(self, profile):
         id = self.serviceDict[profile.name]
-        self.tree.Delete(id)
+        if(id != None):
+            del self.serviceDict[profile.name]
+            self.tree.Delete(id)
 
     def AddNode(self, profile):
         node = self.tree.AppendItem(self.nodes, profile.name, \
@@ -597,18 +600,18 @@ class ContentListPanel(wxPanel):
 
         for index in self.nodeDict.values():
             self.tree.Delete(index)
-
+        
         for index in self.serviceDict.values():
             self.tree.Delete(index)
-
+        
         for index in self.dataDict.values():
             self.tree.Delete(index)                                   
-
+        
         self.participantDict.clear()
         self.dataDict.clear()
         self.serviceDict.clear()
         self.nodeDict.clear()
-                    
+                            
     def __doLayout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
         sizer1.Add(self.text, 0, wxALL, 20)
@@ -916,5 +919,4 @@ if __name__ == "__main__":
             print 'remove exit'
 
     app = TheGrid()
-    print 'before main loop'
     app.MainLoop()
