@@ -1,6 +1,7 @@
 from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
 from AccessGrid.hosting.pyGlobus import Client
+from AccessGrid.Descriptions import VenueDescription
 
 '''VenueManagementClient. 
 
@@ -13,8 +14,8 @@ class VenueManagementClient(wxApp):
     
     def OnInit(self):
         self.frame = wxFrame(NULL, -1, "Venue Management" )
-	self.address = VenueServerAddress(self.frame, self.connectToServer)
-	self.tabs = VenueManagementTabs(self.frame, -1)
+	self.address = VenueServerAddress(self.frame, self)
+	self.tabs = VenueManagementTabs(self.frame, -1, self)
 	self.__doLayout()
 	self.frame.Show() 
 	statusbar = self.frame.CreateStatusBar(1)
@@ -22,44 +23,81 @@ class VenueManagementClient(wxApp):
 	self.SetTopWindow(self.frame)
         return true
 
+   
     def __doLayout(self):
         box = wxBoxSizer(wxVERTICAL)
-	box.Add(self.address, 0, wxEXPAND|wxALL, 8)
+	box.Add(self.address, 0, wxEXPAND|wxALL)
 	box.Add(self.tabs, 1, wxEXPAND)
 	self.frame.SetSizer(box)
 	box.Fit(self.frame)
 	self.frame.SetAutoLayout(1)  
 
-    def connectToServer(self, URL):
+    def ConnectToServer(self, URL):
         self.client = Client.Handle(URL).get_proxy()
-        vl = self.client.GetVenues()
-        self.tabs.venuesPanel.venuesListPanel.venuesList.Clear()
-        for v in vl:
-            print v
-            self.tabs.venuesPanel.venuesListPanel.venuesList.Append(v)
+
+        try:
+            print 'connecting'
+            vl = self.client.GetVenues()
+            self.tabs.venuesPanel.venuesListPanel.venuesList.Clear()
+            for v in vl:
+                print v
+                self.tabs.venuesPanel.venuesListPanel.venuesList.Append(v)
+        except:
+            print 'connection failed'
+            self.__showNoServerDialog( 'The server you are trying to connect to is not running!')  
+
+    def AddVenue(self, venue):
+        try:
+            self.client.AddVenue(venue)
+            
+        except:
+            self.__showNoServerDialog('You are not connected to a server')
+
+    def ModifyVenue(self, url, venue):
+        try:
+            print 'modify venue'
+
+        except:
+            self.__showNoServerDialog('You are not connected to a server')
+        
+    def DeleteVenue(self, url):
+        try:
+            print 'delete venue'
+
+        except:
+            self.__showNoServerDialog('You are not connected to a server')
+            
+    def __showNoServerDialog(self, text):
+        noServerDialog = wxMessageDialog(self.frame, text, \
+                                         '', wxOK | wxICON_INFORMATION)
+        noServerDialog.ShowModal()
+        noServerDialog.Destroy() 
         
 class VenueServerAddress(wxPanel):
-     def __init__(self, parent, callback):     
+     def __init__(self, parent, application):     
          wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
 			 wxDefaultSize, wxNO_BORDER)
-         self.callback = callback
+         self.application = application
 	 self.addressLabel =  wxStaticText(self, -1,'Venue Server Address:')
 	 self.addressText = wxTextCtrl(self, 42, style=wxPROCESS_ENTER)
 	 self.line = wxStaticLine(self, -1)
 	 self.__doLayout()
-         EVT_TEXT_ENTER(self, 42, self.evtText)
+         self.__addEvents()
+        
+     def __addEvents(self):
+          EVT_TEXT_ENTER(self, 42, self.evtText)
 
      def evtText(self, event):
-         self.callback(event.GetString())
+         self.application.ConnectToServer(event.GetString())
          
      def __doLayout(self):
          venueServerAddressBox = wxBoxSizer(wxVERTICAL)  
 	
          box = wxBoxSizer(wxHORIZONTAL)
-	 box.Add(self.addressLabel, 0, wxEXPAND|wxRIGHT, 5)
-	 box.Add(self.addressText, 1, wxEXPAND)
+	 box.Add(self.addressLabel, 0, wxEXPAND|wxRIGHT|wxLEFT|wxTOP, 5)
+	 box.Add(self.addressText, 1, wxEXPAND|wxRIGHT|wxTOP, 5)
 	 venueServerAddressBox.Add(box, 0, wxEXPAND)
-	 venueServerAddressBox.Add(self.line, 0, wxEXPAND|wxTOP, 5)
+	 venueServerAddressBox.Add(self.line, 0, wxEXPAND|wxALL, 5)
 	 self.SetSizer(venueServerAddressBox)
 	 venueServerAddressBox.Fit(self)
 	 self.SetAutoLayout(1)  
@@ -71,13 +109,13 @@ containing the VenuesPanel, AdministratorsPanel, and ServicesPanel.
 
 '''
 class VenueManagementTabs(wxNotebook):
-    def __init__(self, *args):
-        wxNotebook.__init__(self, *args)
-	self.venuesPanel = VenuesPanel(self) 
+    def __init__(self, parent, id, application):
+        wxNotebook.__init__(self, parent, id)
+	self.venuesPanel = VenuesPanel(self, application) 
 	self.administratorsPanel = AdministratorsPanel(self)
 	self.servicesPanel = ServicesPanel(self)
 	self.AddPage(self.venuesPanel, "Venues")   
-	self.AddPage(self.administratorsPanel, "Server Administrators")
+	self.AddPage(self.administratorsPanel, "Configuration")
 	self.AddPage(self.servicesPanel, "Services")
 
        
@@ -92,18 +130,18 @@ VenuesPanel is split up into two panels;  VenueProfilePanel and VenueListPanel.
 
 '''
 class VenuesPanel(wxPanel):
-    def __init__(self, parent):
+    def __init__(self, parent, application):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D)
 	self.venueProfilePanel = VenueProfilePanel(self)
-	self.venuesListPanel = VenueListPanel(self)
+	self.venuesListPanel = VenueListPanel(self, application)
 	self.__doLayout()
 	
     def __doLayout(self):
         venuesPanelBox = wxBoxSizer(wxHORIZONTAL)
 	venuesPanelBox.Add(self.venuesListPanel, 0, wxEXPAND|wxALL, 10)
 	venuesPanelBox.Add(self.venueProfilePanel, 2, wxEXPAND|wxALL, 10)
-     
+
         self.SetSizer(venuesPanelBox)
 	venuesPanelBox.Fit(self)
 	self.SetAutoLayout(1)  
@@ -120,53 +158,55 @@ class VenueProfilePanel(wxPanel):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D, name = "venueProfilePanel")  
 	self.venueProfileBox = wxStaticBox(self, -1, "Library")
-	self.description = wxStaticText(self, -1,'This is the Library')
+	self.description = wxStaticText(self, -1,'This is the Library', \
+                                        size = wxSize(10, 30) ,\
+                                      style = wxTE_MULTILINE | wxTE_READONLY)
 	self.line = wxStaticLine(self, -1)
-	self.urlLabel = wxStaticText(self, -1, 'URL:', size = wxSize(35, 20),\
-				     name = "urlLabel", style = wxALIGN_RIGHT)
-	self.url =  wxStaticText(self, -1, 'http://www.theurl.com', name = "url")
+#	self.urlLabel = wxStaticText(self, -1, 'URL:', size = wxSize(35, 20),\
+#				     name = "urlLabel", style = wxALIGN_RIGHT)
+#	self.url =  wxStaticText(self, -1, 'http://www.theurl.com', name = "url")
 	self.iconLabel = wxStaticText(self, -1, 'Icon:', size = wxSize(40, 20),\
 				      name = "icon", style = wxALIGN_RIGHT)
 	wxInitAllImageHandlers()
 	bitmap =  wxBitmap('IMAGES/icon.gif', wxBITMAP_TYPE_GIF)
 	self.icon = wxStaticBitmap(self, -1, bitmap, \
 				   size = wxSize(bitmap.GetWidth(), bitmap.GetHeight()))
-	self.exitsLabel = wxStaticText(self, -1, 'Exits:', size = wxSize(40, 20), \
+	self.exitsLabel = wxStaticText(self, -1, 'Exits:', size = wxSize(50, 20), \
 				       name = "exitsLabel", style = wxALIGN_RIGHT)
 	self.exits = wxListBox(self, 10, size = wxSize(250, 100), style = wxTE_READONLY)
 	self.__setProperties()
 	self.__doLayout()
 
     def __setProperties(self):
-        self.description.SetLabel('\nThis is the library and you can find all kinds of\ninteresting books!\n')
-	self.exits.Append('Chemistry')
+        self.description.SetLabel('This is the library \nfilled with all kinds of books\n')
+        self.exits.Append('Chemistry')
 	self.exits.Append('Physics')
-
+       
     def ChangeCurrentVenue(data):
+        self.venueProfileBox.SetLabel(data.GetName())
         self.description.SetLabel(data.GetDescription())
-	self.url.SetLabel(data.GetUrl())
+#	self.url.SetLabel(data.GetUrl())
 	self.icon.SetBitmap(self.bitmap)
 
     def __doLayout(self):
         venueListProfileSizer = wxStaticBoxSizer(self.venueProfileBox, wxVERTICAL)
-	venueListProfileSizer.Add(self.description, 0, wxEXPAND|wxALL, 5)
-	venueListProfileSizer.Add(self.line, 1, wxEXPAND)
+	venueListProfileSizer.Add(self.description,0, wxEXPAND|wxALL, 5)
+	venueListProfileSizer.Add(self.line, 0, wxEXPAND)
 	self.SetSizer(venueListProfileSizer)
 	venueListProfileSizer.Fit(self)
 
 	paramGridSizer = wxFlexGridSizer(4, 2, 10, 10)
-	paramGridSizer.Add(self.urlLabel, 0, wxEXPAND, 0)
-	paramGridSizer.Add(self.url, 0, wxEXPAND, 0)
+#	paramGridSizer.Add(self.urlLabel, 0, wxEXPAND, 0)
+#	paramGridSizer.Add(self.url, 0, wxEXPAND, 0)
 	paramGridSizer.Add(self.iconLabel, 0, wxEXPAND, 0)
 	paramGridSizer.Add(self.icon, 0, wxALIGN_LEFT, 0)
 	paramGridSizer.Add(self.exitsLabel, 0, wxEXPAND, 0)
 	paramGridSizer.Add(self.exits, 0, wxEXPAND|wxRIGHT|wxBOTTOM, 5)
 	paramGridSizer.AddGrowableCol(1) 
 	paramGridSizer.AddGrowableRow(2) 
-	venueListProfileSizer.Add(paramGridSizer, 10, wxEXPAND)
+	venueListProfileSizer.Add(paramGridSizer, 10, wxEXPAND|wxTOP, 10)
 
 	self.SetAutoLayout(1)  
-
 
 '''VenueListPanel.
 
@@ -175,19 +215,26 @@ to execute modifications of the list (add, delete, and modify venue).
 
 '''
 class VenueListPanel(wxPanel):
-    def __init__(self, parent):
+    def __init__(self, parent, application):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
-			 wxDefaultSize, wxNO_BORDER|wxSW_3D)  
+			 wxDefaultSize, wxNO_BORDER|wxSW_3D)
+        self.application = application
 	self.venuesListBox = wxStaticBox(self, -1, "Venues", name = 'venueListBox')
 	self.venuesList = wxListBox(self, -1, name = 'venueList')
 	self.addButton = wxButton(self, 10, 'Add', \
-				  size = wxSize(42,20), name = 'addButton')
+				  size = wxSize(50,20), name = 'addButton')
 	self.modifyButton = wxButton(self, 20, 'Modify',\
-				     size = wxSize(42, 20), name = 'modifyButton')
+				     size = wxSize(50, 20), name = 'modifyButton')
 	self.deleteButton = wxButton(self, 30, 'Delete',\
-				     size = wxSize(42, 20), name = 'deleteButton')
+				     size = wxSize(50, 20), name = 'deleteButton')
 	self.__doLayout()
 	self.__addEvents()
+
+        # -- for now
+        self.venuesList.Append('Biology')
+        self.venuesList.Append('Library')
+        self.venuesList.Append('Chemistry')
+        self.venuesList.Append('Physics')
    	
     def __addEvents(self):
         EVT_BUTTON(self, 10, self.OpenAddVenueDialog)  
@@ -195,11 +242,11 @@ class VenueListPanel(wxPanel):
 	EVT_BUTTON(self, 30, self.DeleteVenue)  
 
     def OpenAddVenueDialog(self, event):
-        addVenueDialog = AddVenueFrame(self, -1, "Please, enter right parameters")
+        addVenueDialog = AddVenueFrame(self, -1, "")
 
     def OpenModifyVenueDialog(self, event):
 	if(self.venuesList.GetSelection() != -1):    
-		modifyVenueDialog = ModifyVenueFrame(self, -1, "Please, enter right parameters")
+		modifyVenueDialog = ModifyVenueFrame(self, -1, "")
 		item = self.venuesList.GetSelection()
 		data = self.venuesList.GetClientData(item)
 		modifyVenueDialog.InsertData(data)
@@ -211,13 +258,24 @@ class VenueListPanel(wxPanel):
 			self.venuesList.SetSelection(0)
   
     def InsertVenue(self, data):
-	self.venuesList.Append(data.GetTitle(), data) 
+      #  description = VenueDescription(data.GetTitle(), "First Venue Description", "", None) 
+        self.application.AddVenue(data)
+	self.venuesList.Append(data.GetName(), data) 
 	self.venuesList.Select(self.venuesList.Number()-1)
 		
     def ModifyCurrentVenue(self, data):
-	item = self.venuesList.GetSelection()
-	self.venuesList.SetClientData(item, data)
-	self.venuesList.SetString(item, data.GetTitle())
+        item = self.venuesList.GetSelection()
+        print 'we have a selection'
+        print item
+        print data.GetName()
+       # print data.GetUrl()
+        print data.GetDescription()
+        print data.GetIcon()
+        print 'before set client data'
+        self.venuesList.SetClientData(item, data)
+        print 'we set the client data'
+	self.venuesList.SetString(item, data.GetName())
+        print 'we set the string'
        
     def __doLayout(self):
         venueListPanelSizer = wxStaticBoxSizer(self.venuesListBox, wxVERTICAL)
@@ -272,7 +330,7 @@ class AdministratorsProfilePanel(wxPanel):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D, name = "venueProfilePanel")  
 	self.administratorsProfileBox = wxStaticBox(self, -1, "Susanne Lefvert")
-	self.description = wxStaticText(self, -1,'ops' ,size = wxSize(200,50))
+	self.description = wxStaticText(self, -1,'ops' ,size = wxSize(200, 30))
 	self.line = wxStaticLine(self, -1)
 	self.dnLabel = wxStaticText(self, -1, 'DN:', size = wxSize(35, 20),\
 				     name = "dnLabel", style = wxALIGN_RIGHT)
@@ -287,12 +345,12 @@ class AdministratorsProfilePanel(wxPanel):
 	self.__doLayout()
 
     def __setProperties(self):
-        self.description.SetLabel('\nSusanne Lefvert works in the MCS division at \nArgonne National Laboratories!\n')
-			
+        self.description.SetLabel('Employed at Argonne National \nLaboratory!\n')
+        			
     def __doLayout(self):
         administratorsProfileSizer = wxStaticBoxSizer(self.administratorsProfileBox, wxVERTICAL)
 	administratorsProfileSizer.Add(self.description, 0, wxEXPAND|wxALL, 5)
-	administratorsProfileSizer.Add(self.line, 1, wxEXPAND)
+	administratorsProfileSizer.Add(self.line, 0, wxEXPAND)
 
 	self.SetSizer(administratorsProfileSizer)
         administratorsProfileSizer.Fit(self)
@@ -302,9 +360,10 @@ class AdministratorsProfilePanel(wxPanel):
 	paramGridSizer.Add(self.dn, 0, wxEXPAND, 0)
 	paramGridSizer.Add(self.iconLabel, 0, wxEXPAND, 0)
 	paramGridSizer.Add(self.icon, 0, wxLEFT, 0)
-	administratorsProfileSizer.Add(paramGridSizer, 10, wxEXPAND)
+        paramGridSizer.AddGrowableCol(1) 
+	paramGridSizer.AddGrowableRow(2) 
+	administratorsProfileSizer.Add(paramGridSizer, 10, wxEXPAND|wxTOP, 10)
 	self.SetAutoLayout(1)      
-	
  
 '''AdministratorsListPanel.
 
@@ -319,13 +378,13 @@ class AdministratorsListPanel(wxPanel):
 	self.administratorsListBox = wxStaticBox(self, -1, "Administrators", name = 'venueListBox')
 	self.administratorsList = wxListBox(self, -1, name = 'venueList')
 	self.addButton = wxButton(self, -1, 'Add', \
-				  size = wxSize(42, 20), name = 'addButton')
+				  size = wxSize(50, 20), name = 'addButton')
 	self.deleteButton = wxButton(self, -1, 'Delete',\
-				     size = wxSize(42, 20), name = 'deleteButton')
+				     size = wxSize(50, 20), name = 'deleteButton')
 	self.modifyButton = wxButton(self, -1, 'Modify',\
-				     size = wxSize(42, 20), name = 'modifyButton')
+				     size = wxSize(50, 20), name = 'modifyButton')
 	self.__doLayout()
-
+        
       
     def AddVenue(self, title): 
         self.administratorsList.Append(title)
@@ -338,6 +397,11 @@ class AdministratorsListPanel(wxPanel):
 	buttonSizer.Add(self.addButton, 1,  wxLEFT| wxBOTTOM | wxALIGN_CENTER, 5)
 	buttonSizer.Add(self.modifyButton, 1, wxLEFT | wxBOTTOM |wxALIGN_CENTER, 5)
 	buttonSizer.Add(self.deleteButton, 1, wxLEFT | wxBOTTOM |wxRIGHT | wxALIGN_CENTER, 5)
+
+        #-- for now
+        self.administratorsList.Append('Mike Papka')
+        self.administratorsList.Append('Ivan Judson')
+        self.administratorsList.Append('Susanne Lefvert')
 		
 	self.SetSizer(administratorsListSizer)
 	administratorsListSizer.Fit(self)
@@ -418,8 +482,8 @@ class VenueParamFrame(wxFrame):
 	self.descriptionLabel = wxStaticText(self, -1, "Description:")
 	self.description =  wxTextCtrl(self, -1, "",\
 				       size = wxSize(200, 100), style = wxTE_MULTILINE|wxHSCROLL)
-	self.urlLabel = wxStaticText(self, -1, "URL:")
-	self.url =  wxTextCtrl(self, -1, "", size = wxSize(200, 20))
+#	self.urlLabel = wxStaticText(self, -1, "URL:")
+#	self.url =  wxTextCtrl(self, -1, "", size = wxSize(200, 20))
 	self.iconLabel = wxStaticText(self, -1, "Icon:")
 	
 	self.bitmap =  wxBitmap('IMAGES/icon.gif', wxBITMAP_TYPE_GIF)
@@ -457,8 +521,8 @@ class VenueParamFrame(wxFrame):
 	paramFrameSizer.Add(self.titleLabel, 0, wxALIGN_RIGHT)
 	paramFrameSizer.Add(self.title, 0, wxEXPAND)
 	
-	paramFrameSizer.Add(self.urlLabel, 0, wxALIGN_RIGHT)
-	paramFrameSizer.Add(self.url, 0, wxEXPAND)
+#	paramFrameSizer.Add(self.urlLabel, 0, wxALIGN_RIGHT)
+#	paramFrameSizer.Add(self.url, 0, wxEXPAND)
 	paramFrameSizer.Add(self.iconLabel, 0, wxALIGN_RIGHT)
 	box = wxBoxSizer(wxHORIZONTAL)
 	box.Add(20, 10, 0, wxEXPAND)
@@ -495,6 +559,33 @@ class VenueParamFrame(wxFrame):
 
     def Cancel(self,  event):
         self.Destroy()
+
+    def RightValues(self):
+        titleTest =  self.__isStringBlank(self.title.GetValue())
+   #     urlTest =  self.__isStringBlank(self.url.GetValue())
+        descriptionTest =  self.__isStringBlank(self.description.GetValue())
+            
+        if(titleTest or  \
+           (self.bitmap == None) or descriptionTest):
+            wrongParamsDialog = wxMessageDialog(self, 'Please, fill in all fields!', \
+                                                '', wxOK | wxICON_INFORMATION)
+            wrongParamsDialog.ShowModal()
+            wrongParamsDialog.Destroy()
+            return false
+        
+        else:
+            return true
+
+    def __isStringBlank(self, text):
+        empty = true
+        index = 0
+        while index < len(text):
+            if text[index] >= 'A' and text[index] <= 'z' :
+                empty = false
+                break
+            else:
+                index = index + 1
+        return empty
  
 class AddVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title):
@@ -512,10 +603,12 @@ class AddVenueFrame(VenueParamFrame):
 		exitsCopy.append(self.exits.IsChecked(index))
 		index = index + 1
            
-        data = VenueData(self.title.GetValue(), self.url.GetValue(), self.bitmap, self.description.GetValue(), exitsCopy)
-        self.parent.InsertVenue(data)
-	self.Destroy()
-
+        data = VenueDescription(self.title.GetValue(), \
+                         self.description.GetValue(), "", self.bitmap)
+        if self.RightValues():
+            self.parent.InsertVenue(data)
+            self.Destroy()
+            
 class ModifyVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title):
         VenueParamFrame.__init__(self, parent, id, title)
@@ -531,16 +624,21 @@ class ModifyVenueFrame(VenueParamFrame):
 	while index < self.exits.Number():
 		exitsCopy.append(self.exits.IsChecked(index))
 		index = index + 1
+                
+        data = VenueDescription(self.title.GetValue(), \
+                         self.description.GetValue(), "", self.bitmap)
 
-	data = VenueData(self.title.GetValue(), self.url.GetValue(), self.bitmap, self.description.GetValue(), exitsCopy)
-	self.parent.ModifyCurrentVenue(data)
-	self.Destroy()
+        if self.RightValues():
+            print 'we have right data'
+            self.parent.ModifyCurrentVenue(data)
+            print 'we have modified current venue'
+	    self.Destroy()
 
     def InsertData(self, data):
-        self.title.AppendText(data.GetTitle())
-	self.url.AppendText(data.GetUrl())
+        self.title.AppendText(data.GetName())
+#	self.url.AppendText(data.GetUrl())
         self.description.AppendText(data.GetDescription())
-	self.icon.SetBitmap(data.GetBitmap())
+	self.icon.SetBitmap(data.GetIcon())
 	self.Layout()
 	item = 0
 	exitList = data.GetExits()
@@ -551,30 +649,31 @@ class ModifyVenueFrame(VenueParamFrame):
     	while index < len(exitList):
 		self.exits.Check(index, exitList[index])
 		index = index + 1
+
+
 	
-class VenueData:
-    def __init__(self, title, url, bitmap, description, exits):
-        self.title = title
-	self.url = url
-	self.bitmap = bitmap
-	self.description = description
-	self.exits = exits
+#class VenueData:
+  #  def __init__(self, title, bitmap, description, exits):
+  #      self.title = title
+#	self.url = url
+#	self.bitmap = bitmap
+#	self.description = description
+#	self.exits = exits
 		
-    def GetTitle(self):
-        return self.title
+  #  def GetTitle(self):
+  #      return self.title
 
-    def GetUrl(self):
-        return self.url
+  #  def GetUrl(self):
+      #  return self.url
 
-    def GetBitmap(self):
-        return self.bitmap
+  #  def GetBitmap(self):
+   #     return self.bitmap
 
-    def GetDescription(self):
-        return self.description
+  #  def GetDescription(self):
+  #      return self.description
 
-    def GetExits(self):
-        return self.exits
-
+  #  def GetExits(self):
+        #return self.exits
 
 app = VenueManagementClient(0)
 app.MainLoop()  
