@@ -6,11 +6,12 @@
 # Basic plan:
 #
 # Create a snapshot build directory.
-# cd to it, and cvs export the ag-vic, ag-rat, and AccessGrid modules
+# cd to it, and cvs export the AccessGrid module
 # cd to the AccessGrid/packaging/windows dir
 # modify the paths to point at the build dir
 # modify AppVersionLong and AppVersionShort to be the snapshot name
-# kick off a build
+# run the precompile scripts
+# invoke the innosetup compiler on the modified iss file
 #
 # Also need to modify setup.py to change the version there to match
 # this snapshot version.
