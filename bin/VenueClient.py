@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.222 2003-09-26 15:15:57 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.223 2003-09-26 18:17:37 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -835,7 +835,10 @@ class VenueClientUI(VenueClientEventSubscriber):
             text = "You have not entered the venue located at %s.\nAn error occured.  Please, try again."%URL
             ErrorDialog(None, text, "Enter Venue Error",
                           style = wxOK  | wxICON_ERROR)
-             
+
+    def ExitVenue(self):
+        wxCallAfter(self.frame.venueListPanel.CleanUp)
+
     def __setHistory(self, uri, back):
         """
         This method sets the history list, which stores visited
