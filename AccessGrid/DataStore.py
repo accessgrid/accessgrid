@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.57 2004-02-23 22:55:35 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.58 2004-02-23 23:06:57 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.57 2004-02-23 22:55:35 lefvert Exp $"
+__revision__ = "$Id: DataStore.py,v 1.58 2004-02-23 23:06:57 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -442,9 +442,9 @@ class DataStore:
             dd.SetType(cp.get(sec, 'type'))
 
             try:
-                dd.SetLastModified(sec, 'lastModified')
+                dd.SetLastModified(cp.get(sec, 'lastModified'))
             except:
-                log.info("LoadPersistentVenues: Data has no last modified date")
+                log.info("LoadPersistentVenues: Data has no last modified date. Probably old DataDescription")
             
             url = self.GetDownloadDescriptor(dd.name)
             if url != None:

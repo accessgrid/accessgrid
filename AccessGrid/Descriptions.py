@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.41 2004-02-23 22:55:07 lefvert Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.42 2004-02-23 23:06:57 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.41 2004-02-23 22:55:07 lefvert Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.42 2004-02-23 23:06:57 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -160,6 +160,7 @@ class DataDescription(ObjectDescription):
         string += "checksum : %s\n" % self.GetChecksum()
         string += "owner: %s\n" % self.GetOwner()
         string += "type: %s\n" % self.GetType()
+        string += 'lastModified: %s\n' % self.GetLastModified()
 
         return string
 
