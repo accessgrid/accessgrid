@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.166 2003-05-05 21:38:04 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.167 2003-05-07 13:37:15 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -225,18 +225,18 @@ class VenueClientFrame(wxFrame):
 	self.menubar.Append(self.venue, "&Venue")
         
         self.venue.AppendSeparator()
-        self.venue.Append(self.ID_VENUE_CLOSE,"&Exit\tCTRL-q", "Exit venue")
+        self.venue.Append(self.ID_VENUE_CLOSE,"&Exit", "Exit venue")
 	
 	self.edit = wxMenu()
-	self.edit.Append(self.ID_PROFILE,"&Profile...\tCTRL-p", "Change your personal information")
+	self.edit.Append(self.ID_PROFILE,"&Profile...\t", "Change your personal information")
         self.menubar.Append(self.edit, "&Edit")
         self.myNode = wxMenu()
-        self.myNode.Append(self.ID_MYNODE_MANAGE, "&Manage...\tCTRL-m", "Configure your node")
-        self.myNode.Append(self.ID_MYNODE_URL, "&Set URL...\tCTRL-u", "Specify URL address to node service")
+        self.myNode.Append(self.ID_MYNODE_MANAGE, "&Manage...\t", "Configure your node")
+        self.myNode.Append(self.ID_MYNODE_URL, "&Set URL...\t", "Specify URL address to node service")
         self.menubar.Append(self.myNode, "My &Node")
         self.myVenues = wxMenu()
-        self.myVenues.Append(self.ID_MYVENUE_ADD, "Add &Current Venue...\tCTRL-t", "Add this venue to your list of venues")
-        self.myVenues.Append(self.ID_MYVENUE_EDIT, "Edit My &Venues...\tCTRL-e", "Edit your venues")
+        self.myVenues.Append(self.ID_MYVENUE_ADD, "Add &Current Venue...\t", "Add this venue to your list of venues")
+        self.myVenues.Append(self.ID_MYVENUE_EDIT, "Edit My &Venues...\t", "Edit your venues")
         self.myVenues.AppendSeparator()
         self.menubar.Append(self.myVenues, "My Ven&ues")
 
@@ -248,7 +248,7 @@ class VenueClientFrame(wxFrame):
             self.menubar.Append(certMenu, "&Certificates")
               
       	self.help = wxMenu()
-        self.help.Append(self.ID_HELP_ABOUT, "&About\tCTRL-a", "Information about the application")
+        self.help.Append(self.ID_HELP_ABOUT, "&About\t", "Information about the application")
         self.menubar.Append(self.help, "&Help")
         self.HideMenu()
 
