@@ -84,6 +84,24 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
     def __init__(self):
         CertificateManager.CertificateManagerUserInterface.__init__(self)
 
+    def GetPassphraseCallback(self, caption, message):
+        return lambda rwflag, caption = caption, message = message, self = self: \
+            self.GUIPassphraseCallback(rwflag, caption, message)
+
+    def GUIPassphraseCallback(self, rwflag, caption, message):
+        dlg = wxTextEntryDialog(None, message, caption, style = wxTE_PASSWORD)
+        rc = dlg.ShowModal()
+
+        if rc == wxID_OK:
+            ret = str(dlg.GetValue())
+        else:
+            ret = None
+
+        dlg.Destroy()
+
+        return ret
+            
+        
     def GetProxyInfo(self, cert, msg = ""):
         """
         Construct and show a dialog to retrieve proxy creation information from user.
