@@ -3,7 +3,7 @@
 # Name:        certmgr.py
 # Purpose:     Command line certificate management tool.
 # Created:     9/10/2003
-# RCS-ID:      $Id: certmgr.py,v 1.10 2004-07-16 00:49:12 judson Exp $
+# RCS-ID:      $Id: certmgr.py,v 1.11 2004-08-02 14:19:56 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This tool is used on the command line to interact with the users certificate
 environment.
 """
-__revision__ = "$Id: certmgr.py,v 1.10 2004-07-16 00:49:12 judson Exp $"
+__revision__ = "$Id: certmgr.py,v 1.11 2004-08-02 14:19:56 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -509,6 +509,7 @@ the base name of certfile, with a .signing_policy suffix.
                         break
                 if not validKey and keyRE.search(line):
                     validKey = 1
+                    keyFile = certFile
                     if validCert:
                         break
             fh.close()
