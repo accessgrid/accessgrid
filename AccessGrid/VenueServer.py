@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.15 2003-01-21 17:33:09 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.16 2003-01-21 20:44:16 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -169,7 +169,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
             print "Next coherence port is: %d" % self.coherencePort
             # Build the new coherenceService
-            coherenceService = CoherenceService.CoherenceService(NetworkLocation.UnicastNetworkLocation(socket.getfqdn(), self.coherencePort))
+            coherenceService = CoherenceService.CoherenceService((socket.getfqdn(), self.coherencePort))
 #            coherenceService = CoherenceService.CoherenceService( NetworkLocation.UnicastNetworkLocation(socket.getfqdn(), coherencePort))
 
             venueID = GUID.GUID()
@@ -364,7 +364,7 @@ class VenueServer(ServiceBase.ServiceBase):
     GetCoherencePortBase.soap_export_as = "GetCoherencePortBase"
 
 
-    def SetStorageLocation( self, dataStorageLocation ):
+    def SetStorageLocation( self, connectionInfo, dataStorageLocation ):
         """
         Set the path for data storage
         """
@@ -373,7 +373,7 @@ class VenueServer(ServiceBase.ServiceBase):
     SetStorageLocation.soap_export_as = "SetStorageLocation"
 
 
-    def GetStorageLocation( self ):
+    def GetStorageLocation( self, connectionInfo ):
         """
         Get the path for data storage
         """
