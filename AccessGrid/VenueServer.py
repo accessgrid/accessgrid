@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.29 2003-02-06 21:22:17 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.30 2003-02-06 22:01:55 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -120,6 +120,9 @@ class VenueServer(ServiceBase.ServiceBase):
         #
         if len(self.defaultVenue) == 0:
             self.defaultVenue = self.AddVenue(None, self.defaultVenueDescription)
+        else:
+            defaultVenue = self.hostingEnvironment.create_service_object(pathId = 'Venues/default')
+            self.venues[self.defaultVenue]._bind_to_service(defaultVenue)
 
         # The houseKeeper is a task that is doing garbage collection and
         # other general housekeeping tasks for the Venue Server.

@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.2 2003-02-06 20:47:04 judson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.3 2003-02-06 22:01:55 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -84,7 +84,6 @@ def BuildServiceMenu( ):
     svcmenu.Append(ID_SERVICE_GET_CONFIG, "Get Service Config", "Dum")
     return svcmenu
 
-
 class HostListCtrl( wxListCtrl ):
 
     def __init__(self, parent, ID, pos=wxDefaultPosition,
@@ -110,8 +109,6 @@ class ServiceListCtrl( wxListCtrl ):
         imageList = wxImageList( bmap.GetWidth(), bmap.GetHeight() )
         imageList.Add( bmap )
         self.AssignImageList( imageList, wxIMAGE_LIST_NORMAL)
-
-
 
 class ServiceConfigurationPanel( wxPanel ):
     def __init__( self, parent, ID, pos=wxDefaultPosition, size=wxDefaultSize, style=0 ):
