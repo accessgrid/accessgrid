@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.34 2003-05-22 20:18:37 olson Exp $
+# RCS-ID:      $Id: Types.py,v 1.35 2003-08-07 20:58:21 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -21,7 +21,7 @@ from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetPara
 
 class VenueState:
     def __init__( self, uniqueId, name, description, uri, connections, clients,
-                  data, eventLocation, textLocation, applications, services ):
+                  data, eventLocation, textLocation, applications, services, backupServer=None ):
         self.uniqueId = uniqueId
         self.name = name
         self.description = description
@@ -29,7 +29,8 @@ class VenueState:
         self.eventLocation = eventLocation
         self.textLocation = textLocation
         self.services = services
-
+        self.backupServer = backupServer
+        
         self.connections = dict()
         self.clients = dict()
         self.data = dict()
