@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.19 2004-08-19 16:49:18 turam Exp $
+# RCS-ID:      $Id: agpm.py,v 1.20 2004-08-24 22:46:06 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.19 2004-08-19 16:49:18 turam Exp $"
+__revision__ = "$Id: agpm.py,v 1.20 2004-08-24 22:46:06 eolson Exp $"
 
 import os
 import re
@@ -83,7 +83,8 @@ def ProcessArgs():
     # At least one of the following must be given
     if not (options.appzip or options.apppkg 
             or options.post_install or options.appfile
-            or options.appdir):
+            or options.appdir or options.listservices
+            or options.listapps):
         parser.print_help()
         print "Error: no action specified"
         sys.exit(1)
