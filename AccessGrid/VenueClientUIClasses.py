@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.75 2003-03-19 22:54:21 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.76 2003-03-19 23:32:02 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -114,8 +114,7 @@ class VenueClientFrame(wxFrame):
         self.Layout()
         self.__setEvents()
         self.__loadMyVenues()
-        self.__setLogger()
-     
+            
     def OnSashDrag(self, event):
         if event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE:
             return
@@ -275,7 +274,7 @@ class VenueClientFrame(wxFrame):
 	#self.menubar.SetFont(font)
         #self.SetFont(font)
 	currentHeight = self.venueListPanel.GetSize().GetHeight()
-	self.venueListPanel.SetSize(wxSize(100, 300))
+	self.venueListPanel.SetSize(wxSize(180, 300))
         
     def Layout(self):
         self.venueAddressBar.SetDefaultSize(wxSize(1000, 35))
@@ -289,7 +288,7 @@ class VenueClientFrame(wxFrame):
 
         wxLayoutAlgorithm().LayoutWindow(self.TextWindow, self.textClientPanel)
 
-        self.venueListPanel.SetDefaultSize(wxSize(120, 1000))
+        self.venueListPanel.SetDefaultSize(wxSize(180, 1000))
         self.venueListPanel.SetOrientation(wxLAYOUT_VERTICAL)
         self.venueListPanel.SetSashVisible(wxSASH_RIGHT, TRUE)
         self.venueListPanel.SetAlignment(wxLAYOUT_LEFT)
@@ -620,21 +619,7 @@ class VenueClientFrame(wxFrame):
     def __showNoSelectionDialog(self, text):
         MessageDialog(self, text)
 
-    def __setLogger(self):
-        logger = logging.getLogger("AG.VenueClientUIClasses")
-        logger.setLevel(logging.DEBUG)
-        logname = "VenueClientUIClasses.log"
-        hdlr = logging.handlers.RotatingFileHandler(logname, "a", 10000000, 0)
-        fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-        hdlr.setFormatter(fmt)
-        logger.addHandler(hdlr)
-        log = logging.getLogger("AG.VenueClientUIClasses")
-
-        wxLog_SetActiveTarget(wxLogGui())  
-        wxLog_SetActiveTarget(wxLogChain(MyLog(log)))
-        wxLogInfo(" ")
-        wxLogInfo("--------- START VenueClientUIClasses")
-        
+            
     def CleanUp(self):
         self.venueListPanel.CleanUp()
         self.contentListPanel.CleanUp()
@@ -771,7 +756,7 @@ class VenueListPanel(wxSashLayoutWindow):
         self.maximizeButton.Hide()
         self.minimizeButton.Show()  
         self.list.ShowDoors()
-        self.SetSize(wxSize(100, currentHeight))
+        self.SetSize(wxSize(180, currentHeight))
         self.parent.UpdateLayout()
         
     def OnClick(self, event):
@@ -819,10 +804,14 @@ class VenueList(wxScrolledWindow):
                
     def GoToNewVenue(self, event):
         id = event.GetId()
-        description = self.exitsDict[id]
-        wxBeginBusyCursor()
-        self.app.GoToNewVenue(description.uri)
-        wxEndBusyCursor()
+        if(self.exitsDict.has_key(id)):
+            description = self.exitsDict[id]
+            wxBeginBusyCursor()
+            self.app.GoToNewVenue(description.uri)
+            wxEndBusyCursor()
+        else:
+            wxMessage("This exit does no longer exist, sorry!")
+            wxLog_GetActiveTarget().Flush()
                 
     def AddVenueDoor(self, profile):
         panel = ExitPanel(self, profile)
@@ -839,7 +828,7 @@ class VenueList(wxScrolledWindow):
         self.parent.Layout()
         self.EnableScrolling(true, true)
         self.box.SetVirtualSizeHints(self)
-
+        
     def RemoveVenueDoor(self):
         print 'remove venue door'
 
@@ -881,14 +870,12 @@ class ExitPanel(wxPanel):
         #self.label = wxStaticText(self, -1, profile.name)
         self.SetToolTipString("tool tip")
         self.label = wxTextCtrl(self, -1, "", size= wxSize(50,10),
-                                style = wxNO_BORDER|wxTE_MULTILINE|wxTE_RICH|wxTE_READONLY)
-        self.label.SetValue('This is a very cool venue with all kinds of interesting things')
+                                style = wxNO_BORDER|wxTE_MULTILINE|wxTE_RICH)
+        self.label.SetValue(profile.name)
         self.label.SetBackgroundColour(wxColour(190,190,190))
-        self.label.SetToolTipString("tool tip")
+        self.label.SetToolTipString(profile.description)
+        self.button.SetToolTipString(profile.description)
         self.Layout()
-
-
-        
         
         EVT_LEFT_DOWN(self.button, self.onClick) # could create my own event...
         EVT_LEFT_DOWN(self.label, self.onClick)
@@ -1275,7 +1262,7 @@ class TextClientPanel(wxPanel):
         self.socket = GSITCPSocket()
         self.socket.connect(self.host, self.port, self.attr)
 
-        wxLogDebug("Set text location host:%s, port:%d, venueId:%s, attr:%s, socket:%s"
+        wxLogDebug("VenueClientUIClasses.py: VenueClientUIClasses.py: Set text location host:%s, port:%d, venueId:%s, attr:%s, socket:%s"
                    %(self.host,self.port, self.venueId, str(self.attr), str(self.socket)))
         
         self.Processor = SimpleTextProcessor(self.socket, self.venueId,
@@ -1304,7 +1291,7 @@ class TextClientPanel(wxPanel):
     def LocalInput(self, event):
         """ User input """
         if(self.venueId != None):
-            wxLogDebug("User writes: %s" %self.TextInput.GetValue())
+            wxLogDebug("VenueClientUIClasses.py: User writes: %s" %self.TextInput.GetValue())
             textEvent = TextEvent(self.venueId, None, 0, self.TextInput.GetValue())
             try:
                 self.Processor.Input(textEvent)
@@ -1316,11 +1303,11 @@ class TextClientPanel(wxPanel):
             wxLog_GetActiveTarget().Flush()
            
     def Stop(self):
-        wxLogDebug("Stop processor")
+        wxLogDebug("VenueClientUIClasses.py: Stop processor")
         self.Processor.Stop()
         
     def OnCloseWindow(self):
-        wxLogDebug("Destroy text client")
+        wxLogDebug("VenueClientUIClasses.py: Destroy text client")
         self.Destroy()
         
       
