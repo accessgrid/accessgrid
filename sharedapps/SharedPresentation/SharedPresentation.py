@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.25 2004-04-19 17:13:04 eolson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.26 2004-05-03 22:41:41 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ from AccessGrid.DataStoreClient import GetVenueDataStore
 from AccessGrid.hosting import Client
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.ClientProfile import ClientProfile
-#from AccessGrid.UIUtilities import MessageDialog
+from AccessGrid.UIUtilities import MessageDialog
 from AccessGrid import icons
 
 class ViewerSoftwareNotInstalled(Exception):
