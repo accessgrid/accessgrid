@@ -22,6 +22,7 @@ if [ $# -lt 1 ]; then
 fi
 srcdir=${1}
 pkgname=${name}-${version}-${arch}-${release}.tgz
+xdgfiles=${here}/../xdg
 
 
 #%prep
@@ -47,6 +48,19 @@ echo ${pyver}
 #%install
 #
 cp -a ${srcdir}/* ${buildroot}/
+#
+# Now remove gnome/kde stuff in favour of menues
+#
+rm -rf ${buildroot}/share/gnome
+rm -rf ${buildroot}/share/applnk
+mkdir -p ${buildroot}/share/AccessGrid
+cp -a ${here}/../ag-ellipse.png ${buildroot}/share/AccessGrid/
+mkdir -p ${buildroot}/etc/xdg/menus/applications-merged
+cp ${xdgfiles}/AccessGrid.menu ${buildroot}/etc/xdg/menus/applications-merged/
+mkdir -p ${buildroot}/share/desktop-directories
+cp -a ${xdgfiles}/*.directory ${buildroot}/share/desktop-directories/
+mkdir -p ${buildroot}/share/applications/AccessGrid
+cp -a ${xdgfiles}/*.desktop ${buildroot}/share/applications/AccessGrid/
 
 # Move node services and shared apps into etc 
 #
