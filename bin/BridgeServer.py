@@ -1,5 +1,48 @@
 #!/usr/bin/python2
+#-----------------------------------------------------------------------------
+# Name:        BridgeServer.py
+# Purpose:     Provide a bridging service for venues.
+# Created:     2003/08/02
+# RCS-ID:      $Id: BridgeServer.py,v 1.26 2004-09-03 02:57:03 judson Exp $
+# Copyright:   (c) 2002-2003
+# Licence:     See COPYING.txt
+#-----------------------------------------------------------------------------
+"""
+Usage:
 
+- Bridge single venue
+    BridgeServer.py --venue venueUrl
+
+- Bridge venues/venueServers specified in config file
+    BridgeServer.py -c configFile
+
+- venue/venueserver specifications on the command line
+  would override those in the config file
+
+
+Format of BridgeServer config file
+
+[BridgeServer]
+name = Argonne
+location = Chicago
+qbexec = /usr/bin/QuickBridge
+# use this port range for the bridge server as a whole
+portMin = 30000
+portMax = 40000
+
+# Lobby of ag-2 server
+[https://ag-2:8000/Venues/default]
+type = Venue
+# use this special port range for this venue
+portMin = 24000
+portMax = 24006
+
+# Entire transitional venue server
+[https://vv2.mcs.anl.gov:9000/VenueServer]
+type = VenueServer
+"""
+
+# The standard imports
 import os
 import Queue
 import threading
@@ -8,6 +51,7 @@ import ConfigParser
 
 from pyGlobus.io import IOBaseException
 
+# Our imports
 from AccessGrid import Log
 from AccessGrid import GUID
 from AccessGrid import NetService
@@ -24,10 +68,8 @@ from AccessGrid.NetworkLocation import UnicastNetworkLocation, ProviderProfile
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Platform.Config import UserConfig, AGTkConfig, SystemConfig
 
-
 class InvalidVenueUrl(Exception):
     pass
-    
     
 log = None
 
@@ -745,38 +787,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-"""
-Usage:
-
-- Bridge single venue
-    BridgeServer.py --venue venueUrl
-
-- Bridge venues/venueServers specified in config file
-    BridgeServer.py -c configFile
-
-- venue/venueserver specifications on the command line
-  would override those in the config file
-
-
-Format of BridgeServer config file
-
-[BridgeServer]
-name = Argonne
-location = Chicago
-qbexec = /usr/bin/QuickBridge
-# use this port range for the bridge server as a whole
-portMin = 30000
-portMax = 40000
-
-# Lobby of ag-2 server
-[https://ag-2:8000/Venues/default]
-type = Venue
-# use this special port range for this venue
-portMin = 24000
-portMax = 24006
-
-# Entire transitional venue server
-[https://vv2.mcs.anl.gov:9000/VenueServer]
-type = VenueServer
-"""

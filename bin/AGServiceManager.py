@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.48 2004-08-25 14:55:25 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.49 2004-09-03 02:57:03 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -11,8 +11,8 @@
 # The standard imports
 import sys
 
-if sys.platform=="darwin":
-    # On osx pyGlobus/globus need to be loaded before various modules such as socket.
+if sys.platform == "darwin":
+    # OSX: pyGlobus/globus need to be loaded before modules such as socket.
     import pyGlobus.ioc
 
 import signal, time, os

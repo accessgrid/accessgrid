@@ -4,22 +4,22 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.59 2004-08-23 18:28:14 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.60 2004-09-03 02:57:03 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.59 2004-08-23 18:28:14 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.60 2004-09-03 02:57:03 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
 import os
 import sys
 
-if sys.platform=="darwin":
-    # On osx pyGlobus/globus need to be loaded before various modules such as socket.
+if sys.platform == "darwin":
+    # OSX: pyGlobus/globus need to be loaded before modules such as socket.
     import pyGlobus.ioc
 
 import signal

@@ -3,20 +3,20 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.264 2004-07-30 22:22:11 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.265 2004-09-03 02:57:03 judson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.264 2004-07-30 22:22:11 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.265 2004-09-03 02:57:03 judson Exp $"
 
 # Standard Imports
 import os
 import sys
 
-if sys.platform=="darwin":
-    # On osx pyGlobus/globus need to be loaded before various modules such as socket.
+if sys.platform == "darwin":
+    # OSX: pyGlobus/globus need to be loaded before modules such as socket.
     import pyGlobus.ioc
 
 from optparse import Option
