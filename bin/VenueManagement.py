@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.91 2003-09-10 15:50:59 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.92 2003-09-10 16:32:45 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -262,7 +262,7 @@ class VenueManagementClient(wxApp):
             except:
                 wxEndBusyCursor() 
                 log.exception("VenueManagementClient.ConnectToServer: Can not connect")
-                text = "You have not connected to the venue server located at\n%s.  Error occured." % URL
+                text = "You have not connected to the venue server located at\n%s.  Error occurred." % URL
                 ErrorDialog(None, text, "Venue Server Error",
                             style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
                 
