@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.58 2004-04-08 18:13:25 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.59 2004-04-16 20:51:02 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -77,6 +77,7 @@ linux_scripts = [ r"bin/VenueServer.py",
                   r"bin/BridgeServer.py",
                   r"bin/certmgr.py",
                   r"bin/agpm.py",
+                  r"services/network/QuickBridge/QuickBridge",
                   ]
 
 linux_data = [('etc/init.d',
@@ -90,7 +91,6 @@ linux_data = [('etc/init.d',
                ),
               ('etc/AccessGrid/nodeConfig',
                [r"packaging/config/defaultLinux",
-                r"packaging/config/defaultWindows"
                 ]
                ),
               ('share/AccessGrid',
@@ -104,19 +104,19 @@ linux_data = [('etc/init.d',
                 ]
                ),
               ('share/gnome/apps/AccessGrid',
-               [r"packaging/gnome/.desktop",
-                r"packaging/gnome/NodeManagement.desktop",
-                r"packaging/gnome/VenueClient.desktop",
-                r"packaging/gnome/VenueClient-PersonalNode.desktop",
-                r"packaging/gnome/VenueManagement.desktop"
+               [r"packaging/linux/gnome/.desktop",
+                r"packaging/linux/gnome/NodeManagement.desktop",
+                r"packaging/linux/gnome/VenueClient.desktop",
+                r"packaging/linux/gnome/VenueClient-PersonalNode.desktop",
+                r"packaging/linux/gnome/VenueManagement.desktop"
                 ]
                ),
               ('share/applnk/AccessGrid',
-               [r"packaging/kde/.desktop",
-                r"packaging/kde/NodeManagement.desktop",
-                r"packaging/kde/VenueClient.desktop",
-                r"packaging/kde/VenueClient-PersonalNode.desktop",
-                r"packaging/kde/VenueManagement.desktop"
+               [r"packaging/linux/kde/.desktop",
+                r"packaging/linux/kde/NodeManagement.desktop",
+                r"packaging/linux/kde/VenueClient.desktop",
+                r"packaging/linux/kde/VenueClient-PersonalNode.desktop",
+                r"packaging/linux/kde/VenueManagement.desktop"
                 ]
                ),
               ('share/doc/AccessGrid',
@@ -129,22 +129,22 @@ linux_data = [('etc/init.d',
                ),
               ('bin', []),
               ('share/doc/AccessGrid/Documentation/VenueClientManual',
-               [r"doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManual.htm",
-                r"doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML.htm",
-                r"doc/VENUE_CLIENT_MANUAL_HTML/1.htm"
+               [r"doc/VenueClientManual/VenueClientManual.htm",
+                r"doc/VenueClientManual/VenueClientManualHTML.htm",
+                r"doc/VenueClientManual/1.htm"
                 ]
                ),
               ('share/doc/AccessGrid/Documentation/VenueClientManual/VenueClientManual_files',
-               glob.glob("doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManual_files/*")
+               glob.glob("doc/VenueClientManual/VenueClientManual_files/*")
                ),
               ('share/doc/AccessGrid/Documentation/VenueManagementManual',
-               [r"doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManual.htm",
-                r"doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML.htm",
-                r"doc/VENUE_MANAGEMENT_MANUAL_HTML/11.htm"
+               [r"doc/VenueManagementManual/VenueManagementManual.htm",
+                r"doc/VenueManagementManual/VenueManagementManualHTML.htm",
+                r"doc/VenueManagementManual/11.htm"
                 ]
                ),
               ('share/doc/AccessGrid/Documentation/VenueManagementManual/VenueManagementManual_files',
-               glob.glob("doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManual_files/*")
+               glob.glob("doc/VenueManagementManual/VenueManagementManual_files/*")
                )
               ]
 
