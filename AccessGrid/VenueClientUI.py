@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.30 2004-04-07 13:19:40 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.31 2004-04-07 16:29:57 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.30 2004-04-07 13:19:40 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.31 2004-04-07 16:29:57 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2150,6 +2150,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # Disable menus
         wxCallAfter(self.__HideMenu)
+        
+        # Stop shared applications
+        self.controller.StopApplications()
 
 
     def HandleError(self,err):

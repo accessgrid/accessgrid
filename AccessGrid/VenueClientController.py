@@ -3,12 +3,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.15 2004-04-06 00:47:35 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.16 2004-04-07 16:29:57 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.15 2004-04-06 00:47:35 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.16 2004-04-07 16:29:57 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -52,6 +52,7 @@ class VenueClientController:
 
         # Create Process Manager
         self.processManager = ProcessManager()
+        self.appProcessManager = ProcessManager()
         
 
 
@@ -1117,6 +1118,7 @@ class VenueClientController:
         localFilePath = None
         name = None
         appDir = None
+        processManager = self.processManager
 
         # If objDesc is data, download the filename specified in it.
         if isinstance(objDesc, DataDescription):
@@ -1189,8 +1191,11 @@ class VenueClientController:
                     except:
                         log.warn("Couldn't Change dir to app directory")
                         return
+                        
+                    processManager = self.appProcessManager
                 else:
                     self.gui.Notify("You have no client for this Shared Application.", "Notification")
+                    return
                     
             if IsWindows():
                 if command.find("%1") != -1:
@@ -1251,7 +1256,10 @@ class VenueClientController:
             
         aList = realCommand.split(' ')
         log.info("StartCmd starting command: %s", realCommand)
-        self.processManager.StartProcess(aList[0], aList[1:])
+        processManager.StartProcess(aList[0], aList[1:])
+        
+    def StopApplications(self):
+        self.appProcessManager.terminateAllProcesses()
 
     #
     # Other
