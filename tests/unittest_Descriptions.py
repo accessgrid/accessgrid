@@ -192,7 +192,7 @@ class AGServiceDescriptionTestCase(unittest.TestCase):
        assert s.capabilities == "some capabilities"
        assert s.executable == "some executable"
        assert s.serviceManagerUri == "http://some_servicemanageruri"
-       assert s.servicePackageUri == "http://some_servicepackageuri"
+       assert s.servicePackageFile == "http://some_servicepackageuri"
        assert s.version == "version"
        
 def suite():
