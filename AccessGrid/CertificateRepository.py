@@ -52,6 +52,8 @@ class RepoInvalidCertificate(Exception):
     """
     pass
 
+class RepoBadPassphrase:
+    pass
 
 class CertificateRepository:
 
@@ -221,7 +223,7 @@ class CertificateRepository:
 
                 except crypto.Error:
                     log.exception("load error")
-                    raise Exception, "Invalid passphrase"
+                    raise RepoBadPassphrase
 
             #
             # At this point pkey has is the privatekey.
@@ -239,11 +241,15 @@ class CertificateRepository:
         #
         # Preliminary checks successful. We can go ahead and import.
         #
-
-        self._ImportCertificate(cert, path)
+        # Import the private key first, so that if we get an exception
+        # on the passphrase we're not left with intermediate state.
+        # (aie, transactions anyone?)
+        #
 
         if pkey is not None:
             self._ImportPrivateKey(pkey, passphrase)
+
+        self._ImportCertificate(cert, path)
 
         #
         # Import done, set the metadata about the cert.
@@ -265,6 +271,7 @@ class CertificateRepository:
         that this is a valid cert that is okay to just copy into place.
         """
 
+        log.debug("_ImportCertificate: create %s", path)
         os.makedirs(path)
 
         certPath = os.path.join(path, "cert.pem")
@@ -711,6 +718,7 @@ class Certificate:
     def GetFilePath(self, filename):
         dir = os.path.join(self.repo._GetCertDirPath(self), "user_files")
         if not os.path.isdir(dir):
+            log.debug("GetFilePath: create %s", dir)
             os.mkdir(dir)
         return os.path.join(dir, filename)
 

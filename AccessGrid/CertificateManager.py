@@ -306,11 +306,39 @@ class CertificateManager(object):
             caption = "Initial import of Globus identity certificate"
             message = "Import certificate for %s. Please enter the passphrase for the private key of this certificate." % (certObj.GetSubject())
 
-            passphraseCB = self.GetUserInterface().GetPassphraseCallback(caption, message)
+            #
+            # Import the identity cert.
+            # Loop until either it succeeds, or until the user cancels.
+            #
 
-            impCert = self.ImportIdentityCertificatePEM(repo, userCert, userKey,
-                                                        passphraseCB)
-            impCert.SetMetadata("AG.CertificateManager.isDefaultIdentity", "1")
+            while 1:
+
+                impCert = None
+                passphraseCB = self.GetUserInterface().GetPassphraseCallback(caption,
+                                                                             message)
+                try:
+                    
+                    impCert = self.ImportIdentityCertificatePEM(repo, userCert, userKey,
+                                                                passphraseCB)
+
+                except CertificateRepository.RepoInvalidCertificate:
+                    log.exception("invalid cert on import")
+                    self.GetUserInterface().ReportError("Your globus certificate is invalid; ignoring it.")
+                    break
+
+                except CertificateRepository.RepoBadPassphrase:
+                    log.exception("badd passphrase on import")
+                    cont = self.GetUserInterface().ReportBadPassphrase()
+                    if not cont:
+                        break
+
+                except:
+                    log.exception("Unknown error on import")
+                    self.GetUserInterface().ReportError("Unknown error on Globus import; ignoring your globus identity certificate")
+                    break
+
+            if impCert is not None:
+                impCert.SetMetadata("AG.CertificateManager.isDefaultIdentity", "1")
             
         #
         # Now handle the CA certs.
@@ -797,6 +825,21 @@ class CertificateManagerUserInterface:
         hours = 8
 
         return (passphrase, hours, bits)
+    
+    def ReportError(self, err):
+        print ""
+        print "Certificate manager error:"
+        print "  ", err
+        print ""
+
+    def ReportBadPassphrase(self):
+        print ""
+        print "Incorrect passphrase. Try again? (y/n) ",
+        reply = sys.stdin.readline()
+        if reply[0].lower() == 'y':
+            return 1
+        else:
+            return 0
 
     def GetPassphraseCallback(self, caption, message):
         return CmdlinePassphraseCallback(caption, message)

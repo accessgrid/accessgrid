@@ -101,6 +101,22 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
         return ret
             
+    def ReportError(self, err):
+        dlg = wxMessageDialog(None, err, "Certificate manager error",
+                              style = wxOK)
+        dlg.ShowModal()
+        dlg.Destroy()                
+
+    def ReportBadPassphrase(self):
+        dlg = wxMessageDialog(None,
+                              "Incorrect passphrase. Try again?",
+                              style = wxYES_NO | wxYES_DEFAULT)
+        rc = dlg.ShowModal()
+        dlg.Destroy()
+        if rc == wxID_YES:
+            return 1
+        else:
+            return 0
         
     def GetProxyInfo(self, cert, msg = ""):
         """
@@ -168,11 +184,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
             except CertificateManager.NoCertificates:
 
-                reqTool = CertificateRequestTool(None,
-                                                 certificateType = 'IDENTITY',
-                                                 createIdentityCertCB = self.CreateCertificateRequestCB)
-                reqTool.Destroy()
-                success = 0
+                success = self.HandleNoCertificateInteraction()
                 break
 
             except CertificateManager.NoDefaultIdentity:
@@ -196,6 +208,25 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
         return success
 
+    def HandleNoCertificateInteraction(self):
+        """
+        Encapsulate the user interaction that takes place when the
+        app starts up and tehre are no users.
+
+        This should check for pending certificates and bring up the
+        status dialog if there are.
+
+        It also brings up the cert request tool.
+
+        """
+
+        reqTool = CertificateRequestTool(None,
+                                         certificateType = 'IDENTITY',
+                                         createIdentityCertCB = self.CreateCertificateRequestCB)
+        reqTool.Destroy()
+
+        return 1
+    
     def CreateProxy(self):
         """
         GUI interface for creating a Globus proxy.
