@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.250 2004-03-12 21:29:11 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.251 2004-03-12 21:31:31 judson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.250 2004-03-12 21:29:11 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.251 2004-03-12 21:31:31 judson Exp $"
 
 # Standard Imports
 import os
@@ -40,47 +40,6 @@ from AccessGrid.VenueClientController import VenueClientController
 from AccessGrid.VenueClient import VenueClient
 from AccessGrid.UIUtilities import ErrorDialog
 from AccessGrid.UIUtilities import ProgressDialog
-
-# Print usage
-def Usage(agtk):
-    """
-    Print usage for the venue client.
-    """
-    print "USAGE %s:" % os.path.split(sys.argv[0])[1]
-
-    print " Toolkit Options:"
-    agtk.Usage()
-
-    print " VenueClient Specific Options:"
-    print "\t--personalNode: manage services as a personal node"
-
-# Command line argument processing
-def ProcessArgs(app, argv):
-    """
-    Handle any arguments we're interested in.
-
-    --personalNode: Handle startup of local node services.
-    """
-    options = dict()
-
-    try:
-        opts, args = getopt.getopt(argv, "", ["personalNode"])
-    except getopt.GetoptError:
-        Usage(app)
-        sys.exit(2)
-
-    for opt, arg in opts:
-        if opt == '--personalNode':
-            options['pnode'] = 1
-        else:
-            Usage(app)
-            sys.exit(0)
-
-    if app.GetCmdlineArg('help') or app.GetCmdlineArg('h'):
-        Usage(app)
-        sys.exit(0)
-
-    return options
 
 def main():
     log = None
