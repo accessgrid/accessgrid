@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.183 2004-07-23 18:46:20 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.184 2004-07-26 21:42:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.183 2004-07-23 18:46:20 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.184 2004-07-26 21:42:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -430,6 +430,10 @@ class VenueClient:
 
         profile = event.data
         
+        # Pre-2.3 server compatability code
+        if not profile.connectionId:
+            profile.connectionId = profile.venueClientURL
+
         self.venueState.AddUser(profile)
         for s in self.observers:
             s.AddUser(profile)
@@ -439,8 +443,12 @@ class VenueClient:
 
         profile = event.data
         
+        # Pre-2.3 server compatability code
+        if not profile.connectionId:
+            profile.connectionId = profile.venueClientURL
+
         # Handle removal of self
-        if profile.publicId == self.profile.publicId:
+        if profile.connectionId == self.profile.connectionId:
             # Get out and stay out
             self.ExitVenue()
             for s in self.observers:
@@ -463,6 +471,10 @@ class VenueClient:
 
         profile = event.data
 
+        # Pre-2.3 server compatability code
+        if not profile.connectionId:
+            profile.connectionId = profile.venueClientURL
+
         self.venueState.ModifyUser(profile)
         for s in self.observers:
             s.ModifyUser(profile)
@@ -474,7 +486,6 @@ class VenueClient:
       
         if data.type == "None" or data.type == None:
             # Venue data gets saved in venue state
-                       
             self.venueState.AddData(data)
                       
         elif data.type not in self.requests:
@@ -689,6 +700,18 @@ class VenueClient:
             log.debug("EnterVenue: Invoke venue enter")
             (venueState, self.privateId, self.streamDescList ) = self.__venueProxy.Enter( self.profile )
 
+            # Retrieve the connection id from within the private id
+            # (when we break compatability, the server will likely pass
+            #  back the private id and connection id separately)
+            parts = self.privateId.split('_')
+            if len(parts) > 1:
+                # 2.3+ server, get connection id from private id
+                self.profile.connectionId = parts[1]
+            else:
+                # Older server, set the connection id to the venueclienturl
+                # (it's the only unique client identifier in the profile)
+                self.profile.connectionId = self.profile.venueClientURL
+
             self.venueState = CreateVenueState(venueState)
 
             self.venueUri = URL
@@ -770,7 +793,6 @@ class VenueClient:
                 errorInNode = 1
     
                     
-    # Back argument is true if going to a previous venue (used in UI).
     def EnterVenue(self, URL):
         """
         EnterVenue puts this client into the specified venue.
