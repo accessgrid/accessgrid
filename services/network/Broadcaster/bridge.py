@@ -1,7 +1,11 @@
 #!/usr/bin/python2
 #
 #
+import sys
+import optparse
 import socket, threading, time, Queue, string, struct
+
+debug = 0
 
 def is_mcast(host):
     # Check the first byte of the address, if it's between 224 and 239
@@ -44,40 +48,23 @@ def openmcastsock(group, port):
     
     return s
 
-class Client(threading.Thread):
+class BaseClient(threading.Thread):
     """
     """
     MSGSIZE = 8192
-    def __init__(self, src_host, src_port, dst_host, dst_port, time, queue):
-        """
-        Create a new client, which could be either a unicast connection,
-        or a multicast group.
-
-        The time is the last time we heard from this client, in case
-        we want to garbage collect silent clients.
-        """
-        super(Client, self).__init__()
-        
+    def __init__(self, src_host, src_port, queue):
+        super(BaseClient, self).__init__(name=self.__class__)
         self.host = src_host
         self.port = src_port
-        self.to_host = dst_host
-        self.to_port = dst_port
-        self.time = time
         self.queue = queue
         self.active = threading.Event()
-        self.allowed = 1
         self.key = "%s:%s" % (self.host, self.port)
-        self.socket = self.create_sock(self.host, self.port)
-
-
-    def create_sock(self, host, port):
-        if is_mcast(host):
-            return openmcastsock(host, port)
-        else:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            return sock
-
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+       
+    def listen(self):
+        self.socket.bind((self.host, self.port))
+       
     def disable(self):
         self.active.clear()
         
@@ -108,6 +95,57 @@ class Client(threading.Thread):
             return self.time
         else:
             return now - self.time
+        
+    def run(self):
+        self.active.set()
+        
+        dst_addr = (self.host, self.port)
+        while self.is_active():
+            data, src_addr = self.socket.recvfrom(self.MSGSIZE)
+            self.time = time.time()
+            k = "%s:%s" % (src_addr[0], src_addr[1])
+            self.queue.put((data, src_addr, dst_addr))
+
+    def stop(self):
+        self.active.clear()
+        try:
+            self.socket.shutdown(2)
+        except Exception,e:
+            #print "Exception in shutdown:", e
+            pass
+
+    def is_active(self):
+        return self.active.isSet()
+    
+    def send(self, src, data, port_override=None):
+        pass
+
+class Client(BaseClient):
+    """
+    """
+    MSGSIZE = 8192
+    def __init__(self, src_host, src_port, dst_host, dst_port, time, queue):
+        super(Client, self).__init__(src_host, src_port, queue)
+        self.to_host = dst_host
+        self.to_port = dst_port
+        self.time = time
+        self.allowed = 1
+
+    def set_time(self, time):
+        """
+        Set the last time heard from this client.
+        """
+        self.time = time
+
+    def get_time(self, now=None):
+        """
+        Get the last time heard from this client, or if specified, the
+        length of time since the now parameter.
+        """
+        if now is None:
+            return self.time
+        else:
+            return now - self.time
 
     def enable_send(self):
         self.allowed = 1
@@ -116,11 +154,38 @@ class Client(threading.Thread):
         self.allowed = 0
         
     def run(self):
+        pass
+        
+    def send(self, src, data, port_override=None):
+        """
+        Send data to this client, the client checks to make sure they
+        don't send data to themselves.
+        """
+        #print "***key, src=", self.key, src
+        if self.key != src and self.to_host != "":
+            self.socket.sendto(data, (self.host, port_override))
+
+class MulticastClient(Client):
+    """
+    """
+    MSGSIZE = 8192
+    def __init__(self, src_host, src_port,time, queue):
+        """
+        Create a new client, which could be either a unicast connection,
+        or a multicast group.
+
+        The time is the last time we heard from this client, in case
+        we want to garbage collect silent clients.
+        """
+        super(MulticastClient, self).__init__(src_host,src_port,"",0,time,queue)
+        
+
+    def create_sock(self, host, port):
+        return openmcastsock(host, port)
+
+    def run(self):
         self.active.set()
-
-        if not is_mcast(self.host):
-            self.socket.bind((self.host, self.port))
-
+        
         dst_addr = (self.host, self.port)
         while self.is_active():
             if self.allowed:
@@ -128,51 +193,46 @@ class Client(threading.Thread):
                 k = "%s:%s" % (src_addr[0], src_addr[1])
                 self.queue.put((data, src_addr, dst_addr))
 
-    def stop(self):
-        self.active.clear()
-
-    def is_active(self):
-        return self.active.isSet()
-
     def send(self, src, data, port_override=None):
         """
         Send data to this client, the client checks to make sure they
         don't send data to themselves.
         """
-        if self.key != src and self.to_host != "":
+        if self.key != src:
+            #print "sending data to ", self.host, port_override
             self.socket.sendto(data, (self.host, port_override))
 
 class Receiver(threading.Thread):
     """
     """
+    MSGSIZE = 8192
     def __init__(self, host, port, timeout=None):
         """
         """
-        super(Receiver, self).__init__()
+        super(Receiver, self).__init__(name=self.__class__)
         self.host = host; self.port = port; self.timeout = timeout
         self.active = threading.Event()
         self.active.set()
         self.clients = dict()
         self.queue = Queue.Queue(10)
 
-        self.add_client(host, port, start=1)
+        c = BaseClient(self.host, self.port, self.queue)
+        c.listen()
+        self.add_client(c)
 
-    def add_client(self, src_host, src_port,
-                   dst_host="", dst_port=0, start=0):
-        c = Client(src_host, src_port, dst_host, dst_port,
-                   time.time(), self.queue)
-        c_key = "%s:%s" % (src_host, src_port)
-        self.clients[c_key] = c
+    def add_client(self, client):
+        self.clients[client.key] = client
 
-        if start:
-            c.start()
-        
+        client.start()
+            
     def run(self):
         """
         """
         while self.active.isSet():
             try:
                 data, src, dst = self.queue.get()
+                if data == 'quit':
+                    break
                 if is_mcast(dst[0]):
                     src_key = "%s:%s" % (dst[0], dst[1])
                     mcast = 1
@@ -181,20 +241,23 @@ class Receiver(threading.Thread):
                     mcast = 0
 
                 if not self.clients.has_key(src_key):
+                    if debug: print "adding client src_key = ", src_key
                     # This is a new connection
-                    self.add_client(src[0], src[1], dst[0], dst[1])
-                else:
-                    # Update the time on this client
-                    self.clients[src_key].set_time(time.time())
-                    
-                    # Then send the data
-                    for c in self.clients.values():
-                        c.send(src_key, data, self.port)
+                    c = Client(src[0], src[1], self.host, self.port,
+                               time.time(), self.queue)
+                    self.add_client(c)
+
+                # Update the time on this client
+                self.clients[src_key].set_time(time.time())
+                
+                # Then send the data
+                for c in self.clients.values():
+                    c.send(src_key, data, self.port)
 
             except socket.timeout:
                 print "Socket timeout"
                 pass
-
+                
         for l in self.clients.values():
             l.stop()
             
@@ -202,6 +265,7 @@ class Receiver(threading.Thread):
         """
         """
         self.active.clear()
+        self.queue.put(('quit','',''))
 
     def cleanup_clients(self):
         """
@@ -210,13 +274,14 @@ class Receiver(threading.Thread):
             limit = time.time() - self.timeout
             for s in [k for (k,v) in self.clients.items()
                       if v.get_time() < limit]:
+                if debug: print "Removing client ", self.clients[s].host, self.clients[s].port
                 del self.clients[s]
 
     def is_active(self):
         """
         """
         return self.active.isSet()
-    
+        
 class RTPReceiver(threading.Thread):
     """
     """
@@ -226,7 +291,7 @@ class RTPReceiver(threading.Thread):
         if port % 2:
             raise "RTP Port must be even."
         
-        super(RTPReceiver, self).__init__()
+        super(RTPReceiver, self).__init__(name=self.__class__)
         self.host = host; self.port = port; self.timeout = timeout
         self.data = Receiver(host, port, timeout)
         self.ctrl = Receiver(host, port+1, timeout)
@@ -253,18 +318,61 @@ class RTPReceiver(threading.Thread):
     def add_client(self, addr, port, active):
         """
         """
-        self.data.add_client(addr, port, start=active)
-        self.ctrl.add_client(addr, port+1, start=active)
+        if is_mcast(addr):
+            if debug: print "Adding mcast client", addr, port
+            dataClient = MulticastClient(addr,port,time.time(),self.data.queue)
+            ctrlClient = MulticastClient(addr,port+1,time.time(),self.ctrl.queue)
+        else:
+            if debug: print "Adding ucast client", addr, port
+            dataClient = Client(addr,port,time.time(),self.data.queue)
+            ctrlClient = Client(addr,port+1,time.time(),self.ctrl.queue)
+        self.data.add_client(dataClient)
+        self.ctrl.add_client(ctrlClient)
                                     
 def main():
-    UDP_PORT = 43278; CHECK_PERIOD = 20; CHECK_TIMEOUT = 15
+
+    global debug
+
+    parser = optparse.OptionParser()
+    parser.add_option("-g", "--group",
+                      dest="group",
+                      help="The multicast group to bridge.")
+    parser.add_option("-m", "--mport",
+                      dest="mport",type='int',
+                      help="The multicast port to bridge.")
+    parser.add_option("-u", "--uport",
+                      dest="uport",type='int',default=0,
+                      help="The unicast port for the bridge.")
+    parser.add_option("-d", "--debug", action="store_true",
+                      help="The debug level.")
+    (options, args) = parser.parse_args()
+    
+    if not options.group:
+        print "Error: A multicast group must be specified"
+        parser.print_help()
+        sys.exit(1)
+    if not options.mport:
+        print "Error: A multicast port must be specified"
+        parser.print_help()
+        sys.exit(1)
+    if not options.uport:
+        print "Error: A unicast port must be specified"
+        parser.print_help()
+        sys.exit(1)
+        
+    group = options.group
+    mport = options.mport
+    uport = options.uport
+    debug = options.debug
+    
+    CHECK_TIMEOUT = 15
     host = socket.gethostbyname(socket.gethostname())
-    rtp_bridge = RTPReceiver(host, UDP_PORT, CHECK_TIMEOUT)
+    rtp_bridge = RTPReceiver(host, uport, CHECK_TIMEOUT)
     rtp_bridge.start()
 
-    rtp_bridge.add_client("224.2.159.7", 57712, 1)
+    rtp_bridge.add_client(group, mport, 1)
     
-    print "Server on %s:%d" % (host, UDP_PORT)
+    print "Server on %s:%d" % (host, uport)
 
     try:
         while rtp_bridge.is_active():
@@ -272,6 +380,9 @@ def main():
     except KeyboardInterrupt:
         print 'Exiting, please wait...'
         rtp_bridge.stop()
+        
+#     for t in threading.enumerate():
+#         print "t = ", t
 
 if __name__ == '__main__':
     main()
