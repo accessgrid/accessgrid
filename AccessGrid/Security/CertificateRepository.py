@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.13 2004-04-26 21:01:45 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.14 2004-05-04 21:01:24 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,13 +27,14 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.13 2004-04-26 21:01:45 olson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.14 2004-05-04 21:01:24 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 
 from __future__ import generators
 
 import re
+import sys
 import os
 import os.path
 import time
@@ -41,10 +42,12 @@ import string
 import md5
 import struct
 from AccessGrid.Platform import IsOSX
+
 if IsOSX():
     import bsddb185 as bsddb
 else:
     import bsddb
+
 import operator
 import cStringIO
 from AccessGrid import Log
@@ -290,31 +293,54 @@ class CertificateRepository:
                 self.db.sync()
                 
             except bsddb.error:
+
+                invalidRepo = 1
+                
                 log.exception("exception opening hash %s", self.dbPath)
+
                 try:
                     self.db.close()
                 except:
                     pass
+
+                #
+                # See if this might be an old-style DB hash (pre-python2.3)
+                #
+
+                if sys.version[:3] >= "2.3":
+                    try:
+                        import bsddb185
+                            
+                        self.db = bsddb185.hashopen(self.dbPath, 'w')
+                        #
+                        # It worked.
+                        #
+                        invalidRepo = 0
+                        log.info("Fallback to bsddb 1.85 succeeded for %s", self.dbPath)
+                        
+                    except ImportError:
+                        log.error("bsddb185 module not available in this python install, marking certRepo as corrupt")
+                    except bsddb.error:
+                        log.exception("attempted fallback to 1.85 bsddb failed")
+                
                 #
                 # Try to figure out what's going on. Stat the db and
                 # its directory and log the information.
-                
-                try:
-                    xx = os.stat(self.dbPath)
-                    pred = lambda x: x.startswith("st_")
-                    log.error("Stats on %s:", self.dbPath)
-                    for k in filter(pred, dir(xx)):
-                        log.error("%s: %s", k, getattr(xx, k))
-                        
-                    xx = os.stat(self.dir)
-                    log.error("Stats on %s:", self.dir)
-                    for k in filter(pred, dir(xx)):
-                        log.error("%s: %s", k, getattr(xx, k))
-                except:
-                    log.exception("error trying to read stats")
-                        
-                invalidRepo = 1
-                
+                #
+                if invalidRepo:
+                    try:
+                        xx = os.stat(self.dbPath)
+                        pred = lambda x: x.startswith("st_")
+                        log.error("Stats on %s:", self.dbPath)
+                        for k in filter(pred, dir(xx)):
+                            log.error("%s: %s", k, getattr(xx, k))
+
+                        xx = os.stat(self.dir)
+                        log.error("Stats on %s:", self.dir)
+                        for k in filter(pred, dir(xx)):
+                            log.error("%s: %s", k, getattr(xx, k))
+                    except:
+                        log.exception("error trying to read stats")
 
             if invalidRepo:
                 #
