@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.13 2003-02-10 16:27:37 leggett Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.14 2003-02-11 23:19:48 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -90,10 +90,10 @@ def AllocateEncryptionKey():
     
     intKey = GetRandInt(rg)
     
-    for i in range(1, rg.randrange(GetRandInt(rg), GetRandInt(rg))):
-        intKey = intKey ^ rg.randrange(GetRandInt(rg), GetRandInt(rg))
+    for i in range(1, 8):
+        intKey = intKey ^ rg.randrange(1, sys.maxint)
 
-    print "Key: %x" % intKey
+#    print "Key: %x" % intKey
     
     return "%x" % intKey
 
