@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.245 2003-09-05 16:28:03 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.246 2003-09-05 18:02:50 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -30,7 +30,8 @@ from AccessGrid import icons
 from AccessGrid import Toolkit
 from AccessGrid.VenueClient import VenueClient, EnterVenueException
 from AccessGrid import Utilities
-from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog
+from AccessGrid.UIUtilities import AboutDialog, MessageDialog
+from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.Platform import GetMimeCommands, GetMimeType
 from AccessGrid.ClientProfile import *
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
@@ -40,6 +41,8 @@ from AccessGrid.Platform import GetTempDir, GetInstallDir, GetSharedDocDir
 from AccessGrid.Platform import isWindows, isLinux, isOSX
 from AccessGrid.TextClient import TextClient
 from AccessGrid.RoleAuthorization import AddPeopleDialog, RoleClient
+from AccessGrid.Utilities import SubmitBug, NO_LOG
+
 
 try:
     import win32api
@@ -101,6 +104,8 @@ class VenueClientFrame(wxFrame):
     ID_HELP_AGORG = wxNewId()
     ID_HELP_FL = wxNewId()
     ID_HELP_FLAG = wxNewId()
+    ID_HELP_BUG_REPORT = wxNewId()
+    ID_HELP_BUGZILLA = wxNewId()
     ID_PARTICIPANT_PROFILE = wxNewId()
     ID_PARTICIPANT_FOLLOW = wxNewId()
     ID_PARTICIPANT_LEAD = wxNewId()
@@ -125,6 +130,7 @@ class VenueClientFrame(wxFrame):
         self.ag_url = "http://www.accessgrid.org/"
         self.flag_url = "http://www.mcs.anl.gov/fl/research/accessgrid"
         self.fl_url = "http://www.mcs.anl.gov/fl/"
+        self.bugzilla_url = "http://bugzilla.mcs.anl.gov/AccessGrid"
         self.app = app
         self.parent = parent
         self.myVenuesFile = os.path.join(self.app.accessGridPath, "myVenues.txt" )
@@ -258,6 +264,12 @@ class VenueClientFrame(wxFrame):
                          "")
 
         self.help.AppendSeparator()
+        self.help.Append(self.ID_HELP_BUG_REPORT, "&Submit error report or feature request","Send report to bugzilla")
+
+        self.help.Append(self.ID_HELP_BUGZILLA, "&Bugzilla Web Site","See current error reports and feature request")
+
+        self.help.AppendSeparator()
+         
         self.help.Append(self.ID_HELP_ABOUT, "&About",
                          "Information about the application")
         self.menubar.Append(self.help, "&Help")
@@ -386,6 +398,10 @@ class VenueClientFrame(wxFrame):
                  lambda event, url=self.fl_url: self.OpenHelpURL(url))
         EVT_MENU(self, self.ID_HELP_MANUAL,
                  lambda event, url=self.manual_url: self.OpenHelpURL(url))
+        EVT_MENU(self, self.ID_HELP_BUG_REPORT, self.SubmitBugReport)
+        EVT_MENU(self, self.ID_HELP_BUGZILLA,
+                 lambda event, url=self.bugzilla_url: self.OpenHelpURL(url))
+                 
 
         EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.Follow)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_JOIN, self.OpenApp)
@@ -423,6 +439,24 @@ class VenueClientFrame(wxFrame):
         self.venueListPanel.SetAlignment(wxLAYOUT_LEFT)
 
         wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
+
+    def SubmitBugReport(self, event):
+        bugReportCommentDialog = BugReportCommentDialog(self)
+        
+        if(bugReportCommentDialog.ShowModal() == wxID_OK):
+            # Submit the error report to Bugzilla
+            comment = bugReportCommentDialog.GetComment()
+            profile = bugReportCommentDialog.GetProfile()
+            email = bugReportCommentDialog.GetEmail()
+            
+            SubmitBug(comment, profile, email, logFile = NO_LOG)
+            bugFeedbackDialog = wxMessageDialog(self, "Your error report has been sent, thank you.",
+                                                "Error Reported", style = wxOK|wxICON_INFORMATION)
+            bugFeedbackDialog.ShowModal()
+            bugFeedbackDialog.Destroy()       
+            
+        bugReportCommentDialog.Destroy()
+        
 
     def OpenHelpURL(self, url):
         """
