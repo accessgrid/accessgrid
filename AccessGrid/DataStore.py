@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.54 2003-10-01 21:55:52 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.55 2003-11-17 15:02:14 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.54 2003-10-01 21:55:52 eolson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.55 2003-11-17 15:02:14 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -437,6 +437,10 @@ class DataStore:
                 log.info("File " + dd.name + " was not found, so it was not loaded.")
                 
     def Shutdown(self):
+        self.StorePersistentData()
+
+
+    def StorePersistentData(self):
         # Open the persistent store
         store = file(self.persistenceFileName, "w")
         store.write(self.AsINIBlock())

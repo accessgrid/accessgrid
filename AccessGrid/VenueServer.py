@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.108 2003-10-20 18:50:59 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.109 2003-11-17 15:02:14 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.108 2003-10-20 18:50:59 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.109 2003-11-17 15:02:14 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -559,6 +559,8 @@ class VenueServer(ServiceBase.ServiceBase):
 
                 # Change the URI back
                 self.venues[venuePath].uri = venueURI
+
+                self.venues[venuePath].dataStore.StorePersistentData()
 
             # Close the persistent store
             store.close()
