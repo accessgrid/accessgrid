@@ -180,7 +180,7 @@ class AGNetworkService:
                 else:
                     self.log.debug("AGNetworkService.UnRegister: Can not unregister from venue %s, it is not listed."%(url))
             except:
-                self.log.exception("AGNetworkService.UnRegister: UnRegisterNetworkService failed for %s"%(self.url, nsd.ToString()))
+                self.log.exception("AGNetworkService.UnRegister: UnRegisterNetworkService failed in venue %s for %s"%(self.url, nsd.ToString()))
 
     def UnRegisterFromVenueServer(self, url):
         '''
