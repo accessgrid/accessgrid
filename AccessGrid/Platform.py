@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.6 2003-02-21 15:29:17 leggett Exp $
+# RCS-ID:      $Id: Platform.py,v 1.7 2003-02-23 14:21:40 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
