@@ -6,13 +6,14 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.14 2003-01-24 19:02:52 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.15 2003-01-24 20:21:28 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys
 import time
 import string
+import socket
 
 from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid.Types import Capability, Event
@@ -52,13 +53,14 @@ class Venue(ServiceBase.ServiceBase):
 
         self.venueServer = server
         
-        self.coherenceService = CoherenceService(('', 
+        self.coherenceService = CoherenceService((socket.getfqdn(), 
                 self.venueServer.multicastAddressAllocator.AllocatePort()))
                                             
         self.coherenceService.start()
         
         cl = self.coherenceService.GetLocation()
         
+        print cl.GetHost(), cl.GetPort(), "*********************************************"
         self.coherenceClient = CoherenceClient(cl.GetHost(), cl.GetPort(), 
                                                self.CoherenceCallback,
                                                self.uniqueId)
