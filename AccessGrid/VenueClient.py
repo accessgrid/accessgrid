@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.159 2004-04-07 15:54:00 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.160 2004-04-07 23:51:09 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.159 2004-04-07 15:54:00 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.160 2004-04-07 23:51:09 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -29,7 +29,7 @@ from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Venue import VenueIW
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
-from AccessGrid.hosting import Server
+from AccessGrid.hosting import SecureServer, InsecureServer
 from AccessGrid.Utilities import LoadConfig
 from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid.VenueClientObserver import VenueClientObserver
@@ -190,8 +190,11 @@ class VenueClient:
                 self.personalDataStorePath = None
                 
         if self.personalDataStorePath:
-            self.transferEngine = DataStore.GSIHTTPTransferServer(('',
-                                                                   self.personalDataStorePort))
+            if Toolkit.Application.instance().GetOption("insecure"):
+                self.transferEngine = DataStore.HTTPTransferServer(('', self.personalDataStorePort))
+            else:
+                self.transferEngine = DataStore.GSIHTTPTransferServer(('',
+                                                                       self.personalDataStorePort))
             self.transferEngine.run()
             self.dataStore = DataStore.DataStore(self, self.personalDataStorePath, 
                                                  self.personalDataStorePrefix,
@@ -271,7 +274,10 @@ class VenueClient:
             else:
                 port = NetworkAddressAllocator().AllocatePort()
 
-        self.server = Server((SystemConfig.instance().GetHostname(), port))
+        if Toolkit.Application.instance().GetOption("insecure"):
+            self.server = InsecureServer((SystemConfig.instance().GetHostname(), port))
+        else:
+            self.server = SecureServer((SystemConfig.instance().GetHostname(), port))
         vci = VenueClientI(self)
         uri = self.server.RegisterObject(vci, path='/VenueClient')
 
