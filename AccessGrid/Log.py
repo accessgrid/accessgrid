@@ -239,6 +239,11 @@ _defaultLevels = {}
 # Most default levels are usually set in individual files like this:
 # Log.SetDefaultLevel(Log.EventService, Log.WARN)
 
+
+_loggers = []
+def GetLoggers():
+    return _loggers
+
 # Get the default levels for a logger.
 def GetDefaultLevel(name):
     if name in _defaultLevels.keys():
@@ -261,6 +266,15 @@ def SetDefaultLevel(name, level):
 # Shorthand/user-friendly way to handle loggers (create LoggerLevels)
 def HandleLoggers(hdlr, loggerNamesList=defaultLoggers, handleDefaults=1, defaultLoggerList=defaultLoggers):
     return LoggerLevels(hdlr, loggerNamesList, handleDefaults, defaultLoggerList)
+   
+# Remove logger levels will remove LevelHandlers referenced in the 
+# input 'loggerLevels' object from the logs in 'logList'.
+# logList is likely the list of all logs maintained here in the Log module
+def RemoveLoggerLevels(loggerLevels,logList):
+    for logger in _loggers:
+        for levelHandler in loggerLevels.levelHandlers.values():
+            if levelHandler in logger.handlers:
+                logger.removeHandler(levelHandler)
 
 # similar to logging.getLogger, but make sure it's handled by default.
 #  The defaultHandled flag is normally set to 1 (True) in order to send 
@@ -269,6 +283,8 @@ def HandleLoggers(hdlr, loggerNamesList=defaultLoggers, handleDefaults=1, defaul
 #  defaultLoggerList is just in case you want to manage multiple lists.
 def GetLogger(name, defaultHandled=1, defaultLoggerList=defaultLoggers):
     logger = logging.getLogger(name)
+    _loggers.append(logger)
+    
     # If we want to send this logger's output to things handling new
     #   "default" loggers.
     if defaultHandled:
@@ -315,7 +331,7 @@ class LoggerLevels:
             logging.getLogger(name).addHandler(lhdlr)
             self.levelHandlers[name] = lhdlr
             lhdlr.addHandler(handler)
-
+            
         self.outputHandlers.append(handler)
         # Keep track of instances globally in case new loggers are created.
         _loggerLevels[handler] = self
@@ -374,6 +390,7 @@ class LevelHandler(logging.handlers.BufferingHandler):
     def __init__(self, handler, level=HIGHEST_LEVEL):
         if not handler:
             GetLogger(Logger).error("LevelHandler requires a handler argument")
+
         # Not too concerned about a buffer for the handler.
         #   We just need a handler to redirect output.
         logging.handlers.BufferingHandler.__init__(self, capacity=1)
@@ -419,4 +436,3 @@ mlh.setFormatter(GetFormatter())
 memLevels = HandleLoggers(mlh, GetDefaultLoggers())
 memLevels.SetLevel(DEBUG)
                                                                                 
-
