@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.51 2004-09-08 20:53:29 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.52 2004-10-11 15:36:48 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ from optparse import Option
 
 # Our imports
 from AccessGrid import Log
-from AccessGrid.hosting import SecureServer
+from AccessGrid.hosting import SecureServer, InsecureServer
 from AccessGrid.Toolkit import Service
 from AccessGrid.Platform import IsLinux
 from AccessGrid.Platform.Config import AGTkConfig, SystemConfig
@@ -85,17 +85,27 @@ def main():
         log.error('No default identity, check your certificates.')
         print 'No default identity, check your certificates.'
         sys.exit(-1)
+        
+    if not app.certificateManager.HaveValidProxy():
+        msg = 'No valid proxy; exiting.'
+        log.error(msg)
+        print msg
+        sys.exit(-1)
 
 
     port = app.GetOption("port")
         
     # Create the hosting environment
     hostname = app.GetHostname()
-    server = SecureServer((hostname, port))
+    if app.GetOption("insecure"):
+        server = InsecureServer((hostname, port))
+    else:
+        server = SecureServer((hostname, port))
+    
 
     # Create the Service Manager
     gServiceManager = AGServiceManager(server)
-
+    
     # Create the Service Manager Service
     smi = AGServiceManagerI(gServiceManager)
     server.RegisterObject(smi,path="/ServiceManager")
