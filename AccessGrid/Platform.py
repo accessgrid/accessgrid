@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.53 2003-10-14 04:28:49 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.54 2003-10-14 13:34:46 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 The Platform Module is to isolate OS specific interfaces.
 """
-__revision__ = "$Id: Platform.py,v 1.53 2003-10-14 04:28:49 judson Exp $"
+__revision__ = "$Id: Platform.py,v 1.54 2003-10-14 13:34:46 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -336,6 +336,18 @@ if isWindows():
 
         return (global_reg, user_reg)
 
+def Win32SendSettingChange():
+    """
+    This updates all windows with registry changes to the HKCU\Environment key.
+    """
+    import win32gui, win32con
+    
+    ret = win32gui.SendMessageTimeout(win32con.HWND_BROADCAST,
+                                      win32con.WM_SETTINGCHANGE, 0,
+                                      "Environment", win32con.SMTO_NORMAL,
+                                      1000)
+    return ret
+
 #
 # Windows register mime type function
 #
@@ -601,20 +613,10 @@ def Win32InitUserEnv():
             log.exception("Couldn't initialize globus environment.")
             return 0
 
+    Win32SendSettingChange()
+    
     return 1
     
-def Win32SendSettingChange():
-    """
-    This updates all windows with registry changes to the HKCU\Environment key.
-    """
-    import win32gui, win32con
-    
-    ret = win32gui.SendMessageTimeout(win32con.HWND_BROADCAST,
-                                      win32con.WM_SETTINGCHANGE, 0,
-                                      "Environment", win32con.SMTO_NORMAL,
-                                      1000)
-    return ret
-
 def LinuxInitUserEnv():
     """
     This is the place for user initialization code to go.
