@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.146 2004-06-30 07:56:42 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.147 2004-07-08 02:01:44 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.146 2004-06-30 07:56:42 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.147 2004-07-08 02:01:44 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -21,9 +21,11 @@ import os
 import re
 import os.path
 import string
-from threading import Thread, Lock, Condition
+import threading
 import time
 import ConfigParser
+import csv
+import resource
 
 from AccessGrid.Toolkit import Service
 from AccessGrid import Log
@@ -117,7 +119,7 @@ class VenueServer(AuthorizationMixIn):
             "VenueServer.dataPort" : 8006,
             "VenueServer.administrators" : '',
             "VenueServer.encryptAllMedia" : 1,
-            "VenueServer.houseKeeperFrequency" : 90,
+            "VenueServer.houseKeeperFrequency" : 120,
             "VenueServer.persistenceFilename" : 'VenueServer.dat',
             "VenueServer.serverPrefix" : 'VenueServer',
             "VenueServer.venuePathPrefix" : 'Venues',
@@ -162,10 +164,22 @@ class VenueServer(AuthorizationMixIn):
         rl = self.GetRequiredRoles()
         self.authManager.AddRoles(rl)
 
+	# report
+	self.report = None
+
         # Get the silly default subject this really should be fixed
         certMgr = self.servicePtr.GetCertificateManager()
         admins = self.authManager.FindRole("Administrators")
-        admins.AddSubject(self.servicePtr.GetDefaultSubject())
+
+	try:
+    	    subj = self.servicePtr.GetDefaultSubject()
+	except InvalidSubject:
+	    log.exception("Invalid Default Subject!")
+	    subj = None
+
+	if subj is not None:
+	    admins.AddSubject(subj)
+
         admins.SetRequireDefault(1)
 
         # In the venueserver we default to admins
@@ -173,19 +187,12 @@ class VenueServer(AuthorizationMixIn):
 
         # Initialize our state
         self.checkpointing = 0
-        self.persistenceFilename = 'VenueServer.dat'
-        self.houseKeeperFrequency = 90
-        self.venuePathPrefix = 'Venues'
         self.defaultVenue = ''
         self.multicastAddressAllocator = MulticastAddressAllocator()
         self.hostname = SystemConfig.instance().GetHostname()
         self.venues = {}
         self.services = []
         self.configFile = configFile
-        self.dataStorageLocation = None
-        self.dataPort = 0
-        self.eventPort = 0
-        self.textPort = 0
         self.simpleLock = ServerLock("VenueServer")
         
         # If we haven't been given a hosting environment, make one
@@ -282,9 +289,8 @@ class VenueServer(AuthorizationMixIn):
         self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.Checkpoint,
                                  int(self.houseKeeperFrequency), 0)
-
+#	self.houseKeeper.AddTask(self.Report, 60)
         self.houseKeeper.AddTask(self.CleanupVenueClients, 10)
-
         self.houseKeeper.StartAllTasks()
 
         # End of Services starting
@@ -525,6 +531,46 @@ class VenueServer(AuthorizationMixIn):
         for venue in self.venues.values():
             venue.CleanupClients()
 
+    def Report(self):
+	log.error("Running report")
+	if self.report is None:
+	    self.reportFile = file("statistics.csv", "w")
+	    self.report = csv.writer(self.reportFile)
+	    self.report.writerow(["Time Stamp", "User Time",
+			  	  "System Time", "Maximum Resident Size",
+				  "Shared Memory Size","Unshared Memory Size", 
+				  "Unshared Stack Size","Page Faults (No I/O)",
+				  "Page Faults (I/O)","Swaps",
+				  "Blocked Input Ops","Blocked Output Ops",
+				  "Messages Sent","Messages Received",
+				  "Signals Received",
+				  "Voluntary Context Switches",
+				  "Involuntary Context Switches",
+				  "Number Connected Clients",
+				  "Number Event Clients",
+				  "Number Text Clients"])
+
+	record=["%s" % time.strftime("%Y-%m-%d-%H:%M:%S")]
+	try:
+	    record = record + map(str, 
+				  resource.getrusage(resource.RUSAGE_BOTH))
+	except ValueError:
+	    try:
+		record = record + map(str, 
+				  resource.getrusage(resource.RUSAGE_SELF))
+	    except ValueError:
+		return
+
+	nc = 0
+	for v in self.venues.values():
+	    nc += len(v.GetClients())
+
+	record = record + [nc, len(self.eventService.allConnections),
+			   len(self.textService.allConnections)]
+
+	self.report.writerow(record)
+	self.reportFile.flush()
+
     def Shutdown(self):
         """
         Shutdown shuts down the server.
@@ -587,19 +633,19 @@ class VenueServer(AuthorizationMixIn):
         state that is lost (the longer the time between checkpoints, the more
         that can be lost).
         """
-        
+
         # Don't checkpoint if we are already
         if not self.checkpointing:
             self.checkpointing = 1
-	    log.info("Checkpoint starting at %s.", time.asctime())
+	    log.info("Checkpoint starting at: %s", time.asctime())
         else:
             return
         
         # Grab a copy of the venues to dump
         # This is a critical section so we lock around it
-        self.simpleLock.acquire()
-        venuesToDump = self.venues.copy()
-        self.simpleLock.release()
+#        self.simpleLock.acquire()
+#        venuesToDump = self.venues.copy()
+#        self.simpleLock.release()
 
         # Before we backup we copy the previous backup to a safe place
         # We only do this once, ie, if the file exists, we don't copy
@@ -612,30 +658,38 @@ class VenueServer(AuthorizationMixIn):
                 except OSError:
                     log.exception("Couldn't rename backup file.")
                     return 0
+	    else:
+		log.info("Not creating backup file, it already exists.")
+	else:
+	    log.warn("Backup file name exists but is not a file.")
 
         # Open the persistent store
         store = file(self.persistenceFilename, "w")
 
         try:
                        
-            for venuePath in venuesToDump.keys():
+#            for venuePath in venuesToDump.keys():
+            for venuePath in self.venues.keys():
                 # Change out the uri for storage,
                 # we don't bother to store the path since this is
                 # a copy of the real list we're going to dump anyway
-                venueUri = venuesToDump[venuePath].uri
-                venuesToDump[venuePath].uri = venuePath
+#                venueUri = venuesToDump[venuePath].uri
 
                 try:            
                     # Store the venue.
-                    store.write(venuesToDump[venuePath].AsINIBlock())
+#                    store.write(venuesToDump[venuePath].AsINIBlock())
+		
+		    self.simpleLock.acquire()
+                    store.write(self.venues[venuePath].AsINIBlock())
+		    self.simpleLock.release()
                 except:
-                    self.simpleLock.release()
+		    self.simpleLock.release()
                     log.exception("Exception Storing Venue!")
-                    venuesToDump[venuePath].uri = venueUri
+#                    venuesToDump[venuePath].uri = venueUri
                     return 0
 
-                venuesToDump[venuePath].uri = venueUri
-                venuesToDump[venuePath].dataStore.StorePersistentData()
+#                venuesToDump[venuePath].uri = venueUri
+#                venuesToDump[venuePath].dataStore.StorePersistentData()
 
             # Close the persistent store
             store.close()
@@ -644,9 +698,9 @@ class VenueServer(AuthorizationMixIn):
             log.exception("Exception Checkpointing!")
             return 0
 
-	del venuesToDump
+#	del venuesToDump
 
-        log.info("Checkpointing completed at %s.", time.asctime())
+        log.info("Checkpointing completed at: %s", time.asctime())
 
         # Get authorization policy.
         if self.authManager:
