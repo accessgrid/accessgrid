@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.254 2003-09-15 15:04:28 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.255 2003-09-15 15:38:49 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -198,7 +198,7 @@ class VenueClientFrame(wxFrame):
      	self.applicationMenu = wxMenu()
 
         self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"&Applications",
-                              self.BuildAppMenu())
+                              self.BuildAppMenu(None))
         self.venue.AppendSeparator()
         self.venue.Append(self.ID_VENUE_CLOSE,"&Exit", "Exit venue")
         
@@ -416,6 +416,8 @@ class VenueClientFrame(wxFrame):
                  
 
         EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.Follow)
+
+        EVT_MENU_OPEN(self.venue, self.BuildAppMenu)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_JOIN, self.OpenApp)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_DELETE, self.RemoveApp)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_PROPERTIES, self.OpenApplicationProfile)
@@ -987,7 +989,7 @@ class VenueClientFrame(wxFrame):
             callback = lambda event,theApp=app: self.StartApp(theApp, event)
             EVT_MENU(self, appId, callback)
 
-    def BuildAppMenu(self):
+    def BuildAppMenu(self, event):
         """
         Build the menu of installed applications
         """
