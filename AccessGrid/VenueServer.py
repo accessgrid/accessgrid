@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.127 2004-03-23 22:56:27 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.128 2004-03-24 00:31:45 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.127 2004-03-23 22:56:27 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.128 2004-03-24 00:31:45 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -188,7 +188,7 @@ class VenueServer(AuthorizationMixIn):
             self.internalHostingEnvironment = 0 # False
         else:
             defaultPort = 8000
-            self.hostingEnvironment = Server(defaultPort)
+            self.hostingEnvironment = Server((self.hostname, defaultPort) )
             self.internalHostingEnvironment = 1 # True
 
         # Figure out which configuration file to use for the
