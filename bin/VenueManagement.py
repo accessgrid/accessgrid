@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.59 2003-04-10 05:02:16 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.60 2003-04-22 21:53:55 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -245,8 +245,8 @@ class VenueManagementClient(wxApp):
         location = MulticastNetworkLocation(videoAddress, int(videoPort),
                                             int(videoTtl))
         capability = Capability( Capability.PRODUCER, Capability.VIDEO)
-        videoStreamDescription = StreamDescription( "", "", location,
-                                                    capability, None, 1)
+        videoStreamDescription = StreamDescription( "", location,
+                                                    capability, 0, None, 1)
         self.SetCurrentVenue(venue)
         wxLogDebug("Enable static video: %s addr: %s, port: %s, ttl %s" 
                      % (str(venue.uri), str(videoAddress),
@@ -257,8 +257,8 @@ class VenueManagementClient(wxApp):
         location = MulticastNetworkLocation(audioAddress, int(audioPort),
                                             int(audioTtl))
         capability = Capability( Capability.PRODUCER, Capability.AUDIO)
-        audioStreamDescription = StreamDescription( "", "", location,
-                                                    capability, None, 1)
+        audioStreamDescription = StreamDescription( "", location,
+                                                    capability, 0, None, 1)
         wxLogDebug("Enable static audio: %s addr: %s, port: %s, ttl %s"
                    % (str(venue.uri), str(audioAddress), str(audioPort),
                       str(audioTtl)))
@@ -1378,18 +1378,16 @@ class VenueParamFrame(wxDialog):
                                             int(sap.GetVideoTtl()))
             staticVideoCap = Capability(Capability.PRODUCER, Capability.VIDEO)
             streams.append(StreamDescription("Static Video",
-                                                  "Static Video",
                                                   svml, staticVideoCap,
-                                                  None, 1))
+                                                  0, None, 1))
             # Static Audio
             saml = MulticastNetworkLocation(sap.GetAudioAddress(),
                                             int(sap.GetAudioPort()),
                                             int(sap.GetAudioTtl()))
             staticAudioCap = Capability(Capability.PRODUCER, Capability.AUDIO)
             streams.append(StreamDescription("Static Audio",
-                                                  "Static Audio",
                                                   saml, staticAudioCap,
-                                                  None, 1))
+                                                  0, None, 1))
 
         # Get Encryption
         if self.encryptionPanel.encryptMediaButton.GetValue():

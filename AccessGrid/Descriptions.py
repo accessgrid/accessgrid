@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.23 2003-04-17 16:04:06 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.24 2003-04-22 21:52:23 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -211,7 +211,6 @@ def CreateVenueDescription(venueDescStruct):
                              venueDescStruct.administrators,
                              (venueDescStruct.encryptMedia,
                               venueDescStruct.encryptionKey), clist, slist)
-
     vdesc.uri = venueDescStruct.uri
     
     return vdesc
@@ -254,19 +253,21 @@ class ApplicationDescription(ObjectDescription):
 
 class StreamDescription( ObjectDescription ):
    """A Stream Description represents a stream within a venue"""
-   def __init__( self, name=None, description=None,
+   def __init__( self, name=None, 
                  location=MulticastNetworkLocation(), 
                  capability=Capability(),
-                 encryptionKey=None,
+                 encryptionFlag=0, encryptionKey=None,
                  static=0):
-      ObjectDescription.__init__( self, name, description, None)
+      ObjectDescription.__init__( self, name, None, None)
       self.location = location
       self.capability = capability
+      self.encryptionFlag = encryptionFlag
       self.encryptionKey = encryptionKey
       self.static = static
 
    def AsINIBlock(self):
        string = ObjectDescription.AsINIBlock(self)
+       string += "encryptionFlag : %s\n" % self.encryptionFlag
        string += "encryptionKey : %s\n" % self.encryptionKey
        string += "static : %d\n" % self.static
        string += "location : %s\n" % self.location
@@ -281,11 +282,11 @@ def CreateStreamDescription( streamDescStruct ):
     cap = Capability( streamDescStruct.capability.role, 
                       streamDescStruct.capability.type )
     streamDescription = StreamDescription( streamDescStruct.name, 
-                                           streamDescStruct.description,
                                            networkLocation,
                                            cap,
-                                           streamDescStruct.encryptionKey )
-    streamDescription.static = streamDescStruct.static
+                                           streamDescStruct.encryptionFlag,
+                                           streamDescStruct.encryptionKey,
+                                           streamDescStruct.static)
     return streamDescription
 
 class AGServiceManagerDescription:

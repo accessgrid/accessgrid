@@ -39,20 +39,18 @@ for sec in cp.sections():
     if cp.has_option(sec, 'video'):
         (host, port) = string.split(cp.get(sec, 'video'), ':')
         vcap = Capability(Capability.PRODUCER, Capability.VIDEO)
-        vsd = StreamDescription(vd.name, "Static Video",
-                                MulticastNetworkLocation(host.strip(),
-                                                         int(port), 127),
-                                vcap, 0, 1)
+        vsd = StreamDescription(vd.name, 
+                                MulticastNetworkLocation(host.strip(),int(port), 127),
+                                vcap, 0, None, 1)
         vd.streams.append(vsd)
         
     # Static Audio
     if cp.has_option(sec, 'audio'):
         (host, port) = string.split(cp.get(sec, 'audio'), ':')
         acap = Capability(Capability.PRODUCER, Capability.AUDIO)
-        asd = StreamDescription(vd.name, "Static Audio",
-                                MulticastNetworkLocation(host.strip(),
-                                                         int(port), 127),
-                                acap, 0, 1)
+        asd = StreamDescription(vd.name, 
+                                MulticastNetworkLocation(host.strip(),int(port), 127),
+                                acap, 0, None, 1)
 
         vd.streams.append(asd)
     

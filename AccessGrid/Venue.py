@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.75 2003-04-20 21:47:12 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.76 2003-04-22 21:52:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -369,20 +369,19 @@ class Venue(ServiceBase.ServiceBase):
                         matchesExistingStream = 1
                         log.debug("added user as producer of existent stream")
 
-                # add user as producer of non-existent stream
+                # add user as producer of new stream
                 if not matchesExistingStream:
                     capability = Capability( clientCapability.role,
                                              clientCapability.type )
                     capability.parms = clientCapability.parms
-                    if self.encryptMedia:
-                        key = 0
-                    else:
-                        key = self.encryptionKey
 
                     addr = self.AllocateMulticastLocation()
                     streamDesc = StreamDescription( self.name,
-                                                    "noDesc", addr,
-                                                    capability, key)
+                                                    addr,
+                                                    capability, 
+                                                    self.encryptMedia, 
+                                                    self.encryptionKey,
+                                                    0)
                     log.debug("added user as producer of non-existent stream")
                     self.streamList.AddStreamProducer( privateId,
                                                        streamDesc )

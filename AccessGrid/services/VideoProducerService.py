@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.14 2003-04-21 20:30:58 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.15 2003-04-22 21:54:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,6 @@ from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid import Platform
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
-
 
 vicstartup="""option add Vic.muteNewSources true startupFile
 option add Vic.maxbw 6000 startupFile
@@ -93,7 +92,7 @@ class VideoProducerService( AGService ):
          options.append( startupfile ) 
          options.append( "-C" )
          options.append( '"' + self.configuration["streamname"].value + '"'  )
-         if self.streamDescription.encryptionKey != 0:
+         if self.streamDescription.encryptionFlag != 0:
             options.append( "-K" )
             options.append( self.streamDescription.encryptionKey )
          options.append( "-t" )
@@ -110,6 +109,7 @@ class VideoProducerService( AGService ):
 
    def ConfigureStream( self, streamDescription ):
       """Configure the Service according to the StreamDescription, and stop and start rat"""
+
       ret = AGService.ConfigureStream( self, streamDescription )
       if ret:
          return
@@ -123,6 +123,7 @@ class VideoProducerService( AGService ):
 
    def SetResource( self, resource ):
       """Set the resource used by this service"""
+
       self.resource = resource
       if "portTypes" in self.resource.__dict__.keys():
           self.configuration["port"] = OptionSetParameter( "port", self.resource.portTypes[0], 

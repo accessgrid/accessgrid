@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.65 2003-04-21 20:37:32 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.66 2003-04-22 21:52:23 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -234,16 +234,20 @@ class VenueServer(ServiceBase.ServiceBase):
                     if len(s) != 0:
                         name = cp.get(s, 'name')
                         desc = cp.get(s, 'description')
+                        encryptionFlag = cp.get(s, 'encryptionFlag')
                         encryptionKey = cp.get(s, 'encryptionKey')
+                        static = cp.get(s, 'static')
                         (addr, port, ttl) = string.split(cp.get(s, 'location'),
                                                          " ")
                         capability = cp.get(s, 'capability')
-                        l = MulticastNetworkLocation(addr, int(port), int(ttl))
-                        c = Capability(string.split(capability, ' '))
+                        loc = MulticastNetworkLocation(addr, int(port), int(ttl))
+                        cap = Capability(string.split(capability, ' '))
                         
                         uri = self.MakeVenueURL(self.IdFromURL(cp.get(s,
                                                                       'uri')))
-                        sd = StreamDescription(name, desc, l, c)
+                        sd = StreamDescription(name, loc, cap, 
+                                               encryptionFlag, encryptionKey,
+                                               static)
                         v.AddStream(sd)
 
     def _authorize(self):
@@ -306,7 +310,6 @@ class VenueServer(ServiceBase.ServiceBase):
             raise InvalidVenueURL
         else:
             vd = CreateVenueDescription(venueDescStruct)
-        
             self.ModifyVenue(URL, vd)
         
     wsModifyVenue.soap_export_as = "ModifyVenue"

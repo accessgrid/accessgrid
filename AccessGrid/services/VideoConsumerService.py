@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.13 2003-04-10 19:09:12 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.14 2003-04-22 21:54:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -42,7 +42,7 @@ class VideoConsumerService( AGService ):
          if self.streamDescription.name and len(self.streamDescription.name.strip()) > 0:
             options.append( "-C" )
             options.append( self.streamDescription.name )
-         if self.streamDescription.encryptionKey != 0:
+         if self.streamDescription.encryptionFlag != 0:
             options.append( "-K" )
             options.append( self.streamDescription.encryptionKey )
          options.append( "-t" )
@@ -68,6 +68,7 @@ class VideoConsumerService( AGService ):
       if self.started:
          self.Stop()
          self.Start()
+
    ConfigureStream.soap_export_as = "ConfigureStream"
 
 
