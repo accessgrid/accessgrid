@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.98 2003-04-01 23:27:03 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.99 2003-04-03 15:38:52 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -262,6 +262,27 @@ class VenueClientUI(wxApp, VenueClient):
         """
         wxCallAfter(wxLogDebug, "EVENT - Remove data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.RemoveData, data)
+
+
+    def AddServiceEvent(self, service):
+        """
+        Note: Overloaded from VenueClient
+        This method is called every time new service is added to the venue.
+        Appropriate gui updates are made in client.
+        """
+        wxCallAfter(wxLogDebug, "EVENT - Add service: %s" %(service.name))
+        wxCallAfter(self.frame.contentListPanel.AddService, service)
+
+
+    def RemoveServiceEvent(self, service):
+        """
+        Note: Overloaded from VenueClient
+        This method is called every time service is removed from the venue.
+        Appropriate gui updates are made in client.
+        """
+        wxCallAfter(wxLogDebug, "EVENT - Remove service: %s" %(service.name))
+        wxCallAfter(self.frame.contentListPanel.RemoveService, service)
+
         
     def AddConnectionEvent(self, data):
         """
@@ -746,7 +767,31 @@ class VenueClientUI(wxApp, VenueClient):
         except:
             wxLogError("Error occured when trying to remove data")
             wxLog_GetActiveTarget().Flush()
-              
+
+    def AddService(self, service):
+        """
+        This method adds a service to the venue
+        """
+        wxLogDebug("Adding service: %s to venue" %service.name)
+        try:
+            self.client.AddService(service)
+            
+        except:
+            wxLogError("Error occured when trying to add service")
+            wxLog_GetActiveTarget().Flush()
+        
+    def RemoveService(self, service):
+        """
+        This method removes a service from the venue
+        """
+        wxLogDebug("Remove service: %s from venue" %service.name)
+        try:
+            self.client.RemoveService(service)
+
+        except:
+            wxLogError("Error occured when trying to remove service")
+            wxLog_GetActiveTarget().Flush()
+
     def ChangeProfile(self, profile):
         """
         This method changes this participants profile
