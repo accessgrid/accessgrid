@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.8 2003-08-22 20:11:36 judson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.9 2003-09-15 15:09:56 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -45,34 +45,16 @@ def registerApp(fileName):
     app = Toolkit.CmdlineApplication()
     appdb = app.GetAppDatabase()
 
-    # Get just the filename
-    fn = os.path.split(fileName)[1]
+    fn = os.path.basename(fileName)
 
-    # Find the app dir
-    uad = Platform.GetUserAppPath()
-
-    # Get the absolute path for copying the file
-    src = os.path.abspath(fn)
-
-    # Get the destination filename
-    dest = os.path.join(uad, fn)
-
-    exeCmd = sys.executable + " \"" + dest + "\" -a %(appUrl)s"
-
-    print "SRC: %s DST: %s CMD: %s" % (src, dest, exeCmd)
-    
-    # Copy the file
-    try:
-        shutil.copyfile(src, dest)
-    except IOError:
-        print "Couldn't copy app into place, bailing."
-        sys.exit(1)
+    exeCmd = sys.executable + " " + fn + " -a %(appUrl)s"
 
     # Call the registration method on the applications database
     appdb.RegisterApplication("Shared Presentation",
                               "application/x-ag-shared-presentation",
                               "sharedpresentation",
-                              {"Open" : exeCmd })
+                              {"Open" : exeCmd },
+                              [fn], os.getcwd())
     
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
