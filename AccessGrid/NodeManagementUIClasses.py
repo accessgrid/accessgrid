@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.14 2003-02-24 22:06:45 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.15 2003-02-24 22:48:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -513,7 +513,7 @@ class NodeManagementClientFrame(wxFrame):
                     break
 
 
-
+            resourceToAssign = AGResource()
             resources = Client.Handle( serviceManager.uri ).get_proxy().GetResources()
             if len(resources) > 0:
                 for resource in resources:
@@ -530,18 +530,14 @@ class NodeManagementClientFrame(wxFrame):
                 if ret != wxID_OK:
                     return
 
-                res = dlg.GetStringSelection()
+                selectedResource = dlg.GetStringSelection()
 
-                resourceToAssign = None
                 for resource in resources:
-                    if res == resource.resource:
+                    if selectedResource == resource.resource:
                         resourceToAssign = resource
+                        print "assigning resource ", resourceToAssign.resource
                         break
 
-                if resourceToAssign == None:
-                    resourceToAssign = AGResource()
-                else:
-                    print "assigning resource ", resourceToAssign.resource
 
             try:
                 print "Adding service ", serviceToAdd.name, serviceToAdd.uri
