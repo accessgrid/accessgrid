@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Tools.py,v 1.8 2004-03-02 19:13:38 judson Exp $
+# RCS-ID:      $Id: Tools.py,v 1.9 2004-04-06 18:06:44 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ This module defines methods for making serialization and other things simpler
 when using the SOAPpy module.
 """
 
-__revision__ = "$Id: Tools.py,v 1.8 2004-03-02 19:13:38 judson Exp $"
+__revision__ = "$Id: Tools.py,v 1.9 2004-04-06 18:06:44 eolson Exp $"
 
 # External imports
 import sys
@@ -72,7 +72,9 @@ def Reconstitute(obj):
     if isinstance(obj, structType):
         if hasattr(obj, "ag_class"):
             k = obj.ag_class
-            delattr(obj, "ag_class")
+            # Not optimal, but for now, don't delete "ag_class" attribute
+            #  in case this struct is referenced more than once.
+            # delattr(obj, "ag_class")
             f = CreateBlank(k)
             for ok in obj._keys():
                 setattr(f, ok, Reconstitute(obj[ok]))
