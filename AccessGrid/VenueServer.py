@@ -5,14 +5,13 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.20 2003-01-24 17:31:40 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.21 2003-01-27 21:01:11 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 # Standard stuff
 import sys
-import ConfigParser
 import socket
 import string
 from threading import Thread
@@ -21,7 +20,7 @@ import signal
 import traceback
 
 # AG Stuff
-from AccessGrid.Utilities import formatExceptionInfo
+from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
 from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid import Venue
 from AccessGrid.GUID import GUID
@@ -77,8 +76,7 @@ class VenueServer(ServiceBase.ServiceBase):
             self.configFile = configFile
 
         # Instantiate a new config parser
-        self.config = self.LoadConfig(self.configFile,
-                                      self.configDefaults)
+        self.config = LoadConfig(self.configFile, self.configDefaults)
 
         # Initialize our state
         # We need to get the first administrator from somewhere
@@ -130,30 +128,8 @@ class VenueServer(ServiceBase.ServiceBase):
         print "Got signal: ", signum
         self.Shutdown(None, 0)
 
-    def LoadConfig(self, file, config={}):
-        """
-        Returns a dictionary with keys of the form <section>.<option>
-        and the corresponding values.
-        This is from the python cookbook credit: Dirk Holtwick.
-        """
-        config = config.copy()
-        cp = ConfigParser.ConfigParser()
-        cp.read(file)
-        for sec in cp.sections():
-            name = string.lower(sec)
-            for opt in cp.options(sec):
-                config[name + "."
-                       + string.lower(opt)] = string.strip(
-                        cp.get(sec, opt))
-        return config
 
-    def SaveConfig(self, file):
-        """
-        This method saves the current configuration out to the specified file.
-        """
-        cp = ConfigParser.ConfigParser()
-        cp.write(file(self.configFile, 'w+'))
-        
+
     def AddVenue(self, connectionInfo, venueDescription):
         """
         The AddVenue method takes a venue description and creates a new
@@ -195,7 +171,7 @@ class VenueServer(ServiceBase.ServiceBase):
             self.venues[venueURL] = venue
 
         except:
-            print "Exception in AddVenue ", traceback.print_exc()
+            "Exception in AddVenue ", traceback.print_exc()
 
         # return the URL to the new venue
         return venueURL
@@ -309,8 +285,8 @@ class VenueServer(ServiceBase.ServiceBase):
         try:
             venueDescriptionList = map( lambda venue: venue.GetDescription( connectionInfo ), self.venues.values() )
 
-            for venue in venueDescriptionList:
-                print "  ---- venue ", venue.name, venue.description, venue.uri
+#            for venue in venueDescriptionList:
+#                print "  ---- venue ", venue.name, venue.description, venue.uri
         except:
             print "Exception in GetVenues ", sys.exc_type, sys.exc_value
         return venueDescriptionList
@@ -470,8 +446,11 @@ class VenueServer(ServiceBase.ServiceBase):
             store.close()
         except:
             (name, args, tb) = formatExceptionInfo()
-            print "Name: ", name, "\nArgs: ", args, "\nTrace: ", tb
-            
-        self.SaveConfig(file(self.configFile, 'w+'))
-        
+            print "Name: ", name, "\nArgs: ", args
+            print "Trace:\n"
+            for x in tb:
+                print x
+
+        (self.configFile, self.config)
+
     Checkpoint.soap_export_as = "Checkpoint"
