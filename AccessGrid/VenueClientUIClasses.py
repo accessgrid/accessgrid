@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.69 2003-03-14 21:41:29 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.70 2003-03-14 22:57:13 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -923,9 +923,26 @@ class ContentListPanel(wxPanel):
                           
     def RemoveParticipant(self, description):
         if description!=None :
-            id = self.participantDict[description.publicId]
-            del self.participantDict[description.publicId]
-            self.tree.Delete(id)
+            if(self.participantDict.has_key(description.publicId)):
+                id = self.participantDict[description.publicId]
+
+                if id!=None:
+                     self.tree.Delete(id)
+                
+                del self.participantDict[description.publicId]
+               
+
+
+    def RemoveNode(self, profile):
+        if(profile!=None):
+            if(self.nodeDict.has_key(profile.publicId)):
+                id = self.nodeDict[profile.publicId]
+
+                if(id != None):
+                    self.tree.Delete(id)
+
+                del self.nodeDict[profile.publicId]
+        
         
     def ModifyParticipant(self, description):
         type =  description.profileType
@@ -1032,12 +1049,6 @@ class ContentListPanel(wxPanel):
         self.nodeDict[profile.publicId] = node
         self.tree.Expand(self.nodes)
 
-    def RemoveNode(self, profile):
-        id = self.nodeDict[profile.publicId]
-        self.tree.Delete(id)
-        del self.nodeDict[profile.publicId]
-        
-        
     def __setTree(self):
         #temporary fix for wxPython bug
 
