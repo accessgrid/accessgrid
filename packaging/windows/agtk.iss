@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.95 2004-06-01 17:10:20 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.96 2004-06-01 17:34:31 judson Exp $
 ;
 
 ; Set externally
@@ -41,7 +41,7 @@ AppPublisher=Futures Laboratory / Argonne National Laboratory
 AppPublisherURL=http://www.mcs.anl.gov/fl
 AppSupportURL=http://bugzilla.mcs.anl.gov/accessgrid
 AppUpdatesURL=http://www.mcs.anl.gov/fl/research/accessgrid
-AppID={907B1500-42CA-4148-8F13-2004654CCA06}
+AppID={2CD98D2E-F3D2-438E-91F7-D74860A70959}
 Compression=zip/9
 MinVersion=0,5.0.2195
 LicenseFile=COPYING.txt
