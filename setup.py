@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.11 2003-03-14 22:10:10 leggett Exp $
+# RCS-ID:      $Id: setup.py,v 1.12 2003-03-21 20:43:55 leggett Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -80,17 +80,17 @@ setup(
                     ]
                    ),
                   ('share/gnome/apps/AccessGrid',
-                   [r"gnome/.desktop",
-                    r"gnome/NodeManagement.desktop",
-                    r"gnome/VenueClient.desktop",
-                    r"gnome/VenueManagement.desktop"
+                   [r"packaging/gnome/.desktop",
+                    r"packaging/gnome/NodeManagement.desktop",
+                    r"packaging/gnome/VenueClient.desktop",
+                    r"packaging/gnome/VenueManagement.desktop"
                     ]
                    ),
                   ('share/applnk/AccessGrid',
-                   [r"kde/.desktop",
-                    r"kde/NodeManagement.desktop",
-                    r"kde/VenueClient.desktop",
-                    r"kde/VenueManagement.desktop"
+                   [r"packaging/kde/.desktop",
+                    r"packaging/kde/NodeManagement.desktop",
+                    r"packaging/kde/VenueClient.desktop",
+                    r"packaging/kde/VenueManagement.desktop"
                     ]
                    ),
                   ('share/doc/AccessGrid',
