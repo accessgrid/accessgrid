@@ -16,6 +16,8 @@ import os.path
 from OpenSSL_AG import crypto
 from AccessGrid.Security import ProxyGen
 
+from pyGlobus import utilc, gssc
+
 def ConstructSigningPolicy(cert):
     """
     Construct a simple signing policy based on the subject name of cert.
@@ -317,9 +319,13 @@ class ProxyTestCase(unittest.TestCase):
 
         outFile = os.path.join(self.userDir, "proxy.pem")
 
-        self.assertRaises(ProxyGen.GridProxyInitError,
-                          ProxyGen.CreateGlobusProxy,
-                          passphrase, certPath, keyPath, self.certDir, outFile, 512, 12)
+        try:
+            ProxyGen.CreateGlobusProxy(passphrase, certPath, keyPath, self.certDir,
+                                       outFile, 512, 12)
+            self.fail("Should have raised GridProxyInitError exception")
+        except ProxyGen.GridProxyInitError, e:
+            assert str(e).find("Missing CA Certificate") >= 0
+
 
     def test_04_MissingSigningPolicy(self):
 
@@ -342,9 +348,72 @@ class ProxyTestCase(unittest.TestCase):
 
         outFile = os.path.join(self.userDir, "proxy.pem")
 
-        self.assertRaises(ProxyGen.GridProxyInitError,
-                          ProxyGen.CreateGlobusProxy,
-                          passphrase, certPath, keyPath, self.certDir, outFile, 512, 12)
+        try:
+            ProxyGen.CreateGlobusProxy(passphrase, certPath, keyPath, self.certDir,
+                                       outFile, 512, 12)
+            self.fail("Should have raised GridProxyInitError exception")
+        except ProxyGen.GridProxyInitError, e:
+            assert str(e) == "Missing signing policy"
+
+    def test_05_ExpiredCA(self):
+
+        now = time.time()
+        ca_start = now - 2 * 86400
+        ca_end = now - 86400
+
+        user_start = now -  86400
+        user_end = now + 86400
+
+        passphrase = "abcd"
+        
+        caCert = CreateCA(ca_start, ca_end, self.caName)
+        userCert = CreateUser(user_start, user_end, caCert, self.userCertName)
+
+        caName = str(caCert.cert.get_subject())
+
+        caCert.WriteTrustedCert(self.certDir)
+        caCert.WriteSigningPolicy(self.certDir)
+        
+        certPath, keyPath = userCert.Write(self.userDir, "usercert", passphrase)
+
+        outFile = os.path.join(self.userDir, "proxy.pem")
+
+        try:
+            ProxyGen.CreateGlobusProxy(passphrase, certPath, keyPath, self.certDir,
+                                       outFile, 512, 12)
+            self.fail("Should have raised GridProxyInitError exception")
+        except ProxyGen.GridProxyInitError, e:
+            assert str(e) == "Expired certificate for " + caName
+
+    def test_06_ExpiredUser(self):
+
+        now = time.time()
+        user_start = now - 2 * 86400
+        user_end = now - 86400
+
+        ca_start = now -  86400
+        ca_end = now + 86400
+
+        passphrase = "abcd"
+        
+        caCert = CreateCA(ca_start, ca_end, self.caName)
+        userCert = CreateUser(user_start, user_end, caCert, self.userCertName)
+
+        userName = str(userCert.cert.get_subject())
+
+        caCert.WriteTrustedCert(self.certDir)
+        caCert.WriteSigningPolicy(self.certDir)
+        
+        certPath, keyPath = userCert.Write(self.userDir, "usercert", passphrase)
+
+        outFile = os.path.join(self.userDir, "proxy.pem")
+
+        try:
+            ProxyGen.CreateGlobusProxy(passphrase, certPath, keyPath, self.certDir,
+                                       outFile, 512, 12)
+            self.fail("Should have raised GridProxyInitError exception")
+        except ProxyGen.GridProxyInitError, e:
+            assert str(e) == "Expired certificate for " + userName
 
 def basic_test():
     x = CreateCA(int(time.time() - 86400),
