@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.5 2004-03-17 20:21:01 olson Exp $
+# RCS-ID:      $Id: Config.py,v 1.6 2004-03-26 19:34:19 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.5 2004-03-17 20:21:01 olson Exp $"
+__revision__ = "$Id: Config.py,v 1.6 2004-03-26 19:34:19 olson Exp $"
 
 import os
 import sys
@@ -27,10 +27,11 @@ log = Log.GetLogger(Log.Toolkit)
 
 # To speed things up on windows
 from pyGlobus import utilc, gsic, ioc
-from AccessGrid.Security import Utilities
+from AccessGrid.Security import Utilities as SecurityUtilities
+from AccessGrid import Utilities
 utilc.globus_module_activate(gsic.get_module())
 utilc.globus_module_activate(ioc.get_module())
-Utilities.CreateTCPAttrAlwaysAuth()
+SecurityUtilities.CreateTCPAttrAlwaysAuth()
 
 # Windows Defaults
 try:
@@ -301,6 +302,65 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         application. For now, I'm putting globus registry crud in
         here, later there might be other stuff.
 
+        """
+
+        self._InitializeRegistry()
+
+        self._InitializeHostname()
+
+    def _InitializeHostname(self):
+        """
+        Ensure that we have a valid Globus hostname.
+
+        If GLOBUS_HOSTNAME is set, we will do nothing further.
+
+        Otherwise, we will inspect the hostname as returned by the
+        socket.getfqdn() call. If it appears to be valid (where valid means that
+        it maps to an IP address and we can locally bind to that address),
+        we needn't do anythign, since the globus hostname calls will return the right
+        thing.
+
+        Otherwise, we need to get our IP address using SystemConfig.GetLocalIPAddress()
+        """
+
+
+        ghost = os.getenv("GLOBUS_HOSTNAME")
+        if ghost is not None:
+            log.debug("Using GLOBUS_HOSTNAME=%s as set in the environment", ghost)
+            return
+
+        hostname = socket.getfqdn()
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            sock.bind((hostname, 0))
+
+            #
+            # This worked, so we are okay.
+            #
+
+            log.debug("System hostname of %s is valid", hostname) 
+            return
+        
+        except socket.error:
+            pass
+
+        #
+        # Binding to our hostname didn't work. Retrieve our IP address
+        # and use that.
+        #
+
+        try:
+            myip = SystemConfig.instance().GetLocalIPAddress()
+            log.debug("retrieved local IP address %s", myip)
+        except:
+            myip = "127.0.0.1"
+            log.exception("Failed to determine local IP address, using %s", myip)
+
+        Utilities.setenv("GLOBUS_HOSTNAME", myip)
+
+    def _InitializeRegistry(self):
+        """
         right now we just want to check and see if registry settings
         are in place for:
 
@@ -371,8 +431,10 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
                                                     "userkey.pem")
                     self.certFileName = os.path.join(uappdata, "globus",
                                                      "usercert.pem")
+
                     self.proxyFileName = os.path.join(win32api.GetTempPath(),
                                                       "proxy")
+                    
                     self.caCertDir = os.path.join(cappdata, "AccessGrid",
                                                   "certificates")
                     
@@ -382,9 +444,13 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
                     gsikey = _winreg.CreateKey(gkey, "GSI")
                     
                     # Set the values
-                    _winreg.SetValueEx(gsikey, "x509_user_proxy", 0,
-                                       _winreg.REG_EXPAND_SZ,
-                                       self.proxyFileName)
+                    #
+                    # RDO 2004-0326: don't do this, since we're likely to
+                    # remove it later on.
+                    #
+                    #_winreg.SetValueEx(gsikey, "x509_user_proxy", 0,
+                    #                   _winreg.REG_EXPAND_SZ,
+                    #                   self.proxyFileName)
                     _winreg.SetValueEx(gsikey, "x509_user_key", 0,
                                        _winreg.REG_EXPAND_SZ, self.keyFileName)
                     _winreg.SetValueEx(gsikey, "x509_user_cert", 0,
@@ -855,24 +921,85 @@ HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings
 
         return adapters
 
-    def GetDefaultRouteIP(self):
+    def GetLocalIPAddress(self):
         """
-        Retrieve the IP address of the interface that the
-        default route points to.
+        Get our IP address. We use the heuristic that the address we
+        want to advertise is the one that corresponds to the active
+        default route. If there isn't a default route, pick the lowest-metric
+        interface from the routing table. If we don't have anything there,
+        return 127.0.0.1
+        
         """
 
         route = os.path.join(os.getenv("SystemRoot"), "system32",
                              "route.exe")
-        p = os.popen(r"%s print" % route, "r")
+
+        if not os.path.isfile(route):
+            log.error("Cannot find route command: %s", route)
+            return "127.0.0.1"
         
+        p = os.popen(r"%s print" % route, "r")
+
+        def_routes = []
+        host_routes = []
+        def_gw = None
+
         for l in p:
-            parts = l.split()
+            parts = l.strip().split()
             if parts[0] == "0.0.0.0":
                 int = parts[3]
-                p.close()
-                return int
+                metric= parts[4]
+                gw = parts[2]
+                def_routes.append((metric, int, gw))
+            elif parts[0] == "255.255.255.255":
+                host_routes.append((parts[4], parts[3]))
+            elif l.startswith("Default Gateway"):
+                def_gw = parts[2]
 
-        return None
+        #
+        # If we have no default routes, pick the lowest-metric
+        # limited broadcast route (one with a destination of 255.255.255.255).
+        #
+
+        if len(def_routes) == 0:
+            #
+            # Back off to the host routes
+            #
+
+            if len(host_routes) == 0:
+                #
+                # No chance.
+                #
+                return "127.0.0.1"
+
+            host_routes.sort()
+
+            return host_routes[0][1]
+
+        # sort by metric
+        def_routes.sort()
+
+        # find the default gateway in the list
+        #
+
+        def_int = None
+        if def_gw is not None:
+            for m, i, g in def_routes:
+                if g == def_gw:
+                    def_int = i
+                    break
+
+        #
+        # Return the interface for the route
+        # marked as default, if there is one.
+        #
+        if def_int is not None:
+            return def_int
+
+        #
+        # Otherwise, return the lowest-metric default route.
+        #
+        return def_routes[0][1]
     
 class MimeConfig(AccessGrid.Config.MimeConfig):
     """
