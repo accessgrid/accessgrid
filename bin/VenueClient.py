@@ -1,11 +1,14 @@
-#qfrom AccessGrid.VenueClient import VenueClient
+#from AccessGrid.VenueClient import VenueClient
+from wxPython.wx import *
 import AccessGrid.GUID
 import AccessGrid.Types
 import AccessGrid.Utilities
-from AccessGrid.VenueClientUIClasses import *
+from AccessGrid.VenueClientUIClasses import VenueClient
+from AccessGrid.VenueClientUIClasses import VenueClientFrame
 import threading
 import AccessGrid.ClientProfile
 import os
+from AccessGrid.Descriptions import DataDescription
 
 class VenueClientUI(wxApp, VenueClient):
     """
@@ -84,20 +87,26 @@ class VenueClientUI(wxApp, VenueClient):
             print 'somebody enters'
             self.frame.contentListPanel.AddParticipant(event.data)
 
-       # elif event.eventType == Event.MODIFY_USER:
-        #    print 'modify user'
-                        
         elif event.eventType == Event.EXIT:
             print 'exit'
             self.frame.contentListPanel.RemoveParticipant(event.data)
             
         elif event.eventType == Event.ADD_DATA:
-            print 'add data'
+            print '------------------add data'
             self.frame.contentListPanel.AddData(event.data)
+
+        elif event.eventType == Event.REMOVE_DATA:
+            print '------------------remove data'
+            self.frame.contentListPanel.RemoveData(event.data)
             
         elif event.eventType == Event.ADD_SERVICE:
-            print 'add service'
+            print '------------------add service'
             self.frame.contentListPanel.AddService(event.data)
+
+        elif event.eventType == Event.REMOVE_SERVICE:
+            print '------------------add service'
+            self.frame.contentListPanel.RemoveService(event.data)
+            
             
         elif event.eventType == Event.ADD_CONNECTION:
             print 'add connection'
@@ -174,11 +183,22 @@ class VenueClientUI(wxApp, VenueClient):
         """
         self.ExitVenue()
 
-    def AddData(self, path):
-        print '------- add data'
-        data = DataDescription('myData', path)
+    def AddData(self, data):
         self.client.AddData(data)
 
+    def AddService(self, service):
+        self.client.AddService(service)
+        
+    def RemoveData(self, data):
+        print "-----------REMOVE DATA"
+        print data.name
+        self.client.RemoveData(data)
+
+    def RemoveService(self, service):
+        print "----------- REMOVE SERVICE"
+        print service.name
+        self.client.RemoveService(service)
+        
     def ChangeProfile(self, profile):
         profile.Dump()
         self.profile = profile
