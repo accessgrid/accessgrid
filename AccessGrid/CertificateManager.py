@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.29 2003-09-10 21:13:21 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.30 2003-09-11 21:10:19 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1006,7 +1006,7 @@ class CertificateManager(object):
 
         return out
 
-    def CheckRequestedCertificate(self, req, token, server):
+    def CheckRequestedCertificate(self, req, token, server, proxyHost = None, proxyPort = None):
         """
         Check the server to see if the given request has been granted.
         Return a tuple of (success, msg). If successful, success=1
@@ -1015,10 +1015,14 @@ class CertificateManager(object):
         """
 
         success = 0
-        client = CRSClient.CRSClient(server)
+        client = CRSClient.CRSClient(server, proxyHost, proxyPort)
         try:
             certRet = client.RetrieveCertificate(token)
             log.debug("Retrieve returns %s", certRet)
+        except CRSClient.CRSClientConnectionFailed:
+            log.error("Connection failed connecting to server %s via proxy %s:%s",
+                      server, proxyHost, proxyPort)
+            certRet = (0, "Connection failed")
         except:
             log.exception("Error retrieving certificate")
             certRet = (0, "Error retrieving certificate")
