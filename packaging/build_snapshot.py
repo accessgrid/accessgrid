@@ -45,10 +45,6 @@ parser.add_option("-s", "--sourcedir", dest="sourcedir", metavar="SOURCEDIR",
 parser.add_option("-m", "--meta", dest="metainfo", metavar="METAINFO",
                   default=None,
                   help="Meta information string about this release.")
-parser.add_option("-b", "--build-package-dir", dest="bdir",
-                  metavar="PACKAGEDIR",
-                  default=None,
-                  help="Directory of packages to be built.")
 parser.add_option("--no-checkout", action="store_true", dest="nocheckout",
                   default=0,
                   help="A flag that indicates the snapshot should be built from a previously exported source directory.")
@@ -140,17 +136,30 @@ os.chdir(s)
 # Build packages according to the command line
 #
 
-if options.bdir is not None:
+if sys.platform == 'win32':
+    bdir = 'windows'
+elif sys.platform == 'linux2':
+    bdir = 'linux'
+elif sys.platform == 'darwin':
+    print "Sorry not supported yet ;-)"
+    bdir = 'darwin'
+else:
+    bdir = None
+
+if bdir is not None:
     pkg_script = "build_package.py"
     NextDir = os.path.join(RunDir, options.bdir)
-    os.chdir(NextDir)
-    os.system("%s %s -s %s -b %s -d %s -p %s -m %s -v %s" % (sys.executable,
-                                                             pkg_script,
-                                                             SourceDir,
-                                                             BuildDir,
-                                                             DestDir,
-                                                             options.pyver,
-                                                             metainfo,
-                                                             version))
+    if os.path.exists(NextDir):
+        os.chdir(NextDir)
+        os.system("%s %s -s %s -b %s -d %s -p %s -m %s -v %s" % (sys.executable,
+                                                                 pkg_script,
+                                                                 SourceDir,
+                                                                 BuildDir,
+                                                                 DestDir,
+                                                                 options.pyver,
+                                                                 metainfo,
+                                                                 version))
+    else:
+        print "No directory (%s) found." % NextDir
 
 
