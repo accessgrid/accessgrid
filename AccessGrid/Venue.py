@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.42 2003-02-21 16:10:29 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.43 2003-02-21 17:37:58 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,6 +16,9 @@ import string
 import types
 import socket
 import os.path
+
+# import logging
+# log = logging.getLogger("AG.Venue")
 
 from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid.Types import Capability
@@ -43,7 +46,7 @@ class Venue(ServiceBase.ServiceBase):
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
     """
-    def __init__(self, uniqueId, description, administrator):
+    def __init__(self, uniqueId, description, administrator, dataStorePath):
         """
         Venue constructor.
 
@@ -69,11 +72,17 @@ class Venue(ServiceBase.ServiceBase):
         self.clients = dict()
         self.nodes = dict()
 
+        self.dataStorePath = dataStorePath
+        self.dataStore = None
+
         self.producerCapabilities = []
         self.consumerCapabilities = []
 
         self.cleanupTime = 30
         self.nextPrivateId = 1
+
+        # self.AllowedEntryRole = AccessControl.Role("Venue.AllowedEntry", self)
+        # self.VenueUsersRole = AccessControl.Role("Venue.VenueUsers", self)
 
         self.encryptionKey = AllocateEncryptionKey()
 
@@ -93,7 +102,8 @@ class Venue(ServiceBase.ServiceBase):
         keys = ("users", "clients", "nodes", "multicastAllocator",
                 "producerCapabilities", "consumerCapabilities", 
                 "textService", "eventService", "dataService",
-                "_service_object", "houseKeeper")
+                "_service_object", "houseKeeper",
+                "dataTransferServer", "dataStore")
         for k in odict.keys():
             if k in keys:
                 del odict[k]
@@ -117,8 +127,9 @@ class Venue(ServiceBase.ServiceBase):
         self.cleanupTime = 30
         self.nextPrivateId = 1
         self.encryptionKey = AllocateEncryptionKey()
+        self.dataStore = None
 
-    def Start(self, multicastAllocator, dataService,
+    def Start(self, multicastAllocator, dataTransferServer,
               eventService, textService):
         """ """
         # We assume the multicast allocator has been set by now
@@ -126,10 +137,11 @@ class Venue(ServiceBase.ServiceBase):
         # other icky things (description, state, venue) issues -- IRJ
 
         self.multicastAllocator = multicastAllocator
-        self.dataService = dataService
+        self.dataTransferServer = dataTransferServer
         self.eventService = eventService
         self.textService = textService
 
+        # log.debug("Registering heartbeat for %s", self.uniqueId)
         self.eventService.RegisterCallback(self.uniqueId,
                                            HeartbeatEvent.HEARTBEAT, 
                                            self.ClientHeartbeat)
@@ -137,6 +149,8 @@ class Venue(ServiceBase.ServiceBase):
         self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.CleanupClients, 45)
         self.houseKeeper.StartAllTasks()
+
+        self.startDataStore()
 
     def startDataStore(self):
         """
@@ -158,12 +172,13 @@ class Venue(ServiceBase.ServiceBase):
             print "Not starting datastore for venue: %s does not exist" % (
                 self.dataStorePath)
             return
-        self.dataStore = DataStore.DataStore(self, self.dataStorePath)
-        transferServer = DataStore.HTTPTransferServer(self.dataStore,
-                                                      ('', 0))
-        self.dataStore.SetTransferEngine(transferServer)
 
-        print "Have upload url: ", self.dataStore.GetUploadDescriptor()
+        self.dataTransferServer.RegisterPrefix(str(self.uniqueId), self)
+
+        self.dataStore = DataStore.DataStore(self, self.dataStorePath, str(self.uniqueId))
+        self.dataStore.SetTransferEngine(self.dataTransferServer)
+
+        print "Have upload url: %s" % (self.dataStore.GetUploadDescriptor())
 
         for file, desc in self.data.items():
             print "Checking file %s for validity" % (file)
@@ -174,8 +189,6 @@ class Venue(ServiceBase.ServiceBase):
             else:
                 desc.SetURI(url)
                 self.UpdateData(desc)
-
-        transferServer.run()
 
     def SetMulticastAddressAllocator(self, multicastAllocator):
         """
@@ -473,6 +486,29 @@ class Venue(ServiceBase.ServiceBase):
         streamDescriptions = []
         state = self.GetState()
 
+
+        #
+        # Authorization management.
+        #
+        # Get the security manager for this invocation. This will tell
+        # us how the user was authenticated for this call.
+        #
+        # To check to see whether this user can even enter, see if
+        # he is in the AllowedEntry role
+        #
+
+#          sm = AccessControl.GetSecurityManager()
+#          if  sm.ValidateRole(self.AllowedEntryRole):
+#              subject = sm.GetSubject()
+#              log.info("User %s validated for entry to %s", subject, self)
+
+#              if self.VenueUsersRole.HasSubject(subject):
+#                  self.VenueUsersRole.AddSubject(subject)
+#          else:
+#              log.info("User %s rejected for entry to %s", sm.GetSubject(), self)
+#              raise VenueException("Entry denied")
+            
+
         try:
 #            print "Called Venue Enter for: "
 #            print dir(clientProfile)
@@ -581,6 +617,7 @@ class Venue(ServiceBase.ServiceBase):
             raise VenueException("AddData: data %s already present" % (name))
 
         self.data[dataDescription.name] = dataDescription
+        # log.debug("Send ADD_DATA event %s", dataDescription)
         self.eventService.Distribute( self.uniqueId,
                                       Event( Event.ADD_DATA,
                                              self.uniqueId,
@@ -610,6 +647,7 @@ class Venue(ServiceBase.ServiceBase):
             raise VenueException("UpdateData: data %s not already present" % (name))
 
         self.data[dataDescription.name] = dataDescription
+        # log.debug("Send UPDATE_DATA event %s", dataDescription)
         self.eventService.Distribute( self.uniqueId,
                                       Event( Event.UPDATE_DATA,
                                              self.uniqueId,

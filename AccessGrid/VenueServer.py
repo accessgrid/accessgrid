@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.38 2003-02-21 16:10:29 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.39 2003-02-21 17:37:58 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -30,7 +30,7 @@ from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 from AccessGrid.Venue import Venue
 from AccessGrid.GUID import GUID
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-from AccessGrid.DataStore import DataStore
+from AccessGrid import DataStore
 from AccessGrid.EventService import EventService
 from AccessGrid.scheduler import Scheduler
 from AccessGrid.Descriptions import VenueDescription
@@ -91,10 +91,11 @@ class VenueServer(ServiceBase.ServiceBase):
         self.hostname = GetHostname()
         self.venues = {}
         self.services = []
-        self.dataLocation = None
+
+        self.dataStorageLocation = None
+
         self.eventPort = 0
         self.textPort = 0
-        self.dataService = None
         
         # Figure out which configuration file to use for the
         # server configuration. If no configuration file was specified
@@ -115,6 +116,9 @@ class VenueServer(ServiceBase.ServiceBase):
                                                 int(self.textPort),
                                                 int(self.dataPort) )
         
+        self.dataTransferServer = DataStore.GSIHTTPTransferServer(('', int(self.dataPort)))
+        self.dataTransferServer.run()
+
         self.eventService = EventService((self.hostname, int(self.eventPort)))
         self.eventService.start()
         self.textService = TextService((self.hostname, int(self.textPort)))
@@ -131,7 +135,7 @@ class VenueServer(ServiceBase.ServiceBase):
                 print "Loading Venue: %s" % vURL
                 self.venues[vURL] = store[vURL]
                 self.venues[vURL].Start(self.multicastAddressAllocator,
-                                        self.dataService, self.eventService,
+                                        self.dataTransferServer, self.eventService,
                                         self.textService)
                 
                 venuePath = "%s/%s" % (self.venuePathPrefix,
@@ -212,10 +216,10 @@ class VenueServer(ServiceBase.ServiceBase):
             # Allocator, and the server's Data Storage object
                     
             venue = Venue(venueID, venueDescription,
-                          GetDefaultIdentityDN())
+                          GetDefaultIdentityDN(), venueStoragePath)
 
             venue.Start(self.multicastAddressAllocator, 
-                        self.dataService, self.eventService,
+                        self.dataTransferServer, self.eventService,
                         self.textService)
             
             # Somehow we have to register this venue as a new service
