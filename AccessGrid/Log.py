@@ -391,4 +391,10 @@ class LevelHandler(logging.handlers.BufferingHandler):
             self.level=level
         else:
             logging.getLogger(Logging).error("Invalid level type: " + str(type(level)) )
+            return
+
+        # Make sure handler is accepting at this level or with more detail.
+        for handler in self.handlers:
+            if handler.level > level: # closer to zero means more detail
+                handler.setLevel(level)
 
