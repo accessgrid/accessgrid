@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.17 2003-08-19 19:35:03 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.18 2003-08-19 22:20:12 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -268,7 +268,19 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
         """
 
-        self.RunCertificateRequestTool()
+        pending = self.certificateManager.GetPendingRequests()
+
+        if pending is not None and len(pending) > 0:
+            #
+            # We have pending requests. Bring up that dialog so that
+            # the user can check to see if they're available yet.
+            #
+
+            self.RunCertificateStatusTool()
+
+        else:
+            
+            self.RunCertificateRequestTool()
         
         return 1
 

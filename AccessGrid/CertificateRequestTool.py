@@ -18,9 +18,13 @@ from AccessGrid import CertificateRepository
 from AccessGrid import Toolkit
 from AccessGrid.CertificateRepository import RepoDoesNotExist
 from AccessGrid.CRSClient import CRSClient
+from AccessGrid import Platform
 
 import string
 import time
+import md5
+import os
+import os.path
 
 import logging, logging.handlers
 log = logging.getLogger("AG.CertificateRequestTool")
@@ -164,12 +168,14 @@ class CertificateRequestTool(wxWizard):
                 if next and isinstance(next, SubmitReqWindow):
                     name = ""
                     email = ""
+                    domain = ""
                     request = ""
                     password = ""
 
                     if isinstance(page, IdentityCertWindow):
                         name = page.nameCtrl.GetValue()
                         email = page.emailCtrl.GetValue()
+                        domain = page.domainCtrl.GetValue()
                         request = "identity"
                         password = page.passwordCtrl.GetValue()
                         
@@ -183,7 +189,7 @@ class CertificateRequestTool(wxWizard):
                         email = page.emailCtrl.GetValue()
                         request = "service"
 
-                    next.SetText(name, email, request, password)
+                    next.SetText(name, email, domain, request, password)
                     next.SetPrev(page)
                 
         elif dir == backward:
@@ -340,16 +346,20 @@ class IdentityCertWindow(TitledPage):
 
         self.nameId = wxNewId()
         self.emailId = wxNewId()
+        self.domainId = wxNewId()
         self.passwrdId = wxNewId()
         self.passwrd2Id = wxNewId()
        
         self.nameText = wxStaticText(self, -1, "Name:")
         self.emailText = wxStaticText(self, -1, "E-mail:")
+        self.domainText = wxStaticText(self, -1, "Domain:")
         self.passwordText = wxStaticText(self, -1, "Password:")
         self.passwordVerText = wxStaticText(self, -1, "Retype Password:")
         self.nameCtrl = wxTextCtrl(self, self.nameId ,
                                    validator = IdentityCertValidator())
         self.emailCtrl = wxTextCtrl(self, self.emailId,
+                                    validator = IdentityCertValidator())
+        self.domainCtrl = wxTextCtrl(self, self.domainId,
                                     validator = IdentityCertValidator())
         self.passwordCtrl = wxTextCtrl(self, self.passwrdId,
                                        style = wxTE_PASSWORD,
@@ -359,11 +369,48 @@ class IdentityCertWindow(TitledPage):
                                           validator = IdentityCertValidator())
 
         EVT_TEXT(self, self.nameId, self.EnterText)
-        EVT_TEXT(self.emailCtrl, self.emailId, self.EnterText)
+        EVT_TEXT(self.emailCtrl, self.emailId, self.EnterEmailText)
+        EVT_TEXT(self.domainCtrl, self.domainId, self.EnterDomainText)
         EVT_TEXT(self.passwordCtrl, self.passwrdId , self.EnterText)
         EVT_TEXT(self.passwordVerCtrl, self.passwrd2Id, self.EnterText)
+        EVT_CHAR(self.domainCtrl, self.EnterDomainChar)
         self.Layout()
 
+        #
+        # State to set if the user entered anything in the domain
+        # textbox. If so, don't change it on them.
+        #
+        self.userEnteredDomain = 0
+
+    def EnterDomainChar(self, event):
+        self.userEnteredDomain = 1
+        event.Skip()
+        
+    def EnterDomainText(self, event):
+        self.EnterText(event)
+        
+    def EnterEmailText(self, event):
+        self.EnterText(event)
+
+        #
+        # See if the user has entered a domain yet. If not,
+        # initialize to the part of the email address after the @.
+        #
+
+        if self.userEnteredDomain:
+            return
+
+        email = self.emailCtrl.GetValue()
+
+        at = email.find("@")
+        if at < 0:
+            return
+
+        domainStr = email[at+1:]
+
+        if domainStr != "":
+            self.domainCtrl.SetValue(domainStr)
+        
     def EnterText(self, event):
         '''
         Sets background color of the item that triggered the event to white.
@@ -383,6 +430,8 @@ class IdentityCertWindow(TitledPage):
         gridSizer.Add(self.nameCtrl, 0, wxEXPAND)
         gridSizer.Add(self.emailText)
         gridSizer.Add(self.emailCtrl, 0, wxEXPAND)
+        gridSizer.Add(self.domainText)
+        gridSizer.Add(self.domainCtrl, 0, wxEXPAND)
         gridSizer.Add(self.passwordText)
         gridSizer.Add(self.passwordCtrl, 0, wxEXPAND)
         gridSizer.Add(self.passwordVerText)
@@ -486,6 +535,7 @@ class IdentityCertValidator(wxPyValidator):
         '''
         name = win.nameCtrl.GetValue()
         email = win.emailCtrl.GetValue()
+        domain = win.domainCtrl.GetValue()
         password = win.passwordCtrl.GetValue()
         password2 = win.passwordVerCtrl.GetValue()
         
@@ -500,7 +550,7 @@ class IdentityCertValidator(wxPyValidator):
             return false
 
         elif email.find("@") == -1:
-            MessageDialog(NULL, "Pleas enter a valid e-mail address, for example name@mcs.anl.gov.",
+            MessageDialog(NULL, "Pleas enter a valid e-mail address, for example name@example.com.",
                           style = wxOK | wxICON_INFORMATION)
             self.helpClass.SetColour(win.emailCtrl)
             return false
@@ -515,6 +565,12 @@ class IdentityCertValidator(wxPyValidator):
             self.helpClass.SetColour(win.passwordCtrl)
             self.helpClass.SetColour(win.passwordVerCtrl)
             return false
+
+        elif domain == "":
+            MessageDialog(NULL, "Please enter the domain name of your home site; for example, example.com..", style = wxOK | wxICON_INFORMATION)
+            self.helpClass.SetColour(win.domainCtrl)
+            return false
+            
 
         return true
 
@@ -782,13 +838,14 @@ class SubmitReqWindow(TitledPage):
         self.text.SetBackgroundColour(self.GetBackgroundColour())
         self.Layout()
 
-    def SetText(self, name, email, requestType, password):
+    def SetText(self, name, email, domain, requestType, password):
         '''
         Sets the text based on previous page
         '''
         # Parameters for requesting a certificate
         self.name = name
         self.email = email
+        self.domain = domain
         self.password = password
         self.request = requestType
         
@@ -823,10 +880,19 @@ class SubmitReqWindow(TitledPage):
         # was passed to the constructor of the wizard.
         #
 
-        self.parent.createIdentityCertCB(str(self.name),
-                                         str(self.email),
-                                         'my.domain',
-                                         str(self.password))
+        wxBeginBusyCursor()
+        self.Refresh()
+        self.Update()
+
+        try:
+            self.parent.createIdentityCertCB(str(self.name),
+                                             str(self.email),
+                                             str(self.domain),
+                                             str(self.password))
+        finally:
+            wxEndBusyCursor()
+            self.Refresh()
+            self.Update()
 
         return true
 
@@ -850,18 +916,19 @@ class CertificateStatusDialog(wxDialog):
         self.list = wxListCtrl(self, wxNewId(),
                                style = wxLC_REPORT | wxSUNKEN_BORDER)
         
-        self.text = wxStaticText(self, -1, "Click 'Ok' to check their status.")
+        self.importButton = wxButton(self, -1, "Import certificate")
+        self.importButton.Enable(0)
 
         self.getStatusButton = wxButton(self, -1, "Check Status")
-        self.okButton = wxButton(self, wxID_OK, "Ok")
-        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
-        self.newRequestButton = wxButton(self, wxNewId(), "New Request")
+        self.closeButton = wxButton(self, wxID_CLOSE, "Close")
+        self.newRequestButton = wxButton(self, wxNewId(), "Create New Request")
         self.certReqDict = {}
-        self.requestStatus = {}
+        self.certStatus = {}
         self.beforeStatus = 0
         self.afterStatus = 1
         self.state = self.beforeStatus
-       
+        self.selectedItem = None
+        
         self.__setProperties()
         self.__layout()
         self.__setEvents()
@@ -869,23 +936,31 @@ class CertificateStatusDialog(wxDialog):
         self.AddCertificates()
                                      
     def __setEvents(self):
+        EVT_BUTTON(self, self.importButton.GetId(), self.OnImportCertificate)
         EVT_BUTTON(self, self.getStatusButton.GetId(), self.OnUpdateStatus)
-        EVT_BUTTON(self, self.okButton.GetId(), self.Ok)
+        EVT_BUTTON(self, self.closeButton.GetId(), self.OnClose)
         EVT_BUTTON(self, self.newRequestButton.GetId(), self.RequestCertificate)
+
+        EVT_LIST_ITEM_SELECTED(self.list, self.list.GetId(),
+                               self.OnCertSelected)
 
     def __layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
         sizer.Add(self.info, 0, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10)
-        sizer.Add(self.list, 1, wxEXPAND|wxALL, 10)
-        sizer.Add(self.text, 0, wxEXPAND|wxALL, 10)
-        sizer.Add(10,10)
+
+        hs = wxBoxSizer(wxHORIZONTAL)
+        
+        hs.Add(self.list, 1, wxEXPAND|wxALL, 10)
+        hs.Add(self.importButton, 0, wxALL, 10)
+
+        sizer.Add(hs, 1, wxEXPAND)
+        
         sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND)
 
         box = wxBoxSizer(wxHORIZONTAL)
         box.Add(self.getStatusButton, 0 , wxALL, 5)
-        box.Add(self.okButton, 0 , wxALL, 5)
-        box.Add(self.cancelButton, 0 , wxALL, 5)
         box.Add(self.newRequestButton, 0 , wxALL, 5)
+        box.Add(self.closeButton, 0 , wxALL, 5)
 
         sizer.Add(box, 0, wxCENTER)
 
@@ -906,9 +981,64 @@ class CertificateStatusDialog(wxDialog):
     def OnUpdateStatus(self, event):
         self.CheckStatus()
             
-    def Ok(self, event):
+    def OnClose(self, event):
         self.Close()
+
+    def OnCertSelected(self, event):
+        row = event.m_itemIndex
+        print "Selected item ", row
+        self.selectedItem = row
+
+        if row in self.certStatus:
+            status = self.certStatus[row][0]
+
+            if status == "Ready":
+                self.importButton.Enable(1)
+                
+            else:
+                self.importButton.Enable(0)
             
+    def OnImportCertificate(self, event):
+
+        if self.selectedItem:
+            item = self.reqList[self.selectedItem]
+            status = self.certStatus[self.selectedItem]
+
+            cert = status[1]
+
+            #
+            # Write the cert out to a tempfile, then import.
+            #
+
+            hash = md5.new(cert).hexdigest()
+            tempfile = os.path.join(Platform.GetTempDir(), "%s.pem" % (hash))
+
+            try:
+                try:
+                    fh = open(tempfile, "w")
+                    fh.write(cert)
+                    fh.close()
+
+                    certMgr = Toolkit.GetApplication().GetCertificateManager()
+                    impCert = certMgr.ImportRequestedCertificate(tempfile)
+
+                    MessageDialog(self,
+                                  "Successfully imported certificate for\n" +
+                                  str(impCert.GetSubject()),
+                                  "Import Successful")
+                    self.AddCertificates()
+
+                except:
+                    log.exception("Import of requested cert failed")
+                    ErrorDialog(self,
+                                "The import of your approved certificate failed.",
+                                "Import Failed")
+
+            finally:
+                os.unlink(tempfile)
+                
+            
+
     def RequestCertificate(self, event):
         self.Hide()
         certReq = CertificateRequestTool(self, None)
@@ -928,6 +1058,7 @@ class CertificateStatusDialog(wxDialog):
         row = 0
         for reqItem in self.reqList:
 
+            self.certStatus[row] = ("Unknown")
             requestDescriptor, token, server, creationTime = reqItem
 
             #
@@ -966,6 +1097,8 @@ class CertificateStatusDialog(wxDialog):
         
         # Check status of certificate requests
         for row in range(0, self.list.GetItemCount()):
+
+            self.certStatus[row] = ("Unknown")
             
             itemId = self.list.GetItemData(row)
             reqItem = self.reqList[itemId]
@@ -988,8 +1121,10 @@ class CertificateStatusDialog(wxDialog):
             success, msg = certReturn
             if not success:
                 self.list.SetStringItem(row, 3, "Not ready")
+                self.certStatus[row] = ("NotReady")
             else:
                 self.list.SetStringItem(row, 3, "Ready for installation")
+                self.certStatus[row] = ("Ready", msg)
 
             self.list.SetColumnWidth(3, wxLIST_AUTOSIZE)
             

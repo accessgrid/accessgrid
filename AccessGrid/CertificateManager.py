@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.26 2003-08-19 19:35:03 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.27 2003-08-19 22:20:12 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -437,6 +437,14 @@ class CertificateManager(object):
                 except:
                     print "Failure to import ", path
 
+    def ImportRequestedCertificate(self, userCert):
+        repo = self.GetCertificateRepository()
+        impCert = repo.ImportRequestedCertificate(userCert)
+        log.debug("imported requested cert %s", impCert.GetSubject())
+        
+        impCert.SetMetadata("AG.CertificateManager.certType", "identity")
+        return impCert
+        
     def ImportIdentityCertificatePEM(self, repo, userCert, userKey, passphraseCB):
         impCert = repo.ImportCertificatePEM(userCert, userKey, passphraseCB)
         

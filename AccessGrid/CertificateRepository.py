@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.9 2003-08-19 15:17:18 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.10 2003-08-19 22:20:12 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -305,6 +305,60 @@ class CertificateRepository:
 
         return CertificateDescriptor(cert, self)
             
+    def ImportRequestedCertificate(self, certFile, passphraseCB = None):
+        """
+        Import a certificate that we earlier issued a request for.
+
+        """
+
+        #
+        # Load the cert into a pyOpenSSL data structure.
+        #
+
+        cert = Certificate(certFile, repo = self)
+        path = self._GetCertDirPath(cert)
+        # print "Would put cert in dir ", path
+
+        #
+        # If the path already exists, we already have this (uniquely named)
+        # certificate.
+        #
+
+        if os.path.isdir(path):
+            raise RepoInvalidCertificate, "Certificate already in repository at %s" % (path)
+
+        #
+        # Check to see that we have a private key already for this cert.
+        #
+
+        mhash = cert.GetModulusHash()
+
+        pkeyPath = self._GetPrivateKeyPath(mhash)
+
+        log.debug("Importing requested certificate subj=%s path=%s",
+                  cert.GetSubject(), path)
+        log.debug("Modulus hash is %s", mhash)
+
+        if not os.path.isfile(pkeyPath):
+            log.error("we don't have a private key for this certificate")
+            raise RepoInvalidCertificate("No private key exists for this certificate")
+
+        #
+        # Preliminary checks successful. We can go ahead and import.
+        #
+
+        self._ImportCertificate(cert, path)
+
+        #
+        # Import done, set the metadata about the cert.
+        #
+
+        cert.SetMetadata("System.importTime", str(time.time()))
+        cert.SetMetadata("System.certImportedFrom", certFile)
+        cert.SetMetadata("System.hasKey", "1")
+
+        return CertificateDescriptor(cert, self)
+            
     def _ImportCertificate(self, cert, path):
         """
         Import a certificate. We've already done the due diligence
@@ -342,6 +396,12 @@ class CertificateRepository:
 
         return desc
 
+    def _GetPrivateKeyPath(self, hash):
+        path = os.path.join(self.dir,
+                            "privatekeys",
+                            "%s.pem" % (hash))
+        return path
+
     def _ImportPrivateKey(self, pkey, passwdCB):
         """
         Import the given private key into the repository.
@@ -361,10 +421,8 @@ class CertificateRepository:
         dig = md5.new(pkey.get_modulus())
         hash = dig.hexdigest()
 
-        path = os.path.join(self.dir,
-                            "privatekeys",
-                            "%s.pem" % (hash))
-
+        path = self._GetPrivateKeyPath(hash)
+        
         print "Importing pkey to ", path
         #
         # If passwdCB is none, don't encrypt.
