@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.93 2003-05-16 04:17:57 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.94 2003-05-17 18:04:48 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -198,7 +198,10 @@ class Venue(ServiceBase.ServiceBase):
         self.description = description
         self.administrators = administrators
         self.encryptMedia = server.GetEncryptAllMedia()
-        self.encryptionKey = None
+        if self.encryptMedia:
+            self.encryptionKey = AllocateEncryptionKey()
+        else:
+            self.encryptionKey = None
         self.simpleLock = Condition(Lock())
         
         if id == None:
@@ -206,8 +209,22 @@ class Venue(ServiceBase.ServiceBase):
         else:
             self.uniqueId = id
             
+        self.cleanupTime = 30
+
+        self.connections = dict()
+        self.applications = dict()
+        self.data = dict()
+        self.services = dict()
+        self.streamList = StreamDescriptionList()
+        self.clients = dict()
+
+        self.dataStore = None
+        self.producerCapabilities = []
+        self.consumerCapabilities = []
+
         self.uri = self.server.MakeVenueURL(self.uniqueId)
-        log.info("URI %s", self.uri)
+
+        log.info("Venue URI %s", self.uri)
 
         self.server.eventService.AddChannel(self.uniqueId)
         self.server.textService.AddChannel(self.uniqueId)
@@ -215,6 +232,10 @@ class Venue(ServiceBase.ServiceBase):
         self.server.eventService.RegisterCallback(self.uniqueId,
                                            HeartbeatEvent.HEARTBEAT,
                                            self.ClientHeartbeat)
+
+        self.server.eventService.RegisterCallback(self.uniqueId,
+                                                  DisconnectEvent.DISCONNECT,
+                                                  self.EventServiceDisconnect)
 
         #
         # Create the directory to hold the venue's data.
@@ -234,36 +255,21 @@ class Venue(ServiceBase.ServiceBase):
                 except OSError:
                     log.exception("Could not create venueStoragePath.")
                     self.dataStorePath = None
-                
-        if self.encryptMedia == 1:
-            self.encryptionKey = AllocateEncryptionKey()
 
-        self.cleanupTime = 30
 
-        self.connections = dict()
-        self.applications = dict()
-        self.data = dict()
-        self.services = dict()
-        self.streamList = StreamDescriptionList()
-        self.clients = dict()
+        # Start the data store
+        if self.dataStorePath is None or not os.path.isdir(self.dataStorePath):
+            log.warn("Not starting datastore for venue: %s does not exist %s",
+                      self.uniqueId, self.dataStorePath)
 
-        self.dataStore = None
-        self.producerCapabilities = []
-        self.consumerCapabilities = []
+        self.server.dataTransferServer.RegisterPrefix(str(self.uniqueId), self)
 
-        self.StartDataStore()
+        self.dataStore = DataStore.DataStore(self, self.dataStorePath,
+                                             str(self.uniqueId))
+        self.dataStore.SetTransferEngine(self.server.dataTransferServer)
 
-        self.server.eventService.AddChannel(self.uniqueId)
-        self.server.textService.AddChannel(self.uniqueId)
-        log.debug("Registering heartbeat for %s", self.uniqueId)
-        self.server.eventService.RegisterCallback(self.uniqueId,
-                                           HeartbeatEvent.HEARTBEAT,
-                                           self.ClientHeartbeat)
-        # This might make things better
-        self.server.eventService.RegisterCallback(self.uniqueId,
-                                                  DisconnectEvent.DISCONNECT,
-                                                  self.EventServiceDisconnect)
-
+        log.info("Have upload url: %s", self.dataStore.GetUploadDescriptor())
+        
         #self.StartApplications()
 
         #self.AllowedEntryRole = AccessControl.Role("Venue.AllowedEntry", self)
@@ -303,24 +309,6 @@ class Venue(ServiceBase.ServiceBase):
             return 1
         else:
             return 0
-
-    def _GetClients(self):
-        """
-        Creates a dictionary of clients by extracting clients from the
-        clients-time dictionary
-        """
-        clientsDict = dict()
-        
-        for key in self.clients.keys():
-            
-            (client, heartbeatTime) = self.clients[key]
-            
-            clientsDict[key] = client
-            
-        log.debug("Clients contained in the venue are: %s" %
-                  str(clientsDict.values()))
-
-        return clientsDict
 
     def AsINIBlock(self):
         """
@@ -364,6 +352,20 @@ class Venue(ServiceBase.ServiceBase):
         if len(dlist):
             string += "data : %s\n" % dlist
 
+        # List of applications
+        alist = ":".join(map(lambda app: app.GetId(),
+                             self.applications.values()))
+
+        if len(alist):
+            string += "applications : %s\n" % alist
+
+        # List of services
+        servlist = ":".join(map(lambda service: service.GetId(),
+                                self.services.values()))
+
+        if len(servlist):
+            string += "services: %s\n" % servlist
+            
         # The blocks for other data
         if len(clist):
             string += "".join(map(lambda conn: conn.AsINIBlock(),
@@ -375,6 +377,14 @@ class Venue(ServiceBase.ServiceBase):
             string += "".join(map(lambda stream: stream.AsINIBlock(),
                                     self.streamList.GetStaticStreams()))
 
+        if len(alist):
+            string += "".join(map(lambda app: app.AsINIBlock(),
+                                  self.applications.values()))
+
+        if len(servlist):
+            string += "".join(map(lambda service: service.AsINIBlock(),
+                                  self.services.values()))
+            
         return string
 
     def AsVenueDescription(self):
@@ -390,6 +400,28 @@ class Venue(ServiceBase.ServiceBase):
         desc.SetURI(self.uri)
         
         return desc
+
+    def AsVenueState(self):
+        """
+        This creates a Venue State filled in with the data from this
+        venue.
+        """
+        venueState = {
+            'uniqueId' : self.uniqueId,
+            'name' : self.name,
+            'description' : self.description,
+            'uri' : self.uri,
+            'connections' : self.connections.values(),
+            'applications': map(lambda x: x.AsApplicationDescription(),
+                                self.applications.values()),
+            'clients' : map(lambda c: c[0], self.clients.values()),
+            'services' : self.services.values(),
+            'data' : self.data.values(),
+            'eventLocation' : self.server.eventService.GetLocation(),
+            'textLocation' : self.server.textService.GetLocation()
+            }
+
+        return venueState
     
     def StartApplications(self):
         """
@@ -402,53 +434,12 @@ class Venue(ServiceBase.ServiceBase):
         for appImpl in self.applications.values():
             appImpl.Awaken(self.server.eventService)
             app = AppService.AppObject(appImpl)
-            hostObj = self.server.hostingEnvironment.create_service_object()
-            app._bind_to_service(hostObj)
+            hostObj = self.server.hostingEnvironment.BindService(app)
             appHandle = hostObj.GetHandle()
             appImpl.SetHandle(appHandle)
-            log.debug("Restarted app id=%s handle=%s", appImpl.GetId(), appHandle)
+            log.debug("Restarted app id=%s handle=%s",
+                      appImpl.GetId(), appHandle)
 
-    def StartDataStore(self):
-        """
-        Start the local datastore server.
-
-        We create a DataStore to manage this Venue's data.
-        We have been already given a data transfer service instance
-        (in the call to Venue.Start()).
-        
-        The DataStore is given the Venue's dataStorePath as
-        its working directory.  We then loop through the data
-        descriptions in the venue, both checking to see that the file
-        still exists for each piece of data, and updating the uri
-        field in the description with the new download URL.
-
-        Actually, we get to do both steps at once, as
-        GetDownloadDescriptor will return None if the file doesn't
-        exist in the local data store.
-        """
-        
-        if self.dataStorePath is None or not os.path.isdir(self.dataStorePath):
-            log.warn("Not starting datastore for venue: %s does not exist %s",
-                      self.uniqueId, self.dataStorePath)
-            return
-
-        self.server.dataTransferServer.RegisterPrefix(str(self.uniqueId), self)
-
-        self.dataStore = DataStore.DataStore(self, self.dataStorePath,
-                                             str(self.uniqueId))
-        self.dataStore.SetTransferEngine(self.server.dataTransferServer)
-
-        log.info("Have upload url: %s", self.dataStore.GetUploadDescriptor())
-        
-        for file, desc in self.data.items():
-            log.debug("Checking file %s for validity", file)
-            url = self.dataStore.GetDownloadDescriptor(file)
-            if url is None:
-                log.warn("File %s has vanished", file)
-                del self.data[file]
-            else:
-                desc.SetURI(url)
-                self.UpdateData(desc)
 
     def SetDataStore(self, dataStore):
         """
@@ -461,47 +452,6 @@ class Venue(ServiceBase.ServiceBase):
 
         """
         self.dataStore = dataStore
-
-    def GetState(self):
-        """
-        GetState returns the current state of the Virtual Venue.
-
-        **Raises:**
-
-            *InvalidVenueState* Raised when we can't get the venue state.
-            
-        **Returns:**
-
-            *venueState* A dictionary containing all the state of the venue.
-        """
-
-        log.debug("Called GetState on %s", self.uniqueId)
-
-        venueState = {
-            'uniqueId' : self.uniqueId,
-            'name' : self.name,
-            'description' : self.description,
-            'uri' : self.uri,
-            'connections' : self.connections.values(),
-            'applications': map(lambda x: x.GetState(),
-                                self.applications.values()),
-            'clients' : self._GetClients().values(),
-            'services' : self.services.values(),
-            'eventLocation' : self.server.eventService.GetLocation(),
-            'textLocation' : self.server.textService.GetLocation()
-            }
-
-        #
-        # If we don't have a datastore, don't advertise
-        # the existence of any data. We won't be able to get
-        # at it anyway.
-        #
-        if self.dataStore is None:
-            venueState['data'] = []
-        else:
-            venueState['data'] = self.data.values()
-
-        return venueState
 
     def CleanupClients(self):
         """
@@ -542,7 +492,7 @@ class Venue(ServiceBase.ServiceBase):
        
         if self.clients.has_key(privateId):
             self.simpleLock.acquire()
-            
+
             (profile, heartbeatTime) = self.clients[privateId]
             self.clients[privateId] = (profile, now)
 
@@ -814,7 +764,7 @@ class Venue(ServiceBase.ServiceBase):
                                                     clientProfile ) )
 
         try:
-            state = self.GetState()
+            state = self.AsVenueState()
         except:
             log.exception("Enter: Can't get state.")
             raise InvalidVenueState
@@ -845,8 +795,6 @@ class Venue(ServiceBase.ServiceBase):
         log.debug("AddData with name %s " %name)
              
         if self.data.has_key(name):
-            self.simpleLock.notify()
-            self.simpleLock.release()
             log.exception("AddData: data already present: %s", name)
             raise DataAlreadyPresent
 
@@ -918,12 +866,17 @@ class Venue(ServiceBase.ServiceBase):
         name = dataDescription.name
 
         if not self.data.has_key(name):
-            self.simpleLock.notify()
-            self.simpleLock.release()
             log.exception("UpdateData: data not already present: %s", name)
             raise DataNotFound
 
-        self.data[dataDescription.name] = dataDescription
+        log.debug("Checking file %s for validity", name)
+        url = self.dataStore.GetDownloadDescriptor(name)
+        if url is None:
+            log.warn("File %s has vanished", name)
+            del self.data[name]
+        else:
+            dataDescription.SetURI(url)
+            self.data[dataDescription.name] = dataDescription
 
         log.debug("Distribute UPDATE_DATA event %s", dataDescription)
 
@@ -2025,7 +1978,7 @@ class Venue(ServiceBase.ServiceBase):
     
     GetApplication.soap_export_as = "GetApplication"
 
-    def CreateApplication(self, name, description, mimeType ):
+    def CreateApplication(self, name, description, mimeType, id = None ):
         """
         Create a new application object.  Initialize the
         implementation, and create a web service interface for it.
@@ -2048,7 +2001,7 @@ class Venue(ServiceBase.ServiceBase):
                   name, description)
 
         appImpl = AppService.CreateApplication(name, description, mimeType, 
-                                           self.server.eventService)
+                                           self.server.eventService, id)
         app = AppService.AppObject(appImpl)
 
         hostObj = self.server.hostingEnvironment.BindService(app)
@@ -2057,18 +2010,17 @@ class Venue(ServiceBase.ServiceBase):
 
         self.applications[appImpl.GetId()] = appImpl
 
-        ad = ApplicationDescription(appImpl.GetId(), name, description,
-                                    appHandle, mimeType)
+        appDesc = appImpl.AsApplicationDescription()
         
         self.server.eventService.Distribute( self.uniqueId,
                                              Event( Event.ADD_APPLICATION,
                                                     self.uniqueId,
-                                                    ad ) )
+                                                    appDesc ) )
         
         log.debug("CreateApplication: Created id=%s handle=%s",
-                  appImpl.GetId(), appHandle)
+                  appDesc.id, appDesc.uri)
 
-        return appHandle
+        return appDesc
 
     CreateApplication.soap_export_as = "CreateApplication"
 
