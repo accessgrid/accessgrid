@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.281 2003-09-19 02:13:45 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.282 2003-09-19 16:17:28 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.281 2003-09-19 02:13:45 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.282 2003-09-19 16:17:28 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -3276,6 +3276,7 @@ def VerifyExecutionEnvironment(mainApp = None):
 
     if not os.environ.has_key("GLOBUS_LOCATION"):
         log.critical("VerifyExecutionEnvironment: The GLOBUS_LOCATION environment must be set, check your Globus installation")
+        log.critical("exiting")
         dlg = wxMessageDialog(None, "The GLOBUS_LOCATION environment variable is not set.\n" + 
                               "Check your Globus installation.",
                               "Globus configuration problem", wxOK)
@@ -3286,6 +3287,35 @@ def VerifyExecutionEnvironment(mainApp = None):
             mainApp.OnExit()
 
         sys.exit(1)
+
+    #
+    # Check to see  if we are running as root (on non-windows platforms)
+    #
+
+    if not isWindows():
+        try:
+            uid = os.getuid()
+        except:
+            log.exception("os.getuid failed")
+            uid = 3
+            
+        if uid == 0:
+            #
+            # Disallow running client as root.
+            #
+            log.critical("VerifyExecutionEnvironment: Client running as root, exiting.")
+            dlg = wxMessageDialog(None, "Your client is running using a root login.\n" +
+                                  "Please run the client as a normal user.",
+                                  "Running as root", wxOK)
+            dlg.ShowModal()
+            dlg.Destroy()
+
+            if mainApp:
+                mainApp.OnExit()
+
+            sys.exit(1)
+
+                
 
 
     #
