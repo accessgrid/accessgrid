@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.86 2003-04-29 20:39:13 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.87 2003-05-12 16:26:07 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -391,6 +391,13 @@ class Venue(ServiceBase.ServiceBase):
                     log.debug("added user as producer of non-existent stream")
                     self.streamList.AddStreamProducer( privateId,
                                                        streamDesc )
+
+                    # Distribute event announcing new stream
+                    self.server.eventService.Distribute( self.uniqueId,
+                                             Event( Event.ADD_STREAM,
+                                                    self.uniqueId,
+                                                    streamDesc ) )
+
 
 
         #
