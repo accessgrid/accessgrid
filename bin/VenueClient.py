@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.155 2003-05-20 19:36:23 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.156 2003-05-22 20:17:22 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -280,12 +280,15 @@ class VenueClientUI(wxApp, VenueClient):
         log.setLevel(logging.DEBUG)
         logname = "VenueClient.log"
         hdlr = logging.FileHandler(logname)
+        extfmt = logging.Formatter("%(asctime)s %(name)s %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
         fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-        hdlr.setFormatter(fmt)
+        hdlr.setFormatter(extfmt)
         log.addHandler(hdlr)
 
         if self.debugMode:
-            log.addHandler(logging.StreamHandler())
+            hdlr = logging.StreamHandler()
+            hdlr.setFormatter(fmt)
+            log.addHandler(hdlr)
        
     def ConnectToVenue(self):
         """
@@ -605,8 +608,10 @@ class VenueClientUI(wxApp, VenueClient):
         #
         # if this venue url has a valid web service then enter venue
         #
+        log.debug("check client for validity")
         if(self.clientHandle.IsValid()):
             self.client = self.clientHandle.get_proxy()
+            log.debug("OK")
 
             #
             # Tell super class to enter venue
@@ -796,6 +801,12 @@ class VenueClientUI(wxApp, VenueClient):
         performs its own operations when the client exits a venue.
         """
         log.debug("exit venue")
+
+        #
+        # Shut down the text client
+        #
+
+        wxCallAfter(self.frame.CloseTextConnection)
         VenueClient.ExitVenue(self)
 
     def __setHistory(self, uri, back):
@@ -993,8 +1004,8 @@ class VenueClientUI(wxApp, VenueClient):
             failure_reason = "Exception: %s" % (str(e))
 
         if failure_reason is not None:
-            MessageDialog(None, failure_reason, "Download error",
-            style = wxOK  | wxICON_ERROR)
+            wxCallAfter(MessageDialog, None, failure_reason, "Download error",
+                        wxOK  | wxICON_ERROR)
 
     def SaveFileNoProgress(self, data_descriptor, local_pathname):
         """
@@ -1027,7 +1038,7 @@ class VenueClientUI(wxApp, VenueClient):
             log.debug("data descriptor is %s" %data_descriptor.__class__)
 
             if data_descriptor.status != DataDescription.STATUS_PRESENT:
-                MessageDialog(none,
+                MessageDialog(None,
                               "File %s is not downloadable - it has status %s"
                               % (data_descriptor.name,
                                  data_descriptor.status), "Notification")
@@ -1063,17 +1074,17 @@ class VenueClientUI(wxApp, VenueClient):
             if url.startswith("https"):
                 log.debug("url=%s, local path =%s, size = %s, checksum = %s"%(url, local_pathname, size, checksum))
                 DataStore.GSIHTTPDownloadFile(url, local_pathname, size,
-                checksum, progressCB)
+                                              checksum, progressCB)
                 log.debug("finished GSIHTTPDownload")
 
             else:
                 log.debug("url does not start with https")
                 my_identity = GetDefaultIdentityDN()
                 DataStore.HTTPDownloadFile(my_identity, url, local_pathname, size,
-                checksum, progressCB)
+                                           checksum, progressCB)
         except DataStore.DownloadFailed, e:
             log.exception("bin.VenueClient:get_ident_and_download: Got exception on download")
-            MessageDialog(None, "The file could not be downloaded", "Download Error", style = wxOK | wxICON_ERROR)
+            wxCallAfter(MessageDialog, None, "The file could not be downloaded", "Download Error",  wxOK | wxICON_ERROR)
             
     def UploadPersonalFiles(self, fileList):
         """
@@ -1119,7 +1130,7 @@ class VenueClientUI(wxApp, VenueClient):
         def progressCB(filename, sent, total, file_done, xfer_done,
             dialog = dlg):
             wxCallAfter(dialog.SetProgress, filename, sent, total,
-            file_done, xfer_done)
+                        file_done, xfer_done)
             return dialog.IsCancelled()
 
         #
@@ -1134,11 +1145,13 @@ class VenueClientUI(wxApp, VenueClient):
         #
         ul_args = (url, file_list, progressCB)
 
-        log.debug("Have args, creating thread, url: %s, files: %s" %
-        (url, file_list))
+        log.debug("Have args, creating thread, url: %s, files: %s", url, file_list)
 
         upload_thread = threading.Thread(target = method, args = ul_args)
 
+        #
+        # XXX is the wxCallAfter really needed here?
+        #
         wxCallAfter(upload_thread.start)
         log.debug("Started thread")
         dlg.ShowModal()
@@ -1179,7 +1192,9 @@ class VenueClientUI(wxApp, VenueClient):
 
         if error_msg is not None:
             log.exception("bin.VenueClient::get_ident_and_upload: Upload data error")
-            MessageDialog(None, error_msg, "Upload Files Error", style = wxOK | wxICON_ERROR)
+            wxCallAfter(MessageDialog,
+                        None, error_msg,
+                        "Upload Files Error", wxOK | wxICON_ERROR)
                
     def UploadFilesNoDialog(self, file_list):
         """
