@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.36 2004-02-23 21:54:09 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.37 2004-02-24 21:43:19 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.36 2004-02-23 21:54:09 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.37 2004-02-24 21:43:19 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -46,15 +46,15 @@ import getpass
 import sys
 import time
 
-from AccessGrid import Platform
-from AccessGrid import CertificateRepository
-from AccessGrid.hosting.pyGlobus import ProxyGen
-from AccessGrid import CRSClient
-from AccessGrid import Utilities
-
 import pyGlobus.sslutilsc
 
 from OpenSSL_AG import crypto
+
+from AccessGrid import Platform
+from AccessGrid import CertificateRepository
+from AccessGrid import Utilities
+from AccessGrid.Security.pyGlobus import ProxyGen
+from AccessGrid.Security import CRSClient
 
 log = logging.getLogger("AG.CertificateManager")
 

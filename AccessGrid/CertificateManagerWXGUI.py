@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.32 2004-02-23 16:50:40 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.33 2004-02-24 21:44:29 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.32 2004-02-23 16:50:40 olson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.33 2004-02-24 21:44:29 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -26,18 +26,23 @@ import os.path
 import re
 import shutil
 
-log = logging.getLogger("AG.CertificateManagerWXGUI")
+from wxPython.wx import *
 
 from OpenSSL_AG import crypto
-from wxPython.wx import *
-from AccessGrid.UIUtilities import MessageDialog, ErrorDialog, ErrorDialogWithTraceback
+
+from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
+from AccessGrid.UIUtilities import ErrorDialogWithTraceback
 
 from AccessGrid import CertificateManager
 from AccessGrid import CertificateRepository
-from AccessGrid.CertificateRequestTool import CertificateRequestTool, CertificateStatusDialog
-from AccessGrid.CRSClient import CRSClient, CRSClientInvalidURL, CRSClientConnectionFailed
-from AccessGrid.hosting.pyGlobus import ProxyGenExceptions
 
+from AccessGrid.CertificateRequestTool import CertificateRequestTool
+from AccessGrid.CertificateRequestTool import CertificateStatusDialog
+from AccessGrid.Security.CRSClient import CRSClient, CRSClientConnectionFailed
+from AccessGrid.Security.CRSClient import CRSClientInvalidURL
+from AccessGrid.Security.pyGlobus import ProxyGenExceptions
+
+log = logging.getLogger("AG.CertificateManagerWXGUI")
 #
 # Custom event types for the cert browser.
 #

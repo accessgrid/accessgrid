@@ -12,18 +12,17 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.25 2004-02-23 16:55:09 olson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.26 2004-02-24 21:45:00 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
 from wxPython.wizard import *
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
-from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid import CertificateRepository
 from AccessGrid import CertificateManager
 from AccessGrid import Toolkit
 from AccessGrid.CertificateRepository import RepoDoesNotExist, RepoInvalidCertificate
-from AccessGrid.CRSClient import CRSClient
+from AccessGrid.Security.CRSClient import CRSClient
 from AccessGrid import Platform
 from AccessGrid import NetUtilities, Utilities
 
