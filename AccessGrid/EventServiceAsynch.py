@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.34 2004-07-15 20:23:08 turam Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.35 2004-07-15 20:37:37 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.34 2004-07-15 20:23:08 turam Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.35 2004-07-15 20:37:37 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -636,8 +636,8 @@ class EventService:
     def SendHandler(self):
 	log.info("Entering SendHandler")
 
-	try:
-	    while self.inQEvt.isSet():
+	while self.inQEvt.isSet():
+	    try:
 		try:
 		    (channel, data) = self.inQueue.get()
                     if channel == 'quit':
@@ -650,8 +650,8 @@ class EventService:
 		if data is not None:
                     log.info("Calling _Distribute, in SendHandler.")
                     self._Distribute(channel, data)         
-	except:
-	    log.exception("Body of event distribution queue handler threw.")
+	    except:
+	        log.exception("Body of event distribution queue handler threw.")
 
 	log.info("Exiting SendHandler")
 
