@@ -120,6 +120,24 @@ class CertRequestWrapper:
                 fh = open(temp_path, "w")
                 fh.write(certText)
                 fh.close()
+
+                #
+                # Be more paranoid. Ensure the file was created.
+                #
+
+                try:
+                    fileInfo = os.stat(temp_path)
+                except OSError:
+                    log.exception("Installing certificate: temp file %s was not created", temp_path)
+                    ErrorDialog(self.browser,
+                                "The system could not create a temporary file for this certificate import.\n" +
+                                "Try restarting the software or rebooting your computer."
+                                "Import Failed")
+                    return
+
+                if fileInfo.st_size != len(certText):
+                    log.error("File %s write did not work: fileSize=%s certSize=%s",
+                              temp_file, fileInfo.st_size, len(certText))
                 
                 certMgr = self.browser.GetCertificateManager()
                 impCert = certMgr.ImportRequestedCertificate(temp_path)
@@ -148,7 +166,10 @@ class CertRequestWrapper:
                             "Import Failed")
 
         finally:
-            os.unlink(temp_path)
+            try:
+                os.unlink(temp_path)
+            except:
+                pass
 
     def CheckPrivateKey(self):
         """
