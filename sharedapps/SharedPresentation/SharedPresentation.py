@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.15 2003-11-06 20:43:13 eolson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.16 2003-11-07 00:30:43 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -689,6 +689,8 @@ class SharedPresentation:
         while self.running:
             print ".",
             time.sleep(1)
+        # Shutdown EventClient thread
+        self.eventClient.Stop()
     
 
     def OpenVenueData(self,venueDataUrl):
