@@ -86,6 +86,7 @@ if sys.platform == 'win32':
               '--no-compile')
 else:
     os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','build',
+              '--run-swig',
               '--with-modules=io,security,util',
               '--flavor=%s' % (flavor,))
     os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','install',
