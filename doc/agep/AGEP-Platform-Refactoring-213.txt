@@ -1,0 +1,168 @@
+=========================================
+Platform Support Design Changes for 2.1.3
+=========================================
+ 
+:version: $Revision: 1.1 $
+:author: Ivan R. Judson <judson@mcs.anl.gov>
+:status: Draft
+
+Abstract
+========
+
+This document proposes design modifications to the existing Core
+Toolkit Design to make it easier to support on the existing platforms,
+and port to new platforms. These changes involve identifying the use
+of platform specific interfaces, and encapsulating all uses in a
+platform specific module.
+
+Overview
+========
+
+In order to create a simple platform strategy, a few things need to be
+done. Most of the work is in refactoring, abstracting, creating
+facades, and structuring modules in a coherent way. The specific tasks
+involved are enumerated here, by module (all of these contain platform
+specific or platform tailored code):
+
+1. NetUtilities.py, NetUtilitiesLinux.py, NetUtilitiesWin32.py
+
+   - These are a very small body of code that should be integrated
+     somewhere else.
+
+2. Platform.py
+
+   - Currently the location for linux and windows specific code using
+     the simple naming convention of methods prefixed with platform,
+     e.g. LinuxInitUserenv or Win32InitUserEnv.
+
+3. ProcessManager.py, ProcessManagerUnix.py, ProcessManagerWin32.py
+
+   - need to conform to a unified naming solution
+   - might be able to be integrated into a simpler platform solution
+   - need a start detached process method/function
+   - then need to use that or the process manager everywhere, no more
+     spawns or forks, etc
+
+4. PersonalNode.py, PersonalNodePipes.py, PersonalNodeWin32.py
+
+   - needs to be integrated into the platform solution
+   - alot of code, might not integrate simply
+
+5. CertificateManager.py
+
+    - This is only in the cert_locations stuff, which should be abstracted?
+
+6. DataStoreClient.py
+
+    - the function/method pageFile is platform specific, so should be moved.
+
+7. VenueClientUIClasses.py
+
+    - wx bug
+    - path handling
+    - Network Init (should be moved, or fixed with initialization stuff)
+
+8. RoleAuthorization.py
+
+    - tree list control hacks for platform bugs, sigh
+
+9. Utilities.py
+
+    - auto bug reporter
+
+Summary of Modifications
+========================
+
+The model would generally be to have a single file for each platform, 
+named by platform, in the AccessGrid.Platform directory. The __init__.py
+file would do the appropriate direction on a per-execution basis. This
+would mean that all AccessGrid.Platform.*.py files would be installed on
+all platforms. There is no special handling necessary.
+
+First we would refactor the code to combine theses files:
+
+Linux.py
+
+  - parts of Platform.py
+  - ProcessManagerUnix.py
+  - PersonalNodePipes.py
+  - the network initialization parts of VenueClientUIClasses.py
+  - NetUtilitiesLinux.py
+
+Win32.py
+
+  - parts of Platform.py
+  - ProcessManagerWin32.py
+  - PersonalNodeWin32.py
+  - the network initialization parts of VenueClientUIClasses.py
+  - NetUtilitiesWin32.py
+
+Resulting use of these interfaces should be cleaned up in the files
+identified above, with the exception of the CertificateManager.py file, 
+which will be updated as part of the general core refactoring in support of
+using the latest pyGlobus and GT 2.4.3.
+
+Module Organization
+-------------------
+
+- AccessGrid
+   
+  - Platform
+
+    - __init__.py
+
+    - Linux.py
+
+    - Win32.py
+
+    - Darwin.py (Soon)
+
+Security Issues
+===============
+
+None, this set of modifications should in no way affect the security
+of the system.
+
+Interoperability Issues
+=======================
+
+The refactoring in this proposal should not affect the
+interoperability of the client with servers and services. This is an
+internal refactoring.
+
+Related AGEPs
+=============
+
+- Core Toolkit Design Changes for 2.1.3 AGEP-???
+- The Usage Logging AGEP.
+- The Initialization AGEP.
+- The Venue Client Refactoring AGEP.
+
+References
+==========
+
+1. Design Patterns: Elements of Reusable Object-Oriented Software, Erich 
+   Gamma, Richard Helm, Ralph Johnson, John Vlissides. Addison-Wesley 
+   Professions Computing Series, Addison Wesley Longman, Inc, Reading, MA, 
+   1995.
+2. `Python Enhancement Proposals`_
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
+
+
+.. _`Python Enhancement Proposals`: http://www.python.org/peps/

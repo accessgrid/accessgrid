@@ -1,0 +1,190 @@
+-----------------------------------------------
+Firewall Configuration Information for AGTk 2.0
+-----------------------------------------------
+
+:author: Ivan R. Judson
+:status: Draft
+:contact: ag-info@mcs.anl.gov
+:copyright: University of Chicago, 2003
+:date: 04-Dec-2003
+
+Abstract
+--------
+
+This document specifies what firewall configuration options need to be 
+considered to use the Access Grid in a firewalled network environment. 
+Specific firewall solutions are not addressed in this document.
+
+Copyright
+---------
+
+This document falls under the AGTkPL.
+
+Discussion
+----------
+
+The Access Grid Toolkit provides distributed collaboration system with
+parts that communicate over both the local area and wide area
+network. In order to function properly the various parts of the system
+need to be able to initiate and use network connections in various
+directions (both incoming and outgoing). The term connection refers to a 
+GSI Secured TCP Socket.
+
+For the streaming media, which is carried via RTP, two ports are
+required. The first (even numbered) port is the data port, the next
+odd port (first port + 1) is used for RTP Control data.
+
+In the current version of the toolkit, the network interfaces are
+served via SOAP. 
+
+The minimal set of ports that need to be configured to allow access to 
+server interfaces includes:
+
+================  ===============
+Service		  Default Port(s)
+================  ===============
+Venue Server	  8000, 8002, 8004, 8006
+Beacon Server	  (233.4.200.21:10002,10004), beacon.dast.nlanr.net:10004
+================  ===============
+
+Additionally, these optional interfaces provide richer collaboration:
+
+================= ===============
+Service		  Default Port(s)
+================= ===============
+Venue Client [*]_ 1 dynamically assigned
+Bridge Server	  Each stream uses a statically configured or dynamically assigned port 
+================= ===============
+
+These services make no *wide area* network connections, but do require any 
+firewall on the local machine be configured to allow access [*]_.
+
+================== ===============
+Service		   Default Port(s)
+================== ===============
+Services	   one dynamically assigned port per service
+Service Manager	   11000
+Node Service	   12000 and 1 dynamically assigned port
+================== ===============
+
+.. [*] Disabling incoming connections to the Venue Client is possible and doesn't significantly hinder collaboration. Personal data sharing is not possible if incoming connections are not allowed.
+
+.. [*] Host based firewalls like Microsofts XP Firewall will interfere not only with local area connectivity but it will also stop multicast from working properly. Currently, the best advice is to turn the firewall off.
+
+Service Details
+'''''''''''''''
+
+- Venue Server (defaults to port 8000, 8002, 8004, 8006)
+
+  The venue server listens for incoming connections on four ports, which
+  are configurable. These ports are for incoming connections only, there
+  are no outbound connections from the venue server.
+
+- Bridge Server (multiple ports used)
+
+  The bridge server can use either statically assigned ports for the
+  media bridges it starts, or it can dynamically assign the ports for
+  media bridges. 
+
+- Beacon Server (one multicast group, one outgoing connection)
+  
+  The beacon server uses one multicast group and one outbound
+  connection to a reporting server. These are both configurable, but
+  the defaults are the correct configuration to be a part of the
+  Access Grid Multicast Beacon infrastructure.
+
+Multicast
+'''''''''
+
+In order for audio and video to flow among users multicast needs to be able to be allowed through the firewall. There is currently no set of static configurations that are used for multicast (although they could be used, if needed), so ideally the firewall would allow data from any group *that is subscribed to from
+inside* the firewall to come through the firewall from the outside. 
+
+The media tools we use have two different behaviors for how they send data. For audio the source port for the data is identical to the destination port for the data. For video, the source port for the data is selected randomly.
+
+Example of a Secured Static Environment
+---------------------------------------
+
+This is an example of a small installation configured for a paranoid
+network configuration. The configuration has only three venues to keep
+the example simple.
+
+To keep this example even more simple, the bridge, data and venue
+server are all running on the same machine, *host.domain*.
+
+Meeting Room Venue
+''''''''''''''''''
+
+============ ===================== ============
+Media        Multicast Groups	   Bridge Ports
+============ ===================== ============
+static video 224.1.2.3/1234,1235   9000,9001
+static audio 224.1.2.3/1236,1237   9002,9003
+============ ===================== ============
+
+Laboratory #1 Venue
+'''''''''''''''''''
+
+============ ===================== ============
+Media        Multicast Groups	   Bridge Ports
+============ ===================== ============
+static video 224.1.2.4/1234,1235   9004,9005
+static audio 224.1.2.4/1236,1237   9006,9007
+============ ===================== ============
+
+Laboratory #2 Venue
+'''''''''''''''''''
+
+============ ===================== ============
+Media        Multicast Groups	   Bridge Ports
+============ ===================== ============
+static video 224.1.2.5/1234,1235   9008,9009
+static audio 224.1.2.5/1236,1237   9010,9011
+============ ===================== ============
+
+Beacon Service
+''''''''''''''
+
+- running on host.domain
+- Multicast Group: (233.4.200.21, 10002/10003)
+- Outbound TCP: beacon.dast.nlanr.net:10004
+
+Summary Configuration
+---------------------
+
+Incoming **to host.domain** from outside the firewall:
+
+- Ports: 8000, 8002, 8004, 8006, 9000-9011
+
+Multicast Groups (All hosts on the local network should be able to send and 
+receive traffic via these multicast groups):
+
+- (224.1.2.3:1234,1235,1236,1237)
+- (224.1.2.4:1234,1235,1236,1237)
+- (224.1.2.5:1234,1235,1236,1237)
+- (233.4.200.21:10002,10003)
+
+Conclusion
+----------
+
+This document describes the firewall requirements for the AGTk 2.0 software,
+for both clients and services. For more information please see:
+
+- `The AGTk Home Page`_
+- `The Access Grid Project Home Page`_
+- `The Access Grid Documentation Project Home Page`_
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
+
+.. _`The AGTk Home Page`: http://www.mcs.anl.gov/fl/research/accessgrid
+
+.. _`The Access Grid Project Home Page`: http://www.accessgrid.org/
+
+.. _`The Access Grid Documentation Project Home Page`: http://www.accessgrid.org/agdp

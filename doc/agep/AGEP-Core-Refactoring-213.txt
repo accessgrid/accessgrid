@@ -1,0 +1,282 @@
+=====================================
+Core Toolkit Design Changes for 2.1.3
+=====================================
+ 
+:version: $Revision: 1.1 $
+:author: Ivan R. Judson <judson@mcs.anl.gov>
+:status: Draft
+
+Abstract
+========
+
+This document proposes design modifications to the existing Core Toolkit
+Design to make it more solid, with a factoring that allows an
+easier transition to GT3 or other network interfaces. It applies well
+known patterns, leveraging the pattern terminology to keep the code as
+clear as possible and also abstracts the persistence solution for the
+venues.
+
+Overview
+========
+
+There are a few reorganizations that can be done within the AG
+module. These will result in a reasonably clean and simple set of
+logical sub-modules with interfaces defined among them. The
+separations that are proposed in this enhancement include:
+
+1. Separating interfaces and implementations
+
+  The proposed naming is for interfaces to have the name format:
+
+  - **<Network Protocol><Class Name>I**, or
+  - **<Network Protocol><Class Name>Interface**
+
+  (e.g. SOAPVenueServerI or SOAPVenueServerInterface)
+  then the Venue Server implementation can retain the name
+  VenueServer. This allows the creation of many interfaces with clear
+  naming, for the same implementation object and the additional syntax
+  is retained where it is needed for clarification.
+
+2. Creating a SOAP interface base class with two methods:
+
+  - a constructor that registers the implementation with interface and
+    the interface with the implementation, and 
+  - an authorization method that is used by default, the proposed
+    policy is that the default authorization method disallow incoming
+    actions.
+ 
+3. Creating an AccessGrid.security package
+ [ Moving this to Authorization/Security AGEP]
+
+  This creates a sub-package space to allow us to expand and adopt other 
+  possible security solutions as they become reasonable.
+
+  - putting authorization in AccessGrid.security 
+  - putting proxy management in an AccessGrid.security.pyGlobus
+    package
+
+4. Creating an AccessGrid.logFactory module
+[Separable Task, it's own AGEP?]
+
+  This module defines the toolkit logging mechanisms so that:
+
+  - We don't have to distribute the logging module under 2.2
+  - We can use the logging module under 2.3
+  - We have a place to incorporate other logging solutions (netLogger)
+    abstractly
+
+5. Implement the memento pattern for venues
+[Separable Task, but logically part of the core...]
+
+  - create a config.ini persistor (to be followed later with other persistors)
+    This should take mementos and persist them, read them back in
+  - create Venue.GetState(self) => Memento
+  - create CreateVenueFromMemento(memento) => Venue
+
+6. Move AppDatabase from Toolkit to VenueClient
+   [Done]
+  
+  This is the appropriate place for it to go.
+
+7. Update to latest version of pyGlobus
+8. Update to GT2.4.3 on Linux, Mac OS X
+9. Update to GT2.4.3+ on Windows
+  
+  Updating these pieces of software should make it easier for us to
+  maintain, and it will make it easier to migrate in the future.
+
+10. Add linux mime types / mail cap handling
+   
+  This will make the linux version match the windows functionality.
+
+11. Add linux init user environment functionality
+
+  This will make the linux version match the windows functionality.
+
+12. Sort platform stuff into modules more cleanly
+[ Needs it's own AGEP]
+
+  There are currently three platform specific modules:
+  
+  - netutils (needs to get integrated into a solution for platform
+  - platform
+  - process manager
+    - need a start detached process method/function
+    - then need to use that or the process manager everywhere, no more
+      spawns or forks, etc
+  - personalnode
+
+
+  - certificate manager
+
+    - This is only in the cert_locations stuff, which should be abstracted?
+
+  - datastore client
+    - the function/method pageFile is platform specific, so should be moved.
+
+  - venueclient ui classes
+    - wx bug
+    - path handling
+    - Network Init (should be moved, or fixed with initialization stuff)
+
+  - role authorization
+    - tree list control hacks for platform bugs, sigh
+
+  - utilities
+    - auto bug reporter
+
+  ### Work to be done here, thinking and writing ###
+
+Summary of Modifications
+========================
+
+Modified:
+
+These objects need to have their interfaces separated from the implementation.
+
+- Venue Server
+- Venue
+- AG Node Service
+- AG Service Manager
+- AG Service
+- Toolkit.Application
+- VenueClient
+
+Removed:
+
+- Service Object
+- Service Base
+- Client
+- Server
+- AGGSISOAP
+
+New:
+
+- SOAPInterface
+- SOAPVenueServerI
+- SOAPVenueI
+- SOAPAGNodeServiceI
+- SOAPAGServiceManagerI
+- SOAPServiceI
+- LogFactory
+- ConfigINIPersistor
+- VenueMemento(Memento)
+
+Module Organization
+-------------------
+
+- AccessGrid
+   
+  - hosting
+
+    - pyGlobus [Nothing required now]
+
+      - tests
+
+        - tclient.py
+        - test_invalid.py
+        - tserver.py
+
+    - <pyGridware> (Future Addition)
+
+  - security
+                
+    - AccessControl.py
+    - Authorization.py
+
+  - logFactory.py [ to implement the logging Factory inside our toolkit ]
+ 
+- SOAPpy [standard SOAPpy install]
+
+  - wstools [standard wstools install
+
+- pyGlobus [standard pyGlobus install]
+        
+   
+Deprecated Packages
+-------------------
+
+- pyOpenSSL_AG module
+- logging module
+- pyDNS module
+- putty program
+- openssl libraries
+
+Specifications
+==============
+
+SOAPInterface:
+    def __init__(self, impl):
+    def _authorize(self, *args, **kw):
+
+VenueServer
+
+  in the __init__ method, this object creates a SOAPVenueServerI object 
+  passing self. This effectively creates a single SOAP interface 
+  (self.interface), later when we support multiple interfaces per object this
+  should be removed and replaced with self.interfaces = list() and 
+  AddInterface(self, interface).
+
+Venue
+
+  in the __init__ method, this object creates a SOAPVenueI object 
+  passing self. This effectively creates a single SOAP interface 
+  (self.interface), later when we support multiple interfaces per object this
+  should be removed and replaced with self.interfaces = list() and 
+  AddInterface(self, interface).
+
+Security Issues
+===============
+
+None, this set of modifications should in no way affect the security
+of the system.
+
+Interoperability Issues
+=======================
+
+The refactoring in this proposal should not affect the
+interoperability of the client with servers and services. This is an
+internal refactoring.
+
+Related AGEPs
+=============
+
+- The Shared Application AGEP.
+- The Usage Logging AGEP.
+- The Initialization AGEP.
+- The Venue Client Refactoring AGEP.
+- The Authorization Refactoring AGEP.
+
+Implementation
+==============
+
+To Be written
+
+References
+==========
+
+1. Design Patterns: Elements of Reusable Object-Oriented Software, Erich 
+   Gamma, Richard Helm, Ralph Johnson, John Vlissides. Addison-Wesley 
+   Professions Computing Series, Addison Wesley Longman, Inc, Reading, MA, 
+   1995.
+2. `Python Enhancement Proposals`_
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
+
+
+.. _`Python Enhancement Proposals`: http://www.python.org/peps/
