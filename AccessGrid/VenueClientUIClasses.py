@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.107 2003-03-25 21:30:59 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.108 2003-03-25 21:46:22 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -844,21 +844,15 @@ class VenueList(wxScrolledWindow):
         self.grandParent = grandParent
         self.doorsAndLabelsList = []
         self.exitsDict = {}
-        self.Layout()
+        self.__doLayout()
         self.parent = parent
         self.EnableScrolling(true, true)
         self.SetScrollRate(1, 1)
                       
-    def Layout(self):
+    def __doLayout(self):
 
         self.box = wxBoxSizer(wxVERTICAL)
-        self.column = wxFlexGridSizer(cols=1, vgap=0, hgap=0)
-        self.column.AddGrowableCol(0)
-        self.column.AddGrowableCol(1)
-        self.box.Add(self.column, 1, wxEXPAND)
-       
         self.SetSizer(self.box)
-        self.box.Fit(self)
         self.SetAutoLayout(1)
                
     def GoToNewVenue(self, event):
@@ -880,28 +874,21 @@ class VenueList(wxScrolledWindow):
         self.doorsAndLabelsList.sort(lambda x, y: cmp(x.GetName(), y.GetName()))
         index = self.doorsAndLabelsList.index(panel)
                       
+        self.box.Insert(index, panel, 0, wxEXPAND)
         #self.column.Insert(index, panel, 1, wxEXPAND)
-        self.column.Insert(index, panel, 1, wxEXPAND)
+
         id = panel.GetButtonId()
 
         self.exitsDict[id] = profile
-                
-        
-        #EVT_BUTTON(self, id, self.GoToNewVenue)
-        
-        #self.parent.Layout()
-        #self.Layout()
+        self.FitInside()
         self.EnableScrolling(true, true)
-        self.box.SetVirtualSizeHints(self)
-        self.grandParent.FixDoorsLayout()
-        # wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
-                      
+                            
     def RemoveVenueDoor(self):
         print '----------------- remove venue door'
 
     def CleanUp(self):
         for item in self.doorsAndLabelsList:
-            self.column.Remove(item)
+            self.box.Remove(item)
             item.Destroy()
 
         self.Layout()
@@ -925,19 +912,14 @@ class ExitPanel(wxPanel):
     def __init__(self, parent, id, profile):
         wxPanel.__init__(self, parent, id, wxDefaultPosition, \
 			 size = wxSize(400,200), style = wxDOUBLE_BORDER)
-        #self.id = NewId()
         self.id = id
         self.parent = parent
         self.SetBackgroundColour(wxColour(190,190,190))
         self.bitmap = icons.getDefaultDoorClosedBitmap()
         self.bitmapSelect = icons.getDefaultDoorOpenedBitmap()
         self.button = wxStaticBitmap(self, self.id, self.bitmap, wxPoint(0, 0), wxDefaultSize, wxBU_EXACTFIT)
-       	#self.button.SetBitmapSelected(bitmapSelect)
-	#self.button.SetBitmapFocus(bitmapSelect)
-	#self.button.SetToolTipString(profile.description)
-        #self.label = wxStaticText(self, -1, profile.name)
         self.SetToolTipString(profile.description)
-        self.label = wxTextCtrl(self, self.id, "", size= wxSize(30,10),
+        self.label = wxTextCtrl(self, self.id, "", size= wxSize(0,10),
                                 style = wxNO_BORDER|wxTE_MULTILINE|wxTE_RICH)
         self.label.SetValue(profile.name)
         self.label.SetBackgroundColour(wxColour(190,190,190))
