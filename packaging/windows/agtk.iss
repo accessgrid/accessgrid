@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.15 2003-08-22 20:15:03 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.16 2003-08-23 01:25:47 judson Exp $
 ;
 
 #define SourceDir "C:\Software\AccessGrid\AccessGrid"
@@ -45,8 +45,8 @@ Compression=zip/9
 MinVersion=0,5.0.2195
 LicenseFile=COPYING.txt
 DisableDirPage=false
-DefaultGroupName={#AppNameShort} {#AppVersionShort}
-DefaultDirName={pf}\{#AppNameShort} {#AppVersionShort}
+DefaultGroupName={#AppName}
+DefaultDirName={pf}\{#AppName}
 UsePreviousAppDir=false
 UserInfoPage=false
 WindowVisible=false
@@ -73,7 +73,7 @@ UninstallDisplayIcon={app}\install\agicons.exe
 DisableReadyPage=true
 UsePreviousSetupType=false
 UsePreviousTasks=false
-UsePreviousGroup=false
+UsePreviousGroup=true
 
 [Files]
 ; The Python Modules
