@@ -2,7 +2,7 @@
 Finishing Shared Applications
 ===============================
 
-:version: $Revision: 1.3 $
+:version: $Revision: 1.4 $
 :author: Susanne Lefvert <lefvert@mcs.anl.gov>
 :status: Draft
 :contact: ag-tech@mcs.anl.gov
@@ -32,6 +32,8 @@ Methods:
     **Modifications to AppService.py/AppObject interface:**
 
     * (privateId, publicId) Join(ClientConnectionId = None)
+    
+    * Removed GetComponents(privateId)
 
     **Additions to AppService.py/AppObjectImpl interface:**
 
@@ -40,27 +42,28 @@ Methods:
     * [ParticipantDescription] GetParticipants(privateId)
 
     * void SetParticipantStatus(privateId, statusString)
+   
+    * void SetParticipantProfile(privateId, profile)
 
     * [key] GetDataKeys(privateId)
 
-    * {key:value} GetAllData(privateId)
-
     * AppState GetState(privateId)
+
 
 New Events:
 '''''''''''
 
-    New events will be introduced in AppService.py
+    New events will be introduced in Events.py
 
     * PARTICIPANT_JOIN (distributed in Join method)
     * PARTICIPANT_LEAVE (distributed in Leave method)
-    * UPDATE_PARTICIPANT_STATUS (distributed in SetParticipantStatus method)
+    * UPDATE_PARTICIPANT (distributed in SetParticipantStatus method)
     * SET_DATA (distributed in SetData method)
 
 New Descriptions:
 '''''''''''''''''
 
-    New descriptions will be introduced in AppService.py
+    New descriptions will be introduced in Descriptions.py
 
     AppParticipantDescription(publicId, clientProfile, status)
 
@@ -79,9 +82,7 @@ New Descriptions:
 Reference Implementation
 -------------------------
 
-    Sample code can be found at [2]. 
-
-    **Note:** Currently, not reflecting the design in this document. Needs to be updated. 
+    Sample code can be found in CVS. 
 
 Relevant classes:
 '''''''''''''''''
@@ -121,6 +122,8 @@ Rationale
 Interoperability Issues
 ------------------------
 
+    I removed **GetComponents** from the interface. Use **GetParticipans** instead.  If this results in problems, it can easily be added again.  
+
     ========== =========== ===========
         .      Old Server  New Server
     ========== =========== ===========
@@ -129,7 +132,6 @@ Interoperability Issues
     ========== =========== ===========
 
     1. Already implemented shared applications will not be affected by the changes described.  However, to be displayed as a participant in an application monitor, the shared application has to include a client connection ID when calling the Join method.  Also, if more status values other than 'connected' are desired for participants, calls to the SetParticipantStatus method have to be added.
-
 
     2. New clients calling Join(...) on an old server, will cause an exception.  This can be solved by doing a try except on the Join call, if it fails, try to join the application without a parameter.
 
@@ -158,6 +160,11 @@ Open Issues
 
     However, this might be changed to use the same authorization as the rest of the toolkit.
            
+3. **Should we implement a heartbeat mechanism that disconnects clients if the application service goes down?** 
+
+4. **Should components include participantdescriptions instead of just public id?**
+   
+   Currently, components includes participantdescriptions and can be accessed via the GetParticipants call. GetComponents are removed to avoid redundant code.  
 
 Application distribution information
 =====================================
@@ -165,7 +172,7 @@ Application distribution information
 Overview
 ---------
 
-    If a venue participant does not have a shared application installed, he or she should be able to find a URL to the shared application installer, possibly in the properties of the application (see feature request in Bugzilla, [3]). This would allow a participant to download and install an application to use in the venue.
+    If a venue participant does not have a shared application installed, he or she should be able to find a URL to the shared application installer, possibly in the properties of the application (see feature request in Bugzilla, [2]). This would allow a participant to download and install an application to use in the venue.
 
 Design
 -------
@@ -201,7 +208,7 @@ Add Application User Scenario
 Overview
 ---------
 
-    Current user scenario for adding applications seem confusing to participants. It is easy to add several shared applications that are named the same, consequently making it hard to know which session to join (see feature request in Bugzilla, [4]).  
+    Current user scenario for adding applications seem confusing to participants. It is easy to add several shared applications that are named the same, consequently making it hard to know which session to join (see feature request in Bugzilla, [3]).  
 
 Design
 -------
@@ -236,9 +243,8 @@ Implementation
 References
 ===========
     .. [1] http://bugzilla.mcs.anl.gov/accessgrid/show_bug.cgi?id=322
-    .. [2] Reference implementation: http://www-unix.mcs.anl.gov/~lefvert/AGEP/AGEP.html (AGPE Shared Application Changes for AGTk 2.0 - App Monitor)
-    .. [3] http://bugzilla.mcs.anl.gov/accessgrid/show_bug.cgi?id=317
-    .. [4] http://bugzilla.mcs.anl.gov/accessgrid/show_bug.cgi?id=311
+    .. [2] http://bugzilla.mcs.anl.gov/accessgrid/show_bug.cgi?id=317
+    .. [3] http://bugzilla.mcs.anl.gov/accessgrid/show_bug.cgi?id=311
 
 
 Copyright
