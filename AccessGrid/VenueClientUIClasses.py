@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.287 2003-09-24 14:02:54 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.288 2003-09-24 18:22:02 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.287 2003-09-24 14:02:54 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.288 2003-09-24 18:22:02 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -453,7 +453,7 @@ class VenueClientFrame(wxFrame):
         self.venueAddressBar.SetOrientation(wxLAYOUT_HORIZONTAL)
         self.venueAddressBar.SetAlignment(wxLAYOUT_TOP)
 
-        self.TextWindow.SetDefaultSize(wxSize(1000, 80))
+        self.TextWindow.SetDefaultSize(wxSize(1000, 100))
         self.TextWindow.SetOrientation(wxLAYOUT_HORIZONTAL)
         self.TextWindow.SetAlignment(wxLAYOUT_BOTTOM)
         self.TextWindow.SetSashVisible(wxSASH_TOP, TRUE)
@@ -2349,27 +2349,32 @@ class ContentListPanel(wxPanel):
         self.personalDataDict.clear()
  
 class TextClientPanel(wxPanel):
-    aboutText = """PyText 1.0 -- a simple text client in wxPython and pyGlobus.
-    This has been developed as part of the Access Grid project."""
-    bufferSize = 128
-    venueId = None
-    location = None
-    Processor = None
+    
     ID_BUTTON = wxNewId()
-    textMessage = ''
 
     def __init__(self, parent, id, application):
         wxPanel.__init__(self, parent, id)
+
+        # Not used anymore
+        
+        #self.aboutText = """PyText 1.0 -- a simple text client in wxPython and pyGlobus.
+        #This has been developed as part of the Access Grid project."""
+        #self.bufferSize = 128
+        #self.venueId = None
+        #self.location = None
+        #self.Processor = None
+        #self.textMessage = ''
+
         self.textOutputId = wxNewId()
         self.app = application
         self.TextOutput = wxTextCtrl(self, self.textOutputId, "",
                                      style= wxTE_MULTILINE|wxTE_READONLY|wxTE_AUTO_URL|wxTE_RICH)
         EVT_TEXT_URL(self, self.TextOutput.GetId(), self.OnUrl)
-        self.label = wxStaticText(self, -1, "Your message:")
+        self.label = wxStaticText(self, -1, "Your \nmessage:")
         self.display = wxButton(self, self.ID_BUTTON, "Display", style = wxBU_EXACTFIT)
         self.textInputId = wxNewId()
-        self.TextInput = wxTextCtrl(self, self.textInputId, "",
-                                    style= wxTE_PROCESS_ENTER)
+        self.TextInput = wxTextCtrl(self, self.textInputId, "", size = wxSize(1000, 40),
+                                    style= wxTE_PROCESS_ENTER|wxTE_MULTILINE)
         self.TextInput.SetToolTipString("Write your message here")
         self.__set_properties()
         self.__do_layout()
