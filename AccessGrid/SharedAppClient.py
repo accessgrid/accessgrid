@@ -33,17 +33,6 @@ class SharedAppClient:
         self.__dataCache = {}
         self.__callbackTable = []
 
-    def CheckServer(self, methodName):
-        '''
-        Checks to see if server is running latest code that supports the new client.
-        '''
-        handle = Client.Handle(self.__appUrl)
-        
-        if not handle.Implements(methodName):
-            self.log.info("SharedAppClient.CheckServer: Server %s is running old software; Use Join without argument"%(self.__appUrl))
-            return 0
-
-        return 1
         
     def InitLogging(self, debug = 0, log = None):
         """
@@ -67,7 +56,7 @@ class SharedAppClient:
         
         hdlr = Log.StreamHandler()
         hdlr.setFormatter(Log.GetFormatter())
-        Log.HandleLogger(hdlr, Log.GetDefaultLoggers())
+        Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
         
         self.log = Log.GetLogger(self.__appName)
         Log.SetDefaultLevel(self.__appName, Log.DEBUG)
@@ -105,18 +94,19 @@ class SharedAppClient:
         self.__appUrl = appServiceUrl
         
         # Get a handle to the application service in the venue
-        self.__appProxy = Client.Handle(appServiceUrl).GetProxy()
+        self.__appProxy = Client.SecureHandle(appServiceUrl).GetProxy()
                 
 
         try:
             # Join the application object with your client profile
-            if self.CheckServer("GetState"):
-                (self.__publicId, self.__privateId) = self.__appProxy.Join(clientProfile)
-                
-            else:                
+            (self.__publicId, self.__privateId) = self.__appProxy.Join(clientProfile)
+        except Client.MethodNotFound, e:
+            try:
                 (self.__publicId, self.__privateId) = self.__appProxy.Join()
                 self.log.info("SharedAppClient.Connect: Service at %s is running old software"
                           %self.__appUrl)
+            except:
+                self.log.exception("SharedAppClient.Connect: Failed to join service at %s"%self.__appUrl)
         except:
             self.log.exception("SharedAppClient.Connect: Failed to join service at %s"%self.__appUrl)
         
@@ -283,12 +273,11 @@ class SharedAppClient:
         *state* Application state.
         '''
 
-        if not self.CheckServer("GetState"):
-            self.log.exception("SharedAppClient.GetApplicationState: Failed to get application state")
-            raise "The server you are connecting to is running old software. This method is not implemented in that version." 
-                        
         try:
             state = self.__appProxy.GetState(self.__privateId)
+        except Client.MethodNotFound, e:
+            self.log.exception("SharedAppClient.GetApplicationState: Failed to get application state")
+            raise "The server you are connecting to is running old software. This method is not implemented in that version." 
         except:
             self.log.exception("SharedAppClient.GetApplicationState: Failed to get state")
             raise "Failed to get application state" 
@@ -307,12 +296,11 @@ class SharedAppClient:
         # Check GetState instead of GetId; GetId exists on old servers but with no
         # private id as argument.
 
-        if not self.CheckServer("GetState"):
-            self.log.exception("SharedAppClient.GetApplicationID: Failed to get application ID")
-            raise "The server you are connecting to is running old software. This method is not implemented in that version." 
-        
         try:
             id = self.__appProxy.GetId(self.__privateId)
+        except Client.MethodNotFound, e:
+            self.log.exception("SharedAppClient.GetApplicationID: Failed to get application ID")
+            raise "The server you are connecting to is running old software. This method is not implemented in that version." 
         except:
             self.log.exception("SharedAppClient.GetApplicationId: Failed to get application ID")
             raise "Failed to get application ID"
@@ -328,12 +316,11 @@ class SharedAppClient:
         *participants* List of AppParticipantDescriptions.
         '''
 
-        if not self.CheckServer("GetParticipants"):
-            self.log.exception("SharedAppClient.GetParticipants: Failed to get participants")
-            raise "The server you are connecting to is running old software. This method is not implemented in that version." 
-                    
         try:
             participants = self.__appProxy.GetParticipants(self.__privateId)
+        except Client.MethodNotFound, e:
+            self.log.exception("SharedAppClient.GetParticipants: Failed to get participants")
+            raise "The server you are connecting to is running old software. This method is not implemented in that version." 
                            
         except:
             self.log.exception("SharedAppClient.GetParticipants: Failed to participants")
@@ -350,12 +337,11 @@ class SharedAppClient:
         *components* List of public IDs for each instance connected to the application service.
         '''
 
-        if not self.CheckServer("GetComponents"):
+        try:
+            components = self.__appProxy.GetComponents(self.__privateId)
+        except Client.MethodNotFound, e:
             self.log.exception("SharedAppClient.GetComponents: Failed to get components")
             raise "The server you are connecting to is running old software. This method is not implemented in that version." 
-        
-        #try:
-        components = self.__appProxy.GetComponents(self.__privateId)
                            
         #except:
         #self.log.exception("SharedAppClient.GetComponents: Failed to get components")
@@ -371,12 +357,12 @@ class SharedAppClient:
         
         *keys* List of data keys.
         '''
-        if not self.CheckServer("GetDataKeys"):
-            self.log.exception("SharedAppClient.GetDataKeys: Failed to get data keys")
-            raise "The server you are connecting to is running old software. This method is not implemented in that version." 
-                
+
         try:
             keys = self.__appProxy.GetDataKeys(self.__privateId)
+        except Client.MethodNotFound, e:
+            self.log.exception("SharedAppClient.GetDataKeys: Failed to get data keys")
+            raise "The server you are connecting to is running old software. This method is not implemented in that version." 
 
         except:
             self.log.exception("SharedAppClient.GetDataKeys: Failed to get data keys")
@@ -393,12 +379,11 @@ class SharedAppClient:
         *status* Status string
         '''
 
-        if not self.CheckServer("SetParticipantStatus"):
-            self.log.exception("SharedAppClient.SetParticipantStatus: Failed to set participant status")
-            raise "The server you are connecting to is running old software. This method is not implemented in that version." 
-        
         try:
             self.__appProxy.SetParticipantStatus(self.__privateId, status)
+        except Client.MethodNotFound, e:
+            self.log.exception("SharedAppClient.SetParticipantStatus: Failed to set participant status")
+            raise "The server you are connecting to is running old software. This method is not implemented in that version." 
         except:
             self.log.exception("SharedAppClient.SetParticipantStatus: Failed to set status")
             raise "Failed to set participant status" 
@@ -412,12 +397,11 @@ class SharedAppClient:
         *profile* Your ClientProfile.
         '''
 
-        if not self.CheckServer("SetParticipantProfile"):
-            self.log.exception("SharedAppClient.SetParticipantProfile: Failed to set participant profile")
-            raise "The server you are connecting to is running old software. This method is not implemented in that version." 
-        
         try:
             self.__appProxy.SetParticipantProfile(self.__privateId, profile)
+        except Client.MethodNotFound, e:
+            self.log.exception("SharedAppClient.SetParticipantProfile: Failed to set participant profile")
+            raise "The server you are connecting to is running old software. This method is not implemented in that version." 
         except:
             self.log.exception("SharedAppClient.SetParticipantProfile: Failed to set profile")
             raise "Failed to set participant profile"
