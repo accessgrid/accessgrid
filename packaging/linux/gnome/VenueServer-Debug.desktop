@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Venue Server (Debug)
+Comment=Run the venue server software in debug mode
+TryExec=VenueServer.py
+Exec=VenueServer.py -d
+Icon=/usr/share/AccessGrid/ag.ico
+Terminal=1
+Type=Application

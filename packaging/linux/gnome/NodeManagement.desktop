@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Node Manager
-Comment=Manage your Access Grid Node
+Comment=Manage AG nodes
 TryExec=NodeManagement.py
 Exec=NodeManagement.py
 Icon=/usr/share/AccessGrid/ag.ico

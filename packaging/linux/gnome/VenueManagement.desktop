@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Venue Manager
-Comment=Manage your Access Grid Venue
+Comment=Manage venue servers
 TryExec=VenueManagement.py
 Exec=VenueManagement.py
 Icon=/usr/share/AccessGrid/ag.ico

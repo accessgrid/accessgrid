@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Venue Server
+Comment=Run the venue server software
+TryExec=VenueServer.py
+Exec=VenueServer.py
+Icon=/usr/share/AccessGrid/ag.ico
+Terminal=0
+Type=Application

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=AGTk License
+Comment=Read the software license under which the AGTk is distributed
+URL=/usr/share/doc/AccessGrid/COPYING.txt
+Icon=/usr/share/AccessGrid/ag.ico
+Terminal=0
+Type=Link
