@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.218 2003-09-18 19:05:54 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.219 2003-09-19 19:04:05 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -80,15 +80,33 @@ class VenueClientUI(VenueClientEventSubscriber):
     
     def __init__(self, startupDialog):
         self.__processArgs()
-        self.__setLogger()
-        self.frame = None
-        self.startupDialog = startupDialog
-        self.startupDialog.UpdateOneStep()
+
+        #
+        # Need to do this before logging is bootstrapped.
+        # However, since we don't have logging, we can't log
+        # an error. Bring up a dialog instead.
+        #
         if not os.path.exists(self.accessGridPath):
             try:
                 os.mkdir(self.accessGridPath)
             except OSError, e:
-                log.exception("bin.VenueClient::__init__: Could not create base path")
+                print "bin.VenueClient::__init__: Could not create base path"
+                MessageDialog(None,
+                              "Could not create user config path %s" % (self.accessGridPath),
+                              "Cannot initialize client",
+                              style = wxOK | wxICON_ERROR)
+                #
+                # Can't use OnExit because it assumes logging. Don't want to
+                # risk sys.exit() hanging.
+                #
+                os._exit(1)
+
+        self.__setLogger()
+
+        self.frame = None
+        self.startupDialog = startupDialog
+        self.startupDialog.UpdateOneStep()
+
         self.venueClient = VenueClient()
         self.venueClient.AddEventSubscriber(self)
         self.onExitCalled = false
