@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.15 2003-03-14 07:07:23 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.16 2003-03-14 14:34:37 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,10 +14,10 @@ import urllib
 import os
 import socket
 import time
+import logging
 
 try:     import win32process
 except:  pass
-
 
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
@@ -31,9 +31,12 @@ from AccessGrid import Utilities
 from AccessGrid.Platform import GetConfigFilePath, GetSystemConfigDir
 from AccessGrid import GUID
 
+log = logging.getLogger("AG.ServiceManager")
+
 class AGServiceManager( ServiceBase ):
     """
-    AGServiceManager : exposes local resources and configures services to deliver them
+    AGServiceManager : exposes local resources and configures services
+    to deliver them
     """
 
     def __init__( self ):
@@ -74,8 +77,9 @@ class AGServiceManager( ServiceBase ):
             self.authManager.SetAuthorizedUsers( authorizedUsers )
             self.__PushAuthorizedUserList()
         except:
-            print "AGServiceManager.SetAuthorizedUsers : ", sys.exc_type, sys.exc_value
+            log.exception("AGServiceManager.SetAuthorizedUsers.")
             raise faultType("AGServiceManager.SetAuthorizedUsers failed: " + str( sys.exc_value ))
+        
     SetAuthorizedUsers.soap_export_as = "SetAuthorizedUsers"
 
 
@@ -120,13 +124,16 @@ class AGServiceManager( ServiceBase ):
             for resource in self.resources:
                 if resourceToAssign.resource == resource.resource:
                     if resource.inUse == 1:
-                        print "** Resource is already in use ! ", resource.resource
-                        # should error out here later; for now, services aren't using the resources anyway
+                        log.debug("** Resource is already in use! : %s ",
+                                  resource.resource)
+                    # should error out here later; for now,
+                    # services aren't using the resources anyway
                     foundResource = 1
                     break
 
             if foundResource == 0:
-                    print "** Resource does not exist! ", resourceToAssign.resource
+                log.debug("** Resource does not exist! : %s ",
+                          resourceToAssign.resource)
 #FIXME - # should error out here later
 
         try:
@@ -182,8 +189,9 @@ class AGServiceManager( ServiceBase ):
             self.unregisteredServices[token] = ( pid, serviceDescription, serviceConfig )
 
         except:
-            print "Exception in AddService, other ", sys.exc_type, sys.exc_value
+            log.exception("Exception in AddService, retrieving service implementation.")
             raise sys.exc_value
+
     AddService.soap_export_as = "AddService"
 
     
@@ -231,12 +239,12 @@ class AGServiceManager( ServiceBase ):
                                 foundResource = 1
 
                         if foundResource == 0:
-                            print "** The resource used by the service can not be found !! ", service.resource.resource
+                            log.debug("** The resource used by the service can not be found !! : %s", service.resource.resource)
 
                     break
 
         except:
-            print "Exception in AGServiceManager.RemoveService ", sys.exc_type, sys.exc_value
+            log.exception("Exception in AGServiceManager.RemoveService.")
             exc = sys.exc_value
 
         #
@@ -260,8 +268,9 @@ class AGServiceManager( ServiceBase ):
             for service in self.services.values():
                 self.RemoveService( service )
         except:
-            print "Exception in AGServiceManager.RemoveServices ", sys.exc_type, sys.exc_value
-            raise faultType("AGServiceManager.RemoveServices failed : " + str( sys.exc_value ) )
+            log.exception("Exception in AGServiceManager.RemoveServices.")
+            raise faultType("AGServiceManager.RemoveServices failed : "
+                            + str( sys.exc_value ) )
     RemoveServices.soap_export_as = "RemoveServices"
 
 
@@ -284,10 +293,10 @@ class AGServiceManager( ServiceBase ):
 
     def RegisterService( self, token, uri ):
         """
-        Register a service with the service manager.  Why?  When the service manager
-        executes a service implementation, it assigns it a token.  When the service
-        actually starts, it registers with the service manager by passing this token
-        and its uri
+        Register a service with the service manager.  Why?  When the
+        service manager executes a service implementation, it assigns
+        it a token.  When the service actually starts, it registers
+        with the service manager by passing this token and its uri
         """
 
         try:
@@ -316,7 +325,7 @@ class AGServiceManager( ServiceBase ):
                 Client.Handle( service.uri ).get_proxy().SetConfiguration( serviceConfig )
             
         except:
-            print "Exception in RegisterService ", sys.exc_type, sys.exc_value
+            log.exception("Exception in RegisterService.")
             raise faultType("AGServiceManager.RegisterService failed: " + str( sys.exc_value ))
 
     RegisterService.soap_export_as = "RegisterService"
@@ -339,7 +348,7 @@ class AGServiceManager( ServiceBase ):
 
     def __RetrieveServicePackage( self, servicePackageUrl ):
         """Internal : Retrieve a service implementation"""
-        print "Retrieving Service Package:", servicePackageUrl
+        log.info("Retrieving Service Package: %s", servicePackageUrl)
 
         #
         # Retrieve the service package
