@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.8 2003-05-20 19:32:58 eolson Exp $
+# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.9 2003-08-22 20:10:37 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -25,10 +25,10 @@ class ProcessManagerUnix:
     def start_process(self, command, arglist):
         """
         Start a new process.
-        Command is the name of the command to be started. It can either be a full pathname
-        or a command name to be found on the default path.
+        Command is the name of the command to be started. It can either be
+        a full pathname or a command name to be found on the default path.
         Arglist is a list of the arguments to the command.
-         """
+        """
 
         arglist.insert(0, command)
 
