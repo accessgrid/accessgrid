@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.175 2004-04-06 18:54:35 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.176 2004-04-07 13:03:06 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.175 2004-04-06 18:54:35 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.176 2004-04-07 13:03:06 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -68,6 +68,7 @@ from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.ClientProfile import ClientProfileCache
 
 log = Log.GetLogger(Log.VenueServer)
+
 # Initialize usage log, but set flag so handlers don't include it by default.
 usage_log = Log.GetLogger(Log.Usage, defaultHandled=0)
 
@@ -928,27 +929,38 @@ class Venue(AuthorizationMixIn):
                 usage_log.info("\"RemoveUser\",\"%s\",\"%s\",\"%s\"", "DN Unavailable", self.name, self.uniqueId)
                 return
             else:
-                usage_log.info("\"RemoveUser\",\"%s\",\"%s\",\"%s\"", self.clients[privateId].GetClientProfile().GetDistinguishedName(), self.name, self.uniqueId)
+                usage_log.info("\"RemoveUser\",\"%s\",\"%s\",\"%s\"", 
+                               self.clients[privateId].GetClientProfile().GetDistinguishedName(), 
+                               self.name, self.uniqueId)
 
-            self.authManager.FindRole("VenueUsers").RemoveSubject(X509Subject.CreateSubjectFromString(self.clients[privateId].GetClientProfile().GetDistinguishedName()))
+            # Remove the user from the venue users role
+            # - get the subject of the user to remove
+            dn = self.clients[privateId].GetClientProfile().GetDistinguishedName()
+            subject = X509Subject.CreateSubjectFromString(dn)
+            
+            # - check for other occurrences of this subject
+            foundSubj = 0
+            for cl in self.clients.values():
+                tmp_dn = cl.GetClientProfile().GetDistinguishedName()
+                if subject == X509Subject.CreateSubjectFromString(tmp_dn):
+                    foundSubj += 1
+                    
+                    # early out
+                    if foundSubj > 1:
+                        break
+
+            # - remove the subject only if it occurs singly
+            if foundSubj == 1:
+                print "Removing single instance of user"
+                role = self.authManager.FindRole("VenueUsers")
+                if subject in role.GetSubjects():
+                    role.RemoveSubject(subject)
+            else:
+                print "Multiple instances, not removing", foundSubj
+                    
 
             vclient = self.clients[privateId]
             clientProfile = vclient.GetClientProfile()
-
-            # Remove clients private data
-            #for description in self.data.values():
-            #    
-            #    if description.type == client.publicId:
-            #        log.debug("RemoveUser: Remove private data %s"
-            #                  % description.name)
-
-            # Send the event
-            #self.server.eventService.Distribute( self.uniqueId,
-            #                                     Event( Event.REMOVE_DATA,
-            #                                            self.uniqueId,
-            #                                            description) )
-
-            #del self.data[description.name]
 
             #
             # Shut down the client's connection to the event service.
@@ -959,8 +971,8 @@ class Venue(AuthorizationMixIn):
             log.debug("RemoveUser: Distribute EXIT event")
 
             self.DistributeEvent(Event( Event.EXIT,
-            self.uniqueId,
-            clientProfile ) )
+                                        self.uniqueId,
+                                        clientProfile ) )
 
             del self.clients[privateId]
         except:
