@@ -3,13 +3,13 @@
 # Purpose:     
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.45 2004-03-31 21:59:47 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.46 2004-04-30 20:34:04 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.45 2004-03-31 21:59:47 turam Exp $"
+__revision__ = "$Id: Types.py,v 1.46 2004-04-30 20:34:04 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -187,11 +187,41 @@ class AGServicePackage:
         except zipfile.BadZipfile:
             raise InvalidServicePackage(sys.exc_value)
 
-        if self.isPython:
-            f = open( path + os.sep + self.exeFile, "wb" )
+        f = open( path + os.sep + self.exeFile, "wb" )
         f.write( exefilecontent )
         f.close()
 
+    def ExtractPackage( self, path ):
+        """
+        Extract files from service package
+        """
+        
+        try:
+            zf = zipfile.ZipFile( self.file, "r" )
+            filenameList = zf.namelist()
+            for filename in filenameList:
+                try:
+                    # Extract the file
+                    filecontent = zf.read( filename )
+                    destfilename = os.path.join(path,filename)
+                    f = open( destfilename, "wb" )
+                    f.write( filecontent )
+                    f.close()
+                    
+                    print "setting permissions on file", destfilename
+                    
+                    # Mark the file executable (indiscriminately)
+                    os.chmod(destfilename,0755)
+                    
+                    s = os.stat(destfilename)
+                    print "%s mode %d", destfilename, s[0]
+                    
+                except:
+                    log.exception("Error extracting file %s", filename)
+
+            zf.close()
+        except zipfile.BadZipfile:
+            raise InvalidServicePackage(self.file)
 
 class ServiceConfiguration:
     """
