@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.10 2003-02-28 17:20:43 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.11 2003-03-19 23:09:48 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -173,6 +173,3 @@ class AGService( ServiceBase ):
    IsStarted.soap_export_as = "IsStarted"
 
 
-   def Ping( self ):
-      return 1
-   Ping.soap_export_as = "Ping"
