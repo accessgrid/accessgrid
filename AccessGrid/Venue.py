@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.122 2003-08-20 21:37:58 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.123 2003-08-21 19:56:27 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1598,6 +1598,11 @@ class Venue(ServiceBase.ServiceBase):
             if key == None or len(key.strip()) == 0:
                 key = AllocateEncryptionKey()
             self.encryptionKey = key
+
+        # Make sure streams' encryption is the same as the venue's.
+        for stream in self.streamList.GetStreams():
+            stream.encryptionFlag = self.encryptMedia
+            stream.encryptionKey = self.encryptionKey
 
         self.simpleLock.release()
         

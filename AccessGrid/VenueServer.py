@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.88 2003-08-14 17:27:35 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.89 2003-08-21 19:56:27 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -315,6 +315,10 @@ class VenueServer(ServiceBase.ServiceBase):
                 # Make sure the venue Role Manager knows about the VenueServer role manager.
                 v.GetRoleManager().RegisterExternalRoleManager("VenueServer", self.roleManager)
                 v.encryptMedia = cp.getint(sec, 'encryptMedia')
+                if v.encryptMedia:
+                    v.encryptionKey = cp.get(sec, 'encryptionKey')
+                else:
+                    v.encryptionKey = None
                 v.cleanupTime = cp.getint(sec, 'cleanupTime')
 
                 self.venues[self.IdFromURL(v.uri)] = v
@@ -351,10 +355,19 @@ class VenueServer(ServiceBase.ServiceBase):
                     for s in string.split(streams, ':'):
                         name = cp.get(s, 'name')
                         encryptionFlag = cp.getint(s, 'encryptionFlag')
+
                         if encryptionFlag:
                             encryptionKey = cp.get(s, 'encryptionKey')
                         else:
                             encryptionKey = None
+
+                        if encryptionFlag != v.encryptMedia:
+                            log.info("static stream\"" + name + "\"encryption did not match its venue.  Setting it.")
+                            encryptionFlag = v.encryptMedia
+                            if encryptionKey != v.encryptionKey:
+                                log.info("static stream\"" + name + "\"encryption key did not match its venue.  Setting it.")
+                                encryptionKey = v.encryptionKey
+
                         locationAttrs = string.split(cp.get(s, 'location'),
                                                          " ")
                         capability = string.split(cp.get(s, 'capability'), ' ')
@@ -1232,12 +1245,16 @@ class VenueServer(ServiceBase.ServiceBase):
         # Make sure new venue knows about server's external role manager.
         if "VenueServer" not in venue.GetRoleManager().GetExternalRoleManagerList():
             venue.GetRoleManager().RegisterExternalRoleManager("VenueServer", self.GetRoleManager())
+
+        venue.SetEncryptMedia(venueDesc.encryptMedia, venueDesc.encryptionKey)
         
         # Add Connections if there are any
         venue.SetConnections(venueDesc.connections)
         
         # Add Streams if there are any
         for sd in venueDesc.streams:
+            sd.encryptionFlag = venue.encryptMedia
+            sd.encryptionKey = venue.encryptionKey
             venue.streamList.AddStream(sd)
             
         # Add the venue to the list of venues
@@ -1276,9 +1293,7 @@ class VenueServer(ServiceBase.ServiceBase):
             if "VenueServer" not in self.venues[id].GetRoleManager().GetExternalRoleManagerList():
                 self.roleManager.RegisterExternalRoleManager("VenueServer", self.roleManager)
 
-        self.venues[id].encryptMedia = venueDesc.encryptMedia
-        if self.venues[id].encryptMedia:
-            self.venues[id].encryptionKey = venueDesc.encryptionKey
+        self.venues[id].SetEncryptMedia(venueDesc.encryptMedia, venueDesc.encryptionKey)
             
         self.venues[id].SetConnections(venueDesc.connections)
         
@@ -1287,6 +1302,8 @@ class VenueServer(ServiceBase.ServiceBase):
         for sd in current_streams:
             self.venues[id].RemoveStream(sd)
         for sd in venueDesc.streams:
+            sd.encryptionFlag = self.venues[id].encryptMedia
+            sd.encryptionKey = self.venues[id].encryptionKey
             self.venues[id].AddStream(sd)
         
     def RemoveVenue(self, id):
