@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.59 2003-03-05 16:25:02 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.60 2003-03-05 16:34:22 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -285,7 +285,9 @@ class VenueClientUI(wxApp, VenueClient):
                     
                          
         else:
-            print '---------else'
+            text = ""
+            text2 = ""
+            
             if not HaveValidProxy():
                 print '------ bit have valid proxy'
                 text = 'You do not have a valid proxy.' +\
@@ -300,8 +302,8 @@ class VenueClientUI(wxApp, VenueClient):
                     wxCallAfter(self.frame.FillInAddress, None, oldUri)
                     
 
-                    text = 'The venue URL you specified is not valid'
-                    text2 = 'Invalid URL'
+                text = 'The venue URL you specified is not valid'
+                text2 = 'Invalid URL'
 
             MessageDialog(self.frame, text, text2, style = wxOK|wxICON_INFORMATION)
             
