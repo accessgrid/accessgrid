@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.29 2003-02-20 20:54:04 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.30 2003-02-20 21:15:53 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -818,7 +818,7 @@ class MulticastDialog(wxDialog):
 
 class VenueParamFrame(wxDialog):
     def __init__(self, parent, id, title, application):
-        wxDialog.__init__(self, parent, id, title, style = wxWS_EX_VALIDATE_RECURSIVELY)
+        wxDialog.__init__(self, parent, id, title)
         self.Centre()
         self.venue = None
         self.exitsList = []
@@ -1044,13 +1044,13 @@ class StaticAddressingPanel(wxPanel):
         self.videoIp2 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(IP))
         self.videoIp3 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(IP))
         self.videoIp4 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(IP))
-        self.videoPort = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20),validator = DigitValidator(PORT))
+        self.videoPort = wxTextCtrl(self.panel, -1, "", size = wxSize(50,20),validator = DigitValidator(PORT))
         self.videoTtl = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(TTL))
         self.audioIp1 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(IP))
         self.audioIp2 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(IP))
         self.audioIp3 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(IP))
         self.audioIp4 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(IP))
-        self.audioPort = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator =DigitValidator(PORT))
+        self.audioPort = wxTextCtrl(self.panel, -1, "", size = wxSize(50,20), validator =DigitValidator(PORT))
         self.audioTtl = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(TTL))
 
         if self.staticAddressingButton.GetValue():
@@ -1110,10 +1110,9 @@ class StaticAddressingPanel(wxPanel):
     def ClickStaticButton(self, event):
         if event.Checked():
             self.panel.Enable(true)
-            
         else:
             self.panel.Enable(false)
-
+        
     def Validate(self):
         if(self.staticAddressingButton.GetValue()):
             return self.panel.Validate()
