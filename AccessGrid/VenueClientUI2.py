@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI2.py,v 1.4 2004-07-19 14:55:11 binns Exp $
+# RCS-ID:      $Id: VenueClientUI2.py,v 1.5 2004-07-19 18:34:20 binns Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI2.py,v 1.4 2004-07-19 14:55:11 binns Exp $"
+__revision__ = "$Id: VenueClientUI2.py,v 1.5 2004-07-19 18:34:20 binns Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3903,11 +3903,11 @@ class ProfileDialog(wxDialog):
         self.sizer1.Add(sizer3, 0, wxALIGN_CENTER|wxSOUTH, 10)
 
         self.SetSizer(self.sizer1)
-        print str(self.GetSize())
+        #print str(self.GetSize())
         self.sizer1.Fit(self)
         self.SetAutoLayout(1)
         self.Layout()
-        print str(self.GetSize())
+        #print str(self.GetSize())
 
     def GetNewProfile(self):
         if(self.profile != None):
