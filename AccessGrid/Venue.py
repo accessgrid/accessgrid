@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.62 2003-03-25 17:00:01 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.63 2003-03-27 21:34:06 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,6 +46,8 @@ class VenueException(Exception):
     """
     pass
 
+class NotAuthorized(Exception):
+    pass
 
 class Venue(ServiceBase.ServiceBase):
     """
@@ -396,7 +398,7 @@ class Venue(ServiceBase.ServiceBase):
         """
         """
         if not self._authorize():
-            raise VenueException("You are not authorized to perform this action.")
+            raise NotAuthorized
         self.name = name
 
         return name
@@ -407,7 +409,8 @@ class Venue(ServiceBase.ServiceBase):
         """
         """
         if not self._authorize():
-            raise VenueException("You are not authorized to perform this action.")
+            raise NotAuthorized
+        
         self.description = description
 
         return description
@@ -418,7 +421,7 @@ class Venue(ServiceBase.ServiceBase):
         """
         """
         if not self._authorize():
-            raise VenueException("You are not authorized to perform this action.")
+            raise NotAuthorized
         if string not in self.administrators:
             self.administrators.append(string)
             return string
@@ -432,7 +435,7 @@ class Venue(ServiceBase.ServiceBase):
         """
         """
         if not self._authorize():
-            raise VenueException("You are not authorized to perform this action.")
+            raise NotAuthorized
         if string in self.administrators:
             self.administrators.remove(string)
             return string
@@ -446,7 +449,7 @@ class Venue(ServiceBase.ServiceBase):
         """
         """
         if not self._authorize():
-            raise VenueException("You are not authorized to perform this action.")
+            raise NotAuthorized
         self.administrators = self.administrators + administratorList
 
     SetAdministrators.soap_export_as = "SetAdministrators"
@@ -463,7 +466,7 @@ class Venue(ServiceBase.ServiceBase):
         Turn media encryption on or off.
         """
         if not self._authorize():
-            raise VenueException("You are not authorized to perform this action.")
+            raise NotAuthorized
         self.encryptMedia = value
         if not self.encryptMedia:
             self.encryptionKey = None
@@ -490,7 +493,7 @@ class Venue(ServiceBase.ServiceBase):
         the Venue. Network services are described in the design documents.
         """
         if not self._authorize():
-            raise VenueException("You are not authorized to perform this action.")
+            raise NotAuthorized
         try:
             self.networkServices[ networkServiceDescription.uri ] = networkServiceDescription
         except:
@@ -514,7 +517,7 @@ class Venue(ServiceBase.ServiceBase):
         it unavailable to users of the venue.
         """
         if not self._authorize():
-            raise VenueException("You are not authorized to perform this action.")
+            raise NotAuthorized
         try:
             del self.networkServices[ networkServiceDescription.uri ]
         except:
@@ -529,7 +532,7 @@ class Venue(ServiceBase.ServiceBase):
         virtual venue to this virtual venue.
         """
         if not self._authorize():
-            raise VenueException("You are not authorized to perform this action.")
+            raise NotAuthorized
         try:
             print "Add Connection: ", connectionDescription
             print "-- ", dir(connectionDescription)
@@ -552,7 +555,7 @@ class Venue(ServiceBase.ServiceBase):
         from this virtual venue. This is an administrative operation.
         """
         if not self._authorize():
-            raise VenueException("You are not authorized to perform this action.")
+            raise NotAuthorized
         try:
             del self.connections[ connectionDescription.uri ]
             self.eventService.Distribute( self.uniqueId,
@@ -585,7 +588,7 @@ class Venue(ServiceBase.ServiceBase):
         """
         log.debug("Calling SetConnections.")
         if not self._authorize():
-            raise VenueException("You are not authorized to perform this action.")
+            raise NotAuthorized
         try:
             # Reset the connections
             self.connections = dict()
@@ -612,7 +615,7 @@ class Venue(ServiceBase.ServiceBase):
         to something new.
         """
         if not self._authorize():
-            raise VenueException("You are not authorized to perform this action.")
+            raise NotAuthorized
         self.description = description
 
     SetDescription.soap_export_as = "SetDescription"
@@ -630,7 +633,7 @@ class Venue(ServiceBase.ServiceBase):
         Add a stream to the list of streams "in" the venue
         """
         if not self._authorize():
-            raise VenueException("You are not authorized to perform this action.")
+            raise NotAuthorized
         log.debug("%s - Adding Stream: ", self.uniqueId)
         
         streamDescription = CreateStreamDescription( inStreamDescription )
@@ -653,7 +656,8 @@ class Venue(ServiceBase.ServiceBase):
         Remove the given stream from the venue
         """
         if not self._authorize():
-            raise VenueException("You are not authorized to perform this action.")
+            raise NotAuthorized
+        
         self.streamList.RemoveStream( streamDescription )
 
     RemoveStream.soap_export_as = "RemoveStream"
