@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.51 2003-03-25 15:32:01 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.52 2003-03-25 16:23:09 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -111,8 +111,8 @@ class VenueManagementClient(wxApp):
                 self.tabs.Enable(true)
                 if len(self.venueList) != 0 :
                     for venue in self.venueList:
-                        wxLogDebug("Add venue: %s" % venue.name)
-                        self.tabs.venuesPanel.venuesListPanel.venuesList.Append(venue.name, venue)
+                        wxLogDebug("Add venue: %s" % venue['name'])
+                        self.tabs.venuesPanel.venuesListPanel.venuesList.Append(venue['name'], venue)
                     currentVenue = self.tabs.venuesPanel.venuesListPanel.venuesList.GetClientData(0)
                     self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(currentVenue)
                     self.tabs.venuesPanel.venuesListPanel.venuesList.SetSelection(0)
@@ -224,11 +224,13 @@ class VenueManagementClient(wxApp):
 
         # because I have <AccessGrid.hosting.pyGlobus.AGGSISOAP.structType
         for e in exitsList:  
-            s = s + e.name
+            s = s + e['name']
 
         wxLogDebug("Adding venue %s with exits %s"%(str(venue),s))
         self.SetCurrentVenue(venue)
         self.currentVenueClient.SetConnections(exitsList)
+
+        self.venueList.append(venue)
         return venueUri
 
     def DisableStaticStreams(self, venue):
@@ -279,6 +281,9 @@ class VenueManagementClient(wxApp):
     def DeleteVenue(self, venue):
         wxLogDebug("Delete venue: %s" %str(venue['uri']))
         self.server.RemoveVenue(venue['uri'])
+        index = self.venueList.index(venue)
+        if(index>-1):
+            del self.venueList[index]
 
     def AddAdministrator(self, dnName):
         wxLogDebug("Add administrator: %s" %dnName)
@@ -476,7 +481,7 @@ class VenueProfilePanel(wxPanel):
             self.exits.Clear()
             index = 0
             while index < len(exitsList):
-                self.exits.Append(exitsList[index].name, exitsList[index])
+                self.exits.Append(exitsList[index]['name'], exitsList[index])
                 index = index + 1
 
             self.exitsLabel.Show()
@@ -1080,10 +1085,12 @@ class VenueParamFrame(wxDialog):
     def LoadLocalVenues(self):
         #self.__loadVenues(self.application.serverUrl)
         venueList = self.application.venueList
+        #venueList = self.application.server.GetVenues()
         
         for venue in venueList:
-                    if(venue.name != self.title.GetValue()):
-                        self.venues.Append(venue.name, venue)
+                    if(venue['name'] != self.title.GetValue()):
+                        print '----------------------------',venue['name']
+                        self.venues.Append(venue['name'], venue)
 
     def __loadVenues(self, URL):
         validVenue = false
@@ -1099,8 +1106,8 @@ class VenueParamFrame(wxDialog):
                 self.venues.Clear()
 
                 for venue in venueList:
-                    if(venue.name != self.title.GetValue()):
-                        self.venues.Append(venue.name, venue)
+                    if(venue['name'] != self.title.GetValue()):
+                        self.venues.Append(venue['name'], venue)
 
                 self.currentVenueUrl = URL
                 self.address.SetValue(URL)
@@ -1133,10 +1140,10 @@ class VenueParamFrame(wxDialog):
         if index != -1:
             venue = self.venues.GetClientData(index)
 
-            if self.exits.FindString(venue.name) == -1:
-                self.exits.Append(venue.name, venue)
+            if self.exits.FindString(venue['name']) == -1:
+                self.exits.Append(venue['name'], venue)
             else:
-                text = ""+venue.name+" is added already"
+                text = ""+venue['name']+" is added already"
                 exitExistDialog = wxMessageDialog(self, text, \
                                                   '', wxOK | wxICON_INFORMATION)
                 exitExistDialog.ShowModal()
@@ -1537,8 +1544,8 @@ class ModifyVenueFrame(VenueParamFrame):
         index = 0
         wxLogDebug("load exits")
         while index < len(exits):
-            self.exits.Append(exits[index].name, exits[index])
-            wxLogDebug("    %s"%exits[index].name)
+            self.exits.Append(exits[index]['name'], exits[index])
+            wxLogDebug("    %s"%exits[index]['name'])
             index = index + 1
 
     def __loadStaticStreams(self, streamList):
