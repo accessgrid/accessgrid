@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.44 2003-10-23 17:07:48 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.45 2003-10-23 20:16:50 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.44 2003-10-23 17:07:48 lefvert Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.45 2003-10-23 20:16:50 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -90,10 +90,12 @@ def BuildServiceMenu( ):
     """
     svcmenu = wxMenu()
     svcmenu.Append(ID_SERVICE_ADD_SERVICE, "Add...", "Add Service")
+    svcmenu.Append(ID_SERVICE_REMOVE, "Remove", "Remove Service")
+    svcmenu.AppendSeparator()
     svcmenu.Append(ID_SERVICE_ENABLE_ONE, "Enable", "Enable Service")
     svcmenu.Append(ID_SERVICE_DISABLE_ONE, "Disable", "Disable Service")
-    svcmenu.Append(ID_SERVICE_REMOVE, "Remove", "Remove Service")
-    svcmenu.Append(ID_SERVICE_GET_CONFIG, "Configure", "Configure")
+    svcmenu.AppendSeparator()
+    svcmenu.Append(ID_SERVICE_GET_CONFIG, "Configure...", "Configure")
     return svcmenu
 
 
@@ -107,37 +109,38 @@ class MultiTextFieldDialog(wxDialog):
 
         wxDialog.__init__(self, parent, id, title, style =
                           wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
-
+              
         # Set up sizers
-        gridSizer = wxFlexGridSizer(len(fieldNames)+1, 2, 5, 5)
+        gridSizer = wxFlexGridSizer(len(fieldNames), 2, 5, 5)
         sizer1 = wxBoxSizer(wxVERTICAL)
         sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxHORIZONTAL)
         sizer2.Add(gridSizer, 1, wxALL, 10)
         sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
-        self.SetSizer( sizer1 )
-        self.SetAutoLayout(1)
+       
+        gridSizer.AddGrowableCol(1)
 
         # Create label/textfield pairs for field names
         self.textCtrlList = []
         for name,value in fieldNames.items():
-            labelCtrl = wxStaticText( self, 0, name )
-            textCtrl = wxTextCtrl( self, 1, value)
+            labelCtrl = wxStaticText( self, -1, name)
+            textCtrl = wxTextCtrl( self, -1, value)
             self.textCtrlList.append( textCtrl )
-            gridSizer.Add( labelCtrl, 0, wxALIGN_LEFT, 0)
-            gridSizer.Add( textCtrl, 1, wxEXPAND, 0)
-
+                    
+            gridSizer.Add( labelCtrl)
+            gridSizer.Add( textCtrl, 0, wxEXPAND)
+          
         # Create ok/cancel buttons
         sizer3 = wxBoxSizer(wxHORIZONTAL)
-        okButton = wxButton( self, wxID_OK, "OK" )
+        okButton = wxButton( self, wxID_OK, "OK")
         cancelButton = wxButton( self, wxID_CANCEL, "Cancel" )
         sizer3.Add(okButton, 0, wxALL, 10)
         sizer3.Add(cancelButton, 0, wxALL, 10)
         sizer1.Add(sizer3, 0, wxALIGN_CENTER)
-        gridSizer.Add( okButton, -1 )
-        gridSizer.Add( cancelButton, -1 )
-
+        
+        self.SetSizer( sizer1 )
         sizer1.Fit(self)
-
+        self.SetAutoLayout(1)
+        
     def GetData(self):
         # Get data from textfields
         fieldValues = []
@@ -234,6 +237,18 @@ class ServiceListCtrl( wxListCtrl ):
         imageList.Add( bmap )
         self.AssignImageList( imageList, wxIMAGE_LIST_NORMAL)
 
+        EVT_SIZE(self, self.OnSize)
+
+        self.Layout()
+
+    def OnSize(self, event):
+        """
+        Sets correct column widths.
+        """
+        w,h = self.GetClientSizeTuple()
+        self.SetColumnWidth(0, w*(0.70) )
+        self.SetColumnWidth(1, w*(0.30) )
+       
 class ServiceConfigurationPanel( wxPanel ):
     """
     A panel that displays service configuration parameters based on
@@ -250,7 +265,10 @@ class ServiceConfigurationPanel( wxPanel ):
         self.guiComponents = []
 
         rows = len(serviceConfig.parameters)
-        self.panelSizer = wxFlexGridSizer( rows, 2, 2, 2 ) #rows, cols, hgap, vgap
+
+        self.boxSizer = wxBoxSizer(wxHORIZONTAL)
+
+        self.panelSizer = wxFlexGridSizer( rows, 2, 5, 5 ) #rows, cols, hgap, vgap
         self.panelSizer.AddGrowableCol(1)
         
         pt = wxStaticText( self, -1, "Resource", style=wxALIGN_LEFT)
@@ -258,7 +276,7 @@ class ServiceConfigurationPanel( wxPanel ):
             resource = "None"
         else:
             resource = serviceConfig.resource.resource
-        pComp = wxTextCtrl( self, -1, resource)
+        pComp = wxTextCtrl( self, -1, resource, size = wxSize(300, 20))
         pComp.SetEditable( false )
 
         self.panelSizer.Add( pt)
@@ -296,10 +314,11 @@ class ServiceConfigurationPanel( wxPanel ):
           
             self.panelSizer.Add( pComp, 10, wxEXPAND )
 
-        self.panel.SetSizer( self.panelSizer )
+        self.boxSizer.Add(self.panelSizer, 1, wxALL | wxEXPAND, 10)
+        self.panel.SetSizer( self.boxSizer )
         self.panel.SetAutoLayout( true )
-        self.panel.Layout()
-        self.panel.Fit()
+        #self.panel.Layout()
+        #self.panel.Fit()
 
     def GetConfiguration( self ):
 
@@ -496,6 +515,8 @@ class NodeManagementClientFrame(wxFrame):
         except:
             return 0
 
+   
+
     ############################
     ## FILE menu
     ############################
@@ -509,6 +530,7 @@ class NodeManagementClientFrame(wxFrame):
         names = { "Hostname" : "", "Port":"11000" }
         dlg = MultiTextFieldDialog( self, -1, \
             "Node Attach Dialog", names )
+        dlg.SetSize(wxSize(300,200))
         ret = dlg.ShowModal()
 
         if ret == wxID_OK:
@@ -648,6 +670,7 @@ class NodeManagementClientFrame(wxFrame):
         names = { "Hostname" : "", "Port":"12000" }
         dlg = MultiTextFieldDialog( self, -1, \
             "Add Service Manager Dialog", names )
+        dlg.SetSize(wxSize(300,200))
         ret = dlg.ShowModal()
         if ret == wxID_OK:
 
@@ -711,6 +734,9 @@ class NodeManagementClientFrame(wxFrame):
 
         # Find selected service managers, to retain selections after update
         selectedServiceManagerUri = None
+
+       
+            
         if self.hostList.GetSelectedItemCount() != 0:
             index = -1
             index = self.hostList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
@@ -732,9 +758,12 @@ class NodeManagementClientFrame(wxFrame):
 
             i = i + 1
 
+        if self.hostList.GetSelectedItemCount() == 0:
+            # if no host is selected, select the first item
+            self.hostList.SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
+            
         # Update the service list
-        if selectedServiceManagerUri:
-            self.UpdateServiceList()
+        self.UpdateServiceList()
 
     def ServiceManagerSelectedCB(self, event):
         index = self.hostList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
@@ -1100,7 +1129,7 @@ class NodeManagementClientFrame(wxFrame):
         self.UpdateServiceList()
 
     def Error( self, message ):
-        wxMessageDialog( self, message, style = wxOK ).ShowModal()
+        wxMessageDialog( self, message, style = wxOK | wxICON_INFORMATION ).ShowModal()
         
     def PopupServiceMenu(self, evt):
         """
