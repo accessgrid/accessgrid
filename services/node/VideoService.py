@@ -2,7 +2,7 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.18 2004-09-09 17:20:21 judson Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.19 2004-09-09 17:31:20 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -88,10 +88,11 @@ class VideoService( AGService ):
                                           Capability.VIDEO ),
                               Capability( Capability.CONSUMER,
                                           Capability.VIDEO ) ]
-        if sys.platform == Platform.WIN:
+        if IsWindows():
             vic = "vic.exe"
         else:
             vic = "vic"
+
         self.executable = os.path.join(os.getcwd(),vic)
 
         self.sysConf = SystemConfig.instance()
