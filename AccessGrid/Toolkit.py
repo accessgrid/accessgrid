@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.10 2003-08-22 19:17:45 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.11 2003-08-28 18:04:51 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,9 @@
 import logging
 import os
 
-from AppDb import AppDb
+from AccessGrid.AppDb import AppDb
+import CertificateManager
+from AccessGrid.Platform import GetUserConfigDir, GetUserAppPath
 
 log = logging.getLogger("AG.toolkit")
 
@@ -25,11 +27,6 @@ AG_FALSE = 0
 #
 # Access this through the GetApplication interface only.
 #
-
-import CertificateManager
-
-from AccessGrid import Platform
-
 # Call GetVersion() to get AGTK version information.
 MAJOR_VERSION = 2
 MINOR_VERSION = 1
@@ -148,7 +145,7 @@ class Application:
 
         Application.instance = self
 
-        self.userConfigDir = Platform.GetUserConfigDir()
+        self.userConfigDir = GetUserConfigDir()
         
         if not os.path.exists(self.userConfigDir):
             try:
@@ -159,9 +156,9 @@ class Application:
 
         log.debug("userConfigDir: %s", self.userConfigDir)
 
-        if not os.path.exists(Platform.GetUserAppPath()):
+        if not os.path.exists(GetUserAppPath()):
             try:
-                os.mkdir(Platform.GetUserAppPath())
+                os.mkdir(GetUserAppPath())
             except:
                 log.exception("Couldn't make user app directory.")
                 
