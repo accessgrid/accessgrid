@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.97 2003-03-24 20:28:06 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.98 2003-03-25 17:02:16 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -59,6 +59,9 @@ class VenueClientFrame(wxFrame):
     ID_VENUE_SERVICE = NewId() 
     ID_VENUE_SERVICE_ADD = NewId()
     ID_VENUE_SERVICE_DELETE = NewId()
+    ID_VENUE_APPLICATION = NewId() 
+    ID_VENUE_APPLICATION_ADD = NewId()
+    ID_VENUE_APPLICATION_DELETE = NewId()
     ID_VENUE_OPEN_CHAT = NewId()
     ID_VENUE_CLOSE = NewId()
     ID_PROFILE = NewId()
@@ -149,14 +152,27 @@ class VenueClientFrame(wxFrame):
 
         self.venue = wxMenu()
 	self.dataMenu = wxMenu()
-	self.dataMenu.Append(self.ID_VENUE_DATA_ADD,"Add...", "Add data to the venue")
-	self.dataMenu.Append(self.ID_VENUE_DATA_SAVE,"Save...", "Save data to local disk")
+	self.dataMenu.Append(self.ID_VENUE_DATA_ADD,"Add...",
+                             "Add data to the venue")
+	self.dataMenu.Append(self.ID_VENUE_DATA_SAVE,"Save...",
+                             "Save data to local disk")
 	self.dataMenu.Append(self.ID_VENUE_DATA_DELETE,"Delete", "Remove data")
         self.venue.AppendMenu(self.ID_VENUE_DATA,"&Data", self.dataMenu)
 	self.serviceMenu = wxMenu()
-	self.serviceMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...", "Add service to the venue")
-        self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete", "Remove service")
-        self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",self.serviceMenu)
+	self.serviceMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
+                                "Add service to the venue")
+        self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete",
+                                "Remove service")
+        self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",
+                              self.serviceMenu)
+
+	self.applicationMenu = wxMenu()
+	self.applicationMenu.Append(self.ID_VENUE_APPLICATION_ADD,"Add...",
+                                    "Add application to the venue")
+        self.applicationMenu.Append(self.ID_VENUE_APPLICATION_DELETE, "Delete",
+                                    "Remove application")
+        self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"&Applications",
+                              self.applicationMenu)
      
 	self.menubar.Append(self.venue, "&Venue")
         
@@ -216,6 +232,8 @@ class VenueClientFrame(wxFrame):
         self.participantMenu.Enable(self.ID_PARTICIPANT_FOLLOW, false)
         self.serviceMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
         self.serviceMenu.Enable(self.ID_VENUE_SERVICE_DELETE, false)
+        self.applicationMenu.Enable(self.ID_VENUE_APPLICATION_ADD, false)
+        self.applicationMenu.Enable(self.ID_VENUE_APPLICATION_DELETE, false)
         self.meMenu.Enable(self.ID_ME_DATA, false) 
       
     def HideMenu(self):
@@ -701,13 +719,16 @@ class VenueAddressBar(wxSashLayoutWindow):
 class VenueListPanel(wxSashLayoutWindow):
     '''VenueListPanel. 
     
-    The venueListPanel contains a list of connected venues/exits to current venue.  
-    By clicking on a door icon the user travels to another venue/room, 
-    which contents will be shown in the contentListPanel.  By moving the mouse over
-    a door/exit information about that specific venue will be shown as a tooltip.
-    The user can close the venueListPanel if exits/doors are irrelevant to the user and
-    the application will extend the contentListPanel.  The panels is separated into a 
-    panel containing the close/open buttons and a VenueList object containing the exits.
+    The venueListPanel contains a list of connected venues/exits to
+    current venue.  By clicking on a door icon the user travels to
+    another venue/room, which contents will be shown in the
+    contentListPanel.  By moving the mouse over a door/exit
+    information about that specific venue will be shown as a tooltip.
+    The user can close the venueListPanel if exits/doors are
+    irrelevant to the user and the application will extend the
+    contentListPanel.  The panels is separated into a panel containing
+    the close/open buttons and a VenueList object containing the
+    exits.
     '''
     
     ID_MINIMIZE = 10
@@ -1228,12 +1249,17 @@ class ContentListPanel(wxPanel):
         if text == 'Data' or item != None and self.dataDict.has_key(item.name):
             self.PopupMenu(self.parent.dataMenu, wxPoint(self.x, self.y))
 
-        elif text == 'Services' or item != None and self.serviceDict.has_key(item.name):
+        elif text == 'Services' or item != None and \
+                 self.serviceDict.has_key(item.name):
             self.PopupMenu(self.parent.serviceMenu, wxPoint(self.x, self.y))
 
         elif text == 'Participants' or text == 'Nodes' or item == None:
             pass
 
+        elif text == 'Applications' or item != None and \
+                 self.applicationDict.has_key(item.name):
+            self.PopupMenu(self.parent.applicationMenu,
+                           wxPoint(self.x, self.y))
         elif self.personalDataDict.has_key(item.name):
             self.PopupMenu(self.parent.dataMenu, wxPoint(self.x, self.y))
             
@@ -1250,7 +1276,8 @@ class ContentListPanel(wxPanel):
 
             elif(item.profileType == 'user'):
                 wxLogDebug("This is a user")
-                self.PopupMenu(self.parent.participantMenu, wxPoint(self.x, self.y))
+                self.PopupMenu(self.parent.participantMenu,
+                               wxPoint(self.x, self.y))
 
             
     def CleanUp(self):
