@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.37 2004-04-09 19:57:05 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.38 2004-04-12 19:18:36 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.37 2004-04-09 19:57:05 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.38 2004-04-12 19:18:36 judson Exp $"
 
 # Standard imports
 import os
@@ -211,13 +211,13 @@ class AppBase:
         return None if not found
         """
         
-        userConfigPath = self.userConfig.GetConfigDir()
-        pathToFile = os.path.join(userConfigPath, configFile)
+        pathToFile = os.path.join(self.userConfig.GetConfigDir(), configFile)
+        log.debug("Looking for: %s", pathToFile)
         if os.path.exists( pathToFile ):
             return pathToFile
         
-        systemConfigPath = self.agtkConfig.GetConfigDir()
-        pathToFile = os.path.join(systemConfigPath,configFile)
+        pathToFile = os.path.join(self.agtk.GetConfigDir(), configFile)
+        log.debug("Looking for: %s", pathToFile)
         if os.path.exists( pathToFile ):
             return pathToFile
         
@@ -432,7 +432,16 @@ class Service(AppBase):
         # Deal with the profile if it was passed instead of cert/key pair
         if self.options.profile is not None:
            self.profile = ServiceProfile()
-           self.profile.Import(self.options.profile)
+           if not self.options.profile.endswith(".profile"):
+               profile = self.options.profile + ".profile"
+           else:
+               profile = self.options.profile
+           if os.path.dirname(profile) == '':
+               # There is no directory
+               profPath = os.path.join(self.userConfig.GetServicesDir(),
+                                       profile)
+           log.info("SP: %s", profPath)
+           self.profile.Import(profPath)
            print self.profile.AsINIBlock()
 
         # 5. Initialize Certificate Management
