@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.159 2003-04-25 07:31:51 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.160 2003-04-28 18:40:42 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -25,8 +25,7 @@ log = logging.getLogger("AG.VenueClientUIClasses")
 from AccessGrid import icons
 from AccessGrid.VenueClient import VenueClient, EnterVenueException
 from AccessGrid import Utilities
-from AccessGrid.Utilities import GetMimeCommands
-from AccessGrid.UIUtilities import AboutDialog, MessageDialog
+from AccessGrid.UIUtilities import AboutDialog, MessageDialog, GetMimeCommands
 from AccessGrid.ClientProfile import *
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription

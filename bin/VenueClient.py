@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.134 2003-04-28 18:25:34 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.135 2003-04-28 18:40:03 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -30,9 +30,10 @@ import AccessGrid.ClientProfile
 from AccessGrid import DataStore
 
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
-from AccessGrid.Utilities import HaveValidProxy, GetMimeCommands
+from AccessGrid.Utilities import HaveValidProxy, formatExceptionInfo
 from AccessGrid.Utilities import StartDetachedProcess
-from AccessGrid.UIUtilities import MyLog, MessageDialog, InitMimeTypes 
+from AccessGrid.UIUtilities import MyLog, MessageDialog, InitMimeTypes
+from AccessGrid.UIUtilities import GetMimeCommands
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 from AccessGrid.GUID import GUID
 from AccessGrid.hosting.pyGlobus import Server
@@ -41,7 +42,6 @@ from AccessGrid.Platform import GPI, GetUserConfigDir
 from AccessGrid.VenueClientUIClasses import SaveFileDialog, UploadFilesDialog
 from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
-from AccessGrid.Utilities import formatExceptionInfo
 
 from AccessGrid import PersonalNode
     

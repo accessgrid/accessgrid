@@ -5,10 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.8 2003-04-28 18:26:55 judson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.9 2003-04-28 18:40:43 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+import mailcap
+import string
+
 try:
     import _winreg
     from AccessGrid.Platform import Win32RegisterMimeType
@@ -150,3 +153,26 @@ def InitMimeTypes(file):
                     
     return success
     
+def GetMimeCommands(filename = None, type = None, ext = None):
+    """
+    This function returns anything in the local mime type database for the
+    type or extension specified.
+    """
+    cdict = dict()
+    
+    if type != None:
+        fileType = mtm.GetFileTypeFromMimeType(type)
+    elif ext != None:
+        fileType = mtm.GetFileTypeFromExtension(ext)
+
+    if fileType != None and filename != None:
+        mimeType = fileType.GetMimeType()
+        cmds = fileType.GetAllCommands(filename, mimeType)
+        verbs, cmdlines = cmds
+        for i in range(0, len(verbs)):
+            cdict[string.lower(verbs[i])] = cmdlines[i]
+    else:
+        cdict = None
+
+    return cdict
+

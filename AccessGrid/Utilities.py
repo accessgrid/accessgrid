@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.29 2003-04-28 18:26:15 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.30 2003-04-28 18:40:43 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,6 @@ import time
 from random import Random
 import sha
 import urllib
-import mailcap
 
 import logging
 log = logging.getLogger("AG.Utilities")
@@ -273,29 +272,6 @@ def SetMimeTypeAssociation(mimetype, ext=None, desc=None, cmds=None):
 
     file.write(line)
     
-def GetMimeCommands(filename = None, type = None, ext = None):
-    """
-    This function returns anything in the local mime type database for the
-    type or extension specified.
-    """
-    cdict = dict()
-    
-    if type != None:
-        fileType = mtm.GetFileTypeFromMimeType(type)
-    elif ext != None:
-        fileType = mtm.GetFileTypeFromExtension(ext)
-
-    if fileType != None and filename != None:
-        mimeType = fileType.GetMimeType()
-        cmds = fileType.GetAllCommands(filename, mimeType)
-        verbs, cmdlines = cmds
-        for i in range(0, len(verbs)):
-            cdict[string.lower(verbs[i])] = cmdlines[i]
-    else:
-        cdict = None
-
-    return cdict
-
 def StartDetachedProcess(cmd):
     """
     Start cmd as a detached process.
