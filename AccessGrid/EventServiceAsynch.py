@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.2 2003-05-20 20:09:22 olson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.3 2003-05-21 16:23:05 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
