@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.35 2003-09-16 07:57:43 judson Exp $
+# RCS-ID:      $Id: setup.py,v 1.36 2003-09-16 14:53:21 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ by the set up below.
 win32_scripts = glob.glob('bin/*.py') + glob.glob('dist/bin/*.exe'),
 win32_data = []
 
-linux_ scripts = [r"bin/VenueServer.py", 
+linux_scripts = [r"bin/VenueServer.py", 
                   r"bin/VenueClient.py", 
                   r"bin/VenueManagement.py",
                   r"bin/SetupVideo.py",
