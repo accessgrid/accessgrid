@@ -2,8 +2,7 @@
 [Desktop Entry]
 Encoding=UTF-8
 Name=AGTk License
-Type=Link
-URL=/usr/share/doc/AccessGrid/COPYING.txt
+Type=Application
+Exec=/usr/bin/htmlview /usr/share/doc/AccessGrid/COPYING.txt
 Icon=/usr/share/AccessGrid/ag.ico
-GenericName=Read the software license under which the AGTk is distributed
 Terminal=0

@@ -2,8 +2,7 @@
 [Desktop Entry]
 Encoding=UTF-8
 Name=Venue Client Manual
-Type=Link
-URL=/usr/share/doc/AccessGrid/Documentation/VenueClientManual/VenueClientManual.htm
+Type=Application
+Exec=/usr/bin/htmlview /usr/share/doc/AccessGrid/Documentation/VenueClientManual/VenueClientManualHTML.htm
 Icon=/usr/share/AccessGrid/ag.ico
-GenericName=View Venue Client Manual
 Terminal=0

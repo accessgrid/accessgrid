@@ -2,8 +2,7 @@
 [Desktop Entry]
 Encoding=UTF-8
 Name=Developer Documentation
-Type=Link
-URL=/usr/share/doc/doc/Developer/index.html
+Type=Application
+Exec=/usr/bin/htmlview /usr/share/doc/doc/Developer/index.html
 Icon=/usr/share/AccessGrid/ag.ico
-GenericName=epydoc-generated documentation for developers
 Terminal=0

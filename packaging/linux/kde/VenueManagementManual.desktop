@@ -3,7 +3,6 @@
 Encoding=UTF-8
 Name=Venue Management Manual
 Type=Application
-URL=/usr/share/doc/AccessGrid/Documentation/VenueManagementManual/VenueManagementManual.htm
+Exec=/usr/bin/htmlview /usr/share/doc/AccessGrid/Documentation/VenueManagementManual/VenueManagementManualHTML.htm
 Icon=/usr/share/AccessGrid/ag.ico
-GenericName=View Venue Management Manual
 Terminal=0
