@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.45 2003-09-16 07:20:17 judson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.46 2003-09-17 22:39:04 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.45 2003-09-16 07:20:17 judson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.46 2003-09-17 22:39:04 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -33,7 +33,7 @@ import Queue
 
 import AccessGrid.GUID
 from AccessGrid.Utilities import GetHostname
-from AccessGrid.Descriptions import DataDescription
+from AccessGrid.Descriptions import DataDescription, CreateDataDescription
 from AccessGrid import Platform
 from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
@@ -919,11 +919,14 @@ class DataStore(ServiceBase):
         return desc
 
 
-    def SetDescription(self, filename, description):
+    def SetDescription(self, filename, descriptionStruct):
         """
         Given a data description and a filename,
         set the data description if the file exists
         """
+
+        description = CreateDataDescription(descriptionStruct)
+
         path = os.path.join(self.pathname, filename)
         if os.path.exists(path):
             description.uri = self.GetDownloadDescriptor(filename)
