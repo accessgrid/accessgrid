@@ -44,7 +44,7 @@ server interfaces includes:
 Service		  Default Port(s)
 ================  ===============
 Venue Server	  UDP: 8000, 8002, 8004, 8006
-Beacon Server	  UDP: (233.4.200.21:10002,10004) 
+Beacon Server	  UDP: (233.4.200.21:10002,10003) 
                   TCP: beacon.dast.nlanr.net:10004
 ================  ===============
 
