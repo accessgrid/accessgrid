@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.7 2003-05-28 18:51:32 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.8 2003-10-22 19:55:44 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ class AudioService( AGService ):
 
       self.capabilities = [ Capability( Capability.CONSUMER, Capability.AUDIO ), 
                             Capability( Capability.PRODUCER, Capability.AUDIO ) ]
-      self.executable = "rat"
+      self.executable = os.path.join(Platform.GetInstallDir(), "rat")
 
       #
       # Set configuration parameters

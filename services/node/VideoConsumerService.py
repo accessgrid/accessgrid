@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.6 2003-05-28 18:51:32 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.7 2003-10-22 19:55:44 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,14 +18,13 @@ from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangePara
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid import Platform
 
-
 class VideoConsumerService( AGService ):
 
    def __init__( self, server ):
       AGService.__init__( self, server )
 
       self.capabilities = [ Capability( Capability.CONSUMER, Capability.VIDEO ) ]
-      self.executable = "vic"
+      self.executable = os.path.join(Platform.GetInstallDir(), "vic")
 
       #
       # Set configuration parameters
