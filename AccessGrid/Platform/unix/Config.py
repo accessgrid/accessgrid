@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.20 2004-05-04 19:32:50 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.21 2004-05-05 19:05:45 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.20 2004-05-04 19:32:50 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.21 2004-05-05 19:05:45 eolson Exp $"
 
 import os
 import mimetypes
@@ -646,8 +646,81 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
     def RegisterMimeType(self, mimeType, extension, fileType, description,
                          cmds):
         """
+        mimeType - mimetype designator
+        extension - file extension
+        (doesn't have to be 3 letters, does have to start with a .)
+        fileType - file type, doesn't matter, just unique
+        description - free form description of the type
+        
+        list of:
+        verb - name of command
+        command - the actual command line
+        commandDesc - a description (menu format) for the command
+
+        Written with this use case example:
+        RegisterMimeType("application/x-ag-pkg", ".agpkg", "agpkg file", "Access Grid Package", ["agpm.py", "/usr/bin/agpm.py --wait-for-input", ""])
+        
+        ----
         """
-        pass
+        short_extension = ""
+        if len(extension) > 0:
+            # remove the "." from the front
+            short_extension = extension[1:]
+        homedir = os.environ['HOME']
+
+        # --- BEGIN GNOME REGISTRATION ---
+
+        # if gnome files exist, register with them.
+        gnomeDir = os.path.join(homedir, ".gnome")
+        gnomeAppDir = os.path.join(homedir, ".gnome", "application-info")
+        gnomeMimeDir = os.path.join(homedir, ".gnome", "mime-info")
+        gnomeAppFile = os.path.join(gnomeAppDir, "accessgrid.applications")
+        gnomeKeysFile = os.path.join(gnomeMimeDir, "accessgrid.keys")
+        gnomeMimeFile = os.path.join(gnomeMimeDir, "accessgrid.mime")
+        if os.path.exists(gnomeAppDir):
+            log.info("registering file type " + extension + " with gnome")
+
+            defAppId = cmds[0] # use verb for the defaultAppId
+
+            appInfo="""
+%s
+        requires_terminal=true
+        command=%s
+        can_open_multiple_files=false
+        name=%s
+        mime_types=%s
+            """ % (defAppId, cmds[1], defAppId, mimeType)
+          #  %("agpm.py", "/usr/bin/agpm.py", "agpm.py", application/x-ag-pkg")
+            f = open(gnomeAppFile, "a")
+            f.write(appInfo)
+            f.close()
+
+            keyInfo = """
+%s
+	default_application_id=%s
+        category=Misc
+        default_component_iid=
+        description=%s
+        icon_filename=
+        default_action_type=application
+        short_list_application_user_removals=
+        short_list_application_user_additions=%s
+        use_category_default=no
+            """ % (mimeType, defAppId, description, defAppId)
+            #     ("x-ag-pkg", "agpm.py", "Access Grid Package", "agpm.py")
+            f = open(gnomeKeysFile, "a")
+            f.write(keyInfo)
+            f.close()
+
+            mimeInfo="%s\n        ext: %s\n" % (mimeType, short_extension)  # ("x-ag-pkg", "agpkg"
+            f = open(gnomeMimeFile, "a")
+            f.write(mimeInfo)
+            f.close()
+
+        else:
+            log.info("gnome directory " + gnomeAppDir + " not found, not registering file type " + extension + " with gnome")
+
+        # --- END GNOME REGISTRATION ---
     
     def GetMimeCommands(self, mimeType = None, ext = None):
         """
