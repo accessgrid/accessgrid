@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.16 2003-05-28 22:02:52 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.17 2003-06-05 18:13:15 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -174,14 +174,17 @@ def GetMimeCommands(filename = None, type = None, ext = None):
 
     if fileType != None and filename != None:
         mimeType = fileType.GetMimeType()
-        cmds = fileType.GetAllCommands(filename, mimeType)
-        if None == cmds:
-            verbs = []
-            cmdlines = []
+        if mimeType != None:
+            cmds = fileType.GetAllCommands(filename, mimeType)
+            if None == cmds:
+                verbs = []
+                cmdlines = []
+            else:
+                verbs, cmdlines = cmds
+            for i in range(0, len(verbs)):
+                cdict[string.lower(verbs[i])] = cmdlines[i]
         else:
-            verbs, cmdlines = cmds
-        for i in range(0, len(verbs)):
-            cdict[string.lower(verbs[i])] = cmdlines[i]
+            cdict = None
     else:
         cdict = None
 
