@@ -3,7 +3,7 @@
 # Name:        NodeManagement.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.24 2004-03-17 21:40:08 judson Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.25 2004-03-22 20:02:27 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -26,7 +26,7 @@ class MyApp(wxApp):
         frame = NodeManagementClientFrame(NULL, -1,
                                           "Access Grid Node Management")
         try:
-            frame.AttachToNode(defNSUrl)
+            frame.AttachToNode(self.defNSUrl)
             # Avoid UI errors if fail to attach to node.
             if frame.nodeServiceHandle.IsValid():
                 frame.UpdateUI()
