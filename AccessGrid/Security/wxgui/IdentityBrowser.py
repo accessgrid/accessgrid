@@ -12,6 +12,45 @@ import ImportExportUtils
 
 from ImportIdentityCertDialog import ImportIdentityCertDialog
 
+class DeleteCertificateDialog(wxDialog):
+    """
+    Dialog to use for asking the user if he wants to delete the cert.
+
+    Adds a checkbox that allows the private key to not be deleted, though
+    that is not the default.
+    """
+
+    def __init__(self, parent, msg):
+        wxDialog.__init__(self, parent, -1, title = "Really delete?")
+
+        sizer = wxBoxSizer(wxVERTICAL)
+
+        for l in msg.split("\n"):
+            l = l.strip()
+            txt = wxStaticText(self, -1, l)
+            sizer.Add(txt, 0, wxEXPAND | wxTOP | wxRIGHT | wxLEFT, 10)
+
+        self.checkbox = wxCheckBox(self, -1, "Retain private key for certificate.")
+        sizer.Add(self.checkbox, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, 10)
+
+        hs = wxBoxSizer(wxHORIZONTAL)
+
+        b = wxButton(self, wxID_YES, "Yes")
+        hs.Add(b, 0, wxALL, 3)
+        EVT_BUTTON(self, wxID_YES, lambda e, self = self: self.EndModal(wxID_YES))
+
+        b = wxButton(self, wxID_NO, "No")
+        hs.Add(b, 0, wxALL, 3)
+        EVT_BUTTON(self, wxID_NO, lambda e, self = self: self.EndModal(wxID_NO))
+
+        sizer.Add(hs, 0, wxTOP | wxBOTTOM |  wxALIGN_CENTER, 10)
+
+        self.SetSizer(sizer)
+        self.Fit()
+
+    def GetRetainPrivateKey(self):
+        return self.checkbox.IsChecked()
+        
 class IdentityBrowser(CertificateBrowserBase):
     def __init__(self, parent, id, certMgr):
         CertificateBrowserBase.__init__(self, parent, id, certMgr)
@@ -115,20 +154,21 @@ class IdentityBrowser(CertificateBrowserBase):
         if cert is None:
             return
 
-
-        dlg = wxMessageDialog(self,
-                              "Deleting a certificate is an irreversible operation.\n" +
-                              "Really delete certificate for identity " +
-                              cert.GetShortSubject() + "?",
-                              "Really delete?",
-                              style = wxYES_NO | wxNO_DEFAULT)
+        dlg = DeleteCertificateDialog(self, 
+                                      "Deleting a certificate is an irreversible operation.\n" +
+                                      "Really delete certificate for identity " +
+                                      cert.GetShortSubject() + "?")
+        
         ret = dlg.ShowModal()
+
+        retain = dlg.GetRetainPrivateKey()
+        
         dlg.Destroy()
 
         if ret == wxID_NO:
             return
 
-        self.certMgr.GetCertificateRepository().RemoveCertificate(cert)
+        self.certMgr.GetCertificateRepository().RemoveCertificate(cert, dlg.GetRetainPrivateKey())
         self.certMgr.GetUserInterface().InitGlobusEnvironment()
         self.Load()
 
@@ -319,3 +359,10 @@ class IdentityBrowser(CertificateBrowserBase):
     def _getListColumnWidths(self):
         return [wxLIST_AUTOSIZE_USEHEADER, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE_USEHEADER, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE_USEHEADER]
 
+
+if __name__ == "__main__":
+    a = wxPySimpleApp()
+    dlg = DeleteCertificateDialog(None, "You can't undo this\n" +
+                              "Really delete certificate for identity ?")
+    rc = dlg.ShowModal()
+    print rc
