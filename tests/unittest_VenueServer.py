@@ -27,7 +27,7 @@ Not Testing yet:
    Persistence, SetDefaultVenueServer
 
 """
-
+import sys
 import logging, logging.handlers
 import unittest
 import threading
@@ -54,9 +54,11 @@ class VenueServerTestCase(unittest.TestCase):
         running = 0
 
     def testAddVenue(self):
+        global venueServer
         venueServer.AddVenue(VenueDescription("unittestVenue2", "venue for unittest"));
 
     def testRemoveVenue(self):
+        global venueServer
         rvenue = VenueDescription("unittestVenue3", "venue for unittest")
         rvenue.uri = venueServer.AddVenue(rvenue)
         venueRemoved = 0
@@ -69,13 +71,16 @@ class VenueServerTestCase(unittest.TestCase):
         assert venueRemoved
 
     def testGetSetStorageLocation(self):
+        global venueServer
         venueServer.SetStorageLocation("testData")
         assert "testData" == venueServer.GetStorageLocation()
 
     def testCheckpoint(self):
+        global venueServer
         venueServer.Checkpoint()
 
     def testGetSetEncryptAllMedia(self):
+        global venueServer
         original = venueServer.GetEncryptAllMedia()
         venueServer.SetEncryptAllMedia(1)
         assert 1 == venueServer.GetEncryptAllMedia()
@@ -84,6 +89,7 @@ class VenueServerTestCase(unittest.TestCase):
         venueServer.SetEncryptAllMedia(original)
 
     def testAddRemoveAdministrator(self):
+        global venueServer
         venueServer.authManager.FindRole("Administrators").AddSubject(X509Subject.CreateSubjectFromString("testAdmin"))
 
         assert venueServer.authManager.FindRole("Administrators").HasSubject(X509Subject.CreateSubjectFromString("testAdmin"))
@@ -95,6 +101,9 @@ class VenueServerTestCase(unittest.TestCase):
         global venue1       # so TestCases can access it
         # initialize toolkit and environment
         app = Toolkit.Service()
+        #
+        sys.argv = sys.argv[:1]
+        
         app.Initialize("VenueServer_test")
         # server
         venueServer = VenueServer()

@@ -31,14 +31,13 @@ import signal, time
 import unittest
 import logging, logging.handlers
 
-from AccessGrid.AGNodeService import AGNodeService
-from AccessGrid.AGServiceManager import AGServiceManager
+from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
+from AccessGrid.AGServiceManager import AGServiceManager, AGServiceManagerI
 from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid.hosting import SecureServer as Server
 
-global nodeService
-global server
-global service
+nodeService = None
+server = None
 
 # Start the service in the TestSuite so its tests can access it.
 class AGNodeServiceTestSuite(unittest.TestSuite):
@@ -66,7 +65,6 @@ class AGNodeServiceTestSuite(unittest.TestSuite):
 
         # Start up the logging
 
-        port = 11000            # default
         logFile = "./agns.log"  # default
         debugMode = 0
 
@@ -86,21 +84,20 @@ class AGNodeServiceTestSuite(unittest.TestSuite):
 
         # Create a hosting environment
         global server
-        server = Server(('', port))
+        server = Server(('', 0))
 
         # Create the Node Service Service
-        global service
-        service = server.CreateServiceObject("NodeService")
-        nodeService._bind_to_service( service )
+        nsurl = server.RegisterObject(AGNodeServiceI(nodeService),
+                                      path="NodeService")
 
         # Tell the world where to find the service
-        log.info("Starting service; URI: %s", nodeService.get_handle())
+        log.info("Starting service; URI: %s", nsurl)
 
         # Register a signal handler so we can shut down cleanly
         signal.signal(signal.SIGINT, self.SignalHandler)
 
         # Run the service
-        server.run_in_thread()
+        server.RunInThread()
         # A standard AGNodeService would do the following:
             # Keep the main thread busy so we can catch signals
             #running = 1
@@ -115,6 +112,7 @@ class AGNodeServiceTestCase(unittest.TestCase):
     # Authorization Methods
 
     def testAddRemoveAuthorizedUser(self):
+        global nodeService
         nodeService.AddAuthorizedUser("jdoe")
         assert "jdoe" in nodeService.authManager.GetAuthorizedUsers()
         nodeService.RemoveAuthorizedUser("jdoe")
@@ -123,12 +121,13 @@ class AGNodeServiceTestCase(unittest.TestCase):
     # Service Manager Methods
 
     def testAddRemoveServiceManager(self):
+        global nodeService
         # Create the Service Manager
-        serviceManager = AGServiceManager(Server(0))
-        service_man = server.CreateServiceObject("ServiceManager")
-        serviceManager._bind_to_service(service_man)
-
-        serviceManagerDesc = AGServiceManagerDescription("testServiceManager", service_man.GetHandle() )
+        serviceManager = AGServiceManager(Server(('',0)))
+        smurl = server.RegisterObject(AGServiceManagerI(serviceManager),
+                              path="ServiceManager")
+        serviceManagerDesc = AGServiceManagerDescription("testServiceManager",
+                                                smurl)
         nodeService.AddServiceManager(serviceManagerDesc)
         assert serviceManagerDesc in nodeService.GetServiceManagers()
         nodeService.RemoveServiceManager(serviceManagerDesc) 
@@ -139,20 +138,25 @@ class AGNodeServiceTestCase(unittest.TestCase):
     # Service Methods
 
     def testGetAvailableServices(self):
+        global nodeService
         nodeService.GetAvailableServices()
 
     def testGetServices(self):
+        global nodeService
         nodeService.GetServices()
 
     # Configuration Methods
 
     def testGetConfigurations(self):
+        global nodeService
         nodeService.GetConfigurations()
 
     def testStoreConfiguration(self):
+        global nodeService
         nodeService.StoreConfiguration(".testStore_agns.cfg")
 
     def testLoadConfiguration(self):
+        global nodeService
         nodeService.StoreConfiguration(".testLoad_agns.cfg")
         nodeService.LoadConfiguration(".testLoad_agns.cfg")
 
@@ -161,12 +165,14 @@ class AGNodeServiceTestCase(unittest.TestCase):
     # Other Methods
 
     def testGetCapabilites(self):
+        global nodeService
         nodeService.GetCapabilities()
 
     # Cleanup things set up in the test suite init above.
     #   Unittest suites don't have a proper way to cleanup things used 
     #   in the entire suite.
     def testZEnd(self):
+        global nodeService
         nodeService.Stop()
         server.Stop() 
 
