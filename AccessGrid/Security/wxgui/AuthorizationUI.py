@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.6 2004-03-18 22:33:02 lefvert Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.7 2004-03-22 19:41:39 eolson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.6 2004-03-18 22:33:02 lefvert Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.7 2004-03-22 19:41:39 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -1359,11 +1359,14 @@ def InitLogging(debug = 1, l = None):
 
 if __name__ == "__main__":
     import logging
+
+    app = Toolkit.WXGUIApplication()
+    app.Initialize()
         
     if len(sys.argv) == 2:
         uri = sys.argv[1]
     else:
-        uri = "https://localhost:8000/VenueServer/Authorization"
+        uri = "https://localhost:8000/VenueServer"
         
     try:
         am = AuthorizationManagerIW(uri)
@@ -1397,7 +1400,7 @@ if __name__ == "__main__":
     
     
     f = AuthorizationUIDialog(None, -1, "Manage Roles", log)
-    f.ConnectToAuthManager("https://localhost:8000/VenueServer/Authorization")
+    f.ConnectToAuthManager(uri)
     if f.ShowModal() == wxID_OK:
         f.panel.Apply()
     f.Destroy()
