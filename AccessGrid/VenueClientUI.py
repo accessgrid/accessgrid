@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.42 2004-04-27 02:20:15 judson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.43 2004-04-27 17:24:28 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.42 2004-04-27 02:20:15 judson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.43 2004-04-27 17:24:28 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2116,6 +2116,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             #
             wxCallAfter(self.textClientPanel.OutputText, None,
                         "-- Entered venue %s" % self.venueClient.GetVenueName())
+            wxCallAfter(self.textClientPanel.OutputText, "enter",
+                        self.venueClient.GetVenueDescription())
+
             wxCallAfter(self.SetVenueUrl, URL)
             
             # Get the user's administrative status
@@ -3438,6 +3441,10 @@ class TextClientPanel(wxPanel):
             self.textOutput.AppendText(message+'\n')
             self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
 
+        elif name == "enter":
+            # Descriptions are coloured black
+            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
+            self.textOutput.AppendText(message+'\n')
         # Someone is writing a message
         else:
             # Set names bold
@@ -3458,14 +3465,14 @@ class TextClientPanel(wxPanel):
             textAttr = wxTextAttr(wxBLACK)
             textAttr.SetFont(f)
             self.textOutput.SetDefaultStyle(textAttr)
-            self.textOutput.AppendText(message+'\n')
+            self.textOutput.AppendText('\"' + message+'\"\n')
 
         if IsWindows():
             # Scrolling is not correct on windows when I use
             # wxTE_RICH flag in text output window.
            
             self.SetRightScroll()
-            
+
     def OutputText(self, name, message):
         '''
         Print received text in text chat.
