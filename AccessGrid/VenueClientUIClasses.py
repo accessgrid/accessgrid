@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.222 2003-07-29 16:13:53 eolson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.223 2003-08-04 22:07:53 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -88,6 +88,8 @@ class VenueClientFrame(wxFrame):
     ID_PROFILE = wxNewId()
     ID_PROFILE_EDIT = wxNewId()
     ID_CERTIFICATE_MANAGE = wxNewId()
+    ID_USE_MULTICAST = wxNewId()
+    ID_USE_UNICAST = wxNewId()
     ID_MYNODE_MANAGE = wxNewId()
     ID_ENABLE_VIDEO = wxNewId()
     ID_ENABLE_AUDIO = wxNewId()
@@ -213,9 +215,15 @@ class VenueClientFrame(wxFrame):
             certMenu = gui.GetMenu(self)
             self.preferences.AppendMenu(self.ID_CERTIFICATE_MANAGE,
                                     "&Manage Certificates", certMenu)
+
         self.preferences.AppendSeparator()
-        self.preferences.Append(self.ID_MYNODE_MANAGE, "&Manage My Node...",
-                                "Configure your node")
+
+        # Add node-related entries
+        self.preferences.AppendRadioItem(self.ID_USE_MULTICAST, "Use multicast",
+                                "Use multicast to connect media")
+        self.preferences.AppendRadioItem(self.ID_USE_UNICAST, "Use unicast",
+                                "Use unicast to connect media")
+        self.preferences.AppendSeparator()
         self.preferences.AppendCheckItem(self.ID_ENABLE_VIDEO, "Enable video",
                                 "Enable/disable video for your node")
         self.preferences.Check(self.ID_ENABLE_VIDEO,true)
@@ -224,6 +232,8 @@ class VenueClientFrame(wxFrame):
         self.preferences.Check(self.ID_ENABLE_AUDIO,true)
         self.preferences.Append(self.ID_MYNODE_URL, "&Set Node URL...",
                                 "Specify URL address to node service")
+        self.preferences.Append(self.ID_MYNODE_MANAGE, "&Manage My Node...",
+                                "Configure your node")
         self.menubar.Append(self.preferences, "&Preferences")
         self.myVenues = wxMenu()
         self.myVenues.Append(self.ID_MYVENUE_ADD, "Add &Current Venue",
@@ -379,6 +389,8 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_VENUE_SERVICE_PROPERTIES, self.OpenServiceProfile)
         EVT_MENU(self, self.ID_VENUE_CLOSE, self.Exit)
         EVT_MENU(self, self.ID_PROFILE, self.OpenMyProfileDialog)
+        EVT_MENU(self, self.ID_USE_MULTICAST, self.UseMulticast)
+        EVT_MENU(self, self.ID_USE_UNICAST, self.UseUnicast)
         EVT_MENU(self, self.ID_MYNODE_MANAGE, self.OpenNodeMgmtApp)
         EVT_MENU(self, self.ID_ENABLE_VIDEO, self.EnableVideo)
         EVT_MENU(self, self.ID_ENABLE_AUDIO, self.EnableAudio)
@@ -995,8 +1007,26 @@ class VenueClientFrame(wxFrame):
             if(areYouSureDialog.ShowModal() == wxID_OK):
                 self.app.RemoveApp( app )
         else:
-            self.__showNoSelectionDialog("Please, select the application you want to delete")       
+            self.__showNoSelectionDialog("Please, select the application you want to delete")    
             
+
+    #
+    # Connectivity menu handling
+    #
+    def UseMulticast(self,event):
+        self.app.SetTransport("multicast")
+
+    def UseUnicast(self,event):
+        self.app.SetTransport("unicast")
+
+    def SetUnicastEnabled(self, flag):
+        self.preferences.Enable(self.ID_USE_UNICAST, flag)
+
+    def SetTransport(self, transport):
+        if transport == "multicast":
+            self.preferences.Check(self.ID_USE_MULTICAST, true)
+        elif transport == "unicast":  
+            self.preferences.Check(self.ID_USE_UNICAST, true)
             
     def CleanUp(self):
         self.venueListPanel.CleanUp()

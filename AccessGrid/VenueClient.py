@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.85 2003-07-15 21:36:14 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.86 2003-08-04 22:07:53 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -74,6 +74,9 @@ class VenueClient( ServiceBase):
         self.__InitVenueData__()
         self.isInVenue = 0
         self.isIdentitySet = 0
+
+        self.streamDescList = None
+        self.transport = "multicast"
         
         # attributes for follow/lead
         self.pendingLeader = None
@@ -321,6 +324,14 @@ class VenueClient( ServiceBase):
         for s in self.eventSubscribers:
             s.AddStreamEvent(event)
     
+    def ModifyStreamEvent(self, event):
+        log.debug("Got Modify Stream Event")
+        data = event.data
+        if self.nodeServiceUri != None:
+            Client.Handle(self.nodeServiceUri).GetProxy().AddStream(data)
+        for s in self.eventSubscribers:
+            s.ModifyStreamEvent(event)
+    
     def RemoveStreamEvent(self, event):
         log.debug("Got Remove Stream Event")
         data = event.data
@@ -398,10 +409,9 @@ class VenueClient( ServiceBase):
             #
 
             log.debug("Invoke venue enter")
-            (venueState, self.privateId, streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
+            (venueState, self.privateId, self.streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
 
-       
-                
+
             #
             # construct a venue state that consists of real objects
             # instead of the structs we get back from the SOAP call
@@ -523,21 +533,12 @@ class VenueClient( ServiceBase):
             # Update the node service with stream descriptions
             #
             try:
-                #if haveValidNodeService:
-                if not self.isIdentitySet:
-                    """
-                    Inform the node of the identity of the person driving it
-                    """
-                    Client.Handle(self.nodeServiceUri).GetProxy().SetIdentity(self.profile)
-                    self.isIdentitySet = 1
-                
-                Client.Handle( self.nodeServiceUri ).GetProxy().SetStreams( streamDescList )
-
+                self.UpdateNodeService()
             except Exception, e:
                 #
                 # This is a non fatal error, users should be notified but still enter the venue
                 #
-                log.info("AccessGrid.VenueClient::Exception configuring node service streams")
+                log.exception("AccessGrid.VenueClient::Exception configuring node service streams")
                 errorInNode = 1
 
             self.dataStore.SetEventDistributor(self.eventClient, self.venueState.uniqueId)
@@ -1063,6 +1064,45 @@ class VenueClient( ServiceBase):
         self.pendingLeader = None
 
     FollowResponse.soap_export_as = "FollowResponse"
+    
+
+    def UpdateNodeService(self):
+        """
+        Inform the node of the identity of the person driving it
+        """
+
+        # Set the identity of the user running the node
+        if not self.isIdentitySet:
+            Client.Handle(self.nodeServiceUri).GetProxy().SetIdentity(self.profile)
+            self.isIdentitySet = 1
+
+        # Set the streams to use the selected transport
+        for stream in self.streamDescList:
+            if stream.location.type != self.transport:
+                if stream.__dict__.has_key('networkLocations'):
+                    for netloc in stream.networkLocations:
+                        if netloc.type == self.transport:
+                            log.debug("UpdateNodeService: Setting stream %s to %s",
+                                      stream.id, self.transport)
+                            stream.location = netloc
+
+        # Send streams to the node service
+        Client.Handle( self.nodeServiceUri ).GetProxy().SetStreams( self.streamDescList )
+
+    
+    def SetTransport(self,transport):
+
+        # Update the transport if it has changed
+        if self.transport != transport:
+            self.transport = transport
+
+            # Update the node service to use the new transport
+            if self.streamDescList:
+                self.UpdateNodeService()
+
+    def GetTransport(self):
+        return self.transport
+            
 
     def SetNodeUrl(self, url):
         """
