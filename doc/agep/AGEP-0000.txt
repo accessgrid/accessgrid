@@ -1,7 +1,7 @@
-AGEP: 0
+pep: 0
 Title: Index of Access Grid Enhancement Proposals (AGEPs)
-Version: $Revision: 1.1 $
-Last-Modified: $Date: 2003-12-18 14:50:47 $
+Version: $Revision: 1.2 $
+Last-Modified: $Date: 2004-03-10 19:54:35 $
 Author: Ivan R. Judson <judson@mcs.anl.gov>
 Status: Active
 Type: Informational
@@ -13,7 +13,7 @@ Introduction
 
     The AGEP contains the index of all Access Grid Enhancement Proposals,
     known as AGEPs.  AGEP numbers are assigned by the AGEP Editor, and
-    once assigned are never changed.  The CVS history[1] of the PEP
+    once assigned are never changed.  The CVS history[1] of the AGEP
     texts represent their historical record.
 
 
@@ -42,7 +42,7 @@ Index by Category
  I   101  Doing Access Grid Releases 101               EO, TDU, IRJ, RDO
  I   102  Doing Access Grid Micro Releases             RDO
  I   103  Access Grid 2.1.3 Release Schedule           IRJ
- I   109  Firewall Configuration for AGTk 2.X          IRJ
+ I   109  Firewall Configuration for AGTk 2.X          IRJ      
  I   113  Access Grid Code Testing Strategy	       EO
  I   117  Transition from AG1 to AG2		       IRJ
  I   119  Access Grid Distribution Plan		       EO
@@ -52,18 +52,20 @@ Index by Category
  Open AGEPs (under consideration)
 
  S   104  Persistence Refactoring		       IRJ
- S   105  Authorization Refactoring		       IRJ
- S   106  Client Profile Cache for Servers	       EO
- S   107  Hosting Refactoring			       IRJ
- S   108  Platform Refactoring			       IRJ
- S   110  Finishing Shared Applications		       SL
- S   111  Shared Application Client		       SL
- S   112  Toolkit Initialization Modifications	       IRJ, RDO
- S   114  Usage Logging Extensions		       EO
- S   115  Client SDK Refactoring		       TDU
- S   116  Venue Client SOAP Interface		       TDU
+ S   105  Authorization Refactoring		       IRJ              
+ S   106  Client Profile Cache for Servers	       EO           
+ S   107  Hosting Refactoring			       IRJ              
+ S   108  Platform Refactoring			       IRJ              
+ S   110  Finishing Shared Applications		       SL           
+ S   111  Shared Application Client		       SL               
+ S   112  Toolkit Initialization Modifications	       IRJ, RDO 
+ S   114  Usage Logging Extensions		       EO              
+ S   115  Client SDK Refactoring		       TDU              
+ S   116  Venue Client SOAP Interface		       TDU          
  S   118  Access Grid Logging			       IRJ
  S   120  Shared App/Node Service Packaging	       EO
+ S   121  Display Service                              IRJ
+ S   122  Service Certificate Integration              TDU
    
  Finished AGEPs (done, implemented in CVS)
 
@@ -100,6 +102,11 @@ Numerical Index
  S   115  Client SDK Refactoring		       TDU
  S   116  Venue Client SOAP Interface		       TDU
  I   117  Transition from AG1 to AG2		       IRJ
+ S   118  Access Grid Logging			       IRJ
+ I   119  Access Grid Distribution Plan		       EO
+ S   120  Shared App/Node Service Packaging	       EO
+ S   121  Display Service                              IRJ
+ S   122  Service Certificate Integration              TDU
 
 Key
 
@@ -119,6 +126,13 @@ Owners
     EO			     eolson@mcs.anl.gov	
     SL			     lefvert@mcs.anl.gov
     TDU			     turam@mcs.anl.gov
+    
+	     turam@mcs.anl.gov
+
+References
+
+.. _a105: http://www.python.org
+.. _106: AGE.. _106: AGEP-0106.html
 
 
 Local Variables:
