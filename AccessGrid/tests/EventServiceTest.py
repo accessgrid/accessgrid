@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: EventServiceTest.py,v 1.2 2003-11-12 21:50:35 lefvert Exp $
+# RCS-ID:      $Id: EventServiceTest.py,v 1.3 2003-11-12 22:25:20 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
@@ -56,7 +56,7 @@ class EventServiceController:
         for i in range(self.nrOfEvent):
             index = index + 1
             event.data.name =" D-"+str(index)
-            
+
             self.lock.acquire()
             self.eventList.append(event.eventType+event.data.name)
             self.lock.release()
@@ -109,8 +109,7 @@ class EventServiceSender:
 
     def SendEvents(self, event):
         index = 0
-        name = event.data.name
-                
+
         for i in range(self.nrOfEvent):
             index = index + 1
             event.data.name = " S-" + str(index)
@@ -302,6 +301,19 @@ if __name__ == "__main__":
     # -- Add data
     event = Events.AddDataEvent(esc.GetChannelId(), dataDescription)
     sendThread1 = threading.Thread(target = ess.SendEvents, args = [event])
+
+    event = Events.UpdateDataEvent(esc.GetChannelId(), dataDescription)
+    sendThread2 = threading.Thread(target = ess.SendEvents, args = [event])
+
+    event = Events.RemoveDataEvent(esc.GetChannelId(), dataDescription)
+    sendThread3 = threading.Thread(target = ess.SendEvents, args = [event])
+        
+    #event = Events.ClientExitingEvent(esc.GetChannelId(), 1)
+    #sendThread4 = threading.Thread(target = ess.SendEvents, args = [event])
+    
+    #event = Events.HeartbeatEvent(esc.GetChannelId(), 1)
+    #sendThread5 = threading.Thread(target = ess.SendEvents, args = [event])
+    
     
     #
     # Distribute threads
@@ -368,6 +380,11 @@ if __name__ == "__main__":
     distributeThread14 = threading.Thread(target = esc.DistributeEvents,
                                          args = [event])
     sendThread1.start()
+    sendThread2.start()
+    sendThread3.start()
+    #sendThread4.start()
+    #sendThread5.start()
+    
     distributeThread1.start()
     distributeThread2.start()
     distributeThread3.start()
@@ -387,6 +404,11 @@ if __name__ == "__main__":
     # Join threads
     #
     sendThread1.join()
+    sendThread2.join()
+    sendThread3.join()
+    #sendThread4.join()
+    #sendThread5.join()
+    
     distributeThread1.join()
     distributeThread2.join()
     distributeThread3.join()
@@ -413,10 +435,15 @@ if __name__ == "__main__":
     print "Received events:\n %s\n"%(eventsReceived)
    
     print '--- RESULT ---'
-    
+
+    receivedAllEvts = 1
     for event in eventsOut:
         if event not in eventsReceived:
+            receivedAllEvts = 0
             print event + " was not received"
+
+    if receivedAllEvts:
+        print 'All events sent got received '
 
     if not eventsOut == eventsReceived:
         print '\nThe events were not received in the same order as they were sent\n'
