@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.37 2003-09-24 14:21:22 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.38 2003-09-25 14:01:47 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.37 2003-09-24 14:21:22 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.38 2003-09-25 14:01:47 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import isWindows, isLinux, isOSX
@@ -83,7 +83,7 @@ class BugReportCommentDialog(wxDialog):
         # will never get focus when you use the TAB key.
         # --
         if isWindows():
-            temp = wxBitmapButton(self, -1, icons.getEmptyBitmap(), size = wxSize(1,1))
+            temp = wxBitmapButton(self, -1, wxEmptyBitmap(1,1), size = wxSize(1,1))
         # --
         
         self.commentText =  wxStaticText(self, -1, "Comment:")
