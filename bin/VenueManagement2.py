@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement2.py,v 1.1 2004-07-29 16:04:58 binns Exp $
+# RCS-ID:      $Id: VenueManagement2.py,v 1.2 2004-07-30 17:00:23 binns Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement2.py,v 1.1 2004-07-29 16:04:58 binns Exp $"
+__revision__ = "$Id: VenueManagement2.py,v 1.2 2004-07-30 17:00:23 binns Exp $"
 
 # Standard imports
 import sys
@@ -2120,10 +2120,10 @@ class ModifyVenueFrame(VenueParamFrame):
         self.generalPanel.LoadLocalVenues()
 
         # Connect to authorization manager.
-        #self.noteBook.AddPage(self.authorizationPanel, "Security")
+        self.noteBook.AddPage(self.authorizationPanel, "Security")
 
-        #self.authorizationPanel.ConnectToAuthManager(self.venue.uri)
-        self.authorizationPanel.Hide()
+        self.authorizationPanel.ConnectToAuthManager(self.venue.uri)
+        #self.authorizationPanel.Hide()
         
         wxEndBusyCursor()
 

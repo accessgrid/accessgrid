@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.23 2004-07-28 23:05:01 turam Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.24 2004-07-30 17:00:23 binns Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.23 2004-07-28 23:05:01 turam Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.24 2004-07-30 17:00:23 binns Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -25,7 +25,7 @@ from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from wxPython.wizard import *
 
 from AccessGrid import Toolkit
-from AccessGrid.Platform import IsWindows
+from AccessGrid.Platform import IsWindows,IsOSX
 from AccessGrid.ClientProfile import ClientProfileCache
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
 from AccessGrid.Venue import VenueIW
@@ -72,24 +72,38 @@ class AuthorizationUIPanel(wxPanel):
         self.changed = 0
         
         # Create ui componentes
-        self.leftSashWindow = wxSashLayoutWindow(self, self.ID_WINDOW_LEFT,
-                                                 size = wxSize(400,10))
+        self.leftSashWindow = wxSashWindow(self, self.ID_WINDOW_LEFT,
+                                                    size = wxSize(400,200))
         self.rolePanel = wxPanel(self.leftSashWindow ,  wxNewId(),
                                  style = wxSUNKEN_BORDER)
+        self.roleTitle = wxStaticText(self.leftSashWindow, -1, "Roles", size=wxSize(100,-1), style=wxALIGN_LEFT)
+        if IsOSX():
+            self.roleTitle.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+        else:
+            self.roleTitle.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+
         self.actionPanel = wxPanel(self,  wxNewId(),
                                    style = wxSUNKEN_BORDER)
+        self.actionTitle = wxStaticText(self.actionPanel, -1, "Actions", size=wxSize(100,-1), style=wxALIGN_LEFT)
+        if IsOSX():
+            self.actionTitle.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
+        else:
+            self.actionTitle.SetFont(wxFont(wxDEFAULT,wxNORMAL,wxNORMAL,wxBOLD))
+
         self.tree = wxTreeCtrl(self.rolePanel, wxNewId(), wxDefaultPosition, 
                                wxDefaultSize, style = wxTR_HAS_BUTTONS |
                                wxTR_LINES_AT_ROOT | wxTR_HIDE_ROOT)
-        self.staticBox = None
-        self.actionList = wxCheckListBox(self.actionPanel, wxNewId())
+        if IsOSX():
+            self.actionList = wxListBox(self.actionPanel, wxNewId(),style=wxLB_MULTIPLE)
+        else:
+            self.actionList = wxCheckListBox(self.actionPanel, wxNewId())
                
+        self.SetSize(wxSize(800,800))
+
         self.__setMenus()
         self.__setEvents()
         self.__layout()
         
-        self.SetSize(wxSize(800,800))
-       
     def ConnectToAuthManager(self, url):
         '''
         Connects to an authorization manager running at url. After a successful connect,
@@ -140,7 +154,7 @@ class AuthorizationUIPanel(wxPanel):
                 actions.append(action.name)
 
             self.actionList.InsertItems(actions, 0)
-                      
+
         except:
             self.log.exception("AuthorizationUIPanel.ConnectToAuthManager: List actions failed. %s"%(authUrl))
             self.allActions = []
@@ -233,16 +247,14 @@ class AuthorizationUIPanel(wxPanel):
         self.tree.SelectItem(firstItem)
 
         currentItem = self.tree.GetSelection()
-        if self.staticBox:
-            self.staticBox.SetLabel("Actions for %s"%self.tree.GetItemText(currentItem))
+        self.actionTitle.SetLabel("Actions for %s"%self.tree.GetItemText(currentItem))
             
     def __setEvents(self):
         '''
         Set events.
         '''
         EVT_RIGHT_DOWN(self.tree, self.OnRightClick)
-       
-       
+
         #EVT_TREE_END_LABEL_EDIT(self.tree, self.tree.GetId(), self.EndRename)
         EVT_TREE_BEGIN_DRAG(self.tree, self.tree.GetId(), self.BeginDrag)
         EVT_TREE_END_DRAG(self.tree, self.tree.GetId(), self.EndDrag)
@@ -278,16 +290,18 @@ class AuthorizationUIPanel(wxPanel):
         
         if eID == self.ID_WINDOW_LEFT:
             width = event.GetDragRect().width
-            self.leftSashWindow.SetDefaultSize(wxSize(width, 1000))
-                                           
-        wxLayoutAlgorithm().LayoutWindow(self, self.actionPanel)
+            self.leftSashWindow.SetSize(wxSize(width, -1))
+
+#        wxLayoutAlgorithm().LayoutWindow(self, self.actionPanel)
+        self.__layout()
         self.actionPanel.Refresh()
                                                 
     def __OnSize(self, event = None):
         '''
         Called when a user resizes the window.
         '''
-        wxLayoutAlgorithm().LayoutWindow(self, self.actionPanel)
+        self.__layout()
+        #wxLayoutAlgorithm().LayoutWindow(self, self.actionPanel)
               
     def __participantInRole(self, roleId, person):
         '''
@@ -387,30 +401,30 @@ class AuthorizationUIPanel(wxPanel):
         Handles UI layout,
         '''
         # Role Panel
-        mainSizer = wxBoxSizer(wxHORIZONTAL)
-        staticBox = wxStaticBox(self.rolePanel, -1, "Roles")
-        staticBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        sizer  = wxStaticBoxSizer(staticBox,
-                                  wxVERTICAL)
-        sizer.Add(self.tree, 1, wxEXPAND|wxALL, 10)
-        mainSizer.Add(sizer, 1, wxEXPAND|wxALL, 10) 
+        mainSizer = wxBoxSizer(wxVERTICAL)
+        mainSizer.Add(self.roleTitle,0,wxEXPAND|wxALL,10)
+        mainSizer.Add(self.tree,1,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,10)
         self.rolePanel.SetSizer(mainSizer)
 
         # Action Panel
-        mainSizer = wxBoxSizer(wxHORIZONTAL)
-        self.staticBox = wxStaticBox(self.actionPanel, -1, "Actions")
-        self.staticBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        sizer  = wxStaticBoxSizer(self.staticBox,
-                                  wxVERTICAL)
-        sizer.Add(self.actionList, 1, wxEXPAND|wxALL, 10)
-        mainSizer.Add(sizer, 1, wxEXPAND|wxALL, 10) 
-        self.actionPanel.SetSizer(mainSizer)
+        mainSizer2 = wxBoxSizer(wxVERTICAL)
+        mainSizer2.Add(self.actionTitle,0,wxEXPAND|wxALL,10)
+        mainSizer2.Add(self.actionList,1,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,10)
+        self.actionPanel.SetSizer(mainSizer2)
 
-        # Sash windows
-        self.leftSashWindow.SetDefaultSize(wxSize(400, 60))
-        self.leftSashWindow.SetOrientation(wxLAYOUT_VERTICAL)
-        self.leftSashWindow.SetAlignment(wxLAYOUT_LEFT)
+        mainSizer3=wxBoxSizer(wxHORIZONTAL)
+        mainSizer3.Add(self.rolePanel,1,wxEXPAND)
+        w,h=self.leftSashWindow.GetSizeTuple()
+        self.leftSashWindow.SetSizer(mainSizer3)
+        self.leftSashWindow.GetSizer().SetDimension(5,5,w-10,h-10)
+
         self.leftSashWindow.SetSashVisible(wxSASH_RIGHT, TRUE)
+        
+        mainSizer4=wxBoxSizer(wxHORIZONTAL)
+        mainSizer4.Add(self.leftSashWindow,0,wxEXPAND)
+        mainSizer4.Add(self.actionPanel,1,wxEXPAND)
+        self.SetSizer(mainSizer4)
+        self.Layout()
         
     def Copy(self, event):
         '''
@@ -473,19 +487,26 @@ class AuthorizationUIPanel(wxPanel):
         makes the list behave as if the user checked a the list
         box of that item.
         '''
-        index = event.GetInt()
-        checked = self.actionList.IsChecked(index)
-        if checked:
-            self.actionList.Check(index, 0)
+        if IsOSX():
+            index = event.GetInt()
+            self.__SetAction(index)
         else:
-            self.actionList.Check(index, 1)
+            index = event.GetInt()
+            checked = self.actionList.IsChecked(index)
+            if checked:
+                self.actionList.Check(index, 0)
+            else:
+                self.actionList.Check(index, 1)
 
-        self.__SetAction(index)
+            self.__SetAction(index)
 
 
     def __SetAction(self, index):
         actionName = self.actionList.GetString(index)
-        checked = self.actionList.IsChecked(index)
+        if IsOSX():
+            checked = self.actionList.IsSelected(index)
+        else:
+            checked = self.actionList.IsChecked(index)
 
         # Get current action object
         currentAction = None
@@ -517,14 +538,18 @@ class AuthorizationUIPanel(wxPanel):
        
         index = event.GetInt()
         actionName = self.actionList.GetString(index)
-        checked = self.actionList.IsChecked(index)
+        if IsOSX():
+            checked = self.actionList.IsSelected(index)
+        else:
+            checked = self.actionList.IsChecked(index)
 
         # Make select action work as check action for usability reasons.
         # Thus, ignore check action events.
-        if checked:
-            self.actionList.Check(index, 0)
-        else:
-            self.actionList.Check(index, 1)
+        if not IsOSX():
+            if checked:
+                self.actionList.Check(index, 0)
+            else:
+                self.actionList.Check(index, 1)
 
       
     def OnSelect(self, event):
@@ -544,7 +569,10 @@ class AuthorizationUIPanel(wxPanel):
             nrOfItems = self.actionList.GetCount()
             
             for index in range(nrOfItems):
-                self.actionList.Check(index, 0)
+                if IsOSX():
+                    self.actionList.Deselect(index)
+                else:
+                    self.actionList.Check(index, 0)
                                
             if self.__isRole(selectedItem):
                 self.currentRole = role
@@ -555,10 +583,12 @@ class AuthorizationUIPanel(wxPanel):
                     
                     # Check correct actions for this role.
                     if index is not wxNOT_FOUND:
-                        self.actionList.Check(index, 1)
-                                       
-            if self.staticBox:
-                self.staticBox.SetLabel("Actions for %s"%self.currentRole.name)
+                        if IsOSX():
+                            self.actionList.SetSelection(index)
+                        else:
+                            self.actionList.Check(index, 1)
+            
+            self.actionTitle.SetLabel("Actions for %s"%self.currentRole.name)
 
     def BeginDrag(self, event):
         '''
