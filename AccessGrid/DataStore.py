@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.13 2003-03-31 21:45:52 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.14 2003-04-01 16:28:49 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -68,6 +68,7 @@ class DataStore:
         """
 
         self.callbackClass = callbackClass
+        log.debug("----------------Datastore path is %s" %pathname)
         
         if not os.path.exists(pathname):
             raise Exception("Datastore path %s does not exist" % (pathname))
@@ -89,43 +90,56 @@ class DataStore:
         Add file to a local datastore
         '''
         for filename in fileList:
-            # Transfer file from local path to local data store path
-            log.debug("Add file %s to local datastore" %filename)
-            input = open(filename, 'r')
-            fileString = input.read()
-            list = filename.split('/')
-            name = list[len(list)-1]
-            dir = os.path.join(self.pathname, self.prefix)
-            path = os.path.join(self.pathname, self.prefix, name)
-          
-            if not os.path.exists(dir):
-                os.mkdir(dir)
-
-            output = open(path, 'w')
-            log.debug("Write file to %s" %path)
-            output.write(fileString)
-            input.close()
-            output.close()
+            try:
+                # Transfer file from local path to local data store path
+                log.debug("Add file %s to local datastore" %filename)
+                input = open(filename, 'r')
+                fileString = input.read()
+                
+                if sys.platform == "win32":
+                     list = filename.split("\\")
+                else:
+                    list = filename.split('/')
+                    
+                log.debug("This is the string list of the path %s" %str(list))
+                name = list[len(list)-1]
+                log.debug("this is the file name %s"%name)
+                dir = os.path.join(self.pathname, self.prefix)
+                                
+                if not os.path.exists(dir):
+                    log.debug("Personal data storage directory does not exist, create it")
+                    os.mkdir(dir)
+                    
+                dataStorePath = os.path.join(dir, name)
+                log.debug("Personal datastorage is located at %s"%dataStorePath)
+                output = open(dataStorePath, 'w')
+                output.write(fileString)
+                input.close()
+                output.close()
             
-            # Create DataDescription
-            size = os.path.getsize(path)
-            log.debug("Size of file %s" %size)
+                # Create DataDescription
+                size = os.path.getsize(dataStorePath)
+                log.debug("Size of file %s" %size)
+                
+                # This should be done in a loop in case
+                # the file is big
+                checksum = md5.new(fileString).hexdigest()
+                log.debug("Checksum %s" %checksum)
+                
+                desc = DataDescription(name)
+                desc.SetOwner(dn)
+                desc.SetType(id) # id shows that this data is personal
+                desc.SetChecksum(checksum)
+                desc.SetSize(int(size))
+                desc.SetStatus(DataDescription.STATUS_PRESENT)
+                desc.SetURI(self.transfer_engine.GetDownloadDescriptor(self.prefix, name))
+                log.debug("CompleteUpload: updating with %s %s", desc, desc.__dict__)
+                self.callbackClass.AddData(desc)
 
-            # This should be done in a loop in case
-            # the file is big
-            checksum = md5.new(fileString).hexdigest()
-            log.debug("Checksum %s" %checksum)
-        
-            desc = DataDescription(name)
-            desc.SetOwner(dn)
-            desc.SetType(id) # id shows that this data is personal
-            desc.SetChecksum(checksum)
-            desc.SetSize(int(size))
-            desc.SetStatus(DataDescription.STATUS_PRESENT)
-            desc.SetURI(self.transfer_engine.GetDownloadDescriptor(self.prefix, name))
-            log.debug("CompleteUpload: updating with %s %s", desc, desc.__dict__)
-            self.callbackClass.AddData(desc)
-
+            except:
+                log.error("DataStore::AddFile: Error when trying to add local data to datastorage")
+                raise UploadFailed("Error when trying to add local data to datastorage")
+           
     def GetUploadDescriptor(self):
         """
         Return the upload descriptor for this datastore.
