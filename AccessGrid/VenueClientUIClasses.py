@@ -126,16 +126,16 @@ class VenueListPanel(wxPanel):
 	self.maximizeButton.Hide()
 	self.SetBackgroundColour(self.maximizeButton.GetBackgroundColour())
 	
-	wxInitAllImageHandlers()
+#	wxInitAllImageHandlers()
 	self.imageList = wxImageList(16,16)
 	self.__doLayout()
 	self.__addEvents()
 	self.__insertItems()
 	
     def __insertItems(self):
-        doorOpen = wxBitmap('IMAGES/doorOpen.gif', wxBITMAP_TYPE_GIF)
+       # doorOpen = wxBitmap('IMAGES/doorOpen.gif', wxBITMAP_TYPE_GIF)
 	self.SetToolTipString("Connected Venues")
-	self.iconId =  self.imageList.Add( doorOpen )
+	self.iconId =  self.imageList.Add(icons.getDoorOpenBitmap())
 	#self.list.AssignImageList(self.imageList, wxIMAGE_LIST_NORMAL)
 	#self.list.InsertImageStringItem(0, "Library  ", self.iconId)
 	#self.list.InsertImageStringItem(1, "Biology  ", self.iconId)
@@ -192,7 +192,7 @@ class VenueList(wxScrolledWindow):
 	self.box = wxBoxSizer(wxVERTICAL)
 	self.column = wxFlexGridSizer(cols=1, vgap=1, hgap=0)
         self.column.AddGrowableCol(1)
-	wxInitAllImageHandlers()
+#	wxInitAllImageHandlers()
 	
 	self.box.Add(self.column, 1)
 	self.column.Add(40, 5)   
@@ -204,8 +204,8 @@ class VenueList(wxScrolledWindow):
         self.SetScrollRate(20, 20)
 		            
     def AddVenueDoor(self, profile):
-        bitmap = wxBitmap('IMAGES/doorClosed.gif', wxBITMAP_TYPE_GIF)
-        bitmapSelect = wxBitmap('IMAGES/doorOpen.gif', wxBITMAP_TYPE_GIF)
+        bitmap = icons.getDoorCloseBitmap()
+        bitmapSelect = icons.getDoorOpenBitmap()
             
         tc = wxBitmapButton(self, -1, bitmap, wxPoint(0, 0), wxDefaultSize, wxBU_EXACTFIT)
 	tc.SetBitmapSelected(bitmapSelect)
@@ -254,14 +254,14 @@ class ContentListPanel(wxPanel):
 	EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
 	
     def __setImageList(self):
-	wxInitAllImageHandlers()
+#	wxInitAllImageHandlers()
 	imageList = wxImageList(16,16)  
 #	service = wxBitmap('IMAGES/service.bmp', wxBITMAP_TYPE_BMP)
 #	smileyOn = wxBitmap('IMAGES/smileyOn.jpg', wxBITMAP_TYPE_JPEG)
 #	smileySelect = wxBitmap('IMAGES/smileySelect.jpg', wxBITMAP_TYPE_JPEG)
 
 	newImageList = wxImageList(16,16) 
-	self.arrow = imageList.Add(wxBitmap("IMAGES/rightArrow.gif"))
+#	self.arrow = imageList.Add(wxBitmap("IMAGES/rightArrow.gif"))
 	self.defaultPersonId = imageList.Add(icons.getDefaultPersonIconBitmap())
 	self.pptDocId = imageList.Add(icons.getPptIconBitmap())
 	self.importantPaperId = imageList.Add(icons.getWordIconBitmap())
@@ -452,8 +452,8 @@ if __name__ == "__main__":
 
         def AddExit(self, profile):
             self.frame.venueListPanel.list.AddVenueDoor(profile.name, " ", \
-                                                        wxBitmap('IMAGES/doorClosed.gif', wxBITMAP_TYPE_GIF), \
-                                                        wxBitmap('IMAGES/doorOpen.gif', wxBITMAP_TYPE_GIF))
+                                                        icons.getDoorCloseBitmap(), \
+                                                        icons.getDoorOpenBitmap()) 
             
         def RemoveExit(self):
             print 'remove exit'
