@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.33 2003-03-21 16:22:23 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.34 2003-03-21 16:26:31 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -36,6 +36,8 @@ class VenueClient( ServiceBase):
     Interface.  The VenueClient can only be in one venue at a
     time.
     """
+    urlToFollow = None
+    
     def __init__(self, profile=None):
         """
         This client class is used on shared and personal nodes.
