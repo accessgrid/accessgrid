@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.13 2004-05-17 15:32:35 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.14 2004-05-25 21:55:06 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ SOAPpy server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.13 2004-05-17 15:32:35 judson Exp $"
+__revision__ = "$Id: Server.py,v 1.14 2004-05-25 21:55:06 eolson Exp $"
 
 # External imports
 import urlparse
@@ -23,6 +23,9 @@ from threading import Thread, Event
 from SOAPpy.GSIServer import ThreadingGSISOAPServer, GSIConfig
 from SOAPpy.Server import ThreadingSOAPServer, GetSOAPContext
 from SOAPpy.Config import SOAPConfig
+
+from AccessGrid import Log
+log = Log.GetLogger(Log.Hosting)
 
 class _Server:
     """
