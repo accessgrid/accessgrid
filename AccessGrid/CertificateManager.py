@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.28 2003-08-20 18:28:41 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.29 2003-09-10 21:13:21 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -388,8 +388,11 @@ class CertificateManager(object):
                         self.GetUserInterface().ReportError("Unknown error on Globus import; ignoring your globus identity certificate")
                         break
 
+
                 if impCert is not None:
-                    impCert.SetMetadata("AG.CertificateManager.isDefaultIdentity", "1")
+                    idCerts = self.GetDefaultIdentityCerts()
+                    if len(idCerts) == 0:
+                        self.SetDefaultIdentity(impCert)
             
         #
         # Now handle the CA certs.
@@ -948,7 +951,6 @@ class CertificateManager(object):
 
         identityCerts = self.certRepo.FindCertificatesWithMetadata("AG.CertificateManager.certType",
                                                                    "identity")
-        print "Found id certs ", identityCerts
         if len(identityCerts) == 0:
             log.error("No identity certs found")
 
@@ -958,9 +960,6 @@ class CertificateManager(object):
 
         defaultIdCerts = self.certRepo.FindCertificatesWithMetadata("AG.CertificateManager.isDefaultIdentity",
                                                                    "1")
-        print "Default ident ", defaultIdCerts
-
-
     #
     # Certificate request stuff
     #
