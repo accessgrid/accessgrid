@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.106 2003-08-04 20:14:50 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.107 2003-08-04 22:16:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -38,6 +38,8 @@ from AccessGrid.Events import Event, HeartbeatEvent, DisconnectEvent, ClientExit
 from AccessGrid.Events import MarshalledEvent
 from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import GetHostname, ServerLock
+from AccessGrid.hosting.AccessControl import RoleManager, Subject
+from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 
 # these imports are for dealing with SOAP structs, which we won't have to 
 # do when we have WSDL; at that time, these imports and the corresponding calls
@@ -274,16 +276,26 @@ class Venue(ServiceBase.ServiceBase):
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
     """
-    def __init__(self, server, name, description, administrators,
+    def __init__(self, server, name, description, roleManager,
                  dataStoreLocation, id=None):
         """
         Venue constructor.
         """
+
         log.debug("------------ STARTING VENUE")
+
         self.server = server
         self.name = name
         self.description = description
-        self.administrators = administrators
+        #self.administrators = administrators
+        if roleManager:
+            self.roleManager = roleManager
+            self.RegisterDefaultRoles() # make sure default roles exist
+        else:
+            self.roleManager = RoleManager()
+            self.RegisterDefaultRoles()
+            self.RegisterDefaultSubjects()
+
         self.encryptMedia = server.GetEncryptAllMedia()
         if self.encryptMedia:
             self.encryptionKey = AllocateEncryptionKey()
@@ -373,11 +385,7 @@ class Venue(ServiceBase.ServiceBase):
         except:
             log.warn("Could not create venue data store")
 
-                    
         #self.StartApplications()
-
-        #self.AllowedEntryRole = AccessControl.Role("Venue.AllowedEntry", self)
-        #self.VenueUsersRole = AccessControl.Role("Venue.VenueUsers", self)
 
     def __repr__(self):
         """
@@ -389,30 +397,66 @@ class Venue(ServiceBase.ServiceBase):
         """
         return "Venue: name=%s id=%s" % (self.name, id(self))
 
-    def _Authorize(self):
+    def _IsInRole(self, role_name=""):
         """
 
-        This is a simplistic authorization that only checks to see if
-        the caller is in the list of administrators of this venue, or
-        the venue server. if they are they are authorized, if they
-        aren't they are not authorized.
+        Role Based Authorization method.
+        Role name is passed in.  This method returns
+        whether the current user is a member of that role.
 
         **Returns:**
-
-            *0* If authorization fails.
-
-            *1* If authorization succeeds.
+            *1* on success
+            *0* on failure
         """
+
         sm = AccessControl.GetSecurityManager()
         if sm == None:
             return 1
-        elif sm.GetSubject().GetName() in self.administrators:
-            return 1
-        # call back up to the server
-        elif self.server._Authorize():
-            return 1
+
+        role_manager = self.GetRoleManager()
+
+        return sm.ValidateUserInRole(role_name, role_manager)
+
+    def BindRoleManager(self):
+        self._service_object.SetRoleManager(self.roleManager)
+
+    def SetRoleManager(self, role_manager):
+        self.roleManager = role_manager
+        self.BindRoleManager()
+
+    def GetRoleManager(self):
+        return self.roleManager
+        #return self._service_object.GetRoleManager()
+
+    def RegisterDefaultRoles(self):
+        # RegisterRole cannot be done our __init__, it needs to be done after the
+        #   hostingEnvironment.bindService in VenueServer.py.
+        #rm = AccessControl.GetSecurityManager().role_manager
+        rm = self.GetRoleManager()
+        # Call the more general function instead of duplicating code
+        RegisterDefaultVenueRoles(self.GetRoleManager())
+
+    def RegisterDefaultSubjects(self):
+        #print "Venue:RegisterDefaultSubjects"
+        rm = self.GetRoleManager()
+        sm = AccessControl.GetSecurityManager()
+        # Default ALL USERS are allowed to enter.
+        if "Venue.AllowedEntry" in rm.validRoles.keys():
+            rm.validRoles["Venue.AllowedEntry"].AddSubject("ALL_USERS")
         else:
-            return 0
+            raise "ErrorNoAllowedEntryRoleForVenue"
+        # Default user running this server process is the first administrator.
+        if "Venue.Administrators" in rm.validRoles.keys():
+            rm.validRoles["Venue.Administrators"].AddSubject("Role.VenueServer.Administrators")
+        else:
+            raise "ErrorNoAdministratorsRoleForVenue"
+
+    def RegisterRole(self, role_name):
+        #rm = AccessControl.GetSecurityManager().role_manager
+        rm = self.GetRoleManager()
+        # Register role with Role Manager if necessary
+        if role_name not in rm.GetRoleList():
+            rm.RegisterRole(role_name)
 
     def AsINIBlock(self):
         """
@@ -425,8 +469,18 @@ class Venue(ServiceBase.ServiceBase):
         string += "type : %s\n" % sclass[-1]
         string += "name : %s\n" % self.name
         string += "description : %s\n" % self.description
-        if len(self.administrators):
-            string += "administrators : %s\n" % ":".join(self.administrators)
+        #if len(self.administrators):
+            #string += "administrators : %s\n" % ":".join(self.administrators)
+        #rm = AccessControl.GetSecurityManager().role_manager
+        rm =self.GetRoleManager()
+        if len(rm.validRoles):
+            # Write a list of roles names to the config file.
+            string += "roles : %s\n" % ":".join(rm.GetRoleList())
+            for r in rm.validRoles.keys():
+                # For now, still write Venue.VenueUsers to file, if not written, 
+                #   modify corresponding reading code in VenueServer.py
+                #if not r == "Venue.VenueUsers": # VenueUsers are not persisted
+                string += r + " : %s\n" % ":".join(rm.validRoles[r].GetSubjectListAsStrings()) 
         string += "encryptMedia : %d\n" % self.encryptMedia
         string += "cleanupTime : %d\n" % self.cleanupTime
         if self.encryptMedia:
@@ -495,7 +549,7 @@ class Venue(ServiceBase.ServiceBase):
         this venue.
         """
         desc = VenueDescription(self.name, self.description,
-                                self.administrators, 
+                                self.roleManager, 
                                 (self.encryptMedia, self.encryptionKey),
                                 self.connections.values(),
                                 self.GetStaticStreams())
@@ -1219,7 +1273,7 @@ class Venue(ServiceBase.ServiceBase):
             anonymous struct is not converted to a real connection
             description.
         """
-        if not self._Authorize():
+        if not self._IsInRole("Venue.Administrators"):
             raise NotAuthorized
 
         for connection in connectionList:
@@ -1262,7 +1316,7 @@ class Venue(ServiceBase.ServiceBase):
             description struct is not successfully converted to a
             connection description.
         """
-        if not self._Authorize():
+        if not self._IsInRole("Venue.Administrators"):
             raise NotAuthorized
 
         c = ConnectionDescription(connectionDescStruct.name,
@@ -1321,17 +1375,23 @@ class Venue(ServiceBase.ServiceBase):
         # he is in the AllowedEntry role
         #
 
-        # sm = AccessControl.GetSecurityManager()
-        # if  sm.ValidateRole(self.AllowedEntryRole):
-        #     subject = sm.GetSubject()
-        
-        #     if self.VenueUsersRole.HasSubject(subject):
-        #         log.info("User %s validated for entry to %s", subject, self)
-        #         self.VenueUsersRole.AddSubject(subject)
-        #     else:
-        #         log.info("User %s rejected for entry to %s",
-        #                   sm.GetSubject(), self)
-        #         raise VenueException("Entry denied")
+        #rm = AccessControl.GetSecurityManager().role_manager
+        sm = AccessControl.GetSecurityManager()
+        rm = self.GetRoleManager()
+
+        # Special Case: if all users are DisallowedEntry, then specific users are allowed.
+        if "ALL_USERS" in rm.validRoles["Venue.DisallowedEntry"].GetSubjectList():
+            if not self._IsInRole("Venue.AllowedEntry"):
+                raise NotAuthorized
+        # Normal operation when all users are not DisallowedEntry by default.
+        else:
+            if self._IsInRole("Venue.DisallowedEntry") or not self._IsInRole("Venue.AllowedEntry"):
+                raise NotAuthorized
+
+        subject = AccessControl.GetSecurityManager().GetSubject()
+        #print "Approved entry for", subject
+        log.info("User %s Approved entry to %s", sm.GetSubject(), self )
+        rm.validRoles["Venue.VenueUsers"].AddSubject(subject)
 
         log.debug("wsEnter: Called.")
         
@@ -1383,7 +1443,7 @@ class Venue(ServiceBase.ServiceBase):
             *string* the Distinguished Name (DN) of the administrator added.
 
         """
-        if not self._Authorize():
+        if not self._IsInRole("Venue.Administrators"):
             raise NotAuthorized
         
         if string not in self.administrators:
@@ -1423,7 +1483,7 @@ class Venue(ServiceBase.ServiceBase):
             *string* The Distinguished Name (DN) of the administrator removed.
 
         """
-        if not self._Authorize():
+        if not self._IsInRole("Venue.Administrators"):
             raise NotAuthorized
 
         if not string in self.administrators:
@@ -1453,7 +1513,7 @@ class Venue(ServiceBase.ServiceBase):
             *NotAuthorized* This is raised if the caller is not an
             administrator.
         """
-        if not self._Authorize():
+        if not self._IsInRole("Venue.Administrators"):
             raise NotAuthorized
 
         self.simpleLock.acquire()
@@ -1497,7 +1557,7 @@ class Venue(ServiceBase.ServiceBase):
 
             *value* The value of the EncryptMedia flag.
         """
-        if not self._Authorize():
+        if not self._IsInRole("Venue.Administrators"):
             raise NotAuthorized
 
         self.simpleLock.acquire()
@@ -1570,7 +1630,7 @@ class Venue(ServiceBase.ServiceBase):
             description struct is not successfully converted to a
             connection description.
         """
-        if not self._Authorize():
+        if not self._IsInRole("Venue.Administrators"):
             raise NotAuthorized
 
         c = ConnectionDescription(connectionDescription.name,
@@ -1628,7 +1688,7 @@ class Venue(ServiceBase.ServiceBase):
 
             *description* New description for this venue.
         """
-        if not self._Authorize():
+        if not self._IsInRole("Venue.Administrators"):
             raise NotAuthorized
 
         self.simpleLock.acquire()
@@ -1657,7 +1717,7 @@ class Venue(ServiceBase.ServiceBase):
 
             *name* New name for this venue.
         """
-        if not self._Authorize():
+        if not self._IsInRole("Venue.Administrators"):
             raise NotAuthorized
 
         self.simpleLock.acquire()
@@ -1694,7 +1754,7 @@ class Venue(ServiceBase.ServiceBase):
             passed in cannot be successfully converted to a real
             Stream Description.
         """
-        if not self._Authorize():
+        if not self._IsInRole("Venue.Administrators"):
             raise NotAuthorized
 
         log.debug("%s - Adding Stream: ", self.uniqueId)
@@ -1737,7 +1797,7 @@ class Venue(ServiceBase.ServiceBase):
             passed in cannot be successfully converted to a real
             Stream Description.
         """
-        if not self._Authorize():
+        if not self._IsInRole("Venue.Administrators"):
             raise NotAuthorized
         
         streamDescription = CreateStreamDescription( inStreamDescription )
@@ -1813,6 +1873,11 @@ class Venue(ServiceBase.ServiceBase):
             raise ClientNotFound
         
         self.RemoveUser(privateId)
+
+        subject = AccessControl.GetSecurityManager().GetSubject()
+        log.info("Removing Subject %s from Role Venue.VenueUsers", subject)
+        rm = AccessControlSecurityManager().role_manager
+        rm.validRoles["Venue.VenueUsers"].RemoveSubject(subject)
 
     Exit.soap_export_as = "Exit"
 
@@ -2156,6 +2221,136 @@ class Venue(ServiceBase.ServiceBase):
 
     DestroyApplication.soap_export_as = "DestroyApplication"
 
+    def wsAddSubjectToRole(self, subject, role_string):
+        """
+        Adds user to list of users authorized for a specific role.
+        """
+
+        if not self._IsInRole("Venue.Administrators"):
+            raise NotAuthorized
+
+        try: 
+            sm = AccessControl.GetSecurityManager()
+            rm = self.GetRoleManager()
+            if sm.ValidateRole([role_string]):
+                if rm.validRoles[role_string]:
+                    rm.validRoles[role_string].AddSubject(subject)
+                    if rm.validRoles[role_string].HasSubject(subject):
+                        return 1
+                else:
+                    log.warn("Role " + role_string + " exists in security manager, but not in venue ")
+            else:
+                log.exception("Role " + role_string + " is not known to security manager.")
+            return 0
+        except:
+            log.exception("wsAddSubjectToRole: exception")
+
+    wsAddSubjectToRole.soap_export_as = "AddSubjectToRole"
+
+    def wsRemoveSubjectFromRole(self, subject, role):
+        """
+        Removes a user from list of those authorized for a specific role.
+        """
+        if not self._IsInRole("Venue.Administrators"):
+            raise NotAuthorized
+
+        try: 
+            sm = AccessControl.GetSecurityManager()
+            rm = self.GetRoleManager()
+            if sm.ValidateRole([role_string]):
+                subject = sm.GetSubject()
+
+                if rm.validRoles[role_string]:
+                    rm.validRoles[role_string].RemoveSubject(subject)
+                else:
+                    log.exception("Role " + role_string + " exists in security manager, but not in venue ")
+            else:
+                log.exception("Role " + role.name + " is not known to security manager.")
+            return 0
+        except:
+            log.exception("wsRemoveSubjectFromRole: exception")
+
+    wsRemoveSubjectFromRole.soap_export_as = "RemoveSubjectFromRole"
+
+    def wsAddRole(self, role_string):
+        """
+        Registers a role with venue's role manager.
+        """
+        if not self._IsInRole("Venue.Administrators"):
+            raise NotAuthorized
+
+        sm = AccessControl.GetSecurityManager()
+        rm = self.GetRoleManager()
+        if sm.ValidateRole([role_string]):
+            log.info("Role ", role_string, " already registered in security manager.")
+        else:
+            rm.RegisterRole(role_string)
+        if rm.has_key(role_string):
+            log.info("Role ", role_string, " already exists in venue.")
+        else:
+            rm.validRoles[role_string] = AccessControl.Role(role_string, self)
+
+    wsAddRole.soap_export_as = "AddRole"
+
+    def wsGetUsersInRole(self, role_string):
+        """
+        Returns a list of strings of users' names.
+        """
+        if not self._IsInRole("Venue.Administrators"):
+            raise NotAuthorized
+
+        rm = self.GetRoleManager()
+        if role_string in rm.validRoles:
+            return rm.validRoles[role_string].GetSubjectListAsStrings()
+        else:
+           return []
+
+    wsGetUsersInRole.soap_export_as = "GetUsersInRole"
+
+    def GetRole(self, role_name):
+        """
+        Returns a role from venue's role manager
+        """
+        rm = self.GetRoleManager()
+        if role_name in rm.validRoles:
+            return rm.validRoles[role_name]
+        else:
+            return None
+
+    def wsGetRoleNames(self):
+        """
+        Returns a list of role names.
+        """
+        if not self._IsInRole("Venue.Administrators"):
+            raise NotAuthorized
+
+        if self._IsInRole("Venue.Administrators"):
+            return self.GetRoleManager().GetRoleList()
+        else:
+            raise "PermissionDenied"
+
+    wsGetRoleNames.soap_export_as = "GetRoleNames"
+
+def RegisterDefaultVenueRoles(role_manager):
+    """
+    Registers default roles for venues into the role_manager
+    provided as an argument.
+    """
+    if not isinstance( role_manager, RoleManager):
+        raise "InvalidArgumentTo_RegisterDefaultVenueRoles"
+       
+    rm = role_manager
+    if "Venue.AllowedEntry" not in rm.validRoles:
+        rm.RegisterRole("Venue.AllowedEntry")
+    if "Venue.DisallowedEntry" not in rm.validRoles:
+        rm.RegisterRole("Venue.DisallowedEntry")
+    if "Venue.VenueUsers" not in rm.validRoles:
+        rm.RegisterRole("Venue.VenueUsers")
+    if "Venue.Administrators" not in rm.validRoles:
+        rm.RegisterRole("Venue.Administrators")
+
+    if "Role.VenueServer.Administrators" not in rm.validRoles: 
+        rm.RegisterRole("Role.VenueServer.Administrators")
 
 
     def AddNetworkLocationToStream(self, privateId, streamId, networkLocation):
@@ -2251,7 +2446,6 @@ class Venue(ServiceBase.ServiceBase):
     def GetEventServiceLocation(self):
         return (self.server.eventService.GetLocation(), self.uniqueId)
     GetEventServiceLocation.soap_export_as = "GetEventServiceLocation"
-
 
 
 class StreamDescriptionList:

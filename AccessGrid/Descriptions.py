@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.33 2003-08-04 18:10:09 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.34 2003-08-04 22:16:07 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,6 +15,7 @@ from AccessGrid.GUID import GUID
 from AccessGrid.NetworkLocation import MulticastNetworkLocation, UnicastNetworkLocation
 from AccessGrid.Types import Capability
 from AccessGrid.Utilities import PathFromURL
+from AccessGrid.hosting.AccessControl import RoleManager
 
 class ObjectDescription:
     """
@@ -180,7 +181,7 @@ class VenueDescription(ObjectDescription):
     """
     A Venue Description is used to represent a Venue.
     """
-    def __init__(self, name=None, description=None, adminList=[],
+    def __init__(self, name=None, description=None, roleManager=None,
                  encryptionInfo=(0,''), connectionList=[], staticStreams=[]):
         ObjectDescription.__init__(self, name, description, None)
 
@@ -188,7 +189,17 @@ class VenueDescription(ObjectDescription):
         self.connections = {}
         self.encryptMedia = 0
         self.encryptionKey = None
-        self.administrators = []
+        #self.administrators = []
+        # Exclude roleManager.  Roles and admins handled separately.
+        self.roleManager = roleManager
+        #if roleManager:
+            #self.roleManager = roleManager
+        #else:
+            #self.roleManager = RoleManager()
+
+        #print "VenueDesc.__init__ : admins:"
+        #if "Venue.Administrators" in self.roleManager.GetRoleList():
+            #print self.roleManager.GetRole("Venue.Administrators").GetSubjectListAsStrings()
         
         self.encryptMedia = encryptionInfo[0]
         
@@ -196,9 +207,7 @@ class VenueDescription(ObjectDescription):
             self.encryptionKey = encryptionInfo[1]
         else:
             self.encryptionKey = None
-            
-        self.administrators = adminList
-
+           
         self.connections = {}
         for c in connectionList:
             self.connections[c.uri] = c
@@ -207,7 +216,15 @@ class VenueDescription(ObjectDescription):
     
     def AsINIBlock(self):
         string = ObjectDescription.AsINIBlock(self)
-        string += "administrators : %s\n" % ":".join(self.administrators)
+        #string += "administrators : %s\n" % ":".join(self.administrators)
+        if len(rm.validRoles):
+            # Write a list of roles names to the config file.
+            string += "roles : %s\n" % ":".join(rm.GetRoleList())
+            for r in rm.validRoles.keys():
+                # For now, still write Venue.VenueUsers to file, if not written, 
+                #   modify corresponding reading code. 
+                #if not r == "Venue.VenueUsers": # VenueUsers are not persisted
+                string += r + " : %s\n" % ":".join(rm.validRoles[r].GetSubjectListAsStrings()) 
         string += "encryptMedia: %d\n" % self.encryptMedia
         if self.encryptMedia:
             string += "encryptionKey : %s\n" % self.encryptionKey
@@ -382,8 +399,24 @@ def CreateVenueDescription(venueDescStruct):
     for s in venueDescStruct.streams:
         slist.append(CreateStreamDescription(s))
 
+    # If a roleManager was sent with venueDescriptions, it would use
+    #   code like this, but we'll set admins and roles separately.
+    #if venueDescStruct.roleManager:
+        #roleManager = RoleManager()
+        #for role_struct in venueDescStruct.roleManager.validRoles:
+           #print "role_struct", role_struct
+           #roleManager.RegisterRole(role_struct.name)
+           #registered_role = roleManager.GetRole(role_struct.name)
+           #for subj in role_struct.subjects:
+               #registered_role.AddSubject(subj)
+    
+        #print "CreateVenueDesc: admins:"
+        #if "Venue.Administrators" in roleManager.GetRoleList():
+            #print roleManager.GetRole("Venue.Administrators").GetSubjectListAsStrings()
+   
+       
     vdesc = VenueDescription(venueDescStruct.name, venueDescStruct.description,
-                             venueDescStruct.administrators,
+                             None,
                              (venueDescStruct.encryptMedia,
                               venueDescStruct.encryptionKey), clist, slist)
     vdesc.uri = venueDescStruct.uri

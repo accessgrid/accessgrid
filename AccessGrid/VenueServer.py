@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.79 2003-06-26 20:50:47 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.80 2003-08-04 22:16:07 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
 from AccessGrid.Utilities import GetHostname, PathFromURL
 from AccessGrid.GUID import GUID
-from AccessGrid.Venue import Venue, AdministratorNotFound
+from AccessGrid.Venue import Venue, AdministratorNotFound, RegisterDefaultVenueRoles
 from AccessGrid.Venue import AdministratorAlreadyPresent
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.DataStore import GSIHTTPTransferServer
@@ -46,6 +46,8 @@ from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.Types import Capability
 from AccessGrid.Utilities import ServerLock
+from AccessGrid.hosting.AccessControl import RoleManager, Subject
+from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
 
 log = logging.getLogger("AG.VenueServer")
 
@@ -128,8 +130,6 @@ class VenueServer(ServiceBase.ServiceBase):
         self.persistenceFilename = 'VenueServer.dat'
         self.houseKeeperFrequency = 30
         self.venuePathPrefix = 'Venues'
-        self.administrators = ''
-        self.administratorList = []
         self.defaultVenue = ''
         self.multicastAddressAllocator = MulticastAddressAllocator()
         self.hostname = GetHostname()
@@ -140,6 +140,9 @@ class VenueServer(ServiceBase.ServiceBase):
         self.dataPort = 0
         self.eventPort = 0
         self.textPort = 0
+        # Create a role manager so it can be used when loading persistent data. 
+        self.roleManager = RoleManager()
+        self.RegisterDefaultRoles() 
 
         if hostEnvironment != None:
             self.hostingEnvironment = hostEnvironment
@@ -171,12 +174,10 @@ class VenueServer(ServiceBase.ServiceBase):
 
         # If there are no administrators set then we set it to the
         # owner of the current running process
-        if len(self.administrators) == 0:
+        if len(self.GetRoleManager().GetRole("VenueServer.Administrators").GetSubjectList()) == 0:
             dnAdmin = GetDefaultIdentityDN()
             if dnAdmin:
-                self.administratorList.append(dnAdmin)
-        else:
-            self.administratorList = string.split(self.administrators, ":")
+                self.GetRoleManager().GetRole("VenueServer.Administrators").AddSubject(dnAdmin)
             
         # Start Venue Server wide services
         self.dataTransferServer = GSIHTTPTransferServer(('',
@@ -214,7 +215,14 @@ class VenueServer(ServiceBase.ServiceBase):
             self.SetDefaultVenue(self.MakeVenueURL(self.defaultVenue))
         else:
             log.debug("Creating default venue")
-            self.defaultVenueDesc.administrators.append(GetDefaultIdentityDN())
+            if not self.defaultVenueDesc.roleManager:
+                self.defaultVenueDesc.roleManager = RoleManager()
+                
+            RegisterDefaultVenueRoles(self.defaultVenueDesc.roleManager)
+            # Let the venue role manager know about the venueserver role manager.
+            self.defaultVenueDesc.roleManager.RegisterExternalRoleManager("VenueServer", self.roleManager)
+            # Set default Venue administrators to include all VenueServer administrators.
+            self.defaultVenueDesc.roleManager.GetRole("Venue.Administrators").AddSubject("Role.VenueServer.Administrators")
             self.AddVenue(self.defaultVenueDesc)
 
         # The houseKeeper is a task that is doing garbage collection and
@@ -229,11 +237,37 @@ class VenueServer(ServiceBase.ServiceBase):
 
         # Then we create the VenueServer service
         self.service = self.hostingEnvironment.BindService(self, 'VenueServer')
+        self.BindRoleManager()
+        self.RegisterDefaultSubjects() # Register primary user as administrator
 
         # Some simple output to advertise the location of the service
         print("Server URL: %s \nEvent Port: %d Text Port: %d Data Port: %d" %
               ( self.service.GetHandle(), int(self.eventPort),
                 int(self.textPort), int(self.dataPort) ) )
+
+    def BindRoleManager(self):
+        """ This method you to bind a role manager to our service object. """
+        self._service_object.SetRoleManager(self.roleManager)
+
+    def SetRoleManager(self, role_manager):
+        """ Store manager in two places because we need to load roles from 
+            persistent data into self.manager before manager is bound to service.
+        """
+        self.roleManager = role_manager 
+        self._service_object.SetRoleManager(role_manager)
+
+    def GetRoleManager(self):
+        """ Return self.roleManager because it is valid sooner.   After binding
+            it is the same as self._service_object.GetRoleManager() 
+        """
+        return self.roleManager # same as self._service_object.GetRoleManager() 
+
+    def RegisterDefaultRoles(self):
+        self.GetRoleManager().RegisterRole("VenueServer.Administrators")
+
+    def RegisterDefaultSubjects(self):
+        role = self.GetRoleManager().validRoles["VenueServer.Administrators"]
+        role.AddSubject(GetDefaultIdentityDN())
 
     def LoadPersistentVenues(self, filename):
         """
@@ -253,21 +287,45 @@ class VenueServer(ServiceBase.ServiceBase):
         for sec in cp.sections():
             if cp.has_option(sec, 'type'):
                 log.debug("Loading Venue: %s", sec)
+
+                # Deal with roles if there are any
+                roleManager = None
+                role_names = []
                 try:
-                    administrators = string.split(cp.get(sec,
-                                                         'administrators'),
-                                                  ':')
+                    role_names = string.split(cp.get(sec, 'roles'), ':')
                 except ConfigParser.NoOptionError:
-                    log.warn("No adminstrators for venue %s", sec)
-                    administrators = []
+                    log.warn("No roles for venue %s", sec)
+                    role_names = []
+                    v.RegisterDefaultSubjects()
+
+                # Read the subjects for the role names we just read (if any).
+                if len(role_names):
+                    try:
+                        roleManager = RoleManager()
+                        for role_name in role_names:
+                            roleManager.RegisterRole(role_name) # create role if needed.
+                            role_subjects = string.split(cp.get(sec, role_name), ':')
+                            # Add subjects/users to role.
+                            r = roleManager.GetRole(role_name)
+                            for subj in role_subjects:
+                                r.AddSubject(subj)
+                    except ConfigParser.NoOptionError:
+                        log.warn("specific role %s details not in venue %s, registering default users", role_name, sec)
+                        roleManager = None   # default roles and users will be used.
+
                 v = Venue(self, cp.get(sec, 'name'),
-                          cp.get(sec, 'description'), administrators,
+                          cp.get(sec, 'description'), roleManager,
                           self.dataStorageLocation, id=sec)
+                # Make sure the venue Role Manager knows about the VenueServer role manager.
+                v.GetRoleManager().RegisterExternalRoleManager("VenueServer", self.roleManager)
                 v.encryptMedia = cp.getint(sec, 'encryptMedia')
                 v.cleanupTime = cp.getint(sec, 'cleanupTime')
 
                 self.venues[self.IdFromURL(v.uri)] = v
                 self.hostingEnvironment.BindService(v, PathFromURL(v.uri))
+
+                # Bind the venue's role manager to the service.
+                v.BindRoleManager()
 
                 # Deal with connections if there are any
                 try:
@@ -286,7 +344,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
                 else:
                     log.debug("No connections to load for venue %s", sec)
-                        
+
                 # Deal with streams if there are any
                 try:
                     streams = cp.get(sec, 'streams')
@@ -396,26 +454,24 @@ class VenueServer(ServiceBase.ServiceBase):
                 else:
                     log.debug("No services to load for Venue %s", sec)
 
-    def _Authorize(self):
+    def _IsInRole(self, role_name=""):
         """
-        This is a placeholder authorization method. It will be
-        replaced with the Role Based Authorization. Currently
-        authorization is merely a check to see if the caller is an
-        administrator.
+            Role Based Authorization method.
+            Role name is passed in.  This method returns
+            whether the current user is a member of that role.
 
-        **Returns:**
-            *1* on success
-            *0* on failure
+            **Returns:**
+                *1* on success
+                *0* on failure
         """
+
         sm = AccessControl.GetSecurityManager()
         if sm == None:
             return 1
-        elif sm.GetSubject().GetName() in self.administratorList:
-            return 1
-        else:
-            log.exception("Authorization failed for %s",
-                          sm.GetSubject().GetName())
-            return 0
+
+        role_manager = self.GetRoleManager()
+
+        return sm.ValidateUserInRole(role_name, role_manager)
 
     def InitFromFile(self, config):
         """
@@ -423,7 +479,12 @@ class VenueServer(ServiceBase.ServiceBase):
         self.config = config
         for k in config.keys():
             (section, option) = string.split(k, '.')
-            setattr(self, option, config[k])
+            if option == "administrators":
+                adminList = string.split(config[k],':')
+                for a in adminList:
+                    self.AddAdministrator(a)
+            else:
+                setattr(self, option, config[k])
 
     def IdFromURL(self, URL):
         """
@@ -523,7 +584,7 @@ class VenueServer(ServiceBase.ServiceBase):
         """
 
         
-        if not self._Authorize():
+        if not self._IsInRole("VenueServer.Administrators"):
             log.exception("Unauthorized attempt to Add Venue.")
             raise NotAuthorized
 
@@ -532,7 +593,7 @@ class VenueServer(ServiceBase.ServiceBase):
         if venueDesc == None:
             raise InvalidVenueDescription
             
-        venueDesc.administrators.append(GetDefaultIdentityDN())
+        #venueDesc.roleManager.GetRole("Venue.Administrators").AddSubject(GetDefaultIdentityDN())
 
         try:
             self.simpleLock.acquire()
@@ -569,7 +630,7 @@ class VenueServer(ServiceBase.ServiceBase):
             different URL than the URL argument passed in.
 
         """
-        if not self._Authorize():   
+        if not self._IsInRole("VenueServer.Administrators"):   
             raise NotAuthorized
 
         if URL == None:
@@ -608,7 +669,7 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         log.debug("wsRemoveVenue: url = %s", URL)
         
-        if not self._Authorize():
+        if not self._IsInRole("VenueServer.Administrators"):
             raise NotAuthorized
 
         id = self.IdFromURL(URL)
@@ -643,7 +704,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
             *string* The DN of the administrator added.
         """
-        if not self._Authorize():
+        if not self._IsInRole("VenueServer.Administrators"):
             raise NotAuthorized
 
         try:
@@ -677,7 +738,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
             *string* The Distinguished Name (DN) of the administrator removed.
         """
-        if not self._Authorize():
+        if not self._IsInRole("VenueServer.Administrators"):
             raise NotAuthorized
 
         try:
@@ -761,7 +822,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
             *URL* the url of the default venue upon success.
         """
-        if not self._Authorize():
+        if not self._IsInRole("VenueServer.Administrators"):
             raise NotAuthorized
 
         try:
@@ -795,7 +856,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
             *location* The new location on success.
         """
-        if not self._Authorize():
+        if not self._IsInRole("VenueServer.Administrators"):
             raise NotAuthorized
 
         try:
@@ -855,7 +916,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
         **Returns:**
         """
-        if not self._Authorize():
+        if not self._IsInRole("VenueServer.Administrators"):
             raise NotAuthorized
 
         try:
@@ -916,7 +977,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
             *flag* the return value from SetEncryptAllMedia.
         """
-        if not self._Authorize():
+        if not self._IsInRole("VenueServer.Administrators"):
             raise NotAuthorized
 
         try:
@@ -975,7 +1036,7 @@ class VenueServer(ServiceBase.ServiceBase):
         **Returns:**
         
         """
-        if not self._Authorize():
+        if not self._IsInRole("VenueServer.Administrators"):
             raise NotAuthorized
 
         try:
@@ -1033,7 +1094,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
         **Returns:**
         """
-        if not self._Authorize():
+        if not self._IsInRole("VenueServer.Administrators"):
             raise NotAuthorized
 
         try:
@@ -1092,7 +1153,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
         **Returns:**
         """
-        if not self._Authorize():
+        if not self._IsInRole("VenueServer.Administrators"):
             raise NotAuthorized
 
         log.debug("Calling wsShutdown with seconds %d" % secondsFromNow)
@@ -1108,8 +1169,14 @@ class VenueServer(ServiceBase.ServiceBase):
         available from this Venue Server.
         """
         # Create a new Venue object pass it the server
+        # Usually the venueDesc will not have Role information 
+        #   and defaults will be used.
         venue = Venue(self, venueDesc.name, venueDesc.description,
-                      venueDesc.administrators, self.dataStorageLocation)
+                      venueDesc.roleManager, self.dataStorageLocation)
+
+        # Make sure new venue knows about server's external role manager.
+        if "VenueServer" not in venue.GetRoleManager().GetExternalRoleManagerList():
+            venue.GetRoleManager().RegisterExternalRoleManager("VenueServer", self.GetRoleManager())
         
         # Add Connections if there are any
         venue.SetConnections(venueDesc.connections)
@@ -1125,6 +1192,9 @@ class VenueServer(ServiceBase.ServiceBase):
         venuePath = PathFromURL(venue.uri)
         if(self.hostingEnvironment != None):
             self.hostingEnvironment.BindService(venue, venuePath)
+            # Initialize Role Manager and Roles for venue
+            venue.BindRoleManager()
+            venue.RegisterDefaultSubjects()
             
         # If this is the first venue, set it as the default venue
         if(len(self.venues) == 1):
@@ -1140,13 +1210,24 @@ class VenueServer(ServiceBase.ServiceBase):
         self.venues[id].name = venueDesc.name
         self.venues[id].description = venueDesc.description
         self.venues[id].uri = venueDesc.uri
-        self.venues[id].administrators = venueDesc.administrators
+
+        # Usually venueDesc.roleManager will be None, and Roles are
+        #   modified separately.
+        if venueDesc.roleManager:
+            self.venues[id].SetRoleManager(venueDesc.roleManager)
+            # Make sure at least default roles exist.
+            self.venues[id].RegisterDefaultRoles() 
+            # Allow venue to access our (VenueServer) role manager
+            if "VenueServer" not in self.venues[id].GetRoleManager().GetExternalRoleManagerList():
+                self.roleManager.RegisterExternalRoleManager("VenueServer", self.roleManager)
+
         self.venues[id].encryptMedia = venueDesc.encryptMedia
         if self.venues[id].encryptMedia:
             self.venues[id].encryptionKey = venueDesc.encryptionKey
             
         self.venues[id].SetConnections(venueDesc.connections)
-            
+        
+        current_streams = self.venues[id].GetStreams()    
         for sd in venueDesc.streams:
             self.venues[id].AddStream(sd)
         
@@ -1212,13 +1293,14 @@ class VenueServer(ServiceBase.ServiceBase):
             *string* The DN of the administrator added.
 
         """
-        if string in self.administratorList:
-            log.exception("AddAdministrator: Adminstrator already present.")
+        role = self.GetRoleManager().GetRole("VenueServer.Administrators")
+        if role.HasSubject(string):
+            log.exception("AddAdministrator: Administrator already present.")
             raise AdministratorAlreadyPresent
         
-        self.administratorList.append(string)
+        role.AddSubject(string)
 
-        self.config["VenueServer.administrators"] = ":".join(self.administratorList)
+        self.config["VenueServer.administrators"] = ":".join(role.GetSubjectListAsStrings())
         return string
 
     def RemoveAdministrator(self, string):
@@ -1238,9 +1320,10 @@ class VenueServer(ServiceBase.ServiceBase):
             administrators list.
         
         """
-        if string in self.administratorList:
-            self.administratorList.remove(string)
-            self.config["VenueServer.administrators"] = ":".join(self.administratorList)
+        role = self.GetRoleManager().GetRole("VenueServer.Administrators")
+        if role.HasSubject(string):
+            role.RemoveSubject(string)
+            self.config["VenueServer.administrators"] = ":".join(role.GetSubjectListAsStrings())
             return string
         else:
             log.exception("RemoveAdministrator: Administrator not found.")
@@ -1251,7 +1334,8 @@ class VenueServer(ServiceBase.ServiceBase):
         GetAdministrators returns a list of adminisitrators for this
         VenueServer.
         """
-        return self.administratorList
+        role = self.GetRoleManager().GetRole("VenueServer.Administrators")
+        return role.GetSubjectListAsStrings()
 
     GetAdministrators.soap_export_as = "GetAdministrators"
 
@@ -1311,7 +1395,14 @@ class VenueServer(ServiceBase.ServiceBase):
         id = self.IdFromURL(venueURL)
         self.defaultVenue = id
         self.config["VenueServer.defaultVenue"] = id
+        rm = self.venues[id].GetRoleManager()
         self.hostingEnvironment.BindService(self.venues[id], defaultPath)
+        # This venue already has a role manager.  Assign it to this
+        #   service as well so the same role manager will be used
+        #   when connecting to "/Venues/default" or the venue's long name.
+        self.venues[id].SetRoleManager(rm)
+        if "VenueServer" not in self.venues[id].GetRoleManager().GetExternalRoleManagerList():
+            raise "BLAH"
         
     def SetStorageLocation(self,  dataStorageLocation):
         """
@@ -1387,7 +1478,7 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         Shutdown shuts down the server.
         """
-        if not self._Authorize():
+        if not self._IsInRole("VenueServer.Administrators"):
             log.exception("Shutdown: Not authorized.")
             raise NotAuthorized
 

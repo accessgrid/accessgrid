@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.69 2003-05-30 21:20:02 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.70 2003-08-04 22:16:07 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -25,6 +25,8 @@ from AccessGrid import icons
 from AccessGrid.Platform import GPI
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid import Toolkit
+from AccessGrid.hosting.AccessControl import RoleManager
+from AccessGrid.Venue import RegisterDefaultVenueRoles
 
 import webbrowser
 import logging, logging.handlers
@@ -1488,8 +1490,8 @@ class VenueParamFrame(wxDialog):
         # Make a venue description
         venue = VenueDescription(self.title.GetValue(),
                                  self.description.GetValue(),
-                                 # Administrators missing
-                                 (), encryptTuple, exitsList,
+                                 # Roles are None -- modified separately
+                                 None, encryptTuple, exitsList,
                                  streams)
         self.venue = venue
 

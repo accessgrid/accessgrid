@@ -11,6 +11,7 @@ log = logging.getLogger("AG.VenueClient")
 from AccessGrid.VenueClient import VenueClient
 from AccessGrid.Toolkit import AG_TRUE, AG_FALSE, CmdlineApplication
 from AccessGrid.VenueClientEventSubscriber import VenueClientEventSubscriber
+from AccessGrid.hosting.AccessControl import Subject
 
 class CommandLineVenueClient(VenueClientEventSubscriber):
     """
@@ -111,9 +112,9 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
     def EnterVenue(self, URL, back = AG_FALSE, warningString="", enterSuccess=AG_TRUE):
         if enterSuccess == AG_TRUE:
             self.ClearCaches() # clear exits, etc. from last venue
-            print "Successfully entered venue: " + URL
+            self.OutputText("Successfully entered venue: " + URL)
         else:
-            print "Failed to enter venue: " + URL
+            self.OutputText("Failed to enter venue: " + URL)
 
 
     # --- Commands to be initiated from the command line. ---
@@ -203,6 +204,40 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
             self.OutputText("You are not in a venue and are unable to list data.")
             return AG_FALSE
 
+    def AddUserToRole(self, user, role):
+        if self.venueClient.isInVenue:
+            if self.venueClient.venueProxy.AddSubjectToRole(user, role):
+                self.OutputText("Successfully added user: " + user + "  to role: " + role)
+                return AG_TRUE
+            else:
+                self.OutputText("Failed to add user: " + user + "  to role: " + role)
+        else:
+            self.OutputText("You are not in a venue and are unable to add a user to a role.")
+        return AG_FALSE
+
+    def ListUsersInRole(self, role):
+        if self.venueClient.isInVenue:
+            users = self.venueClient.venueProxy.GetUsersInRole(role)
+            strng = "Users in Role: " + role + "\n"
+            for u in users:
+                if type(u) is type(""):
+                    strng = strng + u + ", "
+                else:
+                    raise "InvalidSubjectTypeError (expected string within the list)"
+            self.OutputText(strng)
+        else:
+            self.OutputText("You are not in a venue and are unable to list the users of a role.")
+
+    def ListRoles(self):
+        if self.venueClient.isInVenue:
+            roles = self.venueClient.venueProxy.GetRoleNames()
+            strng = "Roles:\n"
+            for r in roles:
+                strng = strng + r + ", "
+            self.OutputText(strng)
+        else:
+            self.OutputText("You are not in a venue and so are unable to list a venue's roles.")
+
     # Allow output to be channeled to a single place.
     def OutputText(self, strng):
        if self.cmdLineInterface:
@@ -280,6 +315,34 @@ class CmdLineController(cmd.Cmd, Thread):
         self.cmdLineVC.GetStatus()
 
     do_s = do_status
+
+    def do_listroles(self, argline):
+        self.cmdLineVC.ListRoles()
+
+    do_lr = do_listroles
+
+    def do_role_listusers(self, argline):
+        if len(argline) == 0:
+            self.OutputText("Please provide the name of a role as an argument.")
+        else:
+            self.cmdLineVC.ListUsersInRole(argline)
+
+    do_rlu = do_role_listusers
+
+    def do_role_adduser(self, argline):
+        args = argline.split(" ", 1)
+        if len(args) >= 2:
+            arg_string = ""
+            for a in args[1:]:
+                arg_string += a
+            self.cmdLineVC.AddUserToRole(arg_string, args[0])
+        else:
+            args_strng  = ""
+            for s in args:
+                args_strng += "|" + s + "| "
+            self.OutputText("role_adduser requires 2 arguments: role and user.  (you provided " + str(len(args)) + ") " + args_strng)
+
+    do_rad = do_role_adduser
 
     def do_fulltest(self, argline):
         empty_argline = ""
