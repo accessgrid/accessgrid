@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.37 2003-09-05 15:30:36 lefvert Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.38 2003-09-10 14:26:41 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,17 +15,18 @@ import string
 import thread
 import ConfigParser
 import logging
+import shutil
 
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 
+from AccessGrid import Platform
 from AccessGrid.Descriptions import AGServiceDescription
 from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid.Types import ServiceConfiguration, AGResource
 from AccessGrid.AuthorizationManager import AuthorizationManager
-from AccessGrid.Platform import GetConfigFilePath
 from AccessGrid.Utilities import LoadConfig
 from AccessGrid.AGParameter import ValueParameter
 
@@ -41,8 +42,7 @@ class AGNodeService( ServiceBase ):
     """
 
     defaultNodeConfigurationOption = "Node Configuration.defaultNodeConfiguration"
-    configDirOption = "Node Configuration.configDirectory"
-    servicesDirOption = "Node Configuration.servicesDirectory"
+    NodeConfigFile = "AGNodeService.cfg"
 
 
     def __init__( self ):
@@ -54,10 +54,38 @@ class AGNodeService( ServiceBase ):
         self.__ReadAuthFile()
         self.config = None
         self.defaultConfig = None
-        self.configDir = "config"
-        self.servicesDir = "services"
+        self.configDir = os.path.join(Platform.GetUserConfigDir(),"nodeConfig")
+        self.servicesDir = os.path.join(Platform.GetSystemConfigDir(),"services")
         self.streamDescriptionList = dict()
         self.profile = None
+
+        #
+        # Ensure that the necessary user directories exist
+        #
+        if not os.path.exists(self.servicesDir):
+            log.error("Services directory does not exist: %s", self.servicesDir)
+
+        if not os.path.exists(self.configDir): 
+            try:
+                log.info("Creating user node config directory %s", self.configDir)
+                os.mkdir(self.configDir)
+
+                # Copy node configurations from system node config directory
+                # to user node config directory
+                log.info("Copying system node configs to user node config dir")
+                systemNodeConfigDir = os.path.join(Platform.GetSystemConfigDir(),"nodeConfig")
+                configFiles = os.listdir(systemNodeConfigDir)
+                for configFile in configFiles:
+                    log.info("  node config: %s", configFile)
+                    srcfile=os.path.join(systemNodeConfigDir,configFile)
+                    destfile=os.path.join(self.configDir,configFile)
+                    try:
+                        shutil.copyfile(srcfile,destfile)
+                    except:
+                        log.exception("Couldn't copy file %s to %s" % (srcfile,destfile))
+
+            except:
+                log.exception("Couldn't create node service config dir: %s", self.configDir)
 
         #
         # Read the configuration file (directory options and such)
@@ -654,58 +682,39 @@ class AGNodeService( ServiceBase ):
     def __ReadConfigFile( self ):
         """
         Read the node service configuration file
+
+        Note:  it is read from the user config dir if it exists, 
+               then from the system config dir
         """
 
-        configFile = GetConfigFilePath("AGNodeService.cfg")
+        configFile = Platform.GetConfigFilePath(AGNodeService.NodeConfigFile)
         if configFile and os.path.exists(configFile):
 
             log.info("Reading node service config file: %s" % configFile)
-
             self.config = LoadConfig( configFile )
 
             # Process default config option
             if AGNodeService.defaultNodeConfigurationOption in self.config.keys():
                 self.defaultConfig = self.config[AGNodeService.defaultNodeConfigurationOption]
 
-            # Process config dir option
-            if AGNodeService.configDirOption in self.config.keys():
-                self.configDir = self.config[AGNodeService.configDirOption]
-                # If relative path in config file, use SystemConfigDir as the base
-                if not os.path.isabs(self.configDir):
-                    self.configDir = GetConfigFilePath(self.configDir)
-
-            # Process services dir option
-            if AGNodeService.servicesDirOption in self.config.keys():
-                self.servicesDir = self.config[AGNodeService.servicesDirOption]
-             
-                # If relative path in config file, use SystemConfigDir as the base
-                if not os.path.isabs(self.servicesDir):
-                    self.servicesDir = GetConfigFilePath(self.servicesDir)
-                
-
 
     def __WriteConfigFile( self ):
         """
         Write the node service configuration file
+
+        It is always written to the user's config directory
         """
         from AccessGrid.Utilities import SaveConfig
 
-        configFile = GetConfigFilePath("AGNodeService.cfg")
+        configFile = os.path.join(self.configDir, AGNodeService.NodeConfigFile)
 
-        if not os.access(configFile, os.W_OK):
-            raise Exception("Unable to write configuration file")
+        log.info("Writing node service config file: %s" % configFile)
 
-        if configFile and os.path.exists(configFile):
+        # Update the config to local values
+        self.config[AGNodeService.defaultNodeConfigurationOption] = self.defaultConfig
 
-            log.info("Writing node service config file: %s" % configFile)
-
-            # Update the config to local values
-            self.config[AGNodeService.configDirOption] = self.configDir
-            self.config[AGNodeService.servicesDirOption] = self.servicesDir
-            self.config[AGNodeService.defaultNodeConfigurationOption] = self.defaultConfig
-
-            # Save the config file
-            SaveConfig( configFile, self.config )
+        # Save the config file
+        SaveConfig( configFile, self.config )
         
 
     def __SendStreamsToService( self, serviceUri ):
