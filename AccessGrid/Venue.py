@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.89 2003-05-14 16:34:48 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.90 2003-05-14 19:27:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -111,20 +111,6 @@ class ConnectionNotFound(Exception):
     """
     pass
 
-class ClientInVenueException(Exception):
-    """
-    The exception raised when someone tries to enter who is already in the
-    venue.
-    """
-    pass
-
-class ClientNotInVenueException(Exception):
-    """
-    The exception raised when someone tries to do something without being in
-    the venue.
-    """
-    pass
-
 class NotAuthorized(Exception):
     """
     The exception raised when the caller is not authorized to invoke the
@@ -141,6 +127,13 @@ class StreamAlreadyPresent(Exception):
 class StreamNotFound(Exception):
     """
     The exception raised when a stream is not found in the venue.
+    """
+    pass
+
+class ClientNotFound(Exception):
+    """
+    The exception raised when a client is not found in the venues list
+    of active clients.
     """
     pass
 
@@ -429,6 +422,7 @@ class Venue(ServiceBase.ServiceBase):
         **Arguments:**
 
             *dataStore* Path to the data store.
+
         """
         self.dataStore = dataStore
 
@@ -436,27 +430,34 @@ class Venue(ServiceBase.ServiceBase):
         """
         GetState returns the current state of the Virtual Venue.
 
+        **Raises:**
+
+            *InvalidVenueState* Raised when we can't get the venue state.
+            
         **Returns:**
 
             *venueState* A dictionary containing all the state of the venue.
         """
 
         log.debug("Called GetState on %s", self.uniqueId)
-        
-        venueState = {
-            'uniqueId' : self.uniqueId,
-            'name' : self.name,
-            'description' : self.description,
-            'uri' : self.uri,
-            'connections' : self.connections.values(),
-            'applications': map(lambda x: x.GetState(),
-                                self.applications.values()),
-            'clients' : self._GetClients().values(),
-            'services' : self.services.values(),
-            'eventLocation' : self.server.eventService.GetLocation(),
-            'textLocation' : self.server.textService.GetLocation()
-            }
 
+        try:
+            venueState = {
+                'uniqueId' : self.uniqueId,
+                'name' : self.name,
+                'description' : self.description,
+                'uri' : self.uri,
+                'connections' : self.connections.values(),
+                'applications': map(lambda x: x.GetState(),
+                                    self.applications.values()),
+                'clients' : self._GetClients().values(),
+                'services' : self.services.values(),
+                'eventLocation' : self.server.eventService.GetLocation(),
+                'textLocation' : self.server.textService.GetLocation()
+                }
+        except:
+            log.exception("Couldn't get venuestate")
+            raise InvalidVenueState
         #
         # If we don't have a datastore, don't advertise
         # the existence of any data. We won't be able to get
@@ -502,13 +503,15 @@ class Venue(ServiceBase.ServiceBase):
             *ClientNotFound* This is raised when we get a heartbeat
             for a client that we don't know about.
         """
-        log.debug("Got Client Heartbeat for %s at %s." % (event, now))
+        now = time.time()
+        
+        log.debug("Got Client Heartbeat for %s at %s." % (privateId, now))
        
         if self.clients.has_key(privateId):
             self.simpleLock.acquire()
             
             (profile, heartbeatTime) = self.clients[privateId]
-            self.clients[privateId] = (profile, time.time())
+            self.clients[privateId] = (profile, now)
 
             self.simpleLock.notify()
             self.simpleLock.release()
@@ -704,19 +707,19 @@ class Venue(ServiceBase.ServiceBase):
                    
         # Remove clients from venue
         if self.clients.has_key(privateId):
+            # Distribute event
+            clientProfile, heartbeatTime = self.clients[privateId]
+            
+            log.debug("RemoveUser: Distribute EXIT event")
+            
+            self.server.eventService.Distribute( self.uniqueId,
+                                                 Event( Event.EXIT,
+                                                        self.uniqueId,
+                                                        clientProfile ) )
             del self.clients[privateId]
         else:
             log.warn("RemoveUser: Tried to remove a client that doesn't exist")
 
-        # Distribute event
-        clientProfile, heartbeatTime = self.clients[privateId]
-
-        log.debug("RemoveUser: Distribute EXIT event")
-
-        self.server.eventService.Distribute( self.uniqueId,
-                                             Event( Event.EXIT,
-                                                    self.uniqueId,
-                                                    clientProfile ) )
     def SetConnections(self, connectionDict):
         """
         SetConnections is a convenient aggregate accessor for the list of
@@ -768,7 +771,7 @@ class Venue(ServiceBase.ServiceBase):
             log.debug("Enter: Assigning private id: %s", privateId)
         else:
             log.debug("Enter: Client already in venue: %s", privateId)
-            # raise ClientInVenueException
+            # raise ClientAlreadyPresent
 
         # reset connection information
         self.clients[privateId] = (clientProfile, time.time())
@@ -783,7 +786,13 @@ class Venue(ServiceBase.ServiceBase):
                                                     self.uniqueId,
                                                     clientProfile ) )
 
-        return ( self.GetState(), privateId, streamDescriptions )
+        try:
+            state = self.GetState()
+        except:
+            log.exception("Enter: Can't get state.")
+            raise InvalidVenueState
+        
+        return ( state, privateId, streamDescriptions )
 
     def AddData(self, dataDescription ):
         """
@@ -1330,7 +1339,7 @@ class Venue(ServiceBase.ServiceBase):
         self.simpleLock.release()
 
         return returnValue
-
+    
     wsEnter.soap_export_as = "Enter"
 
     # 
