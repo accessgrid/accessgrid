@@ -15,6 +15,11 @@
 import sys, os, time
 from optparse import OptionParser
 
+
+if not os.environ.has_key('AGBUILDROOT'):
+    print "AGBUILDROOT environment variable must be set"
+    sys.exit(1)
+
 # Source Directory
 #  We assume the following software is in this directory:
 #    ag-rat, ag-vic, and AccessGrid
@@ -121,8 +126,8 @@ version = version[:-1]
 # Go to that checkout to build stuff
 #
 
+RunDir = os.path.join(BuildDir, "packaging")
 if not options.nocheckout:
-    RunDir = os.path.join(BuildDir, "packaging")
 
     if options.verbose:
         print "BUILD: Changing to directory: %s" % RunDir
@@ -174,20 +179,46 @@ elif sys.platform == 'darwin':
     bdir = 'darwin'
 else:
     bdir = None
+    
+# Change to packaging dir to build packages
+os.chdir(os.path.join(BuildDir,'packaging'))
+
+# Build service packages
+# makeServicePackages.py AGDIR\services\node DEST\services
+cmd = '%s %s %s %s %s' % (sys.executable,
+                       'makeServicePackages.py',
+                       SourceDir,
+                       BuildDir,
+                       os.path.join(DestDir,"NodeServices"))
+print "cmd = ", cmd
+os.system(cmd)
+
+# Build app packages
+# makeAppPackages.py AGDIR\sharedapps DEST\sharedapps
+cmd = '%s %s %s %s' % (sys.executable,
+                       'makeAppPackages.py',
+                       os.path.join(BuildDir,"sharedapps"),
+                       os.path.join(DestDir, "SharedApplications"))
+print "cmd = ", cmd
+os.system(cmd)
+
+
 
 if bdir is not None:
     pkg_script = "build_package.py"
     NextDir = os.path.join(RunDir, bdir)
     if os.path.exists(NextDir):
         os.chdir(NextDir)
-        os.system("%s %s --verbose -s %s -b %s -d %s -p %s -m %s -v %s" % (sys.executable,
+        cmd = "%s %s --verbose -s %s -b %s -d %s -p %s -m %s -v %s" % (sys.executable,
                                                                  pkg_script,
                                                                  SourceDir,
                                                                  BuildDir,
                                                                  DestDir,
                                                                  options.pyver,
                                                                  metainfo.replace(' ', '_'),
-                                                                 version))
+                                                                 version)
+        print "cmd = ", cmd
+        os.system(cmd)
     else:
         print "No directory (%s) found." % NextDir
 
