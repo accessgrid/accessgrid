@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.9 2004-03-02 19:12:17 judson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.10 2004-03-04 22:40:33 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 AG Hosting environment tools.
 """
-__revision__ = "$Id: __init__.py,v 1.9 2004-03-02 19:12:17 judson Exp $"
+__revision__ = "$Id: __init__.py,v 1.10 2004-03-04 22:40:33 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
@@ -101,7 +101,4 @@ def ListHostingImpls():
 
 # Set the default
 SetHostingImpl(__hostingImpl)
-
-# Hostname glue
-from AccessGrid.NetUtilities import GetHostname
 
