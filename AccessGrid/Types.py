@@ -20,9 +20,7 @@ class Event:
     ADD_CONNECTION = "Add connection"
     REMOVE_CONNECTION = "Remove connection"
     UPDATE_VENUE_STATE = "Update venue state"
-
-    VENUECLIENT_HEARTBEAT = "VenueClient Heartbeat"
-    
+        
     def __init__( self, eventType, data ):
         self.eventType = eventType
         self.data = data
