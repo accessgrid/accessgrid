@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.36 2004-03-22 19:43:05 turam Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.37 2004-03-30 16:52:29 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.36 2004-03-22 19:43:05 turam Exp $"
+__revision__ = "$Id: EventClient.py,v 1.37 2004-03-30 16:52:29 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from threading import Thread, Lock
@@ -95,7 +95,8 @@ class EventClient:
         
         self.queue = Queue.Queue()
 
-        self.qThread = Thread(target = self.queueThreadMain)
+        self.qThread = Thread(target = self.queueThreadMain,
+                              name = "EventClient.queueThreadMain")
         self.qThread.start()
 
         self.lock = Lock()
