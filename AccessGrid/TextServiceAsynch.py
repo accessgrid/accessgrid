@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.1 2003-05-20 19:40:55 olson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.2 2003-05-21 16:23:45 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
