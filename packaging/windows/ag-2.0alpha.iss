@@ -2,6 +2,8 @@
 
 EnableISX=false
 
+; This section sets the standard variables needed for the installer
+
 [Setup]
 
 OutputDir=C:\xfer
@@ -146,17 +148,18 @@ Source: packaging\windows\Postinstall.py; DestDir: {app}\config; Flags: deleteaf
 
 Source: packaging\windows\AGNodeServicePostinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
 
-Source: ..\ag-media-tools\*vic.exe; DestDir: {app}; Components: Video_Consumer Video_Producer
+Source: ..\ag-vic\vic\DDraw_Release\vic.exe; DestDir: {app}; Components: Video_Consumer Video_Producer
 
-Source: ..\ag-media-tools\rat*.exe; DestDir: {app}; Components: Audio_Service
-
+Source: ..\ag-rat\rat\Release\rat.exe; DestDir: {app}; Components: Audio_Service
+Source: ..\ag-rat\rat\Release\ratmedia.exe; DestDir: {app}; Components: Audio_Service
+Source: ..\ag-rat\rat\Release\ratui.exe; DestDir: {app}; Components: Audio_Service
 
 
 [Icons]
 
 Name: {group}\Venue Client; Filename: {app}\RunMe.py; IconFilename: {app}\config\AG.ico; WorkingDir: {app}; Components: Venue_Client
 
-Name: {group}\Uninstall the AGTk; IconFilename: {app}\config\AG.ico; Filename: {uninstallexe}
+Name: {group}\Uninstall the AGTk; Filename: {uninstallexe}
 
 Name: {group}\Node Manager; IconFilename: {app}\config\AG.ico; Filename: {app}\NodeManagement.py; WorkingDir: {app}; Components: Venue_Client
 
@@ -228,5 +231,8 @@ Name: {app}\config; Components: Venue_Client
 
 [_ISToolPreCompile]
 
-;Name: C:\AccessGridBuild\AccessGrid\packaging\windows\Prebuild.cmd; Parameters: ; Flags: abortonerror
-Name: packaging\windows\makeServicePackages.py; Parameters: ; Flags: abortonerror
+; It would be a good idea to figure out how to pass the SourceDir as a 
+; parameter to prebuild. Ti and I have chatted about this, it's on the 
+; to do list :-)
+;Name: C:\AccessGridBuild\AccessGrid\packaging\windows\Prebuild.cmd; Flags: abortonerror
+Name: packaging\windows\makeServicePackages.py; Parameters: " ""{}"" ""{}"" "; Flags: abortonerror
