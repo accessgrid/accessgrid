@@ -4,6 +4,7 @@ description = Vic-based video service to receive multicast video
 capabilities = Capability1
 executable = VideoConsumerService.py
 platform = neutral
+version = 2.0
 
 [Capability1]
 role = consumer
