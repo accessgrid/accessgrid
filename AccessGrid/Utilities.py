@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.34 2003-05-28 19:10:27 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.35 2003-06-17 21:52:22 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -159,7 +159,78 @@ def GetResourceList( resourceFile ):
 
     return resources
 
-def SubmitBug():
+def GetLogText(maxSize):
+    '''
+    Reads log records, based on todays date, from VenueClient.log.  
+
+    **Arguments:**
+        
+    *maxSize* The maximum number of bytes we want to read from the VenueClient.log file.
+      
+    **Returns:**
+    
+    *test* a string including log records from todays date.
+    If the VenueClient.log file is missing, GetLogText will return the error message
+    received when trying to read the file.  If the log file does not include any
+    records from today, the last "maxSize" bytes of the file will be included in the string.
+    '''
+        
+    try:
+        #
+        # Try to get text from VenueClient.log
+        #
+        logFileLocation = os.path.join(GetInstallDir(), "VenueClient.log")
+        logFile = file(logFileLocation)
+        
+        #
+        # Move to a position "maxSize" bytes from the end of the file. 
+        # The read will now just include the end of the file with a maximum
+        # of "maxSize" bytes
+        #
+        try:
+            # If the file is smaller than "maxSize" this will fail
+            # and the entire file will be read.
+            logFile.seek(-maxSize, 2)
+        except:
+            pass
+        
+        text = logFile.read(maxSize) # text for error report
+        logFile.close()
+    
+    except Exception,e:
+        #
+        # If reading the log file failed somehow, the text sent in the
+        # error report contains the received error message
+        #
+        (name, args, traceback_string_list) = formatExceptionInfo()
+        
+        traceback = ""
+        for x in traceback_string_list:
+            traceback += x + "\n"
+        
+        info = "\n\n"+"Type: "+str(sys.exc_type)+"\n"+"Value: "+str(sys.exc_value) + "\nTraceback:\n" + traceback
+        text = "VenueClient.log could not be located "+ info # text for error report
+
+    #
+    # Seek for todays date to just include relevant
+    # log messages in the error report
+    #
+    
+    todaysDate = time.strftime("%m/%d/%Y", time.localtime())
+    dateIndex = text.find(str(todaysDate))
+
+    if dateIndex != -1:
+        #
+        # If today's date is found, send log info starting from that index.
+        # Else, the last "maxSize" bytes of the log file is sent
+        #
+        
+        text = text[dateIndex:]
+
+    return text
+
+
+def SubmitBug(comment):
     url = "http://bugzilla.mcs.anl.gov/accessgrid/post_bug.cgi"
     args = {}
 
@@ -188,41 +259,46 @@ def SubmitBug():
     else:
         args['op_sys'] = "other"
         
-        args['priority'] = "P2"
-        args['bug_severity'] = "normal"
-        args['bug_status'] = "NEW"
-        args['assigned_to'] = ""
-        args['cc'] = "olson@mcs.anl.gov"   # email to be cc'd
-        args['bug_file_loc'] = "http://"
+    args['priority'] = "P2"
+    args['bug_severity'] = "normal"
+    args['bug_status'] = "NEW"
+    args['assigned_to'] = ""
+    args['cc'] = "lefvert@mcs.anl.gov"   # email to be cc'd
+    args['bug_file_loc'] = "http://"
+    
+    
+    args['submit'] = "    Commit    "
+    args['form_name'] = "enter_bug"
+    
+    # Bug information goes here
+    args['short_desc'] = "Crash in Client UI"
+    
+    #
+    # Combine comment and log file information
+    #
+    commentAndLog = "---Comment from Reporter--- \n\n"+comment+ \
+                    "\n\n---VenueClient.log Information---" +"\n\n" + GetLogText(20000)
+    
+    args['comment']= commentAndLog
+      
+    #
+    # Now submit to the form.
+    #
+    
+    params = urllib.urlencode(args)
+    
+    f = urllib.urlopen(url, params)
+    
+    #
+    # And read the output.
+    #
+    
+    out = f.read()
+    f.close()
         
-        
-        args['submit'] = "    Commit    "
-        args['form_name'] = "enter_bug"
-        
-        # Bug information goes here
-        args['short_desc'] = "Crash in Client UI"
-        args['comment']="Here goes the backtrace"
-        
-        #
-        # Now submit to the form.
-        #
-        
-        params = urllib.urlencode(args)
-        
-        f = urllib.urlopen(url, params)
-        
-        #
-        # And read the output.
-        #
-        
-        out = f.read()
-        f.close()
-        
-        print "Submit returns ", out
-        
-        o = open("out.html", "w")
-        o.write(out)
-        o.close()
+    o = open("out.html", "w")
+    o.write(out)
+    o.close()
 #
 # We use this import to get a reliable hostname; should be made more
 # general later (in the event we are using something other than hosting.pyGlobus
@@ -324,3 +400,6 @@ class ServerLock:
             log.debug("Releasing server lock %s  %s:%s", self.name, file, line)
         self.lock.release()
 
+
+if __name__ == "__main__":
+    SubmitBug("This is just a test for the Bug Reporting Tool")
