@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.51 2004-03-31 22:14:14 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.52 2004-04-01 23:33:01 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.51 2004-03-31 22:14:14 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.52 2004-04-01 23:33:01 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -359,7 +359,6 @@ class VenueState:
         self.connections = dict()
         self.clients = dict()
         self.data = dict()
-        self.clients = dict()
         self.applications = dict()
         self.services = dict()
         
@@ -406,12 +405,16 @@ class VenueState:
     def SetConnections( self, connectionList ):
         for connection in connectionList:
             self.connections[connection.uri] = connection
+    def GetConnections(self):
+        return self.connections.values()
     def AddData( self, dataDescription ):
         self.data[dataDescription.id] = dataDescription
     def UpdateData( self, dataDescription ):
         self.data[dataDescription.id] = dataDescription
     def RemoveData( self, dataDescription ):
         del self.data[dataDescription.id]
+    def GetData(self):
+        return self.data.values()
     def AddService( self, serviceDescription ):
         self.services[serviceDescription.id] = serviceDescription
     def UpdateService(self, serviceDescription):
@@ -426,12 +429,16 @@ class VenueState:
             for id,service in self.services.items():
                 if service.name == serviceDescription.name:
                     del self.services[id]
+    def GetServices(self):
+        return self.services.values()
     def AddApplication( self, applicationDescription ):
         self.applications[applicationDescription.uri] = applicationDescription
     def UpdateApplication(self, applicationDescription):
         self.applications[applicationDescription.uri] = applicationDescription
     def RemoveApplication( self, applicationDescription ):
         self.applications[applicationDescription.uri] = applicationDescription
+    def GetApplications(self):
+        return self.applications.values()
     def SetEventLocation( self, eventLocation ):
         self.eventLocation = eventLocation
     def GetEventLocation( self ):
