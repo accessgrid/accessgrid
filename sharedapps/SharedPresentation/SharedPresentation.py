@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.24 2004-04-16 22:35:31 eolson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.25 2004-04-19 17:13:04 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1105,10 +1105,10 @@ class SharedPresentation:
         # from the venue data store
        
         if slidesUrl.startswith("https"):
-            tmpFile = os.path.join(Platform.GetTempDir(), "presentation.ppt")
+            tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation.ppt")
             # Make sure filename is not currently open
             if tmpFile == self.viewer.openFile:
-                tmpFile = os.path.join(Platform.GetTempDir(), "presentation2.ppt")
+                tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation2.ppt")
            
             try:
                 DataStore.GSIHTTPDownloadFile(slidesUrl, tmpFile, None, None )
@@ -1346,10 +1346,10 @@ class SharedPresentation:
         # If the slides URL begins with https, retrieve the slides
         # from the venue data store
         if slidesUrl.startswith("https"):
-            tmpFile = os.path.join(Platform.GetTempDir(), "presentation.ppt")
+            tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation.ppt")
             # If current filename is in use, use slightly different name.
             if tmpFile == self.viewer.openFile:
-                tmpFile = os.path.join(Platform.GetTempDir(), "presentation2.ppt")
+                tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation2.ppt")
            
             try:
                 DataStore.GSIHTTPDownloadFile(slidesUrl, tmpFile, None, None )
@@ -1440,10 +1440,10 @@ class SharedPresentation:
             # If the slides URL begins with https, retrieve the slides
             # from the venue data store
             if self.presentation.startswith("https"):
-                tmpFile = os.path.join(Platform.GetTempDir(), "presentation.ppt")
+                tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation.ppt")
                 # If tmpFile name is in use, use a different name.
                 if tmpFile == self.viewer.openFile:
-                    tmpFile = os.path.join(Platform.GetTempDir(), "presentation2.ppt")
+                    tmpFile = os.path.join(UserConfig.instance().GetTempDir(), "presentation2.ppt")
                 try:
                     DataStore.GSIHTTPDownloadFile(self.presentation, tmpFile, None, None )
                     self.viewer.LoadPresentation(tmpFile)
