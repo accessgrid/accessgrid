@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.51 2003-03-25 15:33:52 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.52 2003-03-25 17:01:01 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -313,21 +313,6 @@ class VenueServer(ServiceBase.ServiceBase):
             raise VenueServerException("Couldn't Add Venue.")
 
     AddVenue.soap_export_as = "AddVenue"
-
-    def ModifyVenue(self, URL, venueDescription):
-        """
-        ModifyVenue updates a Venue Description.
-        """
-        if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
-        id = self.IdFromURL(URL)
-      
-        if(venueDescription['uri'] == URL):
-            self.venues[id].name = venueDescription['name']
-            self.venues[id].description = venueDescription['description']
-            self.venues[id].uri = venueDescription['uri']
-
-    ModifyVenue.soap_export_as = "ModifyVenue"
 
     def RemoveVenue(self, URL):
         """
