@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.59 2004-04-16 20:51:02 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.60 2004-04-19 17:20:31 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -77,7 +77,6 @@ linux_scripts = [ r"bin/VenueServer.py",
                   r"bin/BridgeServer.py",
                   r"bin/certmgr.py",
                   r"bin/agpm.py",
-                  r"services/network/QuickBridge/QuickBridge",
                   ]
 
 linux_data = [('etc/init.d',
@@ -95,12 +94,6 @@ linux_data = [('etc/init.d',
                ),
               ('share/AccessGrid',
                [r"packaging/ag.ico"
-                ]
-               ),
-              ('etc/AccessGrid/services',
-               [r"services/node/AudioService.zip",
-                r"services/node/VideoConsumerService.zip",
-                r"services/node/VideoProducerService.zip"
                 ]
                ),
               ('share/gnome/apps/AccessGrid',
@@ -202,25 +195,4 @@ functionality of the Access Grid.
     #    Data Files list -- these are things like the services, etc.
     data_files = inst_data
 )
-
-if dest is not None:
-    # invoke service package script
-    # packaging\makeServicePackages.py %AGDIR%\services\node %DEST%\services
-    cmd = [
-        sys.executable,
-        os.path.join("packaging", "makeServicePackages.py"),
-        os.path.abspath(os.path.join("services", "node")),
-        os.path.join(dest, "NodeServices")
-        ]
-    spawn(cmd, verbose=1)
-    
-    # invoke shared app packaging script
-    # packaging\makeAppPackages.py %AGDIR%\sharedapps %DEST%\sharedapps
-    cmd = [
-        sys.executable,
-        os.path.join("packaging","makeAppPackages.py"),
-        os.path.abspath("sharedapps"),
-        os.path.join(dest, "SharedApplications")
-        ]
-    spawn(cmd, verbose=1)
 
