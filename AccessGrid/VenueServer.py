@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.132 2004-03-26 21:07:47 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.133 2004-03-29 18:16:07 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.132 2004-03-26 21:07:47 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.133 2004-03-29 18:16:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -468,7 +468,8 @@ class VenueServer(AuthorizationMixIn):
             (section, option) = string.split(k, '.')
           
             if option == "authorizationPolicy":
-                self.authManager.ImportPolicy(config[k])
+                if len(config[k]) > 0:
+                    self.authManager.ImportPolicy(config[k])
             
             elif option == "administrators":
                 adminList = string.split(config[k],':')
