@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.22 2004-06-02 03:27:11 judson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.23 2004-06-30 07:58:17 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.22 2004-06-02 03:27:11 judson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.23 2004-06-30 07:58:17 judson Exp $"
 
 # External Imports
 import os
@@ -185,6 +185,8 @@ class AuthorizationManager:
             authP.appendChild(a.ToXML(authDoc, 1))
 
         rval = authDoc.toxml()
+
+	del authP
 
         return rval
     
