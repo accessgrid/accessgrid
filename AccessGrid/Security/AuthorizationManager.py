@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.3 2004-02-25 18:33:04 eolson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.4 2004-02-26 14:52:26 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 Authorization Manager, as described in AGEP-0105.txt.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.3 2004-02-25 18:33:04 eolson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.4 2004-02-26 14:52:26 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -54,7 +54,7 @@ class AuthorizationManager:
         self.parent = None
 
     def _repr_(self):
-        return self.ToXML().toxml()
+        return self.ToXML()
 
     def __str__(self):
         return self._repr_()
@@ -91,14 +91,16 @@ class AuthorizationManager:
             try:
                 self.AddRole(r, default = default)
             except:
-                print "Not adding Role."
+                # Don't add the role
+                pass
 
         for c in domP.getElementsByTagName("Action"):
             a = unpackAction(c)
             try:
                 self.AddAction(a)
             except:
-                print "Not adding action"
+                # Don't add the action
+                pass
 
     def ToXML(self):
         """
