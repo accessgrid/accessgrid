@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: SOAPInterface.py,v 1.12 2004-04-12 17:48:42 judson Exp $
+# RCS-ID:      $Id: SOAPInterface.py,v 1.13 2004-05-06 05:41:27 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,11 +16,12 @@ primary methods, the constructor and a default authorization for all
 interfaces.
 """
 
-__revision__ = "$Id: SOAPInterface.py,v 1.12 2004-04-12 17:48:42 judson Exp $"
+__revision__ = "$Id: SOAPInterface.py,v 1.13 2004-05-06 05:41:27 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
 import re
+import urlparse
 
 # AGTk imports
 from AccessGrid import Log
@@ -163,7 +164,29 @@ class SOAPIWrapper:
         @raises ConnectionFailed: if client can't connection to the service.
         """
         self.proxy = None
-        self.url = url
+
+        # This code makes it so that if you don't specify a port
+        # we default to trying port 8000 first.
+        
+        self.defaultPort = 8000
+        
+        urlist = urlparse.urlsplit(url)
+        print "OURL: ", urlist
+        nurl = list()
+        nurl.append(urlist[0])
+        hp = urlist[1]
+        if len(hp.split(':')) == 1:
+            nurl.append('%s:%d' % (hp, self.defaultPort))
+        else:
+            nurl.append(hp)
+
+        for i in urlist[2:]:
+            nurl.append(i)
+
+        print "NURL: ", nurl
+        
+        self.url = urlparse.urlunsplit(nurl)
+
         if url != None:
             try:
                 if Application.instance().GetOption("insecure"):
