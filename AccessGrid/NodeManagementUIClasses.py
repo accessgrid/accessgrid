@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.66 2004-07-27 18:29:12 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.67 2004-07-28 22:42:18 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.66 2004-07-27 18:29:12 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.67 2004-07-28 22:42:18 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -853,7 +853,7 @@ class NodeManagementClientFrame(wxFrame):
         serviceManager = self.serviceManagers[index]
 
         # Get services available
-        availServices =  self.nodeServiceHandle.GetAvailableServices()
+        availServices =  AGServiceManagerIW(serviceManager.uri).GetAvailableServices()
         availServiceNames = map( lambda serviceDesc: serviceDesc.name, availServices )
 
         #
