@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.50 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.51 2003-09-16 19:32:40 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 The Platform Module is to isolate OS specific interfaces.
 """
-__revision__ = "$Id: Platform.py,v 1.50 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: Platform.py,v 1.51 2003-09-16 19:32:40 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -585,14 +585,14 @@ def SetRtpDefaultsWin( profile ):
     # Set RTP defaults according to the profile
     #
     k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
-    r"Software\Mbone Applications\common",
-    0,
-    _winreg.KEY_SET_VALUE)
-    _winreg.SetValueEx(k, "rtpName", 0, _winreg.REG_SZ, profile.name)
-    _winreg.SetValueEx(k, "rtpEmail", 0, _winreg.REG_SZ, profile.email)
-    _winreg.SetValueEx(k, "rtpPhone", 0, _winreg.REG_SZ, profile.phoneNumber)
-    _winreg.SetValueEx(k, "rtpLoc", 0, _winreg.REG_SZ, profile.location)
-    _winreg.SetValueEx(k, "rtpNote", 0, _winreg.REG_SZ, str(profile.publicId) )
+                        r"Software\Mbone Applications\common",
+                        0,
+                        _winreg.KEY_SET_VALUE)
+    _winreg.SetValueEx(k, "*rtpName", 0, _winreg.REG_SZ, profile.name)
+    _winreg.SetValueEx(k, "*rtpEmail", 0, _winreg.REG_SZ, profile.email)
+    _winreg.SetValueEx(k, "*rtpPhone", 0, _winreg.REG_SZ, profile.phoneNumber)
+    _winreg.SetValueEx(k, "*rtpLoc", 0, _winreg.REG_SZ, profile.location)
+    _winreg.SetValueEx(k, "*rtpNote", 0, _winreg.REG_SZ, str(profile.publicId) )
 
     _winreg.CloseKey(k)
 
