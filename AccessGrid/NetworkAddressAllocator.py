@@ -5,13 +5,13 @@
 # Author:      Robert Olson, Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: NetworkAddressAllocator.py,v 1.3 2004-03-31 22:13:26 turam Exp $
+# RCS-ID:      $Id: NetworkAddressAllocator.py,v 1.4 2004-04-21 23:02:50 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetworkAddressAllocator.py,v 1.3 2004-03-31 22:13:26 turam Exp $"
+__revision__ = "$Id: NetworkAddressAllocator.py,v 1.4 2004-04-21 23:02:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -62,11 +62,6 @@ class NetworkAddressAllocator:
         RTP standard use cases.
         """
         
-        # Check to see whether any ports are available
-        numPorts = 1 + (self.portMax - self.portBase)/2
-        if numPorts == len(self.allocatedPorts):
-            raise NoFreePortsError
-            
         port = self.AllocatePortInRange(even,self.portBase,self.portMax)
         return port
         
