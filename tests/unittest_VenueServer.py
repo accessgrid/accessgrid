@@ -30,6 +30,7 @@ Not Testing yet:
 
 import logging, logging.handlers
 import unittest
+import threading
 from AccessGrid.Descriptions import VenueDescription
 from AccessGrid.VenueServer import VenueServer
 from AccessGrid.Venue import Venue
@@ -60,6 +61,22 @@ class VenueServerTestSuite(unittest.TestSuite):
 
 class VenueServerTestCase(unittest.TestCase):
     """A test case for VenueServers."""
+
+    def SignalHandler(self, signum, frame):
+        """
+        SignalHandler catches signals and shuts down the VenueServer (and
+        all of it's Venues. Then it stops the hostingEnvironment.
+        """
+        print "SignalHandler"
+        global running
+        global server
+        server.Stop()
+        # shut down the node service, saving config or whatever
+        running = 0
+
+    # Authorization callback for globus
+    def AuthCallback(server, g_handle, remote_user, context):
+        return 1
 
     def testAddVenue(self):
         venueServer.AddVenue(VenueDescription("unittestVenue2", "venue for unittest"));
@@ -111,16 +128,20 @@ class VenueServerTestCase(unittest.TestCase):
     # VenueServer.ModifyVenue not finished yet.
     # def testModifyVenue(self):
 
-    # This shutdown is not the most elegant solution, but the writers of PyUnit and JUnit 
-    #   want to make it as hard as possible to allow a single teardown (or setup) that
-    #   will affect multiple testCases.  We don't want to shutdown and restart the 
-    #   server for each test -- and besides, at the time of this writing it's not supported 
-    #   by the server.   This should be the last test case in the default function list 
+    # Cleanup things we set up in the test suite init above.
+    #   Unittest suites don't have a proper way to cleanup things used in
+    #   the entire suite.  The writers of PyUnit and JUnit do this so
+    #   tests don't interfere with each other.
+    # But we don't want to shutdown and restart the server for each test.
+    #   This should be the last test case in the default function list 
     #   and also last when the list is sorted alphabetically.
-  # Commented out for now because it takes a long time to shutdown, and we still have to kill
-  #   the server for now anyway.
-    #def testZEnd(self):
-        #venueServer.Shutdown(0)
+    def testZEnd(self):
+        venueServer.Shutdown(0)
+        # In case tests leave threads open, print them out so we
+        # know why the program isn't exiting.
+        for t in threading.enumerate():
+            if "MainThread" != t.getName():
+                print "Thread ", t
 
     # Would be called after each testCase
     # def tearDown(self):
