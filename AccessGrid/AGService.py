@@ -5,10 +5,11 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.21 2003-08-12 12:46:00 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.22 2003-08-20 19:27:02 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+import os
 import sys
 import logging
 import logging.handlers
@@ -23,6 +24,7 @@ from AccessGrid.Types import *
 from AccessGrid.AGParameter import *
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.AuthorizationManager import AuthorizationManager
+from AccessGrid.Platform import GetUserConfigDir
 
 if sys.platform == 'win32':
     from AccessGrid.ProcessManagerWin32 import ProcessManagerWin32 as ProcessManager
@@ -35,7 +37,7 @@ def GetLog():
     """
     log = logging.getLogger("AG.AGService")
     log.setLevel(logging.DEBUG)
-    logFile="AGService.log"
+    logFile = os.path.join(GetUserConfigDir(), "AGService.log")
     hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
     logFormat = "%(asctime)s %(levelname)-5s %(message)s (%(filename)s)"
     hdlr.setFormatter(logging.Formatter(logFormat))
