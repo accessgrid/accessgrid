@@ -2,7 +2,7 @@
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.40 2004-12-08 16:48:07 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.41 2005-04-05 18:32:36 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.40 2004-12-08 16:48:07 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.41 2005-04-05 18:32:36 turam Exp $"
 
 import re
 import os
@@ -42,8 +42,6 @@ import sys
 import time
 
 from stat import *
-
-from OpenSSL_AG import crypto
 
 from AccessGrid import Log
 from AccessGrid import Utilities
