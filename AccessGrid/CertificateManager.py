@@ -1,3 +1,15 @@
+#-----------------------------------------------------------------------------
+# Name:        CertificateManager.py
+# Purpose:     Cert management code.
+#
+# Author:      Robert Olson
+#
+# Created:     2003
+# RCS-ID:      $Id: CertificateManager.py,v 1.23 2003-08-15 16:39:21 olson Exp $
+# Copyright:   (c) 2002
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
+
 """
 Certificate management module.
 
@@ -303,52 +315,68 @@ class CertificateManager(object):
             # extract the subject name to tell the user.
             #
 
-            certObj = CertificateRepository.Certificate(userCert)
+            try:
+                certObj = CertificateRepository.Certificate(userCert)
+            except IOError:
+                self.GetUserInterface().ReportError("Globus identity certificate does not exist at\n" +
+                                                    userCert + "\n" +
+                                                    "You will have to import a valid identity certificate later.")
+                certObj = None
 
-            caption = "Initial import of Globus identity certificate"
-            message = "Import certificate for %s. Please enter the passphrase for the private key of this certificate." % (certObj.GetSubject())
+            impCert = None
 
-            #
-            # Import the identity cert.
-            # Loop until either it succeeds, or until the user cancels.
-            #
+            if certObj is not None:
 
-            while 1:
+                caption = "Initial import of Globus identity certificate"
+                message = "Import certificate for %s. Please enter the passphrase for the private key of this certificate." % (certObj.GetSubject())
 
-                impCert = None
-                passphraseCB = self.GetUserInterface().GetPassphraseCallback(caption,
-                                                                             message)
-                try:
-                    
-                    impCert = self.ImportIdentityCertificatePEM(repo, userCert, userKey,
-                                                                passphraseCB)
-                    break
+                #
+                # Import the identity cert.
+                # Loop until either it succeeds, or until the user cancels.
+                #
 
-                except CertificateRepository.RepoInvalidCertificate:
-                    log.exception("invalid cert on import")
-                    self.GetUserInterface().ReportError("Your globus certificate is invalid; ignoring it.")
-                    break
+                while 1:
 
-                except CertificateRepository.RepoBadPassphrase:
-                    log.exception("badd passphrase on import")
-                    cont = self.GetUserInterface().ReportBadPassphrase()
-                    if not cont:
+                    impCert = None
+                    passphraseCB = self.GetUserInterface().GetPassphraseCallback(caption,
+                                                                                 message)
+                    try:
+
+                        impCert = self.ImportIdentityCertificatePEM(repo, userCert, userKey,
+                                                                    passphraseCB)
                         break
 
-                except:
-                    log.exception("Unknown error on import")
-                    self.GetUserInterface().ReportError("Unknown error on Globus import; ignoring your globus identity certificate")
-                    break
+                    except CertificateRepository.RepoInvalidCertificate:
+                        log.exception("invalid cert on import")
+                        self.GetUserInterface().ReportError("Your globus certificate is invalid; ignoring it.")
+                        break
 
-            if impCert is not None:
-                impCert.SetMetadata("AG.CertificateManager.isDefaultIdentity", "1")
+                    except CertificateRepository.RepoBadPassphrase:
+                        log.exception("badd passphrase on import")
+                        cont = self.GetUserInterface().ReportBadPassphrase()
+                        if not cont:
+                            break
+
+                    except:
+                        log.exception("Unknown error on import")
+                        self.GetUserInterface().ReportError("Unknown error on Globus import; ignoring your globus identity certificate")
+                        break
+
+                if impCert is not None:
+                    impCert.SetMetadata("AG.CertificateManager.isDefaultIdentity", "1")
             
         #
         # Now handle the CA certs.
         #
 
         if caDir is not None:
-            files = os.listdir(caDir)
+            try:
+                files = os.listdir(caDir)
+            except:
+                self.GetUserInterface().ReportError("Error reading CA certificate directory\n" +
+                                                    caDir + "\n" +
+                                                    "You will have to import trusted CA certificates later.")
+                files = []
 
             #
             # Extract the files from the caDir that match OpenSSL's
