@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.5 2003-01-13 18:26:07 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.6 2003-01-14 18:59:22 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,11 +18,6 @@ class ObjectDescription:
         uri : uri (string)
         icon : IconType
     """
-    name = ""
-    description = ""
-    uri = ""
-    icon = None
-    
     def __init__(self, name, description, uri, icon):
         self.name = name
         self.description = description
@@ -59,7 +54,6 @@ class ServiceDescription(ObjectDescription):
         services users can interact with. This is an extension of the Object
         Description that adds a mimeType which should be a standard mime-type.
         """
-    mimeType = ""
     
     def __init__(self, name, description, uri, icon, mimetype):
         ObjectDescription.__init__(self, name, description, uri, icon)
@@ -84,12 +78,11 @@ class VenueDescription(ObjectDescription):
     It is suggested that this be simply XML so that clients require no
     additional software for processing it.
     """
-    coherenceLocation = None
-    extendedDescription = ""
     
     def __init__(self, name, description, icon, extendeddescription):
         ObjectDescription.__init__(self, name, description, "", icon)
         self.extendedDescription = extendeddescription
+        self.coherenceLocation = None
         
     def SetExtendedDescription(self, extendeddescription):
         self.extendedDescription = extendeddescription
@@ -105,7 +98,6 @@ class VenueDescription(ObjectDescription):
    
 class DataDescription(ObjectDescription):
     """A Data Description represents data within a venue."""
-    storageType = ''
     
     def __init__(self, name, description, uri, icon, storageType):
         ObjectDescription.__init__(self, name, description, uri, icon)
