@@ -6,7 +6,7 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: RoleAuthorization.py,v 1.6 2003-08-13 23:57:31 eolson Exp $ 
+# RCS_ID:      $Id: RoleAuthorization.py,v 1.7 2003-08-15 20:58:30 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -451,7 +451,7 @@ class AddPeopleDialog(wxDialog):
     Dialog for adding people to roles
     '''
     def __init__(self, parent, id, title, venueUrl="https://localhost:8000/Venues/default", infoDict=None, selectedRole=""):
-        wxDialog.__init__(self, parent, id, title, style=wxDEFAULT_DIALOG_STYLE)
+        wxDialog.__init__(self, parent, id, title, style=wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
         self.SetSize(wxSize(500, 450))
         self.venueUrl = venueUrl
         self.roleClient = RoleClient()
@@ -474,16 +474,17 @@ class AddPeopleDialog(wxDialog):
         self.addButton1 = wxButton(self, wxNewId(), "Add >>",
                                    style = wxBU_EXACTFIT )
         self.list = wxListCtrl(self, wxNewId(),
-                               style = wxLC_REPORT | wxLC_SORT_ASCENDING | wxSUNKEN_BORDER)
+                               style = wxLC_REPORT | wxLC_SORT_ASCENDING |
+                               wxSUNKEN_BORDER |wxHSCROLL | wxLC_NO_HEADER )
         self.list.InsertColumn(0, "People:")
        
         self.addButton2 = wxButton(self, wxNewId(), "Add >>",
                                    style = wxBU_EXACTFIT)
         self.groupList = wxListCtrl(self, wxNewId(),
-                                    style = wxLC_REPORT | wxLC_SORT_ASCENDING | wxSUNKEN_BORDER)
+                                    style = wxLC_REPORT | wxLC_SORT_ASCENDING | wxSUNKEN_BORDER|wxLC_NO_HEADER)
         self.groupList.InsertColumn(0, "Groups:")
 
-        self.addList = wxListCtrl(self, wxNewId(),  style = wxLC_REPORT | wxLC_NO_HEADER| wxLC_SORT_ASCENDING |wxSUNKEN_BORDER)
+        self.addList = wxListCtrl(self, wxNewId(),  style = wxLC_REPORT | wxLC_SORT_ASCENDING |wxSUNKEN_BORDER|wxLC_NO_HEADER)
         self.addList.InsertColumn(0, "")
         self.addButton3 = wxButton(self, wxNewId(), "Add >>",
                                    style = wxBU_EXACTFIT)
@@ -686,10 +687,12 @@ class AddPeopleDialog(wxDialog):
         self.SetAutoLayout(1)
         self.SetSizer(mainSizer)
         self.Layout()
-        self.list.SetColumnWidth(0, self.list.GetSize().GetWidth()-4)
-        self.groupList.SetColumnWidth(0, self.groupList.GetSize().GetWidth()-4)
-        self.addList.SetColumnWidth(0, self.addList.GetSize().GetWidth()-4)
-
+        #self.list.SetColumnWidth(0, self.list.GetSize().GetWidth()-4)
+        self.list.SetColumnWidth(0, wxLIST_AUTOSIZE)
+        #self.groupList.SetColumnWidth(0, self.groupList.GetSize().GetWidth()-4)
+        self.groupList.SetColumnWidth(0, wxLIST_AUTOSIZE)
+        #self.addList.SetColumnWidth(0, self.addList.GetSize().GetWidth()-4)
+        self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
 
 class RoleAuthorizationFrame(wxFrame):
     def __init__(self, parent, id, title):
