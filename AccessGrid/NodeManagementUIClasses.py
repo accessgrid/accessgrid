@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.10 2003-02-14 23:21:27 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.11 2003-02-18 19:09:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -414,9 +414,7 @@ class NodeManagementClientFrame(wxFrame):
     ## VIEW menu
     ############################
     def Update( self, event=None ):
-        #vc.Refresh()
         self.UpdateHostList()
-        self.UpdateServiceList()
 
 
     ############################
@@ -455,16 +453,29 @@ class NodeManagementClientFrame(wxFrame):
         self.UpdateHostList()
 
     def UpdateHostList( self, event=None ):
+
+        selectedServiceManagerUri = None
+        if self.hostList.GetSelectedItemCount() != 0:
+            index = -1
+            index = self.hostList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
+            selectedServiceManagerUri = self.serviceManagers[index].uri
+
         self.hostList.DeleteAllItems()
 
         i = 0
         self.serviceManagers = self.vc.GetServiceManagers()
         for serviceManager in self.serviceManagers:
             print serviceManager
-            self.hostList.InsertStringItem( i, serviceManager.name )
+            item = self.hostList.InsertStringItem( i, serviceManager.name )
+
+            # retain selection in host list
+            if serviceManager.uri == selectedServiceManagerUri:
+                self.hostList.SetItemState( item, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED )
+
             i = i + 1
 
-        #self.serviceConfigPanel.Clear()
+        if selectedServiceManagerUri:
+            self.UpdateServiceList()
 
     ############################
     ## SERVICE menu
