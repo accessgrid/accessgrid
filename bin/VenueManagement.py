@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.62 2003-04-24 16:56:21 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.63 2003-05-09 20:45:53 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,6 +24,7 @@ from AccessGrid.Utilities import formatExceptionInfo, HaveValidProxy
 from AccessGrid import icons
 from AccessGrid.Platform import GPI
 from AccessGrid.UIUtilities import MyLog
+from AccessGrid import Toolkit
 
 import logging, logging.handlers
 import string
@@ -56,6 +57,10 @@ class VenueManagementClient(wxApp):
         self.__doLayout()
         self.__setProperties()
         self.__setLogger()
+
+        self.app = Toolkit.WXGUIApplication()
+        self.app.Initialize()
+
         return true
 
     def __setLogger(self):
@@ -94,7 +99,10 @@ class VenueManagementClient(wxApp):
 
         if not HaveValidProxy():
             wxLogDebug("You do not have a valid proxy run Platform.GPI()")
-            GPI()
+            # GPI()
+
+            app = Toolkit.GetApplication()
+            app.GetCertificateManager().ConfigureProxy()
 
         if(handle.IsValid()):
             wxLogDebug("You have a valid proxy")
