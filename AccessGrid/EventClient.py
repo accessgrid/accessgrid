@@ -6,15 +6,16 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.43 2004-08-06 17:24:09 turam Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.44 2004-09-08 23:20:30 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.43 2004-08-06 17:24:09 turam Exp $"
+__revision__ = "$Id: EventClient.py,v 1.44 2004-09-08 23:20:30 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
+import sys
 from threading import Thread, Lock
 import Queue
 import pickle
@@ -267,6 +268,15 @@ class EventClient:
                 else:
                     log.info("No callback for %s!", event.eventType)
                     self.DefaultCallback(event)
+        except ImportError:
+            exc, value = sys.exc_info()[:2]
+            valueStrList = str(value).lower().split()
+            first_words = valueStrList[:2]
+            module_name = valueStrList[-1:]
+            if first_words == ['no', 'module'] and module_name == ['pyglobus.aggsisoap']:
+                log.warning("handleData unable to import pyGlobus.AGGSISOAP")
+            else:
+                log.exception("handleData failed due to ImportError")
         except:
             log.exception("handleData failed")
 
