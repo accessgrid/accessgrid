@@ -5,23 +5,22 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.26 2004-03-10 23:17:07 eolson Exp $
+# RCS-ID:      $Id: AGService.py,v 1.27 2004-03-12 00:31:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.26 2004-03-10 23:17:07 eolson Exp $"
+__revision__ = "$Id: AGService.py,v 1.27 2004-03-12 00:31:20 turam Exp $"
 __docformat__ = "restructuredtext en"
 
-from AccessGrid.hosting.pyGlobus import Client
 import os
 import sys
 import Platform
 
-from AccessGrid import Log, Log.handlers
-from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
+from AccessGrid import Log
+from AccessGrid.Log import handlers
 
 from AccessGrid.Types import *
 from AccessGrid.AGParameter import *
@@ -44,7 +43,7 @@ def GetLog():
     return log
 
 
-class AGService( ServiceBase ):
+class AGService:
     """
     AGService : Base class for developing services for the AG
     """
@@ -71,7 +70,6 @@ class AGService( ServiceBase ):
     def Start( self ):
         """Start the service"""
         raise Exception("AGService.Start is abstract!")
-    Start.soap_export_as = "Start"
 
 
     def _Start( self, options ):
@@ -96,7 +94,6 @@ class AGService( ServiceBase ):
         except Exception, e:
             self.log.exception("Exception in AGService.Stop")
             raise e
-    Stop.soap_export_as = "Stop"
 
     def ForceStop(self):
         """
@@ -121,37 +118,31 @@ class AGService( ServiceBase ):
         except:
            self.log.exception("Exception in AGService.SetAuthorizedUsers")
            raise Exception("AGService.SetAuthorizedUsers failed : " + str(sys.exc_value) )
-    SetAuthorizedUsers.soap_export_as = "SetAuthorizedUsers"
 
 
     def GetCapabilities( self ):
         """Get capabilities"""
         return self.capabilities
-    GetCapabilities.soap_export_as = "GetCapabilities"
 
 
     def GetResource( self ):
         """Get resources"""
         return self.resource
-    GetResource.soap_export_as = "GetResource"
 
 
     def SetResource( self, resource ):
         """Set the resource used by this service"""
         self.resource = resource
-    SetResource.soap_export_as = "SetResource"
 
 
     def GetExecutable( self ):
         """Get resources"""
         return self.executable
-    GetExecutable.soap_export_as = "GetExecutable"
 
 
     def SetExecutable( self, executable ):
         """Set the resource used by this service"""
         self.executable = executable
-    SetExecutable.soap_export_as = "SetExecutable"
 
 
     def SetConfiguration( self, configuration ):
@@ -167,7 +158,6 @@ class AGService( ServiceBase ):
         except:
             self.log.exception("Exception in AGService.SetConfiguration")
             raise Exception("AGService.SetConfiguration failed : " + str(sys.exc_value) )
-    SetConfiguration.soap_export_as = "SetConfiguration"
 
 
     def GetConfiguration( self ):
@@ -180,7 +170,6 @@ class AGService( ServiceBase ):
             raise Exception("AGService.GetConfiguration failed : " + str(sys.exc_value) )
 
         return serviceConfig
-    GetConfiguration.soap_export_as = "GetConfiguration"
 
 
     def ConfigureStream( self, streamDescription ):
@@ -207,13 +196,11 @@ class AGService( ServiceBase ):
             raise Exception("AGService.ConfigureStream failed : " + str(sys.exc_value) )
 
         return 0
-    ConfigureStream.soap_export_as = "ConfigureStream"
 
 
     def IsStarted( self ):
         """Return the state of Service"""
         return self.started
-    IsStarted.soap_export_as = "IsStarted"
 
     def SetEnabled(self, enabled):
         """
@@ -229,14 +216,12 @@ class AGService( ServiceBase ):
             self.log.info("Stopping service")
             self.Stop()
 
-    SetEnabled.soap_export_as = "SetEnabled"
 
     def GetEnabled(self):
         """
         Get the enabled state
         """
         return self.enabled
-    GetEnabled.soap_export_as = "GetEnabled"
 
 
     def Shutdown(self):
@@ -246,9 +231,130 @@ class AGService( ServiceBase ):
        self.log.info("Shut service down")
        self.Stop()
        self.server.stop()
-    Shutdown.soap_export_as = "Shutdown"
 
 
     def SetIdentity(self, profile):
         self.profile = profile
-    SetIdentity.soap_export_as = "SetIdentity"
+
+
+
+
+
+from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
+
+class AGServiceI(SOAPInterface):
+    """
+    Interface Class for AGService
+    """
+    
+    def __init__(self,impl):
+        SOAPInterface.__init__(self,impl)
+    
+    def Start(self):
+        self.impl.Start()
+
+    def Stop(self):
+        self.impl.Stop()
+        
+    def SetAuthorizedUsers( self, authorizedUsers ):
+        self.impl.SetAuthorizedUsers(authorizedUsers )
+
+    def GetCapabilities( self ):
+        return self.impl.GetCapabilities()
+
+    def GetResource( self ):
+        return self.impl.GetResource()
+
+    def SetResource( self, resource ):
+        self.impl.SetResource(resource )
+
+    def GetExecutable( self ):
+        return self.impl.GetExecutable()
+
+    def SetExecutable( self, executable ):
+        self.impl.SetExecutable( self, executable )
+
+    def SetConfiguration(configuration ):
+        self.impl.SetConfiguration(configuration )
+
+    def GetConfiguration( self ):
+        return self.impl.GetConfiguration()
+
+    def ConfigureStream( self, streamDescription ):
+        self.impl.ConfigureStream(streamDescription )
+
+    def IsStarted( self ):
+        return self.impl.IsStarted()
+
+    def SetEnabled(self, enabled):
+        self.impl.SetEnabled(enabled)
+
+    def GetEnabled(self):
+        return self.impl.GetEnabled()
+
+    def Shutdown(self):
+        self.impl.Shutdown()
+
+    def SetIdentity(self, profile):
+        self.impl.SetIdentity(profile)
+
+    
+    
+    
+class AGServiceIW(SOAPIWrapper):
+    """
+    Interface Wrapper Class for AGService
+    """
+    
+    def __init__(self,url):
+        SOAPIWrapper.__init__(self,url)
+    
+    def Start(self):
+        self.proxy.Start()
+
+    def Stop(self):
+        self.proxy.Stop()
+        
+    def GetCapabilities( self ):
+        return self.proxy.GetCapabilities()
+
+    def GetResource( self ):
+        return self.proxy.GetResource()
+
+    def SetResource( self, resource ):
+        self.proxy.SetResource(resource )
+
+    def GetExecutable( self ):
+        return self.proxy.GetExecutable()
+
+    def SetExecutable( self, executable ):
+        self.proxy.SetExecutable( self, executable )
+
+    def SetConfiguration(configuration ):
+        self.proxy.SetConfiguration(configuration )
+
+    def GetConfiguration( self ):
+        return self.proxy.GetConfiguration()
+
+    def ConfigureStream( self, streamDescription ):
+        self.proxy.ConfigureStream(streamDescription )
+
+    def IsStarted( self ):
+        return self.proxy.IsStarted()
+
+    def SetEnabled(self, enabled):
+        self.proxy.SetEnabled(enabled)
+
+    def GetEnabled(self):
+        return self.proxy.GetEnabled()
+
+    def Shutdown(self):
+        self.proxy.Shutdown()
+
+    def SetIdentity(self, profile):
+        self.proxy.SetIdentity(profile)
+
+    
+    
+    
+    
