@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.151 2003-05-19 16:06:07 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.152 2003-05-19 21:43:26 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -864,19 +864,20 @@ class VenueClientUI(wxApp, VenueClient):
         log.info("--------- END VenueClient")
 
         #
+        # If we are connected to a venue, exit the venue
+        # Do this before terminating services, since we need
+        # to message them to shut down their services first
+        #
+        if self.isInVenue:
+            self.ExitVenue()
+
+        #
         # If we're running as a personal node, terminate the services.
         #
-
         if self.isPersonalNode:
             log.debug("Terminating services")
             self.personalNode.Stop()
 
-        #
-        # If we are connected to a venue, exit the venue
-        #
-
-        if self.venueUri != None:
-            self.ExitVenue()
         #
         # save personal data
         #
