@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.26 2004-04-13 02:59:50 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.27 2004-04-13 03:29:39 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.26 2004-04-13 02:59:50 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.27 2004-04-13 03:29:39 judson Exp $"
 
 import os
 import sys
@@ -108,6 +108,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         self.GetInstallDir()
         self.GetDocDir()
         self.GetPkgCacheDir()
+        self.GetLogDir()
         self.GetSharedAppDir()
         self.GetNodeServiceDir()
         self.GetServicesDir()
@@ -115,7 +116,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
     def GetVersion(self):
         return self.version
 
-    def GetInstallBase(self):
+    def GetBaseDir(self):
         global AGTK_LOCATION
         
         if self.installBase == None:
@@ -142,7 +143,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         
     def GetConfigDir(self):
         if self.installBase == None:
-            self.GetInstallBase()
+            self.GetBaseDir()
 
         self.configDir = os.path.join(self.installBase, "Config")
 
@@ -157,11 +158,11 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
         return self.configDir
 
-    GetInstallDir = GetInstallBase
+    GetInstallDir = GetBaseDir
     
     def GetBinDir(self):
         if self.installBase == None:
-            self.GetInstallBase()
+            self.GetBaseDir()
 
         self.installDir = os.path.join(self.installBase, "bin")
 
@@ -173,7 +174,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
     def GetDocDir(self):
         if self.installBase == None:
-            self.GetInstallBase()
+            self.GetBaseDir()
 
         self.docDir = os.path.join(self.installBase, "doc")
 
@@ -191,7 +192,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
     def GetPkgCacheDir(self):
         if self.pkgCacheDir == None:
-            ucd = self.GetConfigDir()
+            ucd = self.GetBaseDir()
             self.pkgCacheDir = os.path.join(ucd, "PackageCache")
 
         # Check dir and make it if needed.
@@ -203,20 +204,20 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         # Check the installation
         if self.pkgCacheDir is not None and \
                not os.path.exists(self.pkgCacheDir):
-            raise Exception, "AGTkConfig: pkg cache dir does not exist."            
+            raise Exception, "AGTkConfig: pkg cache dir does not exist."
+
         return self.pkgCacheDir
 
     def GetLogDir(self):
         if self.logDir == None:
-            ucd = self.GetConfigDir()
-            self.pkgCacheDir = os.path.join(ucd, "Logs")
+            ucd = self.GetBaseDir()
+            self.logDir = os.path.join(ucd, "Logs")
 
         # Check dir and make it if needed.
         if self.initIfNeeded:
             if self.logDir is not None and \
                    not os.path.exists(self.logDir):
                 os.mkdir(self.logDir)
-
 
         # Check the installation
         if self.logDir is not None and \
@@ -227,7 +228,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
     
     def GetSharedAppDir(self):
         if self.appDir == None:
-            ucd = self.GetConfigDir()
+            ucd = self.GetBaseDir()
             self.appDir = os.path.join(ucd, "SharedApplications")
 
         # Check dir and create it if needed.
@@ -243,7 +244,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
     def GetNodeServiceDir(self):
         if self.nodeServiceDir == None:
-            ucd = self.GetConfigDir()
+            ucd = self.GetBaseDir()
             self.nodeServiceDir = os.path.join(ucd, "NodeServices")
 
         # Check dir and create it if needed.
@@ -259,7 +260,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
     def GetServicesDir(self):
         if self.servicesDir == None:
-            ucd = self.GetConfigDir()
+            ucd = self.GetBaseDir()
             self.servicesDir = os.path.join(ucd, "Services")
 
         # Check dir and create it if needed.
@@ -899,7 +900,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
     def GetLogDir(self):
         if self.logDir == None:
             ucd = self.GetBaseDir()
-            self.pkgCacheDir = os.path.join(ucd, "Logs")
+            self.logDir = os.path.join(ucd, "Logs")
 
         # Check dir and make it if needed.
         if self.initIfNeeded:
@@ -1522,11 +1523,11 @@ if __name__ == "__main__":
             print "\tInstallDir: ", tkConf.GetInstallDir()
             print "\tDocDir: ", tkConf.GetDocDir()
             print "\tConfigDir: ", tkConf.GetConfigDir()
-            print "\tLogDir: ", tkConf.GetLogDir()
             print "\tPkgCacheDir: ", tkConf.GetPkgCacheDir()
             print "\tSharedAppDir: ", tkConf.GetSharedAppDir()
             print "\tNodeServiceDir: ", tkConf.GetNodeServiceDir()
             print "\tServiceDir: ", tkConf.GetServicesDir()
+            print "\tLogDir: ", tkConf.GetLogDir()
         except Exception, e:
             print "Error trying to retrieve AGTk Configuration:\n", e
             
