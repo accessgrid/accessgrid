@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.207 2004-06-23 18:45:38 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.208 2004-07-08 02:00:00 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.207 2004-06-23 18:45:38 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.208 2004-07-08 02:00:00 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -232,22 +232,23 @@ class VenueClientState:
         # for this client.
         #
         self.eventConnObj = None
+	self.textConnObj = None
 
     def __repr__(self):
         s = "VenueClientState(name=%s privateID=%s lastHeartbeat=%s)" % (
-        self.clientProfile.name, self.privateId, self.lastHeartbeat)
+            self.clientProfile.name, self.privateId, self.lastHeartbeat)
         return s
 
     def SendEvent(self, marshalledEvent):
         if self.eventConnObj is None:
             log.debug("Enqueue event of type %s for %s",
-            marshalledEvent.GetEvent().eventType,
-            self.clientProfile.GetName())
+	            marshalledEvent.GetEvent().eventType,
+	            self.clientProfile.GetName())
             self.messageQueue.append(marshalledEvent)
         else:
             log.debug("Send event of type %s for %s",
-            marshalledEvent.GetEvent().eventType,
-            self.clientProfile.GetName())
+	            marshalledEvent.GetEvent().eventType,
+	            self.clientProfile.GetName())
             self.eventConnObj.writeMarshalledEvent(marshalledEvent)
 
     def SetConnection(self, connObj):
@@ -270,6 +271,9 @@ class VenueClientState:
 
         self.eventConnObj = connObj
 
+    def SetTextConnection(self, conn):
+	self.textConnObj = conn
+
     def CloseEventChannel(self):
         """
         Close down our connection to the event service.
@@ -278,6 +282,13 @@ class VenueClientState:
         if self.eventConnObj is not None:
             self.venue.server.eventService.CloseConnection(self.eventConnObj)
         self.eventConnObj = None
+
+    def CloseTextChannel(self):
+
+	if self.textConnObj is not None:
+	    self.venue.server.textService.CloseConnection(self.textConnObj)
+
+	self.textConnObj = None
 
     def UpdateAccessTime(self):
         self.lastHeartbeat = time.time()
@@ -383,7 +394,8 @@ class Venue(AuthorizationMixIn):
 
             self.server.eventService.AddChannel(self.uniqueId,
                                                 self.channelAuthCallback)
-            self.server.textService.AddChannel(self.uniqueId)
+            self.server.textService.AddChannel(self.uniqueId,
+					       self.textChannelAuthCallback)
             log.debug("Registering heartbeat for %s", self.uniqueId)
             self.server.eventService.RegisterCallback(self.uniqueId,
                                                       HeartbeatEvent.HEARTBEAT,
@@ -490,7 +502,7 @@ class Venue(AuthorizationMixIn):
         string = "\n[%s]\n" % self.uniqueId
         string += "type : %s\n" % sclass[-1]
         string += "name : %s\n" % self.name
-        string += "uri  : %s\n" % self.uri
+        string += "uri  : %s\n" % self.uniqueId
         # Don't store these control characters, but lets make sure we
         # bring them back
         desc = re.sub("\r\n", "<CRLF>", self.description)
@@ -961,6 +973,7 @@ class Venue(AuthorizationMixIn):
             #
 
             vclient.CloseEventChannel()
+	    vclient.CloseTextChannel()
 
             log.debug("RemoveUser: Distribute EXIT event")
 
@@ -1054,6 +1067,37 @@ class Venue(AuthorizationMixIn):
             netService = self.netServices[priv][0]
             netService.SetConnection(connObj)
             authorized = 1
+        else:
+            log.debug("Private id is not client list, denying")
+            authorized = 0
+
+        return authorized
+
+    def textChannelAuthCallback(self, event, connObj):
+        """
+        Authorization callback to gate the connection of new clients
+        to the venue's text channel.
+
+        event is the incoming event that triggered the authorization request.
+        connObj is the event service connection handler object for the request.
+        """
+
+        priv = event.data
+        log.debug("Venue gets channelAuthCallback, privateID=%s", priv)
+
+        authorized = 0
+        if priv in self.clients:
+            log.debug("Private id is in client list, authorizing")
+            authorized = 1
+
+            self.simpleLock.acquire()
+            try:
+                self.clients[priv].SetTextConnection(connObj)
+            except:
+                log.exception("Exception setting text connection (id=%s)", 
+			      priv)
+            self.simpleLock.release()
+
         else:
             log.debug("Private id is not client list, denying")
             authorized = 0
