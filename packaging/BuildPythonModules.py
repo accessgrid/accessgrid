@@ -57,8 +57,8 @@ if PYVER=="2.2":
 print "Building fpconst 0.6.0"
 SetupModule("fpconst-0.6.0", SOURCE, DEST)
 
-print "Building SOAPpy"
-SetupModule("SOAPpy", SOURCE, DEST)
+print "Building SOAPpy 0.11.4"
+SetupModule("SOAPpy-0.11.4", SOURCE, DEST)
 
 print "Building pyOpenSSL_AG"
 SetupModule("pyOpenSSL", SOURCE, DEST)
