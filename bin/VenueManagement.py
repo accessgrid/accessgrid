@@ -1,4 +1,3 @@
-
 from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
 from AccessGrid.hosting.pyGlobus import Client
@@ -49,16 +48,19 @@ class VenueManagementClient(wxApp):
         else:
             # fill in venues
             self.tabs.venuesPanel.venuesListPanel.venuesList.Clear()
+            self.tabs.venuesPanel.venueProfilePanel.ClearAllFields()
             if len(venueList) != 0 :
                 for venue in venueList:
                     self.tabs.venuesPanel.venuesListPanel.venuesList.Append(venue.name, venue)
-                    self.tabs.venuesPanel.venuesListPanel.venuesList.SetSelection(0)
                 currentVenue = self.tabs.venuesPanel.venuesListPanel.venuesList.GetClientData(0)
-                exitsList = Client.Handle(currentVenue.uri).get_proxy().GetConnections()    
+                exitsList = Client.Handle(currentVenue.uri).get_proxy().GetConnections()
+                               
                 self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(currentVenue, exitsList)
-
+                self.tabs.venuesPanel.venuesListPanel.venuesList.SetSelection(0)
+                
             else:
                 self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(None)
+                           
 
             # fill in administrators
             administratorList = self.client.GetAdministrators()
@@ -106,14 +108,9 @@ class VenueManagementClient(wxApp):
         self.client.AddAdministrator(dnName)
 
     def DeleteAdministrator(self, dnName):
-        print "-------------------remove administrator"
-        print dnName
         self.client.RemoveAdministrator(dnName)
 
     def ModifyAdministrator(self, oldName, dnName):
-        print "-------------------modify administrator"
-        print oldName
-        print dnName
         self.client.RemoveAdministrator(oldName)
         self.client.AddAdministrator(dnName)
         
@@ -180,7 +177,7 @@ class VenueManagementTabs(wxNotebook):
 	self.servicesPanel = ServicesPanel(self, application)
 	self.AddPage(self.venuesPanel, "Venues")   
 	self.AddPage(self.configurationPanel, "Configuration")
-	self.AddPage(self.servicesPanel, "Services")
+	#self.AddPage(self.servicesPanel, "Services")
 
        
 # --------------------- TAB 1 -----------------------------------
@@ -224,9 +221,12 @@ class VenueProfilePanel(wxPanel):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D, name = "venueProfilePanel")  
 	self.venueProfileBox = wxStaticBox(self, -1, "")
-	self.description = wxStaticText(self, -1,'', \
-                                        size = wxSize(10, 30) ,\
-                                      style = wxTE_MULTILINE | wxTE_READONLY)
+#	self.description = wxStaticText(self, -1,'', \
+         #                               size = wxSize(10, 30) ,\
+        #                              style = wxTE_MULTILINE | wxTE_READONLY)
+        self.description = wxTextCtrl(self, -1,'', size = wxSize(10, 50), \
+                                      style = wxSIMPLE_BORDER | wxNO_3D | wxTE_MULTILINE )
+        self.description.SetBackgroundColour(wxColour(0,0,255))
 	self.line = wxStaticLine(self, -1)
         #	self.iconLabel = wxStaticText(self, -1, 'Icon:', size = wxSize(40, 20),\
 	#			      name = "icon", style = wxALIGN_RIGHT)
@@ -240,7 +240,9 @@ class VenueProfilePanel(wxPanel):
         self.exitsLabel.Hide()
         self.exits.Hide()
         self.venueProfileBox.SetLabel("")
-        self.description.SetLabel("Not connected to server")
+        #self.description.SetLabel("Not connected to server")
+        self.description.SetValue("Not connected to server")
+        self.description.SetBackgroundColour(wxColour(215,214,214))
 	self.__doLayout()
 
     def EvtListBox(self, event):
@@ -249,28 +251,38 @@ class VenueProfilePanel(wxPanel):
         if data is not None:
             exits = Client.Handle(data.uri).get_proxy().GetConnections()
             venueProfilePanel.ChangeCurrentVenue(data, exits)
+
+    def ClearAllFields(self):
+        self.venueProfileBox.SetLabel('')
+        self.description.SetLabel('')
+        self.exits.Clear()
        
     def ChangeCurrentVenue(self, data = None, exitsList = None):
         if data == None:
             self.venueProfileBox.SetLabel("")
-            self.description.SetLabel("No venues in server")
-                       
+            #self.description.SetLabel("No venues in server")
+            self.description.SetValue("No venues in server")
+            self.exitsLabel.Hide()
+            self.exits.Hide()
+                                  
         else:
             self.exitsLabel.Show()
             self.exits.Show()
             self.venueProfileBox.SetLabel(data.name)
-            self.description.SetLabel(data.description)
-            # self.icon.SetBitmap(wxBitmap(data.icon))
             self.exits.Clear()
             index = 0
             while index < len(exitsList):
                 self.exits.Append(exitsList[index].name, exitsList[index])
                 index = index + 1
+            self.description.SetValue(data.description)
 
     def __doLayout(self):
         venueListProfileSizer = wxStaticBoxSizer(self.venueProfileBox, wxVERTICAL)
+        venueListProfileSizer.Add(5, 10)
 	venueListProfileSizer.Add(self.description, 0, wxEXPAND|wxALL, 5)
+        venueListProfileSizer.Add(5, 10)
 	venueListProfileSizer.Add(self.line, 0, wxEXPAND)
+        
 
 	paramGridSizer = wxFlexGridSizer(4, 2, 10, 10)
         #	paramGridSizer.Add(self.iconLabel, 0, wxEXPAND, 0)
@@ -705,10 +717,11 @@ class VenueParamFrame(wxDialog):
 	self.informationBox = wxStaticBox(self, -1, "Information")
 	self.exitsBox = wxStaticBox(self, -1, "Exits")
         self.titleLabel =  wxStaticText(self, -1, "Title:")
-	self.title =  wxTextCtrl(self, -1, "",  size = wxSize(200, 20))
+        self.title =  wxTextCtrl(self, -1, "",  size = wxSize(200, 20))
 	self.descriptionLabel = wxStaticText(self, -1, "Description:")
 	self.description =  wxTextCtrl(self, -1, "",\
 				       size = wxSize(200, 100), style = wxTE_MULTILINE|wxHSCROLL)
+        self.description.SetBackgroundColour('RED')
 	#self.iconLabel = wxStaticText(self, -1, "Icon:")
 	
 	#self.bitmap =  wxBitmap('IMAGES/icon.gif', wxBITMAP_TYPE_GIF)
