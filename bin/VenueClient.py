@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.241 2003-11-07 22:44:47 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.242 2004-02-10 22:38:28 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
@@ -1453,7 +1453,8 @@ class VenueClientUI(VenueClientEventSubscriber):
 
             except:
                 log.exception("bin.VenueClient::ChangeProfile: Error occured when trying to update profile")
-                ErrorDialog(None, "Your profile could not be changed", "Change Profile Error", style = wxOK | wxICON_ERROR)
+                # User does not need to know about this. The profile info got saved locally anyhow.
+                # ErrorDialog(None, "Your profile could not be changed", "Change Profile Error", style = wxOK | wxICON_ERROR)
         else:
             log.debug("Can not update client profile in venue - not connected")
 
