@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.59 2005-01-14 02:01:16 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.60 2005-01-14 19:43:21 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.59 2005-01-14 02:01:16 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.60 2005-01-14 19:43:21 turam Exp $"
 
 import os
 import socket
@@ -172,8 +172,6 @@ class SystemConfig(Config.SystemConfig):
     @ivar tempDir: the system temp directory.
     @type tempDir: string
     """
-    theSystemConfigInstance = None
-
     def instance():
         if SystemConfig.theSystemConfigInstance == None:
             SystemConfig()
