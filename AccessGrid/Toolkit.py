@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.22 2004-03-15 20:06:17 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.23 2004-03-15 20:59:49 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.22 2004-03-15 20:06:17 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.23 2004-03-15 20:59:49 judson Exp $"
 
 # Standard imports
 import os
@@ -17,13 +17,13 @@ import getopt
 
 if sys.version.startswith('2.2'):
     try:
-        from optik import OptionParser
+        from optik import OptionParser, Option
     except:
         raise Exception, "Missing module optik necessary for the AG Toolkit."
 
 if sys.version.startswith('2.3'):
     try:
-        from optparse import OptionParse
+        from optparse import OptionParser, Option
     except:
         raise Exception, "Missing module optparse, check your python installation."
 
@@ -33,38 +33,27 @@ from AccessGrid.Security import CertificateManager
 from AccessGrid.Platform.Config import AGTkConfig, GlobusConfig
 from AccessGrid.Platform.Config import SystemConfig, UserConfig
 
-class Application:
+class AppBase:
     """
     The application object is one of the top level objects used to
     build new parts of the AGTk. The application object is required to
     be a singleton in any process.
     """
     # The singleton
-    theAppInstance = None
+    theInstance = None
 
     # The class method for retrieving/creating the singleton
     def instance():
        """
        The interface for getting the one true instance of this object.
        """
-       if Application.theAppInstance == None:
-          Application()
-         
-       return Application.theAppInstance
-      
-    instance = staticmethod(instance)
+       raise "This should never be called directly."
 
     # The real constructor
     def __init__(self):
        """
        The application constructor that enforces the singleton pattern.
        """
-       if Application.theAppInstance is not None:
-          raise Exception, "Only one instance of Application is allowed"
-       
-       # Create the singleton instance
-       Application.theAppInstance = self
-
        self.parser = OptionParser()
        self.parser.add_option("-d", "--debug", action="store_true",
                               dest="debug", default=0,
@@ -85,7 +74,7 @@ class Application:
        
     # This method implements the initialization strategy outlined
     # in AGEP-0112
-    def Initialize(self, argv=[''], name=None):
+    def Initialize(self, name=None):
        """
        This method sets up everything for reasonable execution.
        At the first sign of any problems it raises exceptions and exits.
@@ -150,22 +139,6 @@ class Application:
            log.exception("Globus Initialization failed.")
            sys.exit(-1)
        
-       # 6. Initialize Certificate Management
-       # This has to be done by sub-classes
-       configDir = self.userConfig.GetConfigDir()
-       self.certificateManager = \
-            CertificateManager.CertificateManager(configDir, self.certMgrUI)
-
-       self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
-
-       # 7. Do one final check, if we don't have a default
-       #    Identity we bail, there's nothing useful to do.
-
-       if self.GetDefaultIdentityDN() is None:
-           log.error("Toolkit initialized with no default identity.")
-           log.error("Exiting because there's no default identity.")
-           sys.exit(-1)
-           
        return argvResult
 
     def ProcessArgs(self):
@@ -217,12 +190,6 @@ class Application:
     def GetGlobusConfig(self):
         return self.globusConfig
 
-    def GetCertificateManager(self):
-       return self.certificateManager
-
-    def GetCertMgrUI(self):
-       return self.certMgrUI
-   
     def GetDefaultIdentityDN(self):
         ident = self.certificateManager.GetDefaultIdentity()
         if ident is None:
@@ -230,6 +197,12 @@ class Application:
         else:
             return str(ident.GetSubject())
 
+    def GetCertificateManager(self):
+       return self.certificateManager
+
+    def GetCertMgrUI(self):
+       return self.certMgrUI
+   
     def FindConfigFile(self, configFile):
         """
         Locate given file in configuration directories:
@@ -249,6 +222,67 @@ class Application:
         
         raise Exception, "File Not Found"
 
+class Application(AppBase):
+    """
+    The application object is one of the top level objects used to
+    build new parts of the AGTk. The application object is required to
+    be a singleton in any process.
+    """
+    # The singleton
+    theAppInstance = None
+
+    # The class method for retrieving/creating the singleton
+    def instance():
+       """
+       The interface for getting the one true instance of this object.
+       """
+       if Application.theAppInstance == None:
+          Application()
+         
+       return Application.theAppInstance
+      
+    instance = staticmethod(instance)
+
+    # The real constructor
+    def __init__(self):
+       """
+       The application constructor that enforces the singleton pattern.
+       """
+       AppBase.__init__(self)
+       
+       if Application.theAppInstance is not None:
+          raise Exception, "Only one instance of Application is allowed"
+       
+       # Create the singleton instance
+       Application.theAppInstance = self
+
+    # This method implements the initialization strategy outlined
+    # in AGEP-0112
+    def Initialize(self, name=None):
+       """
+       This method sets up everything for reasonable execution.
+       At the first sign of any problems it raises exceptions and exits.
+       """
+       argvResult = AppBase.Initialize(self, name)
+       
+       # 6. Initialize Certificate Management
+       # This has to be done by sub-classes
+       configDir = self.userConfig.GetConfigDir()
+       self.certificateManager = \
+            CertificateManager.CertificateManager(configDir, self.certMgrUI)
+
+       self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
+
+       # 7. Do one final check, if we don't have a default
+       #    Identity we bail, there's nothing useful to do.
+
+       if self.GetDefaultIdentityDN() is None:
+           log.error("Toolkit initialized with no default identity.")
+           log.error("Exiting because there's no default identity.")
+           sys.exit(-1)
+           
+       return argvResult
+
 class CmdlineApplication(Application):
     """
     An application that's going to run without a gui.
@@ -263,24 +297,83 @@ class WXGUIApplication(Application):
         from AccessGrid.Security.wxgui import CertificateManagerWXGUI
         self.certMgrUI = CertificateManagerWXGUI.CertificateManagerWXGUI()
 
-# class ServiceApplicationWithIdentity:
-#     """
-#     An application that's going to run as a service.
+class Service(AppBase):
+    """
+    The service object is one of the top level objects used to
+    build new parts of the AGTk. The service object is required to
+    be a singleton in any process.
+    """
+    # The singleton
+    theServiceInstance = None
 
-#     This implies no graphical UI, and that the identity cert and key are
-#     explicitly specified.
-#     """
+    # The class method for retrieving/creating the singleton
+    def instance():
+       """
+       The interface for getting the one true instance of this object.
+       """
+       if Service.theServiceInstance == None:
+          Service()
+         
+       return Service.theServiceInstance
+      
+    instance = staticmethod(instance)
 
-#     def __init__(self, cert, key):
-#         Application.__init__(self)
+    # The real constructor
+    def __init__(self):
+       """
+       The application constructor that enforces the singleton pattern.
+       """
+       AppBase.__init__(self)
+       
+       if Service.theServiceInstance is not None:
+          raise Exception, "Only one instance of Service is allowed"
+       
+       # Create the singleton instance
+       Service.theServiceInstance = self
 
-#         self.cert = cert
-#         self.key = key
-        
-#         userInterface = CertificateManager.CertificateManagerUserInterface()
-#         self.certificateManager = \
-#             CertificateManager.CertificateManager(self.userConfigDir,
-#                                                   userInterface,
-#                                                   identityCert = self.cert,
-#                                                   identityKey = self.key)
+       # Add cert, key, and profile options
+       certOption = Option("--cert", dest="cert", metavar="CERTFILE",
+                           help="Specify a certificate file.")
+       self.AddCmdLineOption(certOption)
+       keyOption = Option("--key", dest="key", metavar="KEYFILE",
+                           help="Specify a key file.")
+       self.AddCmdLineOption(keyOption)
+       profileOption = Option("--profile", dest="profile", metavar="PROFILE",
+                           help="Specify a service profile.")
+       self.AddCmdLineOption(profileOption)
+
+    # This method implements the initialization strategy outlined
+    # in AGEP-0112
+    def Initialize(self, name=None):
+       """
+       This method sets up everything for reasonable execution.
+       At the first sign of any problems it raises exceptions and exits.
+       """
+       argvResult = AppBase.Initialize(self, name)
+
+       # Deal with the profile if it was passed instead of cert/key pair
+       if self.options.profile is not None:
+           self.profile = Profile(self.options.profile)
+       
+       # 6. Initialize Certificate Management
+       # This has to be done by sub-classes
+       configDir = self.userConfig.GetConfigDir()
+       self.certMgrUI = CertificateManager.CertificateManagerUserInterface()
+       self.certificateManager = \
+            CertificateManager.CertificateManager(configDir, self.certMgrUI,
+                                            identityCert = self.options.cert,
+                                            identityKey = self.options.key)
+
+       self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
+
+       # 7. Do one final check, if we don't have a default
+       #    Identity we bail, there's nothing useful to do.
+
+       if self.GetDefaultIdentityDN() is None:
+           log.error("Toolkit initialized with no default identity.")
+           log.error("Exiting because there's no default identity.")
+           sys.exit(-1)
+           
+       return argvResult
+
         
