@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.76 2003-08-12 20:57:24 olson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.77 2003-08-13 20:06:02 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1266,15 +1266,18 @@ class VenueParamFrame(wxDialog):
 
         bottomParamSizer.Add(exitsSizer, 0, wxEXPAND | wxALL, 10)
 
-        rolesSizer = wxStaticBoxSizer(wxStaticBox(self, -1, "Roles and Authorization"),
-                                 wxHORIZONTAL)
+        # For now, only use the modify roles button for the ModifyVenueFrame
+        #   since the current modify roles dialog needs a venue to interact with.
+        if isinstance(self, ModifyVenueFrame):
+            rolesSizer = wxStaticBoxSizer(wxStaticBox(self, -1, "Roles and Authorization"),
+                                     wxHORIZONTAL)
 
-        #rolesSizer.Add(self.modifyRolesButton, 2, wxEXPAND | wxRIGHT , 14)
-        #rolesSizer.Add(self.rolesText, 2, wxEXPAND|wxLEFT , 14)
-        roleFrameSizer = wxFlexGridSizer(1, 2, 5, 5)
-        roleFrameSizer.Add(self.modifyRolesButton, 0, wxEXPAND|wxRIGHT, 14)
-        roleFrameSizer.Add(self.rolesText, 2, wxEXPAND|wxLEFT , 14)
-        rolesSizer.Add(roleFrameSizer, 2, wxALL, 6)
+            #rolesSizer.Add(self.modifyRolesButton, 2, wxEXPAND | wxRIGHT , 14)
+            #rolesSizer.Add(self.rolesText, 2, wxEXPAND|wxLEFT , 14)
+            roleFrameSizer = wxFlexGridSizer(1, 2, 5, 5)
+            roleFrameSizer.Add(self.modifyRolesButton, 0, wxEXPAND|wxRIGHT, 14)
+            roleFrameSizer.Add(self.rolesText, 2, wxEXPAND|wxLEFT , 14)
+            rolesSizer.Add(roleFrameSizer, 2, wxALL, 6)
 
         buttonSizer =  wxBoxSizer(wxHORIZONTAL)
         buttonSizer.Add(20, 20, 1)
@@ -1286,8 +1289,11 @@ class VenueParamFrame(wxDialog):
 
         boxSizer.Add(bottomParamSizer, 0,
                      wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT, 10)
-        boxSizer.Add(rolesSizer, 0,
-                     wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT, 10)
+
+        if isinstance(self, ModifyVenueFrame):
+            boxSizer.Add(rolesSizer, 0,
+                         wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT, 10)
+
         boxSizer.Add(buttonSizer, 5, wxEXPAND | wxBOTTOM, 5)
 
         self.SetSizer(boxSizer)
