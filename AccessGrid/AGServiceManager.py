@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.63 2004-05-07 20:15:33 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.64 2004-05-07 22:01:35 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.63 2004-05-07 20:15:33 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.64 2004-05-07 22:01:35 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -132,7 +132,7 @@ class AGServiceManager:
             if foundResource == 0:
                 log.debug("** Resource does not exist! : %s ",
                           resourceToAssign.resource)
-                raise ResourceNotFoundError(resourceToAssign.resource)
+                #raise ResourceNotFoundError(resourceToAssign.resource)
 
 
         #
