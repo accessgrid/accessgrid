@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: AccessControl.py,v 1.6 2003-05-14 19:19:39 olson Exp $
+# RCS-ID:      $Id: AccessControl.py,v 1.7 2003-05-27 15:51:30 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -302,7 +302,8 @@ class InvocationWrapper(MethodSig):
               info = sys.exc_info()
 
               ftype = traceback.format_exception_only(info[0], info[1])
-              fault = faultType(faultstring = ftype[0])
+              fault = faultType(faultcode = str(info[0]),
+                                faultstring = ftype[0])
               fault._setDetail("".join(traceback.format_exception(
                                     info[0], info[1], info[2])))
               raise fault

@@ -13,7 +13,8 @@ class C(ServiceBase.ServiceBase):
 
 #        print "Executing as subject name: ", sm.GetSubject()
 
-#        x = y
+
+        x = y
 
 #        ident = "/O=Grid/OU=Access Grid/OU=mcs.anl.gov/CN=Bob Olson"
 #        if not sm.ValidateUser(ident):
@@ -27,6 +28,8 @@ class C(ServiceBase.ServiceBase):
     meth.soap_export_as = "method"
 
 def cb(server, g_handle, remote_user, context):
+    import gc
+    print "garb: ", gc.garbage
     print "%s Got cb %s" % (clk(), remote_user)
     return 1
 
