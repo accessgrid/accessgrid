@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.156 2003-04-24 18:36:47 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.157 2003-04-24 18:41:45 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -2243,15 +2243,15 @@ class DataDropTarget(wxFileDropTarget):
         else:
             self.app.UploadVenueFiles(files)
  
-    def OnData(self, x, y, d):
-        wxLogDebug('on data')
-        self.GetData()
-        files = self.do.GetFilenames()
-        for file in files:
-            fileNameList = file.split('/')
-            fileName = fileNameList[len(fileNameList)-1]
-            self.dock.AddSimpleTool(20, icons.getDefaultDataBitmap(), fileName)
-        return d
+    #def OnData(self, x, y, d):
+    #    wxLogDebug('on data')
+    #    self.GetData()
+    #    files = self.do.GetFilenames()
+    #    for file in files:
+    #        fileNameList = file.split('/')
+    #        fileName = fileNameList[len(fileNameList)-1]
+    #        self.dock.AddSimpleTool(20, icons.getDefaultDataBitmap(), fileName)
+    #    return d
 
 '''VenueClient.
 
