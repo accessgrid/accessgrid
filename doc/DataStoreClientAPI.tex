@@ -1,0 +1,144 @@
+\documentclass{howto}
+
+\title{Venue DataStore Client API}
+
+% \release{0.5.1}
+
+\author{Robert Olson}
+\authoraddress{\email{olson@mcs.anl.gov}}
+
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+
+\makeindex
+\makemodindex
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\noindent
+The venue datastore provides a mechanism for the venue to store data
+on behalf of the venue's users. The client API described here provides
+easy access for the clients of a venue to access the data therein.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction \label{intro}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% begin module docs
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{\module{AccessGrid.DataStoreClient} --- Client API to the
+Venue DataStore}
+
+\declaremodule{}{AccessGrid.DataStoreClient}
+\modulesynopsis{Client access to the Venue Datastore}
+
+\begin{classdesc}{DataStoreClient}{uploadURL, datastoreURL}
+
+
+\end{classdesc}
+
+\begin{classdesc}{DataStoreShell}{datastoreClient}
+
+A \class{DataStoreShell} instance provides a command-line interface to
+the files in a datastore.
+
+\end{classdesc}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% CertificateRepository methods.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsection{DataStoreClient Objects}
+
+The \class{DataStoreClient} class defines the following methods:
+
+\begin{methoddesc}{LoadData}{}
+Reload the client's cache of venue data information.
+\end{methoddesc}
+
+\begin{methoddesc}{QueryMatchingFiles}{pattern}
+Return a list of filenames in the venue that match the unix-style file
+glob \var{pattern}.
+
+\end{methoddesc}
+
+\begin{methoddesc}{QueryMatchingFilesMultiple}{patternList}
+Return a list of filenames in the venue that match any of the unix-style file
+globs in \var{patternList}.
+
+\end{methoddesc}
+
+\begin{methoddesc}{GetFileData}{filename}
+Return the metadata in the cache for file \var{filename}. The metadata
+is returned as a Python dictionary. Keys of
+interest in this dictionary include 
+\begin{description}
+\item[name~] Name of the file
+\item[size~] Size of the file, in bytes
+\item[checksum~] MD5 checksum of the file
+\item[uri~] DataStore URL for the file.
+\end{description}
+
+\end{methoddesc}
+
+\begin{methoddesc}{Download}{filename, localFile}
+Download \var{filename} to the local file \var{localFile}.
+\end{methoddesc}
+
+\begin{methoddesc}{Upload}{localFile}
+Upload local file \var{localFile} to the datastore. The uploaded file will
+be named with the basename of \var{localFile}. If that file already
+exists, an exception will be raised.
+\end{methoddesc}
+
+\begin{methoddesc}{RemoveFile}{file}
+Remove the file named \var{file} from the venue datastore.
+
+\end{methoddesc}
+
+\begin{methoddesc}{OpenFile}{file, mode}
+Open a venue file named \var{file}. 
+
+If \var{mode} is ``r'', the file
+will be opened for reading. In this implementation, the file will be
+downloaded and a filehandle to that local file returned. 
+
+If \var{mode} is ``w'', the file will be opened for writing. In this
+implemetnation, a file handle to a new local file will be
+returned. When the file handle is closed, the file will be uploaded to
+the venue.
+
+\end{methoddesc}
+
+\subsection{DataStoreShell Objects}
+
+The \class{DataStoreShell} class defines the following methods:
+
+\begin{methoddesc}{run}{}
+Start the command processor.
+
+\end{methoddesc}
+
+%begin{latexonly}
+\renewcommand{\indexname}{Module Index}
+%end{latexonly}
+\input{modDataStoreClientAPI.ind}              % Module Index
+
+%begin{latexonly}
+\renewcommand{\indexname}{Index}
+%end{latexonly}
+\input{DataStoreClientAPI.ind}                 % Index
+
+\end{document}
+
