@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.26 2003-05-20 21:43:06 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.27 2003-05-23 14:43:41 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,6 +17,7 @@ from wxPython.lib.dialogs import wxMultipleChoiceDialog
 # AG2 imports
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
+from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 
 from AccessGrid.Types import Capability, ServiceConfiguration
 from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetParameter, CreateParameter
@@ -557,7 +558,11 @@ class NodeManagementClientFrame(wxFrame):
                 self.Error( "No selection made" )
                 return
 
-            self.nodeServiceHandle.GetProxy().LoadConfiguration( conf )
+            try:
+                self.nodeServiceHandle.GetProxy().LoadConfiguration( conf )
+            except faultType, e:
+                self.Error(e.faultstring)
+
             self.UpdateHostList()
             self.UpdateServiceList()
 
@@ -584,7 +589,10 @@ class NodeManagementClientFrame(wxFrame):
                     return
 
                 # Store the configuration
-                self.nodeServiceHandle.GetProxy().StoreConfiguration( configName )
+                try:
+                    self.nodeServiceHandle.GetProxy().StoreConfiguration( configName )
+                except faultType,e:
+                    self.Error(e.faultstring)
 
                 # Set the default configuration
                 if isDefault:
@@ -644,9 +652,9 @@ class NodeManagementClientFrame(wxFrame):
             name = '%s:%s' % (host,port)
             try:
                 self.nodeServiceHandle.GetProxy().AddServiceManager( AGServiceManagerDescription( name, uri ) )
-            except:
+            except faultType, e:
                 print "Exception in AddHost", sys.exc_type, sys.exc_value
-                self.Error( "Add Service Manager failed" )
+                self.Error(e.faultstring)
                 return
 
             # Update the service manager list
@@ -801,9 +809,10 @@ class NodeManagementClientFrame(wxFrame):
                                serviceManager.uri,
                                resourceToAssign,
                                None )
-            except:
+            except faultType, e:
                 print "Exception in AddService : ", sys.exc_type, sys.exc_value
-                self.Error( "Add Service failed :" + serviceToAdd.name )
+                #self.Error( "Add Service failed :" + serviceToAdd.name )
+                self.Error(e.faultstring)
 
             self.UpdateServiceList()
 
@@ -1003,7 +1012,10 @@ class NodeManagementClientFrame(wxFrame):
                              MulticastNetworkLocation( "233.2.171.38", 42002, 127 ),
                              Capability( Capability.CONSUMER, Capability.VIDEO ),
                              0, None, 0 ) )
-        self.nodeServiceHandle.GetProxy().SetStreams( streamDs )
+        try:
+            self.nodeServiceHandle.GetProxy().SetStreams( streamDs )
+        except faultType, e:
+            self.Error(e.faultstring)
 
         self.UpdateServiceList()
 
