@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.75 2004-09-03 13:45:05 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.76 2004-09-03 18:15:13 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.75 2004-09-03 13:45:05 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.76 2004-09-03 18:15:13 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -972,7 +972,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.nodeManagementFrame.Raise()
         else:
             self.nodeManagementFrame = NodeManagementClientFrame(self, -1, "Access Grid Node Management")
-            log.debug("VenueClientFrame.OpenNodeMgmtApp: open node management")
+            log.debug("VenueClientFrame.ManageNodeCB: open node management")
 
             try:
                 self.nodeManagementFrame.AttachToNode( self.venueClient.GetNodeServiceUri() )
@@ -1970,7 +1970,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 log.debug(warningString)
             else:
                 log.debug("warningString: %s" %warningString)
-                text = "Can not connect to venue located at %s.  Please, try again." % URL
+                text = "Can not connect to venue located at %s. \n%s Please, try again." % (URL,warningString)
                 wxCallAfter(self.Notify, text, "Can not enter venue")
             return
 
