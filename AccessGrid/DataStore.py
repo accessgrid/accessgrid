@@ -6,12 +6,13 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.40 2003-08-22 21:38:58 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.41 2003-08-28 18:45:54 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-import os.path
+import os
+import time
 import threading
 import re
 import urllib
@@ -22,11 +23,9 @@ import shutil
 import sys
 import socket
 import md5
-import os
 import ConfigParser
 import cStringIO
 import Queue
-from threading import Condition, Lock
 
 import AccessGrid.GUID
 from AccessGrid.Utilities import GetHostname
@@ -496,7 +495,6 @@ class DataStore(ServiceBase):
         HeartbeatThread loops while the object is active,
         to keep the connection with the Venue open
         """
-        import time
         while self.sendHeartBeats:
             try:
                 self.eventClient.Send(HeartbeatEvent(self.channelId, self.privateId))
@@ -2266,8 +2264,6 @@ if __name__ == "__main__":
     logger.addHandler(logging.StreamHandler())
     logger.setLevel(logging.debug)
 
-    import time
-    import os
     from AccessGrid.Events import Event
     
     #

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.24 2003-08-07 19:17:16 turam Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.25 2003-08-28 18:45:54 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,6 @@ import Queue
 import pickle
 import logging
 import struct
-import threading
 import types
 
 from pyGlobus.io import GSITCPSocket, TCPIOAttr, AuthData, IOBaseException
@@ -95,7 +94,7 @@ class EventClient:
         self.qThread = Thread(target = self.queueThreadMain)
         self.qThread.start()
 
-        self.lock = threading.Lock()
+        self.lock = Lock()
 
         attr = CreateTCPAttrAlwaysAuth()
         self.sock = GSITCPSocket()
@@ -177,10 +176,9 @@ class EventClient:
         
         try:
             return self.readCallback(arg, handle, ret, buf, n)
-        except Exception, e:
+        except Exception:
             log.exception("readcallback failed")
                 
-
     def readCallback(self, arg, handle, ret, buf, n):
 
         log.debug("Got read handle=%s ret=%s  n=%s \n", handle, ret, n)

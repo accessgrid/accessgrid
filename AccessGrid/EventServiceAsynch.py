@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.14 2003-08-21 23:23:03 eolson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.15 2003-08-28 18:45:54 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -666,7 +666,7 @@ class EventService:
 
         connId = connObj.GetId()
 
-        connChannel = self.findConnectionChannel(connId)
+#        connChannel = self.findConnectionChannel(connId)
 
 #        if connChannel is not None:
 #            connChannel.RemoveConnection(connObj)

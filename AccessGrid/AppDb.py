@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.3 2003-08-27 20:32:58 judson Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.4 2003-08-28 18:45:54 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -83,19 +83,6 @@ class AppDb:
         except:
             print "Couldn't flush the db to disk."
 
-    def ListMimeTypes(self):
-        """
-        """
-
-        mt = list()
-        
-        for key in self.AppDb.keys():
-            (section, option) = key.split(self.defaultSeparator)
-            if section != "name" and section != "extension":
-                mt.append(option)
-
-        return mt
-    
     def GetMimeType(self, name = None, extension = None):
         """
         returns a mimeType in a string.
@@ -106,7 +93,7 @@ class AppDb:
             lookupName = self.defaultSeparator.join(["name", name])
             try:
                 mimeType = self.AppDb[lookupName]
-            except KeyError, k:
+            except KeyError:
                 mimeType = None
     
         if extension != None:

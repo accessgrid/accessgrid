@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: AppService.py,v 1.9 2003-08-12 06:00:03 turam Exp $
+# RCS-ID:      $Id: AppService.py,v 1.10 2003-08-28 18:45:54 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -185,7 +185,7 @@ class AppObjectImpl:
             'id' : self.id,
             'mimeType' : self.mimeType,
             'uri' : self.uri,
-            'data' : self.data
+            'data' : self.app_data
             }
             
         return appState

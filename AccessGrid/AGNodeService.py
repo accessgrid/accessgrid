@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.35 2003-08-27 20:32:21 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.36 2003-08-28 18:45:54 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -13,7 +13,6 @@ import os
 import sys
 import string
 import thread
-import string
 import ConfigParser
 import logging
 
@@ -810,7 +809,7 @@ class AGServicePackageRepository:
                     try:
                         servicePackage = AGServicePackage( self.servicesDir + os.sep + file)
                         serviceDesc = servicePackage.GetServiceDescription()
-                    except InvalidServicePackage, InvalidServiceDescription:
+                    except InvalidServicePackage:
                         invalidServicePackages = invalidServicePackages + 1
                     serviceDesc.servicePackageUri = self.baseUrl + file
                     self.serviceDescriptions.append( serviceDesc )

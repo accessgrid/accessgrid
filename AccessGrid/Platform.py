@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.44 2003-08-28 18:03:48 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.45 2003-08-28 18:45:54 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -365,7 +365,7 @@ def Win32RegisterMimeType(mimeType, extension, fileType, description, cmds):
                                    "MIME\Database\Content Type\%s" % mimeType)
         _winreg.SetValueEx(regKey, "Extension", 0, _winreg.REG_SZ, extension)
         _winreg.CloseKey(regKey)
-    except EnvironmentError, e:
+    except EnvironmentError:
         log.debug("Couldn't open registry for mime registration!")
     
     # Do 2. from above
@@ -464,7 +464,7 @@ def Win32GetMimeCommands(mimeType = None, ext = None):
             key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
                                   "%s\shell" % filetype)
             nCommands = _winreg.QueryInfoKey(key)[0]
-            defaultCommand = _winreg.QueryValue(key, "")
+#            defaultCommand = _winreg.QueryValue(key, "")
             
             for i in range(0,nCommands-1):
                 commandName = _winreg.EnumKey(key, i)
