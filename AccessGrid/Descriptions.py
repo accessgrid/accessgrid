@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.35 2003-08-12 15:56:31 eolson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.36 2003-08-21 23:03:26 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -143,11 +143,13 @@ class DataDescription(ObjectDescription):
         return self.owner
 
     def AsINIBlock(self):
+        print "in as iniblock for data description", self.GetType()
         string = ObjectDescription.AsINIBlock(self)
         string += "status : %s\n" % self.GetStatus()
         string += "size : %d\n" % self.GetSize()
         string += "checksum : %s\n" % self.GetChecksum()
         string += "owner: %s\n" % self.GetOwner()
+        string += "type: %s\n" % self.GetType()
 
         return string
 
