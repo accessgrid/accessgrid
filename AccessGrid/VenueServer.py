@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.68 2003-04-28 18:07:57 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.69 2003-05-13 18:52:32 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ import os
 import os.path
 import socket
 import string
-from threading import Thread, RLock
+from threading import Thread, Lock, Condition
 import traceback
 import logging
 import urlparse
@@ -54,12 +54,35 @@ class VenueServerException(Exception):
     pass
 
 class NotAuthorized(Exception):
+    """
+    The exception raised when a caller is not authorized to make the call.
+    """
     pass
 
 class InvalidVenueURL(Exception):
+    """
+    The exception raised when a URL doesn't point to a venue.
+    """
     pass
 
-class RemoveVenueException(Exception):
+class UnbindVenueError(Exception):
+    """
+    The exception raised when the hosting environment can't detach a
+    venue from the web services layer.
+    """
+    pass
+
+class VenueNotFound(Exception):
+    """
+    The exception raised when a venue is not found on this venue server.
+    """
+    pass
+
+class AdministratorAlreadyPresent(Exception):
+    """
+    The exception raised when an administrator is already present, but
+    added a second time.
+    """
     pass
 
 class VenueServer(ServiceBase.ServiceBase):
@@ -67,27 +90,10 @@ class VenueServer(ServiceBase.ServiceBase):
     The Virtual Venue Server object is responsible for creating,
     destroying, and configuring Virtual Venue objects.
 
-    The Virtual Venue Server object is:
+    **Extends:**
 
-    . adminstrators -- list of strings (each is a DN of a adminsitrative user)
-    . defaultVenue -- VenueURL
-    . hostingEnvironment -- AccessGrid.hosting.pyGlobus.Server
-    . multicastAddressAllocator -- AccessGrid.MulticastAddressAllocator
-    . hostname -- the hostname of the local machine
-    . venues -- a list of Venues Objects that are being made available
-    . dataStorageLocation -- string
-    . eventPort -- the local port to run the EventService on.
-    . textPort -- the local port to run the TextService on.
-    . configFile -- string
-    . dataTransferServer -- a DataStore Transfer Server for storing files.
-    . eventService -- an Event Service so all venues can have event
-    infrastructure.
-    . textService -- a Text Service for all venues.
-    . services -- a list of service descriptions, these are either network or
-               application services that are available so any venue hosted
-               by this venue server can add these to the services available
-               from within that venue
-    . houseKeeper -- Scheduler
+        *AccessGrid.hosting.pyGlobus.ServiceBase.*
+    
     """
 
     configDefaults = {
@@ -110,6 +116,11 @@ class VenueServer(ServiceBase.ServiceBase):
         The constructor creates a new Venue Server object, initializes
         that object, then registers signal handlers so the venue can cleanly
         shutdown in the event of catastrophic signals.
+
+        **Arguments:**
+        - *hostingEnvironment* a reference to the hosting environment.
+        - *configFile* the filename of a configuration file for this venue server.
+        
         """
         # Initialize our state
         self.administrators = ''
@@ -130,6 +141,7 @@ class VenueServer(ServiceBase.ServiceBase):
         self.dataStorageLocation = None
         self.eventPort = 0
         self.textPort = 0
+        self.simpleLock = Condition(Lock())
         
         # Figure out which configuration file to use for the
         # server configuration. If no configuration file was specified
@@ -159,11 +171,6 @@ class VenueServer(ServiceBase.ServiceBase):
             self.administratorList = string.split(self.administrators, ":")
             
         # Start Venue Server wide services
-        log.info("HN: %s EP: %d TP: %d DP: %d" % ( self.hostname,
-                                                    int(self.eventPort),
-                                                    int(self.textPort),
-                                                    int(self.dataPort) ) )
-
         self.dataTransferServer = GSIHTTPTransferServer(('',
                                                          int(self.dataPort)),
                                                         numThreads = 5,
@@ -199,6 +206,7 @@ class VenueServer(ServiceBase.ServiceBase):
             self.SetDefaultVenue(self.MakeVenueURL(self.defaultVenue))
         else:
             log.debug("Creating default venue")
+            self.defaultVenueDesc.administrators.append(GetDefaultIdentityDN())
             self.AddVenue(self.defaultVenueDesc)
 
         # The houseKeeper is a task that is doing garbage collection and
@@ -208,8 +216,22 @@ class VenueServer(ServiceBase.ServiceBase):
                                  int(self.houseKeeperFrequency), 0)
         self.houseKeeper.StartAllTasks()
 
+        # Then we create the VenueServer service
+        self.service = self.hostingEnvironment.BindService(self, 'VenueServer')
+
+        # Some simple output to advertise the location of the service
+        print("Server URL: %s \nEvent Port: %d Text Port: %d Data Port: %d" %
+              ( self.service.GetHandle(), int(self.eventPort),
+                int(self.textPort), int(self.dataPort) ) )
+
     def LoadPersistentVenues(self, filename):
         """
+        This method loads venues from a persistent store.
+
+        **Arguments:**
+
+            *filename* The filename for the persistent store. It is
+            currently a INI formatted file.
         """
         cp = ConfigParser.ConfigParser()
         cp.read(filename)
@@ -230,9 +252,16 @@ class VenueServer(ServiceBase.ServiceBase):
 
                 self.venues[self.IdFromURL(v.uri)] = v
                 self.hostingEnvironment.BindService(v, self.PathFromURL(v.uri))
-                
-                cl = {}
-                for c in string.split(cp.get(sec, 'connections'), ':'):
+
+                # Deal with connections if there are any
+                try:
+                    connections = cp.get(sec, 'connections')
+                except ConfigParser.NoOptionError:
+                    log.debug("No connections for venue being loaded")
+                    connections = ""
+                    
+                cl = dict()
+                for c in string.split(connections, ':'):
                     if len(c) != 0:
                         uri = self.MakeVenueURL(self.IdFromURL(cp.get(c,
                                                                       'uri')))
@@ -241,32 +270,49 @@ class VenueServer(ServiceBase.ServiceBase):
                                                    uri)
                         cl[cd.uri] = cd
                         
-                v.SetConnections(cl)
+                        v.SetConnections(cl)
+                cl = None
+                    
                         
-                for s in string.split(cp.get(sec, 'streams'), ':'):
+                # Deal with streams if there are any
+                try:
+                    streams = cp.get(sec, 'streams')
+                except ConfigParser.NoOptionError:
+                    log.debug("No streams for venue being loaded")
+                    streams = ""
+                    
+                for s in string.split(streams, ':'):
                     if len(s) != 0:
                         name = cp.get(s, 'name')
-                        desc = cp.get(s, 'description')
-                        encryptionFlag = cp.get(s, 'encryptionFlag')
-                        encryptionKey = cp.get(s, 'encryptionKey')
-                        static = cp.get(s, 'static')
+                        try:
+                            desc = cp.get(s, 'description')
+                        except ConfigParser.NoOptionError:
+                            desc = None
+                        encryptionFlag = cp.getint(s, 'encryptionFlag')
+                        if encryptionFlag:
+                            encryptionKey = cp.get(s, 'encryptionKey')
+                        else:
+                            encryptionKey = None
                         (addr, port, ttl) = string.split(cp.get(s, 'location'),
                                                          " ")
                         capability = cp.get(s, 'capability')
                         loc = MulticastNetworkLocation(addr, int(port),
                                                        int(ttl))
                         cap = Capability(string.split(capability, ' '))
-                        
-                        uri = self.MakeVenueURL(self.IdFromURL(cp.get(s,
-                                                                      'uri')))
+
                         sd = StreamDescription(name, loc, cap, 
                                                encryptionFlag, encryptionKey,
-                                               static)
+                                               static=1)
                         v.AddStream(sd)
                     else:
                         log.debug("Not loading stream: %s", sec)
-                        
-                for d in string.split(cp.get(sec, 'data'), ':'):
+
+                try:
+                    dataList = cp.get(sec, 'data')
+                except ConfigParser.NoOptionError:
+                    dataList = ""
+                    
+                for d in string.split(dataList, ':'):
                     if len(d) != 0:
                         dd = DataDescription(cp.get(d, 'name'))
                         dd.SetId(d)
@@ -279,8 +325,17 @@ class VenueServer(ServiceBase.ServiceBase):
                         v.AddData(dd)
                     else:
                         log.debug("Not loading data: %s", sec)
-    def _authorize(self):
+
+    def _Authorize(self):
         """
+        This is a placeholder authorization method. It will be
+        replaced with the Role Based Authorization. Currently
+        authorization is merely a check to see if the caller is an
+        administrator.
+
+        **Returns:**
+            *1* on success
+            *0* on failure
         """
         sm = AccessControl.GetSecurityManager()
         if sm == None:
@@ -288,7 +343,8 @@ class VenueServer(ServiceBase.ServiceBase):
         elif sm.GetSubject().GetName() in self.administratorList:
             return 1
         else:
-            log.exception("Authorization failed for %s", sm.GetSubject().GetName())
+            log.exception("Authorization failed for %s",
+                          sm.GetSubject().GetName())
             return 0
 
     def InitFromFile(self, config):
@@ -310,39 +366,6 @@ class VenueServer(ServiceBase.ServiceBase):
         path = self.PathFromURL(URL)
         return path.split('/')[-1]
     
-    def wsAddVenue(self, venueDescStruct):
-        """
-        Inteface call for Adding a venue.
-        """
-        
-        if not self._authorize():
-            log.exception("Unauthorized attempt to Add Venue.")
-            raise NotAuthorized
-        else:
-            try:
-                venueDesc = CreateVenueDescription(venueDescStruct)
-                venueDesc.administrators.append(GetDefaultIdentityDN())
-                venueUri = self.AddVenue(venueDesc)
-                return venueUri
-            except:
-                log.exception("Exception in AddVenue!")
-                raise VenueServerException("Couldn't Add Venue.")
-
-
-    wsAddVenue.soap_export_as = "AddVenue"
-    
-    def wsModifyVenue(self, URL, venueDescStruct):
-        if not self._authorize():   
-            raise NotAuthorized
-
-        if URL == None:
-            raise InvalidVenueURL
-        else:
-            vd = CreateVenueDescription(venueDescStruct)
-            self.ModifyVenue(URL, vd)
-        
-    wsModifyVenue.soap_export_as = "ModifyVenue"
-    
     def MakeVenueURL(self, uniqueId):
         """
         Helper method to make a venue URI from a uniqueId.
@@ -350,6 +373,587 @@ class VenueServer(ServiceBase.ServiceBase):
         uri = string.join([self.hostingEnvironment.get_url_base(),
                            self.venuePathPrefix, uniqueId], '/')
         return uri
+
+    def Checkpoint(self):
+        """
+        Checkpoint stores the current state of the running VenueServer to
+        non-volatile storage. In the event of catastrophic failure, the
+        non-volatile storage can be used to restart the VenueServer.
+
+        The fequency at which Checkpointing is done will bound the amount of
+        state that is lost (the longer the time between checkpoints, the more
+        that can be lost).
+        """
+        # Before we backup we copy the previous backup to a safe place
+        if os.path.isfile(self.persistenceFilename):
+            nfn = self.persistenceFilename + '.bak'
+            if os.path.isfile(nfn):
+                try:
+                    os.remove(nfn)
+                except OSError, e:
+                    log.exception("Couldn't remove backup file.")
+                    return 0
+            try:
+                os.rename(self.persistenceFilename, nfn)
+            except OSError, e:
+                log.exception("Couldn't rename backup file.")
+                return 0
+            
+        # Open the persistent store
+        store = file(self.persistenceFilename, "w")
+
+        try:            
+            for venuePath in self.venues.keys():
+                # Change out the uri for storage, we store the path
+                venueURI = self.venues[venuePath].uri
+                self.venues[venuePath].uri = venuePath
+
+                try:            
+                    # Store the venue.
+                    store.write(self.venues[venuePath].AsINIBlock())
+                except:
+                    log.exception("Exception Storing Venue!")
+                    return 0
+                
+                # Change the URI back
+                self.venues[venuePath].uri = venueURI
+
+            # Close the persistent store
+            store.close()
+
+        except:
+            log.exception("Exception Checkpointing!")
+            return 0
+
+        log.info("Checkpointing completed at %s.", time.asctime())
+
+        # Finally we save the current config
+        SaveConfig(self.configFile, self.config)
+
+        return 1
+
+    def wsAddVenue(self, venueDescStruct):
+        """
+        Inteface call for Adding a venue.
+
+        **Arguments:**
+
+             *Venue Description Struct* A description of the new
+             venue, currently an anonymous struct.
+
+        **Raises:**
+            *NotAuthorized* When an unauthorized call is made to add a venue.
+
+            *VenueServerException* When the venue description struct
+            isn't successfully converted to a real venue description
+            object and the venue isn't added.
+
+        **Returns:**
+            *Venue URI* Upon success a uri to the new venue is returned.
+        """
+
+        
+        if not self._Authorize():
+            log.exception("Unauthorized attempt to Add Venue.")
+            raise NotAuthorized
+
+        try:
+            self.simpleLock.acquire()
+
+            venueDesc = CreateVenueDescription(venueDescStruct)
+            venueDesc.administrators.append(GetDefaultIdentityDN())
+            venueUri = self.AddVenue(venueDesc)
+
+            self.simpleLock.notify()
+            self.simpleLock.release()
+
+            return venueUri
+        except:
+            log.exception("Exception in AddVenue!")
+            raise VenueServerException("Couldn't Add Venue.")
+
+    wsAddVenue.soap_export_as = "AddVenue"
+    
+    def wsModifyVenue(self, URL, venueDescStruct):
+        """
+        Interface for modifying an existing Venue.
+
+        **Arguments:**
+            *URL* The URL to the venue.
+
+            *Venue Description Struct* An anonymous struct that is the
+            new venue description.
+
+        **Raises:**
+        
+            *NotAuthorized* When an unauthorized modify call is made.
+
+            *InvalideVenueURL* When the URL isn't a valid venue.
+
+            *InvalidVenueDescription* If the Venue Description has a
+            different URL than the URL argument passed in.
+
+        """
+        if not self._Authorize():   
+            raise NotAuthorized
+
+        if URL == None:
+            raise InvalidVenueURL
+
+        id = self.IdFromURL(URL)   
+        vd = CreateVenueDescription(venueDescStruct)
+        
+        if vd.uri == URL:
+            self.simpleLock.acquire()
+            
+            self.ModifyVenue(id, vd)
+
+            self.simpleLock.notify()
+            self.simpleLock.release()
+        else:
+            raise InvalidVenueDescription
+        
+    wsModifyVenue.soap_export_as = "ModifyVenue"
+
+    def wsRemoveVenue(self, URL):
+        """
+        Interface for removing a Venue.
+
+        **Arguments:**
+            *URL* The url to the venue to be removed.
+
+        **Raises:**
+
+            *NotAuthorized* If a remove venue call is not authorized.
+
+        """
+        log.debug("wsRemoveVenue: url = %s", URL)
+        
+        if not self._Authorize():
+            raise NotAuthorized
+
+        # Get the venue from the id (from the URL)
+        id = self.IdFromURL(URL)
+
+        self.simpleLock.acquire()
+        
+        self.RemoveVenue(id)
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
+        
+    wsRemoveVenue.soap_export_as = "RemoveVenue"
+
+    def wsAddAdministrator(self, string):
+        """
+        Interface to add an administrator to the Venue Server.
+
+        **Arguments:**
+
+            *string* The DN of the new administrator.
+
+        **Raises:**
+
+            *NotAuthorized* This exception is raised if the call is
+            coming from a non-administrator.
+
+        **Returns:**
+
+            *string* The DN of the administrator added.
+        """
+        if not self._Authorize():
+            raise NotAuthorized
+
+        self.simpleLock.acquire()
+        
+        returnString = self.AddAdministrator(string)
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
+
+        return returnString
+        
+    wsAddAdministrator.soap_export_as = "AddAdministrator"
+
+    def wsRemoveAdministrator(self, string):
+        """
+        **Arguments:**
+
+            *string* The Distinguished Name (DN) of the administrator
+            being removed.
+
+        **Raises:**
+
+            *NotAuthorized* This is raised when the caller is not an
+            administrator.
+
+        **Returns:**
+
+            *string* The Distinguished Name (DN) of the administrator removed.
+        """
+        if not self._Authorize():
+            raise NotAuthorized
+
+        self.simpleLock.acquire()
+        
+        returnString = self.RemoveAdministrator(string)
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
+
+        return returnString
+    
+    wsRemoveAdministrator.soap_export_as = "RemoveAdministrator"
+
+
+    def wsGetVenues(self):
+        """
+        This is the interface to get a list of Venues from the Venue Server.
+
+        **Arguments:**
+
+        **Raises:**
+
+        **Returns:**
+
+            *venue description list* A list of venues descriptions.
+        """
+
+        # Authorization missing
+        
+        self.simpleLock.acquire()
+        
+        vdl = self.GetVenues()
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
+        
+        # This is because our SOAP implemenation doesn't like passing
+        # dictionaries that have URLs for the keys.
+        # This *should* go away.
+        for v in vdl:
+            v.connections = v.connections.values()
+
+        return vdl
+
+    wsGetVenues.soap_export_as = "GetVenues"
+
+    def wsGetDefaultVenue(self):
+        """
+        Interface for getting the URL to the default venue.
+        """
+        self.simpleLock.acquire()
+        
+        returnURL = self.GetDefaultVenue()
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
+        
+        return returnURL
+        
+    wsGetDefaultVenue.soap_export_as = "GetDefaultVenue"
+
+    def wsSetDefaultVenue(self, URL):
+        """
+        Interface to set default venue.
+
+        **Arguments:**
+            *URL* The URL to the default venue.
+            
+        **Raises:**
+        
+            *NotAuthorized* This exception is raised if the caller is
+            not an administrator.
+
+        **Returns:**
+        
+        """
+        if not self._Authorize():
+            raise NotAuthorized
+
+        self.simpleLock.acquire()
+
+        self.SetDefaultVenue(URL)
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
+
+    wsSetDefaultVenue.soap_export_as = "SetDefaultVenue"
+
+    def wsSetStorageLocation(self, location):
+        """
+        Interface for setting the location of the data store.
+        
+        **Arguments:**
+
+            *location* This is a path for the data store.
+            
+        **Raises:**
+
+        **Returns:**
+        """
+        if not self._Authorize():
+            raise NotAuthorized
+
+        self.simpleLock.acquire()
+        
+        self.SetStorageLocation(location)
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
+        
+    wsSetStorageLocation.soap_export_as = "SetStorageLocation"
+
+    def wsGetStorageLocation(self):
+        """
+        Inteface for getting the current data store path.
+        
+        **Arguments:**
+
+        **Raises:**
+
+        **Returns:**
+
+            *location* The path to the data store location.
+        """
+
+        self.simpleLock.acquire()
+        
+        returnString = self.GetStorageLocation()
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
+        
+        return returnString
+
+    wsGetStorageLocation.soap_export_as = "GetStorageLocation"
+
+    def wsSetAddressAllocationMethod(self, method):
+        """
+        Interface for setting the address allocation method for
+        multicast addresses (for now).
+
+        **Arguments:**
+
+            *method* An argument specifying either RANDOM or INTERVAL
+            allocation. RANDOM is a random address from the standard
+            random range. INTERVAL means a random address from a
+            specified range.
+
+        **Raises:**
+
+        **Returns:**
+        """
+        if not self._Authorize():
+            raise NotAuthorized
+
+        self.simpleLock.acquire()
+        
+        self.SetAddressAllocationMethod(method)
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
+
+    wsSetAddressAllocationMethod.soap_export_as = "SetAddressAllocationMethod"
+
+    def wsGetAddressAllocationMethod(self):
+        """
+        Interface for getting the Address Allocation Method.
+
+        **Arguments:**
+
+        **Raises:**
+
+        **Returns:**
+
+            *method* The address allocation method configured, either
+            RANDOM or INTERVAL.
+        """
+        self.simpleLock.acquire()
+        
+        returnValue = self.GetAddressAllocationMethod()
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
+        
+        return returnValue
+    
+    wsGetAddressAllocationMethod.soap_export_as = "GetAddressAllocationMethod"
+
+    def wsSetEncryptAllMedia(self, value):
+        """
+        Interface for setting the flag to encrypt all media or turn it off.
+
+        **Arguments:**
+
+            *value* The flag, 1 turns encryption on, 0 turns encryption off.
+
+        **Raises:**
+
+            *NotAuthorized* This is raised when the method is called
+            by a non-administrator.
+
+        **Returns:**
+
+            *flag* the return value from SetEncryptAllMedia.
+        """
+        if not self._Authorize():
+            raise NotAuthorized
+
+        self.simpleLock.acquire()
+        
+        returnValue = self.SetEncryptAllMedia(value)
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
+        
+        return returnValue
+
+    wsSetEncryptAllMedia.soap_export_as = "SetEncryptAllMedia"
+
+    def wsGetEncryptAllMedia(self):
+        """
+        Interface to retrieve the value of the media encryption flag.
+
+        **Arguments:**
+
+        **Raises:**
+
+        **Returns:**
+        
+        """
+
+        self.simpleLock.acquire()
+
+        returnValue = self.GetEncryptAllMedia()
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
+
+        return returnValue
+        
+    wsGetEncryptAllMedia.soap_export_as = "GetEncryptAllMedia"
+
+    def wsSetBaseAddress(self, address):
+        """
+        Interface for setting the base address for the allocation pool.
+
+        **Arguments:**
+        
+            *address* The base address of the address pool to allocate from.
+            
+        **Raises:**
+
+            *NotAuthorized*  When called by a non-administrator.
+
+        **Returns:**
+        
+        """
+        if not self._Authorize():
+            raise NotAuthorized
+        else:
+            self.simpleLock.acquire()
+            
+            self.SetBaseAddress(address)
+
+            self.simpleLock.notify()
+            self.simpleLock.release()
+
+    wsSetBaseAddress.soap_export_as = "SetBassAddress"
+
+    def wsGetBaseAddress(self):
+        """
+        Interface to retrieve the base address for the address allocation pool.
+
+        **Arguments:**
+
+        **Raises:**
+
+        **Returns:**
+
+            *base address* the base address of the address allocation pool.
+        """
+        self.simpleLock.acquire()
+        
+        returnValue = self.GetBaseAddress()
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
+        
+        return returnValue
+    
+    wsGetBaseAddress.soap_export_as = "GetBaseAddress"
+
+    def wsSetAddressMask(self, mask):
+        """
+        Interface to set the network mask of the address allocation pool.
+
+        **Arguments:**
+
+            *mask*  The network mask for the address allocation pool.
+            
+        **Raises:**
+
+            *NotAuthorized* This is raised when the method is called
+            by a non-administrator.
+
+        **Returns:**
+        """
+        if not self._Authorize():
+            raise NotAuthorized
+
+        self.SetAddressMask(mask)
+
+    wsSetAddressMask.soap_export_as = "SetAddressMask"
+
+    def wsGetAddressMask(self):
+        """
+        Interface to retrieve the address mask of the address allocation pool.
+
+        **Arguments:**
+
+        **Raises:**
+
+        **Returns:**
+
+            *mask* the network mask of the address allocation pool.
+        """
+
+        self.simpleLock.acquire()
+        
+        returnValue = self.GetAddressMask()
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
+
+        return returnValue
+
+    wsGetAddressMask.soap_export_as = "GetAddressMask"
+
+    def wsShutdown(self, secondsFromNow):
+        """
+        Interface to shutdown the Venue Server.
+
+        **Arguments:**
+
+            *secondsFromNow* How long from the time the call is
+            received until the server starts to shutdown.
+
+        **Raises:**
+
+        **Returns:**
+        """
+        if not self._Authorize():
+            raise NotAuthorized
+
+        self.simpleLock.acquire()
+        
+        self.Shutdown(secondsFromNow)
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
+
+    wsShutdown.soap_export_as = "Shutdown"
 
     def AddVenue(self, venueDesc):
         """
@@ -368,12 +972,11 @@ class VenueServer(ServiceBase.ServiceBase):
         for sd in venueDesc.streams:
             venue.streamList.AddStream(sd)
             
-        venuePath = self.PathFromURL(venue.uri)
-            
         # Add the venue to the list of venues
         self.venues[self.IdFromURL(venue.uri)] = venue
         
         # We have to register this venue as a new service.
+        venuePath = self.PathFromURL(venue.uri)
         if(self.hostingEnvironment != None):
             self.hostingEnvironment.BindService(venue, venuePath)
             
@@ -384,89 +987,117 @@ class VenueServer(ServiceBase.ServiceBase):
         # return the URL to the new venue
         return venue.uri
 
-    def ModifyVenue(self, URL, venueDesc):   
+    def ModifyVenue(self, id, venueDesc):   
         """   
         ModifyVenue updates a Venue Description.   
         """
-        id = self.IdFromURL(URL)   
-        if(venueDesc.uri == URL):
-            self.venues[id].name = venueDesc.name
-            self.venues[id].description = venueDesc.description
-            self.venues[id].uri = venueDesc.uri
-            self.venues[id].administrators = venueDesc.administrators
-            self.venues[id].encryptMedia = venueDesc.encryptMedia
-            if self.venues[id].encryptMedia:
-                self.venues[id].encryptionKey = venueDesc.encryptionKey
-
-            self.venues[id].SetConnections(venueDesc.connections)
+        self.venues[id].name = venueDesc.name
+        self.venues[id].description = venueDesc.description
+        self.venues[id].uri = venueDesc.uri
+        self.venues[id].administrators = venueDesc.administrators
+        self.venues[id].encryptMedia = venueDesc.encryptMedia
+        if self.venues[id].encryptMedia:
+            self.venues[id].encryptionKey = venueDesc.encryptionKey
             
-            for sd in venueDesc.streams:
-                self.venues[id].AddStream(sd)
+        self.venues[id].SetConnections(venueDesc.connections)
+            
+        for sd in venueDesc.streams:
+            self.venues[id].AddStream(sd)
         
-    def RemoveVenue(self, URL):
+    def RemoveVenue(self, id):
         """
         RemoveVenue removes a venue from the VenueServer.
-        """
-        if not self._authorize():
-            raise NotAuthorized
 
-        # Get the venue from the id (from the URL)
-        id = self.IdFromURL(URL)
-        venue = self.venues[id]
+        **Arguments:**
+            *ID* The id of the venue to be removed.
+
+        **Raises:**
+
+            *UnbindVenueError* - This exception is raised when the
+            hosting Environment fails to unbind the venue from the
+            venue server.
+
+            *VenueNotFound* - This exception is raised when the
+            the venue is not found in the list of venues for this server.
+
+        """
+
+        log.debug("RemoveVenue: id = %s", id)
+        
+        # Get the venue object
+        try:
+            venue = self.venues[id]
+        except KeyError:
+            raise VenueNotFound
 
         # Stop the web service interface
         try:
             self.hostingEnvironment.UnbindService(venue)
         except:
             log.exception("Couldn't unbind venue.")
-            raise RemoveVenueException("Counldn't unbind venue.")
-
+            raise UnbindVenueError
+        
         # Shutdown the venue
         self.venues[id].Shutdown()
-
+        
         # Clean it out of the venueserver
         del self.venues[id]
-        
-    RemoveVenue.soap_export_as = "RemoveVenue"
 
+        # Checkpoint so we don't save it again
+        self.Checkpoint()
+        
     def AddAdministrator(self, string):
         """
         AddAdministrator adds an administrator to the list of administrators
         for this VenueServer.
+
+        **Arguments:**
+
+            *string* The Distinguished Name of the new administrator.
+
+        **Raises:**
+
+            *AdministratorAlreadyPresent* This exception is raised if
+            the user is already an administrator.
+
+        **Returns:**
+
+            *string* The DN of the administrator added.
+
         """
-        if not self._authorize():
-            raise NotAuthorized
-
-        if string not in self.administratorList:
-            if None == self.administratorList[0]:
-                self.administratorList[0] = string
-            else:
-                self.administratorList.append(string)
-
-            self.config["VenueServer.administrators"] = ":".join(self.administratorList)
-            return string
-        else:
-            raise VenueServerException("Administrator already present.")
+        if string in self.administratorList:
+            log.exception("AddAdministrator: Adminstrator already present.")
+            raise AdministratorAlreadyPresent
         
-    AddAdministrator.soap_export_as = "AddAdministrator"
+        self.administratorList.append(string)
+
+        self.config["VenueServer.administrators"] = ":".join(self.administratorList)
+        return string
 
     def RemoveAdministrator(self, string):
         """
         RemoveAdministrator removes an administrator from the list of
         administrators for this VenueServer.
-        """
-        if not self._authorize():
-            raise NotAuthorized
 
+        **Arguments:**
+
+            *string* The Distinguished Name (DN) of the administrator
+            being removed.
+
+        **Raises:**
+
+            *AdministratorNotFound* This is raised when the
+            administrator specified is not found in the Venue Servers
+            administrators list.
+        
+        """
         if string in self.administratorList:
             self.administratorList.remove(string)
             self.config["VenueServer.administrators"] = ":".join(self.administratorList)
             return string
         else:
-            raise VenueServerException("Administrator not found.")
+            raise AdministratorNotFound
         
-    RemoveAdministrator.soap_export_as = "RemoveAdministrator"
-
     def GetAdministrators(self):
         """
         GetAdministrators returns a list of adminisitrators for this
@@ -476,37 +1107,45 @@ class VenueServer(ServiceBase.ServiceBase):
 
     GetAdministrators.soap_export_as = "GetAdministrators"
 
-    def RegisterServer(self, URL):
-        """
-        This method should register the server with the venues
-        registry at the URL passed in. This is by default a
-        registration page at Argonne for now.
-        """
-        if not self._authorize():
-            raise NotAuthorized
-        # registryService = SOAP.SOAPProxy(URL)
-        # registryService.Register(#data)
+# This is not supported for 2.0
+#     def RegisterServer(self, URL):
+#         """
+#         This method should register the server with the venues
+#         registry at the URL passed in. This is by default a
+#         registration page at Argonne for now.
+#         """
+#         if not self._Authorize():
+#             raise NotAuthorized
+#         registryService = SOAP.SOAPProxy(URL)
+#         registryService.Register(data)
 
-    RegisterServer.soap_export_as = "RegisterServer"
+#     RegisterServer.soap_export_as = "RegisterServer"
 
     def GetVenues(self):
         """
         GetVenues returns a list of Venues Descriptions for the venues
         hosted by this VenueServer.
+
+        **Arguments:**
+
+        **Raises:**
+
+            **VenueServerException** This is raised if there is a
+            problem creating the list of Venue Descriptions.
+
+        **Returns:**
+            
+            This returns a list of venue descriptions.
+
         """
         try:
             venueDescList = map(lambda venue: venue.AsVenueDescription(),
                                         self.venues.values() )
 
-            for v in venueDescList:
-                v.connections = v.connections.values()
-
             return venueDescList
         except:
             log.exception("Exception in GetVenues!")
             raise VenueServerException("GetVenues Failed!")
-
-    GetVenues.soap_export_as = "GetVenues"
 
     def GetDefaultVenue(self):
         """
@@ -515,43 +1154,23 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         return self.MakeVenueURL(self.defaultVenue)
 
-    GetDefaultVenue.soap_export_as = "GetDefaultVenue"
-
     def SetDefaultVenue(self,  venueURL):
         """
         SetDefaultVenue sets which Venue is the default venue for the
         VenueServer.
         """
-        if not self._authorize():
-            raise NotAuthorized
-
         defaultPath = "/Venues/default"
-
-        path = self.PathFromURL(venueURL)
         id = self.IdFromURL(venueURL)
-        
-        defaultVenue = self.hostingEnvironment.CreateServiceObject(defaultPath)
-
         self.defaultVenue = id
-
         self.config["VenueServer.defaultVenue"] = id
-
-        self.venues[id]._bind_to_service(defaultVenue)
-
-    SetDefaultVenue.soap_export_as = "SetDefaultVenue"
-
+        self.hostingEnvironment.BindService(self.venues[id], defaultPath)
+        
     def SetStorageLocation(self,  dataStorageLocation):
         """
         Set the path for data storage
         """
-        if not self._authorize():
-            raise NotAuthorized
-        
         self.dataStorageLocation = dataStorageLocation
         self.config["VenueServer.dataStorageLocation"] = dataStorageLocation
-
-    SetStorageLocation.soap_export_as = "SetStorageLocation"
-
 
     def GetStorageLocation(self):
         """
@@ -559,20 +1178,13 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         return self.dataStorageLocation
 
-    GetStorageLocation.soap_export_as = "GetStorageLocation"
-
-
     def SetAddressAllocationMethod(self,  addressAllocationMethod):
         """
         Set the method used for multicast address allocation:
             either RANDOM or INTERVAL (defined in MulticastAddressAllocator)
         """
-        if not self._authorize():
-            raise NotAuthorized
-        
-        self.multicastAddressAllocator.SetAddressAllocationMethod( addressAllocationMethod )
-
-    SetAddressAllocationMethod.soap_export_as = "SetAddressAllocationMethod"
+        self.multicastAddressAllocator.SetAddressAllocationMethod(
+            addressAllocationMethod )
 
     def GetAddressAllocationMethod(self):
         """
@@ -587,13 +1199,9 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         Turn on or off server wide default for venue media encryption.
         """
-        if not self._authorize():
-            raise NotAuthorized
-        
         self.encryptAllMedia = int(value)
-        return self.encryptAllMedia
 
-    SetEncryptAllMedia.soap_export_as = "SetEncryptAllMedia"
+        return self.encryptAllMedia
 
     def GetEncryptAllMedia(self):
         """
@@ -601,19 +1209,12 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         return int(self.encryptAllMedia)
 
-    GetEncryptAllMedia.soap_export_as = "GetEncryptAllMedia"
-
     def SetBaseAddress(self, address):
         """
         Set base address used when allocating multicast addresses in
         an interval
         """
-        if not self._authorize():
-            raise NotAuthorized
-        
         self.multicastAddressAllocator.SetBaseAddress( address )
-
-    SetBaseAddress.soap_export_as = "SetBaseAddress"
 
     def GetBaseAddress(self):
         """
@@ -622,19 +1223,12 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         return self.multicastAddressAllocator.GetBaseAddress( )
 
-    GetBaseAddress.soap_export_as = "GetBaseAddress"
-
     def SetAddressMask(self,  mask):
         """
         Set address mask used when allocating multicast addresses in
         an interval
         """
-        if not self._authorize():
-            raise NotAuthorized
-        
         self.multicastAddressAllocator.SetAddressMask( mask )
-
-    SetAddressMask.soap_export_as = "SetAddressMask"
 
     def GetAddressMask(self):
         """
@@ -642,8 +1236,6 @@ class VenueServer(ServiceBase.ServiceBase):
         an interval
         """
         return self.multicastAddressAllocator.GetAddressMask( )
-
-    GetAddressMask.soap_export_as = "GetAddressMask"
 
     def Shutdown(self, secondsFromNow):
         """
@@ -656,7 +1248,7 @@ class VenueServer(ServiceBase.ServiceBase):
             
         self.houseKeeper.StopAllTasks()
 
-        if not self._authorize():
+        if not self._Authorize():
             raise NotAuthorized
 
         log.info("Shutdown -> Checkpointing...")
@@ -679,60 +1271,3 @@ class VenueServer(ServiceBase.ServiceBase):
 
         log.info("Shutdown Complete.")
         
-    Shutdown.soap_export_as = "Shutdown"
-
-    def Checkpoint(self):
-        """
-        Checkpoint stores the current state of the running VenueServer to
-        non-volatile storage. In the event of catastrophic failure, the
-        non-volatile storage can be used to restart the VenueServer.
-
-        The fequency at which Checkpointing is done will bound the amount of
-        state that is lost (the longer the time between checkpoints, the more
-        that can be lost).
-        """
-        # Before we backup we copy the previous backup to a safe place
-        if os.path.isfile(self.persistenceFilename):
-            nfn = self.persistenceFilename + '.bak'
-            if os.path.isfile(nfn):
-                try:
-                    os.remove(nfn)
-                except OSError, e:
-                    log.exception("Couldn't remove backup file.")
-            try:
-                os.rename(self.persistenceFilename, nfn)
-            except OSError, e:
-                log.exception("Couldn't rename backup file.")
-                raise e
-
-        # Open the persistent store
-        store = file(self.persistenceFilename, "w")
-
-        try:            
-            for venuePath in self.venues.keys():
-                # Change out the uri for storage, we store the path
-                venueURI = self.venues[venuePath].uri
-                self.venues[venuePath].uri = venuePath
-
-                try:            
-                    # Store the venue.
-                    store.write(self.venues[venuePath].AsINIBlock())
-                except:
-                    log.exception("Exception Storing Venue!")
-                    raise VenueServerException("Failed to store venue.!")
-                
-                # Change the URI back
-                self.venues[venuePath].uri = venueURI
-
-            # Close the persistent store
-            store.close()
-
-        except:
-            log.exception("Exception Checkpointing!")
-            raise VenueServerException("Checkpoint Failed!")
-
-        log.info("Checkpointing completed at %s.", time.asctime())
-
-        # Finally we save the current config
-        SaveConfig(self.configFile, self.config)
-
