@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: icons.py,v 1.17 2003-05-07 18:38:52 lefvert Exp $
+# RCS-ID:      $Id: icons.py,v 1.18 2003-05-07 19:15:34 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -10115,6 +10115,68 @@ def getHeadingLineData():
 \xc1\x06$\xf5g^]\x01\xa4X\x8a\x9d<C8\x80\xa0\x86#\xa5\x03\xc8\x17\xf0tq\x0c\
 \xa9\x98\x93\x9c\x92\x90\xf0\xe3\xbc\x83:\x03Cf!#\xe3T\xf78\x19\xa0\x1c\x83\
 \xa7\xab\x9f\xcb:\xa7\x84&\x00\xe0\x11\x13R' )
+
+def getHeadingLineBitmap():
+    return wxBitmapFromImage(getHeadingLineImage())
+
+def getHeadingLineImage():
+    stream = cStringIO.StringIO(getHeadingLineData())
+    return wxImageFromStream(stream)
+
+def getHeadingLineIcon():
+    icon = wxEmptyIcon()
+    icon.CopyFromBitmap(getHeadingLineBitmap())
+    return icon
+
+index.append('HeadingLine')
+catalog['HeadingLine'] = ImageClass()
+catalog['HeadingLine'].getData = getHeadingLineData
+catalog['HeadingLine'].getImage = getHeadingLineImage
+catalog['HeadingLine'].getBitmap = getHeadingLineBitmap
+catalog['HeadingLine'].getIcon = getHeadingLineIcon
+
+
+#----------------------------------------------------------------------
+def getHeadingLineData():
+    return zlib.decompress(
+"x\xda\xeb\x0c\xf0s\xe7\xe5\x92\xe2b``\xe0\xf5\xf4p\t\x02\xd2\n@,\xcc\xc1\
+\x06$?N\xe1\xff\x0e\xa4X\x8a\x9d<C8\x80\xa0\x86#\xa5\x03\xc8\x0f\xf6tq\x0c\
+\xa9\x98\xf3\xf6\xeaF\xc1\x03\x06\x1c\xce\x17\xfb\x97'\t\xad\xed\xd9\x1et\
+\xab$s\xd2\x8d\xf26\xbf\xe5M\xe5&-\xb9\x9b\x0b\x8e\x9dz\xca\x9b\xe1\xc0,\xc5\
+`\xa0\xa2\xc8\xc9p\xfb\x8e\xf1\x81\xeb\xb5!S\x19\x8d\x84\x1b,\xd5\xeb\x9f\
+\xdd\xf8&n\xb3\xf3\xde\xab\xef{\x1d\x98\xfb\x18c\xa2*}\xa5\x0b\x16\xfc\x17\
+\x04\x1a\xcf\xe0\xe9\xea\xe7\xb2\xce)\xa1\t\x00\xef\xc64\xf1" )
+
+def getHeadingLineBitmap():
+    return wxBitmapFromImage(getHeadingLineImage())
+
+def getHeadingLineImage():
+    stream = cStringIO.StringIO(getHeadingLineData())
+    return wxImageFromStream(stream)
+
+def getHeadingLineIcon():
+    icon = wxEmptyIcon()
+    icon.CopyFromBitmap(getHeadingLineBitmap())
+    return icon
+
+index.append('HeadingLine')
+catalog['HeadingLine'] = ImageClass()
+catalog['HeadingLine'].getData = getHeadingLineData
+catalog['HeadingLine'].getImage = getHeadingLineImage
+catalog['HeadingLine'].getBitmap = getHeadingLineBitmap
+catalog['HeadingLine'].getIcon = getHeadingLineIcon
+
+
+#----------------------------------------------------------------------
+def getHeadingLineData():
+    return zlib.decompress(
+"x\xda\xeb\x0c\xf0s\xe7\xe5\x92\xe2b``\xe0\xf5\xf4p\t\x02\xd2\n@,\xcc\xc1\
+\x06$?N\xe1\xff\x0e\xa4X\x8a\x9d<C8\x80\xa0\x86#\xa5\x03\xc8\x0f\xf6tq\x0c\
+\xa9\x98\xf3\xf6\xeaF\xc1\x03\x06\x1c\xce\x17\xfb\x97'\t\xad\xed\xd9\x1et\
+\xab$s\xd2\x8d\xf26\xbf\xe5M\xe5&-\xb9\x9b\x0b\x8e\x9dz\xca\x9b\xe1\xc0,\xc5\
+`\xa0\xa2\xc8\xc9p\xfb\x8e\xf1\x81\xeb\xb5!S\x19\x8d\x84\x1b,\xd5\xeb\x9f\
+\xdd\xf8&n\xb3\xf3\xde\xab\xef{\x1d\x98\xfb\x18c\xa2*}\xa5\x0b\x16\xfc\x17\
+\x04\x1a\xcf\xe0\xe9\xea\xe7\xb2\xce)\xa1\t\x00\xef\xc64\xf1" )
 
 def getHeadingLineBitmap():
     return wxBitmapFromImage(getHeadingLineImage())
