@@ -11,7 +11,7 @@ class VenueClient(wxApp):
 	def OnInit(self):
            frame = VenueClientFrame(NULL, -1,"The Lobby")
            frame.Show(true)
-	   frame.SetSize(wxSize(400,400))
+	   frame.SetSize(wxSize(300, 400))
            self.SetTopWindow(frame)
            return true                 
 	
@@ -82,9 +82,13 @@ class VenueClientFrame(wxFrame):
 	
     def __setProperties(self):
         self.SetTitle("Access Grid - The Lobby")
+	bitmap = icons.getDefaultPersonIconBitmap()
+	icon = wxIcon("future icon", -1)
+	self.SetIcon(icon)
         self.statusbar.SetStatusWidths([-1])
 	self.statusbar.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "adventure"))
 	self.menubar.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "adventure"))
+	currentHeight = self.venueListPanel.GetSize().GetHeight()
 	self.venueListPanel.SetSize(wxSize(60, 300))
 		
     def __doLayout(self):
@@ -118,14 +122,18 @@ class VenueListPanel(wxPanel):
         wxPanel.__init__(self, parent, -1)
 	self.parent = parent
 	self.SetBackgroundColour(parent.GetBackgroundColour())
-	self.panel = wxPanel(self, -1)
-	self.panel.SetBackgroundColour(parent.GetBackgroundColour())
+#	self.panel = wxPanel(self, -1)
+#	self.panel.SetBackgroundColour(parent.GetBackgroundColour())
 	self.list = VenueList(self, -1)
 		
     	self.list.SetBackgroundColour(parent.GetBackgroundColour())
-	self.minimizeButton = wxButton(self.panel, 10, "<<", wxPoint(40,0), wxDefaultSize, wxBU_EXACTFIT)
+	self.leftArrow = wxBitmap("IMAGES/leftArrow.gif", wxBITMAP_TYPE_GIF)
+	#	self.minimizeButton = wxBitmapButton(self, 10, self.leftArrow, wxDefaultPosition, wxDefaultSize)
+	self.minimizeButton = wxButton(self, 10, "<<", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT )
 	self.minimizeButton.SetFont(wxFont(5, wxSWISS, wxNORMAL, wxNORMAL, 0, "adventure"))
-	self.maximizeButton = wxButton(self.panel, 20, ">>", wxPoint(0,0), wxDefaultSize, wxBU_EXACTFIT)
+	self.rightArrow = wxBitmap("IMAGES/rightArrow.jpg", wxBITMAP_TYPE_JPEG)
+	#self.maximizeButton = wxBitmapButton(self, 20, self.rightArrow, wxDefaultPosition, wxDefaultSize)
+	self.maximizeButton = wxButton(self, 20, ">>", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT )
 	self.maximizeButton.SetFont(wxFont(5, wxSWISS, wxNORMAL, wxNORMAL, 0, "adventure"))
 	self.minimizeButton.SetToolTipString("Hide Sidebar")
 	self.maximizeButton.SetToolTipString("Show Sidebar")
@@ -150,20 +158,26 @@ class VenueListPanel(wxPanel):
         EVT_BUTTON(self, 20, self.OnClick) 
 
     def __doLayout(self):
-        venueListPanelSizer = wxBoxSizer(wxVERTICAL)
-	venueListPanelSizer.Add(self.panel, 0, wxEXPAND)
-	venueListPanelSizer.Add(self.list, 1, wxEXPAND)
+        panelSizer = wxBoxSizer(wxHORIZONTAL)
+	panelSizer.Add(self.maximizeButton, 0)
+	panelSizer.Add(10,10, wxEXPAND)
+	panelSizer.Add(self.minimizeButton, 0)
+	
+	venueListPanelSizer = wxBoxSizer(wxVERTICAL)
+	venueListPanelSizer.Add(panelSizer, 0, wxEXPAND)
+	venueListPanelSizer.Add(self.list, 2, wxEXPAND)
 
 	self.SetSizer(venueListPanelSizer)
         venueListPanelSizer.Fit(self)
 	self.SetAutoLayout(1)  
 
     def OnClick(self, event):
+	currentHeight = self.GetSize().GetHeight()
         if event.GetId() == 10:
 		self.minimizeButton.Hide()  
 		self.maximizeButton.Show()
 		self.list.Hide()
-		self.SetSize(wxSize(20, 300))
+		self.SetSize(wxSize(20, currentHeight))
 		self.Layout()
 		self.parent.UpdateLayout()
 				
@@ -171,7 +185,7 @@ class VenueListPanel(wxPanel):
 		self.maximizeButton.Hide()
 		self.minimizeButton.Show()  
 		self.list.Show()
-		self.SetSize(wxSize(60, 300))
+		self.SetSize(wxSize(60, currentHeight))
 		self.Layout()
 		self.parent.UpdateLayout()
 
@@ -253,7 +267,7 @@ class ContentListPanel(wxPanel):
 	self.__setProperties()
 	
 	EVT_SIZE(self, self.OnSize)
-	EVT_TREE_SEL_CHANGED(self, id, self.OnSelChanged)
+#	EVT_TREE_SEL_CHANGED(self, id, self.OnSelChanged)
 	EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
 	
     def __setImageList(self):
@@ -288,7 +302,7 @@ class ContentListPanel(wxPanel):
 	data2 = self.tree.AppendItem(data, "CoolPresentation.ppt",self.pptDocId, self.pptDocId)
 	services = self.tree.AppendItem(self.root, "Services")
 	self.tree.SetItemBold(services)
-	service1 = self.tree.AppendItem(services, "VIC", self.serviceId, self.serviceId)
+	service1 = self.tree.AppendItem(services, "Voyager", self.serviceId, self.serviceId)
 	nodes = self.tree.AppendItem(self.root, "Nodes")
 	self.tree.SetItemBold(nodes)
 	node1 = self.tree.AppendItem(nodes, "Library Node")
