@@ -116,7 +116,7 @@ class Venue:
         self.log = logging.getLogger("AG.BridgeServer")
 
         # Register with the venue
-        self.privateId = self.venueProxy.RegisterNetService("bridge")
+        self.privateId = self.venueProxy.AddNetService("bridge")
 
         # Create bridges for the venue streams
         streamList = self.venueProxy.GetStreams()
