@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.45 2003-02-17 21:32:45 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.46 2003-02-20 20:03:53 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT -----------------------------------------------------------------------------
 import threading
@@ -25,11 +25,10 @@ from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
 from AccessGrid.VenueClientUIClasses import UrlDialog, UrlDialogCombo
 from AccessGrid.VenueClientUIClasses import SaveFileDialog, UploadFilesDialog
 from AccessGrid.Descriptions import DataDescription
-from AccessGrid.Utilities import formatExceptionInfo
+from AccessGrid.Utilities import formatExceptionInfo, HaveValidProxy 
 from AccessGrid.UIUtilities import ErrorDialog
 
 from AccessGrid.TextClientUI import TextClientUI
-from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 from AccessGrid import DataStore
 
 class VenueClientUI(wxApp, VenueClient):
@@ -93,7 +92,8 @@ class VenueClientUI(wxApp, VenueClient):
         This method opens a profile dialog where the user can fill in
         his or her information.  
         """
-        profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', self.profile)
+        profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile')
+        profileDialog.SetProfile(self.profile)
 
         if (profileDialog.ShowModal() == wxID_OK):
             self.profile = profileDialog.GetNewProfile()
@@ -276,6 +276,9 @@ class VenueClientUI(wxApp, VenueClient):
         VenueClient.ExitVenue(self)
         
     def GoToNewVenue(self, uri):
+        if not HaveValidProxy():
+            GPI()
+                   
         if self.venueUri != None:
             oldUri = self.venueUri
         else:
@@ -287,50 +290,28 @@ class VenueClientUI(wxApp, VenueClient):
         except: # no, it is a venue
             venueUri = uri
 
-        #try:
         self.clientHandle = Client.Handle(venueUri)
         if(self.clientHandle.IsValid()):
-            self.client = self.clientHandle.get_proxy()
-            self.gotClient = true
-            if oldUri != None:
-                wxCallAfter(self.frame.CleanUp)
-                self.ExitVenue()
-
             try:
+                self.client = self.clientHandle.get_proxy()
+                self.gotClient = true
+                if oldUri != None:
+                    wxCallAfter(self.frame.CleanUp)
+                    self.ExitVenue()
+            
                 self.EnterVenue(venueUri)
                 wxCallAfter(self.frame.ShowMenu)
-                #   return true
-                
-            except GSITCPSocketException:  # no proxy
-                GPI() # create proxy
-                
-            #try:
-            #   self.client = Client.Handle(venueUri).get_proxy()
-            #   if oldUri != None:
-            #       wxCallAfter(self.frame.CleanUp)
-            #       self.ExitVenue()
-            #   self.EnterVenue(venueUri)
-            #   return true
-            
+               
             except EnterVenueException:
                 if oldUri != None:
                     self.EnterVenue(oldUri) # go back to venue where we came from
-                    return true
-                else:
-                    return false
-        
-        #except EnterVenueException:
-        #    if oldUri != None:
-        #        self.EnterVenue(oldUri) # go back to venue where we came from
-        #    else:
-        #        return false
-
+                         
         else:
             dlg = wxMessageDialog(self.frame, 
-                                      'The venue URL you specified is not valid',
-                                      "Invalid URL",
-                                      style = wxOK|wxICON_INFORMATION)
-                
+                                  'The venue URL you specified is not valid',
+                                  "Invalid URL",
+                                  style = wxOK|wxICON_INFORMATION)
+            
             dlg.ShowModal()
             dlg.Destroy()
              
