@@ -209,7 +209,6 @@ mkdir -p %{buildroot}/tmp/local_services
 %{sharedir}/%{name}/ag.ico
 %defattr(0755,root,root)
 %{prefix}/bin/AGServiceManager.py
-%{prefix}/bin/MailcapSetup.py
 /etc/init.d/agsm
 %defattr(0755,ag,ag)
 %dir %{aghome}/local_services
@@ -232,6 +231,7 @@ mkdir -p %{buildroot}/tmp/local_services
 %{prefix}/bin/NodeManagement.py
 %{prefix}/bin/NodeSetupWizard.py
 %{prefix}/bin/CertificateRequestTool.py
+%{prefix}/bin/certmgr.py
 %{sharedir}/doc/AccessGrid
 /etc/init.d/agns
 %defattr(0644,root,root)

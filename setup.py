@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.33 2003-09-10 18:46:47 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.34 2003-09-12 04:37:38 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ setup(
 # Distribution Meta-Data
     name = 'AGTk',
     fullname = 'AccessGrid Toolkit',
-    version = '2.0RC1',
+    version = '2.1.2',
     description = "The Access Grid Toolkit",
     long_description = "The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.",
     author = "Argonne National Laboratory",
@@ -47,8 +47,8 @@ setup(
                r"bin/NodeSetupWizard.py",
                r"bin/CertificateRequestTool.py",
                r"bin/BridgeServer.py",
+               r"bin/certmgr.py",
                r"services/network/QuickBridge/QuickBridge",
-               r"sharedapps/MailcapSetup.py"
 #               r"bin/VenuesServerRegistry.py"
               ],
 
