@@ -15,6 +15,7 @@ from AccessGrid.Toolkit import CmdlineApplication
 from AccessGrid.GUID import GUID
 from AccessGrid.Venue import VenueIW
 from AccessGrid.VenueServer import VenueServerIW
+from AccessGrid.Descriptions import VenueDescription
 
 
 class CmdProcessor(cmd.Cmd):
@@ -197,10 +198,29 @@ class CmdProcessor(cmd.Cmd):
             return
 
         VenueIW(self.venueList[index].uri).SetConnections(self.connectionList)
-
+        
+    def do_AddVenue(self,line=None):
+        
+        venueName = raw_input('Enter venue name:')
+        venueDescription = raw_input('Enter venue description:')
+        encryptFlag = raw_input('Encrypt streams? (y/n):')
+        encryptKey = None
+        if encryptFlag[0] == 'y':
+            encryptKey = raw_input('Encryption key:')
+            
+        venueDescription = VenueDescription(venueName,
+                                            venueDescription,
+                                            (encryptFlag,encryptKey))
+        
+        venueUri = VenueServerIW(self.venueserverurl).AddVenue(venueDescription)
+        print "Venue uri: ", venueUri
+        
+        
     def do_quit(self,line):
         # Just do what the man says and everything'll be cool
         os._exit(0)
+        
+        
         
         
        
