@@ -14,9 +14,9 @@ executable = c:\program files\access grid toolkit\rat.exe
 serviceconfig = serviceconfig0
 
 [servicemanager0]
-url = https://localhost:12000/ServiceManager
+url = https://localhost:11000/ServiceManager
 services = service0 service1 
-name = localhost:12000
+name = localhost:11000
 
 [serviceconfig1]
 
