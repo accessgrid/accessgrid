@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.39 2004-01-05 19:06:38 lefvert Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.40 2004-02-13 22:06:02 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.39 2004-01-05 19:06:38 lefvert Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.40 2004-02-13 22:06:02 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -253,6 +253,7 @@ class VenueDescription(ObjectDescription):
 class BadServiceDescription(Exception):
     pass
 
+
 class ServiceDescription(ObjectDescription):
     """
     The Service Description is the Virtual Venue resident information
@@ -300,6 +301,9 @@ class ApplicationDescription(ObjectDescription):
         string += "mimeType : %s\n" % self.mimeType
         
         return string
+
+class BadApplicationDescription(Exception):
+    pass
         
 class StreamDescription( ObjectDescription ):
    """A Stream Description represents a stream within a venue"""
@@ -410,7 +414,21 @@ def CreateServiceDescription(serviceDescStruct):
                                              serviceDescStruct.description,
                                              serviceDescStruct.uri,
                                              serviceDescStruct.mimeType )
+
+    serviceDescription.SetId(serviceDescStruct.id)
+
     return serviceDescription
+
+def CreateApplicationDescription(appDescStruct):
+    appDescription = ApplicationDescription( appDescStruct.id,
+                                             appDescStruct.name,    
+                                             appDescStruct.description,
+                                             appDescStruct.uri,
+                                             appDescStruct.mimeType )
+
+    appDescription.SetId(appDescStruct.id)
+
+    return appDescription
 
 def CreateVenueDescription(venueDescStruct):
     clist = []
