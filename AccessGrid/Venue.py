@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.213 2004-07-22 18:52:20 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.214 2004-07-23 15:58:17 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.213 2004-07-22 18:52:20 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.214 2004-07-23 15:58:17 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -568,6 +568,17 @@ class Venue(AuthorizationMixIn):
         if len(servlist):
             string += "services: %s\n" % servlist
 
+        # Venue Authorization Policy
+        policy = self.authManager.ExportPolicy()
+        # Don't store these control characters, but lets make sure we
+        # bring them back
+        policy = re.sub("\r\n", "<CRLF>", policy)
+        policy = re.sub("\r", "<CR>", policy)
+        policy = re.sub("\n", "<LF>", policy)
+        string += 'authorizationPolicy : %s' %policy
+        
+
+        
         # The blocks for other data
         if len(clist):
             string += "".join(map(lambda conn: conn.AsINIBlock(),
@@ -585,14 +596,6 @@ class Venue(AuthorizationMixIn):
             string += "".join(map(lambda service: service.AsINIBlock(),
                                   self.services.values()))
 
-        policy = self.authManager.ExportPolicy()
-        # Don't store these control characters, but lets make sure we
-        # bring them back
-        policy = re.sub("\r\n", "<CRLF>", policy)
-        policy = re.sub("\r", "<CR>", policy)
-        policy = re.sub("\n", "<LF>", policy)
-        string += 'authorizationPolicy : %s' %policy
-        
         return string
 
     def ImportAuthorizationPolicy(self, policy):
@@ -1153,14 +1156,8 @@ class Venue(AuthorizationMixIn):
         """
         log.debug("Enter called.")
 
-        privateId = None
-
-        # If we don't find them, we assign a new id
-        if privateId == None:
-            privateId = self.GetNextPrivateId()
-            log.debug("Enter: Assigning private id: %s", privateId)
-        else:
-            log.debug("Enter: Client already in venue: %s", privateId)
+        privateId = self.GetNextPrivateId()
+        log.debug("Enter: Assigning private id: %s", privateId)
 
         # Send this before we set up client state, so that
         # we don't end up getting our own enter event enqueued.
