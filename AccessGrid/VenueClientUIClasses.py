@@ -34,23 +34,23 @@ class VenueClientFrame(wxFrame):
 	self.__setToolbar()
 	self.__setProperties()
         self.__doLayout()
+        self.__setEvents()
 	
     def __setStatusbar(self):
         self.statusbar.SetToolTipString("Statusbar")   
 
+    
     def __setMenubar(self):
         self.SetMenuBar(self.menubar)
 
         self.venue = wxMenu()
 	self.dataSubmenu = wxMenu()
 	self.dataSubmenu.Append(221,"Add")
-	self.dataSubmenu.Append(221,"Modify")
 	self.dataSubmenu.Append(221,"Delete")
 	self.venue.AppendMenu(220,"&Data",self.dataSubmenu)
 	self.serviceSubmenu = wxMenu()
 	self.serviceSubmenu.Append(221,"Add")
-	self.serviceSubmenu.Append(221,"Modify")
-	self.serviceSubmenu.Append(221,"Delete")
+        self.serviceSubmenu.Append(221,"Delete")
 	self.venue.AppendMenu(220,"&Services",self.serviceSubmenu)
 	self.menubar.Append(self.venue, "&Venue")
 	
@@ -62,6 +62,12 @@ class VenueClientFrame(wxFrame):
 	self.help.Append(301, "Manual")
 	self.help.Append(302, "About", "Information about developers and application")
         self.menubar.Append(self.help, "&Help")
+
+    def __setEvents(self):
+        EVT_MENU(self, 200, self.OpenProfileDialog)
+        EVT_MENU(self, 221, self.OpenAddDataDialog)
+        EVT_MENU(self, 302, self.OpenAboutDialog)
+                
 	
     def __setToolbar(self):
 	self.toolbar.AddSimpleTool(20, icons.getWordIconBitmap(), "ImportantPaper.doc", "ImportantPaper.doc",)
@@ -92,7 +98,25 @@ class VenueClientFrame(wxFrame):
 	      
     def UpdateLayout(self):
         self.__doLayout()
-     
+
+    def OpenAddDataDialog(self, event):
+        print 'adding data'
+        self.app.AddData('home')
+
+    def OpenProfileDialog(self, event):
+        print 'profile dialog'
+        profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', self.app.profile)
+           
+        if (profileDialog.ShowModal() == wxID_OK): # when click ok
+            self.app.ChangeProfile(profileDialog.GetNewProfile())
+            profileDialog.Destroy()
+            
+        else:  # when click cancel
+            profileDialog.Destroy()
+
+    def OpenAboutDialog(self, event):
+        aboutDialog = AboutDialog(self, -1, "About VenueClient")
+            
 
 '''VenueListPanel. 
 
@@ -244,7 +268,8 @@ class ContentListPanel(wxPanel):
 	self.app = app
 	self.tree = wxTreeCtrl(self, id, wxDefaultPosition, \
 			       wxDefaultSize,  wxTR_HAS_BUTTONS \
-			       | wxTR_NO_LINES | wxTR_TWIST_BUTTONS \
+			       | wxTR_NO_LINES  \
+                               # | wxTR_TWIST_BUTTONS 
 			       | wxTR_HIDE_ROOT)
 	
         self.participantDict = {}
@@ -283,7 +308,7 @@ class ContentListPanel(wxPanel):
         print profile.name
         participant = self.tree.AppendItem(self.participants, profile.name, \
                              self.iconId, self.iconId)
-        self.tree.SetPyData(participant, profile)
+       # self.tree.SetPyData(participant, profile)
         self.participantDict[profile.name] = participant
         self.tree.Expand(self.participants)
     
@@ -295,7 +320,7 @@ class ContentListPanel(wxPanel):
         name = "ImportantPaper.doc"
         data = self.tree.AppendItem(self.data, name, \
                              self.importantPaperId, self.importantPaperId)
-        self.tree.SetPyData(data, profile)
+       # self.tree.SetPyData(data, profile)
         self.dataDict[name] = data
         self.tree.Expand(self.data)
        
@@ -307,7 +332,7 @@ class ContentListPanel(wxPanel):
         name = "Voyager"
         service = self.tree.AppendItem(self.services, name,\
                                        self.serviceId, self.serviceId)
-        self.tree.SetPyData(service, profile)
+       # self.tree.SetPyData(service, profile)
         self.serviceDict[name] = service
         self.tree.Expand(self.services)
       
@@ -316,10 +341,9 @@ class ContentListPanel(wxPanel):
         self.tree.Delete(id)
 
     def AddNode(self, profile):
-        name = "Library Node"
-        node = self.tree.AppendItem(self.nodes, name)
-        self.tree.SetPyData(node, profile)
-        self.nodeDict[name] = node
+        node = self.tree.AppendItem(self.nodes, profile.name)
+      #  self.tree.SetPyData(node, profile)
+        self.nodeDict[profile.name] = node
         self.tree.Expand(self.nodes)
 
     def RemoveNode(self):
@@ -328,23 +352,23 @@ class ContentListPanel(wxPanel):
 
     def __setTree(self):
         self.root = self.tree.AddRoot("The Lobby")
-        self.tree.SetPyData(self.root, 1)
+       # self.tree.SetPyData(self.root, 1)
         
 	self.participants = self.tree.AppendItem(self.root, "Participants")
 	self.tree.SetItemBold(self.participants)
-        self.tree.SetPyData(self.participants, 1)
+      #  self.tree.SetPyData(self.participants, 1)
         
 	self.data = self.tree.AppendItem(self.root, "Data")
 	self.tree.SetItemBold(self.data)
-        self.tree.SetPyData(self.data, 1)
+        #self.tree.SetPyData(self.data, 1)
         
 	self.services = self.tree.AppendItem(self.root, "Services")
 	self.tree.SetItemBold(self.services)
-        self.tree.SetPyData(self.services, 1)
+      #  self.tree.SetPyData(self.services, 1)
         
 	self.nodes = self.tree.AppendItem(self.root, "Nodes")
 	self.tree.SetItemBold(self.nodes)
-        self.tree.SetPyData(self.nodes, 1)
+      #  self.tree.SetPyData(self.nodes, 1)
         
         self.tree.Expand(self.participants)
         self.tree.Expand(self.data)
@@ -387,6 +411,27 @@ class ErrorDialog:
        noServerDialog.ShowModal()
        noServerDialog.Destroy()
        
+class AboutDialog(wxDialog):
+    def __init__(self, parent, id, title):
+        wxDialog.__init__(self, parent, id, title)
+        info = 'Developed by Argonne National Laboratories'
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
+        self.__doLayout()
+
+        if (self.ShowModal() == wxID_OK): 
+            print 'ok'
+        else: 
+            self.Destroy()
+                    
+    def __doLayout(self):
+        sizer1 = wxBoxSizer(wxVERTICAL)
+        sizer1.Add(self.text, 0, wxALL, 20)
+        sizer1.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
+        self.SetSizer(sizer1)
+        sizer1.Fit(self)
+        self.SetAutoLayout(1)
+       
 class ProfileDialog(wxDialog):
     def __init__(self, parent, id, title, profile):
         wxDialog.__init__(self, parent, id, title)
@@ -407,24 +452,20 @@ class ProfileDialog(wxDialog):
         self.profileTypeBox = wxComboBox(self, -1, choices =['user', 'node'], style = wxCB_DROPDOWN)
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
-        self.__set_properties()
-        self.__do_layout()
-        #if (self.ShowModal() == wxID_OK):
-         #   self.profile.SetName(self.nameCtrl.GetValue())
-          #  self.profile.SetEmail(self.emailCtrl.GetValue())
-           # self.profile.SetPhoneNumber(self.phoneNumberCtrl.GetValue())
-           # self.profile.SetTechSupportInfo(self.supportCtrl.GetValue())
-           # self.profile.SetLocation(self.locationCtrl.GetValue())
-           # self.profile.SetHomeVenue(self.homeVenueCtrl.GetValue())
-           # self.profile.SetProfileType(self.profileTypeBox.GetValue())
+        self.__setProperties()
+        self.__doLayout()
 
-        #else:
-         #   print 'profile = none'
-          #  self.profile = None
-        
-       # self.Destroy()
-               
-    def __set_properties(self):
+    def GetNewProfile(self):
+        self.profile.SetName(self.nameCtrl.GetValue())
+        self.profile.SetEmail(self.emailCtrl.GetValue())
+        self.profile.SetPhoneNumber(self.phoneNumberCtrl.GetValue())
+        self.profile.SetTechSupportInfo(self.supportCtrl.GetValue())
+        self.profile.SetLocation(self.locationCtrl.GetValue())
+        self.profile.SetHomeVenue(self.homeVenueCtrl.GetValue())
+        self.profile.SetProfileType(self.profileTypeBox.GetValue())
+        return self.profile
+
+    def __setProperties(self):
         self.SetTitle("Please, fill in your profile information")
         self.nameCtrl.SetValue(self.profile.GetName())
         self.emailCtrl.SetValue(self.profile.GetEmail())
@@ -437,7 +478,7 @@ class ProfileDialog(wxDialog):
         else:
             self.profileTypeBox.SetSelection(1)
 
-    def __do_layout(self):
+    def __doLayout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
         sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, "Profile"), wxHORIZONTAL)
         gridSizer = wxFlexGridSizer(9, 2, 5, 5)

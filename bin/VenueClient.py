@@ -18,6 +18,8 @@ class VenueClientUI(wxApp, VenueClient):
         self.frame = VenueClientFrame(NULL, -1,"", self)
         self.frame.SetSize(wxSize(300, 400))
         self.SetTopWindow(self.frame)
+        self.client = None
+        self.gotClient = false
         return true
 
     def ConnectToServer(self, file = None):
@@ -28,29 +30,27 @@ class VenueClientUI(wxApp, VenueClient):
         self.profilePath = myHomePath+'/'+accessGridDir+'/profile'
 
         if file:
-            profile = ClientProfile(file)
+            self.profile = ClientProfile(file)
+            self.profile.Dump()
         else:
             try:
                 os.listdir(myHomePath+'/'+accessGridDir)
             except:
                 os.mkdir(myHomePath+'/'+accessGridDir)
 
-            profile = ClientProfile(self.profilePath)
+            self.profile = ClientProfile(self.profilePath)
                   
-        if profile.IsDefault():  # not your profile
-            profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', profile)
+        if self.profile.IsDefault():  # not your profile
+            print 'ConnectToServer'
+            self.profile.Dump()
+            profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', self.profile)
 
             if (profileDialog.ShowModal() == wxID_OK): # when click ok
-                profile.SetName(profileDialog.nameCtrl.GetValue())
-                profile.SetEmail(profileDialog.emailCtrl.GetValue())
-                profile.SetPhoneNumber(profileDialog.phoneNumberCtrl.GetValue())
-                profile.SetTechSupportInfo(profileDialog.supportCtrl.GetValue())
-                profile.SetLocation(profileDialog.locationCtrl.GetValue())
-                profile.SetHomeVenue(profileDialog.homeVenueCtrl.GetValue())
-                profile.SetProfileType(profileDialog.profileTypeBox.GetValue())
+                self.ChangeProfile(profileDialog.GetNewProfile())
+                
                 profileDialog.Destroy()
-                profile.Save(self.profilePath)
-                self.__startMainLoop(venueUri, profile)
+               # profile.Save(self.profilePath)
+                self.__startMainLoop(venueUri, self.profile)
             
             else:  # when click cancel
                 profileDialog.Destroy()
@@ -61,7 +61,9 @@ class VenueClientUI(wxApp, VenueClient):
                
     def __startMainLoop(self, uri, profile):
         if uri:
-            self.SetProfile(profile)
+            self.gotClient = true
+            self.client = Client.Handle(uri).get_proxy()
+           # self.SetProfile(profile)
             self.EnterVenue(uri)
             self.frame.Show(true)
             self.MainLoop()
@@ -79,9 +81,12 @@ class VenueClientUI(wxApp, VenueClient):
         if event.eventType == Event.ENTER :
             print 'somebody enters'
             self.frame.contentListPanel.AddParticipant(event.data)
+
+       # elif event.eventType == Event.MODIFY_USER:
+        #    print 'modify user'
                         
         elif event.eventType == Event.EXIT:
-            print 'remove data'
+            print 'exit'
             self.frame.contentListPanel.RemoveParticipant(event.data)
             
         elif event.eventType == Event.ADD_DATA:
@@ -166,6 +171,20 @@ class VenueClientUI(wxApp, VenueClient):
         done as the application is about to exit.
         """
         self.ExitVenue()
+
+    def AddData(self, path):
+        print '------- add data'
+        data = DataDescription('myData', path)
+        self.client.AddData(data)
+
+    def ChangeProfile(self, profile):
+        profile.Dump()
+        self.profile = profile
+        self.profile.Save(self.profilePath)
+        self.SetProfile(self.profile)
+
+     #   if self.gotClient:
+     #       self.client.UpdateClientProfile(profile)
 
         
 if __name__ == "__main__":
