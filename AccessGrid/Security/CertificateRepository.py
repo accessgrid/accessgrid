@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.19 2004-07-17 02:35:38 judson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.20 2004-07-20 20:05:45 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.19 2004-07-17 02:35:38 judson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.20 2004-07-20 20:05:45 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -958,6 +958,11 @@ class CertificateRepository:
 
         certPath = os.path.join(path, "cert.pem")
         cert.WriteCertificate(certPath)
+        
+        # Set permissions on the certificate as needed by unix globus
+        # (globus requires it for service certificates, but it's a good
+        #  idea generally)
+        os.chmod(certPath, 0644)
 
     def _ImportCertificateRequest(self, req):
         """
@@ -1544,7 +1549,6 @@ class Certificate:
         #
         # Key path is based on the modulus.
         #
-
         if self.keyPath is not None:
             return self.keyPath
         
@@ -1554,6 +1558,7 @@ class Certificate:
         path = os.path.join(self.repo.dir,
                             "privatekeys",
                             "%s.pem" % (self.GetModulusHash()))
+                            
         return path
 
     def GetPath(self):
@@ -1750,8 +1755,9 @@ class Certificate:
         fmt += "%s Fingerprint: %s\n"  % (type,
                                           string.join(map(lambda a: "%02X" % (a), fp), ":"))
         fmt += "Certificate location: %s\n" % (self.GetPath(),)
+        
         pkeyloc = self.GetKeyPath()
-
+        
         if os.access(pkeyloc, os.R_OK):
             fmt += "Private key location: %s\n" % (pkeyloc,)
 
