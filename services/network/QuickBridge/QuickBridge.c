@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.4 2003-10-13 20:51:24 judson Exp $
+ * $Id: QuickBridge.c,v 1.5 2003-10-15 22:37:01 turam Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -727,7 +727,6 @@ int all_fixed(Session *head){
 #if 1
 /* tdu */
 void signal_handler(int signum) {
-	printf( "* * QUICKBRIDGE caught signal %d\n", signum);
 	exit(2);
 }
 #endif
