@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.26 2004-03-22 16:21:52 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.27 2004-03-22 20:12:34 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.26 2004-03-22 16:21:52 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.27 2004-03-22 20:12:34 olson Exp $"
 
 # Standard imports
 import os
@@ -333,6 +333,8 @@ class Service(AppBase):
        The application constructor that enforces the singleton pattern.
        """
        AppBase.__init__(self)
+
+       self.profile = None
        
        if Service.theServiceInstance is not None:
           raise Exception, "Only one instance of Service is allowed"
@@ -354,18 +356,33 @@ class Service(AppBase):
        """
        argvResult = AppBase.Initialize(self, name)
 
+       print "Service init: have profile ", self.options.profile
+
        # Deal with the profile if it was passed instead of cert/key pair
        if self.options.profile is not None:
-           self.profile = ServicProfile(self.options.profile)
+           self.profile = ServiceProfile()
+           self.profile.Import(self.options.profile)
+           print self.profile.AsINIBlock()
        
        # 6. Initialize Certificate Management
        # This has to be done by sub-classes
        configDir = self.userConfig.GetConfigDir()
        self.certMgrUI = CertificateManager.CertificateManagerUserInterface()
-       self.certificateManager = \
-            CertificateManager.CertificateManager(configDir, self.certMgrUI,
-                                            profile = self.profile)
+       certMgr = self.certificateManager = \
+            CertificateManager.CertificateManager(configDir, self.certMgrUI)
 
+       #
+       # If we have a service profile, load and parse, then configure
+       # certificate manager appropriately.
+       #
+
+       if self.profile:
+           if self.profile.subject is not None:
+               certMgr.SetTemporaryDefaultIdentity(useDefaultDN = self.profile.subject)
+           elif self.profile.certfile is not None:
+               certMgr.SetTemporaryDefaultIdentity(useCertFile = self.profile.certfile,
+                                                   useKeyFile = self.profile.keyfile)
+                                                                   
        self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
 
        # 7. Do one final check, if we don't have a default
