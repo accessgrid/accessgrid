@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.13 2003-02-24 20:56:24 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.14 2003-02-24 22:06:45 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -21,7 +21,7 @@ from wxPython.lib.dialogs import wxMultipleChoiceDialog
 # AG2 imports
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.Types import AGResource, Capability, ServiceConfiguration
-from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetParameter
+from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetParameter, CreateParameter
 from AccessGrid.Descriptions import StreamDescription, AGServiceManagerDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid import icons
@@ -514,8 +514,6 @@ class NodeManagementClientFrame(wxFrame):
 
 
 
-            resourceToAssign = AGResource()
-
             resources = Client.Handle( serviceManager.uri ).get_proxy().GetResources()
             if len(resources) > 0:
                 for resource in resources:
@@ -540,7 +538,9 @@ class NodeManagementClientFrame(wxFrame):
                         resourceToAssign = resource
                         break
 
-                if resourceToAssign != None:
+                if resourceToAssign == None:
+                    resourceToAssign = AGResource()
+                else:
                     print "assigning resource ", resourceToAssign.resource
 
             try:
