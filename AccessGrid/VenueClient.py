@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.178 2004-07-06 21:04:35 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.179 2004-07-08 02:26:53 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.178 2004-07-06 21:04:35 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.179 2004-07-08 02:26:53 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -91,10 +91,10 @@ class VenueClient:
         """
         This client class is used on shared and personal nodes.
         """
+        self.userConf = UserConfig.instance()
         if profile:
             self.profile = profile
         else:
-            self.userConf = UserConfig.instance()
             self.profileFile = os.path.join(self.userConf.GetConfigDir(),
                                             "profile" )
             self.profile = ClientProfile(self.profileFile)
