@@ -1,3 +1,4 @@
+#!/usr/bin/python2
 #-----------------------------------------------------------------------------
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
@@ -5,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.209 2003-09-12 14:27:30 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.210 2003-09-12 14:36:08 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
