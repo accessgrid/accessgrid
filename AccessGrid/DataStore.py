@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.68 2004-05-27 19:33:55 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.69 2004-05-27 20:45:33 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.68 2004-05-27 19:33:55 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.69 2004-05-27 20:45:33 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -38,7 +38,6 @@ from pyGlobus import io
 
 from AccessGrid import Log
 import AccessGrid.GUID
-from AccessGrid import Platform
 from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.Descriptions import DataDescription, CreateDataDescription
 from AccessGrid.EventServiceAsynch import EventService
@@ -920,7 +919,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         try:
             upload_dir = os.path.dirname(upload_file_path)
-            bytesFree = Platform.GetFilesystemFreeSpace(upload_dir)
+            bytesFree = SystemConfig.instance().GetFileSystemFreeSpace(upload_dir)
             # bytesFree = 10
             if bytesFree is None:
                 log.debug("HTTPTransferHandler::ProcessFileUpload: Cannot determine free space for %s", upload_Dir)
@@ -934,7 +933,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     log.debug("HTTPTransferHandler::ProcessFileUpload: Allowing upload. Free spae=%d needed=%d",
                              bytesFree, size)
         except:
-            log.exception("Platform.GetFilesystemFreeSpace threw exception")
+            log.exception("SystemConfig.instance().GetFileSystemFreeSpace threw exception")
             
         #
         # Open up destination file and initialize digest.
