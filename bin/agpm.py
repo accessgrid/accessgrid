@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.1 2003-10-17 14:13:58 judson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.2 2003-10-20 21:15:54 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This program is used to register applications with the users AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.1 2003-10-17 14:13:58 judson Exp $"
+__revision__ = "$Id: agpm.py,v 1.2 2003-10-20 21:15:54 judson Exp $"
 
 import os
 import re
@@ -39,6 +39,7 @@ def Usage():
     print "     -f|--file : <.app file>"
     print "     -d|--dir : <directory containing a .app file>"
     print "     -z|--zip : <zip archive containing a .app file>"
+    print "     -p|--package : <package archive containing a .app file>"
     print "     -h|--help : This help."
     print """
     By default this program registers/installs a shared application
@@ -57,7 +58,8 @@ def UnpackZip(filename):
     os.mkdir(workingDir)
     for filename in zipArchive.namelist():
         parts = filename.split('.')
-        if len(parts) == 2 and parts[1] == 'app':
+        if len(parts) == 2 and (parts[1] == 'app'
+                                or parts[1] == 'shared_app_pkg'):
             appFile = filename
         bytes = zipArchive.read(filename)
         out = file(os.path.join(workingDir, filename), "w")
@@ -114,13 +116,14 @@ def main():
     # file and the other parts of the shared application.
     
     try:
-        opts = getopt.getopt(sys.argv[1:], "f:d:z:n:huv", ["file=",
-                                                           "dir=",
-                                                           "zip=",
-                                                           "name=",
-                                                           "unregister",
-                                                           "verbose",
-                                                           "help"])[0]
+        opts = getopt.getopt(sys.argv[1:], "f:d:z:n:p:huv", ["file=",
+                                                             "dir=",
+                                                             "zip=",
+                                                             "name=",
+                                                             "package=",
+                                                             "unregister",
+                                                             "verbose",
+                                                             "help"])[0]
     except getopt.GetoptError:
         Usage()
         sys.exit(2)
@@ -138,7 +141,7 @@ def main():
                 appFile = arg
         elif opt in ("-d", "--dir"):
             workingDir = os.path.abspath(arg)
-        elif opt in ("-z", "--zip"):
+        elif opt in ("-z", "--zip", "-p", "--package"):
             # Unpack the zip archive
             # We get back the appfile and directory
             appFile, workingDir = UnpackZip(arg)
@@ -162,6 +165,12 @@ def main():
                 if ext == "app":
                     appFile = filename
 
+    # Otherwise we go through and do the registration stuff...
+    if workingDir != None and workingDir != '':
+        # Change to the appropriate directory
+        # This won't work for zipfiles
+        os.chdir(workingDir)
+
     # Process the App File we've gotten
     if appFile:
         appInfo, commands = ProcessAppFile(appFile)
@@ -177,11 +186,11 @@ def main():
                    unregister."
         sys.exit(0)
 
-    # Otherwise we go through and do the registration stuff...
-    if workingDir != None and workingDir != '':
-        # Change to the appropriate directory
-        # This won't work for zipfiles
-        os.chdir(workingDir)
+    if verbose:
+        print "Name: %s" % appName
+        print "Mime Type: %s" % appInfo["application.mimetype"]
+        print "Extension: %s" % appInfo["application.extension"]
+        print "From: %s" % workingDir
 
     # Register the App
     if appName == None:
@@ -189,12 +198,6 @@ def main():
     files = appInfo["application.files"]
     if type(files) is StringType:
         files = re.split(r',\s*|\s+', files)
-
-    if verbose:
-        print "Name: %s" % appName
-        print "Mime Type: %s" % appInfo["application.mimetype"]
-        print "Extension: %s" % appInfo["application.extension"]
-        print "From: %s" % workingDir
 
     appdb.RegisterApplication(appName,
                               appInfo["application.mimetype"],
