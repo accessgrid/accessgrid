@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.27 2003-08-21 23:27:11 judson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.28 2003-09-03 17:58:49 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -28,7 +28,8 @@ from AccessGrid import icons
 from AccessGrid.Utilities import SubmitBug
 from AccessGrid.Utilities import formatExceptionInfo
 from Toolkit import GetVersion
-
+from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.ClientProfile import ClientProfile
 
 class MessageDialog:
     def __init__(self, frame, text, text2 = "", style = wxOK|wxICON_INFORMATION):
@@ -40,34 +41,68 @@ class ErrorDialog:
     def __init__(self, frame, text, text2 = "", style =  wxICON_ERROR |wxYES_NO | wxNO_DEFAULT):
         info = text + "\n\nDo you wish to send an automated error report?"
         errorDialog = wxMessageDialog(frame, info, text2, wxICON_ERROR |wxYES_NO | wxNO_DEFAULT)
-        
+
         if(errorDialog.ShowModal() == wxID_YES):
             # The user wants to send an error report
             bugReportCommentDialog = BugReportCommentDialog(frame)
 
             if(bugReportCommentDialog.ShowModal() == wxID_OK):
                 # Submit the error report to Bugzilla
-              
-                SubmitBug(bugReportCommentDialog.GetComment())
+                comment = bugReportCommentDialog.GetComment()
+                profile = bugReportCommentDialog.GetProfile()
+                email = bugReportCommentDialog.GetEmail()
+
+                SubmitBug(comment, profile, email)
                 bugFeedbackDialog = wxMessageDialog(frame, "Your error report has been sent, thank you.",
                                                     "Error Reported", style = wxOK|wxICON_INFORMATION)
                 bugFeedbackDialog.ShowModal()
                 bugFeedbackDialog.Destroy()       
 
             bugReportCommentDialog.Destroy()
-            errorDialog.Destroy()
+
+        errorDialog.Destroy()
 
 
 class BugReportCommentDialog(wxDialog):
     def __init__(self, parent):
-        wxDialog.__init__(self, parent, -1, "Comment for Bug Report")
-        self.text = wxStaticText(self, -1, "Please, enter a description of the problem you are experiencing.", style=wxALIGN_LEFT)
+        wxDialog.__init__(self, parent, -1, "Bug Report")
+        self.text = wxStaticText(self, -1, "Please, enter a description of the problem you are experiencing.  You may \nreceive periodic mailings from us with information on this problem.  If you \ndo not wish to be contacted, please leave the 'E-mail' field blank.", style=wxALIGN_LEFT)
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.commentBox = wxTextCtrl(self, -1, "", size = wxSize(300,100), style = wxTE_MULTILINE)
         self.line = wxStaticLine(self, -1)
+        self.commentText =  wxStaticText(self, -1, "Comment:")
+        self.emailText = wxStaticText(self, -1, "E-mail:")
+        self.emailBox =  wxTextCtrl(self, -1, "")
+        self.infoText = wxStaticText(self, -1, "For more information on bugs, visit http://bugzilla.mcs.anl.gov/AccessGrid ")
+        self.GetClientProfile()
         self.Centre()
         self.Layout()
+
+    def GetClientProfile(self):
+        accessGridPath = GetUserConfigDir()
+        profileFile = os.path.join(accessGridPath, "profile" )
+        profile = ClientProfile(profileFile)
+
+        if profile.IsDefault():
+            # This is the default profile and we do not want to
+            # use values from it.
+            self.profile = None
+
+        else:
+            self.profile = profile
+      
+        # If we have a profile and the email is filled in properly,
+        # use email as default.
+        if (self.profile
+            and self.profile.email != ClientProfile.defaultProfile["ClientProfile.email"]):
+            self.emailBox.SetValue(self.profile.email)
+
+    def GetProfile(self):
+        return self.profile
+    
+    def GetEmail(self):
+        return self.emailBox.GetValue()
         
     def GetComment(self):
         return self.commentBox.GetValue()
@@ -75,7 +110,12 @@ class BugReportCommentDialog(wxDialog):
     def Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
         sizer.Add(self.text, 0, wxALL, 10)
-        sizer.Add(self.commentBox, 0, wxALL | wxEXPAND, 10)
+        sizer.Add(self.commentText, 0, wxLEFT| wxRIGHT | wxEXPAND, 10)
+        sizer.Add(self.commentBox, 0,  wxLEFT| wxRIGHT | wxEXPAND, 10)
+        sizer.Add(10,10)
+        sizer.Add(self.emailText, 0, wxLEFT| wxRIGHT | wxEXPAND, 10)
+        sizer.Add(self.emailBox, 0,  wxLEFT| wxRIGHT | wxBOTTOM | wxEXPAND, 10)
+        sizer.Add(self.infoText, 0, wxLEFT | wxRIGHT | wxTOP |  wxEXPAND, 10)
         sizer.Add(self.line, 0, wxALL | wxEXPAND, 10)
 
         buttonSizer = wxBoxSizer(wxHORIZONTAL)
@@ -194,7 +234,7 @@ class AppSplash(wxSplashScreen):
 def ProgressDialogTest():
     max = 100
      
-    dlg = ProgressDialog("Start up", "Loading Venue Client. Please be patient.", max)
+    dlg = ProgressDialog("Start up", "Loading Venue Client.", max)
     dlg.Show()
   
     keepGoing = True
@@ -219,7 +259,18 @@ if __name__ == "__main__":
     app = wxPySimpleApp()
 
     #ProgressDialogTest()
-    AboutDialogTest()
+    #AboutDialogTest()
 
+
+    # Test for bug report
+    #b = BugReportCommentDialog(None)
+    #b.ShowModal()
+    #b.Destroy()
+
+    # Test for error dialog (includes bug report)
+    e = ErrorDialog(None, "test", "Enter Venue Error",
+                    style = wxOK  | wxICON_ERROR)
+    
+    
     app.MainLoop()
     
