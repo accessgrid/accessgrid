@@ -107,6 +107,8 @@ cmd = 'sed s/AG_VER=VER/AG_VER=\\"%s-%s\\"/ %s > %s' % (version,metainfo,
 print "cmd = ", cmd
 os.system(cmd)
 
+os.chmod(installsh_out,0755)
+
 #
 # Create the targz file including the rpms and install script
 #
