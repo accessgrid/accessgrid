@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.51 2003-04-18 17:40:31 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.52 2003-04-18 23:00:39 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -54,6 +54,7 @@ class VenueClient( ServiceBase):
         self.nodeServiceUri = "https://localhost:11000/NodeService"
         self.homeVenue = None
         self.houseKeeper = Scheduler()
+        self.heartbeatTask = None
         self.CreateVenueClientWebService()
         self.__InitVenueData__()
 
@@ -102,42 +103,68 @@ class VenueClient( ServiceBase):
     # Event Handlers
     #
     def AddUserEvent(self, data):
+        log.debug("Got Add User Event")
+        
         self.venueState.AddUser(data)
 
     def RemoveUserEvent(self, data):
+        log.debug("Got Remove User Event")
+
         self.venueState.RemoveUser(data)
 
     def ModifyUserEvent(self, data):
+        log.debug("Got Modify User Event")
+
         self.venueState.ModifyUser(data)
 
     def AddDataEvent(self, data):
+        log.debug("Got Add Data Event")
+
         self.venueState.AddData(data)
 
     def UpdateDataEvent(self, data):
+        log.debug("Got Update Data Event")
+
         self.venueState.UpdateData(data)
 
     def RemoveDataEvent(self, data):
+        log.debug("Got Remove Data Event")
+
         self.venueState.RemoveData(data)
 
     def AddServiceEvent(self, data):
+        log.debug("Got Add Service Event")
+
         self.venueState.AddService(data)
 
     def RemoveServiceEvent(self, data):
+        log.debug("Got Remove Service Event")
+
         self.venueState.RemoveService(data)
 
     def AddApplicationEvent(self, data):
+        log.debug("Got Add Application Event")
+
         self.venueState.AddApplication(data)
 
     def RemoveApplicationEvent(self, data):
+        log.debug("Got Remove Application Event")
+
         self.venueState.RemoveApplication(data)
 
     def AddConnectionEvent(self, data):
+        log.debug("Got Add Connection Event")
+
         self.venueState.AddConnection(data)
 
     def RemoveConnectionEvent(self, data):
+        log.debug("Got Remove Connection Event")
+
         self.venueState.RemoveConnection(data)
 
     def SetConnectionsEvent(self, data):
+        log.debug("Got Set Connections Event")
+
         self.venueState.SetConnections(data)
         
     def EnterVenue(self, URL):
@@ -265,7 +292,8 @@ class VenueClient( ServiceBase):
         """
         ExitVenue removes this client from the specified venue.
         """
-        self.heartbeatTask.stop()
+        if self.heartbeatTask != None:
+            self.heartbeatTask.stop()
         self.eventClient.Send(DisconnectEvent(self.venueState.uniqueId))
         self.eventClient.Stop()
         self.venueProxy.Exit( self.privateId )
