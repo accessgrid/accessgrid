@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.37 2003-09-16 16:58:05 judson Exp $
+# RCS-ID:      $Id: setup.py,v 1.38 2003-09-18 20:06:48 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -32,6 +32,7 @@ linux_scripts = [r"bin/VenueServer.py",
                   r"bin/NodeSetupWizard.py",
                   r"bin/CertificateRequestTool.py",
                   r"bin/BridgeServer.py",
+                  r"bin/DataService.py",
                   r"bin/certmgr.py",
                   r"services/network/QuickBridge/QuickBridge",
                   ]
