@@ -1,43 +1,41 @@
-{\rtf1\ansi\ansicpg1252\uc1\deff0\stshfdbch0\stshfloch0\stshfhich0\stshfbi0\deflang1033\deflangfe1033{\fonttbl{\f0\froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}{\f1\fswiss\fcharset0\fprq2{\*\panose 020b0604020202020204}Arial;}
+{\rtf1\adeflang1025\ansi\ansicpg1252\uc1\adeff0\deff0\stshfdbch0\stshfloch0\stshfhich0\stshfbi0\deflang1033\deflangfe1033{\fonttbl{\f0\froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}{\f1\fswiss\fcharset0\fprq2{\*\panose 020b0604020202020204}Arial;}
 {\f2\fmodern\fcharset0\fprq1{\*\panose 02070309020205020404}Courier New;}{\f3\froman\fcharset2\fprq2{\*\panose 05050102010706020507}Symbol;}{\f10\fnil\fcharset2\fprq2{\*\panose 05000000000000000000}Wingdings;}
-{\f35\fswiss\fcharset0\fprq2{\*\panose 020b0604030504040204}Tahoma;}{\f36\froman\fcharset238\fprq2 Times New Roman CE;}{\f37\froman\fcharset204\fprq2 Times New Roman Cyr;}{\f39\froman\fcharset161\fprq2 Times New Roman Greek;}
-{\f40\froman\fcharset162\fprq2 Times New Roman Tur;}{\f41\froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\f42\froman\fcharset178\fprq2 Times New Roman (Arabic);}{\f43\froman\fcharset186\fprq2 Times New Roman Baltic;}
-{\f44\froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\f46\fswiss\fcharset238\fprq2 Arial CE;}{\f47\fswiss\fcharset204\fprq2 Arial Cyr;}{\f49\fswiss\fcharset161\fprq2 Arial Greek;}{\f50\fswiss\fcharset162\fprq2 Arial Tur;}
-{\f51\fswiss\fcharset177\fprq2 Arial (Hebrew);}{\f52\fswiss\fcharset178\fprq2 Arial (Arabic);}{\f53\fswiss\fcharset186\fprq2 Arial Baltic;}{\f54\fswiss\fcharset163\fprq2 Arial (Vietnamese);}{\f56\fmodern\fcharset238\fprq1 Courier New CE;}
-{\f57\fmodern\fcharset204\fprq1 Courier New Cyr;}{\f59\fmodern\fcharset161\fprq1 Courier New Greek;}{\f60\fmodern\fcharset162\fprq1 Courier New Tur;}{\f61\fmodern\fcharset177\fprq1 Courier New (Hebrew);}
-{\f62\fmodern\fcharset178\fprq1 Courier New (Arabic);}{\f63\fmodern\fcharset186\fprq1 Courier New Baltic;}{\f64\fmodern\fcharset163\fprq1 Courier New (Vietnamese);}{\f386\fswiss\fcharset238\fprq2 Tahoma CE;}{\f387\fswiss\fcharset204\fprq2 Tahoma Cyr;}
-{\f389\fswiss\fcharset161\fprq2 Tahoma Greek;}{\f390\fswiss\fcharset162\fprq2 Tahoma Tur;}{\f391\fswiss\fcharset177\fprq2 Tahoma (Hebrew);}{\f392\fswiss\fcharset178\fprq2 Tahoma (Arabic);}{\f393\fswiss\fcharset186\fprq2 Tahoma Baltic;}
-{\f394\fswiss\fcharset163\fprq2 Tahoma (Vietnamese);}{\f395\fswiss\fcharset222\fprq2 Tahoma (Thai);}}{\colortbl;\red0\green0\blue0;\red0\green0\blue255;\red0\green255\blue255;\red0\green255\blue0;\red255\green0\blue255;\red255\green0\blue0;
-\red255\green255\blue0;\red255\green255\blue255;\red0\green0\blue128;\red0\green128\blue128;\red0\green128\blue0;\red128\green0\blue128;\red128\green0\blue0;\red128\green128\blue0;\red128\green128\blue128;\red192\green192\blue192;}{\stylesheet{
-\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext0 \styrsid16088027 Normal;}{
-\s1\ql \li0\ri0\sb240\sa60\keepn\widctlpar\aspalpha\aspnum\faauto\outlinelevel0\adjustright\rin0\lin0\itap0 \b\f1\fs32\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext0 \styrsid16088027 heading 1;}{
-\s2\ql \li0\ri0\sb240\sa60\keepn\widctlpar\aspalpha\aspnum\faauto\outlinelevel1\adjustright\rin0\lin0\itap0 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext0 \styrsid16088027 heading 2;}{
-\s3\ql \li0\ri0\sb240\sa60\keepn\widctlpar\aspalpha\aspnum\faauto\outlinelevel2\adjustright\rin0\lin0\itap0 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext0 \styrsid16088027 heading 3;}{\*\cs10 \additive 
-\ssemihidden \styrsid16088027 Default Paragraph Font;}{\*
+{\f35\fswiss\fcharset0\fprq2{\*\panose 020b0604030504040204}Tahoma;}{\f119\froman\fcharset238\fprq2 Times New Roman CE;}{\f120\froman\fcharset204\fprq2 Times New Roman Cyr;}{\f122\froman\fcharset161\fprq2 Times New Roman Greek;}
+{\f123\froman\fcharset162\fprq2 Times New Roman Tur;}{\f124\fbidi \froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\f125\fbidi \froman\fcharset178\fprq2 Times New Roman (Arabic);}{\f126\froman\fcharset186\fprq2 Times New Roman Baltic;}
+{\f127\froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\f129\fswiss\fcharset238\fprq2 Arial CE;}{\f130\fswiss\fcharset204\fprq2 Arial Cyr;}{\f132\fswiss\fcharset161\fprq2 Arial Greek;}{\f133\fswiss\fcharset162\fprq2 Arial Tur;}
+{\f134\fbidi \fswiss\fcharset177\fprq2 Arial (Hebrew);}{\f135\fbidi \fswiss\fcharset178\fprq2 Arial (Arabic);}{\f136\fswiss\fcharset186\fprq2 Arial Baltic;}{\f137\fswiss\fcharset163\fprq2 Arial (Vietnamese);}
+{\f139\fmodern\fcharset238\fprq1 Courier New CE;}{\f140\fmodern\fcharset204\fprq1 Courier New Cyr;}{\f142\fmodern\fcharset161\fprq1 Courier New Greek;}{\f143\fmodern\fcharset162\fprq1 Courier New Tur;}
+{\f144\fbidi \fmodern\fcharset177\fprq1 Courier New (Hebrew);}{\f145\fbidi \fmodern\fcharset178\fprq1 Courier New (Arabic);}{\f146\fmodern\fcharset186\fprq1 Courier New Baltic;}{\f147\fmodern\fcharset163\fprq1 Courier New (Vietnamese);}
+{\f469\fswiss\fcharset238\fprq2 Tahoma CE;}{\f470\fswiss\fcharset204\fprq2 Tahoma Cyr;}{\f472\fswiss\fcharset161\fprq2 Tahoma Greek;}{\f473\fswiss\fcharset162\fprq2 Tahoma Tur;}{\f474\fbidi \fswiss\fcharset177\fprq2 Tahoma (Hebrew);}
+{\f475\fbidi \fswiss\fcharset178\fprq2 Tahoma (Arabic);}{\f476\fswiss\fcharset186\fprq2 Tahoma Baltic;}{\f477\fswiss\fcharset163\fprq2 Tahoma (Vietnamese);}{\f478\fswiss\fcharset222\fprq2 Tahoma (Thai);}}{\colortbl;\red0\green0\blue0;\red0\green0\blue255;
+\red0\green255\blue255;\red0\green255\blue0;\red255\green0\blue255;\red255\green0\blue0;\red255\green255\blue0;\red255\green255\blue255;\red0\green0\blue128;\red0\green128\blue128;\red0\green128\blue0;\red128\green0\blue128;\red128\green0\blue0;
+\red128\green128\blue0;\red128\green128\blue128;\red192\green192\blue192;\red217\green217\blue217;}{\stylesheet{\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 
+\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext0 \styrsid616528 Normal;}{\s1\qc \li0\ri0\sb240\sa60\keepn\widctlpar\aspalpha\aspnum\faauto\outlinelevel0\adjustright\rin0\lin0\itap0 \rtlch\fcs1 \ab\af1\afs32\alang1025 \ltrch\fcs0 
+\b\f1\fs32\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext0 \styrsid616528 heading 1;}{\s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx360\aspalpha\aspnum\faauto\ls19\outlinelevel1\adjustright\rin0\lin360\itap0 \rtlch\fcs1 \ab\ai\af1\afs28\alang1025 \ltrch\fcs0 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext0 \sautoupd \styrsid12668944 
+heading 2;}{\s3\ql \fi-432\li432\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx1080\aspalpha\aspnum\faauto\ls19\ilvl1\outlinelevel2\adjustright\rin0\lin432\itap0 \rtlch\fcs1 \ab\af1\afs26\alang1025 \ltrch\fcs0 
+\b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext0 \sautoupd \styrsid12668944 heading 3;}{\*\cs10 \additive \ssemihidden \styrsid616528 Default Paragraph Font;}{\*
 \ts11\tsrowd\trftsWidthB3\trpaddl108\trpaddr108\trpaddfl3\trpaddft3\trpaddfb3\trpaddfr3\trcbpat1\trcfpat1\tscellwidthfts0\tsvertalt\tsbrdrt\tsbrdrl\tsbrdrb\tsbrdrr\tsbrdrdgl\tsbrdrdgr\tsbrdrh\tsbrdrv 
-\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs20\lang1024\langfe1024\cgrid\langnp1024\langfenp1024 \snext11 \ssemihidden Normal Table;}{\s15\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 
-\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext15 Dashed List;}{\s16\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext16 Box List;}{
-\s17\ql \li0\ri0\keepn\widctlpar\tx1584\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f1\fs24\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 \sbasedon31 \snext0 Section Heading;}{\s18\ql \li0\ri0\keepn\widctlpar
-\tx431\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \i\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon2 \snext0 Numbered Heading 2;}{\s19\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 
-\f2\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext19 Plain Text;}{\s20\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext20 Implies List;}{
-\s21\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon29 \snext21 Upper Case List;}{\s22\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 
-\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext22 Hand List;}{\s23\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon29 \snext23 Upper Roman List;}{
-\s24\ql \li1440\ri1440\sa120\widctlpar\aspalpha\aspnum\faauto\adjustright\rin1440\lin1440\itap0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext24 Block Text;}{
-\s25\ql \fi-431\li720\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin720\itap0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext25 Lower Roman List;}{\s26\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 
-\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext26 Heart List;}{\s27\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon29 \snext27 Lower Case List;}{
-\s28\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext28 Tick List;}{\s29\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 
-\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext29 Numbered List;}{\s30\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext30 Star List;}{
-\s31\ql \li0\ri0\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f1\fs24\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 \sbasedon1 \snext0 Numbered Heading 1;}{
-\s32\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext32 Diamond List;}{\s33\ql \li0\ri0\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 
-\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon3 \snext0 Numbered Heading 3;}{\s34\ql \li0\ri0\keepn\widctlpar\tx1584\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 
-\f1\fs24\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 \sbasedon31 \snext0 Chapter Heading;}{\s35\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext35 Square List;}{
-\s36\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext36 Triangle List;}{\s37\ql \fi-431\li720\ri0\nowidctlpar\faauto\rin0\lin720\itap0 
-\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext37 Bullet List;}{\s38\ql \li0\ri0\widctlpar\tqc\tx4320\tqr\tx8640\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 
-\sbasedon0 \snext38 \styrsid16088027 header;}{\s39\ql \li0\ri0\widctlpar\tqc\tx4320\tqr\tx8640\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext39 \styrsid16088027 footer;}{
-\s40\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \cbpat9 \f35\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext40 \ssemihidden \styrsid16088027 Document Map;}{
-\s41\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f35\fs16\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext41 \ssemihidden \styrsid16088027 Balloon Text;}{\*\cs42 \additive \ul\cf2 
-\sbasedon10 \styrsid16088027 Hyperlink;}}{\*\listtable{\list\listtemplateid746733300\listsimple{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat0\levelspace0\levelindent0{\leveltext\'01\'b7;}{\levelnumbers;}\f3 
-\fi-431\li720\lin720 }{\listname ;}\listid192734754}{\list\listtemplateid-549296348\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689
+\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \rtlch\fcs1 \af0\afs20 \ltrch\fcs0 \fs20\lang1024\langfe1024\cgrid\langnp1024\langfenp1024 \snext11 \ssemihidden \styrsid616528 Normal Table;}{
+\s19\ql \li720\ri720\widctlpar\aspalpha\aspnum\faauto\adjustright\rin720\lin720\itap0 \cbpat17 \rtlch\fcs1 \af2\afs24\alang1025 \ltrch\fcs0 \f2\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext19 \sautoupd \styrsid10953014 
+Plain Text,Literal Code;}{\s38\ql \li0\ri0\widctlpar\tqc\tx4320\tqr\tx8640\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 
+\sbasedon0 \snext38 \styrsid616528 header;}{\s39\ql \li0\ri0\widctlpar\tqc\tx4320\tqr\tx8640\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 
+\sbasedon0 \snext39 \styrsid616528 footer;}{\s40\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \cbpat9 \rtlch\fcs1 \af35\afs24\alang1025 \ltrch\fcs0 \f35\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 
+\sbasedon0 \snext40 \ssemihidden \styrsid616528 Document Map;}{\s41\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \rtlch\fcs1 \af35\afs16\alang1025 \ltrch\fcs0 \f35\fs16\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 
+\sbasedon0 \snext41 \ssemihidden \styrsid616528 Balloon Text;}{\*\cs42 \additive \rtlch\fcs1 \af0 \ltrch\fcs0 \ul\cf2 \sbasedon10 \styrsid616528 Hyperlink;}{\s43\qc \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \rtlch\fcs1 
+\af1\afs24\alang1025 \ltrch\fcs0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext43 \styrsid616528 Author Information;}}{\*\listtable{\list\listtemplateid-676319688\listsimple{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0
+\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fi-360\li360\jclisttab\tx360\lin360 }{\listname ;}\listid-120}{\list\listtemplateid1949447084{\listlevel\levelnfc0\levelnfcn0
+\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \s2\fi-360\li360\jclisttab\tx360\lin360 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0
+\levelstartat1\levelspace0\levelindent0{\leveltext\'04\'00.\'01.;}{\levelnumbers\'01\'03;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \s3\fi-432\li792\jclisttab\tx1080\lin792 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace0\levelindent0{\leveltext\'06\'00.\'01.\'02.;}{\levelnumbers\'01\'03\'05;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-504\li1224\jclisttab\tx1440\lin1224 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0
+\levelindent0{\leveltext\'08\'00.\'01.\'02.\'03.;}{\levelnumbers\'01\'03\'05\'07;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-648\li1728\jclisttab\tx2160\lin1728 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0
+\levelindent0{\leveltext\'0a\'00.\'01.\'02.\'03.\'04.;}{\levelnumbers\'01\'03\'05\'07\'09;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-792\li2232\jclisttab\tx2880\lin2232 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace0\levelindent0{\leveltext\'0c\'00.\'01.\'02.\'03.\'04.\'05.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-936\li2736\jclisttab\tx3240\lin2736 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0
+\levelstartat1\levelspace0\levelindent0{\leveltext\'0e\'00.\'01.\'02.\'03.\'04.\'05.\'06.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-1080\li3240\jclisttab\tx3960\lin3240 }{\listlevel\levelnfc0\levelnfcn0\leveljc0
+\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'10\'00.\'01.\'02.\'03.\'04.\'05.\'06.\'07.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d\'0f;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-1224\li3744\jclisttab\tx4680\lin3744 }
+{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'12\'00.\'01.\'02.\'03.\'04.\'05.\'06.\'07.\'08.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d\'0f\'11;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 
+\fi-1440\li4320\jclisttab\tx5040\lin4320 }{\listname ;}\listid73670441}{\list\listtemplateid746733300\listsimple{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat0\levelspace0\levelindent0{\leveltext\'01\'b7;}{\levelnumbers;}
+\f3 \fi-431\li720\lin720 }{\listname ;}\listid192734754}{\list\listtemplateid-549296348\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689
 \'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li360\jclisttab\tx360\lin360 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}
 \f2\fbias0 \fi-360\li1080\jclisttab\tx1080\lin1080 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li1800
 \jclisttab\tx1800\lin1800 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li2520\jclisttab\tx2520\lin2520 }
@@ -45,34 +43,62 @@
 \leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li3960\jclisttab\tx3960\lin3960 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0
 \levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li4680\jclisttab\tx4680\lin4680 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1
 \levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li5400\jclisttab\tx5400\lin5400 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
-\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li6120\jclisttab\tx6120\lin6120 }{\listname ;}\listid635722587}{\list\listtemplateid1908756341\listsimple{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0
-\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}\fi-431\li720\lin720 }{\listname ;}\listid818376912}{\list\listtemplateid1649862534\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1
-\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li720\jclisttab\tx720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0
-{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li1440\jclisttab\tx1440\lin1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693
-\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li2160\jclisttab\tx2160\lin2160 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers
-;}\f3\fbias0 \fi-360\li2880\jclisttab\tx2880\lin2880 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li3600
-\jclisttab\tx3600\lin3600 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li4320\jclisttab\tx4320\lin4320 }
-{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li5040\jclisttab\tx5040\lin5040 }{\listlevel\levelnfc23
-\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li5760\jclisttab\tx5760\lin5760 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0
-\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li6480\jclisttab\tx6480\lin6480 }{\listname ;}\listid884172567}{\list\listtemplateid920158744\listhybrid{\listlevel
-\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li720\jclisttab\tx720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0
-\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li1440\jclisttab\tx1440\lin1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1
-\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li2160\jclisttab\tx2160\lin2160 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0
-{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li2880\jclisttab\tx2880\lin2880 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
-\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li3600\jclisttab\tx3600\lin3600 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693
+\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li6120\jclisttab\tx6120\lin6120 }{\listname ;}\listid635722587}{\list\listtemplateid835124188{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-360\li0\jclisttab\tx0\lin0 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext
+\'04\'00.\'01.;}{\levelnumbers\'01\'03;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-432\li432\jclisttab\tx432\lin432 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext
+\'06\'00.\'01.\'02.;}{\levelnumbers\'01\'03\'05;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-504\li864\jclisttab\tx1080\lin864 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext
+\'08\'00.\'01.\'02.\'03.;}{\levelnumbers\'01\'03\'05\'07;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-648\li1368\jclisttab\tx1800\lin1368 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext
+\'0a\'00.\'01.\'02.\'03.\'04.;}{\levelnumbers\'01\'03\'05\'07\'09;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-792\li1872\jclisttab\tx2160\lin1872 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0
+{\leveltext\'0c\'00.\'01.\'02.\'03.\'04.\'05.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-936\li2376\jclisttab\tx2880\lin2376 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0
+\levelindent0{\leveltext\'0e\'00.\'01.\'02.\'03.\'04.\'05.\'06.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-1080\li2880\jclisttab\tx3240\lin2880 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0
+\levelstartat1\levelspace0\levelindent0{\leveltext\'10\'00.\'01.\'02.\'03.\'04.\'05.\'06.\'07.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d\'0f;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-1224\li3384\jclisttab\tx3960\lin3384 }{\listlevel\levelnfc0\levelnfcn0
+\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'12\'00.\'01.\'02.\'03.\'04.\'05.\'06.\'07.\'08.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d\'0f\'11;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-1440\li3960
+\jclisttab\tx4320\lin3960 }{\listname ;}\listid652297125}{\list\listtemplateid1908756341\listsimple{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}
+\rtlch\fcs1 \af0 \ltrch\fcs0 \fi-431\li720\lin720 }{\listname ;}\listid818376912}{\list\listtemplateid1649862534\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li720\jclisttab\tx720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691
+\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li1440\jclisttab\tx1440\lin1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}
+\f10\fbias0 \fi-360\li2160\jclisttab\tx2160\lin2160 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li2880
+\jclisttab\tx2880\lin2880 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li3600\jclisttab\tx3600\lin3600 }{\listlevel
+\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li4320\jclisttab\tx4320\lin4320 }{\listlevel\levelnfc23\levelnfcn23
+\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li5040\jclisttab\tx5040\lin5040 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0
+\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li5760\jclisttab\tx5760\lin5760 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li6480\jclisttab\tx6480\lin6480 }{\listname ;}\listid884172567}{\list\listtemplateid920158744\listhybrid{\listlevel\levelnfc23\levelnfcn23
+\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li720\jclisttab\tx720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0
+\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li1440\jclisttab\tx1440\lin1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360
+\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li2160\jclisttab\tx2160\lin2160 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li2880\jclisttab\tx2880\lin2880 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691
+\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li3600\jclisttab\tx3600\lin3600 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}
+\f10\fbias0 \fi-360\li4320\jclisttab\tx4320\lin4320 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li5040
+\jclisttab\tx5040\lin5040 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li5760\jclisttab\tx5760\lin5760 }{\listlevel
+\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li6480\jclisttab\tx6480\lin6480 }{\listname ;}\listid1244681304}
+{\list\listtemplateid-1529311060{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-360\li0\jclisttab\tx0\lin0 }
+{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levellegal\levelspace0\levelindent0{\leveltext\'04\'00.\'01.;}{\levelnumbers\'01\'03;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-432\li432\jclisttab\tx432\lin432 }{\listlevel
+\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'06\'00.\'01.\'02.;}{\levelnumbers\'01\'03\'05;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-504\li864\jclisttab\tx1080\lin864 }{\listlevel\levelnfc0
+\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'08\'00.\'01.\'02.\'03.;}{\levelnumbers\'01\'03\'05\'07;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-648\li1368\jclisttab\tx1800\lin1368 }{\listlevel\levelnfc0
+\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'0a\'00.\'01.\'02.\'03.\'04.;}{\levelnumbers\'01\'03\'05\'07\'09;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-792\li1872\jclisttab\tx2160\lin1872 }{\listlevel
+\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'0c\'00.\'01.\'02.\'03.\'04.\'05.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-936\li2376
+\jclisttab\tx2880\lin2376 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'0e\'00.\'01.\'02.\'03.\'04.\'05.\'06.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d;}\rtlch\fcs1 \af0 \ltrch\fcs0 
+\fbias0 \fi-1080\li2880\jclisttab\tx3240\lin2880 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'10\'00.\'01.\'02.\'03.\'04.\'05.\'06.\'07.;}{\levelnumbers
+\'01\'03\'05\'07\'09\'0b\'0d\'0f;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-1224\li3384\jclisttab\tx3960\lin3384 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext
+\'12\'00.\'01.\'02.\'03.\'04.\'05.\'06.\'07.\'08.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d\'0f\'11;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-1440\li3960\jclisttab\tx4320\lin3960 }{\listname ;}\listid1374307091}{\list\listtemplateid-2024219922
+\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li720\jclisttab\tx720\lin720 }{\listlevel\levelnfc23
+\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li1440\jclisttab\tx1440\lin1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0
+\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li2160\jclisttab\tx2160\lin2160 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li2880\jclisttab\tx2880\lin2880 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0
+{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li3600\jclisttab\tx3600\lin3600 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693
 \'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li4320\jclisttab\tx4320\lin4320 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers
 ;}\f3\fbias0 \fi-360\li5040\jclisttab\tx5040\lin5040 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li5760
 \jclisttab\tx5760\lin5760 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li6480\jclisttab\tx6480\lin6480 }
-{\listname ;}\listid1244681304}{\list\listtemplateid-2024219922\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}
-\f3\fbias0 \fi-360\li720\jclisttab\tx720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li1440
-\jclisttab\tx1440\lin1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li2160\jclisttab\tx2160\lin2160 }
-{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li2880\jclisttab\tx2880\lin2880 }{\listlevel\levelnfc23
-\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li3600\jclisttab\tx3600\lin3600 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0
-\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li4320\jclisttab\tx4320\lin4320 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1
-\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li5040\jclisttab\tx5040\lin5040 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0
-{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li5760\jclisttab\tx5760\lin5760 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693
-\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li6480\jclisttab\tx6480\lin6480 }{\listname ;}\listid1424766927}{\list\listtemplateid2061311112\listsimple{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat0\levelspace0
-\levelindent0{\leveltext\'01\'b7;}{\levelnumbers;}\f3 \fi-431\li720\lin720 }{\listname ;}\listid1586128940}{\list\listtemplateid-973822032\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360
+{\listname ;}\listid1424766927}{\list\listtemplateid2061311112\listsimple{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat0\levelspace0\levelindent0{\leveltext\'01\'b7;}{\levelnumbers;}\f3 \fi-431\li720\lin720 }{\listname 
+;}\listid1586128940}{\list\listtemplateid-973822032\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 
+\fi-360\li720\jclisttab\tx720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li1440\jclisttab\tx1440\lin1440 }
+{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li2160\jclisttab\tx2160\lin2160 }{\listlevel\levelnfc23
+\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li2880\jclisttab\tx2880\lin2880 }{\listlevel\levelnfc23\levelnfcn23\leveljc0
+\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li3600\jclisttab\tx3600\lin3600 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li4320\jclisttab\tx4320\lin4320 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0
+{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li5040\jclisttab\tx5040\lin5040 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li5760\jclisttab\tx5760\lin5760 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693
+\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li6480\jclisttab\tx6480\lin6480 }{\listname ;}\listid1632905741}{\list\listtemplateid-1830271016\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360
 \levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li720\jclisttab\tx720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
 \leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li1440\jclisttab\tx1440\lin1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693
 \'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li2160\jclisttab\tx2160\lin2160 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers
@@ -80,7 +106,7 @@
 \jclisttab\tx3600\lin3600 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li4320\jclisttab\tx4320\lin4320 }
 {\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li5040\jclisttab\tx5040\lin5040 }{\listlevel\levelnfc23
 \levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li5760\jclisttab\tx5760\lin5760 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0
-\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li6480\jclisttab\tx6480\lin6480 }{\listname ;}\listid1632905741}{\list\listtemplateid-1830271016\listhybrid
+\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li6480\jclisttab\tx6480\lin6480 }{\listname ;}\listid1705248686}{\list\listtemplateid-1871427984\listhybrid
 {\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li720\jclisttab\tx720\lin720 }{\listlevel\levelnfc23
 \levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li1440\jclisttab\tx1440\lin1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0
 \levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li2160\jclisttab\tx2160\lin2160 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1
@@ -89,75 +115,88 @@
 \'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li4320\jclisttab\tx4320\lin4320 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers
 ;}\f3\fbias0 \fi-360\li5040\jclisttab\tx5040\lin5040 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li5760
 \jclisttab\tx5760\lin5760 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li6480\jclisttab\tx6480\lin6480 }
-{\listname ;}\listid1705248686}{\list\listtemplateid-1871427984\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}
-\f3\fbias0 \fi-360\li720\jclisttab\tx720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li1440
-\jclisttab\tx1440\lin1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li2160\jclisttab\tx2160\lin2160 }
-{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li2880\jclisttab\tx2880\lin2880 }{\listlevel\levelnfc23
-\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li3600\jclisttab\tx3600\lin3600 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0
-\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li4320\jclisttab\tx4320\lin4320 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1
-\levelspace360\levelindent0{\leveltext\leveltemplateid67698689\'01\u-3913 ?;}{\levelnumbers;}\f3\fbias0 \fi-360\li5040\jclisttab\tx5040\lin5040 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0
-{\leveltext\leveltemplateid67698691\'01o;}{\levelnumbers;}\f2\fbias0 \fi-360\li5760\jclisttab\tx5760\lin5760 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698693
-\'01\u-3929 ?;}{\levelnumbers;}\f10\fbias0 \fi-360\li6480\jclisttab\tx6480\lin6480 }{\listname ;}\listid2040616483}{\list\listtemplateid827788416{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0
-{\leveltext\'02\'00.;}{\levelnumbers\'01;}}{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'04\'00.\'01.;}{\levelnumbers\'01\'03;}}{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0
-\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}}{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}}{\listlevel
-\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}}{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext
-\'02\'00.;}{\levelnumbers\'01;}}{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}}{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0
-\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}}{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}}{\listname 
-;}\listid2107612293}}{\*\listoverridetable{\listoverride\listid2107612293\listoverridecount0\ls1}{\listoverride\listid2107612293\listoverridecount0\ls2}{\listoverride\listid2107612293\listoverridecount0\ls3}{\listoverride\listid192734754
-\listoverridecount0\ls4}{\listoverride\listid1586128940\listoverridecount0\ls5}{\listoverride\listid818376912\listoverridecount0\ls6}{\listoverride\listid1705248686\listoverridecount0\ls7}{\listoverride\listid1244681304\listoverridecount0\ls8}
-{\listoverride\listid1632905741\listoverridecount0\ls9}{\listoverride\listid635722587\listoverridecount0\ls10}{\listoverride\listid2040616483\listoverridecount0\ls11}{\listoverride\listid1424766927\listoverridecount0\ls12}{\listoverride\listid884172567
-\listoverridecount0\ls13}}{\*\pgptbl {\pgp\ipgp0\itap0\li0\ri0\sb0\sa0}}{\*\rsidtbl \rsid5730313\rsid10189455\rsid14225503\rsid16088027}{\*\generator Microsoft Word 10.0.4524;}{\info{\author Ivan R. Judson}{\operator Ivan R. Judson}
-{\creatim\yr2003\mo5\dy15\hr14\min37}{\revtim\yr2003\mo6\dy4\hr23\min15}{\version4}{\edmins3}{\nofpages8}{\nofwords1985}{\nofchars11321}{\*\company  }{\nofcharsws13280}{\vern16475}}\margl1440\margr1440 
-\widowctrl\ftnbj\aenddoc\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\hyphcaps0\horzdoc\dghspace120\dgvspace120\dghorigin1701\dgvorigin1984\dghshow0\dgvshow3\jcompress\viewkind1\viewscale100\nolnhtadjtbl\rsidroot14225503 \fet0{\*\template 
-C:\\software\\AccessGrid\\AccessGrid\\doc\\AG.dot}\sectd \sbknone\linex0\colsx360\sectdefaultcl\sftnbj {\footer \pard\plain \s39\qc \li0\ri0\widctlpar\tqc\tx4320\tqr\tx8640\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid14225503 
-\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\fs20\insrsid14225503 Copyright 2003 Argonne National Laboratory/University of Chicago.
+{\listname ;}\listid2040616483}{\list\listtemplateid827788416{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}\rtlch\fcs1 \af0 \ltrch\fcs0 }{\listlevel
+\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'04\'00.\'01.;}{\levelnumbers\'01\'03;}\rtlch\fcs1 \af0 \ltrch\fcs0 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}\rtlch\fcs1 \af0 \ltrch\fcs0 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}\rtlch\fcs1 
+\af0 \ltrch\fcs0 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}\rtlch\fcs1 \af0 \ltrch\fcs0 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0
+\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}\rtlch\fcs1 \af0 \ltrch\fcs0 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext
+\'02\'00.;}{\levelnumbers\'01;}\rtlch\fcs1 \af0 \ltrch\fcs0 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}\rtlch\fcs1 \af0 \ltrch\fcs0 }{\listlevel
+\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}\rtlch\fcs1 \af0 \ltrch\fcs0 }{\listname ;}\listid2107612293}{\list\listtemplateid1883434002{\listlevel\levelnfc0
+\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'02\'00.;}{\levelnumbers\'01;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-360\li-360\jclisttab\tx-360\lin-360 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0
+\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'04\'00.\'01.;}{\levelnumbers\'01\'03;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-432\li72\jclisttab\tx72\lin72 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace0\levelindent0{\leveltext\'06\'00.\'01.\'02.;}{\levelnumbers\'01\'03\'05;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-504\li504\jclisttab\tx720\lin504 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0
+\levelindent0{\leveltext\'08\'00.\'01.\'02.\'03.;}{\levelnumbers\'01\'03\'05\'07;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-648\li1008\jclisttab\tx1440\lin1008 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0
+\levelindent0{\leveltext\'0a\'00.\'01.\'02.\'03.\'04.;}{\levelnumbers\'01\'03\'05\'07\'09;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-792\li1512\jclisttab\tx1800\lin1512 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace0\levelindent0{\leveltext\'0c\'00.\'01.\'02.\'03.\'04.\'05.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-936\li2016\jclisttab\tx2520\lin2016 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0
+\levelstartat1\levelspace0\levelindent0{\leveltext\'0e\'00.\'01.\'02.\'03.\'04.\'05.\'06.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-1080\li2520\jclisttab\tx2880\lin2520 }{\listlevel\levelnfc0\levelnfcn0\leveljc0
+\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'10\'00.\'01.\'02.\'03.\'04.\'05.\'06.\'07.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d\'0f;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 \fi-1224\li3024\jclisttab\tx3600\lin3024 }
+{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\'12\'00.\'01.\'02.\'03.\'04.\'05.\'06.\'07.\'08.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d\'0f\'11;}\rtlch\fcs1 \af0 \ltrch\fcs0 \fbias0 
+\fi-1440\li3600\jclisttab\tx3960\lin3600 }{\listname ;}\listid2132819547}}{\*\listoverridetable{\listoverride\listid-120\listoverridecount0\ls1}{\listoverride\listid2107612293\listoverridecount0\ls2}{\listoverride\listid2107612293\listoverridecount0\ls3}
+{\listoverride\listid2107612293\listoverridecount0\ls4}{\listoverride\listid192734754\listoverridecount0\ls5}{\listoverride\listid1586128940\listoverridecount0\ls6}{\listoverride\listid818376912\listoverridecount0\ls7}{\listoverride\listid1705248686
+\listoverridecount0\ls8}{\listoverride\listid1244681304\listoverridecount0\ls9}{\listoverride\listid1632905741\listoverridecount0\ls10}{\listoverride\listid635722587\listoverridecount0\ls11}{\listoverride\listid2040616483\listoverridecount0\ls12}
+{\listoverride\listid1424766927\listoverridecount0\ls13}{\listoverride\listid884172567\listoverridecount0\ls14}{\listoverride\listid-120\listoverridecount0\ls15}{\listoverride\listid652297125\listoverridecount0\ls16}{\listoverride\listid2132819547
+\listoverridecount0\ls17}{\listoverride\listid1374307091\listoverridecount0\ls18}{\listoverride\listid73670441\listoverridecount0\ls19}}{\*\pgptbl {\pgp\ipgp0\itap0\li0\ri0\sb0\sa0}}{\*\rsidtbl \rsid616528\rsid1967412\rsid5730313\rsid9520417\rsid10189455
+\rsid10953014\rsid12668944\rsid14225503\rsid16088027}{\*\generator Microsoft Word 10.0.4524;}{\info{\author Ivan R. Judson}{\operator Ivan R. Judson}{\creatim\yr2003\mo5\dy15\hr14\min37}{\revtim\yr2003\mo10\dy10\hr14\min31}{\version9}{\edmins13}
+{\nofpages7}{\nofwords1987}{\nofchars11327}{\*\company  }{\nofcharsws13288}{\vern16475}}\margl1440\margr1440\ltrsect \widowctrl\ftnbj\aenddoc\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\linkstyles\hyphcaps0\horzdoc\dghspace120\dgvspace120
+\dghorigin1701\dgvorigin1984\dghshow0\dgvshow3\jcompress\viewkind1\viewscale66\viewzk2\nolnhtadjtbl\rsidroot14225503 \fet0{\*\template C:\\software\\AccessGrid\\AccessGrid\\doc\\HowTo.dot}\ltrpar \sectd \ltrsect
+\sbknone\linex0\colsx360\sectdefaultcl\sftnbj {\footer \ltrpar \pard\plain \ltrpar\s39\qc \li0\ri0\widctlpar\tqc\tx4320\tqr\tx8640\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid14225503 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 
+\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af1\afs20 \ltrch\fcs0 \f1\fs20\insrsid14225503 Copyright 2003 Argonne National Laboratory/University of Chicago.
 \par 
-\par }\pard\plain \qc \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid14225503 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\fs20\insrsid14225503 For more information email: ag-mcs@mcs.anl.gov.
-\par }\pard\plain \s39\ql \li0\ri0\widctlpar\tqc\tx4320\tqr\tx8640\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid14225503 
+\par }\pard\plain \ltrpar\qc \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid14225503 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af1\afs20 \ltrch\fcs0 
+\f1\fs20\insrsid14225503 For more information email: ag-mcs@mcs.anl.gov.
+\par }\pard\plain \ltrpar\s39\ql \li0\ri0\widctlpar\tqc\tx4320\tqr\tx8640\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503 
 \par }}{\*\pnseclvl1\pnucrm\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl2\pnucltr\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl3\pndec\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl4\pnlcltr\pnstart1\pnindent720\pnhang {\pntxta )}}
 {\*\pnseclvl5\pndec\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl6\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl7\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl8
-\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl9\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}\pard\plain 
-\s1\qc \li0\ri0\sb240\sa60\keepn\widctlpar\aspalpha\aspnum\faauto\outlinelevel0\adjustright\rin0\lin0\itap0\pararsid16088027 \b\f1\fs32\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 {\insrsid14225503\charrsid16088027 
-Access Grid RPM Package mini-HOWTO
-\par }\pard\plain \qc \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid16088027 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 Author: Ti Leggett <leggett@mcs.anl.gov>
+\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl9\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}\pard\plain \ltrpar
+\s1\qc \li0\ri0\sb240\sa60\keepn\widctlpar\aspalpha\aspnum\faauto\outlinelevel0\adjustright\rin0\lin0\itap0\pararsid16088027 \rtlch\fcs1 \ab\af1\afs32\alang1025 \ltrch\fcs0 \b\f1\fs32\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 {
+\rtlch\fcs1 \af1 \ltrch\fcs0 \insrsid14225503\charrsid16088027 Access Grid RPM Package mini-HOWTO
+\par }\pard\plain \ltrpar\s43\qc \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af1\afs24\alang1025 \ltrch\fcs0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af1 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 Author: Ti Leggett <leggett@mcs.anl.gov>
 \par Date: March 26, 2003
-\par {\listtext\pard\plain\s31 \b\f1\fs34\kerning32\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 1.\tab}}\pard\plain \s31\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin0\itap0 
-\f1\fs24\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 {\b\fs34\insrsid14225503\charrsid16088027 Preface
-\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
-This document will attempt to describe how to build RPMs of the Access Grid 2.0 software. It will briefly describe how rpm building works and the rpm spec file format and keywords. It will then describe in detail how we use rpm to build our packages.
-
-\par {\listtext\pard\plain\s31 \b\f1\fs34\kerning32\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 2.\tab}}\pard\plain \s31\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin0\itap0 
-\f1\fs24\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 {\b\fs34\insrsid14225503\charrsid16088027 Behind RPM
-\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
-What an rpm is is basically a tarball with some metadata about that the cont
-ents of the tarball. When you install the rpm it basically untars  the contents and add the metadata to a database. Examples of the metadata that are tracked are the files in the package, the name of the package, the person and machine who packaged it, wh
-at the package provides and what the package depends on to install.
+\par {\listtext\pard\plain\ltrpar \s2 \rtlch\fcs1 \ab\ai\af1\afs28 \ltrch\fcs0 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 1.\tab}}\pard\plain \ltrpar\s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx360\aspalpha\aspnum\faauto\ls19\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid1967412 \rtlch\fcs1 \ab\ai\af1\afs28\alang1025 \ltrch\fcs0 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af1 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 Preface
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 This document will attempt to describe how to build RPMs of the Access Grid 2.0 software. It will briefly describe how rpm building works and the rpm spec file format and keywords. 
+It will then describe in detail how we use rpm to build our packages.
+\par {\listtext\pard\plain\ltrpar \s2 \rtlch\fcs1 \ab\ai\af1\afs28 \ltrch\fcs0 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 2.\tab}}\pard\plain \ltrpar\s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx360\aspalpha\aspnum\faauto\ls19\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid616528 \rtlch\fcs1 \ab\ai\af1\afs28\alang1025 \ltrch\fcs0 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af1 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 Behind RPM
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 What an rpm is is basically a tarball with some metadata about that the contents of the tarball. When you install the rpm it basically untars  the contents and add the meta
+data to a database. Examples of the metadata that are tracked are the files in the package, the name of the package, the person and machine who packaged it, what the package provides and what the package depends on to install.
 \par 
 \par To build an rpm you need an rpm spec file. This file lays out the metadata, the packages and sub packages, files that go in those packages, and scripts that can be run at various points of the (un)installation process. 
-\par {\listtext\pard\plain\s18 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 2.1.\tab}}\pard\plain \s18\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls2\ilvl1\adjustright\rin0\lin0\itap0 
-\i\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\b\fs28\insrsid14225503\charrsid16088027 BuildRoot
-\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
-One of the pieces of metadata is the BuildRoot. Normally when you have a source package, you compile it using make or some other method and then install it using make. If you're root, this usually gets install
-ed in /usr or /usr/local. Part of the rpm build process is to compile your software and install it, but you don't want to install the files in /usr or /usr/local while you're building it (especially if you're still debugging your rpm build process). This 
-i
-s where BuildRoot comes. It defines a virtual root point where you can install your files temporarily while you're building the rpm. We use /var/tmp/AccessGrid-<version> (2.0beta as of 03/26/2003). If you were to go into that directory during the build pr
-ocess you'd see what you're install tree looks like. Say your package should have /usr/lib/foo.so, there would be a /var/tmp/AccessGrid-2.0beta/usr/lib/foo.so.
+\par {\listtext\pard\plain\ltrpar \s3 \rtlch\fcs1 \ab\af1\afs26 \ltrch\fcs0 \b\f1\fs26\insrsid14225503\charrsid12668944 \hich\af1\dbch\af0\loch\f1 2.1.\tab}}\pard\plain \ltrpar\s3\ql \fi-432\li432\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx1080\aspalpha\aspnum\faauto\ls19\ilvl1\outlinelevel2\adjustright\rin0\lin432\itap0\pararsid12668944 \rtlch\fcs1 \ab\af1\afs26\alang1025 \ltrch\fcs0 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af1 \ltrch\fcs0 
+\insrsid14225503\charrsid12668944 BuildRoot
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 One of the pieces of metadata is the BuildRoot. N
+ormally when you have a source package, you compile it using make or some other method and then install it using make. If you're root, this usually gets installed in /usr or /usr/local. Part of the rpm build process is to compile your software and install
+ 
+it, but you don't want to install the files in /usr or /usr/local while you're building it (especially if you're still debugging your rpm build process). This is where BuildRoot comes. It defines a virtual root point where you can install your files tempo
+r
+arily while you're building the rpm. We use /var/tmp/AccessGrid-<version> (2.0beta as of 03/26/2003). If you were to go into that directory during the build process you'd see what you're install tree looks like. Say your package should have /usr/lib/foo.s
+o, there would be a /var/tmp/AccessGrid-2.0beta/usr/lib/foo.so.
 \par 
-\par So if you where you would normally run ./configure --prefix=/usr/local to set your install prefix, now you would run ./configure --prefix=%\{buildroot\}
-/usr/local (more on this a bit later). RPM uses the BuildRoot implictly when you define the files that are to go in to the package. So where you see /usr/lib/foo.so in the %files section, rpm is really looking at %\{buildroot\}
+\par So if you where you would normally run ./configure --prefix=/usr/local to set your install prefix, now you would run ./configure --prefix=%\{buildroot\}/usr/local (more on this a bit later). RPM
+ uses the BuildRoot implictly when you define the files that are to go in to the package. So where you see /usr/lib/foo.so in the %files section, rpm is really looking at %\{buildroot\}
 /usr/lib/foo.so to find the file, but it will ultimately put the file in /usr/lib/foo.so when you install the rpm.
-\par {\listtext\pard\plain\s31 \b\f1\fs34\kerning32\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.\tab}}\pard\plain \s31\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin0\itap0 
-\f1\fs24\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 {\b\fs34\insrsid14225503\charrsid16088027 The Access Grid 2.0 Spec File
-\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
-If you haven't already done so, grab the spec file out of CVS. If you really want to 
-follow along grab version 1.8 as that's the version I'm using in this document. I'm going to break the spec file into 6 large sections: Preamble, Package Definitions, Building/Installing Source, File Definitions, Pre/Post Install Scripts, and ChangeLog.
-
-\par {\listtext\pard\plain\s18 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.1.\tab}}\pard\plain \s18\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls3\ilvl1\adjustright\rin0\lin0\itap0 
-\i\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\b\fs28\insrsid14225503\charrsid16088027 Preamble
-\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
-The Preamble is where we set up some common variables that are used repeatedly throughout the script and it looks like:
+\par {\listtext\pard\plain\ltrpar \s2 \rtlch\fcs1 \ab\ai\af1\afs28 \ltrch\fcs0 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.\tab}}\pard\plain \ltrpar\s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx360\aspalpha\aspnum\faauto\ls19\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid616528 \rtlch\fcs1 \ab\ai\af1\afs28\alang1025 \ltrch\fcs0 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af1 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 The Access Grid 2.0 Spec File
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 If you haven't already done so, grab the spec file out of CVS. If you really want to follow along grab version 1.8 as that's the version I'm using in this document. I'm going to bre
+ak the spec file into 6 large sections: Preamble, Package Definitions, Building/Installing Source, File Definitions, Pre/Post Install Scripts, and ChangeLog.
+\par {\listtext\pard\plain\ltrpar \s3 \rtlch\fcs1 \ab\af1\afs26 \ltrch\fcs0 \b\f1\fs26\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.1.\tab}}\pard\plain \ltrpar\s3\ql \fi-432\li432\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx1080\aspalpha\aspnum\faauto\ls19\ilvl1\outlinelevel2\adjustright\rin0\lin432\itap0\pararsid12668944 \rtlch\fcs1 \ab\af1\afs26\alang1025 \ltrch\fcs0 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af1 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 Preamble
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 The Preamble is where we set up some common variables that are used repeatedly throughout the script and it looks like:
 \par 
-\par %define name\tab \tab AccessGrid
+\par }\pard\plain \ltrpar\s19\ql \li720\ri720\widctlpar\aspalpha\aspnum\faauto\adjustright\rin720\lin720\itap0\pararsid10953014 \cbpat17 \rtlch\fcs1 \af2\afs24\alang1025 \ltrch\fcs0 \f2\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af2 
+\ltrch\fcs0 \insrsid14225503\charrsid16088027 %define name\tab \tab AccessGrid
 \par %define version\tab 2.0beta
 \par %define release\tab 2
 \par %define prefix\tab \tab /usr
@@ -167,16 +206,19 @@ The Preamble is where we set up some common variables that are used repeatedly t
 \par %define kdedir\tab \tab %\{sharedir\}/applnk
 \par %define aghome\tab \tab /var/lib/ag
 \par %define buildroot\tab /var/tmp/%\{name\}-%\{version\}
-\par 
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 
 \par Each variable starts with %define, then gives the variable name, then it's value. In order to use the variable, you simply type %\{<variable>\} as is done with %\{name\}. The variables that are important here are %\{version\}, %\{release\}, and %\{
 buildroot\}. The variable %\{buildroot\} is what we define our rpm BuildRoot to be.
-\par {\listtext\pard\plain\s18 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.2.\tab}}\pard\plain \s18\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls3\ilvl1\adjustright\rin0\lin0\itap0 
-\i\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\b\fs28\insrsid14225503\charrsid16088027 Package Definitions
-\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
-The Package Definitions are we define the metadata for a package or sub-package. Here you define the name, versions, URLs, etc. for a package. There are two types of definitions the "top level" package and sub-packages. The "top level" package looks like:
-
+\par {\listtext\pard\plain\ltrpar \s3 \rtlch\fcs1 \ab\af1\afs26 \ltrch\fcs0 \b\f1\fs26\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.2.\tab}}\pard\plain \ltrpar\s3\ql \fi-432\li432\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx1080\aspalpha\aspnum\faauto\ls19\ilvl1\outlinelevel2\adjustright\rin0\lin432\itap0\pararsid12668944 \rtlch\fcs1 \ab\af1\afs26\alang1025 \ltrch\fcs0 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af1 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 Package Definitions
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 The Package Definitions are we define the metadata for a package or sub-package. Here you define the name, versions, URLs, etc. for a package. There are tw
+o types of definitions the "top level" package and sub-packages. The "top level" package looks like:
 \par 
-\par Summary:\tab \tab The Access Grid Toolkit
+\par }\pard\plain \ltrpar\s19\ql \li720\ri720\widctlpar\aspalpha\aspnum\faauto\adjustright\rin720\lin720\itap0\pararsid10953014 \cbpat17 \rtlch\fcs1 \af2\afs24\alang1025 \ltrch\fcs0 \f2\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af2 
+\ltrch\fcs0 \insrsid14225503\charrsid16088027 Summary:\tab \tab The Access Grid Toolkit
 \par Name:\tab \tab %\{name\}
 \par Version:\tab \tab %\{version\}
 \par Release:\tab \tab %\{release\}
@@ -192,17 +234,19 @@ The Package Definitions are we define the metadata for a package or sub-package.
 \par Obsoletes:\tab AccessGrid-2.0alpha
 \par 
 \par %description
-\par The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access 
-Grid.
+\par The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node service
+s to extend the functionality of the Access Grid.
 \par 
 \par This module provides the core components to start participating in the Access Grid.
-\par 
-\par Here you can see the metadata for the "top level" package. Notice that there is a name, version, and release. These are used to make the actual rpm filename and it would look like        %\{name\}-%\{version\}-%\{release\}
-.i386.rpm and with the variable substituted from the Preamble you get AccessGrid-2.0beta-2.i386.rpm. 
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 
+\par Here you can see the metadata for the "top level" package. Notice that there is a name, version, and release. These are used to make the actual rpm filename and it would look like        %\{name\}-%\{version\}-%\{release\}.
+i386.rpm and with the variable substituted from the Preamble you get AccessGrid-2.0beta-2.i386.rpm. 
 \par 
 \par A sub-package looks like:
 \par 
-\par %package VenueClient
+\par }\pard\plain \ltrpar\s19\ql \li720\ri720\widctlpar\aspalpha\aspnum\faauto\adjustright\rin720\lin720\itap0\pararsid10953014 \cbpat17 \rtlch\fcs1 \af2\afs24\alang1025 \ltrch\fcs0 \f2\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af2 
+\ltrch\fcs0 \insrsid14225503\charrsid16088027 %package VenueClient
 \par Summary:\tab \tab The Access Grid Toolkit Venue Client
 \par Version:\tab \tab %\{version\}
 \par Release:\tab \tab %\{release\}
@@ -211,28 +255,29 @@ Grid.
 \par Obsoletes:\tab AccessGrid-VenueClient-2.0alpha
 \par 
 \par %description VenueClient
-\par The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based c
-ollaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
+\par The Access Grid Toolkit provides the necessary components fo
+r users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
 \par 
 \par This module provides the components needed to connect to an Access Grid Venue.
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 
+\par Notice that there is no Name, there is now a line with a %package directive, and the %description directive now has an "argument." The reason a sub-package has no Name is because it derives it from the "top level" package. A sub-p
+ackage file name has the form "top level name"-%\{package\}-%[version\}-%\{release\}.i386.rpm or in this case AccessGrid-VenueClient-2.0beta-2.i386.rpm.
+\par {\listtext\pard\plain\ltrpar \s3 \rtlch\fcs1 \ab\af1\afs26 \ltrch\fcs0 \b\f1\fs26\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.3.\tab}}\pard\plain \ltrpar\s3\ql \fi-432\li432\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx1080\aspalpha\aspnum\faauto\ls19\ilvl1\outlinelevel2\adjustright\rin0\lin432\itap0\pararsid12668944 \rtlch\fcs1 \ab\af1\afs26\alang1025 \ltrch\fcs0 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af1 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 Building/Installing Source
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 The Access Grid 2.0 Toolkit is based by and large on python. It only makes sense to make use of some of the built-in python tools like distutils. We use distutils to build the p
+ython source and install it into the BuildRoot. There are three rpm directives that are useful here:
+\par }{\rtlch\fcs1 \af0 \ltrch\fcs0 \insrsid12668944 
+\par }{\rtlch\fcs1 \af0 \ltrch\fcs0 \insrsid14225503\charrsid16088027 %prep - Untar the source tarball and prep the source tree
+\par %build - Build the source
+\par %install - Install the built files into the BuildRoot
+\par }{\rtlch\fcs1 \af0 \ltrch\fcs0 \insrsid12668944 
+\par }{\rtlch\fcs1 \af0 \ltrch\fcs0 \insrsid14225503\charrsid16088027 The Build/Install section looks like:
 \par 
-\par Notice that there i
-s no Name, there is now a line with a %package directive, and the %description directive now has an "argument." The reason a sub-package has no Name is because it derives it from the "top level" package. A sub-package file name has the form "top level nam
-e"-%\{package\}-%[version\}-%\{release\}.i386.rpm or in this case AccessGrid-VenueClient-2.0beta-2.i386.rpm.
-\par {\listtext\pard\plain\s18 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.3.\tab}}\pard\plain \s18\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls3\ilvl1\adjustright\rin0\lin0\itap0 
-\i\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\b\fs28\insrsid14225503\charrsid16088027 Building/Installing Source
-\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 The Access Grid 
-2.0 Toolkit is based by and large on python. It only makes sense to make use of some of the built-in python tools like distutils. We use distutils to build the python source and install it into the BuildRoot. There are three rpm directives that are useful
- here:
-\par {\pntext\pard\plain\f3\insrsid14225503\charrsid16088027 \loch\af3\dbch\af0\hich\f3 \'b7\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlblt\ilvl0\ls4\pnrnot0\pnf3\pnindent360\pnsp120\pnhang {\pntxtb \'b7}}
-\aspalpha\aspnum\faauto\ls4\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 %prep - Untar the source tarball and prep the source tree
-\par {\pntext\pard\plain\f3\insrsid14225503\charrsid16088027 \loch\af3\dbch\af0\hich\f3 \'b7\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlblt\ilvl0\ls4\pnrnot0\pnf3\pnindent360\pnsp120\pnhang {\pntxtb \'b7}}
-\aspalpha\aspnum\faauto\ls4\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 %build - Build the source
-\par {\pntext\pard\plain\f3\insrsid14225503\charrsid16088027 \loch\af3\dbch\af0\hich\f3 \'b7\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlblt\ilvl0\ls4\pnrnot0\pnf3\pnindent360\pnsp120\pnhang {\pntxtb \'b7}}
-\aspalpha\aspnum\faauto\ls4\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 %install - Install the built files into the BuildRoot
-\par }\pard \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 {\f1\insrsid14225503\charrsid16088027 The Build/Install section looks like:
-\par 
-\par %prep
+\par }\pard\plain \ltrpar\s19\ql \li720\ri720\widctlpar\aspalpha\aspnum\faauto\adjustright\rin720\lin720\itap0\pararsid10953014 \cbpat17 \rtlch\fcs1 \af2\afs24\alang1025 \ltrch\fcs0 \f2\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af2 
+\ltrch\fcs0 \insrsid14225503\charrsid16088027 %prep
 \par %setup
 \par [ -n "%\{buildroot\}" -a "%\{buildroot\}" != / ] && rm -rf %\{buildroot\}
 \par 
@@ -244,7 +289,8 @@ e"-%\{package\}-%[version\}-%\{release\}.i386.rpm or in this case AccessGrid-Ven
 \par mv %\{buildroot\}%\{prefix\}/etc %\{buildroot\}
 \par mv %\{buildroot\}%\{prefix\}/var %\{buildroot\}
 \par mkdir -p %\{buildroot\}/tmp/local_services
-\par 
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 
 \par Here you can see we untar the source tarball (using the %setup rpm macro), remove any previous BuildRoot, build the source using python, install using python, and then make some modifications to the installed tree to better fit our needs. We make these mo
 difications because of some minor limitations in distutils. Namely, in distutils you can either install a file relative to the prefix or to an absolute path. So by default, everything is installed into /usr. This is fine except we really do want some of t
 hese files under /, like etc/ and var/ so we just move them down to the BuildRoot level. At this point our BuildRoot looks like:
@@ -253,13 +299,15 @@ hese files under /, like etc/ and var/ so we just move them down to the BuildRoo
 \par etc/
 \par var/
 \par tmp/local_services
-\par {\listtext\pard\plain\s18 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.4.\tab}}\pard\plain \s18\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls3\ilvl1\adjustright\rin0\lin0\itap0 
-\i\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\b\fs28\insrsid14225503\charrsid16088027 File Definitions
-\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 The Fil
-e Definitions section is where you define which of those installed files go into which package. In the files list you can specify permissions of the file, ownership of the file, whether the file is a config file, as well as many other things. A File Defin
-ition list looks like:
+\par {\listtext\pard\plain\ltrpar \s3 \rtlch\fcs1 \ab\af1\afs26 \ltrch\fcs0 \b\f1\fs26\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.4.\tab}}\pard\plain \ltrpar\s3\ql \fi-432\li432\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx1080\aspalpha\aspnum\faauto\ls19\ilvl1\outlinelevel2\adjustright\rin0\lin432\itap0\pararsid12668944 \rtlch\fcs1 \ab\af1\afs26\alang1025 \ltrch\fcs0 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af1 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 File Definitions
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 The File Definitions section is where you define which of those installed files go into which package. In the files list you can specify permissions of the file, ownership of the file,
+ whether the file is a config file, as well as many other things. A File Definition list looks like:
 \par 
-\par %files
+\par }\pard\plain \ltrpar\s19\ql \li720\ri720\widctlpar\aspalpha\aspnum\faauto\adjustright\rin720\lin720\itap0\pararsid10953014 \cbpat17 \rtlch\fcs1 \af2\afs24\alang1025 \ltrch\fcs0 \f2\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af2 
+\ltrch\fcs0 \insrsid14225503\charrsid16088027 %files
 \par %doc %\{sharedir\}/doc/
 \par %defattr(-,root,root)
 \par %\{prefix\}/lib
@@ -272,33 +320,34 @@ ition list looks like:
 \par %dir /tmp/local_services
 \par %defattr(0644,root,root)
 \par %config %\{sysconfdir\}/AGServiceManager.cfg
-\par 
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 
 \par Here we start the definitions list with the %files directive. This is the Files Definitions list for the "top level" package. For sub-packages it would look like:
 \par 
-\par %files VenueClient
-\par 
-\par Each line is either a filename or setting the attributes for files below. I'll explain key points below:
-\par {\pntext\pard\plain\f3\insrsid14225503\charrsid16088027 \loch\af3\dbch\af0\hich\f3 \'b7\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlblt\ilvl0\ls5\pnrnot0\pnf3\pnindent360\pnsp120\pnhang {\pntxtb \'b7}}
-\aspalpha\aspnum\faauto\ls5\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 %doc - This specifies to RPM that the file following the directive is a documentation file
-\par {\pntext\pard\plain\f3\insrsid14225503\charrsid16088027 \loch\af3\dbch\af0\hich\f3 \'b7\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlblt\ilvl0\ls5\pnrnot0\pnf3\pnindent360\pnsp120\pnhang {\pntxtb \'b7}}
-\aspalpha\aspnum\faauto\ls5\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 %defattr - This specifies attributes for fil
-es below it. It's of the form (<perms>,<owner>,<group>). A dash (-) in any of those fields means use value of the installed file.
-\par {\pntext\pard\plain\f3\insrsid14225503\charrsid16088027 \loch\af3\dbch\af0\hich\f3 \'b7\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlblt\ilvl0\ls5\pnrnot0\pnf3\pnindent360\pnsp120\pnhang {\pntxtb \'b7}}
-\aspalpha\aspnum\faauto\ls5\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 %dir - This directive specifies to only package the directory and no files, if any, underneath it
-\par {\pntext\pard\plain\f3\insrsid14225503\charrsid16088027 \loch\af3\dbch\af0\hich\f3 \'b7\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlblt\ilvl0\ls5\pnrnot0\pnf3\pnindent360\pnsp120\pnhang {\pntxtb \'b7}}
-\aspalpha\aspnum\faauto\ls5\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 %config - This specifies to RPM that the file following is a configuration file
-\par {\listtext\pard\plain\s18 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.5.\tab}}\pard\plain \s18\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls3\ilvl1\adjustright\rin0\lin0\itap0 
-\i\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\b\fs28\insrsid14225503\charrsid16088027 Pre/Postinstall Scripts
-\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
-You can specify that commands be run prior to installing, after installing, prior to uninstalling, and after uninstalling a rpm package using the rpm directives %p
-re, %post, %preun, and %postun respectively. By default these are run from a bash shell and so bash scripting can be used. A simple example of a script is:
+\par }\pard\plain \ltrpar\s19\ql \li720\ri720\widctlpar\aspalpha\aspnum\faauto\adjustright\rin720\lin720\itap0\pararsid10953014 \cbpat17 \rtlch\fcs1 \af2\afs24\alang1025 \ltrch\fcs0 \f2\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af2 
+\ltrch\fcs0 \insrsid14225503\charrsid16088027 %files VenueClient
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 
+\par Each line is either a filename or setting the attributes for files below. I'll explain key points below:}{\rtlch\fcs1 \af0 \ltrch\fcs0 \insrsid14225503 
+\par }{\rtlch\fcs1 \af0 \ltrch\fcs0 \insrsid12668944\charrsid16088027 
+\par }{\rtlch\fcs1 \af0 \ltrch\fcs0 \insrsid14225503\charrsid16088027 %doc - This specifies to RPM that the file following the directive is a documentation file
+\par %defattr - This specifies attributes for files below it. It's of the form (<perms>,<owner>,<group>). A dash (-) in any of those fields means use value of the installed file.
+\par %dir - This directive specifies to only package the directory and no files, if any, underneath it
+\par %config - This specifies to RPM that the file following is a configuration file
+\par {\listtext\pard\plain\ltrpar \s3 \rtlch\fcs1 \ab\af1\afs26 \ltrch\fcs0 \b\f1\fs26\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.5.\tab}}\pard\plain \ltrpar\s3\ql \fi-432\li432\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx1080\aspalpha\aspnum\faauto\ls19\ilvl1\outlinelevel2\adjustright\rin0\lin432\itap0\pararsid12668944 \rtlch\fcs1 \ab\af1\afs26\alang1025 \ltrch\fcs0 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af1 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 Pre/Postinstall Scripts
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 You can specify that commands be run prior to installing, after installing, prior to uninstalling, and after uninstalling a rpm package using the rpm directives %pre, %post, %preun, and %postun respectively. By default
+ these are run from a bash shell and so bash scripting can be used. A simple example of a script is:
 \par 
 \par %post VenueClient
 \par /sbin/chkconfig --add agns
 \par 
 \par Whereas a more complicated script is:
 \par 
-\par %post
+\par }\pard\plain \ltrpar\s19\ql \li720\ri720\widctlpar\aspalpha\aspnum\faauto\adjustright\rin720\lin720\itap0\pararsid10953014 \cbpat17 \rtlch\fcs1 \af2\afs24\alang1025 \ltrch\fcs0 \f2\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af2 
+\ltrch\fcs0 \insrsid14225503\charrsid16088027 %post
 \par cat <<EOF > /tmp/AccessGrid-Postinstall.py
 \par #!/usr/bin/python2.2
 \par import AccessGrid
@@ -326,16 +375,19 @@ re, %post, %preun, and %postun respectively. By default these are run from a bas
 \par /tmp/AccessGrid-Postinstall.py
 \par rm -f /tmp/AccessGrid-Postinstall.py
 \par /sbin/chkconfig --add agsm
-\par 
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 
 \par The first script just calls the chkconfig command 
 to remove the agns service prior to uninstalling the AccessGrid-VenueClient rpm. The second script creates a file that is actually a python script that compiles all the modules in the AccessGrid rpm, runs it, then deletes it as well as running chkconfig t
 o add the agsm service.
-\par {\listtext\pard\plain\s18 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.6.\tab}}\pard\plain \s18\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls3\ilvl1\adjustright\rin0\lin0\itap0 
-\i\f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\b\fs28\insrsid14225503\charrsid16088027 ChangeLog
-\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 
-The ChangeLog is where you keep a history of the changes to the rpm spec file. It must be in chronological order with most recent events at the top. It looks like:
+\par {\listtext\pard\plain\ltrpar \s3 \rtlch\fcs1 \ab\af1\afs26 \ltrch\fcs0 \b\f1\fs26\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.6.\tab}}\pard\plain \ltrpar\s3\ql \fi-432\li432\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx1080\aspalpha\aspnum\faauto\ls19\ilvl1\outlinelevel2\adjustright\rin0\lin432\itap0\pararsid12668944 \rtlch\fcs1 \ab\af1\afs26\alang1025 \ltrch\fcs0 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af1 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 ChangeLog
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 The ChangeLog is where you keep a history of the changes to the rpm spec file. It must be in chronological order with most recent events at the top. It looks like:
 \par 
-\par %changelog
+\par }\pard\plain \ltrpar\s19\ql \li720\ri720\widctlpar\aspalpha\aspnum\faauto\adjustright\rin720\lin720\itap0\pararsid10953014 \cbpat17 \rtlch\fcs1 \af2\afs24\alang1025 \ltrch\fcs0 \f2\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af2 
+\ltrch\fcs0 \insrsid14225503\charrsid16088027 %changelog
 \par * Wed Mar 26 2003 Ti Leggett <leggett@mcs.anl.gov>
 \par - Added a plethora of comments
 \par - Fixed a few permissions for some install files
@@ -363,24 +415,21 @@ The ChangeLog is where you keep a history of the changes to the rpm spec file. I
 \par 
 \par * Tue Feb 05 2003 Ti Leggett <leggett@mcs.anl.gov>
 \par - This file was created
-\par {\listtext\pard\plain\s31 \b\f1\fs34\kerning32\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 4.\tab}}\pard\plain \s31\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin0\itap0 
-\f1\fs24\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 {\b\fs34\insrsid14225503\charrsid16088027 Packaging the Access Grid Toolkit
-\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 Once you have an understandin
-g of the above you need to actually make the rpms. The process of doing this is as follows:
-\par {\pntext\pard\plain\f1\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 1.\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlbody\ilvl0\ls6\pnrnot0\pndec\pnstart1\pnindent360\pnsp120\pnhang {\pntxta .}}
-\aspalpha\aspnum\faauto\ls6\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 Checkout the Access Grid Toolkit from CVS
-\par {\pntext\pard\plain\f1\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 2.\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlbody\ilvl0\ls6\pnrnot0\pndec\pnstart1\pnindent360\pnsp120\pnhang {\pntxta .}}
-\aspalpha\aspnum\faauto\ls6\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 Make the source tarball
-\par {\pntext\pard\plain\f1\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 3.\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlbody\ilvl0\ls6\pnrnot0\pndec\pnstart1\pnindent360\pnsp120\pnhang {\pntxta .}}
-\aspalpha\aspnum\faauto\ls6\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 Become root
-\par {\pntext\pard\plain\f1\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 4.\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlbody\ilvl0\ls6\pnrnot0\pndec\pnstart1\pnindent360\pnsp120\pnhang {\pntxta .}}
-\aspalpha\aspnum\faauto\ls6\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 Copy the spec file and source tarball to the RPM build tree
-\par {\pntext\pard\plain\f1\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 5.\tab}}\pard \qj \fi-431\li720\ri0\widctlpar{\*\pn \pnlvlbody\ilvl0\ls6\pnrnot0\pndec\pnstart1\pnindent360\pnsp120\pnhang {\pntxta .}}
-\aspalpha\aspnum\faauto\ls6\adjustright\rin0\lin720\itap0 {\f1\insrsid14225503\charrsid16088027 Build the RPM
-\par }\pard \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 {\f1\insrsid14225503\charrsid16088027 
+\par {\listtext\pard\plain\ltrpar \s2 \rtlch\fcs1 \ab\ai\af1\afs28 \ltrch\fcs0 \b\i\f1\fs28\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 4.\tab}}\pard\plain \ltrpar\s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx360\aspalpha\aspnum\faauto\ls19\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid616528 \rtlch\fcs1 \ab\ai\af1\afs28\alang1025 \ltrch\fcs0 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af1 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 Packaging the Access Grid Toolkit
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 Once you have an understanding of the above you need to actually make the rpms. The process of doing this is as follows:
+\par Checkout the Access Grid Toolkit from CVS
+\par Make the source tarball
+\par Become root
+\par Copy the spec file and source tarball to the RPM build tree
+\par Build the RPM
+\par 
 \par A real world example might look something like this:
 \par 
-\par cd /sandbox/AGCVS/HEAD
+\par }\pard\plain \ltrpar\s19\ql \li720\ri720\widctlpar\aspalpha\aspnum\faauto\adjustright\rin720\lin720\itap0\pararsid10953014 \cbpat17 \rtlch\fcs1 \af2\afs24\alang1025 \ltrch\fcs0 \f2\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af2 
+\ltrch\fcs0 \insrsid14225503\charrsid16088027 cd /sandbox/AGCVS/HEAD
 \par rm -rf AccessGrid
 \par cvs co AccessGrid
 \par mv AccessGrid AccessGrid-2.0beta
@@ -391,26 +440,32 @@ g of the above you need to actually make the rpms. The process of doing this is 
 \par cp /sandbox/AGCVS/HEAD/AccessGrid/packaging/redhat/AccessGrid.spec SPECS/.
 \par cd SPECS
 \par rpm -ba AccessGrid.spec
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 
+\par Here's what this does. First you need to change to a directory where you will checkout the package and delete any previous cvs module currently there. Then you need to check out the AccessGrid module. Then you make the source tarball. The name of the 
+tarball comes from the spec file from the "top level" package description where the line looks like:
 \par 
-\par Here's what this does. First you need to change to a directory where you will checkout t
-he package and delete any previous cvs module currently there. Then you need to check out the AccessGrid module. Then you make the source tarball. The name of the tarball comes from the spec file from the "top level" package description where the line loo
-ks like:
-\par 
-\par Source:\tab \tab %\{name\}-%\{version\}.tar.gz
-\par 
+\par }\pard\plain \ltrpar\s19\ql \li720\ri720\widctlpar\aspalpha\aspnum\faauto\adjustright\rin720\lin720\itap0\pararsid10953014 \cbpat17 \rtlch\fcs1 \af2\afs24\alang1025 \ltrch\fcs0 \f2\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af2 
+\ltrch\fcs0 \insrsid14225503\charrsid16088027 Source:\tab \tab %\{name\}-%\{version\}.tar.gz
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 
 \par Then you must become root and change to the RPM build tree which by default is /usr/src/redhat and copy the source tarball and spec file to the proper locations. Then you build the rpm from the spec file. If all goes well you should see lines like:
 \par 
-\par Wrote: /usr/src/redhat/SRPMS/AccessGrid-2.0beta-2.src.rpm
+\par }\pard\plain \ltrpar\s19\ql \li720\ri720\widctlpar\aspalpha\aspnum\faauto\adjustright\rin720\lin720\itap0\pararsid10953014 \cbpat17 \rtlch\fcs1 \af2\afs24\alang1025 \ltrch\fcs0 \f2\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af2 
+\ltrch\fcs0 \insrsid14225503\charrsid16088027 Wrote: /usr/src/redhat/SRPMS/AccessGrid-2.0beta-2.src.rpm
 \par Wrote: /usr/src/redhat/RPMS/i386/AccessGrid-2.0beta-2.i386.rpm
 \par Wrote: /usr/src/redhat/RPMS/i386/AccessGrid-VenueClient-2.0beta-2.i386.rpm
 \par Wrote: /usr/src/redhat/RPMS/i386/AccessGrid-VenueServer-2.0beta-2.i386.rpm
 \par Wrote: /usr/src/redhat/RPMS/i386/AccessGrid-VideoProducer-2.0beta-2.i386.rpm
 \par Wrote: /usr/src/redhat/RPMS/i386/AccessGrid-VideoConsumer-2.0beta-2.i386.rpm
 \par Wrote: /usr/src/redhat/RPMS/i386/AccessGrid-AudioService-2.0beta-2.i386.rpm
-\par 
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 
 \par Which tells you where it actually wrote the rpms.
-\par {\listtext\pard\plain\s31 \b\f1\fs34\kerning32\insrsid14225503\charrsid16088027 \hich\af1\dbch\af0\loch\f1 5.\tab}}\pard\plain \s31\qj \li0\ri0\sb440\sa60\keepn\widctlpar\tx431\aspalpha\aspnum\faauto\ls1\adjustright\rin0\lin0\itap0 
-\f1\fs24\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 {\b\fs34\insrsid14225503\charrsid16088027 Links
-\par }\pard\plain \qj \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\f1\insrsid14225503\charrsid16088027 Maximum RPM Documentation :: http://www.rpm.org/max-rpm/
+\par {\listtext\pard\plain\ltrpar \s2 \rtlch\fcs1 \ab\ai\af1\afs28 \ltrch\fcs0 \b\i\f1\fs28\insrsid616528 \hich\af1\dbch\af0\loch\f1 5.\tab}}\pard\plain \ltrpar\s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx360\aspalpha\aspnum\faauto\ls19\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid616528 \rtlch\fcs1 \ab\ai\af1\afs28\alang1025 \ltrch\fcs0 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af1 \ltrch\fcs0 
+\insrsid616528 References}{\rtlch\fcs1 \af1 \ltrch\fcs0 \insrsid616528\charrsid616528 
+\par }\pard\plain \ltrpar\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid12668944 \rtlch\fcs1 \af0\afs24\alang1025 \ltrch\fcs0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\rtlch\fcs1 \af0 \ltrch\fcs0 
+\insrsid14225503\charrsid16088027 Maximum RPM Documentation :: http://www.rpm.org/max-rpm/
 \par Python Disutils Documentation :: http://www.python.org/dev/doc/devel/dist/dist.html
 \par }}
