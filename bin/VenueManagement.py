@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.28 2003-02-20 19:55:09 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.29 2003-02-20 20:54:04 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -926,18 +926,19 @@ class VenueParamFrame(wxDialog):
         if(index > -1):
             self.exits.Delete(index)
 
+    def ModifyStaticAddressing(self):
+        self.parent.DisableStaticStreams()
+        self.SetStaticAddressing()
+        
     def SetStaticAddressing(self):
-        if self.staticAddressingPanel.staticAddressingButton.GetValue() == 0:
-            self.parent.DisableStaticStreams()
-            
-        else:
+        if(self.staticAddressingPanel.staticAddressingButton.GetValue()==1):
             self.parent.SetStaticVideo(self.staticAddressingPanel.GetVideoAddress(), \
-                                          self.staticAddressingPanel.GetVideoPort(), \
-                                          self.staticAddressingPanel.GetVideoTtl())
+                                       self.staticAddressingPanel.GetVideoPort(), \
+                                       self.staticAddressingPanel.GetVideoTtl())
             
             self.parent.SetStaticAudio(self.staticAddressingPanel.GetAudioAddress(), \
-                                          self.staticAddressingPanel.GetAudioPort(), \
-                                          self.staticAddressingPanel.GetAudioTtl())
+                                       self.staticAddressingPanel.GetAudioPort(), \
+                                       self.staticAddressingPanel.GetAudioTtl())
 
 
     def Ok(self):
@@ -1216,7 +1217,7 @@ class ModifyVenueFrame(VenueParamFrame):
             if(self.staticAddressingPanel.Validate()):
                 self.Ok()
                 self.parent.ModifyCurrentVenue(self.venue, self.exitsList)
-                self.SetStaticAddressing()
+                self.ModifyStaticAddressing()
                 self.Hide()
 
     def __setCurrentVenueInfo(self):
