@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.32 2004-04-29 15:54:38 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.33 2004-04-29 16:46:47 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.32 2004-04-29 15:54:38 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.33 2004-04-29 16:46:47 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -227,6 +227,10 @@ class AGServiceI(SOAPInterface):
     def __init__(self,impl):
         SOAPInterface.__init__(self,impl)
     
+    def _authorize(self, *args, **kw):
+        # Authorize everybody.
+        return 1
+
     def Start(self):
         self.impl.Start()
 
