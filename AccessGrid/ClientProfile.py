@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.8 2003-01-27 22:32:10 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.9 2003-01-27 22:43:01 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ class ClientProfile:
     """
 
     defaultProfile = {
-        'VenueClient.profileType' : ClientProfile.USER,
+        'VenueClient.profileType' : "user",
         'VenueClient.name' : 'John Doe',
         'VenueClient.email' : 'john@mail.com',
         'VenueClient.phoneNumber' : '+1 888 959 5555',
