@@ -5,13 +5,13 @@
 # Author:      Robert Olson, Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: NetworkAddressAllocator.py,v 1.2 2004-03-30 16:57:24 turam Exp $
+# RCS-ID:      $Id: NetworkAddressAllocator.py,v 1.3 2004-03-31 22:13:26 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetworkAddressAllocator.py,v 1.2 2004-03-30 16:57:24 turam Exp $"
+__revision__ = "$Id: NetworkAddressAllocator.py,v 1.3 2004-03-31 22:13:26 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -91,6 +91,7 @@ class NetworkAddressAllocator:
                 continue
             
         self.allocatedPorts.append(port)
+        return port
     
         
     def RecyclePort(self, port):
