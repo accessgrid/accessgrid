@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI2.py,v 1.5 2004-07-19 18:34:20 binns Exp $
+# RCS-ID:      $Id: VenueClientUI2.py,v 1.6 2004-07-20 14:47:54 binns Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI2.py,v 1.5 2004-07-19 18:34:20 binns Exp $"
+__revision__ = "$Id: VenueClientUI2.py,v 1.6 2004-07-20 14:47:54 binns Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -4123,13 +4123,13 @@ class ExitPropertiesDialog(wxDialog):
         self.Centre()
         self.title = title
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
-        self.nameCtrl = wxTextCtrl(self, -1, profile.GetName(), size = (500,20))
+        self.nameCtrl = wxTextCtrl(self, -1, profile.GetName(), size = (500,-1))
         self.descriptionText = wxStaticText(self, -1, "Description:", 
                                             style=wxALIGN_LEFT | wxTE_MULTILINE )
         self.descriptionCtrl = wxTextCtrl(self, -1, profile.GetDescription(), 
-                                          size = (500,20))
+                                          size = (500,-1))
         self.urlText = wxStaticText(self, -1, "URL:", style=wxALIGN_LEFT)
-        self.urlCtrl = wxTextCtrl(self, -1, profile.GetURI(),  size = (500,20))
+        self.urlCtrl = wxTextCtrl(self, -1, profile.GetURI(),  size = (500,-1))
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.__SetProperties()
         self.__Layout()
@@ -4172,7 +4172,7 @@ class DataPropertiesDialog(wxDialog):
         wxDialog.__init__(self, parent, id, title)
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
-        self.nameCtrl = wxTextCtrl(self, -1, "", size = (500,20))
+        self.nameCtrl = wxTextCtrl(self, -1, "", size = (500,-1))
         self.ownerText = wxStaticText(self, -1, "Owner:", 
                                       style=wxALIGN_LEFT | wxTE_MULTILINE )
         self.ownerCtrl = wxTextCtrl(self, -1, "")
@@ -4268,7 +4268,7 @@ class ServicePropertiesDialog(wxDialog):
         wxDialog.__init__(self, parent, id, title)
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
-        self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,20))
+        self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,-1))
         self.uriText = wxStaticText(self, -1, "Location URL:",
                                     style=wxALIGN_LEFT | wxTE_MULTILINE )
         self.uriCtrl = wxTextCtrl(self, -1, "")
@@ -4359,7 +4359,7 @@ class ApplicationPropertiesDialog(wxDialog):
         wxDialog.__init__(self, parent, id, title)
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
-        self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,20))
+        self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,-1))
         self.uriText = wxStaticText(self, -1, "Location URL:",
                                     style=wxALIGN_LEFT | wxTE_MULTILINE )
         self.uriCtrl = wxTextCtrl(self, -1, "")
