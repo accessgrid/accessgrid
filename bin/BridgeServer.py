@@ -16,7 +16,7 @@ from AccessGrid.Events import Event, ConnectEvent, HeartbeatEvent
 from AccessGrid.EventClient import EventClient, EventClientWriteDataException
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.NetworkLocation import UnicastNetworkLocation, ProviderProfile
-from AccessGrid.ProcessManagerUnix import ProcessManagerUnix as ProcessManager
+from AccessGrid.ProcessManager import ProcessManager
 from AccessGrid.Platform import GetUserConfigDir
 
 
@@ -93,7 +93,7 @@ class BridgeFactory:
 
         retBridge = None
 
-        # - Check for an existing bridge with the given multicast addr/port
+ # - Check for an existing bridge with the given multicast addr/port
         for bridge,refcount in self.bridges.values():
             if bridge.maddr == maddr and bridge.mport == mport:
                 self.log.info("- using existing bridge")
