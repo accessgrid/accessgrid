@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.28 2003-10-14 05:37:51 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.29 2003-10-21 03:30:39 judson Exp $
 ;
 
 #define SourceDir "C:\Software\AccessGrid\AccessGrid"
@@ -16,25 +16,21 @@ EnableISX=true
 [_ISToolPreCompile]
 Name: mkdir; Parameters: C:\Software\AccessGrid\AccessGrid\dist\bin
 Name: mkdir; Parameters: C:\Software\AccessGrid\AccessGrid\dist\services
+Name: mkdir; Parameters: C:\Software\AccessGrid\AccessGrid\dist\sharedapps
 Name: python; Parameters: C:\Software\AccessGrid\AccessGrid\packaging\makeServicePackages.py C:\Software\AccessGrid\AccessGrid\services\node C:\Software\AccessGrid\AccessGrid\dist\services; Flags: abortonerror
+Name: python; Parameters: C:\Software\AccessGrid\AccessGrid\packaging\makeAppPackages.py C:\Software\AccessGrid\AccessGrid\sharedapps C:\Software\AccessGrid\AccessGrid\dist\sharedapps; Flags: abortonerror
 Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\Software\AccessGrid\ag-vic C:\Software\AccessGrid\AccessGrid\dist\bin; Flags: abortonerror
 Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: C:\Software\AccessGrid\ag-rat C:\Software\AccessGrid\AccessGrid\dist\bin; Flags: abortonerror
 Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildPutty.cmd; Parameters: C:\software\AccessGrid\putty C:\software\AccessGrid\AccessGrid\dist; Flags: abortonerror
-;Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildSendSettingChange.cmd; Parameters: C:\software\AccessGrid C:\software\AccessGrid\AccessGrid\dist; Flags: abortonerror
 Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildPythonModules.cmd; Parameters: C:\Software\AccessGrid C:\Software\AccessGrid\AccessGrid\dist; Flags: abortonerror
 
 ; This section sets the standard variables needed for the installer
 
 [Setup]
-; Name with version information
 AppVerName={#AppVersionLong}
-; Version information
 AppVersion={#AppVersionShort}
-; What to build the installer from
 SourceDir={#SourceDir}
-; Where to put the built installer
 OutputDir={#OutputDir}
-; Name with version information
 OutputBaseFilename={#AppNameShort}-{#AppVersionLong}
 
 AppName={#AppName}
@@ -48,7 +44,7 @@ Compression=zip/9
 MinVersion=0,5.0.2195
 LicenseFile=COPYING.txt
 DisableDirPage=false
-DefaultGroupName={#AppName}
+DefaultGroupName={#AppName} 2
 DefaultDirName={pf}\{#AppName}
 UsePreviousAppDir=false
 UserInfoPage=false
@@ -110,24 +106,20 @@ Source: bin\NodeSetupWizard.py; DestDir: {app}\bin; DestName: NodeSetupWizard.py
 Source: bin\SetupVideo.py; DestDir: {app}\bin; DestName: SetupVideo.pyw
 Source: bin\VenueManagement.py; DestDir: {app}\bin; DestName: VenueManagement.py
 Source: bin\AGNodeService.py; DestDir: {app}\bin
-Source: bin\RegisterApp.py; DestDir: {app}\bin
-Source: dist\services\AudioService.zip; DestDir: {commonappdata}\AccessGrid\services; DestName: AudioService.zip
-Source: dist\services\VideoConsumerService.zip; DestDir: {commonappdata}\AccessGrid\services; DestName: VideoConsumerService.zip
-Source: dist\services\VideoProducerService.zip; DestDir: {commonappdata}\AccessGrid\services; DestName: VideoProducerService.zip
+Source: bin\agpm.py; DestDir: {app}\bin
+Source: dist\services\*.zip; DestDir: {commonappdata}\AccessGrid\services
+Source: dist\sharedapps\*.shared_app_pkg; DestDir: {commonappdata}\AccessGrid\sharedapps
 Source: dist\bin\rat.exe; DestDir: {app}\bin; DestName: rat.exe
 Source: dist\bin\ratui.exe; DestDir: {app}\bin; DestName: ratui.exe
 Source: dist\bin\ratmedia.exe; DestDir: {app}\bin; DestName: ratmedia.exe
 Source: dist\bin\vic.exe; DestDir: {app}\bin; DestName: vic.exe
 Source: dist\bin\rat-kill.exe; DestDir: {app}\bin; DestName: rat-kill.exe
 Source: dist\bin\pscp.exe; DestDir: {app}\bin; DestName: pscp.exe
-;Source: dist\bin\send_settingchange.exe; DestDir: {app}\bin; DestName: send_settingchange.exe
 Source: packaging\windows\agicons.exe; DestDir: {app}\install
 
 ; begin VC system files
-; (Note: Scroll to the right to see the full lines!)
 Source: packaging\windows\msvcr70.dll; DestDir: {win}\system32; Flags: restartreplace uninsneveruninstall onlyifdoesntexist
 ; end VC system files
-
 
 [Icons]
 Name: {group}\View README; Filename: {app}\README.txt; Flags: createonlyiffileexists; Comment: Read the ReadMe.
@@ -142,7 +134,7 @@ Name: {group}\Request a Certificate; Filename: {reg:HKLM\Software\Python\PythonC
 Name: {group}\Venue Server\Venue Server (Debug); IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\python.exe; Parameters: """{app}\bin\VenueServer.py"" --debug"; WorkingDir: {userappdata}\AccessGrid; Comment: Run the venue server software in debugging mode.
 Name: {group}\Venue Server\Manage Venue Servers; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\VenueManagement.py"""; WorkingDir: {userappdata}\AccessGrid; Comment: Run the venue management tool.
 
-Name: {group}\Documentation\Venue Client Manual; Filename: {app}\doc\VenueClient\VenueClientManualHTML.htm; Comment: Read the Venue Client Manual.
+Name: {group}\Documentation\Venue Client Manual; Filename: {app}\doc\VenueClientManual\VenueClientManualHTML.htm; Comment: Read the Venue Client Manual.
 Name: {group}\Documentation\Venue Management Client Manual; Filename: {app}\doc\VenueManagement\VenueManagementManualHTML.htm; Comment: Read the Venue Client Manual.
 Name: {group}\Documentation\View License; IconFilename: {app}\install\agicons.exe; Filename: {app}\COPYING.txt; Comment: Read the software license the AGTk is distributed under.
 Name: {group}\Documentation\Developers Documentation; Filename: {app}\doc\Developer\index.html; Comment: Happy Doc generated documentation for developers.
@@ -163,13 +155,6 @@ Root: HKLM; Subkey: SYSTEM\CurrentControlSet\Control\Session Manager\Environment
 Root: HKLM; Subkey: SYSTEM\CurrentControlSet\Control\Session Manager\Environment; ValueType: expandsz; ValueName: GLOBUS_HOSTNAME
 Root: HKLM; Subkey: SOFTWARE\Globus; ValueType: expandsz; ValueName: GLOBUS_LOCATION; ValueData: {commonappdata}\AccessGrid; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\Globus\GSI; ValueType: expandsz; ValueName: x509_cert_dir; ValueData: {commonappdata}\AccessGrid\certificates; Flags: uninsdeletekey
-Root: HKCU; Subkey: Software\Globus; Flags: uninsdeletekey; ValueType: none
-Root: HKCU; Subkey: Software\Globus\GSI; ValueType: expandsz; ValueName: x509_user_proxy; ValueData: {%TEMP|{win}\temp}\proxy; Flags: uninsdeletekey
-Root: HKCU; Subkey: Software\Globus\GSI; ValueType: expandsz; ValueName: x509_user_key; ValueData: {userappdata}\globus\userkey.pem; Flags: uninsdeletekey
-Root: HKCU; Subkey: Software\Globus\GSI; ValueType: expandsz; ValueName: x509_user_cert; ValueData: {userappdata}\globus\usercert.pem; Flags: uninsdeletekey
-Root: HKCU; Subkey: Software\Globus\GSI; ValueType: expandsz; ValueName: x509_cert_dir; ValueData: {commonappdata}\AccessGrid\certificates; Flags: uninsdeletekey
-Root: HKCU; Subkey: Software\Globus\GSI; Flags: uninsdeletekey; ValueType: none
-Root: HKCU; Subkey: Environment; ValueType: expandsz; ValueName: GLOBUS_LOCATION; ValueData: {commonappdata}\AccessGrid
 
 [Tasks]
 Name: desktopicon; Description: Create &Desktop Icons; GroupDescription: Additional icons:
@@ -181,8 +166,7 @@ WelcomeLabel2=This will install the {#AppName} {#AppVersionLong} on your compute
 
 [Run]
 Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\python.exe; WorkingDir: {app}\bin; Description: Setup what video devices will produce video streams; Flags: runminimized nowait shellexec; Parameters: SetupVideo.pyw
-;Filename: {app}\bin\send_settingchange.exe; Flags: runminimized waituntilidle; Description: Update system settings with globus configuration.
-;Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Description: Set up Globus runtime environment; Flags: postinstall waituntilidle; Parameters: globus_init.pyw; WorkingDir: {app}\bin
+Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\python.exe; WorkingDir: {userappdata}; Description: Update environment; Flags: runminimized nowait shellexec; Parameters: "-c ""import AccessGrid.Platform; AccessGrid.Platform.Win32SendSettingChange()"""; StatusMsg: Updating Environment
 
 [UninstallDelete]
 Name: {app}; Type: filesandordirs
