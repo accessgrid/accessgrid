@@ -11,7 +11,7 @@
 # Author:      Ti Leggett
 # Copyright:   (c) 2002-2003
 # License:     See COPYING.txt
-# RCS-ID:      $Id: MailcapSetup.py,v 1.7 2003-05-29 22:07:55 judson Exp $
+# RCS-ID:      $Id: MailcapSetup.py,v 1.8 2003-05-29 23:25:46 judson Exp $
 #-----------------------------------------------------------------------------
 
 import os
@@ -119,9 +119,6 @@ class Mailcap:
             elif opt == '--update':
                 self.update = True
 
-        if not passed_args:
-            self.executable = self.executable + " %s"
-            
         if not self.mimetype:
             print "You must provide a mimetype."
             print ""
@@ -194,7 +191,7 @@ class Mailcap:
             self.description = "description=" + self.description
         if not self.nametemplate.startswith("nametemplate="):
             self.nametemplate = "nametemplate=" + self.nametemplate
-        self.executable = self.executable + " " + self.execargs
+        self.executable = "\"%s %s\"" % (self.executable, self.execargs)
         self.mimetypes[self.mimetype] = [self.executable, self.description, self.nametemplate]
         return True
 
