@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.64 2004-04-19 21:26:12 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.65 2004-04-27 17:15:38 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.64 2004-04-19 21:26:12 lefvert Exp $"
+__revision__ = "$Id: DataStore.py,v 1.65 2004-04-27 17:15:38 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1500,20 +1500,12 @@ class GSIHTTPTransferServer(io.GSITCPSocketServer, TransferServer):
         self.requestQueue = Queue.Queue()
         self._CreateWorkers()
 
-        #
-        # For now, allow all connections.
-        #
-
-        def auth_cb(server, g_handle, remote_user, context):
-            # print "Got remote ", remote_user
-            return 1
-        # tcpAttr = Utilities.CreateTCPAttrAlwaysAuth()
-
         if sslCompat:
             log.debug("creating ssl compatible server")
-            tcpAttr = Utilities.CreateTCPAttrCallbackAuthSSL(auth_cb)
+            tcpAttr = Utilities.CreateTCPAttrAlwaysAuthSSL()
         else:
-            tcpAttr = Utilities.CreateTCPAttrCallbackAuth(auth_cb)
+            tcpAttr = Utilities.CreateTCPAttrAlwaysAuth()
+
         io.GSITCPSocketServer.__init__(self, address, HTTPTransferHandler,
                                     None, None, tcpAttr = tcpAttr)
 
@@ -1651,7 +1643,6 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
     the transfer.
 
     """
-
     dest_fp = open(destination, "wb")
 
     headers = {}
@@ -1669,12 +1660,9 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
 
     log.debug("Downloading %s into %s", download_url, destination)
 
-    #
     # We want strict enabled here, otherwise the empty
     # result we get when querying a gsihttp server with an http
     # client results in a valid response, when it should have failed.
-    #
-
     try:
         conn.strict = 1
         log.debug("before connect reqest path %s, headers %s" %(path, str(headers)))
@@ -2161,7 +2149,7 @@ if __name__ == "__main__":
         def Send(self, event):
             pass
         
-    dContainer = DataDescriptionContainer(FAKEEvent(1,2,3), 5)
+    dContainer = DataDescriptionContainer() #FAKEEvent(1,2,3), 5)
     d1 = DataDescription("file1")
     d1.description = "noaoin"
     d2 = DataDescription("file2")
