@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.56 2003-03-14 20:46:35 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.57 2003-03-14 20:57:16 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -340,8 +340,8 @@ class Venue(ServiceBase.ServiceBase):
         """
         defaultTtl = 127
         return MulticastNetworkLocation(
-            self.server.multicastAllocator.AllocateAddress(),
-            self.server.multicastAllocator.AllocatePort(),
+            self.server.multicastAddressAllocator.AllocateAddress(),
+            self.server.multicastAddressAllocator.AllocatePort(),
             defaultTtl )
 
     def GetNextPrivateId( self ):
