@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.43 2003-11-06 23:08:24 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.44 2003-11-06 23:15:41 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.43 2003-11-06 23:08:24 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.44 2003-11-06 23:15:41 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import isWindows, isLinux, isOSX
@@ -254,9 +254,8 @@ class AboutDialog(wxDialog):
         boxSizer.Add(self.okButton, 0, wxALIGN_CENTER|wxBOTTOM, 10)
 
         self.panel.SetSizer(boxSizer)
-                
-        self.SetAutoLayout(1)
-        self.SetSizer(sizer)
+        boxSizer.Fit(self.panel)
+
         sizer.Fit(self)
         
         
