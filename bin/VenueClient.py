@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.129 2003-04-24 18:36:47 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.130 2003-04-24 18:48:22 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -43,14 +43,12 @@ from AccessGrid.Utilities import formatExceptionInfo
 
 from AccessGrid import PersonalNode
     
-# try:
-#     from AccessGrid import CertificateManager
-#     CertificateManager.CertificateManagerWXGUI
-#     HaveCertificateManager = 1
-# except Exception, e:
-#     HaveCertificateManager = 0
-
-HaveCertificateManager = 0
+try:
+    from AccessGrid import CertificateManager
+    CertificateManager.CertificateManagerWXGUI
+    HaveCertificateManager = 1
+except Exception, e:
+    HaveCertificateManager = 0
 
 class VenueClientUI(wxApp, VenueClient):
     """
