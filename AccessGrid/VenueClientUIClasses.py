@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.176 2003-05-08 14:50:25 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.177 2003-05-08 20:23:07 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -126,6 +126,7 @@ class VenueClientFrame(wxFrame):
         self.textClientPanel = TextClientPanel(self.TextWindow, -1)
         self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT, app)
         self.contentListPanel = ContentListPanel(self, app)
+      
         dataDropTarget = DataDropTarget(self.app)
         self.contentListPanel.tree.SetDropTarget(dataDropTarget)
         self.__setStatusbar()
@@ -1264,17 +1265,17 @@ class ContentListPanel(wxPanel):
 	self.app = app
         if sys.platform == "win32":
             self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
-                                   wxDefaultSize, style = wxTR_TWIST_BUTTONS | wxTR_HAS_BUTTONS |
+                                   wxDefaultSize, style = wxTR_HAS_BUTTONS |
                                    wxTR_NO_LINES)
             
             
         elif sys.platform == "linux2":
             self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
-                                   wxDefaultSize, style = wxTR_TWIST_BUTTONS | wxTR_HAS_BUTTONS |
+                                   wxDefaultSize, style = wxTR_HAS_BUTTONS |
                                    wxTR_NO_LINES | wxTR_HIDE_ROOT)
         self.__setImageList()
 	self.__setTree()
-	self.__setProperties()
+       	self.__setProperties()
 
         EVT_SIZE(self, self.OnSize)
         EVT_RIGHT_DOWN(self.tree, self.OnRightClick)
@@ -1283,9 +1284,11 @@ class ContentListPanel(wxPanel):
         # EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
 
     def __setImageList(self):
-	imageList = wxImageList(32,19)
+	#imageList = wxImageList(32,19)
+        imageList = wxImageList(18,15)
 
-        self.line = imageList.Add(icons.getHeadingLineBitmap())
+        #self.line = imageList.Add(icons.getHeadingLineBitmap())
+        self.line = imageList.Add(icons.getFolderBitmap())
         self.participantId = imageList.Add(icons.getDefaultParticipantBitmap())
         self.defaultDataId = imageList.Add(icons.getDefaultDataBitmap())
 	self.serviceId = imageList.Add(icons.getDefaultServiceBitmap())
@@ -1559,6 +1562,8 @@ class ContentListPanel(wxPanel):
         elif sys.platform == "linux2":
             index = -1
             index2 = -1
+
+        index = self.line
         
         self.root = self.tree.AddRoot("", index2, index2)
         
