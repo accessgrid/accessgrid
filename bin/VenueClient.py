@@ -1,4 +1,4 @@
-from AccessGrid.VenueClient import VenueClient
+#qfrom AccessGrid.VenueClient import VenueClient
 import AccessGrid.GUID
 import AccessGrid.Types
 import AccessGrid.Utilities
@@ -25,7 +25,7 @@ class VenueClientUI(wxApp, VenueClient):
         venueUri = Client.Handle( venueServerUri ).get_proxy().GetDefaultVenue()
         myHomePath = os.environ['HOME']
         accessGridDir = '.AccessGrid'
-        profilePath = myHomePath+'/'+accessGridDir+'/profile'
+        self.profilePath = myHomePath+'/'+accessGridDir+'/profile'
 
         if file:
             profile = ClientProfile(file)
@@ -35,7 +35,7 @@ class VenueClientUI(wxApp, VenueClient):
             except:
                 os.mkdir(myHomePath+'/'+accessGridDir)
 
-            profile = ClientProfile(profilePath)
+            profile = ClientProfile(self.profilePath)
                   
         if profile.IsDefault():  # not your profile
             profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', profile)
@@ -49,7 +49,7 @@ class VenueClientUI(wxApp, VenueClient):
                 profile.SetHomeVenue(profileDialog.homeVenueCtrl.GetValue())
                 profile.SetProfileType(profileDialog.profileTypeBox.GetValue())
                 profileDialog.Destroy()
-                profile.Save(profilePath)
+                profile.Save(self.profilePath)
                 self.__startMainLoop(venueUri, profile)
             
             else:  # when click cancel
@@ -111,7 +111,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method calls the venue client method and then
         performs its own operations when the client enters a venue.
         """
-        print 'enter venue'
+        print '-------------------------enter venue'
         VenueClient.EnterVenue( self, URL )
         
         venueState = self.venueState
@@ -124,9 +124,10 @@ class VenueClientUI(wxApp, VenueClient):
 
         users = venueState.users.values()
         for user in users:
-            print '--------------------- user -----------------'
-            print user.name
-            self.frame.contentListPanel.AddParticipant(user)
+            if(user.profileType == 'user'):
+                self.frame.contentListPanel.AddParticipant(user)
+            else:
+                self.frame.contentListPanel.AddNode(user)
 
         data = venueState.data.values()
         for d in data:
