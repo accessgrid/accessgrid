@@ -39,6 +39,7 @@ from AccessGrid import Toolkit
 
 nodeService = None
 server = None
+log = None
 
 class AGNodeServiceTestCase(unittest.TestCase):
     """A test case for AGNodeServices."""
@@ -50,29 +51,36 @@ class AGNodeServiceTestCase(unittest.TestCase):
         all of it's Venues. Then it stops the hostingEnvironment.
         """
         print "SignalHandler"
-        global running
-        global server
+        global running, server
+
         server.Stop()
         # shut down the node service, saving config or whatever
         running = 0
 
     def testAAABegin(self):
-        global nodeService, server
+        global nodeService, server, log
 
         # initialize toolkit and environment
         app = Toolkit.Service()
         app.Initialize("NodeService_test")
-
+        log = app.GetLog()
+        
         # Create a Node Service
         nodeService = AGNodeService()
 
         # Create a hosting environment
-        server = Server(('', 0))
+        server = Server(('localhost', 4000))
+
+        # get url and print it
+        url = server.GetURLBase()
+        print "Server URL: %s" % url
 
         # Create the Node Service Service
         nsurl = server.RegisterObject(AGNodeServiceI(nodeService),
-                                      path="NodeService")
+                                      path="/NodeService")
 
+        print "NS URL: %s" % nsurl
+        
         # Tell the world where to find the service
         log.info("Starting service; URI: %s", nsurl)
 
@@ -81,6 +89,7 @@ class AGNodeServiceTestCase(unittest.TestCase):
 
         # Run the service
         server.RunInThread()
+
 
     # Authorization Methods
 
@@ -91,14 +100,15 @@ class AGNodeServiceTestCase(unittest.TestCase):
     # Service Manager Methods
 
     def testAddRemoveServiceManager(self):
-        global nodeService
+        global nodeService, server
         # Create the Service Manager
-        serviceManager = AGServiceManager(Server(('',0)))
+        serviceManager = AGServiceManager(server)
         smurl = server.RegisterObject(AGServiceManagerI(serviceManager),
-                              path="ServiceManager")
+                              path="/ServiceManager")
         serviceManagerDesc = AGServiceManagerDescription("testServiceManager",
                                                 smurl)
         nodeService.AddServiceManager(serviceManagerDesc)
+
         assert serviceManagerDesc in nodeService.GetServiceManagers()
         nodeService.RemoveServiceManager(serviceManagerDesc) 
         assert serviceManagerDesc not in nodeService.GetServiceManagers()
