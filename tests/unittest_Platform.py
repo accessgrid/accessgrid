@@ -19,7 +19,10 @@ from AccessGrid import Platform
 class DefaultPaths(unittest.TestCase):
 
     def setUp(self):
-        pass
+        if os.environ.has_key(Platform.AGTK_LOCATION):
+            del os.environ[Platform.AGTK_LOCATION]
+        if os.environ.has_key(Platform.AGTK_USER):
+            del os.environ[Platform.AGTK_USER]
     
     def testSystem(self):
         configDir = Platform.GetSystemConfigDir()
@@ -109,10 +112,12 @@ class GPI(unittest.TestCase):
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
-    suite1 = unittest.makeSuite(DefaultPaths)
-    suite2 = unittest.makeSuite(EnvPaths)
-    suite3 = unittest.makeSuite(GPI)
-    return unittest.TestSuite((suite1, suite2, suite3))
+
+    suites = []
+    for testClass in [DefaultPaths, Environ, GPI]:
+        suites.append(unittest.makeSuite(testClass))
+
+    return unittest.TestSuite(suites)
 
 if __name__ == '__main__':
     # When this module is executed from the command-line, run all its tests
