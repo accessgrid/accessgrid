@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.3 2003-03-14 16:36:25 turam Exp $
+# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.4 2003-04-09 06:10:46 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -38,8 +38,8 @@ class ProcessManagerUnix:
     def terminate_all_processes(self):
         for pid in self.processes:
             try:
-                os.kill(pid, signal.SIGKILL)
-                ret = os.waitpid(pid, 0)
+                os.kill(pid, signal.SIGINT)
+                ret = os.waitpid(pid, os.WNOHANG)
                 print "waitpid returns ", ret
                 status = ret[1]
                 if os.WIFEXITED(status):
