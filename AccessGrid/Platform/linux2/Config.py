@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.7 2004-03-18 20:47:23 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.8 2004-03-22 22:02:00 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.7 2004-03-18 20:47:23 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.8 2004-03-22 22:02:00 turam Exp $"
 
 import os
 import mimetypes
@@ -123,7 +123,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         try:
             self.configDir = os.environ[AGTK_LOCATION]
         except:
-            self.configDir = AGTkBasePath
+            self.configDir = self.AGTkBasePath
             
         return self.configDir
 
