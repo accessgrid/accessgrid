@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.2 2003-04-23 10:00:39 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.3 2003-04-23 14:46:28 judson Exp $
 ;
 
 #define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
@@ -48,7 +48,7 @@ SourceDir={#SourceDir}
 ; Where to put the built installer
 OutputDir={#OutputDir}
 ; Name with version information
-OutputBaseFilename=agtk-{#AppVersionShort}
+OutputBaseFilename={#AppVersionShort}
 
 AppName={#AppName}
 AppCopyright=Copyright © 2003 University of Chicago. All Rights Reserved.

@@ -41,10 +41,6 @@ def usage():
     print "    -v|--verbose : be noisy"
 
 
-# Names for the software
-long_version_name = ""
-short_version_name = ""
-
 # Source Directory
 #  We assume the following software is in this directory:
 #    ag-rat, ag-vic, and AccessGrid
@@ -65,6 +61,10 @@ DestDir = r"C:\xfer"
 BuildTime = time.strftime("%Y-%m%d-%H%M%S")
 BuildName = BuildTime
 
+# Names for the software
+long_version_name = "Access Grid Toolkit 2.0 Snapshot %s" % BuildTime
+short_version_name = "agtk-%s" % BuildTime
+
 # Innosoft config file names
 iss_orig = "agtk.iss"
 iss_new  = "build_snap.iss"
@@ -79,7 +79,7 @@ checkoutnew = 0
 verbose = 0
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "n:s:d:t:i:l:n:chv",
+    opts, args = getopt.getopt(sys.argv[1:], "n:s:d:t:i:l:r:chv",
                                ["buildname", "sourcedir", "destdir",
                                 "tempdir", "innopath", "longname",
                                 "shortname", "checkoutcvs", "help",
@@ -101,7 +101,7 @@ for o, a in opts:
         innopath = a
     elif o in ("-l", "--longname"):
         long_version_name = a
-    elif o in ("-n", "--shortname"):
+    elif o in ("-r", "--shortname"):
         short_version_name = a
     elif o in ("-c", "--checkoutcvs"):
         checkoutnew = 1
@@ -159,17 +159,17 @@ else:
         ip = os.path.join(innopath, "iscc.exe")
         inno_compiler = win32api.GetShortPathName(ip)
     except WindowsError:
-        #if verbose:
-            #print "Couldn't find ISXTool from registry key." 
+        if verbose:
+            print "Couldn't find ISXTool from registry key." 
 
         # If still not found, try default path:
         innopath = r"\Program Files\My Inno Setup Extensions 3"
         inno_compiler = os.path.join(innopath, "ISCC.exe")
-        #if verbose:
-            #if os.path.exists(inno_compiler):
-                #print "Found ISXTool in default path:", inno_compiler
-             #else:
-                #print "Could not find ISXTool in default path:", inno_compiler
+        if verbose:
+            if os.path.exists(inno_compiler):
+                print "Found ISXTool in default path:", inno_compiler
+            else:
+                print "Could not find ISXTool in default path:", inno_compiler
 
 # Print error and exit if innotool's iscc.exe isn't found yet.
 if not os.path.exists(inno_compiler):
@@ -266,15 +266,10 @@ for line in file:
 
     # Fix up application version strings
     if line.startswith("#define AppVersionLong"):
-        if long_version_name != "":
-            line = '#define AppVersionLong "%s"\n' % (long_version_name)
-        else:
-            line = '#define AppVersionLong "Snapshot %s"\n' % (BuildTime)
+        line = '#define AppVersionLong "%s"\n' % (long_version_name)
+
     if line.startswith("#define AppVersionShort"):
-        if short_version_name != "":
-            line = '#define AppVersionShort "%s"\n' % (short_version_name)
-        else:
-            line = '#define AppVersionShort "%s"\n' % (BuildTime)
+        line = '#define AppVersionShort "%s"\n' % (short_version_name)
 
     m = section_re.search(line)
 
@@ -322,7 +317,7 @@ os.system(inno_compiler_command)
 # Now we clean up
 #
 
-#os.remove(iss_new)
+os.remove(iss_new)
 
 shutil.rmtree(build_dir)
 shutil.rmtree(os.path.join(SourceDir, r"AccessGrid\Release"))
