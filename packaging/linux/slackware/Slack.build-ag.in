@@ -14,7 +14,7 @@ buildroot=/var/tmp/${name}-${version}
 debug_package=${nil}
 
 python=pythonPYVER
-arch=i486
+arch=${arch:-i486}
 here=`pwd`
 if [ $# -lt 1 ]; then
   echo "Please tell me the source directory"
@@ -119,18 +119,20 @@ EOF
 chmod +x ${buildroot}/install/AccessGrid-Postinstall.py
 
 
-#. /etc/profile.d/globus.sh
-#/tmp/AccessGrid-Postinstall.py
-#rm -f /tmp/AccessGrid-Postinstall.py
-#agpm.py --post-install
-
-# Invoke AccessGrid-Postinstall.py from /install/doinst.sh
+# Invoke AccessGrid-Postinstall.py from /install/doinst.sh,
+# register shared apps and fix vncviewer permissions.
 #
 cat <<EOF > ${buildroot}/install/doinst.sh
 #!/bin/sh
 
 . /etc/profile.d/globus.sh
 install/AccessGrid-Postinstall.py
+
+agpm.py --post-install
+VNCEXE=/etc/AccessGrid/SharedApplications/VenueVNC/vncviewer
+if [ -f ${VNCEXE} ]; then
+    chmod a+x ${VNCEXE}
+fi
 
 EOF
 chmod +x ${buildroot}/install/doinst.sh
