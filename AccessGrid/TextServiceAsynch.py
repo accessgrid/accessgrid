@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.20 2004-03-10 23:17:07 eolson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.21 2004-03-18 14:07:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.20 2004-03-10 23:17:07 eolson Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.21 2004-03-18 14:07:52 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client, Server
@@ -197,7 +197,7 @@ class ConnectionHandler:
                 self.wfile.close()
             self.socket.close()
         except:
-            log.info("TextServiceAsynch: IOBase exception on event service close (probably ok)")
+            log.info("TextServiceAsynch: IOBase exception on text service close (probably ok)")
 
     def handleData(self, pdata, event):
         """
