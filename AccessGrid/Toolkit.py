@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.51 2004-04-23 14:04:59 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.52 2004-04-24 20:25:41 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.51 2004-04-23 14:04:59 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.52 2004-04-24 20:25:41 turam Exp $"
 
 # Standard imports
 import os
@@ -101,7 +101,7 @@ class AppBase:
 
        # 2. Load the Toolkit wide configuration.
        try:
-           self.agtkConfig = AGTkConfig.instance(1)
+           self.agtkConfig = AGTkConfig.instance(0)
        except Exception, e:
            self.log.exception("Toolkit Initialization failed.")
            sys.exit(-1)
