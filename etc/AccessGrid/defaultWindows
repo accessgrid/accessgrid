@@ -90,7 +90,7 @@ p30
 I0
 sS'serviceManagerUri'
 p31
-S'https://munich.mcs.anl.gov:12000/ServiceManager'
+S'https://localhost:12000/ServiceManager'
 p32
 sS'capabilities'
 p33
@@ -192,7 +192,7 @@ Nsg26
 (dp68
 sbsS'uri'
 p69
-S'https://munich.mcs.anl.gov:4114/100'
+S'https://localhost:4114/100'
 p70
 sb.(iAccessGrid.Types
 ServiceConfiguration
@@ -340,7 +340,7 @@ p30
 I1
 sS'serviceManagerUri'
 p31
-S'https://munich.mcs.anl.gov:12000/ServiceManager'
+S'https://localhost:12000/ServiceManager'
 p32
 sS'capabilities'
 p33
@@ -490,7 +490,7 @@ Nsg26
 (dp82
 sbsS'uri'
 p83
-S'https://munich.mcs.anl.gov:4120/100'
+S'https://localhost:4120/100'
 p84
 sb.(iAccessGrid.Types
 ServiceConfiguration
