@@ -1,0 +1,74 @@
+=====================================
+Audio Analysis Service
+=====================================
+ 
+:version: $Revision: 1.1 $
+:author: Robert Olson <olson@mcs.anl.gov>
+:status: Draft
+:contact: ag-tech@mcs.anl.gov
+
+Abstract
+========
+
+High-quality audio is a requirement for effective communication over
+the Access Grid. Unfortunately, it is also difficult to achieve in a
+real-world environment. In this AGEP we discuss and propose an audio
+analysis service infrastructure that uses the Access Grid audio
+infrastructure itself to provide feedback to the users and
+administrators of Access Grid nodes to improve audio quality.
+
+Overview
+========
+
+
+Summary of Modifications
+========================
+
+
+Module Organization
+-------------------
+
+   
+Deprecated Packages
+-------------------
+
+
+Specifications
+==============
+
+
+Security Issues
+===============
+
+Interoperability Issues
+=======================
+
+
+Related AGEPs
+=============
+
+
+Implementation
+==============
+
+
+References
+==========
+
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
