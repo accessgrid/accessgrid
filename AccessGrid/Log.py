@@ -429,12 +429,12 @@ class LevelHandler(logging.handlers.BufferingHandler):
 
 # 0. Initialize logging, storing in log data memory
 #defLogHandler = StreamHandler()
-(fd, fn) = tempfile.mkstemp("log", "AGErr")
+(fd, fn) = tempfile.mkstemp(".log", "AGErrors-")
 defLogHandler = FileHandler(fn)
 defLogHandler.setFormatter(GetFormatter())
 # This is set to 4096 to get around pythonw limitations!!!
 # http://mail.python.org/pipermail/python-list/2004-June/227268.html
-mlh = handlers.MemoryHandler(4096, flushLevel=CRITICAL, target=defLogHandler)
+mlh = handlers.MemoryHandler(16384, flushLevel=CRITICAL, target=defLogHandler)
 mlh.setFormatter(GetFormatter())
 memLevels = HandleLoggers(mlh, GetDefaultLoggers())
 memLevels.SetLevel(DEBUG)
