@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.7 2004-03-04 20:24:45 judson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.8 2004-03-04 20:26:26 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,9 +19,10 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.7 2004-03-04 20:24:45 judson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.8 2004-03-04 20:26:26 judson Exp $"
 
 # External Imports
+import os
 import xml.dom.minidom
 
 # AGTk Imports
