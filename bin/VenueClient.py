@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.72 2003-03-21 00:03:06 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.73 2003-03-21 15:46:20 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -429,10 +429,12 @@ class VenueClientUI(wxApp, VenueClient):
         for person in self.followerProfiles.values():
             url = person.venueClientURL
             followerHandle = Client.Handle(url)
+            wxLogDebug('This person is following me, url:%s ' %url)
             if(followerHandle.IsValid()):
                 wxLogDebug("the follower handler is valid")
-                followerProxy = self.clientHandle.get_proxy()
+                followerProxy = followerHandle.get_proxy()
                 followerProxy.EnterVenue(venueUrl)
+                wxLogDebug("told followers to enter url: %s "%venueUrl)
 
     def OnExit(self):
         """
