@@ -5,10 +5,10 @@
   xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
   xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-  xmlns:agtk="http://www.accessgrid.org/"
-  targetNamespace="http://www.accessgrid.org/">
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  targetNamespace="http://www.accessgrid.org/v3.0">
 
-  <import namespace="http://www.accessgrid.org/" 
+  <import namespace="http://www.accessgrid.org/v3.0" 
           location="VenueServerInterface.wsdl"/>
 
   <binding name="SOAPBinding" type="agtk:VenueServer">

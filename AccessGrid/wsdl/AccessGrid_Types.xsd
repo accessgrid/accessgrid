@@ -1,11 +1,13 @@
-<xs:schema targetNamespace="http://www.accessgrid.org/"
-	xmlns:tns="http://www.accessgrid.org/"
+<xs:schema targetNamespace="http://www.accessgrid.org/v3.0"
+	xmlns:tns="http://www.accessgrid.org/v3.0"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema" 
         elementFormDefault="qualified" 
 	attributeFormDefault="unqualified">
 
+<!--
     <xs:element name="VenueDescription" type="tns:VenueDescription"/>
     <xs:element name="Dictionary" type="tns:Dictionary"/>
+-->
 
     <xs:complexType name="Dictionary">
       <xs:sequence>

@@ -5,16 +5,16 @@
   xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
   xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-  xmlns:agtk="http://www.accessgrid.org/"
-  targetNamespace="http://www.accessgrid.org/">
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  targetNamespace="http://www.accessgrid.org/v3.0">
 
     <types>
-      <schema targetNamespace="http://www.accessgrid.org/" 
+      <schema targetNamespace="http://www.accessgrid.org/v3.0" 
               elementFormDefault="qualified" 
 	      attributeFormDefault="unqualified" 
               xmlns="http://www.w3.org/2001/XMLSchema">
 
-	  <include schemaLocation="types.xsd"/>
+	  <include schemaLocation="AccessGrid_Types.xsd"/>
 
       </schema>
     </types>
@@ -47,13 +47,13 @@
 	<part name="venueDescriptionList" type="agtk:VenueDescription"/>
     </message>
     <message name="GetPropertyRequest">
-	<part name="PropertyDictionary" type="agtk:Dictionary"/>
+	<part name="propertyDictionary" type="agtk:Dictionary"/>
     </message>
     <message name="GetPropertyResponse">
         <part name="result" type="agtk:Dictionary"/>
     </message>
     <message name="SetPropertyRequest">
-	<part name="PropertyDictionary" type="agtk:Dictionary"/>
+	<part name="propertyDictionary" type="agtk:Dictionary"/>
     </message>
     <message name="SetPropertyResponse">
 	<part name="result" type="agtk:Dictionary"/>
