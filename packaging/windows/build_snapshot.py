@@ -44,7 +44,7 @@ def usage():
 # Source Directory
 #  We assume the following software is in this directory:
 #    ag-rat, ag-vic, and AccessGrid
-SourceDir = r"C:\Software"
+SourceDir = r"\Software"
 
 # Temporary Directory
 #  This is where interim cruft is kept, it should be cleaned out every time
@@ -54,7 +54,7 @@ TempDir = win32api.GetTempPath()
 
 # Destination Directory
 #  This is where the installer is left at the end
-DestDir = r"C:\xfer"
+DestDir = r"\xfer"
 
 # Build Name
 #  This is the default name we use for the installer
