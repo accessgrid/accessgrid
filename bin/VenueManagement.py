@@ -679,7 +679,7 @@ class VenueParamFrame(wxFrame):
         if exits != None:
             index = 0
             while index < len(exits):
-                self.exits.Append(exits[0].name, exits[0])
+                self.exits.Append(exits[index].name, exits[index])
                 index = index + 1
 
     def TransferVenue(self, event):
