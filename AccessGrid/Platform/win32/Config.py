@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.53 2004-09-10 18:45:39 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.54 2004-09-10 22:00:23 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.53 2004-09-10 18:45:39 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.54 2004-09-10 22:00:23 lefvert Exp $"
 
 import os
 import socket
@@ -1108,8 +1108,7 @@ class SystemConfig(Config.SystemConfig):
         except Exception:
             log.exception("Exception configuring firewall for application: %s",
                           path)
-            raise
-    
+              
 class MimeConfig(Config.MimeConfig):
     """
     The MimeConfig object encapsulates in single object the management
