@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.74 2004-09-10 13:56:20 judson Exp $
+# RCS-ID:      $Id: setup.py,v 1.75 2004-09-15 22:02:25 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -174,9 +174,68 @@ linux_data = [('etc/init.d',
                )
               ]
 
+mac_scripts = [ r"bin/VenueServer.py", 
+                  r"bin/VenueClient.py", 
+                  r"bin/VenueManagement.py",
+                  r"bin/AGServiceManager.py",
+                  r"bin/NodeManagement.py",
+                  r"bin/NodeSetupWizard.py",
+                  r"bin/CertificateRequestTool.py",
+                  r"bin/BridgeServer.py",
+                  r"bin/certmgr.py",
+                  r"bin/agpm.py",
+                  r"bin/AGLauncher.py",
+                  ]
+
+mac_data =    [ 
+              ('Config/nodeConfig',
+               [r"packaging/config/defaultMac",
+                ]
+               ),
+              ('Config/CAcertificates',
+               filter(os.path.isfile, glob.glob('packaging/config/CAcertificates/*')),
+               ),
+              ('',
+               [r"packaging/mac/AGTk.icns"
+                ]
+               ),
+              ('share/doc/AccessGrid',
+               ["COPYING.txt",
+                "README",
+                "README-developers",
+                "TODO",
+                "VERSION",
+                "ChangeLog"
+                ]
+               ),
+              ('bin', ['tools/GoToVenue.py']),
+              ('share/doc/AccessGrid/Documentation/VenueClientManual',
+               [r"doc/VenueClientManual/VenueClientManual.htm",
+                r"doc/VenueClientManual/VenueClientManualHTML.htm",
+                r"doc/VenueClientManual/1.htm"
+                ]
+               ),
+              ('share/doc/AccessGrid/Documentation/VenueClientManual/VenueClientManual_files',
+               filter(os.path.isfile, glob.glob("doc/VenueClientManual/VenueClientManual_files/*"))
+               ),
+              ('share/doc/AccessGrid/Documentation/VenueManagementManual',
+               [r"doc/VenueManagementManual/VenueManagementManual.htm",
+                r"doc/VenueManagementManual/VenueManagementManualHTML.htm",
+                r"doc/VenueManagementManual/1.htm"
+                ]
+               ),
+              ('share/doc/AccessGrid/Documentation/VenueManagementManual/VenueManagementManual_files',
+               filter(os.path.isfile, glob.glob("doc/VenueManagementManual/VenueManagementManual_files/*"))
+               )
+              ]
+
+
 if sys.platform == 'win32':
     inst_scripts = win32_scripts
     inst_data = win32_data
+elif sys.platform == 'darwin':
+    inst_scripts = mac_scripts
+    inst_data = mac_data
 else:
     inst_scripts = linux_scripts
     inst_data = linux_data
@@ -200,7 +259,7 @@ if sys.platform == 'linux2' or sys.platform == 'darwin':
 setup (
     name = 'AGTk',
     fullname = 'AccessGrid Toolkit',
-    version = '2.2',
+    version = '2.3',
     description = "The Access Grid Toolkit",
     long_description = """
 The Access Grid Toolkit provides the necessary components
