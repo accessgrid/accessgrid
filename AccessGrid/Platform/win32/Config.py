@@ -3,17 +3,19 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.52 2004-09-10 17:01:32 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.53 2004-09-10 18:45:39 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.52 2004-09-10 17:01:32 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.53 2004-09-10 18:45:39 turam Exp $"
 
 import os
 import socket
 import re
+
+import win32api
 
 from pyGlobus import utilc, gsic, ioc
 
@@ -989,12 +991,16 @@ class SystemConfig(Config.SystemConfig):
         try:
             vfwscanexe = os.path.join(AGTkConfig.instance().GetBinDir(),
                                       'vfwscan.exe')
+            vfwscanexe = win32api.GetShortPathName(vfwscanexe)
             if os.path.exists(vfwscanexe):
                 try:
                     log.info("Using vfwscan to get devices")
+                    log.debug("vfwscanexe = %s", vfwscanexe)
                     f = os.popen(vfwscanexe,'r')
                     filelines = f.readlines()
                     f.close()
+
+                    log.debug("filelines = %s", filelines)
 
                     deviceList = map( lambda d: d.strip(), filelines)
                 except:
