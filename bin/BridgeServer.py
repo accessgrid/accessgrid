@@ -25,11 +25,11 @@ from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Platform.Config import UserConfig, AGTkConfig, SystemConfig
 
 
-logFile = os.path.join(UserConfig.instance().GetConfigDir(), 'BridgeServer.log')
-
-
 class InvalidVenueUrl(Exception):
     pass
+    
+    
+log = None
 
 class BridgeFactory:
     """
@@ -56,20 +56,18 @@ class BridgeFactory:
             # Instantiate the process manager
             self.processManager = ProcessManager()
 
-            # Setup the log
-            self.log = Log.GetLogger(Log.BridgeServer)
 
         def Start(self):
             """
             Start the Bridge (actually execute the bridge process)
             """
-            self.log.debug("Method Bridge.Start called")
+            log.info("Method Bridge.Start called")
 
             # Log detail about bridge being started
-            self.log.debug("Starting bridge:")
-            self.log.debug("  [maddr,mport,mttl] = %s %d %d", 
+            log.info("Starting bridge:")
+            log.info("  [maddr,mport,mttl] = %s %d %d", 
                            self.maddr, self.mport, self.mttl)
-            self.log.debug("  [uaddr,uport] = %s %s", self.uaddr, 
+            log.info("  [uaddr,uport] = %s %s", self.uaddr, 
                            str(self.uport))
 
             # Start the process
@@ -78,14 +76,14 @@ class BridgeFactory:
                     "-m", '%d' % (self.mport,),
                     "-u", '%s' % (str(self.uport),),
                    ]
-            self.log.info("Starting bridge: %s %s", self.qbexec, str(args))
+            log.info("Starting bridge: %s %s", self.qbexec, str(args))
             self.processManager.StartProcess(self.qbexec,args)
 
         def Stop(self):
             """
             Stop stops the bridge, terminating bridge processes
             """
-            self.log.debug("Method Bridge.Stop called")
+            log.info("Method Bridge.Stop called")
             self.processManager.TerminateAllProcesses()
 
 
@@ -93,7 +91,6 @@ class BridgeFactory:
         self.qbexec = qbexec
         self.portRange = portRange
 
-        self.log = Log.GetLogger(Log.BridgeServer)
         self.bridges = dict()
 
         self.addressAllocator = NetworkAddressAllocator()
@@ -118,20 +115,20 @@ class BridgeFactory:
         or a new one
         """
 
-        self.log.info("Method CreateBridge called")
+        log.info("Method CreateBridge called")
 
         if not uport:
             # Allocate a port
             allocateEvenPort = 1
             uport = self.addressAllocator.AllocatePort(allocateEvenPort)
-            self.log.debug("Allocated port = %s", str(uport))
+            log.info("Allocated port = %s", str(uport))
 
         retBridge = None
 
         # - Check for an existing bridge with the given multicast addr/port
         for bridge,refcount in self.bridges.values():
             if bridge.maddr == maddr and bridge.mport == mport:
-                self.log.info("- using existing bridge")
+                log.info("- using existing bridge")
                 retBridge = bridge
                 refcount += 1
                 key = "%s%d" % (maddr,mport)
@@ -141,7 +138,7 @@ class BridgeFactory:
         # - If bridge does not exist; create one
         if not retBridge:
             # Instantiate a new bridge
-            self.log.debug("- creating new bridge")
+            log.info("- creating new bridge")
             retBridge = BridgeFactory.Bridge(self.qbexec,id,maddr,mport,
                                              mttl,uaddr,uport)
             retBridge.Start()
@@ -158,7 +155,7 @@ class BridgeFactory:
         DestroyBridge deletes the specified bridge from the list of bridges
         """
 
-        self.log.info("Method DestroyBridge called")
+        log.info("Method DestroyBridge called")
 
         key = "%s%d" % (bridge.maddr,bridge.mport)
         if self.bridges.has_key(key):
@@ -169,7 +166,7 @@ class BridgeFactory:
             # if the refcount is 0,
             # stop and delete the bridge
             if refcount == 0:
-                self.log.info("- Stopping and deleting bridge")
+                log.info("- Refcount zero; stopping and deleting bridge")
                 bridge.Stop()
                 del self.bridges[key]
 
@@ -182,50 +179,32 @@ class BridgeServer:
     def __init__(self, debug=0):
 
         self.debug = debug
-        self.__setLogger()
 
         # Allocate default values
         self.privateId = str(GUID.GUID())
-        self.qbexec = os.path.join(AGTkConfig.instance().GetInstallDir(), 
+        qbexec = os.path.join(AGTkConfig.instance().GetBinDir(), 
                                    "QuickBridge")
-        self.name = "UnspecifiedName"
-        self.location = "UnspecifiedLocation"
         self.portMin = None
         self.portMax = None
 
         # Create the bridge factory
-        self.bridgeFactory = BridgeFactory(self.qbexec)
+        self.bridgeFactory = BridgeFactory(qbexec)
 
         # Create a provider profile to identify the bridge owner
-        self.providerProfile = ProviderProfile(self.name, self.location)
+        self.providerProfile = ProviderProfile("UnspecifiedName", 
+                                               "UnspecifiedLocation")
 
         self.venues = dict()
             
         self.running = 1
         
-    def __setLogger(self):
-        """
-        Sets the logging mechanism.
-        """
-        self.log = Log.GetLogger(Log.BridgeServer)
-
-        hdlr = Log.FileHandler(logFile)
-        hdlr.setLevel(Log.DEBUG)
-        hdlr.setFormatter(Log.GetFormatter())
-        Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
-
-        if self.debug:
-            hdlr = Log.StreamHandler()
-            hdlr.setFormatter(Log.GetLowDetailFormatter())
-            Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
-
     def AddVenueServer(self, venueServerUrl):
         """
         AddVenueServer adds venues on the specified venue server to 
         those being bridged by the BridgeServer
         """
 
-        self.log.info("AddVenueServer: url = %s", venueServerUrl )
+        log.info("AddVenueServer: url = %s", venueServerUrl )
         
         # Retrieve venues from the venue server
         venueDescList = VenueServerIW(venueServerUrl).GetVenues()
@@ -240,7 +219,7 @@ class BridgeServer:
         AddVenue adds the specified venue to those being bridged
         by the BridgeServer
         """
-        self.log.info("AddVenue: url = %s", venueUrl)
+        log.info("AddVenue: url = %s", venueUrl)
         venue = Venue(venueUrl, self.providerProfile, self.bridgeFactory, 
                       self.privateId, venuePortConfig)
         self.venues[venueUrl] = venue
@@ -250,7 +229,7 @@ class BridgeServer:
         RemoveVenue stops the BridgeServer from bridging the 
         specified venue
         """
-        self.log.debug("Method BridgeServer.RemoveVenue called")
+        log.info("Method BridgeServer.RemoveVenue called")
         if self.venues.has_key(venueUrl):
             self.venues[venueUrl].Shutdown()
             del self.venues[venueUrl]
@@ -259,7 +238,7 @@ class BridgeServer:
         """
         GetVenues returns the list of venues being bridged
         """
-        self.log.debug("Method BridgeServer.GetVenues called")
+        log.info("Method BridgeServer.GetVenues called")
         return self.venues.keys()
 
     def RemoveVenues(self):
@@ -267,7 +246,7 @@ class BridgeServer:
         RemoveVenues stops the BridgeServer from bridging all
         known venues
         """
-        self.log.debug("Method BridgeServer.RemoveVenues called")
+        log.info("Method BridgeServer.RemoveVenues called")
 
         # Shutdown the venues
         for venue in self.venues.values():
@@ -288,7 +267,7 @@ class BridgeServer:
         - Remove venues
         - Clear the running flag
         """
-        self.log.debug("Method BridgeServer.Shutdown called")
+        log.info("Method BridgeServer.Shutdown called")
 
         # Remove venues
         self.RemoveVenues()
@@ -317,10 +296,8 @@ class BridgeServer:
 
         config = dict()
         for sec in cp.sections():
-            print "sec = ", sec
             optdict = dict()
             for opt in cp.options(sec):
-                print "opt = ", opt, cp.get(sec,opt)
                 optdict[opt] = cp.get(sec,opt)
             config[sec] = optdict
 
@@ -339,15 +316,18 @@ class BridgeServer:
 
         # Read the BridgeServer section
         try:
-            self.name = bridgeServerDict[NAME]
-            self.location = bridgeServerDict[LOCATION]
+            name = bridgeServerDict[NAME]
+            location = bridgeServerDict[LOCATION]
+            
+            self.SetName(name)
+            self.SetLocation(location)
         except KeyError, e:
             raise InvalidConfigFile, \
                 "Required option %s missing" %(e.args[0])
 
         # These options are, well, optional
         if bridgeServerDict.has_key(QBEXEC):
-            self.qbexec = bridgeServerDict[QBEXEC]
+            self.bridgeFactory.SetBridgeExecutable(bridgeServerDict[QBEXEC])
         if bridgeServerDict.has_key(ID):
             self.id = bridgeServerDict[ID]
         if bridgeServerDict.has_key(PORTMIN):
@@ -383,7 +363,7 @@ class BridgeServer:
                 try:
                     self.AddVenueServer(url)
                 except:
-                    self.log.exception("Error adding venue server; url=%s", url)
+                    log.exception("Error adding venue server; url=%s", url)
             elif itemType == "Venue":
                 try:
                     for item,value in itemConfig.items():
@@ -391,8 +371,16 @@ class BridgeServer:
                         
                     self.AddVenue(url, itemConfig)
                 except:
-                    self.log.exception("Error adding venue; url=%s", url)
-                
+                    log.exception("Error adding venue; url=%s", url)
+
+    def SetName(self,name):
+        self.providerProfile.name = name
+        
+    def SetLocation(self,location):
+        self.providerProfile.location = location
+        
+    def SetBridgeExecutable(self,qbexec):
+        self.bridgeFactory.SetBridgeExecutable(qbexec)
 
 class Venue:
 
@@ -423,8 +411,6 @@ class Venue:
         self.running = 1
         self.sendHeartbeats = threading.Event()
         self.sendHeartbeats.set()
-
-        self.log = Log.GetLogger(Log.BridgeServer)
 
         self.ConnectEventClient()
         if self.eventClient.connected:
@@ -470,7 +456,7 @@ class Venue:
         It puts the received event on the queue for processing
         by the queue processing thread.
         """
-        self.log.debug("Method Venue.EventReceivedCB called")
+        log.info("Method Venue.EventReceivedCB called")
         if event.eventType == Event.ADD_STREAM:
             strDesc = event.data
             self.AddBridge(strDesc)
@@ -482,9 +468,9 @@ class Venue:
     def AddBridges(self):
         # Create bridges for the venue streams
         streamList = self.venueProxy.GetStreams()
+        
         for stream in streamList:
             self.AddBridge(stream)
-
 
     def RemoveBridges(self):
         # Remove all known bridges 
@@ -513,7 +499,7 @@ class Venue:
         AddBridge adds a bridge with the specified parameters
         """
 
-        self.log.debug("Method Venue.AddBridge called")
+        log.info("Method Venue.AddBridge called")
         
         uaddr = SystemConfig.instance().GetHostname()
         uport = 0
@@ -524,7 +510,7 @@ class Venue:
                                         self.venuePortConfig["portMax"])
             allocateEventPort = 1
             uport = addressAllocator.AllocatePort(allocateEventPort)  
-            self.log.debug("Allocating port; port = %s", str(uport))
+            log.info("Allocating port; port = %s", str(uport))
     
         # Create the bridge and start it
         bridge = None
@@ -535,7 +521,7 @@ class Venue:
                             streamDesc.location.ttl, 
                             uaddr, uport)
         except NoFreePortsError:
-            self.log.exception("Error creating bridge; no free ports")
+            log.exception("Error creating bridge; no free ports")
             return
             
         self.bridges[streamDesc.id] = bridge
@@ -552,14 +538,14 @@ class Venue:
         """
         RemoveBridge removes the bridge with the specified id
         """
-        self.log.debug("Method Venue.RemoveBridge called")
-        self.log.debug("  streamId = %s", streamId)
+        log.info("Method Venue.RemoveBridge called")
+        log.info("  streamId = %s", streamId)
         if self.bridges.has_key(streamId):
-            self.log.debug("  removed")
+            log.info("  removed")
             self.bridgeFactory.DestroyBridge(self.bridges[streamId])
             del self.bridges[streamId]
         else:  
-            self.log.debug("  not found")
+            log.info("  not found")
         
             
     def RunQueueThread(self):
@@ -569,7 +555,7 @@ class Venue:
         appropriately
         """
 
-        self.log.debug("Method Venue.RunQueueThread called")
+        log.info("Method Venue.RunQueueThread called")
     
         while self.running:
             event = self.queue.get(1)
@@ -582,7 +568,7 @@ class Venue:
                 self.__RemoveBridge(event[1])
                 continue
              
-        self.log.debug("RunQueueThread exiting")
+        log.info("RunQueueThread exiting")
 
     def HeartbeatThread(self):
         """
@@ -596,55 +582,55 @@ class Venue:
                 if self.sendHeartbeats.isSet():
                     time.sleep(.2)
                 else:
-                    self.log.debug("Heartbeat thread exiting (1)")
+                    log.info("Heartbeat thread exiting (1)")
                     return
 
-            self.log.debug("Done sleeping")
+            log.info("Done sleeping")
             try:
                 if self.eventClient.connected:
-                    self.log.debug("Send heartbeat")
+                    log.info("Send heartbeat")
                     self.eventClient.Send(HeartbeatEvent(self.channelId, self.privateId))
                 else:
-                    self.log.debug("Trying to reach venue")
+                    log.info("Trying to reach venue")
                     try:
 
                         # Test whether venue is reachable 
                         self.venueProxy._IsValid()
-                        self.log.debug("- venue reachable; url=%s" % self.venueUrl)
+                        log.info("- venue reachable; url=%s" % self.venueUrl)
 
                         # Try to connect the event client
                         self.ConnectEventClient()
 
                         # If event client is connected; recreate the bridges
                         if self.eventClient.connected:
-                            self.log.debug("event client connected; url=%s" % self.venueUrl)
-                            self.log.debug("- re-creating bridges; url=%s" % self.venueUrl)
+                            log.info("event client connected; url=%s" % self.venueUrl)
+                            log.info("- re-creating bridges; url=%s" % self.venueUrl)
 
                             # Event client reconnected; re-bridge venue
                             self.AddBridges()
                         else:
-                            self.log.debug("event client NOT connected; url=%s" % self.venueUrl)
+                            log.info("event client NOT connected; url=%s" % self.venueUrl)
 
 
                     except:  # pyGlobus.io.GSITCPSocketException
-                        self.log.exception("While testing/reconnecting; url=%s" % self.venueUrl)
-                        self.log.debug("- venue unreachable; url=%s" % self.venueUrl)
+                        log.exception("While testing/reconnecting; url=%s" % self.venueUrl)
+                        log.info("- venue unreachable; url=%s" % self.venueUrl)
 
             except EventClientWriteDataException:
-                self.log.debug("- EventClientWriteDataException")
+                log.info("- EventClientWriteDataException")
 
                 if not self.eventClient.connected:
                     # connection broken; remove bridges
-                    self.log.debug("Connection lost; shutting down venue; url=%s" % self.venueUrl)
+                    log.info("Connection lost; shutting down venue; url=%s" % self.venueUrl)
                     self.RemoveBridges()
                 else:
                     # couldn't send, but i'm still connected, so just
                     # continue trying to send
-                    self.log.debug("- still connected; do nothing; url=%s", self.venueUrl)
+                    log.info("- still connected; do nothing; url=%s", self.venueUrl)
             except:
-                self.log.exception("*** Unexpected exception; no action taken ****")
+                log.exception("*** Unexpected exception; no action taken ****")
 
-        self.log.debug("Heartbeat thread exiting (2)")
+        log.info("Heartbeat thread exiting (2)")
 
 
     def Shutdown(self):
@@ -655,39 +641,39 @@ class Venue:
         - Put an event on the queue, to stop it
         - Clear the running flag
         """
-        self.log.debug("Method Venue.Shutdown called")
+        log.info("Method Venue.Shutdown called")
 
         # Stop sending heartbeats
         self.sendHeartbeats.clear()
 
         # Delete bridges
-        self.log.debug("- Send stop message to bridges")
+        log.info("- Send stop message to bridges")
         self.RemoveBridges()
 
         # Shut down the event client
-        self.log.debug("- Stopping event client")
+        log.info("- Stopping event client")
         try:
 
             if self.eventClient:
                 self.eventClient.Stop()
                 self.eventClient = None
         except IOBaseException:
-            self.log.exception("Exception caught stopping event client; probably negligible")
+            log.exception("Exception caught stopping event client; probably negligible")
 
         # Put an event on the queue
-        self.log.debug("- Wait for bridges to shutdown")
+        log.info("- Wait for bridges to shutdown")
         import time
         while len(self.bridges) > 0:
             time.sleep(.2)
 
         # Send stop message to queue thread
-        self.log.debug("- Send stop message to queue processor")
+        log.info("- Send stop message to queue processor")
         self.queue.put(Venue.EVT_QUIT)
         
         # Clear the running flag
         self.running = 0
 
-        self.log.debug("Shutdown exiting")
+        log.info("Shutdown exiting")
 
 
 
@@ -718,6 +704,8 @@ def main():
     import sys
     import signal
     import time
+    
+    global log
 
     # initialization
     bridgeServer = None
@@ -765,7 +753,9 @@ def main():
         
     # Init toolkit with standard environment.
     app = Toolkit.CmdlineApplication().instance()
-    app.Initialize()
+    app.Initialize(Log.BridgeServer)
+    
+    log = app.GetLog()
 
     # Register a signal handler so we can shut down cleanly
     signal.signal(signal.SIGINT, SignalHandler)
