@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.80 2003-03-20 15:32:36 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.81 2003-03-20 15:57:26 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -125,7 +125,7 @@ class VenueClientFrame(wxFrame):
             self.venueListPanel.Show()
             width = event.GetDragRect().width
             if width < 60:
-                width = 22
+                width = 20
                 self.venueListPanel.Hide()
             elif width > (self.GetSize().GetWidth() - 20):
                 width = self.GetSize().GetWidth() - 20
@@ -826,10 +826,12 @@ class VenueList(wxScrolledWindow):
         self.exitsDict[id] = profile
         #EVT_BUTTON(self, id, self.GoToNewVenue)
         
-        self.parent.Layout()
+        #self.parent.Layout()
+        #self.Layout()
         self.EnableScrolling(true, true)
         self.box.SetVirtualSizeHints(self)
-        
+        self.parent.Layout()
+                      
     def RemoveVenueDoor(self):
         print 'remove venue door'
 
@@ -858,7 +860,7 @@ class VenueList(wxScrolledWindow):
 class ExitPanel(wxPanel):
     def __init__(self, parent, profile):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
-			 size = wxSize(200,200), style = wxDOUBLE_BORDER)
+			 size = wxSize(400,200), style = wxDOUBLE_BORDER)
         self.id = NewId()
         self.parent = parent
         self.SetBackgroundColour(wxColour(190,190,190))
@@ -870,7 +872,7 @@ class ExitPanel(wxPanel):
 	#self.button.SetToolTipString(profile.description)
         #self.label = wxStaticText(self, -1, profile.name)
         self.SetToolTipString("tool tip")
-        self.label = wxTextCtrl(self, -1, "", size= wxSize(50,10),
+        self.label = wxTextCtrl(self, -1, "", size= wxSize(30,10),
                                 style = wxNO_BORDER|wxTE_MULTILINE|wxTE_RICH)
         self.label.SetValue(profile.name)
         self.label.SetBackgroundColour(wxColour(190,190,190))
