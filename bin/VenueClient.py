@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.108 2003-04-08 14:15:30 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.109 2003-04-08 16:39:18 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -101,7 +101,7 @@ class VenueClientUI(wxApp, VenueClient):
             def setSvcCallback(svcUrl, self = self):
                 log.debug("setting node service URI to %s from PersonalNode", svcUrl)
                 self.SetNodeServiceUri(svcUrl)
-            self.personalNode = PersonalNode.PersonalNodeManager(setSvcCallback)
+            self.personalNode = PersonalNode.PersonalNodeManager(setSvcCallback, self.debugMode)
             self.personalNode.Run()
         
         return true

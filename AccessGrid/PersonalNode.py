@@ -53,8 +53,9 @@ class EventObj:
         log.debug("Done waiting on %s", self.name)
 
 class PersonalNodeManager:
-    def __init__(self, setNodeServiceCallback):
+    def __init__(self, setNodeServiceCallback, debugMode):
         self.setNodeServiceCallback = setNodeServiceCallback
+        self.debugMode = debugMode
 
         self.initEventObjects()
 
@@ -104,7 +105,14 @@ class PersonalNodeManager:
         path = os.path.join(Platform.GetInstallDir(), "AGServiceManager.py")
         path = win32api.GetShortPathName(path)
 
-        arg = "python %s --pnode %s -d" % (path,  self.serviceManagerArg)
+        if self.debugMode:
+            python = "python"
+            dflag = "--debug"
+        else:
+            python = "pythonw"
+            dflag = ""
+
+        arg = "%s %s --pnode %s %s" % (python, path,  self.serviceManagerArg, dflag)
 
         log.debug("Start service manager with %s", arg)
 
@@ -124,7 +132,14 @@ class PersonalNodeManager:
         path = os.path.join(Platform.GetInstallDir(), "AGNodeService.py")
         path = win32api.GetShortPathName(path)
 
-        arg = "python %s --pnode %s -d" % (path, self.nodeServiceArg)
+        if self.debugMode:
+            python = "python"
+            dflag = "--debug"
+        else:
+            python = "pythonw"
+            dflag = ""
+
+        arg = "%s %s --pnode %s %s" % (python, path, self.nodeServiceArg, dflag)
 
         log.debug("Start node service with %s", arg)
 
