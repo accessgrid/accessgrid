@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.166 2004-04-29 19:31:15 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.167 2004-04-29 22:56:00 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.166 2004-04-29 19:31:15 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.167 2004-04-29 22:56:00 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -318,6 +318,9 @@ class VenueClient:
             
         self.server.RunInThread()
         
+        if pnode:
+            ns.LoadDefaultConfig()
+            
         # Save the location of the venue client url
         # for other apps to communicate with the venue client
         self.urlFile = os.path.join(UserConfig.instance().GetTempDir(),
@@ -1542,6 +1545,7 @@ class VenueClient:
 
     def SetProfile(self, profile):
         self.profile = profile
+        self.isIdentitySet = 0
         if(self.profile != None):
            self.profile.venueClientURL = self.server.FindURLForObject(self)
 
@@ -1625,7 +1629,8 @@ class VenueClient:
             try:
                 # Try legacy method (2.1.2 and earlier)
                 log.info("Trying legacy method for getting admin list")
-                roleNameList = self.__venueProxy.DetermineSubjectRoles()
+                prox = Client.SecureHandle(self.venueUri).GetProxy()
+                roleNameList = prox.DetermineSubjectRoles()
                 if "Venue.Administrators" in roleNameList :        
                     isVenueAdministrator = 1
             except Exception, e:
