@@ -5,6 +5,7 @@ from wxPython.wx import *
 from AccessGrid.Security.wxgui.ProxyBrowser import ProxyBrowser
 from AccessGrid.Security.wxgui.IdentityBrowser import IdentityBrowser
 from AccessGrid.Security.wxgui.CABrowser import CABrowser
+from AccessGrid.Security.wxgui.CertificateStatusBrowser import CertificateStatusBrowser
 
 class CertificateManagerDialog(wxDialog):
     def __init__(self, parent, id, title, certMgr):
@@ -35,6 +36,9 @@ class CertificateManagerDialog(wxDialog):
 
         self.caBrowser = CABrowser(self.notebook, -1, self.certMgr)
         self.notebook.AddPage(self.caBrowser, "CA Certs")
+
+        self.statusBrowser = CertificateStatusBrowser(self.notebook, -1, self.certMgr)
+        self.notebook.AddPage(self.statusBrowser, "Certificate Requests")
 
         #
         # Legacy ones
@@ -82,6 +86,7 @@ if __name__ == "__main__":
 
     import AccessGrid.Toolkit
     app = AccessGrid.Toolkit.WXGUIApplication()
+    app.Initialize()
 #    app.GetCertificateManager().InitEnvironment()
 
 #    id = app.GetCertificateManager().GetDefaultIdentity()
