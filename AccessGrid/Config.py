@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.18 2004-05-14 21:06:01 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.19 2004-07-27 19:09:40 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.18 2004-05-14 21:06:01 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.19 2004-07-27 19:09:40 eolson Exp $"
 
 import os
 import sys
@@ -65,28 +65,28 @@ class AGTkConfig:
         return self._repr_()
     
     def GetVersion(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def GetInstallDir(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def GetDocDir(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def GetLogDir(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def GetConfigDir(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def GetSharedAppDir(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def GetNodeServicesDir(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def GetServicesDir(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
 pyGlobusSetenv = None
 pyGlobusGetenv = None
@@ -123,7 +123,7 @@ class GlobusConfig:
 
         @type initEnvIfNeeded: integer
         """
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def __str__(self):
         return self._repr_()
@@ -295,7 +295,7 @@ class UserConfig:
     @type configDir: string
     """
     def __init__(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def _repr_(self):
         str = "User Configuration:\n"
@@ -362,28 +362,28 @@ class UserConfig:
         self._CopyDir(oldPath, newPath)
     
     def GetProfile(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def GetBaseDir(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def GetLogDir(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def GetTempDir(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
     
     def GetConfigDir(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def GetSharedAppDir(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def GetNodeServicesDir(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def GetServicesDir(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
 class SystemConfig:
     """
@@ -395,7 +395,7 @@ class SystemConfig:
     @type tempDir: string
     """
     def __init__(self):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def _repr_(self):
         str = "System Configuration:\n"
@@ -417,7 +417,7 @@ class SystemConfig:
         """
         Get the path to the system temp directory.
         """
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
         
     def GetHostname(self):
         """
@@ -651,10 +651,10 @@ class MimeConfig:
         raise Exception(err_str)
     
     def GetMimeType(extension = None):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def GetMimeCommands(mimeType = None, ext = None):
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
 
     def RegisterMimeType():
-        raise "This should not be called directly, but through a subclass."
+        raise Exception, "This should not be called directly, but through a subclass."
