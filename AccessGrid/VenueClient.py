@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.122 2003-10-14 20:51:16 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.123 2003-10-20 18:41:55 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.122 2003-10-14 20:51:16 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.123 2003-10-20 18:41:55 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -402,23 +402,6 @@ class VenueClient( ServiceBase):
     def ModifyStreamEvent(self, event):
         log.debug("Got Modify Stream Event")
         data = event.data
-
-        # Modify the stream in the node service
-        # (for now, remove and add it)
-        if self.nodeServiceUri != None:
-            try:
-                Client.Handle(self.nodeServiceUri).GetProxy().RemoveStream(data)
-
-                stream = data
-                if stream.__dict__.has_key('networkLocations'):
-                    try:
-                        self.UpdateStream(stream)
-                    except NetworkLocationNotFound, e:
-                        log.debug("Couldn't update stream with transport/provider info")
-    
-                Client.Handle(self.nodeServiceUri).GetProxy().AddStream(data)
-            except:
-                log.exception("Error modifying stream")
 
         # Modify the local stream store
         for i in range(len(self.streamDescList)):
