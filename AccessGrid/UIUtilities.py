@@ -1,18 +1,14 @@
 #-----------------------------------------------------------------------------
 # Name:        UIUtilities.py
 # Purpose:     
-#
-# Author:      Everyone
-#
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.64 2004-09-09 22:12:12 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.65 2004-09-10 01:41:09 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.64 2004-09-09 22:12:12 turam Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: UIUtilities.py,v 1.65 2004-09-10 01:41:09 judson Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -83,15 +79,19 @@ class BugReportCommentDialog(wxDialog):
         wxDialog.__init__(self, parent, -1, "Bug Report")
         self.text = wxStaticText(self, -1, "Please, enter a description of the problem you are experiencing.  You may \nreceive periodic mailings from us with information on this problem.  If you \ndo not wish to be contacted, please leave the 'E-mail' field blank.", style=wxALIGN_LEFT)
         
-        self.commentBox = wxTextCtrl(self, -1, "", size = wxSize(300,100), style = wxTE_MULTILINE, validator = TextValidator())
+        self.commentBox = wxTextCtrl(self, -1, "", size = wxSize(300,100),
+                                     style = wxTE_MULTILINE,
+                                     validator = TextValidator())
         self.line = wxStaticLine(self, -1)
         
-        # I have to add this due to a wxPython bug. A wxTextCtrl that has wxTE_MULTILINE
-        # flag set ignores focus of next child. If I don't have tmp, the email text ctrl
-        # will never get focus when you use the TAB key.
-        # --
+        # I have to add this due to a wxPython bug. A wxTextCtrl that
+        # has wxTE_MULTILINE flag set ignores focus of next child. If
+        # I don't have tmp, the email text ctrl will never get focus
+        # when you use the TAB key.  --
+
         if IsWindows():
-            temp = wxBitmapButton(self, -1, wxEmptyBitmap(1,1), size = wxSize(1,1))
+            temp = wxBitmapButton(self, -1, wxEmptyBitmap(1,1),
+                                  size = wxSize(1,1))
         # --
         
         self.commentText =  wxStaticText(self, -1, "Comment:")
@@ -137,7 +137,7 @@ class TextValidator(wxPyValidator):
     def Clone(self):
         return TextValidator()
 
-    def Validate(self, win):
+    def Validate(self):
         tc = self.GetWindow()
         val = tc.GetValue()
 
@@ -148,14 +148,13 @@ class TextValidator(wxPyValidator):
         return true
 
     def TransferToWindow(self):
-        return true # Prevent wxDialog from complaining.
+        # Prevent wxDialog from complaining.
+        return true 
 
     def TransferFromWindow(self):
-        return true # Prevent wxDialog from complaining.
+        # Prevent wxDialog from complaining.
+        return true 
         
-
-
-
 class ErrorDialogWithTraceback:
     def __init__(self, frame, text, text2 = "", style = wxOK | wxICON_ERROR):
         
@@ -165,7 +164,7 @@ class ErrorDialogWithTraceback:
        for x in traceback_string_list:
            print(x)
            tbstr += x + "\n"
-
+       import sys
        print sys.exc_type
        print sys.exc_value
        info = text + "\n\n"+"Type: "+str(sys.exc_type)+"\n"+"Value: "+str(sys.exc_value) + "\nTraceback:\n" + tbstr
@@ -173,7 +172,6 @@ class ErrorDialogWithTraceback:
        errorDialog.ShowModal()
        errorDialog.Destroy()
         
-
 class ProgressDialog(wxProgressDialog):
     count = 1
 
@@ -275,52 +273,18 @@ class AppSplash(wxSplashScreen):
     def OnClose(self, evt):
         evt.Skip()
     
-# def GetMimeCommands(filename = None, type = None, ext = None):
-#      """
-#      This function returns anything in the local mime type database for the
-#      type or extension specified.
-#      """
-#      cdict = dict()
-    
-#      if type != None:
-#          fileType = mtm.GetFileTypeFromMimeType(type)
-#      elif ext != None:
-#          fileType = mtm.GetFileTypeFromExtension(ext)
-
-#      if fileType != None and filename != None:
-#          mimeType = fileType.GetMimeType()
-#          if mimeType != None:
-#              cmds = fileType.GetAllCommands(filename, mimeType)
-#              if None == cmds:
-#                  verbs = []
-#                  cmdlines = []
-#              else:
-#                  verbs, cmdlines = cmds
-#              for i in range(0, len(verbs)):
-#                  cdict[string.lower(verbs[i])] = cmdlines[i]
-#          else:
-#              cdict = None
-#      else:
-#          cdict = None
-
-#      return cdict
-
 def ProgressDialogTest():
-    max = 100
+    maxSize = 100
      
-    dlg = ProgressDialog("Start up", "Loading Venue Client.", max)
+    dlg = ProgressDialog("Start up", "Loading Venue Client.", maxSize)
     dlg.Show()
   
     keepGoing = True
     count = 0
-    while keepGoing and count < max:
+    while keepGoing and count < maxSize:
         count = count + 1
         wxSleep(1)
-
-        if count == max / 2:
-            keepGoing = dlg.Update(count, "Half-time!")
-        else:
-            keepGoing = dlg.Update(count)
+        keepGoing = dlg.Update(count)
 
     dlg.Destroy()
 
@@ -382,25 +346,23 @@ class FileLocationWidget(wxPanel):
 
     def OnBrowse(self, event):
         path = self.path
-        dir = file = ""
+        fdir = ffile = ""
         
         if path != "":
             if os.path.isdir(path):
-                dir = path
+                fdir = path
             elif os.path.isfile(path):
-                dir, file = os.path.split(path)
+                fdir, ffile = os.path.split(path)
             else:
-                #
                 # User entered an invalid file; point the browser
                 # at the directory containing that file.
-                #
-                dir, file = os.path.split(path)
-                file = ""
+                fdir, ffile = os.path.split(path)
+                ffile = ""
 
         wildcard = "|".join(map(lambda a: "|".join(a), self.wildcardDesc))
         dlg = wxFileDialog(self, self.title,
-                           defaultDir = dir,
-                           defaultFile = file,
+                           defaultDir = fdir,
+                           defaultFile = ffile,
                            wildcard = wildcard,
                            style = wxOPEN)
         dlg.SetFilterIndex(self.lastFilterIndex)
@@ -494,7 +456,6 @@ class SecureTextCtrl(wxTextCtrl):
         if sel[0] < sel[1]:
             self.deleteSelection(sel)
             
-        # ch = k ^ 0x80
         ch = struct.pack('b', k)
 
         self.Replace(pos, pos, "*")
@@ -504,25 +465,18 @@ class SecureTextCtrl(wxTextCtrl):
     def OnKeyDown(self, event):
         k = event.GetKeyCode()
 
-        #
         # We only worry about control keys here.
-        #
         if not event.ControlDown():
             event.Skip()
             return
         
         if k == ord('V'):
-            #
             # Ctl-V
-            #
             self.doPaste()
 
         elif k == ord('C'):
-            #
             # Ctl-C
-            #
             # Don't do anything - disallow copying password.
-            #
             pass
 
         else:
@@ -569,9 +523,7 @@ class SecureTextCtrl(wxTextCtrl):
             if pos < self.GetLastPosition():
                 self.SetInsertionPoint(pos + 1)
         elif k == ord('V') - 64:
-            #
             # Ctl-V
-            #
             self.doPaste()
         else:
             event.Skip()
@@ -653,7 +605,6 @@ class PassphraseVerifyDialog(wxDialog):
                           size = size,
                           style = wxDEFAULT_DIALOG_STYLE)
 
-        #
         # Need to create a panel so that tab traversal works properly.
         # Should be fixed in wx 2.5.
         #
@@ -663,19 +614,11 @@ class PassphraseVerifyDialog(wxDialog):
         panel = wxPanel(self, -1, style = wxTAB_TRAVERSAL)
         topsizer = wxBoxSizer(wxVERTICAL)
 
-        #
-        # can't do this with the intervening panel 
-        #ts = self.CreateTextSizer(message1)
-        #topsizer.Add(ts, 0, wxALL, 10)
-
         txt = wxStaticText(panel, -1, message1)
         topsizer.Add(txt, 0, wxALL, 10)
 
         self.text1 = SecureTextCtrl(panel, -1, size = wxSize(300, -1))
         topsizer.Add(self.text1, 0, wxEXPAND | wxLEFT | wxRIGHT, 15)
-
-        #ts = self.CreateTextSizer(message2)
-        #topsizer.Add(ts, 0, wxALL, 10)
 
         txt = wxStaticText(panel, -1, message2)
         topsizer.Add(txt, 0, wxALL, 10)
@@ -683,9 +626,6 @@ class PassphraseVerifyDialog(wxDialog):
         self.text2 = SecureTextCtrl(panel, -1, size = wxSize(300, -1))
 
         topsizer.Add(self.text2, 0, wxEXPAND | wxLEFT | wxRIGHT, 15)
-
-        # buttons = self.CreateButtonSizer(wxOK | wxCANCEL)
-        # topsizer.Add(buttons, 0, wxCENTRE | wxALL, 10)
 
         b = wxButton(panel, wxID_OK, "OK")
         topsizer.Add(b, 0, wxALIGN_RIGHT | wxALL, 10)
@@ -708,10 +648,7 @@ class PassphraseVerifyDialog(wxDialog):
 
     def OnOK(self, event):
 
-        #
         # Doublecheck to see if the passphrases match.
-        #
-        
         if self.text1.GetChars() != self.text2.GetChars():
             dlg = wxMessageDialog(self,
                                   "Entered passphrases do not match.",
@@ -731,7 +668,7 @@ class PassphraseVerifyDialog(wxDialog):
 
 def PassphraseDialogTest():
     
-    a = wxPySimpleApp()
+    wxPySimpleApp()
 
     d = PassphraseDialog(None, "Message", "Caption")
 
@@ -744,7 +681,7 @@ def PassphraseDialogTest():
         
 def PassphraseVerifyDialogTest():
     
-    a = wxPySimpleApp()
+    wxPySimpleApp()
 
     d = PassphraseVerifyDialog(None, "Message", "And again", "Caption")
 
@@ -755,9 +692,7 @@ def PassphraseVerifyDialogTest():
 
     print chars
    
-############################################################################
 # Add URL Base Dialog
-
 class AddURLBaseDialog(wxDialog):
        
     def __init__(self, parent, id, name, type = 'venue'):
@@ -797,10 +732,7 @@ class AddURLBaseDialog(wxDialog):
         return self.address.GetValue()
 
 
-################################################################################
-#
 # Edit URL Base Dialog
-
 class EditURLBaseDialog(wxDialog):
     ID_DELETE = wxNewId() 
     ID_RENAME = wxNewId()
@@ -830,7 +762,6 @@ class EditURLBaseDialog(wxDialog):
         self.menu = wxMenu()
         self.menu.Append(self.ID_RENAME,"Rename", "Rename selected %s" %self.type)
         self.menu.Append(self.ID_DELETE,"Delete", "Delete selected %s" %self.type)
-        #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
         self.Layout()
         self.__PopulateList()
         self.__SetEvents()
@@ -878,7 +809,7 @@ class EditURLBaseDialog(wxDialog):
 
     def OnRename(self, event):
         if(self.dictCopy.has_key(self.currentItem)):
-            renameDialog = RenameDialog(self, -1, "Rename %s"%self.type, type = self.type)
+            RenameDialog(self, -1, "Rename %s"%self.type, type = self.type)
             
         else:
             text = "Please, select the %s you want to rename"%self.type
@@ -985,30 +916,28 @@ class MyUrlsEditValidator(wxPyValidator):
         return true
     
     def TransferToWindow(self):
-        return true # Prevent wxDialog from complaining.
+        # Prevent wxDialog from complaining.
+        return true 
 
     def TransferFromWindow(self):
-        return true # Prevent wxDialog from complaining.
-                
-
-
+        # Prevent wxDialog from complaining.
+        return true 
         
 if __name__ == "__main__":
     app = wxPySimpleApp()
 
-    #ProgressDialogTest()
+    ProgressDialogTest()
     AboutDialogTest()
 
 
     # Test for bug report
-    #b = BugReportCommentDialog(None)
-    #b.ShowModal()
-    #b.Destroy()
+    b = BugReportCommentDialog(None)
+    b.ShowModal()
+    b.Destroy()
 
     # Test for error dialog (includes bug report)
-    #e = ErrorDialog(None, "test", "Enter Venue Error",
-    #                style = wxOK  | wxICON_ERROR)
-    
+    e = ErrorDialog(None, "test", "Enter Venue Error",
+                    style = wxOK  | wxICON_ERROR)
     
     app.MainLoop()
     
