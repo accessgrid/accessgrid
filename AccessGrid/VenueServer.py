@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.97 2003-09-17 19:35:21 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.98 2003-09-17 21:17:22 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.97 2003-09-17 19:35:21 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.98 2003-09-17 21:17:22 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -1473,6 +1473,9 @@ class VenueServer(ServiceBase.ServiceBase):
         GetAdministrators returns a list of adminisitrators for this
         VenueServer.
         """
+        if not self._IsInRole("VenueServer.Administrators"):   
+            raise NotAuthorized
+
         role = self.GetRoleManager().GetRole("VenueServer.Administrators")
         return role.GetSubjectListAsStrings()
 
