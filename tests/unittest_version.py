@@ -60,7 +60,7 @@ class AGVersionTestCase(unittest.TestCase):
        assert a.AsTuple3() == (2,1,0)
        assert b.AsTuple3() == (2,1,1)
 
-    def testC(self):
+    def testD(self):
        a = CreateVersionFromString("2.0.1")
        b = CreateVersionFromString("2.1.1")
        assert not a == b
@@ -74,7 +74,7 @@ class AGVersionTestCase(unittest.TestCase):
        assert a.AsTuple3() == (2,0,1)
        assert b.AsTuple3() == (2,1,1)
 
-    def testD(self):
+    def testE(self):
        a = CreateVersionFromString("0.2.3")
        b = CreateVersionFromString("1.2.3")
        assert not a == b
@@ -88,7 +88,7 @@ class AGVersionTestCase(unittest.TestCase):
        assert a.AsTuple3() == (0,2,3)
        assert b.AsTuple3() == (1,2,3)
 
-    def testD(self):
+    def testF(self):
        a = CreateVersionFromString("1.2.3")
        b = CreateVersionFromString("0.2.3")
        assert not a == b
@@ -101,6 +101,34 @@ class AGVersionTestCase(unittest.TestCase):
        assert b.AsString() == "0.2.3"
        assert a.AsTuple3() == (1,2,3)
        assert b.AsTuple3() == (0,2,3)
+
+    def testG(self):
+       a = CreateVersionFromString("2.1.1")
+       b = CreateVersionFromString("2.1")
+       assert not a == b
+       assert not a <= b
+       assert a >= b
+       assert not a < b
+       assert a > b
+       assert a <> b
+       assert a.AsString() == "2.1.1"
+       assert b.AsString() == "2.1.0"
+       assert a.AsTuple3() == (2,1,1)
+       assert b.AsTuple3() == (2,1,0)
+
+    def testH(self):
+       a = CreateVersionFromString("2.1")
+       b = CreateVersionFromString("2.1.1")
+       assert not a == b
+       assert a <= b
+       assert not a >= b
+       assert a < b
+       assert not a > b
+       assert a <> b
+       assert a.AsString() == "2.1.0"
+       assert b.AsString() == "2.1.1"
+       assert a.AsTuple3() == (2,1,0)
+       assert b.AsTuple3() == (2,1,1)
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
