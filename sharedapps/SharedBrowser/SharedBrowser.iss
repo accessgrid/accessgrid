@@ -1,10 +1,10 @@
 ;
-; RCS-ID: $Id: SharedBrowser.iss,v 1.3 2003-05-29 18:41:37 leggett Exp $
+; RCS-ID: $Id: SharedBrowser.iss,v 1.4 2003-05-30 08:38:01 judson Exp $
 ;
 
-#define SourceDir "C:\AccessGridBuild\AccessGrid\sharedapps\SharedBrowser"
-#define OutputDir "C:\AccessGridBuild\Builds"
-#define AppName "Access Grid Shared Browser"
+#define SourceDir "C:\Software\AccessGrid\AccessGrid\sharedapps\SharedBrowser"
+#define OutputDir "C:\xfer"
+#define AppName "AG Shared Browser"
 #define AppVersionLong "1.0-1"
 #define AppVersionShort "1.0-1"
 #define AppShortName "SharedBrowser"
@@ -16,8 +16,6 @@
 
 [_ISTool]
 EnableISX=true
-LogFile=C:\AccessGridBuild\Builds\{#AppShortName}-installer.log
-LogFileAppend=false
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -52,7 +50,7 @@ Compression=zip/9
 MinVersion=0,5.00.2195
 
 DisableDirPage=false
-DefaultGroupName=Access Grid Toolkit
+
 DefaultDirName={reg:HKLM\SOFTWARE\Access Grid Toolkit\2.0,ConfigPath|{commonappdata}\AccessGrid}\applications\{#AppShortName}
 UsePreviousAppDir=false
 UserInfoPage=false
@@ -61,10 +59,10 @@ WindowVisible=false
 UninstallDisplayName={#AppName}
 DisableStartupPrompt=false
 WindowResizable=false
-AlwaysShowComponentsList=true
-ShowComponentSizes=true
-FlatComponentsList=true
-AllowNoIcons=false
+AlwaysShowComponentsList=false
+ShowComponentSizes=false
+FlatComponentsList=false
+AllowNoIcons=true
 DirExistsWarning=auto
 DisableFinishedPage=false
 DisableReadyMemo=true
@@ -77,6 +75,8 @@ UninstallFilesDir={app}\uninst
 ShowTasksTreeLines=true
 PrivilegesRequired=admin
 UninstallDisplayIcon={app}\ag.ico
+UsePreviousGroup=false
+DefaultGroupName=AGTk 2.0
 
 [Files]
 ; The Python Module: AccessGrid
