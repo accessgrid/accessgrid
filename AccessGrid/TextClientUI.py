@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClientUI.py,v 1.14 2003-03-13 23:41:56 lefvert Exp $
+# RCS-ID:      $Id: TextClientUI.py,v 1.15 2003-03-14 15:49:55 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -161,7 +161,7 @@ class TextClientUI(wxPanel):
     
     def __init__(self, *args, **kwds):
         wxPanel.__init__(self, *args, **kwds)
-        self.TextOutput = wxTextCtrl(self, wxNewId(), "", style=wxTE_MULTILINE|wxTE_READONLY | wxTE_RICH2)
+        self.TextOutput = wxTextCtrl(self, wxNewId(), "", style=wxTE_MULTILINE|wxTE_READONLY)
         self.TextOutput.SetToolTipString("Text chat")
         self.textInputId = wxNewId()
         self.TextInput = wxTextCtrl(self, self.textInputId, "", style=wxTE_PROCESS_ENTER)
