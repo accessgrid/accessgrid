@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.318 2004-01-29 20:47:34 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.319 2004-02-13 21:52:38 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.318 2004-01-29 20:47:34 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.319 2004-02-13 21:52:38 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -31,6 +31,7 @@ import cPickle
 import pyGlobus.utilc
 import pyGlobus.sslutilsc
 import re
+import copy
 
 from time import localtime , strftime
 log = logging.getLogger("AG.VenueClientUIClasses")
@@ -1874,15 +1875,15 @@ class ContentListPanel(wxPanel):
 
  
         self.tree.SetItemData(service, wxTreeItemData(profile)) 
-        self.serviceDict[profile.name] = service
+        self.serviceDict[profile.id] = service
         self.tree.SortChildren(self.services)
         self.tree.Refresh()
         #self.tree.Expand(self.services)
         
     def RemoveService(self, profile):
-        if(self.serviceDict.has_key(profile.name)):
-            id = self.serviceDict[profile.name]
-            del self.serviceDict[profile.name]
+        if(self.serviceDict.has_key(profile.id)):
+            id = self.serviceDict[profile.id]
+            del self.serviceDict[profile.id]
             if(id != None):
                 self.tree.Delete(id)
 
@@ -2318,15 +2319,32 @@ class ContentListPanel(wxPanel):
             dataView.SetDescription(desc)
             dataView.ShowModal()
             dataView.Destroy()
+
         elif isinstance(desc, ServiceDescription):
             serviceView = ServiceDialog(self, -1, "Service Properties")
             serviceView.SetDescription(desc)
-            serviceView.ShowModal()
+            if(serviceView.ShowModal() == wxID_OK):
+                # Get new description
+                newDesc = serviceView.GetDescription()
+              
+                # If name or description is different, change the service in venue
+                if newDesc.name != desc.name or newDesc.description != desc.description:
+                    self.app.venueClient.client.UpdateService(newDesc)
+                     
             serviceView.Destroy()
+
         elif isinstance(desc, ApplicationDescription):
             serviceView = ServiceDialog(self, -1, "Application Properties")
             serviceView.SetDescription(desc)
-            serviceView.ShowModal()
+
+            # Get new description
+            if(serviceView.ShowModal() == wxID_OK):
+                newDesc = serviceView.GetDescription()
+              
+                # If name or description is different, change the application in venue
+                if newDesc.name != desc.name or newDesc.description != desc.description:
+                    self.app.venueClient.client.UpdateApplication(newDesc)
+                     
             serviceView.Destroy()
                 
     def StartCmd(self, command, item=None, namedVars=None, verb=None):
@@ -3242,6 +3260,7 @@ class TextValidator(wxPyValidator):
 class ServiceDialog(wxDialog):
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title)
+        self.description = None
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
         self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,20))
@@ -3268,19 +3287,31 @@ class ServiceDialog(wxDialog):
         '''
         This method is called if you on want to view the dialog.
         '''
+        # make a copy of the description
+        self.description = copy.copy(serviceDescription)
+
         self.nameCtrl.SetValue(serviceDescription.name)
         self.uriCtrl.SetValue(serviceDescription.uri)
         self.typeCtrl.SetValue(serviceDescription.mimeType)
         self.descriptionCtrl.SetValue(serviceDescription.description)
         self.__setEditable(false)
         self.cancelButton.Destroy()
-       
+
+    def GetDescription(self):
+        '''
+        Returns the new description
+        '''
+        self.description.name = self.nameCtrl.GetValue()
+        self.description.description = self.descriptionCtrl.GetValue()
+            
+        return self.description
+
     def __setEditable(self, editable):
         if not editable:
-            self.nameCtrl.SetEditable(false)
+            #self.nameCtrl.SetEditable(false)
             self.uriCtrl.SetEditable(false)
             self.typeCtrl.SetEditable(false)
-            self.descriptionCtrl.SetEditable(false)
+            #self.descriptionCtrl.SetEditable(false)
           
         else:
             self.nameCtrl.SetEditable(true)
