@@ -175,7 +175,7 @@ class PersonalNodeManager:
         #
         # OK, OK, so this isn't initializing event objects but it is sort of related.
         #
-        myid = win32process.GetCurrentProcessId()
+        myid = win32api.GetCurrentProcessId()
 
         self.nodeServiceArg = "AG_node_svc_init:AG_svc_mgr_node_svc_synch:AG_node_svc_term:%s"  % (myid)
         self.serviceManagerArg = "AG_svc_mgr_init:AG_svc_mgr_node_svc_synch:AG_svc_mgr_term:%s" % (myid)
