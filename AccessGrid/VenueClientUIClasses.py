@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.125 2003-04-03 22:58:45 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.126 2003-04-03 23:06:55 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1598,6 +1598,7 @@ class SaveFileDialog(wxDialog):
         sizer.Add(self.button, 0, wxCENTER)
 
         self.SetSizer(sizer)
+        sizer.Fit(self)
         self.SetAutoLayout(1)
 
     def OnButton(self, event):
@@ -1645,11 +1646,11 @@ class UploadFilesDialog(wxDialog):
 
         self.Centre()
         self.button = wxButton(self, wxNewId(), "Cancel")
-        self.text = wxStaticText(self, -1, "", size = wxSize(100, 20))
+        self.text = wxStaticText(self, -1, "", size = wxSize(300, 20))
 
         self.cancelFlag = 0
 
-        self.progress = wxGauge(self, wxNewId(), 100,  size = wxSize(100, 20),
+        self.progress = wxGauge(self, wxNewId(), 100,  size = wxSize(300, 20),
                                 style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH)
 
         EVT_BUTTON(self, self.button.GetId(), self.OnButton)
@@ -1667,6 +1668,7 @@ class UploadFilesDialog(wxDialog):
         sizer.Add(self.button, 0, wxCENTER|wxALL, 5)
 
         self.SetSizer(sizer)
+        sizer.Fit(self)
         self.SetAutoLayout(1)
       
     def OnButton(self, event):
