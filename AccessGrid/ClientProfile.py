@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.2 2003-01-07 20:27:13 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.3 2003-01-13 18:37:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,6 +20,7 @@ class ClientProfile:
     The client profile is all public data, however only the author of the
     profile is allowed to modify it.
     """
+
     profileFile = ''
     profileType = ''
     name = ''
@@ -31,6 +32,9 @@ class ClientProfile:
     venueClientURL = ''
     technicalSupportInformation = ''
     homeVenue = ''
+    privateId = None
+    distinguishedName = None
+    capabilities = []
 
     _defaultProfile = {
         'VenueClient.profileType' : 'user',
