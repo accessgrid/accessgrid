@@ -971,13 +971,21 @@ def FindGlobusCertsWin32():
         try:
             (val, type) = _winreg.QueryValueEx(k, name)
 
+            #
+            # We bypass the existence test for the globus user proxy
+            # in the event that it doesn't exist yet.
+            #
 
-            if os.access(val, os.R_OK):
+            if name == 'x509_user_proxy':
                 log.debug("FindGlobusCertsWin32: Found name=%s val=%s", name, val)
                 vals[name] = val
             else:
-                log.debug("FindGlobusCertsWin32: Found name=%s val=%s, but file does not exist", name, val)
-                
+                if os.access(val, os.R_OK):
+                    log.debug("FindGlobusCertsWin32: Found name=%s val=%s", name, val)
+                    vals[name] = val
+                else:
+                    log.debug("FindGlobusCertsWin32: Found name=%s val=%s, but file does not exist", name, val)
+                    
         except Exception, e:
             log.exception("FindGlobusCertsWin32: %s not found", name)
             pass
