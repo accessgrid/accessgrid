@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.8 2003-03-24 20:26:12 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.9 2003-03-25 21:38:06 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -97,7 +97,7 @@ class EventClient(Thread):
                 except:
                     log.exception("Couldn't close socket!")
 
-            self.sock.close()
+        self.sock.close()
 
     def Send(self, data):
         """
