@@ -1,4 +1,5 @@
 import sys, os, re
+import shutil
 import zipfile
 
 """
@@ -63,7 +64,7 @@ for thing in things:
         continue
     
     # if associated file found, zip em up together in the outputDir
-    zipFile = thing + ".shared_app_pkg"
+    zipFile = thing + ".zip"
     long_zipFile = os.path.join(absOutputDir, zipFile)
     print "Writing Package File:", long_zipFile
     zf = zipfile.ZipFile( long_zipFile, "w" )
@@ -74,3 +75,5 @@ for thing in things:
 
     zf.close()
 
+    # Copy to destination name
+    shutil.copyfile(long_zipFile, log_zipFile.replace("zip", "agpkg"))
