@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.72 2003-05-29 15:25:44 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.73 2003-06-26 21:17:36 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,6 +14,7 @@ import sys
 import urlparse
 import string
 import threading
+import cPickle
 
 import logging, logging.handlers
 
@@ -31,6 +32,9 @@ from AccessGrid import Platform
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
 from AccessGrid.Descriptions import DataDescription, ConnectionDescription
 from AccessGrid.Utilities import LoadConfig
+from AccessGrid import DataStore
+from AccessGrid.Platform import GetUserConfigDir
+
 
 class EnterVenueException(Exception):
     pass
@@ -47,9 +51,8 @@ class VenueClient( ServiceBase):
     programmatic interface to the Access Grid for a Venues User
     Interface.  The VenueClient can only be in one venue at a
     time.
-    """
-    urlToFollow = None
-    
+    """    
+
     def __init__(self, profile=None):
         """
         This client class is used on shared and personal nodes.
@@ -63,17 +66,25 @@ class VenueClient( ServiceBase):
         self.__InitVenueData__()
         self.isInVenue = 0
         self.isIdentitySet = 0
-
+        
         # attributes for follow/lead
         self.pendingLeader = None
         self.leaderProfile = None
         self.pendingFollowers = dict()
         self.followerProfiles = dict()
+        self.urlToFollow = None
+               
+        # attributes for personal data store
+        self.personalDataStorePrefix = "personalDataStore"
+        self.personalDataStorePort = 0
+        self.personalDataStorePath = os.path.join(GetUserConfigDir(), self.personalDataStorePrefix)
+        self.personalDataFile = os.path.join(self.personalDataStorePath, "myData.txt" )
+        self.requests = [] # If already requested personal data, clients public id is saved in requests.
 
-        #
+        # Create personal data store
+        self.__createPersonalDataStore()
+
         # Manage the currently-exiting state
-        #
-
         self.exiting = 0
         self.exitingLock = threading.Lock()
                           
@@ -87,7 +98,8 @@ class VenueClient( ServiceBase):
     def Heartbeat(self):
         if self.eventClient != None:
             self.eventClient.Send(HeartbeatEvent(self.venueId, self.privateId))
-                        
+            
+                                  
     def SetProfile(self, profile):
         self.profile = profile
         if(self.profile != None):
@@ -110,7 +122,45 @@ class VenueClient( ServiceBase):
         if(self.profile != None):
             self.profile.venueClientURL = self.service.get_handle()
             log.debug("AccessGrid.VenueClient::venue client serving : %s" %self.profile.venueClientURL)
-                 
+
+    def __createPersonalDataStore(self):
+        """
+        Creates the personal data storage and loads personal data
+        from file to a dictionary of DataDescriptions. If the file is removed
+        from local path, the description is not added to the list.
+        """
+        
+        log.debug("bin.VenueClient::__createPersonalDataStore: Creating personal datastore at %s using prefix %s and port %s" %(self.personalDataStorePath, self.personalDataStorePrefix,self.personalDataStorePort))
+        
+        if not os.path.exists(self.personalDataStorePath):
+            try:
+                os.mkdir(self.personalDataStorePath)
+            except OSError, e:
+                log.exception("bin.VenueClient::__createPersonalDataStore: Could not create personal data storage path")
+                self.personalDataStorePath = None
+                
+        if self.personalDataStorePath:
+            self.dataStore = DataStore.DataStore(self.personalDataStorePath, self.personalDataStorePrefix)
+            self.transferEngine = DataStore.GSIHTTPTransferServer(('',
+                                                                   self.personalDataStorePort))
+            self.transferEngine.run()
+            self.transferEngine.RegisterPrefix(self.personalDataStorePrefix, self)
+            self.dataStore.SetTransferEngine(self.transferEngine)
+
+            #
+            # load personal data from file
+            #
+            
+            log.debug("AccessGrid.VenueClient::__createPersonalDataStore: Load personal data from file")
+            if os.path.exists(self.personalDataFile):
+                try:
+                    file = open(self.personalDataFile, 'r')
+                    dList = cPickle.load(file)
+                    self.dataStore.LoadPersistentData(dList)
+                    file.close()
+                except:
+                    log.exception("Personal data could not be added")
+                    
     #
     # Event Handlers
     #
@@ -253,7 +303,7 @@ class VenueClient( ServiceBase):
             #
             # This is a non fatal error, users should be notified but still enter the venue
             #
-            log.exception("AccessGrid.VenueClient::Get node capabilities failed")
+            #log.exception("AccessGrid.VenueClient::Get node capabilities failed")
             errorInNode = 1
                         
         #
@@ -262,7 +312,9 @@ class VenueClient( ServiceBase):
 
         log.debug("Invoke venue enter")
         (venueState, self.privateId, streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
-      
+
+       
+                
         #
         # construct a venue state that consists of real objects
         # instead of the structs we get back from the SOAP call
@@ -361,16 +413,24 @@ class VenueClient( ServiceBase):
         self.eventClient = EventClient(self.privateId,
                                        self.venueState.eventLocation,
                                        self.venueState.uniqueId)
+
+       
         for e in coherenceCallbacks.keys():
             self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
             
         self.eventClient.start()
         self.eventClient.Send(ConnectEvent(self.venueState.uniqueId,
                                            self.privateId))
-                           
+                               
         self.heartbeatTask = self.houseKeeper.AddTask(self.Heartbeat, 5)
         self.heartbeatTask.start()
 
+        #
+        # Send eventClient to personal dataStore and get personaldatastore information
+        #
+        self.dataStore.SetEventDistributor(self.eventClient, self.venueState.uniqueId)
+        self.dataStoreUploadUrl,self.dataStoreLocation = Client.Handle( URL ).get_proxy().GetDataStoreInformation()
+        
         # 
         # Update the node service with stream descriptions
         #
@@ -389,7 +449,7 @@ class VenueClient( ServiceBase):
             #
             # This is a non fatal error, users should be notified but still enter the venue
             #
-            log.exception("AccessGrid.VenueClient::Exception configuring node service streams")
+            #log.exception("AccessGrid.VenueClient::Exception configuring node service streams")
             errorInNode = 1
                  
         # Finally, set the flag that we are in a venue
@@ -489,6 +549,14 @@ class VenueClient( ServiceBase):
             except Exception, e:
                 log.info("don't have a node service")
 
+        #
+        # Save personal data
+        #
+        if self.dataStore:
+            file = open(self.personalDataFile, 'w')
+            cPickle.dump(self.dataStore.GetDataDescriptions(), file)
+            file.close()
+
         self.__InitVenueData__()
         self.isInVenue = 0
         self.exitingLock.acquire()
@@ -565,6 +633,65 @@ class VenueClient( ServiceBase):
                         applicationList.append( app )
         return applicationList
 
+    #
+    # Method support for personal data
+    #
+
+    def GetDataStoreInformation(self):
+        """
+        Retrieve an upload descriptor and a URL to personal DataStore 
+        
+        **Returns:**
+        
+        *(upload description, url)* the upload descriptor to the DataStore
+        and the url to the DataStore SOAP service.
+        
+        """
+        
+        if self.dataStore is None:
+            return ""
+        else:
+            return self.dataStore.GetUploadDescriptor(), self.dataStore.GetLocation()
+        
+    GetDataStoreInformation.soap_export_as = "GetDataStoreInformation"
+
+
+    def GetPersonalData(self, clientProfile):
+        '''
+        Get personal data from client
+        
+        **Arguements**
+            *clientProfile* of the person we want to get data from
+        '''
+        url = clientProfile.venueClientURL
+        id = clientProfile.publicId
+
+        log.debug("bin.VenueClient.GetPersonalData")
+        
+        #
+        # After initial request, personal data will be updated via events.
+        #
+      
+        if not id in self.requests:
+            log.debug("bin.VenueClient.GetPersonalData: The client has NOT been queried for personal data yet %s", clientProfile.name)
+            self.requests.append(id)
+         
+            #
+            # If this is my data, ignore remote SOAP call
+            #
+                       
+            if url == self.profile.venueClientURL:
+                log.debug('bin.VenueClient.GetPersonalData: I am trying to get my own data')
+                return self.dataStore.GetDataDescriptions()
+            else:
+                log.debug("bin.VenueClient.GetPersonalData: This is somebody else's data")
+                uploadDescriptor, dataStoreUrl = Client.Handle(url).get_proxy().GetDataStoreInformation()
+                dataDescriptionList = Client.Handle(dataStoreUrl).get_proxy().GetDataDescriptions()
+                return dataDescriptionList
+        else:
+            log.debug("bin.VenueClient.GetPersonalData: The client has been queried for personal %s" %clientProfile.name)
+                        
+         
     #
     # Method support for FOLLOW
     #
