@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.30 2003-02-07 20:51:05 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.31 2003-02-07 21:04:37 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -81,7 +81,7 @@ class VenueClientUI(wxApp, VenueClient):
         self.profile = ClientProfile(self.profilePath)
                   
         if self.profile.IsDefault():  # not your profile
-            self.__openProfileDialog(self.profile)
+            self.__openProfileDialog()
         else:
             self.__startMainLoop(self.profile)
 
