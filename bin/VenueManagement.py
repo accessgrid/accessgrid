@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.103 2003-09-17 23:11:25 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.104 2003-09-18 16:29:20 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.103 2003-09-17 23:11:25 eolson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.104 2003-09-18 16:29:20 judson Exp $"
 
 import webbrowser
 import string
@@ -53,6 +53,8 @@ class VenueManagementClient(wxApp):
     application as well as the VenueManagementTabs and statusbar.
     """
     ID_FILE_EXIT = wxNewId()
+    ID_SERVER_CHECKPOINT = wxNewId()
+    ID_SERVER_SHUTDOWN = wxNewId()
     ID_HELP_ABOUT = wxNewId()
     ID_HELP_MANUAL =  wxNewId()
 
@@ -90,6 +92,8 @@ class VenueManagementClient(wxApp):
 
     def __setEvents(self):
         EVT_MENU(self, self.ID_FILE_EXIT, self.Exit)
+        EVT_MENU(self, self.ID_SERVER_CHECKPOINT, self.Checkpoint)
+        EVT_MENU(self, self.ID_SERVER_SHUTDOWN, self.Shutdown)
         EVT_CLOSE(self, self.OnCloseWindow)
         EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialog)
         EVT_MENU(self, self.ID_HELP_MANUAL,
@@ -101,6 +105,15 @@ class VenueManagementClient(wxApp):
         self.fileMenu = wxMenu()
         self.fileMenu.Append(self.ID_FILE_EXIT,"&Exit", "Quit Venue Management")
         self.menubar.Append(self.fileMenu, "&File")
+
+        self.serverMenu = wxMenu()
+        self.serverMenu.Append(self.ID_SERVER_CHECKPOINT, "&Checkpoint",
+                               "Checkpoint the server")
+        
+        self.serverMenu.Append(self.ID_SERVER_SHUTDOWN, "&Shutdown",
+                               "Shutdown the server")
+
+        self.menubar.Append(self.serverMenu, "&Server")
         
         self.helpMenu = wxMenu()
         self.helpMenu.Append(self.ID_HELP_MANUAL, "Venue Management &Help",
@@ -154,13 +167,17 @@ class VenueManagementClient(wxApp):
     def Exit(self, event):
         self.frame.Close(true)
 
+    def Checkpoint(self, event):
+        self.server.Checkpoint()
+    
+    def Shutdown(self, event):
+        self.server.Shutdown(0)
+    
     def OnCloseWindow(self, event):
         self.frame.Destroy()
      
     def ConnectToServer(self, URL):
         log.debug("VenueManagementClient.ConnectToServer: Connect to server %s" %URL)
-
-        handle = Client.Handle(URL)
 
         certMgt = Toolkit.GetApplication().GetCertificateManager()
         if not certMgt.HaveValidProxy():
@@ -246,11 +263,6 @@ class VenueManagementClient(wxApp):
                     dp.changeButton.Enable(true)
                     dp.intervalButton.SetValue(true)
 
-                # fill in storage location
-                storageLocation = self.server.GetStorageLocation()
-                log.debug("VenueManagementClient.ConnectToServer: Set storage location: %s" %storageLocation)
-                dp.storageLocation.SetLabel(storageLocation)
-
                 # fill in address
                 if self.address.addressText.FindString(self.serverUrl) == wxNOT_FOUND:
                     log.debug("VenueManagementClient.ConnectToServer: Set address: %s" %self.serverUrl)
@@ -281,28 +293,6 @@ class VenueManagementClient(wxApp):
                 ErrorDialog(None, text, "Venue Server Error",
                             style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
                 
-        #else:
-        #    certMgt = Toolkit.GetApplication().GetCertifiateManager()
-        #    if not certMgt.HaveValidProxy():
-        #        text = 'You do not have a valid proxy.' +\
-        #               '\nPlease, run "grid-proxy-init" on the command line"'
-        #        text2 = 'Invalid proxy'
-        #        log.debug(text)
-
-        #    else:
-        #        text = 'The venue URL you specified is not valid'
-        #        text2 = 'Invalid URL'
-        
-        #        if(self.serverUrl != None):
-        #            self.address.addressText.SetValue(self.serverUrl)
-        #        else:
-        #            self.address.addressText.SetValue('https://localhost:8000/VenueServer')
-
-        #    dlg = wxMessageDialog(self.frame, text, text2, style = wxOK|wxICON_INFORMATION)
-        #    dlg.ShowModal()
-        #    dlg.Destroy()
-        #    log.debug(text)
-
     def GetCName(self, distinguishedName):
         index = distinguishedName.find("CN=")
         if(index > -1):
@@ -378,10 +368,6 @@ class VenueManagementClient(wxApp):
         self.server.SetEncryptAllMedia(int(value))
         self.encrypt = int(value)
 
-    def SetStorageLocation(self, location):
-        log.debug("VenueManagementClient.SetStorageLocation: %s" %location)
-        self.server.SetStorageLocation(location)
-
 class VenueServerAddress(wxPanel):
     ID_BUTTON = wxNewId()
     ID_ADDRESS = wxNewId()
@@ -441,12 +427,8 @@ class VenueManagementTabs(wxNotebook):
         self.parent = parent
         self.venuesPanel = VenuesPanel(self, application)
         self.configurationPanel = ConfigurationPanel(self, application)
-        # Services are commented out for now
-        # self.servicesPanel = ServicesPanel(self, application)
         self.AddPage(self.venuesPanel, "Venues")
         self.AddPage(self.configurationPanel, "Configuration")
-        # Services are commented out for now
-        # self.AddPage(self.servicesPanel, "Services")
         self.Enable(false)
 
 # --------------------- TAB 1 -----------------------------------
@@ -1049,9 +1031,6 @@ class DetailPanel(wxPanel):
         self.multicastBox = wxStaticBox(self, -1, "Multicast Address",
                                         size = wxSize(50, 50),
                                         name = 'multicastBox')
-        self.storageBox = wxStaticBox(self, -1, "Storage Location",
-                                      size = wxSize(500, 50),
-                                      name = 'storageBox')
         self.encryptionBox = wxStaticBox(self, -1, "Encryption",
                                          size = wxSize(500, 50),
                                          name = 'encryptionBox')
@@ -1059,16 +1038,13 @@ class DetailPanel(wxPanel):
                                           "Standard Range")
         self.intervalButton = wxRadioButton(self, self.ID_INTERVAL,
                                             "Custom Range: ")
-        self.ipAddress = wxStaticText(self, -1, "111.111.111.111/24",
+        self.ipAddress = wxStaticText(self, -1, "224.2.128.0/17",
                                       style = wxALIGN_LEFT)
         self.changeButton = wxButton(self, self.ID_CHANGE, "Change")
-        self.storageLocation = wxStaticText(self, -1,
-                                            "/home/lefvert/cool_files/")
         self.encryptionButton = wxCheckBox(self, self.ID_ENCRYPT,
                                            " Encrypt media ")
-        self.browseButton = wxButton(self, self.ID_BROWSE, "Change")
-        self.ipString = "111.111.111.111"
-        self.maskString = "24"
+        self.ipString = "224.2.128.0"
+        self.maskString = "17"
         self.__doLayout()
         self.__setEvents()
         self.ipAddress.Enable(false)
@@ -1076,8 +1052,6 @@ class DetailPanel(wxPanel):
 
     def __setEvents(self):
         EVT_BUTTON(self, self.ID_CHANGE, self.OpenIntervalDialog)
-        #EVT_BUTTON(self, self.ID_BROWSE, self.OpenBrowseDialog)
-        EVT_BUTTON(self, self.ID_BROWSE, self.OpenEditPathDialog)
         EVT_RADIOBUTTON(self, self.ID_RANDOM, self.ClickedOnRandom)
         EVT_RADIOBUTTON(self, self.ID_INTERVAL, self.ClickedOnInterval)
         EVT_CHECKBOX(self, self.ID_ENCRYPT, self.ClickedOnEncrypt)
@@ -1134,7 +1108,7 @@ class DetailPanel(wxPanel):
          
     def ClickedOnInterval(self, event):
         self.ipAddress.Enable(true)
-        self.changeButton .Enable(true)
+        self.changeButton.Enable(true)
         maskInt = int(self.maskString)
 
         try:
@@ -1192,49 +1166,6 @@ class DetailPanel(wxPanel):
             ErrorDialog(None, text, "Set Multicast Error",
                         style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
          
-    def OpenEditPathDialog(self, event):
-        dlg = EditPathDialog(self, -1, "Edit path")
-        if dlg.ShowModal() == wxID_OK:
-            try:
-                log.debug("DetailPanel.OpenEditPathDialog: Set storage location")
-                self.application.SetStorageLocation(dlg.GetPath())
-
-            except Exception, e:
-                if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
-                    text = "You are not an administrator on this server and are not authorized to set the storage location.\n"
-                    MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
-                    log.info("DetailPanel.SetAddress: Not authorized to set server's storage location.")
-                else:
-                    log.exception("DetailPanel.OpenEditPathDialog: Set storage location failed")
-                    text = "The path could not be set."
-                    ErrorDialog(None, text, "Set Path Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
-            except:
-                log.exception("DetailPanel.OpenEditPathDialog: Set storage location failed")
-                text = "The path could not be set."
-                ErrorDialog(None, text, "Set Path Error",
-                            style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
-            else:
-                self.storageLocation.SetLabel(dlg.GetPath())
-
-        dlg.Destroy()
-    
-    def OpenBrowseDialog(self, event):
-        dlg = wxDirDialog(self, "Choose a directory:")
-        if dlg.ShowModal() == wxID_OK:
-            try:
-                log.debug("DetailPanel.OpenBrowseDialog: Set storage location")
-                self.application.SetStorageLocation(dlg.GetPath())
-            except:
-                log.exception("DetailPanel.OpenBrowseDialog: Set storage location failed")
-            
-                text = "The path could not be set."
-                ErrorDialog(None, text, "Set Path Error",
-                            style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
-            else:
-                self.storageLocation.SetLabel(dlg.GetPath())
-
-        dlg.Destroy()
-
     def OpenIntervalDialog(self, event):
         MulticastDialog(self, -1, "Enter Multicast Address")
 
@@ -1253,13 +1184,6 @@ class DetailPanel(wxPanel):
         serviceSizer.Add(multicastBoxSizer, 0,  wxBOTTOM|wxEXPAND, 10)
         serviceSizer.Add(5,5)
 
-        storageBoxSizer = wxStaticBoxSizer(self.storageBox, wxVERTICAL)
-        storageBoxSizer.Add(5,5)
-        storageBoxSizer.Add(self.storageLocation, 5, wxALL, 10)
-        storageBoxSizer.Add(self.browseButton, 0, wxCENTER|wxBOTTOM, 5)
-
-        serviceSizer.Add(storageBoxSizer, 0, wxEXPAND| wxBOTTOM, 10)
-
         encryptionBoxSizer = wxStaticBoxSizer(self.encryptionBox, wxVERTICAL)
         encryptionBoxSizer.Add(self.encryptionButton, 5, wxALL, 10)
 
@@ -1268,29 +1192,6 @@ class DetailPanel(wxPanel):
         self.SetSizer(serviceSizer)
         serviceSizer.Fit(self)
         self.SetAutoLayout(1)
-
-
-# --------------------- TAB 3 -----------------------------------
-
-"""
-ServicesPanel.
-
-This is the third page in the notebook.  The page lets the user
-specify different options for services for the venue server.
-Currently, a user can choose random or interval multicast address and
-the storage location for the server.
-"""
-
-class ServicesPanel(wxPanel):
-    def __init__(self, parent, application):
-        wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
-                         wxDefaultSize, wxNO_BORDER|wxSW_3D)
-        self.application = application
-        self.__doLayout()
-
-    def __doLayout(self):
-        self.SetAutoLayout(1)
-
 
 #--------------------- DIALOGS -----------------------------------
 IP = 1
@@ -1470,8 +1371,6 @@ class VenueParamFrame(wxDialog):
             rolesSizer = wxStaticBoxSizer(wxStaticBox(self, -1, "Roles and Authorization"),
                                      wxHORIZONTAL)
 
-            #rolesSizer.Add(self.modifyRolesButton, 2, wxEXPAND | wxRIGHT , 14)
-            #rolesSizer.Add(self.rolesText, 2, wxEXPAND|wxLEFT , 14)
             roleFrameSizer = wxFlexGridSizer(1, 2, 10, 10)
             roleFrameSizer.Add(self.modifyRolesButton, 0, wxEXPAND)
             roleFrameSizer.Add(self.rolesText, 0, wxEXPAND)
@@ -1499,7 +1398,6 @@ class VenueParamFrame(wxDialog):
         self.SetAutoLayout(1)
 
     def __addEvents(self):
-        #EVT_BUTTON(self, 160, self.BrowseForImage)
         EVT_BUTTON(self, self.ID_TRANSFER, self.AddExit)
         EVT_BUTTON(self, self.ID_REMOVE_EXIT, self.RemoveExit)
         EVT_BUTTON(self, self.ID_LOAD, self.LoadRemoteVenues)
@@ -1568,13 +1466,6 @@ class VenueParamFrame(wxDialog):
 
                 self.currentVenueUrl = URL
                 self.address.SetValue(URL)
-
-            #else:
-            #    self.address.SetValue(self.currentVenueUrl)
-            #    log.exception("VenueParamFrame.__LoadVenues: could not load venues from %s"%URL)
-            #    text = "Could not load exits from server at %s" %URL
-            #    ErrorDialog(None, text, "Exits Error",
-            #                style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
 
             wxEndBusyCursor()
 
@@ -2108,49 +1999,6 @@ class ModifyAdministratorFrame(AdministratorParamFrame):
                 self.parent.ModifyAdministrator(oldName, self.name.GetValue())
 
         self.Destroy();
-
-#
-# Until we have a remote file browser
-#
-
-
-class EditPathDialog(wxDialog):
-    def __init__(self, parent, id, title):
-        wxDialog.__init__(self, parent, id, title)
-        self.Centre()
-        self.okButton = wxButton(self, wxID_OK, "Ok")
-        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
-        info = "Please, enter the path where you want the data storage to be located for this server"
-        self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
-        self.addressText = wxStaticText(self, -1, "Path: ", style=wxALIGN_LEFT)
-        self.address = wxTextCtrl(self, -1, "", size = wxSize(200,20))
-        self.Layout()
-
-    def GetPath(self):
-        return self.address.GetValue()
-
-    def Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
-        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
-        
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.addressText, 0)
-        sizer2.Add(self.address, 1, wxEXPAND)
-        
-        sizer1.Add(sizer2, 0, wxEXPAND | wxALL, 20)
-        
-        sizer3 =  wxBoxSizer(wxHORIZONTAL)
-        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
-        
-        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer.Add(sizer3, 0, wxALIGN_CENTER)
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.SetAutoLayout(1)
-        
-
 
 class DigitValidator(wxPyValidator):
     def __init__(self, flag):
