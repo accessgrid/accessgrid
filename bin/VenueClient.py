@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.157 2003-05-22 20:33:32 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.158 2003-05-22 20:39:12 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -730,7 +730,7 @@ class VenueClientUI(wxApp, VenueClient):
                 #
                 # Display all non fatal warnings to the user
                 #
-                if warningString is not '': 
+                if warningString != '': 
                     message = "Following non fatal problems have occured when you entered the venue:\n" + warningString
                     MessageDialog(None, message, "Notification")
                    
@@ -934,7 +934,7 @@ class VenueClientUI(wxApp, VenueClient):
             log.debug("data descriptor is %s" %data_descriptor.__class__)
 
             if data_descriptor.status != DataDescription.STATUS_PRESENT:
-                MessageDialog(none,
+                MessageDialog(None,
                               "File %s is not downloadable - it has status %s"
                               % (data_descriptor.name,
                                  data_descriptor.status), "Notification")
@@ -1206,10 +1206,8 @@ class VenueClientUI(wxApp, VenueClient):
         This uses the DataStore HTTP upload engine code.
         """
 
-        log.debug("Upload files - no dialog")
+        log.debug("Upload files - no dialog. upload_url=%s", self.upload_url)
         upload_url = self.upload_url
-        log.debug("Have identity=%s upload_url=%s" %
-        (my_identity, upload_url))
 
         error_msg = None
         try:
