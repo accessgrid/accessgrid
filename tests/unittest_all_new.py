@@ -2,7 +2,7 @@
 # Name:        unittest_all.py
 # Purpose:     Automatic testing with machine readable output
 # Created:     2004/04/014
-# RCS-ID:      $Id: unittest_all_new.py,v 1.1 2004-04-14 22:11:10 judson Exp $
+# RCS-ID:      $Id: unittest_all_new.py,v 1.2 2004-04-14 22:29:34 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -10,6 +10,7 @@
 import sys, time
 import xml.dom.minidom
 from unittest import TestResult, TestSuite, findTestCases
+from optparse import OptionParser
 
 class _XMLTestResult(TestResult):
     """
@@ -113,25 +114,53 @@ class XMLTestRunner:
         return outxml, result
 
 if __name__ == '__main__':
-    suite = TestSuite()
+    parser = OptionParser()
+    parser.add_option("-o", "--outputFile", dest="outputFile", metavar="FILE",
+                      default=None,
+                      help="specify the output file to store results in.")
+    parser.add_option("--html", action="store_true", dest="ohtml", default=0,
+                      help="Output HTML results.")
+    options, args = parser.parse_args()
+    
     # List modules to test
     modules_to_test = [
-#        'unittest_AGNodeService',
         'unittest_AGParameter',
-#        'unittest_AGServiceManager',
         'unittest_ClientProfile',
         'unittest_Descriptions',
         'unittest_GUID',
         'unittest_MulticastAddressAllocator',
         'unittest_NetworkLocation',
         'unittest_Platform',
-#        'unittest_VenueServer',
         'unittest_version'
+#        'unittest_AGServiceManager',
+#        'unittest_AGNodeService',
+#        'unittest_VenueServer',
         ]
+
+    suite = TestSuite()
 
     for module in map(__import__, modules_to_test):
        suite.addTest(findTestCases(module))
 
-    runner = XMLTestRunner()
-    output, result = runner.run(suite)
-    print output
+    output, result = XMLTestRunner().run(suite)
+
+    if options.outputFile is not None:
+        f = file(options.outputFile, 'w')
+        if options.ohtml:
+            try:
+                from Ft.Lib import Uri
+                from Ft.Xml import InputSource
+                from Ft.Xml.Xslt.Processor import Processor
+
+                processor = Processor()
+                processor.appendStylesheet("default.css")
+                result = processor.run(output)
+                f.write(result)
+            except:
+                print "Couldn't import modules to generate HTML."
+                print output
+        else:
+            f.write(output)
+        f.close()
+    else:
+        print output
