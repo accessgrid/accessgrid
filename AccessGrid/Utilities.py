@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.7 2003-01-28 19:31:03 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.8 2003-01-28 20:13:30 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -21,16 +21,14 @@ def LoadConfig(fileName, config={}):
     and the corresponding values.
     This is from the python cookbook credit: Dirk Holtwick.
     """
+    rconfig = config.copy()
     cp = ConfigParser.ConfigParser()
     cp.optionxform = str
     cp.read(fileName)
     for sec in cp.sections():
-        name = string.lower(sec)
         for opt in cp.options(sec):
-            config[name + "."
-                   + string.lower(opt)] = string.strip(
-                    cp.get(sec, opt))
-    return config
+            rconfig[sec + "."+ opt] = string.strip(cp.get(sec, opt))
+    return rconfig
 
 def SaveConfig(fileName, config):
     """
