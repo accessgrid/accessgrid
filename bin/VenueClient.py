@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.258 2004-03-26 03:34:55 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.259 2004-04-07 13:18:49 turam Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.258 2004-03-26 03:34:55 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.259 2004-04-07 13:18:49 turam Exp $"
 
 # Standard Imports
 import os
@@ -52,7 +52,7 @@ def main():
 
     # Create a progress dialog
     startupDialog = ProgressDialog("Starting Venue Client...",
-                                   "Initializing AccessGrid Toolkit", 5)
+                                   "Initializing AccessGrid Toolkit", 4)
     startupDialog.Show()
 
     # Init the toolkit with the standard environment.
@@ -60,7 +60,7 @@ def main():
 
     # build options for this application
     portOption = Option("-p", "--port", type="int", dest="port",
-                        default=11000, metavar="PORT",
+                        default=0, metavar="PORT",
                         help="Set the port the venueclient control interface\
                         should listen on.")
     app.AddCmdLineOption(portOption)
@@ -87,10 +87,10 @@ def main():
     url = app.GetOption("url")
     port = app.GetOption("port")
     
-    startupDialog.UpdateOneStep("Initializing the VenueClient.")
+    startupDialog.UpdateOneStep("Creating venue client components.")
 
     # Create venue client components
-    vc = VenueClient(pnode=pnode, port=port)
+    vc = VenueClient(pnode=pnode, port=port, progressCB=startupDialog.UpdateOneStep)
     vcc = VenueClientController()
     vcui = VenueClientUI(vc, vcc)
 
@@ -101,6 +101,7 @@ def main():
 
     # Enter the specified venue
     if url:
+        startupDialog.UpdateOneStep("Entering venue")
         vc.EnterVenue(url)
         
     # Startup complete; kill progress dialog
