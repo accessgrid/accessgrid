@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.1 2003-04-22 17:31:04 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.2 2003-04-23 10:00:39 judson Exp $
 ;
 
 #define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
@@ -109,7 +109,6 @@ Source: var\lib\ag\local_services\VideoProducerService.py; DestDir: {app}\local_
 Source: var\lib\ag\local_services\VideoProducerService.svc; DestDir: {app}\local_services; Components: Video_Producer
 
 ; Programs for the user to run
-Source: Scripts\RunMe.py; DestDir: {app}; Components: Venue_Client
 Source: Scripts\VenueClient.py; DestDir: {app}; Components: Venue_Client
 Source: Scripts\NodeManagement.py; DestDir: {app}; Components: Venue_Client
 Source: Scripts\AGNodeService.py; DestDir: {app}; Components: Venue_Client
