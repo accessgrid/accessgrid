@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextService.py,v 1.14 2003-04-19 05:49:42 judson Exp $
+# RCS-ID:      $Id: TextService.py,v 1.15 2003-04-21 14:07:26 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -139,7 +139,7 @@ class TextService(ThreadingGSITCPSocketServer, Thread):
             try:
                 self.handle_request()
             except GSITCPSocketException:
-                log.info("TextService: GSITCPSocket, interrupted I/O operation, most likely shutting down. ")
+                self.log.info("TextService: GSITCPSocket, interrupted I/O operation, most likely shutting down. ")
 
     def Stop(self):
         """
