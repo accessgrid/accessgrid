@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Client.py,v 1.5 2004-03-01 17:24:32 judson Exp $
+# RCS-ID:      $Id: Client.py,v 1.6 2004-03-02 19:12:47 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,17 +16,30 @@ This module provides a helper class Client that wraps
 the creation of the SOAP server proxy.
 """
 
-__revision__ = "$Id: Client.py,v 1.5 2004-03-01 17:24:32 judson Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: Client.py,v 1.6 2004-03-02 19:12:47 judson Exp $"
 
+# External imports
 from SOAPpy import SOAPProxy
 from SOAPpy.GSIServer import GSIConfig
 
 import urllib
 
 class Handle:
+    """
+    A class that encapsulates a SOAP proxy.
+    """
     def __init__(self, url, namespace = None, authCallback = None, debug = 0,
                  config = None):
+        """
+        @param url: the url to the service
+        @param namespace: the namespace for the service
+        @param authCallback: LEGACY
+        @param debug: a debugging flag
+        @type url: string
+        @type namespace: string
+        @type authCallback: python method
+        @type debug: 0 or 1
+        """
         if config == None:
             self.config = GSIConfig()
         else:
@@ -40,11 +53,26 @@ class Handle:
         self.proxy = SOAPProxy(self.url, self.namespace, config = self.config)
 
     def GetURL(self):
+        """
+        This method accesses the url for the service.
+
+        @return: a string of the URL
+        """
         return self.url
 
     def GetProxy(self):
+        """
+        This method accesses the internal proxy object.
+
+        @return: a SOAPPy.SOAPProxy object.
+        """
         return self.proxy
 
     def __repr__(self):
+        """
+        This method makes a human readable form of the Hanle object.
+
+        @returns: a string of the URL
+        """
         return self.url
 

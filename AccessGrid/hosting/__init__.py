@@ -5,28 +5,51 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.8 2004-03-01 20:03:37 turam Exp $
+# RCS-ID:      $Id: __init__.py,v 1.9 2004-03-02 19:12:17 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 AG Hosting environment tools.
 """
-__revision__ = "$Id: __init__.py,v 1.8 2004-03-01 20:03:37 turam Exp $"
+__revision__ = "$Id: __init__.py,v 1.9 2004-03-02 19:12:17 judson Exp $"
 __docformat__ = "restructuredtext en"
 
+# External imports
 import os
 
 # mechanisms to support multiple hosting environments and to set defaults
 __hostingImpl = "SOAPpy"
 
+# pointers to methods and objects, helpful magic
+Server = lambda x: None
+InsecureServer = lambda x: None
+GetSOAPContext = lambda x: None
+Client = lambda x: None
+Decorate = lambda x: None
+Reconstitute = lambda x: None
+__root = lambda x: None
+
 def GetHostingImpl():
+    """
+    Return the currently selected hosting implementation.
+
+    @return: string
+    """
     global __hostingImpl
     return __hostingImpl
 
 def SetHostingImpl(choice):
+    """
+    Set the hosting implementation to the one specifed.
+
+    @param choice: the hosting implementation to use
+    @type choice: string
+
+    @return: 1 if successful, None if not
+    """
     global __hostingImpl, __root, Server, Client, Decorate, Reconstitute
-    global IWrapper, GetSOAPContext, SecureServer, InsecureServer
+    global GetSOAPContext, SecureServer, InsecureServer
     
     __hostingImpl = choice
     
@@ -38,29 +61,34 @@ def SetHostingImpl(choice):
         s = __import__(nis, globals(), locals(), ["SecureServer",
                                                   "InsecureServer",
                                                   "GetSOAPContext"])
-        Server = getattr(s,"SecureServer")
-        InsecureServer = getattr(s,"InsecureServer")
-        GetSOAPContext = getattr(s,"GetSOAPContext")
-    except ImportError: 
-        raise
-    try:
-        c = __import__(nic, globals(), locals(), ["Client"])
-        Client = getattr(c, "Client")
+        Server = s.SecureServer
+        InsecureServer = s.InsecureServer
+        GetSOAPContext = s.GetSOAPContext
     except ImportError:
         raise
+    
+    try:
+        c = __import__(nic, globals(), locals(), ["Client"])
+        Client = c.Client
+    except ImportError:
+        raise
+
     try:
         t = __import__(nit, globals(), locals(), ["Decorate",
-                                                  "Reconstitute",
-                                                  "IWrapper"])
-        Decorate = getattr(t, "Decorate")
-        Reconstitute = getattr(t, "Reconstitute")
-        IWrapper = getattr(t, "IWrapper")
+                                                  "Reconstitute"])
+        Decorate = t.Decorate
+        Reconstitute = t.Reconstitute
     except ImportError:
         raise
     
     return 1
 
 def ListHostingImpls():
+    """
+    This method lists the hosting implementations currently isntalled.
+
+    @return: a list of hosting implementation names.
+    """
     global __root
     retList = list()
     for e in os.listdir(__root):
@@ -71,6 +99,7 @@ def ListHostingImpls():
                 retList.append(e)
     return retList
 
+# Set the default
 SetHostingImpl(__hostingImpl)
 
 # Hostname glue

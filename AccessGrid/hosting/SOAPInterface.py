@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: SOAPInterface.py,v 1.3 2004-03-01 20:02:42 turam Exp $
+# RCS-ID:      $Id: SOAPInterface.py,v 1.4 2004-03-02 19:12:17 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,14 +16,29 @@ primary methods, the constructor and a default authorization for all
 interfaces.
 """
 
-__revision__ = "$Id: SOAPInterface.py,v 1.3 2004-03-01 20:02:42 turam Exp $"
+__revision__ = "$Id: SOAPInterface.py,v 1.4 2004-03-02 19:12:17 judson Exp $"
 __docformat__ = "restructuredtext en"
 
+# External imports
 import re
+
+# AGTk imports
+from AccessGrid.hosting import Client
+from AccessGrid.Security.Action import MethodAction
 
 methodPat = re.compile("^<(slot wrapper|bound method|built-in method) .+>$")
 
-from AccessGrid.Security.Action import MethodAction
+class InvalidURL(Exception):
+    """
+    This is raised when a url doesn't point to a service.
+    """
+    pass
+
+class ConnectionFailed(Exception):
+    """
+    This is raised when a SOAP client can't connect to a service.
+    """
+    pass
 
 class SOAPInterface:
     """
@@ -32,40 +47,46 @@ class SOAPInterface:
     and implementations get stuck together. It also provides a default
     authorization method that returns 0 (not authorized).
     """
-
     def __init__(self, impl):
         """
         This constructor for all SOAP Interfaces.
-        """
-        # The interface keeps a reference to the implementation
-        self.impl = impl
 
-        # If the implementation is smart it keeps a reference to all of the
-        # interfaces it exposes.
-        if hasattr(impl, "AddInterface"):
-            impl.AddInterface(self)
+        @param impl: an implementation object messages are routed to.
+        @type impl: a python object.
+        """
+        self.impl = impl
 
     def _authorize(self, *args, **kw):
         """
         This is meant to be a base class for all SOAP interfaces, so it's going
         to default to disallow calls. Derived interfaces can tailor this to
         suit their needs.
+
+        @return: 1, things are authorized by default right now.
         """
-        #        print "Authorizing method: %s" % kw["method"]
         return 1
 
     def _GetMethodActions(self):
+        """
+        This method extracts all the methods and creates MethodActions
+        for them, which means Authorization can be automatically
+        loaded with actions for all the methods on an interface
+        object.
+
+        @return: a list of AccessGrid.Security.Action.MethodAction objects.
+        """
         global methodPat
-        object = self
+        obj = self
         actions = list()
+
         # Here we preload the methods as actions
-        for attrName in dir(object):
+        for attrName in dir(obj):
             if attrName.startswith("_"):
                 # don't register private methods
                 pass
             else:
                 try:
-                    attr = eval("object.%s" % attrName)
+                    attr = eval("obj.%s" % attrName)
                     attrRepr = repr(attr)
                     m = methodPat.match(attrRepr)
                     if m:
@@ -80,9 +101,45 @@ class SOAPInterface:
         """
         This method is here to support calls that just want to see if there
         is a valid server endpoint for communication from the client.
+
+        @returns: 1
         """
         return 1
 
+class SOAPIWrapper:
+    """
+    A SOAP interface wrapper object. This object helps provide a rich
+    encapsulation of the SOAP implementation underneath.
+    """
+    def __init__(self, url=None):
+        """
+        The constructor.
+
+        @param url: the url to the SOAP interface.
+        @type url: string
+
+        @raises InvalidURL: if the url doesn't point ot a service
+        @raises ConnectionFailed: if client can't connection to the service.
+        """
+        self.proxy = None
+        self.url = url
+        if url != None:
+            try:
+                self.proxy = Client.Handle(self.url).GetProxy()
+            except:
+                self.proxy = None
+                raise ConnectionFailed
+        else:
+            raise InvalidURL
+
+    def IsValid(self):
+        """
+        Method to provide interface verification.
+
+        @returns: the result of calling across the network to the service.
+        """
+        return self.proxy.IsValid()
+    
     def _IsValid(self):
         """
         This method is here to support calls that just want to see if there

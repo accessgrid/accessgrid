@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Tools.py,v 1.7 2004-03-01 20:02:16 turam Exp $
+# RCS-ID:      $Id: Tools.py,v 1.8 2004-03-02 19:13:38 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,42 +16,22 @@ This module defines methods for making serialization and other things simpler
 when using the SOAPpy module.
 """
 
-__revision__ = "$Id: Tools.py,v 1.7 2004-03-01 20:02:16 turam Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: Tools.py,v 1.8 2004-03-02 19:13:38 judson Exp $"
 
+# External imports
 import sys
 import types
 
-from AccessGrid.hosting.SOAPpy import Client
-
-class InvalidURL(Exception):
-    pass
-
-class ConnectionFailed(Exception):
-    pass
-
-class IWrapper:
-    def __init__(self, url=None):
-        self.proxy = None
-        self.url = url
-        if url != None:
-            try:
-                self.proxy = Client.Handle(self.url).GetProxy()
-            except Exception, e:
-                self.proxy = None
-                print "Exception connecting authorization client: ", e
-                raise ConnectionFailed
-        else:
-            raise InvalidURL
-
-    def IsValid(self):
-        return self.proxy._IsValid()
-    
 def Decorate(obj):
     """
     This method traverses a object hierarchy rooted at object. It tags each
     object with an attribute ag_class with the class this is. This makes it
     possible to rebuild these classes on the other side of a SOAP call.
+
+    @param obj: an object to annotate
+    @type obj: a python object
+
+    @returns: obj with annotations
     """
     if type(obj) == types.TupleType:
         res = map(lambda x: Decorate(x), obj)
@@ -66,7 +46,7 @@ def Decorate(obj):
         retval = obj
     if type(obj) == types.InstanceType:
         cp = ".".join([obj.__class__.__module__, obj.__class__.__name__])
-        setattr(obj, "ag_class", cp)
+        obj.ag_class = cp
         for k in obj.__dict__.keys():
             setattr(obj, k, Decorate(obj.__dict__[k]))
         retval = obj
@@ -74,22 +54,20 @@ def Decorate(obj):
         retval = obj
 
     return retval
-    
+
+# External imports
 from SOAPpy.Types import structType, typedArrayType, arrayType
 from types import DictType
 
 def Reconstitute(obj):
     """
-    """
-    """
-    f = obj
-    if isinstance(obj, DictType) and hasattr(obj, "ag_class"):
-        k = obj.ag_class
-        delattr(obj, "ag_class")
-        f = CreateBlank(k)
-        for ok in obj._keys():
-            setattr(f, ok, Reconstitute(obj[ok]))
+    This method takes an object that has been sent across the network
+    via SOAPpy and rebuilds a real python object from it.
 
+    @param obj: an annotated object from the network
+    @type obj: SOAPpy typed object
+
+    @return: a native python object.
     """
     if isinstance(obj, structType):
         if hasattr(obj, "ag_class"):
@@ -126,9 +104,18 @@ def Reconstitute(obj):
 #         print f
 #         raise "HELLIFIKNOW"
 # 
+
     return f
 
 def CreateBlank(p):
+    """
+    This is a utility method to create an object of a specified class.
+
+    @param p: the module/class name
+    @type p: string
+
+    @return: a python object of class p
+    """
     parts = p.split('.')
     name = parts[-1]
     parts.remove(parts[-1])
@@ -141,4 +128,7 @@ def CreateBlank(p):
     return r
 
 class _a:
+    """
+    a dummy class we use to create an object, then set it's class.
+    """
     pass
