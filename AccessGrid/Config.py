@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.7 2004-04-13 02:10:12 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.8 2004-04-13 18:44:03 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.7 2004-04-13 02:10:12 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.8 2004-04-13 18:44:03 judson Exp $"
 
 import sys
 import struct
@@ -42,8 +42,25 @@ class AGTkConfig:
     @ivar configDir: The directory for installation configuration.
     """
     def __init__(self):
-        raise "This should not be called directly, but through a subclass."
-        
+        pass
+
+    def _repr_(self):
+        str = "AGTk Config\n"
+        str += "Version: %s\n" % self.GetVersion()
+        str += "InstallDir: %s\n" % self.GetInstallDir()
+        str += "DocDir: %s\n" % self.GetDocDir()
+        str += "LogDir: %s\n" % self.GetLogDir()
+        str += "PkgCacheDir: %s\n" % self.GetPkgCacheDir()
+        str += "ConfigDir: %s\n" % self.GetConfigDir()
+        str += "SharedAppDir: %s\n" % self.GetSharedAppDir()
+        str += "NodeServicesDir: %s\n" % self.GetNodeServicesDir()
+        str += "ServicesDir: %s\n" % self.GetServicesDir()
+    
+        return str
+
+    def __str__(self):
+        return self._repr_()
+    
     def GetVersion(self):
         raise "This should not be called directly, but through a subclass."
 
@@ -65,11 +82,23 @@ class AGTkConfig:
     def GetSharedAppDir(self):
         raise "This should not be called directly, but through a subclass."
 
-    def GetNodeServiceDir(self):
+    def GetNodeServicesDir(self):
         raise "This should not be called directly, but through a subclass."
 
     def GetServicesDir(self):
         raise "This should not be called directly, but through a subclass."
+
+pyGlobusSetenv = None
+pyGlobusGetenv = None
+pyGlobusUnsetenv = None
+
+try:
+    import pyGlobus.utilc
+    pyGlobusSetenv = pyGlobus.utilc.setenv
+    pyGlobusUnsetenv = pyGlobus.utilc.unsetenv
+    pyGlobusGetenv = pyGlobus.utilc.getenv
+except:
+    pass
 
 class GlobusConfig:
     """
@@ -95,6 +124,52 @@ class GlobusConfig:
         @type initEnvIfNeeded: integer
         """
         raise "This should not be called directly, but through a subclass."
+
+    def _repr_(self):
+        str = "Globus Configuration:\n"
+        str += "Location: %s\n" % self.GetLocation()
+        str += "Hostname: %s\n" % self.GetHostname()
+        str += "Server Flag: %s\n" % self.GetServerFlag()
+        str += "CA Cert Dir: %s\n" % self.GetCACertDir()
+        str += "Proxy Filename: %s\n" % self.GetProxyFileName()
+        str += "Cert Filename: %s\n" % self.GetCertFileName()
+        str += "Key Filename: %s\n" % self.GetKeyFileName()
+
+        return str
+    #
+    # We define our own setenv/unsetenv to prod both the pyGlobus
+    # environment and the standard python environment.
+    #
+    def Setenv(self, name, val):
+        global pyGlobusSetenv
+
+        os.environ[name] = val
+        
+        print "normal setenv %s=%s" %(name, val)
+        
+        if pyGlobusSetenv:
+            print "pyGlobus setenv %s=%s" %(name, val)
+            pyGlobusSetenv(name, val)
+            
+    def Unsetenv(self, name):
+        global pyGlobusUnsetenv
+
+        if name in os.environ:
+            del os.environ[name]
+
+        if pyGlobusUnsetenv:
+            pyGlobusUnsetenv(name)
+
+    def Getenv(self, name):
+        global pyGlobusGetenv
+
+        if pyGlobusGetenv:
+            return pyGlobusGetenv(name)
+        else:
+            return os.getenv(name)
+
+    def __str__(self):
+        return self._repr_()
 
     def GetLocation(self):
         raise "This should not be called directly, but through a subclass."
@@ -192,6 +267,21 @@ class UserConfig:
     def __init__(self):
         raise "This should not be called directly, but through a subclass."
 
+    def _repr_(self):
+        str = "User Configuration:\n"
+        str += "Profile File: %s\n" % self.GetProfile()
+        str += "Config Dir: %s\n" % self.GetConfigDir()
+        str += "Temp Dir: %s\n" % self.GetTempDir()
+        str += "Log Dir: %s\n" % self.GetLogDir()
+        str += "Pkg Cache Dir: %s\n" % self.GetPkgCacheDir()
+        str += "Shared App Dir: %s\n" % self.GetSharedAppDir()
+        str += "Node Services Dir: %s\n" % self.GetNodeServicesDir()
+        str += "Services Dir: %s\n" % self.GetServicesDir()
+        return str
+
+    def __str__(self):
+        return self._repr_()
+    
     def GetProfile(self):
         raise "This should not be called directly, but through a subclass."
 
@@ -231,6 +321,22 @@ class SystemConfig:
     def __init__(self):
         raise "This should not be called directly, but through a subclass."
 
+    def _repr_(self):
+        str = "System Configuration:\n"
+        str += "Temp Dir: %s\n" % self.GetTempDir()
+        str += "HTTP Proxy Settings: %s\n" % self.GetProxySettings()
+        str += "F/S Free Space(/): %s\n" % self.FileSystemFreeSpace("/")
+        str += "Username: %s\n" % self.GetUsername()
+        str += "Local IP Address: %s\n" % self.GetLocalIPAddress()
+        str += "Local Network Interfaces:\n"
+        for i in self.EnumerateInterfaces():
+            str += "\tName: %8s IP: %15s DNS: %s\n" % (i['name'], i['ip'],
+                                                       i['dns'])
+        return str
+
+    def __str__(self):
+        return self._repr_()
+    
     def GetTempDir(self):
         """
         Get the path to the system temp directory.
