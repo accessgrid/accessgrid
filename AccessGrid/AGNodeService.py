@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.58 2004-04-26 19:41:14 lefvert Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.59 2004-04-27 02:06:16 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.58 2004-04-26 19:41:14 lefvert Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.59 2004-04-27 02:06:16 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -64,8 +64,8 @@ class AGNodeService:
         self.defaultConfig = None
         self.configDir = os.path.join(UserConfig.instance().GetConfigDir(),
                                       "nodeConfig")
-        self.servicesDir = os.path.join(AGTkConfig.instance().GetConfigDir(),
-                                        "services")
+        self.servicesDir = AGTkConfig.instance().GetNodeServicesDir()
+
         self.streamDescriptionList = dict()
         self.profile = None
 
