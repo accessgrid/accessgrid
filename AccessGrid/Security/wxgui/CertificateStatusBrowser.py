@@ -439,9 +439,15 @@ class CertificateStatusBrowser(CertificateBrowserBase):
         if req is None:
             return
 
-        req.Install()
-        
-
+        try:
+            req.Install()
+        except:
+            log.exception("")
+            dlg = wxMessageDialog(self,
+                                  "The selected certificate is not ready for installation.", "Not ready.", style = wxICON_INFORMATION | wxOK )
+            ret = dlg.ShowModal()
+            dlg.Destroy()
+          
     def OnDeleteRequest(self, event):
         req = self.GetSelectedCertificate()
 
