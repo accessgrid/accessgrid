@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.20 2004-03-31 21:59:06 turam Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.21 2004-05-11 20:16:08 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ used by client software that wants to keep track of what AG specific
 tools are appropriate for specific data types. It also keeps track of
 how to invoke those tools.
 """
-__revision__ = "$Id: AppDb.py,v 1.20 2004-03-31 21:59:06 turam Exp $"
+__revision__ = "$Id: AppDb.py,v 1.21 2004-05-11 20:16:08 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -28,6 +28,9 @@ from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.Descriptions import ApplicationDescription
 from AccessGrid.GUID import GUID
+from AccessGrid import Log
+
+log = Log.GetLogger(Log.AppDb)
 
 """
 Type management for access grid toolkit:
@@ -88,7 +91,14 @@ class AppDb:
             self.path = path
 
         self.fileName = os.path.join(self.path, filename)
-        
+
+        # Create the file if it doesn't exist
+        if not os.path.exists(self.fileName):
+            try:
+                file(self.fileName,'w').close()
+            except:
+                log.exception("Couldn't create app db file %s", self.fileName)
+
         self.Load(self.fileName)
 
     def Load(self, fileName=None):
