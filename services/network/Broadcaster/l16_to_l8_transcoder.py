@@ -1,7 +1,7 @@
 import array
 import time
 import sys
-
+import struct
 from common.RTPSensor import RTPSensor
 from common import common
 
@@ -20,36 +20,30 @@ class L16_to_L8(RTPSensor):
                                   name, len(name))
         self.destination.send_ctrl(0, None)
         self.last_ts = 0
-        self.buffer = array.array('h')
+        self.buffer = ""
         
     def do_RTP(self, session, event):
         packet = common.make_rtp_packet(event.data)
-
         data = common.rtp_packet_getdata(packet)
-        data = common.twos_complement(data, len(data))
-        pt = packet.pt
-
-        d = array.array('h', data)
-        d.byteswap()
-
-        e = array.array('h')
-        for i in range(0, len(d), 2):
-            e.append(d[i])
+        
+        args = []
+        fmt = '%dh' % (len(data)/4)
+        s = struct.unpack('%dh' % (len(data)/2) , data)
+        args.append(fmt)
+        for i in range(0, len(s), 2):
+            args.append(s[i])
             
+        sdata = apply(struct.pack,args)
+        
         if self.buffer:
-            self.buffer = self.buffer + e
+            self.buffer = self.buffer + sdata
             sdata = self.buffer
             self.buffer = None
         else:
-            self.buffer = e 
+            self.buffer = sdata
             common.free_rtp_packet(event.data)
-            #common.free_rtp_packet(packet)
             return
         
-        sdata.byteswap()
-        sdata = sdata.tostring()
-        sdata = common.twos_complement(sdata, len(sdata))
-
         pt = 122
 
         try:
@@ -66,7 +60,6 @@ class L16_to_L8(RTPSensor):
         self.destination.update()
 
         common.free_rtp_packet(event.data)
-#       common.free_rtp_packet(packet)
         
 
 if __name__ == "__main__":
