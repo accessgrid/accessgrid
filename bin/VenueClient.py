@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.224 2003-09-26 21:24:23 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.225 2003-09-29 19:23:16 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -991,7 +991,8 @@ class VenueClientUI(VenueClientEventSubscriber):
             # Plumbing for getting progress callbacks to the dialog
             #
             def progressCB(progress, done, dialog = dlg):
-                wxCallAfter(dialog.SetProgress, progress, done)
+                if not dialog.IsCancelled():
+                    wxCallAfter(dialog.SetProgress, progress, done)
                 return dialog.IsCancelled()
 
             #
@@ -1120,7 +1121,8 @@ class VenueClientUI(VenueClientEventSubscriber):
                                            checksum, progressCB)
         except DataStore.DownloadFailed, e:
             log.exception("bin.VenueClient:get_ident_and_download: Got exception on download")
-            wxCallAfter(ErrorDialog, None, "The file could not be downloaded", "Download Error",  wxOK | wxICON_ERROR)
+            MessageDialog(None, "The file could not be downloaded", "Download Error", 
+                          style = wxOK  | wxICON_WARNING)
             
     def UploadPersonalFiles(self, fileList):
         """
