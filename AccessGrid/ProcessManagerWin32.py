@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerWin32.py,v 1.2 2003-02-10 14:47:37 judson Exp $
+# RCS-ID:      $Id: ProcessManagerWin32.py,v 1.3 2003-03-14 16:35:55 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -63,6 +63,8 @@ class ProcessManagerWin32:
         except win32process.error, e:
             print "process creation failed: ", e
 
+        return info[0]
+
     def terminate_all_processes(self):
         for phandle in self.processes:
             try:
@@ -70,6 +72,13 @@ class ProcessManagerWin32:
             except win32process.error, e:
                 print "couldn't terminate process: ", e
         self.processes = []
+
+    def terminate_process(self, phandle):
+        try:
+            win32process.TerminateProcess(phandle, 0)
+            self.processes.remove(phandle)
+        except win32process.error, e:
+            print "couldn't terminate process: ", e
 
 if __name__ == "__main__":
 
