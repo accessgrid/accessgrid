@@ -5,7 +5,7 @@
 # Author:      Robert Olson, Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.13 2003-05-16 04:17:27 judson Exp $
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.14 2003-08-12 15:44:48 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,9 +14,7 @@ import sys
 import socket
 import struct
 from random import Random
-import time
 
-import NetworkLocation
 
 class MulticastAddressAllocator:
     """
