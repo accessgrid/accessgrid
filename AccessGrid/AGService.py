@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.18 2003-05-12 16:35:17 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.19 2003-05-15 03:00:57 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -246,3 +246,8 @@ class AGService( ServiceBase ):
        self.Stop()
        self.server.stop()
     Shutdown.soap_export_as = "Shutdown"
+
+
+    def SetIdentity(self, profile):
+        self.profile = profile
+    SetIdentity.soap_export_as = "SetIdentity"
