@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.71 2005-01-06 22:24:50 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.72 2005-01-06 23:31:22 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.71 2005-01-06 22:24:50 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.72 2005-01-06 23:31:22 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -287,6 +287,33 @@ class ApplicationDescription(ObjectDescription):
 class BadApplicationDescription(Exception):
     pass
         
+class Capability:
+
+    PRODUCER = "producer"
+    CONSUMER = "consumer"
+
+    AUDIO = "audio"
+    VIDEO = "video"
+    TEXT  = "text"
+
+    def __init__( self, role=None, type=None ):
+        self.role = role
+        self.type = type
+        self.parms = dict()
+        self.xml = ''
+        
+    def __repr__(self):
+        string = "%s %s" % (self.role, self.type)
+        return string
+
+    def matches( self, capability ):
+        if self.type != capability.type:
+            # type mismatch
+            return 0
+
+        # capability match
+        return 1
+
 class StreamDescription( ObjectDescription ):
    """A Stream Description represents a stream within a venue"""
    def __init__( self, name=None, 
@@ -521,33 +548,6 @@ class ResourceDescription(ObjectDescription):
     def __init__(self,name):
         ObjectDescription.__init__(self,name)
     
-
-class Capability:
-
-    PRODUCER = "producer"
-    CONSUMER = "consumer"
-
-    AUDIO = "audio"
-    VIDEO = "video"
-    TEXT  = "text"
-
-    def __init__( self, role=None, type=None ):
-        self.role = role
-        self.type = type
-        self.parms = dict()
-        self.xml = ''
-        
-    def __repr__(self):
-        string = "%s %s" % (self.role, self.type)
-        return string
-
-    def matches( self, capability ):
-        if self.type != capability.type:
-            # type mismatch
-            return 0
-
-        # capability match
-        return 1
 
 #
 #
