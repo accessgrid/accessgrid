@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.18 2003-04-24 18:36:47 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.19 2003-04-28 17:10:08 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -131,11 +131,12 @@ class NodeServiceApp(wxApp):
         self.TBMENU_MANAGE = wxNewId()
         self.TBMENU_CLOSE = wxNewId()
         wxInitAllImageHandlers()
-        self.tbicon = wxTaskBarIcon()
-        self.tbicon.SetIcon(getAGIconIcon(), "AG Node Service")
-        EVT_TASKBAR_RIGHT_UP(self.tbicon, self.OnTaskBarMenu)
-        EVT_MENU(self.tbicon, self.TBMENU_MANAGE, self.OnTaskBarActivate)
-        EVT_MENU(self.tbicon, self.TBMENU_CLOSE, self.OnTaskBarClose)
+        if (sys.platform == 'win32'):
+            self.tbicon = wxTaskBarIcon()
+            self.tbicon.SetIcon(getAGIconIcon(), "AG Node Service")
+            EVT_TASKBAR_RIGHT_UP(self.tbicon, self.OnTaskBarMenu)
+            EVT_MENU(self.tbicon, self.TBMENU_MANAGE, self.OnTaskBarActivate)
+            EVT_MENU(self.tbicon, self.TBMENU_CLOSE, self.OnTaskBarClose)
 
         return True
     
