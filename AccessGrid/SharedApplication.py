@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.17 2004-06-14 17:20:19 eolson Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.18 2004-08-31 19:33:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.17 2004-06-14 17:20:19 eolson Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.18 2004-08-31 19:33:01 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -593,5 +593,3 @@ class SharedApplicationIW(SOAPIWrapper, AuthorizationIWMixIn):
     def GetState(self, private_token):
         return self.proxy.GetState(private_token)
 
-    def GetParticipants(self, private_token):
-        return self.proxy.GetParticipants(private_token)
