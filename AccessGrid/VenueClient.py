@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.71 2003-05-28 13:25:45 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.72 2003-05-29 15:25:44 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -587,7 +587,8 @@ class VenueClient( ServiceBase):
         """
 
         log.debug('AccessGrid.VenueClient::Trying to unfollow: %s' %leaderProfile.name)
-        Client.Handle( leaderProfile.venueClientURL ).get_proxy().UnFollow( self.profile )
+        Client.Handle( leaderProfile.venueClientURL ).get_proxy().UnLead( self.profile )
+        self.leaderProfile = None
 
     def RequestLead( self, followerProfile):
         """
@@ -615,6 +616,7 @@ class VenueClient( ServiceBase):
         response = 1
 
         # For now, the base VenueClient authorizes every Lead request
+            
         self.SendLeadResponse(clientProfile,response)
 
     def SendLeadResponse(self, clientProfile, response):
@@ -661,6 +663,33 @@ class VenueClient( ServiceBase):
         self.pendingLeader = None
 
     LeadResponse.soap_export_as = "LeadResponse"
+
+    def UnLead(self, clientProfile):
+        """
+        UnLead tells this venue client to stop dragging the specified client.
+        """
+
+        log.debug( "AccessGrid.VenueClient::AccessGrid.VenueClient::Received request to unlead %s %s"
+                   %(clientProfile.name, clientProfile.venueClientURL))
+
+        if(self.followerProfiles.has_key(clientProfile.publicId)):
+            del self.followerProfiles[clientProfile.publicId]
+
+        if(self.pendingFollowers.has_key(clientProfile.publicId)):
+            del self.pendingFollowers[clientProfile.publicId]
+
+        threading.Thread(target = self.NotifyUnLead, args = (clientProfile,)).start()
+            
+    UnLead.soap_export_as = "UnLead"
+
+    def NotifyUnLead(self, clientProfile):
+        """
+        Notify requests to stop leading this client.  
+        
+        Subclasses should override this method to perform their specific 
+        notification
+        """
+        pass
 
     #
     # Method support for LEAD
