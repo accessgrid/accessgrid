@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.247 2003-09-09 21:59:32 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.248 2003-09-09 22:05:55 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -3339,102 +3339,8 @@ def ShowNetworkInitWin32(msg):
             if os.access(path, os.R_OK):
                 networkInit = path
                 break
-    if networkInit is not None:
-        dlg = wxMessageDialog(None,
-                              "This computer's network configuration is not correct.\n" \
-                              "We will invoke the network configuration tool in an attempt\n" \
-                              "to remedy the problem. " +  msg,
-                              "Globus network problem", wxOK)
-        dlg.ShowModal()
-        dlg.Destroy()
 
-        import win32api
-        shortpath = win32api.GetShortPathName(networkInit)
-        # win32api.WinExec("python %s" % (shortpath))
-
-        #
-        # Fire up the network tool. However, first grab the system and user
-        # globus hostname values in order to pick up any changes that the
-        # network tool made.
-        #
-
-        from Platform import FindRegistryEnvironmentVariable
-        (global_reg_before, user_reg_before) = FindRegistryEnvironmentVariable("GLOBUS_HOSTNAME")
-        
-        os.system("python %s" % (shortpath))
-        time.sleep(1)
-
-        #
-        # Pick up the new values. If one has changed (the tool tries to change
-        # the global one first, then the local if user is not an administrator)
-        # set the globus hostname environment variable to the new value and
-        # retry the LocalHostnameValid test.
-        #
-
-        (global_reg_after, user_reg_after) = FindRegistryEnvironmentVariable("GLOBUS_HOSTNAME")
-
-        new_name = None
-        changed = 0
-        if global_reg_after != global_reg_before:
-            changed = 1
-            new_name = global_reg_after
-            log.debug("Found new name %s from global registry setting", new_name)
-        elif user_reg_after != user_reg_before:
-            new_name = user_reg_after
-            changed = 1
-            log.debug("Found new name %s from else registry setting", new_name)
-        else:
-            log.debug("No change in registry setting")
-
-        #
-        # Set for this process. The value might have been deleted.
-        #
-
-        if changed:
-            if new_name is None:
-                try:
-                    del os.environ['GLOBUS_HOSTNAME']
-                    if hasattr(pyGlobus.utilc, "unsetenv"):
-                        pyGlobus.utilc.unsetenv("GLOBUS_HOSTNAME")
-                except KeyError:
-                    pass
-
-            else:
-                os.environ['GLOBUS_HOSTNAME'] = new_name
-                if hasattr(pyGlobus.utilc, "setenv"):
-                    pyGlobus.utilc.setenv("GLOBUS_HOSTNAME", new_name)
-
-        #
-        # Retry test.
-        #
-        
-        myhost = GetLocalHostname()
-        validNow = LocalHostnameValid(myhost)
-
-        log.debug("Result of test: myhost=%s validNow=%s", myhost, validNow)
-
-        if validNow:
-            return
-
-        #
-        # We failed again, sigh. Try localhost.
-        #
-
-        os.environ['GLOBUS_HOSTNAME'] = 'localhost'
-        if hasattr(pyGlobus.utilc, "setenv"):
-            pyGlobus.utilc.setenv("GLOBUS_HOSTNAME", 'localhost')
-
-        myhost = GetLocalHostname()
-        validNow = LocalHostnameValid(myhost)
-
-        log.debug("Result of test: myhost=%s validNow=%s", myhost, validNow)
-
-        if validNow:
-            log.debug("Worked with localhost")
-        else:
-            log.debug("didn't work with localhost, hmmm")
-
-    else:
+    if networkInit is None:
         log.debug("networkInit.py not found; searched in cmds=%s locs=%s",
                   cmds, locs)
         dlg = wxMessageDialog(None,
@@ -3446,6 +3352,121 @@ def ShowNetworkInitWin32(msg):
         dlg.Destroy()
         os._exit(1)
 
+    #
+    # Test to see if we have the pyGlobus with setenv/unsetenv.
+    #
+    # If we do not, we can't do the live update, and the user will have to restart his app.
+    #
+    
+    if not hasattr(pyGlobus.utilc, 'setenv') or  \
+       not hasattr(pyGlobus.utilc, 'unsetenv'):
+        dlg = wxMessageDialog(None,
+                              "This computer's network configuration is not correct.\n" \
+                              "We will invoke the network configuration tool, and the \n" \
+                              "Venues client will then exit. Complete the configuration and\n" \
+                              "restart the Venues client." +  msg,
+                              "Globus network problem", wxOK)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+        import win32api
+        shortpath = win32api.GetShortPathName(networkInit)
+        win32api.WinExec("python %s" % (shortpath))
+        os._exit(0)
+
+    # Else...
+        
+    dlg = wxMessageDialog(None,
+                          "This computer's network configuration is not correct.\n" \
+                          "We will invoke the network configuration tool in an attempt\n" \
+                          "to remedy the problem. " +  msg,
+                          "Globus network problem", wxOK)
+    dlg.ShowModal()
+    dlg.Destroy()
+
+    import win32api
+    shortpath = win32api.GetShortPathName(networkInit)
+    # win32api.WinExec("python %s" % (shortpath))
+
+    #
+    # Fire up the network tool. However, first grab the system and user
+    # globus hostname values in order to pick up any changes that the
+    # network tool made.
+    #
+
+    from Platform import FindRegistryEnvironmentVariable
+    (global_reg_before, user_reg_before) = FindRegistryEnvironmentVariable("GLOBUS_HOSTNAME")
+
+    os.system("python %s" % (shortpath))
+    time.sleep(1)
+
+    #
+    # Pick up the new values. If one has changed (the tool tries to change
+    # the global one first, then the local if user is not an administrator)
+    # set the globus hostname environment variable to the new value and
+    # retry the LocalHostnameValid test.
+    #
+
+    (global_reg_after, user_reg_after) = FindRegistryEnvironmentVariable("GLOBUS_HOSTNAME")
+
+    new_name = None
+    changed = 0
+    if global_reg_after != global_reg_before:
+        changed = 1
+        new_name = global_reg_after
+        log.debug("Found new name %s from global registry setting", new_name)
+    elif user_reg_after != user_reg_before:
+        new_name = user_reg_after
+        changed = 1
+        log.debug("Found new name %s from else registry setting", new_name)
+    else:
+        log.debug("No change in registry setting")
+
+    #
+    # Set for this process. The value might have been deleted.
+    #
+
+    if changed:
+        if new_name is None:
+            try:
+                del os.environ['GLOBUS_HOSTNAME']
+                pyGlobus.utilc.unsetenv("GLOBUS_HOSTNAME")
+            except KeyError:
+                pass
+
+        else:
+            os.environ['GLOBUS_HOSTNAME'] = new_name
+            pyGlobus.utilc.setenv("GLOBUS_HOSTNAME", new_name)
+
+    #
+    # Retry test.
+    #
+
+    myhost = GetLocalHostname()
+    validNow = LocalHostnameValid(myhost)
+
+    log.debug("Result of test: myhost=%s validNow=%s", myhost, validNow)
+
+    if validNow:
+        return
+
+    #
+    # We failed again, sigh. Try localhost.
+    #
+
+    os.environ['GLOBUS_HOSTNAME'] = 'localhost'
+    pyGlobus.utilc.setenv("GLOBUS_HOSTNAME", 'localhost')
+
+    myhost = GetLocalHostname()
+    validNow = LocalHostnameValid(myhost)
+
+    log.debug("Result of test: myhost=%s validNow=%s", myhost, validNow)
+
+    if validNow:
+        log.debug("Worked with localhost")
+    else:
+        log.debug("didn't work with localhost, hmmm")
+            
 
 if __name__ == "__main__":
    
