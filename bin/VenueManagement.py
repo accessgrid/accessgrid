@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.96 2003-09-10 21:04:58 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.97 2003-09-10 23:58:59 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1070,6 +1070,17 @@ class DetailPanel(wxPanel):
         try:
             log.debug("DetailPanel.ClickedOnEncrypt: Set encryption")
             self.application.SetEncryption(event.Checked())
+        except Exception, e:
+             if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+                 self.encryptionButton.SetValue(not event.Checked())
+                 text = "You are not an administrator on this server and are not authorized to change the media encryption flag.\n"
+                 MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+                 log.info("DetailPanel.ClickedOnEncrypt: Not authorized to change server's media encryption flag.")
+             else:
+                 self.encryptionButton.SetValue(not event.Checked())
+                 log.exception("DetailPanel.ClickedOnEncrypt: Set encryption failed")
+                 text = "The encryption option could not be set"
+                 ErrorDialog(None, text, "Set Encryption Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
         except:
             self.encryptionButton.SetValue(not event.Checked())
             log.exception("DetailPanel.ClickedOnEncrypt: Set encryption failed")
@@ -1083,6 +1094,19 @@ class DetailPanel(wxPanel):
         try:
             log.debug("DetailPanel.ClickedOnRandom: Set multicast address to random")
             self.application.SetRandom()
+        except Exception, e:
+            self.ipAddress.Enable(true)
+            self.changeButton.Enable(true)
+            self.intervalButton.SetValue(true)
+            if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+                text = "You are not an administrator on this server and are not authorized to set multicast addressing to random.\n"
+                MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+                log.info("DetailPanel.ClickedOnRandom: Not authorized to set server multicast addressing to random.")
+            else:
+                log.exception("DetailPanel.ClickedOnEncrypt: Set multicast address to random failed")
+                text = "The multicast option could not be set."
+                ErrorDialog(None, text, "Set Multicast Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+
         except:
             self.ipAddress.Enable(true)
             self.changeButton.Enable(true)
@@ -1100,6 +1124,19 @@ class DetailPanel(wxPanel):
         try:
             log.debug("DetailPanel.ClickedOnInterval: Set multicast address to interval")
             self.application.SetInterval(self.ipString, maskInt)
+
+        except Exception, e:
+            self.ipAddress.Enable(false)
+            self.changeButton.Enable(false)
+            self.randomButton.SetValue(true)
+            if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+                text = "You are not an administrator on this server and are not authorized to set multicast addressing to interval.\n"
+                MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+                log.info("DetailPanel.ClickedOnInterval: Not authorized to set server's multicast address to interval.")
+            else:
+                log.exception("DetailPanel.ClickedOnInterval: Set multicast address to interval failed")
+                text = "The multicast option could not be set."
+                ErrorDialog(None, text, "Set Multicast Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
 
         except:
             self.ipAddress.Enable(false)
@@ -1121,6 +1158,17 @@ class DetailPanel(wxPanel):
             maskInt = int(mask)
             self.application.SetInterval(self.ipString, maskInt)
 
+        except Exception, e:
+            self.ipAddress.SetLabel(oldIpAddress)
+            if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+                text = "You are not an administrator on this server and are not authorized to set the multicast address.\n"
+                MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+                log.info("DetailPanel.SetAddress: Not authorized to set server's multicast address.")
+            else:
+                log.exception("DetailPanel.SetAddress: Set ip and mask failed")
+                text = "The multicast option could not be set."
+                ErrorDialog(None, text, "Set Multicast Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+
         except:
             self.ipAddress.SetLabel(oldIpAddress)
             log.exception("DetailPanel.SetAddress: Set ip and mask failed")
@@ -1134,6 +1182,16 @@ class DetailPanel(wxPanel):
             try:
                 log.debug("DetailPanel.OpenEditPathDialog: Set storage location")
                 self.application.SetStorageLocation(dlg.GetPath())
+
+            except Exception, e:
+                if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+                    text = "You are not an administrator on this server and are not authorized to set the storage location.\n"
+                    MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+                    log.info("DetailPanel.SetAddress: Not authorized to set server's storage location.")
+                else:
+                    log.exception("DetailPanel.OpenEditPathDialog: Set storage location failed")
+                    text = "The path could not be set."
+                    ErrorDialog(None, text, "Set Path Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
             except:
                 log.exception("DetailPanel.OpenEditPathDialog: Set storage location failed")
                 text = "The path could not be set."
