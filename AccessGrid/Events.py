@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.21 2004-01-20 23:06:49 eolson Exp $
+# RCS-ID:      $Id: Events.py,v 1.22 2004-02-13 22:02:59 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Events.py,v 1.21 2004-01-20 23:06:49 eolson Exp $"
+__revision__ = "$Id: Events.py,v 1.22 2004-02-13 22:02:59 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -25,8 +25,10 @@ class Event:
     UPDATE_DATA = "Update data"
     REMOVE_DATA = "Remove data"
     ADD_SERVICE = "Add service"
+    UPDATE_SERVICE = "Update service"
     REMOVE_SERVICE = "Remove service"
     ADD_APPLICATION = "Add application"
+    UPDATE_APPLICATION = "Update application"
     REMOVE_APPLICATION = "Remove application"
     ADD_CONNECTION = "Add connection"
     REMOVE_CONNECTION = "Remove connection"
