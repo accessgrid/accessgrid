@@ -2,7 +2,6 @@ import sys
 import logging
 
 import AccessGrid.Types
-from AccessGrid.Platform import GPI 
 from AccessGrid import EventClient
 from AccessGrid import VenueClient
 from AccessGrid import Events
