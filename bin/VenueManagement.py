@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.148 2004-09-09 05:40:37 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.149 2005-02-14 22:14:46 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.148 2004-09-09 05:40:37 judson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.149 2005-02-14 22:14:46 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -429,10 +429,10 @@ class VenueManagementClient(wxApp):
     def ConnectToServer(self, URL):
         log.debug("VenueManagementClient.ConnectToServer: Connect to server %s" %URL)
         
-        certMgt = Toolkit.Application.instance().GetCertificateManager()
-        if not certMgt.HaveValidProxy():
-            log.debug("VenueManagementClient.ConnectToServer:: no valid proxy")
-            certMgt.CreateProxy()
+        #certMgt = Toolkit.Application.instance().GetCertificateManager()
+        # if not certMgt.HaveValidProxy():
+        #     log.debug("VenueManagementClient.ConnectToServer:: no valid proxy")
+        #     certMgt.CreateProxy()
         try:
             wxBeginBusyCursor()
             log.debug("VenueManagementClient.ConnectToServer: Connect to server")
