@@ -9,7 +9,11 @@
 #     Guido van Rossum.
 #     Python's standard library module repr.py.
 
-"""Module Cyclops -- stare at cycles in Python data structures.
+__revision__ = "$Id: Cyclops.py,v 1.2 2004-03-02 19:14:06 judson Exp $"
+__docformat__ = "restructuredtext en"
+
+"""
+Module Cyclops -- stare at cycles in Python data structures.
 
 Cyclops started life as a faster implementation of Lars Marius
 Garshol's Plumbo.py, but almost instantly diverged due to feature
