@@ -6,14 +6,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.62 2003-03-11 21:05:32 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.63 2003-03-11 21:21:55 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import threading
 import os
-import logging
+import logging, logging.handlers
 
 from wxPython.wx import *
 
@@ -141,7 +141,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time a venue participant changes
         its profile.  Appropriate gui updates are made in client.
         """
-        wxCallAfter(wxLogDebug, "EVENT - Modify participant %s" %(data.name))
+        wxCallAfter(wxLogDebug, "EVENT - Modify participant: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.ModifyParticipant, data)
         pass
 
@@ -161,7 +161,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called when a data item has been updated in the venue.
         Appropriate gui updates are made in client.
         """
-        wxCallAfter(wxLogDebug, "EVENT - Update data %s" %(data.name))
+        wxCallAfter(wxLogDebug, "EVENT - Update data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.UpdateData, data)
         pass
 
@@ -171,7 +171,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time data is removed from the venue.
         Appropriate gui updates are made in client.
         """
-        wxCallAfter(wxLogDebug, "EVENT - Remove data %s" %(data.name))
+        wxCallAfter(wxLogDebug, "EVENT - Remove data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.RemoveData, data)
         pass
 
@@ -181,7 +181,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time a service is added to the venue.
         Appropriate gui updates are made in client.
         """
-        wxCallAfter(wxLogDebug, "EVENT - Add service %s" %(data.name))
+        wxCallAfter(wxLogDebug, "EVENT - Add service: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.AddService,data)
         pass
 
@@ -191,7 +191,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time a service is removed from the venue.
         Appropriate gui updates are made in client.
         """
-        wxCallAfter(wxLogDebug, "EVENT - Remove service %s" %(data.name))
+        wxCallAfter(wxLogDebug, "EVENT - Remove service: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.RemoveService, data)
         pass
 
@@ -201,7 +201,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time a new exit is added to the venue.
         Appropriate gui updates are made in client.
         """
-        wxCallAfter(wxLogDebug, "EVENT - Add connection %s" %(data.name))
+        wxCallAfter(wxLogDebug, "EVENT - Add connection: %s" %(data.name))
         wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, data)
         pass
 
@@ -215,7 +215,7 @@ class VenueClientUI(wxApp, VenueClient):
         wxCallAfter(self.frame.venueListPanel.CleanUp)
                
         for connection in data:
-            wxCallAfter(wxLogDebug, "EVENT - Add connection %s" %(connection.name))
+            wxCallAfter(wxLogDebug, "EVENT - Add connection: %s" %(connection.name))
             wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, connection)
 
     def EnterVenue(self, URL):
@@ -224,7 +224,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method calls the venue client method and then
         performs its own operations when the client enters a venue.
         """
-        wxCallAfter(wxLogDebug, "EVENT- Enter venue with url %s" %(URL))
+        wxCallAfter(wxLogDebug, "EVENT- Enter venue with url: %s" %(URL))
         VenueClient.EnterVenue( self, URL )
         venueState = self.venueState
         wxCallAfter(self.frame.SetLabel, venueState.description.name)
