@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.15 2003-04-01 19:44:39 leggett Exp $
+# RCS-ID:      $Id: setup.py,v 1.16 2003-04-03 17:41:05 leggett Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -74,7 +74,7 @@ setup(
                     ]
                    ),
                   ('share/AccessGrid',
-                   [r"packaging/AG.ico"]
+                   [r"packaging/ag.ico"]
                    ),
                   ('share/AccessGrid/services',
                    [r"AccessGrid/services/AudioService.zip",
