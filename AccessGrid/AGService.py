@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.33 2004-04-29 16:46:47 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.34 2004-05-03 17:40:44 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.33 2004-04-29 16:46:47 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.34 2004-05-03 17:40:44 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -379,7 +379,8 @@ def RunService(service,serviceInterface,port):
     svc = Service.instance()
     svc.Initialize(Log.AGService)
     log = svc.GetLog()
-    
+    Log.SetDefaultLevel(Log.AGService, Log.DEBUG)   
+     
     # Create the server
     hostname = Service.instance().GetHostname()
     server = Server( (hostname, port) )
@@ -391,7 +392,7 @@ def RunService(service,serviceInterface,port):
     server.RunInThread()
     
     url = server.FindURLForObject(service)
-    log.debug("Starting Service URI: %s", url)
+    log.info("Starting Service URI: %s", url)
     print "Starting Service URI: %s" % url
     
     # Register the signal handler so we can shut down cleanly
