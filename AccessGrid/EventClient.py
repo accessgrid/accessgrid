@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.27 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.28 2003-09-19 03:52:03 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.27 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: EventClient.py,v 1.28 2003-09-19 03:52:03 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from threading import Thread, Lock
@@ -376,7 +376,7 @@ if __name__ == "__main__":
         port = 6500
         channel = 'Test'
         
-        eventClient = EventClient('privId', (host, port), channel)
+    eventClient = EventClient('privId', (host, port), channel)
 
     eventClient.Start()
     

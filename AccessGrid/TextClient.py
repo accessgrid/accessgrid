@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.21 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.22 2003-09-19 03:52:03 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.21 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: TextClient.py,v 1.22 2003-09-19 03:52:03 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -301,3 +301,39 @@ class TextClient:
         self.textProcessor.Input(DisconnectEvent(self.venueId, self.privateId))
         self.textConnection.Stop()
 
+
+if __name__ == "__main__":
+    import sys
+    import string
+    import socket
+    from AccessGrid import Toolkit
+    from AccessGrid import ClientProfile
+    
+    app = Toolkit.CmdlineApplication()
+    app.Initialize()
+    app.InitGlobusEnvironment()
+
+    certMgr = app.GetCertificateManager()
+    if not certMgr.HaveValidProxy():
+        certMgr.CreateProxy()
+
+    log = logging.getLogger("AG.TextClient")
+    log.addHandler(logging.StreamHandler())
+    log.setLevel(logging.DEBUG)
+
+    host = string.lower(socket.getfqdn())
+    port = 6600
+    log.debug("TextClient: Creating connection to service at: %s %d.",
+              host, port)
+
+    def out(string):
+        print "GOT STRING: <%s>" % string
+        
+    textClient = TextClient(ClientProfile.ClientProfile(), (host, port))
+    textClient.RegisterOutputCallback(out)
+    
+    textClient.Connect("Test", "123")
+    for i in range(1, int(sys.argv[1])):
+        textClient.Input("Hello World")
+        
+    textClient.Disconnect("Test", "123")

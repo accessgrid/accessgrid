@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.18 2003-09-18 17:31:33 eolson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.19 2003-09-19 03:52:03 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.18 2003-09-18 17:31:33 eolson Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.19 2003-09-19 03:52:03 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -318,7 +318,7 @@ class EventChannel:
                 log.exception("EventServiceAsynch: Authorization callback failed")
                 authorized = 0
         else:
-            log.debug("EventServiceAsynch: Default authorization (no calblack registered")
+            log.debug("EventServiceAsynch: Default authorization (no callback registered)")
             authorized = 1
         return authorized
 

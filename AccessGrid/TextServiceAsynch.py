@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.9 2003-09-18 17:32:31 judson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.10 2003-09-19 03:52:03 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.9 2003-09-18 17:32:31 judson Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.10 2003-09-19 03:52:03 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import socket
@@ -209,7 +209,6 @@ class ConnectionHandler:
 
         logTextEvent("TextConnection: Got Event %s", event)
 
-        #
         # Drop this event on the event server's queue for processing
         # out of the asynch event handler.
         self.server.EnqueueEvent(event, self)
@@ -319,7 +318,7 @@ class TextChannel:
                 log.info("TextServiceAsynch: Authorization callback failed")
                 authorized = 0
         else:
-            log.debug("TextServiceAsynch: Default authorization (no calblack registered")
+            log.debug("TextServiceAsynch: Default authorization (no callback registered)")
             authorized = 1
         return authorized
 
@@ -771,12 +770,23 @@ class TextService:
 
 if __name__ == "__main__":
   import string
+  from AccessGrid import Toolkit
 
+  app = Toolkit.CmdlineApplication()
+  app.Initialize()
+  app.InitGlobusEnvironment()
+
+  certMgr = app.GetCertificateManager()
+  if not certMgr.HaveValidProxy():
+      certMgr.CreateProxy()
+  
   log.addHandler(logging.StreamHandler())
   log.setLevel(logging.DEBUG)
 
   host = string.lower(socket.getfqdn())
   port = 6600
-  log.debug("TextServiceAsynch: Creating new TextService at %s %d.", host, port)
+  log.debug("TextServiceAsynch: Creating new TextService at %s %d.",
+            host, port)
   textService = TextService((host, port))
+  textService.AddChannel("Test")
   textService.start()
