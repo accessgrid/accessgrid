@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.48 2004-03-12 21:23:59 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.49 2004-03-15 20:10:36 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.48 2004-03-12 21:23:59 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.49 2004-03-15 20:10:36 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -23,13 +23,13 @@ import threading
 
 if sys.version.startswith('2.2'):
     try:
-        from optik import OptionParser
+        from optik import Option
     except:
         raise Exception, "Missing module optik necessary for the AG Toolkit."
 
 if sys.version.startswith('2.3'):
     try:
-        from optparse import OptionParse
+        from optparse import Option
     except:
         raise Exception, "Missing module optparse, check your python installation."
 
@@ -62,16 +62,15 @@ def main():
     """
     global venueServer, log
 
-    # build options for this application
-    parser = OptionParser()
-    parser.add_option("-p", "--port", type="int", dest="port",
-                      default=8000, metavar="PORT",
-                      help="Set the port the service manager should run on.")
-
     # Init toolkit with standard environment.
     app = CmdlineApplication()
 
-    app.SetOptionParser(parser)
+    # build options for this application
+    portOption = Option("-p", "--port", type="int", dest="port",
+                        default=8000, metavar="PORT",
+                        help="Set the port the service manager should run on.")
+
+    app.AddCmdLineOption(portOption)
     
     # Try to initialize
     try:
