@@ -104,6 +104,6 @@ cd ${here}
 
 # cleanup
 #
-#[ -n "${pkgdir}" -a "${pkgdir}" != / ] && rm -rf ${pkgdir}
+[ -n "${pkgdir}" -a "${pkgdir}" != / ] && rm -rf ${pkgdir}
 
 
