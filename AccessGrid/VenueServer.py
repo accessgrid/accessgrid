@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.9 2003-01-15 20:23:59 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.10 2003-01-15 23:19:23 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -130,7 +130,8 @@ class VenueServer(ServiceBase.ServiceBase):
             venueID = GUID.GUID()
             venuePath = "Venues/%s" % venueID
             venueURL = self.hostingEnvironment.get_url_base() + "/" + venuePath
-            venueDescription.url = venueURL
+            venueDescription.uri = venueURL
+            print "******************* uri = ", venueDescription.uri
 
             # Create a new Venue object, pass it the coherenceService,
             #       the server's Multicast Address Allocator, and the server's
@@ -147,10 +148,6 @@ class VenueServer(ServiceBase.ServiceBase):
             if(self.hostingEnvironment != None):
                 venueService = self.hostingEnvironment.create_service_object(pathId = venuePath)
                 venue._bind_to_service(venueService)
-
-#                print "Created Venue object"
-
-#                print "* * VENUE URL = ", venue.get_handle()
 
             # If this is the first venue, set it as the default venue
             if(len(self.venues) == 0):
@@ -210,7 +207,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
     def AddService(self, connectionInfo, serviceDescription):
         """ """
-        self.services[serviceDescription.url] = serviceDescription
+        self.services[serviceDescription.uri] = serviceDescription
 
     AddService.pass_connection_info = 1
     AddService.soap_export_as = "AddService"
@@ -224,7 +221,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
     def ModifyService(self, connectionInfo, URL, serviceDescription):
         """ """
-        if URL == serviceDescription.url:
+        if URL == serviceDescription.uri:
             self.services[URL] = serviceDescription
 
     ModifyService.pass_connection_info = 1
@@ -247,7 +244,7 @@ class VenueServer(ServiceBase.ServiceBase):
         try:
             venueDescriptionList = map( lambda venue: venue.GetDescription( connectionInfo ), self.venues.values() )
             for venue in venueDescriptionList:
-                print "  ---- venue ", venue.name, venue.description, venue.url
+                print "  ---- venue ", venue.name, venue.description, venue.uri
         except:
             print "Exception in GetVenues ", sys.exc_type, sys.exc_value
         return venueDescriptionList
