@@ -6,4 +6,5 @@ files = SharedPresentation.py
 
 [commands]
 Open = %(python)s SharedPresentation.py -v %(venueUrl)s -a %(appUrl)s
+Open for All Participants = %(python)s SharedPresentation.py -v %(venueUrl)s -a %(appUrl)s 
 
