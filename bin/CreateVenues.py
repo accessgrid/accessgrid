@@ -18,6 +18,7 @@ if len(sys.argv) > 2:
 configFile = sys.argv[1]
 
 venueServer = Client.Handle(venueServerUri).get_proxy()
+venueServer.SetEncryptAllMedia(0)
 
 cp = ConfigParser.ConfigParser()
 cp.read(configFile)
@@ -31,39 +32,40 @@ log.addHandler(logging.StreamHandler())
 # We do this in two iterations because we need valid URLs for connections
 for sec in cp.sections():
     # Build Venue Descriptions
-    venues[sec] = VenueDescription(cp.get(sec, 'name'),
-                                   cp.get(sec, 'description'))
-
-    # Make the venue, then store the resulting URL
-    print "VD #%s : %s" % (sec, venues[sec].name)
-    venues[sec].uri = venueServer.AddVenue(venues[sec])
+    vd = VenueDescription(cp.get(sec, 'name'), cp.get(sec, 'description'))
+    vd.streams = []
     
-    if cp.has_option(sec, 'default'):
-        venueServer.SetDefaultVenue(venues[sec].uri)
-
-    cp.set(sec, 'uri', venues[sec].uri)
-
     # Static Video
     if cp.has_option(sec, 'video'):
         (host, port) = string.split(cp.get(sec, 'video'), ':')
         vcap = Capability(Capability.PRODUCER, Capability.VIDEO)
-        vsd = StreamDescription(venues[sec].name, "Static Video",
+        vsd = StreamDescription(vd.name, "Static Video",
                                 MulticastNetworkLocation(host.strip(),
                                                          int(port), 127),
                                 vcap, 0, 1)
-        venues[sec].streams.append(vsd)
+        vd.streams.append(vsd)
         
     # Static Audio
     if cp.has_option(sec, 'audio'):
         (host, port) = string.split(cp.get(sec, 'audio'), ':')
         acap = Capability(Capability.PRODUCER, Capability.AUDIO)
-        asd = StreamDescription(venues[sec].name, "Static Audio",
+        asd = StreamDescription(vd.name, "Static Audio",
                                 MulticastNetworkLocation(host.strip(),
                                                          int(port), 127),
                                 acap, 0, 1)
 
-        venues[sec].streams.append(asd)
+        vd.streams.append(asd)
+    
+    # Make the venue, then store the resulting URL
+    print "VD #%s : %s" % (sec, vd.name)
+    vd.uri = venueServer.AddVenue(vd)
+    cp.set(sec, 'uri', vd.uri)
 
+    if cp.has_option(sec, 'default'):
+        venueServer.SetDefaultVenue(vd.uri)
+        
+    venues[sec] = vd
+    
 for sec in cp.sections():
     # Build up connections
     current = venues[sec].connections
