@@ -47,15 +47,15 @@
         <tr>
         <td>
         
-<b>from</b> AccessGrid.Events <b>import</b> HeartbeatEvent, ConnectEvent<br>
+<b>from</b> AccessGrid.Events <b>import</b> HeartbeatEvent, ConnectEvent, DisconnectEvent<br>
 <b>from</b> AccessGrid.Utilities <b>import</b> formatExceptionInfo<br>
 <b>from</b> AccessGrid.hosting.pyGlobus.Utilities <b>import</b> CreateTCPAttrAlwaysAuth<br>
+<b>import</b> logging<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-pickle.html">pickle</a><br>
 <b>from</b> pyGlobus <b>import</b> ioc<br>
 <b>from</b> pyGlobus.io <b>import</b> GSITCPSocket, TCPIOAttr, AuthData<br>
 <b>from</b> pyGlobus.util <b>import</b> Buffer<br>
-<b>import</b> <a href="http://www.python.org/doc/current/lib/module-socket.html">socket</a><br>
-<b>import</b> <a href="http://www.python.org/doc/current/lib/module-string.html">string</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-struct.html">struct</a><br>
 <b>from</b> <a href="http://www.python.org/doc/current/lib/module-threading.html">threading</a> <b>import</b> Thread<br>
 
 </td></tr>
@@ -86,6 +86,9 @@
 <tr><td valign="top" align="left"><a href="EventClient_EventClient.py.html">EventClient</a></td><td valign="top" align="left">
 <p>The Event Client maintains a client side connection to the Event</p>
 </td></tr>
+<tr><td valign="top" align="left"><a href="EventClient_EventClientConnectionException.py.html">EventClientConnectionException</a></td><td valign="top" align="left">
+<p>This exception is used to indicate a problem connecting to an</p>
+</td></tr>
 </table>
 </td></tr>
 </td></tr>
@@ -100,7 +103,7 @@
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

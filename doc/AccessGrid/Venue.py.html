@@ -47,9 +47,9 @@
         <tr>
         <td>
         
-<b>from</b> AccessGrid <b>import</b> DataStore<br>
-<b>from</b> AccessGrid.Descriptions <b>import</b> StreamDescription, CreateStreamDescription<br>
-<b>from</b> AccessGrid.Events <b>import</b> Event, HeartbeatEvent<br>
+<b>from</b> AccessGrid <b>import</b> AppService, DataStore<br>
+<b>from</b> AccessGrid.Descriptions <b>import</b> StreamDescription, CreateStreamDescription, ConnectionDescription, VenueDescription, ApplicationDescription<br>
+<b>from</b> AccessGrid.Events <b>import</b> Event, HeartbeatEvent, DisconnectEvent<br>
 <b>from</b> AccessGrid.GUID <b>import</b> GUID<br>
 <b>from</b> AccessGrid.NetworkLocation <b>import</b> MulticastNetworkLocation<br>
 <b>from</b> AccessGrid.Types <b>import</b> Capability<br>
@@ -57,6 +57,7 @@
 <b>from</b> AccessGrid.hosting <b>import</b> AccessControl<br>
 <b>from</b> AccessGrid.hosting.pyGlobus <b>import</b> ServiceBase<br>
 <b>from</b> AccessGrid.scheduler <b>import</b> Scheduler<br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-ConfigParser.html">ConfigParser</a><br>
 <b>import</b> logging<br>
 <b>import</b> os.path<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-socket.html">socket</a><br>
@@ -91,6 +92,7 @@
         <td>
         
 <table border="0" cellpadding="3" cellspacing="0">
+<tr><td valign="top" align="left"><a href="Venue_NotAuthorized.py.html">NotAuthorized</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="Venue_StreamDescriptionList.py.html">StreamDescriptionList</a></td><td valign="top" align="left">
 <p>Class to represent stream descriptions in a venue.  Entries in the</p>
 </td></tr>
@@ -114,7 +116,7 @@
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

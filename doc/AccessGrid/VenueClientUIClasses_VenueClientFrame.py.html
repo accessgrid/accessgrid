@@ -24,13 +24,16 @@
         <td>
         
 <h3>VenueClientFrame. </h3>
-<p>    The VenueClientFrame is the main frame of the application, creating statusbar, dock,
-    venueListPanel, and contentListPanel.  The contentListPanel represents current venue and
-    has information about all participants in the venue, it also shows what data and services 
-    are available in the venue, as well as nodes connected to the venue.  It represents a room
-    with its contents visible for the user.  The venueListPanel contains a list of connected 
-    venues/exits to current venue.  By clicking on a door icon the user travels to another 
-    venue/room, which contents will be shown in the contentListPanel.</p>
+<p>    The VenueClientFrame is the main frame of the application,
+    creating statusbar, dock, venueListPanel, and contentListPanel.
+    The contentListPanel represents current venue and has information
+    about all participants in the venue, it also shows what data and
+    services are available in the venue, as well as nodes connected to
+    the venue.  It represents a room with its contents visible for the
+    user.  The venueListPanel contains a list of connected
+    venues/exits to current venue.  By clicking on a door icon the
+    user travels to another venue/room, which contents will be shown
+    in the contentListPanel.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -88,43 +91,43 @@ wxFrame<br>
               <tr>
             <td align="LEFT" valign="TOP">
 <a href="#AddToMyVenues">AddToMyVenues</a><br>
+<a href="#AuthorizeLeadDialog">AuthorizeLeadDialog</a><br>
 <a href="#CleanUp">CleanUp</a><br>
-<a href="#ConnectToMyVenue">ConnectToMyVenue</a><br>
 <a href="#EditMyVenues">EditMyVenues</a><br>
 <a href="#Exit">Exit</a><br>
 <a href="#FillInAddress">FillInAddress</a><br>
 <a href="#Follow">Follow</a><br>
 <a href="#HideMenu">HideMenu</a><br>
+<a href="#Layout">Layout</a><br>
+<a href="#NotifyLeadDialog">NotifyLeadDialog</a><br>
+<a href="#NotifyUnLeadDialog">NotifyUnLeadDialog</a><br>
 <a href="#OnSashDrag">OnSashDrag</a><br>
 <a href="#OnSize">OnSize</a><br>
+</td>
+<td align="LEFT" valign="TOP">
 <a href="#OpenAboutDialog">OpenAboutDialog</a><br>
 <a href="#OpenAddDataDialog">OpenAddDataDialog</a><br>
 <a href="#OpenAddPersonalDataDialog">OpenAddPersonalDataDialog</a><br>
-</td>
-<td align="LEFT" valign="TOP">
 <a href="#OpenAddServiceDialog">OpenAddServiceDialog</a><br>
-<a href="#OpenConnectToVenueDialog">OpenConnectToVenueDialog</a><br>
+<a href="#OpenData">OpenData</a><br>
 <a href="#OpenDataProfileDialog">OpenDataProfileDialog</a><br>
 <a href="#OpenNodeMgmtApp">OpenNodeMgmtApp</a><br>
 <a href="#OpenParticipantProfile">OpenParticipantProfile</a><br>
-<a href="#OpenParticipantProfileDialog">OpenParticipantProfileDialog</a><br>
 <a href="#OpenProfileDialog">OpenProfileDialog</a><br>
-<a href="#OpenServiceProfileDialog">OpenServiceProfileDialog</a><br>
 <a href="#OpenSetNodeUrlDialog">OpenSetNodeUrlDialog</a><br>
 <a href="#RemoveData">RemoveData</a><br>
 <a href="#RemoveService">RemoveService</a><br>
 <a href="#SaveData">SaveData</a><br>
-<a href="#SaveMyVenuesToFile">SaveMyVenuesToFile</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#SaveMyVenuesToFile">SaveMyVenuesToFile</a><br>
 <a href="#SetTextLocation">SetTextLocation</a><br>
 <a href="#ShowMenu">ShowMenu</a><br>
+<a href="#UnFollow">UnFollow</a><br>
 <a href="#UpdateLayout">UpdateLayout</a><br>
-<a href="#__doLayout">__doLayout</a><br>
 <a href="#__fillTempHelp">__fillTempHelp</a><br>
 <a href="#__init__">__init__</a><br>
 <a href="#__loadMyVenues">__loadMyVenues</a><br>
-<a href="#__setDock">__setDock</a><br>
 <a href="#__setEvents">__setEvents</a><br>
 <a href="#__setMenubar">__setMenubar</a><br>
 <a href="#__setProperties">__setProperties</a><br>
@@ -170,6 +173,33 @@ AddToMyVenues ( self,  event )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="AuthorizeLeadDialog"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AuthorizeLeadDialog&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AuthorizeLeadDialog ( self,  clientProfile )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="CleanUp"></a>&nbsp;
                 </font>
             </th>
@@ -185,33 +215,6 @@ AddToMyVenues ( self,  event )
         <td>
         <font color="#000088"><pre>
 CleanUp ( self )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="ConnectToMyVenue"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">ConnectToMyVenue&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-ConnectToMyVenue ( self,  event )
 
 </pre></font>
 
@@ -364,6 +367,91 @@ HideMenu ( self )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="Layout"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">Layout&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+Layout ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="NotifyLeadDialog"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">NotifyLeadDialog&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+NotifyLeadDialog (
+        self,
+        clientProfile,
+        isAuthorized,
+        )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="NotifyUnLeadDialog"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">NotifyUnLeadDialog&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+NotifyUnLeadDialog ( self,  clientProfile )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="OnSashDrag"></a>&nbsp;
                 </font>
             </th>
@@ -490,6 +578,8 @@ OpenAddPersonalDataDialog ( self,  event )
 
 </pre></font>
 
+<p>Verify that we have a valid upload URL. If we don't have one,
+ then there isn't a data upload service available.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -526,7 +616,7 @@ OpenAddServiceDialog ( self,  event )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="OpenConnectToVenueDialog"></a>&nbsp;
+                  <a name="OpenData"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -534,13 +624,13 @@ OpenAddServiceDialog ( self,  event )
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">OpenConnectToVenueDialog&nbsp;</font>
+                <font color="#000000">OpenData&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-OpenConnectToVenueDialog ( self,  event=None )
+OpenData ( self,  event )
 
 </pre></font>
 
@@ -634,33 +724,6 @@ OpenParticipantProfile ( self,  event )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="OpenParticipantProfileDialog"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">OpenParticipantProfileDialog&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-OpenParticipantProfileDialog ( self,  event )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
                   <a name="OpenProfileDialog"></a>&nbsp;
                 </font>
             </th>
@@ -676,33 +739,6 @@ OpenParticipantProfileDialog ( self,  event )
         <td>
         <font color="#000088"><pre>
 OpenProfileDialog ( self,  event )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="OpenServiceProfileDialog"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">OpenServiceProfileDialog&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-OpenServiceProfileDialog ( self,  event )
 
 </pre></font>
 
@@ -904,6 +940,33 @@ ShowMenu ( self )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="UnFollow"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">UnFollow&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+UnFollow ( self,  event )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="UpdateLayout"></a>&nbsp;
                 </font>
             </th>
@@ -919,33 +982,6 @@ ShowMenu ( self )
         <td>
         <font color="#000088"><pre>
 UpdateLayout ( self )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="__doLayout"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">__doLayout&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-__doLayout ( self )
 
 </pre></font>
 
@@ -1036,35 +1072,6 @@ __loadMyVenues ( self,  venueURL=None )
 
 </pre></font>
 
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="__setDock"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">__setDock&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-__setDock ( self )
-
-</pre></font>
-
-<p>self.dock.AddSimpleTool(20, icons.getWordBitmap(),                                    &quot;ImportantPaper.doc&quot;, &quot;ImportantPaper.doc&quot;,)
-        self.dock.AddSimpleTool(21, icons.getPowerPointBitmap(),                                    &quot;Presentation.ppt&quot;, &quot;Presentation.ppt&quot;,)</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1213,7 +1220,7 @@ __showNoSelectionDialog ( self,  text )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

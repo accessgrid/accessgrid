@@ -105,7 +105,6 @@ ServiceBase.ServiceBase<br>
               <tr>
             <td align="LEFT" valign="TOP">
 <a href="#AddAdministrator">AddAdministrator</a><br>
-<a href="#AddService">AddService</a><br>
 <a href="#AddVenue">AddVenue</a><br>
 <a href="#Checkpoint">Checkpoint</a><br>
 <a href="#GetAddressAllocationMethod">GetAddressAllocationMethod</a><br>
@@ -121,18 +120,16 @@ ServiceBase.ServiceBase<br>
 <a href="#IdFromURL">IdFromURL</a><br>
 <a href="#InitFromFile">InitFromFile</a><br>
 <a href="#LoadPersistentVenues">LoadPersistentVenues</a><br>
-<a href="#MakeVenueURI">MakeVenueURI</a><br>
-<a href="#ModifyService">ModifyService</a><br>
+<a href="#MakeVenueURL">MakeVenueURL</a><br>
 <a href="#ModifyVenue">ModifyVenue</a><br>
 <a href="#PathFromURL">PathFromURL</a><br>
 <a href="#RegisterServer">RegisterServer</a><br>
 <a href="#RemoveAdministrator">RemoveAdministrator</a><br>
-<a href="#RemoveService">RemoveService</a><br>
 <a href="#RemoveVenue">RemoveVenue</a><br>
 <a href="#SetAddressAllocationMethod">SetAddressAllocationMethod</a><br>
+<a href="#SetAddressMask">SetAddressMask</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#SetAddressMask">SetAddressMask</a><br>
 <a href="#SetBaseAddress">SetBaseAddress</a><br>
 <a href="#SetDefaultVenue">SetDefaultVenue</a><br>
 <a href="#SetEncryptAllMedia">SetEncryptAllMedia</a><br>
@@ -140,6 +137,8 @@ ServiceBase.ServiceBase<br>
 <a href="#Shutdown">Shutdown</a><br>
 <a href="#__init__">__init__</a><br>
 <a href="#_authorize">_authorize</a><br>
+<a href="#wsAddVenue">wsAddVenue</a><br>
+<a href="#wsModifyVenue">wsModifyVenue</a><br>
 </td>
 </tr>
             </table>
@@ -197,66 +196,8 @@ AddAdministrator ( self,  string )
         <tr>
         <td>
         
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 VenueServerException( "Administrator already present." )<br>
-VenueServerException( "You are not authorized to perform this action." )<br>
-
-</td></tr>
-</table>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="AddService"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">AddService&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-AddService ( self,  serviceDescription )
-
-</pre></font>
-
-<p>AddService adds a service description to the list of service
-        descriptions that are available to the Virtual Venues hosted by
-        this VenueServer.</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-VenueServerException( "You are not authorized to perform this action." )<br>
 
 </td></tr>
 </table>
@@ -283,42 +224,13 @@ VenueServerException( "You are not authorized to perform this action." )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-AddVenue ( self,  venueDescription )
+AddVenue ( self,  venueDesc )
 
 </pre></font>
 
 <p>The AddVenue method takes a venue description and creates a new
         Venue Object, complete with a event service, then makes it
         available from this Venue Server.</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-VenueServerException( "Couldn't Add Venue." )<br>
-VenueServerException( "You are not authorized to perform this action." )<br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -720,8 +632,6 @@ LoadPersistentVenues ( self,  filename )
 
 </pre></font>
 
-<p>This method just encapsulates persistent venue loading.</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
             <th bgcolor="#99ccff"
@@ -731,7 +641,7 @@ LoadPersistentVenues ( self,  filename )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
+                  <a name="MakeVenueURL"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -739,105 +649,17 @@ LoadPersistentVenues ( self,  filename )
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-VenueServerException( "Failed to load persistent venues." )<br>
-
-</td></tr>
-</table>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="MakeVenueURI"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">MakeVenueURI&nbsp;</font>
+                <font color="#000000">MakeVenueURL&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-MakeVenueURI ( self,  uniqueId )
+MakeVenueURL ( self,  uniqueId )
 
 </pre></font>
 
 <p>Helper method to make a venue URI from a uniqueId.</p>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="ModifyService"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">ModifyService&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-ModifyService (
-        self,
-        URL,
-        serviceDescription,
-        )
-
-</pre></font>
-
-<p>ModifyService updates a service description that is in the
-        list of services for this VenueServer.</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-VenueServerException( "You are not authorized to perform this action." )<br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -864,40 +686,12 @@ VenueServerException( "You are not authorized to perform this action." )<br>
 ModifyVenue (
         self,
         URL,
-        venueDescription,
+        venueDesc,
         )
 
 </pre></font>
 
 <p>ModifyVenue updates a Venue Description.</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-VenueServerException( "You are not authorized to perform this action." )<br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -979,7 +773,7 @@ RegisterServer ( self,  URL )
         <tr>
         <td>
         
-VenueServerException( "You are not authorized to perform this action." )<br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
 </table>
@@ -1036,69 +830,8 @@ RemoveAdministrator ( self,  string )
         <tr>
         <td>
         
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 VenueServerException( "Administrator not found." )<br>
-VenueServerException( "You are not authorized to perform this action." )<br>
-
-</td></tr>
-</table>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="RemoveService"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">RemoveService&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-RemoveService (
-        self,
-        URL,
-        serviceDescription,
-        )
-
-</pre></font>
-
-<p>RemoveService removes a service description from the list of
-        service descriptions that this VenueServer knows about.</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-VenueServerException( "You are not authorized to perform this action." )<br>
 
 </td></tr>
 </table>
@@ -1154,7 +887,7 @@ RemoveVenue ( self,  URL )
         <tr>
         <td>
         
-VenueServerException( "You are not authorized to perform this action." )<br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
 </table>
@@ -1211,7 +944,7 @@ SetAddressAllocationMethod ( self,  addressAllocationMethod )
         <tr>
         <td>
         
-VenueServerException( "You are not authorized to perform this action." )<br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
 </table>
@@ -1268,7 +1001,7 @@ SetAddressMask ( self,  mask )
         <tr>
         <td>
         
-VenueServerException( "You are not authorized to perform this action." )<br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
 </table>
@@ -1325,7 +1058,7 @@ SetBaseAddress ( self,  address )
         <tr>
         <td>
         
-VenueServerException( "You are not authorized to perform this action." )<br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
 </table>
@@ -1382,7 +1115,7 @@ SetDefaultVenue ( self,  venueURL )
         <tr>
         <td>
         
-VenueServerException( "You are not authorized to perform this action." )<br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
 </table>
@@ -1438,7 +1171,7 @@ SetEncryptAllMedia ( self,  value )
         <tr>
         <td>
         
-VenueServerException( "You are not authorized to perform this action." )<br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
 </table>
@@ -1494,7 +1227,7 @@ SetStorageLocation ( self,  dataStorageLocation )
         <tr>
         <td>
         
-VenueServerException( "You are not authorized to perform this action." )<br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
 </table>
@@ -1550,7 +1283,7 @@ Shutdown ( self,  secondsFromNow )
         <tr>
         <td>
         
-VenueServerException( "You are not authorized to perform this action." )<br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
 </table>
@@ -1615,6 +1348,123 @@ _authorize ( self )
 
 </pre></font>
 
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsAddVenue"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsAddVenue&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsAddVenue ( self,  venueDescStruct )
+
+</pre></font>
+
+<p>Inteface call for Adding a venue.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+VenueServerException( "Couldn't Add Venue." )<br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsModifyVenue"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsModifyVenue&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsModifyVenue (
+        self,
+        URL,
+        venueDescStruct,
+        )
+
+</pre></font>
+
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_InvalidVenueURL.py.html">InvalidVenueURL</a><br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
 </td></tr>
 </td></tr>
 </table>
@@ -1628,7 +1478,7 @@ _authorize ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

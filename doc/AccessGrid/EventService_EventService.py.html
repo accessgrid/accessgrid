@@ -94,6 +94,7 @@ Thread<br>
 <a href="#Distribute">Distribute</a><br>
 <a href="#GetLocation">GetLocation</a><br>
 <a href="#RegisterCallback">RegisterCallback</a><br>
+<a href="#RegisterChannelCallback">RegisterChannelCallback</a><br>
 </td>
 <td align="LEFT" valign="TOP">
 <a href="#RegisterObject">RegisterObject</a><br>
@@ -132,6 +133,7 @@ AddChannel ( self,  channelId )
 
 </pre></font>
 
+<p>This adds a new channel to the Event Service.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -184,7 +186,7 @@ DefaultCallback ( self,  event )
         <font color="#000088"><pre>
 Distribute (
         self,
-        venueId,
+        channel,
         data,
         )
 
@@ -244,13 +246,45 @@ GetLocation ( self )
         <font color="#000088"><pre>
 RegisterCallback (
         self,
-        venueId,
+        channel,
         eventType,
         callback,
         )
 
 </pre></font>
 
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="RegisterChannelCallback"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">RegisterChannelCallback&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+RegisterChannelCallback (
+        self,
+        channel,
+        callback,
+        )
+
+</pre></font>
+
+<p>Register a callback for all events on this channel.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -276,7 +310,7 @@ RegisterCallback (
         <font color="#000088"><pre>
 RegisterObject (
         self,
-        venueId,
+        channel,
         object,
         )
 
@@ -313,6 +347,7 @@ RemoveChannel ( self,  channelId )
 
 </pre></font>
 
+<p>This removes a channel from the Event Service.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -413,7 +448,7 @@ run ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -47,6 +47,8 @@
         <tr>
         <td>
         
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-getpass.html">getpass</a><br>
+<b>import</b> logging<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-os.html">os</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-sys.html">sys</a><br>
 
@@ -74,13 +76,26 @@
         <tr>
         <td>
         
-<a href="#GPI">GPI</a><br>
+
+            <table border="0" cellspacing="2" cellpadding="2" width="100%">
+              <tr>
+            <td align="LEFT" valign="TOP">
+<a href="#GPICmdline">GPICmdline</a><br>
+<a href="#GPIWin32">GPIWin32</a><br>
 <a href="#GetConfigFilePath">GetConfigFilePath</a><br>
 <a href="#GetFilesystemFreeSpace">GetFilesystemFreeSpace</a><br>
 <a href="#GetInstallDir">GetInstallDir</a><br>
+</td>
+<td align="LEFT" valign="TOP">
 <a href="#GetSystemConfigDir">GetSystemConfigDir</a><br>
+<a href="#GetSystemTempDir">GetSystemTempDir</a><br>
+<a href="#GetTempDir">GetTempDir</a><br>
 <a href="#GetUserConfigDir">GetUserConfigDir</a><br>
-
+<a href="#GetUsername">GetUsername</a><br>
+</td>
+</tr>
+            </table>
+            
 
         <tr>
             <th bgcolor="#99ccff"
@@ -90,7 +105,7 @@
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="GPI"></a>&nbsp;
+                  <a name="GPICmdline"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -98,16 +113,45 @@
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">GPI&nbsp;</font>
+                <font color="#000000">GPICmdline&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-GPI ()
+GPICmdline ()
 
 </pre></font>
 
+<p>Run grid-proxy-init to get a new proxy.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GPIWin32"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GPIWin32&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GPIWin32 ()
+
+</pre></font>
+
+<p>Run wgpi.exe to get a new proxy.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -165,8 +209,9 @@ GetFilesystemFreeSpace ( path )
 
 </pre></font>
 
-<h3>Determine the amount of free space available in the filesystem containint &lt;path&gt;.</h3>
-<p>    Returns a value in bytes.</p>
+<p>Determine the amount of free space available in the filesystem
+    containing &lt;path&gt;.<p>    Returns a value in bytes.</p>
+</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -232,6 +277,63 @@ GetSystemConfigDir ()
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="GetSystemTempDir"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetSystemTempDir&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetSystemTempDir ()
+
+</pre></font>
+
+<p>Return a directory in which temporary files may be written.
+    The system temp dir is guaranteed to not be tied to any particular user.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetTempDir"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetTempDir&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetTempDir ()
+
+</pre></font>
+
+<p>Return a directory in which temporary files may be written.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="GetUserConfigDir"></a>&nbsp;
                 </font>
             </th>
@@ -251,6 +353,33 @@ GetUserConfigDir ()
 </pre></font>
 
 <p>Determine the user configuration directory</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetUsername"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetUsername&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetUsername ()
+
+</pre></font>
+
 </td></tr>
 </td></tr>
 </table>
@@ -264,7 +393,7 @@ GetUserConfigDir ()
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -23,6 +23,7 @@
         <tr>
         <td>
         
+<p>The main UI frame for Node Management</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -84,19 +85,19 @@ wxFrame<br>
 <a href="#Attach">Attach</a><br>
 <a href="#AttachToNode">AttachToNode</a><br>
 <a href="#Connected">Connected</a><br>
-<a href="#Dum">Dum</a><br>
 <a href="#Error">Error</a><br>
 <a href="#GetServiceConfiguration">GetServiceConfiguration</a><br>
 <a href="#GotoArgonne">GotoArgonne</a><br>
 <a href="#GotoLobby">GotoLobby</a><br>
 <a href="#GotoLocal">GotoLocal</a><br>
+<a href="#GotoTestRoom">GotoTestRoom</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#GotoTestRoom">GotoTestRoom</a><br>
 <a href="#LayoutConfiguration">LayoutConfiguration</a><br>
 <a href="#LoadConfiguration">LoadConfiguration</a><br>
 <a href="#OnAbout">OnAbout</a><br>
-<a href="#OnShowPopupTransient">OnShowPopupTransient</a><br>
+<a href="#PopupHostMenu">PopupHostMenu</a><br>
+<a href="#PopupServiceMenu">PopupServiceMenu</a><br>
 <a href="#RemoveHost">RemoveHost</a><br>
 <a href="#RemoveService">RemoveService</a><br>
 <a href="#SetConfiguration">SetConfiguration</a><br>
@@ -108,9 +109,9 @@ wxFrame<br>
 <a href="#StopServices">StopServices</a><br>
 <a href="#StoreConfiguration">StoreConfiguration</a><br>
 <a href="#TimeToQuit">TimeToQuit</a><br>
-<a href="#Update">Update</a><br>
 <a href="#UpdateHostList">UpdateHostList</a><br>
 <a href="#UpdateServiceList">UpdateServiceList</a><br>
+<a href="#UpdateUI">UpdateUI</a><br>
 <a href="#__init__">__init__</a><br>
 </td>
 </tr>
@@ -143,7 +144,8 @@ AddHost ( self,  event )
 
 </pre></font>
 
-<p>HOST menu</p>
+<h3>Add a service manager to the node service</h3>
+<p> HOST menu</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -171,6 +173,7 @@ AddService ( self,  event=None )
 
 </pre></font>
 
+<p>Add a service to the node service</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -226,6 +229,7 @@ Attach ( self,  event )
 
 </pre></font>
 
+<p>Attach to a node service</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -253,6 +257,7 @@ AttachToNode ( self,  nodeServiceUri )
 
 </pre></font>
 
+<p>This method does the real work of attaching to a node service</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -277,33 +282,6 @@ AttachToNode ( self,  nodeServiceUri )
         <td>
         <font color="#000088"><pre>
 Connected ( self )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Dum"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">Dum&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-Dum ( self,  event=None )
 
 </pre></font>
 
@@ -361,6 +339,7 @@ GetServiceConfiguration ( self,  event=None )
 
 </pre></font>
 
+<p>Configure the selected service</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -497,6 +476,7 @@ LayoutConfiguration ( self )
 
 </pre></font>
 
+<p>Display the service configuration dialog</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -524,6 +504,7 @@ LoadConfiguration ( self,  event )
 
 </pre></font>
 
+<p>Load a configuration for the node service</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -551,7 +532,8 @@ OnAbout ( self,  event )
 
 </pre></font>
 
-<p>HELP menu</p>
+<h3>Display about AG info</h3>
+<p> HELP menu</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -561,7 +543,7 @@ OnAbout ( self,  event )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="OnShowPopupTransient"></a>&nbsp;
+                  <a name="PopupHostMenu"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -569,16 +551,45 @@ OnAbout ( self,  event )
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">OnShowPopupTransient&nbsp;</font>
+                <font color="#000000">PopupHostMenu&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-OnShowPopupTransient ( self,  evt )
+PopupHostMenu ( self,  evt )
 
 </pre></font>
 
+<p>Popup the service manager menu</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="PopupServiceMenu"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">PopupServiceMenu&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+PopupServiceMenu ( self,  evt )
+
+</pre></font>
+
+<p>Popup the service menu</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -606,6 +617,7 @@ RemoveHost ( self,  event )
 
 </pre></font>
 
+<p>Remove a host from the node service</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -633,6 +645,7 @@ RemoveService ( self,  event )
 
 </pre></font>
 
+<p>Remove the selected service(s)</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -660,6 +673,7 @@ SetConfiguration ( self,  event=None )
 
 </pre></font>
 
+<p>Configure the service according to the service configuration panel</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -743,6 +757,7 @@ StopService ( self,  event=None )
 
 </pre></font>
 
+<p>Stop the selected service(s)&quot;</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -770,6 +785,7 @@ StopServices ( self,  event )
 
 </pre></font>
 
+<p>Stop all known services</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -797,6 +813,7 @@ StoreConfiguration ( self,  event )
 
 </pre></font>
 
+<p>Store a node service configuration</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -824,34 +841,7 @@ TimeToQuit ( self,  event )
 
 </pre></font>
 
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Update"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">Update&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-Update ( self,  event=None )
-
-</pre></font>
-
-<p>VIEW menu</p>
+<p>Exit</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -879,6 +869,7 @@ UpdateHostList ( self,  event=None )
 
 </pre></font>
 
+<p>Update the service manager list</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -906,6 +897,36 @@ UpdateServiceList ( self,  event=None )
 
 </pre></font>
 
+<p>Update the service list (bring it into sync with the node service)</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="UpdateUI"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">UpdateUI&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+UpdateUI ( self,  event=None )
+
+</pre></font>
+
+<h3>Update the service manager and service lists</h3>
+<p> VIEW menu</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -951,7 +972,7 @@ __init__ (
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

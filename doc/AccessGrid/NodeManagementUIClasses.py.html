@@ -49,13 +49,13 @@
         
 <b>from</b> AccessGrid <b>import</b> icons, Platform<br>
 <b>from</b> AccessGrid.AGParameter <b>import</b> ValueParameter, RangeParameter, OptionSetParameter, CreateParameter<br>
-<b>from</b> AccessGrid.Descriptions <b>import</b> StreamDescription, AGServiceManagerDescription<br>
+<b>from</b> AccessGrid.Descriptions <b>import</b> AGServiceManagerDescription, StreamDescription<br>
 <b>from</b> AccessGrid.NetworkLocation <b>import</b> MulticastNetworkLocation<br>
-<b>from</b> AccessGrid.Types <b>import</b> AGResource, Capability, ServiceConfiguration<br>
-<b>from</b> AccessGrid.Utilities <b>import</b> HaveValidProxy, formatExceptionInfo<br>
+<b>from</b> AccessGrid.Types <b>import</b> Capability, ServiceConfiguration<br>
+<b>from</b> AccessGrid.Utilities <b>import</b> HaveValidProxy<br>
 <b>from</b> AccessGrid.hosting.pyGlobus <b>import</b> Client<br>
+<b>from</b> AccessGrid.hosting.pyGlobus.Utilities <b>import</b> GetHostname<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-sys.html">sys</a><br>
-<b>import</b> <a href="http://www.python.org/doc/current/lib/module-urlparse.html">urlparse</a><br>
 <b>from</b> wxPython.lib.dialogs <b>import</b> wxMultipleChoiceDialog<br>
 <b>from</b> wxPython.wx <b>import</b> *<br>
 
@@ -83,9 +83,38 @@
         <tr>
         <td>
         
+<a href="#BuildServiceManagerMenu">BuildServiceManagerMenu</a><br>
 <a href="#BuildServiceMenu">BuildServiceMenu</a><br>
 <a href="#CheckCredentials">CheckCredentials</a><br>
 
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="BuildServiceManagerMenu"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">BuildServiceManagerMenu&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+BuildServiceManagerMenu ()
+
+</pre></font>
+
+<p>Used in the pulldown and popup menus to display the service manager menu</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -113,6 +142,7 @@ BuildServiceMenu ()
 
 </pre></font>
 
+<p>Used in the pulldown and popup menus to display the service menu</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -140,6 +170,7 @@ CheckCredentials ()
 
 </pre></font>
 
+<p>Check user credentials, typically before a SOAP call</p>
 </td></tr>
 
         <tr>
@@ -165,12 +196,21 @@ CheckCredentials ()
         <td>
         
 <table border="0" cellpadding="3" cellspacing="0">
-<tr><td valign="top" align="left"><a href="NodeManagementUIClasses_HostListCtrl.py.html">HostListCtrl</a></td><td valign="top" align="left"></td></tr>
-<tr><td valign="top" align="left"><a href="NodeManagementUIClasses_NodeManagementClientFrame.py.html">NodeManagementClientFrame</a></td><td valign="top" align="left"></td></tr>
-<tr><td valign="top" align="left"><a href="NodeManagementUIClasses_ServiceConfigurationPanel.py.html">ServiceConfigurationPanel</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="NodeManagementUIClasses_MultiTextFieldDialog.py.html">MultiTextFieldDialog</a></td><td valign="top" align="left">
+<p>MultiTextFieldDialog accepts a dictionary and presents its</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="NodeManagementUIClasses_NodeManagementClientFrame.py.html">NodeManagementClientFrame</a></td><td valign="top" align="left">
+<p>The main UI frame for Node Management</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="NodeManagementUIClasses_ServiceConfigurationPanel.py.html">ServiceConfigurationPanel</a></td><td valign="top" align="left">
+<p>A panel that displays service configuration parameters based on</p>
+</td></tr>
 <tr><td valign="top" align="left"><a href="NodeManagementUIClasses_ServiceListCtrl.py.html">ServiceListCtrl</a></td><td valign="top" align="left"></td></tr>
-<tr><td valign="top" align="left"><a href="NodeManagementUIClasses_TestTransientPopup.py.html">TestTransientPopup</a></td><td valign="top" align="left">
-<p>Adds a bit of text and mouse movement to the wxPopupWindow</p>
+<tr><td valign="top" align="left"><a href="NodeManagementUIClasses_ServiceManagerPopup.py.html">ServiceManagerPopup</a></td><td valign="top" align="left">
+<p>Popup for the service manager menu</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="NodeManagementUIClasses_ServicePopup.py.html">ServicePopup</a></td><td valign="top" align="left">
+<p>Popup for the service menu</p>
 </td></tr>
 </table>
 </td></tr>
@@ -186,7 +226,7 @@ CheckCredentials ()
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -23,8 +23,7 @@
         <tr>
         <td>
         
-<p>This is a Venue Description. The Venue Description is used by Venue Clients
-    to present the appearance of a space to the users.</p>
+<p>A Venue Description is used to represent a Venue.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -77,13 +76,9 @@
         <tr>
         <td>
         
-<a href="#GetEventLocation">GetEventLocation</a><br>
-<a href="#GetExtendedDescription">GetExtendedDescription</a><br>
-<a href="#GetTextLocation">GetTextLocation</a><br>
-<a href="#SetEventLocation">SetEventLocation</a><br>
-<a href="#SetExtendedDescription">SetExtendedDescription</a><br>
-<a href="#SetTextLocation">SetTextLocation</a><br>
+<a href="#AsINIBlock">AsINIBlock</a><br>
 <a href="#__init__">__init__</a><br>
+<a href="#__repr__">__repr__</a><br>
 
 
         <tr>
@@ -94,7 +89,7 @@
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="GetEventLocation"></a>&nbsp;
+                  <a name="AsINIBlock"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -102,148 +97,13 @@
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">GetEventLocation&nbsp;</font>
+                <font color="#000000">AsINIBlock&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-GetEventLocation ( self )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="GetExtendedDescription"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">GetExtendedDescription&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-GetExtendedDescription ( self )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="GetTextLocation"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">GetTextLocation&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-GetTextLocation ( self )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="SetEventLocation"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">SetEventLocation&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-SetEventLocation ( self,  eventLocation )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="SetExtendedDescription"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">SetExtendedDescription&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-SetExtendedDescription ( self,  extendeddescription )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="SetTextLocation"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">SetTextLocation&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-SetTextLocation ( self,  textLocation )
+AsINIBlock ( self )
 
 </pre></font>
 
@@ -272,11 +132,40 @@ SetTextLocation ( self,  textLocation )
         <font color="#000088"><pre>
 __init__ (
         self,
-        name,
-        description,
-        icon=None,
-        extendeddescription=&quot;&quot;,
+        name=None,
+        description=None,
+        adminList=[],
+        encryptionInfo=( 0, '' ),
+        connectionList=[],
+        staticStreams=[],
         )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="__repr__"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">__repr__&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+__repr__ ( self )
 
 </pre></font>
 
@@ -293,7 +182,7 @@ __init__ (
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

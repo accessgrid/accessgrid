@@ -51,37 +51,68 @@
             <table border="0" cellspacing="2" cellpadding="2" width="100%">
               <tr>
             <td align="LEFT" valign="TOP">
+<a href="#AddApplication">AddApplication</a><br>
 <a href="#AddConnection">AddConnection</a><br>
 <a href="#AddData">AddData</a><br>
-<a href="#AddNode">AddNode</a><br>
 <a href="#AddService">AddService</a><br>
 <a href="#AddUser">AddUser</a><br>
 <a href="#GetDescription">GetDescription</a><br>
 <a href="#GetEventLocation">GetEventLocation</a><br>
+<a href="#GetName">GetName</a><br>
 <a href="#GetTextLocation">GetTextLocation</a><br>
-<a href="#GetUniqueId">GetUniqueId</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#GetUniqueId">GetUniqueId</a><br>
+<a href="#GetUri">GetUri</a><br>
 <a href="#GetUsers">GetUsers</a><br>
 <a href="#ModifyUser">ModifyUser</a><br>
+<a href="#RemoveApplication">RemoveApplication</a><br>
 <a href="#RemoveConnection">RemoveConnection</a><br>
 <a href="#RemoveData">RemoveData</a><br>
-<a href="#RemoveNode">RemoveNode</a><br>
 <a href="#RemoveService">RemoveService</a><br>
 <a href="#RemoveUser">RemoveUser</a><br>
-<a href="#SetConnections">SetConnections</a><br>
-<a href="#SetDescription">SetDescription</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#SetConnections">SetConnections</a><br>
+<a href="#SetDescription">SetDescription</a><br>
 <a href="#SetEventLocation">SetEventLocation</a><br>
+<a href="#SetName">SetName</a><br>
 <a href="#SetTextLocation">SetTextLocation</a><br>
 <a href="#SetUniqueId">SetUniqueId</a><br>
+<a href="#SetUri">SetUri</a><br>
 <a href="#UpdateData">UpdateData</a><br>
 <a href="#__init__">__init__</a><br>
 </td>
 </tr>
             </table>
             
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="AddApplication"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AddApplication&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AddApplication ( self,  applicationDescription )
+
+</pre></font>
+
 
         <tr>
             <th bgcolor="#99ccff"
@@ -133,33 +164,6 @@ AddConnection ( self,  connectionDescription )
         <td>
         <font color="#000088"><pre>
 AddData ( self,  dataDescription )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="AddNode"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">AddNode&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-AddNode ( self,  nodeProfile )
 
 </pre></font>
 
@@ -280,6 +284,33 @@ GetEventLocation ( self )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="GetName"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetName&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetName ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="GetTextLocation"></a>&nbsp;
                 </font>
             </th>
@@ -322,6 +353,33 @@ GetTextLocation ( self )
         <td>
         <font color="#000088"><pre>
 GetUniqueId ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetUri"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetUri&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetUri ( self )
 
 </pre></font>
 
@@ -388,6 +446,33 @@ ModifyUser ( self,  userProfile )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="RemoveApplication"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">RemoveApplication&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+RemoveApplication ( self,  applicationDescription )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="RemoveConnection"></a>&nbsp;
                 </font>
             </th>
@@ -430,33 +515,6 @@ RemoveConnection ( self,  connectionDescription )
         <td>
         <font color="#000088"><pre>
 RemoveData ( self,  dataDescription )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="RemoveNode"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">RemoveNode&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-RemoveNode ( self,  nodeProfile )
 
 </pre></font>
 
@@ -604,6 +662,33 @@ SetEventLocation ( self,  eventLocation )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="SetName"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetName&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetName ( self,  name )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="SetTextLocation"></a>&nbsp;
                 </font>
             </th>
@@ -646,6 +731,33 @@ SetTextLocation ( self,  textLocation )
         <td>
         <font color="#000088"><pre>
 SetUniqueId ( self,  uniqueId )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetUri"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetUri&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetUri ( self,  uri )
 
 </pre></font>
 
@@ -702,14 +814,16 @@ UpdateData ( self,  dataDescription )
 __init__ (
         self,
         uniqueId,
+        name,
         description,
+        uri,
         connections,
-        users,
-        nodes,
+        clients,
         data,
-        services,
         eventLocation,
         textLocation,
+        applications,
+        services,
         )
 
 </pre></font>
@@ -727,7 +841,7 @@ __init__ (
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

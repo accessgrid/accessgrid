@@ -52,6 +52,7 @@
             <table border="0" cellspacing="2" cellpadding="2" width="100%">
               <tr>
             <td align="LEFT" valign="TOP">
+<a href="#AddFile">AddFile</a><br>
 <a href="#AddPendingUpload">AddPendingUpload</a><br>
 <a href="#CanUploadFile">CanUploadFile</a><br>
 <a href="#CompleteUpload">CompleteUpload</a><br>
@@ -68,6 +69,68 @@
 </tr>
             </table>
             
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="AddFile"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AddFile&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AddFile (
+        self,
+        fileList,
+        dn,
+        id,
+        )
+
+</pre></font>
+
+<p>Add file to a local datastore</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+DuplicateFile( "A file named %s already exists in the venue, \nplease rename your file and try again" % name )<br>
+UploadFailed( "Error when trying to add local data to datastorage" )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -440,7 +503,7 @@ SetTransferEngine ( self,  engine )
         <font color="#000088"><pre>
 __init__ (
         self,
-        venue,
+        callbackClass,
         pathname,
         prefix,
         )
@@ -491,7 +554,7 @@ Exception("Datastore path %s does not exist" %( pathname ) )<br>
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

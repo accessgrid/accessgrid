@@ -26,8 +26,7 @@
 <p>An object description has four parts:
         name : string
         description : string
-        uri : uri (string)
-        icon : IconType</p>
+        uri : uri (string)</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -56,14 +55,14 @@
             <table border="0" cellspacing="2" cellpadding="2" width="100%">
               <tr>
             <td align="LEFT" valign="TOP">
+<a href="#AsINIBlock">AsINIBlock</a><br>
 <a href="#GetDescription">GetDescription</a><br>
-<a href="#GetIcon">GetIcon</a><br>
+<a href="#GetId">GetId</a><br>
 <a href="#GetName">GetName</a><br>
 <a href="#GetURI">GetURI</a><br>
-<a href="#SetDescription">SetDescription</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#SetIcon">SetIcon</a><br>
+<a href="#SetDescription">SetDescription</a><br>
 <a href="#SetName">SetName</a><br>
 <a href="#SetURI">SetURI</a><br>
 <a href="#__init__">__init__</a><br>
@@ -72,6 +71,33 @@
 </tr>
             </table>
             
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="AsINIBlock"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AsINIBlock&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AsINIBlock ( self )
+
+</pre></font>
+
 
         <tr>
             <th bgcolor="#99ccff"
@@ -108,7 +134,7 @@ GetDescription ( self )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="GetIcon"></a>&nbsp;
+                  <a name="GetId"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -116,13 +142,13 @@ GetDescription ( self )
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">GetIcon&nbsp;</font>
+                <font color="#000000">GetId&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-GetIcon ( self )
+GetId ( self )
 
 </pre></font>
 
@@ -216,33 +242,6 @@ SetDescription ( self,  description )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="SetIcon"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">SetIcon&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-SetIcon ( self,  icon )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
                   <a name="SetName"></a>&nbsp;
                 </font>
             </th>
@@ -315,7 +314,6 @@ __init__ (
         self,
         name,
         description=&quot;&quot;,
-        icon=None,
         uri=&quot;&quot;,
         )
 
@@ -361,7 +359,7 @@ __repr__ ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

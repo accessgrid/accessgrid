@@ -47,6 +47,7 @@
         <tr>
         <td>
         
+<b>from</b> AccessGrid.GUID <b>import</b> GUID<br>
 <b>from</b> AccessGrid.NetworkLocation <b>import</b> MulticastNetworkLocation<br>
 <b>from</b> AccessGrid.Types <b>import</b> Capability<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-string.html">string</a><br>
@@ -76,6 +77,7 @@
         <td>
         
 <a href="#CreateStreamDescription">CreateStreamDescription</a><br>
+<a href="#CreateVenueDescription">CreateVenueDescription</a><br>
 
 
         <tr>
@@ -100,7 +102,34 @@
         <tr>
         <td>
         <font color="#000088"><pre>
-CreateStreamDescription ( streamDescriptionStruct )
+CreateStreamDescription ( streamDescStruct )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="CreateVenueDescription"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">CreateVenueDescription&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+CreateVenueDescription ( venueDescStruct )
 
 </pre></font>
 
@@ -131,6 +160,9 @@ CreateStreamDescription ( streamDescriptionStruct )
 <table border="0" cellpadding="3" cellspacing="0">
 <tr><td valign="top" align="left"><a href="Descriptions_AGServiceDescription.py.html">AGServiceDescription</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="Descriptions_AGServiceManagerDescription.py.html">AGServiceManagerDescription</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="Descriptions_ApplicationDescription.py.html">ApplicationDescription</a></td><td valign="top" align="left">
+<p>The Service Description is the Virtual Venue resident information</p>
+</td></tr>
 <tr><td valign="top" align="left"><a href="Descriptions_ConnectionDescription.py.html">ConnectionDescription</a></td><td valign="top" align="left">
 <p>A Connection Description is used to represent the</p>
 </td></tr>
@@ -141,13 +173,13 @@ CreateStreamDescription ( streamDescriptionStruct )
 <p>An object description has four parts:</p>
 </td></tr>
 <tr><td valign="top" align="left"><a href="Descriptions_ServiceDescription.py.html">ServiceDescription</a></td><td valign="top" align="left">
-<p>The Service Description is the Virtual Venue resident information about</p>
+<p>The Service Description is the Virtual Venue resident information</p>
 </td></tr>
 <tr><td valign="top" align="left"><a href="Descriptions_StreamDescription.py.html">StreamDescription</a></td><td valign="top" align="left">
 <p>A Stream Description represents a stream within a venue</p>
 </td></tr>
 <tr><td valign="top" align="left"><a href="Descriptions_VenueDescription.py.html">VenueDescription</a></td><td valign="top" align="left">
-<p>This is a Venue Description. The Venue Description is used by Venue Clients</p>
+<p>A Venue Description is used to represent a Venue.</p>
 </td></tr>
 </table>
 </td></tr>
@@ -163,7 +195,7 @@ CreateStreamDescription ( streamDescriptionStruct )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

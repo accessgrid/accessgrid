@@ -85,13 +85,11 @@ ServiceBase<br>
 <a href="#DiscoverResources">DiscoverResources</a><br>
 <a href="#GetResources">GetResources</a><br>
 <a href="#GetServices">GetServices</a><br>
-<a href="#Ping">Ping</a><br>
-<a href="#RegisterService">RegisterService</a><br>
 <a href="#RemoveService">RemoveService</a><br>
 <a href="#RemoveServices">RemoveServices</a><br>
+<a href="#SetAuthorizedUsers">SetAuthorizedUsers</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#SetAuthorizedUsers">SetAuthorizedUsers</a><br>
 <a href="#StopServices">StopServices</a><br>
 <a href="#__DiscoverResources">__DiscoverResources</a><br>
 <a href="#__PushAuthorizedUserList">__PushAuthorizedUserList</a><br>
@@ -159,6 +157,7 @@ AddService (
         <tr>
         <td>
         
+Exception( "Add service failed; service is unreachable" )<br>
 faultType("AGServiceManager.AddService failed: " + str( sys.exc_value ) )<br>
 sys.exc_value<br>
 
@@ -276,96 +275,6 @@ GetServices ( self )
 </pre></font>
 
 <p>Return list of services</p>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Ping"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">Ping&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-Ping ( self )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="RegisterService"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">RegisterService&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-RegisterService (
-        self,
-        token,
-        uri,
-        )
-
-</pre></font>
-
-<p>Register a service with the service manager.  Why?  When the
-        service manager executes a service implementation, it assigns
-        it a token.  When the service actually starts, it registers
-        with the service manager by passing this token and its uri</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-faultType("AGServiceManager.RegisterService failed: " + str( sys.exc_value ) )<br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -716,7 +625,7 @@ __init__ ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -83,56 +83,60 @@ ServiceBase.ServiceBase<br>
 <a href="#AddAdministrator">AddAdministrator</a><br>
 <a href="#AddConnection">AddConnection</a><br>
 <a href="#AddData">AddData</a><br>
-<a href="#AddNetworkService">AddNetworkService</a><br>
 <a href="#AddService">AddService</a><br>
 <a href="#AddStream">AddStream</a><br>
 <a href="#AllocateMulticastLocation">AllocateMulticastLocation</a><br>
+<a href="#AsINIBlock">AsINIBlock</a><br>
+<a href="#AsVenueDescription">AsVenueDescription</a><br>
 <a href="#CleanupClients">CleanupClients</a><br>
 <a href="#ClientHeartbeat">ClientHeartbeat</a><br>
+<a href="#CreateApplication">CreateApplication</a><br>
+<a href="#DestroyApplication">DestroyApplication</a><br>
 <a href="#Enter">Enter</a><br>
+<a href="#EventServiceDisconnect">EventServiceDisconnect</a><br>
 <a href="#Exit">Exit</a><br>
 <a href="#FindUserByProfile">FindUserByProfile</a><br>
 <a href="#GetAdministrators">GetAdministrators</a><br>
+<a href="#GetApplication">GetApplication</a><br>
+</td>
+<td align="LEFT" valign="TOP">
 <a href="#GetConnections">GetConnections</a><br>
 <a href="#GetData">GetData</a><br>
 <a href="#GetDescription">GetDescription</a><br>
 <a href="#GetEncryptMedia">GetEncryptMedia</a><br>
-<a href="#GetNetworkServices">GetNetworkServices</a><br>
-</td>
-<td align="LEFT" valign="TOP">
 <a href="#GetNextPrivateId">GetNextPrivateId</a><br>
 <a href="#GetState">GetState</a><br>
 <a href="#GetStaticStreams">GetStaticStreams</a><br>
 <a href="#GetStreams">GetStreams</a><br>
 <a href="#GetUploadDescriptor">GetUploadDescriptor</a><br>
-<a href="#IsValidPrivateId">IsValidPrivateId</a><br>
 <a href="#NegotiateCapabilities">NegotiateCapabilities</a><br>
 <a href="#RemoveAdministrator">RemoveAdministrator</a><br>
 <a href="#RemoveConnection">RemoveConnection</a><br>
 <a href="#RemoveData">RemoveData</a><br>
-<a href="#RemoveNetworkService">RemoveNetworkService</a><br>
 <a href="#RemoveService">RemoveService</a><br>
 <a href="#RemoveStream">RemoveStream</a><br>
 <a href="#RemoveUser">RemoveUser</a><br>
 <a href="#SetAdministrators">SetAdministrators</a><br>
 <a href="#SetConnections">SetConnections</a><br>
-<a href="#SetDataStore">SetDataStore</a><br>
-<a href="#SetDescription">SetDescription</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#SetDataStore">SetDataStore</a><br>
+<a href="#SetDescription">SetDescription</a><br>
 <a href="#SetEncryptMedia">SetEncryptMedia</a><br>
 <a href="#Shutdown">Shutdown</a><br>
-<a href="#Start">Start</a><br>
+<a href="#StartApplications">StartApplications</a><br>
 <a href="#UpdateClientProfile">UpdateClientProfile</a><br>
 <a href="#UpdateData">UpdateData</a><br>
-<a href="#__getstate__">__getstate__</a><br>
+<a href="#_ChangeUniqueId">_ChangeUniqueId</a><br>
+<a href="#__GetClients">__GetClients</a><br>
 <a href="#__init__">__init__</a><br>
 <a href="#__repr__">__repr__</a><br>
-<a href="#__setstate__">__setstate__</a><br>
 <a href="#_authorize">_authorize</a><br>
 <a href="#startDataStore">startDataStore</a><br>
 <a href="#wsAddData">wsAddData</a><br>
+<a href="#wsAddService">wsAddService</a><br>
 <a href="#wsGetData">wsGetData</a><br>
+<a href="#wsSetConnections">wsSetConnections</a><br>
 <a href="#wsUpdateData">wsUpdateData</a><br>
 </td>
 </tr>
@@ -190,6 +194,7 @@ AddAdministrator ( self,  string )
         <tr>
         <td>
         
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 VenueException( "Administrator already present" )<br>
 
 </td></tr>
@@ -247,8 +252,8 @@ AddConnection ( self,  connectionDescription )
         <tr>
         <td>
         
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 VenueException( "Add Connection Failed!" )<br>
-VenueException( "You are not authorized to perform this action." )<br>
 
 </td></tr>
 </table>
@@ -319,64 +324,6 @@ VenueException("AddData: data %s already present" %( name ) )<br>
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="AddNetworkService"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">AddNetworkService&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-AddNetworkService ( self,  networkServiceDescription )
-
-</pre></font>
-
-<p>AddNetworkService allows an administrator to add functionality to
-        the Venue. Network services are described in the design documents.</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-VenueException( "Add Network Service Failed!" )<br>
-VenueException( "You are not authorized to perform this action." )<br>
-
-</td></tr>
-</table>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
                   <a name="AddService"></a>&nbsp;
                 </font>
             </th>
@@ -395,7 +342,9 @@ AddService ( self,  serviceDescription )
 
 </pre></font>
 
-<p>This method adds a service description to the Venue.</p>
+<p>The AddService method enables VenuesClients to put services in the Virtual
+        Venue. Service put in the Virtual Venue through AddService is persistently
+        stored.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -420,7 +369,7 @@ AddService ( self,  serviceDescription )
         <tr>
         <td>
         
-VenueException( "AddService: " )<br>
+VenueException("AddService: service %s already present" %( name ) )<br>
 
 </td></tr>
 </table>
@@ -476,7 +425,7 @@ AddStream ( self,  inStreamDescription )
         <tr>
         <td>
         
-VenueException( "You are not authorized to perform this action." )<br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
 </table>
@@ -508,6 +457,60 @@ AllocateMulticastLocation ( self )
 </pre></font>
 
 <p>This method creates a new Multicast Network Location.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="AsINIBlock"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AsINIBlock&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AsINIBlock ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="AsVenueDescription"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AsVenueDescription&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AsVenueDescription ( self )
+
+</pre></font>
+
 
         <tr>
             <th bgcolor="#99ccff"
@@ -571,6 +574,68 @@ ClientHeartbeat ( self,  event )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="CreateApplication"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">CreateApplication&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+CreateApplication (
+        self,
+        name,
+        description,
+        mimeType,
+        )
+
+</pre></font>
+
+<p>Create a new application object.  Initialize the
+        implementation, and create a web service interface for it.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="DestroyApplication"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">DestroyApplication&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+DestroyApplication ( self,  appId )
+
+</pre></font>
+
+<p>Destroy an application object.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="Enter"></a>&nbsp;
                 </font>
             </th>
@@ -590,9 +655,8 @@ Enter ( self,  clientProfile )
 </pre></font>
 
 <p>The Enter method is used by a VenueClient to gain access to the
-        services, users, and content found within a Virtual Venue.<p> Client Methods</p>
+        services, clients, and content found within a Virtual Venue.<p> Client Methods</p>
 </p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
             <th bgcolor="#99ccff"
@@ -602,7 +666,7 @@ Enter ( self,  clientProfile )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
+                  <a name="EventServiceDisconnect"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -610,16 +674,16 @@ Enter ( self,  clientProfile )
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">&nbsp;</font>
+                <font color="#000000">EventServiceDisconnect&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
-        
-VenueException( "Enter: " )<br>
+        <font color="#000088"><pre>
+EventServiceDisconnect ( self,  event )
 
-</td></tr>
-</table>
+</pre></font>
+
 
         <tr>
             <th bgcolor="#99ccff"
@@ -705,8 +769,8 @@ FindUserByProfile ( self,  profile )
 
 </pre></font>
 
-<p>Find out if a given user is in the venue from their client profile.
-        If they are return their private id, if not, return None.</p>
+<p>Find out if a given client is in the venue from their client profile.
+        If they are, return their private id, if not, return None.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -734,6 +798,34 @@ GetAdministrators ( self )
 
 </pre></font>
 
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetApplication"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetApplication&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetApplication ( self,  id )
+
+</pre></font>
+
+<p>Return the application state for the given application object.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -849,35 +941,6 @@ GetEncryptMedia ( self )
 </pre></font>
 
 <p>Return whether we are encrypting streams or not.</p>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="GetNetworkServices"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">GetNetworkServices&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-GetNetworkServices ( self )
-
-</pre></font>
-
-<p>GetNetworkServices retreives the list of network service descriptions
-        from the venue.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1029,34 +1092,6 @@ GetUploadDescriptor ( self )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="IsValidPrivateId"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">IsValidPrivateId&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-IsValidPrivateId ( self,  privateId )
-
-</pre></font>
-
-<p>This method verifies the private Id is valid.</p>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
                   <a name="NegotiateCapabilities"></a>&nbsp;
                 </font>
             </th>
@@ -1135,6 +1170,7 @@ RemoveAdministrator ( self,  string )
         <tr>
         <td>
         
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 VenueException( "Administrator not found" )<br>
 
 </td></tr>
@@ -1192,8 +1228,8 @@ RemoveConnection ( self,  connectionDescription )
         <tr>
         <td>
         
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 VenueException( "Remove Connection Failed!" )<br>
-VenueException( "You are not authorized to perform this action." )<br>
 
 </td></tr>
 </table>
@@ -1263,64 +1299,6 @@ VenueException( "Data not found." )<br>
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="RemoveNetworkService"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">RemoveNetworkService&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-RemoveNetworkService ( selfnetworkServiceDescription )
-
-</pre></font>
-
-<p>RemoveNetworkService removes a network service from a venue, making
-        it unavailable to users of the venue.</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-VenueException( "Remove Network Service Failed!" )<br>
-VenueException( "You are not authorized to perform this action." )<br>
-
-</td></tr>
-</table>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
                   <a name="RemoveService"></a>&nbsp;
                 </font>
             </th>
@@ -1339,8 +1317,7 @@ RemoveService ( self,  serviceDescription )
 
 </pre></font>
 
-<p>This method removes a service description from the list of services
-        in the Virtual Venue.</p>
+<p>RemoveService removes persistent service from the Virtual Venue.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -1365,7 +1342,8 @@ RemoveService ( self,  serviceDescription )
         <tr>
         <td>
         
-VenueException( "RemoveService: " )<br>
+VenueException( "Cannot remove service!" )<br>
+VenueException( "Service not found." )<br>
 
 </td></tr>
 </table>
@@ -1421,7 +1399,7 @@ RemoveStream ( self,  streamDescription )
         <tr>
         <td>
         
-VenueException( "You are not authorized to perform this action." )<br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
 </table>
@@ -1479,37 +1457,6 @@ SetAdministrators ( self,  administratorList )
 
 </pre></font>
 
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="SetConnections"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">SetConnections&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-SetConnections ( self,  connectionList )
-
-</pre></font>
-
-<p>SetConnections is a convenient aggregate accessor for the list of
-        connections for this venue. Alternatively the user could iterate over
-        a list of connections adding them one by one, but this is more
-        desirable.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -1534,11 +1481,41 @@ SetConnections ( self,  connectionList )
         <tr>
         <td>
         
-VenueException( "Set Connections Failed!" )<br>
-VenueException( "You are not authorized to perform this action." )<br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
 </table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetConnections"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetConnections&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetConnections ( self,  connectionDict )
+
+</pre></font>
+
+<p>SetConnections is a convenient aggregate accessor for the list of
+        connections for this venue. Alternatively the user could iterate over
+        a list of connections adding them one by one, but this is more
+        desirable.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1621,7 +1598,7 @@ SetDescription ( self,  description )
         <tr>
         <td>
         
-VenueException( "You are not authorized to perform this action." )<br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
 </table>
@@ -1681,7 +1658,7 @@ SetEncryptMedia (
         <tr>
         <td>
         
-VenueException( "You are not authorized to perform this action." )<br>
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
 </table>
@@ -1724,7 +1701,7 @@ Shutdown ( self )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="Start"></a>&nbsp;
+                  <a name="StartApplications"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -1732,16 +1709,19 @@ Shutdown ( self )
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">Start&nbsp;</font>
+                <font color="#000000">StartApplications&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-Start ( self,  server )
+StartApplications ( self )
 
 </pre></font>
 
+<h3>Restart the application services after a server restart.</h3>
+<p>        For each app impl, awaken the app, and create a new
+        web service binding for it.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1826,7 +1806,7 @@ UpdateData ( self,  dataDescription )
         <tr>
         <td>
         
-VenueException("UpdateData: data %s not already present" %( name ) )<br>
+VenueException( "UpdateData: data %s not already present" % name )<br>
 
 </td></tr>
 </table>
@@ -1839,7 +1819,7 @@ VenueException("UpdateData: data %s not already present" %( name ) )<br>
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="__getstate__"></a>&nbsp;
+                  <a name="_ChangeUniqueId"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -1847,19 +1827,45 @@ VenueException("UpdateData: data %s not already present" %( name ) )<br>
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">__getstate__&nbsp;</font>
+                <font color="#000000">_ChangeUniqueId&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-__getstate__ ( self )
+_ChangeUniqueId ( self,  id )
 
 </pre></font>
 
-<h3>Retrieve the state of object attributes for pickling.</h3>
-<p>        We don't pickle any object instances, except for the
-        uniqueId and description.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="__GetClients"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">__GetClients&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+__GetClients ( self )
+
+</pre></font>
+
+<p>Creates a dictionary of clients by extracting clients from the
+        clients-time dictionary</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1885,10 +1891,11 @@ __getstate__ ( self )
         <font color="#000088"><pre>
 __init__ (
         self,
-        uniqueId,
+        server,
+        name,
         description,
-        administrator,
-        dataStorePath,
+        administrators,
+        dataStoreLocation,
         )
 
 </pre></font>
@@ -1923,36 +1930,6 @@ __repr__ ( self )
 
 </pre></font>
 
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="__setstate__"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">__setstate__&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-__setstate__ ( self,  pickledDict )
-
-</pre></font>
-
-<h3>Resurrect the state of this object after unpickling.</h3>
-<p>        Restore  the attribute dictionary and start up the
-        services.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -2008,8 +1985,10 @@ startDataStore ( self )
 </pre></font>
 
 <h3>Start the local datastore server.</h3>
-<p>        We create a DataStore and a HTTPTransportServer for the actual
-        service.  The DataStore is given the Venue's dataStorePath as
+<p>        We create a DataStore to manage this Venue's data.
+        We have been already given a data transfer service instance
+        (in the call to Venue.Start()).</p>
+<p>        The DataStore is given the Venue's dataStorePath as
         its working directory.  We then loop through the data
         descriptions in the venue, both checking to see that the file
         still exists for each piece of data, and updating the uri
@@ -2044,6 +2023,90 @@ wsAddData ( self,  dataDescription )
 
 </pre></font>
 
+<p>Interface methods</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsAddService"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsAddService&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsAddService ( self,  serviceDescription )
+
+</pre></font>
+
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -2071,6 +2134,90 @@ wsGetData ( self,  name )
 
 </pre></font>
 
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="wsSetConnections"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">wsSetConnections&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+wsSetConnections ( self,  connectionList )
+
+</pre></font>
+
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+VenueException( "Set Connections Failed!" )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -2098,6 +2245,34 @@ wsUpdateData ( self,  dataDescription )
 
 </pre></font>
 
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="VenueServer_NotAuthorized.py.html">NotAuthorized</a><br>
+
+</td></tr>
+</table>
 </td></tr>
 </td></tr>
 </table>
@@ -2111,7 +2286,7 @@ wsUpdateData ( self,  dataDescription )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

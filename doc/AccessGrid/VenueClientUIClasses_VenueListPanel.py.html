@@ -24,13 +24,16 @@
         <td>
         
 <h3>VenueListPanel. </h3>
-<p>    The venueListPanel contains a list of connected venues/exits to current venue.  
-    By clicking on a door icon the user travels to another venue/room, 
-    which contents will be shown in the contentListPanel.  By moving the mouse over
-    a door/exit information about that specific venue will be shown as a tooltip.
-    The user can close the venueListPanel if exits/doors are irrelevant to the user and
-    the application will extend the contentListPanel.  The panels is separated into a 
-    panel containing the close/open buttons and a VenueList object containing the exits.</p>
+<p>    The venueListPanel contains a list of connected venues/exits to
+    current venue.  By clicking on a door icon the user travels to
+    another venue/room, which contents will be shown in the
+    contentListPanel.  By moving the mouse over a door/exit
+    information about that specific venue will be shown as a tooltip.
+    The user can close the venueListPanel if exits/doors are
+    irrelevant to the user and the application will extend the
+    contentListPanel.  The panels is separated into a panel containing
+    the close/open buttons and a VenueList object containing the
+    exits.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -84,11 +87,12 @@ wxSashLayoutWindow<br>
         <td>
         
 <a href="#CleanUp">CleanUp</a><br>
+<a href="#FixDoorsLayout">FixDoorsLayout</a><br>
 <a href="#Hide">Hide</a><br>
+<a href="#Layout">Layout</a><br>
 <a href="#OnClick">OnClick</a><br>
 <a href="#Show">Show</a><br>
 <a href="#__addEvents">__addEvents</a><br>
-<a href="#__doLayout">__doLayout</a><br>
 <a href="#__init__">__init__</a><br>
 <a href="#__setProperties">__setProperties</a><br>
 
@@ -128,6 +132,33 @@ CleanUp ( self )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="FixDoorsLayout"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">FixDoorsLayout&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+FixDoorsLayout ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="Hide"></a>&nbsp;
                 </font>
             </th>
@@ -143,6 +174,33 @@ CleanUp ( self )
         <td>
         <font color="#000088"><pre>
 Hide ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Layout"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">Layout&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+Layout ( self )
 
 </pre></font>
 
@@ -236,33 +294,6 @@ __addEvents ( self )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="__doLayout"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">__doLayout&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-__doLayout ( self )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
                   <a name="__init__"></a>&nbsp;
                 </font>
             </th>
@@ -326,7 +357,7 @@ __setProperties ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

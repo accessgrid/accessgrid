@@ -47,21 +47,20 @@
         <tr>
         <td>
         
-<b>from</b> AccessGrid <b>import</b> Utilities, GUID<br>
+<b>from</b> AccessGrid <b>import</b> Utilities<br>
 <b>from</b> AccessGrid.AuthorizationManager <b>import</b> AuthorizationManager<br>
 <b>from</b> AccessGrid.DataStore <b>import</b> GSIHTTPDownloadFile<br>
-<b>from</b> AccessGrid.Descriptions <b>import</b> AGServiceDescription<br>
+<b>from</b> AccessGrid.MulticastAddressAllocator <b>import</b> MulticastAddressAllocator<br>
 <b>from</b> AccessGrid.Platform <b>import</b> GetConfigFilePath, GetSystemConfigDir<br>
 <b>from</b> AccessGrid.Types <b>import</b> AGServicePackage<br>
 <b>from</b> AccessGrid.hosting.pyGlobus <b>import</b> Client<br>
 <b>from</b> AccessGrid.hosting.pyGlobus.AGGSISOAP <b>import</b> faultType<br>
 <b>from</b> AccessGrid.hosting.pyGlobus.ServiceBase <b>import</b> ServiceBase<br>
+<b>from</b> AccessGrid.hosting.pyGlobus.Utilities <b>import</b> GetHostname<br>
 <b>import</b> logging<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-os.html">os</a><br>
-<b>import</b> <a href="http://www.python.org/doc/current/lib/module-socket.html">socket</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-sys.html">sys</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-time.html">time</a><br>
-<b>import</b> <a href="http://www.python.org/doc/current/lib/module-urllib.html">urllib</a><br>
 
 </td></tr>
 
@@ -105,7 +104,7 @@
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -24,9 +24,11 @@
         <td>
         
 <h3>ContentListPanel.</h3>
-<p>    The contentListPanel represents current venue and has information about all participants 
-    in the venue, it also shows what data and services are available in the venue, as well as 
-    nodes connected to the venue.  It represents a room, with its contents visible for the user.</p>
+<p>    The contentListPanel represents current venue and has information
+    about all participants in the venue, it also shows what data and
+    services are available in the venue, as well as nodes connected to
+    the venue.  It represents a room, with its contents visible for
+    the user.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -83,6 +85,7 @@ wxPanel<br>
             <table border="0" cellspacing="2" cellpadding="2" width="100%">
               <tr>
             <td align="LEFT" valign="TOP">
+<a href="#AddApplication">AddApplication</a><br>
 <a href="#AddData">AddData</a><br>
 <a href="#AddNode">AddNode</a><br>
 <a href="#AddParticipant">AddParticipant</a><br>
@@ -90,20 +93,21 @@ wxPanel<br>
 <a href="#CleanUp">CleanUp</a><br>
 <a href="#ModifyParticipant">ModifyParticipant</a><br>
 <a href="#OnKeyDown">OnKeyDown</a><br>
+<a href="#OnLeftDown">OnLeftDown</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#OnLeftDown">OnLeftDown</a><br>
 <a href="#OnRightClick">OnRightClick</a><br>
 <a href="#OnSize">OnSize</a><br>
 <a href="#RemoveData">RemoveData</a><br>
 <a href="#RemoveNode">RemoveNode</a><br>
 <a href="#RemoveParticipant">RemoveParticipant</a><br>
 <a href="#RemoveParticipantData">RemoveParticipantData</a><br>
-</td>
-<td align="LEFT" valign="TOP">
 <a href="#RemoveService">RemoveService</a><br>
 <a href="#UnSelectList">UnSelectList</a><br>
 <a href="#UpdateData">UpdateData</a><br>
+</td>
+<td align="LEFT" valign="TOP">
+<a href="#__GetPersonalDataFromItem">__GetPersonalDataFromItem</a><br>
 <a href="#__init__">__init__</a><br>
 <a href="#__setImageList">__setImageList</a><br>
 <a href="#__setProperties">__setProperties</a><br>
@@ -112,6 +116,33 @@ wxPanel<br>
 </tr>
             </table>
             
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="AddApplication"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AddApplication&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AddApplication ( self,  appDesc )
+
+</pre></font>
+
 
         <tr>
             <th bgcolor="#99ccff"
@@ -162,7 +193,11 @@ AddData ( self,  profile )
         <tr>
         <td>
         <font color="#000088"><pre>
-AddNode ( self,  profile )
+AddNode (
+        self,
+        profile,
+        dataList=[],
+        )
 
 </pre></font>
 
@@ -189,7 +224,11 @@ AddNode ( self,  profile )
         <tr>
         <td>
         <font color="#000088"><pre>
-AddParticipant ( self,  profile )
+AddParticipant (
+        self,
+        profile,
+        dataList=[],
+        )
 
 </pre></font>
 
@@ -513,7 +552,7 @@ RemoveParticipantData ( self,  dataTreeId )
         <tr>
         <td>
         <font color="#000088"><pre>
-RemoveService ( self,  profile )
+RemoveService ( self,  appDesc )
 
 </pre></font>
 
@@ -568,6 +607,33 @@ UnSelectList ( self )
         <td>
         <font color="#000088"><pre>
 UpdateData ( self,  profile )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="__GetPersonalDataFromItem"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">__GetPersonalDataFromItem&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+__GetPersonalDataFromItem ( self,  treeId )
 
 </pre></font>
 
@@ -697,7 +763,7 @@ __setTree ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

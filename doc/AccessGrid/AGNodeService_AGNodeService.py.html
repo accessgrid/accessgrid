@@ -93,9 +93,9 @@ ServiceBase<br>
 <a href="#LoadConfiguration">LoadConfiguration</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#Ping">Ping</a><br>
 <a href="#RemoveAuthorizedUser">RemoveAuthorizedUser</a><br>
 <a href="#RemoveServiceManager">RemoveServiceManager</a><br>
+<a href="#Stop">Stop</a><br>
 <a href="#StoreConfiguration">StoreConfiguration</a><br>
 <a href="#__PushAuthorizedUserList">__PushAuthorizedUserList</a><br>
 <a href="#__ReadAuthFile">__ReadAuthFile</a><br>
@@ -157,7 +157,7 @@ AddAuthorizedUser ( self,  authorizedUser )
         <tr>
         <td>
         
-faultType( "Failed to add user authorization: " + authorizedUser )<br>
+Exception( "Failed to add user authorization: " + authorizedUser )<br>
 
 </td></tr>
 </table>
@@ -213,8 +213,8 @@ AddServiceManager ( self,  serviceManager )
         <tr>
         <td>
         
-faultType( "Failed to set Service Manager user authorization: " + serviceManager.uri )<br>
-faultType( "Service Manager is unreachable: " + serviceManager.uri )<br>
+Exception( "Failed to set Service Manager user authorization: " + serviceManager.uri )<br>
+Exception( "Service Manager is unreachable: " + serviceManager.uri )<br>
 
 </td></tr>
 </table>
@@ -248,34 +248,6 @@ ConfigureStreams ( self,  streamDescriptions )
 <p>Configure streams according to stream descriptions.
         The stream descriptions are applied to the installed services
         according to matching capabilities</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-faultType("AGNodeService.ConfigureStreams failed: " + str( sys.exc_value ) )<br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -356,7 +328,7 @@ GetCapabilities ( self )
         <tr>
         <td>
         
-faultType("AGNodeService.GetCapabilities failed: " + str( sys.exc_value ) )<br>
+Exception("AGNodeService.GetCapabilities failed: " + str( sys.exc_value ) )<br>
 
 </td></tr>
 </table>
@@ -468,7 +440,7 @@ GetServices ( self )
         <tr>
         <td>
         
-faultType("AGNodeService.GetServices failed: " + str( sys.exc_value ) )<br>
+Exception("AGNodeService.GetServices failed: " + str( sys.exc_value ) )<br>
 
 </td></tr>
 </table>
@@ -500,34 +472,6 @@ LoadConfiguration ( self,  configName )
 </pre></font>
 
 <p>Load named node configuration</p>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Ping"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">Ping&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-Ping ( self )
-
-</pre></font>
-
-<p>Allows clients to determine whether node service is alive</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -580,7 +524,7 @@ RemoveAuthorizedUser ( self,  authorizedUser )
         <tr>
         <td>
         
-faultType( "Failed to remove user authorization: " + authorizedUser )<br>
+Exception( "Failed to remove user authorization: " + authorizedUser )<br>
 
 </td></tr>
 </table>
@@ -636,10 +580,37 @@ RemoveServiceManager ( self,  serviceManagerToRemove )
         <tr>
         <td>
         
-faultType( "AGNodeService.RemoveServiceManager failed: " + serviceManagerToRemove.uri )<br>
+Exception( "AGNodeService.RemoveServiceManager failed: " + serviceManagerToRemove.uri )<br>
 
 </td></tr>
 </table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Stop"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">Stop&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+Stop ( self )
+
+</pre></font>
+
 
         <tr>
             <th bgcolor="#99ccff"
@@ -794,7 +765,7 @@ __init__ ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Mar 14 10:06:12 2003 by
+        on Sun Apr 20 09:11:36 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         
