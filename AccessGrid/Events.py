@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.7 2003-03-24 20:26:12 judson Exp $
+# RCS-ID:      $Id: Events.py,v 1.8 2003-04-18 22:58:35 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -25,17 +25,25 @@ class Event:
     SET_CONNECTIONS = "Set connections"
     UPDATE_VENUE_STATE = "Update venue state"
     
-    def __init__( self, eventType, venueId, data ):
+    def __init__(self, eventType, venueId, data):
         self.eventType = eventType
         self.venue = venueId
         self.data = data
 
+    def __repr__(self):
+        string = "Event:\n"
+        string += "\tType: %s" % self.eventType
+        string += "\tVenue: %s" % self.venue
+        string += "\tData: %s" % self.data
+
+        return string
+    
 class ConnectEvent(Event):
     CONNECT = "Connect"
 
     def __init__(self, venueId):
         Event.__init__(self, ConnectEvent.CONNECT, venueId, None)
-        
+
 class DisconnectEvent(Event):
     DISCONNECT = "Disconnect"
 
