@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.48 2003-03-14 18:42:55 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.49 2003-03-21 22:56:18 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -45,6 +45,8 @@ class VenueManagementClient(wxApp):
     venueList = []
 
     def OnInit(self):
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
         self.frame = wxFrame(NULL, -1, "Venue Management" )
         self.address = VenueServerAddress(self.frame, self)
         self.tabs = VenueManagementTabs(self.frame, -1, self)
@@ -286,8 +288,9 @@ class VenueManagementClient(wxApp):
 
     def ModifyAdministrator(self, oldName, dnName):
         wxLogDebug("Modify administrator: %s with new dnName: %s"%(oldName,dnName))
-        self.server.AddAdministrator(dnName)
-        self.server.RemoveAdministrator(oldName)
+        if(dnName != oldName):
+            self.server.AddAdministrator(dnName)
+            self.server.RemoveAdministrator(oldName)
 
     def SetRandom(self):
         wxLogDebug("Set random address allocation method")
