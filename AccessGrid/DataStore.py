@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.27 2003-05-30 20:16:52 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.28 2003-06-26 21:01:23 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -25,11 +25,18 @@ import os
 import ConfigParser
 import cStringIO
 import Queue
+from threading import Condition, Lock
 
 import AccessGrid.GUID
 from AccessGrid.Utilities import GetHostname
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid import Platform
+from AccessGrid.hosting.pyGlobus import Server
+from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
+from AccessGrid.hosting.pyGlobus import Client
+from AccessGrid.EventServiceAsynch import EventService
+from AccessGrid.Events import Event, AddPersonalDataEvent
+from AccessGrid.Events import RemovePersonalDataEvent, UpdatePersonalDataEvent
 from pyGlobus.io import GSITCPSocketException
 
 import logging
@@ -53,13 +60,203 @@ class UploadFailed(Exception):
 class DownloadFailed(Exception):
     pass
 
-class DataStore:
+class DataAlreadyPresent(Exception):
+    pass
+
+class DataNotFound(Exception):
+    pass
+
+
+class DataDescriptionContainer:
+    
+    """
+    A DataDescriptionContainer includes all DataDescription representations of
+    data in the DataStore. The DataStore calls this class to manage the Descriptions.
+    """
+    data = dict()
+
+    def __init__(self):
+        self.channelId = None 
+        self.eventDistributor = None
+
+    def SetEventDistributor(self, eventDistributor, channelId):
+        '''
+        Sets the object used to send events
+
+        **Arguments**
+
+        *eventDistributor* Object that sends events
+        *channelId* channel ID to use for events
+        '''
+        
+        self.eventDistributor = eventDistributor
+        self.channelId = channelId
+            
+    def AddData(self, dataDescription):
+        """
+        Replace the current description for dataDescription.name with
+        this one.
+
+        **Arguments:**
+            *dataDescription* A real data description.
+            
+        **Raises:**
+            *DataAlreadyPresent* Raised when the data is not found in the Venue.
+
+        """
+
+        name = dataDescription.name
+        log.debug("DataDescriptionContainer::AddData with name %s " %name)
+             
+        if self.data.has_key(name):
+            log.exception("DataDescriptionContainer::AddData: data already present: %s", name)
+            raise DataAlreadyPresent
+
+        self.data[name] = dataDescription
+        log.debug("DataDescriptionContainer::AddData: Distribute ADD_DATA event %s", dataDescription)
+
+        # DataStore belongs to venue
+        if isinstance(self.eventDistributor, EventService):
+            self.eventDistributor.Distribute( self.channelId,
+                                              Event(Event.ADD_DATA,
+                                                    self.channelId,
+                                                    dataDescription))
+        # DataStore belongs to participant
+        else:
+            self.eventDistributor.Send(AddPersonalDataEvent(self.channelId, dataDescription))
+      
+    def UpdateData(self, dataDescription,):
+        """
+        **Arguments:**
+            *dataDescription* DataDescription to update
+            
+        **Raises:**
+            *DataNotFound* Raised when the data is not found in the Venue.
+        """
+
+        name = dataDescription.name
+
+        if not self.data.has_key(name):
+            log.exception("UpdateData: data not already present: %s", name)
+            raise DataNotFound
+
+        self.data[dataDescription.name] = dataDescription
+
+        log.debug("Distribute UPDATE_DATA event %s", dataDescription)
+
+        
+        # DataStore belongs to venue
+        if isinstance(self.eventDistributor, EventService):
+            self.eventDistributor.Distribute(self.channelId,
+                                             Event(Event.UPDATE_DATA,
+                                                   self.channelId,
+                                                   dataDescription))
+        # DataStore belongs to participant
+        else:
+            self.eventDistributor.Send(UpdatePersonalDataEvent(self.channelId, dataDescription))
+
+    def GetData(self, fileName):
+        """
+        GetData retreives the DataDescription associated with fileName.
+        
+        **Arguments:**
+            *fileName* The name of the data to be retrieved.
+        
+        **Returns:**
+            *dataDescription* A data description that corresponds
+            to the name passed in.
+        
+            *None* When the data is not found
+        
+        """
+        if self.data.has_key(fileName):
+            return self.data[fileName]
+        else:
+            return None
+
+    def RemoveData(self, dataDescription):
+        """
+        RemoveData removes a DataDescription 
+
+        **Arguments:**
+            *dataDescription* A data description.
+
+        **Raises:**
+            *DataNotFound* Raised when the data is not found.
+        """
+
+        name = dataDescription.name
+
+        #
+        # We always want to send an event to clean up UI for clients.
+        #
+
+        # DataStore belongs to venue
+        if isinstance(self.eventDistributor, EventService):
+            self.eventDistributor.Distribute(self.channelId,
+                                             Event( Event.REMOVE_DATA,
+                                                    self.channelId,
+                                                    dataDescription ) )
+        # DataStore belongs to participant
+        else:
+            self.eventDistributor.Send(RemovePersonalDataEvent(self.channelId, dataDescription))
+            
+        if self.data.has_key(name):
+            del self.data[ dataDescription.name ]
+            
+        else:
+            log.exception("DataDescriptionContainer::RemoveData: Data not found.")
+            raise DataNotFound
+        
+    def AsINIBlock(self):
+        """
+        AsINIBlock serializes the data as an INI formatted
+        block of text.
+
+        **Returns**
+            *iniblock* string of serialized data. If no data is present,
+        
+        """
+        iniblock = ""
+        
+        dataList = ":".join(map( lambda data: data.GetId(), self.data.values()))
+
+        return dataList
+                
+    def LoadPersistentData(self, dataList):
+        '''
+        Adds a list of DataDescriptions without distributing events
+
+        **Arguments**
+        *dataList* List of DataDescriptions you want to add
+        '''
+        for description in dataList:
+            self.data[description.name] = description
+            
+
+    def GetDataDescriptions(self):
+        """
+        This methods returns a list containing all present DataDescriptions.
+
+        **Returns**
+            *data* A list of DataDescription
+        
+        """
+        dList = []
+       
+        for data in self.data.values():
+            dList.append(data)
+
+        return dList
+    
+
+class DataStore(ServiceBase):
     """
     A DataStore implements a per-venue data storage server.
     
     """
     
-    def __init__(self, callbackClass, pathname, prefix):
+    def __init__(self, pathname, prefix):
         """
         Create the datastore.
 
@@ -67,8 +264,11 @@ class DataStore:
         The URL prefix for this data store is <prefix>.
 
         """
-
-        self.callbackClass = callbackClass
+        self.cbLock = threading.Lock()
+        self.transferEngineLock = threading.Lock()
+             
+        self.prefix = prefix
+        self.callbackClass = DataDescriptionContainer()
         log.debug("Datastore path is %s" %pathname)
         
         if not os.path.exists(pathname):
@@ -76,25 +276,171 @@ class DataStore:
             raise Exception("Datastore path %s does not exist" % (pathname))
 
         self.pathname = pathname
-        self.prefix = prefix
+        self.__CreateWebService()
 
     def SetTransferEngine(self, engine):
         """
         Set the datastore's default transfer engine.
 
         """
-
+        self.transferEngineLock.acquire()
         self.transfer_engine = engine
         engine.RegisterPrefix(self.prefix, self)
+        self.transferEngineLock.release()
 
-    def AddFile(self, fileList, dn, id):
+    # ------------------------
+    #
+    # New methods
+    #
+
+        
+    def __CreateWebService(self):
+        '''
+        Initiates the DataStore SOAP service.
+        '''
+
+        def AuthCallback(server, g_handle, remote_user, context):
+            return 1
+        
+        from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
+        port = MulticastAddressAllocator().AllocatePort()
+
+        server = Server.Server(port, auth_callback=AuthCallback)
+        self.service = server.CreateServiceObject("DataStore")
+        self._bind_to_service( self.service )
+        server.run_in_thread()
+
+    def SetEventDistributor(self, eventDistributor, channelId):
+        '''
+        Set the object responsible for sending events.
+        '''
+
+        self.cbLock.acquire()
+        self.callbackClass.SetEventDistributor(eventDistributor, channelId)
+        self.cbLock.release()
+        
+    def GetLocation(self):
+        '''
+        This methods returns a handle to the DataStore SOAP service.
+
+        **Returns**
+            *url* The url to the DataStore SOAP service
+    
+        '''
+        return self.service.get_handle()
+
+    def LoadPersistentData(self, dataList):
+        '''
+        Adds a list of DataDescriptions.  If the datastore location has changed, url of data
+        passed in is changed. If data is no longer present in the file system, the DataDescription
+        is not ignored.
+        '''
+
+        persistentData = []
+
+        
+        for data in dataList:
+            url = self.GetDownloadDescriptor(data.name)
+
+            #
+            # Remove data that has vanished
+            #
+            if url is None:
+                log.debug("DataStore.LoadPersistentData: File %s is not valid, remove it" %data.name)
+                self.callbackClass.Remove(data)
+
+            #
+            # Change url if data storage location has changed
+            #
+            else:
+                data.SetURI(url)
+                persistentData.append(data)
+                
+        self.cbLock.acquire()
+        self.callbackClass.LoadPersistentData(persistentData)
+        self.cbLock.release()
+
+    def AsINIBlock(self):
+        '''
+        This serializes the data in the DataStore as a INI formatted
+        block of text.
+
+        **Returns**
+            *string* The INI formatted list of DataDescriptions in the DataStore.
+        '''
+        self.cbLock.acquire()
+        block = self.callbackClass.AsINIBlock()
+        self.cbLock.release()
+        
+        return block
+
+    def GetDataDescriptions(self):
+        '''
+        Retreive data in the DataStore as a list of DataDescriptions.
+        
+        **Returns**
+            *dataDescriptionList* A list of DataDescriptions representing data currently in the DataStore
+        '''
+
+        self.cbLock.acquire()
+        dataDescriptionList = self.callbackClass.GetDataDescriptions()
+        self.cbLock.release()
+        
+        return dataDescriptionList
+
+    GetDataDescriptions.soap_export_as = "GetDataDescriptions"
+
+    def RemoveFiles(self, dataDescriptionList):
+        filesWithError = ""
+
+        # 
+        # Try to remove all files in the list.  If an error occurs, raise a FileNotFound error
+        # with a string containing all names of files that couldn't be removed errors.
+        #
+        for data in dataDescriptionList:
+            errorFlag = 0
+            
+            log.debug("Datastore.RemoveFiles: %s", data.name)
+            try:
+                self.cbLock.acquire()
+                self.callbackClass.RemoveData(data)
+                self.cbLock.release()
+            except:
+                log.error("DataStore.RemoveFiles: Can not remove data from callbackclass")
+                               
+                #  errorFlag = 1
+                # We don't have to raise an exception for this
+
+            path = os.path.join(self.pathname, data.name)
+                        
+            if not os.path.exists(path):
+                errorFlag = 1
+                log.error("DataStore.RemoveFiles: The path does not exist %s"%path)
+                                
+            try:
+                os.remove(path)
+            except:
+                log.exception("DataStore.RemoveFiles: raised error")
+                errorFlag = 1
+                
+            if errorFlag:
+                filesWithError = filesWithError + " "+data.name
+                
+        if errorFlag:
+            raise FileNotFound(filesWithError)
+            
+        
+    RemoveFiles.soap_export_as = "RemoveFiles"
+    
+    # -----------------------
+    
+    def UploadLocalFiles(self, fileList, dn, id):
         '''
         Add file to a local datastore
         '''
         for filename in fileList:
             try:
                 # Transfer file from local path to local data store path
-                log.debug("DataStore::AddFile: Add file %s to local datastore" %filename)
                 input = open(filename, 'rb')
                 fileString = input.read()
                 
@@ -104,10 +450,11 @@ class DataStore:
                     log.debug("DataStore::AddFile: Personal data storage directory does not exist, create it")
                     os.mkdir(self.pathname)
 
-                log.debug("DataStore::AddFile: GetData returns %s"%self.callbackClass.GetData(name))
-                log.debug("DataStore::AddFile: GetVenueData returns %s"%self.callbackClass.GetVenueData(name))
-                if self.callbackClass.GetData(name) == None and self.callbackClass.GetVenueData(name) == None:
-                    
+                self.cbLock.acquire()
+                desc = self.callbackClass.GetData(name)
+                self.cbLock.release()
+                
+                if desc == None:
                     dataStorePath = os.path.join(self.pathname, name)
                     log.debug("DataStore::AddFile: Personal datastorage is located at %s"%dataStorePath)
                     output = open(dataStorePath, 'wb')
@@ -130,10 +477,16 @@ class DataStore:
                     desc.SetChecksum(checksum)
                     desc.SetSize(int(size))
                     desc.SetStatus(DataDescription.STATUS_PRESENT)
+                    
+                    self.transferEngineLock.acquire()
                     desc.SetURI(self.transfer_engine.GetDownloadDescriptor(self.prefix, name))
+                    self.transferEngineLock.release()
+                    
                     log.debug("DataStore::AddFile: updating with %s %s", desc, desc.__dict__)
-                    self.callbackClass.AddData(desc)
 
+                    self.cbLock.acquire()
+                    self.callbackClass.AddData(desc)
+                    self.cbLock.release()
                 else:
                     raise DuplicateFile("A file named %s already exists in the venue, \nplease rename your file and try again" %name) 
             except:
@@ -145,7 +498,14 @@ class DataStore:
         Return the upload descriptor for this datastore.
 
         """
-        return self.transfer_engine.GetUploadDescriptor(self.prefix)
+
+        self.transferEngineLock.acquire()
+        descriptor = self.transfer_engine.GetUploadDescriptor(self.prefix)
+        self.transferEngineLock.release()
+        
+        return descriptor
+
+    GetUploadDescriptor.soap_export_as = "GetUploadDescriptor"
 
     def GetDownloadDescriptor(self, filename):
         """
@@ -159,8 +519,14 @@ class DataStore:
      
         if not os.path.exists(path):
             return None
+
+        self.transferEngineLock.acquire()
+        descriptor = self.transfer_engine.GetDownloadDescriptor(self.prefix, filename)
+        self.transferEngineLock.release()
         
-        return self.transfer_engine.GetDownloadDescriptor(self.prefix, filename)
+        return descriptor
+
+    GetDownloadDescriptor.soap_export_as = "GetDownloadDescriptor"
 
     def GetDownloadFilename(self, id_token, url_path):
         """
@@ -204,7 +570,10 @@ class DataStore:
         """
 
         filename = file_info['name']
+
+        self.cbLock.acquire()
         desc = self.callbackClass.GetData(filename)
+        self.cbLock.release()
 
         if desc is None or desc == "":
             return 1
@@ -229,7 +598,10 @@ class DataStore:
         #
 
         filename = file_info['name']
+
+        self.cbLock.acquire()
         desc = self.callbackClass.GetData(filename)
+        self.cbLock.release()
         
         if desc is None:
             log.debug("Datastore::GetUploadFilenameVenue: data for %s not present", filename)
@@ -256,34 +628,37 @@ class DataStore:
         from the manifest).
         """
 
+        self.cbLock.acquire()
         desc = self.callbackClass.GetData(file_info['name'])
+        self.cbLock.release()
+        
         log.debug("Datastore::CompleteUpload: got desc %s %s", desc, desc.__dict__)
         desc.SetChecksum(file_info['checksum'])
         desc.SetSize(int(file_info['size']))
         desc.SetStatus(DataDescription.STATUS_PRESENT)
         desc.SetOwner(identityToken.dn)
         desc.SetURI(self.GetDownloadDescriptor(file_info['name']))
+        
         log.debug("Datastore::CompleteUpload: updating with %s %s", desc, desc.__dict__)
-        self.callbackClass.UpdateData(desc)
 
-    def DeleteFile(self, filename):
-        """
-        Delete filename from the datastore.
-
-        """
-        log.debug("Datastore::DeleteFile: %s", filename)
-        path = os.path.join(self.pathname, filename)
-        if not os.path.exists(path):
-            raise FileNotFound(filename)
-
-        try:
-            os.remove(path)
-        except OSError, e:
-            log.exception("DataStore::DeleteFile: raised error ")
-
+        url = self.GetDownloadDescriptor(desc.name)
+        
+        log.debug("Checking file %s for validity", desc.name)
+        
+        if url is None:
+            self.cbLock.acquire()
+            log.warn("File %s has vanished", name)
+            self.callbackClass.RemoveData(desc)
+            self.cbLock.release()
+        else:
+            desc.SetURI(url)
+            self.cbLock.acquire()
+            self.callbackClass.UpdateData(desc)
+            self.cbLock.release()
+          
     def AddPendingUpload(self, identityToken, filename):
         """
-        Create a data description for filename with a state of "pending" and
+        Create a data description for filename with a state of 'pending' and
         add to the venue.
 
         """
@@ -291,9 +666,11 @@ class DataStore:
         desc = DataDescription(filename)
         desc.SetStatus(DataDescription.STATUS_PENDING)
         desc.SetOwner(identityToken.dn)
-        
-        self.callbackClass.AddData(desc)
 
+        self.cbLock.acquire()
+        self.callbackClass.AddData(desc)
+        self.cbLock.release()
+        
         return desc
 
 import BaseHTTPServer
@@ -1661,11 +2038,93 @@ if __name__ == "__main__":
 
     logger = logging.getLogger("AG")
     logger.addHandler(logging.StreamHandler())
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.debug)
 
     import time
     import os
+    from AccessGrid.Events import Event
+    
+    #
+    # Test DataDescriptionContainer
+    # 
+    print '------------ Test DataDescriptionContainer'
 
+    class FAKEEvent:
+        '''
+        To test DataDescriptionContainer
+        '''
+        ADD_DATA = 1
+        REMOVE_DATA = 2
+        UPDATE_DATA = 3
+        
+        def __init__(self, arg1, arg2, arg3):
+            pass
+        
+        def Distribute(self, id, event):
+            return "DISTRIBUTE"
+
+        def Send(self, event):
+            pass
+        
+    dContainer = DataDescriptionContainer(FAKEEvent(1,2,3), 5)
+    d1 = DataDescription("file1")
+    d1.description = "noaoin"
+    d2 = DataDescription("file2")
+    d3 = DataDescription("file3")
+    dContainer.AddData(d1)
+    dContainer.AddData(d2)
+    dContainer.AddData(d3)
+
+    print '*** Test AddData'
+    
+    dDict = dContainer.GetDataDescriptions()
+      
+    if (d1 in dDict) & (d2 in dDict) & (d3 in dDict):
+        print "OK!"
+    else:
+        print "FAILED! AddData does not work as expected, should include 'file1', 'file2', 'file3'", dDict
+
+    print '*** Test RemoveData'
+    
+    dContainer.RemoveData(d2)
+    dDict = dContainer.GetDataDescriptions()
+    if d2.name in dDict:
+        print "FAILED! RemoveData does not work as expected"
+    else:
+        print "OK!"
+
+    print '*** Test UpdateData'
+   
+    d4 = DataDescription("file1")
+    d4.description = "test"
+    dContainer.UpdateData(d4)
+    dDict = dContainer.GetDataDescriptions()
+    flag = 1
+    for x in dDict:
+        if x.name == d4.name and x.description == "test":
+            flag = 0
+            print "OK!"
+
+    if flag:
+        print "FAILED! UpdateData does not work as expected ", dDict
+      
+    print '*** Test GetData'
+        
+    if dContainer.GetData(d3.name) == d3:
+        print "OK!"         
+        
+    else:
+        print "FAILED! GetData does not work as expected"
+
+    print '*** Test AsINIBlock'          
+    print dContainer.AsINIBlock()
+            
+    #
+    # Test DataStore
+    #
+
+    print '------------ Test DataStore'
+    
     class TestCallbackClass:
         def __init__(self):
             self.data = {}
@@ -1688,7 +2147,7 @@ if __name__ == "__main__":
             log.debug("AddData: %s", desc)
 
     v = TestCallbackClass()
-    ds = DataStore(v, "/temp", "snap")
+    ds = DataStore(v, "./temp", "snap", 1)
     s = GSIHTTPTransferServer(('', 9011))
 
     class Handler:
