@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.60 2003-04-22 21:53:55 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.61 2003-04-24 14:58:15 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -646,33 +646,50 @@ class VenueListPanel(wxPanel):
     def AddVenue(self, venue):
         # ICKY ICKY ICKY
         venue.connections = venue.connections.values()
-        newUri = self.application.server.AddVenue(venue)
-        venue.uri = newUri
+        if(self.venuesList.FindString(venue.name) == wxNOT_FOUND):
+            newUri = self.application.server.AddVenue(venue)
+            venue.uri = newUri
 
-        if newUri:
-            exits = venue.connections
-            venue.connections = {}
-            for e in exits:
-                venue.connections[e.uri] = e
-            
-            self.venuesList.Append(venue.name, venue)
-            self.venuesList.Select(self.venuesList.Number()-1)
-            self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
+            if newUri:
+                exits = venue.connections
+                venue.connections = {}
+                for e in exits:
+                    venue.connections[e.uri] = e
+
+                self.venuesList.Append(venue.name, venue)
+                self.venuesList.Select(self.venuesList.FindString(venue.name))
+                self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
+
+        else:
+            text = "The venue could not be added, \na venue with the same name is already present"
+            text2 = "Add venue error"
+            message = wxMessageDialog(self, text, text2,
+                                      style = wxOK|wxICON_INFORMATION)
+            message.ShowModal()
+            message.Destroy()
 
     def ModifyVenue(self, venue):
-        if venue.uri != None:
-            # ICKY HACK
-            connectionDict = venue.connections
-            venue.connections = venue.connections.values()
-            self.application.server.ModifyVenue(venue.uri, venue)
-            item = self.venuesList.GetSelection()
-            self.venuesList.SetClientData(item, venue)
-            self.venuesList.SetString(item, venue.name)
+        if(self.venuesList.FindString(venue.name) == wxNOT_FOUND):
+            if venue.uri != None:
+                # ICKY HACK
+                connectionDict = venue.connections
+                venue.connections = venue.connections.values()
+                self.application.server.ModifyVenue(venue.uri, venue)
+                item = self.venuesList.GetSelection()
+                self.venuesList.SetClientData(item, venue)
+                self.venuesList.SetString(item, venue.name)
+                
+                venue.connections = connectionDict
+                self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
 
-            venue.connections = connectionDict
-            self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
-
-        self.DisableStaticStreams()
+            self.DisableStaticStreams()
+        else:
+            text = "The venue could not be modified, a venue with the same name is already present"
+            text2 = "Add venue error"
+            message = wxMessageDialog(self, text, text2,
+                                      style = wxOK|wxICON_INFORMATION)
+            message.ShowModal()
+            message.Destroy()
 
     def SetEncryption(self, value, key):
         item = self.venuesList.GetSelection()
@@ -1322,6 +1339,8 @@ class VenueParamFrame(wxDialog):
             numExits = self.exits.GetCount()
             for index in range(numExits):
                 exit = self.exits.GetClientData(index)
+                print exit.uri
+                print venue.uri
                 if exit.uri == venue.uri:
                     existingExit = 1
                     break
