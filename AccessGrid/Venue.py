@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.85 2003-04-29 19:43:31 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.86 2003-04-29 20:39:13 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -445,15 +445,17 @@ class Venue(ServiceBase.ServiceBase):
     # Interface methods
     def wsAddData(self, dataDescriptionStruct ):
         log.debug("wsAddData")
-        if not self._authorize():
-            raise NotAuthorized
-        else:
-            try:
-                dataDescription = CreateDataDescription(dataDescriptionStruct)
-            except:
-                raise BadDataDescription
-
-            return self.AddData(dataDescription)
+        # This authorization is only checking administrators, we need
+        # richer authorization for this stuff.
+#        if not self._authorize():
+#            raise NotAuthorized
+#        else:
+        try:
+            dataDescription = CreateDataDescription(dataDescriptionStruct)
+        except:
+            raise BadDataDescription
+        
+        return self.AddData(dataDescription)
 
     wsAddData.soap_export_as = "AddData"
 
@@ -486,15 +488,15 @@ class Venue(ServiceBase.ServiceBase):
     wsGetData.soap_export_as = "GetData"
 
     def wsAddService(self, servDescStruct ):
-        if not self._authorize():
-            raise NotAuthorized
-        else:
-            try:
-                serviceDescription = CreateServiceDescription(servDescStruct)
-            except:
-                raise BadDataDescription
-            return self.AddService(serviceDescription)
-        
+#        if not self._authorize():
+#            raise NotAuthorized
+#        else:
+         try:
+             serviceDescription = CreateServiceDescription(servDescStruct)
+         except:
+             raise BadDataDescription
+         return self.AddService(serviceDescription)
+     
     wsAddService.soap_export_as = "AddService"
 
     # Management methods
