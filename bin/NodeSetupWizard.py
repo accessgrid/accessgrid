@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.26 2004-04-05 19:11:08 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.27 2004-04-05 21:19:33 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -31,7 +31,8 @@ from AccessGrid.Utilities import NODE_SETUP_WIZARD_LOG
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.UIUtilities import ProgressDialog
 
-from AccessGrid.hosting import Client
+from AccessGrid.AGService import AGServiceIW
+from AccessGrid.AGServiceManager import AGServiceManagerIW
 
 log = Log.GetLogger(Log.NodeSetupWizard)
 
@@ -193,7 +194,8 @@ class WelcomeWindow(TitledPage):
         self.info = wxStaticText(self, -1, "This wizard will help you setup and test your Node. The node is your configuration of machines \ncontrolling cameras, speakers, and microphones.")
         self.beforeText = wxStaticText(self, -1,"Before continuing:")
         self.beforeText.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        self.beforeText2 =  wxStaticText(self, -1,"Make sure you have Service Managers running on each machine in your node.")
+        self.beforeText2 =  wxStaticText(self, -1,
+                                "Make sure you have Service Managers running on each machine in your node.")
         self.contText =  wxStaticText(self, -1, "Click 'Next' to continue.", style = wxCENTER)
        
         self.Layout()
@@ -261,7 +263,8 @@ class VideoCaptureWindow(TitledPage):
         # A uri built with empty host will point at local host, to
         # avoid misunderstandings the user have to give a machine name.
         if self.machineCtrl.GetValue() == "":
-            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
+            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
+                          style = wxICON_ERROR|wxOK)
             return false
         
         wxBeginBusyCursor()
@@ -292,7 +295,8 @@ class VideoCaptureWindow(TitledPage):
             return true
         
         else:
-            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
+            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
+                          style = wxICON_ERROR|wxOK)
             wxEndBusyCursor()
             return false
           
@@ -409,7 +413,8 @@ class VideoCaptureWindow2(TitledPage):
             for port in self.cameras[i].portTypes:
                 ports.append(port)
             i = i + 1
-            cameraOption = wxComboBox(self.scrolledWindow, -1, style = wxLB_SORT, size = wxSize(100, 50), choices = ports, value = ports[0])
+            cameraOption = wxComboBox(self.scrolledWindow, -1, style = wxLB_SORT, size = wxSize(100, 50), 
+                                      choices = ports, value = ports[0])
 
             # Save widgets so we can delete them later
             self.widgets.append((cameraText, cameraOption))          
@@ -486,7 +491,8 @@ class VideoDisplayWindow(TitledPage):
         # A uri built with empty host will point at local host, to
         # avoid misunderstandings the user have to give a machine name.
         if self.machineCtrl.GetValue() == "":
-            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
+            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
+                          style = wxICON_ERROR|wxOK)
             return false
 
         # Verify access to machine
@@ -505,7 +511,8 @@ class VideoDisplayWindow(TitledPage):
             return true
             
         else:
-            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
+            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
+                          style = wxICON_ERROR|wxOK)
             return false
         
     def CheckBoxEvent(self, event):
@@ -588,7 +595,8 @@ class AudioWindow(TitledPage):
         # A uri built with empty host will point at local host, to
         # avoid misunderstandings the user have to give a machine name.
         if self.machineCtrl.GetValue() == "":
-            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
+            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
+                          style = wxICON_ERROR|wxOK)
             return false
         
         wxBeginBusyCursor()
@@ -604,7 +612,8 @@ class AudioWindow(TitledPage):
         if self.canConnect:
             return true
         else:
-            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
+            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  
+                          style = wxICON_ERROR|wxOK)
             return false
     
     def CheckBoxEvent(self, event):
@@ -654,7 +663,8 @@ class ConfigWindow(TitledPage):
         self.audioUrl = None
         self.videoCaptUrl = None
         self.videoDispUrl = None
-        self.info = wxStaticText(self, -1, "This is your node configuration. Click 'Back' if you want to change something.")
+        self.info = wxStaticText(self, -1, 
+                                 "This is your node configuration. Click 'Back' if you want to change something.")
         self.vCapHeading = wxStaticText(self, -1, "Video Capture Machine", style = wxALIGN_LEFT)
         self.vCapHeading.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         self.vDispHeading = wxStaticText(self, -1, "Video Display Machine", style = wxALIGN_LEFT)
@@ -665,7 +675,8 @@ class ConfigWindow(TitledPage):
         self.vDispMachineText = wxStaticText(self, -1, "")
         self.audioMachineText = wxStaticText(self, -1, "")
         self.CHECK_ID = wxNewId()
-        self.checkBox = wxCheckBox(self, self.CHECK_ID, "Always use this node setup for Access Grid meetings (default configuration)")
+        self.checkBox = wxCheckBox(self, self.CHECK_ID, 
+                            "Always use this node setup for Access Grid meetings (default configuration)")
         self.checkBox.SetValue(true)
         self.configName = wxStaticText(self, -1, "Configuration Name: ")
         self.configNameCtrl = wxTextCtrl(self, -1, "")
@@ -932,20 +943,22 @@ class NodeClient:
                 # Add video producer service for each capture card
                 
                 for captureCard in self.cameraList:
-                    log.debug("NodeClient.AddService: Video Producer Service %s %s %s" %(serviceAvailable.servicePackageUri, serviceManagerUrl, captureCard))
-                    serviceDesc = self.node.AddService(serviceAvailable.servicePackageUri,
+                    log.debug("NodeClient.AddService: Video Producer Service %s %s %s" %
+                                (serviceAvailable.servicePackageUri, 
+                                 serviceManagerUrl, captureCard))
+                    serviceDesc = self.node.AddService(serviceAvailable,
                                                        serviceManagerUrl, captureCard, None)
 
                     # Get service configuration
-                    conf = Client.Handle(serviceDesc.uri).GetProxy().GetConfiguration()
+                    conf = AGServiceIW(serviceDesc.uri).GetConfiguration()
                                                                                 
                     # Set camera port type
                     conf.parameters.append(ValueParameter("port", data[captureCard.resource]))
-                    Client.Handle(serviceDesc.uri).GetProxy().SetConfiguration(conf)
+                    AGServiceIW(serviceDesc.uri).SetConfiguration(conf)
 
             else: # Video consumer or audio
                 log.debug("NodeClient.AddService: Audio or video consumer service")
-                self.node.AddService(serviceAvailable.servicePackageUri,
+                self.node.AddService(serviceAvailable,
                                      serviceManagerUrl, None, None)
                 
         else:
@@ -964,7 +977,7 @@ class NodeClient:
         # Is the service manager running on the specified machine and port?
 
         # Remove current services from service manager
-        Client.Handle(mgrUri).GetProxy().RemoveServices()
+        AGServiceManagerIW(mgrUri).RemoveServices()
                       
     def GetCaptureCards(self, machine, port):
         '''
@@ -976,7 +989,7 @@ class NodeClient:
       
         try:
             # Get available services
-            resourceList = Client.Handle(mgrUri).GetProxy().GetResources()
+            resourceList = AGServiceManagerIW(mgrUri).GetResources()
         except:
             log.exception("NodeClient.GetCaptureCards: Could not find resources")
             return []
