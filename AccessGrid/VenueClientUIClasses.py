@@ -56,6 +56,8 @@ class VenueClientFrame(wxFrame):
 	self.venue.AppendMenu(220,"&Services",self.serviceMenu)
 	self.menubar.Append(self.venue, "&Venue")
         self.venue.AppendSeparator()
+        self.venue.Append(342,"Open virtual venue")
+        self.venue.AppendSeparator()
         self.venue.Append(320, 'Close')
 	
 	self.edit = wxMenu()
@@ -75,6 +77,8 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, 232, self.RemoveService)   
         EVT_MENU(self, 302, self.OpenAboutDialog)
         EVT_MENU(self, 320, self.OnExit)
+        EVT_MENU(self, 342, self.OpenConnectToVenueDialog)
+     
         
     def __setToolbar(self):
 	self.toolbar.AddSimpleTool(20, icons.getWordIconBitmap(), \
@@ -135,7 +139,15 @@ class VenueClientFrame(wxFrame):
             self.app.AddService(addServiceDialog.GetNewProfile())
 
         addServiceDialog.Destroy()
-                
+
+    def OpenConnectToVenueDialog(self, event):
+        connectToVenueDialog = ConnectToVenueDialog(self, -1, 'Connect to server')
+        if (connectToVenueDialog.ShowModal() == wxID_OK):
+            venueUri = connectToVenueDialog.address.GetValue()
+            self.app.GoToNewVenue(venueUri)
+          
+        connectToVenueDialog.Destroy()
+
     def OpenAboutDialog(self, event):
         aboutDialog = AboutDialog(self, -1, "About VenueClient")
 
@@ -289,7 +301,7 @@ class VenueList(wxScrolledWindow):
     def GoToNewVenue(self, event):
         id = event.GetId()
         description = self.exitsDict[id]
-        self.app.GoToNewVenue(description)
+        self.app.GoToNewVenue(description.uri)
         		            
     def AddVenueDoor(self, profile):
         #id = wxNewId()
@@ -362,8 +374,10 @@ class ContentListPanel(wxPanel):
 	self.__setProperties()
         	
 	EVT_SIZE(self, self.OnSize)
-#	EVT_TREE_SEL_CHANGED(self, id, self.OnSelChanged)
+        #	EVT_TREE_SEL_CHANGED(self, id, self.OnSelChanged)
+        EVT_TREE_KEY_DOWN(self.tree, id, self.OnKeyDown) 
 	EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
+
 	
     def __setImageList(self):
 	imageList = wxImageList(16,16)  
@@ -379,6 +393,7 @@ class ContentListPanel(wxPanel):
     def AddParticipant(self, profile):
         participant = self.tree.AppendItem(self.participants, profile.name, \
                                            self.iconId, self.iconId)
+        self.tree.SetItemData(participant, wxTreeItemData(profile)) 
         self.participantDict[profile.publicId] = participant
         self.tree.Expand(self.participants)
            
@@ -448,6 +463,7 @@ class ContentListPanel(wxPanel):
 
     def AddNode(self, profile):
         node = self.tree.AppendItem(self.nodes, profile.name)
+        self.tree.SetItemData(node, wxTreeItemData(profile)) 
         self.nodeDict[profile.publicId] = node
         self.tree.Expand(self.nodes)
 
@@ -493,14 +509,55 @@ class ContentListPanel(wxPanel):
 	self.tree.Unselect() 
 	event.Skip()
 
-    def OnSelChanged(self, event):
-        self.item = event.GetEventObject()
-     	infoPopup = InfoPopup(self, wxSIMPLE_BORDER)
-	object = event.GetEventObject()
-	size =  object.GetSize()
-	position  = object.ClientToScreen((150, 0 - size.height + self.y - 50))
-	infoPopup.Position(position, (0, size.height))
-	infoPopup.Popup()
+    def OnKeyDown(self, event):
+        key = event.GetKeyCode()
+      
+        if key == WXK_DELETE:
+            treeId = self.tree.GetSelection()
+            dataItem = self.tree.GetItemData(treeId).GetData()
+            serviceItem = self.tree.GetItemData(treeId).GetData()
+
+        # data
+        
+        obj = None
+        for object in self.dataDict:
+            if dataItem != None and dataItem.name == object:
+                self.app.RemoveData(dataItem)
+                #self.tree.Delete(treeId)
+                #obj = object
+                break
+
+       # if(obj != None):
+       #     del self.dataDict[obj]
+
+        # services
+        
+        obj = None
+        for object in self.serviceDict:
+            if serviceItem != None and serviceItem.name == object:
+                self.app.RemoveService(serviceItem)
+               # self.tree.Delete(treeId)
+              #  obj = object
+                break
+
+        #if(obj != None):
+        #    del self.serviceDict[obj]
+
+        self.serviceDict.keys()
+        self.serviceDict.values()
+       
+            
+                # and delete from dict?
+                           
+                
+            #  def OnSelChanged(self, event):
+        #     self.item = event.GetEventObject()
+        #   	infoPopup = InfoPopup(self, wxSIMPLE_BORDER)
+        #	object = event.GetEventObject()
+        #	size =  object.GetSize()
+        #	position  = object.ClientToScreen((150, 0 - size.height + self.y - 50))
+        #	infoPopup.Position(position, (0, size.height))
+        #	infoPopup.Popup()
 
     def CleanUp(self):
         for index in self.participantDict.values():
@@ -550,6 +607,74 @@ class AboutDialog(wxDialog):
         self.SetSizer(sizer1)
         sizer1.Fit(self)
         self.SetAutoLayout(1)
+
+class ConnectToServerDialog(wxDialog):
+    def __init__(self, parent, id, title):
+        wxDialog.__init__(self, parent, id, title)
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        info = "Please, enter server URL address.\nYou will open default venue on the server."
+        self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
+        self.addressText = wxStaticText(self, -1, "Address: ", style=wxALIGN_LEFT)
+        self.address = wxTextCtrl(self, -1, "", size = wxSize(300,20))
+        self.__doLayout()
+
+    def __doLayout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
+        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
+
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.addressText, 0)
+        sizer2.Add(self.address, 1, wxEXPAND)
+
+        sizer1.Add(sizer2, 0, wxEXPAND | wxALL, 20)
+
+        sizer3 =  wxBoxSizer(wxHORIZONTAL)
+        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
+
+        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer.Add(sizer3, 0, wxALIGN_CENTER)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+
+
+class ConnectToVenueDialog(wxDialog):
+    def __init__(self, parent, id, title):
+        wxDialog.__init__(self, parent, id, title)
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        info = "Please, enter venue URL address"
+        self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
+        self.addressText = wxStaticText(self, -1, "Address: ", style=wxALIGN_LEFT)
+        self.address = wxTextCtrl(self, -1, "", size = wxSize(300,20))
+        self.__doLayout()
+
+    def __doLayout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
+        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
+
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.addressText, 0)
+        sizer2.Add(self.address, 1, wxEXPAND)
+
+        sizer1.Add(sizer2, 0, wxEXPAND | wxALL, 20)
+
+        sizer3 =  wxBoxSizer(wxHORIZONTAL)
+        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
+
+        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer.Add(sizer3, 0, wxALIGN_CENTER)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+
+
+        
        
 class ProfileDialog(wxDialog):
     def __init__(self, parent, id, title, profile):
