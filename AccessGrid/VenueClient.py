@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.100 2003-08-22 04:49:24 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.101 2003-08-22 15:17:14 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -268,12 +268,16 @@ class VenueClient( ServiceBase):
         log.debug("Got Add Data Event")
      
         data = event.data
-
-        try:
+      
+        if data.type == "None" or data.type == None:
+            # Venue data gets saved in venue state
             self.venueState.AddData(data)
-        except:
-            pass
-        
+                      
+        elif data.type not in self.requests:
+            # If we haven't done an initial request of this
+            # persons data, don't react on events.
+            return
+
         for s in self.eventSubscribers:
             s.AddDataEvent(event)
 
@@ -281,23 +285,35 @@ class VenueClient( ServiceBase):
         log.debug("Got Update Data Event")
 
         data = event.data
-        # Venue data (personal data handled in VenueClientUIClasses)
+                
         if data.type == "None" or data.type == None:
+            # Venue data gets saved in venue state
             self.venueState.UpdateData(data)
+                      
+        elif data.type not in self.requests:
+            # If we haven't done an initial request of this
+            # persons data, don't react on events.
+            return
 
         for s in self.eventSubscribers:
-            s.UpdateDataEvent(event)
+               s.UpdateDataEvent(event)
 
     def RemoveDataEvent(self, event):
         log.debug("Got Remove Data Event")
         data = event.data
-        # Venue data (personal data handled in VenueClientUIClasses)
+
         if data.type == "None" or data.type == None:
+            # Venue data gets saved in venue state
             self.venueState.RemoveData(data)
             
-        for s in self.eventSubscribers:
-            s.RemoveDataEvent(event)
+        elif data.type not in self.requests:
+            # If we haven't done an initial request of this
+            # persons data, don't react on events.
+            return
 
+        for s in self.eventSubscribers:
+               s.RemoveDataEvent(event)
+                
     def AddServiceEvent(self, event):
         log.debug("Got Add Service Event")
 
@@ -889,7 +905,7 @@ class VenueClient( ServiceBase):
         if not id in self.requests:
             log.debug("bin.VenueClient.GetPersonalData: The client has NOT been queried for personal data yet %s", clientProfile.name)
             self.requests.append(id)
-         
+                    
             #
             # If this is my data, ignore remote SOAP call
             #
