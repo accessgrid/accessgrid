@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Subject.py,v 1.11 2004-03-24 18:42:48 eolson Exp $
+# RCS-ID:      $Id: Subject.py,v 1.12 2004-03-31 21:05:50 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ Subjects are the basic security handle on entities that want to be a
 part of the secure Access Grid Toolkit.
 """
 
-__revision__ = "$Id: Subject.py,v 1.11 2004-03-24 18:42:48 eolson Exp $"
+__revision__ = "$Id: Subject.py,v 1.12 2004-03-31 21:05:50 eolson Exp $"
 
 # External Imports
 import xml.dom.minidom
@@ -99,7 +99,7 @@ class Subject:
         if not isinstance(other, Subject):
             return -1
 
-        result1 = cmp(self.name, other.name)
+        result1 = cmp(str(self.name), str(other.name))
         result2 = cmp(self.auth_data, other.auth_data)
 
         # Both name and auth_data are the same
