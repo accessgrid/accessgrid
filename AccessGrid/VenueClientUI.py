@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.68 2004-08-13 21:31:44 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.69 2004-08-18 15:22:37 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.68 2004-08-13 21:31:44 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.69 2004-08-18 15:22:37 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3339,8 +3339,8 @@ class ContentListPanel(wxPanel):
                     othercmds = 1
                     id = wxNewId()
                     menu.Append(id, string.capwords(key))
-                    EVT_MENU(self, id, lambda event, cmd=key, itm=item:
-                             self.parent.StartCmd(item,cmd=cmd))
+                    EVT_MENU(self, id, lambda event, verb=key, itm=item:
+                             self.parent.StartCmd(item,verb=verb))
         if othercmds:
             menu.AppendSeparator()
 
