@@ -15,4 +15,4 @@ rtpforward.o: rtpforward.c rtpforward.h
 	gcc $(LDFLAGS) -c rtpforward.c
 
 clean:
-	/bin/rm -f prog rtpforward.o SelectorGUI.o
+	/bin/rm -f prog rtpforward.o SelectorGUI.o Selector
