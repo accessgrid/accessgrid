@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.30 2003-08-01 21:21:38 lefvert Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.31 2003-08-08 04:44:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -468,9 +468,9 @@ class AGNodeService( ServiceBase ):
         file = self.configDir + os.sep + configName
 
         # Catch inability to write config file
-        #if not os.access(file, os.W_OK):
-        # See if configuration directory exists
-        if not os.path.exists(self.configDir):
+        if((not os.path.exists(self.configDir)) or
+           (not os.access(self.configDir,os.W_OK)) or
+           (os.path.exists(file) and not os.access(file, os.W_OK) )):
             log.exception("Can't write config file %s" % (file))
             raise Exception("Can't write config file %s" % (file))
 
