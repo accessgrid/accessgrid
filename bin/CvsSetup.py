@@ -216,17 +216,29 @@ smfile.write("[Service Manager]\n")
 smfile.write("servicesDirectory = local_services\n\n")
 smfile.close()
 
+
 # Tell users how to use the new configuration files.
 
 print "\n"
-print "    If you want to setup video resources for this configuration, set"
-print "       the environment variables below and run: \"python SetupVideo.py\" \n"
-print "    To use this configuration, set "
+print "    If you want to setup video resources for this configuration,"
+print "       set the environment as instructed below, "
+print "       and run: \"python SetupVideo.py\" \n"
+
+print "    To use this configuration:\n"
+
+print "       Make sure media-related programs (vic, rat, etc.) are in your path."
 if sys.platform == WIN:
-    print "        AGTK_INSTALL to the location of vic(.exe) and rat(.exe) "
+    print "          On Windows: copying the vic and rat related binaries (if needed, "
+    print "          from a real install) into their own directory before adding them "
+    print "          to your path is recommended.  If you don't want to bother modifying "
+    print "          your path, copying them into AccessGrid/bin is a quick fix.\n"
+
 elif sys.platform == LINUX:
-    print "        AGTK_INSTALL to", os.path.join( os.path.abspath(AG_BASE_DIR), "bin" )
-print "        PYTHONPATH to", os.path.abspath(AG_BASE_DIR)
-print "        AGTK_LOCATION to", os.path.abspath(DST_CONFIG_DIR)
+    print "          On linux: if you've installed the vic and rat rpm packages,"
+    print "          they should already be in your path.\n"
+
+print "       set AGTK_INSTALL to", os.path.join( os.path.abspath(AG_BASE_DIR), "bin" )
+print "       set PYTHONPATH to", os.path.abspath(AG_BASE_DIR)
+print "       set AGTK_LOCATION to", os.path.abspath(DST_CONFIG_DIR)
 print ""
 
