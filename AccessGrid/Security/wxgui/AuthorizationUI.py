@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.14 2004-05-26 14:47:59 lefvert Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.15 2004-05-28 17:41:28 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.14 2004-05-26 14:47:59 lefvert Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.15 2004-05-28 17:41:28 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -60,7 +60,6 @@ class AuthorizationUIPanel(wxPanel):
         self.roleToTreeIdDict = dict()
         self.x = -1
         self.y = -1
-        self.checkFlag = 0
         self.currentRole = None
         self.allActions = []
         self.allRoles = []
@@ -487,6 +486,16 @@ class AuthorizationUIPanel(wxPanel):
         box of that item.
         '''
         index = event.GetInt()
+        checked = self.actionList.IsChecked(index)
+        if checked:
+            self.actionList.Check(index, 0)
+        else:
+            self.actionList.Check(index, 1)
+
+        self.__SetAction(index)
+
+
+    def __SetAction(self, index):
         actionName = self.actionList.GetString(index)
         checked = self.actionList.IsChecked(index)
 
@@ -498,14 +507,12 @@ class AuthorizationUIPanel(wxPanel):
                 currentAction = action
 
         # Check correct action and add/remove current role to the action.
-        if checked:
-            self.actionList.Check(index, 0)
+        if not checked:
             self.changed = 1
             if currentAction:
                 # Remove action
                 currentAction.RemoveRole(self.currentRole)
         else:
-            self.actionList.Check(index, 1)
             self.changed = 1
             if currentAction:
                 # Add action
@@ -515,14 +522,9 @@ class AuthorizationUIPanel(wxPanel):
         '''
         Is called when user checks an action.
         '''
-        # wxPython (windows) does not distinguish between checklistbox events
-        # that are triggered by a user and check method calls done in
-        # the program code. To avoid reacting to non-user
-        # triggered events; use a flag.
-
-        if self.checkFlag and IsWindows():
-            event.Skip()
-            self.checkFlag = 0
+        if IsWindows():
+            
+            self.__SetAction(event.GetInt())
             return
        
         index = event.GetInt()
@@ -542,6 +544,7 @@ class AuthorizationUIPanel(wxPanel):
         Is called when user selects a new item in the tree.
         '''
         selectedItem = event.GetItem()
+     
         if selectedItem.IsOk():
             role = self.tree.GetItemData(selectedItem).GetData()
             if not self.__isRole(selectedItem):
@@ -553,7 +556,6 @@ class AuthorizationUIPanel(wxPanel):
             nrOfItems = self.actionList.GetCount()
             
             for index in range(nrOfItems):
-                self.checkFlag = 1
                 self.actionList.Check(index, 0)
                                
             if self.__isRole(selectedItem):
@@ -565,7 +567,6 @@ class AuthorizationUIPanel(wxPanel):
                     
                     # Check correct actions for this role.
                     if index is not wxNOT_FOUND:
-                        self.checkFlag = 1
                         self.actionList.Check(index, 1)
                                        
             if self.staticBox:
