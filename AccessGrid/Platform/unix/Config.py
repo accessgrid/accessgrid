@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.31 2004-05-17 18:06:29 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.32 2004-05-20 21:02:21 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.31 2004-05-17 18:06:29 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.32 2004-05-20 21:02:21 eolson Exp $"
 
 import os
 import mimetypes
@@ -741,7 +741,7 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
         kdeMimeInfo = """[Desktop Entry]
 Version=%s
 Encoding=UTF-8
-Hidden=false
+Hidden=1
 Icon=ag.ico
 Type=MimeType
 Patterns=%s
@@ -753,6 +753,7 @@ Comment=%s
         kdeAppInfo="""[Desktop Entry]
 Version=%s
 Encoding=UTF-8
+Hidden=1
 MultipleArgs=false
 Terminal=1
 Icon=ag.ico
@@ -828,8 +829,8 @@ Comment=%s
             elif path.find("mimelnk") != -1:  # expecting /usr/share/mimelnk/
                 kdeSystemMime = path
 
-        userMimeFile = os.path.join(kdeUserMime, "agpkg.desktop")
-        userAppFile = os.path.join(kdeUserApps, "agpm.desktop")
+        userMimeFile = os.path.join(kdeUserMime, extension[1:] + ".desktop")
+        userAppFile = os.path.join(kdeUserApps, cmd[0] +".desktop")
 
         # Copy KDE files into place
         if len(userMimeFile) > 0 and os.path.exists(kdeUserMime):
@@ -849,9 +850,9 @@ Comment=%s
         gnomeDir = os.path.join(homedir, ".gnome")
         gnomeAppDir = os.path.join(homedir, ".gnome", "application-info")
         gnomeMimeDir = os.path.join(homedir, ".gnome", "mime-info")
-        gnomeAppFile = os.path.join(gnomeAppDir, "accessgrid.applications")
-        gnomeKeysFile = os.path.join(gnomeMimeDir, "accessgrid.keys")
-        gnomeMimeFile = os.path.join(gnomeMimeDir, "accessgrid.mime")
+        gnomeAppFile = os.path.join(gnomeAppDir, cmd[0] + ".applications")
+        gnomeKeysFile = os.path.join(gnomeMimeDir, cmd[0] + ".keys")
+        gnomeMimeFile = os.path.join(gnomeMimeDir, cmd [0] + ".mime")
         if os.path.exists(gnomeAppDir) and os.path.exists(gnomeMimeDir):
             log.info("registering file type " + extension + " with gnome")
 
@@ -879,9 +880,9 @@ Comment=%s
 
             # general paths
             genSystemAppDir = "/usr/share/applications"
-            genSystemAppFile = os.path.join(genSystemAppDir, "agpm.desktop")
+            genSystemAppFile = os.path.join(genSystemAppDir, cmd[0] + ".desktop")
             genSystemMimeDir = "/usr/share/mimelnk/application"
-            genSystemMimeFile = os.path.join(genSystemMimeDir, "agpkg.desktop")
+            genSystemMimeFile = os.path.join(genSystemMimeDir, extension[1:] + ".desktop")
 
             if len(genSystemAppFile) > 0 and os.path.exists(genSystemAppDir):
                 appFd = open(genSystemAppFile, "w" )
@@ -896,10 +897,10 @@ Comment=%s
         # --- GNOME SYSTEM REGISTRATION ---
 
             gnomeSystemMimeDir = "/usr/share/mime-info"
-            gnomeSystemMimeFile = os.path.join(gnomeSystemMimeDir, "accessgrid.mime")
-            gnomeSystemKeysFile = os.path.join(gnomeSystemMimeDir, "accessgrid.keys")
+            gnomeSystemMimeFile = os.path.join(gnomeSystemMimeDir, cmd[0] + ".mime")
+            gnomeSystemKeysFile = os.path.join(gnomeSystemMimeDir, cmd[0] + ".keys")
             gnomeSystemAppDir = "/usr/share/application-registry"
-            gnomeSystemAppFile = os.path.join(gnomeSystemAppDir, "accessgrid.applications")
+            gnomeSystemAppFile = os.path.join(gnomeSystemAppDir, cmd[0] + ".applications")
             if os.path.exists(gnomeSystemMimeDir):
                 # Keys
                 f = open(gnomeSystemKeysFile, "w")
