@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.40 2004-04-12 21:02:47 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.41 2004-04-12 21:41:07 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.40 2004-04-12 21:02:47 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.41 2004-04-12 21:41:07 judson Exp $"
 
 # Standard imports
 import os
@@ -365,15 +365,15 @@ class Service(AppBase):
 
         reqs = filter(lambda a: str(a[0].GetSubject()) == dn, pending)
         if len(reqs) == 0:
-            print "No requests found"
+            self.log.info("No requests found")
             return
 
         if len(reqs) > 1:
-            print "Multiple requests found, just picking one"
+            self.len.warn("Multiple requests found, just picking one")
             
         request, token, server, created = reqs[0]
 
-        print "Found request at ", server
+        self.log.info("Found request at %s", server)
 
         #
         # Check status. Note that if a proxy is required, we
@@ -387,7 +387,7 @@ class Service(AppBase):
             #
             # Nope, not ready.
             #
-            print "Certificate not ready: ", certText
+            self.log.info("Certificate not ready: %s", certText)
             return
 
         #
@@ -405,15 +405,15 @@ class Service(AppBase):
 
                 impCert = certMgr.ImportRequestedCertificate(tempfile)
 
-                print "Successfully imported certificate for ", \
-                      str(impCert.GetSubject())
+                self.log.info("Successfully imported certificate for %s", 
+                              str(impCert.GetSubject()))
 
             except CertificateRepository.RepoInvalidCertificate, e:
                 msg = e[0]
-                print "The import of your approved certificate failed: ", msg
+                self.log.warn("The import of your approved certificate failed: %s", msg)
 
             except Exception, e:
-                print "The import of your approved certificate failed: ", e
+                self.log.exception("The import of your approved certificate failed")
 
         finally:
             os.unlink(tempfile)
@@ -427,7 +427,7 @@ class Service(AppBase):
         """
         argvResult = AppBase.Initialize(self, name)
 
-        print "Service init: have profile ", self.options.profile
+        self.log.info("Service init: have profile %s", self.options.profile)
 
         # Deal with the profile if it was passed instead of cert/key pair
         if self.options.profile is not None:
@@ -451,6 +451,8 @@ class Service(AppBase):
                   CertificateManager.CertificateManager(configDir,
                                                         self.certMgrUI)
 
+        self.log.info("Initialized cert mgmt.")
+        
         # If we have a service profile, load and parse, then configure
         # certificate manager appropriately.
         if self.profile:
@@ -464,8 +466,12 @@ class Service(AppBase):
                                                     useKeyFile = \
                                                     self.profile.keyfile)
 
+        self.log.info("Loaded profile and configured with it.")
+        
         self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
 
+        self.log.info("Initialized Globus.")
+        
         # 6. Do one final check, if we don't have a default
         #    Identity we bail, there's nothing useful to do.
 
