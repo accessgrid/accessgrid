@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.22 2003-08-13 20:59:57 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.23 2003-08-13 21:57:37 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -120,20 +120,19 @@ class AboutDialog(wxDialog):
     def __init__(self, parent):
         wxDialog.__init__(self, parent, -1, self.version)
         self.panel = wxPanel(self, -1)
-        self.version = "AGTk 2.1"
-        
+                
         bmp = icons.getAboutBitmap()
 
         info = "Version: %s \nCopyright@2001-2003 by University of Chicago, \nAll rights reserved\nPlease visit www.accessgrid.org for more information" %self.version
-        self.panel.SetSize(wxSize(bmp.GetWidth()-2,bmp.GetHeight()-2))
-        image = wxStaticBitmap(self.panel, -1, bmp)
+        self.SetSize(wxSize(bmp.GetWidth(),bmp.GetHeight()))
+        #self.panel.SetSize(wxSize(bmp.GetWidth(),bmp.GetHeight()))
+        self.image = wxStaticBitmap(self.panel, -1, bmp, size = wxSize(bmp.GetWidth(), bmp.GetHeight()))
         text = wxStaticText(self.panel, -1, info, pos = wxPoint(80,100))
-        self.SetSize(wxSize(bmp.GetWidth()-2,bmp.GetHeight()-2))
         self.__layout()
 
     def __layout(self):
         box = wxBoxSizer(wxVERTICAL)
-        box.Add(self.panel)
+        box.Add(self.panel, 1, wxEXPAND)
         self.SetAutoLayout(1)
         self.SetSizer(box)
         self.Layout()
@@ -275,3 +274,4 @@ if __name__ == "__main__":
     AboutDialogTest()
 
     app.MainLoop()
+    
