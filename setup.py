@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.46 2004-04-05 15:29:24 judson Exp $
+# RCS-ID:      $Id: setup.py,v 1.47 2004-04-05 16:12:19 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -35,13 +35,6 @@ for arg in sys.argv[1:]:
         al = string.split(arg, '=')
         if len(al) == 2:
             dest = al[1]
-
-if dest == None:
-    print "Destination required to run setup. Please specify with the"
-    print "--prefix command line argument."
-    sys.exit(-1)
-
-print "DESTINATION: ", dest
 
 cmd = [sys.executable, ep, "--html", "-o", os.path.join("doc", "Developer"),
        "-n", "Access Grid Toolkit", "-u",
@@ -201,23 +194,24 @@ functionality of the Access Grid.
     data_files = inst_data
 )
 
-# invoke service package script
-# packaging\makeServicePackages.py %AGDIR%\services\node %DEST%\services
-cmd = [
-    sys.executable,
-    os.path.join("packaging", "makeServicePackages.py"),
-    os.path.abspath(os.path.join("services", "node")),
-    os.path.join(dest, "services")
-    ]
-spawn(cmd, verbose=1)
-
-# invoke shared app packaging script
-# packaging\makeAppPackages.py %AGDIR%\sharedapps %DEST%\sharedapps
-cmd = [
-    sys.executable,
-    os.path.join("packaging","makeAppPackages.py"),
-    os.path.abspath("sharedapps"),
-    os.path.join(dest, "sharedapps")
-    ]
-spawn(cmd, verbose=1)
+if dest is not None:
+    # invoke service package script
+    # packaging\makeServicePackages.py %AGDIR%\services\node %DEST%\services
+    cmd = [
+        sys.executable,
+        os.path.join("packaging", "makeServicePackages.py"),
+        os.path.abspath(os.path.join("services", "node")),
+        os.path.join(dest, "services")
+        ]
+    spawn(cmd, verbose=1)
+    
+    # invoke shared app packaging script
+    # packaging\makeAppPackages.py %AGDIR%\sharedapps %DEST%\sharedapps
+    cmd = [
+        sys.executable,
+        os.path.join("packaging","makeAppPackages.py"),
+        os.path.abspath("sharedapps"),
+        os.path.join(dest, "sharedapps")
+        ]
+    spawn(cmd, verbose=1)
 
