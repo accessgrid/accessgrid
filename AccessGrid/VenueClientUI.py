@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.71 2004-08-18 20:17:09 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.72 2004-08-18 20:56:01 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.71 2004-08-18 20:17:09 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.72 2004-08-18 20:56:01 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3348,26 +3348,27 @@ class ContentListPanel(wxPanel):
         # - Open
         id = wxNewId()
         menu.Append(id, "Open", "Open application and join the session.")
-        
+
+       
         if commands != None and 'Open' in commands:
             EVT_MENU(self, id, lambda event, cmd='Open':
                      self.parent.StartCmd(item,verb='Open'))
 
+
+            # - Open for All Participants
+            key = 'Open for All Participants'
+            id = wxNewId()
+            menu.Append(id, key, "Open application for all participants in the venue.")
+            EVT_MENU(self, id, lambda event, verb=key, itm=item:
+                     self.parent.StartAllCmd(item,verb=key))
+            
         else:
             text = "You have nothing configured to open this application."
             title = "Notification"
             EVT_MENU(self, id, lambda event, text=text, title=title:
                      MessageDialog(self, text, title,
                                    style = wxOK|wxICON_INFORMATION))
-
-        # - Open for All Participants
-        if commands != None and 'Open for All Participants' in commands:
-            key = 'Open for All Participants'
-            id = wxNewId()
-            menu.Append(id, key)
-            EVT_MENU(self, id, lambda event, verb=key, itm=item:
-                     self.parent.StartAllCmd(item,verb=key))
-                          
+       
         # - Delete
         id = wxNewId()
         menu.Append(id, "Delete", "Delete this application.")

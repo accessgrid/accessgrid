@@ -6,4 +6,3 @@ files = SharedBrowser.py
 
 [commands]
 Open = %(python)s SharedBrowser.py -a %(appUrl)s
-Open for All Participants = %(python)s SharedBrowser.py -a %(appUrl)s
