@@ -1,20 +1,58 @@
 from wxPython.wx import *
 from wxPython.lib.buttons import *
 from AccessGrid import icons
+from AccessGrid.VenueClient import VenueClient
+import threading
 
 '''VenueClient. 
 
 The VenueClient class creates the main frame of the application, the VenueClientFrame. 
 
 '''
-class VenueClient(wxApp):
-	def OnInit(self):
-           frame = VenueClientFrame(NULL, -1,"The Lobby")
-           frame.Show(true)
-	   frame.SetSize(wxSize(300, 400))
-           self.SetTopWindow(frame)
-           return true                 
-	
+class TheGrid(wxApp, VenueClient):
+    def OnInit(self):
+	    self.frame = VenueClientFrame(NULL, -1,"The Lobby")
+	    self.frame.Show(true)
+	    self.frame.SetSize(wxSize(300, 400))
+	    self.SetTopWindow(self.frame)
+	    return true
+
+    def AddParticipant(self, profile):
+        self.frame.contentListPanel.AddParticipant(profile)
+
+    def RemoveParticipant(self):
+        self.frame.contentListPanel.RemoveParticipant()
+
+    def AddData(self, profile):
+        self.frame.contentListPanel.AddData(profile)
+
+    def RemovData(self):
+        self.frame.contentListPanel.RemoveData()
+
+    def AddService(self, profile):
+        self.frame.contentListPanel.AddService(profile)
+
+    def RemoveService(self):
+        self.frame.contentListPanel.RemoveService()
+
+    def AddNode(self, profile):
+        self.frame.contentListPanel.AddNode(profile)
+
+    def RemoveNode(self):
+        self.frame.contentListPanel.RemoveNode()
+
+    def ExpandTree(self):
+        self.frame.contentListPanel.ExpandTree()
+    
+    def AddExit(self, profile):
+        self.frame.venueListPanel.list.AddVenueDoor("Lobby", "This is the lobby room...", \
+						       wxBitmap('IMAGES/doorClosed.gif',  \
+								wxBITMAP_TYPE_GIF), \
+						       wxBitmap('IMAGES/doorOpen.gif', wxBITMAP_TYPE_GIF))
+
+    def RemoveExit(self):
+        print 'remove exit'
+        
 
 '''VenueClientFrame. 
 
@@ -42,6 +80,7 @@ class VenueClientFrame(wxFrame):
 	self.__setMenubar()
 	self.__setToolbar()
 	self.__setProperties()
+#	wxInitAllImageHandlers()
         self.__doLayout()
 	
     def __setStatusbar(self):
@@ -75,7 +114,7 @@ class VenueClientFrame(wxFrame):
 	
     def __setToolbar(self):
 #	self.toolbar.SetToolTipString("My private data")   
-	wxInitAllImageHandlers()
+#	wxInitAllImageHandlers()
 #	icon = wxBitmap('IMAGES/icon.gif', wxBITMAP_TYPE_GIF)
 	self.toolbar.AddSimpleTool(20, icons.getWordIconBitmap(), "ImportantPaper.doc", "ImportantPaper.doc",)
 	self.toolbar.AddSimpleTool(21, icons.getPptIconBitmap(), "Presentation.ppt", "Presentation.ppt",)
@@ -139,14 +178,13 @@ class VenueListPanel(wxPanel):
 	self.maximizeButton.Hide()
 	self.SetBackgroundColour(self.maximizeButton.GetBackgroundColour())
 	
-
+	wxInitAllImageHandlers()
 	self.imageList = wxImageList(16,16)
 	self.__doLayout()
 	self.__addEvents()
 	self.__insertItems()
 	
     def __insertItems(self):
-        wxInitAllImageHandlers()
         doorOpen = wxBitmap('IMAGES/doorOpen.gif', wxBITMAP_TYPE_GIF)
 	self.SetToolTipString("Connected Venues")
 	self.iconId =  self.imageList.Add( doorOpen )
@@ -216,21 +254,6 @@ class VenueList(wxScrolledWindow):
         self.box.SetVirtualSizeHints(self)
 	self.EnableScrolling(true, true)
         self.SetScrollRate(20, 20)
-
-	##############  TEST
-	self.AddVenueDoor("Lobby", "This is the lobby room...", \
-			  wxBitmap('IMAGES/doorClosed.gif',  wxBITMAP_TYPE_GIF), \
-			  wxBitmap('IMAGES/doorOpen.gif', wxBITMAP_TYPE_GIF))
-	self.AddVenueDoor("Library", "This is the library room...", \
-			  wxBitmap('IMAGES/doorClosed.gif', wxBITMAP_TYPE_GIF), \
-			  wxBitmap('IMAGES/doorOpen.gif', wxBITMAP_TYPE_GIF))
-	self.AddVenueDoor("Hallway", "This is the hallway room...", \
-			  wxBitmap('IMAGES/doorClosed.gif', wxBITMAP_TYPE_GIF), \
-			  wxBitmap('IMAGES/doorOpen.gif', wxBITMAP_TYPE_GIF) )
-	self.AddVenueDoor("Physics", "This is the physics room", \
-			  wxBitmap('IMAGES/doorClosed.gif', wxBITMAP_TYPE_GIF), \
-			  wxBitmap('IMAGES/doorOpen.gif', wxBITMAP_TYPE_GIF))
-	##############  TEST
 		            
     def AddVenueDoor(self, text, tooltip, bitmap, bitmapSelect):
         tc = wxBitmapButton(self, -1, bitmap, wxPoint(0, 0), wxDefaultSize, \
@@ -245,6 +268,9 @@ class VenueList(wxScrolledWindow):
 	self.SetSize(wxDefaultSize)
 	self.Layout()
 	self.box.SetVirtualSizeHints(self)
+
+    def RemoveVenueDoor(self):
+        print 'remove venue door'
 	
 
 '''ContentListPanel.
@@ -265,10 +291,14 @@ class ContentListPanel(wxPanel):
 			       | wxTR_NO_LINES | wxTR_TWIST_BUTTONS \
 			       | wxTR_HIDE_ROOT)
 	
+        self.participantDict = {}
+        self.dataDict = {}
+        self.serviceDict = {}
+        self.nodeDict = {}
 	self.__setImageList()
 	self.__setTree()
 	self.__setProperties()
-	
+        	
 	EVT_SIZE(self, self.OnSize)
 #	EVT_TREE_SEL_CHANGED(self, id, self.OnSelChanged)
 	EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
@@ -290,32 +320,81 @@ class ContentListPanel(wxPanel):
 	#self.smileyOnId =  imageList.Add(smileyOn)
 	#self.smileySelectId =  imageList.Add(smileySelect)
 	self.tree.AssignImageList(imageList)
-	
+
+    def AddParticipant(self, profile):
+        name = 'New Person'
+        participant = self.tree.AppendItem(self.participants, name, \
+                             self.iconId, self.iconId)
+        self.tree.SetPyData(participant, profile)
+        self.participantDict[name] = participant
+    
+    def RemoveParticipant(self):
+        id = self.participantDict['New Person']
+        self.tree.Delete(id)
+        
+    def AddData(self, profile):
+        name = "ImportantPaper.doc"
+        data = self.tree.AppendItem(self.data, name, \
+                             self.importantPaperId, self.importantPaperId)
+        self.tree.SetPyData(data, profile)
+        self.dataDict[name] = data
+       
+    def RemoveData(self):
+        id = self.dataDict["ImportantPaper.doc"]
+        self.tree.Delete(id)
+       
+    def AddService(self, profile):
+        name = "Voyager"
+        service = self.tree.AppendItem(self.services, name,\
+                                       self.serviceId, self.serviceId)
+        self.tree.SetPyData(service, profile)
+        self.serviceDict[name] = service
+      
+    def RemoveService(self):
+        id = self.serviceDict["Voyager"]
+        self.tree.Delete(id)
+
+    def AddNode(self, profile):
+        name = "Library Node"
+        node = self.tree.AppendItem(self.nodes, name)
+        self.tree.SetPyData(node, profile)
+        self.nodeDict[name] = node
+
+    def RemoveNode(self):
+        id = self.nodeDict["Library Node"]
+        self.tree.Delete(id)
+
+
+    def ExpandTree(self):
+        self.tree.Expand(self.services)
+
+    def __compareItems(self, item1, item2):
+        t1 = self.GetItemText(item1)
+        t2 = self.GetItemText(item2)
+        if t1 < t2: return -1
+        if t1 == t2: return 0
+        return 1
+                               
     def __setTree(self):
         self.root = self.tree.AddRoot("The Lobby")
-	participants = self.tree.AppendItem(self.root, "Participants")
-	self.tree.SetItemBold(participants)
-	person1 = self.tree.AppendItem(participants, " Susanne Lefvert", self.iconId, self.iconId)
-	person2 = self.tree.AppendItem(participants, " Bob Olson", self.iconId, self.iconId)
-	person3 = self.tree.AppendItem(participants, " Ivan Judson", self.iconId,  self.iconId)
-	person4 = self.tree.AppendItem(participants, " Tom Uram", self.iconId, self.iconId)
-	data = self.tree.AppendItem(self.root, "Data")
-	self.tree.SetItemBold(data)
-		
-	data1 = self.tree.AppendItem(data, "ImportantPaper.doc", self.importantPaperId, self.importantPaperId)
-	data2 = self.tree.AppendItem(data, "CoolPresentation.ppt",self.pptDocId, self.pptDocId)
-	services = self.tree.AppendItem(self.root, "Services")
-	self.tree.SetItemBold(services)
-	service1 = self.tree.AppendItem(services, "Voyager", self.serviceId, self.serviceId)
-	nodes = self.tree.AppendItem(self.root, "Nodes")
-	self.tree.SetItemBold(nodes)
-	node1 = self.tree.AppendItem(nodes, "Library Node")
-	
-        self.tree.Expand(participants)
-	self.tree.Expand(data)
-	self.tree.Expand(services)
-	self.tree.Expand(nodes)
-
+        self.tree.SetPyData(self.root, 1)
+        
+	self.participants = self.tree.AppendItem(self.root, "Participants")
+	self.tree.SetItemBold(self.participants)
+        self.tree.SetPyData(self.participants, 1)
+        
+	self.data = self.tree.AppendItem(self.root, "Data")
+	self.tree.SetItemBold(self.data)
+        self.tree.SetPyData(self.data, 1)
+        
+	self.services = self.tree.AppendItem(self.root, "Services")
+	self.tree.SetItemBold(self.services)
+        self.tree.SetPyData(self.services, 1)
+        
+	self.nodes = self.tree.AppendItem(self.root, "Nodes")
+	self.tree.SetItemBold(self.nodes)
+        self.tree.SetPyData(self.nodes, 1)
+        
     def __setProperties(self):
         self.tree.SetToolTipString("Contents of this venue")
 
@@ -368,5 +447,3 @@ class InfoPopup(wxPopupTransientWindow):
         self.SetSize(panel.GetSize())
 
 
-app = VenueClient(0)
-app.MainLoop()  
