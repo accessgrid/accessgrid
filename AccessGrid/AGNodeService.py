@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.31 2003-08-08 04:44:09 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.32 2003-08-11 04:18:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -324,7 +324,7 @@ class AGNodeService( ServiceBase ):
 
         # Remove the stream from the list
         if self.streamDescriptionList.has_key( streamDescription.capability.type ):
-            del self.streamDescriptionList.has_key[streamDescription.capability.type]
+            del self.streamDescriptionList[streamDescription.capability.type]
 
         # Stop services using that stream's media type
         # (er, not yet)
