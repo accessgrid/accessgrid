@@ -245,12 +245,8 @@ if __name__ == "__main__":
         def StopTransform(self, streamList):
             return []
                
-        StopTransform.soap_export_as = "StopTransform"
-                    
         def Transform(self, streamList):
             return []
-
-        Transform.soap_export_as = "Transform"
 
     # Create the network service.
     service = FakeService('FakeService')
