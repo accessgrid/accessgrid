@@ -107,11 +107,12 @@ class SharedAppClient:
             self.log.exception("SharedAppClient.Join failed: %s",
                                self.__appUrl)
             try:
-                (self.__publicId, self.__privateId) = self.__appProxy.Join()
+                oldAppProxy = Client.SecureHandle(self.__appUrl).GetProxy()
+                (self.__publicId, self.__privateId) = oldAppProxy.Join()
                 self.log.info("SharedAppClient.Join: %s using old software",
                               self.__appUrl)
             except:
-                self.log.excpetion("SharedAppClient.Join failed: %s",
+                self.log.exception("SharedAppClient.Join failed: %s",
                                    self.__appUrl)
                 raise "Failed to join application service at %s." %self.__appUrl                
         try:
