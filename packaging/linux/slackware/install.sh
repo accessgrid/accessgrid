@@ -8,6 +8,8 @@
 # Note:  It currently makes no effort to handle failures!
 #
 
+# First, check for external prerequisites
+#
 # Has wxPythonGTK been installed?
 #
 WXPYGTK=`ls /var/adm/packages | grep wxPythonGTK`
@@ -16,7 +18,6 @@ if [ ! $? -eq 0 ]; then
     echo "Please install wxPythonGTK package, before running this script again"
     exit 1
 fi
-
 
 # Has xawtv been installed? (need v4lctl)
 # We could just look for v4lctl
@@ -28,10 +29,27 @@ if [ ! $? -eq 0 ]; then
     exit 2
 fi
 
+
+#################################################################
+# Install processing begins here
+#################################################################
+
+# Inform user what will be done and prompt to continue
+#
+echo
+echo "This script installs the Slackware packages for the Access Grid software. " 
+echo "Continue ? [y/n]"
+read response
+if [ "$response" != 'y' ] && [ "$response" != "Y" ]
+then
+   exit 5
+fi
+
 # Default ALSA sound devices
 #
 if [ -x ./snddevices ]; then
   echo
+  echo "Treating ALSA devices"
   sh ./snddevices
   echo
 fi
@@ -49,10 +67,6 @@ export GLOBUS_VER="2.4-i486-1"
 export AG="AccessGrid"
 export AG_VER=VER
  
-
-#################################################################
-# Install processing begins here
-#################################################################
 
 #
 # Install the specified package and version
@@ -72,24 +86,25 @@ Install()
 }
 
 #
-# Check that python2 (typically a link to python2.3) is available
+# Check that python2 (typically a link to python2.2 or python2.3) is available
 #
+echo "Checking python2 link"
 PYTHON2=`which python2 2>/dev/null`
 if [ ! $? -eq 0 ]; then
-  PYTHON23=`which python2.3 2>/dev/null`
+  PYTHONEXE=`which pythonPYVER 2>/dev/null`
   if [ ! $? -eq 0 ]; then
-    echo "No python2.3 available! Please find one and start again"
+    echo "No pythonPYVER available! Please find one and start again"
     exit 2
   else
-    echo "Found ${PYTHON23} but no python2 link to it" 
-    echo  "Create a link to ${PYTHON23} now? (Press y to create link) "
+    echo "Found ${PYTHONEXE} but no python2 link to it" 
+    echo  "Create a link to ${PYTHONEXE} now? (Press y to create link) "
     read response
     if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
       echo "Not creating link (at your request), exiting now"
       exit 3
     fi
-    PYDIR=`dirname ${PYTHON23}`
-    ln -s ${PYTHON23} ${PYDIR}/python2
+    PYDIR=`dirname ${PYTHONEXE}`
+    ln -s ${PYTHONEXE} ${PYDIR}/python2
   fi
 fi
 # Confirm creation of python2 link worked
@@ -110,34 +125,26 @@ if [ ! $? -eq 0 ]; then
 
  exit 4
 fi
+echo "python2 OK"
 
 
-
-# Inform user what will be done and prompt to continue
-#
-echo
-echo "This script installs the Slackware packages for the Access Grid software. " 
-echo "Continue ? [y/n]"
-read response
-if [ "$response" != 'y' ] && [ "$response" != "Y" ]
-then
-   exit 5
-fi
 
 #
-# Install Prerequisites
+# Install globus package
 #
+echo ""
 echo "***********************************************"
-echo "Installing prerequisites" 
+echo "Installing ${GLOBUS}-${GLOBUS_VER} " 
 echo "***********************************************"
 Install $GLOBUS $GLOBUS_VER
 echo ""
 
 #
-# Install AG RPMS
+# Install AG package
 #
+echo ""
 echo "***********************************************"
-echo "Installing Access Grid packages "
+echo "Installing Access Grid package "
 echo "***********************************************"
 Install $AG $AG_VER
 echo ""
@@ -145,6 +152,7 @@ echo ""
 #
 # Install XDG menu stuff
 #
+echo ""
 echo "***********************************************"
 echo "Install AG Menus "
 echo "***********************************************"
@@ -163,8 +171,8 @@ if [ $? -eq 0 ]; then
   echo "Patching \"Applications\" menu"
   patch -p0 -N -t -l -s  2>&1 > /dev/null < ${APPSMENU_PATCH}
 else
-  echo "Patch won't apply cleanly. Do it yourself!"
-  exit 2
+  echo "Patch won't apply cleanly."
+  echo "Perhaps the \"Applications\" menu was patched by a previous installation? "
 fi
 
 echo ""
