@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.56 2004-05-12 18:40:46 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.57 2004-05-14 20:52:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.56 2004-05-12 18:40:46 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.57 2004-05-14 20:52:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -472,7 +472,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.SetTitle("Venue Client")
         self.SetIcon(icons.getAGIconIcon())
         self.venueListPanel.GetSize().GetHeight()
-        self.venueListPanel.SetSize(wxSize(180, 300))
+        self.venueListPanel.SetSize(wxSize(160, 300))
         
     def __FillTempHelp(self, x):
         if x == '\\':
@@ -672,7 +672,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         wxLayoutAlgorithm().LayoutWindow(self, self.textInputWindow)
        
-        self.venueListPanel.SetDefaultSize(wxSize(150, 1000))
+        self.venueListPanel.SetDefaultSize(wxSize(160, 1000))
         self.venueListPanel.SetOrientation(wxLAYOUT_VERTICAL)
         self.venueListPanel.SetSashVisible(wxSASH_RIGHT, TRUE)
         self.venueListPanel.SetAlignment(wxLAYOUT_LEFT)
