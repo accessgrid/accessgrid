@@ -92,7 +92,7 @@ import time
 try: from M2Crypto import SSL
 except: pass
 
-ident = '$Id: AGGSISOAP.py,v 1.5 2003-01-31 20:17:07 olson Exp $'
+ident = '$Id: AGGSISOAP.py,v 1.6 2003-01-31 21:09:12 turam Exp $'
 
 __version__ = "0.9.7"
 
@@ -3616,14 +3616,23 @@ class SOAPProxy:
             self.__hd   	= hd
             self.__ma           = ma
             self.__config       = config
+            self.__action   = 0
             if self.__name[0] == "_":
                 if self.__name in ["__repr__","__str__"]:
-                    self.__call__ = self.__repr__
+                    self.__action = 1
                 else:
-                    self.__call__ = self.__f_call
+                    self.__action = 2
             else:
-                self.__call__ = self.__r_call
+                self.__action = 3
 
+        def __call__(self, *args, **kw):
+            if self.__action == 1:
+                return self.__repr__()
+            elif self.__action == 2:
+                return self.__f_call(*args, **kw)
+            else:
+                return self.__r_call(*args, **kw)
+                        
         def __getattr__(self, name):
             if self.__name[0] == "_":
                 # Don't nest method if it is a directive
