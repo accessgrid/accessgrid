@@ -2,7 +2,7 @@
 # Name:        Server.py
 # Purpose:     
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.1 2004-12-15 17:14:39 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.2 2005-01-31 19:02:27 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@ ZSI server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.1 2004-12-15 17:14:39 judson Exp $"
+__revision__ = "$Id: Server.py,v 1.2 2005-01-31 19:02:27 judson Exp $"
 
 # External imports
 import urlparse
@@ -20,6 +20,9 @@ from ZSI.ServiceContainer import ServiceContainer
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.Hosting)
+
+def GetSOAPContext():
+    return None
 
 class _Server:
     """
