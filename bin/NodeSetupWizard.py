@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.29 2004-04-23 22:00:26 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.30 2004-04-26 18:52:24 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -11,6 +11,7 @@
 import os
 import string
 import getopt
+import sys
 
 # Imports for user interface
 from wxPython.wx import *
@@ -98,17 +99,20 @@ class NodeSetupWizard(wxWizard):
     The node setup wizard guides users through the steps necessary for
     creating and testing a node configuration. 
     '''
-    def __init__(self, parent, debugMode, log):
+    def __init__(self, parent, debugMode, log, progress):
         wxWizard.__init__(self, parent, 10,"Setup Node", wxNullBitmap)
         '''
         This class creates a wizard for node setup
         '''
+        startupDialog = progress
         self.debugMode = debugMode
         self.log = log
 
         self.step = 1
         self.SetPageSize(wxSize(510, 310))
         self.nodeClient = NodeClient()
+        
+        startupDialog.UpdateOneStep("Initializing the Node Setup Wizard.")
         
         self.page1 = WelcomeWindow(self, "Welcome to the Node Setup Wizard")
         self.page2 = VideoCaptureWindow(self, self.nodeClient,
@@ -139,6 +143,7 @@ class NodeSetupWizard(wxWizard):
 
         # Start the node service which will store the configuration
         try:
+            startupDialog.UpdateOneStep("Start the node service.")
             self.nodeClient.StartNodeService()
         except:
             log.exception("NodeSetupWizard.__init__: Can not start node service")
@@ -147,16 +152,16 @@ class NodeSetupWizard(wxWizard):
 
         else:
             # Run the wizard
+            startupDialog.UpdateOneStep("Open wizard.")
+
+            # Startup complete; kill progress dialog
+            startupDialog.Destroy()
+
             self.RunWizard(self.page1)
 
-            # Wizard finished
-            
-            # Stop node service
-            #node = self.nodeClient.GetNodeService()
-
-            #if node:
+            # Wizard finished; stop node service
             try:
-                self.nodeClient.nodeService.Stop()
+                self.nodeClient.Stop()
             except:
                 log.exception("NodeSetupWizard.__init__: Can not stop node service")
 
@@ -184,7 +189,7 @@ class NodeSetupWizard(wxWizard):
 
         # Check to see if values are entered correctly
         if dir == forward:
-            if not page.Validate():
+            if not page.GetValidity():
                 # Ignore event
                 event.Veto()
 
@@ -204,7 +209,7 @@ class WelcomeWindow(TitledPage):
        
         self.Layout()
 
-    def Validate(self):
+    def GetValidity(self):
         return true
           
     def Layout(self):
@@ -257,7 +262,7 @@ class VideoCaptureWindow(TitledPage):
         # Connect status should only reflect current machine
         self.canConnect = None
             
-    def Validate(self):
+    def GetValidity(self):
         '''
         Is called when the next button is clicked. It tests if a service manager is running on
         the specified machine and port. If it can connect available video capture cards are displayed.
@@ -432,7 +437,7 @@ class VideoCaptureWindow2(TitledPage):
         self.scrolledWindow.Layout()
         self.Layout()
 
-    def Validate(self):
+    def GetValidity(self):
         return true
     
     def __layout(self):
@@ -490,7 +495,7 @@ class VideoDisplayWindow(TitledPage):
         '''   
         self.canConnect = None
         
-    def Validate(self):
+    def GetValidity(self):
         '''
         Is called when the next button is clicked. It tests if a service manager is running on
         the specified machine and port. 
@@ -594,7 +599,7 @@ class AudioWindow(TitledPage):
         '''   
         self.canConnect = None
         
-    def Validate(self):
+    def GetValidity(self):
         '''
         Is called when the next button is clicked. It tests if a service manager is running on
         the specified machine and port. 
@@ -729,7 +734,7 @@ class ConfigWindow(TitledPage):
             self.vDispMachineText.SetLabel("Do not use a video display machine")
             self.videoDispUrl = None
           
-    def Validate(self):
+    def GetValidity(self):
         """
         Adds service managers for each machine to the node service. For each
         service manager, appropriate services are added. Then save the configuration
@@ -931,30 +936,33 @@ class NodeClient:
 
     def StartNodeService(self):
          app = Service().instance()
-         # Initialize the app
+         #Initialize node service
          try:
              app.Initialize("NodeService")
          except Exception, e:
-             print "Toolkit Initialization failed, exiting."
-             print " Initialization Error: ", e
+             log.exception("NodeClient: init failed. Exiting.")
              sys.exit(-1)
 
          self.nodeService = AGNodeService()
-
+         
          hostname = SystemConfig.instance().GetHostname()
          port = 11000
-         server = SecureServer((hostname, port), debug = app.GetDebugLevel())
+         self.server = SecureServer((hostname, port), debug = app.GetDebugLevel())
          
          nsi = AGNodeServiceI(self.nodeService)
-         server.RegisterObject(nsi, path="/NodeService")
-         url = server.FindURLForObject(self.nodeService)
-                 
+         self.server.RegisterObject(nsi, path="/NodeService")
+         url = self.server.FindURLForObject(self.nodeService)
          self.node = AGNodeServiceIW(url)
 
-         #
-         # THIS IS NEEDED BUT HANGS RIGHT NOW......FIX IT!
-         #
-         #self.serviceList = self.node.GetAvailableServices()
+         self.server.RunInThread()
+
+         self.serviceList = self.node.GetAvailableServices()
+
+    def Stop(self):
+        # Exit cleanly
+        self.nodeService.Stop()
+        self.server.Stop()
+        sys.exit(0)
                        
     def GetNodeService(self):
         return self.node
@@ -1068,10 +1076,10 @@ def main():
     
     startupDialog.UpdateOneStep("Initializing the Node Setup Wizard.")
 
-    nodeSetupWizard = NodeSetupWizard(None, debug, log)
+    nodeSetupWizard = NodeSetupWizard(None, debug, log, startupDialog)
     
     # Startup complete; kill progress dialog
-    startupDialog.Destroy()
+    #startupDialog.Destroy()
 
     # Spin
     wxapp.SetTopWindow(nodeSetupWizard)
