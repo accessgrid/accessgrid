@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.21 2004-03-18 14:07:52 turam Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.22 2004-04-05 13:42:51 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.21 2004-03-18 14:07:52 turam Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.22 2004-04-05 13:42:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client, Server
@@ -105,6 +105,9 @@ class ConnectionHandler:
             #
             # We can now start reading.
             #
+
+            ctx = self.socket.get_security_context()
+            self.sender = CreateSubjectFromGSIContext(ctx).GetName()
 
             self.wfile = self.socket.makefile("w")
             self.registerForRead()
@@ -630,9 +633,8 @@ class TextService:
 
         # Tag the event with the sender, which is obtained
         # from the security layer to avoid spoofing
-        ctx = connObj.socket.get_security_context()
         payload = event.data
-        payload.sender = CreateSubjectFromGSIContext(ctx).GetName()
+        payload.sender = connObj.sender
 
         # Parse the text structure
         # When this is advanced you can route things, for now
