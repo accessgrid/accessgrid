@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.8 2003-02-12 23:01:16 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.9 2003-02-18 19:11:48 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -45,8 +45,6 @@ class AGServiceManager( ServiceBase ):
 
         self.nextToken = 9500
 
-        self.__DiscoverResources()
-
         # note: unregisteredServices dict is keyed on token
         self.unregisteredServices = dict()
 
@@ -84,6 +82,8 @@ class AGServiceManager( ServiceBase ):
 
         # Check authorization
         if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
+
+        self.__DiscoverResources()
 
         return self.resources
     GetResources.soap_export_as = "GetResources"
@@ -288,6 +288,16 @@ class AGServiceManager( ServiceBase ):
         return self.services.values()
     GetServices.soap_export_as = "GetServices"
     GetServices.pass_connection_info = 1
+
+    def StopServices( self ):
+        """
+        Stop all services on service manager
+        """
+        for service in self.services.values():
+            print "stopping service at uri ", service.uri
+            Client.Handle( service.uri ).get_proxy().Stop()
+
+    StopServices.soap_export_as = "StopServices"
 
 
     def RegisterService( self, connInfo, token, uri ):
