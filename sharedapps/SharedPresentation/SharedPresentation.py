@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.7 2003-08-22 16:52:25 turam Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.8 2003-08-22 20:11:36 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,6 +16,7 @@ import getopt
 import logging
 from threading import Thread
 import Queue
+import shutil
 
 from wxPython.wx import *
 
@@ -35,15 +36,39 @@ from AccessGrid import Platform
 from AccessGrid import DataStore
 
 
+# This function registers the application with the users environment
+# There is no longer support for shared application installations
+# that might be reintroduced later.
 
-def registerApp():
+def registerApp(fileName):
     import AccessGrid.Toolkit as Toolkit
     app = Toolkit.CmdlineApplication()
     appdb = app.GetAppDatabase()
-    cmd = os.path.join(app.userConfigDir, "applications",
-                       "SharedPresentation", "SharedPresentation.py")
-    exeCmd = sys.executable + " \"" + cmd + "\" -a %(appUrl)s"
-    print exeCmd
+
+    # Get just the filename
+    fn = os.path.split(fileName)[1]
+
+    # Find the app dir
+    uad = Platform.GetUserAppPath()
+
+    # Get the absolute path for copying the file
+    src = os.path.abspath(fn)
+
+    # Get the destination filename
+    dest = os.path.join(uad, fn)
+
+    exeCmd = sys.executable + " \"" + dest + "\" -a %(appUrl)s"
+
+    print "SRC: %s DST: %s CMD: %s" % (src, dest, exeCmd)
+    
+    # Copy the file
+    try:
+        shutil.copyfile(src, dest)
+    except IOError:
+        print "Couldn't copy app into place, bailing."
+        sys.exit(1)
+
+    # Call the registration method on the applications database
     appdb.RegisterApplication("Shared Presentation",
                               "application/x-ag-shared-presentation",
                               "sharedpresentation",
@@ -1254,10 +1279,10 @@ if __name__ == "__main__":
 
     # Here we parse command line options
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "d:v:a:l:ih",
+        opts, args = getopt.getopt(sys.argv[1:], "d:v:a:l:ihr",
                                    ["venueURL=", "applicationURL=",
                                     "information=", "logging=", 
-                                    "data=", "debug", "help"])
+                                    "data=", "debug", "help", "register"])
     except getopt.GetoptError:
         Usage()
         sys.exit(2)
@@ -1278,6 +1303,9 @@ if __name__ == "__main__":
             venueDataUrl = a
         elif o in ("--debug",):
             debug = 1
+        elif o in ("-r", "--register"):
+            registerApp(sys.argv[0])
+            sys.exit(0)
         elif o in ("-h", "--help"):
             Usage()
             sys.exit(0)
