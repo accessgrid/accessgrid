@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.322 2004-02-13 22:57:19 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.323 2004-02-18 17:38:01 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.322 2004-02-13 22:57:19 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.323 2004-02-18 17:38:01 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1830,6 +1830,7 @@ class ContentListPanel(wxPanel):
             
         if(id != None):
             self.tree.SetItemData(id, wxTreeItemData(profile))
+            self.tree.SetItemText(id, profile.name)
         else:
             log.info("ContentListPanel.UpdateData: Id is none - that is not good")
                           
@@ -2323,11 +2324,21 @@ class ContentListPanel(wxPanel):
     def LookAtProperties(self, desc):
         """
         """
-              
         if isinstance(desc, DataDescription):
             dataView = DataDialog(self, -1, "Data Properties")
             dataView.SetDescription(desc)
-            dataView.ShowModal()
+            if dataView.ShowModal() == wxID_OK:
+                # Get new description
+                newDesc = dataView.GetDescription()
+                               
+                # If name is different, change data in venue
+                if newDesc.name != desc.name:
+                    try:
+                        self.app.venueClient.client.ModifyData(newDesc)
+                    except:
+                        log.exception("VenueClientUIClasses: Modify data failed")
+                        MessageDialog(None, "Update data failed.", "Notification", style = wxOK|wxICON_INFORMATION) 
+            
             dataView.Destroy()
 
         elif isinstance(desc, ServiceDescription):
@@ -2342,6 +2353,7 @@ class ContentListPanel(wxPanel):
                     try:
                         self.app.venueClient.client.UpdateService(newDesc)
                     except:
+                        log.exception("VenueClientUIClasses: Update service failed")
                         MessageDialog(None, "Update service failed.", "Notification", style = wxOK|wxICON_INFORMATION)
                                            
             serviceView.Destroy()
@@ -3499,6 +3511,7 @@ class ExitProfileDialog(wxDialog):
 class DataDialog(wxDialog):
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title)
+        self.description = None
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
         self.nameCtrl = wxTextCtrl(self, -1, "", size = (500,20))
@@ -3515,12 +3528,20 @@ class DataDialog(wxDialog):
         '''
         This method is called if you only want to view the dialog.
         '''
+        self.description = copy.copy(dataDescription)
+        
         self.nameCtrl.SetValue(dataDescription.name)
         self.ownerCtrl.SetValue(str(dataDescription.owner))
         self.sizeCtrl.SetValue(str(dataDescription.size))
         self.SetTitle("Data Properties")
         self.__setEditable(false)
         self.cancelButton.Destroy()
+
+    def GetDescription(self):
+        if self.description:
+            self.description.name = self.nameCtrl.GetValue()
+
+        return self.description
           
     def __setProperties(self):
         self.SetTitle("Please, fill in data information")
@@ -3528,7 +3549,9 @@ class DataDialog(wxDialog):
 
     def __setEditable(self, editable):
         if not editable:
-            self.nameCtrl.SetEditable(false)
+            # Name is always editable
+            self.nameCtrl.SetEditable(true)
+
             self.ownerCtrl.SetEditable(false)
             self.sizeCtrl.SetEditable(false)
                      
