@@ -244,7 +244,7 @@ mkdir -p %{buildroot}/tmp/local_services
 %defattr(0755,root,root)
 %{prefix}/bin/VenueManagement.py
 %{prefix}/bin/VenueServer.py
-%{prefix}/bin/VenuesServerRegistry.py
+#%{prefix}/bin/VenuesServerRegistry.py
 %defattr(-,root,root)
 %{gnomedir}/%{name}/.desktop
 %{gnomedir}/%{name}/VenueManagement.desktop
