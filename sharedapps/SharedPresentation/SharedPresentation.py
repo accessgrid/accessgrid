@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.6 2003-08-21 23:29:04 judson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.7 2003-08-22 16:52:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1254,7 +1254,7 @@ if __name__ == "__main__":
 
     # Here we parse command line options
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "dv:a:l:ih",
+        opts, args = getopt.getopt(sys.argv[1:], "d:v:a:l:ih",
                                    ["venueURL=", "applicationURL=",
                                     "information=", "logging=", 
                                     "data=", "debug", "help"])
