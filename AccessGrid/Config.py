@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.2 2004-03-26 19:29:54 olson Exp $
+# RCS-ID:      $Id: Config.py,v 1.3 2004-03-26 20:41:16 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.2 2004-03-26 19:29:54 olson Exp $"
+__revision__ = "$Id: Config.py,v 1.3 2004-03-26 20:41:16 judson Exp $"
 
 import sys
 import struct
@@ -205,8 +205,8 @@ class SystemConfig:
         if self.hostname == None:
             try:
                 self.hostname = socket.getfqdn()
-            except Exception, e:
-                self.hostname == None
+            except:
+                self.hostname = None
                 raise
         
         return self.hostname
@@ -215,14 +215,16 @@ class SystemConfig:
         """
         Retrieve local HTTP proxy settings.
         """
-        raise "This should not be called directly, but through a subclass."
+        err_str = "This should not be called directly, but through a subclass."
+        raise Exception(err_str)
 
-    def FileSystemFreeSpace(self,path):
+    def FileSystemFreeSpace(self, path):
         """
         Retrieve the amount of free space on the file system the path is
         housed on.
         """
-        raise "This should not be called directly, but through a subclass."
+        err_str = "This should not be called directly, but through a subclass."
+        raise Exception(err_str)
 
     def _GetSNTPTime(self, timeout=0.3):
         """
@@ -288,7 +290,8 @@ class MimeConfig:
     viewing.
     """
     def __init__(self):
-        raise "This should not be called directly, but through a subclass."
+        err_str = "This should not be called directly, but through a subclass."
+        raise Exception(err_str)
     
     def GetMimeType(extension = None):
         raise "This should not be called directly, but through a subclass."
