@@ -318,7 +318,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                       certificateRequest.GetModulusHash())
 
             certificateClient = CRSClient(submitServerURL)
-            requestId = certificateClient.RequestCertificate(pem)
+            requestId = certificateClient.RequestCertificate(email, pem)
 
             log.debug("SubmitRequest:Validate:Request id is %s", requestId)
 
