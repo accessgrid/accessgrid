@@ -35,7 +35,7 @@ for cmd in [
     "BuildPythonModules.cmd"
     ]:
     cmd = "%s %s %s %s %s" % (cmd, options.sourcedir, options.builddir,
-                              options.destdir, options.pyver)
+                              options.destdir, options.version)
     if options.verbose:
         print "BUILD: Running: %s" % cmd
 
