@@ -18,6 +18,7 @@ Unittest for MulticastAddressAllocator
 import signal, time, os
 import unittest
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator 
+from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
 
 class MulticastAddressAllocatorTestCase(unittest.TestCase):
     """A test case for MulticastAddressAllocator."""
@@ -67,8 +68,8 @@ class MulticastAddressAllocatorTestCase(unittest.TestCase):
 
     def testSetGetAddressAllocationMethod(self):
        m = MulticastAddressAllocator() 
-       m.SetAddressAllocationMethod(MulticastAddressAllocator.INTERVAL)
-       assert MulticastAddressAllocator.INTERVAL == m.GetAddressAllocationMethod()
+       m.SetAllocationMethod(NetworkAddressAllocator.INTERVAL)
+       assert NetworkAddressAllocator.INTERVAL == m.GetAllocationMethod()
 
     def testRecyclePort(self):
        m = MulticastAddressAllocator() 
