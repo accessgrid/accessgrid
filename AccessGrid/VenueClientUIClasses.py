@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.128 2003-04-07 22:13:35 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.129 2003-04-08 14:30:35 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -879,7 +879,6 @@ class VenueListPanel(wxSashLayoutWindow):
         font = wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana")
         self.minimizeButton.SetToolTipString("Hide Exits")
 	self.maximizeButton.SetToolTipString("Show Exits")
-        self.SetToolTipString("Connected Venues")
         #self.minimizeButton.SetFont(font)
         #self.maximizeButton.SetFont(font)
         self.exitsText.SetBackgroundColour("WHITE")
@@ -1479,7 +1478,6 @@ class TextClientPanel(wxPanel):
         wxPanel.__init__(self, *args, **kwds)
         self.TextOutput = wxTextCtrl(self, wxNewId(), "",
                                      style= wxTE_MULTILINE|wxTE_READONLY)
-        self.TextOutput.SetToolTipString("Text chat")
         self.label = wxStaticText(self, -1, "Your message:", size = wxSize(95,20))
         self.display = wxButton(self, self.ID_BUTTON, "Display", style = wxBU_EXACTFIT)
         self.textInputId = wxNewId()
