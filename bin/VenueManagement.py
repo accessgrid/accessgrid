@@ -747,7 +747,8 @@ class VenueParamFrame(wxDialog):
         EVT_BUTTON(self, 180, self.RemoveExit) 
     
     def BrowseForImage(self, event):
-        initial_dir = '/home/lefvert/PROJECTS/P2_AG/VENUE_MANAGEMENT/IMAGES' 
+#        initial_dir = '/home/lefvert/PROJECTS/P2_AG/VENUE_MANAGEMENT/IMAGES' 
+        initial_dir = '/'
 	imageDialog = ImageDialog(self, initial_dir)   
 	imageDialog.Show()
 	if (imageDialog.ShowModal() == wxID_OK):      
