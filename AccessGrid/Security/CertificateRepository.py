@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.8 2004-03-22 20:12:04 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.9 2004-03-25 19:01:07 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.8 2004-03-22 20:12:04 olson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.9 2004-03-25 19:01:07 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -610,7 +610,7 @@ class CertificateRepository:
 
         mhash = cert.GetModulusHash()
 
-        pkeyPath = self._GetPrivateKeyPath(mhash)
+        pkeyPath = self.GetPrivateKeyPath(mhash)
 
         log.debug("Importing requested certificate subj=%s path=%s",
                   cert.GetSubject(), path)
@@ -673,7 +673,7 @@ class CertificateRepository:
 
         return desc
 
-    def _GetPrivateKeyPath(self, hash):
+    def GetPrivateKeyPath(self, hash):
         path = os.path.join(self.dir,
                             "privatekeys",
                             "%s.pem" % (hash))
@@ -698,7 +698,7 @@ class CertificateRepository:
         dig = md5.new(pkey.get_modulus())
         hash = dig.hexdigest()
 
-        path = self._GetPrivateKeyPath(hash)
+        path = self.GetPrivateKeyPath(hash)
         
         print "Importing pkey to ", path
         #
