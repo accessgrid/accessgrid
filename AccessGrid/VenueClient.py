@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.188 2004-09-03 18:19:51 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.189 2004-09-07 18:16:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.188 2004-09-03 18:19:51 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.189 2004-09-07 18:16:27 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -1011,7 +1011,7 @@ class VenueClient:
                 self.nodeService.SetIdentity(self.profile)
                 self.isIdentitySet = 1
             except:
-                log.info("Error setting identity")
+                log.exception("Error setting identity")
 
         # Set the streams to use the selected transport
         for stream in self.streamDescList:
