@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.15 2004-05-17 17:14:04 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.16 2004-05-17 17:29:55 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.15 2004-05-17 17:14:04 olson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.16 2004-05-17 17:29:55 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -410,8 +410,22 @@ class CertificateRepository:
         # We'll create a new empty db.
         #
 
-        self.db = bsddb.hashopen(self.dbPath, 'n')
-        self.db.sync()
+        if os.path.isfile(self.dbPath):
+            #
+            # If there's one there, move it out of the way.
+            #
+            os.rename(self.dbPath, self.dbPath + ".before_recovery")
+        try:
+            self.db = bsddb.hashopen(self.dbPath, 'n')
+            self.db.sync()
+
+        except:
+            #
+            # We couldn't create a new one. Abort the recovery attempt.
+            #
+            log.exception("Cannot open new dbhash file %s", self.dbPath)
+            return 0
+            
 
         #
         # First scan the privatekeys.
