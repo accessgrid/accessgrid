@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.271 2003-09-17 16:23:19 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.272 2003-09-17 17:58:25 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.271 2003-09-17 16:23:19 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.272 2003-09-17 17:58:25 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -48,7 +48,8 @@ from AccessGrid.Platform import GetTempDir, GetInstallDir, GetSharedDocDir, GetU
 from AccessGrid.Platform import isWindows, isLinux, isOSX
 from AccessGrid.TextClient import TextClient
 from AccessGrid.RoleAuthorization import AddPeopleDialog, RoleClient
-from AccessGrid.Utilities import SubmitBug, NO_LOG
+from AccessGrid.Utilities import SubmitBug, NO_LOG, VENUE_CLIENT_LOG
+from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 
 
 try:
@@ -1105,14 +1106,25 @@ class VenueClientFrame(wxFrame):
         venueUri = self.app.venueClient.venueUri
 
         # Open the dialog with selected role in the combo box
-        addPeopleDialog = AddPeopleDialog(self, -1, "Modify Roles", venueUri)
+        try:
+            addPeopleDialog = AddPeopleDialog(self, -1, "Modify Roles", venueUri)
 
-        if addPeopleDialog.ShowModal() == wxID_OK:
-            # Get new role configuration
-            rolesDict = addPeopleDialog.GetInfo()
-            # Set new role configuration
-            if rolesDict:
-                RoleClient(venueUri).SetVenueRoles(rolesDict)
+            if addPeopleDialog.ShowModal() == wxID_OK:
+                # Get new role configuration
+                rolesDict = addPeopleDialog.GetInfo()
+                # Set new role configuration
+                if rolesDict:
+                    RoleClient(venueUri).SetVenueRoles(rolesDict)
+
+        except Exception, e:
+            if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+                    text = "You are not authorized to administrate this venue.\n"
+                    MessageDialog(None, text, "Not Authorized", style=wxOK|wxICON_WARNING)
+                    log.info("OpenModifyVenueRolesDialog: Not authorized to administrate roles in this venue %s." % venueUri)
+            else:
+                log.exception("OpenModifyVenueRolesDialog: Error administrating roles in this venue %s." % venueUri)
+                text = "Error administrating roles in this venue " + venueUri + "."
+                ErrorDialog(None, text, "Venue Role Administration Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_CLIENT_LOG)
 
     def CleanUp(self):
         self.venueListPanel.CleanUp()
