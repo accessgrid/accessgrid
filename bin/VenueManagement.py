@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.108 2003-09-19 20:59:36 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.109 2003-10-21 18:55:49 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.108 2003-09-19 20:59:36 eolson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.109 2003-10-21 18:55:49 eolson Exp $"
 
 import webbrowser
 import string
@@ -34,7 +34,7 @@ from AccessGrid.CertificateManager import CertificateManager
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid import icons
-from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.Platform import GetUserConfigDir, GetSharedDocDir
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog
 from AccessGrid.Utilities import VENUE_MANAGEMENT_LOG
 from AccessGrid import Toolkit
@@ -62,7 +62,8 @@ class VenueManagementClient(wxApp):
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
 
-        self.manual_url = "http://www-unix.mcs.anl.gov/fl/research/accessgrid/documentation/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML.htm"
+        #self.manual_url = "http://www-unix.mcs.anl.gov/fl/research/accessgrid/documentation/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML.htm"
+        self.manual_url = os.path.join(GetSharedDocDir(), "VenueManagementManual", "VenueManagementManualHTML.htm")
         self.server = None
         self.serverUrl = None
         self.currentVenueClient = None
