@@ -5,19 +5,20 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.55 2003-10-17 13:41:52 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.56 2003-10-20 21:15:38 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 The Platform Module is to isolate OS specific interfaces.
 """
-__revision__ = "$Id: Platform.py,v 1.55 2003-10-17 13:41:52 judson Exp $"
+__revision__ = "$Id: Platform.py,v 1.56 2003-10-20 21:15:38 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
 import sys
 import getpass
+import time
 import mimetypes, mailcap
 
 import logging
@@ -43,7 +44,7 @@ except:
     pass
 
 # This gets updated with a call to get the version
-AGTkRegBaseKey = "SOFTWARE\\Access Grid Toolkit\\%s" % GetVersion()
+AGTkRegBaseKey = "SOFTWARE\Access Grid Toolkit\%s" % GetVersion()
 
 def isWindows():
     """Function that retusn 1 if the platform is windows, 0 otherwise """
@@ -616,9 +617,54 @@ def Win32InitUserEnv():
             return 0
 
     # Register application installer mime type
-    # Win32RegisterMimeType(sharedAppPkgType, sharedAppPkgExt,
-    #                       sharedAppPktDesc, sharedAppPkgCmds)
+    #
+    #  shared app package mime type: application/x-ag-shared-app-pkg
+    #  shared app package extension: .shared_app_pkg
+
+    installCmd = win32api.GetShortPathName(os.path.join(GetInstallDir(),
+                                                        "agpm.py"))
+    sharedAppPkgType = "application/x-ag-shared-app-pkg"
+    sharedAppPkgExt = ".shared_app_pkg"
+    sharedAppPkgDesc = "A shared application package for use with the Access \
+                        Grid Toolkit 2.0."
+    open = ('Open', installCmd + " -p %s", "Install this shared application.")
+    sharedAppPkgCmds = list()
+    sharedAppPkgCmds.append(open)
+
+    Win32RegisterMimeType(sharedAppPkgType, sharedAppPkgExt,
+                          "AG Shared Application Package",
+                          sharedAppPkgDesc, sharedAppPkgCmds)
+
+    log.debug("registered agpm for shared app packages.")
     
+    # Install applications found in the shared app repository
+    # Only install those that are not found in the user db.
+
+    # TO BE DONE
+    sharedPkgPath = os.path.join(GetSystemConfigDir(), "sharedapps")
+
+    if os.path.exists(sharedPkgPath):
+        for pkg in os.listdir(sharedPkgPath):
+            t = pkg.split('.')
+            if len(t) == 2:
+                (name, ext) = t
+                if ext == "shared_app_pkg":
+                    pkgPath = win32api.GetShortPathName(os.path.join(sharedPkgPath, pkg))
+                    import AccessGrid.ProcessManager
+                    pm = AccessGrid.ProcessManager.ProcessManager()
+#                    pm.start_process(os.environ['ComSpec'], ("/c", installCmd,
+#                                                             "-p", pkgPath))
+                    pm.start_process(sys.executable, (installCmd, "-p", pkgPath))
+                    # This is because on windows we can't wait for the process
+                    # or so it seems to me right now.
+                    time.sleep(0.25)
+                else:
+                    log.debug("Not registering file: %s", t)
+            else:
+                log.debug("Filename wrong, not registering: %s", t)
+        else:
+            log.debug("No shared package directory.")
+            
     # Invoke windows magic to get settings to be recognized by the
     # system. After this incantation all new things know about the
     # settings.
