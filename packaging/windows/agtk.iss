@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.49 2004-04-07 03:35:06 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.50 2004-04-07 03:37:40 judson Exp $
 ;
 
 ; Set externally
@@ -214,5 +214,4 @@ begin
 	begin
 		PythonPath := 'C:\Python22';
     end;
-    return PythonPath;
 end;
