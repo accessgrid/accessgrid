@@ -444,8 +444,8 @@ def main():
         print """
 Usage: BridgeServer.py <<--venueServer venueServerUrl>|
                         <--venueServerFile venueServerFile>|
-                        <--file venueUrlFile>|
                         <--venue venueUrl>>
+                        <--venueFile venueUrlFile>|
                        <--qbexec quickbridgeExecutable>
                        [--cert certpath]
                        [--key keypath]
