@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.54 2003-03-13 14:44:59 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.55 2003-03-14 17:44:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -866,7 +866,7 @@ class Venue(ServiceBase.ServiceBase):
         """
         This method adds a service description to the Venue.
         """
-        log.debug("Adding service %s", serviceDescription.name,
+        log.debug("Adding service %s at %s", serviceDescription.name,
                   serviceDescription.uri)
         try:
             self.services[serviceDescription.uri] = serviceDescription
