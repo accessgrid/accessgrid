@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.46 2004-07-30 21:25:09 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.47 2004-08-04 23:12:28 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.46 2004-07-30 21:25:09 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.47 2004-08-04 23:12:28 eolson Exp $"
 
 import os
 import mimetypes
@@ -860,8 +860,11 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
 
         # --- .DESKTOP FILES BASE INFORMATION --- (KDE)
 
-        # User
-        kdeMimeInfo = """[Desktop Entry]
+        from AccessGrid.Utilities import IsExecFileAvailable
+        if IsExecFileAvailable("kde-config"):
+
+            # User
+            kdeMimeInfo = """[Desktop Entry]
 Version=%s
 Encoding=UTF-8
 Hidden=1
@@ -870,10 +873,10 @@ Type=MimeType
 Patterns=%s
 MimeType=%s
 Comment=%s
-        """ % (str(GetVersion()), "*" + extension, mimeType, description) 
-        #   ("2.2", "*.agpkg", "application/x-ag-pkg", "Access Grid Package")
+            """ % (str(GetVersion()), "*" + extension, mimeType, description) 
+            #   ("2.2", "*.agpkg", "application/x-ag-pkg", "Access Grid Package")
 
-        kdeAppInfo="""[Desktop Entry]
+            kdeAppInfo="""[Desktop Entry]
 Version=%s
 Encoding=UTF-8
 Hidden=1
@@ -885,8 +888,8 @@ Type=Application
 MimeType=%s
 Name=%s
 Comment=%s
-        """ % (str(GetVersion()), cmd[1], mimeType, cmd[0], cmd[2])
-        #    ("2.2", "/usr/bin/agpm.py", "application/x-ag-pkg", "Access Grid Package Manager" or "agpm.py", comment)
+            """ % (str(GetVersion()), cmd[1], mimeType, cmd[0], cmd[2])
+            #    ("2.2", "/usr/bin/agpm.py", "application/x-ag-pkg", "Access Grid Package Manager" or "agpm.py", comment)
 
 
         # --- GNOME BASE INFORMATION ---
@@ -923,50 +926,51 @@ Comment=%s
 
         # --- KDE USER REGISTRATION ---
 
-        # First find the user and system app paths.
-        # query them since applnk-redhat can't work for everybody.
-        f = os.popen("kde-config --path apps")
-        result = f.read()
-        f.close()
-        pathList = result.split(":")
-        kdeSystemApps = ""
-        kdeUserApps = ""
-        # if kde-config failed, the paths should stay == ""
-        for path in pathList:
-            if path.find(homedir) != -1:
-                kdeUserApps = path # expecting /home/user/.kde/share/applnk[-redhat]
-            elif path.find("kde") != -1:  # expecting /var/lib/menu/kde/Applications/
-                kdeSystemApps = path  # Unused, sym links here from another dir.
+        if IsExecFileAvailable("kde-config"):
+            # First find the user and system app paths.
+            # query them since applnk-redhat can't work for everybody.
+            f = os.popen("kde-config --path apps")
+            result = f.read()
+            f.close()
+            pathList = result.split(":")
+            kdeSystemApps = ""
+            kdeUserApps = ""
+            # if kde-config failed, the paths should stay == ""
+            for path in pathList:
+                if path.find(homedir) != -1:
+                    kdeUserApps = path # expecting /home/user/.kde/share/applnk[-redhat]
+                elif path.find("kde") != -1:  # expecting /var/lib/menu/kde/Applications/
+                    kdeSystemApps = path  # Unused, sym links here from another dir.
 
-        # Find the user and system mime paths.
-        f = os.popen("kde-config --path mime")
-        result = f.read()
-        f.close()
-        pathList = result.split(":")
-        kdeSystemMime = ""
-        kdeUserMime = ""
-        # if kde-config failed, the paths should stay == ""
-        for path in pathList:
-            if path.find(homedir) != -1:
-                kdeUserMime = path # expecting /home/user/.kde/share/applnk[-redhat]
-            elif path.find("mimelnk") != -1:  # expecting /usr/share/mimelnk/
-                kdeSystemMime = path
+            # Find the user and system mime paths.
+            f = os.popen("kde-config --path mime")
+            result = f.read()
+            f.close()
+            pathList = result.split(":")
+            kdeSystemMime = ""
+            kdeUserMime = ""
+            # if kde-config failed, the paths should stay == ""
+            for path in pathList:
+                if path.find(homedir) != -1:
+                    kdeUserMime = path # expecting /home/user/.kde/share/applnk[-redhat]
+                elif path.find("mimelnk") != -1:  # expecting /usr/share/mimelnk/
+                    kdeSystemMime = path
 
-        userMimeFile = os.path.join(kdeUserMime, extension[1:] + ".desktop")
-        userAppFile = os.path.join(kdeUserApps, cmd[0] +".desktop")
+            userMimeFile = os.path.join(kdeUserMime, extension[1:] + ".desktop")
+            userAppFile = os.path.join(kdeUserApps, cmd[0] +".desktop")
 
-        # Copy KDE files into place
-        if len(userMimeFile) > 0 and os.path.exists(kdeUserMime):
-            if not os.path.exists(userMimeFile): # don't overwrite
-                mimeFd = open(userMimeFile, "w")
-                mimeFd.write(kdeMimeInfo)
-                mimeFd.close()
+            # Copy KDE files into place
+            if len(userMimeFile) > 0 and os.path.exists(kdeUserMime):
+                if not os.path.exists(userMimeFile): # don't overwrite
+                    mimeFd = open(userMimeFile, "w")
+                    mimeFd.write(kdeMimeInfo)
+                    mimeFd.close()
 
-        if len(userAppFile) > 0 and os.path.exists(kdeUserApps):
-            if not os.path.exists(userAppFile): # don't overwrite
-                appFd = open(userAppFile, "w")
-                appFd.write(kdeAppInfo)
-                appFd.close()
+            if len(userAppFile) > 0 and os.path.exists(kdeUserApps):
+                if not os.path.exists(userAppFile): # don't overwrite
+                    appFd = open(userAppFile, "w")
+                    appFd.write(kdeAppInfo)
+                    appFd.close()
 
 
         # --- GNOME USER REGISTRATION ---
