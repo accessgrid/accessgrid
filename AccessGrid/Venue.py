@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.17 2003-01-28 17:05:07 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.18 2003-01-30 02:40:52 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -30,7 +30,8 @@ class Venue(ServiceBase.ServiceBase):
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
     """
-    def __init__(self, server, uniqueId, description, administrator):
+    def __init__(self, uniqueId, description, administrator,
+                 multicastAllocator, dataStore):
         self.connections = dict()
         self.users = dict()
         self.nodes = dict()
@@ -45,54 +46,52 @@ class Venue(ServiceBase.ServiceBase):
         self.uniqueId = uniqueId
         self.description = description
         self.administrators.append(administrator)
+        self.multicastAllocator = multicastAllocator
+        self.dataStore = dataStore
 
+        self.coherenceHost = socket.getfqdn()
+        self.coherencePort = self.multicastAllocator.AllocatePort()
+        
         self.producerCapabilities = []
         self.consumerCapabilities = []
 
         self.cleanupTime = 30
         self.nextPrivateId = 1
 
-        self.venueServer = server
-        
-        self.coherenceService = CoherenceService((socket.getfqdn(), 
-                self.venueServer.multicastAddressAllocator.AllocatePort()))
-                                            
+    def Start(self):
+        self.coherenceService = CoherenceService((self.coherenceHost,
+                                                  self.coherencePort))
         self.coherenceService.start()
-        
-        cl = self.coherenceService.GetLocation()
-        
-        self.coherenceHost = cl.GetHost()
-        self.coherencePort = cl.GetPort()
         
         self.coherenceClient = CoherenceClient(self.coherenceHost, 
                                                self.coherencePort, 
                                                self.CoherenceCallback,
                                                self.uniqueId)
         self.coherenceClient.start()
-        self.houseKeeper = Scheduler()
 
+        self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.CleanupClients, 45)
         self.houseKeeper.StartAllTasks()
 
-#     def __getstate__(self):
-#         print "in get state"
-#         for x in self.__dict__.keys():
-#             if type(self.__dict__[x] == types.InstanceType):
-#                 print self.__dict__[x].__class__
-            
-#     def __setstate__(self, state):
-#         print "in set state"
-        
-#     def __getattr__(self, name):
-#         print "__getattr__ for %s" % name
-#         if self.__dict__[name] != None:
-#             return self.__dict__[name]
-#         else:
-#             raise AttributeError, name
-    
-#     def __setattr__(self, key, value):
-#         self.__dict__[key] = value
-        
+#                if issubclass(odict[k].__class__, Thread):
+
+    def __getstate__(self):
+#        print "Getting ", self.__class__, " state"
+        odict = self.__dict__.copy()
+        for k in odict.keys():
+#            print "Key: %s Type: %s" % (k, type(odict[k]))
+            if type(odict[k]) == types.InstanceType:
+                if k != "uniqueId" and k != "description":
+                    del odict[k]
+        return odict
+
+    def __setstate__(self, dict):
+#        print "Setting ", self.__class__, " state"
+#        for i in dict:
+#            print "%s" % i
+        self.__dict__ = dict
+        self.Start()
+
     # Management methods
     def AddNetworkService(self, connectionInfo, networkServiceDescription):
         """
@@ -414,7 +413,7 @@ class Venue(ServiceBase.ServiceBase):
 
     # Internal Methods
     def CleanupClients(self):
-        print "Cleaning up dead clients."
+#        print "Cleaning up dead clients."
         now_sec = time.time()
         for privateId in self.clients.keys():
            if privateId in self.users.keys():
@@ -501,8 +500,8 @@ class Venue(ServiceBase.ServiceBase):
         """
         defaultTtl = 127
         return MulticastNetworkLocation(
-            self.venueServer.multicastAddressAllocator.AllocateAddress(),
-            self.venueServer.multicastAddressAllocator.AllocatePort(), 
+            self.multicastAllocator.AllocateAddress(),
+            self.multicastAllocator.AllocatePort(), 
             defaultTtl )
        
     def GetNextPrivateId( self ):
@@ -514,14 +513,3 @@ class Venue(ServiceBase.ServiceBase):
         if privateId in self.users.keys():
             return 1 
         return 0
-    
-
-class VenueSerializer:
-    def Serialize(self, venue):
-        """
-        This enables persistence.
-        """
-    def Deserialize(self, data):
-        """
-        This enables retrieval from persistent storage.
-        """
