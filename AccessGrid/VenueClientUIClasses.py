@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.57 2003-03-12 20:43:59 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.58 2003-03-13 12:15:43 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -603,6 +603,7 @@ class VenueClientFrame(wxFrame):
 class VenueAddressBar(wxSashLayoutWindow):
     ID_GO = wxNewId()
     ID_BACK = wxNewId()
+    ID_ADDRESS = wxNewId()
     
     def __init__(self, parent, id, application, venuesList, defaultVenue):
         wxSashLayoutWindow.__init__(self, parent, id, wxDefaultPosition, \
@@ -610,8 +611,9 @@ class VenueAddressBar(wxSashLayoutWindow):
         
         self.application = application
         self.panel = wxPanel(self, -1)
-        self.address = wxComboBox(self.panel, wxNewId(), defaultVenue,\
-                                  choices = venuesList.keys(), style = wxCB_DROPDOWN)
+        self.address = wxComboBox(self.panel, self.ID_ADDRESS, defaultVenue,
+                                  choices = venuesList.keys(),
+                                  style = wxCB_DROPDOWN)
         
         self.goButton = wxButton(self.panel, self.ID_GO, "Go", wxDefaultPosition, wxSize(20, 21))
         self.backButton = wxButton(self.panel, self.ID_BACK , "<<", wxDefaultPosition, wxSize(20, 21))
@@ -621,6 +623,7 @@ class VenueAddressBar(wxSashLayoutWindow):
     def __addEvents(self):
         EVT_BUTTON(self, self.ID_GO, self.callAddress)
         EVT_BUTTON(self, self.ID_BACK, self.GoBack)
+        EVT_TEXT_ENTER(self, self.ID_ADDRESS, self.callAddress)
         
     def SetAddress(self, url):
         self.address.SetValue(url)
