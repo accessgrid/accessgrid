@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.43 2003-02-24 22:54:29 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.44 2003-02-24 23:02:46 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -247,7 +247,7 @@ class VenueClientFrame(wxFrame):
         try:
             textLoc = tuple(self.app.venueState.GetTextLocation())
             id = self.app.venueState.uniqueId
-            self.textClient = TextClientUI(None, -1, "",
+            self.textClient = TextClientUI(self, -1, "",
                                            location = textLoc,
                                            venueId = id)
             self.textClient.Show(1)
