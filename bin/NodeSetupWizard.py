@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.8 2003-09-04 22:10:39 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.9 2003-09-10 15:02:03 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -869,15 +869,18 @@ class ConfigWindow(TitledPage):
             errors = errors + "The configuration could not be saved. Error occured.\n\n"
             
             
-        # Set configuration as default
-        try:
-            self.nodeClient.GetNodeService().SetDefaultConfiguration(self.name)
-        except:
-            log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not set default configuration.")
-            errors = errors + "The configuration could not be set as default. Error occured.\n\n"
+        # Set configuration as default if checkbox is marked.
+        if self.checkBox.GetValue():
+         
+            try:
+                self.nodeClient.GetNodeService().SetDefaultConfiguration(self.name)
+            except:
+                log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not set default configuration.")
+                errors = errors + "The configuration could not be set as default. Error occured.\n\n"
 
         if errors != "":
             ErrorDialog(self, errors, "Error", logFile = NODE_SETUP_WIZARD_LOG)
+            
      
         wxEndBusyCursor()
         return true
@@ -1036,4 +1039,4 @@ class NodeClient:
 if __name__ == "__main__":
     pp = wxPySimpleApp()
     n = NodeSetupWizard(None)
-    n.Destroy()
+ 
