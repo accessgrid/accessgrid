@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.109 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.110 2003-09-16 20:51:16 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.109 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.110 2003-09-16 20:51:16 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -274,7 +274,7 @@ class VenueClient( ServiceBase):
 
     def AddDataEvent(self, event):
         log.debug("Got Add Data Event")
-     
+          
         data = event.data
       
         if data.type == "None" or data.type == None:
@@ -757,10 +757,12 @@ class VenueClient( ServiceBase):
         #
         # Save personal data
         #
-        if self.dataStore:
-            file = open(self.personalDataFile, 'w')
-            cPickle.dump(self.dataStore.GetDataDescriptions(), file)
-            file.close()
+        # This is done in the data store
+        #
+        #if self.dataStore:
+        #    file = open(self.personalDataFile, 'w')
+        #    cPickle.dump(self.dataStore.GetDataDescriptions(), file)
+        #    file.close()
 
         self.__InitVenueData__()
         self.isInVenue = 0
