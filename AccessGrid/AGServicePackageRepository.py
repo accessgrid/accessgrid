@@ -3,7 +3,7 @@
 # Purpose:     
 #
 # Created:     2004/03/30
-# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.8 2004-04-29 13:24:21 judson Exp $
+# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.9 2004-05-04 18:57:49 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -95,6 +95,18 @@ class AGServicePackageRepository:
         """
         serviceDescriptions = []
 
+        servicePackages = self.GetServicePackages()
+        for servicePackage in servicePackages:
+            serviceDescriptions.append(servicePackage.GetServiceDescription())
+
+        return serviceDescriptions
+        
+    def GetServicePackages( self ):
+        """
+        Read service packages from local directory
+        """
+        servicePackages = []
+
         invalidServicePackages = 0
 
         # Catch non-existent service directory
@@ -106,15 +118,19 @@ class AGServicePackageRepository:
         for file in files:
             if file.endswith('.zip'):
                 try:
-                    serviceDesc = self.GetServiceDescription(file)
-                    serviceDescriptions.append( serviceDesc )
+                    servicePkg = AGServicePackage(os.path.join(self.servicesDir,file))
+                    
+                    # Minimal test to validate service package
+                    servicePkg.GetServiceDescription()
+                    
+                    servicePackages.append(servicePkg)
                 except:
                     invalidServicePackages += 1
                     
         if invalidServicePackages:
             log.info("%d invalid service packages skipped", invalidServicePackages)
 
-        return serviceDescriptions
+        return servicePackages
             
 if __name__ == "__main__":
 
