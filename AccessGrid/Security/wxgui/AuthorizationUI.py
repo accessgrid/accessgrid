@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.26 2004-08-13 18:29:37 lefvert Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.27 2004-08-23 18:19:57 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.26 2004-08-13 18:29:37 lefvert Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.27 2004-08-23 18:19:57 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -196,7 +196,7 @@ class AuthorizationUIPanel(wxPanel):
        
         # Only add subjects that are new in the cache.
         if self.cacheRole != None:
-            subjects = self.cacheRole.subjects
+            subjects = self.cacheRole.GetSubjects()
                 
             sList = []
                 
