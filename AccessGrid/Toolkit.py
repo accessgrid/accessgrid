@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.76 2004-08-18 20:42:29 lefvert Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.77 2004-08-23 18:04:04 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.76 2004-08-18 20:42:29 lefvert Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.77 2004-08-23 18:04:04 judson Exp $"
 
 # Standard imports
 import os
@@ -285,6 +285,7 @@ class AppBase:
             subject = X509Subject.CreateSubjectFromString(str(ident.GetSubject()))
         else:
             subject = None
+
         return subject
 
     def GetCertificateManager(self):
@@ -374,8 +375,12 @@ class Application(AppBase):
 
        self.globusConfig = self.certificateManager.GetGlobusConfig()
 
+       self.log.debug("Init'ing globus.")
+       
        self.certMgrUI.InitGlobusEnvironment()
 
+       self.log.debug("Done with globus.")
+       
        # 6. Do one final check, if we don't have a default
        #    Identity we warn them, but they can still request certs.
        #
