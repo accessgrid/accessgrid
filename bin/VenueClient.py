@@ -1,13 +1,13 @@
 #from AccessGrid.VenueClient import VenueClient
+import threading
+import os
+
 from wxPython.wx import *
-import AccessGrid.GUID
 import AccessGrid.Types
 import AccessGrid.Utilities
 from AccessGrid.VenueClientUIClasses import VenueClient
-from AccessGrid.VenueClientUIClasses import VenueClientFrame
-import threading
+from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
 import AccessGrid.ClientProfile
-import os
 from AccessGrid.Descriptions import DataDescription
 
 class VenueClientUI(wxApp, VenueClient):
