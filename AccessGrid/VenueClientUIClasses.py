@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.56 2003-03-12 20:37:17 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.57 2003-03-12 20:43:59 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -824,6 +824,7 @@ class VenueList(wxScrolledWindow):
         self.Layout()
         self.parent.Layout()
         self.EnableScrolling(true, true)
+        self.box.SetVirtualSizeHints(self)
                             
     def RemoveVenueDoor(self):
         print 'remove venue door'
