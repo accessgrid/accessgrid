@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.38 2003-02-19 23:21:20 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.39 2003-02-20 16:51:46 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -130,6 +130,16 @@ class StreamDescriptionList:
         Get the list of streams, without producing user info
         """
         return map( lambda streamTuple: streamTuple[0], self.streams )
+
+    def GetStaticStreams(self):
+        """
+        GetStaticStreams returns a list of static stream descriptions to the caller.
+        """
+        staticStreams = []
+        for stream in self.streams:
+            if stream.static:
+                staticStreams.append( stream )
+        return staticStreams
 
     def index( self, inStream ):
         """
@@ -594,12 +604,7 @@ class Venue(ServiceBase.ServiceBase):
         """
         GetStaticStreams returns a list of static stream descriptions to the caller.
         """
-        staticStreams = []
-        streams = self.streamList.GetStreams()
-        for stream in streams:
-            if stream.static:
-                staticStreams.append( stream )
-        return staticStreams
+        return self.streamList.GetStaticStreams()
     GetStaticStreams.soap_export_as = "GetStaticStreams"
 
     # Client Methods
