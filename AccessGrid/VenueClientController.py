@@ -3,12 +3,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.11 2004-03-19 04:55:24 judson Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.12 2004-03-24 22:36:32 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.11 2004-03-19 04:55:24 judson Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.12 2004-03-24 22:36:32 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -1338,6 +1338,11 @@ class VenueClientApp:
         """
         This method synchs the saved venues list to disk
         """
+        if os.path.exists(self.myVenuesFile):
+            myVenuesFileH = open(self.myVenuesFile, 'w')
+        else:
+            myVenuesFileH = open(self.myVenuesFile, 'aw')
+        
         myVenuesFileH = open(self.myVenuesFile, 'aw')
         cPickle.dump(self.myVenuesDict, myVenuesFileH)
         myVenuesFileH.close()
