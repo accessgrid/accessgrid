@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.182 2003-05-12 22:05:41 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.183 2003-05-13 16:20:17 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1312,8 +1312,8 @@ class ContentListPanel(wxPanel):
 	#imageList = wxImageList(32,19)
         imageList = wxImageList(19,18)
 
-        self.line = imageList.Add(icons.getHeadingLineBitmap())
-        #self.line = imageList.Add(icons.getBulletBitmap())
+        #self.line = imageList.Add(icons.getHeadingLineBitmap())
+        self.line = imageList.Add(icons.getBulletBitmap())
         self.participantId = imageList.Add(icons.getDefaultParticipantBitmap())
         self.defaultDataId = imageList.Add(icons.getDefaultDataBitmap())
 	self.serviceId = imageList.Add(icons.getDefaultServiceBitmap())
