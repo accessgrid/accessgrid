@@ -7,7 +7,7 @@ import logging
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
-from AccessGrid.Descriptions import Capability, StreamDescription
+from AccessGrid.Descriptions import Capability, StreamDescription 
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
 venueServerUri = "https://localhost:8000/VenueServer"
@@ -50,7 +50,7 @@ for sec in cp.sections():
         vsd = StreamDescription(venues[sec].name, "Static Video",
                                 MulticastNetworkLocation(host.strip(),
                                                          int(port), 127),
-                                vcap, 1)
+                                vcap, 0, 1)
         venues[sec].streams.append(vsd)
         
     # Static Audio
@@ -60,7 +60,7 @@ for sec in cp.sections():
         asd = StreamDescription(venues[sec].name, "Static Audio",
                                 MulticastNetworkLocation(host.strip(),
                                                          int(port), 127),
-                                acap, 1)
+                                acap, 0, 1)
 
         venues[sec].streams.append(asd)
 
