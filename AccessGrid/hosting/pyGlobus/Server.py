@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.15 2003-05-28 17:32:34 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.16 2003-05-28 18:21:16 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import socket
-from threading import Thread
+from threading import Thread, Event
 
 # These come from the local directory
 import ServiceObject
@@ -44,7 +44,7 @@ class Server:
 
         self._path_map = {}
 
-        self._running = 0
+        self._running = Event()
 
     def _create_server(self, port, server_auth_callback, debug = 0):
 
@@ -82,9 +82,9 @@ class Server:
 
         """
 
-        self._running = 1
+        self._running.set()
 
-        while(self._running):
+        while(self._running.isSet()):
             try:
                 self._server.handle_request()
             # catch interruption to handle_request() when server is closed. 
@@ -109,10 +109,11 @@ class Server:
 
         server_thread = Thread(target = self.run)
         server_thread.start()
-
+        self._running.wait()
+        
     def Stop(self):
-        if self._running:
-           self._running = 0
+        if self._running.isSet():
+           self._running.clear()
            self._server.server_close()
 
     def CreateService(self, service_class, pathId = None, *args):
