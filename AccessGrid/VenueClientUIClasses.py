@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.255 2003-09-15 15:38:49 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.256 2003-09-15 18:13:19 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -39,7 +39,7 @@ from AccessGrid.ClientProfile import *
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
-from AccessGrid.Platform import GetTempDir, GetInstallDir, GetSharedDocDir
+from AccessGrid.Platform import GetTempDir, GetInstallDir, GetSharedDocDir, GetUserAppPath
 from AccessGrid.Platform import isWindows, isLinux, isOSX
 from AccessGrid.TextClient import TextClient
 from AccessGrid.RoleAuthorization import AddPeopleDialog, RoleClient
@@ -2279,10 +2279,10 @@ class ContentListPanel(wxPanel):
         else:
             mimeType = item.mimeType
             # Get the app dir and run
-            appdb = Toolkit.GetApplication().GetAppdatabase()
+            appdb = Toolkit.GetApplication().GetAppDatabase()
             name = appdb.GetNameForMimeType(mimeType)
             appName = ''.join(name.split(' '))
-            appDir = os.path.join([Platform.GetUserAppPath, appName])
+            appDir = os.path.join(GetUserAppPath(), appName)
             try:
                 os.chdir(appDir)
             except:
