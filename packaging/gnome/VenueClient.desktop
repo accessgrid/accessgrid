@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=Venue Client
-Comment=Access Grid Venue Client
-TryExec=VenueClient.py
-Exec=VenueClient.py
-Icon=/usr/share/AccessGrid/ag.ico
-Terminal=0
-Type=Application
