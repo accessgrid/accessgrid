@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.148 2004-07-12 14:18:24 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.149 2004-07-12 15:33:11 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.148 2004-07-12 14:18:24 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.149 2004-07-12 15:33:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -288,7 +288,7 @@ class VenueServer(AuthorizationMixIn):
         self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.Checkpoint,
                                  int(self.houseKeeperFrequency), 0)
-#	self.houseKeeper.AddTask(self.Report, 60)
+	self.houseKeeper.AddTask(self.Report, 60)
         self.houseKeeper.AddTask(self.CleanupVenueClients, 10)
         self.houseKeeper.StartAllTasks()
 
@@ -531,7 +531,10 @@ class VenueServer(AuthorizationMixIn):
             venue.CleanupClients()
 
     def Report(self):
-	    log.error("Running report")
+        data = SystemConfig.instance().PerformanceSnapshot()
+        log.info("Performace Report:")
+        for k in data.keys():
+            log.info("%s : %s", k, data[k])
 
     def Shutdown(self):
         """
