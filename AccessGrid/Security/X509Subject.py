@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: X509Subject.py,v 1.7 2004-08-23 18:18:25 judson Exp $
+# RCS-ID:      $Id: X509Subject.py,v 1.8 2004-10-14 22:00:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,12 +14,9 @@ Subjects are the basic security handle on entities that want to be a
 part of the security environment.
 """
 
-__revision__ = "$Id: X509Subject.py,v 1.7 2004-08-23 18:18:25 judson Exp $"
+__revision__ = "$Id: X509Subject.py,v 1.8 2004-10-14 22:00:07 turam Exp $"
 
 
-# external imports
-from OpenSSL_AG.crypto import X509NameType
-                                          
 # imports from the AGTk
 from AccessGrid.Security.Subject import Subject, InvalidSubject
 
