@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.24 2003-02-10 21:20:14 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.25 2003-02-11 16:16:18 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -117,7 +117,6 @@ class VenueManagementClient(wxApp):
         Client.Handle(venue.uri).get_proxy().SetConnections(exitsList) 
                 
     def DeleteVenue(self, venue):
-        print 'trying to delete venue'
         self.client.RemoveVenue(venue.uri)
             
     def AddAdministrator(self, dnName):
@@ -162,7 +161,10 @@ class VenueServerAddress(wxPanel):
          EVT_BUTTON(self, 43, self.callAddress)
 
      def callAddress(self, event):
-         self.application.ConnectToServer(self.addressText.GetValue())
+         URL = self.addressText.GetValue()
+         self.application.ConnectToServer(URL)
+         if self.addressText.FindString(URL) == wxNOT_FOUND:
+             self.address.Append(URL)
          
      def __doLayout(self):
          venueServerAddressBox = wxBoxSizer(wxVERTICAL)  
@@ -744,14 +746,19 @@ class VenueParamFrame(wxDialog):
 	self.description =  wxTextCtrl(self, -1, "", size = wxSize(200, 100), \
                                        style = wxTE_MULTILINE|wxHSCROLL, validator = TextValidator())
         self.venuesLabel = wxStaticText(self, -1, "Venues on server:")
-        self.venues = wxListBox(self, -1, size = wxSize(200, 100))
+        self.venues = wxListBox(self, -1, size = wxSize(250, 100))
         self.transferVenueLabel = wxStaticText(self, -1, "Add Exit")
         self.transferVenueButton = wxButton(self, 170, ">>", size = wxSize(30, 20))
-        self.thisServerButton = wxButton(self, 190, "This server")
-        self.remoteServerButton = wxButton(self, 200, "Remote server")
+        url = self.application.url
+        choicesList = [url]
+        self.address = wxComboBox(self, 42, url,\
+                                  choices = choicesList, style = wxCB_DROPDOWN)
+        self.goButton = wxButton(self, 200, "Go", size = wxSize(20, 10))
+        #self.thisServerButton = wxButton(self, 190, "This server")
+        #self.remoteServerButton = wxButton(self, 200, "Remote server")
         self.removeExitButton = wxButton(self, 180, "     Remove Exit     ")
 	self.exitsLabel = wxStaticText(self, -1, "Exits for your venue:")
-        self.exits = wxListBox(self, -1, size = wxSize(200, 100))
+        self.exits = wxListBox(self, -1, size = wxSize(250, 100))
 	self.okButton = wxButton(self, wxID_OK, "Ok")
 	self.cancelButton =  wxButton(self, wxID_CANCEL, "Cancel")
 	self.doLayout() 
@@ -762,26 +769,28 @@ class VenueParamFrame(wxDialog):
      	EVT_BUTTON(self, 160, self.BrowseForImage)
         EVT_BUTTON(self, 170, self.TransferVenue)
         EVT_BUTTON(self, 180, self.RemoveExit)
-        EVT_BUTTON(self, 190, self.LoadLocalVenues) 
         EVT_BUTTON(self, 200, self.LoadRemoteVenues) 
+        #EVT_BUTTON(self, 190, self.LoadLocalVenues) 
+        #EVT_BUTTON(self, 200, self.LoadRemoteVenues) 
 
     def LoadRemoteVenues(self, event = None):
-        remoteServerUrlDialog = RemoteServerUrlDialog(self, -1, 'Connect to server')
-        if (remoteServerUrlDialog.ShowModal() == wxID_OK):
-            URL = remoteServerUrlDialog.address.GetValue()
-            self.__loadVenues(URL)
+        # remoteServerUrlDialog = RemoteServerUrlDialog(self, -1, 'Connect to server')
+        #if (remoteServerUrlDialog.ShowModal() == wxID_OK):
+        URL = self.address.GetValue() #remoteServerUrlDialog.address.GetValue()
+        self.__loadVenues(URL)
+        if self.address.FindString(URL) == wxNOT_FOUND:
+            self.address.Append(URL)
                      
-        remoteServerUrlDialog.Destroy()
+        #remoteServerUrlDialog.Destroy()
       
     def LoadLocalVenues(self, event = None):
         self.__loadVenues(self.application.url)
          
     def __loadVenues(self, URL):
         validVenue = false
-
+        
         # while not validVenue:
         try:
-            print '-----------URL in while, :', URL
             self.client = Client.Handle(URL).get_proxy()
             venueList = self.client.GetVenues()
             validVenue = true
@@ -791,9 +800,8 @@ class VenueParamFrame(wxDialog):
                     self.venues.Append(venue.name, venue)
                     
         except:
-            self.LoadRemoteVenues()
-                    
-                
+            ErrorDialog(self, "Can not connect to server")
+                           
     def BrowseForImage(self, event):
         initial_dir = '/'
 	imageDialog = ImageDialog(self, initial_dir)   
@@ -866,17 +874,25 @@ class VenueParamFrame(wxDialog):
 	exitsSizer.Add(self.venuesLabel, 0)
         exitsSizer.Add(10,10, wxEXPAND)
         exitsSizer.Add(self.exitsLabel, 0)
-      	exitsSizer.Add(self.venues, 0, wxEXPAND)
+      	#exitsSizer.Add(self.venues, 0, wxEXPAND)
+
+        exitsSizer.Add(self.venues, 0, wxEXPAND)
+        
         transferbuttonSizer = wxBoxSizer(wxVERTICAL)
         transferbuttonSizer.Add(self.transferVenueLabel, 0, wxEXPAND|wxCENTER)
         transferbuttonSizer.Add(self.transferVenueButton, 0, wxEXPAND|wxTOP, 2)
         exitsSizer.Add(transferbuttonSizer, 0, wxALL|wxALIGN_CENTER, 5)
 	exitsSizer.Add(self.exits, 0, wxEXPAND)
 
+        #buttonSizer = wxBoxSizer(wxHORIZONTAL)
+       
         buttonSizer = wxBoxSizer(wxHORIZONTAL)
-        buttonSizer.Add(self.thisServerButton, 1, wxEXPAND | wxRIGHT, 2)
-        buttonSizer.Add(self.remoteServerButton, 1, wxEXPAND |wxLEFT, 2)
+        buttonSizer.Add(self.address, 2, wxEXPAND| wxRIGHT, 1)
+        buttonSizer.Add(self.goButton, 0, wxEXPAND | wxLEFT, 1)
         exitsSizer.Add(buttonSizer, 1, wxEXPAND)
+        #buttonSizer.Add(self.thisServerButton, 1, wxEXPAND | wxRIGHT, 2)
+        #buttonSizer.Add(self.remoteServerButton, 1, wxEXPAND |wxLEFT, 2)
+        #exitsSizer.Add(buttonSizer, 1, wxEXPAND)
         exitsSizer.Add(10,10)
         exitsSizer.Add(self.removeExitButton, 0, wxEXPAND)
         exitsSizer.AddGrowableCol(0)
