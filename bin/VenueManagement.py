@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.81 2003-08-20 22:31:13 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.82 2003-08-21 19:59:10 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1694,7 +1694,8 @@ class AddVenueFrame(VenueParamFrame):
                     log.info("Add venue")
                     self.parent.AddVenue(self.venue)
                     # from super class
-                    self.SetEncryption() 
+                    # Not needed anymore, already set in description in AddVenue.
+                    #self.SetEncryption() 
 
                 except:
                     log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type) ,
@@ -1734,7 +1735,9 @@ class ModifyVenueFrame(VenueParamFrame):
                         RoleClient(venueUri).SetVenueRoles(self.rolesDict)
                         self.rolesDict = None
                     # from super class
-                    self.SetEncryption()
+                    # Don't need to reset encryption with ModifyVenue 
+                    # Works, but not needed anymore since it's been set by the description in ModifyVenue.
+                    #self.SetEncryption()
                 except:
                     log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
                                                            str(sys.exc_value)))
