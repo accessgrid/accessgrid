@@ -109,14 +109,16 @@ class Server:
         server_thread = threading.Thread(target = self.run)
         server_thread.start()
 
-    def create_service(self, service_class, *args):
+    def create_service(self, service_class, 
+                       pathId = None,
+                       *args):
 	"""
         Instantiate a new service.
 
         
 	"""
 
-        service_obj = self.create_service_object()
+        service_obj = self.create_service_object(pathId = pathId)
 
         if not issubclass(service_class, ServiceBase.ServiceBase):
             raise NotAServiceClassException
@@ -131,7 +133,7 @@ class Server:
 
 	return appobj
 
-    def create_service_object(self):
+    def create_service_object(self, pathId = None):
 	"""
         Instantiate a new service object.
 
@@ -142,7 +144,10 @@ class Server:
         
 	"""
 
-        my_id = self.allocate_id()
+        if pathId is None:
+            my_id = self.allocate_id()
+        else:
+            my_id = pathId
         
 	# Create the service object
 	
