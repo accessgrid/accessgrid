@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.16 2004-03-16 07:15:40 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.17 2004-03-16 21:21:22 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.16 2004-03-16 07:15:40 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.17 2004-03-16 21:21:22 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -33,7 +33,7 @@ Log.SetDefaultLevel(Log.VenueClientUI, Log.WARN)
 
 from AccessGrid import icons
 from AccessGrid import Toolkit
-from AccessGrid.Platform import isWindows, Config
+from AccessGrid.Platform import isWindows, isOSX, Config
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.ClientProfile import *
@@ -578,6 +578,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 
     def __OnSize(self, event = None):
         wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
+        if isOSX():
+            # Currently, nothing appears on osx unless these are explicitly called.
+            self.venueAddressBar.Layout()
+            self.venueListPanel.Layout()
        
     def __CleanUp(self):
         self.venueListPanel.CleanUp()
