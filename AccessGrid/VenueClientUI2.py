@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI2.py,v 1.11 2004-07-28 21:50:07 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI2.py,v 1.12 2004-07-28 23:04:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI2.py,v 1.11 2004-07-28 21:50:07 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI2.py,v 1.12 2004-07-28 23:04:25 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -20,6 +20,7 @@ import os
 import os.path
 import time
 import getopt
+from wx import VERSION as WXVERSION
 from wxPython.wx import *
 import string
 import webbrowser
@@ -2658,9 +2659,13 @@ class ContentListPanel(wxPanel):
     def __GetPersonalDataFromItem(self, treeId):
         # Get data for this id
         dataList = []
+        cookie = 0
         
         if(self.tree.GetChildrenCount(treeId)>0):
-            id, cookie = self.tree.GetFirstChild(treeId)
+            if WXVERSION[0] <= 2 and WXVERSION[1] <= 4:
+                id, cookie = self.tree.GetFirstChild(treeId, cookie)
+            else:
+                id, cookie = self.tree.GetFirstChild(treeId)
             d = self.tree.GetPyData(id)
             if d:
                 dataList.append(d)
