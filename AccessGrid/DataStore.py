@@ -6,7 +6,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.37 2003-08-22 18:01:47 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.38 2003-08-22 21:04:03 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -97,6 +97,7 @@ class DataService(ServiceBase):
         self.__CreateWebService()
         self.__CreateTransferEngine()
         self.__CheckPath()
+        self.running = 1
             
     def __CreateWebService(self):
         '''
@@ -202,6 +203,23 @@ class DataService(ServiceBase):
         del self.dataStores[channelId]
         
     UnRegisterVenue.soap_export_as = "UnRegisterVenue"
+
+
+    def Shutdown(self):
+        """
+        This method shuts down the DataService
+        """
+        self.server.Stop()
+
+        while self.dataStores:
+            self.UnRegisterVenue(self.dataStores.keys()[0])
+
+        self.dataTransferServer.stop()
+
+        self.running = 0
+
+    def IsRunning(self):
+        return self.running
 
 
 class DataDescriptionContainer:
