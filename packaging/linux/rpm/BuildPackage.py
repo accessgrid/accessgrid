@@ -85,7 +85,7 @@ os.system(cmd)
 
 # - copy the rpms to the dist dir
 print "** Copying RPMs to the RPM directory"
-cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-%s-1.i386.rpm %s" % (version,RpmDir)
+cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-%s-4.i386.rpm %s" % (version,RpmDir)
 print "cmd = ", cmd
 os.system(cmd)
 

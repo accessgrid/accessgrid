@@ -4,7 +4,7 @@
 #
 %define	name		AccessGrid
 %define version		2.2
-%define release		3
+%define release		4
 %define	prefix		/usr
 %define sysconfdir	/etc/%{name}/Config
 %define sharedir	%{prefix}/share
@@ -190,6 +190,8 @@ def delcompiled(module):
             pass
 
 delcompiled(AccessGrid.hosting.SOAPpy)
+delcompiled(AccessGrid.hosting.Security)
+delcompiled(AccessGrid.hosting.Platform)
 delcompiled(AccessGrid.hosting)
 delcompiled(AccessGrid)
 EOF
