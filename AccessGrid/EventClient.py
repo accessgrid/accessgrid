@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.42 2004-07-14 20:40:54 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.43 2004-08-06 17:24:09 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.42 2004-07-14 20:40:54 judson Exp $"
+__revision__ = "$Id: EventClient.py,v 1.43 2004-08-06 17:24:09 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from threading import Thread, Lock
@@ -187,7 +187,7 @@ class EventClient:
             try:
                 self.sock.close()
             except IOBaseException:
-                pass
+                log.exception("IOBaseException while closing socket due to failure in read callback")
 
             self.connected = 0
             return
@@ -199,7 +199,7 @@ class EventClient:
                 self.sock.close()
             except IOBaseException:
                 # we may get here because the socket was already closed
-                pass
+                log.exception("IOBaseException while closing socket due to failure in read callback")
             self.connected = 0
             return
 
