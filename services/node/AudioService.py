@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.21 2004-05-12 21:46:07 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.22 2004-05-27 16:11:03 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -70,10 +70,8 @@ class AudioService( AGService ):
                 #
                 # Set RTP defaults according to the profile
                 #
-                k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
-                                    r"Software\Mbone Applications\common",
-                                    0,
-                                    _winreg.KEY_SET_VALUE)
+                k = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER,
+                                    r"Software\Mbone Applications\common")
 
                 # Rat reads these (without '*')
                 _winreg.SetValueEx(k, "rtpName", 0,
@@ -98,8 +96,7 @@ class AudioService( AGService ):
             import _winreg
 
             # Write defaults into registry
-            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\Mbone Applications\\rat", 0,
-                                  _winreg.KEY_SET_VALUE)
+            key = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, "Software\\Mbone Applications\\rat")
             if self.talk.value == "On":    mute = 0
             else:                          mute = 1
             _winreg.SetValueEx(key, "audioInputMute", 0, _winreg.REG_DWORD,

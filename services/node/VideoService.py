@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.10 2004-05-07 21:35:31 eolson Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.11 2004-05-27 16:11:03 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -117,10 +117,8 @@ class VideoService( AGService ):
                 #
                 # Set RTP defaults according to the profile
                 #
-                k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
-                                    r"Software\Mbone Applications\common",
-                                    0,
-                                    _winreg.KEY_SET_VALUE)
+                k = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER,
+                                    r"Software\Mbone Applications\common")
 
                 # Vic reads these values (with '*')
                 _winreg.SetValueEx(k, "*rtpName", 0,
