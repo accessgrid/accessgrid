@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.110 2003-04-09 19:46:34 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.111 2003-04-11 17:06:06 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -451,7 +451,11 @@ class VenueClientUI(wxApp, VenueClient):
 
         # Add personal data to venue
         for data in self.personalDataDict.values():
-            self.client.AddData(data)
+            try:
+                self.client.AddData(data)
+                raise Exception("False error")
+            except:
+                wxCallAfter(wxLogDebug, "Error uploading personal data")
         
     EnterVenue.soap_export_as = "EnterVenue"
 
