@@ -294,13 +294,14 @@ if __name__ == '__main__':
 
     import sys
 
+    pp = wxPySimpleApp();
+    
     app=WXGUIApplication();
     try:
         args = app.Initialize('AGLauncher')
     except:
         pass
 
-    pp = wxPySimpleApp();
     frame=LauncherFrame(None,-1,"Access Grid Launcher",sys.argv[1]);
     frame.Show();
     pp.SetTopWindow(frame);
