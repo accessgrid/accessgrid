@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.26 2003-02-10 21:53:59 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.27 2003-02-10 22:07:55 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -309,7 +309,8 @@ class Venue(ServiceBase.ServiceBase):
             self.connections = dict()
             for connection in connectionList:
                 self.connections[connection.uri] = connection
-#FIXME - how to push new connection list to clients?
+            self.eventService.Distribute( Event( Event.SET_CONNECTIONS, connectionList ) )
+
         except:
             print "Exception in SetConnections", sys.exc_type, sys.exc_value
             print "Connection does not exist ", connectionDescription.uri
@@ -381,7 +382,7 @@ class Venue(ServiceBase.ServiceBase):
 
         except:
            print "Exception in Enter ", formatExceptionInfo()
-        
+
         return ( state, privateId, streamDescriptions )
 
     Enter.pass_connection_info = 1

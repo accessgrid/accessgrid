@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.2 2003-02-10 15:30:14 leggett Exp $
+# RCS-ID:      $Id: Events.py,v 1.3 2003-02-10 22:07:55 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,6 +19,7 @@ class Event:
     REMOVE_SERVICE = "Remove service"
     ADD_CONNECTION = "Add connection"
     REMOVE_CONNECTION = "Remove connection"
+    SET_CONNECTIONS = "Set connections"
     UPDATE_VENUE_STATE = "Update venue state"
     
     def __init__( self, eventType, data ):
