@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.159 2004-03-12 05:23:11 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.160 2004-03-12 23:45:10 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.159 2004-03-12 05:23:11 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.160 2004-03-12 23:45:10 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -64,6 +64,8 @@ from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.ClientProfile import ClientProfileCache
 
 log = Log.GetLogger(Log.VenueServer)
+# Initialize usage log, but set flag so handlers don't include it by default.
+usage_log = Log.GetLogger(Log.Usage, defaultHandled=0)
 
 class VenueException(Exception):
     """
@@ -840,6 +842,9 @@ class Venue(AuthorizationMixIn):
         self.simpleLock.acquire()
 
         try:
+            # Log RemoveUser in case of abrupt disconnects that don't call Exit().
+            usage_log.info("\"RemoveUser\",\"%s\",\"%s\",\"%s\"", self.clients[privateId].GetClientProfile().GetDistinguishedName(), self.name, self.uniqueId)
+
             # Remove user as stream producer
             log.debug("Called RemoveUser on %s", privateId)
             self.streamList.RemoveProducer(privateId)
@@ -1003,6 +1008,7 @@ class Venue(AuthorizationMixIn):
                                                              clientProfile)
         vcstate.UpdateAccessTime()
         self._UpdateProfileCache(clientProfile)
+        usage_log.info("\"Enter\",\"%s\",\"%s\",\"%s\"", clientProfile.GetDistinguishedName(), self.name, self.uniqueId)
 
         # negotiate to get stream descriptions to return
         streamDescriptions = self.NegotiateCapabilities(vcstate)
@@ -1430,7 +1436,10 @@ class Venue(AuthorizationMixIn):
 
         if not self.clients.has_key( privateId ):
             log.exception("Exit: User not found!")
+            usage_log.info("\"Exit\",\"%s\",\"%s\",\"%s\"", 0, self.name, self.uniqueId)
             raise ClientNotFound
+        else:
+            usage_log.info("\"Exit\",\"%s\",\"%s\",\"%s\"", self.clients[privateId].GetClientProfile().GetDistinguishedName(), self.name, self.uniqueId)
 
         self.RemoveUser(privateId)
 

@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.123 2004-03-12 05:23:11 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.124 2004-03-12 23:45:10 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.123 2004-03-12 05:23:11 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.124 2004-03-12 23:45:10 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -25,7 +25,7 @@ from threading import Thread, Lock, Condition
 import time
 import ConfigParser
 
-from AccessGrid.Toolkit import Application
+from AccessGrid.Toolkit import Application, UserConfig
 from AccessGrid import Log
 from AccessGrid.hosting import Server
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
@@ -140,6 +140,14 @@ class VenueServer(AuthorizationMixIn):
         - *configFile* the filename of a configuration file for this venue server.
 
         """
+        # Initialize the Usage log file.
+        userConfig = UserConfig.instance()
+        usage_fname = os.path.join(userConfig.GetConfigDir(), "ServerUsage.csv")
+        usage_hdlr = Log.FileHandler(usage_fname)
+        usage_hdlr.setFormatter(Log.GetUsageFormatter())
+        # This handler will only handle the Usage logger.
+        Log.HandleLoggers(usage_hdlr, [Log.Usage])
+
         # Initialize Auth stuff
         AuthorizationMixIn.__init__(self)
         self.AddRequiredRole(Role.Role("Administrators"))
