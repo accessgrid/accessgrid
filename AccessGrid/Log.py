@@ -74,6 +74,7 @@ def GetHighestLevel():
 
 # ---- Predefined categories ----
 AGService = "AGService"
+AppDb = "AppDb"
 AppMonitor = "AppMonitor"
 AuthorizationUI = "AuthorizationUI"
 BridgeServer = "BridgeServer"
