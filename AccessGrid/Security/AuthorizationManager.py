@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.27 2004-08-26 02:40:15 turam Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.28 2004-08-26 15:59:38 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.27 2004-08-26 02:40:15 turam Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.28 2004-08-26 15:59:38 turam Exp $"
 
 # External Imports
 import os
@@ -284,7 +284,7 @@ class AuthorizationManager:
         else:
             print "GetActions called with both a subject and a role"
 
-        return actionlist
+        return actionlist[:]
 
     def FindAction(self, name):
         """
@@ -324,7 +324,7 @@ class AuthorizationManager:
         else:
             log.warn("Not adding role %s to action %s, it's already there.",
                      roleName, actionName)
-            
+
         try:
             self.AddAction(action)
         except:
@@ -415,7 +415,7 @@ class AuthorizationManager:
                 
             rolelist = foundAction.GetRoles()
 
-        return rolelist
+        return rolelist[:]
 
     def FindRole(self, name):
         """
