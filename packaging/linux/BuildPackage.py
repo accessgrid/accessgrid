@@ -43,7 +43,7 @@ StartDir = os.getcwd()
 #
 distDirs = ["AccessGrid",
             "ag-media",
-            "SOAPpy",
+            "SOAPpy-0.11.4",
             "fpconst-0.6.0",
             "openssl-0.9.7d",
             "pyGlobus",
