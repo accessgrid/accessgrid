@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.253 2004-03-15 20:56:57 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.254 2004-03-16 16:48:53 turam Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.253 2004-03-15 20:56:57 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.254 2004-03-16 16:48:53 turam Exp $"
 
 # Standard Imports
 import os
@@ -65,6 +65,10 @@ def main():
                          default=0,
                          help="Personal node rendezvous token.")
     app.AddCmdLineOption(pnodeOption)
+    urlOption = Option("--url", type="string", dest="url",
+                       default="", metavar="URL",
+                       help="URL of venue to enter on startup.")
+    app.AddCmdLineOption(urlOption)
 
     # Try to initialize
     try:
@@ -77,6 +81,7 @@ def main():
     # Get the log
     log = app.GetLog()
     pnode = app.GetOption("pnode")
+    url = app.GetOption("url")
     
     startupDialog.UpdateOneStep("Initializing the VenueClient.")
 
@@ -99,6 +104,10 @@ def main():
         vc.SetNodeUrl(nsUrl)
     else:
         log.debug("Not starting personal node services.")
+        
+    # Enter the specified venue
+    if url:
+        vc.EnterVenue(url)
         
     # Startup complete; kill progress dialog
     startupDialog.Destroy()
