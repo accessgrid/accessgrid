@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.72 2003-04-17 16:07:43 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.73 2003-04-17 20:05:27 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -106,14 +106,11 @@ class Venue(ServiceBase.ServiceBase):
         self.cleanupTime = 30
 
         self.connections = dict()
-        self.applications = {}
+        self.applications = dict()
         self.data = dict()
         self.services = dict()
         self.streamList = StreamDescriptionList()
-
-        self.users = dict()
         self.clients = dict()
-        self.nodes = dict()
 
         self.dataStore = None
         self.producerCapabilities = []
@@ -271,7 +268,7 @@ class Venue(ServiceBase.ServiceBase):
         """
 
         log.debug("Called GetState on %s", self.uniqueId)
-
+        
         venueState = {
             'uniqueId' : self.uniqueId,
             'name' : self.name,
@@ -280,8 +277,8 @@ class Venue(ServiceBase.ServiceBase):
             'connections' : self.connections.values(),
             'applications': map(lambda x: x.GetState(),
                                 self.applications.values()),
-            'users' : self.users.values(),
-            'nodes' : self.nodes.values(),
+            'clients' : self.__GetClients().values(),
+            'services' : self.services.values(),
             'eventLocation' : self.server.eventService.GetLocation(),
             'textLocation' : self.server.textService.GetLocation()
             }
@@ -298,20 +295,38 @@ class Venue(ServiceBase.ServiceBase):
 
         return venueState
 
+    def __GetClients(self):
+        '''
+        Creates a dictionary of clients by extracting clients from the
+        clients-time dictionary
+        '''
+        clientsDict = {}
+        for key in self.clients.keys():
+            (client, heartbeatTime) = self.clients[key]
+            clientsDict[key] = client
+            
+        log.debug("Clients contained in the venue are: %s" %str(clientsDict.values()))
+        return clientsDict
+
     def CleanupClients(self):
         now_sec = time.time()
         for privateId in self.clients.keys():
-            then_sec = self.clients[privateId]
+            (client, then_sec) = self.clients[privateId]
             if abs(now_sec - then_sec) > self.cleanupTime:
-                log.debug("  Removing user : %s", self.users[privateId].name)
-                self.RemoveUser( privateId )
+                log.debug("Removing user %s with expired heartbeat time", client.name)
+                self.RemoveUser(privateId)
 
     def ClientHeartbeat(self, event):
         privateId = event
         now = time.time()
-        self.clients[privateId] = now
         log.debug("Got Client Heartbeat for %s at %s." % (event, now))
 
+        if(self.clients.has_key(privateId)):
+            (profile, heartbeatTime) = self.clients[privateId]
+            self.clients[privateId] = (profile, now)
+        else:
+            log.error("Venue::ClientHeartbeat: Trying to set heartbeat time on non existing client")
+    
     def EventServiceDisconnect(self, event):
         log.debug("Got Client Disconnect")
         
@@ -402,27 +417,29 @@ class Venue(ServiceBase.ServiceBase):
         """This method creates the next Private Id."""
         return str(GUID())
 
-    def IsValidPrivateId( self, privateId ):
-        """This method verifies the private Id is valid."""
-        if privateId in self.users.keys():
-            return 1
-        return 0
+    # Should use self.clients.has_key(privateId), and get rid of this method
+
+    #def IsValidPrivateId( self, privateId ):
+    #    """This method verifies the private Id is valid."""
+    #    if privateId in self.clients.keys():
+    #        return 1
+    #    return 0
 
     def FindUserByProfile(self, profile):
         """
-        Find out if a given user is in the venue from their client profile.
-        If they are return their private id, if not, return None.
+        Find out if a given client is in the venue from their client profile.
+        If they are, return their private id, if not, return None.
         """
-
-        for key in self.users.keys():
-            user = self.users[key]
-            if user.publicId == profile.publicId:
+        for key in self.clients.keys():
+            (client, heartbeatTime) = self.clients[key]
+            if client.publicId == profile.publicId:
                 return key
 
         return None
 
     # Interface methods
     def wsAddData(self, dataDescription ):
+        log.debug("wsAddData")
         if not self._authorize():
             raise NotAuthorized
         else:
@@ -572,8 +589,6 @@ class Venue(ServiceBase.ServiceBase):
         if not self._authorize():
             raise NotAuthorized
         try:
-            print "Add Connection: ", connectionDescription
-            print "-- ", dir(connectionDescription)
             c = ConnectionDescription(connectionDescription.name,
                                       connectionDescription.description,
                                       connectionDescription.uri)
@@ -728,7 +743,7 @@ class Venue(ServiceBase.ServiceBase):
     def Enter(self, clientProfile):
         """
         The Enter method is used by a VenueClient to gain access to the
-        services, users, and content found within a Virtual Venue.
+        services, clients, and content found within a Virtual Venue.
         """
         privateId = None
         streamDescriptions = []
@@ -756,36 +771,32 @@ class Venue(ServiceBase.ServiceBase):
 #              raise VenueException("Entry denied")
 
 
-        try:
-            log.debug("Called Venue Enter for: ")
-            log.debug(dir(clientProfile))
-
-            privateId = self.FindUserByProfile(clientProfile)
-
-            if privateId != None:
-                log.debug("* * User already in venue")
-            else:
-                privateId = self.GetNextPrivateId()
-                log.debug("Assigning private id: %s", privateId)
-                clientProfile.distinguishedName = AccessControl.GetSecurityManager().GetSubject().GetName()
-                if clientProfile.profileType == "user":
-                    self.users[privateId] = clientProfile
-                elif clientProfile.profileType == "node":
-                    self.nodes[privateId] = clientProfile
-                self.clients[privateId] = time.time()
-                state['users'] = self.users.values()
-
-            # negotiate to get stream descriptions to return
-            streamDescriptions = self.NegotiateCapabilities(clientProfile,
+        #try:
+        log.debug("Called Venue Enter for: ")
+        log.debug(dir(clientProfile))
+        
+        privateId = self.FindUserByProfile(clientProfile)
+        
+        if privateId != None:
+            log.debug("Client already in venue")
+        else:
+            privateId = self.GetNextPrivateId()
+            log.debug("Assigning private id: %s", privateId)
+            clientProfile.distinguishedName = AccessControl.GetSecurityManager().GetSubject().GetName()
+            self.clients[privateId] = (clientProfile, time.time())
+            state['clients'] = self.__GetClients().values()
+                       
+        # negotiate to get stream descriptions to return
+        streamDescriptions = self.NegotiateCapabilities(clientProfile,
                                                             privateId)
-            self.server.eventService.Distribute( self.uniqueId,
-                                          Event( Event.ENTER,
-                                                 self.uniqueId,
-                                                 clientProfile ) )
-
-        except:
-            log.exception("Exception in Enter!")
-            raise VenueException("Enter: ")
+        log.debug("Distribute enter event ")
+        self.server.eventService.Distribute( self.uniqueId,
+                                             Event( Event.ENTER,
+                                                    self.uniqueId,
+                                                    clientProfile ) )
+        #except:
+        #    log.exception("Exception in Enter!")
+        #    raise VenueException("Enter: ")
 
         return ( state, privateId, streamDescriptions )
 
@@ -799,12 +810,10 @@ class Venue(ServiceBase.ServiceBase):
         """
         try:
             log.debug("Called Venue Exit on %s", privateId)
-
-            if self.IsValidPrivateId( privateId ):
-                log.debug("Deleting user %s %s", privateId,
-                          self.users[privateId].name)
-                self.RemoveUser( privateId )
-
+            
+            if self.clients.has_key( privateId ):
+                self.RemoveUser(privateId)
+                
             else:
                 log.warn("* * Invalid private id %s!!", privateId)
         except:
@@ -815,41 +824,47 @@ class Venue(ServiceBase.ServiceBase):
 
     def RemoveUser(self, privateId):
         # Remove user as stream producer
+        log.debug("Called RemoveUser on %s", privateId)
         self.streamList.RemoveProducer(privateId)
 
         # Distribute event
-        clientProfile = self.users[privateId]
+        clientProfile, heartbeatTime = self.clients[privateId]
+        log.debug("Distribute EXIT event")
         self.server.eventService.Distribute( self.uniqueId,
                                              Event( Event.EXIT,
                                                     self.uniqueId,
                                                     clientProfile ) )
-        # Remove users private data
+        # Remove clients private data
         for description in self.data.values():
-            if description.type == self.users[privateId].publicId:
+            client, heartbeatTime = self.clients[privateId]
+
+            if description.type == client.publicId:
                 log.debug("Remove private data %s" %description.name)
                 del self.data[description.name]
-
-        # Remove user from venue
-        if clientProfile.profileType == "user":
-            del self.users[privateId]
-        elif clientProfile.profileType == "node":
-            del self.nodes[privateId]
-        del self.clients[privateId]
-
+                   
+        # Remove clients from venue
+        if self.clients.has_key(privateId):
+            del self.clients[privateId]
+        else:
+            log.warn("Tried to remove a client that doesn't exist in the venue")
+       
     def UpdateClientProfile(self, clientProfile):
         """
         UpdateClientProfile allows a VenueClient to update/modify the client
         profile that is stored by the Virtual Venue that they gave to the Venue
         when they called the Enter method.
         """
-        for user in self.users.values():
-            if user.publicId == clientProfile.publicId:
-                self.users[user.privateId] = clientProfile
-            self.server.eventService.Distribute( self.uniqueId,
-                                          Event( Event.MODIFY_USER,
-                                                 self.uniqueId,
-                                                 clientProfile ) )
+        log.debug("Called UpdateClientProfile on %s " %clientProfile.name)
+        for client, heartbeatTime in self.clients.values():
+            if client.publicId == clientProfile.publicId:
+                self.clients[client.privateId] = (clientProfile, time.time())
 
+        log.debug("Distribute MODIFY_USER event")
+        self.server.eventService.Distribute( self.uniqueId,
+                                             Event( Event.MODIFY_USER,
+                                                    self.uniqueId,
+                                                    clientProfile ) )
+        
     UpdateClientProfile.soap_export_as = "UpdateClientProfile"
 
     def AddData(self, dataDescription ):
@@ -858,24 +873,26 @@ class Venue(ServiceBase.ServiceBase):
         Venue. Data put in the Virtual Venue through AddData is persistently
         stored.
         """
-
         name = dataDescription.name
-
+              
+        log.debug("AddData with name %s " %name)
+      
         if self.data.has_key(name):
             #
             # We already have this data; raise an exception.
             #
-
             log.exception("AddData: data already present: %s", name)
             raise VenueException("AddData: data %s already present" % (name))
 
         self.data[dataDescription.name] = dataDescription
-        log.debug("Send ADD_DATA event %s", dataDescription)
+        
+        log.debug("Distribute ADD_DATA event %s", dataDescription)
         self.server.eventService.Distribute( self.uniqueId,
                                       Event( Event.ADD_DATA,
                                              self.uniqueId,
                                              dataDescription ) )
 
+   
     def AddService(self, serviceDescription):
         """
         The AddService method enables VenuesClients to put services in the Virtual
@@ -893,7 +910,7 @@ class Venue(ServiceBase.ServiceBase):
             raise VenueException("AddService: service %s already present" % (name))
 
         self.services[serviceDescription.name] = serviceDescription
-        log.debug("Send ADD_SERVICE event %s", serviceDescription)
+        log.debug("Distribute ADD_SERVICE event %s", serviceDescription)
         self.server.eventService.Distribute( self.uniqueId,
                                              Event( Event.ADD_SERVICE,
                                                     self.uniqueId,
@@ -940,7 +957,7 @@ class Venue(ServiceBase.ServiceBase):
                                  name)
 
         self.data[dataDescription.name] = dataDescription
-        log.debug("Send UPDATE_DATA event %s", dataDescription)
+        log.debug("Distribute UPDATE_DATA event %s", dataDescription)
         self.server.eventService.Distribute( self.uniqueId,
                                       Event( Event.UPDATE_DATA,
                                              self.uniqueId,
@@ -1170,8 +1187,6 @@ class StreamDescriptionList:
             (stream, producerList) = streamListItem
             if producingUser in producerList:
                 producerList.remove( producingUser )
-
-
 
     def CleanupStreams( self ):
         """
