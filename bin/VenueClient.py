@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.135 2003-04-28 18:40:03 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.136 2003-04-28 20:44:45 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -300,16 +300,35 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time a venue participant enters
         the venue.  Appropriate gui updates are made in client.
         """
+        profile = ClientProfile()
+        profile.profileFile = user.profileFile
+        profile.profileType = user.profileType
+        profile.name = user.name
+        profile.email = user.email
+        profile.phoneNumber = user.phoneNumber
+        profile.icon = user.icon
+        profile.publicId = user.publicId
+        profile.location = user.location
+        profile.venueClientURL = user.venueClientURL
+        profile.techSupportInfo = user.techSupportInfo
+        profile.homeVenue = user.homeVenue
+        profile.privateId = user.privateId
+        profile.distinguishedName = user.distinguishedName
 
-        VenueClient.AddUserEvent(self, user)
+        # should also objectify the capabilities, but not doing it 
+        # for now (until it's a problem ;-)
+        profile.capabilities = user.capabilities
 
-        if(user.profileType == 'user'):
-            wxCallAfter(self.frame.contentListPanel.AddParticipant, user)
-            wxCallAfter(wxLogDebug, "  add user: %s" %(user.name))
+
+        VenueClient.AddUserEvent(self, profile)
+
+        if(profile.profileType == 'user'):
+            wxCallAfter(self.frame.contentListPanel.AddParticipant, profile)
+            wxCallAfter(wxLogDebug, "  add user: %s" %(profile.name))
 
         else:
-            wxCallAfter(self.frame.contentListPanel.AddNode, user)
-            wxCallAfter(wxLogDebug, "  add node: %s" %(user.name))
+            wxCallAfter(self.frame.contentListPanel.AddNode, profile)
+            wxCallAfter(wxLogDebug, "  add node: %s" %(profile.name))
 
     def RemoveUserEvent(self, user):
         """
@@ -333,6 +352,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time a venue participant changes
         its profile.  Appropriate gui updates are made in client.
         """
+        
         VenueClient.ModifyUserEvent(self, data)
         wxCallAfter(wxLogDebug, "EVENT - Modify participant: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.ModifyParticipant, data)
@@ -354,6 +374,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called when a data item has been updated in the venue.
         Appropriate gui updates are made in client.
         """
+
         VenueClient.UpdateDataEvent(self, data)
         wxCallAfter(wxLogDebug, "EVENT - Update data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.UpdateData, data)
@@ -420,6 +441,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time a new exit is added to the venue.
         Appropriate gui updates are made in client.
         """
+                
         VenueClient.AddConnectionEvent(self, data)
         wxCallAfter(wxLogDebug, "EVENT - Add connection: %s" %(data.name))
         wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, data)
@@ -515,7 +537,7 @@ class VenueClientUI(wxApp, VenueClient):
             # Start text location
             wxCallAfter(wxLogDebug, "Set text location and address bar")
             wxCallAfter(self.frame.SetTextLocation)
-            wxCallAfter(self.frame.FillInAddress, None, URL)
+            #wxCallAfter(self.frame.FillInAddress, None, URL)
             self.venueUri = URL
 
             # Venue data storage location
@@ -665,10 +687,10 @@ class VenueClientUI(wxApp, VenueClient):
                 text2 = 'Invalid proxy'
 
             else:
-                if self.oldUri is None:
-                    wxCallAfter(self.frame.FillInAddress, None, self.profile.homeVenue)
-                else:
-                    wxCallAfter(self.frame.FillInAddress, None, self.oldUri)
+                #if self.oldUri is None:
+                #    wxCallAfter(self.frame.FillInAddress, None, self.profile.homeVenue)
+                #else:
+                #wxCallAfter(self.frame.FillInAddress, None, venueUri)
 
                 text = 'The venue URL you specified is not valid'
                 text2 = 'Invalid URL'
