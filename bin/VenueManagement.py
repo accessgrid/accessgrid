@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.100 2003-09-17 18:22:24 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.101 2003-09-17 19:36:03 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.100 2003-09-17 18:22:24 eolson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.101 2003-09-17 19:36:03 eolson Exp $"
 
 import webbrowser
 import string
@@ -262,6 +262,17 @@ class VenueManagementClient(wxApp):
                 dp.encryptionButton.SetValue(key)
                 self.encrypt = key
                 wxEndBusyCursor()
+
+            except Exception, e:
+                wxEndBusyCursor() 
+                if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+                        text = "You and are not authorized to administrate this server.\n"
+                        MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+                        log.info("VenueManagementClient.ConnectToServer: Not authorized to administrate the server.")
+                else:
+                    log.exception("VenueManagementClient.ConnectToServer: Can not connect")
+                    text = "You have not connected to the venue server located at\n%s.  Error occurred." % URL
+                    ErrorDialog(None, text, "Venue Server Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
 
             except:
                 wxEndBusyCursor() 
