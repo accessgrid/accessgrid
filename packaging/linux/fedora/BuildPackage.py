@@ -102,7 +102,7 @@ os.chdir(StartDir)
 cmd = "rpmbuild -ba globus-accessgrid.spec"     
 print "cmd = ", cmd     
 os.system(cmd)      
-cmd = "cp /usr/src/redhat/RPMS/i386/globus-accessgrid-2.4-4.i386.rpm %s" % (RpmDir,)   
+cmd = "cp /usr/src/redhat/RPMS/i386/globus-accessgrid-2.4-6.i386.rpm %s" % (RpmDir,)   
 print "cmd = ", cmd     
 os.system(cmd)      
 

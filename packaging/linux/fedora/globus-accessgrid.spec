@@ -1,6 +1,6 @@
 %define	name		globus-accessgrid
 %define	version		2.4
-%define	release		4
+%define	release		6
 %define	prefix		/usr/lib/globus
 %define buildroot	/var/tmp/%{name}-%{version}
 
@@ -33,15 +33,15 @@ export GLOBUS_LOCATION=%{buildroot}%{prefix}
 
 ##
 # Globus Data Management Client
-${GPT_LOCATION}/sbin/gpt-build ${AGBUILDROOT}/gt3.0.2-source-installer/globus-data-management-client-2.4.3-src_bundle.tar.gz gcc32pthr
-(cd ${GLOBUS_LOCATION}/setup/globus/ ; ./setup-globus-common )
+${GPT_LOCATION}/sbin/gpt-build ${AGBUILDROOT}/gt3.0.2-source-installer/globus-data-management-client-2.4.3-src_bundle.tar.gz gcc32dbgpthr
+(cd ${GLOBUS_LOCATION}/setup/globus/ ; ./setup-globus-common ; ./setup-ssl-utils)
 
 ##
 # Fix der_chop from openssl from using the not right /usr/local/bin/perl and instead use /usr/bin/perl
 sed -e 's,/usr/local/bin/perl,/usr/bin/perl,g' < %{buildroot}%{prefix}/bin/der_chop > %{buildroot}%{prefix}/bin/der_chop.sed
 mv -f %{buildroot}%{prefix}/bin/der_chop.sed %{buildroot}%{prefix}/bin/der_chop
 chmod 0755 %{buildroot}%{prefix}/bin/der_chop
-cp -f -p %{buildroot}%{prefix}/bin/der_chop %{buildroot}%{prefix}/bin/gcc32pthr/shared/der_chop
+cp -f -p %{buildroot}%{prefix}/bin/der_chop %{buildroot}%{prefix}/bin/gcc32dbgpthr/shared/der_chop
 
 %install
 mkdir -p %{buildroot}/etc/profile.d

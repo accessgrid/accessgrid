@@ -15,7 +15,7 @@
 #
 
 export GLOBUS="globus-accessgrid"
-export GLOBUS_VER="2.4-1"
+export GLOBUS_VER="2.4-6"
 
 export AG="AccessGrid"
 export AG_VER=VER
