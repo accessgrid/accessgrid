@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI2.py,v 1.1 2004-07-16 20:12:12 binns Exp $
+# RCS-ID:      $Id: VenueClientUI2.py,v 1.2 2004-07-16 20:53:48 binns Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI2.py,v 1.1 2004-07-16 20:12:12 binns Exp $"
+__revision__ = "$Id: VenueClientUI2.py,v 1.2 2004-07-16 20:53:48 binns Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2417,7 +2417,8 @@ class VenueListPanel(wxSashWindow):
 
 
 class VenueList(wxScrolledWindow):
-    '''VenueList. 
+    '''
+    VenueList. 
     
     The venueList is a scrollable window containing all exits to current venue.
     
@@ -2433,7 +2434,6 @@ class VenueList(wxScrolledWindow):
         self.SetScrollRate(1, 1)
                       
     def __Layout(self):
-
         self.box = wxBoxSizer(wxVERTICAL)
         self.SetSizer(self.box)
         self.SetAutoLayout(1)
