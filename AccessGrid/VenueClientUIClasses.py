@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.61 2003-03-13 23:40:20 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.62 2003-03-14 15:20:23 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -876,17 +876,16 @@ class ContentListPanel(wxPanel):
     personalDataDict = {}
     
     def __init__(self, parent, app):
-        wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
+        wxPanel.__init__(self, parent, -1, wxDefaultPosition, 
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D)
      	id = NewId()
-        
+       
         self.parent = parent
 	self.app = app
-	self.tree = wxTreeCtrl(self, id, wxDefaultPosition, \
-			       wxDefaultSize,  wxTR_HAS_BUTTONS \
-			       | wxTR_NO_LINES  \
-                              # | wxTR_TWIST_BUTTONS \
-			       | wxTR_HIDE_ROOT)
+	self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
+			      wxDefaultSize, style = wxTR_TWIST_BUTTONS | wxTR_HAS_BUTTONS |
+                               wxTR_NO_LINES  | wxTR_HIDE_ROOT)
+        self.tree.SetBackgroundColour('RED')
         self.__setImageList()
 	self.__setTree()
 	self.__setProperties()
@@ -902,7 +901,11 @@ class ContentListPanel(wxPanel):
         self.importantPaperId = imageList.Add(icons.getDefaultDataBitmap())
 	self.serviceId = imageList.Add(icons.getDefaultServiceBitmap())
         self.nodeId = imageList.Add(icons.getDefaultNodeBitmap())
-	self.tree.AssignImageList(imageList)
+        self.tree.AssignImageList(imageList)
+
+        buttonImageList = wxImageList(32,19)
+        button1Image = imageList.Add(icons.getDefaultDataBitmap())
+	button2Image = imageList.Add(icons.getDefaultServiceBitmap())
 
     def AddParticipant(self, profile):
         participant = self.tree.AppendItem(self.participants, profile.name, \
@@ -1033,19 +1036,19 @@ class ContentListPanel(wxPanel):
         
         
     def __setTree(self):
-        self.root = self.tree.AddRoot("The Lobby")
+        self.root = self.tree.AddRoot("The Lobby", -2, -2)
                     
-	self.participants = self.tree.AppendItem(self.root, "Participants")
+	self.participants = self.tree.AppendItem(self.root, "Participants", -2, -2)
        
 	self.tree.SetItemBold(self.participants)
              
-	self.data = self.tree.AppendItem(self.root, "Data") 
+	self.data = self.tree.AppendItem(self.root, "Data", -2, -2) 
 	self.tree.SetItemBold(self.data)
              
-	self.services = self.tree.AppendItem(self.root, "Services")
+	self.services = self.tree.AppendItem(self.root, "Services", -2, -2)
 	self.tree.SetItemBold(self.services)
              
-	self.nodes = self.tree.AppendItem(self.root, "Nodes")
+	self.nodes = self.tree.AppendItem(self.root, "Nodes", -2, -2)
 	self.tree.SetItemBold(self.nodes)
              
         self.tree.Expand(self.participants)
