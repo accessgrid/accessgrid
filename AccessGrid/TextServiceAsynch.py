@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.24 2004-04-07 23:50:40 eolson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.25 2004-04-09 14:20:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.24 2004-04-07 23:50:40 eolson Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.25 2004-04-09 14:20:09 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -95,7 +95,7 @@ class ConnectionHandler:
     def acceptCallback(self, arg, handle, result):
         try:
             if result[0] != 0:
-                log.debug("TextServiceAsynch: acceptCallback returned failure: %d %s", result[1], result[2])
+                log.debug("TextServiceAsynch: acceptCallback returned failure: %d %s", result[0], result[1])
                 self.server.registerForListen()
                 return
 
@@ -159,7 +159,7 @@ class ConnectionHandler:
         logTextEvent("Got read handle=%s ret=%s  n=%s \n", handle, result, n)
 
         if result[0] != 0:
-            log.debug("TextServiceAsynch: readCallback returned failure: %d %s", result[1], result[2])
+            log.debug("TextServiceAsynch: readCallback returned failure: %d %s", result[0], result[1])
             self.handleEOF()
             return
 
@@ -477,7 +477,7 @@ class TextService:
     def listenCallback(self, arg, handle, result):
         try:
             if result[0] != 0:
-                log.debug("TextServiceAsynch: listenCallback returned failure: %d %s", result[1], result[2])
+                log.debug("TextServiceAsynch: listenCallback returned failure: %d %s", result[0], result[1])
                 self.registerForListen()
                 return
 

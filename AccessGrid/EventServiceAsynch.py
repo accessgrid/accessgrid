@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.26 2004-04-05 19:03:41 turam Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.27 2004-04-09 14:20:09 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.26 2004-04-05 19:03:41 turam Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.27 2004-04-09 14:20:09 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -91,7 +91,7 @@ class ConnectionHandler:
     def acceptCallback(self, arg, handle, result):
         try:
             if result[0] != 0:
-                log.debug("EventServiceAsynch: acceptCallback returned failure: %d %s", result[1], result[2])
+                log.debug("EventServiceAsynch: acceptCallback returned failure: %d %s", result[0], result[1])
                 self.server.registerForListen()
                 return
 
@@ -150,7 +150,7 @@ class ConnectionHandler:
                  handle, result, n, self.waitingLen)
 
         if result[0] != 0:
-            log.debug("EventServiceAsynch: readCallback returned failure: %s %s", result[1], result[2])
+            log.debug("EventServiceAsynch: readCallback returned failure: %s %s", result[0], result[1])
             self.handleEOF()
             return
 
@@ -477,7 +477,7 @@ class EventService:
     def listenCallback(self, arg, handle, result):
         try:
             if result[0] != 0:
-                log.debug("EventServiceAsynch: listenCallback returned failure: %d %s", result[1], result[2])
+                log.debug("EventServiceAsynch: listenCallback returned failure: %d %s", result[0], result[1])
                 self.registerForListen()
                 return
             
