@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.62 2004-03-12 05:23:11 judson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.63 2004-03-23 23:46:08 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.62 2004-03-12 05:23:11 judson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.63 2004-03-23 23:46:08 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -259,7 +259,7 @@ class DataStore:
         self.LoadPersistentInfo()
 
     def __CheckPath(self):
-        if not os.path.exists(self.path):
+        if self.path == None or not os.path.exists(self.path):
             log.exception("DataStore::init: Datastore path %s does not exist" % (self.path))
             try:
                 os.mkdir(self.path)
