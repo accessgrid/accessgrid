@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.45 2003-03-13 12:15:14 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.46 2003-03-14 17:29:06 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -231,6 +231,12 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         """
         return urlparse.urlparse(URL)[2]
+
+    def IdFromURL(self, URL):
+        """
+        """
+        path = self.PathFromURL(URL)
+        return path.split('/')[-1]
     
     def MakeVenueURI(self, uniqueId):
         """
@@ -474,12 +480,13 @@ class VenueServer(ServiceBase.ServiceBase):
         defaultPath = "/Venues/default"
 
         path = self.PathFromURL(venueURL)
-
+        id = self.IdFromURL(venueURL)
+        
         defaultVenue = self.hostingEnvironment.CreateServiceObject(defaultPath)
 
-        self.defaultVenue = path
+        self.defaultVenue = id
 
-        self.config["VenueServer.defaultVenue"] = path
+        self.config["VenueServer.defaultVenue"] = id
 
         self.venues[path]._bind_to_service(defaultVenue)
 
