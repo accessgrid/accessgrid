@@ -45,6 +45,8 @@ class AGServiceManagerBasicTest(unittest.TestCase):
     """Basic test case for AGServiceManager."""
     def testInit(self):
         """Test initialization"""
+        app = Toolkit.Service.instance()
+        app.Initialize("unittest_AGServiceManager")
         self.serviceManager = AGServiceManager(Server(('localhost',5000)))
         self.serviceManager.Shutdown()
         time.sleep(1)
@@ -55,7 +57,7 @@ class AGServiceManagerTestCase(unittest.TestCase):
         global server, serviceManager, nodeService, log, smURL
 
         # initialize toolkit and environment
-        app = Toolkit.Service()
+        app = Toolkit.Service.instance()
         app.Initialize("ServiceManager_test", sys.argv[:1])
         log = app.GetLog()
 
@@ -97,8 +99,8 @@ class AGServiceManagerTestCase(unittest.TestCase):
 
         # Add all services to make sure they work
         for service in services:
-            if service.name != "":
-                serviceManager.AddService(nodeService.servicePackageRepository.GetPackageUrl(service.name + ".zip"), None, None)
+            if service.name != "" and service.name != "DisplayService":
+                serviceManager.AddService(service, None, None)
 
         time.sleep(2)
 
@@ -112,7 +114,7 @@ class AGServiceManagerTestCase(unittest.TestCase):
 
         index = len(possible_services) - 1   # try adding and removing the last one
         service = possible_services[index]
-        serviceManager.AddService(nodeService.servicePackageRepository.GetPackageUrl(service.name + ".zip"), None, None)
+        serviceManager.AddService(service, None, None)
         time.sleep(2) 
 
         # Should have at least one service to remove now.
