@@ -5,10 +5,19 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/13/12
-# RCS-ID:      $Id: NetworkLocation.py,v 1.11 2003-08-04 18:11:18 turam Exp $
+# RCS-ID:      $Id: NetworkLocation.py,v 1.12 2003-08-09 23:56:33 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+
+class ProviderProfile:
+    """
+    ProviderProfile contains information to identify the provider
+    of a network location. 
+    """
+    def __init__(self,name,location):
+        self.name = name
+        self.location = location
 
 class NetworkLocation:
     """
@@ -30,6 +39,7 @@ class NetworkLocation:
         self.type = self.TYPE
         self.id = None
         self.privateId = None
+        self.profile = ProviderProfile(None,None)
 
     def SetHost(self, host):
         self.host = host
