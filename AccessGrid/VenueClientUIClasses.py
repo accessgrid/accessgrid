@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.91 2003-03-21 17:07:08 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.92 2003-03-21 17:12:47 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -209,10 +209,10 @@ class VenueClientFrame(wxFrame):
                                            "Lead this node")
         # until implemented
         self.nodeMenu.Enable(self.ID_NODE_LEAD, false)
-        #self.nodeMenu.Enable(self.ID_NODE_FOLLOW, false)
+        self.nodeMenu.Enable(self.ID_NODE_FOLLOW, false)
         self.nodeMenu.Enable(self.ID_NODE_MANAGE, false)
         self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
-        #self.participantMenu.Enable(self.ID_PARTICIPANT_FOLLOW, false)
+        self.participantMenu.Enable(self.ID_PARTICIPANT_FOLLOW, false)
         self.serviceMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
         self.serviceMenu.Enable(self.ID_VENUE_SERVICE_DELETE, false)
         self.meMenu.Enable(self.ID_ME_DATA, false) 

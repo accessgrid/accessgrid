@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.35 2003-03-21 17:02:20 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.36 2003-03-21 17:13:12 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -49,7 +49,7 @@ class VenueClient( ServiceBase):
         self.followerProfiles = dict()
         self.__InitVenueData__()
         self.houseKeeper = Scheduler()
-        self.CreateFollowLeadServer()
+        #self.CreateFollowLeadServer()
                           
     def __InitVenueData__( self ):
         self.eventClient = None
@@ -65,9 +65,9 @@ class VenueClient( ServiceBase):
             
     def SetProfile(self, profile):
         self.profile = profile
-        if(self.profile != None):
-            self.profile.venueClientURL = self.service.get_handle()
-            self.followLeadClient = Client.Handle(self.profile.venueClientURL).get_proxy()
+        #if(self.profile != None):
+        #   self.profile.venueClientURL = self.service.get_handle()
+            #self.followLeadClient = Client.Handle(self.profile.venueClientURL).get_proxy()
         
     def DoNothing(self, data):
         pass
