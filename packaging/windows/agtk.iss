@@ -1,9 +1,9 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.11 2003-05-23 19:17:33 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.12 2003-05-29 18:45:56 leggett Exp $
 ;
 
-#define SourceDir "C:\software\AccessGrid\AccessGrid\Release"
-#define OutputDir "C:\xfer"
+#define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
+#define OutputDir "C:\AccessGridBuild\Builds"
 #define AppName "Access Grid Toolkit"
 #define AppNameShort "AGTk"
 #define AppVersionLong "2.0"
@@ -15,7 +15,7 @@
 
 [_ISTool]
 EnableISX=true
-LogFile=C:\AccessGridBuild\AccessGrid-Build\installer.log
+LogFile=C:\AccessGridBuild\Builds\AGTk-installer.log
 LogFileAppend=false
 
 [_ISToolPreCompile]
@@ -23,10 +23,10 @@ LogFileAppend=false
 ; parameter to prebuild. Ti and I have chatted about this, it's on the
 ; to do list :-)
 ;
-Name: python; Parameters: C:\software\AccessGrid\AccessGrid\packaging\makeServicePackages.py C:\software\AccessGrid\AccessGrid\services\node; Flags: abortonerror
-Name: C:\software\AccessGrid\AccessGrid\packaging\windows\BuildAccessGrid.cmd; Parameters: C:\software\AccessGrid\AccessGrid; Flags: abortonerror
-Name: C:\software\AccessGrid\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\software\AccessGrid\ag-vic C:\software\AccessGrid\AccessGrid\Release\bin; Flags: abortonerror
-Name: C:\software\AccessGrid\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: C:\software\AccessGrid\ag-rat C:\software\AccessGrid\AccessGrid\Release\bin; Flags: abortonerror
+Name: python; Parameters: C:\AccessGridBuild\AccessGrid\packaging\makeServicePackages.py C:\AccessGridBuild\AccessGrid\services\node; Flags: abortonerror
+Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildAccessGrid.cmd; Parameters: C:\AccessGridBuild\AccessGrid; Flags: abortonerror
+Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\AccessGridBuild\ag-vic C:\AccessGridBuild\AccessGrid\Release\bin; Flags: abortonerror
+Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: C:\AccessGridBuild\ag-rat C:\AccessGridBuild\AccessGrid\Release\bin; Flags: abortonerror
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -48,7 +48,7 @@ SourceDir={#SourceDir}
 ; Where to put the built installer
 OutputDir={#OutputDir}
 ; Name with version information
-OutputBaseFilename={#AppNameShort}{#AppVersionShort}-snapshot-2003-05-22
+OutputBaseFilename={#AppNameShort}-{#AppVersionShort}
 
 AppName=AGTk
 AppCopyright=Copyright © 2003 University of Chicago. All Rights Reserved.
@@ -59,15 +59,15 @@ AppUpdatesURL=http://www.mcs.anl.gov/fl/research/accessgrid
 AppID={907B1500-42CA-4148-8F13-2004654CCA06}
 Compression=zip/9
 MinVersion=0,5.0.2195sp3
-LicenseFile=C:\software\AccessGrid\AccessGrid\COPYING.txt
+LicenseFile=C:\AccessGridBuild\AccessGrid\COPYING.txt
 DisableDirPage=false
 DefaultGroupName={#AppName} {#AppVersionShort}
-DefaultDirName={pf}\AGTk {#AppVersionShort}
+DefaultDirName={pf}\{#AppName}
 UsePreviousAppDir=false
 UserInfoPage=false
 WindowVisible=false
 
-UninstallDisplayName={#AppName}
+UninstallDisplayName={#AppName} {#AppVersionLong}
 DisableStartupPrompt=false
 WindowResizable=false
 AlwaysShowComponentsList=true
@@ -82,7 +82,7 @@ WindowStartMaximized=false
 WizardImageFile=compiler:wizmodernimage.bmp
 WizardSmallImageFile=compiler:wizmodernsmallimage.bmp
 UninstallFilesDir={app}\uninst
-InfoBeforeFile=C:\software\AccessGrid\AccessGrid\Install.WINDOWS
+InfoBeforeFile=C:\AccessGridBuild\AccessGrid\Install.WINDOWS
 ShowTasksTreeLines=true
 PrivilegesRequired=admin
 UninstallDisplayIcon={app}\config\agicons.exe
@@ -118,7 +118,6 @@ Source: Scripts\SetupVideo.py; DestDir: {app}; Components: Video_Producer
 Source: Scripts\VenueManagement.py; DestDir: {app}; Components: Venue_Server
 Source: Scripts\VenueServer.py; DestDir: {app}; Components: Venue_Server
 Source: Scripts\MailcapSetup.py; DestDir: {app}
-;Source: Scripts\VenuesServerRegistry.py; DestDir: {app}; Components: Venue_Server
 
 ; Default node configuration
 Source: share\AccessGrid\nodeConfig\defaultWindows; DestDir: {commonappdata}\AccessGrid\nodeConfig; Flags: confirmoverwrite
@@ -131,8 +130,6 @@ Source: share\AccessGrid\agicons.exe; DestDir: {app}\config
 
 ; Post install scripts
 Source: share\AccessGrid\packaging\windows\Postinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
-;Source: share\AccessGrid\packaging\windows\AGNodeServicePostinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
-;Source: share\AccessGrid\packaging\windows\AGServiceManagerPostinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
 
 ; Vic Video Tool
 Source: bin\vic.exe; DestDir: {app}; Components: Video_Consumer Video_Producer
@@ -179,8 +176,6 @@ WelcomeLabel2=This will install the [name/ver] on your computer.%n%nIt is strong
 [Run]
 Filename: {app}\config\Postinstall.py; Flags: shellexec runminimized
 Filename: {app}\SetupVideo.py; WorkingDir: {app}; Description: Setup what video devices will produce video streams; Components: Video_Producer; Flags: postinstall unchecked shellexec
-;Filename: {app}\config\AGNodeServicePostinstall.py; Flags: shellexec runminimized; Components: Venue_Client
-;Filename: {app}\config\AGServiceManagerPostinstall.py; Flags: shellexec runminimized; Components: Venue_Client
 
 [UninstallDelete]
 Name: {reg:HKLM\Software\Python\PythonCore\2.2\PythonPath\win32com,|C:\Python22\Lib\site-packages}\AccessGrid; Type: filesandordirs
