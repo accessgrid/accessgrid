@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.58 2003-03-14 22:48:29 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.59 2003-03-19 16:08:16 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,6 +23,7 @@ from AccessGrid.hosting.pyGlobus import ServiceBase
 
 from AccessGrid.hosting import AccessControl
 
+from AccessGrid import AppService
 from AccessGrid.Types import Capability
 from AccessGrid.Descriptions import StreamDescription, CreateStreamDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
@@ -34,6 +35,7 @@ from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import GetHostname
 
 log = logging.getLogger("AG.VenueServer")
+log.setLevel(logging.INFO)
 
 class VenueException(Exception):
     """
@@ -87,6 +89,19 @@ class Venue(ServiceBase.ServiceBase):
 
         if self.encryptMedia == 1:
             self.encryptionKey = AllocateEncryptionKey()
+
+        #
+        # Application support
+        #
+        # self.applications is a dictionary of the AppObjectImpl instances
+        # representing the applications created in this venue. It is keyed
+        # on the application's unique identifier.
+        #
+        # As such, they can be persisted and later reawakened without
+        # too much hassle.
+        #
+
+        self.applications = {}
 
     def _authorize(self):
         """
@@ -169,14 +184,19 @@ class Venue(ServiceBase.ServiceBase):
         self.houseKeeper.AddTask(self.CleanupClients, 10)
         self.houseKeeper.StartAllTasks()
 
+        self.StartApplications()
+
         self.startDataStore()
 
     def startDataStore(self):
         """
         Start the local datastore server.
 
-        We create a DataStore and a HTTPTransportServer for the actual
-        service.  The DataStore is given the Venue's dataStorePath as
+        We create a DataStore to manage this Venue's data.
+        We have been already given a data transfer service instance
+        (in the call to Venue.Start()).
+        
+        The DataStore is given the Venue's dataStorePath as
         its working directory.  We then loop through the data
         descriptions in the venue, both checking to see that the file
         still exists for each piece of data, and updating the uri
@@ -232,7 +252,9 @@ class Venue(ServiceBase.ServiceBase):
             'nodes' : self.nodes.values(),
             'services' : self.services.values(),
             'eventLocation' : self.server.eventService.GetLocation(),
-            'textLocation' : self.server.textService.GetLocation()
+            'textLocation' : self.server.textService.GetLocation(),
+            'applications': map(lambda x: x.GetState(),
+                                self.applications.values())
             }
 
         #
@@ -890,6 +912,84 @@ class Venue(ServiceBase.ServiceBase):
 
     RemoveService.soap_export_as = "RemoveService"
 
+    #
+    # Application support
+    #
+
+    def GetApplication(self, id):
+        """
+        Return the application state for the given application object.
+        """
+
+        if self.applications.has_key(id):
+            app = self.applications[id]
+            return app.GetState()
+        else:
+            return None
+
+    GetApplication.soap_export_as = "GetApplication"
+
+    def CreateApplication(self, name, description):
+        """
+        Create a new application object.  Initialize the
+        implementation, and create a web service interface for it.
+        """
+        
+        log.debug("Create application name=%s description=%s", name, description)
+
+        appImpl = AppService.AppObjectImpl(name, description,
+                                           self.server.eventService)
+        app = AppService.AppObject(appImpl)
+        hostObj = self.server.hostingEnvironment.create_service_object()
+        app._bind_to_service(hostObj)
+        appHandle = hostObj.GetHandle()
+        self.applications[appImpl.GetId()] = appImpl
+        appImpl.SetHandle(appHandle)
+        
+        log.debug("Created app id=%s handle=%s", appImpl.GetId(), appHandle)
+
+        return appHandle
+
+    CreateApplication.soap_export_as = "CreateApplication"
+
+    def StartApplications(self):
+        """
+        Restart the application services after a server restart.
+
+        For each app impl, awaken the app, and create a new
+        web service binding for it.
+        """
+
+        for appImpl in self.applications.values():
+            appImpl.Awaken(self.eventService)
+            app = AppService.AppObject(appImpl)
+            hostObj = self.hostingEnvironment.create_service_object()
+            app._bind_to_service(hostObj)
+            appHandle = hostObj.GetHandle()
+            appImpl.SetHandle(appHandle)
+            log.debug("Restarted app id=%s handle=%s", appImpl.GetId(), appHandle)
+
+    def DestroyApplication(self, appId):
+        """
+        Destroy an application object.
+
+        """
+
+        #
+        # This needs to be more robust; in particular we need
+        # to pay attention to reference counts to ensure that
+        # the app instances all go away so that the objects
+        # get deleted. This involves the hosting environment
+        # deregistering the handlers properly.
+        #
+        # For now we'll just remove the reference to the app.
+        #
+        
+        if self.applications.has_key(appId):
+            self.applications[appId].Shutdown()
+            del self.applications[appId]
+
+    DestroyApplication.soap_export_as = "DestroyApplication"
 
 class StreamDescriptionList:
     """
@@ -1043,3 +1143,4 @@ class StreamDescriptionList:
                 return (stream, producerList)
 
         return None
+

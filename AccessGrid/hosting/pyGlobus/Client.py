@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Client.py,v 1.8 2003-02-21 16:15:24 judson Exp $
+# RCS-ID:      $Id: Client.py,v 1.9 2003-03-19 16:08:16 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -19,8 +19,12 @@ from AGGSISOAP import SOAPProxy, Config, debugHeader, debugFooter, __version__
 import AGGSISOAP
 import urllib
 import string
+import logging
 
 FaultType = AGGSISOAP.faultType
+
+log = logging.getLogger("AG.hosting.pyGlobus.Client")
+log.setLevel(logging.WARN)
 
 class AuthCallbackException(Exception):
     pass
@@ -105,20 +109,24 @@ def create_proxy(url, namespace, authCallback = None):
     from AGGSISOAP import SOAPConfig
     import Utilities
 
+    log.debug("create_proxy")
+
     if authCallback is None:
         io_attr = Utilities.CreateTCPAttrAlwaysAuth()
     else:
         io_attr = Utilities.CreateTCPAttrCallbackAuth(authCallback)
 
+    log.debug("created attr")
 
     config = SOAPConfig(tcpAttr = io_attr, debug = 0)
 
-    # print "creating proxy on ", url, " ioattr is ", io_attr
+    log.debug( "creating proxy on %s ioattr=%s", url, io_attr)
 
     proxy = SOAPProxy(url, namespace,
                       transport = HTTPTransport,
                       config = config)
 
+    log.debug("proxy created")
     return proxy
             
 class HTTPTransport:

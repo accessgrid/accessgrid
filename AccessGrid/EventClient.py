@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.6 2003-02-21 21:42:10 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.7 2003-03-19 16:08:16 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,6 +15,7 @@ from threading import Thread
 import socket
 import string
 import pickle
+import logging
 
 from pyGlobus.io import GSITCPSocket,TCPIOAttr,AuthData
 from pyGlobus.util import Buffer
@@ -23,6 +24,8 @@ from pyGlobus import ioc
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import HeartbeatEvent, ConnectEvent
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
+
+log = logging.getLogger("AG.EventClient")
 
 class EventClient(Thread):
     """
@@ -57,7 +60,14 @@ class EventClient(Thread):
         while self.sock != None and self.running:
             try:
                 str = self.rfile.readline()
-                size = int(str)
+                if str == "":
+                    log.debug("Received eof while reading len")
+                    raise Exception("EOF")
+                try:
+                    size = int(str)
+                except ValueError, e:
+                    log.exception("ValueError on size conversion of '%s'", str)
+                    raise e
                 
                 if size > 0:
                     # Then read the event
@@ -76,7 +86,7 @@ class EventClient(Thread):
                             for callback in calls:
                                 callback(event.data)
                         else:
-                            print "No callback for %s!" % event.eventType
+                            log.info("No callback for %s!", event.eventType)
                             self.DefaultCallback(event)                            
                     else:
                         self.sock.close()

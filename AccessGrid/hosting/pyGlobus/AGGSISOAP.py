@@ -82,16 +82,21 @@ import socket
 import string
 import sys
 import time
+import logging
+
 from pyGlobus.io import GSITCPSocketServer
 from pyGlobus import ioc
 from types import *
 
 import time
 
+log = logging.getLogger("AG.hosting.pyGlobus.AGGSISOAP")
+log.setLevel(logging.WARN)
+
 try: from M2Crypto import SSL
 except: pass
 
-ident = '$Id: AGGSISOAP.py,v 1.10 2003-02-21 16:15:24 judson Exp $'
+ident = '$Id: AGGSISOAP.py,v 1.11 2003-03-19 16:08:16 judson Exp $'
 
 __version__ = "0.9.7"
 
@@ -3553,15 +3558,22 @@ class SOAPProxy:
             ma = self.methodattrs
         ma = ma or self.methodattrs
 
+        log.debug("buildSOAP")
         m = buildSOAP(args = args, kw = kw, method = name, namespace = ns,
             header = hd, methodattrs = ma, encoding = self.encoding,
             config = self.config)
+
+        log.debug("transport.call")
 
         r = self.transport.call(self.proxy, m, sa, encoding = self.encoding,
                                 http_proxy = self.http_proxy,
                                 config = self.config)
 
+        log.debug("transport.call done")
+
         p, attrs = parseSOAPRPC(r, attrs = 1)
+
+        log.debug("parse done")
 
         try:
             throw_struct = self.throw_faults and \

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/17/12
-# RCS-ID:      $Id: test_VenueServer.py,v 1.4 2003-02-06 14:44:57 judson Exp $
+# RCS-ID:      $Id: test_VenueServer.py,v 1.5 2003-03-19 16:08:17 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -45,9 +45,9 @@ connectionList = [ outsideVenueDesc ]
 Client.Handle( insideVenueUri ).get_proxy().SetConnections( connectionList )
 
 # add some data to each venue
-dataDescription = DataDescription( "sample.data", "Sample data", "uri", "icon", "storageType" )
+dataDescription = DataDescription("sample.data")
 Client.Handle( outsideVenueUri ).get_proxy().AddData( dataDescription )
-dataDescription = DataDescription( "moreSample.data", "More sample data", "uri", "icon", "storageType" )
+dataDescription = DataDescription("moreSample.data")
 Client.Handle( outsideVenueUri ).get_proxy().AddData( dataDescription )
 
 
@@ -79,9 +79,6 @@ print "\nVenue List: "
 
 for v in vl:
     print v
-
-print "\nCheckpointing"
-venueServerProxy.Checkpoint()
 
 print "\nShutting down"
 venueServerProxy.Shutdown(0)

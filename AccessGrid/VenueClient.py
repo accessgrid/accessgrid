@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.24 2003-03-14 22:48:29 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.25 2003-03-19 16:08:16 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -129,6 +129,12 @@ class VenueClient( ServiceBase ):
             # Enter the venue
             #
             (venueState, self.privateId, self.streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
+
+            if hasattr(venueState, "applications"):
+                applications = venueState.applications
+            else:
+                applications = {}
+            
             self.venueState = VenueState( venueState.uniqueId,
                                           venueState.description,
                                           venueState.connections, 
@@ -136,7 +142,9 @@ class VenueClient( ServiceBase ):
                                           venueState.data,
                                           venueState.services, 
                                           venueState.eventLocation,
-                                          venueState.textLocation )
+                                          venueState.textLocation,
+                                          applications)
+            self.venueUri = URL
             self.venueId = self.venueState.GetUniqueId()
             self.venueProxy = Client.Handle( URL ).get_proxy()
 

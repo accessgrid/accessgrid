@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.8 2003-03-12 08:43:33 judson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.9 2003-03-19 16:05:28 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -149,10 +149,10 @@ class DataStore:
         filename = file_info['name']
         desc = self.venue.GetData(filename)
 
-        if desc is  None or desc == "":
+        if desc is None or desc == "":
             return 1
-
-        return 0
+        else:
+            return 0
 
     def GetUploadFilename(self, dn, file_info):
         """
@@ -276,7 +276,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         #
 
         identityToken = self.server.GetIdentityToken(self)
-        # log.debug("POST identity token %s", identityToken)
+        log.debug("POST identity token %s", identityToken)
         
         #
         # Split path into components, and verify
@@ -284,7 +284,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         # empty if that is the case).
         #
 
-        # log.debug("doPOST path=%s", self.path)
+        log.debug("doPOST path=%s", self.path)
 
         path_parts = self.path.split('/')
         if path_parts[0] != '':
@@ -424,10 +424,10 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         fp = None
 
         try:
-            # log.debug("opening upload file %s", upload_file_path)
+            log.debug("opening upload file %s", upload_file_path)
             fp = open(upload_file_path, "wb")
         except EnvironmentError:
-            # log.exception("Cannot open output file")
+            log.exception("Cannot open output file")
             self.send_error(405, "Cannot open output file")
             return None
 
@@ -672,7 +672,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         prefix = components[0]
         path = components[1]
 
-        # log.info("Have path '%s', prefix='%s'", path, prefix)
+        log.info("Have path '%s', prefix='%s'", path, prefix)
 
         #
         # First get the transfer handler for this prefix.
@@ -977,11 +977,11 @@ n
             self.workerThread[workerNum].start()
 
     def __WorkerRun(self, workerNum):
-        # log.debug("Worker %d starting", workerNum)
+        log.debug("Worker %d starting", workerNum)
 
         while not self.done:
             cmd = self.requestQueue.get(1)
-            # log.debug("Worker %d gets cmd %s", workerNum, cmd)
+            log.debug("Worker %d gets cmd %s", workerNum, cmd)
             cmdType = cmd[0]
             if cmdType == "quit":
                 break
@@ -994,11 +994,11 @@ n
                     self.close_request(request)
                 except:
                     info.exception("Worker %d: Request handling threw exception", workerNum)
-        # log.debug("Worker %d exiting", workerNum)
+        log.debug("Worker %d exiting", workerNum)
             
 
     def process_request(self, request, client_address):
-        # log.debug("process_request: request=%s client_address=%s", request, client_address)
+        log.debug("process_request: request=%s client_address=%s", request, client_address)
         self.requestQueue.put(("request", request, client_address))
 
     def GetIdentityToken(self, transferHandler):
@@ -1303,7 +1303,7 @@ class HTTPUploadEngine:
             host = parsed[1]
             base_path = parsed[2]
 
-            # log.debug("upload mainfest: host='%s' base_path='%s'", host, base_path)
+            log.debug("upload mainfest: host='%s' base_path='%s'", host, base_path)
 
             #
             # We want strict enabled here, otherwise the empty
@@ -1315,7 +1315,7 @@ class HTTPUploadEngine:
             
             transfer_key = self.uploadManifest(conn, base_path, manifest)
             
-            # log.debug("Manifest upload returns '%s'", transfer_key)
+            log.debug("Manifest upload returns '%s'", transfer_key)
         
             for idx, file, basename in file_info:
                 conn = self.connectionClass(host)
