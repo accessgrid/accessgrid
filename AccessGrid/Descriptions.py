@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.49 2004-03-25 23:26:59 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.50 2004-03-30 18:56:05 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.49 2004-03-25 23:26:59 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.50 2004-03-30 18:56:05 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -34,7 +34,7 @@ class ObjectDescription:
         uri : uri (string)
     """
     def __init__(self, name, description = None, uri = None,
-                 oid = str(GUID())):
+                 oid = None):
 
         # Catch annoying None case
         if oid != None:
@@ -186,7 +186,7 @@ class VenueDescription(ObjectDescription):
     A Venue Description is used to represent a Venue.
     """
     def __init__(self, name=None, description=None, encryptionInfo=(0,''),
-                 connectionList=[], staticStreams=[], oid = str(GUID()),
+                 connectionList=[], staticStreams=[], oid = None,
                  uri=None):
 
         ObjectDescription.__init__(self, name, description, uri, oid)
