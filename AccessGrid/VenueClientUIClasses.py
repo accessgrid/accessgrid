@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.102 2003-03-25 20:06:33 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.103 2003-03-25 20:57:19 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -379,6 +379,19 @@ class VenueClientFrame(wxFrame):
         except:
             pass
 
+    def AuthorizeLeadDialog(self):
+        text = "Do you want "+clientProfile.name+" to follow you?"
+        title = "Authorize follow"
+        dlg = wxMessageDialog(self.frame, text, title, style = wxOK| wxCANCEL|wxICON_QUESTION)
+        if(dlg.ShowModal() == wxID_OK):
+            self.application.SendLeadResponse(clientProfile, True)
+
+        else:
+            self.application.SendLeadResponse(clientProfile, False)
+
+        dlg.Destroy()
+        
+       
     def OpenAddPersonalDataDialog(self, event):
         dlg = wxFileDialog(self, "Choose a file:", style = wxOPEN | wxMULTIPLE)
 
@@ -1985,6 +1998,7 @@ class TextValidator(wxPyValidator):
 
     def TransferFromWindow(self):
         return true # Prevent wxDialog from complaining.
+
 
  
 class AddServiceDialog(wxDialog):
