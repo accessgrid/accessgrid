@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.61 2003-04-24 14:58:15 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.62 2003-04-24 16:56:21 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -669,28 +669,30 @@ class VenueListPanel(wxPanel):
             message.Destroy()
 
     def ModifyVenue(self, venue):
-        if(self.venuesList.FindString(venue.name) == wxNOT_FOUND):
-            if venue.uri != None:
-                # ICKY HACK
-                connectionDict = venue.connections
-                venue.connections = venue.connections.values()
-                self.application.server.ModifyVenue(venue.uri, venue)
-                item = self.venuesList.GetSelection()
-                self.venuesList.SetClientData(item, venue)
-                self.venuesList.SetString(item, venue.name)
-                
-                venue.connections = connectionDict
-                self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
+        item = self.venuesList.GetSelection()
+        index = self.venuesList.FindString(venue.name)
 
-            self.DisableStaticStreams()
-        else:
+        if(index != wxNOT_FOUND and index != item):
             text = "The venue could not be modified, a venue with the same name is already present"
             text2 = "Add venue error"
             message = wxMessageDialog(self, text, text2,
                                       style = wxOK|wxICON_INFORMATION)
             message.ShowModal()
             message.Destroy()
+                
+        else:
+            if venue.uri != None:
+                # ICKY HACK
+                connectionDict = venue.connections
+                venue.connections = venue.connections.values()
+                self.application.server.ModifyVenue(venue.uri, venue)
+                self.venuesList.SetClientData(item, venue)
+                self.venuesList.SetString(item, venue.name)
+                venue.connections = connectionDict
+                self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
 
+            self.DisableStaticStreams()
+     
     def SetEncryption(self, value, key):
         item = self.venuesList.GetSelection()
         venue =  self.venuesList.GetClientData(item)
@@ -944,7 +946,8 @@ class DetailPanel(wxPanel):
 
     def __setEvents(self):
         EVT_BUTTON(self, self.ID_CHANGE, self.OpenIntervalDialog)
-        EVT_BUTTON(self, self.ID_BROWSE, self.OpenBrowseDialog)
+        #EVT_BUTTON(self, self.ID_BROWSE, self.OpenBrowseDialog)
+        EVT_BUTTON(self, self.ID_BROWSE, self.OpenEditPathDialog)
         EVT_RADIOBUTTON(self, self.ID_RANDOM, self.ClickedOnRandom)
         EVT_RADIOBUTTON(self, self.ID_INTERVAL, self.ClickedOnInterval)
         EVT_CHECKBOX(self, self.ID_ENCRYPT, self.ClickedOnEncrypt)
@@ -1007,6 +1010,22 @@ class DetailPanel(wxPanel):
                                                    str(sys.exc_value)))
             wxLog_GetActiveTarget().Flush()
 
+    def OpenEditPathDialog(self, event):
+        dlg = EditPathDialog(self, -1, "Edit path")
+        if dlg.ShowModal() == wxID_OK:
+            try:
+                wxLogInfo("Set storage location")
+                self.application.SetStorageLocation(dlg.GetPath())
+            except:
+                wxLogError("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
+                                                       str(sys.exc_value)))
+                wxLog_GetActiveTarget().Flush()
+
+            else:
+                self.storageLocation.SetLabel(dlg.GetPath())
+
+        dlg.Destroy()
+    
     def OpenBrowseDialog(self, event):
         dlg = wxDirDialog(self, "Choose a directory:")
         if dlg.ShowModal() == wxID_OK:
@@ -1847,6 +1866,49 @@ class ModifyAdministratorFrame(AdministratorParamFrame):
                 sizer.Fit(self)
                 self.SetAutoLayout(1)
 '''
+
+#
+# Until we have a remote file browser
+#
+
+
+class EditPathDialog(wxDialog):
+    def __init__(self, parent, id, title):
+        wxDialog.__init__(self, parent, id, title)
+        self.Centre()
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        info = "Please, enter the path where you want the data storage to be located for this server"
+        self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
+        self.addressText = wxStaticText(self, -1, "Address: ", style=wxALIGN_LEFT)
+        self.address = wxTextCtrl(self, -1, "", size = wxSize(200,20))
+        self.Layout()
+
+    def GetPath(self):
+        return self.address.GetValue()
+
+    def Layout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
+        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
+        
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.addressText, 0)
+        sizer2.Add(self.address, 1, wxEXPAND)
+        
+        sizer1.Add(sizer2, 0, wxEXPAND | wxALL, 20)
+        
+        sizer3 =  wxBoxSizer(wxHORIZONTAL)
+        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
+        
+        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer.Add(sizer3, 0, wxALIGN_CENTER)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+        
+
 
 class DigitValidator(wxPyValidator):
     def __init__(self, flag):
