@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.1 2005-01-06 23:27:56 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.2 2005-01-14 23:53:35 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ import string
 try:    import _winreg
 except: pass
 
-from AccessGrid.Types import Capability
+from AccessGrid.Descriptions import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter
 from AccessGrid.AGParameter import RangeParameter
@@ -42,10 +42,10 @@ class AudioService( AGService ):
         self.sysConf = SystemConfig.instance()
 
         # Set configuration parameters
-        self.talk = OptionSetParameter( "talk", "Off", ["On", "Off"] )
-        self.inputGain = RangeParameter( "inputgain", 50, 0, 100 )
-        self.outputGain = RangeParameter( "outputgain", 50, 0, 100 )
-        self.silenceSuppression = OptionSetParameter( "silence_suppression", "Off", ["Off","Automatic","Manual"] )
+        self.talk = OptionSetParameter( "Talk", "Off", ["On", "Off"] )
+        self.inputGain = RangeParameter( "Input Gain", 50, 0, 100 )
+        self.outputGain = RangeParameter( "Output Gain", 50, 0, 100 )
+        self.silenceSuppression = OptionSetParameter( "Silence Suppression", "Off", ["Off","Automatic","Manual"] )
 
         self.configuration.append(self.talk)
         self.configuration.append(self.inputGain)
@@ -241,7 +241,7 @@ class AudioService( AGService ):
             self.log.exception("Exception in AGService.Stop ")
             raise Exception("AGService.Stop failed : ", str( sys.exc_value ) )
 
-    def ConfigureStream( self, streamDescription ):
+    def SetStream( self, streamDescription ):
         """
         Configure the Service according to the StreamDescription, and
         stop and start rat
