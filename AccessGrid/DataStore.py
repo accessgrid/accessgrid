@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.53 2003-09-30 22:04:42 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.54 2003-10-01 21:55:52 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.53 2003-09-30 22:04:42 eolson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.54 2003-10-01 21:55:52 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1848,6 +1848,10 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
             if cancel:
                 log.debug("DL got cancel!")
                 dest_fp.close()
+                # remove local file since it was not completed.
+                if os.path.exists(destination):
+                    os.remove(destination)
+                    log.debug("removed file that didn't finish downloading: " + str(destination))
                 raise DownloadFailed("Cancelled by user")
         
         dest_fp.write(buf)
