@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceClient.py,v 1.13 2003-01-24 20:48:34 turam Exp $
+# RCS-ID:      $Id: CoherenceClient.py,v 1.14 2003-01-27 20:57:33 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -60,9 +60,7 @@ class CoherenceClient(Thread):
         __setupSocket is a private method used to consolidate socket
         initialization code so that it can be easily modified without having
         to delve into the rest of the coherence client implementation.
-        """
-        print "Host %s Port %d" % (host, port)
-        
+        """        
         attr = TCPIOAttr()
         attr.set_authentication_mode(ioc.GLOBUS_IO_SECURE_AUTHENTICATION_MODE_GSSAPI)
         authData = AuthData()
