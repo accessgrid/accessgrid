@@ -12,6 +12,8 @@ import win32process
 import win32con
 import _winreg
 import threading
+import urlparse
+import re
 
 import logging
 
@@ -89,6 +91,26 @@ class PersonalNodeManager:
         url = readNodeServiceURL()
 
         log.debug("Node service running at %s", url)
+
+        comps = urlparse.urlparse(url)
+        if comps[1] != "":
+            #
+            # if we parsed properly, and have a hostname, parse it into
+            # hostname/port and replace hostname with localhost.
+            #
+            # TODO: This is a hack that needs to be fixed by the proper
+            # setting of GLOBUS_HOSTNAME.
+            #
+
+            m = re.match("^([^:]+):(\d+)$", comps[1])
+            if m:
+                oldhost = m.group(1)
+                port = m.group(2)
+                log.debug("Parsed name: host='%s' port='%s'", oldhost, port)
+                ncomps = list(comps)
+                ncomps[1] = "localhost:%s" % (port)
+                url = urlparse.urlunparse(ncomps)
+                log.debug("Reconstituted url as %s", url)
 
         self.setNodeServiceCallback(url)
 
