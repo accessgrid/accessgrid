@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.45 2004-03-05 21:40:39 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.46 2004-03-08 22:12:32 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.45 2004-03-05 21:40:39 judson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.46 2004-03-08 22:12:32 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -412,9 +412,17 @@ class VenueState:
     def AddService( self, serviceDescription ):
         self.services[serviceDescription.id] = serviceDescription
     def UpdateService(self, serviceDescription):
-        self.services[serviceDescription.id] = serviceDescription
+        self.services[serviceDescription.id] = serviceDescription            
     def RemoveService( self, serviceDescription ):
-        del self.services[serviceDescription.id]  
+        if self.services.has_key(serviceDescription.id):
+            del self.services[serviceDescription.id]  
+        else:
+            # Legacy code: Accomodate old (2.1.2 and before) servers,
+            # which allocate a new id when the service description goes
+            # through them.
+            for id,service in self.services.items():
+                if service.name == serviceDescription.name:
+                    del self.services[id]
     def AddApplication( self, applicationDescription ):
         self.applications[applicationDescription.uri] = applicationDescription
     def UpdateApplication(self, applicationDescription):
