@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.73 2003-04-17 20:05:27 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.74 2003-04-20 00:25:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1109,7 +1109,13 @@ class Venue(ServiceBase.ServiceBase):
         
         if self.applications.has_key(appId):
             self.applications[appId].Shutdown()
+
+            self.server.eventService.Distribute( self.uniqueId,
+                                                 Event( Event.REMOVE_APPLICATION,
+                                                        self.uniqueId,
+                                                        self.applications[appId] ) )
             del self.applications[appId]
+
 
     DestroyApplication.soap_export_as = "DestroyApplication"
 
