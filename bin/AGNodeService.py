@@ -6,13 +6,13 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.8 2003-03-14 14:47:01 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.9 2003-03-14 16:47:21 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 import sys
 import signal, time, os
-import logging
+import logging, logging.handlers
 import getopt
 
 from AccessGrid.AGNodeService import AGNodeService
