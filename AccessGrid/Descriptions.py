@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.34 2003-08-04 22:16:07 eolson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.35 2003-08-12 15:56:31 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -216,15 +216,17 @@ class VenueDescription(ObjectDescription):
     
     def AsINIBlock(self):
         string = ObjectDescription.AsINIBlock(self)
-        #string += "administrators : %s\n" % ":".join(self.administrators)
-        if len(rm.validRoles):
-            # Write a list of roles names to the config file.
-            string += "roles : %s\n" % ":".join(rm.GetRoleList())
-            for r in rm.validRoles.keys():
-                # For now, still write Venue.VenueUsers to file, if not written, 
-                #   modify corresponding reading code. 
-                #if not r == "Venue.VenueUsers": # VenueUsers are not persisted
-                string += r + " : %s\n" % ":".join(rm.validRoles[r].GetSubjectListAsStrings()) 
+        
+        # Usually the roleManager in the description is None
+        if self.roleManager:
+            rm = self.roleManager
+            if len(rm.validRoles):
+                # Write a list of roles names to the config file.
+                string += "roles : %s\n" % ":".join(rm.GetRoleList())
+                for r in rm.validRoles.keys():
+                    # Still include Venue.VenueUsers. 
+                    #if not r == "Venue.VenueUsers": # VenueUsers are not persisted
+                    string += r + " : %s\n" % ":".join(rm.validRoles[r].GetSubjectListAsStrings()) 
         string += "encryptMedia: %d\n" % self.encryptMedia
         if self.encryptMedia:
             string += "encryptionKey : %s\n" % self.encryptionKey
