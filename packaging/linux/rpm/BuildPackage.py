@@ -67,7 +67,7 @@ for pkg in [ "logging-0.4.7", "Optik-1.4.1", "fpconst-0.6.0", "SOAPpy"]:
 print "** Building pyOpenSSL rpm"
 # - create tar file for the rpmbuild
 os.chdir(SourceDir)
-if not os.path.islink('pyOpenSSL'):
+if not os.path.islink('pyOpenSSL_AG-0.5.1'):
     cmd = "ln -s pyOpenSSL pyOpenSSL_AG-0.5.1"
     print "cmd = ", cmd
     os.system(cmd)
