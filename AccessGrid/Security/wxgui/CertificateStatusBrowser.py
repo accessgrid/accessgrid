@@ -306,6 +306,12 @@ class CertificateStatusBrowser(CertificateBrowserBase):
         EVT_BUTTON(self, b.GetId(), self.OnCheckStatus)
         sizer.Add(b, 0, wxEXPAND | wxALL, 3)
 
+        sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND | wxALL , 3)
+
+        b = wxButton(self, -1, "Request a new certificate")
+        EVT_BUTTON(self, b.GetId(), self.OnRequestNewCertificate)
+        sizer.Add(b, 0, wxEXPAND | wxALL, 3)
+
         for b in self.certOnlyButtons:
             b.Enable(0)
 
@@ -316,6 +322,10 @@ class CertificateStatusBrowser(CertificateBrowserBase):
 
         self.httpProxyPanel = HTTPProxyConfigPanel(panel)
         sizer.Add(self.httpProxyPanel, 0, wxEXPAND)
+
+    def OnRequestNewCertificate(self, event):
+
+        self.certMgr.GetUserInterface().RunCertificateRequestTool(self)
 
     def OnInstallCert(self, event):
         req = self.GetSelectedCertificate()
