@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.70 2003-03-14 22:57:13 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.71 2003-03-18 17:38:44 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -777,6 +777,10 @@ class VenueList(wxScrolledWindow):
         self.parent = parent
         self.EnableScrolling(true, true)
         self.SetScrollRate(1, 1)
+        EVT_LEFT_DOWN(self, self.test)
+
+    def test(self, evt):
+        print '=------------------ test'
      
     def __doLayout(self):
         self.box = wxBoxSizer(wxVERTICAL)
@@ -931,8 +935,6 @@ class ContentListPanel(wxPanel):
                 
                 del self.participantDict[description.publicId]
                
-
-
     def RemoveNode(self, profile):
         if(profile!=None):
             if(self.nodeDict.has_key(profile.publicId)):
@@ -1037,10 +1039,11 @@ class ContentListPanel(wxPanel):
         self.tree.Expand(self.services)
       
     def RemoveService(self, profile):
-        id = self.serviceDict[profile.name]
-        if(id != None):
+        if(self.serviceDict.has_key(profile.name)):
+            id = self.serviceDict[profile.name]
             del self.serviceDict[profile.name]
-            self.tree.Delete(id)
+            if(id != None):
+                self.tree.Delete(id)
 
     def AddNode(self, profile):
         node = self.tree.AppendItem(self.nodes, profile.name, \
