@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.106 2003-09-10 16:50:40 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.107 2003-09-10 21:41:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1122,6 +1122,13 @@ class VenueClient( ServiceBase):
         """
 
         log.debug("Method UpdateNodeService called")
+
+        try:
+            Client.Handle(self.nodeServiceUri).IsValid()
+        except:
+            log.info("- Node Service unreachable; skipping")
+            log.info("  url = %s", self.nodeServiceUri)
+            return
 
         # Set the identity of the user running the node
         if not self.isIdentitySet:
