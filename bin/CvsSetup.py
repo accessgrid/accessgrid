@@ -76,7 +76,10 @@ for o, a in opts:
 
 if DST_CONFIG_DIR == "" or not os.path.exists( DST_CONFIG_DIR ):
     PrintUsage()
-    print "Error: You did not specify a destination directory."
+    if DST_CONFIG_DIR == "":
+        print "Error: You did not specify a destination directory."
+    elif not os.path.exists( DST_CONFIG_DIR ):
+        print "Error: destination directory does not exist:",DST_CONFIG_DIR
     sys.exit()
 
 
