@@ -3,6 +3,7 @@ from AccessGrid import icons
 from AccessGrid.VenueClient import VenueClient
 import threading
 from AccessGrid import Utilities
+from AccessGrid.UIUtilities import AboutDialog, ErrorDialog
 import AccessGrid.ClientProfile
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Descriptions import ServiceDescription
@@ -28,12 +29,12 @@ class VenueClientFrame(wxFrame):
         self.parent = parent
 	self.menubar = wxMenuBar()
 	self.statusbar = self.CreateStatusBar(1)
-	self.toolbar = wxToolBar(self, -1,wxDefaultPosition,wxDefaultSize, wxTB_TEXT| \
+	self.toolbar = wxToolBar(self, 600,wxDefaultPosition,wxDefaultSize, wxTB_TEXT| \
 		  wxTB_HORIZONTAL| wxTB_FLAT)
 	self.venueListPanel = VenueListPanel(self, app) 
 	self.contentListPanel = ContentListPanel(self, app)
 	
-	self. __setStatusbar()
+	self.__setStatusbar()
 	self.__setMenubar()
 	self.__setToolbar()
 	self.__setProperties()
@@ -68,6 +69,8 @@ class VenueClientFrame(wxFrame):
         self.menubar.Append(self.edit, "&Edit")
         self.myNode = wxMenu()
         self.myNode.Append(500, "Manage ")
+        #self.myNode = wxMenu()
+       # self.myNode.Append(500, "Add")
         self.menubar.Append(self.myNode, "&My Node")
       
 	self.help = wxMenu()
@@ -86,13 +89,16 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, 302, self.OpenAboutDialog)
         EVT_MENU(self, 320, self.OnExit)
         EVT_MENU(self, 342, self.OpenConnectToVenueDialog)
+        EVT_TOOL_RCLICKED(self, 20, self.OpenDockMenu)
         EVT_MENU(self, 500, self.OpenNodeMgmtApp)
         
     def __setToolbar(self):
-	self.toolbar.AddSimpleTool(20, icons.getWordBitmap(), \
+	self.tool1Id = self.toolbar.AddSimpleTool(20, icons.getWordBitmap(), \
                                    "ImportantPaper.doc", "ImportantPaper.doc",)
-	self.toolbar.AddSimpleTool(21, icons.getPowerPointBitmap(), \
+	self.tool2Id = self.toolbar.AddSimpleTool(21, icons.getPowerPointBitmap(), \
                                    "Presentation.ppt", "Presentation.ppt",)
+        print '----------tool'
+        print self.tool1Id
 	
     def __setProperties(self):
         self.SetTitle("Access Grid - The Lobby")
@@ -117,6 +123,9 @@ class VenueClientFrame(wxFrame):
 	self.SetSizer(self.venueClientSizer)
 	self.venueClientSizer.Fit(self)
 	self.SetAutoLayout(1)  
+
+    def OpenDockMenu(self, event):
+        print '-------OPEN DOCK MENU'
 
     def OnExit(self, event):
         self.Close()
@@ -176,7 +185,10 @@ class VenueClientFrame(wxFrame):
         print 'open participant profile'
 
     def OpenAboutDialog(self, event):
-        aboutDialog = AboutDialog(self, -1, "About VenueClient")
+        aboutDialog = AboutDialog(self, wxSIMPLE_BORDER)
+       # aboutDialog.SetPosition(self.GetPosition())
+        aboutDialog.Popup()
+                                              
 
     def RemoveData(self, event):
         id = self.contentListPanel.tree.GetSelection()
@@ -414,16 +426,14 @@ class ContentListPanel(wxPanel):
     def __setImageList(self):
 	imageList = wxImageList(32,19)  
 	self.defaultPersonId = imageList.Add(icons.getDefaultParticipantBitmap())
-	self.pptDocId = imageList.Add(icons.getDefaultDataBitmap())
-	self.importantPaperId = imageList.Add(icons.getDefaultDataBitmap())
+        self.importantPaperId = imageList.Add(icons.getDefaultDataBitmap())
 	self.serviceId = imageList.Add(icons.getDefaultServiceBitmap())
         self.nodeId = imageList.Add(icons.getDefaultNodeBitmap())
-	self.iconId = imageList.Add(icons.getDefaultParticipantBitmap())  
 	self.tree.AssignImageList(imageList)
 
     def AddParticipant(self, profile):
         participant = self.tree.AppendItem(self.participants, profile.name, \
-                                           self.iconId, self.iconId)
+                                           self.defaultPersonId, self.defaultPersonId)
         self.tree.SetItemData(participant, wxTreeItemData(profile)) 
         self.participantDict[profile.publicId] = participant
         self.tree.Expand(self.participants)
@@ -603,38 +613,8 @@ class ContentListPanel(wxPanel):
         self.dataDict.clear()
         self.serviceDict.clear()
         self.nodeDict.clear()
-             
-class ErrorDialog:
-   def __init__(self, frame, text):
-       (name, args, traceback_string_list) = Utilities.formatExceptionInfo()
-       for x in traceback_string_list:
-           print(x)       
-       noServerDialog = wxMessageDialog(frame, text, \
-                                        '', wxOK | wxICON_INFORMATION)
-       noServerDialog.ShowModal()
-       noServerDialog.Destroy()
-       
-class AboutDialog(wxDialog):
-    def __init__(self, parent, id, title):
-        wxDialog.__init__(self, parent, id, title)
-        info = 'Developed by Argonne National Laboratories'
-        self.okButton = wxButton(self, wxID_OK, "Ok")
-        self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
-        self.__doLayout()
 
-        if (self.ShowModal() == wxID_OK): 
-            self.Destroy()
-
-        self.Destroy()
-                    
-    def __doLayout(self):
-        sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer1.Add(self.text, 0, wxALL, 20)
-        sizer1.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
-        self.SetSizer(sizer1)
-        sizer1.Fit(self)
-        self.SetAutoLayout(1)
-
+      
 class ConnectToServerDialog(wxDialog):
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title)
