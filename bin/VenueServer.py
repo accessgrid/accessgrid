@@ -3,7 +3,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.1 2003-01-24 18:17:39 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.2 2003-01-24 19:48:24 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,8 +12,12 @@ from AccessGrid.hosting.pyGlobus import Server, ServiceBase
 from AccessGrid.VenueServer import VenueServer
 import sys
 
+port = 8000
+if len(sys.argv)>1:
+    port = int(sys.argv[1])
+
 # First thing we do is create a hosting environment
-hostingEnvironment = Server.Server(8000)
+hostingEnvironment = Server.Server(port)
 
 # Then we create a VenueServer, giving it the hosting environment
 venueServer = VenueServer(hostingEnvironment)
