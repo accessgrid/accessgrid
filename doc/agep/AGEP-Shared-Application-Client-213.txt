@@ -1,9 +1,11 @@
 ===================================
 Shared Application Client for 2.1.3
 ===================================
-: version $Revision: 1.1 $
-: author: Susanne Lefvert <lefvert@mcs.anl.gov>
-: status: Draft
+
+:version: $Revision: 1.2 $
+:author: Susanne Lefvert <lefvert@mcs.anl.gov>
+:status: Draft
+:contact: ag-tech@mcs.anl.gov
 
 Abstract
 ========
@@ -79,7 +81,7 @@ Open Issues
     Should the SharedAppClient implement all SOAP methods offered by the AppService even though this might just be a one line call to the service?  Or, is it better to return the SOAP proxy in a GetServiceProxy method and avoid the extra interface layer?  For new developers, it would probably be easier to understand one well documented client interface and hide the AppService entirely.
 
 
-Backwards Compatibility
+Interoperability Issues
 =======================
 
     Shared applications currently available will still work without using the SharedAppClient. However, application code can be reduced and readability increased if redesign is implemented. 
