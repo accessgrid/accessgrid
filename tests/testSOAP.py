@@ -4,12 +4,12 @@
 #
 #
 
-import AccessGrid.hosting.pyGlobus.Client as Client
+from  AccessGrid.hosting import Client
 
 ServerURL = "https://vv2.mcs.anl.gov:8020/VenueServer"
 #ServerURL = "https://localhost:8000/VenueServer"
 
-server = Client.Handle(ServerURL).get_proxy()
+server = Client.SecureHandle(ServerURL).GetProxy()
 
 defVenueURL = server.GetDefaultVenue()
 
