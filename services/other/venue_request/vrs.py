@@ -163,7 +163,10 @@ def RequestVenueExt(request, test=0):
     log.debug("Created IW to new venue.")
    
     description = request['description']
-    description = description.replace('\n',' ')
+
+    for s in ["\r", "\r\n", "\n\r", "\n"]:
+        description = description.replace(s, " ")
+
     vDict[backDomain] = {
         'name' : request['name'],
         'description' : request['description'],
