@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.237 2003-08-22 05:06:16 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.238 2003-08-22 19:26:41 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1824,14 +1824,28 @@ class ContentListPanel(wxPanel):
                     if len(list) == 2:
                         (name, ext) = list
                     commands = GetMimeCommands(ext = ext)
-                    openCmd = commands['Open']
+                    if commands.has_key('Open'):
+                        openCmd = commands['Open']
+                    else:
+                        text = "You have nothing configured to open this data."
+                        title = "Notification"
+                        EVT_MENU(self, id, lambda event, text=text,
+                                 title=title: MessageDialog(self, text, title,
+                                               style = wxOK|wxICON_INFORMATION))
                 elif isinstance(item, ServiceDescription):
                     list = item.name.split('.')
                     if len(list) == 2:
                         (name, ext) = list
                     commands = GetMimeCommands(mimeType = item.mimeType,
                                                ext = ext)
-                    openCmd = commands['Open']
+                    if commands.has_key('Open'):
+                        openCmd = commands['Open']
+                    else:
+                        text = "You have nothing configured to open this data."
+                        title = "Notification"
+                        EVT_MENU(self, id, lambda event, text=text,
+                                 title=title: MessageDialog(self, text, title,
+                                               style = wxOK|wxICON_INFORMATION))
                 else:
                     appdb = Toolkit.GetApplication().GetAppDatabase()
                     openCmd = appdb.GetCommandLine(item.mimeType, 'Open')
@@ -2109,15 +2123,27 @@ class ContentListPanel(wxPanel):
             self.app.SaveFileNoProgress(item, localFilePath)
 
             # Fix odd commands
-            if command.find("%1") != -1:
-                command = command.replace("%1", "%(localFilePath)s")
-            elif command.find("%(localFilePath)s") == -1:
-                command += " \"%(localFilePath)s\""
+            if isWindows():
+                if command.find("%1") != -1:
+                    command = command.replace("%1", "%(localFilePath)s")
+                elif command.find("%(localFilePath)s") == -1:
+                    command += " \"%(localFilePath)s\""
+            else:
+                if command.find("%s") != -1:
+                    command = command.replace("%s", "%(localFilePath)s")
+                elif command.find("%(localFilePath)s") == -1:
+                    command += " \"%(localFilePath)s\""
         else:
-            if command.find("%1") != -1:
-                command = command.replace("%1", "%(appUrl)s")
-            elif command.find("%(appUrl)s") == -1:
-                command += " \"%(appUrl)s\""
+            if isWindows():
+                if command.find("%1") != -1:
+                    command = command.replace("%1", "%(appUrl)s")
+                elif command.find("%(appUrl)s") == -1:
+                    command += " \"%(appUrl)s\""
+            else:
+                if command.find("%s") != -1:
+                    command = command.replace("%s", "%(localFilePath)s")
+                elif command.find("%(localFilePath)s") == -1:
+                    command += " \"%(localFilePath)s\""
             mimeType = item.mimeType
             
         namedVars['appName'] = item.name
