@@ -199,7 +199,7 @@ _lowDetailFormatter = Formatter("%(name)-17s %(asctime)s %(levelname)-5s %(messa
 def GetLowDetailFormatter():
     return _lowDetailFormatter
 
-_usageFormatter = Formatter("%(asctime)s,%(message)s", "\"%x\",\"%X\"")
+_usageFormatter = Formatter("\"%(created).0f\",%(asctime)s,%(message)s", "\"%x\",\"%X\"")
 
 def GetUsageFormatter():
     return _usageFormatter
