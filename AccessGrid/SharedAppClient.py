@@ -7,6 +7,7 @@ from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.hosting import Client
 from AccessGrid.SharedApplication import SharedApplicationIW
+import SOAPpy.Types
 
 class SharedAppClient:
     '''
@@ -388,6 +389,12 @@ class SharedAppClient:
         except Client.MethodNotFound, e:
             self.log.exception("SharedAppClient.SetParticipantStatus: Failed to set participant status")
             raise "The server you are connecting to is running old software. This method is not implemented in that version." 
+        except Exception, e:                                       
+            if isinstance(e, SOAPpy.Types.faultType) and e.faultstring.startswith("No method"):
+                self.log.info("SharedAppClient.SetParticipantProfile: Failed to set participant profile due to older version of server.")
+            else:
+                self.log.exception("SharedAppClient.SetParticipantProfile: Failed to set participant profile")
+                raise "The server you are connecting to is running old software. This method is not implemented in that version." 
         except:
             self.log.exception("SharedAppClient.SetParticipantStatus: Failed to set status")
             raise "Failed to set participant status" 
