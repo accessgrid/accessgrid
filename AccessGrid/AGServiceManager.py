@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.7 2003-02-10 14:47:35 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.8 2003-02-12 23:01:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -368,7 +368,7 @@ class AGServiceManager( ServiceBase ):
 
 
             if serviceDescription.executable.endswith(".py"):
-                executable = Utilities.Which( "python" )
+                executable = sys.executable
                 options.append(executable)
                 options.append( serviceDescription.executable )
             else:
