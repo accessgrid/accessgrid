@@ -140,8 +140,8 @@ os.system("%s install --prefix=%s --no-compile" % (cmd, DestDir))
 os.chdir(s)
 
 # Build the other python modules
-cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", BuildDir,
-                          SourceDir, DestDir)
+cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
+                          BuildDir, DestDir)
 os.system(cmd)
 
 # Do automatic testing
