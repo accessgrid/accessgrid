@@ -1,3 +1,5 @@
+#!/usr/bin/python2
+
 import ConfigParser
 import sys
 import os
@@ -10,6 +12,8 @@ from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
 from AccessGrid.Descriptions import Capability, StreamDescription 
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
+import gc
+
 venueServerUri = "https://localhost:8000/VenueServer"
 
 if len(sys.argv) > 2:
@@ -17,7 +21,7 @@ if len(sys.argv) > 2:
 
 configFile = sys.argv[1]
 
-venueServer = Client.Handle(venueServerUri).get_proxy()
+venueServer = Client.Handle(venueServerUri).GetProxy()
 venueServer.SetEncryptAllMedia(0)
 
 cp = ConfigParser.ConfigParser()
@@ -40,7 +44,8 @@ for sec in cp.sections():
         (host, port) = string.split(cp.get(sec, 'video'), ':')
         vcap = Capability(Capability.PRODUCER, Capability.VIDEO)
         vsd = StreamDescription(vd.name, 
-                                MulticastNetworkLocation(host.strip(),int(port), 127),
+                                MulticastNetworkLocation(host.strip(),
+                                                         int(port), 127),
                                 vcap, 0, None, 1)
         vd.streams.append(vsd)
         
@@ -49,11 +54,11 @@ for sec in cp.sections():
         (host, port) = string.split(cp.get(sec, 'audio'), ':')
         acap = Capability(Capability.PRODUCER, Capability.AUDIO)
         asd = StreamDescription(vd.name, 
-                                MulticastNetworkLocation(host.strip(),int(port), 127),
+                                MulticastNetworkLocation(host.strip(),
+                                                         int(port), 127),
                                 acap, 0, None, 1)
-
         vd.streams.append(asd)
-    
+
     # Make the venue, then store the resulting URL
     print "VD #%s : %s" % (sec, vd.name)
     vd.uri = venueServer.AddVenue(vd)
@@ -63,25 +68,26 @@ for sec in cp.sections():
         venueServer.SetDefaultVenue(vd.uri)
         
     venues[sec] = vd
-    
+
 for sec in cp.sections():
     # Build up connections
     current = venues[sec].connections
     exits = string.split(cp.get(sec, 'exits'), ', ')
-    print "CE #%s : %s ( %s )" % (sec, venues[sec].name, str(exits))
     for x in exits:
         if venues.has_key(x):
-            c = ConnectionDescription(venues[x].name, venues[x].description,
-                                      venues[x].uri)
-            current[c.uri] = c
+            current[venues[x].uri]=ConnectionDescription(venues[x].name,
+                                                         venues[x].description,
+                                                         venues[x].uri)
         else:
-            print "Error finding description for venue: ", x
+            print "Error making connection to venue: ", x
 
     # Set the connections on the given venue
     print "CD #%s/%s: %s" % (sec, venues[sec].name, cp.get(sec, 'exits'))
-    venue = Client.Handle(venues[sec].uri).get_proxy()
-    venue.SetConnections(venues[sec].connections.values())
-
-
-
-
+    # venue = Client.Handle(venues[sec].uri).GetProxy()
+    print "URL: %s" % venues[sec].uri
+    if Client.Handle(venues[sec].uri).IsValid():
+        venue = Client.Handle(venues[sec].uri).GetProxy()
+        venue.SetConnections(venues[sec].connections.values())
+        print "Set Connections"
+    else:
+        print "Invalid Handle"
