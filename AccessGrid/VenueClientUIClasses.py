@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.106 2003-03-25 21:28:28 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.107 2003-03-25 21:30:59 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -82,7 +82,7 @@ class VenueClientFrame(wxFrame):
     ID_ME_PROFILE = NewId()
     ID_ME_DATA = NewId()
 
-    #https://vv2.mcs.anl.gov:8880/Venues/000000f42704a7fa008c00dd000b00371fc
+   
 
     textClientPanel = None
     textClientStandAlone = None
@@ -386,10 +386,10 @@ class VenueClientFrame(wxFrame):
         title = "Authorize follow"
         dlg = wxMessageDialog(self, text, title, style = wxOK| wxCANCEL|wxICON_QUESTION)
         if(dlg.ShowModal() == wxID_OK):
-            self.app.SendLeadResponse(clientProfile, True)
+            self.app.SendLeadResponse(clientProfile, true)
 
         else:
-            self.app.SendLeadResponse(clientProfile, False)
+            self.app.SendLeadResponse(clientProfile, false)
 
         dlg.Destroy()
         
