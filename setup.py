@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.63 2004-04-21 19:00:16 judson Exp $
+# RCS-ID:      $Id: setup.py,v 1.64 2004-04-26 15:19:04 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -64,13 +64,16 @@ linux_data = [('etc/init.d',
                 r"packaging/linux/init.d/agsm"
                 ]
                ),
-              ('etc/AccessGrid',
+              ('etc/AccessGrid/Config',
                [r"packaging/config/AGNodeService.cfg",
                 ]
                ),
-              ('etc/AccessGrid/nodeConfig',
+              ('etc/AccessGrid/Config/nodeConfig',
                [r"packaging/config/defaultLinux",
                 ]
+               ),
+              ('etc/AccessGrid/Config/CAcertificates',
+               glob.glob('packaging/config/CAcertificates/*'),
                ),
               ('share/AccessGrid',
                [r"packaging/ag.ico"
@@ -94,10 +97,12 @@ linux_data = [('etc/init.d',
                ),
               ('share/doc/AccessGrid',
                ["COPYING.txt",
-                "INSTALL",
+                "Install.LINUX",
                 "README",
+                "README-developers",
                 "TODO",
-                "VERSION"
+                "VERSION",
+                "ChangeLog"
                 ]
                ),
               ('bin', []),
