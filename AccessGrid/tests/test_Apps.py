@@ -1,7 +1,6 @@
 
 import sys
 from AccessGrid.hosting.pyGlobus import Client
-from AccessGrid.ClientProfile import ClientProfile
 
 
 def BasicTest( appUrl ):
@@ -9,8 +8,7 @@ def BasicTest( appUrl ):
     appProxy = Client.Handle( appUrl ).get_proxy()
 
     print "-- Join application"
-    profile = ClientProfile()
-    privateToken = appProxy.Join( profile )
+    (publicToken, privateToken) = appProxy.Join( )
 
     print "-- Get data channel"
     (channelId, eventServiceLocation) = appProxy.GetDataChannel(privateToken)
