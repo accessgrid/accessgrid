@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.206 2003-05-28 16:49:12 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.207 2003-05-28 21:10:19 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1419,9 +1419,9 @@ class ContentListPanel(wxPanel):
     def AddParticipant(self, profile, dataList = []):
         imageId = None
         
-        if self.app.profile.profileType == "user":
+        if profile.profileType == "user":
             imageId =  self.participantId
-        elif self.app.profile.profileType == "node":
+        elif profile.profileType == "node":
             imageId = self.nodeId
         else:
             log.exception("The user type is not a user nor a node, something is wrong")
@@ -1467,8 +1467,12 @@ class ContentListPanel(wxPanel):
                           
     def ModifyParticipant(self, description):
         log.debug('Modify participant')
+        if self.participantDict.has_key(description.publicId):
+            id = self.participantDict[description.publicId]
+            personalData = self.__GetPersonalDataFromItem(id)
+       
         self.RemoveParticipant(description)
-        self.AddParticipant(description)
+        self.AddParticipant(description, personalData)
 
     def __GetPersonalDataFromItem(self, treeId):
         # Get data for this id
@@ -1999,11 +2003,6 @@ class TextClientPanel(wxPanel):
         message, profile = textPayload.data
 
         self.textMessage = ''
-
-        print textPayload.sender
-        print GetDefaultIdentityDN()
-        print profile.name
-        print self.app.profile.name
 
         #
         # Do not base on dn name because if you have 2 clients
