@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.65 2004-08-04 18:51:37 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.66 2004-08-06 17:07:09 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.65 2004-08-04 18:51:37 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.66 2004-08-06 17:07:09 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -3606,6 +3606,11 @@ class TextClientPanel(wxPanel):
         If a url is pressed in the text chat, this method is called to
         bring up correct web site.
         '''
+        # Ignore mouse over events.
+        if event.GetMouseEvent().GetButton() == wxMOUSE_BTN_NONE:
+            event.Skip()
+            return
+        
         start = event.GetURLStart()
         end = event.GetURLEnd()
         url = self.textOutput.GetRange(start, end)
