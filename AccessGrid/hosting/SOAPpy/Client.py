@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Client.py,v 1.2 2004-02-24 21:30:51 judson Exp $
+# RCS-ID:      $Id: Client.py,v 1.3 2004-02-27 19:16:58 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ This module provides a helper class Client that wraps
 the creation of the SOAP server proxy.
 """
 
-__revision__ = "$Id: Client.py,v 1.2 2004-02-24 21:30:51 judson Exp $"
+__revision__ = "$Id: Client.py,v 1.3 2004-02-27 19:16:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from SOAPpy import SOAPProxy
@@ -25,7 +25,7 @@ from SOAPpy.GSIServer import GSIConfig
 import urllib
 
 class Handle:
-    def __init__(self, url, namespace = None, authCallback = None, debug = 0,
+    def __init__(self, url, namespace = None, authCallback = None, debug = 1,
                  config = None):
         if config == None:
             self.config = GSIConfig()
@@ -33,6 +33,7 @@ class Handle:
             self.config = config
             
         self.config.debug = debug
+        self.config.simplify_objects = 1
         self.url = url.replace("https", "httpg")
         self.proxy = None
         self.namespace = namespace

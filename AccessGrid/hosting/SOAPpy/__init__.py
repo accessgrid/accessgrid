@@ -5,14 +5,14 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.2 2004-02-24 21:30:51 judson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.3 2004-02-27 19:16:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
-AG Hosting environment tools.
+SOAPpy hosting interface modules.
 """
-__revision__ = "$Id: __init__.py,v 1.2 2004-02-24 21:30:51 judson Exp $"
+__revision__ = "$Id: __init__.py,v 1.3 2004-02-27 19:16:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
     

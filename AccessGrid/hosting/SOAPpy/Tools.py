@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Tools.py,v 1.3 2004-02-26 05:01:47 turam Exp $
+# RCS-ID:      $Id: Tools.py,v 1.4 2004-02-27 19:16:58 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ This module defines methods for making serialization and other things simpler
 when using the SOAPpy module.
 """
 
-__revision__ = "$Id: Tools.py,v 1.3 2004-02-26 05:01:47 turam Exp $"
+__revision__ = "$Id: Tools.py,v 1.4 2004-02-27 19:16:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -47,57 +47,68 @@ class IWrapper:
     def IsValid(self):
         return self.proxy.IsValid()
     
-def Decorate(object):
+def Decorate(obj):
     """
     This method traverses a object hierarchy rooted at object. It tags each
     object with an attribute ag_class with the class this is. This makes it
     possible to rebuild these classes on the other side of a SOAP call.
     """
-    if type(object) == types.TupleType:
-        listRep = []
-        for i in range(0, len(object)):
-            listRep.append( Decorate(object[i]) )
-        object = tuple(listRep)
-        return object
-    elif type(object) == types.ListType:
-        for i in range(0, len(object)):
-            object[i] = Decorate(object[i])
-        return object
-    elif type(object) == types.DictType:
-        for k,v in object.items():
-            object[k] = Decorate(v)
-        return object
-    if type(object) == types.InstanceType:
-        cp = ".".join([object.__class__.__module__, object.__class__.__name__])
-        setattr(object, "ag_class", cp)
-        for k in object.__dict__.keys():
-            setattr(object, k, Decorate(object.__dict__[k]))
-        return object
+    if type(obj) == types.TupleType:
+        res = map(lambda x: Decorate(x), obj)
+        retval = tuple(res)
+    elif type(obj) == types.ListType:
+        for i in range(0, len(obj)):
+            obj[i] = Decorate(obj[i])
+        retval = obj
+    elif type(obj) == types.DictType:
+        for k,v in obj.items():
+            obj[k] = Decorate(v)
+        retval = obj
+    if type(obj) == types.InstanceType:
+        cp = ".".join([obj.__class__.__module__, obj.__class__.__name__])
+        setattr(obj, "ag_class", cp)
+        for k in obj.__dict__.keys():
+            setattr(obj, k, Decorate(obj.__dict__[k]))
+        retval = obj
     else:
-        return object
+        retval = obj
 
-from SOAPpy.Types import structType, typedArrayType
+    print "TOM LOVES THIS"
+    print retval
+    print "IVAN DOESN'T"
     
-def Reconstitute(object):
+    return retval
+    
+from SOAPpy.Types import structType, typedArrayType, arrayType
+    
+def Reconstitute(obj):
     """
     """
-    if isinstance(object, structType):
-        if hasattr(object, "ag_class"):
-            k = object.ag_class
-            delattr(object, "ag_class")
-            c = CreateBlank(k)
-            for ok in object._keys():
-                setattr(c, ok, Reconstitute(object[ok]))
-            return c
+    if isinstance(obj, structType):
+        if hasattr(obj, "ag_class"):
+            k = obj.ag_class
+            delattr(obj, "ag_class")
+            f = CreateBlank(k)
+            for ok in obj._keys():
+                setattr(f, ok, Reconstitute(obj[ok]))
         else:
-            return object
-    elif isinstance(object, typedArrayType):
+            f = obj
+    elif isinstance(obj, typedArrayType):
         f = list()
-        for o in object:
+        for o in obj:
             f.append(Reconstitute(o))
-        return f
+    elif isinstance(obj, arrayType):
+        f = list()
+        for o in obj:
+            f.append(Reconstitute(o))
     else:
-        return object
+        f = obj
+
+    if isinstance(f, structType):
+        print f
+        raise "HELLIFIKNOW"
+
+    return f
 
 def CreateBlank(p):
     parts = p.split('.')
