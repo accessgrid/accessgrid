@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.313 2004-01-28 16:20:17 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.314 2004-01-28 18:09:07 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.313 2004-01-28 16:20:17 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.314 2004-01-28 18:09:07 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -78,6 +78,7 @@ class VenueClientFrame(wxFrame):
     ID_WINDOW_TOP = wxNewId()
     ID_WINDOW_LEFT  = wxNewId()
     ID_WINDOW_BOTTOM = wxNewId()
+    ID_WINDOW_BOTTOM2 = wxNewId()
     ID_VENUE_DATA = wxNewId()
     ID_VENUE_DATA_ADD = wxNewId()
     ID_VENUE_ADMINISTRATE_VENUE_ROLES = wxNewId()
@@ -142,9 +143,14 @@ class VenueClientFrame(wxFrame):
 	self.statusbar = self.CreateStatusBar(1)
         self.venueAddressBar = VenueAddressBar(self, self.ID_WINDOW_TOP, app, \
                                                self.myVenuesDict, 'default venue')
-        self.TextWindow = wxSashLayoutWindow(self, self.ID_WINDOW_BOTTOM, wxDefaultPosition,
-                                             wxSize(200, 35))
-        self.textClientPanel = TextClientPanel(self.TextWindow, -1, app)
+        self.textInputWindow = wxSashLayoutWindow(self, self.ID_WINDOW_BOTTOM2, wxDefaultPosition,
+                                                  wxSize(200, 35))
+        self.textOutputWindow = wxSashLayoutWindow(self, self.ID_WINDOW_BOTTOM, wxDefaultPosition,
+                                                   wxSize(200, 35))
+        textOutput = wxTextCtrl(self.textOutputWindow, wxNewId(), "",
+                                style= wxTE_MULTILINE|wxTE_READONLY|wxTE_RICH|wxTE_AUTO_URL)
+        self.textClientPanel = TextClientPanel(self.textInputWindow, -1, app, textOutput)
+               
         self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT, app)
         self.contentListPanel = ContentListPanel(self, app)
         dataDropTarget = DataDropTarget(self.app)
@@ -162,7 +168,7 @@ class VenueClientFrame(wxFrame):
             return
 
         eID = event.GetId()
-
+              
         if eID == self.ID_WINDOW_LEFT:
             self.venueListPanel.Show()
             width = event.GetDragRect().width
@@ -174,8 +180,33 @@ class VenueClientFrame(wxFrame):
             self.venueListPanel.SetDefaultSize(wxSize(width, 1000))
 
         elif eID == self.ID_WINDOW_BOTTOM:
-             height = event.GetDragRect().height
-             self.TextWindow.SetDefaultSize(wxSize(1000, height))
+            height = event.GetDragRect().height
+            self.textOutputWindow.SetDefaultSize(wxSize(1000, height))
+
+        elif eID == self.ID_WINDOW_BOTTOM2:
+            outputMinSize = 40
+            inputMinSize = 30
+            oldInputHeight = self.textInputWindow.GetSize().height
+            newInputHeight = event.GetDragRect().height
+
+            # Don't make text input too small.
+            if newInputHeight < inputMinSize:
+                newInputHeight = inputMinSize
+                            
+            diff = newInputHeight - oldInputHeight
+            oldOutputHeight = self.textOutputWindow.GetSize().height
+            newOutputHeight = oldOutputHeight - diff
+
+            # Don't make input hide output.
+            if newOutputHeight < outputMinSize:
+                # fix both sizes
+                newInputHeight = newInputHeight - (outputMinSize - newOutputHeight)
+                newOutputHeight = outputMinSize
+                            
+            self.textInputWindow.SetDefaultSize(wxSize(1000, newInputHeight))
+                        
+            # Make output smaller when input is bigger and vice versa.
+            self.textOutputWindow.SetDefaultSize(wxSize(1000, newOutputHeight))
 
         wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
     
@@ -359,6 +390,9 @@ class VenueClientFrame(wxFrame):
     def __setEvents(self):
         EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_TOP,
                                self.ID_WINDOW_BOTTOM, self.OnSashDrag)
+        EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_BOTTOM,
+                               self.ID_WINDOW_BOTTOM2, self.OnSashDrag)
+        
         EVT_SIZE(self, self.OnSize)
         EVT_MENU(self, self.ID_VENUE_DATA_ADD, self.OpenAddDataDialog)
         EVT_MENU(self, self.ID_VENUE_SAVE_TEXT, self.SaveText)
@@ -417,13 +451,20 @@ class VenueClientFrame(wxFrame):
         self.venueAddressBar.SetOrientation(wxLAYOUT_HORIZONTAL)
         self.venueAddressBar.SetAlignment(wxLAYOUT_TOP)
 
-        self.TextWindow.SetDefaultSize(wxSize(1000, 100))
-        self.TextWindow.SetOrientation(wxLAYOUT_HORIZONTAL)
-        self.TextWindow.SetAlignment(wxLAYOUT_BOTTOM)
-        self.TextWindow.SetSashVisible(wxSASH_TOP, TRUE)
+        self.textOutputWindow.SetDefaultSize(wxSize(1000, 100))
+        self.textOutputWindow.SetOrientation(wxLAYOUT_HORIZONTAL)
+        self.textOutputWindow.SetAlignment(wxLAYOUT_BOTTOM)
+        self.textOutputWindow.SetSashVisible(wxSASH_TOP, TRUE)
 
-        wxLayoutAlgorithm().LayoutWindow(self.TextWindow, self.textClientPanel)
-
+        wxLayoutAlgorithm().LayoutWindow(self.textOutputWindow, self.textClientPanel)
+         
+        self.textInputWindow.SetDefaultSize(wxSize(1000, 45))
+        self.textInputWindow.SetOrientation(wxLAYOUT_HORIZONTAL)
+        self.textInputWindow.SetAlignment(wxLAYOUT_BOTTOM)
+        self.textInputWindow.SetSashVisible(wxSASH_TOP, TRUE)
+        
+        wxLayoutAlgorithm().LayoutWindow(self, self.textInputWindow)
+       
         self.venueListPanel.SetDefaultSize(wxSize(180, 1000))
         self.venueListPanel.SetOrientation(wxLAYOUT_VERTICAL)
         self.venueListPanel.SetSashVisible(wxSASH_RIGHT, TRUE)
@@ -645,7 +686,7 @@ class VenueClientFrame(wxFrame):
         if dlg.ShowModal() == wxID_OK:
             filePath = dlg.GetPath()
             fileName = (os.path.split(filePath))[1]
-            text = self.textClientPanel.TextOutput.GetValue()
+            text = self.textClientPanel.textOutput.GetValue()
 
             # Check if file already exists
             if os.access(filePath, os.R_OK):
@@ -2434,13 +2475,14 @@ class TextClientPanel(wxPanel):
     
     ID_BUTTON = wxNewId()
 
-    def __init__(self, parent, id, application):
+    def __init__(self, parent, id, application, textOutputCtrl):
         wxPanel.__init__(self, parent, id)
 
         self.textOutputId = wxNewId()
         self.app = application
-        self.TextOutput = wxTextCtrl(self, self.textOutputId, "",
-                                     style= wxTE_MULTILINE|wxTE_READONLY|wxTE_RICH|wxTE_AUTO_URL)
+        self.textOutput = textOutputCtrl
+        #self.textOutput = wxTextCtrl(self, self.textOutputId, "",
+        #                             style= wxTE_MULTILINE|wxTE_READONLY|wxTE_RICH|wxTE_AUTO_URL)
         self.label = wxStaticText(self, -1, "Your message:")
         self.display = wxButton(self, self.ID_BUTTON, "Display", style = wxBU_EXACTFIT)
         self.textInputId = wxNewId()
@@ -2450,8 +2492,8 @@ class TextClientPanel(wxPanel):
         self.__set_properties()
         self.__do_layout()
 
-        EVT_TEXT_URL(self, self.TextOutput.GetId(), self.OnUrl)
-        EVT_CHAR(self.TextOutput, self.ChangeTextWindow)
+        EVT_TEXT_URL(self, self.textOutput.GetId(), self.OnUrl)
+        EVT_CHAR(self.textOutput, self.ChangeTextWindow)
         EVT_CHAR(self.TextInput, self.TestEnter) 
         EVT_BUTTON(self, self.ID_BUTTON, self.LocalInput)
       
@@ -2525,7 +2567,7 @@ class TextClientPanel(wxPanel):
         '''
         start = event.GetURLStart()
         end = event.GetURLEnd()
-        url = self.TextOutput.GetRange(start, end)
+        url = self.textOutput.GetRange(start, end)
         self.GetGrandParent().OpenHelpURL(url)
       
     def ChangeTextWindow(self, event):
@@ -2553,15 +2595,15 @@ class TextClientPanel(wxPanel):
         '''
         # Added due to wxPython bug. The wxTextCtrl doesn't
         # scroll properly when the wxTE_AUTO_URL flag is set. 
-        #pos = self.TextOutput.GetInsertionPoint()
-        #self.TextOutput.ShowPosition(pos - 1)
-        self.TextOutput.ScrollLines(-1)
+        #pos = self.textOutput.GetInsertionPoint()
+        #self.textOutput.ShowPosition(pos - 1)
+        self.textOutput.ScrollLines(-1)
                                             
     def ClearTextWidgets(self):
         '''
         Clears text widgets.
         '''
-        self.TextOutput.Clear()
+        self.textOutput.Clear()
         self.TextInput.Clear()
         
     def __set_properties(self):
@@ -2575,14 +2617,14 @@ class TextClientPanel(wxPanel):
         Handles UI layout.
         '''
         TextSizer = wxBoxSizer(wxVERTICAL)
-        TextSizer.Add(self.TextOutput, 2,
-                      wxEXPAND|wxALIGN_CENTER_HORIZONTAL, 0)
+        #TextSizer.Add(self.textOutput, 2,
+        #              wxEXPAND|wxALIGN_CENTER_HORIZONTAL, 0)
         box = wxBoxSizer(wxHORIZONTAL)
         box.Add(self.label, 0, wxALIGN_CENTER |wxLEFT|wxRIGHT, 5)
-        box.Add(self.TextInput, 1, wxALIGN_CENTER )
+        box.Add(self.TextInput, 1, wxALIGN_CENTER | wxEXPAND )
         box.Add(self.display, 0, wxALIGN_CENTER |wxLEFT|wxRIGHT, 5)
         
-        TextSizer.Add(box, 0, wxEXPAND|wxALIGN_CENTER| wxTOP|wxBOTTOM, 2)
+        TextSizer.Add(box, 1, wxEXPAND|wxALIGN_CENTER| wxTOP|wxBOTTOM, 2)
         self.SetAutoLayout(1)
         self.SetSizer(TextSizer)
         self.Layout()
@@ -2601,22 +2643,22 @@ class TextClientPanel(wxPanel):
             message = message + " ("+dateAndTime+")" 
 
             # Events are coloured blue
-            self.TextOutput.SetDefaultStyle(wxTextAttr(wxBLUE))
-            self.TextOutput.AppendText(message+'\n')
-            self.TextOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
+            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLUE))
+            self.textOutput.AppendText(message+'\n')
+            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
 
         # Someone is writing a message
         else:
             # Set names bold
             f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
-            self.TextOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
-            self.TextOutput.AppendText(name)
+            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
+            self.textOutput.AppendText(name)
 
             # Set text normal
             f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxNORMAL)
-            self.TextOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
-            self.TextOutput.AppendText(message+'\n')
-            self.TextOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
+            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
+            self.textOutput.AppendText(message+'\n')
+            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
 
         if isWindows():
             # Scrolling is not correct on windows when I use
