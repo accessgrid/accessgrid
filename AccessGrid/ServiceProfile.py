@@ -1,6 +1,39 @@
+#-----------------------------------------------------------------------------
+# Name:        ServiceProfile.py
+# Purpose:     Describe credentials for a service (e.g., VenueServer)
+# Created:     2004/03/18
+# RCS-ID:      $Id: ServiceProfile.py,v 1.2 2004-03-18 19:54:49 turam Exp $
+# Copyright:   (c) 2002
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
+
+"""
+This class exports/imports service profile files in INI format, as follows:
+
+[ServiceProfile]
+serviceType = VenueServer
+cred = Cred1
+
+
+[Cred1]
+# subject refers to a certificate in the user's cert repository
+authType = x509
+subject = /O=Access Grid/OU=agdev-ca.mcs.anl.gov/OU=mcs.anl.gov/CN=Thomas Uram
+
+[Cred2]
+# certfile/keyfile refer to certificate and key files
+authType = x509
+certfile = /home/smith/VenueServer_cert.pem
+keyfile = /home/smith/VenueServer_key.pem
+
+
+"""
 
 import ConfigParser
 
+
+class InvalidServiceProfile(Exception):
+    pass
 
 
 class ServiceProfile:
@@ -9,64 +42,104 @@ class ServiceProfile:
     utilized by services in the AGTk
     """
 
-    def __init__(self, serviceType, 
+    def __init__(self, serviceType = None, 
+                 authType = None,
                  certfile = None, keyfile = None,
                  subject = None ):
+                 
         if serviceType and ( certfile or keyfile ):
-            raise ValueError("subject and (certfile|keyfile) args are mutually exclusive")
+            raise ValueError(
+                    "Only one of subject and (certfile/keyfile) is allowed")
          
         self.serviceType = serviceType
+        self.authType = authType
+        
         self.subject = subject
         self.certfile = certfile
         self.keyfile = keyfile
         
-    SECTION = "ServiceProfile"
+    PROFILE_SECTION = "ServiceProfile"
     SERVICE_TYPE = "serviceType"
+    CRED = "cred"
+    
+    CRED_SECTION = "Cred"
+    AUTHTYPE = "authType"
     SUBJECT = "subject"
+    CERTFILE = "certfile"
+    KEYFILE = "keyfile"
     
-    def Export(self,file):
+    def Export(self,filepath):
     
-        f = open(file,"w")
+        f = open(filepath,"w")
         f.write(self.AsINIBlock())
         f.close()
     
-    def Import(self,file):
+    def Import(self,filepath):
     
         cp = ConfigParser.ConfigParser()
-        cp.read(file)
-        self.serviceType = cp.get(self.SECTION,self.SERVICE_TYPE)
-        self.subject = cp.get(self.SECTION,self.SUBJECT)
-        return self
+        cp.read(filepath)
+        
+        if (cp.has_option(self.PROFILE_SECTION,self.SUBJECT) and
+            cp.has_option(self.PROFILE_SECTION,self.CERTFILE) and
+            cp.has_option(self.PROFILE_SECTION,self.KEYFILE) ):
+            raise InvalidServiceProfile(
+                    "Only one of subject and (certfile/keyfile) is allowed")
+        
+        # ServiceProfile section
+        self.serviceType = cp.get(self.PROFILE_SECTION,self.SERVICE_TYPE)
+        
+        # Credential section
+        if cp.has_option(self.CRED_SECTION,self.AUTHTYPE):
+            self.authType = cp.get(self.CRED_SECTION,self.AUTHTYPE)
+        if cp.has_option(self.CRED_SECTION,self.SUBJECT):
+            self.subject = cp.get(self.CRED_SECTION,self.SUBJECT)
+        if cp.has_option(self.CRED_SECTION,self.CERTFILE):
+            self.certfile = cp.get(self.CRED_SECTION,self.CERTFILE)
+        if cp.has_option(self.CRED_SECTION,self.KEYFILE):
+            self.keyfile = cp.get(self.CRED_SECTION,self.KEYFILE)
         
     def AsINIBlock(self):
         
         iniBlock = ""
-        iniBlock += "[%s]\n" %(self.SECTION)
+        iniBlock += "[%s]\n" %(self.PROFILE_SECTION)
         iniBlock += "%s = %s\n" % (self.SERVICE_TYPE,self.serviceType)
-        iniBlock += "%s = %s\n" % (self.SUBJECT,self.subject)
+        iniBlock += "%s = %s\n" % (self.CRED,self.CRED_SECTION)
+        iniBlock += "[%s]\n" % (self.CRED_SECTION)
+        if self.authType:  iniBlock += "%s = %s\n" % (self.AUTHTYPE,self.authType)
+        if self.subject:   iniBlock += "%s = %s\n" % (self.SUBJECT,self.subject)
+        if self.certfile:  iniBlock += "%s = %s\n" % (self.CERTFILE,self.certfile)
+        if self.keyfile:   iniBlock += "%s = %s\n" % (self.KEYFILE,self.keyfile)
         return iniBlock
-
-
-def CompareProfiles(serviceProfile,serviceProfile2):
-    return (serviceProfile.serviceType == serviceProfile2.serviceType and
-            serviceProfile.subject == serviceProfile2.subject and 
-            serviceProfile.certfile == serviceProfile2.certfile and
-            serviceProfile.keyfile == serviceProfile2.keyfile )
         
+        
+    def Print(self):
+        print self.AsINIBlock()
+
+
+    def Compare(self,serviceProfile2):
+        return (self.serviceType == serviceProfile2.serviceType and
+                self.subject == serviceProfile2.subject and 
+                self.certfile == serviceProfile2.certfile and
+                self.keyfile == serviceProfile2.keyfile )
+
 if __name__ == "__main__":
     
     profileFile = "/tmp/VenueServerProfile"
     
     try:
         ServiceProfile("VenueServer",subject="MY DN",certfile="file",keyfile="key")
-    except ValueError:
+    except ValueError, e:
         print "Exception setting too many attrs in ServiceProfile"
     
-    serviceProfile = ServiceProfile("VenueServer", subject = "MY DN")
+    serviceProfile = ServiceProfile("VenueServer", authType = "x509", subject = "MY DN")
     serviceProfile.Export(profileFile)
-    serviceProfile2 = serviceProfile.Import(profileFile)
+    serviceProfile2 = ServiceProfile()
+    serviceProfile2.Import(profileFile)
     
-    if CompareProfiles(serviceProfile,serviceProfile2):
+    serviceProfile.Print()
+    serviceProfile2.Print()
+    
+    if serviceProfile.Compare(serviceProfile2):
         print "Export/import of service profile verified"
     else:
         print "Export/import of service profile failed"
