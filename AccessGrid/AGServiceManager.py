@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.64 2004-05-07 22:01:35 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.65 2004-05-09 02:57:07 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.64 2004-05-07 22:01:35 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.65 2004-05-09 02:57:07 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -393,24 +393,25 @@ class AGServiceManager:
     ## INTERNAL methods
     ####################
 
-    def __RetrieveServicePackage( self, servicePackageUrl ):
+    def __RetrieveServicePackage( self, servicePackageUri ):
         """Internal : Retrieve a service implementation"""
-        log.info("__RetrieveServicePackage: %s", servicePackageUrl)
+        log.info("__RetrieveServicePackage: %s", servicePackageUri)
 
         #
         # Retrieve the service package
         #
-        filename = os.path.basename( servicePackageUrl )
+        filename = os.path.basename( servicePackageUri )
         servicePackageFile = os.path.join(self.servicesDir, filename)
         isNewServicePackage = not os.path.exists(servicePackageFile)
         if self.app.GetOption("insecure"):
-            HTTPDownloadFile(None, servicePackageUrl, servicePackageFile,
+            HTTPDownloadFile(None, servicePackageUri, servicePackageFile,
                              None, None)
         else:
-            GSIHTTPDownloadFile(servicePackageUrl, servicePackageFile,
+            GSIHTTPDownloadFile(servicePackageUri, servicePackageFile,
                                 None, None)
 
         package = AGServicePackage( servicePackageFile )
+        package.serviceDesc.servicePackageUri = servicePackageUri
         
         return package
 
