@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.52 2004-04-06 01:57:02 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.53 2004-04-07 23:51:54 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.52 2004-04-06 01:57:02 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.53 2004-04-07 23:51:54 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -32,7 +32,7 @@ from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.Toolkit import CmdlineApplication
 from AccessGrid.VenueServer import VenueServer
 from AccessGrid import Log
-from AccessGrid.hosting import Server
+from AccessGrid.hosting import SecureServer, InsecureServer
 
 # Global defaults
 log = None
@@ -80,7 +80,10 @@ def main():
 
     # Second thing we do is create a hosting environment
     hostname = SystemConfig.instance().GetHostname()
-    server = Server((hostname, port), debug = app.GetDebugLevel())
+    if app.GetOption("insecure"):
+        server = InsecureServer((hostname, port), debug = app.GetDebugLevel())
+    else:
+        server = SecureServer((hostname, port), debug = app.GetDebugLevel())
     
     # Then we create a VenueServer, giving it the hosting environment
     venueServer = VenueServer(server, app.GetOption('configfilename'))
