@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.31 2004-08-17 18:51:36 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.32 2004-08-19 22:21:57 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -458,7 +458,7 @@ class SharedPresentationFrame(wxFrame):
         """
         Callback for 'Instructions' help menu item
         """
-        info =  "If you want to be the leader of this session, select the master check box below. All presentation files located in the data area of this venue are now available here. Choose a file from these available slides or enter the URL address of your presentation. Click the Load button to open the presentation. \n\nNote: Please, only use this controller window to change slides."
+        info =  "If you want to be the leader of this session, select the master check box below.\nAll presentation files located in the data area of this venue are now available here.\nChoose a file from these available slides or enter the URL address of your presentation.\nClick the Load button to open the presentation. \n\nNote: Please, only use this controller window to change slides."
         
         MessageDialog(self, info, "Instructions")
         
