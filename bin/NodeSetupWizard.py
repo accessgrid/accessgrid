@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.24 2004-03-15 21:42:26 judson Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.25 2004-04-05 18:46:10 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ from wxPython.wizard import *
 from AccessGrid.Toolkit import WXGUIApplication
 from AccessGrid import Log
 
-from AccessGrid.Platform import isWindows, isOSX, isLinux
+from AccessGrid.Platform import IsWindows
 
 from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid.AGParameter import ValueParameter
@@ -424,7 +424,7 @@ class VideoCaptureWindow2(TitledPage):
         '''
         Handles UI layout
         '''
-        if isWindows():
+        if IsWindows():
             # For some reason the static text doesn't get the right size on windows
             self.text2.SetSize(wxSize(150, 20))
 
@@ -832,7 +832,7 @@ class ConfigWindow(TitledPage):
         '''
         Handles UI layout
         '''
-        if isWindows():
+        if IsWindows():
             # For some reason the static text doesn't get the right size on windows
             self.vCapHeading.SetSize(wxSize(150, 20))
             self.vDispHeading.SetSize(wxSize(150, 20))

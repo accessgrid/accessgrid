@@ -3,12 +3,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.13 2004-03-30 17:11:54 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.14 2004-04-05 18:46:09 judson Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.13 2004-03-30 17:11:54 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.14 2004-04-05 18:46:09 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -29,7 +29,7 @@ from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Descriptions import ServiceDescription, DataDescription
 from AccessGrid.Descriptions import ApplicationDescription
 from AccessGrid.Platform.Config import UserConfig, MimeConfig
-from AccessGrid.Platform import isWindows, Config
+from AccessGrid.Platform import IsWindows, Config
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.VenueClient import NetworkLocationNotFound
 
@@ -1125,7 +1125,7 @@ class VenueClientController:
             self.SaveFileNoProgress(objDesc, localFilePath)
 
             # Fix odd commands
-            if isWindows():
+            if IsWindows():
                 if command.find("%1") != -1:
                     command = command.replace("%1", "")
                 if command.find("%L") != -1:
@@ -1148,7 +1148,7 @@ class VenueClientController:
             
         elif isinstance(objDesc, ServiceDescription):
             # Fix odd commands
-            if isWindows():
+            if IsWindows():
                 if command.find("%1") != -1:
                     command = command.replace("%1", "")
                 if command.find("%L") != -1:
@@ -1183,7 +1183,7 @@ class VenueClientController:
                 else:
                     self.gui.Notify("You have no client for this Shared Application.", "Notification")
                     
-            if isWindows():
+            if IsWindows():
                 if command.find("%1") != -1:
                     command = command.replace("%1", "")
             else:
@@ -1236,7 +1236,7 @@ class VenueClientController:
                               pprint.pformat(namedVars))
                 return
 
-        if isWindows():
+        if IsWindows():
             shell = os.environ['ComSpec']
             realCommand = "%s %s %s" % (shell, "/c", realCommand)
             

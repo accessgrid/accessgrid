@@ -5,16 +5,16 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.51 2004-03-24 22:38:34 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.52 2004-04-05 18:46:09 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.51 2004-03-24 22:38:34 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.52 2004-04-05 18:46:09 judson Exp $"
 __docformat__ = "restructuredtext en"
 
-from AccessGrid.Platform import isWindows, isLinux, isOSX
+from AccessGrid.Platform import IsWindows
 import string
 import struct
 
@@ -79,7 +79,7 @@ class BugReportCommentDialog(wxDialog):
         # flag set ignores focus of next child. If I don't have tmp, the email text ctrl
         # will never get focus when you use the TAB key.
         # --
-        if isWindows():
+        if IsWindows():
             temp = wxBitmapButton(self, -1, wxEmptyBitmap(1,1), size = wxSize(1,1))
         # --
         

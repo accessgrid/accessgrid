@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.60 2004-03-25 22:01:56 eolson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.61 2004-04-05 18:46:09 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.60 2004-03-25 22:01:56 eolson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.61 2004-04-05 18:46:09 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -287,13 +287,13 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
     # cf http://www.lemburg.com/files/python/platform.py
     #
     
-    if Platform.isLinux():
+    if Platform.IsLinux():
         args['op_sys'] = "Linux"
         args['rep_platform'] = "All"  # Need a better check for this.
-    elif Platform.isWindows():
+    elif Platform.IsWindows():
         args['op_sys'] = "Windows NT"
         args['rep_platform'] = "PC"
-    elif Platform.isOSX():
+    elif Platform.IsOSX():
         args['op_sys'] = "MacOS X"
         args['rep_platform'] = "Macintosh"
     else:

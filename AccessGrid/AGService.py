@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.29 2004-03-16 07:13:29 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.30 2004-04-05 18:46:09 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.29 2004-03-16 07:13:29 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.30 2004-04-05 18:46:09 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -23,7 +23,7 @@ from AccessGrid import Log
 
 from AccessGrid.Types import *
 from AccessGrid.AGParameter import *
-from AccessGrid.Platform import isWindows, isLinux
+from AccessGrid.Platform import IsWindows, IsLinux
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Descriptions import StreamDescription
@@ -102,10 +102,10 @@ class AGService:
         """
         Forcefully stop the service
         """
-        if isWindows():
+        if IsWindows():
            # windows : do nothing special to force stop; it's forced anyway
            AGService.Stop(self)
-        elif isLinux():
+        elif IsLinux():
            # linux : kill vic, instead of terminating
            self.started = 0
            self.processManager.KillAllProcesses()

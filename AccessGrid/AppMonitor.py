@@ -2,7 +2,7 @@ from wxPython.wx import *
 
 from AccessGrid import Log
 from AccessGrid.Events import Event
-from AccessGrid.Platform import isWindows, Config
+from AccessGrid.Platform import IsWindows, Config
 from AccessGrid.ClientProfile import ClientProfile
 
 from AccessGrid.SharedAppClient import SharedAppClient
@@ -405,7 +405,7 @@ class AppMonitorFrame(wxFrame):
         Scrolls to right position in text output field 
         '''
 
-        if isWindows():
+        if IsWindows():
             # Added due to wxPython bug. The wxTextCtrl doesn't
             # scroll properly when the wxTE_AUTO_URL flag is set.
             self.textCtrl.ScrollLines(-1)

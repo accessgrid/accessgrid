@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.28 2004-04-01 23:37:38 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.29 2004-04-05 18:46:09 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.28 2004-04-01 23:37:38 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.29 2004-04-05 18:46:09 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -33,7 +33,7 @@ Log.SetDefaultLevel(Log.VenueClientUI, Log.WARN)
 
 from AccessGrid import icons
 from AccessGrid import Toolkit
-from AccessGrid.Platform import isWindows, isOSX, Config
+from AccessGrid.Platform import IsWindows, IsOSX, Config
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.ClientProfile import *
@@ -581,7 +581,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 
     def __OnSize(self, event = None):
         wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
-        if isOSX():
+        if IsOSX():
             # Currently, nothing appears on osx unless these are explicitly called.
             self.venueAddressBar.Layout()
             self.venueListPanel.Layout()
@@ -2938,7 +2938,7 @@ class ContentListPanel(wxPanel):
         # twist buttons correctly.  If the root item is selected, the ui looks
         # weird so change selection to the participant heading instead.
         #
-        #if isWindows():
+        #if IsWindows():
         #    item = event.GetItem()
         #    
         #    # Root item
@@ -3190,7 +3190,7 @@ class ContentListPanel(wxPanel):
                 dlg.Destroy()
                 
                 # Then execute it
-                if isWindows():
+                if IsWindows():
                     cmd = program + " %1"
                 else:
                     cmd = program + " %s"
@@ -3419,7 +3419,7 @@ class TextClientPanel(wxPanel):
         # Someone is writing a message
         else:
             # Set names bold
-            if isOSX():  # Work around osx font bug.
+            if IsOSX():  # Work around osx font bug.
                 self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
             else:
                 f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
@@ -3427,18 +3427,18 @@ class TextClientPanel(wxPanel):
             self.textOutput.AppendText(name)
 
             # Set text normal
-            if isOSX():  # Work around osx font bug.
+            if IsOSX():  # Work around osx font bug.
                 self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
             else:
                 f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxNORMAL)
                 self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
             self.textOutput.AppendText(message+'\n')
-            if isOSX():  # Work around osx font bug.
+            if IsOSX():  # Work around osx font bug.
                 self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
             else:
                 self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
 
-        if isWindows():
+        if IsWindows():
             # Scrolling is not correct on windows when I use
             # wxTE_RICH flag in text output window.
            

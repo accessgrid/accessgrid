@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.55 2004-03-31 22:15:28 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.56 2004-04-05 18:46:09 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.55 2004-03-31 22:15:28 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.56 2004-04-05 18:46:09 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -35,7 +35,7 @@ from AccessGrid import icons
 from AccessGrid import Platform
 from AccessGrid.UIUtilities import AboutDialog
 from AccessGrid import Toolkit
-from AccessGrid.Platform import isWindows
+from AccessGrid.Platform import IsWindows
 from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.Types import AGResource
 
@@ -247,7 +247,7 @@ class ServiceListCtrl( wxListCtrl ):
         imageList.Add( bmap )
         self.AssignImageList( imageList, wxIMAGE_LIST_NORMAL)
 
-        if isWindows():
+        if IsWindows():
             # This breaks on linux
             EVT_SIZE(self, self.OnSize)
 

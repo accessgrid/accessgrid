@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.39 2004-03-26 03:34:55 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.40 2004-04-05 18:46:10 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,23 +16,12 @@ if sys.platform=="darwin":
     import pyGlobus.ioc
 
 import signal, time, os
-
-if sys.version.startswith('2.2'):
-    try:
-        from optik import Option
-    except:
-        raise Exception, "Missing module optik necessary for the AG Toolkit."
-
-if sys.version.startswith('2.3'):
-    try:
-        from optparse import Option
-    except:
-        raise Exception, "Missing module optparse, check your python installation."
+from optparse import Option
 
 # Our imports
 from AccessGrid.hosting import Server
 from AccessGrid.Toolkit import CmdlineApplication
-from AccessGrid.Platform import isLinux
+from AccessGrid.Platform import IsLinux
 from AccessGrid.Platform.Config import UserConfig, AGTkConfig, SystemConfig
 from AccessGrid.AGServiceManager import AGServiceManager, AGServiceManagerI
 from AccessGrid import Toolkit
@@ -96,7 +85,7 @@ def main():
 
     # Register the signal handler so we can shut down cleanly
     signal.signal(signal.SIGINT, SignalHandler)
-    if isLinux():
+    if IsLinux():
         signal.signal(signal.SIGHUP, SignalHandler)
 
     # Start the service
