@@ -14,7 +14,9 @@ import unittest
 
 def suite():
     # List modules to test
-    modules_to_test = ('unittest_AGServiceManager' ,'unittest_AGServiceManager') 
+    modules_to_test = ['unittest_AGServiceManager',
+                       'unittest_Platform',
+                       ]
 
     alltests = unittest.TestSuite()
     for module in map(__import__, modules_to_test):
