@@ -23,29 +23,25 @@ else:
     
 
 # Build vic if necessary
-if not os.path.exists(VIC_EXE):
-    
+VIC_EXE_PATH = os.path.join(DEST,VIC_EXE)
 
-    VIC_EXE_PATH = os.path.join(DEST,VIC_EXE)
-
-    # Build vic if necessary
-    if not os.path.exists(VIC_EXE_PATH):
-        # Build vic
-        buildCmd = '%s %s %s %s' % (os.path.join(AGDIR,'packaging','BuildVic.py'),
-                                    SOURCE, AGDIR, DEST)
-        os.system(buildCmd)
+# Build vic if necessary
+if not os.path.exists(VIC_EXE_PATH):
+    # Build vic
+    buildCmd = '%s %s %s %s' % (sys.executable,
+                                os.path.join(AGDIR,'packaging','BuildVic.py'),
+                                SOURCE, DEST)
+    os.system(buildCmd)
 
 
-    # Copy the vic executable    
-    if os.path.exists(VIC_EXE_PATH):
-        print 'Copying %s' % (VIC_EXE_PATH)
-        copyCmd = "%s %s %s" % (copyExe,VIC_EXE_PATH,
-                                servicesDir)
-        os.system(copyCmd)
-    else:
-        print "** Error: %s does not exist, not copying" % (VIC_EXE_PATH)
+# Copy the vic executable    
+if os.path.exists(VIC_EXE_PATH):
+    print 'Copying %s' % (VIC_EXE_PATH)
+    copyCmd = "%s %s %s" % (copyExe,VIC_EXE_PATH,
+                            servicesDir)
+    os.system(copyCmd)
 else:
-    print "%s exists; not building" % (VIC_EXE,)
+    print "** Error: %s does not exist, not copying" % (VIC_EXE_PATH)
 
 # Write the service manifest
 os.chdir(servicesDir)
