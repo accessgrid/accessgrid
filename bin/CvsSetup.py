@@ -255,6 +255,21 @@ smfile.write("[Service Manager]\n")
 smfile.write("servicesDirectory = local_services\n\n")
 smfile.close()
 
+# New config using AGTkConfig
+try:
+    os.environ['AGTK_INSTALL'] = os.path.join( os.path.abspath(AG_BASE_DIR), "bin" )
+    os.environ['AGTK_LOCATION'] = os.path.abspath(DST_CONFIG_DIR)
+    # Add to PYTHONPATH
+    sys.path.insert(0, os.path.abspath(AG_BASE_DIR))
+
+    from AccessGrid.Platform.Config import AGTkConfig
+    # Create directory structure
+    agtkConfig = AGTkConfig.instance(initIfNeeded=1)
+except Exception, e:
+    print "Toolkit Initialization failed."
+    raise e
+    sys.exit(-1)
+
 
 # Tell users how to use the new configuration files.
 
