@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/13/12
-# RCS-ID:      $Id: NetworkLocation.py,v 1.9 2003-05-12 16:27:13 turam Exp $
+# RCS-ID:      $Id: NetworkLocation.py,v 1.10 2003-05-23 15:25:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -53,7 +53,11 @@ class UnicastNetworkLocation(NetworkLocation):
     a unicast network connection.
     """
     TYPE = 'unicast'
-    pass
+
+    def __repr__(self):
+        string = "%s %s %d" % (self.type, self.host, self.port)
+        return string
+
 
 class MulticastNetworkLocation(NetworkLocation):
     """
@@ -72,7 +76,7 @@ class MulticastNetworkLocation(NetworkLocation):
         NetworkLocation.__init__(self, host, port)
 
     def __repr__(self):
-        string = "%s %d %d" % (self.host, self.port, self.ttl)
+        string = "%s %s %d %d" % (self.type, self.host, self.port, self.ttl)
         return string
 
     def SetTTL(self, ttl):
