@@ -194,7 +194,7 @@ class CertificateStatusDialog(wxDialog):
 
     def RequestCertificate(self, event):
         self.Hide()
-        reqTool = CertificateRequestTool(None,
+        reqTool = CertificateRequestTool.CertificateRequestTool(None,
                                          certificateType = 'IDENTITY')
         reqTool.Destroy()
                                   
