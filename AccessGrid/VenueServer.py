@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.60 2003-04-04 22:44:12 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.61 2003-04-05 00:43:25 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -400,7 +400,11 @@ class VenueServer(ServiceBase.ServiceBase):
             raise NotAuthorized
 
         if string not in self.administratorList:
-            self.administratorList.append(string)
+            if None == self.administratorList[0]:
+                self.administratorList[0] = string
+            else:
+                self.administratorList.append(string)
+
             self.config["VenueServer.administrators"] = ":".join(self.administratorList)
             return string
         else:
