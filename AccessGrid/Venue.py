@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.29 2003-02-12 17:12:21 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.30 2003-02-14 20:45:52 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,6 +15,7 @@ import time
 import string
 import types
 import socket
+import os.path
 
 from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid.Types import Capability
@@ -24,15 +25,32 @@ from AccessGrid.GUID import GUID
 from AccessGrid.TextService import TextService
 from AccessGrid.EventService import EventService
 from AccessGrid.Events import Event, HeartbeatEvent, TextEvent
-from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
+from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey, GetHostname
 from AccessGrid.scheduler import Scheduler
+from AccessGrid import DataStore
+
+class VenueException(Exception):
+    """
+    A generic exception type to be raised by the Venue code.
+    """
+
+    pass
+
 
 class Venue(ServiceBase.ServiceBase):
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
     """
     def __init__(self, uniqueId, description, administrator,
-                 multicastAllocator, dataStore):
+                 multicastAllocator, dataStorePath):
+        """
+        Venue constructor.
+
+        dataStorePath is the directory which the Venue's data storage object
+        should use for storing its files.
+
+        """
+
         self.connections = dict()
         self.users = dict()
         self.nodes = dict()
@@ -48,12 +66,13 @@ class Venue(ServiceBase.ServiceBase):
         self.description = description
         self.administrators.append(administrator)
         self.multicastAllocator = multicastAllocator
-        self.dataStore = dataStore
+        self.dataStorePath = dataStorePath
+        self.dataStore = None           # This is the actual data store object
 
-        self.textHost = socket.getfqdn()
+        self.textHost = GetHostname()
         self.textPort = self.multicastAllocator.AllocatePort()
         
-        self.eventHost = socket.getfqdn()
+        self.eventHost = GetHostname()
         self.eventPort = self.multicastAllocator.AllocatePort()
         
         self.producerCapabilities = []
@@ -64,7 +83,18 @@ class Venue(ServiceBase.ServiceBase):
 
         self.encryptionKey = AllocateEncryptionKey()
 
+    def __repr__(self):
+        return "Venue: name=%s id=%s" % (self.description.name, id(self))
+
     def __getstate__(self):
+        """
+        Retrieve the state of object attributes for pickling.
+
+        We don't pickle any object instances, except for the
+        uniqueId and description.
+        
+        """
+
         odict = self.__dict__.copy()
         for k in odict.keys():
             if type(odict[k]) == types.InstanceType:
@@ -73,6 +103,14 @@ class Venue(ServiceBase.ServiceBase):
         return odict
 
     def __setstate__(self, dict):
+        """
+        Resurrect the state of this object after unpickling.
+
+        Restore  the attribute dictionary and start up the
+        services.
+
+        """
+        
         self.__dict__ = dict
         self.dataStore = None
         self.multicastAddressAllocator = None
@@ -90,6 +128,46 @@ class Venue(ServiceBase.ServiceBase):
         self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.CleanupClients, 45)
         self.houseKeeper.StartAllTasks()
+
+        self.startDataStore()
+
+    def startDataStore(self):
+        """
+        Start the local datastore server.
+
+        We create a DataStore and a HTTPTransportServer for the actual service.
+        The DataStore is given the Venue's dataStorePath as its working directory.
+        We then loop through the data descriptions in the venue, both checking
+        to see that the file still exists for each piece of data, and updating the
+        uri field in the description with the new download URL.
+
+        Actually, we get to do both steps at once, as GetDownloadDescriptor will
+        return None if the file doesn't exist in the local data store.
+
+        """
+
+        if self.dataStorePath is None or not os.path.isdir(self.dataStorePath):
+            print "Not starting datastore for venue: %s does not exist" % (
+                self.dataStorePath)
+            return
+        self.dataStore = DataStore.DataStore(self, self.dataStorePath)
+        transferServer = DataStore.HTTPTransferServer(self.dataStore,
+                                                      ('', 0))
+        self.dataStore.SetTransferEngine(transferServer)
+
+        print "Have upload url: ", self.dataStore.GetUploadDescriptor()
+
+        for file, desc in self.data.items():
+            print "Checking file %s for validity" % (file)
+            url = self.dataStore.GetDownloadDescriptor(file)
+            if url is None:
+                print "File %s has vanished" % (file)
+                del self.data[file]
+            else:
+                desc.SetURI(url)
+                self.UpdateData(desc)
+
+        transferServer.run()
 
     def SetMulticastAddressAllocator(self, multicastAllocator):
         self.multicastAllocator = multicastAllocator
@@ -370,7 +448,7 @@ class Venue(ServiceBase.ServiceBase):
                     userInVenue = 1
                     privateId = key
                     break
-            
+
             if userInVenue == 0:
                 privateId = self.GetNextPrivateId()
                 print "Assigning private id: ", privateId
@@ -426,35 +504,76 @@ class Venue(ServiceBase.ServiceBase):
     UpdateClientProfile.pass_connection_info = 1
     UpdateClientProfile.soap_export_as = "UpdateClientProfile"
 
-    def AddData(self, connectionInfo, dataDescription ):
+
+    def wsAddData(self, connectionInfo, dataDescription ):
+        return self.AddData(dataDescription)
+    wsAddData.pass_connection_info = 1
+    wsAddData.soap_export_as = "AddData"
+
+    def AddData(self, dataDescription ):
         """
         The AddData method enables VenuesClients to put data in the Virtual
         Venue. Data put in the Virtual Venue through AddData is persistently
         stored.
         """
-        try:
-            # We also have to actually add real data, but not yet
-            self.data[dataDescription.name] = dataDescription
-            self.eventService.Distribute( Event( Event.ADD_DATA,
-                                                     dataDescription ) )
-        except:
-            print "Exception in AddData ", sys.exc_type, sys.exc_value
-            print "Data already exists ", dataDescription.name
 
-    AddData.pass_connection_info = 1
-    AddData.soap_export_as = "AddData"
+        name = dataDescription.name
 
-    def GetData(self, connectionInfo, dataDescription):
+        if self.data.has_key(name):
+            #
+            # We already have this data; raise an exception.
+            #
+
+            print "AddData: data already present: ", name
+            raise VenueException("AddData: data %s already present" % (name))
+
+        self.data[dataDescription.name] = dataDescription
+        self.eventService.Distribute( Event( Event.ADD_DATA,
+                                             dataDescription ) )
+
+    def wsUpdateData(self, connectionInfo, dataDescription):
+        return self.UpdateData(dataDescription)
+    wsAddData.pass_connection_info = 1
+    wsAddData.soap_export_as = "UpdateData"
+        
+    def UpdateData(self, dataDescription):
+        """
+        Replace the current description for dataDescription.name with
+        this one.
+
+        Send out an update event.
+        """
+
+        name = dataDescription.name
+
+        if not self.data.has_key(name):
+            #
+            # We don't already have this data; raise an exception.
+            #
+
+            print "UpdateData: data not already present: ", name
+            raise VenueException("UpdateData: data %s not already present" % (name))
+
+        self.data[dataDescription.name] = dataDescription
+        self.eventService.Distribute( Event( Event.UPDATE_DATA,
+                                             dataDescription ) )
+
+    def wsGetData(self, connectionInfo, name):
+        return self.GetData(name)
+    wsGetData.pass_connection_info = 1
+    wsGetData.soap_export_as = "GetData"
+        
+    def GetData(self, name):
         """
         GetData is the method called by a VenueClient to retrieve information
         about the data. This might also be the operation that the VenueClient
         uses to actually retrieve the real data.
         """
 
-        # Do something with the data store
-
-    GetData.pass_connection_info = 1
-    GetData.soap_export_as = "GetData"
+        if self.data.has_key(name):
+            return self.data[name]
+        else:
+            return None
 
     def RemoveData(self, connectionInfo, dataDescription):
         """
@@ -464,6 +583,7 @@ class Venue(ServiceBase.ServiceBase):
             # We actually have to remove the real data, not just the
             # data description -- I guess that's later :-)
             del self.data[ dataDescription.name ]
+            self.dataStore.DeleteFile(dataDescription.name)
             self.eventService.Distribute( Event( Event.REMOVE_DATA,
                                                      dataDescription ) )
         except:
@@ -472,6 +592,11 @@ class Venue(ServiceBase.ServiceBase):
 
     RemoveData.pass_connection_info = 1
     RemoveData.soap_export_as = "RemoveData"
+
+    def GetUploadDescriptor(self):
+        return self.dataStore.GetUploadDescriptor()
+
+    GetUploadDescriptor.soap_export_as = "GetUploadDescriptor"
 
     def AddService(self, connectionInfo, serviceDescription):
         """
