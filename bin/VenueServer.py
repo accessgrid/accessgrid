@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.56 2004-06-01 20:15:48 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.57 2004-07-30 20:14:36 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.56 2004-06-01 20:15:48 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.57 2004-07-30 20:14:36 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -81,9 +81,9 @@ def main():
     # Second thing we do is create a hosting environment
     hostname = app.GetHostname()
     if app.GetOption("insecure"):
-        server = InsecureServer((hostname, port), debug = app.GetDebugLevel())
+        server = InsecureServer((hostname, port))
     else:
-        server = SecureServer((hostname, port), debug = app.GetDebugLevel())
+        server = SecureServer((hostname, port))
     
     # Then we create a VenueServer, giving it the hosting environment
     venueServer = VenueServer(server, app.GetOption('configfilename'))
@@ -110,9 +110,12 @@ def main():
     log.debug("After main loop!")
 
     # Stop the hosting environment
-    server.Stop()
+    try:
+        server.Stop()
+        log.debug("Stopped Hosting Environment, exiting.")
+    except:
+        log.exception("Exception stopping server")
 
-    log.debug("Stopped Hosting Environment, exiting.")
 
     for thrd in threading.enumerate():
         log.debug("Thread %s", thrd)
