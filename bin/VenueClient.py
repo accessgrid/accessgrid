@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.112 2003-04-11 19:56:31 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.113 2003-04-11 20:00:09 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -45,6 +45,8 @@ try:
     CertificateManager.CertificateManagerWXGUI
     if sys.platform == "win32":
         HaveCertificateManager = 1
+    else:
+        HaveCertificateManager = 0
 except Exception, e:
     HaveCertificateManager = 0
 
