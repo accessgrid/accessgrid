@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.17 2003-02-18 19:06:34 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.18 2003-02-26 23:21:11 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -68,17 +68,6 @@ def formatExceptionInfo(maxTBlevel=5):
         excArgs = "<no args>"
     excTb = traceback.format_tb(trbk, maxTBlevel)
     return (excName, excArgs, excTb)
-
-def Which( file ):
-    paths = string.split( os.environ['PATH'], os.pathsep )
-    if sys.platform == "win32" and string.find( file, ".exe" ) == -1:
-        file = file + ".exe"
-    for path in paths:
-        testfile = os.path.join( path, file )
-        if os.path.exists( testfile ):
-            return testfile
-
-    return None
 
 def GetRandInt(r):
     return int(r.random() * sys.maxint)
