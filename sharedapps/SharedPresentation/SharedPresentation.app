@@ -5,5 +5,5 @@ extension = sharedpresentation
 files = SharedPresentation.py
 
 [commands]
-Open = %(python)s SharedPresentation.py -a %(appUrl)s
+Open = %(python)s SharedPresentation.py -v %(venueUrl)s -a %(appUrl)s
 

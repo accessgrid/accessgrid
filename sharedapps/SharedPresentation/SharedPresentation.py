@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.10 2003-09-16 17:18:22 turam Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.11 2003-11-05 00:35:39 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,6 +19,8 @@ import Queue
 import shutil
 
 from wxPython.wx import *
+
+from AccessGrid.DataStoreClient import GetVenueDataStore
 
 # Win 32 COM interfaces that we use
 try:
@@ -95,6 +97,8 @@ class PowerPointViewer:
         self.win = None
 
         self.pptAlreadyOpen = 0
+        # The filename of the currently open file.
+        self.openFile = ""
 
         from win32com.client import gencache
         import pythoncom
@@ -150,6 +154,7 @@ class PowerPointViewer:
         # Open a new presentation and keep a reference to it in self.presentation
         self.presentation = self.ppt.Presentations.Open(file)
         self.lastSlide = self.presentation.Slides.Count
+        self.openFile = file
 
         # Start viewing the slides in a window
         self.presentation.SlideShowSettings.ShowType = win32com.client.constants.ppShowTypeWindow
@@ -215,13 +220,15 @@ else:
 class SharedPresentationFrame(wxFrame):
 
     ID_SYNC = wxNewId()
+    ID_LOCALUPLOAD = wxNewId()
     ID_CLEAR = wxNewId()
     ID_EXIT = wxNewId()
 
-    def __init__(self, parent, ID, title):
+    def __init__(self, parent, ID, title, log=None):
         wxFrame.__init__(self, parent, ID, title,
                          wxDefaultPosition, wxSize(450, 300))
 
+        self.log = log
 
         # Initialize callbacks
         noOp = lambda x=0:0
@@ -234,6 +241,7 @@ class SharedPresentationFrame(wxFrame):
         self.closeCallback = noOp
         self.syncCallback = noOp
         self.exitCallback = noOp
+        self.localUploadCallback = noOp
 
         #
         # Create UI controls
@@ -242,7 +250,9 @@ class SharedPresentationFrame(wxFrame):
         # - Create menu bar
         menubar = wxMenuBar()
         fileMenu = wxMenu()
+        self.fileMenu = fileMenu
         fileMenu.Append(self.ID_SYNC,"&Sync", "Sync to app state")
+        fileMenu.Append(self.ID_LOCALUPLOAD,"&Upload Local File", "Upload local file to venue.")
         fileMenu.Append(self.ID_CLEAR,"&Clear slides", "Clear the slides from venue")
         fileMenu.AppendSeparator()
         fileMenu.Append(self.ID_EXIT,"&Exit", "Exit")
@@ -259,22 +269,33 @@ class SharedPresentationFrame(wxFrame):
 
         # - Create sizer for remaining ctrls
         staticBoxSizer = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
-        gridSizer = wxFlexGridSizer(3, 2, 5, 5)
+        gridSizer = wxFlexGridSizer(3, 3, 5, 5)
         gridSizer.AddGrowableCol(1)
         staticBoxSizer.Add(gridSizer, 1, wxEXPAND)
         sizer.Add(staticBoxSizer, 1, wxEXPAND)
 
         # - Create textctrl for slide url
         staticText = wxStaticText(self, -1, "Slides")
-        self.slidesText = wxTextCtrl(self,-1)
+        #self.slidesText = wxTextCtrl(self,-1)
+        self.slidesCombo = wxComboBox(self,-1, style=wxCB_DROPDOWN|wxCB_SORT)
+        self.slidesCombo.Append("")
+        self.loadButton = wxButton(self,-1,"Load", wxDefaultPosition, wxSize(40,21) )
+
         gridSizer.Add( staticText, 0, wxALIGN_LEFT)
-        gridSizer.Add( self.slidesText, 1, wxEXPAND)
+        gridSizer.Add( self.slidesCombo, 1, wxALIGN_LEFT)
+        gridSizer.Add( self.loadButton, 2, wxALIGN_RIGHT)
+
+        # Don't update the filelist until user becomes a master (it won't 
+        #   be needed unless user is a master).
+        # self.updateVenueFileList()
 
         # - Create textctrl for slide num
         staticText = wxStaticText(self, -1, "Slide number")
         self.slideNumText = wxTextCtrl(self,-1)
+        self.goButton = wxButton(self,-1,"Go", wxDefaultPosition, wxSize(40,21))
         gridSizer.Add( staticText, wxALIGN_LEFT)
         gridSizer.Add( self.slideNumText )
+        gridSizer.Add( self.goButton, wxALIGN_RIGHT )
 
         # - Create buttons for control 
         rowSizer = wxBoxSizer(wxHORIZONTAL)
@@ -286,15 +307,19 @@ class SharedPresentationFrame(wxFrame):
         gridSizer.Add( rowSizer, 0, wxALIGN_RIGHT )
         
         # Set up event callbacks
-        EVT_TEXT_ENTER(self, self.slidesText.GetId(), self.OpenCB)
+        EVT_TEXT_ENTER(self, self.slidesCombo.GetId(), self.OpenCB)
         EVT_CHECKBOX(self, self.masterCheckBox.GetId(), self.MasterCB)
         EVT_BUTTON(self, self.prevButton.GetId(), self.PrevSlideCB)
         EVT_TEXT_ENTER(self, self.slideNumText.GetId(), self.GotoSlideNumCB)
         EVT_BUTTON(self, self.nextButton.GetId(), self.NextSlideCB)
+        EVT_BUTTON(self, self.loadButton.GetId(), self.OpenCB)
+        EVT_BUTTON(self, self.goButton.GetId(), self.GotoSlideNumCB)
 
         EVT_MENU(self, self.ID_SYNC, self.SyncCB)
+        EVT_MENU(self, self.ID_LOCALUPLOAD, self.LocalUploadCB)
         EVT_MENU(self, self.ID_CLEAR, self.ClearSlidesCB)
         EVT_MENU(self, self.ID_EXIT, self.ExitCB)
+
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~
     #
@@ -336,7 +361,7 @@ class SharedPresentationFrame(wxFrame):
         if self.masterCheckBox.IsChecked():
 
             # Get slide url from text field
-            slidesUrl = self.slidesText.GetValue()
+            slidesUrl = self.slidesCombo.GetValue()
 
             # Call the load callback
             self.loadCallback(slidesUrl)
@@ -346,6 +371,19 @@ class SharedPresentationFrame(wxFrame):
         Callback for "sync" menu item
         """
         self.syncCallback()
+
+    def LocalUploadCB(self,event):
+        """
+        Callback for "LocalUpload" menu item
+        """
+        dlg = wxFileDialog(self, "Choose a file to upload:", style = wxOPEN | wxMULTIPLE)
+
+        if dlg.ShowModal() == wxID_OK:
+            files = dlg.GetPaths()
+            log.debug("SharedPresentation.LocalUploadCB:%s " %str(files))
+            # upload
+            self.localUploadCallback(files)
+            self.updateVenueFileList()
 
     def ClearSlidesCB(self,event):
         """
@@ -372,7 +410,9 @@ class SharedPresentationFrame(wxFrame):
                            masterCallback,
                            closeCallback,
                            syncCallback,
-                           exitCallback):
+                           exitCallback,
+                           localUploadCallback,
+                           queryVenueFilesCallback):
         """
         This method is used to set callbacks for the UI
         """
@@ -385,6 +425,8 @@ class SharedPresentationFrame(wxFrame):
         self.closeCallback = closeCallback
         self.syncCallback = syncCallback
         self.exitCallback = exitCallback
+        self.localUploadCallback = localUploadCallback
+        self.queryVenueFilesCallback = queryVenueFilesCallback
 
     def SetSlideNum(self, slideNum):
         """
@@ -396,7 +438,7 @@ class SharedPresentationFrame(wxFrame):
         """
         This method is used to set the slide URL
         """
-        self.slidesText.SetValue(slides)
+        self.slidesCombo.SetValue(slides)
 
     def SetMaster(self, flag):
         """
@@ -404,19 +446,41 @@ class SharedPresentationFrame(wxFrame):
         """
         self.masterCheckBox.SetValue(flag)
 
-        self.slidesText.SetEditable(flag)
         self.slideNumText.SetEditable(flag)
         self.prevButton.Enable(flag)
         self.nextButton.Enable(flag)
+        self.loadButton.Enable(flag)
+        self.goButton.Enable(flag)
+        self.slidesCombo.Enable(flag)
+        # If we're becoming the master, make sure our list of files is current.
+        if flag:
+            self.updateVenueFileList()
+
+    def updateVenueFileList(self):
+        """
+        This method is used to update the list of files from the venue.
+        """
+        old_value = self.slidesCombo.GetValue()
+        # Fill slides combo box with venue's files.
+        try:
+            filenames = self.queryVenueFilesCallback("*.ppt")
+            self.slidesCombo.Clear()
+            for file in filenames:
+                self.slidesCombo.Append(file)
+        except:
+            self.log.exception("Exception getting filenames from venue.")
+        # Restore value that was unset when we updated the list.
+        self.slidesCombo.SetValue(old_value)
 
 
 class UIController(wxApp):
 
-    def __init__(self,arg):
+    def __init__(self,arg, log=None):
+        self.log = log
         wxApp.__init__(self,arg)
 
     def OnInit(self):
-        self.frame = SharedPresentationFrame(NULL, -1, "Shared Presentation controller")
+        self.frame = SharedPresentationFrame(NULL, -1, "Shared Presentation controller", log=self.log)
         self.frame.Fit()
         self.frame.Show(true)
         self.SetTopWindow(self.frame)
@@ -435,7 +499,9 @@ class UIController(wxApp):
                            masterCallback,
                            closeCallback,
                            syncCallback,
-                           exitCallback):
+                           exitCallback,
+                           localUploadCallback,
+                           queryVenueFilesCallback):
         """
         Pass-through to frame's SetCallbacks method
         """
@@ -447,7 +513,9 @@ class UIController(wxApp):
                                 masterCallback,
                                 closeCallback,
                                 syncCallback,
-                                exitCallback)
+                                exitCallback,
+                                localUploadCallback,
+                                queryVenueFilesCallback)
 
     def SetMaster(self,flag):
         """
@@ -515,17 +583,19 @@ class SharedPresentation:
     appDescription = "A shared presentation is a set of slides that someone presents to share an idea, plan, or activity with a group."
     appMimetype = "application/x-ag-shared-presentation"
     
-    def __init__(self, url, log=None):
+    def __init__(self, url, venueUrl=None, log=None):
         """
         This is the contructor for the Shared Presentation.
         """
         # Initialize state in the shared presentation
         self.url = url
+        self.venueUrl = venueUrl
         self.eventQueue = Queue.Queue(5)
         self.log = log
         self.running = 0
         self.masterId = None
         self.numSteps = 0
+        self.slideNum = 1
 
         # Set up method dictionary for the queue processor to call
         # callbacks based on the event type
@@ -581,7 +651,7 @@ class SharedPresentation:
 
         # Create the controller
         self.log.debug("Creating controller.")
-        self.controller = UIController(0)
+        self.controller = UIController(0, self.log)
         self.controller.SetCallbacks( self.SendLoad,
                                       self.SendPrev,
                                       self.SendNext,
@@ -589,7 +659,9 @@ class SharedPresentation:
                                       self.SendMaster,
                                       self.ClearSlides,
                                       self.Sync,
-                                      self.QuitCB )
+                                      self.QuitCB,
+                                      self.LocalUpload,
+                                      self.QueryVenueFiles )
         
 
         # Start the queue thread
@@ -712,6 +784,15 @@ class SharedPresentation:
 
         if self.masterId == self.publicId:
             # Put the event on the queue
+            if path[:5] != "http:":
+                try:
+                    # Default to loading from venue now.
+                    dsc = GetVenueDataStore(self.venueUrl)
+                    fileData = dsc.GetFileData(path)
+                    path = fileData['uri']
+                    print "venue data url:", path
+                except:
+                    self.log.exception("Unable to get file from venue.")
             self.eventQueue.put([SharedPresEvent.LOCAL_LOAD,path])
 
     def SendMaster(self, flag):
@@ -765,6 +846,9 @@ class SharedPresentation:
         This method will sync the viewer with the state in the app object
         """
         self.log.debug("Method Sync called")
+
+        # Also, update the list of venue ppt files in the dropdown menu.
+        self.updateVenueFileList()
 
         self.eventQueue.put([SharedPresEvent.LOCAL_LOAD_VENUE,None])
 
@@ -903,7 +987,7 @@ class SharedPresentation:
             self.viewer.Previous()
         else:
             self.log.debug("No presentation loaded!")
-        
+
     def GoToSlide(self, slideNum):
         """
         This is the _real_ goto slide method that tells the viewer to move
@@ -931,16 +1015,41 @@ class SharedPresentation:
         # If the slides URL begins with https, retrieve the slides
         # from the venue data store
         if slidesUrl.startswith("https"):
-            tmpFile = "tmp"
+            tmpFile = Platform.GetTempDir() + "presentation.ppt"
+            # Make sure filename is not currently open
+            if tmpFile == self.viewer.openFile:
+                tmpFile = Platform.GetTempDir() + "presentation2.ppt"
             DataStore.GSIHTTPDownloadFile(slidesUrl, tmpFile, None, None )
             self.viewer.LoadPresentation(tmpFile)
         else:
             self.viewer.LoadPresentation(slidesUrl)
 
-        self.controller.SetSlides(slidesUrl)
+        if slidesUrl[:6] == "https:":
+            # Remove datastore prefix on local url in UI since master checks
+            #  if file is in venue and sends full datastore url if it is.
+            short_filename = self.stripDatastorePrefix(slidesUrl)
+            self.controller.SetSlides(short_filename)
+            #self.controller.SetSlides(slidesUrl)
+        else:
+            self.controller.SetSlides(slidesUrl)
         self.controller.SetSlideNum(1)
         self.slideNum = 1
         self.stepNum = 0
+
+    def stripDatastorePrefix(self, url):
+        vproxy = Client.Handle(venueURL).GetProxy()
+        ds = vproxy.GetDataStoreInformation()
+        ds_prefix = str(ds[0])
+        url_beginning = url[:len(ds_prefix)]
+        # If it starts with the prefix ds[1], return just the ending.
+        if ds_prefix == url_beginning and ds_prefix[:6] == "https:":
+            # Get url without datastore ds_prefix, +1 is for extra "/" 
+            short_url = url[len(ds_prefix)+1:]
+            #print "url stripped to:", short_url
+            return short_url
+        else:
+            # Does not start with datastore prefix, leave it alone.
+            return url
 
     def SetMaster(self, data):
         """
@@ -1123,14 +1232,21 @@ class SharedPresentation:
         # from the venue data store
         if slidesUrl.startswith("https"):
             tmpFile = Platform.GetTempDir() + "presentation.ppt"
+            # If current filename is in use, use slightly different name.
+            if tmpFile == self.viewer.openFile:
+                tmpFile = Platform.GetTempDir() + "presentation2.ppt"
             DataStore.GSIHTTPDownloadFile(slidesUrl, tmpFile, None, None )
             self.viewer.LoadPresentation(tmpFile)
+            # Remove datastore prefix on local url in UI since master checks
+            #  if file is in venue and sends full datastore url if it is.
+            self.controller.SetSlides(self.stripDatastorePrefix(slidesUrl))
+            #self.controller.SetSlides(slidesUrl)
         else:
             self.viewer.LoadPresentation(slidesUrl)
+            self.controller.SetSlides(slidesUrl)
 
         self.slideNum = 1
         self.stepNum = 0
-        self.controller.SetSlides(slidesUrl)
         self.controller.SetSlideNum(self.slideNum)
 
         self.appProxy.SetData(self.privateId, SharedPresKey.SLIDEURL, slidesUrl)
@@ -1159,36 +1275,45 @@ class SharedPresentation:
         # Set the slide URL in the UI
         if len(self.presentation) != 0:
             self.log.debug("Got presentation: %s", self.presentation)
-            self.controller.SetSlides(self.presentation)
+            if self.presentation[:6] == "https:":
+                # Remove datastore prefix on local url in UI since master checks
+                #  if file is in venue and sends full datastore url if it is.
+                self.controller.SetSlides(self.stripDatastorePrefix(self.presentation))
+                #self.controller.SetSlides(self.presentation)
+            else:
+                self.controller.SetSlides(self.presentation)
 
-        # Retrieve the current slide
-        self.slideNum = self.appProxy.GetData(self.privateId,
+            # Retrieve the current slide
+            self.slideNum = self.appProxy.GetData(self.privateId,
                                                   SharedPresKey.SLIDENUM)
 
-        # Retrieve the current step number
-        self.stepNum = self.appProxy.GetData(self.privateId,
+            # Retrieve the current step number
+            self.stepNum = self.appProxy.GetData(self.privateId,
                                              SharedPresKey.STEPNUM)
 
-        # Retrieve the master
-        self.masterId = self.appProxy.GetData(self.privateId,
+            # Retrieve the master
+            self.masterId = self.appProxy.GetData(self.privateId,
                                              SharedPresKey.MASTER)
 
-        # If the slides URL begins with https, retrieve the slides
-        # from the venue data store
-        if self.presentation.startswith("https"):
-            tmpFile = Platform.GetTempDir() + "presentation.ppt"
-            DataStore.GSIHTTPDownloadFile(self.presentation, tmpFile, None, None )
-            self.viewer.LoadPresentation(tmpFile)
-        else:
-            self.viewer.LoadPresentation(self.presentation)
+            # If the slides URL begins with https, retrieve the slides
+            # from the venue data store
+            if self.presentation.startswith("https"):
+                tmpFile = Platform.GetTempDir() + "presentation.ppt"
+                # If tmpFile name is in use, use a different name.
+                if tmpFile == self.viewer.openFile:
+                    tmpFile = Platform.GetTempDir() + "presentation2.ppt"
+                DataStore.GSIHTTPDownloadFile(self.presentation, tmpFile, None, None )
+                self.viewer.LoadPresentation(tmpFile)
+            else:
+                self.viewer.LoadPresentation(self.presentation)
 
-        # Go to the current slide
-        self.GoToSlide(self.slideNum)
+            # Go to the current slide
+            self.GoToSlide(self.slideNum)
 
-        # Go to the current step
-        for i in range(self.stepNum):
-            self.Next()
-        
+            # Go to the current step
+            for i in range(self.stepNum):
+                self.Next()
+
         # Set the slide number in the UI
         if self.slideNum == '':
             self.slideNum = 1
@@ -1198,6 +1323,16 @@ class SharedPresentation:
 
         # Set the master in the UI
         self.controller.SetMaster(false)
+
+    def LocalUpload(self, filenames):
+        dsc = GetVenueDataStore(self.venueUrl)
+        for filename in filenames:
+            dsc.Upload(filename)
+
+    def QueryVenueFiles(self, file_query="*"):
+        dsc = GetVenueDataStore(self.venueUrl)
+        filenames = dsc.QueryMatchingFiles(file_query)
+        return filenames
 
 
 
@@ -1326,7 +1461,7 @@ if __name__ == "__main__":
         log.debug("Application URL: %s", appURL)
 
     # This is all that really matters!
-    presentation = SharedPresentation(appURL, log)
+    presentation = SharedPresentation(appURL, venueURL, log)
 
     if venueDataUrl:
         print "loading venueDataUrl: ", venueDataUrl
