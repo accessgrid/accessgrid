@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.25 2003-05-15 03:06:46 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.26 2003-05-19 22:42:11 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -23,7 +23,6 @@ else:
 
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
-from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
 
 from AccessGrid.Types import AGServicePackage
@@ -88,7 +87,7 @@ class AGServiceManager( ServiceBase ):
             self.__PushAuthorizedUserList()
         except:
             log.exception("AGServiceManager.SetAuthorizedUsers.")
-            raise faultType("AGServiceManager.SetAuthorizedUsers failed: " + str( sys.exc_value ))
+            raise Exception("AGServiceManager.SetAuthorizedUsers failed: " + str( sys.exc_value ))
         
     SetAuthorizedUsers.soap_export_as = "SetAuthorizedUsers"
 
@@ -112,7 +111,7 @@ class AGServiceManager( ServiceBase ):
         try:
             self.__DiscoverResources()
         except:
-            raise faultType("AGServiceManager.DiscoverResources failed: " + str( sys.exc_value ))
+            raise Exception("AGServiceManager.DiscoverResources failed: " + str( sys.exc_value ))
     DiscoverResources.soap_export_as = "DiscoverResources"
 
 
@@ -162,7 +161,7 @@ class AGServiceManager( ServiceBase ):
 
         except:
             print "Exception in AddService, retrieving service implementation\n-- ", sys.exc_type, sys.exc_value
-            raise faultType("AGServiceManager.AddService failed: " + str( sys.exc_value ) )
+            raise Exception("AGServiceManager.AddService failed: " + str( sys.exc_value ) )
 
         #
         # Execute service implementation
@@ -300,7 +299,7 @@ class AGServiceManager( ServiceBase ):
 
         # raise exception now, if one occurred
         if exc:
-            raise faultType("AGServiceManager.RemoveService failed : ", str( exc ) )
+            raise Exception("AGServiceManager.RemoveService failed : ", str( exc ) )
 
     RemoveService.soap_export_as = "RemoveService"
 
