@@ -27,7 +27,7 @@ absOutputDir = os.path.abspath(outputDir)
 if not os.path.exists(absOutputDir):
     os.makedirs(absOutputDir)
     
-things = ["SharedBrowser", "SharedPresentation"]
+things = ["SharedBrowser", "SharedPresentation", "VenueVNC"]
 if not os.path.isdir(inputDir):
     print "The following directory does not exist: ", inputDir
 
