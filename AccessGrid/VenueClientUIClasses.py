@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.167 2003-05-07 13:37:15 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.168 2003-05-07 14:24:35 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -96,10 +96,10 @@ class VenueClientFrame(wxFrame):
     ID_PARTICIPANT_PROFILE = wxNewId()
     ID_PARTICIPANT_FOLLOW = wxNewId()
     ID_PARTICIPANT_LEAD = wxNewId()
-    ID_NODE_PROFILE = wxNewId()
-    ID_NODE_FOLLOW = wxNewId()
-    ID_NODE_LEAD = wxNewId()
-    ID_NODE_MANAGE = wxNewId()
+    #ID_NODE_PROFILE = wxNewId()
+    #ID_NODE_FOLLOW = wxNewId()
+    #ID_NODE_LEAD = wxNewId()
+    #ID_NODE_MANAGE = wxNewId()
     ID_ME_PROFILE = wxNewId()
     ID_ME_DATA = wxNewId()
     ID_ME_UNFOLLOW = wxNewId()
@@ -167,6 +167,7 @@ class VenueClientFrame(wxFrame):
     def __setMenubar(self):
         self.SetMenuBar(self.menubar)
 
+        # ---- menus for main menu bar
         self.venue = wxMenu()
 	self.dataMenu = wxMenu()
         self.dataMenu.Append(self.ID_VENUE_DATA_ADD,"Add data to venue...",
@@ -183,6 +184,7 @@ class VenueClientFrame(wxFrame):
 	self.dataMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties...",
                              "View information about the selected data")
         self.venue.AppendMenu(self.ID_VENUE_DATA,"&Data", self.dataMenu)
+
 	self.serviceMenu = wxMenu()
 	self.serviceMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
                                 "Add service to the venue")
@@ -193,7 +195,6 @@ class VenueClientFrame(wxFrame):
         self.serviceMenu.AppendSeparator()
         self.serviceMenu.Append(self.ID_VENUE_SERVICE_PROPERTIES,"Properties...",
                                      "View information about the selected service")
-        
         self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",
                               self.serviceMenu)
 
@@ -201,44 +202,28 @@ class VenueClientFrame(wxFrame):
       
         self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"&Applications",
                               self.applicationMenu)
-        
-     
-
-        # --- I'll use this later, for now, same menu opens for both heading and item selection.
-
-        # Create menu to pop over an application entry
-        self.applicationEntryMenu = wxMenu()
-        self.applicationEntryMenu.Append(self.ID_VENUE_APPLICATION_JOIN,"Join",
-                                    "Join application")
-        self.applicationEntryMenu.Append(self.ID_VENUE_APPLICATION_DELETE, "Delete",
-                                    "Delete application")
-        self.applicationEntryMenu.AppendSeparator()
-        self.applicationEntryMenu.Append(self.ID_VENUE_APPLICATION_PROPERTIES,"Properties...",
-                              "View information about the selected application")
-
-        # Create menu to pop over an service entry
-        #self.serviceEntryMenu = wxMenu()
-	#self.serviceEntryMenu.Append(self.ID_VENUE_SERVICE_OPEN,
-        #                            "Open",  "Launch service client")
-
-
-	self.menubar.Append(self.venue, "&Venue")
-        
         self.venue.AppendSeparator()
         self.venue.Append(self.ID_VENUE_CLOSE,"&Exit", "Exit venue")
-	
-	self.edit = wxMenu()
-	self.edit.Append(self.ID_PROFILE,"&Profile...\t", "Change your personal information")
-        self.menubar.Append(self.edit, "&Edit")
-        self.myNode = wxMenu()
-        self.myNode.Append(self.ID_MYNODE_MANAGE, "&Manage...\t", "Configure your node")
-        self.myNode.Append(self.ID_MYNODE_URL, "&Set URL...\t", "Specify URL address to node service")
-        self.menubar.Append(self.myNode, "My &Node")
+        
+     	self.menubar.Append(self.venue, "&Venue")
+      	
+	#self.edit = wxMenu()
+	#self.edit.Append(self.ID_PROFILE,"&Profile...\t", "Change your personal information")
+        #self.menubar.Append(self.edit, "&Edit")
+        self.preferences = wxMenu()
+        self.preferences.Append(self.ID_PROFILE,"&Profile...\t", "Change your personal information")
+        self.preferences.AppendSeparator()
+        self.preferences.Append(self.ID_MYNODE_MANAGE, "&Manage My Node...\t", "Configure your node")
+        self.preferences.Append(self.ID_MYNODE_URL, "&Set Node URL...\t", "Specify URL address to node service")
+        self.menubar.Append(self.preferences, "&Preferences")
         self.myVenues = wxMenu()
         self.myVenues.Append(self.ID_MYVENUE_ADD, "Add &Current Venue...\t", "Add this venue to your list of venues")
         self.myVenues.Append(self.ID_MYVENUE_EDIT, "Edit My &Venues...\t", "Edit your venues")
         self.myVenues.AppendSeparator()
+
         self.menubar.Append(self.myVenues, "My Ven&ues")
+
+        
 
         if HaveCertificateManager:
             # certMenu = wxMenu()
@@ -250,8 +235,9 @@ class VenueClientFrame(wxFrame):
       	self.help = wxMenu()
         self.help.Append(self.ID_HELP_ABOUT, "&About\t", "Information about the application")
         self.menubar.Append(self.help, "&Help")
-        self.HideMenu()
+       
 
+        # ---- Menus for items
         self.meMenu = wxMenu()
         self.meMenu.Append(self.ID_ME_DATA,"Add personal data...",\
                                            "Add data you can bring to other venues")
@@ -268,21 +254,67 @@ class VenueClientFrame(wxFrame):
         self.participantMenu.Append(self.ID_PARTICIPANT_LEAD,"Lead",\
                                            "Lead this person")
 
-        self.nodeMenu = wxMenu()
-        self.nodeMenu.Append(self.ID_NODE_PROFILE,"View Profile...",\
-                             "View node's profile information")
-        self.nodeMenu.Append(self.ID_NODE_MANAGE,"Manage...",\
-                                           "Manage this node")
-        self.nodeMenu.AppendSeparator()
+        #self.nodeMenu = wxMenu()
+        #self.nodeMenu.Append(self.ID_NODE_PROFILE,"View Profile...",\
+        #                     "View node's profile information")
+        #self.nodeMenu.Append(self.ID_NODE_MANAGE,"Manage...",\
+        #                                   "Manage this node")
+        #self.nodeMenu.AppendSeparator()
 
-        self.nodeMenu.Append(self.ID_NODE_FOLLOW,"Follow",\
-                                           "Follow this node")
-        self.nodeMenu.Append(self.ID_NODE_LEAD,"Lead",\
-                                           "Lead this node")
+        #self.nodeMenu.Append(self.ID_NODE_FOLLOW,"Follow",\
+        #                                   "Follow this node")
+        #self.nodeMenu.Append(self.ID_NODE_LEAD,"Lead",\
+        #                                   "Lead this node")
 
+        self.dataEntryMenu = wxMenu()
+        self.dataEntryMenu.Append(self.ID_VENUE_DATA_ADD,"Add data to venue...",
+                             "Add data to the venue")
+        self.dataEntryMenu.AppendSeparator()
+        self.dataEntryMenu.Append(self.ID_VENUE_DATA_OPEN,"Open",
+                             "Open selected data")
+	self.dataEntryMenu.Append(self.ID_VENUE_DATA_SAVE,"Save...",
+                             "Save selected data to local disk")
+	self.dataEntryMenu.Append(self.ID_VENUE_DATA_DELETE,"Delete", "Remove selected data")
+        self.dataEntryMenu.AppendSeparator()
+	self.dataEntryMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties...",
+                             "View information about the selected data")
+
+        self.serviceEntryMenu = wxMenu()
+      	self.serviceEntryMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
+                                "Add service to the venue")
+        self.serviceEntryMenu.Append(self.ID_VENUE_SERVICE_OPEN,
+                                     "Open",  "Launch service client")
+        self.serviceEntryMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete",
+                                "Remove selected service")
+        self.serviceEntryMenu.AppendSeparator()
+        self.serviceEntryMenu.Append(self.ID_VENUE_SERVICE_PROPERTIES,"Properties...",
+                                     "View information about the selected service")
+
+        self.applicationEntryMenu = wxMenu()
+        self.applicationEntryMenu.Append(self.ID_VENUE_APPLICATION_JOIN,"Join",
+                                    "Join application")
+        self.applicationEntryMenu.Append(self.ID_VENUE_APPLICATION_DELETE, "Delete",
+                                    "Delete application")
+        self.applicationEntryMenu.AppendSeparator()
+        self.applicationEntryMenu.Append(self.ID_VENUE_APPLICATION_PROPERTIES,"Properties...",
+                              "View information about the selected application")
+
+        # ---- Menus for headings
+        self.dataHeadingMenu = wxMenu()
+        self.dataHeadingMenu.Append(self.ID_VENUE_DATA_ADD,"Add...",
+                                   "Add data to the venue")
+
+        self.serviceHeadingMenu = wxMenu()
+      	self.serviceHeadingMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
+                                "Add service to the venue")
+
+        # Do not enable menus until connected
+        self.HideMenu()
+        
+        # until implemented
         #self.nodeMenu.Enable(self.ID_NODE_LEAD, false)
         #self.nodeMenu.Enable(self.ID_NODE_MANAGE, false)
-        #self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
+        self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
 
     def HideMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
@@ -297,6 +329,9 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_SERVICE_PROPERTIES, false)
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
 
+        self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, false)
+      	self.serviceHeadingMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
+        
         self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_JOIN, false)
         self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_DELETE, false)
         self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_PROPERTIES, false)
@@ -313,6 +348,9 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_SERVICE_OPEN, true)
         self.menubar.Enable(self.ID_VENUE_SERVICE_PROPERTIES, true)
         self.menubar.Enable(self.ID_MYVENUE_ADD, true)
+
+        self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, true)
+      	self.serviceHeadingMenu.Enable(self.ID_VENUE_SERVICE_ADD, true)
 
         self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_JOIN, true)
         self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_DELETE, true)
@@ -344,9 +382,9 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_ME_UNFOLLOW, self.UnFollow)
         EVT_MENU(self, self.ID_ME_DATA, self.OpenAddPersonalDataDialog)
         EVT_MENU(self, self.ID_PARTICIPANT_PROFILE, self.OpenParticipantProfile)
-        EVT_MENU(self, self.ID_NODE_PROFILE, self.OpenParticipantProfile)
+        #EVT_MENU(self, self.ID_NODE_PROFILE, self.OpenParticipantProfile)
         EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.Follow)
-        EVT_MENU(self, self.ID_NODE_FOLLOW, self.Follow)
+       # EVT_MENU(self, self.ID_NODE_FOLLOW, self.Follow)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_JOIN, self.JoinApp)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_DELETE, self.RemoveApp)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_PROPERTIES, self.OpenApplicationProfile)
@@ -1200,7 +1238,7 @@ class ContentListPanel(wxPanel):
     participantDict = {}
     dataDict = {}
     serviceDict = {}
-    nodeDict = {}
+    #nodeDict = {}
     applicationDict = {}
     personalDataDict = {}
     
@@ -1231,7 +1269,7 @@ class ContentListPanel(wxPanel):
         self.defaultDataId = imageList.Add(icons.getDefaultDataBitmap())
 	self.serviceId = imageList.Add(icons.getDefaultServiceBitmap())
         self.applicationId = imageList.Add(icons.getDefaultServiceBitmap())
-        self.nodeId = imageList.Add(icons.getDefaultNodeBitmap())
+        #self.nodeId = imageList.Add(icons.getDefaultNodeBitmap())
         #self.nodeFollowId = imageList.Add(icons.getNodeFollowBitmap())
         #self.nodeLeadId = imageList.Add(icons.getNodeLeadBitmap())
         self.tree.AssignImageList(imageList)
@@ -1272,52 +1310,54 @@ class ContentListPanel(wxPanel):
                           
     def ModifyParticipant(self, description):
         wxLogDebug('Modify participant')
-        type =  description.profileType
-        oldType = None
+        #type =  description.profileType
+        #oldType = None
         id = description.publicId
 
-        if(self.participantDict.has_key(id)):
-            oldType = 'user'
+        #if(self.participantDict.has_key(id)):
+        #    oldType = 'user'
             
-        elif(self.nodeDict.has_key(id)):
-            oldType = 'node'
+        #elif(self.nodeDict.has_key(id)):
+        #    oldType = 'node'
         
-        if(oldType == type):   # just change details
-            wxLogDebug('Change details')
-            if type == 'user':
-                treeId = self.participantDict[description.publicId]
-                profile = self.tree.GetItemData(treeId).GetData()
-                self.tree.SetItemText(treeId, description.name)
-                wxLogDebug('this is the name we are changing to %s'%description.name)
-                profile = description
-                self.tree.SetItemData(treeId, wxTreeItemData(description))
-                self.tree.SortChildren(self.participants)
-               
-            else:
-                treeId = self.nodeDict[description.publicId]
-                profile = self.tree.GetItemData(treeId).GetData()
-                self.tree.SetItemText(treeId, description.name)
-                profile = description
-                self.tree.SetItemData(treeId, wxTreeItemData(description))
-                self.tree.SortChildren(self.nodes)
+        #if(oldType == type):   # just change details
+        wxLogDebug('Change details')
+        # if type == 'user':
+        if(self.participantDict.has_key(id)):
+            treeId = self.participantDict[description.publicId]
+            profile = self.tree.GetItemData(treeId).GetData()
+            self.tree.SetItemText(treeId, description.name)
+            wxLogDebug('this is the name we are changing to %s'%description.name)
+            profile = description
+            self.tree.SetItemData(treeId, wxTreeItemData(description))
+            self.tree.SortChildren(self.participants)
+        else:
+            wxLogInfo('The participant is not in the list %s'%description.name)
+            #else:
+            #    treeId = self.nodeDict[description.publicId]
+            #    profile = self.tree.GetItemData(treeId).GetData()
+            #    self.tree.SetItemText(treeId, description.name)
+            #    profile = description
+            #    self.tree.SetItemData(treeId, wxTreeItemData(description))
+            #    self.tree.SortChildren(self.nodes)
 
-        elif(oldType != None): # move to new category type
+        #elif(oldType != None): # move to new category type
 
-            if type == 'node':
-                wxLogDebug('Change to node')
-                if(self.participantDict.has_key(description.publicId)):
-                    participantId = self.participantDict[description.publicId]
-                    dataList = self.__GetPersonalDataFromItem(participantId)
-                    self.RemoveParticipant(description)
-                    self.AddNode(description, dataList)
+      #      if type == 'node':
+      #          wxLogDebug('Change to node')
+      #          if(self.participantDict.has_key(description.publicId)):
+      #              participantId = self.participantDict[description.publicId]
+      #              dataList = self.__GetPersonalDataFromItem(participantId)
+      #              self.RemoveParticipant(description)
+      #              self.AddNode(description, dataList)
                 
-            else:
-                wxLogDebug('Change to user')
-                if (self.nodeDict.has_key(description.publicId)):
-                    nodeId = self.nodeDict[description.publicId]
-                    dataList = self.__GetPersonalDataFromItem(nodeId)
-                    self.RemoveNode(description)
-                    self.AddParticipant(description, dataList)
+      #      else:
+      #          wxLogDebug('Change to user')
+      #          if (self.nodeDict.has_key(description.publicId)):
+      #              nodeId = self.nodeDict[description.publicId]
+      #              dataList = self.__GetPersonalDataFromItem(nodeId)
+      #              self.RemoveNode(description)
+      #              self.AddParticipant(description, dataList)
 
     def __GetPersonalDataFromItem(self, treeId):
         # Get data for this id
@@ -1373,23 +1413,23 @@ class ContentListPanel(wxPanel):
 
                 self.tree.SelectItem(participantId)
                               
-            elif (self.nodeDict.has_key(id)):
-                wxLogDebug("Data belongs to a node")
-                nodeId = self.nodeDict[id]
-                dataId = self.tree.AppendItem(nodeId, profile.name, \
-                                              self.defaultDataId, self.defaultDataId)
-                self.tree.SetItemData(dataId, wxTreeItemData(profile))
-                self.personalDataDict[profile.name] = dataId
-                self.tree.SortChildren(nodeId)
+            #elif (self.nodeDict.has_key(id)):
+            #    wxLogDebug("Data belongs to a node")
+            #    nodeId = self.nodeDict[id]
+            #    dataId = self.tree.AppendItem(nodeId, profile.name, \
+            #                                  self.defaultDataId, self.defaultDataId)
+            #    self.tree.SetItemData(dataId, wxTreeItemData(profile))
+            #    self.personalDataDict[profile.name] = dataId
+            #    self.tree.SortChildren(nodeId)
                 
-                # I select the node to ensure the twist button is visible
-                # when first data item is added. I have to do this due to
-                # a bug in wxPython.
-
-                if(self.tree.GetSelection() == nodeId):
-                    self.tree.Unselect()
-                
-                self.tree.SelectItem(nodeId)
+            # I select the node to ensure the twist button is visible
+            # when first data item is added. I have to do this due to
+            # a bug in wxPython.
+            
+            #    if(self.tree.GetSelection() == nodeId):
+            #        self.tree.Unselect()
+            #    
+            #    self.tree.SelectItem(nodeId)
                               
             else:
                 wxLogInfo("Owner of data does not exist")
@@ -1463,31 +1503,30 @@ class ContentListPanel(wxPanel):
             if(id != None):
                 self.tree.Delete(id)
 
-    def AddNode(self, profile, dataList = []):
-        node = self.tree.AppendItem(self.nodes, profile.name, \
-                                       self.nodeId, self.nodeId)
-        self.tree.SetItemData(node, wxTreeItemData(profile)) 
-        self.nodeDict[profile.publicId] = node
-        self.tree.SortChildren(self.nodes)
-        self.tree.Expand(self.nodes)
-        
-        for data in dataList:
-            nodeData = self.tree.AppendItem(node, data.name, \
-                                            self.defaultDataId, self.defaultDataId)
-            self.tree.SetItemData(nodeData, wxTreeItemData(data))
-            self.personalDataDict[data.name] = nodeData   # data gets new tree id
+    #def AddNode(self, profile, dataList = []):
+    #    node = self.tree.AppendItem(self.nodes, profile.name, \
+    #                                   self.nodeId, self.nodeId)
+    #    self.tree.SetItemData(node, wxTreeItemData(profile)) 
+    #    self.nodeDict[profile.publicId] = node
+    #    self.tree.SortChildren(self.nodes)
+    #    self.tree.Expand(self.nodes)
+    #    
+    #    for data in dataList:
+    #        nodeData = self.tree.AppendItem(node, data.name, \
+    #                                        self.defaultDataId, self.defaultDataId)
+    #        self.tree.SetItemData(nodeData, wxTreeItemData(data))
+    #        self.personalDataDict[data.name] = nodeData   # data gets new tree id
+    #    self.tree.SortChildren(node)
 
-        self.tree.SortChildren(node)
-
-    def RemoveNode(self, profile):
-        if(profile!=None):
-            if(self.nodeDict.has_key(profile.publicId)):
-                id = self.nodeDict[profile.publicId]
-
-                if(id != None):
-                    self.tree.Delete(id)
-                    
-                del self.nodeDict[profile.publicId]
+    #def RemoveNode(self, profile):
+    #    if(profile!=None):
+    #        if(self.nodeDict.has_key(profile.publicId)):
+    #            id = self.nodeDict[profile.publicId]
+    
+    #            if(id != None):
+    #                self.tree.Delete(id)
+    #                
+    #            del self.nodeDict[profile.publicId]
 
     def __setTree(self):
         #temporary fix for wxPython bug
@@ -1500,13 +1539,13 @@ class ContentListPanel(wxPanel):
         self.root = self.tree.AddRoot("The Lobby", index, index)
                     
 	self.participants = self.tree.AppendItem(self.root, "Participants", index, index)
-        self.nodes = self.tree.AppendItem(self.root, "Nodes", index, index)
+        # self.nodes = self.tree.AppendItem(self.root, "Nodes", index, index)
         self.data = self.tree.AppendItem(self.root, "Data", index, index) 
         self.services = self.tree.AppendItem(self.root, "Services", index, index)
         self.applications = self.tree.AppendItem(self.root, "Applications", index, index)
 
         self.tree.SetItemBold(self.participants)
-        self.tree.SetItemBold(self.nodes)
+        #self.tree.SetItemBold(self.nodes)
         self.tree.SetItemBold(self.data)
         self.tree.SetItemBold(self.services)
 	self.tree.SetItemBold(self.applications)
@@ -1514,7 +1553,7 @@ class ContentListPanel(wxPanel):
         colour = wxTheColourDatabase.FindColour("NAVY")
                 
         self.tree.SetItemTextColour(self.participants, colour)
-        self.tree.SetItemTextColour(self.nodes, colour)
+        #self.tree.SetItemTextColour(self.nodes, colour)
         self.tree.SetItemTextColour(self.data, colour)
         self.tree.SetItemTextColour(self.services, colour)
 	self.tree.SetItemTextColour(self.applications, colour)
@@ -1522,7 +1561,7 @@ class ContentListPanel(wxPanel):
         self.tree.Expand(self.participants)
         self.tree.Expand(self.data)
         self.tree.Expand(self.services)
-        self.tree.Expand(self.nodes)
+        #self.tree.Expand(self.nodes)
         
     def __setProperties(self):
         pass
@@ -1572,26 +1611,29 @@ class ContentListPanel(wxPanel):
         item = self.tree.GetItemData(treeId).GetData()
         text = self.tree.GetItemText(treeId)
 
-        if text == 'Data' or isinstance(item,DataDescription):
-            self.PopupMenu(self.parent.dataMenu, wxPoint(self.x, self.y))
+        if text == 'Data':
+            print '====================== Data'
+            self.PopupMenu(self.parent.dataHeadingMenu, wxPoint(self.x, self.y))
 
         elif text == 'Services':
-            self.PopupMenu(self.parent.serviceMenu, wxPoint(self.x, self.y))
+            self.PopupMenu(self.parent.serviceHeadingMenu, wxPoint(self.x, self.y))
 
-        elif text == 'Applications':
-            self.PopupMenu(self.parent.applicationMenu,
-                           wxPoint(self.x, self.y))
-        elif text == 'Participants' or text == 'Nodes' or item == None:
+        #elif text == 'Applications':
+        #    self.PopupMenu(self.parent.applicationEntryMenu,
+        #                   wxPoint(self.x, self.y))
+        #elif text == 'Participants' or text == 'Nodes' or item == None:
+        elif text == 'Participants' or item == None:
             pass
 
         elif isinstance(item, ServiceDescription):
-            self.PopupMenu(self.parent.serviceMenu, wxPoint(self.x,self.y))
+            self.PopupMenu(self.parent.serviceEntryMenu, wxPoint(self.x,self.y))
 
         elif isinstance(item,ApplicationDescription):
             self.PopupMenu(self.parent.applicationEntryMenu, wxPoint(self.x, self.y))
             
         elif isinstance(item, DataDescription):
-            self.PopupMenu(self.parent.dataMenu, wxPoint(self.x, self.y))
+            print '====================== DataDescription'
+            self.PopupMenu(self.parent.dataEntryMenu, wxPoint(self.x, self.y))
 
         elif isinstance(item,ClientProfile):
             wxLogDebug("Is this me? public is = %s, my id = %s "%(item.publicId, self.app.profile.publicId))
@@ -1599,9 +1641,9 @@ class ContentListPanel(wxPanel):
                 wxLogDebug("This is me")
                 self.PopupMenu(self.parent.meMenu, wxPoint(self.x, self.y))
 
-            elif(item.profileType == 'node'):
-                wxLogDebug("This is a node")
-                self.PopupMenu(self.parent.nodeMenu, wxPoint(self.x, self.y))
+            #elif(item.profileType == 'node'):
+            #    wxLogDebug("This is a node")
+            #    self.PopupMenu(self.parent.nodeMenu, wxPoint(self.x, self.y))
 
             elif(item.profileType == 'user'):
                 wxLogDebug("This is a user")
@@ -1613,8 +1655,8 @@ class ContentListPanel(wxPanel):
         for index in self.participantDict.values():
             self.tree.Delete(index)
 
-        for index in self.nodeDict.values():
-            self.tree.Delete(index)
+        #for index in self.nodeDict.values():
+        #    self.tree.Delete(index)
         
         for index in self.serviceDict.values():
             self.tree.Delete(index)
@@ -1628,7 +1670,7 @@ class ContentListPanel(wxPanel):
         self.participantDict.clear()
         self.dataDict.clear()
         self.serviceDict.clear()
-        self.nodeDict.clear()
+        #self.nodeDict.clear()
         self.applicationDict.clear()
                             
  
@@ -2120,7 +2162,7 @@ class ProfileDialog(wxDialog):
         self.supportCtrl = wxTextCtrl(self, -1, "")
         self.homeVenue= wxStaticText(self, -1, "Home Venue:")
         self.homeVenueCtrl = wxTextCtrl(self, -1, "")
-        self.profileTypeText = wxStaticText(self, -1, "Profile Type:", style=wxALIGN_LEFT)
+        #self.profileTypeText = wxStaticText(self, -1, "Profile Type:", style=wxALIGN_LEFT)
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.profile = None
@@ -2137,16 +2179,17 @@ class ProfileDialog(wxDialog):
             self.profile.SetTechSupportInfo(self.supportCtrl.GetValue())
             self.profile.SetLocation(self.locationCtrl.GetValue())
             self.profile.SetHomeVenue(self.homeVenueCtrl.GetValue())
-            self.profile.SetProfileType(self.profileTypeBox.GetValue())
+            #self.profile.SetProfileType(self.profileTypeBox.GetValue())
+            self.profile.SetProfileType('user')
         wxLogDebug("VenueClientUIClasses.py: Got profile information from dialog")
         return self.profile
 
     def SetProfile(self, profile):
         wxLogDebug("VenueClientUIClasses.py: Set profile information in dialog")
         self.profile = profile
-        self.profileTypeBox = wxComboBox(self, -1, choices =['user', 'node'], style = wxCB_DROPDOWN)
+        #self.profileTypeBox = wxComboBox(self, -1, choices =['user', 'node'], style = wxCB_DROPDOWN)
         #self.profileTypeBox.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
-        self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
+        #self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
         self.Layout()
         self.nameCtrl.SetValue(self.profile.GetName())
         self.emailCtrl.SetValue(self.profile.GetEmail())
@@ -2154,19 +2197,19 @@ class ProfileDialog(wxDialog):
         self.locationCtrl.SetValue(self.profile.GetLocation())
         self.supportCtrl.SetValue(self.profile.GetTechSupportInfo())
         self.homeVenueCtrl.SetValue(self.profile.GetHomeVenue())
-        if(self.profile.GetProfileType() == 'user'):
-            self.profileTypeBox.SetSelection(0)
-        else:
-            self.profileTypeBox.SetSelection(1)
+       # if(self.profile.GetProfileType() == 'user'):
+       #     self.profileTypeBox.SetSelection(0)
+       # else:
+       #     self.profileTypeBox.SetSelection(1)
         self.__setEditable(true)
         wxLogDebug("VenueClientUIClasses.py: Set profile information successfully in dialog")
 
     def SetDescription(self, item):
         wxLogDebug("VenueClientUIClasses.py: Set description in dialog name:%s, email:%s, phone:%s, location:%s support:%s, home:%s, dn:%s"
                    %(item.name, item.email,item.phoneNumber,item.location,item.techSupportInfo, item.homeVenue, item.distinguishedName))
-        self.profileTypeBox = wxTextCtrl(self, -1, item.profileType)
+        #self.profileTypeBox = wxTextCtrl(self, -1, item.profileType)
         #self.profileTypeBox.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
-        self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
+        #self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
         self.dnText = wxStaticText(self, -1, "Distinguished name: ")
         self.dnTextCtrl = wxTextCtrl(self, -1, "")
         self.gridSizer.Add(self.dnText, 0, wxEXPAND, 0)
@@ -2194,7 +2237,7 @@ class ProfileDialog(wxDialog):
             self.locationCtrl.SetEditable(false)
             self.supportCtrl.SetEditable(false)
             self.homeVenueCtrl.SetEditable(false)
-            self.profileTypeBox.SetEditable(false)
+            #self.profileTypeBox.SetEditable(false)
             self.dnTextCtrl.SetEditable(false)
         else:
             self.nameCtrl.SetEditable(true)
@@ -2203,7 +2246,7 @@ class ProfileDialog(wxDialog):
             self.locationCtrl.SetEditable(true)
             self.supportCtrl.SetEditable(true)
             self.homeVenueCtrl.SetEditable(true)
-            self.profileTypeBox.SetEditable(true)
+            #self.profileTypeBox.SetEditable(true)
         wxLogDebug("VenueClientUIClasses.py: Set editable in successfully dialog")
            
     def __doLayout(self):
@@ -2223,7 +2266,7 @@ class ProfileDialog(wxDialog):
         self.gridSizer.Add(self.supportCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.homeVenue, 0, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.homeVenueCtrl, 0, wxEXPAND, 0)
-        self.gridSizer.Add(self.profileTypeText, 0, wxALIGN_LEFT, 0)
+        #self.gridSizer.Add(self.profileTypeText, 0, wxALIGN_LEFT, 0)
         #gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
         sizer2.Add(self.gridSizer, 1, wxALL, 10)
 
