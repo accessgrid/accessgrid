@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.39 2004-05-27 19:29:25 turam Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.40 2004-07-30 19:08:36 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.39 2004-05-27 19:29:25 turam Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.40 2004-07-30 19:08:36 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -23,6 +23,9 @@ import md5
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.GUID import GUID
 from AccessGrid.Platform.Config import UserConfig
+from AccessGrid import Log
+
+log = Log.GetLogger(Log.VenueClient)
 
 class InvalidProfileException(Exception):
     """
@@ -183,6 +186,7 @@ class ClientProfile:
             if (section != ClientProfile.configSection and
                 section != string.lower(ClientProfile.configSection)
                 or option not in ClientProfile.validOptions):
+                log.error('ClientProfile.CheckProfile: Check profile failed for section: %s option: %s'%(section, option))
                 return 0
         return 1
     
