@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.38 2003-09-25 14:01:47 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.39 2003-10-14 04:27:14 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.38 2003-09-25 14:01:47 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.39 2003-10-14 04:27:14 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import isWindows, isLinux, isOSX
@@ -190,10 +190,15 @@ class ProgressDialog(wxProgressDialog):
     count = 1
 
     def __init__(self, title, message, maximum):
-        wxProgressDialog.__init__(self, title, message, maximum, style = wxPD_AUTO_HIDE| wxPD_APP_MODAL)
+        self.message = message
+        wxProgressDialog.__init__(self, title, message, maximum,
+                                  style = wxPD_AUTO_HIDE| wxPD_APP_MODAL)
             
-    def UpdateOneStep(self):
-        self.Update(self.count)
+    def UpdateOneStep(self, msg=""):
+        if len(msg) > 0:
+            self.Update(self.count, msg)
+        else:
+            self.Update(self.count)
         self.count = self.count + 1
 
 class AboutDialog(wxDialog):

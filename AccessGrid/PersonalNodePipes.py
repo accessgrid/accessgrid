@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/05
-# RCS-ID:      $Id: PersonalNodePipes.py,v 1.3 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: PersonalNodePipes.py,v 1.4 2003-10-14 04:27:00 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ Svc mgr:
 
 """
 
-__revision__ = "$Id: PersonalNodePipes.py,v 1.3 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: PersonalNodePipes.py,v 1.4 2003-10-14 04:27:00 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -150,9 +150,10 @@ class Pipe:
         return str
 
 class PersonalNodeManager:
-    def __init__(self, setNodeServiceCallback, debugMode):
+    def __init__(self, setNodeServiceCallback, debugMode, progressCallback):
         self.setNodeServiceCallback = setNodeServiceCallback
         self.debugMode = debugMode
+        self.progressCallback = progressCallback
 
         self.initPipes()
 
@@ -177,7 +178,8 @@ class PersonalNodeManager:
         url = self.svc_mgr_init_pipe.readURL()
 
         log.debug("Service manager running at %s", url)
-
+        self.progressCallback("Started service manager.")
+        
         self.svc_mgr_init_pipe.close()
 
         #
@@ -187,6 +189,7 @@ class PersonalNodeManager:
         url = self.node_svc_init_pipe.readURL()
 
         log.debug("Node service running at %s", url)
+        self.progressCallback("Started node service.")
 
         self.node_svc_init_pipe.close()
 

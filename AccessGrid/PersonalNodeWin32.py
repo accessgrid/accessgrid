@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: PersonalNodeWin32.py,v 1.3 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: PersonalNodeWin32.py,v 1.4 2003-10-14 04:27:00 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ of a Personal Node.
 
 """
 
-__revision__ = "$Id: PersonalNodeWin32.py,v 1.3 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: PersonalNodeWin32.py,v 1.4 2003-10-14 04:27:00 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -34,12 +34,10 @@ import logging
 from AccessGrid import Platform
 
 log = logging.getLogger("AG.PersonalNode")
+log.setLevel(logging.WARN)
 
-RegBase = "SOFTWARE\\Access Grid Toolkit\\2.0"
-RegHive = _winreg.HKEY_CURRENT_USER
 NodeServiceURIKey = "NodeServiceURI"
 ServiceManagerURIKey = "ServiceManagerURI"
-
 
 class EventObj:
     def __init__(self, name, create = 0):
@@ -47,7 +45,8 @@ class EventObj:
         if create:
             self.eventObj = win32event.CreateEvent(None, 1, 0, name)
         else:
-            self.eventObj = win32event.OpenEvent(win32event.EVENT_ALL_ACCESS, 0, name)
+            self.eventObj = win32event.OpenEvent(win32event.EVENT_ALL_ACCESS,
+                                                 0, name)
 
     def GetName(self):
         return self.name
@@ -69,10 +68,11 @@ class EventObj:
         log.debug("Done waiting on %s", self.name)
 
 class PersonalNodeManager:
-    def __init__(self, setNodeServiceCallback, debugMode):
+    def __init__(self, setNodeServiceCallback, debugMode, progressCallback):
         self.setNodeServiceCallback = setNodeServiceCallback
         self.debugMode = debugMode
-
+        self.progressCallback = progressCallback
+        
         self.initEventObjects()
 
     def Run(self):
@@ -94,9 +94,10 @@ class PersonalNodeManager:
         self.svc_mgr_init.Wait()
 
         url = readServiceManagerURL()
+        self.progressCallback("Started service manager.")
 
         log.debug("Service manager running at %s", url)
-
+        
         #
         # Now wait for the node service to initialize
         #
@@ -105,7 +106,8 @@ class PersonalNodeManager:
         url = readNodeServiceURL()
 
         log.debug("Node service running at %s", url)
-
+        self.progressCallback("Started node service.")
+        
         comps = urlparse.urlparse(url)
         if comps[1] != "":
             #
@@ -161,7 +163,7 @@ class PersonalNodeManager:
                                            None,
                                            None,
                                            win32process.STARTUPINFO())
-        print "info is ", pinfo
+        log.debug("info is ", pinfo)
         self.serviceManagerPInfo = pinfo
 
     def startNodeService(self):
@@ -188,7 +190,7 @@ class PersonalNodeManager:
                                            None,
                                            None,
                                            win32process.STARTUPINFO())
-        print "info is ", pinfo
+        log.debug("info is ", pinfo)
         self.nodeServicePInfo = pinfo
                                            
 
@@ -222,10 +224,8 @@ class PersonalNodeManager:
             eobj = EventObj(name, create = 1)
             setattr(self, obj, eobj)
 
-
-        #
-        # OK, OK, so this isn't initializing event objects but it is sort of related.
-        #
+        # OK, OK, so this isn't initializing event objects but it is sort
+        # of related.
         myid = win32api.GetCurrentProcessId()
 
         self.nodeServiceArg = "AG_node_svc_init:AG_svc_mgr_node_svc_synch:AG_node_svc_term:%s"  % (myid)
@@ -235,14 +235,12 @@ class PN_NodeService:
     def __init__(self, terminateCallback):
         self.terminateCallback = terminateCallback
 
-
     def RunPhase1(self, initArg):
         """
         First part of initialization.
 
         Returns the URL to the service manager.
         """
-
         try:
             (init, synch, term, self.parentPID) = initArg.split(":")
         except ValueError, e:
@@ -271,7 +269,6 @@ class PN_NodeService:
         myURL is the handle for our node service.
 
         """
-
         writeNodeServiceURL(myURL)
 
         log.debug("signalling node svc event")
@@ -281,7 +278,8 @@ class PN_NodeService:
         # Get the process handle for the parent
         #
 
-        self.hParent = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, 0, int(self.parentPID))
+        self.hParent = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS,
+                                            0, int(self.parentPID))
         log.debug("got parent handle %s", self.hParent)
         #
         # Create a thread to wait for termination
@@ -347,7 +345,8 @@ class PN_ServiceManager:
         # Get the process handle for the parent
         #
 
-        self.hParent = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, 0, int(parentPID))
+        self.hParent = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS,
+                                            0, int(parentPID))
         log.debug("got parent handle %s", self.hParent)
 
         #
@@ -382,19 +381,20 @@ class PN_ServiceManager:
         self.terminateCallback()
 
 def readServiceManagerURL():
-    k = _winreg.OpenKey(RegHive, RegBase)
+    k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, Platform.AGTkRegBaseKey)
     (val, type) = _winreg.QueryValueEx(k, ServiceManagerURIKey)
     k.Close()
     return str(val)
 
 def writeServiceManagerURL(url):
-    k = _winreg.CreateKey(RegHive, RegBase)
+    k = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, Platform.AGTkRegBaseKey)
     _winreg.SetValueEx(k, ServiceManagerURIKey, 0, _winreg.REG_SZ, url)
     k.Close()
 
 def deleteServiceManagerURL():
     try:
-        k = _winreg.OpenKey(RegHive, RegBase, 0, _winreg.KEY_ALL_ACCESS)
+        k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, Platform.AGTkRegBaseKey,
+                            0, _winreg.KEY_ALL_ACCESS)
         _winreg.DeleteValue(k, ServiceManagerURIKey)
         
     except EnvironmentError:
@@ -407,19 +407,20 @@ def deleteServiceManagerURL():
 
 
 def readNodeServiceURL():
-    k = _winreg.OpenKey(RegHive, RegBase)
+    k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, Platform.AGTkRegBaseKey)
     (val, type) = _winreg.QueryValueEx(k, NodeServiceURIKey)
     k.Close()
     return str(val)
 
 def writeNodeServiceURL(url):
-    k = _winreg.CreateKey(RegHive, RegBase)
+    k = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, Platform.AGTkRegBaseKey)
     _winreg.SetValueEx(k, NodeServiceURIKey, 0, _winreg.REG_SZ, url)
     k.Close()
     
 def deleteNodeServiceURL():
     try:
-        k = _winreg.OpenKey(RegHive, RegBase, 0, _winreg.KEY_ALL_ACCESS)
+        k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, Platform.AGTkRegBaseKey,
+                            0, _winreg.KEY_ALL_ACCESS)
         _winreg.DeleteValue(k, NodeServiceURIKey)
     except EnvironmentError:
         #
