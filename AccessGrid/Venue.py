@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.77 2003-04-23 09:15:26 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.78 2003-04-25 21:30:40 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,7 +29,7 @@ from AccessGrid import AppService
 from AccessGrid.Types import Capability
 from AccessGrid.Descriptions import StreamDescription, CreateStreamDescription
 from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
-from AccessGrid.Descriptions import ApplicationDescription
+from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription, DataDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
 from AccessGrid import DataStore
@@ -319,7 +319,7 @@ class Venue(ServiceBase.ServiceBase):
         privateId = event
         now = time.time()
         log.debug("Got Client Heartbeat for %s at %s." % (event, now))
-
+       
         if(self.clients.has_key(privateId)):
             (profile, heartbeatTime) = self.clients[privateId]
             self.clients[privateId] = (profile, now)
@@ -853,10 +853,12 @@ class Venue(ServiceBase.ServiceBase):
         profile that is stored by the Virtual Venue that they gave to the Venue
         when they called the Enter method.
         """
+                
         log.debug("Called UpdateClientProfile on %s " %clientProfile.name)
-        for client, heartbeatTime in self.clients.values():
+        for key in self.clients.keys():
+            client, heartbeatTime = self.clients[key]
             if client.publicId == clientProfile.publicId:
-                self.clients[client.privateId] = (clientProfile, time.time())
+                self.clients[key] = (clientProfile, time.time())
 
         log.debug("Distribute MODIFY_USER event")
         self.server.eventService.Distribute( self.uniqueId,
@@ -875,7 +877,7 @@ class Venue(ServiceBase.ServiceBase):
         name = dataDescription.name
               
         log.debug("AddData with name %s " %name)
-      
+             
         if self.data.has_key(name):
             #
             # We already have this data; raise an exception.
@@ -900,6 +902,7 @@ class Venue(ServiceBase.ServiceBase):
         """
 
         name = serviceDescription.name
+     
 
         if self.services.has_key(name):
             #
