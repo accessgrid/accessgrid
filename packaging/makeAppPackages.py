@@ -1,5 +1,4 @@
-import sys
-import os
+import sys, os, re
 import zipfile
 
 """
@@ -27,28 +26,37 @@ absOutputDir = os.path.abspath(outputDir)
 if not os.path.exists(absOutputDir):
     os.makedirs(absOutputDir)
     
-#things = ["SharedBrowser", "SharedPresentation", "VenueVNC"]
-
 if not os.path.isdir(inputDir):
     print "The following directory does not exist: ", inputDir
     sys.exit(-1)
 else:
     things = os.listdir(inputDir)
 
-print "THINGS: ", things
-
 for thing in things:
-    os.chdir(os.path.join(inputDir, thing))
+    Desc = None
+    adir = os.path.join(inputDir, thing)
+    os.chdir(adir)
 
-    appfilter = re.compile("*.app", re.IGNORECASE)
-    files = filter(appfilter.search, os.listdir(os.path.join(inputDir, thing)))
+    files = os.listdir(adir)
+    
+    appfilter = re.compile(".*app", re.IGNORECASE)
 
-    if len(files) > 1:
-        print "Ambiguous shared app: %s, more than one .app file (%s)" % (thing, files)
-        continue
+    files = filter(appfilter.search, files)
 
+    if len(files) == 0 or len(files) > 1:
+        print "bad shared app: %s, wrong number of .app files (%s)" % (thing,
+                                                                       files)
+        print "trying to use the one named after the directory."
+
+        for f in files:
+            if f.split('.')[0] == thing:
+                Desc = f
+                ImplPy = thing + ".py"
+
+        if Desc is None:
+            continue
     else:
-        Desc = file[0]
+        Desc = files[0]
         ImplPy = Desc.split('.')[-1] + ".py"
 
     if not os.path.isfile(Desc):
