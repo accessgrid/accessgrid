@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.37 2004-04-27 02:40:22 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.38 2004-04-27 02:53:29 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.37 2004-04-27 02:40:22 judson Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.38 2004-04-27 02:53:29 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -60,6 +60,7 @@ class ClientProfile:
         'ClientProfile.icon' : '<Leave blank for now>',
         'ClientProfile.id' : '',
         'ClientProfile.location' : '<Insert Postal Address Here>',
+        'ClientProfile.techsupportinfo':'',
         'ClientProfile.venueclienturl' : '',
         'ClientProfile.home' : 'https://vv2.mcs.anl.gov:9000/Venues/default'
         }
@@ -82,6 +83,7 @@ class ClientProfile:
         self.privateId = None
         self.distinguishedName = None
         self.capabilities = []
+        self.techSupportInfo = ''
 
         if profileFile != None and os.path.exists(profileFile):
             self.Load(self.profileFile)
@@ -115,6 +117,7 @@ class ClientProfile:
             self.location = self.profile['ClientProfile.location']
             self.venueClientURL = self.profile['ClientProfile.venueclienturl']
             self.homeVenue = self.profile['ClientProfile.home']
+            self.techSupportInfo = self.profile['ClientProfile.techsupportinfo']
         else:
             raise InvalidProfileException
 
