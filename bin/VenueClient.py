@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.231 2003-10-13 17:06:39 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.232 2003-10-14 04:28:17 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -60,7 +60,7 @@ from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
 from AccessGrid.GUID import GUID
 from AccessGrid.VenueClient import VenueClient, NotAuthorizedError
 from AccessGrid.VenueClientEventSubscriber import VenueClientEventSubscriber
-from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.Platform import GetUserConfigDir, InitUserEnv
 
 class VenueClientUI(VenueClientEventSubscriber):
     """
@@ -105,7 +105,7 @@ class VenueClientUI(VenueClientEventSubscriber):
 
         self.frame = None
         self.startupDialog = startupDialog
-        self.startupDialog.UpdateOneStep()
+        self.startupDialog.UpdateOneStep("Starting venue client.")
 
         self.venueClient = VenueClient()
         self.venueClient.AddEventSubscriber(self)
@@ -122,12 +122,14 @@ class VenueClientUI(VenueClientEventSubscriber):
          
         # We verify first because the Toolkit code assumes a valid
         # globus environment.
-        self.startupDialog.UpdateOneStep()
+        self.startupDialog.UpdateOneStep("Verifying environment.")
+
+        InitUserEnv()
         
         VerifyExecutionEnvironment(self)
        
         try:
-            self.startupDialog.UpdateOneStep()
+            self.startupDialog.UpdateOneStep("Starting ui.")
             self.app = Toolkit.WXGUIApplication()
 
         except Exception, e:
@@ -155,31 +157,33 @@ class VenueClientUI(VenueClientEventSubscriber):
         self.frame.SetSize(wxSize(500, 400))
         
         # Tell the UI about installed applications
-        self.startupDialog.UpdateOneStep()
+        self.startupDialog.UpdateOneStep("Loading shared applications.")
         self.frame.EnableAppMenu( false )
        
         # Initialize globus runtime stuff.
-        self.startupDialog.UpdateOneStep()
+        self.startupDialog.UpdateOneStep("Verifying globus environment.")
         self.app.InitGlobusEnvironment()
        
-        # Load user mailcap from AG Config Dir
-        self.startupDialog.UpdateOneStep()
-
-        log.debug("bin.VenueClient::OnInit: ispersonal=%s", self.isPersonalNode)
+        self.startupDialog.UpdateOneStep("Starting personal node services.")
+        log.debug("bin.VenueClient::OnInit: ispersonal=%s",
+                  self.isPersonalNode)
         if self.isPersonalNode:
             def setSvcCallback(svcUrl, self = self):
                 log.debug("bin.VenueClient::OnInit: setting node service URI to %s from PersonalNode", svcUrl)
                 self.venueClient.nodeServiceUri = svcUrl
 
 
-            self.personalNode = PersonalNode.PersonalNodeManager(setSvcCallback, self.debugMode)
+            self.personalNode = PersonalNode.PersonalNodeManager(
+                                            setSvcCallback,
+                                            self.debugMode,
+                                            self.startupDialog.UpdateOneStep)
             self.personalNode.Run()
 
         #
         # Check if profile is created then open venue client
         #
+        self.startupDialog.UpdateOneStep("Loading client profile.")
         self.venueClient.profile = ClientProfile(self.profileFile)
-        self.startupDialog.UpdateOneStep()
         
         if self.venueClient.profile.IsDefault():  # not your profile
             log.debug("the profile is the default profile - open profile dialog")
@@ -1495,7 +1499,8 @@ if __name__ == "__main__":
 
     app = wxPySimpleApp()
 
-    dlg = ProgressDialog("Startup", "Loading Venue Client.                  ", 11)
+    dlg = ProgressDialog("Staring Venue Client...",
+                         "Loading Venue Client.", 13)
     dlg.Show()
     
     vc = VenueClientUI(dlg)
