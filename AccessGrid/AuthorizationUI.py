@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.2 2004-02-24 21:34:51 judson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.3 2004-02-26 14:50:37 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.2 2004-02-24 21:34:51 judson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.3 2004-02-26 14:50:37 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -20,6 +20,7 @@ from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from wxPython.wizard import *
 
 from AccessGrid import Toolkit
+from AccessGrid.Platform import isWindows, isLinux
 from AccessGrid.ClientProfile import ClientProfileCache
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
        
@@ -42,13 +43,13 @@ class AuthorizationUIPanel(wxPanel):
             self.rolesDict[role] = self.authClient.ListSubjectInRole(role)
         
         # Adjust tree for different platforms 
-        if sys.platform == "win32":
+        if isWindows():
             self.tree = wxTreeCtrl(self, wxNewId(), wxDefaultPosition, 
                                    wxDefaultSize, style = wxTR_HAS_BUTTONS |
                                    wxTR_NO_LINES|wxTR_EDIT_LABELS )
             
             
-        elif sys.platform == "linux2":
+        elif isLinux():
             self.tree = wxTreeCtrl(self, wxNewId(), wxDefaultPosition, 
                                    wxDefaultSize, style = wxTR_HAS_BUTTONS |
                                    wxTR_NO_LINES | wxTR_HIDE_ROOT| wxTR_EDIT_LABELS )
@@ -678,7 +679,12 @@ if __name__ == "__main__":
         uri = "https://localhost:8000/VenueServer/Authorization"
         
     print "URI: ", uri
-    am = AuthorizationManagerIW(uri)
+    try:
+        am = AuthorizationManagerIW(uri)
+    except Exception, e:
+        print "Couldn't get authorization manager: ", e
+        sys.exit(1)
+        
     p1 = am.GetPolicy()
     am.TestImportExport(p1)
     p2 = am.GetPolicy()

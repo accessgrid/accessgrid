@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.15 2004-02-24 21:34:51 judson Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.16 2004-02-26 14:51:07 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.15 2004-02-24 21:34:51 judson Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.16 2004-02-26 14:51:07 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -485,7 +485,7 @@ class DataStoreShell(cmd.Cmd):
 
         try:
             self.dsc.Download(file, localFile)
-            if sys.platform == 'win32' and pager == "more":
+            if Platform.isWindows() and pager == "more":
                 os.system("more < %s" % (localFile))
             else:
                 os.system("%s %s" % (pager, localFile))

@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.37 2004-02-24 21:43:19 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.38 2004-02-26 14:50:52 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.37 2004-02-24 21:43:19 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.38 2004-02-26 14:50:52 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -55,6 +55,8 @@ from AccessGrid import CertificateRepository
 from AccessGrid import Utilities
 from AccessGrid.Security.pyGlobus import ProxyGen
 from AccessGrid.Security import CRSClient
+
+from AccessGrid.Platform import isWindows
 
 log = logging.getLogger("AG.CertificateManager")
 
@@ -317,7 +319,7 @@ class CertificateManager(object):
                 return
             
         except AttributeError:
-            if sys.platform == "win32":
+            if isWindows():
                 sw = "WinGlobus"
             else:
                 sw = "pyGlobus"
@@ -837,7 +839,7 @@ class CertificateManager(object):
             log.exception("pyGlobus.sslutilsc.get_certificate_locations() not found")
 
             if not self.issuedGlobusWarning:
-                if sys.platform == "win32":
+                if isWindows():
                     self.GetUserInterface().ReportError("It appears that your system has an out-of-date version of \n" +
                                                         "WinGlobus installed. You should check your configuration.\n" +
                                                         "We will attempt to work around the problem, but you may see\n" +
