@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.4 2004-03-02 19:07:12 judson Exp $
+# RCS-ID:      $Id: Role.py,v 1.5 2004-03-09 17:03:28 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ much more dynamic. We programmatically create, destroy and modify
 roles.
 """
 
-__revision__ = "$Id: Role.py,v 1.4 2004-03-02 19:07:12 judson Exp $"
+__revision__ = "$Id: Role.py,v 1.5 2004-03-09 17:03:28 lefvert Exp $"
 
 # external imports
 import xml.dom.minidom
@@ -26,6 +26,7 @@ import xml.dom.minidom
 # AGTk imports
 from AccessGrid.Security.Subject import Subject, InvalidSubject
 from AccessGrid.Toolkit import GetApplication
+from AccessGrid.Security.Subject import SubjectAlreadyPresent
 
 class RoleNotFound(Exception):
     """
@@ -50,8 +51,7 @@ class DefaultIdentityNotRemovable(Exception):
     pass
 
 class Role:
-    """
-
+    '''
     A Role instance represents a group of Subjects (users). The group
     probably has some contextual meaning, such as "Users found in the
     Venue" or "Users who can modify my data".
@@ -61,20 +61,24 @@ class Role:
 
     @cvar TYPE: the type of role, used in doing Role Arithematic.
     @type TYPE: string
-    """
+    '''
 
     TYPE = "Invalid"
 
-    def __init__(self, role_name, subjects=list()):
+    def __init__(self, role_name, subjects=None):
         """
         @param role_name: the name of the role to create
         @param subjects: a list of subjects to initialize this role with.
         @type role_name: string
         @type subjects: a list of AccessGrid.Security.Subject objects
         """
+        if not subjects:
+            self.subjects = []
+        else:
+            self.subjects = subjects
+        
         self.name = role_name
-        self.subjects = subjects
-
+       
     def _repr_(self):
         """
         This method creates a DOM document that represents the role.
@@ -163,6 +167,10 @@ class Role:
         if not isinstance(subject, Subject):
             raise InvalidSubject
 
+        for s in self.subjects:
+            if s.name == subject.name:
+                raise SubjectAlreadyPresent(s.name)
+
         self.subjects.append(subject)
 
     def RemoveSubject(self, subject):
@@ -181,7 +189,10 @@ class Role:
         di = GetApplication().GetCertificateManager().GetDefaultIdentity()
 
         if di == subject:
-            raise DefaultIdentityNotRemovable
+            raise DefaultIdentityNotRemovable(subject.name)
+        
+        if subject not in self.subjects:
+            raise InvalidSubject("Subject %s does not exist in role %s"%(subject.name, self.name))
 
         self.subjects.remove(subject)
 
@@ -245,3 +256,11 @@ Everybody = AllowRole("EVERYBODY")
 Nobody = DenyRole("NOBODY")
 Administrators = AllowRole("Administrators")
 
+if __name__ == "__main__":
+    
+    from AccessGrid.Security.X509Subject import X509Subject
+    
+    r = Role("test")
+    r.RemoveSubject(X509Subject("Susanne1"))
+    #r.AddSubject(X509Subject("Susanne1"))
+    #r.AddSubject(X509Subject("Susanne1"))
