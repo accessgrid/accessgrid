@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.13 2003-03-25 15:34:41 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.14 2003-04-01 20:04:36 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -19,6 +19,8 @@ log = logging.getLogger("AG.Platform")
 
 # Global env var
 AGTK = 'AGTK'
+AGTK_LOCATION = 'AGTK_LOCATION'
+AGTK_USER = 'AGTK_USER'
 
 # Windows Defaults
 WIN = 'win32'
@@ -73,18 +75,26 @@ try:
 except:
     pass
 
+
 def GetSystemConfigDir():
     """
     Determine the system configuration directory
     """
+   
+    try:
+        configDir = os.environ[AGTK_LOCATION]
+    except:
+        configDir = ""
 
-    configDir = ""
-    if sys.platform == WIN:
-        AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
-        configDir, type = _winreg.QueryValueEx(AG20,"ConfigPath")
+    """ If environment variable not set, check for settings from installation. """
+    if "" == configDir:
 
-    elif sys.platform == LINUX:
-        configDir = AGTkBasePath
+        if sys.platform == WIN:
+            AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
+            configDir, type = _winreg.QueryValueEx(AG20,"ConfigPath")
+
+        elif sys.platform == LINUX:
+            configDir = AGTkBasePath
 
     return configDir
 
@@ -93,13 +103,20 @@ def GetUserConfigDir():
     Determine the user configuration directory
     """
 
-    configDir = ""
-    if sys.platform == WIN:
-        AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
-        configDir, type = _winreg.QueryValueEx(AG20,"UserConfigPath")
+    try:
+        configDir = os.environ[AGTK_USER]
+    except:
+        configDir = ""
 
-    elif sys.platform == LINUX:
-        configDir = os.path.join(os.environ["HOME"],".AccessGrid")
+    """ If environment variable not set, check for settings from installation. """
+    if "" == configDir:
+
+        if sys.platform == WIN:
+            AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
+            configDir, type = _winreg.QueryValueEx(AG20,"UserConfigPath")
+
+        elif sys.platform == LINUX:
+            configDir = os.path.join(os.environ["HOME"],".AccessGrid")
 
     return configDir
 
