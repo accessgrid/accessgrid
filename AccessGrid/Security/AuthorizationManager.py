@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.21 2004-06-01 23:07:45 judson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.22 2004-06-02 03:27:11 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.21 2004-06-01 23:07:45 judson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.22 2004-06-02 03:27:11 judson Exp $"
 
 # External Imports
 import os
@@ -113,6 +113,7 @@ class AuthorizationManager:
         # Internal function to create a role
         def unpackRole(node):
             sl = list()
+            numSubjs = len(node.childNodes)
             for s in node.childNodes:
                 s = X509Subject.X509Subject(s.attributes["name"].value,
                                             s.attributes["auth_data"].value)
@@ -124,44 +125,41 @@ class AuthorizationManager:
                 roleType = node.attributes["TYPE"].value
             r = Role(node.attributes["name"].value, sl)
 
-            if "default" in node.attributes.keys():    
-                return (r, 1)
-            else:
-                return(r, 0)
+            return(r, numSubjs)
 
         # Internal function to create an action
-        def unpackAction(node, roleDict):
+        def unpackAction(node, to):
             a = MethodAction(node.attributes["name"].value)
-            for rn in node.childNodes:
+            for rn in map(lambda x: x.attributes["name"].value,
+                          node.childNodes):
                 try:
-                    r = roleDict[rn.attributes["name"].value]
+                    r = to.FindRole(rn)
+                    a.AddRole(r)
                 except KeyError:
                     log.exception("AuthManager Import: Role Not Found.")
-                a.AddRole(r)
 
             return a
 
         # Reset current configuration
         self.roles = []
         self.actions = []
-        
+
         domP = xml.dom.minidom.parseString(policy)
         
         roleElements = domP.getElementsByTagName("Role")
 
-        roleDict = dict()
-        
         for c in roleElements:
             (r, default) = unpackRole(c)
-            roleDict[r.name] = r
-            try:
-                self.AddRole(r, default = default)
-            except:
-                # Don't add the role
-                pass
+            oldr = self.FindRole(r.name)
+            if oldr is not None:
+                if len(r.subjects) >= len(oldr.subjects):
+                    self.RemoveRole(oldr)
+                    self.AddRole(r)
+            else:
+                self.AddRole(r)
 
         for c in domP.getElementsByTagName("Action"):
-            a = unpackAction(c, roleDict)
+            a = unpackAction(c, self)
             try:
                 self.AddAction(a)
             except:
@@ -183,11 +181,6 @@ class AuthorizationManager:
         for r in self.roles:
             authP.appendChild(r.ToXML(authDoc))
 
-        for r in self.defaultRoles:
-            dr = r.ToXML(authDoc)
-            dr.setAttribute("default","1")
-            authP.appendChild(dr)
-
         for a in self.actions:
             authP.appendChild(a.ToXML(authDoc, 1))
 
@@ -207,17 +200,14 @@ class AuthorizationManager:
 
         @returns: 0 if not authorized, 1 if authorized.
         """
-        # By default no authorization happens
-        auth = 0
-
         # this gets us all the roles for this action
         rolelist = self.GetRoles(action=action)
 
         for role in rolelist:
             if role.HasSubject(subject):
-                auth = 1
+                return 1
 
-        return auth
+        return 0
 
     def AddAction(self, action):
         """

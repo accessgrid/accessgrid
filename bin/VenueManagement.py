@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.134 2004-05-28 16:52:12 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.135 2004-06-02 03:27:11 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.134 2004-05-28 16:52:12 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.135 2004-06-02 03:27:11 judson Exp $"
 
 # Standard imports
 import sys
@@ -1438,7 +1438,7 @@ class VenueParamFrame(wxDialog):
                                  self.generalPanel.description.GetValue(),
                                  encryptTuple, exitsList, streams)
         self.venue = venue
-
+        
 class GeneralPanel(wxPanel):
     ID_TRANSFER = wxNewId()
     ID_REMOVE_EXIT = wxNewId()
@@ -1965,7 +1965,8 @@ class ModifyVenueFrame(VenueParamFrame):
                 try:
                     log.debug("ModifyVenueFrame.OnOk: Modify venue")
                     self.parent.ModifyVenue(self.venue)
-
+                    self.authorizationPanel.Apply()
+                    
                 except Exception, e:
                     log.exception("ModifyVenueFrame.OnOk: Modify venue failed")
                     text = "Could not modify venue %s" %self.venue.name

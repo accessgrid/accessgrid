@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.18 2004-06-02 00:18:51 eolson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.19 2004-06-02 03:27:11 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.18 2004-06-02 00:18:51 eolson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.19 2004-06-02 03:27:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -57,13 +57,14 @@ class AuthorizationUIPanel(wxPanel):
         wxPanel.__init__(self, parent, id, wxDefaultPosition)
         self.log = log
         self.cacheRoleName = 'Registered People'
-        self.cacheRole = None
+        self.cacheRole = Role(self.cacheRoleName)
         self.roleToTreeIdDict = dict()
         self.x = -1
         self.y = -1
         self.currentRole = None
         self.allActions = []
         self.allRoles = []
+        self.allRoles.append(self.cacheRole)
         self.dragItem = None
         self.copyItem = None
         self.authClient = None
@@ -124,7 +125,8 @@ class AuthorizationUIPanel(wxPanel):
 
         # Get roles
         try:
-            self.allRoles = self.authClient.ListRoles()
+            for r in self.authClient.ListRoles():
+                self.allRoles.append(r)
         except:
             self.log.exception("AuthorizationUIPanel.ConnectToAuthManager:Failed to list roles. %s"%(authUrl))
         
@@ -164,31 +166,14 @@ class AuthorizationUIPanel(wxPanel):
             # Test if self.baseUrl really is a venue url...for now use try except.
             self.venue = VenueIW(self.baseUrl)
             
-            for p in self.venue.GetCachedProfiles():
-                profile = CreateClientProfile(p)
-                dn = profile.GetDistinguishedName()
-                if dn:
-                    cachedDns.append(dn)
+#             for p in self.venue.GetCachedProfiles():
+#                 profile = CreateClientProfile(p)
+#                 dn = profile.GetDistinguishedName()
+#                 if dn:
+#                     cachedDns.append(dn)
         except:
             self.log.exception("AuthorizationUI.__AddCachedSubjects: Failed to load remote profiles. Only venues have profile caches so this may be the case when connecting to an application. Not critical.")
 
-        # Create role for cached subjects
-        roleExists = 0
-        
-        for role in self.allRoles:
-            if self.cacheRoleName == role.name:
-                roleExists = 1
-                self.cacheRole = role
-                
-        # If role is not already added; Create role.
-        if not roleExists:
-            try:
-                self.cacheRole = Role(self.cacheRoleName)
-                self.allRoles.append(self.cacheRole)
-                self.changed = 1   
-            except:
-                self.log.exception("AuthorizationUIPanel.CreateRole: Failed to add role")
-               
         # Create subjects.
         for dn in cachedDns:
             subject =  X509Subject(dn)
@@ -347,9 +332,6 @@ class AuthorizationUIPanel(wxPanel):
         for a in self.allActions:
             for r in a.GetRoles():
                 if r.name == role.name:
-                    #if isinstance(r, SOAPpy.Types.structType):
-                        #a.RemoveRole(r)
-                        #a.AddRole(CreateRoleFromStruct(r))
                     actions.append(a)
         return actions
             
@@ -722,9 +704,9 @@ class AuthorizationUIPanel(wxPanel):
                                          "AuthorizationPolicy", None)
         authP = authDoc.documentElement
 
-        for r in self.allRoles:
-            if r.name is not self.cacheRoleName:
-                authP.appendChild(r.ToXML(authDoc))
+        for role in self.allRoles:
+            if self.cacheRoleName != role.name:
+                authP.appendChild(role.ToXML(authDoc))
         
         for a in self.allActions:
             authP.appendChild(a.ToXML(authDoc, 1))

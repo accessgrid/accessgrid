@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.144 2004-06-01 20:15:10 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.145 2004-06-02 03:27:10 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.144 2004-06-01 20:15:10 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.145 2004-06-02 03:27:10 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -494,7 +494,11 @@ class VenueServer(AuthorizationMixIn):
           
             if option == "authorizationPolicy":
                 if len(config[k]) > 0:
-                    self.authManager.ImportPolicy(config[k])
+                    pol = config[k]
+                    pol  = re.sub("<CRLF>", "\r\n", pol )
+                    pol  = re.sub("<CR>", "\r", pol )
+                    pol  = re.sub("<LF>", "\n", pol )
+                    self.authManager.ImportPolicy(pol)
             
             elif option == "administrators":
                 adminList = string.split(config[k],':')
@@ -644,7 +648,11 @@ class VenueServer(AuthorizationMixIn):
 
         # Get authorization policy.
         if self.authManager:
-            self.config["VenueServer.authorizationPolicy"] = self.authManager.ExportPolicy()
+            pol = self.authManager.ExportPolicy()
+            pol  = re.sub("\r\n", "<CRLF>", pol )
+            pol  = re.sub("\r", "<CR>", pol )
+            pol  = re.sub("\n", "<LF>", pol )
+            self.config["VenueServer.authorizationPolicy"] = pol
 
         # Finally we save the current config
         SaveConfig(self.configFile, self.config)
