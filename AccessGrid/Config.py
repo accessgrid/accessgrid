@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.16 2004-05-05 22:06:49 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.17 2004-05-14 16:13:47 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.16 2004-05-05 22:06:49 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.17 2004-05-14 16:13:47 lefvert Exp $"
 
 import os
 import sys
@@ -18,6 +18,7 @@ import struct
 import time
 import select
 import socket
+import shutil
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.Toolkit)
@@ -309,6 +310,56 @@ class UserConfig:
 
     def __str__(self):
         return self._repr_()
+
+    def _CopyFile(self, oldFile, newFile):
+        '''
+        If newFile does not exist, move oldFile to newFile.
+        '''
+        # Never overwrite new configs
+        if not os.path.exists(newFile) and os.path.exists(oldFile):
+            log.debug('copy %s to %s' %(oldFile, newFile))
+            shutil.copyfile(oldFile, newFile)
+            
+    def _CopyDir(self, oldDir, newDir):
+        '''
+        if newDir does not exist, move oldDir to newDir.
+        '''
+        # Never overwrite new configs
+        if not os.path.exists(newDir) and os.path.exists(oldDir):
+            log.debug('copy %s to %s' %(oldDir, newDir))
+            shutil.copytree(oldDir, newDir)
+
+    def _Migrate(self):
+        '''
+        Make sure old info gets moved to new location.
+        '''
+        oldPath = os.path.join(self.baseDir, "profile")
+        newPath = os.path.join(self.configDir, "profile")
+        self._CopyFile(oldPath, newPath)
+
+        oldPath = os.path.join(self.baseDir, "myVenues.txt")
+        newPath = os.path.join(self.configDir, "myVenues.txt")
+        self._CopyFile(oldPath, newPath)
+                
+        oldPath = os.path.join(self.baseDir, "certRepo")
+        newPath = os.path.join(self.configDir, "certRepo")
+        self._CopyDir(oldPath, newPath)
+
+        oldPath = os.path.join(self.baseDir, "trustedCACerts")
+        newPath = os.path.join(self.configDir, "trustedCACerts")
+        self._CopyDir(oldPath, newPath)
+        
+        oldPath = os.path.join(self.baseDir, "personalDataStore")
+        newPath = os.path.join(self.configDir, "personalDataStore")
+        self._CopyDir(oldPath, newPath)
+        
+        oldPath = os.path.join(self.baseDir, "profileCache")
+        newPath = os.path.join(self.configDir, "profileCache")
+        self._CopyDir(oldPath, newPath)
+        
+        oldPath = os.path.join(self.baseDir, "nodeConfig")
+        newPath = os.path.join(self.configDir, "nodeConfig")
+        self._CopyDir(oldPath, newPath)
     
     def GetProfile(self):
         raise "This should not be called directly, but through a subclass."
