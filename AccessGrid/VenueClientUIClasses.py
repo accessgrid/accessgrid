@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.256 2003-09-15 18:13:19 eolson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.257 2003-09-15 20:52:35 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1657,7 +1657,7 @@ class ContentListPanel(wxPanel):
             self.tree.SetItemData(dataId, wxTreeItemData(profile)) 
             self.dataDict[profile.id] = dataId
             self.tree.SortChildren(self.data)
-            self.tree.Expand(self.data)
+            #self.tree.Expand(self.data)
             
         #if personal data
         else:
@@ -1767,7 +1767,7 @@ class ContentListPanel(wxPanel):
         self.tree.SetItemData(service, wxTreeItemData(profile)) 
         self.serviceDict[profile.name] = service
         self.tree.SortChildren(self.services)
-        self.tree.Expand(self.services)
+        #self.tree.Expand(self.services)
         
     def RemoveService(self, profile):
         if(self.serviceDict.has_key(profile.name)):
@@ -1829,8 +1829,8 @@ class ContentListPanel(wxPanel):
 	self.tree.SetItemTextColour(self.applications, colour)
                
         self.tree.Expand(self.participants)
-        self.tree.Expand(self.data)
-        self.tree.Expand(self.services)
+        #self.tree.Expand(self.data)
+        #self.tree.Expand(self.services)
                 
         if sys.platform == "win32":
             self.tree.Expand(self.root)
