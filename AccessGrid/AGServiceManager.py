@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.23 2003-05-12 16:54:04 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.24 2003-05-12 22:15:26 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -314,11 +314,7 @@ class AGServiceManager( ServiceBase ):
             try:
                 self.RemoveService( service )
             except Exception, e:
-                log.exception("Exception in AGServiceManager.RemoveServices")
-                exc = e
-
-        if exc:
-            raise exc
+                log.exception("Exception in AGServiceManager.RemoveServices; continuing")
 
     RemoveServices.soap_export_as = "RemoveServices"
 
