@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.105 2003-09-18 18:01:14 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.106 2003-09-18 22:53:59 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.105 2003-09-18 18:01:14 eolson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.106 2003-09-18 22:53:59 eolson Exp $"
 
 import webbrowser
 import string
@@ -979,9 +979,13 @@ class AdministratorsListPanel(wxPanel):
 
         except Exception, e:
             if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
-                    text = "You are not a server administrator and are not authorized to modify an administrator.\n"
-                    MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
-                    log.info("AdministratorsListPanel.ModifyAdministrator: Not authorized to modify administrator to server.")
+                text = "You are not a server administrator and are not authorized to modify an administrator.\n"
+                MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+                log.info("AdministratorsListPanel.ModifyAdministrator: Not authorized to modify administrator to server.")
+            elif isinstance(e, faultType) and str(e.faultstring) == "AdministratorRemovingSelf":
+                text = "When modifying an administrator, you are not allowed to remove yourself the list.\n"
+                MessageDialog(None, text, "Remove Self Error", wxOK|wxICON_WARNING)
+                log.info("AdministratorsListPanel.ModifyAdministrator: When modifying a server administrator, user is not allowed to remove self list.")
             else:
                 log.exception("AdministratorsListPanel.Modify administrator: Could not modify administrator")
                 text = "The administrator %s could not be modified" %oldName
