@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.102 2003-09-17 20:15:53 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.103 2003-09-17 23:11:25 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.102 2003-09-17 20:15:53 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.103 2003-09-17 23:11:25 eolson Exp $"
 
 import webbrowser
 import string
@@ -933,6 +933,10 @@ class AdministratorsListPanel(wxPanel):
                             text = "You are not a server administrator and are not authorized to delete administrators.\n"
                             MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
                             log.info("AdministratorsListPanel.DeleteAdministrator: Not authorized to delete administrators from server.")
+                    elif isinstance(e, faultType) and str(e.faultstring) == "AdministratorRemovingSelf":
+                            text = "You are not allowed to remove yourself from the administrator list.\n"
+                            MessageDialog(None, text, "Remove Self Error", wxOK|wxICON_WARNING)
+                            log.info("AdministratorsListPanel.DeleteAdministrator: Cannot remove self from server administrator list.")
                     else:
                         log.exception("AdministratorsListPanel.DeleteAdministrator: Could not delete administrator")
                         text = "The administrator %s could not be deleted" %adminToDelete

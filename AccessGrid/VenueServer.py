@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.98 2003-09-17 21:17:22 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.99 2003-09-17 23:11:24 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.98 2003-09-17 21:17:22 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.99 2003-09-17 23:11:24 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -40,7 +40,7 @@ from AccessGrid import NetService
 from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
 from AccessGrid.Utilities import GetHostname, PathFromURL
 from AccessGrid.GUID import GUID
-from AccessGrid.Venue import Venue, AdministratorNotFound, RegisterDefaultVenueRoles
+from AccessGrid.Venue import Venue, AdministratorNotFound, RegisterDefaultVenueRoles, AdministratorRemovingSelf
 from AccessGrid.Venue import AdministratorAlreadyPresent
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.DataStore import GSIHTTPTransferServer
@@ -799,6 +799,14 @@ class VenueServer(ServiceBase.ServiceBase):
             self.simpleLock.acquire()
         
             returnString = self.RemoveAdministrator(string)
+
+            # Make sure you can't remove yourself from administrator list.
+            # The user must have been an administrator to get to this point.
+            current_subject = AccessControl.GetSecurityManager().GetSubject()
+            if not self._IsInRole("VenueServer.Administrators"):
+                self.AddAdministrator(current_subject)
+                log.info("user tried to remove self from server admin list, readding..")
+                raise AdministratorRemovingSelf
 
             self.simpleLock.release()
 
