@@ -5,12 +5,11 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.18 2003-08-12 19:24:36 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.19 2003-08-28 18:02:46 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-import sys
 import pickle
 import logging
 import struct
@@ -190,7 +189,7 @@ class TextConnection:
 
         try:
             return self.readCallback(arg, handle, ret, buf, n)
-        except Exception, e:
+        except Exception:
             self.log.exception("TextConnection: readcallback failed")
 
     def readCallback(self, arg, handle, ret, buf, n):
@@ -240,7 +239,7 @@ class TextConnection:
         # Unpickle the data
         try:
             event = pickle.loads(pdata)
-        except EOFError, e:
+        except EOFError:
             self.log.exception("TextConnection: unpickle got EOF.")
             raise TextClientBadDataException
 
