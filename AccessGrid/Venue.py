@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.236 2005-01-06 23:35:57 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.237 2005-03-31 18:01:15 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.236 2005-01-06 23:35:57 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.237 2005-03-31 18:01:15 lefvert Exp $"
 
 import sys
 import time
@@ -63,6 +63,8 @@ from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.ClientProfile import ClientProfileCache, InvalidProfileException
 from AccessGrid.ServiceCapability import ServiceCapability
 from AccessGrid.NetworkServicesManager import NetworkServicesManager
+
+from AccessGrid.AsyncoreEventClient import EventClient
 
 log = Log.GetLogger(Log.VenueServer)
 
@@ -235,7 +237,7 @@ class VenueClientState:
         self.profile = profile
 
     def SetTimeout(self, t_next):
-        log.debug("SET TIMEOUT TO: %d now = %d", t_next, time.time())
+        #log.debug("SET TIMEOUT TO: %d now = %d", t_next, time.time())
         self.timeout = t_next
 
     def GetTimeout(self):
@@ -334,6 +336,7 @@ class Venue(AuthorizationMixIn):
 
         log.debug("------------ STARTING VENUE")
         self.server = server
+
         self.name = name
         self.description = description
 
@@ -417,6 +420,12 @@ class Venue(AuthorizationMixIn):
 
         self.cache = ClientProfileCache(self.profileCachePath)
 
+        # Start the event client.
+        self.eventClient = EventClient(self.server.GetEventServiceLocation(), 
+                                       self.GetId(),
+                                       self.GetId())
+        self.eventClient.Start()
+
     #self.StartApplications()
 
     def __repr__(self):
@@ -496,8 +505,9 @@ class Venue(AuthorizationMixIn):
             string += "applications : %s\n" % alist
        
         # List of services
+
         servlist = ":".join(map(lambda service: service.GetId(),
-                                self.services.values()))
+                                self.server.services.values()))
 
         if len(servlist):
             string += "services: %s\n" % servlist
@@ -621,7 +631,7 @@ class Venue(AuthorizationMixIn):
         """
         now_sec = time.time()
 
-        log.debug("Calling Cleanup Clients: %d", now_sec)
+        #log.debug("Calling Cleanup Clients: %d", now_sec)
 
         users_to_remove = []
         netservices_to_remove = []
@@ -674,6 +684,7 @@ class Venue(AuthorizationMixIn):
         *privateId* Private id for the node
         *capabilities* Node capabilities
         """
+        
         log.debug("negotiate capabilities")
 
         if not self.clients.has_key(privateId):
@@ -726,10 +737,7 @@ class Venue(AuthorizationMixIn):
                     streamDesc )
 
                     # Distribute event announcing new stream
-                    self.server.DistributeEvent(Event(Event.ADD_STREAM,
-                                                      self.uniqueId,
-                                                      streamDesc),
-                                                self.uniqueId)
+                    self.eventClient.Send(Event.ADD_STREAM, streamDesc)
                    
         # Compare user's consumer capabilities with existing stream
         # description capabilities. The user will receive a list of
@@ -986,9 +994,8 @@ class Venue(AuthorizationMixIn):
                 log.exception("Venue.RemoveUser: Error deleting client.")
 
             log.debug("RemoveUser: Distribute EXIT event")
-
-            self.server.DistributeEvent(Event(Event.EXIT, self.uniqueId,
-                                              clientProfile), self.uniqueId)
+            self.eventClient.Send(Event.EXIT, clientProfile)
+          
         except:
             log.exception("Venue.RemoveUser: Body of method threw exception")
 
@@ -1012,11 +1019,7 @@ class Venue(AuthorizationMixIn):
         log.debug("Calling SetConnections.")
 
         self.connections = list(connectionList)
-
-        self.server.DistributeEvent(Event(Event.SET_CONNECTIONS,
-                                          self.uniqueId,
-                                          connectionList),
-                                     self.uniqueId)
+        self.eventClient.Send(Event.SET_CONNECTIONS, connectionList)
 
     def Enter(self, clientProfile):
         """
@@ -1045,10 +1048,8 @@ class Venue(AuthorizationMixIn):
 
         # Send this before we set up client state, so that
         # we don't end up getting our own enter event enqueued.
-            
-        self.server.DistributeEvent(Event(Event.ENTER, self.uniqueId,
-                                     clientProfile),
-                               self.uniqueId)
+
+        self.eventClient.Send(Event.ENTER, clientProfile)
 
         # Create venue client state object
         vcstate = self.clients[privateId] = VenueClientState(self,
@@ -1092,11 +1093,8 @@ class Venue(AuthorizationMixIn):
         log.debug('register network service %s'%nsd)
         try:
             self.networkServicesManager.RegisterService(nsd)
-            self.server.DistributeEvent(Event(Event.ADD_SERVICE,
-                                              self.uniqueId,
-                                              nsd),
-                                         self.uniqueId)
-
+            self.eventClient.Send(Event.ADD_SERVICE, nsd)
+          
         except:
             log.exception('Venue.RegisterNetworkService: Failed')
             raise Exception, 'Venue.RegisterNetworkService: Failed'
@@ -1110,10 +1108,8 @@ class Venue(AuthorizationMixIn):
         nsd = CreateAGNetworkServiceDescription(networkServiceDescription)
         try:
             self.networkServicesManager.UnRegisterService(nsd)
-            self.server.DistributeEvent(Event(Event.REMOVE_SERVICE,
-                                              self.uniqueId,
-                                              nsd), self.uniqueId )
-
+            self.eventClient.Send(Event.REMOVE_SERVICE, nsd)
+          
         except:
             log.exception('Venue.UnRegisterNetworkService: Failed')
             raise Exception, 'Venue.UnRegisterNetworkService: Failed'
@@ -1227,8 +1223,7 @@ class Venue(AuthorizationMixIn):
 
         log.debug("Distribute ADD_SERVICE event %s", serviceDescription)
 
-        self.server.DistributeEvent(Event(Event.ADD_SERVICE, self.uniqueId,
-                                          serviceDescription), self.uniqueId)
+        self.eventClient.Send(Event.ADD_SERVICE, serviceDescription)
 
         return serviceDescription
 
@@ -1257,9 +1252,8 @@ class Venue(AuthorizationMixIn):
 
         log.debug("Distribute UPDATE_SERVICE event %s", serviceDescription)
 
-        self.server.DistributeEvent(Event(Event.UPDATE_SERVICE, self.uniqueId,
-                                          serviceDescription), self.uniqueId)
-
+        self.eventClient.Send(Event.UPDATE_SERVICE, serviceDescription)
+    
         return serviceDescription
         
 
@@ -1287,9 +1281,7 @@ class Venue(AuthorizationMixIn):
         del self.services[serviceDescription.id]
 
         log.debug("Distribute REMOVE_SERVICE event %s", serviceDescription)
-        
-        self.server.DistributeEvent(Event(Event.REMOVE_SERVICE, self.uniqueId,
-                                          serviceDescription), self.uniqueId)
+        self.eventClient.Send(Event.REMOVE_SERVICE, serviceDescription)
         return serviceDescription
 
     def GetServices(self):
@@ -1298,7 +1290,10 @@ class Venue(AuthorizationMixIn):
 
         *self.services* A list of connection descriptions.
         """
-        return self.services.values()
+        venueServices = self.services.values()
+        serverServices = self.server.GetServices()
+        
+        return self.services.values() 
 
     def AddConnection(self, connectionDesc):
         """
@@ -1316,9 +1311,8 @@ class Venue(AuthorizationMixIn):
                 raise ConnectionAlreadyPresent
 
         self.connections.append(connectionDesc)
-        self.server.DistributeEvent(Event(Event.ADD_CONNECTION, self.uniqueId,
-                                          connectionDesc), self.uniqueId)
-            
+        self.eventClient.Send(Event.ADD_CONNECTION, connectionDesc)
+                 
     def RemoveConnection(self, connectionDesc):
         """
         """
@@ -1329,11 +1323,8 @@ class Venue(AuthorizationMixIn):
             if c.GetURI() == connectionDesc.GetURI():
                 found = 1
                 self.connections.remove(c)
-                self.server.DistributeEvent(Event(Event.REMOVE_CONNECTION,
-                                                  self.uniqueId,
-                                                  connectionDesc),
-                                            self.uniqueId)
-
+                self.eventClient.Send(Event.REMOVE_CONNECTION, connectionDesc)
+         
         if not found:
             raise ConnectionNotFound
             
@@ -1401,10 +1392,8 @@ class Venue(AuthorizationMixIn):
                     stream.encryptionKey = self.encryptionKey
 
                     # Send a ModifyStream event
-                    self.server.DistributeEvent(Event(Event.MODIFY_STREAM,
-                                                      self.uniqueId,
-                                                      stream),
-                                                 self.uniqueId)
+                    self.eventClient.Send(Event.MODIFY_STREAM, stream)
+               
         return self.encryptionKey
 
         
@@ -1477,9 +1466,8 @@ class Venue(AuthorizationMixIn):
         self.streamList.AddStream(inStreamDescription)
 
         # Distribute event announcing new stream
-        self.server.DistributeEvent(Event(Event.ADD_STREAM, self.uniqueId,
-                                          inStreamDescription), self.uniqueId)
-
+        self.eventClient.Send(Event.ADD_STREAM, inStreamDescription)
+      
     def RemoveStream(self, inStreamDescription):
         """
         Remove the given stream from the venue
@@ -1506,10 +1494,8 @@ class Venue(AuthorizationMixIn):
         self.streamList.RemoveStream(inStreamDescription)
         
         # Distribute event announcing removal of stream
-        self.server.DistributeEvent(Event(Event.REMOVE_STREAM, self.uniqueId,
-                                          inStreamDescription),
-                                    self.uniqueId)
-
+        self.eventClient.Send(Event.REMOVE_STREAM, inStreamDescription)
+      
     def GetStreams(self):
         """
         GetStreams returns a list of stream descriptions to the caller.
@@ -1569,10 +1555,9 @@ class Venue(AuthorizationMixIn):
             vclient = self.clients[privateId]
             if vclient.GetPublicId() == clientProfile.publicId:
                 vclient.UpdateClientProfile(clientProfile)
-                vclient.UpdateAccessTime()
+                #vclient.UpdateAccessTime()
 
-        self.server.DistributeEvent(Event(Event.MODIFY_USER, self.uniqueId,
-                                          clientProfile), self.uniqueId)
+        self.eventClient.Send(Event.MODIFY_USER, clientProfile)
       
     def RemoveData(self, dataDescription):
         """
@@ -1594,10 +1579,8 @@ class Venue(AuthorizationMixIn):
             datalist = []
             datalist.append(dataDescription)
             self.dataStore.RemoveFiles(datalist)
-            self.server.DistributeEvent(Event(Event.REMOVE_DATA,
-                                              self.uniqueId,
-                                              dataDescription),
-                                        self.uniqueId)
+            self.eventClient.Send(Event.REMOVE_DATA, dataDescription)
+       
         else:
             log.info("Venue.RemoveData tried to remove non venue data.")
 
@@ -1613,19 +1596,13 @@ class Venue(AuthorizationMixIn):
         # need to modify the actual data store.
         
         if dataStoreCall:
-            self.server.DistributeEvent(Event(Event.UPDATE_DATA,
-                                              self.uniqueId,
-                                              dataDescription),
-                                        self.uniqueId)
+            self.eventClient.Send(Event.UPDATE_DATA, dataDescription)
             return
 
         # This is venue resident so modify the file
         if(dataDescription.type is None or dataDescription.type == "None"):
             self.dataStore.ModifyData(dataDescription)
-            self.server.DistributeEvent(Event( Event.UPDATE_DATA,
-                                          self.uniqueId,
-                                          dataDescription),
-                                   self.uniqueId)
+            self.eventClient.Send(Event.UPDATE_DATA, dataDescription)
         else:
             log.info("Venue.UpdateData tried to modify non venue data. That should not happen")
             
@@ -1779,9 +1756,7 @@ class Venue(AuthorizationMixIn):
         # grab the description, and update the universe with it
         appDesc = app.AsApplicationDescription()
 
-        self.server.DistributeEvent(Event(Event.ADD_APPLICATION, self.uniqueId,
-                                     appDesc), self.uniqueId)
-
+        self.eventClient.Send(Event.ADD_APPLICATION, appDesc)
         log.debug("CreateApplication: Created id=%s handle=%s",
                   appDesc.id, appDesc.uri)
 
@@ -1814,11 +1789,8 @@ class Venue(AuthorizationMixIn):
         appImpl.description = applicationDesc.description
         
         self.applications[applicationDesc.id] = appImpl
-        
-        self.server.DistributeEvent(Event(Event.UPDATE_APPLICATION,
-                                     self.uniqueId, applicationDesc),
-                               self.uniqueId)
 
+        self.eventClient.Send(Event.UPDATE_APPLICATION, applicationDesc)
         log.debug("Update Application: id=%s handle=%s",
                   applicationDesc.id, applicationDesc.uri)
 
@@ -1863,10 +1835,8 @@ class Venue(AuthorizationMixIn):
         appDesc = app.AsApplicationDescription()
 
         # Send the remove application event
-        self.server.DistributeEvent(Event(Event.REMOVE_APPLICATION,
-                                          self.uniqueId,
-                                          appDesc), self.uniqueId)
-
+        self.eventClient.Send(Event.REMOVE_APPLICATION, appDesc)
+       
         # Get rid of it for good
         del self.applications[appId]
 
@@ -1908,10 +1878,7 @@ class Venue(AuthorizationMixIn):
                          nid, streamId, privateId)
                 
                 # Send a ModifyStream event
-                self.server.DistributeEvent(Event(Event.MODIFY_STREAM,
-                                                  self.uniqueId,
-                                                  stream),
-                                             self.uniqueId)
+                self.eventClient.Send(Event.MODIFY_STREAM, stream)
                 break
                                                             
         if not nid:
@@ -1937,12 +1904,8 @@ class Venue(AuthorizationMixIn):
                 stream.RemoveNetworkLocation(networkLocationId)
 
                 # Send a ModifyStream event
-                self.server.DistributeEvent(Event(Event.MODIFY_STREAM,
-                                                  self.uniqueId,
-                                                  stream),
-                                            self.uniqueId)
-
-
+                self.eventClient.Send(Event.MODIFY_STREAM, stream)
+              
     def RemoveNetworkLocationsByPrivateId(self, privateId):
         log.info("Removing network locations for private id %s", privateId)
 
@@ -1980,13 +1943,20 @@ class Venue(AuthorizationMixIn):
 
             if streamModified:
                 # Send a ModifyStream event
-                self.server.DistributeEvent(Event(Event.MODIFY_STREAM,
-                                                  self.uniqueId,
-                                                  stream),
-                                            self.uniqueId)
-
+                self.eventClient.Send(Event.MODIFY_STREAM, stream)
+             
     def GetEventServiceLocation(self):
-        return (None, self.uniqueId)
+        # return (self.server.GetEventServiceLocation(), self.uniqueId)
+
+        serverServices = self.server.GetServices()
+        service = None
+        location = None
+        
+        for s in serverServices:
+            if s.GetType() == "AsyncoreEvent":
+                location = s.GetLocation()
+
+        return location
 
 class VenueI(SOAPInterface, AuthorizationIMixIn):
     """
@@ -2616,12 +2586,15 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         clientProfile = CreateClientProfile(clientProfileStruct)
 
         # Rebuild the profile
-        if self.impl.servicePtr.GetOption("insecure"):
-            subject = Subject.Subject("", auth_type=None)
-            clientProfile.distinguishedName = ""
-        else:
-            subject = self._GetCaller()
-            clientProfile.distinguishedName = subject.GetName()
+        #if self.impl.servicePtr.GetOption("insecure"):
+       
+        # Always run insecure for now..
+        subject = Subject.Subject("", auth_type=None)
+        clientProfile.distinguishedName = ""
+
+        #else:
+        #    subject = self._GetCaller()
+        #    clientProfile.distinguishedName = subject.GetName()
         
         try:
             self.impl.UpdateClientProfile(clientProfile)
@@ -3086,7 +3059,9 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
                                                             networkId)
 
     def GetEventServiceLocation(self):
-        return self.proxy.GetEventServiceLocation()
+        location= self.proxy.GetEventServiceLocation()
+        host, port = location
+        return (host, port)
     
     def AllocateMulticastLocation(self):
         locationStruct = self.proxy.AllocateMulticastLocation()
