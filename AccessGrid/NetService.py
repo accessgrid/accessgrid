@@ -36,7 +36,7 @@ def CreateNetService(netServiceType, venue, privateId):
     if netServiceType == BridgeNetService.TYPE:
         netService = BridgeNetService(venue, privateId)
 
-    if netServiceType == DataStoreNetService.TYPE:
+    elif netServiceType == DataStoreNetService.TYPE:
         netService = DataStoreNetService(venue, privateId)
         
     else:
