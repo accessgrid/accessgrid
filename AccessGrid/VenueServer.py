@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.74 2003-05-20 19:46:32 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.75 2003-05-23 15:26:14 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -299,11 +299,19 @@ class VenueServer(ServiceBase.ServiceBase):
                             encryptionKey = cp.get(s, 'encryptionKey')
                         else:
                             encryptionKey = None
-                        (addr, port, ttl) = string.split(cp.get(s, 'location'),
+                        locationAttrs = string.split(cp.get(s, 'location'),
                                                          " ")
                         capability = string.split(cp.get(s, 'capability'), ' ')
-                        loc = MulticastNetworkLocation(addr, int(port),
-                                                       int(ttl))
+
+                        locationType = locationAttrs[0]
+                        if locationType == MulticastNetworkLocation.TYPE:
+                            (addr,port,ttl) = locationAttrs[1:]
+                            loc = MulticastNetworkLocation(addr, int(port),
+                                                           int(ttl))
+                        else:
+                            (addr,port) = locationAttrs[1:]
+                            loc = UnicastNetworkLocation(addr, int(port))
+
                         cap = Capability(capability[0], capability[1])
 
                         sd = StreamDescription(name, loc, cap, 
