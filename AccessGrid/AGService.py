@@ -2,18 +2,19 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.40 2004-10-11 15:14:59 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.41 2004-10-11 18:19:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.40 2004-10-11 15:14:59 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.41 2004-10-11 18:19:23 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
 import sys
+from optparse import Option
 
 from AccessGrid import Log
 
@@ -342,17 +343,30 @@ def SignalHandler(signum, frame, service):
     """
     service.Shutdown()
 
-def RunService(service,serviceInterface,port):
+def RunService(service,serviceInterface):
     import signal, time
     from AccessGrid.hosting import SecureServer, InsecureServer
+    from AccessGrid.AGServiceManager import AGServiceManagerIW
     
     serviceName = service.GetName()
     
     # Initialize the service
     svc = Service.instance()
+    svc.AddCmdLineOption(Option("-p", "--port", type="int", dest="port",
+                        default=9999, metavar="PORT",
+                        help="Set the port the service should run on."))
+    svc.AddCmdLineOption(Option("-s", "--serviceManagerUrl", type="string", dest="serviceManagerUrl",
+                        default=None, metavar="SERVICE_MANAGER_URL",
+                        help="URL of ServiceManager which started this service"))
+    svc.AddCmdLineOption(Option("-t", "--token", type="string", dest="token",
+                        default=None, metavar="TOKEN",
+                        help="Token to pass to service manager when registering"))
+
     svc.Initialize(serviceName)
     log = svc.GetLog()
     Log.SetDefaultLevel(serviceName, Log.DEBUG)   
+    
+    port = svc.GetOption("port")
      
     # Create the server
     hostname = Service.instance().GetHostname()
@@ -371,6 +385,10 @@ def RunService(service,serviceInterface,port):
     url = server.FindURLForObject(service)
     log.info("Starting Service URI: %s", url)
     print "Starting Service URI: %s" % url
+    
+    # Register with the calling service manager
+    token = svc.GetOption('token')
+    AGServiceManagerIW(svc.GetOption('serviceManagerUrl')).RegisterService(token,url)
     
     # Register the signal handler so we can shut down cleanly
     # lambda is used to pass the service instance to the 
