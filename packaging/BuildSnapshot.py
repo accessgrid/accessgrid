@@ -34,7 +34,7 @@ else:
     bdir = None
     sys.exit(1)
 
-
+StartDir=os.getcwd()
 
 # Source Directory
 #  We assume the following software is in this directory:
@@ -165,7 +165,7 @@ else:
 if sys.platform == 'win32':
     npath = os.path.join(DestDir, "Lib", "site-packages")
 elif sys.platform == 'linux2':
-    npath = os.path.join(DestDir, "lib", "python2.2", "site-packages")
+    npath = os.path.join(DestDir, "lib", "python%s"%(options.pyver,), "site-packages")
 if not oldpath:
     nppath = os.pathsep.join([npath, oldpath])
 else:
@@ -245,7 +245,7 @@ file_list = os.listdir(SourceDir)
 
 if bdir is not None:
     pkg_script = "BuildPackage.py"
-    NextDir = os.path.join(RunDir, bdir)
+    NextDir = os.path.join(StartDir, bdir)
     if os.path.exists(NextDir):
         os.chdir(NextDir)
         cmd = "%s %s --verbose -s %s -b %s -d %s -p %s -m %s -v %s" % (sys.executable,
