@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.91 2003-05-14 20:24:05 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.92 2003-05-15 02:10:06 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -204,10 +204,6 @@ class Venue(ServiceBase.ServiceBase):
         self.dataStore = None
         self.producerCapabilities = []
         self.consumerCapabilities = []
-
-        self.houseKeeper = Scheduler()
-        self.houseKeeper.AddTask(self.CleanupClients, 10)
-        self.houseKeeper.StartAllTasks()
 
         self.StartDataStore()
 
@@ -539,7 +535,6 @@ class Venue(ServiceBase.ServiceBase):
         Virtual Venue. Currently there are a few threads in the Event
         Service.
         """
-        self.houseKeeper.StopAllTasks()
 
     def NegotiateCapabilities(self, clientProfile, privateId):
         """

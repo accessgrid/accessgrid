@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.70 2003-05-14 20:24:05 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.71 2003-05-15 02:10:06 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -214,6 +214,9 @@ class VenueServer(ServiceBase.ServiceBase):
         self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.Checkpoint,
                                  int(self.houseKeeperFrequency), 0)
+
+        self.houseKeeper.AddTask(self.CleanupVenueClients, 10)
+        
         self.houseKeeper.StartAllTasks()
 
         # Then we create the VenueServer service
@@ -373,6 +376,11 @@ class VenueServer(ServiceBase.ServiceBase):
         uri = string.join([self.hostingEnvironment.get_url_base(),
                            self.venuePathPrefix, uniqueId], '/')
         return uri
+
+
+    def CleanupVenueClients(self):
+        for venue in self.venues.values():
+            venue.CleanupClients()
 
     def Checkpoint(self):
         """
