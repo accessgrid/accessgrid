@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.10 2003-09-17 20:08:01 olson Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.11 2003-11-03 17:08:59 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.10 2003-09-17 20:08:01 olson Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.11 2003-11-03 17:08:59 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -271,7 +271,10 @@ class DataStoreClient:
         return ret
 
     def GetFileData(self, filename):
-        return self.dataIndex[filename]
+        if filename in self.dataIndex:
+            return self.dataIndex[filename]
+        else:
+            raise FileNotFound
 
     def Download(self, filename, localFile):
         """
