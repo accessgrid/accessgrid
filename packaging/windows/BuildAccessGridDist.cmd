@@ -27,8 +27,8 @@ epydoc.py --html -o doc\Developer -n "Access Grid Toolkit" -u "http://www.mcs.an
 echo CVS > foo
 
 xcopy /s /exclude:foo /y %AGDIR%\doc\Developer %DEST%\doc\Developer
-xcopy /s /exclude:foo /y %AGDIR%\doc\VENUE_CLIENT_MANUAL_HTML %DEST%\doc\VenueClientManual
-xcopy /s /exclude:foo /y %AGDIR%\doc\VENUE_MANAGEMENT_MANUAL_HTML %DEST%\doc\VenueManagementManual
+xcopy /s /exclude:foo /y %AGDIR%\doc\VenueClientManual %DEST%\doc\VenueClientManual
+xcopy /s /exclude:foo /y %AGDIR%\doc\VenueManagementManual %DEST%\doc\VenueManagementManual
 del foo
 
 copy %AGDIR%\COPYING.txt %DEST%\COPYING.txt
