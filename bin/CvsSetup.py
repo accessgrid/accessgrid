@@ -29,6 +29,11 @@ import shutil
 import getopt
 
 
+# Borrowed from Platform.py
+WIN = 'win32'
+LINUX = 'linux2'
+
+
 def PrintUsage():
     print """
 
@@ -217,7 +222,11 @@ print "\n"
 print "    If you want to setup video resources for this configuration, set"
 print "       the environment variables below and run: \"python SetupVideo.py\" \n"
 print "    To use this configuration, set "
-print "        AGTK_INSTALL to the location of vic(.exe) and rat(.exe) "
+if sys.platform == WIN:
+    print "        AGTK_INSTALL to the location of vic(.exe) and rat(.exe) "
+elif sys.platform == LINUX:
+    print "        AGTK_INSTALL to", os.path.join( os.path.abspath(AG_BASE_DIR), "bin" )
 print "        PYTHONPATH to", os.path.abspath(AG_BASE_DIR)
 print "        AGTK_LOCATION to", os.path.abspath(DST_CONFIG_DIR)
+print ""
 
