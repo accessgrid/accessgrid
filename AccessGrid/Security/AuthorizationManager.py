@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.5 2004-03-02 19:07:12 judson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.6 2004-03-04 20:23:19 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.5 2004-03-02 19:07:12 judson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.6 2004-03-04 20:23:19 judson Exp $"
 
 # External Imports
 import xml.dom.minidom
@@ -33,6 +33,8 @@ from AccessGrid.Security.Role import Everybody, Role
 from AccessGrid.Security.Action import ActionNotFound, ActionAlreadyPresent
 from AccessGrid.Security.Action import MethodAction
 from AccessGrid.Security import X509Subject
+
+from AccessGrid.ClientProfile import ClientProfileCache
 
 class InvalidParent(Exception):
     """
@@ -63,6 +65,12 @@ class AuthorizationManager:
         self.defaultRoles.append(Everybody)
         self.parent = None
 
+        # Yeah, I know
+        self.profileCachePrefix = "serverProfileCache"
+        self.profileCachePath = os.path.join(GetUserConfigDir(),
+                                             self.profileCachePrefix)
+        self.profileCache = ClientProfileCache(self.profileCachePath)
+        
     def _repr_(self):
         """
         This method converts the object to XML.
@@ -512,15 +520,24 @@ class AuthorizationManagerI(SOAPInterface):
         r = self.impl.FindRole(name)
         self.impl.RemoveRole(r)
 
-    def ListRoles(self):
+    def ListRoles(self, action = None):
         """
         Retrieve the entire list of Roles.
 
         This involves marshalling data across the wire.
 
+        @param action: the action to list roles for, if none is specified, list all known roles.
+        @type action: AccessGrid.Security.Action
+        
         @return: a list of AccessGrid.Security.Role objects
         """
-        roles = self.impl.GetRoles()
+        if action == None:
+            roles = self.impl.GetRoles()
+        else:
+            a = Reconstitute(action)
+            a1 = self.impl.FindAction(a)
+            roles = a1.GetRoles()
+            
         dr = Decorate(roles)
         return dr
 
@@ -555,8 +572,8 @@ class AuthorizationManagerI(SOAPInterface):
         alist = self.impl.GetActions()
         al = Decorate(alist)
         return al
-    
-    def ListSubjectsInRole(self, role):
+
+    def ListSubjects(self, role=None):
         """
         List subjects that are in a specific role.
 
@@ -566,28 +583,21 @@ class AuthorizationManagerI(SOAPInterface):
         @type role: an AccessGrid.Security.Role object
         @return: a list of AccessGrid.Security.Subject objects
         """
-        r = Reconstitute(role)
-        roleR = self.impl.FindRole(r)
-        subjs = self.impl.GetSubjects(roleR)
+        subjs = None
+        if role == None:
+            # This is not a great engineering solution, and we should
+            # probably revisit it with a better plan.
+            profiles = cache.LoadAllProfiles()
+            subjs = map(lambda x:
+                X509Subject.CreateSubjectFromString(x.GetDistinguishedName()),
+                        profiles)
+        else:
+            r = Reconstitute(role)
+            roleR = self.impl.FindRole(r)
+            subjs = self.impl.GetSubjects(roleR)
         subjs2 = Decorate(subjs)
         return subjs2
 
-    def ListRolesInAction(self, action):
-        """
-        List the roles associated with a specific action.
-
-        WARNING: this has to marshall data.
-
-        @param action: the action to list roles for.
-        @type action: AccessGrid.Security.Action
-
-        @return: list of AccessGrid.Security.Role objects
-        """
-        a = self.impl.FindAction(action)
-        rl = a.GetRoles()
-        r = Decorate(rl)
-        return r
-    
     def AddSubjectsToRole(self, role, subjectList):
         """
         Add a subject to a particular role.
@@ -803,7 +813,7 @@ class AuthorizationManagerIW(SOAPIWrapper):
         alr = Reconstitute(al)
         return alr
 
-    def ListSubjectsInRole(self, role):
+    def ListSubjects(self, role = None):
         """
         List subjects that are in a specific role.
 
@@ -813,8 +823,12 @@ class AuthorizationManagerIW(SOAPIWrapper):
         @type role: an AccessGrid.Security.Role object
         @return: a list of AccessGrid.Security.Subject objects
         """
-        r = Decorate(role)
-        sl = self.proxy.ListSubjectsInRole(r) 
+        if role != None:
+            r = Decorate(role)
+            sl = self.proxy.ListSubjectsInRole(r) 
+        else:
+            sl = self.proxy.ListSubjectsInRole(r) 
+
         s = Reconstitute(sl)
         return s
 
@@ -1018,7 +1032,7 @@ class AuthorizationMixIn(AuthorizationManager):
        @type role: AccessGrid.Security.Role object
        """
        self.rolesRequired.append(role)
-  
+
 class AuthorizationIMixIn(AuthorizationManagerI):
     """
     A MixIn class to provide the server side authorization infrastructure.
