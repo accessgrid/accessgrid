@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.21 2003-05-28 13:25:45 olson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.22 2003-06-27 21:30:20 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,6 +16,7 @@ import Queue
 import pickle
 import logging
 import struct
+import threading
 
 from pyGlobus.io import GSITCPSocket, TCPIOAttr, AuthData, IOBaseException
 from pyGlobus.util import Buffer
@@ -77,6 +78,8 @@ class EventClient:
 
         self.qThread = Thread(target = self.queueThreadMain)
         self.qThread.start()
+
+        self.lock = threading.Lock()
 
         attr = CreateTCPAttrAlwaysAuth()
         self.sock = GSITCPSocket()
@@ -226,8 +229,10 @@ class EventClient:
         try:
             pdata = pickle.dumps(data)
             size = struct.pack("i", len(pdata))
+            self.lock.acquire()
             self.sock.write(size, 4)
             self.sock.write(pdata, len(pdata))
+            self.lock.release()
         except:
             self.running = 0
             self.connected = 0
