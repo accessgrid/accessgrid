@@ -99,7 +99,8 @@ os.system(cmd)
 mk_service_exec = sys.executable + " " + os.path.join( options.agsrcdir, "packaging", "makeServicePackages.py" )
 service_input_dir = "\"" + ABS_AG_BASE_DIR + "\""
 service_output_dir = AGTkConfig.instance().GetNodeServicesDir()
-mk_command = "%s %s %s %s" % (mk_service_exec, ABS_SRC_DIR, service_input_dir, service_output_dir)
+mk_command = "%s --sourcedir %s --agsourcedir %s --outputdir %s" % (mk_service_exec, 
+                    ABS_SRC_DIR, service_input_dir, service_output_dir)
 if options.verbose:
     print "   ",mk_command
 os.system(mk_command)
