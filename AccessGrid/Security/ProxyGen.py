@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.2 2004-03-04 15:34:16 judson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.3 2004-03-04 21:23:21 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.2 2004-03-04 15:34:16 judson Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.3 2004-03-04 21:23:21 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -23,11 +23,23 @@ import os.path
 import popen2
 import logging
 
-from pyGlobus import security, sslutilsc, io
+from pyGlobus import security, io
+
+#
+# Try importing this. We ensure further below that
+# we won't try to use it if it wasn't imported.
+#
+
+try:
+    from pyGlobus import sslutilsc
+    haveOldGlobus = 1
+except:
+    haveOldGlobus = 0
 
 from AccessGrid.Platform import isWindows
 
 log = logging.getLogger("AG.Security.ProxyGen")
+log.setLevel(logging.DEBUG)
 
 class ProxyRequestError(Exception):
     """
@@ -350,7 +362,7 @@ def findCertInArgs(args):
 
     return data
 
-if isWindows():
+if isWindows() and haveOldGlobus:
     CreateGlobusProxy = CreateGlobusProxyProgrammatic
 else:
     CreateGlobusProxy = CreateGlobusProxyGPI
