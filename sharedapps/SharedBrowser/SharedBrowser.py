@@ -240,7 +240,7 @@ class SharedBrowser( wxApp ):
         # Store the URL in the app object in the venue
         self.appProxy.SetData(self.privateId, "url", data)
 
-    def BrowseCallback(self, data):
+    def BrowseCallback(self, event):
         """
         Callback invoked when incoming browse events arrive.  Events
         can include this component's browse events, so these need to be
@@ -248,7 +248,7 @@ class SharedBrowser( wxApp ):
         """
 
         # Determine if the sender of the event is this component or not.
-        (senderId, url) = data
+        (senderId, url) = event.data
         if senderId == self.publicId:
             print "Ignoring %s from myself" % (url)
         else:
