@@ -39,6 +39,7 @@ BuildRoot:	%{buildroot}
 Requires:	wxPython
 Requires:	globus-accessgrid
 Requires:	alsa-lib >= 1.0
+Requires:	PyXML >= 0.8.3
 %if %{require_optik}
 Requires:	python-optik >= 1.4.1
 %endif
@@ -215,6 +216,9 @@ rm -rf %{buildroot}
 #
 
 %changelog
+
+* Mon Nov 22 2004 Douglas Kosovic <douglask@itee.uq.edu.au>
+- Added PyXML 0.8.3 dependency needed for VenueServer on RH9 and RHEL3
 
 * Mon Sep 13 2004 Douglas Kosovic <douglask@itee.uq.edu.au>
 - clean up some non-RPM managed files and dirs in preun step
