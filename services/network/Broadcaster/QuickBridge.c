@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.2 2004-12-16 18:10:03 leggett Exp $
+ * $Id: QuickBridge.c,v 1.3 2004-12-16 18:10:45 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -452,6 +452,8 @@ void session_set( Session *head, fd_set *readfds )
     }
 }
 
+int debugon = 0;
+
 
 
 void process_session(Session *head, fd_set *readfds, u_long myip){
@@ -477,12 +479,13 @@ void process_session(Session *head, fd_set *readfds, u_long myip){
 	memset((char *) &sourceaddr,0, sourceaddrlen);
 	nr = recvfrom(s->ucfd[i], recvbuf, MSGBUFSIZE, 0, (struct sockaddr *) \
 		      &sourceaddr, &sourceaddrlen);
-	debug( 2, "\nreading from ucfd[%d], got data from %s:%d\n", i,inet_ntoa( sourceaddr.sin_addr ), ntohs( sourceaddr.sin_port ) );
-	if ( debugFlag > 0 )
-	  {
-	    ucrecvfromcalls[i] = ucrecvfromcalls[i] + 1;
-	    uctotalbytesrecv[i] = uctotalbytesrecv[i] + nr;
-	  }
+	if (debugon >= 2) {
+	  printf("\nreading from ucfd[%d], got data from %s:%d\n", i,inet_ntoa(sourceaddr.sin_addr),ntohs(sourceaddr.sin_port));
+	}
+	if( debugon > 0 ){
+	  ucrecvfromcalls[i] = ucrecvfromcalls[i] + 1;
+	  uctotalbytesrecv[i] = uctotalbytesrecv[i] + nr;
+	}
 
 	if (nr < 0){
 	  printf("ucfd[%d]:recvfrom over unicast error!(1) %s\n",i,strerror(errno));
@@ -500,7 +503,7 @@ void process_session(Session *head, fd_set *readfds, u_long myip){
 	      /*update activity flag*/ 
 	      s->ucmemarray[foundindex].active = 1; 
 	    } else {
-	      debug( 2, "did not find address in ucmemarray\n" );
+	      if (debugon >= 2) printf("did not find address in ucmemarray\n");
 	      /*add entry to array*/
 	      if ((s->numunicastmem < max_unicast_mem) && 
 		  is_auth(sourceaddr.sin_addr.s_addr)) {
@@ -512,12 +515,15 @@ void process_session(Session *head, fd_set *readfds, u_long myip){
 		printmembers(s);
 		join_group(s);
 	      } else {
-		debug( 1, "Not auth or too many unicast members, can't add another!\n" );
+		if(debugon >= 1 ){
+		  printf("Not auth or too many unicast members, can't add another!\n");
+		}
 		do_send=0;
 	      }
 	    }//end of else 
 	  }else{
-	    debug( 1, "Discarding packet from local host\n" );
+	    if(debugon >= 1 ){
+	      printf("Discarding packet from local host\n");
 	    }
 	  } //end of updating ucmemarray values 
 
@@ -527,21 +533,21 @@ void process_session(Session *head, fd_set *readfds, u_long myip){
 	      remoteunicastaddress = s->ucmemarray[stopcond].addr.s_addr;
 	      if (remoteunicastaddress != sourceaddr.sin_addr.s_addr ) {
 		s->ucaddr[i].sin_addr.s_addr = remoteunicastaddress;
-		debug( 2, "sending to %s\n", inet_ntoa( s->ucmemarray[stopcond].addr ) );
+		if (debugon >= 2) printf("sending to %s\n", inet_ntoa(s->ucmemarray[stopcond].addr));
 		ns = sendto(s->ucfd[i], recvbuf, nr, 0, (struct sockaddr *)&s->ucaddr[i], \
 			    sizeof(s->ucaddr[i]));
 	      } else {
-		debug( 3, "not resending to ORIGINATOR! or array entry = 0\n" ); 
+		if (debugon >= 4) printf("not resending to ORIGINATOR! or array entry = 0\n"); 
 	      }
 	    }//end of for (stopcond=0;....
 
 
 	    if( s->use_multicast && s->forward_unicast){
 	      /*sent to the multicast group*/
-	      debug( 2, "sending to %s\n", inet_ntoa( s->mcaddr[i].sin_addr ) );
+	      if (debugon >= 2) printf("sending to %s\n", inet_ntoa(s->mcaddr[i].sin_addr));
 	      ns = sendto(s->mcfd[i], recvbuf, nr, 0, (struct sockaddr *)&s->mcaddr[i], \
 			  sizeof(s->mcaddr[i]));
-	      if( debugFlag > 0 ){
+	      if( debugon > 0 ){
 		mcsendtocalls[i] = mcsendtocalls[i] + 1;
 		mctotalbytessent[i] = mctotalbytessent[i] + ns;
 	      }
@@ -567,11 +573,14 @@ void process_session(Session *head, fd_set *readfds, u_long myip){
 	    printf ("mcfd[%d]:recvfrom over multicast error!(5) %s\n",i,strerror(errno));
 
 	  }else{
-	    debug( 2, "\nreading from mcfd[%d], got data from=%s\n",i,inet_ntoa( sourceaddr.sin_addr ) );
-	    debug( 2, "retransmit to unicast addresses\n" );
+	    if (debugon >= 2)  {
+	      printf("\nreading from mcfd[%d], got data from=%s\n",i,inet_ntoa(sourceaddr.sin_addr));
+	    }
+	    if (debugon >= 2) 
+	      printf("retransmit to unicast addresses\n");
 	    //printf("chksrc=%d\n", chksrc);
 
-	    if( debugFlag > 0 ){
+	    if( debugon > 0 ){
 	      mcrecvfromcalls[i] = mcrecvfromcalls[i] + 1;
 	      mctotalbytesrecv[i] = mctotalbytesrecv[i] + nr;
 	    }
@@ -587,10 +596,10 @@ void process_session(Session *head, fd_set *readfds, u_long myip){
 #endif
 	      remoteunicastaddress = s->ucmemarray[stopcond].addr.s_addr;
 	      s->ucaddr[i].sin_addr.s_addr = remoteunicastaddress;
-	      debug( 2, "sending to %s\n", inet_ntoa( s->ucmemarray[stopcond].addr ) );
+	      if (debugon >= 2) printf("sending to %s\n", inet_ntoa(s->ucmemarray[stopcond].addr));
 	      ns = sendto(s->ucfd[i], recvbuf, nr, 0, (struct sockaddr *)&s->ucaddr[i], \
 			  sizeof(s->ucaddr[i]));
-	      if( debugFlag > 0 ) {
+	      if( debugon > 0 ) {
 		ucsendtocalls[i] = ucsendtocalls[i] + 1;
 		uctotalbytessent[i] = uctotalbytessent[i] + 1;
 	      }
@@ -896,6 +905,7 @@ int main (int argc, char *argv[])
 	ttl = atoi(optarg);
 	break;
       case 'd':
+	debugon = atoi( optarg );
 	debugFlag = atoi( optarg );
 	break;
       case 'n':
@@ -1039,7 +1049,7 @@ int main (int argc, char *argv[])
     
       FD_ZERO( &readfds );
       session_set( s, &readfds );
-      if ( debugFlag >= 1 )
+      if ( debugon >= 1 )
 	{
 	  FD_SET( 0, &readfds );
 	}
@@ -1066,7 +1076,7 @@ int main (int argc, char *argv[])
 	}
 
       /*if specified on the command line, check for input on stdin*/
-      if (debugFlag >= 1) {
+      if (debugon >= 1) {
 	if (FD_ISSET(0, &readfds)) {
 	  n2 = read(0,inputbuf, sizeof(inputbuf));
 	  //printf("inputbuf=%s\n",inputbuf);
