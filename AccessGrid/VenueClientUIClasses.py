@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.148 2003-04-22 18:10:44 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.149 2003-04-22 18:44:49 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
