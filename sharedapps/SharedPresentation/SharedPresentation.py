@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.26 2004-05-03 22:41:41 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.27 2004-05-06 16:45:48 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1202,9 +1202,15 @@ class SharedPresentation:
         except:
             self.log.exception("Exception quitting viewer")
 
+        # Destroy controller
+        try:
+            self.controller.frame.Destroy()
+        except:
+            self.log.exception("Exception destroying controller. This happens when using the x button in the top right corner. Not critical.")
+        
         # Get rid of the controller
         self.controller = None
-
+        
         # Turn off the main loop
         self.running = 0
 
@@ -1531,6 +1537,7 @@ def Usage():
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 if __name__ == "__main__":
+       
     # Initialization of variables
     venueURL = None
     appURL = None
@@ -1547,6 +1554,7 @@ if __name__ == "__main__":
     wxInitAllImageHandlers()
 
     # Here we parse command line options
+    
     try:
         opts, args = getopt.getopt(sys.argv[1:], "d:v:a:l:ih",
                                    ["venueURL=", "applicationURL=",
@@ -1555,7 +1563,7 @@ if __name__ == "__main__":
     except getopt.GetoptError:
         Usage()
         sys.exit(2)
-
+        
     for o, a in opts:
         if o in ("-v", "--venueURL"):
             venueURL = a
@@ -1575,7 +1583,7 @@ if __name__ == "__main__":
         elif o in ("-h", "--help"):
             Usage()
             sys.exit(0)
-    
+        
     # If we're not passed some url that we can use, bail showing usage
     if appURL == None and venueURL == None:
         Usage()
