@@ -6,14 +6,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.38 2004-03-11 21:12:56 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.39 2004-03-11 22:20:11 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.38 2004-03-11 21:12:56 eolson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.39 2004-03-11 22:20:11 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -146,7 +146,7 @@ fmt = Log.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
 hdlr.setFormatter(fmt)
 Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 if debugMode:
-    Log.HandleLoggers(Log.StreamHandler(), Log.GetDefaultHandlers())
+    Log.HandleLoggers(Log.StreamHandler(), Log.GetDefaultLoggers())
 
 
 # Create a Node Service

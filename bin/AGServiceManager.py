@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.30 2004-03-11 18:43:24 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.31 2004-03-11 22:20:11 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ import getopt
 from AccessGrid import Log
 from AccessGrid import Platform
 from AccessGrid.AGServiceManager import AGServiceManager, AGServiceManagerI
-from AccessGrid import PersonalNode
+from AccessGrid.Platform import PersonalNode
 from AccessGrid import Toolkit
 
 # default arguments
@@ -141,9 +141,9 @@ hdlr = Log.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
 hdlr.setLevel(Log.DEBUG)
 fmt = Log.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
 hdlr.setFormatter(fmt)
-Log.HandleLoggers(hdlr, Log.GetDefaultHandlers())
+Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 if debugMode:
-    Log.HandleLoggers(Log.StreamHandler(), Log.GetDefaultHandlers())
+    Log.HandleLoggers(Log.StreamHandler(), Log.GetDefaultLoggers())
 
 
 
