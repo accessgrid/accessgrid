@@ -154,11 +154,11 @@ if sys.platform == WIN:
     file.close()
     new_file.close()
 
-# copy defaultLinux or defaultDarwin file
+# copy defaultLinux or defaultMac file
 if sys.platform == LINUX:
     defaultNodeCfgFile = "defaultLinux"
 elif sys.platform == OSX:
-    defaultNodeCfgFile = "defaultDarwin"
+    defaultNodeCfgFile = "defaultMac"
 if sys.platform == LINUX or sys.platform == OSX:
     unix_config_src = os.path.join( options.agsrcdir, "packaging", "config", defaultNodeCfgFile)
     unix_config_dst = os.path.join( nodeConfigPath, defaultNodeCfgFile)
