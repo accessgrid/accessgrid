@@ -74,11 +74,6 @@ class ClientProfileTestCase(unittest.TestCase):
        c.SetVenueClientURL("https://vv2.mcs.anl.gov:9000/Venues/default")
        assert "https://vv2.mcs.anl.gov:9000/Venues/default" == c.GetVenueClientURL()
 
-    def testSetGetTechSupportInfo(self): 
-       c = ClientProfile()
-       c.SetTechSupportInfo("Some Tech Support Info")
-       assert "Some Tech Support Info" == c.GetTechSupportInfo()
-
     def testSetGetPublicId(self): 
        c = ClientProfile()
        c.SetPublicId("myPublicId")
