@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.61 2003-04-05 00:43:25 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.62 2003-04-06 08:01:22 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -141,7 +141,9 @@ class VenueServer(ServiceBase.ServiceBase):
         # If there are no administrators set then we set it to the
         # owner of the current running process
         if len(self.administrators) == 0:
-            self.administratorList.append(GetDefaultIdentityDN())
+            dnAdmin = GetDefaultIdentityDN()
+            if dnAdmin:
+                self.administratorList.append(dnAdmin)
         else:
             self.administratorList = string.split(self.administrators, ":")
             
