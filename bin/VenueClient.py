@@ -14,6 +14,8 @@ class VenueClientUI(wxApp, VenueClient):
     receives a coherence event. 
     """
     def OnInit(self):
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
         VenueClient.__init__(self)        
         self.frame = VenueClientFrame(NULL, -1,"", self)
         self.frame.SetSize(wxSize(300, 400))
