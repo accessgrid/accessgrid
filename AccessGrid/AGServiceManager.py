@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.72 2004-05-18 18:25:25 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.73 2004-05-24 16:42:11 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.72 2004-05-18 18:25:25 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.73 2004-05-24 16:42:11 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -446,7 +446,11 @@ class AGServiceManager:
         This method retrieves the list of resources from the machine
         """
         log.info("__DiscoverResources")
-        self.resources = SystemConfig.instance().GetResources()
+        try:
+            self.resources = SystemConfig.instance().GetResources()
+        except:
+            log.exception("Exception getting resources")
+            self.resources = []
 
                 
     def __GetServicePath(self,serviceDescription):
