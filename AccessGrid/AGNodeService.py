@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.17 2003-02-28 19:26:02 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.18 2003-03-13 12:16:44 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,6 +16,7 @@ import string
 import thread
 import string
 import ConfigParser
+import logging
 
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
@@ -28,6 +29,8 @@ from AccessGrid.AuthorizationManager import AuthorizationManager
 from AccessGrid.Platform import GetConfigFilePath
 
 from AccessGrid.AGParameter import ValueParameter
+
+log = logging.getLogger("AG.NodeService")
 
 class AGNodeService( ServiceBase ):
     """
@@ -64,14 +67,11 @@ class AGNodeService( ServiceBase ):
         # Load default node configuration (service managers and services)
         #
         if self.defaultConfig:
-            print "Loading default node config:", self.defaultConfig
+            log.debug("Loading default node config: %s", self.defaultConfig)
             try:
                 self.LoadConfiguration( self.defaultConfig ) 
             except:
-                print "Exception loading default configuration:", sys.exc_type, sys.exc_value
-                print "Failed to load default configuration"
-
-
+                log.exception("Exception loading default configuration.")
 
     ####################
     ## AUTHORIZATION methods
@@ -83,7 +83,7 @@ class AGNodeService( ServiceBase ):
             self.authManager.AddAuthorizedUser( authorizedUser )
             self.__PushAuthorizedUserList()
         except:
-            print "Exception in AGNodeService.AddAuthorizedUser ", sys.exc_type, sys.exc_value
+            log.exception("Exception in AGNodeService.AddAuthorizedUser.")
             raise faultType("Failed to add user authorization: " + authorizedUser )
     AddAuthorizedUser.soap_export_as = "AddAuthorizedUser"
 
@@ -94,7 +94,7 @@ class AGNodeService( ServiceBase ):
             self.authManager.RemoveAuthorizedUser( authorizedUser )
             self.__PushAuthorizedUserList()
         except:
-            print "Exception in AGNodeService.RemoveAuthorizedUser ", sys.exc_type, sys.exc_value
+            log.exception("Exception in AGNodeService.RemoveAuthorizedUser.")
             raise faultType("Failed to remove user authorization: " + authorizedUser )
     RemoveAuthorizedUser.soap_export_as = "RemoveAuthorizedUser"
 
@@ -108,7 +108,7 @@ class AGNodeService( ServiceBase ):
         try:
             Client.Handle( serviceManager.uri ).get_proxy().Ping()
         except:
-            print "Exception in AddServiceManager ", sys.exc_type, sys.exc_value
+            log.exception("Exception in AddServiceManager.")
             raise faultType("Service Manager is unreachable: " + serviceManager.uri )
 
 
@@ -116,7 +116,7 @@ class AGNodeService( ServiceBase ):
             self.serviceManagers.append( serviceManager )
             Client.Handle( serviceManager.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
         except:
-            print "Exception in AGNodeService.AddServiceManager ", sys.exc_type, sys.exc_value
+            log.exception("Exception in AGNodeService.AddServiceManager.")
             raise faultType("Failed to set Service Manager user authorization: " + serviceManager.uri )
     AddServiceManager.soap_export_as = "AddServiceManager"
 
@@ -131,7 +131,7 @@ class AGNodeService( ServiceBase ):
 
                     break
         except:
-            print "Exception in AGNodeService.RemoveServiceManager ", sys.exc_type, sys.exc_value
+            log.exception("Exception in AGNodeService.RemoveServiceManager.")
             raise faultType("AGNodeService.RemoveServiceManager failed: " + serviceManagerToRemove.uri )
     RemoveServiceManager.soap_export_as = "RemoveServiceManager"
 
@@ -167,7 +167,7 @@ class AGNodeService( ServiceBase ):
                     services = services + [ service ]
 
         except:
-            print "Exception in AGNodeService.GetServices ", sys.exc_type, sys.exc_value
+            log.exception("Exception in AGNodeService.GetServices.")
             raise faultType("AGNodeService.GetServices failed: " + str( sys.exc_value ) )
         return services
     GetServices.soap_export_as = "GetServices"
@@ -192,7 +192,7 @@ class AGNodeService( ServiceBase ):
                     if streamDescription.capability.type in serviceCapabilities:
                         Client.Handle( service.uri ).get_proxy().ConfigureStream( streamDescription )
             except:
-                print "Exception in AGNodeService.ConfigureStreams ", sys.exc_type, sys.exc_value
+                log.exception("Exception in AGNodeService.ConfigureStreams.")
                 raise faultType("AGNodeService.ConfigureStreams failed: " + str( sys.exc_value ) )
     ConfigureStreams.soap_export_as = "ConfigureStreams"
 
@@ -279,7 +279,7 @@ class AGNodeService( ServiceBase ):
             try:
                 Client.Handle( serviceManager.uri ).get_proxy().Ping()
             except:
-                print "Couldn't reach service manager:", serviceManager.uri
+                log.exception("Couldn't reach service manager: %s", serviceManager.uri)
                 continue
 
             # Add service manager to list (since it's reachable)
@@ -379,7 +379,7 @@ class AGNodeService( ServiceBase ):
         fp.close()
 
       except:
-        print "Exception in AGNodeService.StoreConfiguration:", sys.exc_type, sys.exc_value
+        log.exception("Exception in AGNodeService.StoreConfiguration.")
 
     StoreConfiguration.soap_export_as = "StoreConfiguration"
 
@@ -405,7 +405,7 @@ class AGNodeService( ServiceBase ):
                 capabilities = capabilities + capabilitySubset
 
         except:
-            print "Exception in AGNodeService.GetCapabilities ", sys.exc_type, sys.exc_value
+            log.exception("Exception in AGNodeService.GetCapabilities.")
             raise faultType("AGNodeService.GetCapabilities failed: " + str( sys.exc_value ) )
         return capabilities
     GetCapabilities.soap_export_as = "GetCapabilities"
@@ -455,7 +455,7 @@ class AGNodeService( ServiceBase ):
             for serviceManager in self.serviceManagers:
                 Client.Handle( serviceManager.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
         except:
-            print "Exception in AGNodeService.RemoveAuthorizedUser ", sys.exc_type, sys.exc_value
+            log.exception("Exception in AGNodeService.RemoveAuthorizedUser.")
 
     def __ReadConfigFile( self, configFile ):
         """
@@ -513,7 +513,8 @@ class AGServicePackageRepository:
         """
         Implementation of Handler interface for DataStore
         """
-        print "Download filename : ", self.servicesDir + os.sep + url_path 
+        log.exception("Download filename : %s",
+                      self.servicesDir + os.sep + url_path)
         return self.servicesDir + os.sep + url_path 
 
     def GetPackageUrl( self, file ):
