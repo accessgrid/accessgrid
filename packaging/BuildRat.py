@@ -13,7 +13,7 @@ RATDIR=os.path.join(SOURCE,'ag-media')
 def build_win(dir):
     os.system("devenv %s /rebuild Release" % os.path.join(dir, "rat",
                                                           "rat.sln"))
-    os.system("devenv %s /rebuild Release /project rat-kill" \
+    os.system("devenv %s /project rat-kill /rebuild \"Release\"" \
               % os.path.join(dir, "rat", "rat.sln"))
     
 def build_linux(dir):
