@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.27 2003-02-17 21:52:27 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.28 2003-02-20 19:55:09 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,11 +15,13 @@ from wxPython.lib.imagebrowser import *
 
 from AccessGrid.Platform import GPI 
 from AccessGrid.hosting.pyGlobus import Client
-from AccessGrid.Descriptions import VenueDescription
+from AccessGrid.Descriptions import VenueDescription, StreamDescription, Capability, MulticastNetworkLocation
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-from AccessGrid.Utilities import formatExceptionInfo 
+from AccessGrid.Utilities import formatExceptionInfo, HaveValidProxy 
 from AccessGrid.UIUtilities import *
 from AccessGrid import icons
+
+import string
 
 from pyGlobus.io import GSITCPSocketException
 
@@ -38,8 +40,7 @@ class VenueManagementClient(wxApp):
 	self.tabs = VenueManagementTabs(self.frame, -1, self)
         self.tabs.Enable(false)
 	self.statusbar = self.frame.CreateStatusBar(1)
-       
-	self.frame.SetSize(wxSize(540, 340))   
+        self.frame.SetSize(wxSize(540, 340))   
 	self.SetTopWindow(self.frame)
         self.url = None
         client = None
@@ -54,23 +55,22 @@ class VenueManagementClient(wxApp):
 	self.frame.SetSizer(box)
 
     def ConnectToServer(self, URL):
-        #try:
+     
         self.clientHandle = Client.Handle(URL)
-        
+
+        if not HaveValidProxy():
+            GPI()
+            
         if(self.clientHandle.IsValid()):
             self.client = self.clientHandle.get_proxy()
 
             try:
                 venueList = self.client.GetVenues()
-
-            except GSITCPSocketException:
-                GPI()
-##            ErrorDialog(self.frame, sys.exc_info()[1][0])
-                self.client = Client.Handle(URL).get_proxy()
-                venueList = self.client.GetVenues()
+                
             except:
                 print "Can't connect to server!", formatExceptionInfo()
                 ErrorDialog(self.frame, 'The server you are trying to connect to is not running!')
+
             else:
                 self.url = URL
                 
@@ -129,12 +129,34 @@ class VenueManagementClient(wxApp):
                         
     def AddVenue(self, venue, exitsList):
         uri = self.client.AddVenue(venue)
-        Client.Handle(uri).get_proxy().SetConnections(exitsList)
-        return uri      
-                
+        if exitsList != []:
+            Client.Handle(uri).get_proxy().SetConnections(exitsList)
+        return uri
+
+    def DisableStaticStreams(self, venueUri):
+        client = Client.Handle(venueUri).get_proxy()
+        streamList = client.GetStaticStreams()
+        for stream in streamList:
+            client.RemoveStream(stream)
+        
+    def EnableStaticVideo(self, venueUri, videoAddress, videoPort, videoTtl):
+        location = MulticastNetworkLocation(videoAddress, videoPort, videoTtl)
+        capability = Capability( Capability.PRODUCER, Capability.VIDEO)
+        videoStreamDescription = StreamDescription( "", "", location, capability)  
+        videoStreamDescription.static = 1
+        Client.Handle(venueUri).get_proxy().AddStream(videoStreamDescription)
+        
+    def EnableStaticAudio(self, venueUri, audioAddress, audioPort, audioTtl):
+        location = MulticastNetworkLocation(audioAddress, audioPort, audioTtl)
+        capability = Capability( Capability.PRODUCER, Capability.AUDIO)
+        audioStreamDescription = StreamDescription( "", "", location, capability)  
+        audioStreamDescription.static = 1
+        Client.Handle(venueUri).get_proxy().AddStream(audioStreamDescription)
+                        
     def ModifyVenue(self, venue, exitsList):
         self.client.ModifyVenue(venue.uri, venue)
-        Client.Handle(venue.uri).get_proxy().SetConnections(exitsList) 
+        if exitsList != []:
+            Client.Handle(venue.uri).get_proxy().SetConnections(exitsList) 
                 
     def DeleteVenue(self, venue):
         self.client.RemoveVenue(venue.uri)
@@ -421,20 +443,14 @@ class VenueListPanel(wxPanel):
                     self.parent.venueProfilePanel.ChangeCurrentVenue()
   
     def InsertVenue(self, data, exitsList):
-        #try:
-            newUri = self.application.AddVenue(data, exitsList)
+        newUri = self.application.AddVenue(data, exitsList)
 
-       # except: 
-        #    ErrorDialog(self, 'Add vanue failed in server!')
-
-       # else: 
-            if newUri :
-                data.uri = newUri
-                self.venuesList.Append(data.name, data)
-                self.venuesList.Select(self.venuesList.Number()-1)
-                self.parent.venueProfilePanel.ChangeCurrentVenue(data, exitsList)
-                
-                
+        if newUri :
+            data.uri = newUri
+            self.venuesList.Append(data.name, data)
+            self.venuesList.Select(self.venuesList.Number()-1)
+            self.parent.venueProfilePanel.ChangeCurrentVenue(data, exitsList)
+                            
     def ModifyCurrentVenue(self, data, exitsList):
         item = self.venuesList.GetSelection()
         clientData =  self.venuesList.GetClientData(item)
@@ -450,7 +466,27 @@ class VenueListPanel(wxPanel):
         else:
             self.venuesList.SetString(item, data.name)
             self.parent.venueProfilePanel.ChangeCurrentVenue(clientData, exitsList)
-               
+
+    
+
+    def SetStaticVideo(self, videoAddress, videoPort, videoTtl):
+        item = self.venuesList.GetSelection()
+        venue =  self.venuesList.GetClientData(item)
+        
+        self.application.EnableStaticVideo(venue.uri, videoAddress, videoPort, videoTtl)
+                        
+    def SetStaticAudio(self, audioAddress, audioPort, audioTtl):
+        item = self.venuesList.GetSelection()
+        venue =  self.venuesList.GetClientData(item)
+        
+        self.application.EnableStaticAudio(venue.uri, audioAddress, audioPort, audioTtl)
+
+    def DisableStaticStreams(self):
+        item = self.venuesList.GetSelection()
+        venue =  self.venuesList.GetClientData(item)
+
+        self.application.DisableStaticStreams(venue.uri)
+
     def __doLayout(self):
         venueListPanelSizer = wxStaticBoxSizer(self.venuesListBox, wxVERTICAL)
 	venueListPanelSizer.Add(self.venuesList, 8, wxEXPAND|wxALL, 5)
@@ -730,6 +766,8 @@ class ServicesPanel(wxPanel):
 IP = 1
 IP_1 = 2
 MASK = 4
+TTL = 5
+PORT = 6
 
 class MulticastDialog(wxDialog):
     def __init__(self, parent, id, title):
@@ -777,9 +815,10 @@ class MulticastDialog(wxDialog):
         sizer.Fit(self)
         self.SetAutoLayout(1)  
 
+
 class VenueParamFrame(wxDialog):
     def __init__(self, parent, id, title, application):
-        wxDialog.__init__(self, parent, id, title)
+        wxDialog.__init__(self, parent, id, title, style = wxWS_EX_VALIDATE_RECURSIVELY)
         self.Centre()
         self.venue = None
         self.exitsList = []
@@ -792,6 +831,7 @@ class VenueParamFrame(wxDialog):
 	self.descriptionLabel = wxStaticText(self, -1, "Description:")
 	self.description =  wxTextCtrl(self, -1, "", size = wxSize(200, 100), \
                                        style = wxTE_MULTILINE|wxHSCROLL, validator = TextValidator())
+        self.staticAddressingPanel = StaticAddressingPanel(self, -1)
         self.venuesLabel = wxStaticText(self, -1, "Venues on server:")
         self.venues = wxListBox(self, -1, size = wxSize(250, 100))
         self.transferVenueLabel = wxStaticText(self, -1, "Add Exit")
@@ -810,7 +850,7 @@ class VenueParamFrame(wxDialog):
 	self.cancelButton =  wxButton(self, wxID_CANCEL, "Cancel")
 	self.doLayout() 
 	self.__addEvents()
-      	self.Show()
+      	#self.Show()
 
     def __addEvents(self):
      	EVT_BUTTON(self, 160, self.BrowseForImage)
@@ -832,7 +872,7 @@ class VenueParamFrame(wxDialog):
       
     def LoadLocalVenues(self, event = None):
         self.__loadVenues(self.application.url)
-         
+
     def __loadVenues(self, URL):
         validVenue = false
         
@@ -886,6 +926,20 @@ class VenueParamFrame(wxDialog):
         if(index > -1):
             self.exits.Delete(index)
 
+    def SetStaticAddressing(self):
+        if self.staticAddressingPanel.staticAddressingButton.GetValue() == 0:
+            self.parent.DisableStaticStreams()
+            
+        else:
+            self.parent.SetStaticVideo(self.staticAddressingPanel.GetVideoAddress(), \
+                                          self.staticAddressingPanel.GetVideoPort(), \
+                                          self.staticAddressingPanel.GetVideoTtl())
+            
+            self.parent.SetStaticAudio(self.staticAddressingPanel.GetAudioAddress(), \
+                                          self.staticAddressingPanel.GetAudioPort(), \
+                                          self.staticAddressingPanel.GetAudioTtl())
+
+
     def Ok(self):
         index = 0
         self.exitsList = []
@@ -896,25 +950,34 @@ class VenueParamFrame(wxDialog):
         self.venue = VenueDescription(self.title.GetValue(), \
                                 self.description.GetValue(), "", None)
 
-
     def doLayout(self):
         boxSizer = wxBoxSizer(wxVERTICAL)
 	
-	paramFrameSizer = wxFlexGridSizer(10, 2, 10, 10)
+        topSizer =  wxBoxSizer(wxHORIZONTAL)
+
+	paramFrameSizer = wxFlexGridSizer(10, 2, 5, 5)
 	paramFrameSizer.Add(self.titleLabel, 0, wxALIGN_RIGHT)
 	paramFrameSizer.Add(self.title, 0, wxEXPAND)
-
-	box = wxBoxSizer(wxHORIZONTAL)
-	box.Add(20, 10, 0, wxEXPAND)
-	box.Add(20, 10, 0, wxEXPAND)
-	paramFrameSizer.Add(box, 0, wxEXPAND)
-	
 	paramFrameSizer.AddGrowableCol(1) 
+        # For icon
+        #	box = wxBoxSizer(wxHORIZONTAL)
+        #	box.Add(20, 10, 0, wxEXPAND)
+        #	box.Add(20, 10, 0, wxEXPAND)
+        #	paramFrameSizer.Add(box, 0, wxEXPAND)
 
 	topParamSizer = wxStaticBoxSizer(self.informationBox, wxVERTICAL)
-	topParamSizer.Add(paramFrameSizer, 0, wxEXPAND | wxALL, 20)
-	topParamSizer.Add(self.descriptionLabel, 0, wxALIGN_LEFT |wxLEFT, 20)
-	topParamSizer.Add(self.description, 0, wxEXPAND |wxLEFT | wxRIGHT| wxBOTTOM, 20)
+	topParamSizer.Add(paramFrameSizer, 0, wxEXPAND | wxALL, 10)
+	topParamSizer.Add(self.descriptionLabel, 0, wxALIGN_LEFT |wxLEFT, 10)
+	topParamSizer.Add(self.description, 0, wxEXPAND |wxLEFT | wxRIGHT| wxBOTTOM, 10)
+
+        topSizer.Add(topParamSizer, 1, wxRIGHT | wxEXPAND, 5)
+        topSizer.Add(self.staticAddressingPanel, 1, wxLEFT | wxEXPAND, 5)
+        # boxSizer.Add(topParamSizer, 0, wxALL | wxEXPAND, 10)
+
+        
+        #topSizer.Add(staticAddressingSizer, 1, wxALL | wxEXPAND, 10)
+	#boxSizer.Add(staticAddressingSizer, 0, wxALL | wxEXPAND, 10)
+        boxSizer.Add(topSizer, 0, wxALL | wxEXPAND, 10)
 	
 	bottomParamSizer = wxStaticBoxSizer(self.exitsBox, wxVERTICAL)
         exitsSizer = wxFlexGridSizer(10, 3, 5, 5)
@@ -954,25 +1017,189 @@ class VenueParamFrame(wxDialog):
 	buttonSizer.Add(self.cancelButton, 0)
 	buttonSizer.Add(20, 20, 1)
 
-    	boxSizer.Add(topParamSizer, 0, wxALL | wxEXPAND, 10)
-	boxSizer.Add(bottomParamSizer, 0, wxEXPAND | wxALL, 10)
+    
+	boxSizer.Add(bottomParamSizer, 0, wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT, 10)
 	boxSizer.Add(buttonSizer, 5, wxEXPAND | wxBOTTOM, 5)
 
 	self.SetSizer(boxSizer)
 	boxSizer.Fit(self)
 	self.SetAutoLayout(1)  
-     
+
+class StaticAddressingPanel(wxPanel):
+    def __init__(self, parent, id):
+        wxPanel.__init__(self, parent, id)
+        self.ipAddressConverter = IpAddressConverter()
+        self.staticAddressingButton = wxCheckBox(self, 5, " Use Static Addressing")
+        self.panel = wxPanel(self, -1)
+        self.videoTitleText = wxStaticText(self.panel, -1, "Video (h261)", size = wxSize(100,20))
+        self.audioTitleText = wxStaticText(self.panel, -1, "Audio (16kHz)", size = wxSize(100,20))
+        self.videoAddressText = wxStaticText(self.panel, -1, "Address: ", size = wxSize(60,20))
+        self.audioAddressText = wxStaticText(self.panel, -1, "Address: ", size = wxSize(60,20))
+        self.videoPortText = wxStaticText(self.panel, -1, " Port: ", size = wxSize(45,20))
+        self.audioPortText = wxStaticText(self.panel, -1, " Port: ", size = wxSize(45,20))
+        self.videoTtlText = wxStaticText(self.panel, -1, " Ttl:", size = wxSize(40,20))
+        self.audioTtlText = wxStaticText(self.panel, -1, " Ttl:", size = wxSize(40,20))
+        self.videoIp1 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(IP))
+        self.videoIp2 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(IP))
+        self.videoIp3 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(IP))
+        self.videoIp4 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(IP))
+        self.videoPort = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20),validator = DigitValidator(PORT))
+        self.videoTtl = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(TTL))
+        self.audioIp1 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(IP))
+        self.audioIp2 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(IP))
+        self.audioIp3 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(IP))
+        self.audioIp4 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(IP))
+        self.audioPort = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator =DigitValidator(PORT))
+        self.audioTtl = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20), validator = DigitValidator(TTL))
+
+        if self.staticAddressingButton.GetValue():
+            self.panel.Enable(true)
+        else:
+            self.panel.Enable(false)
+
+        self.__doLayout()
+        self.__setEvents()
+
+    def __setEvents(self):
+        EVT_CHECKBOX(self, 5, self.ClickStaticButton)
+
+    def SetStaticVideo(self, videoIp, videoPort, videoTtl):
+        videoList = self.ipAddressConverter.StringToIp(videoIp)
+        self.videoPort.SetValue(str(videoPort))
+        self.videoIp1.SetValue(str(videoList[0]))
+        self.videoIp2.SetValue(str(videoList[1]))
+        self.videoIp3.SetValue(str(videoList[2]))
+        self.videoIp4.SetValue(str(videoList[3]))
+        self.videoTtl.SetValue(str(videoTtl))
+
+    def SetStaticAudio(self, audioIp, audioPort, audioTtl):
+        audioList = self.ipAddressConverter.StringToIp(audioIp)
+        self.audioPort.SetValue(str(audioPort))
+        self.audioIp1.SetValue(str(audioList[0]))
+        self.audioIp2.SetValue(str(audioList[1]))
+        self.audioIp3.SetValue(str(audioList[2]))
+        self.audioIp4.SetValue(str(audioList[3]))
+        self.audioTtl.SetValue(str(audioTtl))
+
+       
+    def GetVideoAddress(self):
+        return self.ipAddressConverter.IpToString(self.videoIp1.GetValue(), \
+                                             self.videoIp2.GetValue(), \
+                                             self.videoIp3.GetValue(), \
+                                             self.videoIp4.GetValue())
+
+    def GetAudioAddress(self):
+        return self.ipAddressConverter.IpToString(self.audioIp1.GetValue(), \
+                                             self.audioIp2.GetValue(), \
+                                             self.audioIp3.GetValue(), \
+                                             self.audioIp4.GetValue())
+
+    def GetVideoPort(self):
+        return self.videoPort.GetValue()
+        
+    def GetAudioPort(self):
+        return self.audioPort.GetValue()
+
+    def GetVideoTtl(self):
+        return self.videoTtl.GetValue()
+        
+    def GetAudioTtl(self):
+        return self.audioTtl.GetValue()
+    
+    def ClickStaticButton(self, event):
+        if event.Checked():
+            self.panel.Enable(true)
+            
+        else:
+            self.panel.Enable(false)
+
+    def Validate(self):
+        if(self.staticAddressingButton.GetValue()):
+            return self.panel.Validate()
+        else:
+            return true
+            
+    def __doLayout(self):
+        staticAddressingSizer = wxStaticBoxSizer(wxStaticBox(self, -1, "Static Addressing"), wxVERTICAL)
+        staticAddressingSizer.Add(self.staticAddressingButton, 0, wxEXPAND|wxALL, 5)
+
+        panelSizer = wxBoxSizer(wxVERTICAL)
+
+        videoIpSizer = wxBoxSizer(wxHORIZONTAL)
+        videoIpSizer.Add(self.videoIp1, 0 , wxEXPAND)
+        videoIpSizer.Add(self.videoIp2, 0 , wxEXPAND)
+        videoIpSizer.Add(self.videoIp3, 0 , wxEXPAND)
+        videoIpSizer.Add(self.videoIp4, 0 , wxEXPAND)
+
+        audioIpSizer = wxBoxSizer(wxHORIZONTAL)
+        audioIpSizer.Add(self.audioIp1, 0 , wxEXPAND)
+        audioIpSizer.Add(self.audioIp2, 0 , wxEXPAND)
+        audioIpSizer.Add(self.audioIp3, 0 , wxEXPAND)
+        audioIpSizer.Add(self.audioIp4, 0 , wxEXPAND)
+        
+        videoTitleSizer = wxBoxSizer(wxHORIZONTAL)
+        videoTitleSizer.Add(self.videoTitleText, 0, wxALIGN_CENTER)
+        videoTitleSizer.Add(wxStaticLine(self.panel, -1), 1, wxALIGN_CENTER)
+
+        panelSizer.Add(videoTitleSizer, 1 ,  wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10)
+
+        flexSizer = wxFlexGridSizer(7, 7, 0, 0)
+        flexSizer.Add(10,10)
+        flexSizer.Add(self.videoAddressText, 0 , wxEXPAND|wxALIGN_CENTER)
+        flexSizer.Add(videoIpSizer, 0 , wxEXPAND)
+        flexSizer.Add(self.videoPortText, 0 , wxEXPAND|wxALIGN_CENTER)
+        flexSizer.Add(self.videoPort, 0 , wxEXPAND)
+        flexSizer.Add(self.videoTtlText,0 , wxEXPAND|wxALIGN_CENTER)
+        flexSizer.Add(self.videoTtl,0 , wxEXPAND)
+        
+        panelSizer.Add(flexSizer, 0 , wxEXPAND|wxALL, 5)
+            
+        audioTitleSizer = wxBoxSizer(wxHORIZONTAL)
+        audioTitleSizer.Add(self.audioTitleText, 0, wxALIGN_CENTER)
+        audioTitleSizer.Add(wxStaticLine(self.panel, -1), 1, wxALIGN_CENTER)
+
+        panelSizer.Add(10,10)
+
+        panelSizer.Add(audioTitleSizer, 1 , wxEXPAND|wxLEFT|wxRIGHT, 10)
+        
+        flexSizer2 = wxFlexGridSizer(7, 7, 0, 0)
+        flexSizer2.Add(10,10)
+        flexSizer2.Add(self.audioAddressText, 0 , wxEXPAND|wxALIGN_CENTER)
+        flexSizer2.Add(audioIpSizer, 0 , wxEXPAND)
+        flexSizer2.Add(self.audioPortText, 0 , wxEXPAND|wxALIGN_CENTER)
+        flexSizer2.Add(self.audioPort, 0 , wxEXPAND)
+        flexSizer2.Add(self.audioTtlText,0 , wxEXPAND|wxALIGN_CENTER)
+        flexSizer2.Add(self.audioTtl,0 , wxEXPAND)
+
+        panelSizer.Add(flexSizer2, 0 , wxEXPAND|wxALL, 5)
+        self.panel.SetSizer(panelSizer)
+        panelSizer.Fit(self.panel)
+        
+        staticAddressingSizer.Add(self.panel, 0 , wxEXPAND)
+
+        self.SetSizer(staticAddressingSizer)
+	staticAddressingSizer.Fit(self)
+	self.SetAutoLayout(1)
+        
+              
 class AddVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title, venueList, application):
         VenueParamFrame.__init__(self, parent, id, title, app)
 	self.parent = parent
         self.SetLabel('Add Venue')
         self.LoadLocalVenues()
-        if (self.ShowModal() == wxID_OK ):
-            self.Ok()
-            self.parent.InsertVenue(self.venue, self.exitsList)
-        self.Destroy()
-                 
+        EVT_BUTTON (self.okButton, wxID_OK, self.OnOK)
+        self.ShowModal()
+                    
+    def OnOK (self, event):
+        if(VenueParamFrame.Validate(self)):
+            if(self.staticAddressingPanel.Validate()):
+                self.Ok()
+                self.parent.InsertVenue(self.venue, self.exitsList)
+                self.SetStaticAddressing()
+                self.Hide()
+            
+                                    
 class ModifyVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title, venueList, application):
         VenueParamFrame.__init__(self, parent, id, title, app)
@@ -981,21 +1208,57 @@ class ModifyVenueFrame(VenueParamFrame):
         self.list = venueList
         self.__setCurrentVenueInfo()
         self.LoadLocalVenues()
-                      
-        if (self.ShowModal() == wxID_OK ):
-            self.Ok()
-            self.parent.ModifyCurrentVenue(self.venue, self.exitsList)
-        self.Destroy()
+        EVT_BUTTON (self.okButton, wxID_OK, self.OnOK)
+        self.ShowModal()
+                    
+    def OnOK (self, event):
+        if(VenueParamFrame.Validate(self)):
+            if(self.staticAddressingPanel.Validate()):
+                self.Ok()
+                self.parent.ModifyCurrentVenue(self.venue, self.exitsList)
+                self.SetStaticAddressing()
+                self.Hide()
 
     def __setCurrentVenueInfo(self):
-        item = self.list.GetSelection()
-        data = self.list.GetClientData(item)
+         item = self.list.GetSelection()
+         data = self.list.GetClientData(item)
               
-        self.title.AppendText(data.name)
-        self.description.AppendText(data.description)
-        exitsList = Client.Handle(data.uri).get_proxy().GetConnections()
-        self.InsertExits(exitsList)
-                          
+         self.title.AppendText(data.name)
+         self.description.AppendText(data.description)
+
+         client =  Client.Handle(data.uri).get_proxy()
+         
+         exitsList = client.GetConnections()
+         self.InsertExits(exitsList)
+         
+         streamList = client.GetStaticStreams()
+         videoIp = ""
+         videoPort = ""
+         audioIp = None
+         audioPort = None
+                    
+         if(len(streamList)==0):
+             self.staticAddressingPanel.panel.Enable(false)
+             self.staticAddressingPanel.staticAddressingButton.SetValue(false)
+             
+         elif(len(streamList)>2):
+             print '--------------- I got back more than 2 static streams...that is bad!!!'
+             
+         else:
+             self.staticAddressingPanel.panel.Enable(true)
+             self.staticAddressingPanel.staticAddressingButton.SetValue(true)
+             for stream in streamList:
+                 if(stream.capability.type == Capability.VIDEO):
+                     videoIp = stream.location.host
+                     videoPort = stream.location.port
+                     videoTtl =  stream.location.ttl
+                     self.staticAddressingPanel.SetStaticVideo(videoIp, videoPort, videoTtl)
+                     
+                 elif(stream.capability.type == Capability.AUDIO):
+                     audioIp = stream.location.host
+                     audioPort = stream.location.port
+                     audioTtl =  stream.location.ttl
+                     self.staticAddressingPanel.SetStaticAudio(audioIp, audioPort, audioTtl)
    
 class AdministratorParamFrame(wxDialog):
     def __init__(self, *args):
@@ -1035,7 +1298,6 @@ class AdministratorParamFrame(wxDialog):
 	topSizer.Fit(self)
 	self.SetAutoLayout(1)  
         
-    
 class AddAdministratorFrame(AdministratorParamFrame):
     def __init__(self, parent, id, title):
         AdministratorParamFrame.__init__(self, parent, id, title)
@@ -1110,8 +1372,24 @@ class DigitValidator(wxPyValidator):
         if (self.flag == IP or self.flag == IP_1) and index == 0:
             wxMessageBox("Please, fill in all IP Address fields!", "Error")
             return false
+
+        elif (self.flag == PORT) and index == 0:
+            wxMessageBox("Please, fill in port for static addressing!", "Error")
+            return false
+
+        elif (self.flag == TTL) and index == 0:
+            wxMessageBox("Please, fill in time to live (ttl) for static addressing!", "Error")
+            return false
+
+        elif self.flag == PORT:
+            return true
+
+        elif self.flag == TTL and (int(val)<0 or int(val)>27):
+            wxMessageBox("Time to live should be a value between 0 - 27", "Error", \
+                            style = wxOK|wxICON_INFORMATION)
+            return false
         
-        if self.flag == IP and (int(val)<0 or int(val)>255):
+        elif self.flag == IP and (int(val)<0 or int(val)>255):
             wxMessageBox("Allowed values for IP Address are between 224.0.0.0 - 239.225.225.225", "Error")
             return false
         
@@ -1162,7 +1440,7 @@ class TextValidator(wxPyValidator):
     def Validate(self, win):
         tc = self.GetWindow()
         val = tc.GetValue()
-              
+                     
         if len(val) < 1:
             wxMessageBox("Please, fill in your name and description", "Error")
             return false
@@ -1174,6 +1452,19 @@ class TextValidator(wxPyValidator):
     def TransferFromWindow(self):
         return true # Prevent wxDialog from complaining.
 
+class IpAddressConverter:
+    def __init__(self):
+        self.ipString = ""
+        self.ipIntList = []
+        
+    def StringToIp(self, ipString):
+        ipStringList = string.split(ipString, '.')
+        self.ipIntList = map(string.atoi, ipStringList)
+        return self.ipIntList
+               
+    def IpToString(self, ip1, ip2, ip3, ip4):
+        self.ipString = str(ip1)+'.'+str(ip2)+'.'+str(ip3)+'.'+str(ip4)
+        return self.ipString
 
 if __name__ == "__main__":
     wxInitAllImageHandlers()
