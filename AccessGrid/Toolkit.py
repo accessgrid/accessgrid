@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.78 2004-08-25 16:55:55 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.79 2004-09-03 15:53:19 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.78 2004-08-25 16:55:55 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.79 2004-09-03 15:53:19 judson Exp $"
 
 # Standard imports
 import os
@@ -376,6 +376,26 @@ class Application(AppBase):
 
        self.globusConfig = self.certificateManager.GetGlobusConfig()
 
+       # Make sure we verify the user has all the CAs that have been
+       # put in the system ca dir
+
+       repo = self.certificateManager.GetCertificateRepository()
+
+       self.log.debug("Got repo.")
+
+       self.log.debug("looking in system ca dir: %s", self.globusConfig.GetDistCACertDir())
+       for ca_cert in [f for f in
+                       os.listdir(self.globusConfig.GetDistCACertDir())
+                                  if f.endswith(".0")]:
+           self.log.debug("Getting cert: %s", ca_cert)
+           cpath = os.path.join(self.globusConfig.GetDistCACertDir(), ca_cert)
+           try:
+               repo.ImportCertificatePEM(cpath)
+           except CertificateRepository.RepoInvalidCertificate, e:
+               self.log.warn("Not importing cert %s", cpath)
+           except:
+               self.log.exception("Error during ca initialization.")
+               
        self.log.debug("Init'ing globus.")
        
        self.certMgrUI.InitGlobusEnvironment()
