@@ -187,6 +187,8 @@ os.system("%s test_dist.py --html -o %s -t %s" % (sys.executable,
                                                   BuildTime))
 
 # Generate epydoc documentation
+os.chdir(BuildDir)
+
 if sys.platform == 'win32':
     ep = os.path.join(os.path.dirname(sys.executable), "Scripts",
                       "epydoc.py")
