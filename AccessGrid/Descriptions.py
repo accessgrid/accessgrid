@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.20 2003-04-01 23:23:48 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.21 2003-04-03 21:48:29 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -200,7 +200,9 @@ class VenueDescription(ObjectDescription):
 def CreateVenueDescription(venueDescStruct):
     clist = []
     for c in venueDescStruct.connections:
-        clist.append(ConnectionDescription(c.name, c.description, c.uri))
+        # THIS IS ICKY TOO
+        if c != '\n':
+            clist.append(ConnectionDescription(c.name, c.description, c.uri))
 
     slist = []
     for s in venueDescStruct.streams:
