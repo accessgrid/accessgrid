@@ -3,14 +3,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.42 2004-03-15 20:07:02 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.43 2004-03-15 20:53:16 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.42 2004-03-15 20:07:02 judson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.43 2004-03-15 20:53:16 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -54,7 +54,8 @@ def SignalHandler(signum, frame):
     log.info("Caught signal, going down.")
     log.info("Signal: %d Frame: %s", signum, frame)
     
-    server.Stop()
+    if server != None:
+        server.Stop()
 
     running = 0
 
@@ -134,6 +135,7 @@ def main():
     log.info("Starting Node Service URL: %s", url)
 
     # Keep the main thread busy so we can catch signals
+    global running
     running = 1
     while running:
         time.sleep(1)
