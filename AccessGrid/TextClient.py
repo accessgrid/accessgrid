@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.17 2003-08-08 21:36:44 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.18 2003-08-12 19:24:36 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -294,6 +294,6 @@ class TextClient:
         
     def Stop(self):
         self.log.debug("TextClient.Stop")
-        self.textProcessor.Input(DisconnectEvent(venueId, privateId))
+        self.textProcessor.Input(DisconnectEvent(self.venueId, self.privateId))
         self.textConnection.Stop()
 

@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.227 2003-08-12 18:40:48 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.228 2003-08-12 19:24:36 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -531,14 +531,14 @@ class VenueClientFrame(wxFrame):
         self.FillInAddress(event)
         self.venueAddressBar.callAddress(event)
                   
-    def CloseTextConnection(self):
-        self.textClientPanel.CloseTextConnection()
+#    def CloseTextConnection(self):
+#        self.textClientPanel.CloseTextConnection()
 
-    def SetTextLocation(self, event = None):
-        textLoc = tuple(self.app.venueClient.venueState.GetTextLocation())
-        id = self.app.venueClient.venueState.uniqueId
-        self.textClientPanel.SetLocation(self.app.venueClient.privateId,
-                                         textLoc, id)
+#     def SetTextLocation(self, event = None):
+#         textLoc = tuple(self.app.venueClient.venueState.GetTextLocation())
+#         id = self.app.venueClient.venueState.uniqueId
+#         self.textClientPanel.SetLocation(self.app.venueClient.privateId,
+#                                          textLoc, id)
       
     def AuthorizeLeadDialog(self, clientProfile):
         idPending = None

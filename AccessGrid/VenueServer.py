@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.85 2003-08-12 18:40:48 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.86 2003-08-12 19:24:36 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,6 +22,7 @@ import logging
 import time
 import ConfigParser
 
+from AccessGrid import Toolkit
 from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.hosting import AccessControl
 from AccessGrid.hosting.pyGlobus import ServiceBase
@@ -171,15 +172,6 @@ class VenueServer(ServiceBase.ServiceBase):
                 log.exception("Could not create VenueServer Data Store.")
                 self.dataStorageLocation = None
 
-        # If there are no administrators set then we set it to the
-        # owner of the current running process
-        if len(self.GetRoleManager().GetRole("VenueServer.Administrators").GetSubjectList()) == 0:
-            # Set it from the cert mgmt stuff now -- IRJ
-            certMgr = Toolkit.GetApplication().GetCertificateManager()
-            dnAdmin = certMgr.GetCurrentProxy().GetSubject()
-            if dnAdmin:
-                self.GetRoleManager().GetRole("VenueServer.Administrators").AddSubject(dnAdmin)
-            
         # Start Venue Server wide services
         self.dataTransferServer = GSIHTTPTransferServer(('',
                                                          int(self.dataPort)),
@@ -594,8 +586,6 @@ class VenueServer(ServiceBase.ServiceBase):
         if venueDesc == None:
             raise InvalidVenueDescription
             
-        #venueDesc.roleManager.GetRole("Venue.Administrators").AddSubject(GetDefaultIdentityDN())
-
         try:
             self.simpleLock.acquire()
         
@@ -1404,19 +1394,6 @@ class VenueServer(ServiceBase.ServiceBase):
 
     GetAdministrators.soap_export_as = "GetAdministrators"
 
-# This is not supported for 2.0
-#     def RegisterServer(self, URL):
-#         """
-#         This method should register the server with the venues
-#         registry at the URL passed in. This is by default a
-#         registration page at Argonne for now.
-#         """
-#         if not self._Authorize():
-#             raise NotAuthorized
-#         registryService = SOAP.SOAPProxy(URL)
-#         registryService.Register(data)
-
-#     RegisterServer.soap_export_as = "RegisterServer"
 
     def GetVenues(self):
         """
