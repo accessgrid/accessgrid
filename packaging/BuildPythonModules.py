@@ -15,7 +15,7 @@ AGDIR=sys.argv[2]
 DEST=sys.argv[3]
 
 # Don't pass this in anymore
-PYVER=sys.winver
+PYVER=sys.version[:3]
 
 #
 # Setup the given module in the given dest directory
