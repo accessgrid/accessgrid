@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.131 2004-03-26 20:42:30 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.132 2004-03-26 21:07:47 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.131 2004-03-26 20:42:30 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.132 2004-03-26 21:07:47 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -801,10 +801,10 @@ class VenueServer(AuthorizationMixIn):
         ovi = self.hostingEnvironment.FindObjectForPath(defaultPath)
         ovia = self.hostingEnvironment.FindObjectForPath(defaultAuthPath)
         if ovi != None:
-            self.hostingEnvironment.UnregisterObject(ovi)
+            self.hostingEnvironment.UnregisterObject(ovi, path=defaultPath)
         # handle authorization too
         if ovia != None:
-            self.hostingEnvironment.UnregisterObject(ovia)
+            self.hostingEnvironment.UnregisterObject(ovia, path=defaultAuthPath)
             
         # Setup the new default venue
         self.config["VenueServer.defaultVenue"] = oid

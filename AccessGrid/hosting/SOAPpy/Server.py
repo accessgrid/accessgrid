@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.10 2004-03-19 05:02:54 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.11 2004-03-26 21:07:47 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ SOAPpy server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.10 2004-03-19 05:02:54 judson Exp $"
+__revision__ = "$Id: Server.py,v 1.11 2004-03-26 21:07:47 eolson Exp $"
 
 # External imports
 import urlparse
@@ -129,17 +129,24 @@ class Server:
         self._server.registerObject(obj, namespace=namespace, path = path)
         return uri
     
-    def UnregisterObject(self, obj):
+    def UnregisterObject(self, obj, namespace='', path=''):
         """
         This method removes a object from the server, making it unavailable.
 
         Again, a wrapper to provide custom bookkeeping, then use
         SOAPpy directly underneath.
         """
-        for u,o in self._serving.items():
-            if obj == o:
-                del self._serving[u]
-        self._server.unregisterObject(obj)
+        if len(path) > 0:
+            # Remove specific object,path combination
+            uri = "%s%s" % (self.GetURLBase(), path)
+            if self._serving.has_key(uri):
+                del self._serving[uri]
+        else:
+            # No path specified, remove object and any paths associated with it.
+            for u,o in self._serving.items():
+                if obj == o:
+                    del self._serving[u]
+        self._server.unregisterObject(obj, namespace, path)
 
     # Don't forget we expose interfaces, so
     # interfaces.impl == passed in object
