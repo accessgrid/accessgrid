@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.239 2003-08-22 19:30:16 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.240 2003-08-22 19:35:41 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1827,11 +1827,10 @@ class ContentListPanel(wxPanel):
                     if commands.has_key('Open'):
                         openCmd = commands['Open']
                     else:
-                        text = "You have nothing configured to open this data."
-                        title = "Notification"
-                        EVT_MENU(self, wxNewId(), lambda event, text=text,
-                                 title=title: MessageDialog(self, text, title,
-                                               style = wxOK|wxICON_INFORMATION))
+                        ErrorDialog(None,
+                                    "You have nothing configured for this data.",
+                                    style = wxOK  | wxICON_ERROR)
+                        return None
                 elif isinstance(item, ServiceDescription):
                     list = item.name.split('.')
                     if len(list) == 2:
@@ -1841,11 +1840,10 @@ class ContentListPanel(wxPanel):
                     if commands.has_key('Open'):
                         openCmd = commands['Open']
                     else:
-                        text = "You have nothing configured to open this data."
-                        title = "Notification"
-                        EVT_MENU(self, wxNewId(), lambda event, text=text,
-                                 title=title: MessageDialog(self, text, title,
-                                               style = wxOK|wxICON_INFORMATION))
+                        ErrorDialog(None,
+                                    "You have nothing configured for this data.",
+                                    style = wxOK  | wxICON_ERROR)
+                        return None
                 else:
                     appdb = Toolkit.GetApplication().GetAppDatabase()
                     openCmd = appdb.GetCommandLine(item.mimeType, 'Open')
