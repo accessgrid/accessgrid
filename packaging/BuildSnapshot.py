@@ -43,7 +43,7 @@ parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
                   default=0,
                   help="A flag that indicates to build verbosely.")
 parser.add_option("-p", "--pythonversion", dest="pyver",
-                  metavar="PYTHONVERSION", default="2.3",
+                  metavar="PYTHONVERSION", default="2.2",
                   help="Which version of python to build the installer for.")
 parser.add_option("-r", "--rebuild", action="store_true", dest="rebuild",
                   help="Rebuild an installer from a previously used build dir.")
@@ -141,8 +141,8 @@ os.system("%s install --prefix=%s --no-compile" % (cmd, DestDir))
 os.chdir(s)
 
 # Build the other python modules
-cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
-                          BuildDir, DestDir)
+cmd = "%s %s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
+                          BuildDir, DestDir, options.pyver)
 os.system(cmd)
 
 # Do automatic testing
