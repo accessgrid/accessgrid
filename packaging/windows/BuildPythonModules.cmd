@@ -34,11 +34,6 @@ python setup.py clean --all
 python setup.py build
 python setup.py install --prefix=%DEST%  --no-compile
 
-REM cd ..\AccessGrid
-REM python setup.py clean --all
-REM python setup.py build
-REM python setup.py install --prefix=%DEST%  --no-compile
-
 cd ..\pyGlobus
 python setup.py clean --all
 set GLOBUS_LOCATION=%SOURCE%\WinGlobus
