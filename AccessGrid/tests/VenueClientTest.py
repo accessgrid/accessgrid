@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientTest.py,v 1.2 2003-02-17 17:24:59 turam Exp $
+# RCS-ID:      $Id: VenueClientTest.py,v 1.3 2003-02-28 17:41:52 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -25,7 +25,7 @@ from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
 from AccessGrid.VenueClientUIClasses import UrlDialog, UrlDialogCombo
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Utilities import formatExceptionInfo
-from AccessGrid.UIUtilities import ErrorDialog
+from AccessGrid.UIUtilities import MessageDialog
 
 import sys
 from AccessGrid.hosting.pyGlobus.Server import Server
@@ -38,7 +38,7 @@ class VenueClientTest(VenueClient):
     def __init__(self, url):
         VenueClient.__init__(self)
         print '--------------- SET PROFILE'
-        profile = ClientProfile('userProfileExample')
+        profile = ClientProfile('userProfile')
         self.SetProfile(profile)
         self.profile.Dump()
      
