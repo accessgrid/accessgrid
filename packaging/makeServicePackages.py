@@ -10,19 +10,24 @@ directory.
 """
 
 def usage():
-    print "Usage : ", sys.argv[0], " <serviceDir> <optionalOutputDir> "
+    print "Usage : ", sys.argv[0], " <sourceDir> <serviceDir> <optionalOutputDir> "
 
-if len(sys.argv) < 2:
+if len(sys.argv) < 3:
     usage()
+    sys.exit(1)
 
-inputDir = sys.argv[1]
-outputDir = sys.argv[1]
+sourceDir = sys.argv[1]
+agSourceDir = sys.argv[2]
 
-if len(sys.argv) == 3:
-    outputDir = sys.argv[2]
-elif len(sys.argv) > 3:
+inputDir = os.path.join(agSourceDir,'services','node')
+outputDir = inputDir
+
+if len(sys.argv) == 4:
+    outputDir = sys.argv[3]
+elif len(sys.argv) > 4:
     usage()
-
+    sys.exit(1)
+    
 absOutputDir = os.path.abspath(outputDir)
 if not os.path.exists(absOutputDir):
     os.makedirs(absOutputDir)
@@ -39,11 +44,22 @@ for service in services:
 
     servDesc = service + ".svc"
     servImplPy = service + ".py"
-    servImplWin = service + ".exe"
-    servImplLin = service
+    serviceBuildPy = service + '.build.py'
+    serviceManifest = service + '.manifest'
 
     if not os.path.isfile(servDesc):
         continue
+
+    # Execute the service build script
+    if os.path.isfile(serviceBuildPy):
+        print 'Calling build script: ', serviceBuildPy
+        buildCmd = '%s %s %s %s %s' % (sys.executable,
+                                       serviceBuildPy,
+                                       sourceDir,
+                                       agSourceDir,
+                                       outputDir)
+        os.system(buildCmd)
+
     
     # if associated file found, zip em up together in the outputDir
     serviceZipFile = service + ".zip"
@@ -55,11 +71,18 @@ for service in services:
     if os.path.isfile(servImplPy):
         zf.write(servImplPy)
 
-    if os.path.isfile(servImplWin):
-        zf.write(servImplWin)
-
-    if os.path.isfile(servImplLin):
-        zf.write(servImplLin)
+    # Include files from manifest
+    if os.path.isfile(serviceManifest):
+    
+        # Read the service files list
+        f = open(serviceManifest,'r')
+        fileList = f.readlines()
+        f.close()
+    
+        for f in fileList:
+            f = f.strip()
+            if os.path.isfile(f):
+                zf.write(f)
 
     zf.close()
 
