@@ -2,7 +2,7 @@
 Toolkit Initialization Factoring for 2.1.3
 ==========================================
  
-:version: $Revision: 1.1 $
+:version: $Revision: 1.2 $
 :author: Ivan R. Judson <judson@mcs.anl.gov>
 :status: Draft
 
@@ -25,7 +25,9 @@ of interfaces.
 The basic activities that are done during initialization are:
 
 1. Command Line Parsing
+
 2. Logging/Debugging Setup
+
 3. Security Environment Verification
 
   - Globus Initialization
@@ -60,21 +62,20 @@ Application Services          Service       Service Id / User Id
 Summary of Modifications
 ========================
 
-1. Create a Toolkit.CommandLine class with a Parse(self, argc, argv) method.
-2. Create a Toolkit.Service class for services to use to initialize
-3. Modify the Toolkit.Application class to be used only for applications to initialize
-4. Unify the logging initialization
-5. Unify the logging level and debug level
-6. Bring the Linux initialization up to par with the windows initialization
-
+1. Refactor Toolkit.py to support more general configuration, extending it with
+   configuration objects for systemConfig, userConfig, globusConfig.
+2. Sorting out initialization order, removing redundancy, adding consistent 
+   debug logging, and ensuring all initialization is happening on both
+   supported platforms.
+3. Utilize completed platform refactoring, the resulting configuration objects
+   make this AGEP significantly simpler.
+4. Create a Toolkit.CommandLine class with a Parse(self, argc, argv) method.
+5. Create a Toolkit.Service class for services to use to initialize
+6. Unify the logging initialization
+7. Bring the Linux initialization up to par with the windows initialization
    - LinuxInitUserEnv
    - LinuxRegisterMimeType
-
-7. Define the search paths for installed packages and installed applications
-8. Create a set of interfaces for Toolkit wide configurations, like:
-
-   - Turning debugging on and off
-   - Setting the log level
+8. Define the search paths for installed packages and installed applications
 
 Proposed Standard Command Line Arguments
 ----------------------------------------
@@ -85,31 +86,57 @@ Proposed Standard Command Line Arguments
 4. -v|--verbose <level> -- Specify the program to run and print out information the level may be specified.
 5. -c|--config <configuration> -- Specify a configuration for this program to use.
 6. -p|--profile <profile file> -- Specify the profile to use
-7. --x509cert <certificate.pem> -- Specify the certificate to use
-8. --x509key <keyfile.pem> -- Specify the key to use
 
 Module Organization
 -------------------
 
 - Toolkit.py
 
-  - CommandLine
   - Application
-  - Service
 
-- Platform 
+    - CmdlineApplication
+
+    - WXGUIApplication
+
+  - Service
   
-  - Linux.py
-   
 Deprecated Packages
 -------------------
+
+- Toolkit.py
+
+  - ServiceApplicationWithIdentity
+
+  - ServiceApplicationWithInheritedIdentity
 
 Specifications
 ==============
 
-During initialization the following is done:
+During initialization the following is done, by:
 
-1. Check for 
+app = CmdlineApplication.instance() or WXGUIApplication.instance()
+app.Initialize(sys.argv)
+...
+
+or
+
+service = Service.instance()
+service.Initialize(sys.argv)
+...
+
+0. Initialize logging, storing in log data memory 
+1. Process Command Line Arguments
+2. Load the Toolkit wide configuration.
+3. Load the user configuration, creating one if necessary.
+4. Redirect logging to files in the user's directory, purging memory to file
+5. Retrieve the Globus Configuration from the system.
+    (this will implicitly initialize globus if it's not already initialized)
+    (including the GLOBUS_HOSTNAME)
+6. Initialize Certificate Management
+
+If This is an application:
+7. Register agpm.py for handling shared application packages found as data in virtual venues.
+8. Install shared applications from system config package cache, if not installed.
 
 Security Issues
 ===============
@@ -126,14 +153,14 @@ This internal refactoring should not affect interoperability.
 Related AGEPs
 =============
 
-- Platform Refactoring 213
+- AGEP 108: Platform Refactoring 213
 - Authorization Refactoring 213
 - Core Refactoring 213
 
 Implementation
 ==============
 
-FILL IN IMPLEMENTATION
+To Be Completed.
 
 References
 ==========
