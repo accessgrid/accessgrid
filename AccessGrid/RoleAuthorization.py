@@ -6,7 +6,7 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: RoleAuthorization.py,v 1.7 2003-08-15 20:58:30 lefvert Exp $ 
+# RCS_ID:      $Id: RoleAuthorization.py,v 1.8 2003-08-18 15:42:12 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -518,6 +518,7 @@ class AddPeopleDialog(wxDialog):
         
         self.selections.SetValue(self.selectedRole)
         for item in  self.infoDict[self.selectedRole]:
+            print '--------- insert item to addlist ', item
             self.addList.InsertStringItem(0, item)
 
     def __setEvents(self):
@@ -691,8 +692,8 @@ class AddPeopleDialog(wxDialog):
         self.list.SetColumnWidth(0, wxLIST_AUTOSIZE)
         #self.groupList.SetColumnWidth(0, self.groupList.GetSize().GetWidth()-4)
         self.groupList.SetColumnWidth(0, wxLIST_AUTOSIZE)
-        #self.addList.SetColumnWidth(0, self.addList.GetSize().GetWidth()-4)
-        self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
+        self.addList.SetColumnWidth(0, self.addList.GetSize().GetWidth()-4)
+        #self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
 
 class RoleAuthorizationFrame(wxFrame):
     def __init__(self, parent, id, title):
@@ -798,8 +799,9 @@ if __name__ == "__main__":
     app = wxPySimpleApp()
     #roles = RoleAuthorizationFrame(None, -1, "Manage Roles")
     roles = AddPeopleDialog(None, -1, "Manage Roles")
-    roles.Show()
-    app.MainLoop()
+    roles.ShowModal()
+    roles.Destroy()
+    #app.MainLoop()
     #print "destroy"
     #roles.Destroy()
    
