@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.27 2004-07-08 01:59:02 judson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.28 2004-07-08 18:39:35 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.27 2004-07-08 01:59:02 judson Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.28 2004-07-08 18:39:35 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -26,6 +26,7 @@ import time
 
 from pyGlobus.io import GSITCPSocketServer, GSIRequestHandler, GSITCPSocket
 from pyGlobus.io import GSITCPSocketException, IOBaseException, Buffer
+from pyGlobus.ioc import tcp_get_remote_address
 
 from AccessGrid import Log
 from AccessGrid.Events import HeartbeatEvent, ConnectEvent, TextEvent
@@ -134,11 +135,15 @@ class ConnectionHandler:
 	# if we have actually connected to something
 	if self.wfile is not None:
 	    try:
-                mEvent.Write(self.wfile)
-                return 1
+                ret = tcp_get_remote_address(self.wfile.sock._handle)
+                if ret == 0:
+                    log.debug("Writing text event to %s", ret[1])
+                    mEvent.Write(self.wfile)
+                    return 1
+                else:
+                    log.error("Error writing to connection: %d %s", ret[0], ret[1])
             except:
-                log.exception("writeMarshalledEvent write error! (%s)", 
-			      self.subject)
+                log.exception("writeMarshalledEvent write error!")
 	else:
 	    log.info("not sending text event, conn obj is none.")
 
