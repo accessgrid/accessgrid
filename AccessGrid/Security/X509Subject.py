@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: X509Subject.py,v 1.4 2004-03-18 21:39:35 lefvert Exp $
+# RCS-ID:      $Id: X509Subject.py,v 1.5 2004-03-19 16:09:54 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ Subjects are the basic security handle on entities that want to be a
 part of the security environment.
 """
 
-__revision__ = "$Id: X509Subject.py,v 1.4 2004-03-18 21:39:35 lefvert Exp $"
+__revision__ = "$Id: X509Subject.py,v 1.5 2004-03-19 16:09:54 lefvert Exp $"
 
 
 # external imports
@@ -49,9 +49,18 @@ class X509Subject(Subject):
         Return a short form of the CN in an X509Subject object.
 
         @return: name as a string.
+
         """
-        return self.name.split('=')[-1]
+        components = map(lambda a: a.split('='), self.name[1:].split('/'))
+        cn = []
         
+        for item in components:
+            if item[0] == 'CN':
+                cn.append(item[1])
+                
+        return ", ".join(cn)
+            
+                
 def CreateSubjectFromString(subjectString):
     """
     Utility function that creates an X509Subject from a string, which
@@ -63,3 +72,11 @@ def CreateSubjectFromString(subjectString):
     @type subjectString: string.
     """
     return X509Subject(subjectString)
+
+
+if __name__ == "__main__":
+    s = X509Subject("/O=Access Grid/OU=agdev-ca.mcs.anl.gov/OU=mcs.anl.gov/CN=Ivan Judson")
+    print s.GetCN()
+    s = X509Subject('/O=Access Grid/OU=agdev-ca.mcs.anl.gov/OU=mcs.anl.gov/CN=Robert Olson/CN=10435713')
+    print s.GetCN()
+  
