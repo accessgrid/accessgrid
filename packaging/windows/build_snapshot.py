@@ -160,6 +160,12 @@ if checkoutnew:
 # Go to that checkout to build stuff
 #
 
+RunDir = os.path.join(BuildDir, "packaging", "windows")
+
+if verbose:
+    print "Changing to directory: %s" % RunDir
+    
+os.chdir(RunDir)
 
 #
 # Run precompile scripts
