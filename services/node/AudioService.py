@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.20 2004-05-10 19:37:13 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.21 2004-05-12 21:46:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -260,7 +260,7 @@ if __name__ == '__main__':
     # Look for executables in the current directory,
     # since the rat startup script needs to 
     if os.environ.has_key("PATH"):
-        os.environ["PATH"] = os.pathsep.join([os.environ["PATH"],'.'])
+        os.environ["PATH"] = os.pathsep.join(['.',os.environ["PATH"]])
     else:
         os.environ["PATH"] = '.'
 
