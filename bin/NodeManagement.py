@@ -769,6 +769,8 @@ class MyApp(wxApp):
         self.SetTopWindow(frame)
         return true
 
+wxInitAllImageHandlers()
+
 app = MyApp(0)
 
 app.MainLoop()
