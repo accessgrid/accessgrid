@@ -60,8 +60,8 @@ try:
             txtRecord = rendezvous.AllocateTXTRecordRef()
             rendezvous.pyTXTRecordCreate(txtRecord)
             rendezvous.pyTXTRecordSetValue(txtRecord,"url",url)
-            txtRecordLen = rendezvous.TXTRecordGetLength(txtRecord)
-            txtRecordBytes = rendezvous.TXTRecordGetBytesPtr(txtRecord)
+            txtRecordLen = rendezvous.pyTXTRecordGetLength(txtRecord)
+            txtRecordBytes = rendezvous.pyTXTRecordGetBytesPtr(txtRecord)
 
             # Allocate a service discovery reference and register the specified service
             self.serviceRef = rendezvous.AllocateDNSServiceRef()
@@ -79,9 +79,8 @@ try:
                                           None)
 
             if ret != rendezvous.kDNSServiceErr_NoError:
-                print "error %d returned; exiting" % ret
-                return
-
+                raise PublisherError(ret)
+                
             # Get the socket and loop
             fd = rendezvous.DNSServiceRefSockFD(self.serviceRef)
             ret = select.select([fd],[],[])
