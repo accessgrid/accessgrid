@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.13 2003-04-10 19:09:12 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.14 2003-04-21 20:30:58 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,6 +14,7 @@ import os
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
+from AccessGrid import Platform
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
 
 
@@ -59,7 +60,7 @@ class VideoProducerService( AGService ):
 
 
    def Start( self ):
-      __doc__ = """Start service"""
+      """Start service"""
       try:
          
          #
@@ -73,7 +74,8 @@ class VideoProducerService( AGService ):
          #
          # Write vic startup file
          #
-         startupfile = 'VideoProducerService_%d.vic' % ( os.getpid() )
+         startupfile = os.path.join(Platform.GetTempDir(), 
+                         'VideoProducerService_%d.vic' % ( os.getpid() ) )
          f = open(startupfile,"w")
          f.write( vicstartup % (self.configuration["bandwidth"].value, 
                                     self.configuration["framerate"].value, 
@@ -99,6 +101,7 @@ class VideoProducerService( AGService ):
          options.append( '%s/%d' % ( self.streamDescription.location.host, 
                                         self.streamDescription.location.port) )
          self._Start( options )
+         os.remove(startupfile)
       except:
          print "Exception in VideoProducerService.Start", sys.exc_type, sys.exc_value
          raise Exception("Failed to start service")
