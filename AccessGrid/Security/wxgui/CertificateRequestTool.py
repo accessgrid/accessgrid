@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.8 2004-04-26 20:38:54 lefvert Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.9 2004-05-04 20:52:18 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -36,8 +36,8 @@ import md5
 import os
 import os.path
 
-import logging, logging.handlers
-log = logging.getLogger("AG.CertificateRequestTool")
+from AccessGrid import Log
+log = Log.GetLogger(Log.CertificateRequestTool)
 
 #
 # Service type names and descriptions
@@ -71,7 +71,8 @@ class CertificateRequestTool(wxWizard):
 
         wizardId =  wxNewId()
         wxWizard.__init__(self, parent, wizardId,"", wxNullBitmap)
-        self.log = self.GetLog()
+        global log
+        self.log = log
 
         self.log.debug("__init__:Start Certificate Request Wizard")
         
@@ -143,21 +144,6 @@ class CertificateRequestTool(wxWizard):
         
         self.RunWizard(self.page0)
 
-
-    def GetLog(self):
-        """
-        Create a log with our standard format and return it
-        """
-        log = logging.getLogger("AG.CertificateRequestTool")
-        log.setLevel(logging.DEBUG)
-        logFile = os.path.join(Platform.Config.UserConfig.instance().GetConfigDir(), "CertificateRequestTool.log")
-        hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
-        logFormat = "%(asctime)s %(levelname)-5s %(message)s (%(filename)s)"
-        hdlr.setFormatter(logging.Formatter(logFormat))
-        log.addHandler(hdlr)
-        
-        return log
-                         
     def CancelPage(self, event):
         self.log.debug(" CancelPage:Cancel wizard")
         
@@ -1128,10 +1114,6 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
                         
 if __name__ == "__main__":
     pp = wxPySimpleApp()
-
-    h = logging.StreamHandler()
-    h.setLevel(logging.DEBUG)
-    logging.root.addHandler(h)
 
     from AccessGrid import Toolkit
     app = Toolkit.WXGUIApplication()
