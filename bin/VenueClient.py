@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.174 2003-06-27 21:41:29 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.175 2003-06-27 22:02:40 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -569,6 +569,16 @@ class VenueClientUI(wxApp):
             log.debug("EVENT - Add connection: %s" %(connection.name))
             wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, connection)
 
+    def PreEnterVenue(self, URL, back = false):
+        wxCallAfter(self.frame.statusbar.SetStatusText, "trying to enter venue at %s"%URL)
+        #
+        # Check to see if we have a valid grid proxy
+        # If not, run grid proxy init
+        #
+        if not self.app.certificateManager.HaveValidProxy():
+            log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
+            self.app.certificateManager.CreateProxy()
+
     def EnterVenue(self, URL, back = false, warningString="", enterSuccess=AG_TRUE):
         """
         Note: Overridden from VenueClient
@@ -584,7 +594,6 @@ class VenueClientUI(wxApp):
         log.debug("bin.VenueClient::EnterVenue: Enter venue with url: %s"
                   % URL)
 
-        #wxCallAfter(self.frame.statusbar.SetStatusText, "trying to enter venue at %s"%URL)
         #
         # Check to see if we have a valid grid proxy
         # If not, run grid proxy init

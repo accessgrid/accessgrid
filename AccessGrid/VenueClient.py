@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.77 2003-06-27 21:41:29 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.78 2003-06-27 22:02:40 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -322,6 +322,9 @@ class VenueClient( ServiceBase):
         """
         EnterVenue puts this client into the specified venue.
         """
+
+        for s in self.eventSubscribers:
+            s.PreEnterVenue(URL, back)
 
         enterSuccess = AG_TRUE
         try:
