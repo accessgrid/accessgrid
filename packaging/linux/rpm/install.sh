@@ -16,6 +16,8 @@
 # change the variables defined here
 #
 
+export GLOBUS="globus-accessgrid"
+export GLOBUS_VER="2.4-1"
 export FPCONST="fpconst"
 export FPCONST_VER="0.6.0-1"
 export PYGLOBUS="pyGlobus"
@@ -77,6 +79,7 @@ fi
 echo "***********************************************"
 echo "Installing prerequisites" 
 echo "***********************************************"
+Install $GLOBUS $GLOBUS_VER i386
 Install $FPCONST $FPCONST_VER noarch
 Install $SOAPPY $SOAPPY_VER noarch
 Install $PYGLOBUS $PYGLOBUS_VER i386
