@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.11 2003-03-21 16:09:55 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.12 2003-03-24 14:24:57 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -13,17 +13,47 @@
 import os
 import sys
 
+import logging
+
+log = logging.getLogger("AG.Platform")
+
 WinGPI = "wgpi.exe"
 LinuxGPI = "grid-proxy-init"
 
-def GPI():
+def GPICmdline():
+    """
+    Run grid-proxy-init to get a new proxy.
+    """
+    
     GlobusBin = os.path.join(os.environ['GLOBUS_LOCATION'], 'bin')
-    files = os.listdir(GlobusBin)
-    for f in files:
-        if f == WinGPI:
-            os.spawnv(os.P_WAIT, os.path.join(GlobusBin, f), [])
-        elif f == LinuxGPI:
-            print "LINUX %s" % os.path.join(GlobusBin, f)
+
+    gpiPath = os.path.join(GlobusBin, LinuxGPI)
+
+    if os.access(gpiPath, os.X_OK):
+        log.debug("Found grid-proxy-init at %s, not executing", gpiPath)
+
+def GPIWin32():
+    """
+    Run wgpi.exe to get a new proxy.
+    """
+    
+    GlobusBin = os.path.join(os.environ['GLOBUS_LOCATION'], 'bin')
+    
+    gpiPath = os.path.join(GlobusBin, WinGPI)
+
+    if os.access(gpiPath, os.X_OK):
+        log.debug("Excecuting windows gpi at %s", gpiPath)
+        os.spawnv(os.P_WAIT, gpiPath, [])
+
+
+#
+# Determine which grid-proxy-init we should use.
+#
+
+if sys.platform == "win32":
+    GPI = GPIWin32
+else:
+    GPI = GPICmdline
 
 try:
     import _winreg
@@ -92,7 +122,7 @@ def GetInstallDir():
 
 def GetFilesystemFreeSpace(path):
     """
-    Determine the amount of free space available in the filesystem containint <path>.
+    Determine the amount of free space available in the filesystem containing <path>.
 
     Returns a value in bytes.
     """
