@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.88 2003-03-20 22:53:13 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.89 2003-03-21 00:12:17 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -888,7 +888,7 @@ class ExitPanel(wxPanel):
 	#self.button.SetToolTipString(profile.description)
         #self.label = wxStaticText(self, -1, profile.name)
         self.SetToolTipString(profile.description)
-        self.label = wxTextCtrl(self, self.id, "", size= wxSize(30,10),
+        self.label = wxTextCtrl(self, self.id, "", size= wxSize(132,10),
                                 style = wxNO_BORDER|wxTE_MULTILINE|wxTE_RICH)
         self.label.SetValue(profile.name)
         self.label.SetBackgroundColour(wxColour(190,190,190))
