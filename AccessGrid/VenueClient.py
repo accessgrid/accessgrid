@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.57 2003-05-09 16:28:03 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.58 2003-05-12 14:58:29 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -475,7 +475,7 @@ class VenueClient( ServiceBase):
         Subclasses should override this method to perform their specific 
         authorization, calling SendLeadResponse thereafter.
         """
-        response = True
+        response = 1
 
         # For now, the base VenueClient authorizes every Lead request
         self.SendLeadResponse(clientProfile,response)
@@ -562,7 +562,7 @@ class VenueClient( ServiceBase):
         Subclasses should override this method to perform their specific 
         authorization, calling SendFollowResponse thereafter.
         """
-        response = True
+        response = 1
 
         # For now, the base VenueClient authorizes every Lead request
         self.SendFollowResponse(leaderProfile,response)
@@ -582,7 +582,7 @@ class VenueClient( ServiceBase):
             self.leaderProfile = leaderProfile
 
             # send the response
-            Client.Handle( self.leaderProfile.venueClientURL ).get_proxy().FollowResponse(self.profile,True)
+            Client.Handle( self.leaderProfile.venueClientURL ).get_proxy().FollowResponse(self.profile,1)
         else:
             log.debug("Rejecting follow request for: %s", leaderProfile.name)
 
