@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.6 2004-03-12 15:43:09 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.7 2004-03-17 16:45:16 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.6 2004-03-12 15:43:09 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.7 2004-03-17 16:45:16 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -52,6 +52,7 @@ from AccessGrid import Utilities
 from AccessGrid.Security import CertificateRepository, ProxyGen
 from AccessGrid.Security import CRSClient
 from AccessGrid.Security.Utilities import get_certificate_locations
+from AccessGrid import Platform
 
 from OpenSSL_AG import crypto
 
@@ -624,6 +625,7 @@ class CertificateManager(object):
 
             return 1
         except:
+            log.exception("_VerifyGlobusProxy failed")
             return 0
         
     def InitEnvironment(self):
@@ -692,6 +694,7 @@ class CertificateManager(object):
             self._InitEnvWithProxy()
         else:
             self._InitEnvWithCert()
+
 
     def _InitializeCADir(self):
         """
