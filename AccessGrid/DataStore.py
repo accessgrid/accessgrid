@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.4 2003-02-21 17:37:13 olson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.5 2003-02-25 22:21:17 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -30,9 +30,10 @@ import Queue
 import AccessGrid.GUID
 from AccessGrid.Utilities import GetHostname
 from AccessGrid.Descriptions import DataDescription
+from AccessGrid import Platform
 
-#import logging
-#log = logging.getLogger("AG.DataStore")
+import logging
+log = logging.getLogger("AG.DataStore")
 
 class NotAPlainFile(Exception):
     pass
@@ -382,10 +383,6 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             return None
 
         #
-        # Here, we might want to check for available disk space
-        #
-
-        #
         # Query the handler for the pathname we shoudl use
         # to upload the file.
         #
@@ -394,7 +391,31 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if upload_file_path is None:
             self.send_error(404, "Upload file not found")
             return None
+
+        #
+        # See if we have enough disk space for this. Put a 5% fudge factor on the space
+        # available so we won't consume all.
+        #
+
+        try:
+            upload_dir = os.path.dirname(upload_file_path)
+            bytesFree = Platform.GetFilesystemFreeSpace(upload_dir)
+            # bytesFree = 10
+            if bytesFree is None:
+                log.debug("Cannot determine free space for %s", upload_Dir)
+            else:
+                if size > (0.95 * bytesFree):
+                    log.info("Upload failing: not enough disk space. Free=%d needed=%d",
+                             bytesFree, size)
+                    self.send_error(405, "Not enough disk space for upload")
+                    return None
+                else:
+                    log.debug("Allowing upload. Free spae=%d needed=%d",
+                             bytesFree, size)
+        except:
+            log.exception("Platform.GetFilesystemFreeSpace threw exception")
             
+        
 
         #
         # Open up destination file and initialize digest.
