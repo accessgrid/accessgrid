@@ -30,14 +30,17 @@ class CertificateViewerPanel(wxPanel):
         #
 
         boldFont = wxFont(-1, wxDEFAULT, wxNORMAL, wxBOLD)
-        self.bold = bold = wxTextAttr(font = boldFont)
+        self.bold = bold = wxTextAttr()
+        self.bold.SetFont(boldFont)
 
         normalFont = wxFont(-1, wxDEFAULT, wxNORMAL, wxNORMAL)
-        self.normal = normal = wxTextAttr(font = normalFont)
+        self.normal = normal = wxTextAttr()
+        self.normal.SetFont(normalFont)
 
         defaultPoints = self.text.GetFont().GetPointSize()
         hdrFont = wxFont(defaultPoints + 4, wxDEFAULT, wxNORMAL, wxBOLD)
-        self.hdr = hdr = wxTextAttr(font = hdrFont)
+        self.hdr = hdr = wxTextAttr()
+        self.hdr.SetFont(hdrFont)
 
         name = GetCNFromX509Subject(cert.GetSubject())
 
