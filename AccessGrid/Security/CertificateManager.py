@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.21 2004-04-16 20:30:44 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.22 2004-04-21 21:38:35 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.21 2004-04-16 20:30:44 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.22 2004-04-21 21:38:35 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -296,7 +296,8 @@ class CertificateManager(object):
             # We really shouldn't be here. Raise an exception.
             #
 
-            raise Exception, "Receieved RepoAlreadyExists exception after we determined that it didn't actually exist"
+            log.exception("repo already exists")
+            raise Exception, "Received RepoAlreadyExists exception after we determined that it didn't actually exist"
 
         self.InitRepoFromGlobus(self.certRepo)
 
@@ -311,9 +312,12 @@ class CertificateManager(object):
         If we cannot find any globus state, callback to the user interface for that
         as well. That's a harder problem to solve, but it's not up to us down here.
         """
-        userCert = self.globusConfig.GetCertFileName()
-        userKey = self.globusConfig.GetKeyFileName()
-        caDir = self.globusConfig.GetCACertDir()
+        userCert = self.globusConfig.GetDistCertFileName()
+        userKey = self.globusConfig.GetDistKeyFileName()
+        caDir = self.globusConfig.GetDistCACertDir()
+
+        log.debug("Initializing from %s", caDir)
+
 
         # First the user cert.
 
@@ -828,7 +832,7 @@ class CertificateManager(object):
             if os.path.isfile(spath):
                 shutil.copyfile(spath, os.path.join(self.caDir, "%s.signing_policy" % (nameHash)))
 
-        self.globusConfig.SetCACertDir(self.caDir)
+        self.globusConfig.SetActiveCACertDir(self.caDir)
 
     def _InitEnvWithProxy(self):
         """
@@ -867,17 +871,8 @@ class CertificateManager(object):
                   proxyCert.GetPath(),
                   proxyCert.GetNotValidAfterText())
 
-        self.globusConfig.SetProxyFileName(proxyCert.GetPath())
 
-        #
-        # Clear the X509_USER_CERT, X509_USER_KEY, and
-        # X509_RUN_AS_SERVER environment variables,
-        # as their settings will cause the proxy setting to be ignored.
-        #
-
-        self.globusConfig.RemoveCertFileName()
-        self.globusConfig.RemoveKeyFileName()
-        self.globusConfig.RemoveServerFlag()
+        self.globusConfig.SetProxyCert(proxyCert.GetPath())
         
     def _FindProxyCertificatePath(self, identity = None):
         """
@@ -1026,20 +1021,7 @@ class CertificateManager(object):
         certPath = self.defaultIdentity.GetPath()
         keyPath = self.defaultIdentity.GetKeyPath()
 
-        # Ugh. If x509_user_proxy is set in the registry,
-        # X509_RUN_AS_SERVER is ignored.
-
-        self.globusConfig.RemoveProxyFileName()
-
-        self.globusConfig.SetCertFileName(certPath)
-        self.globusConfig.SetKeyFileName(keyPath)
-
-        import pyGlobus.utilc
-        log.debug("PROXY TEST: os='%s' gl='%s'", os.getenv('X509_USER_PROXY'),
-                  pyGlobus.utilc.getenv('X509_USER_PROXY'))
-        log.debug("SERVER TEST: os='%s' gl='%s'",
-                  os.getenv('X509_RUN_AS_SERVER'),
-                  pyGlobus.utilc.getenv('X509_RUN_AS_SERVER'))
+        self.globusConfig.SetUserCert(certPath, keyPath)
 
     def SetDefaultIdentity(self, certDesc):
         """
