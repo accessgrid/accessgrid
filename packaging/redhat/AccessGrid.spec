@@ -4,7 +4,7 @@
 #
 %define	name		AccessGrid
 %define version		2.1.2
-%define release		6
+%define release		7
 %define	prefix		/usr
 %define sysconfdir	/etc/%{name}
 %define sharedir	%{prefix}/share
@@ -37,7 +37,8 @@ Requires:	globus-accessgrid
 Requires:	pyGlobus
 Requires:	logging
 Requires:	pyOpenSSL_AG
-Obsoletes:	AccessGrid-2.0beta AccessGrid-2.1
+Obsoletes:	AccessGrid-2.0alpha
+Obsoletes:	AccessGrid-2.0beta
 
 %description
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
@@ -47,7 +48,6 @@ This module provides the core components to start participating in the Access Gr
 #
 # The following defines the AccessGrid-VenueClient rpm
 # Requires: AccessGrid
-# Obsoletes: AccessGrid-VenueClient-2.0alpha
 #
 %package VenueClient
 Summary:	The Access Grid Toolkit Venue Client
@@ -55,9 +55,8 @@ Version:	%{version}
 Release:	%{release}
 Group:		Utilities/System
 Requires:	AccessGrid = %{version}-%{release}
-Obsoletes:	AccessGrid-AudioService
-Obsoletes:	AccessGrid-VideoProducer
-Obsoletes:	AccessGrid-VideoConsumer
+Obsoletes:	AccessGrid-VenueClient-2.0alpha
+Obsoletes:	AccessGrid-VenueClient-2.0beta
 
 %description VenueClient
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
@@ -67,7 +66,6 @@ This module provides the components needed to connect to an Access Grid Venue.
 #
 # The following defines the AccessGrid-VenueServer rpm
 # Requires: AccessGrid
-# Obsoletes: AccessGrid-VenueServer-2.0alpha
 #
 %package VenueServer
 Summary:	The Access Grid Toolkit Venue Server
@@ -75,7 +73,8 @@ Version:	%{version}
 Release:	%{release}
 Group:		Utilities/System
 Requires:	AccessGrid = %{version}-%{release}
-Obsoletes:	AccessGrid-VenueServer-2.0beta AccessGrid-VenueServer-2.1
+Obsoletes:	AccessGrid-VenueServer-2.0alpha
+Obsoletes:	AccessGrid-VenueServer-2.0beta
 
 %description VenueServer
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
@@ -122,7 +121,6 @@ python2.2 setup.py build
 #
 # The following installs the package in the buildroot,
 # moves the etc directory to the "root" directory,
-# moves the var directory to the "root" directory,
 # until services are starting at boot)
 #
 
@@ -143,7 +141,6 @@ mv %{buildroot}%{prefix}/etc %{buildroot}
 %{sharedir}/%{name}/ag.ico
 %defattr(0755,root,root)
 %{prefix}/bin/AGServiceManager.py
-/etc/init.d/agsm
 
 #
 # Define the files that are to go into the AccessGrid-VenueClient package
@@ -166,10 +163,8 @@ mv %{buildroot}%{prefix}/etc %{buildroot}
 %{prefix}/bin/certmgr.py
 %{prefix}/bin/SetupVideo.py
 %{sharedir}/doc/AccessGrid
-/etc/init.d/agns
 %defattr(0644,root,root)
 %config %{sysconfdir}/AGNodeService.cfg
-%defattr(0644,root,root)
 %config %{sysconfdir}/nodeConfig/defaultLinux
 %defattr(-,root,root)
 %{sysconfdir}/services/
@@ -208,7 +203,7 @@ mv %{buildroot}%{prefix}/etc %{buildroot}
 #
 
 %files BridgeServer
-%defattr(0775,root,root)
+%defattr(0755,root,root)
 %{prefix}/bin/BridgeServer.py
 %{prefix}/bin/QuickBridge
 
@@ -217,7 +212,6 @@ mv %{buildroot}%{prefix}/etc %{buildroot}
 # AccessGrid package postinstall commands
 # - Make a file, /tmp/AccessGrid-Postinstall.py, run it, then delete.
 #   This script will compile all the AccessGrid python modules
-# - Add the agsm service to chkconfig
 #
 
 %post
@@ -247,24 +241,13 @@ EOF
 chmod +x /tmp/AccessGrid-Postinstall.py
 /tmp/AccessGrid-Postinstall.py
 rm -f /tmp/AccessGrid-Postinstall.py
-/sbin/chkconfig --add agsm
-
-#
-# AccessGrid-VenueClient package postinstall
-# - Add the agns service to chkconfig
-#
-
-%post VenueClient
-/sbin/chkconfig --add agns
 
 #
 # AccessGrid package pre-uninstall
-# - Remove the agsm service from chkconfig
 # - Create a file, /tmp/AccessGrid-Preuninstall.py, run it, then delete it.
 #   This script will remove those compiled AccessGrid python modules
 
 %preun
-/sbin/chkconfig --del agsm
 cat <<EOF > /tmp/AccessGrid-Preuninstall.py
 #!/usr/bin/python2.2
 import AccessGrid
@@ -290,12 +273,11 @@ chmod +x /tmp/AccessGrid-Preuninstall.py
 rm -f /tmp/AccessGrid-Preuninstall.py
 
 #
-# AccessGrid-VenueClient pre-uninstall
-# - Remove the agns service from chkconfig
+# AccessGrid-VenueClient post-install
+# - Run SetupVideo to detect video devices
 #
-
-%preun VenueClient
-/sbin/chkconfig --del agns
+%post VenueClient
+/usr/bin/SetupVideo
 
 #
 # After the RPMs have been successfully built remove the temporary build
