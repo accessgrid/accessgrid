@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.220 2004-08-03 19:09:36 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.221 2004-08-09 21:07:07 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.220 2004-08-03 19:09:36 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.221 2004-08-09 21:07:07 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1251,6 +1251,7 @@ class Venue(AuthorizationMixIn):
 
         # Send this before we set up client state, so that
         # we don't end up getting our own enter event enqueued.
+            
         self.DistributeEvent(Event(Event.ENTER, self.uniqueId, clientProfile))
 
         # Create venue client state object
@@ -1300,6 +1301,7 @@ class Venue(AuthorizationMixIn):
         nsd = CreateAGNetworkServiceDescription(networkServiceDescription)
         try:
             self.networkServicesManager.RegisterService(nsd)
+
         except:
             log.exception('Venue.RegisterNetworkService: Failed')
             raise Exception, 'Venue.RegisterNetworkService: Failed'
@@ -1313,6 +1315,7 @@ class Venue(AuthorizationMixIn):
         nsd = CreateAGNetworkServiceDescription(networkServiceDescription)
         try:
             self.networkServicesManager.UnRegisterService(nsd)
+            
         except:
             log.exception('Venue.UnRegisterNetworkService: Failed')
             raise Exception, 'Venue.UnRegisterNetworkService: Failed'
@@ -2896,8 +2899,17 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         profile struct cannot be converted to a real client
         profile.
         """
+        
         clientProfile = CreateClientProfile(clientProfileStruct)
 
+        # Rebuild the profile
+        if self.impl.servicePtr.GetOption("insecure"):
+            subject = Subject.Subject("", auth_type=None)
+            clientProfile.distinguishedName = ""
+        else:
+            subject = self._GetCaller()
+            clientProfile.distinguishedName = subject.name
+        
         try:
             self.impl.UpdateClientProfile(clientProfile)
         except:
