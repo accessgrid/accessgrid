@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.45 2004-04-13 18:45:20 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.46 2004-04-13 20:25:37 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.45 2004-04-13 18:45:20 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.46 2004-04-13 20:25:37 judson Exp $"
 
 # Standard imports
 import os
@@ -283,7 +283,7 @@ class Application(AppBase):
        self.certificateManager = \
             CertificateManager.CertificateManager(configDir, self.certMgrUI)
 
-       self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
+       self.certMgrUI.InitGlobusEnvironment()
 
        # 6. Do one final check, if we don't have a default
        #    Identity we warn them, but they can still request certs.
@@ -294,13 +294,58 @@ class Application(AppBase):
            
        return argvResult
 
-class CmdlineApplication(Application):
+class CmdlineApplication(AppBase):
     """
     An application that's going to run without a gui.
     """
+    # The singleton
+    theAppInstance = None
+    
+    # The class method for retrieving/creating the singleton
+    def instance():
+        """
+        The interface for getting the one true instance of this object.
+        """
+        if CmdlineApplication.theAppInstance == None:
+            CmdlineApplication()
+         
+        return CmdlineApplication.theAppInstance
+      
+    instance = staticmethod(instance)
+
+    # The real constructor
     def __init__(self):
-        Application.__init__(self)
+        """
+        The application constructor that enforces the singleton pattern.
+        """
+        AppBase.__init__(self)
+       
+        if CmdlineApplication.theAppInstance is not None:
+            raise Exception, "Only one instance of Application is allowed"
+       
+        # Create the singleton instance
+        CmdlineApplication.theAppInstance = self
         self.certMgrUI = CertificateManager.CertificateManagerUserInterface()
+
+    def Initialize(self, name=None):
+        argvResult = AppBase.Initialize(self, name)
+        
+        # 5. Initialize Certificate Management
+        # This has to be done by sub-classes
+        configDir = self.userConfig.GetConfigDir()
+        self.certificateManager = \
+             CertificateManager.CertificateManager(configDir, self.certMgrUI)
+
+        self.certMgrUI.InitGlobusEnvironment()
+        
+        # 6. Do one final check, if we don't have a default
+        #    Identity we warn them, but they can still request certs.
+        #
+        if self.GetDefaultSubject() is None:
+            self.log.warn("Toolkit initialized with no default identity.")
+            self.log.warn("Exiting because there's no default identity.")
+           
+        return argvResult
 
 class WXGUIApplication(Application):
     def __init__(self):
