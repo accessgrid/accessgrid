@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.50 2004-03-16 07:00:30 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.51 2004-03-18 19:53:27 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.50 2004-03-16 07:00:30 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.51 2004-03-18 19:53:27 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -574,7 +574,7 @@ class AGNodeService:
         try:
             services = self.GetServices()
             for service in services:
-                capabilitySubset = AGServiceIW( service.uri ).GetCapabilities().data
+                capabilitySubset = AGServiceIW( service.uri ).GetCapabilities()
                 capabilities = capabilities + capabilitySubset
 
         except:
