@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.249 2003-09-10 15:07:06 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.250 2003-09-11 22:02:27 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -243,14 +243,16 @@ class VenueClientFrame(wxFrame):
                                 "Configure your node")
         self.menubar.Append(self.preferences, "&Preferences")
         self.myVenues = wxMenu()
+        self.myVenues.Append(self.ID_MYVENUE_SETDEFAULT, "Set as default venue",
+                             "Set current venue as default")
+        self.myVenues.AppendSeparator()
+        
         self.myVenues.Append(self.ID_MYVENUE_ADD, "Add &Current Venue",
                              "Add this venue to your list of venues")
         self.myVenues.Append(self.ID_MYVENUE_EDIT, "Edit My &Venues...",
                              "Edit your venues")
-        self.myVenues.Append(self.ID_MYVENUE_SETDEFAULT, "Set as default venue",
-                             "Set current venue as default")
         self.myVenues.AppendSeparator()
-
+        
         self.menubar.Append(self.myVenues, "My Ven&ues")
 
               
@@ -342,7 +344,9 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
 
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
+        self.menubar.Enable(self.ID_MYVENUE_SETDEFAULT, false)
         self.menubar.Enable(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES, false)
+        
 
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, false)
 
@@ -352,6 +356,8 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, true)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
         self.menubar.Enable(self.ID_MYVENUE_ADD, true)
+        self.menubar.Enable(self.ID_MYVENUE_SETDEFAULT, true)
+        
         # Only show administrate button when you can administrate a venue.
         if self.app.isVenueAdministrator:
             self.menubar.Enable(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES, true)
