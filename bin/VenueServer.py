@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.27 2003-05-28 18:37:42 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.28 2003-05-29 20:22:42 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,6 +29,7 @@ configFile = None
 logFile = "VenueServer.log"
 identityCert = None
 identityKey = None
+log = None
 
 # Signal Handler for clean shutdown
 def SignalHandler(signum, frame):
@@ -42,6 +43,7 @@ def SignalHandler(signum, frame):
 
 # Authorization callback for the server
 def AuthCallback(server, g_handle, remote_user, context):
+    global log
     log.debug("Server gets identity %s", remote_user)
     return 1
 
@@ -56,7 +58,7 @@ def Usage():
 
 def main():
     global port, configFile, logFile, identityKey, identityCert
-    global venueServer, hostingEnvironment
+    global venueServer, hostingEnvironment, log
 
     # Parse command line options
     try:
