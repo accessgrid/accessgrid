@@ -5,7 +5,7 @@ import string
 
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid.Descriptions import ConnectionDescription
+from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
 from AccessGrid.Descriptions import Capability, StreamDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
@@ -21,53 +21,61 @@ venueServer = Client.Handle(venueServerUri).get_proxy()
 cp = ConfigParser.ConfigParser()
 cp.read(configFile)
 venues = {}
-connections = {}
 
+# We do this in two iterations because we need valid URLs for connections
 for sec in cp.sections():
-    venues[sec] = {}
-    venues[sec]['name'] = cp.get(sec, 'name')
-    venues[sec]['description'] = cp.get(sec, 'description')
-    print "VD #%s : %s" % (sec, venues[sec]['name'])
-    venues[sec]['uri'] = venueServer.AddVenue(venues[sec]['name'],
-                                              venues[sec]['description'])
+    # Build Venue Descriptions
+    venues[sec] = VenueDescription(cp.get(sec, 'name'),
+                                   cp.get(sec, 'description'))
+
+    # Make the venue, then store the resulting URL
+    print "VD #%s : %s" % (sec, venues[sec].name)
+    venues[sec].uri = venueServer.AddVenue(venues[sec])
+    
     if cp.has_option(sec, 'default'):
-        venueServer.SetDefaultVenue(venues[sec]['uri'])
-    cp.set(sec, 'uri', venues[sec]['uri'])
+        venueServer.SetDefaultVenue(venues[sec].uri)
 
-for sec in cp.sections():
-    connections[sec] = []
-    exits = string.split(cp.get(sec, 'exits'), ', ')
-    print "CE #%s : %s ( %s )" % (sec, venues[sec]['name'], str(exits))
-    for x in exits:
-        if venues.has_key(x):
-            connections[sec].append(ConnectionDescription(venues[x]['name'],
-                                                          venues[x]['description'],
-                                                          venues[x]['uri']))
-        else:
-            print "Error finding description for venue: ", x
-    vcap = Capability(Capability.PRODUCER, Capability.VIDEO)
+    cp.set(sec, 'uri', venues[sec].uri)
+
+    # Static Video
     if cp.has_option(sec, 'video'):
         (host, port) = string.split(cp.get(sec, 'video'), ':')
-    vsd = StreamDescription(venues[sec]['name'], "Static Video",
-                            MulticastNetworkLocation(host.strip(),
-                                                     int(port), 127), vcap)
-    vsd.static = 1
-    acap = Capability(Capability.PRODUCER, Capability.AUDIO)
+        vcap = Capability(Capability.PRODUCER, Capability.VIDEO)
+        vsd = StreamDescription(venues[sec].name, "Static Video",
+                                MulticastNetworkLocation(host.strip(),
+                                                         int(port), 127),
+                                vcap, 1)
+        venues[sec].streams.append(vsd)
+        
+    # Static Audio
     if cp.has_option(sec, 'audio'):
         (host, port) = string.split(cp.get(sec, 'audio'), ':')
-    asd = StreamDescription(venues[sec]['name'], "Static Audio",
-                            MulticastNetworkLocation(host.strip(),
-                                                     int(port), 127), acap)
-    asd.static = 1
-    venue = Client.Handle(venues[sec]['uri']).get_proxy()
-    print "Name: %s URI: %s" % (venues[sec]['name'], venues[sec]['uri'])
-    venue.SetConnections(connections[sec])
-    venue.AddStream(asd)
-    venue.AddStream(vsd)
-    print "Encryption: %s" % venue.GetEncryptMedia()
-    venue.SetEncryptMedia(0)
+        acap = Capability(Capability.PRODUCER, Capability.AUDIO)
+        asd = StreamDescription(venues[sec].name, "Static Audio",
+                                MulticastNetworkLocation(host.strip(),
+                                                         int(port), 127),
+                                acap, 1)
 
-    
+        venues[sec].streams.append(asd)
+
+for sec in cp.sections():
+    # Build up connections
+    current = venues[sec].connections
+    exits = string.split(cp.get(sec, 'exits'), ', ')
+    print "CE #%s : %s ( %s )" % (sec, venues[sec].name, str(exits))
+    for x in exits:
+        if venues.has_key(x):
+            current.append(ConnectionDescription(venues[x].name,
+                                                 venues[x].description,
+                                                 venues[x].uri))
+        else:
+            print "Error finding description for venue: ", x
+
+    # Set the connections on the given venue
+    print "CD #%s/%s: %s" % (sec, venues[sec].name, cp.get(sec, 'exits'))
+    venue = Client.Handle(venues[sec].uri).get_proxy()
+    venue.SetConnections(venues[sec].connections)
+
 
 
 
