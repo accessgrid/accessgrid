@@ -23,6 +23,9 @@ from AccessGrid.Platform import GetUserConfigDir
 logFile = os.path.join(GetUserConfigDir(), 'BridgeServer.log')
 
 
+class InvalidVenueUrl(Exception):
+    pass
+
 class BridgeFactory:
     """
     The BridgeFactory class is used to create and manage Bridges.
@@ -154,7 +157,8 @@ class BridgeServer:
         by the BridgeServer
         """
         self.log.debug("Method BridgeServer.AddVenue called")
-        self.venues[venueUrl] = Venue(venueUrl, self.providerProfile, self.bridgeFactory)
+        venue = Venue(venueUrl, self.providerProfile, self.bridgeFactory)
+        self.venues[venueUrl] = venue
 
     def RemoveVenue(self, venueUrl):
         """
@@ -240,6 +244,12 @@ class Venue:
         self.bridgeFactory = bridgeFactory
 
         self.venueProxy = Client.Handle(venueUrl).GetProxy()
+
+        try:
+            self.venueProxy._IsValid()
+        except:
+            raise InvalidVenueUrl
+
         self.bridges = dict()
         self.queue = Queue.Queue()
         self.running = 1
@@ -267,8 +277,6 @@ class Venue:
         (self.eventServiceLocation, self.channelId) = self.venueProxy.GetEventServiceLocation()
 
         # Set up event client
-        print "Connecting event client "
-        print "   ", self.privateId, self.eventServiceLocation, self.channelId
         self.eventClient = EventClient(self.privateId, self.eventServiceLocation, self.channelId)
         self.eventClient.start()
         self.eventClient.Send(ConnectEvent(self.channelId, self.privateId))
@@ -406,7 +414,6 @@ class Venue:
                 else:
                   self.log.debug("- venue unreachable")
             except EventClientWriteDataException:
-                print "connected ? ", self.eventClient.connected
                 if not self.eventClient.connected:
                   self.log.debug("Connection lost; shutting down venue")
                   self.RemoveBridges()
@@ -482,10 +489,8 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|
                         <--venue venueUrl>>
                         <--venueFile venueUrlFile>|
                        <--qbexec quickbridgeExecutable>
-                       [--cert certpath]
-                       [--key keypath]
-                       [--name name]
-                       [--location location]
+                       <--name name>
+                       <--location location>
                        [-h|--help]
                        [-d|--debug]
 """
@@ -519,8 +524,6 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|
                                    "venue=",
                                    "venueFile=",
                                    "qbexec=",
-                                   #"cert=",
-                                   #"key=",
                                    "name=",
                                    "location="
                                    ])
@@ -542,7 +545,7 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|
             venueServerFile = arg
         elif opt == '--venue':
             venueUrl = arg
-        elif opt == '--file':
+        elif opt == '--venueFile':
             venueFile = arg
         elif opt == '--qbexec':
             qbexec = arg
@@ -550,10 +553,6 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|
             debugMode = 1
         elif opt in ('--logfile', '-l'):
             logFile = arg
-        elif opt == "--key":
-            identityKey = arg
-        elif opt == "--cert":
-            identityCert = arg
         elif opt == "--name": 
             name = arg
         elif opt == "--location":
@@ -585,10 +584,6 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|
             venueFile = GetConfigVal(config,"venueFile")
         if not qbexec: 
             qbexec = GetConfigVal(config,"qbexec")
-        if not identityCert: 
-            identityCert = GetConfigVal(config,"cert")
-        if not identityKey: 
-            identityKey = GetConfigVal(config,"key")
         if not name: 
             name = GetConfigVal(config,"name")
         if not location: 
@@ -597,12 +592,24 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|
             logFile = GetConfigVal(config,"logFile")
 
     # catch bad arguments
+    if (venueServerUrl!=None) + (venueServerFile!=None) + (venueUrl!=None) + (venueFile!=None) ==0:
+        print "* Error : One of venueServer|venueServerFile|venue|venueFile args must be specified"
+        usage()
+        sys.exit(1)
     if (venueServerUrl!=None) + (venueServerFile!=None) + (venueUrl!=None) + (venueFile!=None) > 1:
-        print "* Error : Only one of venueServer|venueServerFile|venue|file args can be specified"
+        print "* Error : Only one of venueServer|venueServerFile|venue|venueFile args can be specified"
+        usage()
+        sys.exit(1)
+    if not name:
+        print "* Error : name option must be specified"
+        usage()
+        sys.exit(1)
+    if not location:
+        print "* Error : location option must be specified"
         usage()
         sys.exit(1)
     if not qbexec:
-        print "* Error : Quickbridge executable not given"
+        print "* Error : Quickbridge executable must be specified"
         usage()
         sys.exit(1)
     else:
@@ -611,21 +618,9 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|
             print "          (%s)" % (qbexec,)
             sys.exit(1)
 
-    # Initialize the application
-    if identityCert is not None or identityKey is not None:
-        # Sanity check on identity cert stuff
-        if identityCert is None or identityKey is None:
-            print "Both a certificate and key must be provided"
-            sys.exit(0)
-
-        # Init toolkit with explicit identity.
-        app = Toolkit.ServiceApplicationWithIdentity(identityCert, identityKey)
-
-    else:
-        # Init toolkit with standard environment.
-        app = Toolkit.CmdlineApplication()
+    # Init toolkit with standard environment.
+    app = Toolkit.CmdlineApplication()
     app.InitGlobusEnvironment()
-
 
 
     # Determine venue(s) to bridge
@@ -637,12 +632,18 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|
         print "vslist = ", venueServerList
         for venueServerUrl in venueServerList:
             print "Retrieving venues from venue server : ", venueServerUrl
-            venueDescList = Client.Handle(venueServerUrl).GetProxy().GetVenues()
-            venueList += map( lambda venue: venue.uri, venueDescList )
+            try:
+                venueDescList = Client.Handle(venueServerUrl).GetProxy().GetVenues()
+                venueList += map( lambda venue: venue.uri, venueDescList )
+            except:
+                print "Can't get venues from venue server: ", venueServerUrl, "; skipping"
     elif venueServerUrl:
         print "Retrieving venues from venue server : ", venueServerUrl
-        venueDescList = Client.Handle(venueServerUrl).GetProxy().GetVenues()
-        venueList = map( lambda venue: venue.uri, venueDescList )
+        try:
+            venueDescList = Client.Handle(venueServerUrl).GetProxy().GetVenues()
+            venueList = map( lambda venue: venue.uri, venueDescList )
+        except:
+            print "Can't get venues from venue server: ", venueServerUrl, "; skipping"
     elif venueFile:
         # Bridge venues specified in the given file
         print "Retrieving venues from file :", venueFile
@@ -666,9 +667,12 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|
     # Bridge those venues !
     for venueUrl in venueList:
         venueUrl = venueUrl.strip()
-        print "venueUrl = ", venueUrl
+        print "Bridging venue:", venueUrl
         if len(venueUrl):
-            bridgeServer.AddVenue(venueUrl)
+            try:
+                bridgeServer.AddVenue(venueUrl)
+            except InvalidVenueUrl:
+                print "Bad venue url: ", venueUrl, "; skipping."
 
     # Loop main thread
     while bridgeServer.IsRunning():
