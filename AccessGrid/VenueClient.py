@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.140 2004-03-05 02:29:01 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.141 2004-03-08 22:20:02 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.140 2004-03-05 02:29:01 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.141 2004-03-08 22:20:02 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -140,7 +140,7 @@ class VenueClient:
         self.exitingLock = threading.Lock()
 
         self.venueUri = None
-        self.venueProxy = None
+        self.__venueProxy = None
 
         # Cache profiles in case we need to look at them later.
         # specifically, the cache makes it easier to add roles when
@@ -161,7 +161,7 @@ class VenueClient:
         self.textClient = None
         self.venueState = None
         self.venueUri = None
-        self.venueProxy = None
+        self.__venueProxy = None
         self.privateId = None
 
     def __CreatePersonalDataStore(self):
@@ -388,10 +388,10 @@ class VenueClient:
     def UpdateServiceEvent(self, event):
         log.debug("UpdateServiceEvent: Got Update Service Event")
 
-        data = event.data
-        self.venueState.UpdateService(data)
-        for s in self.eventSubscribers:
-            s.UpdateServiceEvent(event)
+        service = event.data
+        self.venueState.UpdateService(service)
+        for s in self.observers:
+            s.UpdateService(service)
 
     def RemoveServiceEvent(self, event):
         log.debug("RemoveServiceEvent: Got Remove Service Event")
@@ -411,10 +411,10 @@ class VenueClient:
 
     def UpdateApplicationEvent(self, event):
         log.debug("UpdateApplicationEvent: Got Update Application Event")
-        data = event.data
-        self.venueState.UpdateApplication(data)
-        for s in self.eventSubscribers:
-            s.UpdateApplicationEvent(event)
+        app = event.data
+        self.venueState.UpdateApplication(app)
+        for s in self.observers:
+            s.UpdateApplication(app)
 
     def RemoveApplicationEvent(self, event):
         log.debug("RemoveApplicationEvent: Got Remove Application Event")
@@ -542,10 +542,6 @@ class VenueClient:
 
         enterSuccess = 1
         try:
-            # Exit the venue you are currently in before entering a new venue
-            if self.isInVenue:
-                self.ExitVenue()
-
             # Get capabilities from your node
             errorInNode = 0
             #haveValidNodeService = 0
@@ -563,10 +559,10 @@ class VenueClient:
             # Enter the venue
             #
             self.venueUri = URL
-            self.venueProxy = VenueIW(URL)
+            self.__venueProxy = VenueIW(URL)
 
             log.debug("EnterVenue: Invoke venue enter")
-            (venueState, self.privateId, self.streamDescList ) = self.venueProxy.Enter( self.profile )
+            (venueState, self.privateId, self.streamDescList ) = self.__venueProxy.Enter( self.profile )
 
             self.venueState = CreateVenueState(venueState)
             
@@ -619,7 +615,7 @@ class VenueClient:
             #
             # Get personaldatastore information
             #
-            self.dataStoreUploadUrl = self.venueProxy.GetUploadDescriptor()
+            self.dataStoreUploadUrl = self.__venueProxy.GetUploadDescriptor()
         
             #
             # Connect the venueclient to the text client
@@ -671,8 +667,6 @@ class VenueClient:
                 log.exception("EnterVenue: failed")
                 # pass a flag to UI if we fail to enter.
                 enterSuccess = 0
-                # put error in warningString, in redesign will be raised to UI as exception.
-                self.warningString = str(e.faultstring)
                 
         except Exception, e:
             log.exception("EnterVenue: failed")
@@ -789,7 +783,7 @@ class VenueClient:
             log.exception("ExitVenue: On text client exiting")
         
         try:
-            self.venueProxy.Exit( self.privateId )
+            self.__venueProxy.Exit( self.privateId )
             
         except Exception, e:
             log.exception("ExitVenue: ExitVenue exception")
@@ -801,8 +795,8 @@ class VenueClient:
             except Exception, e:
                 log.info("ExitVenue: Don't have a node service")
 
-            log.info("ExitVenue: Stopping node services")
             if self.nodeService:
+                log.info("ExitVenue: Stopping node services")
                 self.nodeService.StopServices()
                 self.nodeService.SetStreams([])
 
@@ -1137,30 +1131,30 @@ class VenueClient:
     #
 
     def UpdateClientProfile(self,profile):
-        self.venueProxy.UpdateClientProfile(profile)
+        self.__venueProxy.UpdateClientProfile(profile)
         
     def CreateApplication(self, appName, appDescription, appMimeType):
-        self.venueProxy.CreateApplication(appName,appDescription,appMimeType)
+        self.__venueProxy.CreateApplication(appName,appDescription,appMimeType)
 
     def DestroyApplication(self,appId):
-        self.venueProxy.DestroyApplication(appId)
+        self.__venueProxy.DestroyApplication(appId)
         
     def UpdateApplication(self,appDescription):
-        self.venueProxy.UpdateApplication(appDescription)
+        self.__venueProxy.UpdateApplication(appDescription)
         
     def AddService(self,serviceDescription):
         try:
-            self.venueProxy.AddService(serviceDescription)
+            self.__venueProxy.AddService(serviceDescription)
         except Exception,e:
             if e.faultstring == "ServiceAlreadyPresent":
                 raise ServiceAlreadyPresent
             raise
 
     def UpdateService(self,serviceDescription):
-        self.venueProxy.UpdateService(serviceDescription)
+        self.__venueProxy.UpdateService(serviceDescription)
             
     def RemoveService(self,serviceDescription):
-        self.venueProxy.RemoveService(serviceDescription)
+        self.__venueProxy.RemoveService(serviceDescription)
         
     def RemoveData(self, data):
         """
@@ -1178,7 +1172,7 @@ class VenueClient:
     
         if data.type == None or data.type == 'None':
             # Venue data
-            self.venueProxy.RemoveData(data)
+            self.__venueProxy.RemoveData(data)
             
         elif(data.type == self.profile.publicId):
             # My data
@@ -1194,13 +1188,20 @@ class VenueClient:
         
         if data.type == None or data.type == 'None':
             # Venue data
-            self.venueProxy.ModifyData(data)
+            try:
+                self.__venueProxy.ModifyData(data)
+            except:
+                log.exception("Error modifying data")
+                raise
             
         elif(data.type == self.profile.publicId):
             # My data
-            self.dataStore.ModifyData(data)
-            self.eventClient.Send(UpdateDataEvent(self.GetEventChannelId(), data))
-            
+            try:
+                self.dataStore.ModifyData(data)
+                self.eventClient.Send(UpdateDataEvent(self.GetEventChannelId(), data))
+            except:
+                log.exception("Error modifying personal data")
+                raise
         else:
             # Ignore this until we have authorization in place.
             raise NotAuthorizedError
@@ -1334,7 +1335,7 @@ class VenueClient:
             log.debug("GetPersonalData: The client has been queried for personal %s" %clientProfile.name)
             
     def GetSubjectRoles(self):
-        return self.venueProxy.DetermineSubjectRoles()
+        return self.__venueProxy.DetermineSubjectRoles()
         
                          
     #
@@ -1360,10 +1361,12 @@ class VenueClient:
         return self.nodeServiceUri
 
     def SetVideoEnabled(self,enableFlag):
-        self.nodeService.SetServiceEnabledByMediaType("video",enableFlag)
+        if self.nodeService:
+            self.nodeService.SetServiceEnabledByMediaType("video",enableFlag)
         
     def SetAudioEnabled(self,enableFlag):
-        self.nodeService.SetServiceEnabledByMediaType("audio",enableFlag)
+        if self.nodeService:
+            self.nodeService.SetServiceEnabledByMediaType("audio",enableFlag)
 
     #
     # User Info
