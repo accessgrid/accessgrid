@@ -5,7 +5,7 @@
 # Author:      Robert Olson, Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.7 2003-01-24 04:28:41 judson Exp $
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.8 2003-01-24 21:20:18 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ class MulticastAddressAllocator:
         return self.addressMask
 
     def SetAddressAllocationMethod( self, method ):
-        self.addressAlloctionMethod = method
+        self.addressAllocationMethod = method
 
     def GetAddressAllocationMethod( self ):
         return self.addressAllocationMethod
