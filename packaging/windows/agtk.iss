@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.47 2004-04-07 03:20:14 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.48 2004-04-07 03:25:40 judson Exp $
 ;
 
 ; Set externally
@@ -204,15 +204,16 @@ Name: {pf}\Access Grid Toolkit; Type: filesandordirs
 [Code]
 var
   PythonPath : String;
-  DefaultVersion := {#PythonVersion};
+  DefaultVersion : String;
 
 function GetPythonDir(): String;
 begin
+  DefaultVersion := {#PythonVersion};
+
   if not RegQueryStringValue(HKLM, 'Software\Python\PythonCore\2.2\InstallPath', '', PythonPath) then
 	begin
 		PythonPath := 'C:\Python22';
     end;
     return PythonPath;
 end;
-
 
