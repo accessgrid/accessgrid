@@ -1,11 +1,8 @@
 #-----------------------------------------------------------------------------
 # Name:        Server.py
 # Purpose:     
-#
-# Author:      Ivan R. Judson, Robert D. Olson
-#
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.15 2004-06-25 15:56:54 eolson Exp $
+# RCS-ID:      $Id: Server.py,v 1.16 2004-07-12 14:16:02 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +11,7 @@ SOAPpy server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.15 2004-06-25 15:56:54 eolson Exp $"
+__revision__ = "$Id: Server.py,v 1.16 2004-07-12 14:16:02 judson Exp $"
 
 # External imports
 import urlparse
