@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.34 2003-10-13 20:56:33 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.35 2004-02-23 16:49:35 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.34 2003-10-13 20:56:33 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.35 2004-02-23 16:49:35 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -44,11 +44,13 @@ import shutil
 import logging
 import getpass
 import sys
+import time
 
 from AccessGrid import Platform
 from AccessGrid import CertificateRepository
-from  AccessGrid.hosting.pyGlobus import ProxyGen
+from AccessGrid.hosting.pyGlobus import ProxyGen
 from AccessGrid import CRSClient
+from AccessGrid import Utilities
 
 import pyGlobus.sslutilsc
 
@@ -376,7 +378,7 @@ class CertificateManager(object):
 
                     except CertificateRepository.RepoInvalidCertificate:
                         log.exception("invalid cert on import")
-                        self.GetUserInterface().ReportError("Your globus certificate is invalid; ignoring it.")
+                        self.GetUserInterface().ReportError("Your globus certificate is invalid or already present; not importing.")
                         break
 
                     except CertificateRepository.RepoBadPassphrase:
@@ -471,6 +473,33 @@ class CertificateManager(object):
 
         return impCert
         
+    def CheckValidity(self, cert):
+        """
+        Check a certificate for validity.
+        
+        Return "Expired", "OK", "Not yet valid", "Invalid CA Chain"
+        """
+
+        now = time.time()
+        notbefore = cert.GetNotValidBefore()
+        notafter = cert.GetNotValidAfter()
+
+        if now < notbefore:
+            valid = "Not yet valid"
+        elif now > notafter:
+            valid = "Expired"
+        else:
+            #
+            # Check the certificate path.
+            #
+
+            if self.VerifyCertificatePath(cert):
+                valid = "OK"
+            else:
+                valid = "Invalid CA chain"
+
+        return valid
+
     def VerifyCertificatePath(self, cert):
         """
         Verify that we have CA certificates for the issuing chain of this cert.
@@ -512,6 +541,46 @@ class CertificateManager(object):
             c = issuers[0]
 
         return good
+
+    def GetCertificatePath(self, cert):
+        """
+        Return the certification path for cert.
+        """
+
+        path = []
+        repo = self.GetCertificateRepository()
+        c = cert
+        checked = {}
+        while 1:
+            subj = str(c.GetSubject())
+            path.append(c)
+            if c.GetSubject().get_der() == c.GetIssuer().get_der():
+                break
+
+            #
+            # If we come back to a place we've been before, we're in a cycle
+            # and won't get anywhere. Bail.
+            #
+
+            if subj in checked:
+                return 0
+            checked[subj] = 1
+            
+            issuers = repo.FindCertificatesWithSubject(str(c.GetIssuer()))
+
+            validIssuers = filter(lambda x: not x.IsExpired(), issuers)
+
+            #
+            # Find an issuer to return. If none is valid, pick one to return.
+            #
+            if len(validIssuers) == 0:
+                if len(issuers) > 0:
+                    path.append(issuers[0])
+                break
+            
+            c = issuers[0]
+
+        return path
 
     def GetUserInterface(self):
         return self.userInterface
@@ -679,7 +748,8 @@ class CertificateManager(object):
             spath = c.GetFilePath("signing_policy")
             if os.path.isfile(spath):
                 shutil.copyfile(spath, os.path.join(self.caDir, "%s.signing_policy" % (nameHash)))
-        os.environ['X509_CERT_DIR'] = self.caDir
+        import win32api
+        Utilities.setenv('X509_CERT_DIR', win32api.GetShortPathName(self.caDir))
 
     def _InitEnvWithProxy(self):
         """
@@ -716,9 +786,9 @@ class CertificateManager(object):
                   str(defaultIdentity.GetSubject()))
         log.debug("Proxy %s will expire %s",
                   proxyCert.GetPath(),
-                  proxyCert.GetNotValidAfter())
+                  proxyCert.GetNotValidAfterText())
 
-        os.environ['X509_USER_PROXY'] = proxyCert.GetPath()
+        Utilities.setenv('X509_USER_PROXY', proxyCert.GetPath())
 
         #
         # Clear the X509_USER_CERT, X509_USER_KEY, and
@@ -727,8 +797,7 @@ class CertificateManager(object):
         #
 
         for envar in ('X509_USER_CERT', 'X509_USER_KEY', 'X509_RUN_AS_SERVER'):
-            if envar in os.environ:
-                del os.environ[envar]
+            Utilities.unsetenv(envar)
 
     def _FindProxyCertificatePath(self, identity = None):
         """
@@ -879,6 +948,51 @@ class CertificateManager(object):
         return proxyCert
     
 
+    def GetGlobusProxyCert(self):
+        """
+        Perform some exhaustive checks to see if there
+        is a valid globus proxy in place.
+
+        This is similar to _VerifyGlobusProxy() above, but does not
+        do validity checking. It is here for the purposes of returning
+        the proxy info to the user (for the cert mgr interface), expired
+        or not.
+        """
+
+        userProxy = self._FindProxyCertificatePath()
+        self.proxyPath = userProxy
+
+        #
+        # The basic scheme here is to test for the various possibilities
+        # of *failure* for there to be a valid cert, and raise the appropriate
+        # exception for each. If we get to the end, we're still in the running
+        # and we can set up the environment.
+        #
+        # Doing it this way makes the code more readable than a deeply-nested
+        # set of if-tests that culminate with success down deep in the nesting.
+        # It also makes it easier to add additional tests if necessary.
+        #
+
+        #
+        # Check to see if the proxy file exists.
+        #
+
+        if not os.path.isfile(userProxy):
+            raise NoProxyFound
+        
+        #
+        # Check to see if the proxy file is actually a certificate
+        # of some sort.
+        #
+        
+        try:
+            proxyCert = CertificateRepository.Certificate(userProxy)
+
+        except crypto.Error:
+            raise NoProxyFound
+
+        return proxyCert
+
     def _InitEnvWithCert(self):
 
         log.debug("Initializing environment with unencrypted user cert %s",
@@ -887,11 +1001,10 @@ class CertificateManager(object):
         certPath = self.defaultIdentity.GetPath()
         keyPath = self.defaultIdentity.GetKeyPath()
 
-        if 'X509_USER_PROXY' in os.environ:
-            del os.environ['X509_USER_PROXY']
-        os.environ['X509_USER_CERT'] = certPath
-        os.environ['X509_USER_KEY'] = keyPath
-        os.environ['X509_RUN_AS_SERVER'] = '1'
+        Utilities.unsetenv('X509_USER_PROXY')
+        Utilities.setenv('X509_USER_CERT', certPath)
+        Utilities.setenv('X509_USER_KEY', keyPath)
+        Utilities.setenv('X509_RUN_AS_SERVER', '1')
 
     def SetDefaultIdentity(self, certDesc):
         """
@@ -1037,6 +1150,94 @@ class CertificateManager(object):
             
         return certRet
     
+class CertificateRequestInfo:
+    """
+    A CertificateRequestInfo holds the information required
+    to create a request, and holds the logic for creating
+    the appropriate Distinguished Name from it.
+
+    It exists to be subclassed for identity and service certs.
+    """
+
+    def __init__(self):
+        self.name = None
+        self.email = None
+        self.type = None
+        self.host = None
+        self.domain = None
+
+    def GetDNBase(self):
+        """
+        Return the common parts of a full distinguished name.
+
+        If we move to using different CAs, we can parameterize here.
+        """
+
+        name = [("O", "Access Grid"),
+                ("OU", "agdev-ca.mcs.anl.gov")]
+        return name
+
+    def GetDN(self):
+        raise NotImplementedError
+
+    def GetType(self):
+        return self.type
+
+    def GetName(self):
+        return self.name
+
+    def GetEmail(self):
+        return self.email
+
+    def IsIdentityRequest(self):
+        return self.type == "identity"
+
+    def __str__(self):
+        return "Cert request: type=%(type)s name=%(name)s email=%(email)s domain=%(domain)s host=%(host)s" % self.__dict__
+
+class IdentityCertificateRequestInfo(CertificateRequestInfo):
+    def __init__(self, name, domain, email):
+        CertificateRequestInfo.__init__(self)
+        self.name = name
+        self.domain = domain
+        self.email = email
+        self.type = "identity"
+
+    def GetDN(self):
+
+        dn = self.GetDNBase()
+        dn.extend([("OU", self.domain),
+                   ("CN", self.email)])
+
+        return dn
+
+class ServiceCertificateRequestInfo(CertificateRequestInfo):
+    def __init__(self, name, host, email):
+        CertificateRequestInfo.__init__(self)
+        self.name = name
+        self.host = host
+        self.email = email
+        self.type = "service"
+
+    def GetDN(self):
+        dn = self.GetDNBase()
+        dn.append(("CN", "%s/%s" % (self.name, self.host)))
+
+        return dn
+
+class HostCertificateRequestInfo(CertificateRequestInfo):
+    def __init__(self, host, email):
+        CertificateRequestInfo.__init__(self)
+        self.name = host
+        self.host = host
+        self.email = email
+        self.type = "host"
+
+    def GetDN(self):
+        dn = self.GetDNBase()
+        dn.append(("CN", self.host))
+
+        return dn
 
 class CmdlinePassphraseCallback:
     def __init__(self, caption, message):
