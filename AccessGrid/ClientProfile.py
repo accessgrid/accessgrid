@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.35 2004-03-16 17:10:48 lefvert Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.36 2004-04-27 02:06:37 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.35 2004-03-16 17:10:48 lefvert Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.36 2004-04-27 02:06:37 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -48,7 +48,6 @@ class ClientProfile:
         'id',
         'location',
         'venueclienturl',
-        'techsupportinfo',
         'home',
         'distinguishedname']
         
@@ -61,7 +60,6 @@ class ClientProfile:
         'ClientProfile.id' : '',
         'ClientProfile.location' : '<Insert Postal Address Here>',
         'ClientProfile.venueclienturl' : '',
-        'ClientProfile.techsupportinfo' : '<Insert Technical Support Contact Information Here>',
         'ClientProfile.home' : 'https://vv2.mcs.anl.gov:9000/Venues/default'
         }
 
@@ -79,7 +77,6 @@ class ClientProfile:
         self.publicId = str(GUID())
         self.location = ''
         self.venueClientURL = ''
-        self.techSupportInfo = ''
         self.homeVenue = ''
         self.privateId = None
         self.distinguishedName = None
@@ -116,7 +113,6 @@ class ClientProfile:
             self.publicId = self.profile['ClientProfile.id']
             self.location = self.profile['ClientProfile.location']
             self.venueClientURL = self.profile['ClientProfile.venueclienturl']
-            self.techSupportInfo = self.profile['ClientProfile.techsupportinfo']
             self.homeVenue = self.profile['ClientProfile.home']
         else:
             raise InvalidProfileException
@@ -133,7 +129,6 @@ class ClientProfile:
         print "Phone Number: " + self.phoneNumber
         print "Location: " + self.location
         print "Venue Client URL: " + self.venueClientURL
-        print "Technical Support Information: " + self.techSupportInfo
         print "Public ID: " + str(self.publicId)
         print "Home Venue: " + self.homeVenue
 
@@ -144,7 +139,6 @@ class ClientProfile:
                     + "\n Phone Number: " + self.phoneNumber\
                     + "\n Location: " + self.location\
                     + "\n Venue Client URL: " + self.venueClientURL\
-                    + "\n Technical Support Information: " + self.techSupportInfo\
                     + "\n Public ID: " + str(self.publicId)\
                     + "\n Home Venue: " + self.homeVenue
 
@@ -162,7 +156,6 @@ class ClientProfile:
         config['ClientProfile.phone'] = self.GetPhoneNumber()
         config['ClientProfile.location'] = self.GetLocation()
         config['ClientProfile.venueclienturl'] = self.GetVenueClientURL()
-        config['ClientProfile.techsupportinfo'] = self.GetTechSupportInfo()
         config['ClientProfile.id'] = self.GetPublicId()
         config['ClientProfile.home'] = self.GetHomeVenue()
         if saveDnDetails:
@@ -246,15 +239,6 @@ class ClientProfile:
         """ """
         return self.venueClientURL
     
-    def SetTechSupportInfo(self, techSupportInfo):
-        """ """
-        self.techSupportInfo = techSupportInfo
-        self.profile[ClientProfile.configSection + '.techsupportinfo'] = techSupportInfo
-        
-    def GetTechSupportInfo(self):
-        """ """
-        return self.techSupportInfo
-    
     def SetPublicId(self, publicId):
         """ """
         self.publicId = publicId
@@ -299,7 +283,6 @@ class ClientProfile:
                self.phoneNumber == obj.phoneNumber and \
                self.icon == obj.icon and \
                self.location == obj.location and \
-               self.techSupportInfo == obj.techSupportInfo and \
                self.homeVenue == obj.homeVenue :
                 isSame = 1
         except:
