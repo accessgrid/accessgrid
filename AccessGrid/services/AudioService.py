@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.14 2003-04-10 19:09:12 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.15 2003-04-11 14:05:45 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -77,8 +77,8 @@ class AudioService( AGService ):
          if os.access(ratKillExe, os.X_OK):
             self.processManager.start_process(ratKillExe, [])
             time.sleep(0.2)
-         else:
-            self.processManager.terminate_all_processes()
+
+         self.processManager.terminate_all_processes()
 
       except:
          print "Exception in AGService.Stop ", sys.exc_type, sys.exc_value
