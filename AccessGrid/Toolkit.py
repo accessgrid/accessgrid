@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.30 2004-03-23 22:14:13 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.31 2004-03-26 19:30:13 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.30 2004-03-23 22:14:13 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.31 2004-03-26 19:30:13 olson Exp $"
 
 # Standard imports
 import os
@@ -134,7 +134,7 @@ class AppBase:
        try:
            self.globusConfig = GlobusConfig.instance(initIfNeeded=0)
        except Exception, e:
-           log.exception("Globus Initialization failed.")
+           self.log.exception("Globus Initialization failed.")
            sys.exit(-1)
        
        return argvResult
