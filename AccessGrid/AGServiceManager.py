@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.65 2004-05-09 02:57:07 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.66 2004-05-10 19:41:49 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.65 2004-05-09 02:57:07 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.66 2004-05-10 19:41:49 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -180,11 +180,24 @@ class AGServiceManager:
 
 
         try:
-            log.debug("Extracting service package")
+            #
             # Extract the service package
-            servicePackageToInstall.ExtractPackage(self.servicesDir)
+            #
             
-            # Get the service description and set the resource
+            # Get the path to which to extract this service
+            servicePath = self.__GetServicePath(serviceDescription)
+            
+            log.info("Extracting service package to %s", servicePath)
+            
+            # Create dir for package
+            if not os.path.exists(servicePath):
+                log.info("Creating service path %s", servicePath)
+                os.makedirs(servicePath)
+                
+            # Extract the package
+            servicePackageToInstall.ExtractPackage(servicePath)
+            
+            # Get the (new) service description and set the resource
             serviceDescription = servicePackageToInstall.GetServiceDescription()
             serviceDescription.resource = resource
 
@@ -219,7 +232,7 @@ class AGServiceManager:
             # Change to the services directory to start the process
             # Note: services rely on this being true
             #
-            os.chdir(self.servicesDir)
+            os.chdir(servicePath)
             pid = self.processManager.StartProcess( executable, options )
 
             # Wait for service to boot and become reachable,
@@ -313,7 +326,10 @@ class AGServiceManager:
                 if service.uri == serviceToRemove.uri:
 
                     pid = key
-                    AGServiceIW( service.uri ).Shutdown()
+                    try:
+                        AGServiceIW( service.uri ).Shutdown()
+                    except:
+                        log.exception("Error shutting down service %s", service.name)
 
                     #
                     # Kill service
@@ -336,7 +352,7 @@ class AGServiceManager:
                     break
 
         except:
-            log.exception("Exception in AGServiceManager.RemoveService.")
+            log.exception("Exception removing service %s", serviceToRemove.name)
             exc = sys.exc_value
 
         #
@@ -422,20 +438,16 @@ class AGServiceManager:
         log.info("__DiscoverResources")
         self.resources = SystemConfig.instance().GetResources()
 
-    def __ReadConfigFile( self, configFile ):
+                
+    def __GetServicePath(self,serviceDescription):
         """
-        Read the node service configuration file
+        Return the path in which services files will be unpacked for
+        the given service
         """
-        log.info("__ReadConfigFile")
-        servicesDirOption = "Service Manager.servicesDirectory"
-
-        from AccessGrid.Utilities import LoadConfig
-        config = LoadConfig( configFile )
-        if servicesDirOption in config.keys():
-            self.servicesDir = config[servicesDirOption]
-            # If relative path in config file, use SystemConfigDir as the base
-            if not os.path.isabs(self.servicesDir):
-                self.servicesDir = GetConfigFilePath(self.servicesDir)
+        serviceDirName = serviceDescription.name.replace(' ', '_')
+        servicePath = os.path.join(self.servicesDir,serviceDirName)
+        return servicePath
+        
 
 class AGServiceManagerI(SOAPInterface):
     """
