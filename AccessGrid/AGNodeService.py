@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.61 2004-04-27 17:13:11 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.62 2004-04-27 18:18:00 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.61 2004-04-27 17:13:11 judson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.62 2004-04-27 18:18:00 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -88,7 +88,7 @@ class AGNodeService:
                 # Copy node configurations from system node config directory
                 # to user node config directory
                 log.info("Copying system node configs to user node config dir")
-                self.agtkConfigDir = self.app.GetToolkitConfig.GetConfigDir()
+                self.agtkConfigDir = self.app.GetToolkitConfig().GetConfigDir()
                 systemNodeConfigDir = os.path.join(self.agtkConfigDir,
                                                    "nodeConfig")
                 configFiles = os.listdir(systemNodeConfigDir)
@@ -656,7 +656,7 @@ class AGNodeService:
 
         It is always written to the user's config directory
         """
-        configFile = os.path.join(self.app.GetUserConfig.GetConfigDir(),
+        configFile = os.path.join(self.app.GetUserConfig().GetConfigDir(),
                                   AGNodeService.NodeConfigFile)
 
         log.info("Writing node service config file: %s" % configFile)
