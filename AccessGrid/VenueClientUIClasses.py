@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.171 2003-05-07 19:06:25 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.172 2003-05-07 19:27:40 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1265,7 +1265,7 @@ class ContentListPanel(wxPanel):
 	self.app = app
 	self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
 			      wxDefaultSize, style = wxTR_TWIST_BUTTONS | wxTR_HAS_BUTTONS |
-                               wxTR_NO_LINES  | wxTR_HIDE_ROOT)
+                               wxTR_NO_LINES)
         self.__setImageList()
 	self.__setTree()
 	self.__setProperties()
@@ -1275,38 +1275,31 @@ class ContentListPanel(wxPanel):
         EVT_LEFT_DCLICK(self.tree, self.OnDoubleClick)
         EVT_TREE_KEY_DOWN(self.tree, id, self.OnKeyDown) 
         # EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
-	
+
     def __setImageList(self):
 	imageList = wxImageList(32,19)
+
         self.line = imageList.Add(icons.getHeadingLineBitmap())
-     	self.participantId = imageList.Add(icons.getDefaultParticipantBitmap())
-        #self.participantFollowId = imageList.Add(icons.getParticipantFollowBitmap())
-        #self.participantLeadId = imageList.Add(icons.getParticipantLeadBitmap())
+        self.participantId = imageList.Add(icons.getDefaultParticipantBitmap())
         self.defaultDataId = imageList.Add(icons.getDefaultDataBitmap())
 	self.serviceId = imageList.Add(icons.getDefaultServiceBitmap())
         self.applicationId = imageList.Add(icons.getDefaultServiceBitmap())
+             
         #self.nodeId = imageList.Add(icons.getDefaultNodeBitmap())
         #self.nodeFollowId = imageList.Add(icons.getNodeFollowBitmap())
         #self.nodeLeadId = imageList.Add(icons.getNodeLeadBitmap())
         self.tree.AssignImageList(imageList)
-
-        # No images so twist buttons work on Windows
-        #if sys.platform == "win32":
-        #    self.participantId = -1
-        #    self.defaultDataId = -1
-        #    self.serviceId = -1
-        #    self.applicationId = -1
-            
+                   
     def AddParticipant(self, profile, dataList = []):
-        participant = self.tree.AppendItem(self.participants, profile.name, \
-                                           self.line, self.line         )
+        participant = self.tree.AppendItem(self.participants, profile.name, 
+                                           self.participantId, self.participantId)
         self.tree.SetItemData(participant, wxTreeItemData(profile)) 
         self.participantDict[profile.publicId] = participant
         self.tree.SortChildren(self.participants)
         self.tree.Expand(self.participants)
 
         for data in dataList:
-            participantData = self.tree.AppendItem(participant, data.name, \
+            participantData = self.tree.AppendItem(participant, data.name,
                                                    self.defaultDataId, self.defaultDataId)
             self.personalDataDict[data.name] = participantData 
             self.tree.SetItemData(participantData, wxTreeItemData(data))
@@ -1407,8 +1400,8 @@ class ContentListPanel(wxPanel):
         #if venue data
         if(profile.type == 'None' or profile.type == None):
             wxLogDebug("This is venue data")
-            dataId = self.tree.AppendItem(self.data, profile.name, \
-                                        self.defaultDataId, self.defaultDataId)
+            dataId = self.tree.AppendItem(self.data, profile.name,
+                                      self.defaultDataId, self.defaultDataId)
             self.tree.SetItemData(dataId, wxTreeItemData(profile)) 
             self.dataDict[profile.name] = dataId
             self.tree.SortChildren(self.data)
@@ -1494,8 +1487,8 @@ class ContentListPanel(wxPanel):
             self.tree.Delete(id)
                           
     def AddService(self, profile):
-        service = self.tree.AppendItem(self.services, profile.name,\
-                                       self.serviceId, self.serviceId)
+        service = self.tree.AppendItem(self.services, profile.name,
+                                      self.serviceId, self.serviceId)
 
  
         self.tree.SetItemData(service, wxTreeItemData(profile)) 
@@ -1555,12 +1548,12 @@ class ContentListPanel(wxPanel):
         #temporary fix for wxPython bug
 
         if sys.platform == "win32":
-            index = -2
+            index = self.line
         elif sys.platform == "linux2":
             index = -1
         
-        self.root = self.tree.AddRoot("The Lobby", index, index)
-                    
+        self.root = self.tree.AddRoot("", -2, -2)
+                          
 	self.participants = self.tree.AppendItem(self.root, "Participants", index, index)
         # self.nodes = self.tree.AppendItem(self.root, "Nodes", index, index)
         self.data = self.tree.AppendItem(self.root, "Data", index, index) 
