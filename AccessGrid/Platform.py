@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.48 2003-09-15 15:02:10 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.49 2003-09-15 20:34:38 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 The Platform Module is to isolate OS specific interfaces.
 """
-__revision__ = "$Id: Platform.py,v 1.48 2003-09-15 15:02:10 judson Exp $"
+__revision__ = "$Id: Platform.py,v 1.49 2003-09-15 20:34:38 judson Exp $"
 
 import os
 import sys
@@ -90,7 +90,7 @@ def GetSystemConfigDir():
     if "" == configDir:
 
         if isWindows():
-            base = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
+            base = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA, 0, 0)
             configDir = os.path.join(base, "AccessGrid")
 
         elif isLinux() or isOSX():
