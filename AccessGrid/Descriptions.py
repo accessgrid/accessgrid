@@ -5,10 +5,12 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.11 2003-02-14 20:09:47 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.12 2003-02-14 20:42:45 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+
+import string
 
 class ObjectDescription:
     """
@@ -24,6 +26,12 @@ class ObjectDescription:
         self.uri = uri
         self.icon = icon
     
+    def __repr__(self):
+        classpath = string.split(str(self.__class__), '.')
+        classname = classpath[-1]
+        return "%s: %s" % (classname, str(self.__dict__))
+
+
     def SetName(self, name):
         self.name = name
         
@@ -103,18 +111,64 @@ class VenueDescription(ObjectDescription):
         return self.textLocation        
    
 class DataDescription(ObjectDescription):
-    """A Data Description represents data within a venue."""
+    """
+    A Data Description represents data within a venue.
+
+    Each description object represents a single file. (We assume that
+    the venue-resident data server does not support directory hierarchies).
+
+    """
+
+    #
+    # Status values
+    #
+
+    STATUS_INVALID = "invalid"
+    STATUS_REFERENCE = "reference"
+    STATUS_PRESENT = "present"
+    STATUS_PENDING = "pending"
+    STATUS_UPLOADING = "uploading"
+
+    valid_status = [STATUS_INVALID, STATUS_REFERENCE, STATUS_PRESENT,
+                    STATUS_PENDING, STATUS_UPLOADING]
+
+    class InvalidStatus(Exception):
+        pass
     
-    def __init__(self, name, description, uri, icon, storageType):
-        ObjectDescription.__init__(self, name, description, uri, icon)
-        self.storageType = storageType
-        
-    def SetStorageType(self, storage_type):
-        self.storageType = storageType
-        
-    def GetStorageType(self):
-        return self.storageType
-    
+    def __init__(self, name):
+        ObjectDescription.__init__(self, name)
+
+        self.status = self.STATUS_INVALID
+        self.size = None
+        self.checksum = None
+        self.owner = None
+
+    def SetStatus(self, status):
+        if status not in self.valid_status:
+            raise self.InvalidStatus(status)
+        self.status = status
+
+    def GetStatus(self):
+        return self.status
+
+    def SetSize(self, size):
+        self.size = size
+
+    def GetSize(self):
+        return self.size
+
+    def SetChecksum(self, checksum):
+        self.checksum = checksum
+
+    def GetChecksum(self):
+        return self.checksum
+
+    def SetOwner(self, owner):
+        self.owner = owner
+
+    def GetOwner(self):
+        return self.owner
+
 class ConnectionDescription(ObjectDescription):
     """
     A Connection Description is used to represent the 
