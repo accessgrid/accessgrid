@@ -4,7 +4,7 @@
 #
 %define	name		AccessGrid
 %define version		2.2
-%define release		1
+%define release		3
 %define	prefix		/usr
 %define sysconfdir	/etc/%{name}/Config
 %define sharedir	%{prefix}/share
@@ -31,6 +31,7 @@ Source:		%{name}-%{version}.tar.gz
 BuildRoot:	%{buildroot}
 Requires:	wxPythonGTK-py2.2
 Requires:	globus-accessgrid
+Requires:	glibc >= 2.2.5-43
 Obsoletes:	AccessGrid-2.0alpha
 Obsoletes:	AccessGrid-2.0beta
 Obsoletes:	AccessGrid-BridgeServer
