@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.58 2003-03-13 12:15:43 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.59 2003-03-13 15:01:13 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -39,7 +39,6 @@ class VenueClientFrame(wxFrame):
     with its contents visible for the user.  The venueListPanel contains a list of connected 
     venues/exits to current venue.  By clicking on a door icon the user travels to another 
     venue/room, which contents will be shown in the contentListPanel.
-    
     '''
     ID_WINDOW_TOP = NewId()
     ID_WINDOW_LEFT  = NewId()
@@ -87,33 +86,14 @@ class VenueClientFrame(wxFrame):
 	self.statusbar = self.CreateStatusBar(1)
 	#self.dock = wxToolBar(self, 600, pos = wxDefaultPosition, \
         #                      size = (300, 30), style = wxTB_TEXT| wxTB_HORIZONTAL| wxTB_FLAT)
-
-
         self.venueAddressBar = VenueAddressBar(self, self.ID_WINDOW_TOP, app, \
                                                self.myVenuesDict, 'default venue')
-        self.venueAddressBar.SetDefaultSize(wxSize(1000, 35))
-        self.venueAddressBar.SetOrientation(wxLAYOUT_HORIZONTAL)
-        self.venueAddressBar.SetAlignment(wxLAYOUT_TOP)
-        
         self.TextWindow = wxSashLayoutWindow(self, self.ID_WINDOW_BOTTOM, wxDefaultPosition,
-                                 wxSize(200, 35), wxNO_BORDER|wxSW_3D)
-        self.TextWindow.SetDefaultSize(wxSize(1000, 80))
-        self.TextWindow.SetOrientation(wxLAYOUT_HORIZONTAL)
-        self.TextWindow.SetAlignment(wxLAYOUT_BOTTOM)
-        self.TextWindow.SetSashVisible(wxSASH_TOP, TRUE)
+                                             wxSize(200, 35), wxNO_BORDER|wxSW_3D)
         self.textClient = TextClientUI(self.TextWindow, -1)
-
-        wxLayoutAlgorithm().LayoutWindow(self.TextWindow, self.textClient)
-
         self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT, app)
-        self.venueListPanel.SetDefaultSize(wxSize(120, 1000))
-        self.venueListPanel.SetOrientation(wxLAYOUT_VERTICAL)
-        self.venueListPanel.SetSashVisible(wxSASH_RIGHT, TRUE)
-        self.venueListPanel.SetAlignment(wxLAYOUT_LEFT)
-        
         self.contentListPanel = ContentListPanel(self, app)
-        wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
-        
+               
         #fileDropTarget = FileDropTarget(self.dock)
         #self.dock.SetDropTarget(fileDropTarget)
         dataDropTarget = DataDropTarget(self.app)
@@ -125,6 +105,7 @@ class VenueClientFrame(wxFrame):
         self.__doLayout()
         self.__setEvents()
         self.__loadMyVenues()
+     
         
     def OnSashDrag(self, event):
         if event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE:
@@ -167,8 +148,7 @@ class VenueClientFrame(wxFrame):
 	self.serviceMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...", "Add service to the venue")
         self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete", "Remove service")
         self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",self.serviceMenu)
-        #self.venue.Append(self.ID_VENUE_OPEN_CHAT,"&Open chat...", "Open text client to chat with others")
-
+     
 	self.menubar.Append(self.venue, "&Venue")
         
         self.venue.AppendSeparator()
@@ -219,7 +199,10 @@ class VenueClientFrame(wxFrame):
                                            "Lead this node", wxITEM_CHECK)
         # until implemented
         self.nodeMenu.Enable(self.ID_NODE_LEAD, false)
+        self.nodeMenu.Enable(self.ID_NODE_FOLLOW, false)
+        self.nodeMenu.Enable(self.ID_NODE_MANAGE, false)
         self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
+        self.participantMenu.Enable(self.ID_PARTICIPANT_FOLLOW, false)
         
       
     def HideMenu(self):
@@ -229,8 +212,7 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
         self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, false)
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
-        # self.menubar.Enable(self.ID_VENUE_OPEN_CHAT, false)
-       
+                 
     def ShowMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, true)
         self.menubar.Enable(self.ID_VENUE_DATA_SAVE, true)
@@ -238,8 +220,7 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
         self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, true)
         self.menubar.Enable(self.ID_MYVENUE_ADD, true)
-        #self.menubar.Enable(self.ID_VENUE_OPEN_CHAT, true)
-     
+         
     def __setEvents(self):
         EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_TOP,
                                self.ID_WINDOW_BOTTOM, self.OnSashDrag)
@@ -250,7 +231,6 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_VENUE_DATA_DELETE, self.RemoveData)
         EVT_MENU(self, self.ID_VENUE_SERVICE_ADD, self.OpenAddServiceDialog)
         EVT_MENU(self, self.ID_VENUE_SERVICE_DELETE, self.RemoveService)
-        #EVT_MENU(self, self.ID_VENUE_OPEN_CHAT, self.OpenChat)
         EVT_MENU(self, self.ID_VENUE_CLOSE, self.Exit)
         EVT_MENU(self, self.ID_PROFILE, self.OpenProfileDialog)
         EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialog)
@@ -284,7 +264,25 @@ class VenueClientFrame(wxFrame):
 	self.venueListPanel.SetSize(wxSize(100, 300))
         
     def __doLayout(self):
-        pass
+        self.venueAddressBar.SetDefaultSize(wxSize(1000, 35))
+        self.venueAddressBar.SetOrientation(wxLAYOUT_HORIZONTAL)
+        self.venueAddressBar.SetAlignment(wxLAYOUT_TOP)
+
+        self.TextWindow.SetDefaultSize(wxSize(1000, 80))
+        self.TextWindow.SetOrientation(wxLAYOUT_HORIZONTAL)
+        self.TextWindow.SetAlignment(wxLAYOUT_BOTTOM)
+        self.TextWindow.SetSashVisible(wxSASH_TOP, TRUE)
+
+        wxLayoutAlgorithm().LayoutWindow(self.TextWindow, self.textClient)
+
+        self.venueListPanel.SetDefaultSize(wxSize(120, 1000))
+        self.venueListPanel.SetOrientation(wxLAYOUT_VERTICAL)
+        self.venueListPanel.SetSashVisible(wxSASH_RIGHT, TRUE)
+        self.venueListPanel.SetAlignment(wxLAYOUT_LEFT)
+
+        wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
+        
+        
         #self.venueClientSizer = wxBoxSizer(wxVERTICAL)
         #self.venueClientSizer.Add(self.venueAddressBar, 0, wxEXPAND)
         #self.venueContentSizer = wxBoxSizer(wxHORIZONTAL)
@@ -354,8 +352,10 @@ class VenueClientFrame(wxFrame):
         connectToVenueDialog = UrlDialogCombo(self, -1, 'Connect to server', url, list = self.myVenuesDict)
         if (connectToVenueDialog.ShowModal() == wxID_OK):
             venueUri = connectToVenueDialog.address.GetValue()
+            wxBeginBusyCursor()
             self.app.GoToNewVenue(venueUri)
-          
+            wxEndBusyCursor()
+                                  
         connectToVenueDialog.Destroy()
        
     def __loadMyVenues(self, venueURL = None):
@@ -470,9 +470,6 @@ class VenueClientFrame(wxFrame):
 
             self.app.UploadFiles(files)
                           
-            # data = DataDescription(dlg.GetFilename())
-            # self.app.AddData(data)
-
         dlg.Destroy()
 
     def OpenProfileDialog(self, event):
@@ -495,8 +492,10 @@ class VenueClientFrame(wxFrame):
         connectToVenueDialog = UrlDialogCombo(self, -1, 'Connect to server', list = self.myVenuesDict)
         if (connectToVenueDialog.ShowModal() == wxID_OK):
             venueUri = connectToVenueDialog.address.GetValue()
+            wxBeginBusyCursor()
             self.app.GoToNewVenue(venueUri)
-          
+            wxEndBusyCursor()
+                  
         connectToVenueDialog.Destroy()
 
     def OpenNodeMgmtApp(self, event):
@@ -578,6 +577,7 @@ class VenueClientFrame(wxFrame):
                                                '', wxOK |  wxCANCEL |wxICON_INFORMATION)
             if(areYouSureDialog.ShowModal() == wxID_OK):
                 self.app.RemoveData(data)
+                                    
             areYouSureDialog.Destroy()
                 
         else:
@@ -638,8 +638,10 @@ class VenueAddressBar(wxSashLayoutWindow):
     def callAddress(self, event):
         venueUri = self.address.GetValue()
         self.AddChoice(venueUri)
+        wxBeginBusyCursor()
         self.application.GoToNewVenue(venueUri)
-                               
+        wxEndBusyCursor()
+                                      
     def __doLayout(self):
         venueServerAddressBox = wxBoxSizer(wxVERTICAL)  
         box = wxBoxSizer(wxHORIZONTAL)
@@ -758,72 +760,35 @@ class VenueList(wxScrolledWindow):
         self.SetScrollRate(1, 1)
      
     def __doLayout(self):
-       # self.box = wxBoxSizer(wxVERTICAL)
+        self.box = wxBoxSizer(wxVERTICAL)
+        self.column = wxFlexGridSizer(cols=1, vgap=1, hgap=0)
+        self.column.AddGrowableCol(1)
+        self.box.Add(self.column, 1, wxEXPAND|wxTOP |wxBOTTOM, 5)
         
-       # self.column = wxFlexGridSizer(cols=1, vgap=5, hgap=0)
-       # self.column.AddGrowableCol(1)
-	       
-       # self.column.Add(40, 5)   
-       # self.box.SetVirtualSizeHints(self)
-       # self.SetScrollRate(1, 1)
+        self.SetSizer(self.box)
+        self.box.Fit(self)
+        self.SetAutoLayout(1)
         
-       # self.box.Add(self.column, 1, wxEXPAND)
-       # self.SetSizer(self.box)
-       # self.box.Fit(self)
-       # self.SetAutoLayout(1)
-       self.box = wxBoxSizer(wxVERTICAL)
-       self.column = wxFlexGridSizer(cols=1, vgap=1, hgap=0)
-       self.column.AddGrowableCol(1)
-       self.box.Add(self.column, 1, wxEXPAND|wxTOP |wxBOTTOM, 5)
-       
-       self.SetSizer(self.box)
-       self.box.Fit(self)
-       self.SetAutoLayout(1)
-             
     def GoToNewVenue(self, event):
         id = event.GetId()
         description = self.exitsDict[id]
+        wxBeginBusyCursor()
         self.app.GoToNewVenue(description.uri)
-        		            
+        wxEndBusyCursor()
+                
     def AddVenueDoor(self, profile):
-        #bitmap = icons.getDoorClosedBitmap()
-        #bitmapSelect = icons.getDoorOpenBitmap()
-
-        #id = NewId()
-        #panel = wxPanel(self, -1,wxDefaultPosition, wxSize(10,50), name ='panel')
-        #tc = wxBitmapButton(panel, id, bitmap, wxPoint(0, 0), wxDefaultSize, wxBU_EXACTFIT)
-	#tc.SetBitmapSelected(bitmapSelect)
-	#tc.SetBitmapFocus(bitmapSelect)
-	#tc.SetToolTipString(profile.description)
-	#label = wxStaticText(panel, -1, profile.name)
-        #b = wxBoxSizer(wxVERTICAL)
-        #b.Add(tc, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
-        #b.Add(label, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
-        #panel.SetSizer(b)
-        #b.Fit(panel)
-
-        # print "detach all doors"
-        # for p in self.doorsAndLabelsList:
-        #     self.column.Detach(p)
-              
-        #self.column.Add(panel, -1, wxEXPAND)
-
         panel = ExitPanel(self, profile)
         self.doorsAndLabelsList.append(panel)
-
+        
         self.doorsAndLabelsList.sort(lambda x, y: cmp(x.GetName(), y.GetName()))
         index = self.doorsAndLabelsList.index(panel)
                       
-        #self.column.Add(panel, 1, wxEXPAND)
         self.column.Insert(index, panel, 1, wxEXPAND)
-               
-        #self.box.SetVirtualSizeHints(self)
-        
+                
         id = panel.GetButtonId()
         self.exitsDict[id] = profile
         EVT_BUTTON(self, id, self.GoToNewVenue)
-        #self.EnableScrolling(true, true)
-        
+                
         self.Layout()
         self.parent.Layout()
         self.EnableScrolling(true, true)
@@ -1022,19 +987,18 @@ class ContentListPanel(wxPanel):
         
     def __setTree(self):
         self.root = self.tree.AddRoot("The Lobby")
-        #image = self.emptyImageId
-             
-	self.participants = self.tree.AppendItem(self.root, "Participants") # , image)
+                    
+	self.participants = self.tree.AppendItem(self.root, "Participants")
        
 	self.tree.SetItemBold(self.participants)
              
-	self.data = self.tree.AppendItem(self.root, "Data") #, image)
+	self.data = self.tree.AppendItem(self.root, "Data") 
 	self.tree.SetItemBold(self.data)
              
-	self.services = self.tree.AppendItem(self.root, "Services") #, image)
+	self.services = self.tree.AppendItem(self.root, "Services")
 	self.tree.SetItemBold(self.services)
              
-	self.nodes = self.tree.AppendItem(self.root, "Nodes") #, image)
+	self.nodes = self.tree.AppendItem(self.root, "Nodes")
 	self.tree.SetItemBold(self.nodes)
              
         self.tree.Expand(self.participants)
@@ -1091,10 +1055,10 @@ class ContentListPanel(wxPanel):
         elif text == 'Services' or item != None and self.serviceDict.has_key(item.name):
             self.PopupMenu(self.parent.serviceMenu, wxPoint(self.x, self.y))
 
-        elif text == 'Participants' or text == 'Nodes':
+        elif text == 'Participants' or text == 'Nodes' or item == None:
             pass
 
-        elif item != None and self.participantDict.has_key(item.publicId) or \
+        elif self.participantDict.has_key(item.publicId) or \
                  self.nodeDict.has_key(item.publicId):
 
             if(item.publicId == self.app.profile.publicId):
