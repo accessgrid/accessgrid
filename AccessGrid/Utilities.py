@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.40 2003-08-22 04:49:24 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.41 2003-09-03 18:00:40 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -238,7 +238,18 @@ def GetLogText(maxSize):
     return text
 
 
-def SubmitBug(comment):
+def SubmitBug(comment, profile, email):
+    '''
+    Submits a bug to bugzilla. 
+
+    **Parameters**
+      *comment* = Bug description from reporter
+      *profile* = Client Profile describing reporter
+      *email* = Entered email address for support information. If the email
+                is blank, the reporter does not want to be contacted.
+      
+    '''
+     
     url = "http://bugzilla.mcs.anl.gov/accessgrid/post_bug.cgi"
     args = {}
 
@@ -248,7 +259,7 @@ def SubmitBug(comment):
     args['Bugzilla_login'] = bugzilla_login
     args['Bugzilla_password'] = bugzilla_password
     args['product'] = "Virtual Venues Client Software"
-    args['version'] = "2.0"
+    args['version'] = "2.1.1"
     args['component'] = "Client UI"
     args['rep_platform'] = "Other"
     
@@ -282,10 +293,26 @@ def SubmitBug(comment):
     args['short_desc'] = "Crash in Client UI"
     
     #
-    # Combine comment and log file information
+    # Combine comment, profile, and log file information
     #
-    commentAndLog = "---Comment from Reporter--- \n\n"+comment+ \
-                    "\n\n---VenueClient.log Information---" +"\n\n" + GetLogText(20000)
+
+        
+    if profile:
+        # Always set profile email to empty string so we don't write to wrong email address.
+        profile.email = ""
+        profileString = profile.AsString()
+
+    else:
+        profileString = "This reporter does not have a client profile"
+        
+    if email == "":
+        # This reporter does not want to be contacted. Do not submit email address.
+        email = "This reporter does not want to be contacted.  No email address specified."
+
+    commentAndLog = "\n\n--- EMAIL TO CONTACT REPORTER ---\n\n" + str(email) \
+                    +"\n\n--- REPORTER CLIENT PROFILE --- \n\n" + profileString \
+                    +"\n\n--- COMMENT FROM REPORTER --- \n\n" + comment \
+                    +"\n\n--- VENUECLIENT.LOG INFORMATION ---\n\n" + GetLogText(20000)
     
     args['comment']= commentAndLog
       
