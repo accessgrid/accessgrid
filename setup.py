@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.40 2003-10-14 15:44:35 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.41 2003-10-15 17:14:39 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -87,11 +87,12 @@ linux_data = [('etc/init.d',
               ('bin', []),
               ('share/doc/AccessGrid/Documentation/VenueClientManual',
                [r"doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManual.htm",
-                r"doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML.htm"
+                r"doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML.htm",
+                r"doc/VENUE_CLIENT_MANUAL_HTML/1.htm"
                 ]
                ),
-              ('share/doc/AccessGrid/Documentation/VenueClientManual/VenueClientManualHTML_files',
-               glob.glob("doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/*")
+              ('share/doc/AccessGrid/Documentation/VenueClientManual/VenueClientManual_files',
+               glob.glob("doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManual_files/*")
                )
               ]
 
