@@ -23,12 +23,11 @@ class L16_to_L8(RTPSensor):
         self.destination.send_ctrl(0, None)
         self.last_ts = 0
         self.buffer = ""
-        self.StartSignalLoop()
+        
         
     def do_RTP(self, session, event):
         packet = common.make_rtp_packet(event.data)
         data = common.rtp_packet_getdata(packet)
-
 
         # require l16-16k mono as input
         if packet.pt != 112:
@@ -81,15 +80,15 @@ class L16_to_L8(RTPSensor):
         while self.flag:
             try:
                 time.sleep(0.5)
-            except IOError:
+            except:
                 self.flag = 0
                 self.log.debug("l16_to_18_transcoder.StartSignalLoop: Signal loop interrupted, exiting.")
                 self.Stop()
 
-              
+                                                         
 if __name__ == "__main__":
     import sys
-    
+        
     from_addr = sys.argv[1]
     from_port = int(sys.argv[2])
     to_addr = sys.argv[3]
@@ -97,4 +96,7 @@ if __name__ == "__main__":
 
     tcoder = L16_to_L8(from_addr, from_port, to_addr, to_port)
     tcoder.Start()
+
+    tcoder.StartSignalLoop()
       
+    tcoder.Stop()
