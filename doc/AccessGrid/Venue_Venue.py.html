@@ -80,6 +80,7 @@ ServiceBase.ServiceBase<br>
             <table border="0" cellspacing="2" cellpadding="2" width="100%">
               <tr>
             <td align="LEFT" valign="TOP">
+<a href="#AddAdministrator">AddAdministrator</a><br>
 <a href="#AddConnection">AddConnection</a><br>
 <a href="#AddData">AddData</a><br>
 <a href="#AddNetworkService">AddNetworkService</a><br>
@@ -91,13 +92,14 @@ ServiceBase.ServiceBase<br>
 <a href="#Enter">Enter</a><br>
 <a href="#Exit">Exit</a><br>
 <a href="#FindUserByProfile">FindUserByProfile</a><br>
+<a href="#GetAdministrators">GetAdministrators</a><br>
 <a href="#GetConnections">GetConnections</a><br>
 <a href="#GetData">GetData</a><br>
 <a href="#GetDescription">GetDescription</a><br>
 <a href="#GetEncryptMedia">GetEncryptMedia</a><br>
-<a href="#GetNetworkServices">GetNetworkServices</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#GetNetworkServices">GetNetworkServices</a><br>
 <a href="#GetNextPrivateId">GetNextPrivateId</a><br>
 <a href="#GetState">GetState</a><br>
 <a href="#GetStaticStreams">GetStaticStreams</a><br>
@@ -105,19 +107,22 @@ ServiceBase.ServiceBase<br>
 <a href="#GetUploadDescriptor">GetUploadDescriptor</a><br>
 <a href="#IsValidPrivateId">IsValidPrivateId</a><br>
 <a href="#NegotiateCapabilities">NegotiateCapabilities</a><br>
+<a href="#RemoveAdministrator">RemoveAdministrator</a><br>
 <a href="#RemoveConnection">RemoveConnection</a><br>
 <a href="#RemoveData">RemoveData</a><br>
 <a href="#RemoveNetworkService">RemoveNetworkService</a><br>
 <a href="#RemoveService">RemoveService</a><br>
 <a href="#RemoveStream">RemoveStream</a><br>
 <a href="#RemoveUser">RemoveUser</a><br>
+<a href="#SetAdministrators">SetAdministrators</a><br>
 <a href="#SetConnections">SetConnections</a><br>
-<a href="#SetDataStore">SetDataStore</a><br>
-<a href="#SetDescription">SetDescription</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#SetDataStore">SetDataStore</a><br>
+<a href="#SetDescription">SetDescription</a><br>
 <a href="#SetEncryptMedia">SetEncryptMedia</a><br>
 <a href="#SetMulticastAddressAllocator">SetMulticastAddressAllocator</a><br>
+<a href="#Shutdown">Shutdown</a><br>
 <a href="#Start">Start</a><br>
 <a href="#UpdateClientProfile">UpdateClientProfile</a><br>
 <a href="#UpdateData">UpdateData</a><br>
@@ -134,6 +139,62 @@ ServiceBase.ServiceBase<br>
 </tr>
             </table>
             
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="AddAdministrator"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AddAdministrator&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AddAdministrator ( self,  string )
+
+</pre></font>
+
+<p>Management methods</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "Administrator already present" )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -656,6 +717,33 @@ FindUserByProfile ( self,  profile )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="GetAdministrators"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetAdministrators&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetAdministrators ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="GetConnections"></a>&nbsp;
                 </font>
             </th>
@@ -1006,6 +1094,61 @@ NegotiateCapabilities (
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="RemoveAdministrator"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">RemoveAdministrator&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+RemoveAdministrator ( self,  string )
+
+</pre></font>
+
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "Administrator not found" )<br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="RemoveConnection"></a>&nbsp;
                 </font>
             </th>
@@ -1108,6 +1251,7 @@ RemoveData ( self,  dataDescription )
         <td>
         
 VenueException( "Cannot remove data!" )<br>
+VenueException( "Data not found." )<br>
 
 </td></tr>
 </table>
@@ -1318,6 +1462,33 @@ RemoveUser ( self,  privateId )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="SetAdministrators"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetAdministrators&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetAdministrators ( self,  administratorList )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="SetConnections"></a>&nbsp;
                 </font>
             </th>
@@ -1486,8 +1657,7 @@ SetEncryptMedia (
 
 </pre></font>
 
-<h3>Turn media encryption on or off.</h3>
-<p> Management methods</p>
+<p>Turn media encryption on or off.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -1554,6 +1724,36 @@ SetMulticastAddressAllocator ( self,  multicastAllocator )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="Shutdown"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">Shutdown&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+Shutdown ( self )
+
+</pre></font>
+
+<p>This method cleanly shuts down all active threads associated with the
+        Virtual Venue. Currently there are a few threads in the Event
+        Service.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="Start"></a>&nbsp;
                 </font>
             </th>
@@ -1568,13 +1768,7 @@ SetMulticastAddressAllocator ( self,  multicastAllocator )
         <tr>
         <td>
         <font color="#000088"><pre>
-Start (
-        self,
-        multicastAllocator,
-        dataTransferServer,
-        eventService,
-        textService,
-        )
+Start ( self,  server )
 
 </pre></font>
 
@@ -1947,7 +2141,7 @@ wsUpdateData ( self,  dataDescription )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 28 08:28:18 2003 by
+        on Fri Mar 14 04:51:42 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -47,14 +47,16 @@
         <tr>
         <td>
         
-<b>from</b> AccessGrid <b>import</b> Utilities<br>
+<b>from</b> AccessGrid <b>import</b> Utilities, GUID<br>
 <b>from</b> AccessGrid.AuthorizationManager <b>import</b> AuthorizationManager<br>
 <b>from</b> AccessGrid.DataStore <b>import</b> GSIHTTPDownloadFile<br>
 <b>from</b> AccessGrid.Descriptions <b>import</b> AGServiceDescription<br>
+<b>from</b> AccessGrid.Platform <b>import</b> GetConfigFilePath, GetSystemConfigDir<br>
 <b>from</b> AccessGrid.Types <b>import</b> AGServicePackage<br>
 <b>from</b> AccessGrid.hosting.pyGlobus <b>import</b> Client<br>
 <b>from</b> AccessGrid.hosting.pyGlobus.AGGSISOAP <b>import</b> faultType<br>
 <b>from</b> AccessGrid.hosting.pyGlobus.ServiceBase <b>import</b> ServiceBase<br>
+<b>import</b> logging<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-os.html">os</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-socket.html">socket</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-sys.html">sys</a><br>
@@ -87,7 +89,7 @@
         
 <table border="0" cellpadding="3" cellspacing="0">
 <tr><td valign="top" align="left"><a href="AGServiceManager_AGServiceManager.py.html">AGServiceManager</a></td><td valign="top" align="left">
-<p>AGServiceManager : exposes local resources and configures services to deliver them</p>
+<p>AGServiceManager : exposes local resources and configures services</p>
 </td></tr>
 </table>
 </td></tr>
@@ -103,7 +105,7 @@
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 28 08:28:18 2003 by
+        on Fri Mar 14 04:51:42 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

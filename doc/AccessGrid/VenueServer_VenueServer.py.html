@@ -114,22 +114,24 @@ ServiceBase.ServiceBase<br>
 <a href="#GetBaseAddress">GetBaseAddress</a><br>
 <a href="#GetDefaultVenue">GetDefaultVenue</a><br>
 <a href="#GetEncryptAllMedia">GetEncryptAllMedia</a><br>
-</td>
-<td align="LEFT" valign="TOP">
 <a href="#GetStorageLocation">GetStorageLocation</a><br>
 <a href="#GetVenues">GetVenues</a><br>
+</td>
+<td align="LEFT" valign="TOP">
+<a href="#IdFromURL">IdFromURL</a><br>
 <a href="#InitFromFile">InitFromFile</a><br>
 <a href="#LoadPersistentVenues">LoadPersistentVenues</a><br>
 <a href="#MakeVenueURI">MakeVenueURI</a><br>
 <a href="#ModifyService">ModifyService</a><br>
 <a href="#ModifyVenue">ModifyVenue</a><br>
+<a href="#PathFromURL">PathFromURL</a><br>
 <a href="#RegisterServer">RegisterServer</a><br>
 <a href="#RemoveAdministrator">RemoveAdministrator</a><br>
 <a href="#RemoveService">RemoveService</a><br>
-</td>
-<td align="LEFT" valign="TOP">
 <a href="#RemoveVenue">RemoveVenue</a><br>
 <a href="#SetAddressAllocationMethod">SetAddressAllocationMethod</a><br>
+</td>
+<td align="LEFT" valign="TOP">
 <a href="#SetAddressMask">SetAddressMask</a><br>
 <a href="#SetBaseAddress">SetBaseAddress</a><br>
 <a href="#SetDefaultVenue">SetDefaultVenue</a><br>
@@ -169,7 +171,7 @@ AddAdministrator ( self,  string )
 
 </pre></font>
 
-<p>AddAdminstrator adds an administrator to the list of administrators
+<p>AddAdministrator adds an administrator to the list of administrators
         for this VenueServer.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
@@ -195,6 +197,7 @@ AddAdministrator ( self,  string )
         <tr>
         <td>
         
+VenueServerException( "Administrator already present." )<br>
 VenueServerException( "You are not authorized to perform this action." )<br>
 
 </td></tr>
@@ -463,7 +466,7 @@ GetAdministrators ( self )
 
 </pre></font>
 
-<p>GetAdministrators returns a list of adminsitrators for this
+<p>GetAdministrators returns a list of adminisitrators for this
         VenueServer.</p>
 
         <tr>
@@ -606,8 +609,8 @@ GetVenues ( self )
 
 </pre></font>
 
-<p>GetVenues returns a list of Venues Descriptions for the venues hosted by
-        this VenueServer.</p>
+<p>GetVenues returns a list of Venues Descriptions for the venues
+        hosted by this VenueServer.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -636,6 +639,33 @@ VenueServerException( "GetVenues Failed!" )<br>
 
 </td></tr>
 </table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="IdFromURL"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">IdFromURL&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+IdFromURL ( self,  URL )
+
+</pre></font>
+
 
         <tr>
             <th bgcolor="#99ccff"
@@ -877,6 +907,33 @@ VenueServerException( "You are not authorized to perform this action." )<br>
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="PathFromURL"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">PathFromURL&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+PathFromURL ( self,  URL )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="RegisterServer"></a>&nbsp;
                 </font>
             </th>
@@ -979,6 +1036,7 @@ RemoveAdministrator ( self,  string )
         <tr>
         <td>
         
+VenueServerException( "Administrator not found." )<br>
 VenueServerException( "You are not authorized to perform this action." )<br>
 
 </td></tr>
@@ -1570,7 +1628,7 @@ _authorize ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 28 08:28:18 2003 by
+        on Fri Mar 14 04:51:42 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         
