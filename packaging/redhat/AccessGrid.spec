@@ -3,8 +3,8 @@
 # spec file. If you see %{variable_name} this is where it's assigned
 #
 %define	name		AccessGrid
-%define version		2.1
-%define release		2
+%define version		2.1.2
+%define release		1
 %define	prefix		/usr
 %define sysconfdir	/etc/%{name}
 %define sharedir	%{prefix}/share
