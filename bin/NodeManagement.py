@@ -197,7 +197,10 @@ class ServiceConfigurationPanel( wxPanel ):
 
 attached = 0
 try:
-   vc = Client.Handle( sys.argv[1] ).get_proxy()
+   nodeServiceUri = "https://localhost:11000/NodeService"
+   if len(sys.argv) > 1:
+      nodeServiceUri = sys.argv[1]
+   vc = Client.Handle( nodeServiceUri ).get_proxy()
    attached = 1
 except:
    print "* * *Error creating Node Client"
