@@ -60,7 +60,7 @@ class AppMonitor:
         self.GetApplicationInfo()
 
         self.frame.Show()
-
+        
     def RegisterCallbacks(self):
         '''
         Register methods called when the application service distributes
@@ -143,27 +143,42 @@ class AppMonitorFrame(wxFrame):
     The AppMonitor Frame includes all user interface components for the
     Application Monitor.
     '''
+
+    ID_WINDOW_TOP = wxNewId()
+    ID_WINDOW_BOTTOM = wxNewId()
     
     def __init__(self, parent, id, title, appMonitor, **kw):
         wxFrame.__init__(self, parent, id, title, **kw)
         self.appMonitor = appMonitor
 
-        self.SetSize(wxSize(400,300))
-        self.panel = wxPanel(self, -1)
+        # upper sash window
+        self.topWindow = wxSashLayoutWindow(self, self.ID_WINDOW_TOP, wxDefaultPosition)
+        self.topWindow.SetOrientation(wxLAYOUT_HORIZONTAL)
+        self.topWindow.SetAlignment(wxLAYOUT_TOP)
+        self.topWindow.SetSashVisible(wxSASH_BOTTOM, TRUE)
 
-        self.textCtrl = wxTextCtrl(self.panel, -1, style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH)
-
-        self.nameText = wxStaticText(self.panel, -1, "This is the name", style = wxALIGN_CENTER)
+        # lower sash window
+        self.bottomWindow = wxSashLayoutWindow(self, self.ID_WINDOW_BOTTOM, wxDefaultPosition)
+        self.bottomWindow.SetOrientation(wxLAYOUT_HORIZONTAL)
+        self.bottomWindow.SetAlignment(wxLAYOUT_BOTTOM)
+                      
+        # widgets for upper sash window
+        self.panelTop = wxPanel(self.topWindow, -1, wxDefaultPosition, wxDefaultSize, style = wxRAISED_BORDER)
+        self.nameText = wxStaticText(self.panelTop, -1, "This is the name", style = wxALIGN_CENTER)
         font = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
         self.nameText.SetFont(font)
 
-        self.descriptionText = wxTextCtrl(self.panel, -1, "test",
-                                          size = wxSize(10, 50), style = wxTE_MULTILINE)
+        self.descriptionText = wxStaticText(self.panelTop, -1, "No description", size = wxSize(10,40))
+        self.descriptionText.SetBackgroundColour(self.panelTop.GetBackgroundColour())
        
-        self.partListCtrl = wxListCtrl(self.panel, -1, style = wxLC_REPORT)
+        self.partListCtrl = wxListCtrl(self.panelTop, -1, style = wxLC_REPORT)
         self.partListCtrl.InsertColumn(0, "Participants")
         self.partListCtrl.InsertColumn(1, "Status")
 
+        # widgets for lower sash window
+        self.panelBottom = wxPanel(self.bottomWindow, -1, wxDefaultPosition, wxDefaultSize, style = wxRAISED_BORDER)
+        self.textCtrl = wxTextCtrl(self.panelBottom, -1, style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH)
+        
         self.idToProfile = {}
         self.profileToId = {}
 
@@ -173,17 +188,35 @@ class AppMonitorFrame(wxFrame):
         self.__setEvents()
         self.__layout()
 
-        EVT_CLOSE(self, self.OnExit)
-      
+        # finally set size to get proper layout
+        self.SetSize(wxSize(400,400))
+        self.topWindow.SetDefaultSize(wxSize(200, 200))
+
+        
+
+    def OnSashDrag(self, event):
+        '''
+        Called when a sash window has been dragged.
+        '''
+        
+        if event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE:
+            return
+        
+        id = event.GetId()
+        if id == self.ID_WINDOW_TOP:
+            self.topWindow.SetDefaultSize(wxSize(1000, event.GetDragRect().height))
+                    
+        wxLayoutAlgorithm().LayoutWindow(self)
+              
     def OnSize(self, event):
         """
         Sets correct column widths.
         """
-        w,h = self.GetClientSizeTuple()
-        self.partListCtrl.SetColumnWidth(0, w*(0.70) )
-        self.partListCtrl.SetColumnWidth(1, w*(0.30) )
+        wxLayoutAlgorithm().LayoutWindow(self)
 
-        event.Skip()
+        w = self.partListCtrl.GetClientSize().width
+        self.partListCtrl.SetColumnWidth(0, w*(0.50) )
+        self.partListCtrl.SetColumnWidth(1, w*(0.50) )
 
     def OnExit(self, event):
         '''
@@ -203,7 +236,7 @@ class AppMonitorFrame(wxFrame):
         '''
         Set application description.
         '''
-        self.descriptionText.SetValue(desc)
+        self.descriptionText.SetLabel(desc)
 
     def AddParticipant(self, pDesc):
         '''
@@ -249,9 +282,7 @@ class AppMonitorFrame(wxFrame):
         self.partListCtrl.SetStringItem(idx, 1, pDesc.status)
         self.partListCtrl.SetItemData(idx, idx)
         
-        self.partListCtrl.SetColumnWidth(0, wxLIST_AUTOSIZE)
-
-        self.Layout()
+        wxLayoutAlgorithm().LayoutWindow(self)
 
     def RemoveParticipant(self, pDesc):
         '''
@@ -277,7 +308,6 @@ class AppMonitorFrame(wxFrame):
             self.textCtrl.SetDefaultStyle(wxTextAttr(wxBLACK))
 
             self.__SetRightScroll()
-        
 
     def GetProfile(self, appId):
         '''
@@ -308,17 +338,6 @@ class AppMonitorFrame(wxFrame):
             
             self.partListCtrl.SetStringItem(id, 0, pDesc.clientProfile.name)
             self.partListCtrl.SetStringItem(id, 1, pDesc.status)
-
-    def __SetRightScroll(self):
-        '''
-        Scrolls to right position in text output field 
-        '''
-
-        if isWindows():
-            # Added due to wxPython bug. The wxTextCtrl doesn't
-            # scroll properly when the wxTE_AUTO_URL flag is set. 
-            pos = self.textCtrl.GetInsertionPoint()
-            self.textCtrl.ShowPosition(pos - 1)
             
     def AddData(self, appDataDesc):
         '''
@@ -348,16 +367,33 @@ class AppMonitorFrame(wxFrame):
             text = str(key) + "=" + str(dataDict[key]) + '\n'
             self.textCtrl.AppendText(text)
             
-            self.__SetRightScroll()
+            #self.__SetRightScroll()
 
         self.textCtrl.SetDefaultStyle(wxTextAttr(wxBLACK))
-                            
+        
+        
+    def __SetRightScroll(self):
+        '''
+        Scrolls to right position in text output field 
+        '''
+
+        if isWindows():
+            # Added due to wxPython bug. The wxTextCtrl doesn't
+            # scroll properly when the wxTE_AUTO_URL flag is set.
+            self.textCtrl.ScrollLines(-1)
+                                        
     def __setEvents(self):
         '''
         Initialize events.
         '''
-        if isWindows():
-            EVT_SIZE(self.panel, self.OnSize)
+
+        EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_TOP, self.ID_WINDOW_BOTTOM, self.OnSashDrag)
+        EVT_SIZE(self, self.OnSize)
+        
+        EVT_CLOSE(self, self.OnExit)
+
+        #if isWindows():
+        #    EVT_SIZE(self.panelBottom, self.OnSize)
     
     def __layout(self):
         '''
@@ -370,22 +406,28 @@ class AppMonitorFrame(wxFrame):
         vs.Add(self.nameText, 0, wxEXPAND | wxALL, 4)
         
         vs.Add(self.descriptionText, 0, wxEXPAND | wxALL, 4)
-        vs.Add(wxStaticLine(self.panel, -1), 0, wxEXPAND)
+        vs.Add(wxStaticLine(self.panelTop, -1), 0, wxEXPAND)
         vs.Add(5,5)
         vs.Add(self.partListCtrl, 2, wxEXPAND | wxALL, 4)
-        vs.Add(self.textCtrl, 1, wxEXPAND | wxALL, 4)
-        
+
         sizer.Add(vs, 1, wxEXPAND|wxALL, 5)
 
-        w,h = self.GetClientSizeTuple()
-        self.partListCtrl.SetColumnWidth(0, w*(0.70) - 10)
-        self.partListCtrl.SetColumnWidth(1, w*(0.30) - 10)
+        sizer2 = wxBoxSizer(wxVERTICAL)
+        sizer2.Add(self.textCtrl, 1, wxEXPAND | wxALL, 4)
+               
+        self.panelTop.SetSizer(sizer)
+        sizer.Fit(self.panelTop)
+        self.panelTop.SetAutoLayout(1)
+        
+        self.panelTop.Refresh()
 
-        self.panel.SetSizer(sizer)
-        self.panel.SetAutoLayout(1)
-        self.panel.Layout()
-        self.Layout()
-         
+        self.panelBottom.SetSizer(sizer2)
+        sizer2.Fit(self.panelBottom)
+        self.panelBottom.SetAutoLayout(1)
+        self.panelBottom.Layout()
+
+        wxLayoutAlgorithm().LayoutWindow(self, self.panelTop)
+                       
 def SetLogging():
     logFile = None
     debugMode = 1
