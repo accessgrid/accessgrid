@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.27 2004-11-19 23:00:02 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.28 2004-11-29 21:05:04 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.27 2004-11-19 23:00:02 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.28 2004-11-29 21:05:04 turam Exp $"
 
 import os
 import sys
@@ -21,6 +21,7 @@ import socket
 import shutil
 
 from AccessGrid import Log
+from AccessGrid.Version import GetVersion
 log = Log.GetLogger(Log.Toolkit)
 
 class AGTkConfig:
@@ -39,14 +40,50 @@ class AGTkConfig:
     @ivar appDir: The directory for system installed shared applications
     @type nodeServicesDir: string
     @ivar nodeServicesDir: the directory for system installed node services
+    @type nodeConfigDir: string
+    @ivar nodeConfigDir: the directory for system installed node configs
     @type servicesDir: string
     @ivar servicesDir: the directory for system installed services
     service packages for all users of this installation.
     @type configDir: string
     @ivar configDir: The directory for installation configuration.
     """
-    def __init__(self):
-        pass
+    theAGTkConfigInstance = None
+
+    def __init__(self, initIfNeeded):
+        if AGTkConfig.theAGTkConfigInstance is not None:
+            raise Exception, "Only one instance of AGTkConfig is allowed."
+
+        # Create the singleton
+        AGTkConfig.theAGTkConfigInstance = self
+
+        # Set the flag to initialize if needed
+        self.initIfNeeded = initIfNeeded
+        
+        # Initialize state
+        self.version = GetVersion()
+        self.installBase = None
+        self.installDir = None
+        self.configDir = None
+        self.logDir = None
+        self.servicesDir = None
+        self.nodeServicesDir = None
+        self.nodeConfigDir = None
+        self.appDir = None
+        self.docDir = None
+        
+        # Now fill in data
+        self._Initialize()
+        
+    def _Initialize(self):
+        self.GetConfigDir()
+        self.GetInstallDir()
+        self.GetDocDir()
+        self.GetLogDir()
+        self.GetSharedAppDir()
+        self.GetNodeServicesDir()
+        self.GetNodeConfigDir()
+        self.GetServicesDir()
 
     def _repr_(self):
         tmpstr = "Access Grid Toolkit Configuration:\n"
@@ -83,6 +120,9 @@ class AGTkConfig:
         raise Exception, "This should not be called directly, but through a subclass."
 
     def GetNodeServicesDir(self):
+        raise Exception, "This should not be called directly, but through a subclass."
+
+    def GetNodeConfigDir(self):
         raise Exception, "This should not be called directly, but through a subclass."
 
     def GetServicesDir(self):
@@ -300,12 +340,64 @@ class UserConfig:
     @type tempDir: string
     @type appDir: string
     @type nodeServicesDir: string
+    @type localServicesDir: string
+    @type nodeConfigDir: string
     @type servicesDir: string
     @type configDir: string
     """
-    def __init__(self):
+
+    theUserConfigInstance = None
+
+    def __init__(self, initIfNeeded):
+
+        if UserConfig.theUserConfigInstance is not None:
+            raise Exception, "Only one instance of User Config is allowed."
+
+        UserConfig.theUserConfigInstance = self
+
+        self.initIfNeeded = initIfNeeded
+
         self.configDir = None
         self.baseDir = None
+        self.tempDir = None
+        self.appDir = None
+        self.sharedAppDir = None
+        self.nodeServicesDir = None
+        self.nodeConfigDir = None
+        self.servicesDir = None
+        self.profileFilename = None
+        self.logDir = None
+
+        self._Initialize()
+        
+    def _Initialize(self):
+        self.GetConfigDir()
+        self.GetTempDir()
+        self.GetProfile()
+        self.GetLogDir()
+
+        # These are new and so can fail
+        try:
+            self.GetSharedAppDir()
+        except:
+            print "No Shared App Dir!"
+        try:
+            self.GetNodeServicesDir()
+        except:
+            print "No Node Service Dir!"
+        try:
+            self.GetNodeConfigDir()
+        except:
+            print "No Node Config Dir!"
+        try:
+            self.GetServicesDir()
+        except:
+            print "No Service Dir!"
+
+        # Move old config files to new location.
+        if self.initIfNeeded:
+            self._Migrate()
+   
 
     def _repr_(self):
         tmpstr = "User Configuration:\n"
