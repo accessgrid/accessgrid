@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.40 2003-09-08 16:15:58 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.41 2003-09-08 21:52:19 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -210,33 +210,6 @@ class StoreConfigDialog(wxDialog):
         # Get value of textfield and checkbox
         return (self.configText.GetValue(), self.defaultCheckbox.IsChecked())
 
-class ServicePopup(wxPopupTransientWindow):
-    """
-    Popup for the service menu
-    """
-    
-    def __init__(self, parent, style = wxDEFAULT_DIALOG_STYLE):
-       
-        wxPopupTransientWindow.__init__(self, parent, style)
-        panel = wxPanel(self, -1)
-        panel.SetBackgroundColour("#FFB6C1")
-        self.m = BuildServiceMenu()
-
-    def PopThatMenu( self, pos ):
-        self.PopupMenuXY( self.m, pos[0], pos[1] )
-
-class ServiceManagerPopup(wxPopupTransientWindow):
-    """
-    Popup for the service manager menu
-    """
-    def __init__(self, parent):
-        wxPopupTransientWindow.__init__(self, parent)
-        panel = wxPanel(self, -1)
-        panel.SetBackgroundColour("#FFB6C1")
-        self.m = BuildServiceManagerMenu()
-
-    def PopThatMenu( self, pos ):
-        self.PopupMenuXY( self.m, pos[0], pos[1] )
 
 class ServiceListCtrl( wxListCtrl ):
 
@@ -244,8 +217,6 @@ class ServiceListCtrl( wxListCtrl ):
                   size=wxDefaultSize, style=wxLC_REPORT):
         listId = wxNewId()
         wxListCtrl.__init__(self, parent, listId, pos, size, style=style)
-
-
         self.InsertColumn( 0, "Service Name", width=wxLIST_AUTOSIZE )
         self.InsertColumn( 1, "Status", width=wxLIST_AUTOSIZE )
 
@@ -425,12 +396,14 @@ class NodeManagementClientFrame(wxFrame):
         ## HOST menu
         menu = BuildServiceManagerMenu()
         menuBar.Append(menu, "&ServiceManager");
-
+        self.hostMenu = menu
+        
         ## SERVICE menu
 
         menu = BuildServiceMenu()
         menuBar.Append(menu, "&Service");
-
+        self.serviceMenu = menu
+        
         ## DEBUG menu
         """
         debugMenu = wxMenu()
@@ -472,24 +445,23 @@ class NodeManagementClientFrame(wxFrame):
         EVT_LIST_ITEM_RIGHT_CLICK(self, self.hostList.GetId(), self.PopupHostMenu)
         EVT_LIST_ITEM_SELECTED( self, self.hostList.GetId(), self.ServiceManagerSelectedCB )
         EVT_LIST_ITEM_DESELECTED( self, self.hostList.GetId(), self.UpdateServiceList )
-
-
+   
         #
         # Create Services panel
         #
-        statBoxPanel = wxPanel( self, -1 )
+        statBoxPanel = wxPanel( self, wxNewId())
         statBox = wxStaticBox(statBoxPanel, -1, "Services")
         statBoxSizer = wxStaticBoxSizer( statBox, wxVERTICAL )
         hortizontalSizer.Add( statBoxPanel, -1, wxEXPAND )
         statBoxPanel.SetSizer( statBoxSizer )
-        self.serviceList = ServiceListCtrl( statBoxPanel, -1, style=wxLC_REPORT )
+        self.serviceList = ServiceListCtrl( statBoxPanel, wxNewId(), style=wxLC_REPORT )
+
         statBoxSizer.Add( self.serviceList, -1, wxEXPAND )
 
         # Handle events in the services list
         EVT_LIST_ITEM_RIGHT_CLICK(self, self.serviceList.GetId(), self.PopupServiceMenu)
-        EVT_LIST_ITEM_ACTIVATED( self, self.serviceList.GetId(), self.GetServiceConfiguration )
-
-
+        EVT_LIST_ITEM_ACTIVATED(self, self.serviceList.GetId(), self.GetServiceConfiguration )
+       
         # Associate menu items with callbacks
         EVT_MENU(self, ID_FILE_ATTACH            ,  self.Attach )
         EVT_MENU(self, ID_FILE_EXIT              ,  self.TimeToQuit )
@@ -1113,30 +1085,28 @@ class NodeManagementClientFrame(wxFrame):
 
     def Error( self, message ):
         wxMessageDialog( self, message, style = wxOK ).ShowModal()
-
+    
     def PopupServiceMenu(self, evt):
         """
         Popup the service menu
         """
-        win = ServicePopup(self)
-
-        # Show the popup right below or above the button
-        # depending on available screen space...
         list = evt.GetEventObject()
-        pos = list.ClientToScreen( evt.GetPoint() )
-        win.PopThatMenu( pos )
+        # This does not work, bug?
+        # pos = list.ClientToScreen( evt.GetPoint() )
+        pos = evt.GetPoint() + wxPoint(240, 20)
+        self.PopupMenu(self.serviceMenu, pos)
 
     def PopupHostMenu(self, evt):
         """
         Popup the service manager menu
         """
-        win = ServiceManagerPopup(self)
-
-        # Show the popup right below or above the button
-        # depending on available screen space...
+        # Place the menu next to the mouse position.
         list = evt.GetEventObject()
-        pos = list.ClientToScreen( evt.GetPoint() )
-        win.PopThatMenu( pos )
+        
+        # This does not work, bug?
+        #pos = list.ClientToScreen( evt.GetPoint() )
+        pos = evt.GetPoint() + wxPoint(20, 20)
+        self.PopupMenu(self.hostMenu, pos)
 
     def CheckCredentials(self):
         """
