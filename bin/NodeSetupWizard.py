@@ -758,7 +758,6 @@ class ConfigWindow(TitledPage):
         
         if self.checkBox.GetValue() and self.configNameCtrl.GetValue()=="":
             MessageDialog(self, "Please enter a name for this configuration.", "Enter Configuration Name")
-            print '=========', self.configNameCtrl.GetValue()
             wxEndBusyCursor()
             return false
                        
@@ -924,7 +923,6 @@ class NodeClient:
         # Check if we have a video producer service installed
         
         for service in self.serviceList:
-            print service.name
             if service.name == type:
                 serviceAvailable = service
 
