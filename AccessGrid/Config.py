@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.23 2004-09-08 18:57:08 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.24 2004-09-09 05:35:04 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.23 2004-09-08 18:57:08 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.24 2004-09-09 05:35:04 judson Exp $"
 
 import os
 import sys
@@ -123,7 +123,7 @@ class GlobusConfig:
 
         @type initEnvIfNeeded: integer
         """
-        raise Exception, "This should not be called directly, but through a subclass."
+        pass
 
     def __str__(self):
         return self._repr_()
@@ -295,7 +295,7 @@ class UserConfig:
     @type configDir: string
     """
     def __init__(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+        pass
 
     def _repr_(self):
         tmpstr = "User Configuration:\n"
@@ -395,7 +395,7 @@ class SystemConfig:
     @type tempDir: string
     """
     def __init__(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+        pass
 
     def _repr_(self):
         tmpstr = "System Configuration:\n"
@@ -647,8 +647,7 @@ class MimeConfig:
     viewing.
     """
     def __init__(self):
-        err_str = "This should not be called directly, but through a subclass."
-        raise Exception(err_str)
+        pass
     
     def GetMimeType(self,extension = None):
         raise Exception, "This should not be called directly, but through a subclass."
