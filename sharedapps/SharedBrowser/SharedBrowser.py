@@ -8,7 +8,7 @@ from wxPython.wx import *
 from wxPython.iewin import *
 
 from AccessGrid.SharedAppClient import SharedAppClient
-from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid import icons
     
@@ -241,7 +241,7 @@ class SharedBrowser( wxApp ):
 
         # Get client profile
         try:
-            clientProfileFile = os.path.join(GetUserConfigDir(), "profile")
+            clientProfileFile = os.path.join(UserConfig.instance().GetConfigDir(), "profile")
             clientProfile = ClientProfile(clientProfileFile)
         except:
             self.log.info("SharedAppClient.Connect: Could not load client profile, set clientProfile = None")
