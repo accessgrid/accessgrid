@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.135 2004-03-01 20:31:35 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.136 2004-03-02 21:37:44 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.135 2004-03-01 20:31:35 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.136 2004-03-02 21:37:44 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -33,8 +33,8 @@ from AccessGrid import Platform
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.Platform import ProcessManager
 from AccessGrid.Venue import VenueIW
-from AccessGrid.hosting import Server, SOAPInterface, IWrapper
-from AccessGrid.hosting import Decorate, Reconstitute
+from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
+from AccessGrid.hosting import Decorate, Reconstitute, Server
 from AccessGrid.Utilities import LoadConfig
 from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid.VenueClientObserver import VenueClientObserver
@@ -1580,9 +1580,9 @@ class VenueClientI(SOAPInterface):
         retval = Decorate(dl)
         return retval
 
-class VenueClientIW(IWrapper):
+class VenueClientIW(SOAPIWrapper):
     def __init__(self, url=None):
-        IWrapper.__init__(self, url)
+        SOAPIWrapper.__init__(self, url)
 
     def EnterVenue(self, url):
         return self.proxy.EnterVenue(url)
