@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.55 2003-11-17 15:02:14 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.56 2004-02-18 17:39:56 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.55 2003-11-17 15:02:14 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.56 2004-02-18 17:39:56 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -265,11 +265,11 @@ class DataDescriptionContainer:
         name = dataDescription.name
         log.debug("DataDescriptionContainer::AddData with name %s " %name)
              
-        if self.data.has_key(name):
+        if self.data.has_key(dataDescription.id):
             log.exception("DataDescriptionContainer::AddData: data already present: %s", name)
             raise DataAlreadyPresent
 
-        self.data[name] = dataDescription
+        self.data[dataDescription.id] = dataDescription
         log.debug("DataDescriptionContainer::AddData: Distribute ADD_DATA event %s", dataDescription)
 
     def UpdateData(self, dataDescription,):
@@ -283,11 +283,17 @@ class DataDescriptionContainer:
 
         name = dataDescription.name
 
-        if not self.data.has_key(name):
+        if not self.data.has_key(dataDescription.id):
             log.exception("UpdateData: data not already present: %s", name)
             raise DataNotFound
 
-        self.data[dataDescription.name] = dataDescription
+        self.data[dataDescription.id] = dataDescription
+
+    def GetDataFromId(self, id):
+        if self.data.has_key(id):
+            return self.data[id]
+        else:
+            return None
 
     def GetData(self, fileName):
         """
@@ -303,12 +309,19 @@ class DataDescriptionContainer:
             *None* When the data is not found
         
         """
+        desc = None
 
-        if self.data.has_key(fileName):
-            return self.data[fileName]
-        else:
-            return None
+        for dataDesc in self.data.values():
+            if dataDesc.name == fileName:
+                desc = dataDesc
 
+        return desc
+            
+        #if self.data.has_key(fileName):
+        #    return self.data[fileName]
+        #else:
+        #    return None
+    
     def RemoveData(self, dataDescription):
         """
         RemoveData removes a DataDescription 
@@ -321,8 +334,8 @@ class DataDescriptionContainer:
         """
         name = dataDescription.name
 
-        if self.data.has_key(name):
-            del self.data[ dataDescription.name ]
+        if self.data.has_key(dataDescription.id):
+            del self.data[ dataDescription.id ]
             
         else:
             log.exception("DataDescriptionContainer::RemoveData: Data not found.")
@@ -351,7 +364,7 @@ class DataDescriptionContainer:
         '''
       
         for description in dataList:
-            self.data[description.name] = description
+            self.data[description.id] = description
            
     def GetDataDescriptions(self):
         """
@@ -388,7 +401,6 @@ class DataStore:
         self.prefix = prefix
         self.transfer_engine = transferEngine
         self.transfer_engine.RegisterPrefix(prefix,self)
-
 
         self.cbLock = threading.Lock()
         self.transferEngineLock = threading.Lock()
@@ -478,11 +490,11 @@ class DataStore:
             else:
                 data.SetURI(url)
                 persistentData.append(data)
-                
+
         self.cbLock.acquire()
         self.dataDescContainer.LoadPersistentData(persistentData)
         self.cbLock.release()
-
+        
     def AsINIBlock(self):
         '''
         This serializes the data in the DataStore as a INI formatted
@@ -493,8 +505,8 @@ class DataStore:
         '''
         self.cbLock.acquire()
         block = self.dataDescContainer.AsINIBlock()
-        self.cbLock.release()
-        
+        self.cbLock.release()   
+                
         return block
 
     def GetDataDescriptions(self):
@@ -507,7 +519,7 @@ class DataStore:
         self.cbLock.acquire()
         dataDescriptionList = self.dataDescContainer.GetDataDescriptions()
         self.cbLock.release()
-        
+                
         return dataDescriptionList
 
     def GetFiles(self):
@@ -539,13 +551,14 @@ class DataStore:
             errorFlag = 0
             
             log.debug("Datastore.RemoveFiles: %s", data.name)
+
             try:
                 self.cbLock.acquire()
                 self.dataDescContainer.RemoveData(data)
                 self.cbLock.release()
             except:
+                self.cbLock.release()
                 log.error("DataStore.RemoveFiles: Can not remove data from callbackclass")
-                               
                 #  errorFlag = 1
                 # We don't have to raise an exception for this
 
@@ -566,6 +579,38 @@ class DataStore:
                 
         if errorFlag:
             raise FileNotFound(filesWithError)
+
+    def ModifyData(self, data):
+        
+        log.debug("Datastore.ModifyData: %s", data.name)
+        oldName = None
+        errorFlag = None
+
+        self.cbLock.acquire()
+        oldName = self.dataDescContainer.GetDataFromId(data.id).name
+        self.cbLock.release()
+
+        if oldName != data.name:
+            oldPath = os.path.join(self.pathname, oldName)
+            newPath = os.path.join(self.pathname, data.name)
+                        
+            if not os.path.exists(oldPath):
+                errorFlag = 1
+                log.error("DataStore.ModifyData: The path does not exist %s"%path)
+            
+            try:
+                os.rename(oldPath, newPath)
+            except:
+                log.exception("DataStore.ModifyFiles: raised error")
+                errorFlag = 1
+
+        self.cbLock.acquire()
+        data.uri = self.GetDownloadDescriptor(data.name)
+        self.dataDescContainer.UpdateData(data)
+        self.cbLock.release()
+
+        if errorFlag:
+            raise FileNotFound()
         
     def UploadLocalFiles(self, fileList, dn, id):
         '''
@@ -610,16 +655,18 @@ class DataStore:
                     desc.SetChecksum(checksum)
                     desc.SetSize(int(size))
                     desc.SetStatus(DataDescription.STATUS_PRESENT)
-                    
+
                     self.transferEngineLock.acquire()
-                    desc.SetURI(self.transfer_engine.GetDownloadDescriptor(self.prefix, name))
+                    desc.SetURI(self.transfer_engine.GetDownloadDescriptor(self.prefix,
+                                                                               name))
                     self.transferEngineLock.release()
-                    
+
                     log.debug("DataStore::AddFile: updating with %s %s", desc, desc.__dict__)
 
                     self.cbLock.acquire()
                     self.dataDescContainer.AddData(desc)
                     self.cbLock.release()
+                    
                 else:
                     raise DuplicateFile(desc) 
 
@@ -635,11 +682,10 @@ class DataStore:
         Return the upload descriptor for this datastore.
 
         """
-
         self.transferEngineLock.acquire()
         descriptor = self.transfer_engine.GetUploadDescriptor(self.prefix)
         self.transferEngineLock.release()
-        
+                
         return descriptor
 
     def GetDownloadDescriptor(self, filename):
@@ -657,7 +703,7 @@ class DataStore:
         self.transferEngineLock.acquire()
         descriptor = self.transfer_engine.GetDownloadDescriptor(self.prefix, filename)
         self.transferEngineLock.release()
-        
+             
         return descriptor
 
     def GetDownloadFilename(self, id_token, url_path):
@@ -731,11 +777,11 @@ class DataStore:
         #
 
         filename = file_info['name']
-
+        
         self.cbLock.acquire()
         desc = self.dataDescContainer.GetData(filename)
         self.cbLock.release()
-        
+                        
         if desc is None:
             log.debug("Datastore::GetUploadFilenameVenue: data for %s not present", filename)
             return None
@@ -760,7 +806,6 @@ class DataStore:
         information from the file_info dict (which contains the information
         from the manifest).
         """
-
         self.cbLock.acquire()
         desc = self.dataDescContainer.GetData(file_info['name'])
         self.cbLock.release()
@@ -779,8 +824,8 @@ class DataStore:
         log.debug("Checking file %s for validity", desc.name)
         
         if url is None:
-            self.cbLock.acquire()
             log.warn("File %s has vanished", name)
+            self.cbLock.acquire()
             self.dataDescContainer.RemoveData(desc)
             self.cbLock.release()
         else:
@@ -789,7 +834,7 @@ class DataStore:
             self.dataDescContainer.UpdateData(desc)
             self.callbackClass.UpdateData(desc)
             self.cbLock.release()
-          
+                      
     def AddPendingUpload(self, identityToken, filename):
         """
         Create a data description for filename with a state of 'pending' and
@@ -805,7 +850,7 @@ class DataStore:
         self.dataDescContainer.AddData(desc)
         self.callbackClass.AddData(desc)
         self.cbLock.release()
-        
+                        
         return desc
 
     def CancelPendingUpload(self, filename):
@@ -824,10 +869,11 @@ class DataStore:
         # Remove the file from the datastore
         self.RemoveFiles([desc])
         # distribute updated event.
+
         self.cbLock.acquire()
         self.callbackClass.DistributeEvent(Event( Event.REMOVE_DATA, self.callbackClass.uniqueId, desc ))
         self.cbLock.release()
-
+        
     def GetDescription(self, filename):
         return self.dataDescContainer.GetData(filename)
 
@@ -1310,10 +1356,10 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         fp = None
         try:
-            # THIS IS WHERE WE GET AN ERROR!!!
             log.debug("HTTPTransferHandler::ProcessGet: identitytoken: %s, path: %s" %(identityToken, path))
             ds_path = transfer_handler.GetDownloadFilename(identityToken, path)
             log.debug("HTTPTransferHandler::ProcessGet: Datastore path is %s" %ds_path)
+            
             if ds_path is None:
                 log.debug("HTTPTransferHandler::ProcessGet: Datastore path is none")
                 raise FileNotFound(path)
@@ -1754,6 +1800,7 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
     url_info = urlparse.urlparse(download_url)
     host = url_info[1]
     path = url_info[2]
+   
     log.debug("Host %s, path %s", host, path)
 
     log.debug("Connect to %s", host)
