@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.148 2003-05-17 17:59:32 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.149 2003-05-19 15:23:00 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -80,6 +80,10 @@ class VenueClientUI(wxApp, VenueClient):
     def OnInit(self):
         """
         This method initiates all gui related classes.
+
+        **Returns:**
+
+        *Integer* 1 if initiation is successful 
         """
         self.__processArgs()
         self.__setLogger()
@@ -181,7 +185,13 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called during client startup.  It sets the
         participant profile, enters the venue, and finally starts the
         wxPython main gui loop.
+        
+        **Arguments:**
+        
+        *profile* The ClientProfile you want to be associated with in the venue.
+        
         """
+        
         self.SetProfile(profile)
         self.frame.venueAddressBar.SetAddress(self.profile.homeVenue)
         self.frame.Show(true)
@@ -302,6 +312,10 @@ class VenueClientUI(wxApp, VenueClient):
         Note: Overridden from VenueClient
         This method  notifies the user that somebody wants to follow him or
         her and allows the user to approve the request.
+
+        **Arguments:**
+        
+        *clientProfile* The ClientProfile of the user who wish to lead this client.
         """
         wxCallAfter(self.frame.AuthorizeLeadDialog, clientProfile)
 
@@ -311,6 +325,12 @@ class VenueClientUI(wxApp, VenueClient):
         Note: Overridden from VenueClient
         This method notifies the user if the request to follow somebody is approved
         or denied.
+
+        **Arguments:**
+        
+        *leaderProfile* The ClientProfile of the user we want to follow
+        *iaAuthorized* Boolean value set to true if request is approved, else false.
+        
         """
         VenueClient.LeadResponse(self, leaderProfile, isAuthorized)
         wxCallAfter(self.frame.NotifyLeadDialog, leaderProfile, isAuthorized)
@@ -323,6 +343,10 @@ class VenueClientUI(wxApp, VenueClient):
         Note: Overridden from VenueClient
         This method  notifies the user that somebody wants to stop following him or
         her
+
+        **Arguments:**
+        
+        *clientProfile* The ClientProfile of the client who stopped following this client
         """
         wxCallAfter(self.frame.NotifyUnLeadDialog, clientProfile)
 
@@ -335,6 +359,10 @@ class VenueClientUI(wxApp, VenueClient):
         Note: Overridden from VenueClient
         This method is called every time a venue participant enters
         the venue.  Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *user* The ClientProfile of the participant who just  entered the venue
         """
         profile = ClientProfile()
         profile.profileFile = user.profileFile
@@ -385,28 +413,40 @@ class VenueClientUI(wxApp, VenueClient):
         Note: Overridden from VenueClient
         This method is called every time a venue participant exits
         the venue.  Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *user* The ClientProfile of the participant who just exited the venue
         """
         VenueClient.RemoveUserEvent(self, user)
 
         wxCallAfter(self.frame.contentListPanel.RemoveParticipant, user)
         log.debug("  remove user: %s" %(user.name))
 
-    def ModifyUserEvent(self, data):
+    def ModifyUserEvent(self, user):
         """
         Note: Overridden from VenueClient
         This method is called every time a venue participant changes
         its profile.  Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *user* The modified ClientProfile of the participant that just changed profile information
         """
         
-        VenueClient.ModifyUserEvent(self, data)
-        log.debug("EVENT - Modify participant: %s" %(data.name))
-        wxCallAfter(self.frame.contentListPanel.ModifyParticipant, data)
+        VenueClient.ModifyUserEvent(self, user)
+        log.debug("EVENT - Modify participant: %s" %(user.name))
+        wxCallAfter(self.frame.contentListPanel.ModifyParticipant, user)
 
     def AddDataEvent(self, data):
         """
         Note: Overridden from VenueClient
         This method is called every time new data is added to the venue.
         Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *data* The DataDescription representing data that just got added to the venue
         """
         VenueClient.AddDataEvent(self, data)
         log.debug( "EVENT - Add data: %s" %(data.name))
@@ -417,6 +457,10 @@ class VenueClientUI(wxApp, VenueClient):
         Note: Overridden from VenueClient
         This method is called when a data item has been updated in the venue.
         Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *data* The DataDescription representing data that just got updated in the venue
         """
         VenueClient.UpdateDataEvent(self, data)
         log.debug("EVENT - Update data: %s" %(data.name))
@@ -427,6 +471,10 @@ class VenueClientUI(wxApp, VenueClient):
         Note: Overridden from VenueClient
         This method is called every time data is removed from the venue.
         Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *data* The DataDescription representing data that just got removed from the venue
         """
         VenueClient.RemoveDataEvent(self, data)
         log.debug("EVENT - Remove data: %s" %(data.name))
@@ -437,6 +485,10 @@ class VenueClientUI(wxApp, VenueClient):
         Note: Overridden from VenueClient
         This method is called every time a new application is added to the venue.
         Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *app* The ApplicationDescription representing the application that just got added to the venue
         """
         log.debug("EVENT - Add application: %s, Mime Type: %s" %(app.name, app.mimeType))
         wxCallAfter(self.frame.contentListPanel.AddApplication, app)
@@ -446,6 +498,10 @@ class VenueClientUI(wxApp, VenueClient):
         Note: Overridden from VenueClient
         This method is called every time an application is removed from the venue.
         Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *app* The ApplicationDescription representing the application that just got removed from the venue
         """
         log.debug("EVENT - Remove application: %s" %(app.name))
         wxCallAfter(self.frame.contentListPanel.RemoveApplication, app)
@@ -455,6 +511,10 @@ class VenueClientUI(wxApp, VenueClient):
         Note: Overridden from VenueClient
         This method is called every time new service is added to the venue.
         Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *service* The ServiceDescription representing the service that just got added to the venue
         """
         VenueClient.AddServiceEvent(self, service)
         log.debug("EVENT - Add service: %s" %(service.name))
@@ -465,33 +525,45 @@ class VenueClientUI(wxApp, VenueClient):
         Note: Overridden from VenueClient
         This method is called every time service is removed from the venue.
         Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *service* The ServiceDescription representing the service that just got removed from the venue
         """
         VenueClient.RemoveServiceEvent(self, service)
         log.debug("EVENT - Remove service: %s" %(service.name))
         wxCallAfter(self.frame.contentListPanel.RemoveService, service)
 
-    def AddConnectionEvent(self, data):
+    def AddConnectionEvent(self, connection):
         """
         Note: Overridden from VenueClient
         This method is called every time a new exit is added to the venue.
         Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *connection* The ConnectionDescription representing the exit that just got added to the venue
         """
                 
-        VenueClient.AddConnectionEvent(self, data)
-        log.debug("EVENT - Add connection: %s" %(data.name))
-        wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, data)
+        VenueClient.AddConnectionEvent(self, connection)
+        log.debug("EVENT - Add connection: %s" %(connection.name))
+        wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, connection)
 
-    def SetConnectionsEvent(self, data):
+    def SetConnectionsEvent(self, connections):
         """
         Note: Overridden from VenueClient
         This method is called every time a new exit is added to the venue.
         Appropriate gui updates are made in client.
+
+        **Arguments:**
+        
+        *connections* A list of ConnectionDescriptions representing all the exits in the venue.
         """
-        VenueClient.SetConnectionsEvent(self, data)
+        VenueClient.SetConnectionsEvent(self, connections)
         log.debug("EVENT - Set connections")
         wxCallAfter(self.frame.venueListPanel.CleanUp)
 
-        for connection in data:
+        for connection in connections:
             log.debug("EVENT - Add connection: %s" %(connection.name))
             wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, connection)
 
@@ -500,8 +572,12 @@ class VenueClientUI(wxApp, VenueClient):
         Note: Overridden from VenueClient
         This method calls the venue client method and then
         performs its own operations when the client enters a venue.
-        URL - the venue address we want to connect to
-        back - if the back is true if the back button was pressed, else false
+      
+        **Arguments:**
+        
+        *URL* A string including the venue address we want to connect to
+        *back* Boolean value, true if the back button was pressed, else false.
+        
         """
         log.debug("bin.VenueClient::EnterVenue: Enter venue with url: %s" %(URL))
 
@@ -674,7 +750,10 @@ class VenueClientUI(wxApp, VenueClient):
     def __addPersonalDataToVenue(self):
         '''
         Adds all personal data, stored in local file directory as a dictionary, to the venue.
-        Returns a warning string containing information about data that could not be added.
+       
+        **Returns:**
+        
+        *String* A warning string including information about data that could not be added to the venue
         '''
         #
         # Add personal data to venue
@@ -730,6 +809,11 @@ class VenueClientUI(wxApp, VenueClient):
         This method sets the history list, which stores visited
         venue urls used by the back button.  A venue URL does not get
         saved if the back (<<) button is clicked.
+
+        **Arguments:**
+        
+        *uri* A string containing the venue address we want to add to the history list
+        *back* Boolean value, true if the back button was pressed, else false.
         """
         log.debug("Set history url: %s " %uri)
         length = len(self.history)
@@ -956,7 +1040,7 @@ class VenueClientUI(wxApp, VenueClient):
         This implementation fires up a separate thread for the actual
         transfer. We want to do this to keep the application live for possible
         long-term transfers and to allow for live updates of a download status.
-
+        
         """
         url = self.upload_url
         method = self.get_ident_and_upload
@@ -1071,6 +1155,10 @@ class VenueClientUI(wxApp, VenueClient):
     def AddData(self, data):
         """
         This method adds local personal data to the venue
+
+        **Arguments:**
+        
+        *data* The DataDescription we want to add to personal data
         """
         log.debug("Adding data: %s to venue" %data.name)
         
@@ -1084,7 +1172,12 @@ class VenueClientUI(wxApp, VenueClient):
            
     def RemoveData(self, data):
         """
-        This method removes a data from the venue
+        This method removes a data from the venue. If the data is personal, this method
+        also removes the data from the personal data storage.
+
+        **Arguments:**
+        
+        *data* The DataDescription we want to remove from vnue
         """
         log.debug("Remove data: %s from venue" %data.name)
         try:
@@ -1100,6 +1193,10 @@ class VenueClientUI(wxApp, VenueClient):
     def AddService(self, service):
         """
         This method adds a service to the venue
+
+        **Arguments:**
+        
+        *service* The ServiceDescription we want to add to the venue
         """
         log.debug("Adding service: %s to venue" %service.name)
         try:
@@ -1112,6 +1209,10 @@ class VenueClientUI(wxApp, VenueClient):
     def OpenService(self, service):
         """
         open the specified service
+
+        **Arguments:**
+        
+        *service* The ServiceDescription representing the service we want to open
         """
         log.debug("Opening service: %s / %s" % (service.name,
                                                  service.mimeType))
@@ -1137,6 +1238,10 @@ class VenueClientUI(wxApp, VenueClient):
     def RemoveService(self, service):
         """
         This method removes a service from the venue
+
+        **Arguments:**
+        
+        *service* The ServiceDescription representing the service we want to remove from the venue
         """
         log.debug("Remove service: %s from venue" %service.name)
         try:
@@ -1148,7 +1253,11 @@ class VenueClientUI(wxApp, VenueClient):
             
     def ChangeProfile(self, profile):
         """
-        This method changes this participants profile
+        This method changes this participants profile and saves the information to file.
+
+        **Arguments:**
+        
+        *profile* The ClientProfile including the new profile information
         """
         self.profile = profile
         self.profile.Save(self.profileFile)
@@ -1173,6 +1282,10 @@ class VenueClientUI(wxApp, VenueClient):
     def SetNodeUrl(self, url):
         """
         This method sets the node service url
+
+        **Arguments:**
+        
+        *url* The string including the new node url address
         """
         log.debug("Set node service url:  %s" %url)
         self.nodeServiceUri = url
@@ -1183,8 +1296,16 @@ class VenueClientUI(wxApp, VenueClient):
     def GetData(self, filename):
         '''
         This method is called by the personal DataStore to get a
-        DataDescription from the VenueClient.  If the file is not present
-        GetData returns None
+        DataDescription from the VenueClient.
+
+        **Arguments:**
+        
+        *filename* The name of the file we want to locate
+
+        **Returns:** 
+
+        *DataDescription* The DataDescription representing the data named filename.
+        If the file is not present among personal data, None is returned
         '''
         log.debug("Get private data description: %s" %filename)
         if self.personalDataDict.has_key(filename):
@@ -1198,8 +1319,17 @@ class VenueClientUI(wxApp, VenueClient):
     def GetVenueData(self, filename):
         '''
         This method is called by the personal DataStore to get a
-        DataDescription present in the venue.  If the file is not present
-        GetData returns None
+        DataDescription present in the venue.
+
+        **Arguments:**
+        
+        *filename* The name of the file we want to locate
+
+        **Returns:**
+        
+        *DataDescription* The DataDescription representing the data named filename.
+        If the file is not present in the venue, None is returned.
+
         '''
         log.debug("Get venue data description: %s" %filename)
         log.debug("Venue state: %s" %str(self.venueState.data))
@@ -1210,14 +1340,18 @@ class VenueClientUI(wxApp, VenueClient):
             d = None
         return d
 
-    def UpdateData(self, desc):
+    def UpdateData(self, data):
         '''
         This method is called by the personal DataStore to update a
         DataDescription.
+        
+        **Arguments:**
+        
+        *data* The DataDescription of the data we want to update
         '''
-        self.personalDataDict[desc.GetName()] = desc
-        self.client.UpdateData(desc)
-        log.debug("UpdateData: %s" %desc)
+        self.personalDataDict[data.GetName()] = data
+        self.client.UpdateData(data)
+        log.debug("UpdateData: %s" %data)
 
     #
     # Application Integration code
@@ -1226,6 +1360,10 @@ class VenueClientUI(wxApp, VenueClient):
         """
         Start the specified application.  This method creates the application
         in the venue, and then joins it by starting the appropriate client
+
+        **Arguments:**
+        
+        *app* The ApplicationDescription of the application we want to start
         """
         log.debug("Creating application: %s" % app.name)
         appDesc = self.client.CreateApplication( app.name, app.description,
@@ -1235,6 +1373,10 @@ class VenueClientUI(wxApp, VenueClient):
     def JoinApp(self,app):
         """
         Join the specified application
+
+        **Arguments:**
+        
+        *app* The ApplicationDescription of the application we want to join
         """
         log.debug("Joining application: %s / %s" % (app.name, app.mimeType))
         commands = GetMimeCommands(filename=app.uri, type=app.mimeType)
@@ -1254,6 +1396,10 @@ class VenueClientUI(wxApp, VenueClient):
     def RemoveApp(self,app):
         """
         Delete the specified application from the venue
+        
+        **Arguments:**
+        
+        *app* The ApplicationDescription of the application we want to remove from venue
         """
         self.client.DestroyApplication( app.id )
         log.debug("Destroying application: %s" % app.name)
