@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.35 2004-03-10 23:17:07 eolson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.36 2004-03-22 19:43:05 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.35 2004-03-10 23:17:07 eolson Exp $"
+__revision__ = "$Id: EventClient.py,v 1.36 2004-03-22 19:43:05 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from threading import Thread, Lock
@@ -364,7 +364,6 @@ if __name__ == "__main__":
     
     app = Toolkit.CmdlineApplication()
     app.Initialize()
-    app.InitGlobusEnvironment()
 
     certMgr = app.GetCertificateManager()
     if not certMgr.HaveValidProxy():
