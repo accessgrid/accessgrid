@@ -1,0 +1,8 @@
+[node]
+servicemanagers = servicemanager0 
+
+[servicemanager0]
+url = https://localhost:11000/ServiceManager
+services = 
+name = localhost:11000
+
