@@ -1,8 +1,6 @@
 from wxPython.wx import *
 from wxPython.lib.buttons import *
-import importantPaper
-import pptdoc
-import defaultPerson
+from AccessGrid import icons
 
 '''VenueClient. 
 
@@ -35,10 +33,11 @@ class VenueClientFrame(wxFrame):
 	
 	self.menubar = wxMenuBar()
 	self.statusbar = self.CreateStatusBar(1)
-	self.toolbar = wxToolBar(self, -1,wxDefaultPosition,wxDefaultSize, wxTB_TEXT|wxTB_HORIZONTAL|wxNO_BORDER|wxTB_FLAT)
+	self.toolbar = wxToolBar(self, -1,wxDefaultPosition,wxDefaultSize, wxTB_TEXT| \
+		  wxTB_HORIZONTAL| wxTB_FLAT)
 	self.venueListPanel = VenueListPanel(self) 
 	self.contentListPanel = ContentListPanel(self)
-
+	
 	self. __setStatusbar()
 	self.__setMenubar()
 	self.__setToolbar()
@@ -75,10 +74,11 @@ class VenueClientFrame(wxFrame):
         self.menubar.Append(self.help, "&Help")
 	
     def __setToolbar(self):
-	self.toolbar.SetToolTipString("My private data")   
+#	self.toolbar.SetToolTipString("My private data")   
 	wxInitAllImageHandlers()
-	icon = wxBitmap('IMAGES/icon.gif', wxBITMAP_TYPE_GIF)
-	self.toolbar.AddSimpleTool(20,icon, "New", "This is a tool button...",)
+#	icon = wxBitmap('IMAGES/icon.gif', wxBITMAP_TYPE_GIF)
+	self.toolbar.AddSimpleTool(20, icons.getWordIconBitmap(), "ImportantPaper.doc", "ImportantPaper.doc",)
+	self.toolbar.AddSimpleTool(21, icons.getPptIconBitmap(), "Presentation.ppt", "Presentation.ppt",)
 	
     def __setProperties(self):
         self.SetTitle("Access Grid - The Lobby")
@@ -117,12 +117,12 @@ class VenueListPanel(wxPanel):
     def __init__(self, parent):
         wxPanel.__init__(self, parent, -1)
 	self.parent = parent
-	self.SetBackgroundColour(wxLIGHT_GREY)
+	self.SetBackgroundColour(parent.GetBackgroundColour())
 	self.panel = wxPanel(self, -1)
-	self.panel.SetBackgroundColour(wxLIGHT_GREY)
+	self.panel.SetBackgroundColour(parent.GetBackgroundColour())
 	self.list = VenueList(self, -1)
 		
-    	self.list.SetBackgroundColour(wxLIGHT_GREY)
+    	self.list.SetBackgroundColour(parent.GetBackgroundColour())
 	self.minimizeButton = wxButton(self.panel, 10, "<<", wxPoint(40,0), wxDefaultSize, wxBU_EXACTFIT)
 	self.minimizeButton.SetFont(wxFont(5, wxSWISS, wxNORMAL, wxNORMAL, 0, "adventure"))
 	self.maximizeButton = wxButton(self.panel, 20, ">>", wxPoint(0,0), wxDefaultSize, wxBU_EXACTFIT)
@@ -259,27 +259,28 @@ class ContentListPanel(wxPanel):
     def __setImageList(self):
 	wxInitAllImageHandlers()
 	imageList = wxImageList(16,16)  
-	service = wxBitmap('IMAGES/service.bmp', wxBITMAP_TYPE_BMP)
-	smileyOn = wxBitmap('IMAGES/smileyOn.jpg', wxBITMAP_TYPE_JPEG)
-	smileySelect = wxBitmap('IMAGES/smileySelect.jpg', wxBITMAP_TYPE_JPEG)
+#	service = wxBitmap('IMAGES/service.bmp', wxBITMAP_TYPE_BMP)
+#	smileyOn = wxBitmap('IMAGES/smileyOn.jpg', wxBITMAP_TYPE_JPEG)
+#	smileySelect = wxBitmap('IMAGES/smileySelect.jpg', wxBITMAP_TYPE_JPEG)
 
 	newImageList = wxImageList(16,16)  
-	self.defaultPersonId = imageList.Add(defaultPerson.getBitmap())
-	self.pptDocId = imageList.Add(pptdoc.getBitmap())
-	self.importantPaperId = imageList.Add(importantPaper.getBitmap())
-	self.serviceId = imageList.Add(service)
-	self.smileyOnId =  imageList.Add(smileyOn)
-	self.smileySelectId =  imageList.Add(smileySelect)
+	self.defaultPersonId = imageList.Add(icons.getDefaultPersonIconBitmap())
+	self.pptDocId = imageList.Add(icons.getPptIconBitmap())
+	self.importantPaperId = imageList.Add(icons.getWordIconBitmap())
+	self.serviceId = imageList.Add(icons.getVoyagerIconBitmap())
+	self.iconId = imageList.Add(icons.getDefaultPersonIconBitmap())  
+	#self.smileyOnId =  imageList.Add(smileyOn)
+	#self.smileySelectId =  imageList.Add(smileySelect)
 	self.tree.AssignImageList(imageList)
 	
     def __setTree(self):
         self.root = self.tree.AddRoot("The Lobby")
 	participants = self.tree.AppendItem(self.root, "Participants")
 	self.tree.SetItemBold(participants)
-	person1 = self.tree.AppendItem(participants, " Susanne Lefvert", self.smileyOnId,  self.smileySelectId)
-	person2 = self.tree.AppendItem(participants, " Bob Olson", self.smileyOnId,  self.smileySelectId)
-	person3 = self.tree.AppendItem(participants, " Ivan Judson", self.smileyOnId,  self.smileySelectId)
-	person4 = self.tree.AppendItem(participants, " Tom Uram", self.smileyOnId,  self.smileySelectId)
+	person1 = self.tree.AppendItem(participants, " Susanne Lefvert", self.iconId, self.iconId)
+	person2 = self.tree.AppendItem(participants, " Bob Olson", self.iconId, self.iconId)
+	person3 = self.tree.AppendItem(participants, " Ivan Judson", self.iconId,  self.iconId)
+	person4 = self.tree.AppendItem(participants, " Tom Uram", self.iconId, self.iconId)
 	data = self.tree.AppendItem(self.root, "Data")
 	self.tree.SetItemBold(data)
 		
