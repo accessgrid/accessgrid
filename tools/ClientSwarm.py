@@ -77,7 +77,7 @@ def RunClient(*args, **kw):
             exits = client.venueState.connections.values()
             if len(exits):
                 next_index = random.randint(0, len(exits)-1)
-                venueUri = exits[next_index]
+                venueUri = exits[next_index].uri
 
         try:
             client.ExitVenue()
