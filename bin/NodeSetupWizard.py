@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.28 2004-04-14 15:30:47 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.29 2004-04-23 22:00:26 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -19,10 +19,14 @@ from wxPython.wizard import *
 # Agtk specific imports
 from AccessGrid.Toolkit import WXGUIApplication
 from AccessGrid import Log
+from AccessGrid.Toolkit import Service
+from AccessGrid.Platform.Config import SystemConfig
 
 from AccessGrid.Platform import IsWindows
 
-from AccessGrid.AGNodeService import AGNodeService
+from AccessGrid.AGNodeService import AGNodeServiceI, AGNodeService
+from AccessGrid.AGNodeService import AGNodeServiceIW
+from AccessGrid.hosting import SecureServer
 from AccessGrid.AGParameter import ValueParameter
 from AccessGrid.Descriptions import AGServiceManagerDescription
 
@@ -62,7 +66,7 @@ class TitledPage(wxPyWizardPage):
         title.SetFont(wxFont(14, wxNORMAL, wxNORMAL, wxBOLD))
         self.sizer.AddWindow(title, 0, wxALL|wxEXPAND, 5)
         self.sizer.AddWindow(wxStaticLine(self, -1), 0, wxEXPAND|wxALL, 5)
-        self.sizer.Add(10, 10)
+        self.sizer.Add((10, 10))
                
     def SetNext(self, next):
         '''
@@ -139,7 +143,7 @@ class NodeSetupWizard(wxWizard):
         except:
             log.exception("NodeSetupWizard.__init__: Can not start node service")
             ErrorDialog(self, "Can not start Node Setup Wizard.",
-                        "Error", style = wxICON_ERROR|wxOK, logFile = NODE_SETUP_WIZARD_LOG)
+                        "Error", logFile = NODE_SETUP_WIZARD_LOG)
 
         else:
             # Run the wizard
@@ -148,13 +152,13 @@ class NodeSetupWizard(wxWizard):
             # Wizard finished
             
             # Stop node service
-            node = self.nodeClient.GetNodeService()
+            #node = self.nodeClient.GetNodeService()
 
-            if node:
-                try:
-                    node.Stop()
-                except:
-                    log.exception("NodeSetupWizard.__init__: Can not stop node service")
+            #if node:
+            try:
+                self.nodeClient.nodeService.Stop()
+            except:
+                log.exception("NodeSetupWizard.__init__: Can not stop node service")
 
     def ChangingPage(self, event):
         '''
@@ -199,14 +203,17 @@ class WelcomeWindow(TitledPage):
         self.contText =  wxStaticText(self, -1, "Click 'Next' to continue.", style = wxCENTER)
        
         self.Layout()
+
+    def Validate(self):
+        return true
           
     def Layout(self):
         ''' Handles UI layout '''
         self.sizer.Add(self.info, 0, wxALL, 5)
-        self.sizer.Add(10,10)
+        self.sizer.Add((10,10))
         self.sizer.Add(self.beforeText, 0, wxALL|wxEXPAND, 5)
         self.sizer.Add(self.beforeText2, 0, wxALL, 5)
-        self.sizer.Add(10, 100)
+        self.sizer.Add((10, 100))
         self.sizer.Add(self.contText, 0, wxALIGN_CENTER|wxALL|wxEXPAND, 5)
         
 
@@ -331,7 +338,7 @@ class VideoCaptureWindow(TitledPage):
         Handles UI layout
         '''
         self.sizer.Add(self.text, 0, wxALL, 5)
-        self.sizer.Add(20,20)
+        self.sizer.Add((20,20))
         
         gridSizer = wxFlexGridSizer(2, 2, 6, 6)
         gridSizer.Add(self.machineText)
@@ -340,10 +347,10 @@ class VideoCaptureWindow(TitledPage):
         gridSizer.Add(self.portCtrl, 0, wxEXPAND)
         gridSizer.AddGrowableCol(1)
         self.sizer.Add(gridSizer, 0, wxALL | wxEXPAND, 5)
-        self.sizer.Add(10,10)
+        self.sizer.Add((10,10))
         self.sizer.Add(self.checkBox, 0, wxEXPAND)
         
-        self.sizer.Add(20, 20)
+        self.sizer.Add((20, 20))
 
                 
 class VideoCaptureWindow2(TitledPage):
@@ -424,6 +431,9 @@ class VideoCaptureWindow2(TitledPage):
         self.gridSizer.AddGrowableCol(1)
         self.scrolledWindow.Layout()
         self.Layout()
+
+    def Validate(self):
+        return true
     
     def __layout(self):
         '''
@@ -434,11 +444,11 @@ class VideoCaptureWindow2(TitledPage):
             self.text2.SetSize(wxSize(150, 20))
 
         self.sizer.Add(self.text, 0, wxALL, 5)
-        self.sizer.Add(10,10)
+        self.sizer.Add((10,10))
         self.sizer.Add(self.text2, 0, wxLEFT, 5)
         self.sizer.Add(self.scrolledWindow, 1, wxEXPAND|wxLEFT|wxRIGHT, 5)
         self.boxSizer = wxBoxSizer(wxVERTICAL)
-        self.boxSizer.Add(10,10)
+        self.boxSizer.Add((10,10))
         self.scrolledWindow.SetSizer(self.boxSizer)
         self.scrolledWindow.SetAutoLayout(1)
 
@@ -538,7 +548,7 @@ class VideoDisplayWindow(TitledPage):
         Handles UI layout
         '''
         self.sizer.Add(self.text, 0, wxALL, 5)
-        self.sizer.Add(20,20)
+        self.sizer.Add((20,20))
         
         gridSizer = wxFlexGridSizer(2, 2, 6, 6)
         gridSizer.Add(self.machineText)
@@ -547,9 +557,9 @@ class VideoDisplayWindow(TitledPage):
         gridSizer.Add(self.portCtrl, 0, wxEXPAND)
         self.sizer.Add(gridSizer, 0, wxALL | wxEXPAND, 5)
         gridSizer.AddGrowableCol(1)
-        self.sizer.Add(10,10)
+        self.sizer.Add((10,10))
         self.sizer.Add(self.checkBox, 0, wxEXPAND)
-        self.sizer.Add(20, 20)
+        self.sizer.Add((20, 20))
 
         
 class AudioWindow(TitledPage):
@@ -639,7 +649,7 @@ class AudioWindow(TitledPage):
         Handles UI layout
         '''
         self.sizer.Add(self.text, 0, wxALL, 5)
-        self.sizer.Add(20,20)
+        self.sizer.Add((20,20))
         
         gridSizer = wxFlexGridSizer(2, 2, 6, 6)
         gridSizer.Add(self.machineText)
@@ -648,9 +658,9 @@ class AudioWindow(TitledPage):
         gridSizer.Add(self.portCtrl, 0, wxEXPAND)
         gridSizer.AddGrowableCol(1)
         self.sizer.Add(gridSizer, 0, wxALL | wxEXPAND, 5)
-        self.sizer.Add(10,10)
+        self.sizer.Add((10,10))
         self.sizer.Add(self.checkBox, 0, wxEXPAND)
-        self.sizer.Add(20, 20)
+        self.sizer.Add((20, 20))
 
 
 class ConfigWindow(TitledPage):
@@ -871,25 +881,25 @@ class ConfigWindow(TitledPage):
             self.audioHeading.SetSize(wxSize(100, 20))
                      
         self.sizer.Add(self.info, 0, wxALL, 5)
-        self.sizer.Add(20, 20)
+        self.sizer.Add((20, 20))
         box = wxBoxSizer(wxHORIZONTAL)
        
         box.Add(self.vCapHeading, 0, wxALIGN_CENTER)
         box.Add(wxStaticLine(self, -1), 1, wxALIGN_CENTER)
         self.sizer.Add(box, 0, wxEXPAND)
 
-        self.sizer.Add(5,5)
+        self.sizer.Add((5,5))
         self.sizer.Add(self.vCapMachineText, 0, wxLEFT | wxEXPAND, 30)
-        self.sizer.Add(10, 10)
+        self.sizer.Add((10, 10))
 
         box = wxBoxSizer(wxHORIZONTAL)
         box.Add(self.vDispHeading, 0, wxALIGN_CENTER)
         box.Add(wxStaticLine(self, -1), 1, wxALIGN_CENTER)
         self.sizer.Add(box, 0, wxEXPAND)
         
-        self.sizer.Add(5,5)
+        self.sizer.Add((5,5))
         self.sizer.Add(self.vDispMachineText, 0, wxLEFT | wxEXPAND, 30)
-        self.sizer.Add(10, 10)
+        self.sizer.Add((10, 10))
         
         box = wxBoxSizer(wxHORIZONTAL)
        
@@ -897,13 +907,13 @@ class ConfigWindow(TitledPage):
         box.Add(wxStaticLine(self, -1), 1, wxALIGN_CENTER)
         self.sizer.Add(box, 0, wxEXPAND)
 
-        self.sizer.Add(5,5)
+        self.sizer.Add((5,5))
         self.sizer.Add(self.audioMachineText, 0, wxLEFT | wxEXPAND, 30)
 
-        self.sizer.Add(20,20)
+        self.sizer.Add((20,20))
         self.sizer.Add(self.checkBox, 0, wxLEFT | wxEXPAND, 5)
 
-        self.sizer.Add(5,5)
+        self.sizer.Add((5,5))
         box = wxBoxSizer(wxHORIZONTAL)
         box.Add(self.configName, 0, wxCENTER|wxALL, 5)
         box.Add(self.configNameCtrl, 1, wxALL, 5)
@@ -920,8 +930,31 @@ class NodeClient:
         self.node = None
 
     def StartNodeService(self):
-        self.node = AGNodeService()
-        self.serviceList = self.node.GetAvailableServices()
+         app = Service().instance()
+         # Initialize the app
+         try:
+             app.Initialize("NodeService")
+         except Exception, e:
+             print "Toolkit Initialization failed, exiting."
+             print " Initialization Error: ", e
+             sys.exit(-1)
+
+         self.nodeService = AGNodeService()
+
+         hostname = SystemConfig.instance().GetHostname()
+         port = 11000
+         server = SecureServer((hostname, port), debug = app.GetDebugLevel())
+         
+         nsi = AGNodeServiceI(self.nodeService)
+         server.RegisterObject(nsi, path="/NodeService")
+         url = server.FindURLForObject(self.nodeService)
+                 
+         self.node = AGNodeServiceIW(url)
+
+         #
+         # THIS IS NEEDED BUT HANGS RIGHT NOW......FIX IT!
+         #
+         #self.serviceList = self.node.GetAvailableServices()
                        
     def GetNodeService(self):
         return self.node
