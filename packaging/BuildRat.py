@@ -6,11 +6,9 @@ import os
 import sys
 
 SOURCE=sys.argv[1]
-AGDIR=sys.argv[2]
-DEST=sys.argv[3]
+DEST=sys.argv[2]
 
 RATDIR=os.path.join(SOURCE,'ag-media')
-DESTDIR=os.path.join(DEST,'bin')
 
 def build_win(dir):
     os.system('devenv %s\rat\rat.2003.sln /rebuild Release' % (dir,))
@@ -55,7 +53,6 @@ if needBuild:
 
     if os.path.exists(ratFiles[0]):
         for f in ratFiles:
-            print 'Copying %s' % (f,)
             copyCmd = '%s %s %s' % (copyExe,f,DEST)
             os.system(copyCmd)
     else:

@@ -7,8 +7,7 @@ import os
 import sys
 
 SOURCE=sys.argv[1]
-AGDIR=sys.argv[2]
-DEST=sys.argv[3]
+DEST=sys.argv[2]
 
 VICDIR = os.path.join(SOURCE,'ag-media')
 
