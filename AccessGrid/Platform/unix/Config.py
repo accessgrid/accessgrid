@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.33 2004-05-20 22:40:05 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.34 2004-05-27 14:04:28 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.33 2004-05-20 22:40:05 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.34 2004-05-27 14:04:28 turam Exp $"
 
 import os
 import mimetypes
@@ -307,11 +307,8 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
                 
         if os.environ.has_key('GLOBUS_HOSTNAME'):
             self.hostname = os.environ['GLOBUS_HOSTNAME']
-	    print "<<< set hostname to ", self.hostname
         else:
-	    print "<<< need to compute hostname ", self.initIfNeeded
             if self.initIfNeeded:
-		print "<<< Init hostname"
                 self.SetHostname()
                 
         if os.environ.has_key('X509_RUN_AS_SERVER'):
@@ -917,7 +914,6 @@ Comment=%s
                 f.close()
             else:
                 log.info("gnomeSystemMimeDir does not exist: " + gnomeSystemMimeDir)
-                print "ARG"
             if os.path.exists(gnomeSystemAppDir):
                 # Application
                 f = open(gnomeSystemAppFile, "w")
