@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Subject.py,v 1.8 2004-03-04 20:09:02 judson Exp $
+# RCS-ID:      $Id: Subject.py,v 1.9 2004-03-05 21:45:26 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ Subjects are the basic security handle on entities that want to be a
 part of the secure Access Grid Toolkit.
 """
 
-__revision__ = "$Id: Subject.py,v 1.8 2004-03-04 20:09:02 judson Exp $"
+__revision__ = "$Id: Subject.py,v 1.9 2004-03-05 21:45:26 judson Exp $"
 
 # External Imports
 import xml.dom.minidom
@@ -63,9 +63,10 @@ class Subject:
         """
         A hash method so subjects can be used as dictionary keys.
 
-        @returns: the id attribute which is a globally unique identifier in a string.
+        @returns: the id attribute which is a globally unique
+        identifier in a string.
         """
-        return long(self.id, 16)
+        return id(self)
     
     def __cmp__(self, other):
         """
