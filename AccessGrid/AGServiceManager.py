@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.57 2004-04-30 20:34:27 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.58 2004-05-03 17:42:45 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.57 2004-04-30 20:34:27 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.58 2004-05-03 17:42:45 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -117,7 +117,6 @@ class AGServiceManager:
                                   res.resource)
                     # should error out here later; for now,
                     # services aren't using the resources anyway
-                    log.warn("XXX Resource not found, but continuing anyway.")
                     foundResource = 1
                     break
 
@@ -151,9 +150,10 @@ class AGServiceManager:
                 servicePackageFile = self.__RetrieveServicePackage( serviceDescription.servicePackageUri )
                 serviceDescription = AGServicePackage( servicePackageFile ).GetServiceDescription()
             else:
+                log.debug("Using local service package")
                 serviceDescription = localSvcDesc
             
-            serviceDescription.resource = resource
+            serviceDescription.resource = res
 
         except:
             log.exception("Service Manager failed to retrieve service implementation for %s", 
@@ -191,6 +191,10 @@ class AGServiceManager:
             # timing out reasonably
             hostname = self.app.GetHostname()
             serviceUrl = 'https://%s:%s/Service' % ( hostname, port )
+
+            log.debug("Waiting for service to start: %s %s", serviceDescription.name, 
+                      serviceUrl)
+
             elapsedTries = 0
             maxTries = 10
             while elapsedTries < maxTries:
@@ -204,7 +208,8 @@ class AGServiceManager:
 
             # Detect unreachable service
             if elapsedTries >= maxTries:
-                log.error("Add %s failed; service is unreachable", serviceDescription.name)
+                log.error("Add %s failed; service is unreachable", 
+                          serviceDescription.name)
 
         except:
             log.exception("Failed to add service")
@@ -225,13 +230,20 @@ class AGServiceManager:
             # Configure the service
             #
             if serviceConfig and serviceConfig != "None":
+                log.debug("Setting service configuration")
                 AGServiceIW( serviceDescription.uri ).SetConfiguration( serviceConfig )
+            else:
+                log.debug("Not setting service configuration; none given")
+
 
             # Assign resource to the service
             #
             if serviceDescription.resource and serviceDescription.resource != "None":
+                log.debug("Assigning resource to service: %s", serviceDescription.resource.resource)
                 AGServiceIW( serviceDescription.uri ).SetResource( serviceDescription.resource )
-
+            else:
+                log.debug("Not assigning resource; none given")
+                
             # Query the service for its capabilities
             # (the service implementation knows its capabilities better than
             # the description file, which is where the current capabilities
