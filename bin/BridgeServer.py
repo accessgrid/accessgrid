@@ -585,10 +585,8 @@ class Venue:
                     log.info("Heartbeat thread exiting (1)")
                     return
 
-            log.info("Done sleeping")
             try:
                 if self.eventClient.connected:
-                    log.info("Send heartbeat")
                     self.eventClient.Send(HeartbeatEvent(self.channelId, self.privateId))
                 else:
                     log.info("Trying to reach venue")
@@ -675,8 +673,6 @@ class Venue:
 
         log.info("Shutdown exiting")
 
-
-
 def GetConfigVal(config,varName):
     """
     SetConfigVal sets the given variable to the value in
@@ -687,8 +683,6 @@ def GetConfigVal(config,varName):
     if config.has_key(configKey):
         return config[configKey]
     return None
-    
-
 
 def usage():
     print """
@@ -696,11 +690,7 @@ Usage: BridgeServer.py [-c configFile] [-h|--help] [-d|--debug]
 
 """
 
-
-
 def main():
-   
-
     import sys
     import signal
     import time
@@ -712,7 +702,6 @@ def main():
     debugMode = 0
     configFile=None
     
-    
     # Signal handler to catch signals and shutdown
     def SignalHandler(signum, frame):
         """
@@ -723,43 +712,28 @@ def main():
         bridgeServer.Shutdown()
         print "SignalHandler exiting."
 
-    # Command-line option parsing
+    # Init toolkit with standard environment.
+    app = Toolkit.Service.instance()
+
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hdp:c:",
-                                   [
-                                   "help",
-                                   "debug",
-                                   "config=",
-                                   ])
-
-    except getopt.GetoptError:
-        usage()
-        sys.exit(2)
-
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage()
-            sys.exit(0)
-        elif opt in ('-c','--config'):
-            configFile = arg
-        elif opt in ('-d', '--debug'):
-            debugMode = 1
-        
+        app.Initialize(Log.BridgeServer)
+    except:
+        print "Failed to initialize toolkit, exiting."
+        sys.exit(-1)
+    
+    log = app.GetLog()
+    debugMode = app.GetOption("debug")
+    configFile = app.GetOption("configfilename")
 
     # If no config file specified, use default config file
     if not configFile:
         configFile = os.path.join(UserConfig.instance().GetConfigDir(),
                                   "BridgeServer.cfg")
         
-    # Init toolkit with standard environment.
-    app = Toolkit.CmdlineApplication().instance()
-    app.Initialize(Log.BridgeServer)
-    
-    log = app.GetLog()
-
     # Register a signal handler so we can shut down cleanly
     signal.signal(signal.SIGINT, SignalHandler)
-    signal.signal(signal.SIGHUP, SignalHandler)
+    if sys.platform != 'win32':
+        signal.signal(signal.SIGHUP, SignalHandler)
 
     # Create the bridge server
     bridgeServer = BridgeServer(debugMode)
@@ -772,12 +746,7 @@ def main():
 if __name__ == "__main__":
     main()
 
-
-
-
-
 """
-
 Usage:
 
 - Bridge single venue
@@ -810,8 +779,4 @@ portMax = 24006
 # Entire transitional venue server
 [https://vv2.mcs.anl.gov:9000/VenueServer]
 type = VenueServer
-
-
-
 """
-
