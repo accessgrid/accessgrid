@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.26 2003-05-29 21:13:13 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.27 2003-05-30 20:16:52 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -95,7 +95,7 @@ class DataStore:
             try:
                 # Transfer file from local path to local data store path
                 log.debug("DataStore::AddFile: Add file %s to local datastore" %filename)
-                input = open(filename, 'r')
+                input = open(filename, 'rb')
                 fileString = input.read()
                 
                 path, name = os.path.split(filename)
@@ -110,13 +110,13 @@ class DataStore:
                     
                     dataStorePath = os.path.join(self.pathname, name)
                     log.debug("DataStore::AddFile: Personal datastorage is located at %s"%dataStorePath)
-                    output = open(dataStorePath, 'w')
+                    output = open(dataStorePath, 'wb')
                     output.write(fileString)
                     input.close()
                     output.close()
                     
                     # Create DataDescription
-                    size = os.path.getsize(filename)
+                    size = os.path.getsize(dataStorePath)
                     log.debug("DataStore::AddFile: Size of file %s" %size)
                     
                     # This should be done in a loop in case
