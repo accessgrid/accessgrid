@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.199 2004-05-14 17:02:58 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.200 2004-05-17 22:19:40 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.199 2004-05-14 17:02:58 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.200 2004-05-17 22:19:40 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1040,7 +1040,11 @@ class Venue(AuthorizationMixIn):
             #
 
             self.simpleLock.acquire()
-            self.clients[priv].SetConnection(connObj)
+            try:
+                self.clients[priv].SetConnection(connObj)
+            except:
+                log.exception("Exception setting connection (id=%s)", priv)
+                
             self.simpleLock.release()
 
         elif self.netServices.has_key(priv):
