@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.101 2004-06-02 03:13:16 turam Exp $
+; RCS-ID: $Id: agtk.iss,v 1.102 2004-06-22 13:11:31 judson Exp $
 ;
 
 ; Set externally
@@ -41,8 +41,7 @@ AppPublisher=Futures Laboratory / Argonne National Laboratory
 AppPublisherURL=http://www.mcs.anl.gov/fl
 AppSupportURL=http://bugzilla.mcs.anl.gov/accessgrid
 AppUpdatesURL=http://www.mcs.anl.gov/fl/research/accessgrid
-AppID={2CD98D2E-F3D2-438E-91F7-D74860A70959}
-Compression=zip/9
+AppID=2CD98D2E-F3D2-438E-91F7-D74860A70959
 MinVersion=0,5.0.2195
 LicenseFile=COPYING.txt
 DisableDirPage=false
@@ -76,6 +75,7 @@ UsePreviousSetupType=true
 UsePreviousTasks=false
 UsePreviousGroup=true
 ShowLanguageDialog=yes
+Compression=lzma
 
 [Files]
 ; The Python Modules
@@ -153,7 +153,7 @@ Root: HKCR; Subkey: x-ag-venueclient; ValueType: dword; ValueName: EditFlags; Va
 Root: HKCR; Subkey: x-ag-venueclient; ValueType: dword; ValueName: BrowserFlags; ValueData: 00000008; Flags: uninsdeletekey
 Root: HKCR; Subkey: x-ag-venueclient; ValueType: string; ValueData: Access Grid Virtual Venue Description; Flags: uninsdeletekey
 Root: HKCR; Subkey: x-ag-venueclient\shell; ValueType: string; ValueData: Open; Flags: uninsdeletekey
-Root: HKCR; Subkey: x-ag-venueclient\shell\Open\command; ValueType: string; ValueData: """{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe"" ""{app}\bin\GoToVenue.py"" --file ""%1"""; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag-venueclient\shell\Open\command; ValueType: string; ValueData: """{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe"" ""{app}\bin\GoToVenue.py"" --file ""%1"""; Flags: uninsdeletekey
 
 Root: HKCR; Subkey: .agpkg; ValueType: string; ValueData: x-ag-pkg; Flags: uninsdeletekey
 Root: HKCR; Subkey: .agpkg; ValueType: string; ValueName: Content Type; ValueData: application/x-ag-pkg; Flags: uninsdeletekey
