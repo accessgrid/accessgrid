@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.16 2003-02-21 22:17:48 lefvert Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.17 2003-02-27 20:03:26 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,14 +46,14 @@ class ClientProfile:
         
     defaultProfile = {
         'ClientProfile.type' : "user",
-        'ClientProfile.name' : 'John Doe',
-        'ClientProfile.email' : 'john@mail.com',
-        'ClientProfile.phone' : '+1 888 959 5555',
-        'ClientProfile.icon' : '',
+        'ClientProfile.name' : '<Insert Name Here>',
+        'ClientProfile.email' : '<Insert Email Address Here>',
+        'ClientProfile.phone' : '<Insert Phone Number Here>',
+        'ClientProfile.icon' : '<Leave blank for now>',
         'ClientProfile.id' : '',
-        'ClientProfile.location' : 'Nowhere, Fast',
+        'ClientProfile.location' : '<Insert Postal Address Here>',
         'ClientProfile.venueclienturl' : '',
-        'ClientProfile.techsupportinfo' : '',
+        'ClientProfile.techsupportinfo' : '<Insert Technical Support Contact Information Here>',
         'ClientProfile.home' : 'https://vv2.mcs.anl.gov:9000/Venues/default'
         }
 
