@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.27 2004-05-06 16:45:48 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.28 2004-05-06 17:27:11 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -235,6 +235,7 @@ class SharedPresentationFrame(wxFrame):
     ID_LOCALUPLOAD = wxNewId()
     ID_CLEAR = wxNewId()
     ID_EXIT = wxNewId()
+    ID_HELP_INST = wxNewId()
 
     def __init__(self, parent, ID, title, log=None):
         wxFrame.__init__(self, parent, ID, title,
@@ -269,12 +270,16 @@ class SharedPresentationFrame(wxFrame):
         fileMenu.AppendSeparator()
         fileMenu.Append(self.ID_EXIT,"&Exit", "Exit")
      	menubar.Append(fileMenu, "&File")
+
+        self.helpMenu = wxMenu()
+        self.helpMenu.Append(self.ID_HELP_INST, "&Instructions", "Instructions on how to use the shared presentation viewer.")
+        menubar.Append(self.helpMenu, "&Help")
         self.SetMenuBar(menubar)
 
         self.SetIcon(icons.getAGIconIcon())
       
         # - Create main panel
-        self.panel = wxPanel(self, -1, size = wxSize(320, 260))
+        self.panel = wxPanel(self, -1, size = wxSize(320, 140))
         
         # - Create main sizer 
         mainSizer = wxBoxSizer(wxVERTICAL)
@@ -285,13 +290,7 @@ class SharedPresentationFrame(wxFrame):
         # - Create panel sizer
         sizer = wxBoxSizer(wxVERTICAL)
         self.panel.SetSizer(sizer)
-
-        # - Create information text
-        self.info = wxStaticText(self.panel, -1, "If you want to be the leader of this session, select the master check box below. All presentation files located in the data area of this venue are now available here. Choose a file from these available slides or enter the URL address of your presentation. Click the Load button to open the presentation. \n\nNote: Please, only use this controller window to change slides.")
-
-        sizer.Add(self.info, 1, wxEXPAND | wxALL, 5)
-        sizer.Add(wxStaticLine(self.panel, -1), 0, wxEXPAND | wxALL, 5)
-              
+                    
         # - Create checkbox for master
         self.masterCheckBox = wxCheckBox(self.panel,-1,"Take control as presentation master")
         sizer.Add(5, 5)
@@ -357,6 +356,7 @@ class SharedPresentationFrame(wxFrame):
         EVT_MENU(self, self.ID_LOCALUPLOAD, self.LocalUploadCB)
         EVT_MENU(self, self.ID_CLEAR, self.ClearSlidesCB)
         EVT_MENU(self, self.ID_EXIT, self.ExitCB)
+        EVT_MENU(self, self.ID_HELP_INST, self.OpenInstructionsCB)
 
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -449,11 +449,18 @@ class SharedPresentationFrame(wxFrame):
 
     def ExitCB(self,event):
         """
-        Callback for "exit" menu item
+        Callback for 'Exit' menu item
         """
         self.exitCallback()
 
-
+    def OpenInstructionsCB(self, event):
+        """
+        Callback for 'Instructions' help menu item
+        """
+        info =  "If you want to be the leader of this session, select the master check box below. All presentation files located in the data area of this venue are now available here. Choose a file from these available slides or enter the URL address of your presentation. Click the Load button to open the presentation. \n\nNote: Please, only use this controller window to change slides."
+        
+        MessageDialog(self, info, "Instructions")
+        
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #
     # Client methods
@@ -1537,7 +1544,7 @@ def Usage():
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 if __name__ == "__main__":
-       
+    
     # Initialization of variables
     venueURL = None
     appURL = None
@@ -1554,7 +1561,7 @@ if __name__ == "__main__":
     wxInitAllImageHandlers()
 
     # Here we parse command line options
-    
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], "d:v:a:l:ih",
                                    ["venueURL=", "applicationURL=",
@@ -1563,7 +1570,7 @@ if __name__ == "__main__":
     except getopt.GetoptError:
         Usage()
         sys.exit(2)
-        
+
     for o, a in opts:
         if o in ("-v", "--venueURL"):
             venueURL = a
@@ -1583,7 +1590,7 @@ if __name__ == "__main__":
         elif o in ("-h", "--help"):
             Usage()
             sys.exit(0)
-        
+    
     # If we're not passed some url that we can use, bail showing usage
     if appURL == None and venueURL == None:
         Usage()
