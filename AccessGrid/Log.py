@@ -76,6 +76,7 @@ def GetHighestLevel():
 AGService = "AGService"
 AppDb = "AppDb"
 AppMonitor = "AppMonitor"
+AsyncService = "AsyncService"
 AuthorizationUI = "AuthorizationUI"
 BridgeServer = "BridgeServer"
 CertificateManager = "CertificateManager"
