@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.15 2004-05-07 21:28:09 eolson Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.16 2004-05-10 20:36:37 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -105,6 +105,11 @@ class VideoConsumerService( AGService ):
                 if self.streamDescription.location.type == MulticastNetworkLocation.TYPE:
                     options.append( "-t" )
                     options.append( '%d' % ( self.streamDescription.location.ttl ) )
+
+            # This is a consumer, so disable device selection in vic
+            options.append('-XrecvOnly=1')
+                    
+            # Add address/port options (these must occur last; don't add options beyond here)
             options.append( '%s/%d' % ( self.streamDescription.location.host,
                                         self.streamDescription.location.port ) )
             self.log.info("Starting VideoConsumerService")
