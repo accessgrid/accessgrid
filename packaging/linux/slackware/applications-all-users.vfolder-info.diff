@@ -1,0 +1,41 @@
+--- applications-all-users.vfolder-info.orig	2004-07-28 13:15:16.000000000 +1000
++++ applications-all-users.vfolder-info	2004-07-29 13:42:27.000000000 +1000
+@@ -205,5 +205,38 @@
+       <DontShowIfEmpty/>
+     </Folder>
+     
++    <Folder>
++      <Name>Access Grid</Name>
++      <Desktop>/usr/share/desktop-directories/AccessGrid-Base.directory</Desktop>
++      <Include>/usr/share/applications/AccessGrid/Readme.desktop</Include>
++      <Include>/usr/share/applications/AccessGrid/VenueManagement.desktop</Include>
++      <Include>/usr/share/applications/AccessGrid/VenueClient-Debug.desktop</Include>
++      <Include>/usr/share/applications/AccessGrid/VenueClient.desktop</Include>
++      <Include>/usr/share/applications/AccessGrid/CertificateRequestTool.desktop</Include>
++      <Folder>
++        <Name>Configure</Name>
++        <Desktop>/usr/share/desktop-directories/AccessGrid-Configure.directory</Desktop>
++        <Include>/usr/share/applications/AccessGrid/NodeManagement.desktop</Include>
++        <Include>/usr/share/applications/AccessGrid/NodeSetupWizard.desktop</Include>
++      </Folder>
++      <Folder>
++        <Name>Documentation</Name>
++        <Desktop>/usr/share/desktop-directories/AccessGrid-Documentation.directory</Desktop>
++        <Include>/usr/share/applications/AccessGrid/License.desktop</Include>
++        <Include>/usr/share/applications/AccessGrid/VenueManagementManual.desktop</Include>
++        <Include>/usr/share/applications/AccessGrid/VenueClientManual.desktop</Include>
++      </Folder>
++      <Folder>
++        <Name>Services</Name>
++        <Desktop>/usr/share/desktop-directories/AccessGrid-Services.directory</Desktop>
++        <Include>/usr/share/applications/AccessGrid/NodeService-Debug.desktop</Include>
++        <Include>/usr/share/applications/AccessGrid/NodeService.desktop</Include>
++        <Include>/usr/share/applications/AccessGrid/ServiceManager-Debug.desktop</Include>
++        <Include>/usr/share/applications/AccessGrid/ServiceManager.desktop</Include>
++        <Include>/usr/share/applications/AccessGrid/VenueServer-Debug.desktop</Include>
++        <Include>/usr/share/applications/AccessGrid/VenueServer.desktop</Include>
++      </Folder>
++    </Folder>
++
+   </Folder>
+ </VFolderInfo>
