@@ -4,16 +4,16 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.10 2003-02-27 20:13:54 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.11 2003-03-12 08:46:13 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-import os
 import sys
 import signal
 import time
 import logging, logging.handlers
+import threading
 
 from AccessGrid.hosting.pyGlobus import Server, ServiceBase
 from AccessGrid.VenueServer import VenueServer
@@ -26,6 +26,8 @@ def SignalHandler(signum, frame):
     all of it's Venues. Then it stops the hostingEnvironment.
     """
     global running
+    global venueServer
+    print "Got Signal!!!!"
     venueServer.Shutdown(0)
     running = 0
 
@@ -48,13 +50,16 @@ configFile = None
 if len(sys.argv) > 2:
     configFile = sys.argv[2]
     
-logger = logging.getLogger("AG.VenueServer")
-logger.setLevel(logging.DEBUG)
-logname = "VenueServer.log"
-hdlr = logging.handlers.RotatingFileHandler(logname, "a", 10000000, 0)
+logFile = "VenueServer.log"
+if len(sys.argv) > 3:
+    logFile = sys.argv[3]
+
+log = logging.getLogger("AG.VenueServer")
+log.setLevel(logging.DEBUG)
+hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
 fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
 hdlr.setFormatter(fmt)
-logger.addHandler(hdlr)
+log.addHandler(hdlr)
 
 # First thing we do is create a hosting environment
 hostingEnvironment = Server.Server(port, auth_callback=AuthCallback)
@@ -63,24 +68,37 @@ hostingEnvironment = Server.Server(port, auth_callback=AuthCallback)
 venueServer = VenueServer(hostingEnvironment, configFile)
 
 # Then we create the VenueServer service
-serviceObject = hostingEnvironment.create_service_object(pathId = 'VenueServer')
+serviceObject = hostingEnvironment.CreateServiceObject('VenueServer')
 venueServer._bind_to_service(serviceObject)
 
 # Some simple output to advertise the location of the service
-print "Service running at: %s" % venueServer.get_handle()
+print "Service running at: %s" % venueServer.GetHandle()
 
 # We register signal handlers for the VenueServer. In the event of
-# a signal we just try to shut down cleanly.
+# a signal we just try to shut down cleanly.n
 signal.signal(signal.SIGINT, SignalHandler)
 #signal.signal(signal.SIGBREAK, SignalHandler)
 signal.signal(signal.SIGTERM, SignalHandler)
 
+log.debug("Starting Hosting Environment.")
 # We start the execution
-hostingEnvironment.run_in_thread()
+hostingEnvironment.RunInThread()
 
+# We run in a stupid loop so there is still a main thread
 running = 1
 while running:
     time.sleep(1)
+
+log.debug("After main loop!")
+
+# Stop the hosting environment
+hostingEnvironment.Stop()
   
+log.debug("Stopped Hosting Environment, exiting.")
+
+for t in threading.enumerate():
+    print "Thread ", t
+    
 # Exit cleanly
+#sys.exit(0)
 os._exit(0)
