@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.15 2004-05-21 21:47:05 lefvert Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.16 2004-05-25 22:47:04 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.15 2004-05-21 21:47:05 lefvert Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.16 2004-05-25 22:47:04 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -311,12 +311,16 @@ class SharedApplication(AuthorizationMixIn):
         return participants
     
     def SetData(self, private_token, key, value):
+        key = key.lower() # Our .dat files use all lowercase keys
+
         if not self.components.has_key(private_token):
             raise InvalidPrivateToken
 
-        
+        # Get rid of endlines so server can store the data.
+        codedData = value.replace("_", "__")   # escape underscores
+        codedData = value.replace("\n", "z_z") # replace endlines using single underscores
 
-        self.app_data[key] = value
+        self.app_data[key] = codedData
 
         participant = self.components[private_token]
 
@@ -328,11 +332,15 @@ class SharedApplication(AuthorizationMixIn):
             self.eventService.Distribute(channelId, evt)
 
     def GetData(self, private_token, key):
+        key = key.lower() # Our .dat files use all lowercase keys
+
         if not self.components.has_key(private_token):
             raise InvalidPrivateToken
 
         if self.app_data.has_key(key):
-            return self.app_data[key]
+            decodedData = self.app_data[key].replace("z_z","\n") # restore endlines
+            decodedData = decodedData.replace("__", "_")
+            return decodedData
         else:
             return ""
 
