@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientTest.py,v 1.3 2003-02-28 17:41:52 lefvert Exp $
+# RCS-ID:      $Id: VenueClientTest.py,v 1.4 2003-03-21 16:09:06 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -67,7 +67,7 @@ class VenueClientTest(VenueClient):
         self.client.AddService(service)
 
         print '\n--------------- REMOVE DATA'    
-        self.client.RemoveData(data)
+#        self.client.RemoveData(data)
 
         print '\n--------------- REMOVE SERVICE'  
         self.client.RemoveService(service)
