@@ -49,6 +49,24 @@ from OpenSSL import crypto
 
 log = logging.getLogger("AG.CertificateManager")
 
+class CertificateManagerError(Exception):
+    pass
+
+class NoIdentityCertificateError(CertificateManagerError):
+    pass
+
+class ProxyRequestError(Exception):
+    pass
+
+class PassphraseRequestCancelled(ProxyRequestError):
+    pass
+
+class InvalidPassphraseException(ProxyRequestError):
+    pass
+
+class GridProxyInitError(ProxyRequestError):
+    pass
+
 class CertificateManager:
     """
     A CertificateManager manages the certificates for a user.
@@ -139,6 +157,14 @@ class CertificateManager:
         self.forceCert = None
         self.inheritIdentity = None
 
+        #
+        # Certificate mgr options.
+        #
+
+        self.defaultIdentityDN = None
+        self.proxyCertPath = None
+        self.systemCACertDir = None
+        self.useSystemCADir = 0
 
         #
         # Tie the user interface to the cert mgr.
@@ -221,6 +247,13 @@ class CertificateManager:
         # method at a time of his choosing.
         #
 
+        #
+        # We need to do some sanity checking here (ensure we have at least one
+        # identity certificate, for instance)
+        #
+
+        self.CheckConfiguration()
+
     def SetForcedIdentity(self, cert, key):
         """
         Use the identity certificate and private key as passed on
@@ -297,19 +330,20 @@ class CertificateManager:
     def GetUserInterface(self):
         return self.userInterface
 
-    def ConfigureProxy(self):
+    def HaveValidProxy(self):
         """
-        Configure the proxy cert for our default identity cert.
-
-        First check to see if we have an unexpired proxy already. If so, and if
-        it has a long enough lifetime left, just return.
-
-        If we need to create a new proxy, invoke the user interface's
-        QueryForPrivateKeyPassphrase() method, passing along the
-        certificate from which we will
-
+        Returns 1 if there is a valid proxy configured.
         """
 
+        p = self.GetCurrentProxy()
+        return p is not None
+
+    def GetCurrentProxy(self):
+        """
+        Returns a Certificate object representing the
+        current proxy, if it is valid.
+        """
+        
         #
         # Attempt to load the proxy certificate so that we can check its
         # validity.
@@ -328,12 +362,69 @@ class CertificateManager:
             else:
                 log.debug("Proxy %s is valid", self.proxyCertPath)
 
+        return pcert
+    
+    def ConfigureProxy(self):
+        """
+        Configure the proxy cert for our default identity cert.
+
+        First check to see if we have an unexpired proxy already. If so, and if
+        it has a long enough lifetime left, just return.
+
+        If we need to create a new proxy, invoke the user interface's
+        QueryForPrivateKeyPassphrase() method, passing along the
+        certificate from which we will
+
+        """
+
+        pcert = self.GetCurrentProxy()
+
+        userMessage = ""
         if pcert is None:
             #
             # We don't have a valid proxy, so we need to create one.
             #
 
-            pcert = self.CreateProxy()
+            while 1:
+                try:
+
+                    #
+                    # Create the proxy.
+                    #
+                    # This may fail in a number of ways (the user may cancel
+                    # the passphrase request since he doesn't know the passphrase,
+                    # he may type in a bad passphrase, the certificate may be invalid,
+                    # permissions may be wrong, etc).
+                    #
+                    # Some things we can recover from; if so, we retry the creation
+                    # (perhaps with a message to the user).
+                    #
+                    # Others we don't attempt to recover from, and leave the
+                    # application without a valid proxy. In that event, we're
+                    # likely to end up back here the next time the user
+                    # attempts an operation that requires the proxy. Hopefully, he
+                    # has fixed the problem that led to the error.
+                    #
+
+                    pcert = self.CreateProxy(userMessage)
+                    break
+
+                except PassphraseRequestCancelled:
+                    break
+
+                except InvalidPassphraseException:
+                    userMessage = "Passphrase incorrect, please try again."
+
+                except GridProxyInitError, e:
+                    userMessage = "Error encountered during grid-proxy-init: " + e.args[1]
+
+                except ProxyRequestError, e:
+                    #
+                    # These errors are not recoverable ... reraise
+                    #
+
+                    log.exception("Unrecoverable error during proxy creation attempt")
+                    raise e
 
         #
         # pcert now has information on our current proxy certificate.
@@ -342,7 +433,7 @@ class CertificateManager:
 
         pcert = None
 
-    def CreateProxy(self):
+    def CreateProxy(self, userMessage = ""):
         """
         Create a proxy certificate from our default identity certificate.
 
@@ -352,18 +443,27 @@ class CertificateManager:
 
         """
 
+        
         cert = self.userCertRepo.FindCertificateByDN(self.defaultIdentityDN)
 
         if cert is None:
             err = "Could not find certificate for %s" % (self.defaultIdentityDN)
             log.error(err)
-            raise Exception, err
+            raise ProxyRequestError(err)
 
-        ret = self.GetUserInterface().GetProxyInfo(cert)
+        ret = self.GetUserInterface().GetProxyInfo(cert, userMessage)
 
         if ret is None:
-            return
+            raise PassphraseRequestCancelled
 
+        #
+        # initialize the excpetion that we might raise if there is a problem
+        #
+        # We don't actually raise it until the process has completed, in order
+        # to ensure clean shutdown of that child process.
+        #
+        
+        exceptionToRaise = None
         (passphrase, hours, bits) = ret
 
         #
@@ -398,7 +498,7 @@ class CertificateManager:
         if not os.access(gpiPath, os.X_OK):
             msg = "grid-proxy-init not found at %s" % (gpiPath)
             log.error(msg)
-            raise Exception, msg
+            raise ProxyRequestError(msg)
 
         certPath = cert.GetPath()
         keyPath = cert.GetKeyPath()
@@ -444,6 +544,30 @@ class CertificateManager:
                 l = rd.readline()
                 if l == '':
                     break
+
+                #
+                # Check for errors. The response from grid-proxy-init
+                # will look something like this:
+                #
+                # error:8006940B:lib(128):proxy_init_cred:wrong pass phrase:sslutils.c:3714
+                #
+
+                if l.startswith("error"):
+
+                    err_elts = l.strip().split(":")
+                    if len(err_elts) == 7:
+                        err_num = err_elts[1]
+                        err_str = err_elts[4]
+
+                        if err_str == "wrong pass phrase":
+                            exceptionToRaise = InvalidPassphraseException()
+
+                        else:
+                            exceptionToRaise = GridProxyInitError("Unknown grid-proxy-init error", l.strip())
+                                       
+                    else:
+                        exceptionToRaise = GridProxyInitError("Unknown grid-proxy-init error", l.strip())
+
                 log.debug("Proxy returns: %s", l.rstrip())
 
             rd.close()
@@ -455,11 +579,8 @@ class CertificateManager:
             log.exception("Got an IO error in proxy code, ignoring")
             pass
 
-        #
-        # TODO: doublecheck that the newly-generated proxy is indeed
-        # correct. Also to parse the grid-proxy-init output for errors and
-        # status.
-        #
+        if exceptionToRaise is not None:
+            raise exceptionToRaise
 
 
     def InitEnvironment(self):
@@ -481,6 +602,12 @@ class CertificateManager:
         In any event, we set this:
 
             X509_CERT_DIR: location of trusted CA certificates
+
+        It is possible for this function to raise an exception. If it does,
+        the certificate manager is still in a valid state, but the client
+        will not have a properly configured security environment, and will
+        have to attempt to call InitEnvironment again after fixing
+        the problem.
 
         """
 
@@ -703,6 +830,73 @@ class CertificateManager:
         cp.write(fp)
         fp.close()
 
+    def CheckConfiguration(self):
+        """
+        Perform a sanity check on the security execution environment
+        """
+
+        #
+        # First see if we have any identity certificates in the
+        # identity cert repository.
+        #
+
+        if len(self.userCertRepo.GetCertificates()) == 0:
+            #
+            # No certificates found.
+            #
+            # Determine where Globus thinks the user certs are, and try to
+            # load one from there.
+            #
+
+            gcerts = FindGlobusCerts()
+
+            if 'x509_user_cert' in gcerts and 'x509_user_key' in gcerts:
+                #
+                # We have a user cert and key.
+                #
+                # Initialize a certificate object with them, and import to the
+                # user certificate repository.
+                #
+
+                cert = Certificate(gcerts['x509_user_cert'],
+                                   keyPath = gcerts['x509_user_key'])
+                
+                #
+                # Write the cert out to the newly-created user certificate directory
+                #
+
+                cert.WriteToRepoDir(self.userCertPath)
+
+                #
+                # And update the repository.
+                #
+                self.userCertRepo.RescanRepository()
+
+
+                #
+                # Set the default identity to this cert's DN.
+                #
+                # TODO: this needs to actually use the hash of the DN,
+                # in the event that we have multiple certs with the same DN.
+                # (perhaps in the case where there's an expired cert and a new cert..)
+                #
+
+                self.defaultIdentityDN = cert.GetSubject()
+                log.debug("Reloaded initial cert %s", cert.GetSubject())
+
+        #
+        # Ensure that the default DN has a certificate. If it does not,
+        # log a warning.
+        #
+
+        log.debug("Checking that default dn %s has a certificate", self.defaultIdentityDN)
+
+        cert = self.userCertRepo.FindCertificateByDN(self.defaultIdentityDN)
+
+        if cert is None:
+            log.warn("No certificate found for default identity %s", self.defaultIdentityDN)
+
+
 class CertificateManagerUserInterface:
     """
     Superclass for the UI interface to a CertificateManager.
@@ -717,9 +911,12 @@ class CertificateManagerUserInterface:
     def GetCertificateManager(self):
         return self.certificateManager
 
-    def GetProxyInfo(self, cert):
+    def GetProxyInfo(self, cert, userMessage = ""):
         """
         Return the information required to create a proxy from cert.
+
+        userMessage is a string to be presented to the user before asking for the
+        passphrase.
 
         The return value must be a tuple (passphrase, hours, bits) where
         passphrase is the passphrase for the private key for the cert; hours is the
@@ -731,9 +928,12 @@ class CertificateManagerUserInterface:
         # The default interface here retrieves the password from the command line.
         #
 
-        passphrase = getpass.getpass("Enter passphrase for certificate: ")
+        print ""
+        if userMessage != "":
+            print userMessage
+        passphrase = getpass.getpass("Enter passphrase for %s: " % (str(cert.GetSubject()),))
         bits = 1024
-        hours = 1
+        hours = 8
 
         return (passphrase, hours, bits)
 
@@ -748,9 +948,11 @@ def FindGlobusCertsWin32():
         k = _winreg.OpenKey(reg, r"Software\Globus\GSI")
 
     except WindowsError:
+        log.exception("FindGlobusCertsWin32: Could not open windows registry")
         return {}
 
     if k is None:
+        log.warn("FindGlobusCertsWin32: Could not open windows registry")
         return vals
 
     for name in ('x509_cert_dir', 'x509_cert_file', 'x509_user_proxy',
@@ -758,9 +960,15 @@ def FindGlobusCertsWin32():
         try:
             (val, type) = _winreg.QueryValueEx(k, name)
 
+
             if os.access(val, os.R_OK):
+                log.debug("FindGlobusCertsWin32: Found name=%s val=%s", name, val)
                 vals[name] = val
+            else:
+                log.debug("FindGlobusCertsWin32: Found name=%s val=%s, but file does not exist", name, val)
+                
         except Exception, e:
+            log.exception("FindGlobusCertsWin32: %s not found", name)
             pass
 
     k.Close()
@@ -823,6 +1031,9 @@ class CertificateRepository:
 
         self.__scanDir()
 
+    def RescanRepository(self):
+        self.__scanDir()
+
     def GetCertificates(self):
         return self.certDict.values()
 
@@ -835,7 +1046,7 @@ class CertificateRepository:
         OpenSSL from the certificate itself, as that should be more reliable.
         """
 
-        match = filter(lambda x, dn=dn: str(x.GetSubject()) == dn, self.GetCertificates())
+        match = filter(lambda x, dn=dn: str(x.GetSubject()) == str(dn), self.GetCertificates())
 
         if len(match) == 0:
             return None
@@ -848,6 +1059,7 @@ class CertificateRepository:
         """
 
         self.certDict = {}
+        log.debug("CertificateRepository: scanning %s", self.dir)
         for file in os.listdir(self.dir):
             if re.search("^[0-9A-Fa-f]+\.[0-9]$", file):
                 # print "Found cert file ", file

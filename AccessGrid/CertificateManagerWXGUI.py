@@ -23,13 +23,13 @@ class CertificateManagerWXGUI(CertificateManagerUserInterface):
     def __init__(self):
         CertificateManagerUserInterface.__init__(self)
 
-    def GetProxyInfo(self, cert):
+    def GetProxyInfo(self, cert, msg = ""):
         """
         Construct and show a dialog to retrieve proxy creation information from user.
 
         """
 
-        dlg = PassphraseDialog(None, -1, "Enter passphrase", cert)
+        dlg = PassphraseDialog(None, -1, "Enter passphrase", cert, msg)
         rc = dlg.ShowModal()
         if rc == wxID_OK:
             return dlg.GetInfo()
@@ -64,7 +64,7 @@ class CertificateManagerWXGUI(CertificateManagerUserInterface):
         dlg.Destroy()
 
 class PassphraseDialog(wxDialog):
-    def __init__(self, parent, id, title, cert):
+    def __init__(self, parent, id, title, cert, msg = ""):
 
         self.cert = cert
 
@@ -74,6 +74,11 @@ class PassphraseDialog(wxDialog):
 
         t = wxStaticText(self, -1, "Create a proxy for %s" % cert.GetSubject())
         sizer.Add(t, 0, wxEXPAND | wxALL, 4)
+
+        if msg != "":
+            t = wxStaticText(self, -1, msg)
+            sizer.Add(t, 0, wxEXPAND | wxALL, 4)
+            
 
         grid = wxFlexGridSizer(cols = 2, hgap = 3, vgap = 3)
         sizer.Add(grid, 1, wxEXPAND | wxALL, 4)
