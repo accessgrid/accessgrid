@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.124 2003-10-20 20:10:06 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.125 2003-10-29 20:31:03 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.124 2003-10-20 20:10:06 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.125 2003-10-29 20:31:03 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -157,18 +157,18 @@ class VenueClient( ServiceBase):
                                                      self.privateId))
                 isSuccess = 1
             except:
-                log.exception("VenueClient.Heartbeat: Heartbeat exception is caught, exit venue.")
+                log.exception("Heartbeat: Heartbeat exception is caught, exit venue.")
                 isSuccess = 0
 
             # Send whether Heartbeat succeeded or failed to UI.
             for s in self.eventSubscribers:
-                log.debug("VenueClient.Heartbeat: Call heartbeat in subscribers.")
+                log.debug("Heartbeat: Call heartbeat in subscribers.")
                 s.Heartbeat(isSuccess)
 
             if len(self.eventSubscribers) == 0:
                 # If we don't have any event subscribers, we still have to stop
                 # the client.
-                log.debug("VenueClient.Heartbeat: We do not have event subsribers, so exit venue.")
+                log.debug("Heartbeat: We do not have event subsribers, so exit venue.")
                 self.ExitVenue()
 
     def SetProfile(self, profile):
@@ -192,7 +192,7 @@ class VenueClient( ServiceBase):
         
         if(self.profile != None):
             self.profile.venueClientURL = self.service.get_handle()
-            log.debug("AccessGrid.VenueClient::venue client serving : %s"
+            log.debug("CreateVenueClientWebService: venue client serving : %s"
                       % self.profile.venueClientURL)
 
     def __createPersonalDataStore(self):
@@ -202,13 +202,13 @@ class VenueClient( ServiceBase):
         from local path, the description is not added to the list.
         """
         
-        log.debug("bin.VenueClient::__createPersonalDataStore: Creating personal datastore at %s using prefix %s and port %s" %(self.personalDataStorePath, self.personalDataStorePrefix,self.personalDataStorePort))
+        log.debug("__createPersonalDataStore: Creating personal datastore at %s using prefix %s and port %s" %(self.personalDataStorePath, self.personalDataStorePrefix,self.personalDataStorePort))
         
         if not os.path.exists(self.personalDataStorePath):
             try:
                 os.mkdir(self.personalDataStorePath)
             except OSError, e:
-                log.exception("bin.VenueClient::__createPersonalDataStore: Could not create personal data storage path")
+                log.exception("__createPersonalDataStore: Could not create personal data storage path")
                 self.personalDataStorePath = None
                 
         if self.personalDataStorePath:
@@ -224,7 +224,7 @@ class VenueClient( ServiceBase):
             # load personal data from file
             #
             
-            log.debug("AccessGrid.VenueClient::__createPersonalDataStore: Load personal data from file")
+            log.debug("__createPersonalDataStore: Load personal data from file")
             if os.path.exists(self.personalDataFile):
                 try:
                     file = open(self.personalDataFile, 'r')
@@ -232,7 +232,7 @@ class VenueClient( ServiceBase):
                     self.dataStore.LoadPersistentData(dList)
                     file.close()
                 except:
-                    log.exception("Personal data could not be added")
+                    log.exception("__createPersonalDataStore: Personal data could not be added")
 
     # General EventHandler
     # handler should have functions, AddUser, RemoveUser, etc.
@@ -244,7 +244,7 @@ class VenueClient( ServiceBase):
     # Event Handlers
     #
     def AddUserEvent(self, event):
-        log.debug("Got Add User Event")
+        log.debug("AddUserEvent: Got Add User Event")
 
         data = event.data
         
@@ -253,7 +253,7 @@ class VenueClient( ServiceBase):
             s.AddUserEvent(event)
 
     def RemoveUserEvent(self, event):
-        log.debug("Got Remove User Event")
+        log.debug("RemoveUserEvent: Got Remove User Event")
 
         data = event.data
 
@@ -261,7 +261,7 @@ class VenueClient( ServiceBase):
         for s in self.eventSubscribers:
             s.RemoveUserEvent(event)
 
-        log.debug("Got Remove User Event...done")
+        log.debug("RemoveUserEvent: Got Remove User Event...done")
 
         # Remove client from the list of clients who have
         # been requested for personal data
@@ -273,7 +273,7 @@ class VenueClient( ServiceBase):
             pass
         
     def ModifyUserEvent(self, event):
-        log.debug("Got Modify User Event")
+        log.debug("ModifyUserEvent: Got Modify User Event")
 
         data = event.data
 
@@ -282,7 +282,7 @@ class VenueClient( ServiceBase):
             s.ModifyUserEvent(event)
 
     def AddDataEvent(self, event):
-        log.debug("Got Add Data Event")
+        log.debug("AddDataEvent: Got Add Data Event")
           
         data = event.data
       
@@ -299,7 +299,7 @@ class VenueClient( ServiceBase):
             s.AddDataEvent(event)
 
     def UpdateDataEvent(self, event):
-        log.debug("Got Update Data Event")
+        log.debug("UpdateDataEvent: Got Update Data Event")
 
         data = event.data
                 
@@ -316,7 +316,7 @@ class VenueClient( ServiceBase):
                s.UpdateDataEvent(event)
 
     def RemoveDataEvent(self, event):
-        log.debug("Got Remove Data Event")
+        log.debug("RemoveDataEvent: Got Remove Data Event")
         data = event.data
 
         if data.type == "None" or data.type == None:
@@ -332,7 +332,7 @@ class VenueClient( ServiceBase):
             s.RemoveDataEvent(event)
                 
     def AddServiceEvent(self, event):
-        log.debug("Got Add Service Event")
+        log.debug("AddServiceEvent: Got Add Service Event")
 
         data = event.data
         self.venueState.AddService(data)
@@ -340,7 +340,7 @@ class VenueClient( ServiceBase):
             s.AddServiceEvent(event)
 
     def RemoveServiceEvent(self, event):
-        log.debug("Got Remove Service Event")
+        log.debug("RemoveServiceEvent: Got Remove Service Event")
 
         data = event.data
         self.venueState.RemoveService(data)
@@ -348,7 +348,7 @@ class VenueClient( ServiceBase):
             s.RemoveServiceEvent(event)
 
     def AddApplicationEvent(self, event):
-        log.debug("Got Add Application Event")
+        log.debug("AddApplicationEvent: Got Add Application Event")
 
         data = event.data
         self.venueState.AddApplication(data)
@@ -356,7 +356,7 @@ class VenueClient( ServiceBase):
             s.AddApplicationEvent(event)
 
     def RemoveApplicationEvent(self, event):
-        log.debug("Got Remove Application Event")
+        log.debug("RemoveApplicationEvent: Got Remove Application Event")
 
         data = event.data
         self.venueState.RemoveApplication(data)
@@ -364,7 +364,7 @@ class VenueClient( ServiceBase):
             s.RemoveApplicationEvent(event)
 
     def AddConnectionEvent(self, event):
-        log.debug("Got Add Connection Event")
+        log.debug("AddConnectionEvent: Got Add Connection Event")
 
         data = event.data
         self.venueState.AddConnection(data)
@@ -372,7 +372,7 @@ class VenueClient( ServiceBase):
             s.AddConnectionEvent(event)
 
     def RemoveConnectionEvent(self, event):
-        log.debug("Got Remove Connection Event")
+        log.debug("RemoveConnectionEvent: Got Remove Connection Event")
 
         data = event.data
         self.venueState.RemoveConnection(data)
@@ -380,7 +380,7 @@ class VenueClient( ServiceBase):
             s.RemoveConnectionEvent(event)
 
     def SetConnectionsEvent(self, event):
-        log.debug("Got Set Connections Event")
+        log.debug("SetConnectionEvent: Got Set Connections Event")
 
         data = event.data
         self.venueState.SetConnections(data)
@@ -388,7 +388,7 @@ class VenueClient( ServiceBase):
             s.SetConnectionsEvent(event)
 
     def AddStreamEvent(self, event):
-        log.debug("Got Add Stream Event")
+        log.debug("AddStreamEvent: Got Add Stream Event")
         data = event.data
 
         # Add the stream to the local stream store
@@ -400,7 +400,7 @@ class VenueClient( ServiceBase):
             s.AddStreamEvent(event)
     
     def ModifyStreamEvent(self, event):
-        log.debug("Got Modify Stream Event")
+        log.debug("ModifyStreamEvent: Got Modify Stream Event")
         data = event.data
 
         # Modify the local stream store
@@ -414,7 +414,7 @@ class VenueClient( ServiceBase):
         
     
     def RemoveStreamEvent(self, event):
-        log.debug("Got Remove Stream Event")
+        log.debug("RemoveStreamEvent: Got Remove Stream Event")
         data = event.data
 
         # Remove the stream from the local stream store
@@ -461,12 +461,12 @@ class VenueClient( ServiceBase):
                     self.__CheckForInvalidClock()
 
                 else:
-                    log.exception("AccessGrid.VenueClient::EnterVenue failed")
+                    log.exception("EnterVenue: failed")
 
                 raise EnterVenueException("No reachable venue at given venue URL")
             
             except:
-                log.exception("No reachable venue at given venue URL")
+                log.exception("EnterVenue: No reachable venue at given venue URL")
                 raise EnterVenueException("No reachable venue at given venue URL")
 
 
@@ -484,14 +484,14 @@ class VenueClient( ServiceBase):
             except Exception, e:
                 # This is a non fatal error, users should be notified
                 # but still enter the venue
-                log.info("AccessGrid.VenueClient::Get node capabilities failed")
+                log.info("EnterVenue: Get node capabilities failed")
                 errorInNode = 1
                         
             #
             # Enter the venue
             #
 
-            log.debug("Invoke venue enter")
+            log.debug("EnterVenue: Invoke venue enter")
             (venueState, self.privateId, self.streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
 
 
@@ -628,7 +628,7 @@ class VenueClient( ServiceBase):
             except Exception, e:
                 # This is a non fatal error, users should be notified
                 # but still enter the venue
-                log.warn("AccessGrid.VenueClient: Error updating node service")
+                log.warn("EnterVenue: Error updating node service")
                 errorInNode = 1
 
             # Cache profiles from venue.
@@ -648,14 +648,14 @@ class VenueClient( ServiceBase):
         except pyGlobus.io.GSITCPSocketException, e:
             enterSuccess = 0
 
-            log.error("globus tcp exception: %s", e.args)
+            log.error("EnterVenue: globus tcp exception: %s", e.args)
 
             
             if e.args[0] == 'an authentication operation failed':
                 self.__CheckForInvalidClock()
 
             else:
-                log.exception("AccessGrid.VenueClient::EnterVenue failed")
+                log.exception("EnterVenue: failed")
                 # pass a flag to UI if we fail to enter.
                 enterSuccess = 0
                 # put error in warningString, in redesign will be raised to UI as exception.
@@ -663,7 +663,7 @@ class VenueClient( ServiceBase):
                     self.warningString = str(e.faultstring)
                 
         except Exception, e:
-            log.exception("AccessGrid.VenueClient::EnterVenue failed")
+            log.exception("EnterVenue: failed")
             # pass a flag to UI if we fail to enter.
             enterSuccess = 0
             # put error in warningString, in redesign will be raised to UI as exception.
@@ -702,7 +702,7 @@ class VenueClient( ServiceBase):
         try:
             serverTime = GetSNTPTime(timeserver, timeout)
         except:
-            log.exception("Connection to sntp server at %s failed", timeserver)
+            log.exception("__CheckForValideClock: Connection to sntp server at %s failed", timeserver)
             serverTime = None
 
         if serverTime is not None:
@@ -726,7 +726,7 @@ class VenueClient( ServiceBase):
                 #
                 # Time is okay.
                 #
-                log.exception("AccessGrid.VenueClient::EnterVenue failed; time is okay (offset=%s", diff)
+                log.exception("__CheckForValideClock: failed; time is okay (offset=%s", diff)
 
                 self.warningString = "Authorization failure connecting to server."
         else:
@@ -743,20 +743,20 @@ class VenueClient( ServiceBase):
             try:
                 Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue(self.venueUri, 0)
             except:
-                log.exception("AccessGrid.VenueClient::Exception while leading follower")
+                log.exception("LeadFollowers::Exception while leading follower")
 
     def ExitVenue( self ):
         """
         ExitVenue removes this client from the specified venue.
         """
-        log.info("VenueClient.ExitVenue")
+        log.info("ExitVenue")
 
         # Clear the list of personal data requests.
         self.requests = []
        
         self.exitingLock.acquire()
         if self.exiting:
-            log.debug("VenueClient already exiting, returning.")
+            log.debug("ExitVenue: already exiting, returning.")
             self.exitingLock.release()
             return
         self.exiting = 1
@@ -768,7 +768,7 @@ class VenueClient( ServiceBase):
 
         # Stop sending heartbeats
         if self.heartbeatTask != None:
-            log.info(" Stopping heartbeats")
+            log.info("ExitVenue: Stopping heartbeats")
             self.heartbeatTask.stop()
 
         #
@@ -795,42 +795,43 @@ class VenueClient( ServiceBase):
         # 
 
         # Stop the event client
-        log.info(" Stopping event client")
+        log.info("ExitVenue: Stopping event client")
         try:
           
           if self.eventClient:
-            log.debug("  send client exiting event")
+            log.debug("ExitVenue: Send client exiting event")
             self.eventClient.Send(ClientExitingEvent(self.venueState.uniqueId,
                                                      self.privateId))
-            log.debug("  stop event client obj")
-            self.eventClient.Stop()
-            log.debug("  remove reference")
-            self.eventClient = None
-       
         except:
-            # An exception is always thrown for some reason when I exit
-            # the event client
-            log.exception("on client exiting")
+            log.exception("ExitVenue: Can not send client exiting event to event client")
+        
+        try:
+            if self.eventClient:
+                log.debug("ExitVenue: Stop event client obj")
+                self.eventClient.Stop()
+                log.debug("ExitVenue: Remove event client reference")
+                self.eventClient = None
+        except:
+            log.exception("ExitVenue: Can not stop event client")
 
-        log.info("Stopping text client")
+        log.info("ExitVenue: Stopping text client")
         try:
           if self.textClient:
             # Stop the text client
-            log.debug("   sending client disconnect event.")
+            log.debug("ExitVenue: Sending client disconnect event.")
             self.textClient.Disconnect(self.venueState.uniqueId,
                                        self.privateId)
-            log.debug("   remove reference")
+            log.debug("ExitVenue: Remove text client reference")
             self.textClient = None
           
         except:
-          
-            log.exception("on text client exiting")
+            log.exception("ExitVenue: On text client exiting")
         
         try:
             self.venueProxy.Exit( self.privateId )
             
         except Exception, e:
-            log.exception("AccessGrid.VenueClient::ExitVenue exception")
+            log.exception("ExitVenue: ExitVenue exception")
 
         # Stop the node services
         if self.nodeServiceUri != None:
@@ -838,12 +839,12 @@ class VenueClient( ServiceBase):
                 nodeHandle = Client.Handle(self.nodeServiceUri)
 
                 #if nodeHandle.IsValid():
-                log.info(" Stopping node services")
+                log.info("ExitVenue: Stopping node services")
                 nodeHandle.GetProxy().StopServices()
                 nodeHandle.GetProxy().SetStreams([])
 
             except Exception, e:
-                log.info("don't have a node service")
+                log.info("ExitVenue: Don't have a node service")
 
         #
         # Save personal data
@@ -967,14 +968,12 @@ class VenueClient( ServiceBase):
         url = clientProfile.venueClientURL
         id = clientProfile.publicId
 
-        log.debug("bin.VenueClient.GetPersonalData")
-
         #
         # After initial request, personal data will be updated via events.
         #
 
         if not id in self.requests:
-            log.debug("bin.VenueClient.GetPersonalData: The client has NOT been queried for personal data yet %s", clientProfile.name)
+            log.debug("GetPersonalData: The client has NOT been queried for personal data yet %s", clientProfile.name)
             self.requests.append(id)
                     
             #
@@ -982,14 +981,14 @@ class VenueClient( ServiceBase):
             #
                        
             if url == self.profile.venueClientURL:
-                log.debug('bin.VenueClient.GetPersonalData: I am trying to get my own data')
+                log.debug('GetPersonalData: I am trying to get my own data')
                 return self.dataStore.GetDataDescriptions()
             else:
-                log.debug("bin.VenueClient.GetPersonalData: This is somebody else's data")
+                log.debug("GetPersonalData: This is somebody else's data")
                 try:
                     dataDescriptionList = Client.Handle(url).get_proxy().GetDataDescriptions()
                 except:
-                    log.exception("VenueClient.GetPersonalData: GetDataDescriptions call failed")
+                    log.exception("GetPersonalData: GetDataDescriptions call failed")
                     raise GetDataDescriptionsError()
                 
                 dataList = []
@@ -1001,7 +1000,7 @@ class VenueClient( ServiceBase):
                 return dataList
         
         else:
-            log.debug("bin.VenueClient.GetPersonalData: The client has been queried for personal %s" %clientProfile.name)
+            log.debug("GetPersonalData: The client has been queried for personal %s" %clientProfile.name)
                         
          
     #
@@ -1017,7 +1016,7 @@ class VenueClient( ServiceBase):
 
         # request permission to follow the leader
         # (response will come in via the LeadResponse method)
-        log.debug('AccessGrid.VenueClient::Requesting permission to follow this leader: %s' %leaderProfile.name)
+        log.debug('Follow: Requesting permission to follow this leader: %s' %leaderProfile.name)
         Client.Handle( leaderProfile.venueClientURL ).get_proxy().RequestLead( self.profile )
 
     def UnFollow( self, leaderProfile ):
@@ -1025,7 +1024,7 @@ class VenueClient( ServiceBase):
         UnFollow tells this venue client to stop following the specified client
         """
 
-        log.debug('AccessGrid.VenueClient::Trying to unfollow: %s' %leaderProfile.name)
+        log.debug('UnFollow: Trying to unfollow: %s' %leaderProfile.name)
         Client.Handle( leaderProfile.venueClientURL ).get_proxy().UnLead( self.profile )
         self.leaderProfile = None
 
@@ -1034,7 +1033,7 @@ class VenueClient( ServiceBase):
         RequestLead accepts requests from other clients who wish to be lead
         """
      
-        log.debug("AccessGrid.VenueClient::Received request to lead %s %s" %
+        log.debug("RequestLead: Received request to lead %s %s" %
                  (followerProfile.name, followerProfile.venueClientURL))
 
         # Add profile to list of followers awaiting authorization
@@ -1070,14 +1069,14 @@ class VenueClient( ServiceBase):
 
         if response:
             # add profile to list of followers
-            log.debug("AccessGrid.VenueClient::Authorizing lead request for %s" %clientProfile.name)
+            log.debug("SendLeadResponse: Authorizing lead request for %s" %clientProfile.name)
             self.followerProfiles[clientProfile.publicId] = clientProfile
 
             # send the response
             Client.Handle( clientProfile.venueClientURL ).get_proxy().LeadResponse(self.profile, 1)
         else:
             Client.Handle( clientProfile.venueClientURL ).get_proxy().LeadResponse(self.profile, 0)
-            log.debug("AccessGrid.VenueClient::Rejecting lead request for %s" %clientProfile.name)
+            log.debug("SendLeadResponse: Rejecting lead request for %s" %clientProfile.name)
 
     def LeadResponse(self, leaderProfile, isAuthorized):
         """
@@ -1088,18 +1087,18 @@ class VenueClient( ServiceBase):
 
         # Detect responses from clients other than the pending leader
         if leaderProfile.publicId != self.pendingLeader.publicId:
-            log.debug("Lead response received from client other than pending leader")
+            log.debug("LeadResponse: Lead response received from client other than pending leader")
             return
 
         # Check response
         if isAuthorized:
-            log.debug("AccessGrid.VenueClient::Leader has agreed to lead you: %s, %s" %(self.pendingLeader.name, self.pendingLeader.distinguishedName))
+            log.debug("LeadResponse: Leader has agreed to lead you: %s, %s" %(self.pendingLeader.name, self.pendingLeader.distinguishedName))
             self.leaderProfile = self.pendingLeader
 
             # reset the pending leader
             self.pendingLeader = None
         else:
-            log.debug("AccessGrid.VenueClient::Leader has rejected request to lead you: %s", leaderProfile.name)
+            log.debug("LeadResponse: Leader has rejected request to lead you: %s", leaderProfile.name)
         self.pendingLeader = None
 
         for s in self.eventSubscribers:
@@ -1112,7 +1111,7 @@ class VenueClient( ServiceBase):
         UnLead tells this venue client to stop dragging the specified client.
         """
 
-        log.debug( "AccessGrid.VenueClient::AccessGrid.VenueClient::Received request to unlead %s %s"
+        log.debug( "UnLead: AccessGrid.VenueClient::Received request to unlead %s %s"
                    %(clientProfile.name, clientProfile.venueClientURL))
 
         if(self.followerProfiles.has_key(clientProfile.publicId)):
@@ -1146,7 +1145,7 @@ class VenueClient( ServiceBase):
         # request that another client (or clients) follow this client
         # (response will come in via the FollowResponse method)
         for followerProfile in followerProfileList:
-            log.debug("Requesting permission to lead this client: %s", followerProfile.name )
+            log.debug("Lead: Requesting permission to lead this client: %s", followerProfile.name )
             self.pendingFollowers[followerProfile.publicId] = followerProfile
             Client.Handle( followerProfile.venueClientURL ).get_proxy().RequestFollow( self.profile )
 
@@ -1155,7 +1154,7 @@ class VenueClient( ServiceBase):
         """
         RequestFollow accepts requests for other clients to lead this client
         """
-        log.debug("Received request to follow: %s", leaderProfile.name)
+        log.debug("RequestFollow: Received request to follow: %s", leaderProfile.name)
 
         # Store profile of leader making request
         self.pendingLeader = leaderProfile
@@ -1188,13 +1187,13 @@ class VenueClient( ServiceBase):
 
         if response:
             # add profile to list of followers
-            log.debug("Authorizing follow request for: %s", leaderProfile.name)
+            log.debug("SendFollowResponse: Authorizing follow request for: %s", leaderProfile.name)
             self.leaderProfile = leaderProfile
 
             # send the response
             Client.Handle( self.leaderProfile.venueClientURL ).get_proxy().FollowResponse(self.profile,1)
         else:
-            log.debug("Rejecting follow request for: %s", leaderProfile.name)
+            log.debug("SendFollowResponse: Rejecting follow request for: %s", leaderProfile.name)
 
     def FollowResponse(self, followerProfile, isAuthorized):
         """
@@ -1205,11 +1204,11 @@ class VenueClient( ServiceBase):
         
         # Detect responses from clients not in pending followers list
         if followerProfile.publicId not in self.pendingFollowers.keys():
-            log.debug("Follow response received from client not in pending followers list")
+            log.debug("FollowResponse: Follow response received from client not in pending followers list")
             return
 
         if isAuthorized:
-            log.debug("Follower has agreed to follow you: %s", self.pendingLeader.name)
+            log.debug("FollowResponse: Follower has agreed to follow you: %s", self.pendingLeader.name)
 
             # add follower to list of followers
             self.followerProfiles[followerProfile.publicId] = self.pendingFollowers[followerProfile.publicId]
@@ -1217,7 +1216,7 @@ class VenueClient( ServiceBase):
             # remove from pending follower list
             del self.pendingFollowers[followerProfile.publicId]
         else:
-            log.debug("Follower has rejected request to follow you: %s", followerProfile.name)
+            log.debug("FollowResponse: Follower has rejected request to follow you: %s", followerProfile.name)
         self.pendingLeader = None
 
     FollowResponse.soap_export_as = "FollowResponse"
@@ -1228,15 +1227,15 @@ class VenueClient( ServiceBase):
         Send venue streams to the node service
         """
 
-        log.debug("Method UpdateNodeService called")
+        log.debug("UpdateNodeService: Method UpdateNodeService called")
 
         exc = None
 
         try:
             Client.Handle(self.nodeServiceUri).IsValid()
         except:
-            log.info("- Node Service unreachable; skipping")
-            log.info("  url = %s", self.nodeServiceUri)
+            log.info("UpdateNodeService: Node Service unreachable; skipping")
+            log.info("UpdateNodeService: url = %s", self.nodeServiceUri)
             return
 
         # Set the identity of the user running the node
@@ -1250,7 +1249,7 @@ class VenueClient( ServiceBase):
                 try:
                     self.UpdateStream(stream)
                 except NetworkLocationNotFound, e:
-                    log.debug("Couldn't update stream with transport/provider info")
+                    log.debug("UpdateNodeService: Couldn't update stream with transport/provider info")
                     exc = e
 
         # Send streams to the node service
@@ -1310,7 +1309,7 @@ class VenueClient( ServiceBase):
         
         *url* The string including the new node url address
         """
-        log.debug("Set node service url:  %s" %url)
+        log.debug("SerNodeUrl: Set node service url:  %s" %url)
         self.nodeServiceUri = url
 
     def Shutdown(self):
@@ -1351,5 +1350,5 @@ class VenueClient( ServiceBase):
         try:
             self.cache.updateProfile(profile)
         except InvalidProfileException:
-            log.info("InvalidProfile when storing a venue user's profile in the cache.")
+            log.info("UpdateProfileCache: InvalidProfile when storing a venue user's profile in the cache.")
             
