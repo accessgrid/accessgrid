@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.44 2004-07-22 23:24:11 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.45 2004-07-26 17:16:12 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.44 2004-07-22 23:24:11 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.45 2004-07-26 17:16:12 eolson Exp $"
 
 import os
 import mimetypes
@@ -681,9 +681,12 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
         # Create resource objects
         resourceList = list()
         for device,portString in deviceList.items():
-            r = AGVideoResource('video', device, 'producer',
+            try:
+                r = AGVideoResource('video', device, 'producer',
                                 portString.split())
-            resourceList.append(r)
+                resourceList.append(r)
+            except Exception, e:
+                log.exception("Unable to add video resource to list. device: " + device + "  portString: " + portString)
         
         return resourceList
 
