@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.30 2004-05-14 16:12:55 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.31 2004-05-17 18:06:29 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.30 2004-05-14 16:12:55 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.31 2004-05-17 18:06:29 eolson Exp $"
 
 import os
 import mimetypes
@@ -722,7 +722,7 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
         example: [ (verb,command,commandDesc), ...  ]
 
         Written with this use case example:
-        RegisterMimeType("application/x-ag-pkg", ".agpkg", "agpkg file", "Access Grid Package", ["agpm.py", "/usr/bin/agpm.py --wait-for-input", ""])
+        RegisterMimeType("application/x-ag-pkg", ".agpkg", "agpkg file", "Access Grid Package", ["agpm.py", "/usr/bin/agpm.py --wait-for-input --package", ""])
         
         ----
         """
@@ -776,7 +776,7 @@ Comment=%s
         can_open_multiple_files=false
         name=%s
         mime_types=%s
-        """ % (defAppId, cmd[1], defAppId, mimeType)
+        """ % (defAppId, cmd[1].strip("%f"), defAppId, mimeType)
         #  %("agpm.py", "/usr/bin/agpm.py", "agpm.py", application/x-ag-pkg")
 
         gnomeKeyInfo = """
