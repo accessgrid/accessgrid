@@ -33,7 +33,7 @@ class DebugService(AGService):
                             Capability( Capability.CONSUMER, Capability.VIDEO ),
                             Capability( Capability.PRODUCER, "debug" ) ]
       # Set executable
-      self.executable = os.path.join(os.getcwd(),"DebugService.py")
+      self.executable = None
       
       # Set configuration parameters
       self.param1 = OptionSetParameter( "Configuration Parameter 1: ", "On", ["On", "Off"] )
