@@ -51,8 +51,8 @@ Install()
 {
   export package="$1"
   export package_ver="$2"
-  export rpm_opts="$3"
-  export package_rpm="$package-$package_ver.i386.rpm"
+  export arch="$3"
+  export package_rpm="$package-$package_ver.$arch.rpm"
 
   rpm -q --quiet $package
   if [ $? -eq 0 ] ; then
@@ -71,13 +71,7 @@ Install()
 
 # Inform user what will be done and prompt to continue
 #
-echo "This script installs the necessary RPMS for the Access Grid software, " 
-echo "with the exception of python and wxPython.  "
-echo "When prompted whether you want to continue, respond with 'y'"
-echo "When prompted whether you want to save and quit, respond with 'q'"
-echo ""
-echo "After the installation, you must log out and back in before using"
-echo "the software."
+echo "This script installs the necessary RPMS for the Access Grid software. " 
 echo "Continue?"
 read response
 if [ "$response" != 'y' ] && [ "$response" != "Y" ]
@@ -86,17 +80,17 @@ then
 fi
 
 #
-# Install Phase 1 RPMS
+# Install Prerequisites
 #
 echo "***********************************************"
 echo "Installing prerequisites" 
 echo "***********************************************"
-Install $FPCONST $FPCONST_VER
-Install $LOGGING $LOGGING_VER 
-Install $OPTIK $OPTIK_VER
-Install $SOAPPY $SOAPPY_VER
-Install $PYGLOBUS $PYGLOBUS_VER
-Install $PYOPENSSL $PYOPENSSL_VER 
+Install $FPCONST $FPCONST_VER noarch
+Install $LOGGING $LOGGING_VER noarch
+Install $OPTIK $OPTIK_VER noarch
+Install $SOAPPY $SOAPPY_VER noarch
+Install $PYGLOBUS $PYGLOBUS_VER i386
+Install $PYOPENSSL $PYOPENSSL_VER i386
 
 #
 # Install AG RPMS
@@ -105,13 +99,9 @@ echo "***********************************************"
 echo "Installing Access Grid packages "
 echo "***********************************************"
 for package in $AG ; do
-    Install $package $AG_VER 
+    Install $package $AG_VER i386
 done
 
 echo ""
 echo "Installation finished."
 echo ""
-echo "Important: "
-echo "- You should log out and back in before using the software, "
-echo "  to allow proper initialization of the execution environment"
-echo "- The AG software should be run by normal users, _not_ root."
