@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.50 2003-03-06 08:18:16 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.51 2003-03-12 08:50:40 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -95,6 +95,9 @@ class Venue(ServiceBase.ServiceBase):
             return 1
         elif sm.GetSubject().GetName() in self.administrators:
             return 1
+        # call back up to the server
+        elif self.server._authorize():
+            return 1
         else:
             return 0
 
@@ -113,9 +116,8 @@ class Venue(ServiceBase.ServiceBase):
         # We don't save things in this list
         keys = ("users", "clients", "nodes", "multicastAllocator",
                 "producerCapabilities", "consumerCapabilities",
-                "textService", "eventService", "dataService",
-                "_service_object", "houseKeeper",
-                "dataTransferServer", "dataStore")
+                "server", "_service_object", "houseKeeper",
+                "dataStore")
         for k in odict.keys():
             if k in keys:
                 del odict[k]
@@ -142,19 +144,14 @@ class Venue(ServiceBase.ServiceBase):
         if self.encryptMedia == 1:
             self.encryptionKey = AllocateEncryptionKey()
 
-    def Start(self, multicastAllocator, dataTransferServer,
-              eventService, textService):
+    def Start(self, server):
         """ """
-        self.multicastAllocator = multicastAllocator
-        self.dataTransferServer = dataTransferServer
-        self.eventService = eventService
-        self.textService = textService
-
-        self.eventService.AddChannel(self.uniqueId)
-        self.textService.AddChannel(self.uniqueId)
+        self.server = server
+        self.server.eventService.AddChannel(self.uniqueId)
+        self.server.textService.AddChannel(self.uniqueId)
 
         log.debug("Registering heartbeat for %s", self.uniqueId)
-        self.eventService.RegisterCallback(self.uniqueId,
+        self.server.eventService.RegisterCallback(self.uniqueId,
                                            HeartbeatEvent.HEARTBEAT,
                                            self.ClientHeartbeat)
 
@@ -181,23 +178,23 @@ class Venue(ServiceBase.ServiceBase):
         """
 
         if self.dataStorePath is None or not os.path.isdir(self.dataStorePath):
-            log.debug("Not starting datastore for venue: %s does not exist %s",
+            log.warn("Not starting datastore for venue: %s does not exist %s",
                       self.uniqueId, self.dataStorePath)
             return
 
-        self.dataTransferServer.RegisterPrefix(str(self.uniqueId), self)
+        self.server.dataTransferServer.RegisterPrefix(str(self.uniqueId), self)
 
         self.dataStore = DataStore.DataStore(self, self.dataStorePath,
                                              str(self.uniqueId))
-        self.dataStore.SetTransferEngine(self.dataTransferServer)
+        self.dataStore.SetTransferEngine(self.server.dataTransferServer)
 
-        log.debug("Have upload url: %s", self.dataStore.GetUploadDescriptor())
+        log.info("Have upload url: %s", self.dataStore.GetUploadDescriptor())
 
         for file, desc in self.data.items():
             log.debug("Checking file %s for validity", file)
             url = self.dataStore.GetDownloadDescriptor(file)
             if url is None:
-                log.debug("File %s has vanished", file)
+                log.warn("File %s has vanished", file)
                 del self.data[file]
             else:
                 desc.SetURI(url)
@@ -231,8 +228,8 @@ class Venue(ServiceBase.ServiceBase):
             'users' : self.users.values(),
             'nodes' : self.nodes.values(),
             'services' : self.services.values(),
-            'eventLocation' : self.eventService.GetLocation(),
-            'textLocation' : self.textService.GetLocation()
+            'eventLocation' : self.server.eventService.GetLocation(),
+            'textLocation' : self.server.textService.GetLocation()
             }
 
         #
@@ -260,6 +257,14 @@ class Venue(ServiceBase.ServiceBase):
         now = time.time()
         self.clients[privateId] = now
         log.debug("Got Client Heartbeat for %s at %s." % (event, now))
+    
+    def Shutdown(self):
+        """
+        This method cleanly shuts down all active threads associated with the
+        Virtual Venue. Currently there are a few threads in the Event
+        Service.
+        """
+        self.houseKeeper.StopAllTasks()
 
     def NegotiateCapabilities(self, clientProfile, privateId):
         """
@@ -360,6 +365,44 @@ class Venue(ServiceBase.ServiceBase):
         return None
 
     # Management methods
+    def AddAdministrator(self, string):
+        """
+        """
+        if string not in self.administrators:
+            self.administrators.append(string)
+            return string
+        else:
+            log.exception("Venue.AddAdministrator: Administrator already present")
+            raise VenueException("Administrator already present")
+
+    AddAdministrator.soap_export_as = "AddAdministrator"
+
+    def RemoveAdministrator(self, string):
+        """
+        """
+        if string in self.administrators:
+            self.administrators.remove(string)
+            return string
+        else:
+            log.exception("Venue.RemoveAdministrator: Administrator not found")
+            raise VenueException("Administrator not found")
+
+    RemoveAdministrator.soap_export_as = "RemoveAdministrator"
+    
+    def SetAdministrators(self, administratorList):
+        """
+        """
+        self.administrators = self.administrators + administratorList
+
+    SetAdministrators.soap_export_as = "SetAdministrators"
+
+    def GetAdministrators(self):
+        """
+        """
+        return self.administrators
+
+    GetAdministrators.soap_export_as = "GetAdministrators"
+
     def SetEncryptMedia(self, value, key=None):
         """
         Turn media encryption on or off.
@@ -432,7 +475,7 @@ class Venue(ServiceBase.ServiceBase):
             raise VenueException("You are not authorized to perform this action.")
         try:
             self.connections[connectionDescription.uri] = connectionDescription
-            self.eventService.Distribute( self.uniqueId,
+            self.server.eventService.Distribute( self.uniqueId,
                                           Event( Event.ADD_CONNECTION,
                                                  self.uniqueId,
                                                  connectionDescription ) )
@@ -466,6 +509,8 @@ class Venue(ServiceBase.ServiceBase):
         GetConnections returns a list of all the connections to other venues
         that are found within this venue.
         """
+        log.debug("Calling GetConnections.")
+        
         return self.connections.values()
 
     GetConnections.soap_export_as = "GetConnections"
@@ -477,13 +522,15 @@ class Venue(ServiceBase.ServiceBase):
         a list of connections adding them one by one, but this is more
         desirable.
         """
+        log.debug("Calling SetConnections.")
+        
         if not self._authorize():
             raise VenueException("You are not authorized to perform this action.")
         try:
             self.connections = dict()
             for connection in connectionList:
                 self.connections[connection.uri] = connection
-            self.eventService.Distribute( self.uniqueId,
+            self.server.eventService.Distribute( self.uniqueId,
                                           Event( Event.SET_CONNECTIONS,
                                                  self.uniqueId,
                                                  connectionList ) )
@@ -611,7 +658,7 @@ class Venue(ServiceBase.ServiceBase):
             # negotiate to get stream descriptions to return
             streamDescriptions = self.NegotiateCapabilities(clientProfile,
                                                             privateId)
-            self.eventService.Distribute( self.uniqueId,
+            self.server.eventService.Distribute( self.uniqueId,
                                           Event( Event.ENTER,
                                                  self.uniqueId,
                                                  clientProfile ) )
@@ -639,7 +686,7 @@ class Venue(ServiceBase.ServiceBase):
                 self.RemoveUser( privateId )
 
             else:
-                log.debug("* * Invalid private id %s!!", privateId)
+                log.warn("* * Invalid private id %s!!", privateId)
         except:
             log.exception("Exception in Exit!")
             raise VenueException("ExitVenue: ")
@@ -652,7 +699,7 @@ class Venue(ServiceBase.ServiceBase):
 
         # Distribute event
         clientProfile = self.users[privateId]
-        self.eventService.Distribute( self.uniqueId,
+        self.server.eventService.Distribute( self.uniqueId,
                                       Event( Event.EXIT,
                                              self.uniqueId,
                                              clientProfile ) )
@@ -670,7 +717,7 @@ class Venue(ServiceBase.ServiceBase):
         for user in self.users.values():
             if user.publicId == clientProfile.publicId:
                 self.users[user.privateId] = clientProfile
-            self.eventService.Distribute( self.uniqueId,
+            self.server.eventService.Distribute( self.uniqueId,
                                           Event( Event.MODIFY_USER,
                                                  self.uniqueId,
                                                  clientProfile ) )
@@ -696,12 +743,12 @@ class Venue(ServiceBase.ServiceBase):
             # We already have this data; raise an exception.
             #
 
-            log.debug("AddData: data already present: %s", name)
+            log.exception("AddData: data already present: %s", name)
             raise VenueException("AddData: data %s already present" % (name))
 
         self.data[dataDescription.name] = dataDescription
         log.debug("Send ADD_DATA event %s", dataDescription)
-        self.eventService.Distribute( self.uniqueId,
+        self.server.eventService.Distribute( self.uniqueId,
                                       Event( Event.ADD_DATA,
                                              self.uniqueId,
                                              dataDescription ) )
@@ -726,12 +773,12 @@ class Venue(ServiceBase.ServiceBase):
             # We don't already have this data; raise an exception.
             #
 
-            log.debug("UpdateData: data not already present: %s", name)
+            log.exception("UpdateData: data not already present: %s", name)
             raise VenueException("UpdateData: data %s not already present" % (name))
 
         self.data[dataDescription.name] = dataDescription
         log.debug("Send UPDATE_DATA event %s", dataDescription)
-        self.eventService.Distribute( self.uniqueId,
+        self.server.eventService.Distribute( self.uniqueId,
                                       Event( Event.UPDATE_DATA,
                                              self.uniqueId,
                                              dataDescription ) )
@@ -771,7 +818,7 @@ class Venue(ServiceBase.ServiceBase):
             # data description -- I guess that's later :-)
             del self.data[ dataDescription.name ]
             self.dataStore.DeleteFile(dataDescription.name)
-            self.eventService.Distribute( self.uniqueId,
+            self.server.eventService.Distribute( self.uniqueId,
                                           Event( Event.REMOVE_DATA,
                                                  self.uniqueId,
                                                  dataDescription ) )
@@ -806,7 +853,7 @@ class Venue(ServiceBase.ServiceBase):
                   serviceDescription.uri)
         try:
             self.services[serviceDescription.uri] = serviceDescription
-            self.eventService.Distribute( self.uniqueId,
+            self.server.eventService.Distribute( self.uniqueId,
                                           Event( Event.ADD_SERVICE,
                                                  self.uniqueId,
                                                  serviceDescription ) )
@@ -824,7 +871,7 @@ class Venue(ServiceBase.ServiceBase):
 
         try:
             del self.services[serviceDescription.uri]
-            self.eventService.Distribute( self.uniqueId,
+            self.server.eventService.Distribute( self.uniqueId,
                                           Event( Event.REMOVE_SERVICE,
                                                  self.uniqueId,
                                                  serviceDescription ) )
