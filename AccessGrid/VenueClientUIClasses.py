@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.279 2003-09-18 16:01:39 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.280 2003-09-18 19:32:50 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.279 2003-09-18 16:01:39 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.280 2003-09-18 19:32:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -105,6 +105,7 @@ class VenueClientFrame(wxFrame):
     ID_MYNODE_URL = wxNewId()
     ID_MYVENUE_ADD = wxNewId()
     ID_MYVENUE_EDIT = wxNewId()
+    ID_MYVENUE_GOTODEFAULT = wxNewId()
     ID_MYVENUE_SETDEFAULT = wxNewId()
     ID_HELP = wxNewId()
     ID_HELP_ABOUT = wxNewId()
@@ -250,6 +251,8 @@ class VenueClientFrame(wxFrame):
                                 "Configure your node")
         self.menubar.Append(self.preferences, "&Preferences")
         self.myVenues = wxMenu()
+        self.myVenues.Append(self.ID_MYVENUE_GOTODEFAULT, "Go to Home Venue",
+                             "Go to default venue")
         self.myVenues.Append(self.ID_MYVENUE_SETDEFAULT, "Set as Home Venue",
                              "Set current venue as default")
         self.myVenues.AppendSeparator()
@@ -351,6 +354,7 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
 
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
+        self.menubar.Enable(self.ID_MYVENUE_GOTODEFAULT, false)
         self.menubar.Enable(self.ID_MYVENUE_SETDEFAULT, false)
         self.menubar.Enable(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES, false)
         
@@ -363,6 +367,7 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, true)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
         self.menubar.Enable(self.ID_MYVENUE_ADD, true)
+        self.menubar.Enable(self.ID_MYVENUE_GOTODEFAULT, true)
         self.menubar.Enable(self.ID_MYVENUE_SETDEFAULT, true)
         
         # Only show administrate button when you can administrate a venue.
@@ -399,6 +404,7 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_MYNODE_URL, self.OpenSetNodeUrlDialog)
         EVT_MENU(self, self.ID_MYVENUE_ADD, self.AddToMyVenues)
         EVT_MENU(self, self.ID_MYVENUE_EDIT, self.EditMyVenues)
+        EVT_MENU(self, self.ID_MYVENUE_GOTODEFAULT, self.GoToDefaultVenue)
         EVT_MENU(self, self.ID_MYVENUE_SETDEFAULT, self.SetAsDefaultVenue)
         EVT_MENU(self, self.ID_ME_PROFILE, self.OpenMyProfileDialog)
         EVT_MENU(self, self.ID_ME_UNFOLLOW, self.UnFollow)
@@ -718,6 +724,14 @@ class VenueClientFrame(wxFrame):
             self.__loadMyVenues()
 
         editMyVenuesDialog.Destroy()
+
+    def GoToDefaultVenue(self,event):
+        venueUrl = self.app.venueClient.profile.homeVenue
+        self.FillInAddress(None,venueUrl)
+        self.venueAddressBar.AddChoice(venueUrl)
+        wxBeginBusyCursor()
+        self.app.venueClient.EnterVenue(venueUrl, true)
+        wxEndBusyCursor()
 
     def SetAsDefaultVenue(self,event):
         # Get the current profile
