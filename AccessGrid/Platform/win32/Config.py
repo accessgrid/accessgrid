@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.23 2004-04-12 21:33:55 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.24 2004-04-13 01:31:34 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.23 2004-04-12 21:33:55 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.24 2004-04-13 01:31:34 judson Exp $"
 
 import os
 import sys
@@ -683,7 +683,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             _winreg.DeleteValue(gkey, "x509_user_key")
             _winreg.CloseKey(gkey)
         except WindowsError:
-            log.exception("Couldn't delete x509_user_key from registry, no big deal.")
+            log.info("Couldn't delete x509_user_key from registry, no big deal.")
 
         if os.environ.has_key('X509_USER_KEY'):
             del os.environ['X509_USER_KEY']
