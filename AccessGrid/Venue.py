@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.28 2003-02-12 16:51:40 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.29 2003-02-12 17:12:21 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -61,6 +61,8 @@ class Venue(ServiceBase.ServiceBase):
 
         self.cleanupTime = 30
         self.nextPrivateId = 1
+
+        self.encryptionKey = AllocateEncryptionKey()
 
     def __getstate__(self):
         odict = self.__dict__.copy()
@@ -177,10 +179,9 @@ class Venue(ServiceBase.ServiceBase):
                     # add new stream description
 
                     print "* * Adding new producer of type ", capability.type
-                    encryptionKey = AllocateEncryptionKey()
                     streamDesc = StreamDescription( "noName", "noDesc",
                                              self.AllocateMulticastLocation(), 
-                                             capability, encryptionKey )
+                                             capability, self.encryptionKey )
                     self.streams.append( streamDesc )
                     streamDescriptions.append( streamDesc )
         
