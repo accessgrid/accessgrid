@@ -4,27 +4,17 @@
 
 Core Toolkit
      - Build Test Suite
-     - Move to New Authorization/Security Code
-     - Format/Naming of hosting/*.py and hosting/pyGlobus/*.py
-     - Consider renaming non-web service methods with _'s for somewhat
-     standard private method names.
-     - Log to files, instead of standard out
      - AGNodeService/AGServiceManager Configuration files
-     - Move to GT 2.2
-     - Move to the latest pyGlobus
-
      - Move to WSDL/Schemas for language interop
      - Build the Services Toolkit
        
 Basic Services
-     - Bridging
      - Monitoring
 
 Extended Services
      - Tunneling
      - Display Layout
      - Network Fault Tolerance 
-
      - High Resolution Video
      - Stereo Audio
 
