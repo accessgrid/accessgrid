@@ -44,7 +44,14 @@ AUTH_X509 = "x509"
 AUTH_ANONYMOUS = "anonymous"
 
 class Subject:
+    """
+    A Subject instance represents an AG user.
 
+    A Subject can be identified by various authentication mechanisms. we currently
+    support X509 certificates (per Globus).
+
+    """
+    
     def __init__(self, name, auth_type, auth_data = None):
         self.name = name
         self.auth_type = auth_type
@@ -99,25 +106,66 @@ class Role:
     def GetMembership(self):
         return self.manager.GetRoleList()
 
-class RoleManager:
+class RoleAlreadyRegistered(Exception):
+    """
+    This role already has been registered in the RoleManager.
+    """
 
-    def __init__(self):
-        pass
-
-    def GetRoleList(self):
-        pass
-
-    def RegisterRole(self, role_name):
-        pass
-
-    def DetermineRoles(self, subject):
-        pass
-
-def getSecurityManager():
     pass
 
-class SecurityManager:
+class RoleManager:
+    """
+    A RoleManager provides the mechanism for apps to register and query roles.
 
+    A resource that gates access based on roles will use a RoleManager instance
+    to determine if the subject requesting access is a member of the appropriate role.
+
+    A resource that holds the information necessary to assign subjects to
+    roles will act as (either inheriting from or providing an instance of) a
+    RoleManager. 
+
+    """
+
+    def __init__(self):
+        self.validRoles = {}
+
+    def GetRoleList(self):
+        """
+        Return the list of Role objects, one for each role currently registered.
+        """
+
+        raise NotImplementedError
+
+
+    def RegisterRole(self, role_name):
+        """
+        Add role_name as a valid role for this RoleManager.
+
+        Returns the Role object for this role.
+        """
+
+        if self.validRoles.has_key(role_name):
+            raise RoleAlreadyRegistered(role_name)
+
+        role = Role(role_name, self)
+        self.validRoles[role_name] = role
+        return role
+
+    def DetermineRoles(self, subject):
+        """
+        Determine which roles the given subject belongs to.
+        """
+
+        raise NotImplementedError
+
+def CreateSubjectFromGSIContext(context):
+    initiator, acceptor, valid_time, mechanism_oid, flags, local_flag, open_flag = context.inquire()
+    subj_name = initiator.display()
+    self.subject = Subject(subj_name, AUTH_X509)
+
+class SecurityManager:
+    """
+    """
     def __init__(self, roleManager, soapContext, threadId):
         self.role_manager = roleManager
         self.soap_context = soapContext
@@ -127,10 +175,8 @@ class SecurityManager:
         # Globus-specific for now
         #
 
-        context = self.soap_context.security_context
-        initiator, acceptor, valid_time, mechanism_oid, flags, local_flag, open_flag = context.inquire()
-        subj_name = initiator.display()
-        self.subject = Subject(subj_name, AUTH_X509)
+        self.subject = CreateSubjectFromGSIContext(self.soap_context.security_context)
+
 
     def GetSubject(self):
         return self.subject
@@ -143,7 +189,10 @@ class SecurityManager:
         #
         # Doh! User passed in just a single user, not a list. Wrap it for him.
         #
-        if type(userList) != type([]):
+        # There might be a better way to do this comparison. for instance, it
+        # will fail if a UserList instance is passed in, or a tuple.
+        #
+        if type(userList) != types.ListType:
             userList = [userList]
         
         for user in userList:
@@ -153,7 +202,9 @@ class SecurityManager:
         return 0
 
     def ValidateRole(self, roleList):
-        pass
+        if self.role_manager is None:
+            return 0
+        return 0
 
     def __repr__(self):
         return "SecurityManager(rolemgr=%s, soapContext=%s, threadId=%s)" % (
@@ -162,11 +213,27 @@ class SecurityManager:
             self.thread_id)
 
 def GetSecurityManager():
+    """
+    Return the SecurityManager instance for this thread.
+
+    Returns None if none is registered (this might
+    be a main program thread with no identity registered).
+    """
+    
     thread_id = get_ident()
-    return _managers[thread_id]
+    if _managers.has_key(thread_id):
+        return _managers[thread_id]
+    else:
+        return None
 
 class InvocationWrapper(MethodSig):
+    """
+    An InvocationWrapper provides the security manager context setup for a method call.
 
+    It derives from SOAP.MethodSig so that the SOAP engine will
+    automatically invoke the method through this wrapper.
+    """
+    
     def __init__(self, callback, pass_connection_info, service_object):
 
         MethodSig.__init__(self, callback, keywords = 0, context = 1)
