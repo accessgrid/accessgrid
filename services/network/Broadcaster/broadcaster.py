@@ -2,7 +2,7 @@
 # Name:        broadcaster.py
 # Purpose:     
 # Created:     2005/05/01
-# RCS-ID:      $Id: broadcaster.py,v 1.5 2005-02-03 21:09:01 turam Exp $
+# RCS-ID:      $Id: broadcaster.py,v 1.6 2005-02-04 20:42:51 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,6 +34,7 @@ import time
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 from bridge import RTPReceiver
+from l16_to_l8_transcoder import L16_to_L8
 
 bridge = None
 
@@ -97,6 +98,7 @@ class Broadcaster:
         print "Exiting..."
         self.flag = 0
         bridge.stop()
+        self.tcoder.Stop()
         self.StopProcesses()
     
     def StopProcesses(self):
@@ -138,6 +140,10 @@ class Broadcaster:
             fromVideoPort = int(self.app.options.videoPort)
             fromAudioHost = self.app.options.audioHost
             fromAudioPort = int(self.app.options.audioPort)
+            
+        if debug:
+            print "video multicast: ", fromVideoHost, fromVideoPort
+            print "audio multicast: ", fromAudioHost, fromAudioPort
 
         if fromVideoHost == 0 or fromVideoPort == 0:
             if debug: print "Video stream is not received from venue, you will not receive video"
@@ -156,17 +162,9 @@ class Broadcaster:
         # Create commands to execute
 
         # Start audio down-sampler (linear16 kHz -> linear8 kHz)
-        downSampExec = sys.executable
-        dOptions = []
-        dOptions.append("l16_to_l8_transcoder.py")
-        dOptions.append("%s"%(fromAudioHost))
-        dOptions.append("%d"%(fromAudioPort))
-        dOptions.append("%s"%(self.transcoderHost))
-        dOptions.append("%d"%(self.transcoderPort))
-
-        if debug: print "********* START down-sampler", downSampExec, dOptions, '\n'
-        self.processManager.StartProcess(downSampExec, dOptions)
-
+        self.tcoder = L16_to_L8(fromAudioHost,fromAudioPort,
+                                self.transcoderHost,self.transcoderPort)
+        self.tcoder.Start()
 
         if debug: print "****************** BEFORE RAT", self.toAudioPort
         
