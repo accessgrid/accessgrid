@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.30 2003-09-24 01:46:46 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.31 2003-10-14 04:26:35 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.30 2003-09-24 01:46:46 olson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.31 2003-10-14 04:26:35 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -299,7 +299,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                 if not retry:
                     break
 
-        print "done, success=", success
+#        print "done, success=", success
 
         return success
 
