@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.273 2003-09-17 20:28:06 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.274 2003-09-17 20:44:01 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.273 2003-09-17 20:28:06 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.274 2003-09-17 20:44:01 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2241,12 +2241,12 @@ class ContentListPanel(wxPanel):
             # Fix odd commands
             if isWindows():
                 if command.find("%1") != -1:
-                    command = command.replace("%1", "%(localFilePath)s")
+                    command = command.replace("%1", "\"%(localFilePath)s\"")
                 elif command.find("%(localFilePath)s") == -1:
                     command += " \"%(localFilePath)s\""
             else:
                 if command.find("%s") != -1:
-                    command = command.replace("%s", "%(localFilePath)s")
+                    command = command.replace("%s", "\"%(localFilePath)s\"")
                 elif command.find("%(localFilePath)s") == -1:
                     command += " \"%(localFilePath)s\""
         else:
