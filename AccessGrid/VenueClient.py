@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.43 2003-03-26 15:17:34 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.44 2003-03-26 15:57:19 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -370,7 +370,7 @@ class VenueClient( ServiceBase):
 
         threading.Thread(target = self.NotifyUnLead, args = (clientProfile,) ).start()
             
-    Lead.soap_export_as = "UnLead"
+    UnLead.soap_export_as = "UnLead"
 
     def NotifyUnLead(self, clientProfile):
         """
