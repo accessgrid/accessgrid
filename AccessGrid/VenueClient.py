@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.197 2004-12-06 19:52:02 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.198 2004-12-06 20:25:44 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.197 2004-12-06 19:52:02 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.198 2004-12-06 20:25:44 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -105,7 +105,7 @@ class VenueClient:
             pnode = int(self.preferences.GetPreference(Preferences.STARTUP_MEDIA))
             self.isPersonalNode = pnode
 
-        self.capabilities = None
+        self.capabilities = []
         self.nodeServiceUri = self.defaultNodeServiceUri
         self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
         self.homeVenue = None
@@ -711,8 +711,9 @@ class VenueClient:
             (venueState, self.privateId) = self.__venueProxy.Enter( self.profile )
 
             # Retreive stream descriptions
-            self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.privateId,
-                                                                          self.capabilities)
+            if len(self.capabilities) > 0:
+                self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.privateId,
+                                                                              self.capabilities)
             
             # Retrieve the connection id from within the private id
             # (when we break compatability, the server will likely pass
