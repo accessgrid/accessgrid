@@ -362,7 +362,8 @@ if __name__ == "__main__":
     else:
         log.debug("found vncserverexe = %s", vncserverexe)
 
-    if not app.GetOption('name'):
+    name = app.GetOption('name')
+    if not name:
         timestamp = time.strftime("%I:%M:%S %p %B %d, %Y")
         name = "VenueVNC - %s" % (timestamp)
     
@@ -388,6 +389,7 @@ if __name__ == "__main__":
         
         os._exit(1)
     except Exception, e:
+        log.exception("Failure starting VenueVNC session")
         print "Failure starting VenueVNC session (see VenueVNCServer.log for more details)"
         os._exit(1)
         
