@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.21 2003-01-27 21:01:11 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.22 2003-01-27 22:32:45 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -451,6 +451,6 @@ class VenueServer(ServiceBase.ServiceBase):
             for x in tb:
                 print x
 
-        (self.configFile, self.config)
+        SaveConfig(self.configFile, self.config)
 
     Checkpoint.soap_export_as = "Checkpoint"
