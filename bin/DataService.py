@@ -23,7 +23,7 @@ def Main():
                 path = a
             elif o in ("-d", "--dataPort"):
                 dataPort = int(a)
-            elif o in ("-s", "--serviePort"):
+            elif o in ("-s", "--servicePort"):
                 servicePort = int(a)
             elif o in ("-h", "--help"):
                 Usage()
