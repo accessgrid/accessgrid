@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.29 2003-09-24 03:27:30 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.30 2003-09-25 20:50:18 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.29 2003-09-24 03:27:30 judson Exp $"
+__revision__ = "$Id: EventClient.py,v 1.30 2003-09-25 20:50:18 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from threading import Thread, Lock
@@ -312,7 +312,10 @@ class EventClient:
             pass
         if self.cbHandle:
             log.debug("Free callback %s", self.cbHandle)
-            self.sock.free_callback(self.cbHandle)
+            try:
+                self.sock.free_callback(self.cbHandle)
+            except ValueError:
+                log.exception("EventClient.Stop: callback already gone.")
         
         log.debug("EventClient.Stop: closing socket")
         try:
