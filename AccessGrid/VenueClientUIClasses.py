@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.189 2003-05-16 19:29:37 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.190 2003-05-19 18:02:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -2486,6 +2486,82 @@ class DataDropTarget(wxFileDropTarget):
         else:
             self.app.UploadVenueFiles(files)
  
+class SelectAppDialog(wxDialog):
+    """
+    SelectAppDialog provides the option for selecting an executable
+    for operations on a particular mimetype, and for storing this 
+    association permanently.
+    """
+    def __init__(self, parent, id, title, mimetype ):
+
+        wxDialog.__init__(self, parent, id, title, style = wxDEFAULT_DIALOG_STYLE)
+        
+        self.SetSize( wxSize(800,300) )
+
+        # Set up sizers
+        gridSizer = wxFlexGridSizer(5, 1, 5, 5)
+        gridSizer.AddGrowableCol(0)
+        sizer1 = wxBoxSizer(wxVERTICAL)
+        sizer1.Add(gridSizer, 1, wxALL|wxEXPAND, 10)
+        self.SetSizer( sizer1 )
+        self.SetAutoLayout(1)
+
+        # Create config list label and listctrl
+        configLabel = wxStaticText(self,-1,"No client registered for mimetype:\n\t" + mimetype)
+        gridSizer.Add( configLabel, 1 )
+        configLabel = wxStaticText(self,-1,"Select an application to use with this mimetype")
+        gridSizer.Add( configLabel, 1 )
+
+        # Create application text field and button
+        fieldButtonSizer = wxFlexGridSizer(1,2,5,5)
+        self.configText = wxTextCtrl(self,-1,"")
+        buttonId = wxNewId()
+        button = wxButton(self,buttonId,"Browse...")
+        EVT_BUTTON(self, buttonId, self.BrowseCallback)
+
+        fieldButtonSizer.Add( self.configText, 1 )
+        fieldButtonSizer.Add( button )
+        gridSizer.Add( fieldButtonSizer, 1, wxEXPAND )
+
+        # Create default checkbox
+        self.defaultCheckbox = wxCheckBox(self,-1,"Always use this application")
+        gridSizer.Add( self.defaultCheckbox, 1, wxEXPAND )
+
+    
+        # Create ok/cancel buttons
+        sizer3 = wxBoxSizer(wxHORIZONTAL)
+        okButton = wxButton( self, wxID_OK, "OK" )
+        cancelButton = wxButton( self, wxID_CANCEL, "Cancel" )
+        sizer3.Add(okButton, 0, wxALL, 10)
+        sizer3.Add(cancelButton, 0, wxALL, 10)
+        sizer1.Add(sizer3, 0, wxALIGN_RIGHT)
+
+        sizer1.Fit(self)
+
+    def GetPath(self):
+        """
+        Return path to selected file
+        """
+        return self.configText.GetValue()
+
+    def GetCheckboxValue(self):
+        """
+        Return state of checkbox
+        """
+        return self.defaultCheckbox.GetValue()
+
+    def BrowseCallback(self, event):
+        """
+        Handle file selection
+        """
+
+        d = wxFileDialog(self, "Select application")
+        ret = d.ShowModal()
+
+        if ret == wxID_OK:
+            file = d.GetPath()
+            self.configText.SetValue( file )
+
 
 '''VenueClient.
 
