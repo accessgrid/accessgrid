@@ -3,7 +3,7 @@
 # Purpose:     
 #
 # Created:     2004/03/30
-# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.4 2004-04-27 02:41:20 judson Exp $
+# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.5 2004-04-27 02:59:04 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ class AGServicePackageRepository:
         
         # Start the transfer server
         self.s = DataStore.GSIHTTPTransferServer(('', self.port)) 
-        self.s.RegisterPrefix(prefix, self)
+        self.s.RegisterPrefix(self.prefix, self)
         threading.Thread( target=self.s.run, name="PackageRepo TransferServer" )
         self.running = 1
 
