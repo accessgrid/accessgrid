@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=View README
 Comment=Read the ReadMe
-URL=/usr/share/doc/AccessGrid/README
+Exec=/usr/share/doc/AccessGrid/README
 Icon=/usr/share/AccessGrid/ag.ico
 Terminal=0
-Type=Link
+Type=URL

@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Developer Documentation
 Comment=epydoc-generated documentation for developers
-URL=/usr/share/doc/doc/Developer/index.html
+Exec=/usr/share/doc/Developer/index.html
 Icon=/usr/share/AccessGrid/ag.ico
 Terminal=0
-Type=Link
+Type=URL

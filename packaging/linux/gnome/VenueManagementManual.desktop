@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Venue Management Manual
 Comment=View Venue Management Manual
-URL=/usr/share/doc/AccessGrid/Documentation/VenueManagementManual/VenueManagementManual.htm
+Exec=/usr/share/doc/AccessGrid/Documentation/VenueManagementManual/VenueManagementManual.htm
 Icon=/usr/share/AccessGrid/ag.ico
 Terminal=0
-Type=Link
+Type=URL
