@@ -23,7 +23,7 @@ class AuthorizationManager:
 
    def RemoveAuthorizedUser( self, user ):
       """Remove user from list of authorized users"""
-      del self.authorizedUsers[user]
+      self.authorizedUsers.remove(user)
 
    def Authorize( self, user ):
       """Check for user in list of authorized users"""
