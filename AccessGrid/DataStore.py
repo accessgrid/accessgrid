@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.70 2004-07-16 20:46:18 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.71 2004-07-26 22:07:58 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.70 2004-07-16 20:46:18 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.71 2004-07-26 22:07:58 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -38,7 +38,7 @@ from pyGlobus import io
 
 from AccessGrid import Log
 import AccessGrid.GUID
-from AccessGrid.Platform.Config import SystemConfig
+from AccessGrid.Platform.Config import SystemConfig, GlobusConfig
 from AccessGrid.Descriptions import DataDescription, CreateDataDescription
 from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent,  AddDataEvent
 from AccessGrid.EventClient import EventClient, EventClientWriteDataException
@@ -1566,14 +1566,14 @@ class GSIHTTPTransferServer(io.GSITCPSocketServer, TransferServer):
         return self.port
 
     def GetUploadDescriptor(self, prefix):
-        hn = SystemConfig.instance().GetHostname()
+        hn = GlobusConfig.instance().GetHostname()
         return urlparse.urlunparse(("https",
                                  "%s:%d" % (hn, self._GetListenPort()),
                                  prefix,
                                  "", "", ""))
                                  
     def GetDownloadDescriptor(self, prefix, path):
-        hn = SystemConfig.instance().GetHostname()
+        hn = GlobusConfig.instance().GetHostname()
         return urlparse.urlunparse(("https",
                                     "%s:%d" % (hn, self._GetListenPort()),
                                     "%s/%s" % (prefix, urllib.quote(path)),
