@@ -225,7 +225,7 @@ class VenueListPanel(wxPanel):
 	self.maximizeButton.SetToolTipString("Show Sidebar")
 	self.maximizeButton.Hide()
 	self.SetBackgroundColour(self.maximizeButton.GetBackgroundColour())
-	self.imageList = wxImageList(16,16)
+	self.imageList = wxImageList(32,32)
 	self.__doLayout()
 	self.__addEvents()
 	self.__insertItems()
@@ -404,9 +404,7 @@ class ContentListPanel(wxPanel):
 
 	
     def __setImageList(self):
-	imageList = wxImageList(16,16)  
-
-	newImageList = wxImageList(16,16) 
+	imageList = wxImageList(32,19)  
 	self.defaultPersonId = imageList.Add(icons.getDefaultParticipantBitmap())
 	self.pptDocId = imageList.Add(icons.getDefaultDataBitmap())
 	self.importantPaperId = imageList.Add(icons.getDefaultDataBitmap())
