@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.46 2003-02-20 20:03:53 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.47 2003-02-21 16:09:05 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT -----------------------------------------------------------------------------
 import threading
@@ -251,16 +251,18 @@ class VenueClientUI(wxApp, VenueClient):
         # Start text client
         textLoc = tuple(self.venueState.GetTextLocation())
         try:
-            self.textClient = TextClientUI(self.frame, -1, "", location = textLoc)
+            self.textClient = TextClientUI(None, -1, "",
+                                           location = textLoc,
+                                           venueId = self.venueState.uniqueId)
+            self.textClient.Show(1)
         except:
             wxCallAfter(ErrorDialog, self.frame, "Trying to open text client!")
-
 
         #
         # Find the upload location. HACK for now, this should come in
         # thru the venue description.
         #
-        self.upload_url = self.client.GetUploadDescriptor()
+#        self.upload_url = self.client.GetUploadDescriptor()
 
     def ExitVenue(self):
         """

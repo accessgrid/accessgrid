@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.7 2003-02-14 22:39:54 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.8 2003-02-21 16:09:05 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,19 +29,23 @@ def SignalHandler(signum, frame):
     running = 0
 
 def AuthCallback(server, g_handle, remote_user, context):
-    #print "Server gets identity ", remote_user
+    print "Server gets identity ", remote_user
     return 1
 
 
 port = 8000
-if len(sys.argv)>1:
+if len(sys.argv) > 1:
     port = int(sys.argv[1])
 
+configFile = None
+if len(sys.argv) > 2:
+    configFile = sys.argv[2]
+    
 # First thing we do is create a hosting environment
 hostingEnvironment = Server.Server(port, auth_callback=AuthCallback)
 
 # Then we create a VenueServer, giving it the hosting environment
-venueServer = VenueServer(hostingEnvironment)
+venueServer = VenueServer(hostingEnvironment, configFile)
 
 # Then we create the VenueServer service
 serviceObject = hostingEnvironment.create_service_object(pathId = 'VenueServer')
