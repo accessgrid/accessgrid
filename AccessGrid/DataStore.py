@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.50 2003-09-26 15:20:55 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.51 2003-09-29 19:57:03 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.50 2003-09-26 15:20:55 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.51 2003-09-29 19:57:03 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2034,12 +2034,17 @@ class HTTPUploadEngine:
                 conn.send(buf)
                 n_sent += len(buf)
                 if self.progressCB is not None:
-                    self.progressCB(file, n_sent, size, 0, 0)
+                    cancel = self.progressCB(file, n_sent, size, 0, 0)
+                    if cancel:
+                        log.debug("UL got cancel!")
+                        conn.close()
+                        raise UploadFailed("Cancelled by user")
 
         except socket.error, e:
             if self.progressCB is not None:
                 self.progressCB(file, n_sent, size, 1, 1)
             log.debug("Hm, got a socket error.")
+            conn.close()
             raise UploadFailed(e[1])
 
         if self.progressCB is not None:
