@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.23 2004-03-15 20:07:02 judson Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.24 2004-03-15 21:42:26 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -17,20 +17,23 @@ from wxPython.wx import *
 from wxPython.wizard import *
 
 # Agtk specific imports
-from AccessGrid.hosting.pyGlobus import Client
+from AccessGrid.Toolkit import WXGUIApplication
 from AccessGrid import Log
+
+from AccessGrid.Platform import isWindows, isOSX, isLinux
+
 from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid.AGParameter import ValueParameter
 from AccessGrid.Descriptions import AGServiceManagerDescription
-from AccessGrid.Platform import GetUserConfigDir
-from AccessGrid import Toolkit
-from AccessGrid.Platform import isWindows, isOSX, isLinux
-from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
-from AccessGrid.Utilities import NODE_SETUP_WIZARD_LOG
-from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
-from AccessGrid.Platform import isWindows, isLinux
 
-log = Log.getLogger(Log.NodeSetupWizard)
+from AccessGrid.Utilities import NODE_SETUP_WIZARD_LOG
+
+from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
+from AccessGrid.UIUtilities import ProgressDialog
+
+from AccessGrid.hosting import Client
+
+log = Log.GetLogger(Log.NodeSetupWizard)
 
 class ServiceUnavailableException(Exception):
     pass
@@ -90,17 +93,13 @@ class NodeSetupWizard(wxWizard):
     The node setup wizard guides users through the steps necessary for
     creating and testing a node configuration. 
     '''
-    def __init__(self, parent, debugMode):
+    def __init__(self, parent, debugMode, log):
         wxWizard.__init__(self, parent, 10,"Setup Node", wxNullBitmap)
         '''
         This class creates a wizard for node setup
         '''
         self.debugMode = debugMode
-        
-        if not self.CheckCertificate():
-            return None
-        
-        self.__setLogger()
+        self.log = log
 
         self.step = 1
         self.SetPageSize(wxSize(510, 310))
@@ -112,7 +111,7 @@ class NodeSetupWizard(wxWizard):
         self.page3 = VideoCaptureWindow2(self, self.nodeClient,
                                          "Video Capture Machine")
         self.page4 = VideoDisplayWindow(self, self.nodeClient,
-                                        "Video Display Machine")
+                                        "Display Machine")
         self.page5 = AudioWindow(self, self.nodeClient,
                                  "Audio Machine")
         self.page6 = ConfigWindow(self, self.nodeClient, "Your Node Setup")
@@ -156,60 +155,6 @@ class NodeSetupWizard(wxWizard):
                 except:
                     log.exception("NodeSetupWizard.__init__: Can not stop node service")
 
-    def __setLogger(self):
-        """
-        Sets the logging mechanism.
-        """
-        # Should be set from command window.
-        self.logFile = None
-                
-        log = Log.GetLogger(Log.NodeSetupWizard)
-        
-        if self.logFile is None:
-            logname = os.path.join(GetUserConfigDir(), "NodeSetupWizard.log")
-        else:
-            logname = self.logFile
-            
-        hdlr = Log.FileHandler(logname)
-        hdlr.setLevel(Log.DEBUG)
-        hdlr.setFormatter(Log.GetFormatter())
-        Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
-
-        if self.debugMode:
-            hdlr = Log.StreamHandler()
-            hdlr.setFormatter(Log.GetLowDetailFormatter())
-            Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
-       
-    def CheckCertificate(self):
-        
-        VerifyExecutionEnvironment()
-
-        try:
-            self.app = Toolkit.WXGUIApplication()
-          
-        except Exception, e:
-            log.exception("NodeSetupWizard.CheckCertificate: WXGUIApplication creation failed")
-            text = "Could not start the Node Setup Wizard. \nIs your certificate configured correctly?"
-            MessageDialog(None, text, "Node Setup Wizard failed")
-            return 0
-
-        try:
-            self.app.InitGlobusEnvironment()
-            
-        except Exception, e:
-            text = "Could not start the Node Setup Wizard. \nIs your certificate configured correctly?"
-            log.exception("NodeSetupWizard: App initialization failed")
-            MessageDialog(None, text, "Node Setup Wizard failed")
-            return 0
-
-        if not self.app.certificateManager.HaveValidProxy():
-            log.debug("NodeSetupWizard: You don't have a valid proxy")
-            ret = self.app.certificateManager.CreateProxy()
-            if not ret:
-                return 0
-    
-        return 1
-            
     def ChangingPage(self, event):
         '''
         This method is called when a page is changed in the wizard
@@ -1022,50 +967,45 @@ class NodeClient:
         return self.cameraList
 
 
-class ArgumentManager:
-    def __init__(self):
-        self.debugMode = 0
+def main():
+    log = None
 
-    def GetDebugMode(self):
-        return self.debugMode
+    # Create the wxpython app
+    wxapp = wxPySimpleApp()
+
+    # Create a progress dialog
+    startupDialog = ProgressDialog("Starting Node Setup Wizard...",
+                                   "Initializing AccessGrid Toolkit", 5)
+    startupDialog.Show()
+
+    # Init the toolkit with the standard environment.
+    app = WXGUIApplication()
+
+    # Try to initialize
+    try:
+        args = app.Initialize("VenueNodeSetupWizard")
+    except Exception, e:
+        print "Toolkit Initialization failed, exiting."
+        print " Initialization Error: ", e
+        sys.exit(-1)
         
-    def Usage(self):
-        """
-        How to use the program.
-        """
-        print "%s:" % (sys.argv[0])
-        print "  -h|--help: print usage"
-        print "  -d|--debug: print debug output"
-        
-    def ProcessArgs(self):
-        """
-        Handle any arguments we're interested in.
-        """
-        try:
-            opts, args = getopt.getopt(sys.argv[1:], "hdl:",
-                                       ["debug", "help"])
+    # Get the log
+    log = app.GetLog()
+    debug = app.GetDebugLevel()
+    
+    startupDialog.UpdateOneStep("Initializing the Node Setup Wizard.")
 
-        except getopt.GetoptError:
-            self.Usage()
-            sys.exit(2)
-            
-        for opt, arg in opts:
-            if opt in ('-h', '--help'):
-                self.Usage()
-                sys.exit(0)
-            
-            elif opt in ('--debug', '-d'):
-                self.debugMode = 1
-               
+    nodeSetupWizard = NodeSetupWizard(None, debug, log)
+    
+    # Startup complete; kill progress dialog
+    startupDialog.Destroy()
 
+    # Spin
+    wxapp.SetTopWindow(nodeSetupWizard)
+    wxapp.MainLoop()
+
+    wxapp.Destroy()
+    
+# The main block
 if __name__ == "__main__":
-    argManager = ArgumentManager()
-    argManager.ProcessArgs()
-    debugMode = argManager.GetDebugMode()
-    del argManager
-                    
-    pp = wxPySimpleApp()
-    n = NodeSetupWizard(None, debugMode)
-
-    if n:
-        n.Destroy()
+    main()
