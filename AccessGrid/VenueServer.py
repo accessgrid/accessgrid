@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.56 2003-04-03 20:17:11 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.57 2003-04-03 20:22:59 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -114,11 +114,11 @@ class VenueServer(ServiceBase.ServiceBase):
         self.defaultVenue = ''
         if None != hostEnvironment: 
             self.hostingEnvironment = hostEnvironment
-            self.internalHostingEnvironment = False
+            self.internalHostingEnvironment = 0 # False
         else:
             defaultPort = 8000
             self.hostingEnvironment = Server.Server(defaultPort)
-            self.internalHostingEnvironment = True
+            self.internalHostingEnvironment = 1 # True
         self.multicastAddressAllocator = MulticastAddressAllocator()
         self.hostname = GetHostname()
         self.venues = {}
@@ -644,7 +644,7 @@ class VenueServer(ServiceBase.ServiceBase):
         self.eventService.Stop()
         log.info("                         data")
         self.dataTransferServer.stop()
-        if True == self.internalHostingEnvironment:
+        if self.internalHostingEnvironment:
             log.info("                         internally created hostingEnvironment")
             self.hostingEnvironment.Stop()
             del self.hostingEnvironment
