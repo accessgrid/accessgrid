@@ -1,11 +1,11 @@
 #-----------------------------------------------------------------------------
 # Name:        VideoConsumerService.py
-# Purpose:     
+# Purpose:
 #
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.11 2004-03-18 20:48:43 eolson Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.12 2004-03-31 21:08:25 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,108 +20,95 @@ from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
 class VideoConsumerService( AGService ):
 
-   def __init__( self ):
-      AGService.__init__( self )
+    def __init__( self ):
+        AGService.__init__( self )
 
-      self.capabilities = [ Capability( Capability.CONSUMER, Capability.VIDEO ) ]
-      if not Platform.isWindows():
-          self.executable = "vic"
-      else:
-          self.executable = os.path.join(AGTkConfig.instance().GetInstallDir(), "vic")
+        self.capabilities = [ Capability( Capability.CONSUMER, Capability.VIDEO ) ]
+        if not Platform.isWindows():
+            self.executable = "vic"
+        else:
+            self.executable = os.path.join(AGTkConfig.instance().GetInstallDir(), "vic")
 
-      #
-      # Set configuration parameters
-      #
-      pass
-
-
-   def Start( self ):
-      __doc__ = """Start service"""
-      try:
-
-         # 
-         # Start the service; in this case, store command line args in a list and let
-         # the superclass _Start the service
-         options = []
-         if self.streamDescription.name and len(self.streamDescription.name.strip()) > 0:
-            options.append( "-C" )
-            options.append( self.streamDescription.name )
-         if self.streamDescription.encryptionFlag != 0:
-            options.append( "-K" )
-            options.append( self.streamDescription.encryptionKey )
-         # Check whether the network location has a "type" attribute
-         # Note: this condition is only to maintain compatibility between
-         # older venue servers creating network locations without this attribute
-         # and newer services relying on the attribute; it should be removed
-         # when the incompatibility is gone
-         if self.streamDescription.location.__dict__.has_key("type"):
-             if self.streamDescription.location.type == MulticastNetworkLocation.TYPE:
-                options.append( "-t" )
-                options.append( '%d' % ( self.streamDescription.location.ttl ) )
-         options.append( '%s/%d' % ( self.streamDescription.location.host, 
-                                     self.streamDescription.location.port ) )
-         self.log.info("Starting VideoConsumerService")
-         self.log.info(" executable = %s" % self.executable)
-         self.log.info(" options = %s" % options)
-         self._Start( options )
-      except:
-         self.log.exception("Exception in VideoConsumerService.Start")
-         raise Exception("Failed to start service")
-   Start.soap_export_as = "Start"
-
-   def Stop( self ):
-       """Stop the service"""
-
-       # vic doesn't die easily (on linux at least), so force it to stop
-       AGService.ForceStop(self)         
-
-   Stop.soap_export_as = "Stop"
+        #
+        # Set configuration parameters
+        #
+        pass
 
 
-   def ConfigureStream( self, streamDescription ):
-      """Configure the Service according to the StreamDescription"""
+    def Start( self ):
+        __doc__ = """Start service"""
+        try:
 
-      ret = AGService.ConfigureStream( self, streamDescription )
-      if ret and self.started:
-         # service is already running with this config; ignore
-         return
+            #
+            # Start the service; in this case, store command line args in a list and let
+            # the superclass _Start the service
+            options = []
+            if self.streamDescription.name and len(self.streamDescription.name.strip()) > 0:
+                options.append( "-C" )
+                options.append( self.streamDescription.name )
+            if self.streamDescription.encryptionFlag != 0:
+                options.append( "-K" )
+                options.append( self.streamDescription.encryptionKey )
+            # Check whether the network location has a "type" attribute
+            # Note: this condition is only to maintain compatibility between
+            # older venue servers creating network locations without this attribute
+            # and newer services relying on the attribute; it should be removed
+            # when the incompatibility is gone
+            if self.streamDescription.location.__dict__.has_key("type"):
+                if self.streamDescription.location.type == MulticastNetworkLocation.TYPE:
+                    options.append( "-t" )
+                    options.append( '%d' % ( self.streamDescription.location.ttl ) )
+            options.append( '%s/%d' % ( self.streamDescription.location.host,
+                                        self.streamDescription.location.port ) )
+            self.log.info("Starting VideoConsumerService")
+            self.log.info(" executable = %s" % self.executable)
+            self.log.info(" options = %s" % options)
+            self._Start( options )
+        except:
+            self.log.exception("Exception in VideoConsumerService.Start")
+            raise Exception("Failed to start service")
+    Start.soap_export_as = "Start"
 
-      # if started, stop
-      if self.started:
-         self.Stop()
+    def Stop( self ):
+        """Stop the service"""
 
-      # if enabled, start
-      if self.enabled:
-         self.Start()
+        # vic doesn't die easily (on linux at least), so force it to stop
+        AGService.ForceStop(self)
 
-   ConfigureStream.soap_export_as = "ConfigureStream"
-
-   def SetIdentity(self, profile):
-      """
-      Set the identity of the user driving the node
-      """
-      UserConfig.instance().SetRtpDefaults( profile )
-   SetIdentity.soap_export_as = "SetIdentity"
+    Stop.soap_export_as = "Stop"
 
 
+    def ConfigureStream( self, streamDescription ):
+        """Configure the Service according to the StreamDescription"""
 
-def AuthCallback(server, g_handle, remote_user, context):
-    return 1
+        ret = AGService.ConfigureStream( self, streamDescription )
+        if ret and self.started:
+            # service is already running with this config; ignore
+            return
 
-# Signal handler to shut down cleanly
-def SignalHandler(signum, frame):
-    """
-    SignalHandler catches signals and shuts down the service.
-    Then it stops the hostingEnvironment.
-    """
-    global agService
-    agService.Shutdown()
+        # if started, stop
+        if self.started:
+            self.Stop()
+
+        # if enabled, start
+        if self.enabled:
+            self.Start()
+
+    ConfigureStream.soap_export_as = "ConfigureStream"
+
+    def SetIdentity(self, profile):
+        """
+        Set the identity of the user driving the node
+        """
+        UserConfig.instance().SetRtpDefaults( profile )
+    SetIdentity.soap_export_as = "SetIdentity"
+
 
 
 if __name__ == '__main__':
 
-   from AccessGrid.AGService import AGServiceI, RunService
-   
-   service = VideoConsumerService()
-   serviceI = AGServiceI(service)
-   RunService(service,serviceI,int(sys.argv[1]))
+    from AccessGrid.AGService import AGServiceI, RunService
+
+    service = VideoConsumerService()
+    serviceI = AGServiceI(service)
+    RunService(service,serviceI,int(sys.argv[1]))
