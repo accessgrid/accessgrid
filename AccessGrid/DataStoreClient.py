@@ -312,5 +312,5 @@ if __name__ == "__main__":
 #    logging.root.addHandler(logging.StreamHandler())
 #    logging.root.setLevel(logging.ERROR)
 
-    testData("https://lorax.mcs.anl.gov:8000/Venues/default")
+    testData("https://localhost:8000/Venues/default")
 
