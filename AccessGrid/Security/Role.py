@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.11 2004-03-24 19:16:25 eolson Exp $
+# RCS-ID:      $Id: Role.py,v 1.12 2004-03-24 19:42:53 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ much more dynamic. We programmatically create, destroy and modify
 roles.
 """
 
-__revision__ = "$Id: Role.py,v 1.11 2004-03-24 19:16:25 eolson Exp $"
+__revision__ = "$Id: Role.py,v 1.12 2004-03-24 19:42:53 eolson Exp $"
 
 # external imports
 import xml.dom.minidom
@@ -170,7 +170,7 @@ class Role:
 
         @return: a list of strings of subjects.
         """
-        l = map(lambda x: "%s" % x, self.subjects)
+        l = map(lambda x: "%s" % x.GetName(), self.subjects)
         return l
     
     def AddSubject(self, subject):
