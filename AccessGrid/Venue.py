@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.71 2003-04-07 17:25:36 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.72 2003-04-17 16:07:43 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,11 +29,12 @@ from AccessGrid import AppService
 from AccessGrid.Types import Capability
 from AccessGrid.Descriptions import StreamDescription, CreateStreamDescription
 from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
+from AccessGrid.Descriptions import ApplicationDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
 from AccessGrid import DataStore
 from AccessGrid.scheduler import Scheduler
-from AccessGrid.Events import Event, HeartbeatEvent
+from AccessGrid.Events import Event, HeartbeatEvent, DisconnectEvent
 from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import GetHostname
 
@@ -210,6 +211,10 @@ class Venue(ServiceBase.ServiceBase):
         self.server.eventService.RegisterCallback(self.uniqueId,
                                            HeartbeatEvent.HEARTBEAT,
                                            self.ClientHeartbeat)
+        # This might make things better
+        self.server.eventService.RegisterCallback(self.uniqueId,
+                                                  DisconnectEvent.DISCONNECT,
+                                                  self.EventServiceDisconnect)
 
     def startDataStore(self):
         """
@@ -306,7 +311,10 @@ class Venue(ServiceBase.ServiceBase):
         now = time.time()
         self.clients[privateId] = now
         log.debug("Got Client Heartbeat for %s at %s." % (event, now))
-    
+
+    def EventServiceDisconnect(self, event):
+        log.debug("Got Client Disconnect")
+        
     def Shutdown(self):
         """
         This method cleanly shuts down all active threads associated with the
@@ -1034,6 +1042,14 @@ class Venue(ServiceBase.ServiceBase):
         appHandle = hostObj.GetHandle()
         self.applications[appImpl.GetId()] = appImpl
         appImpl.SetHandle(appHandle)
+
+        ad = ApplicationDescription(appImpl.GetId(), name, description,
+                                    appHandle, mimeType)
+        
+        self.server.eventService.Distribute( self.uniqueId,
+                                             Event( Event.ADD_APPLICATION,
+                                                    self.uniqueId,
+                                                    ad ) )
         
         log.debug("Created app id=%s handle=%s", appImpl.GetId(), appHandle)
 
