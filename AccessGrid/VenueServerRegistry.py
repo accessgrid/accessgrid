@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/18/12
-# RCS-ID:      $Id: VenueServerRegistry.py,v 1.4 2003-02-10 14:47:37 judson Exp $
+# RCS-ID:      $Id: VenueServerRegistry.py,v 1.5 2003-08-28 18:05:40 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -44,21 +44,21 @@ class VenueServerRegistry(ServiceBase.ServiceBase):
                                self.config['VenueServerRegistry.checkpointPeriod'], 0)
         self.scheduler.StartAllTasks()
         
-    def LoadConfig(self, file, config={}):
+    def LoadConfig(self, file, config=dict()):
         """
         Returns a dictionary with keys of the form <section>.<option> and 
         the corresponding values.
         This is from the python cookbook credit: Dirk Holtwick.
         """
-        config = config.copy()
+        lconfig=config.copy()
         cp = ConfigParser.ConfigParser()
         cp.read(file)
         for sec in cp.sections():
             name = string.lower(sec)
             for opt in cp.options(sec):
-                config[name + "." + string.lower(opt)] = string.strip(
+                lconfig[name + "." + string.lower(opt)] = string.strip(
                     cp.get(sec, opt))
-        return config
+        return lconfig
 
     def Checkpoint(self):
         # This guarantees a flush of everything to storage
@@ -66,14 +66,14 @@ class VenueServerRegistry(ServiceBase.ServiceBase):
         self.store.close()
         self.store = shelve.open(self.config['VenueServerRegistry.storage'])
         
-    def Register(self, connectionInfo, venueServerURL, registrationInformation):
+    def Register(self, venueServerURL, registrationInformation):
         """ This allows the registration of a server. """
         self.store[venueServerURL] = registrationInformation
         
     Register.pass_connection_info = 1
     Register.soap_export_as = "Register"
        
-    def ListServers(self, connectionInfo):
+    def ListServers(self):
         """ This should list all the servers registered. """
         return self.store.keys()
     
