@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.6 2004-02-27 19:15:07 judson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.7 2004-03-01 20:23:57 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.6 2004-02-27 19:15:07 judson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.7 2004-03-01 20:23:57 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -46,6 +46,7 @@ from AccessGrid.Utilities import SubmitBug
 from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.AppMonitor import AppMonitor
 from AccessGrid.Venue import ServiceAlreadyPresent
+from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 
 try:
     import win32api
