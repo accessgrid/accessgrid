@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.12 2003-09-09 18:42:54 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.13 2003-09-10 21:13:41 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1009,7 +1009,10 @@ class Certificate:
         fmt += "%s Fingerprint: %s\n"  % (type,
                                           string.join(map(lambda a: "%02X" % (a), fp), ":"))
         fmt += "Certificate location: %s\n" % (self.GetPath(),)
-        fmt += "Private key location: %s\n" % (self.GetKeyPath(),)
+        pkeyloc = self.GetKeyPath()
+
+        if os.access(pkeyloc, os.R_OK):
+            fmt += "Private key location: %s\n" % (pkeyloc,)
 
         return fmt
     
