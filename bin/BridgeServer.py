@@ -5,6 +5,7 @@ import logging
 import Queue
 import threading
 import getopt
+import ConfigParser
 
 from pyGlobus.io import IOBaseException
 
@@ -156,13 +157,13 @@ class BridgeServer:
         
         self.log.debug("BridgeServer id = %s", privateId)
 
-    def AddVenue(self, venueUrl):
+    def AddVenue(self, venueUrl, venuePortConfig):
         """
         AddVenue adds the specified venue to those being bridged
         by the BridgeServer
         """
         self.log.debug("Method BridgeServer.AddVenue called")
-        venue = Venue(venueUrl, self.providerProfile, self.bridgeFactory, self.privateId)
+        venue = Venue(venueUrl, self.providerProfile, self.bridgeFactory, self.privateId, venuePortConfig)
         self.venues[venueUrl] = venue
 
     def RemoveVenue(self, venueUrl):
@@ -241,13 +242,14 @@ class Venue:
     EVT_REMOVEBRIDGE="RemoveBridge"
     EVT_QUIT="Quit"
 
-    def __init__(self, venueUrl, providerProfile, bridgeFactory, id ):
+    def __init__(self, venueUrl, providerProfile, bridgeFactory, id, venuePortConfig ):
 
         # Init data
         self.venueUrl = venueUrl
         self.providerProfile = providerProfile
         self.bridgeFactory = bridgeFactory
         self.privateId = id
+        self.venuePortConfig = venuePortConfig
 
         self.venueProxy = Client.Handle(venueUrl).GetProxy()
         
@@ -343,10 +345,21 @@ class Venue:
 
         self.log.debug("Method Venue.AddBridge called")
         
-        # Allocate a port for the bridge
         uaddr = Utilities.GetHostname()
-        uport = MulticastAddressAllocator().AllocatePort()
+        
+        if self.venuePortConfig.has_key(streamDesc.capability.type):
+            # Use the user-specified port
+            uport = self.venuePortConfig[streamDesc.capability.type]
+            self.log.debug("Using user-specified port; [media,port] = %s,%d", 
+                streamDesc.capability.type, uport)
+        else:
+            # Allocate a port
+            uport = MulticastAddressAllocator().AllocatePort()
+            self.log.debug("Allocating port; [media,port] = %s,%d", 
+                streamDesc.capability.type, uport)
+            
 
+    
         # Create the bridge and start it
         bridge = self.bridgeFactory.CreateBridge(streamDesc.id, 
                         streamDesc.location.host, 
@@ -556,12 +569,15 @@ Usage: BridgeServer.py [-c configFile] [-h|--help] [-d|--debug]
     qbexec=None
     id=None
     
+    portConfigFile = None
+    
     
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hdc:",
                                    [
                                    "help",
-                                   "debug"
+                                   "debug",
+                                   "portConfig=",
                                    ])
 
     except getopt.GetoptError:
@@ -576,6 +592,8 @@ Usage: BridgeServer.py [-c configFile] [-h|--help] [-d|--debug]
             configFile = arg
         elif opt in ('-d', '--debug'):
             debugMode = 1
+        elif opt in ('--portConfig',):
+            portConfigFile = arg
 
 
 
@@ -672,6 +690,12 @@ Usage: BridgeServer.py [-c configFile] [-h|--help] [-d|--debug]
     # Create the bridge server
     bridgeFactory = BridgeFactory(qbexec)
     bridgeServer = BridgeServer(providerProfile,bridgeFactory,id,debugMode)
+    
+    # Read the port configuration file
+    portConfig = ConfigParser.ConfigParser()
+    portConfig.optionxform = str
+    if portConfigFile:
+        portConfig.read(portConfigFile)
 
     # Bridge those venues !
     for venueUrl in venueList:
@@ -679,7 +703,20 @@ Usage: BridgeServer.py [-c configFile] [-h|--help] [-d|--debug]
         print "Bridging venue:", venueUrl
         if len(venueUrl):
             try:
-                bridgeServer.AddVenue(venueUrl)
+            
+                # Get port assignments from portConfig
+                venuePortConfig = dict()
+                venueId = os.path.split(venueUrl)[-1]
+                if portConfig.has_section(venueId):
+                    for opt in portConfig.options(venueId):
+                        try:
+                            port = int(portConfig.get(venueId,opt))
+                            venuePortConfig[opt] = int(portConfig.get(venueId,opt))
+                        except:
+                            print "Invalid port specified in config (%s); ignoring" % portConfig.get(venueId,opt)
+            
+                # Add the venue to the bridge server
+                bridgeServer.AddVenue(venueUrl, venuePortConfig)
             except InvalidVenueUrl:
                 print "Bad venue url: ", venueUrl, "; skipping."
 
