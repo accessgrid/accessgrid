@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.46 2003-02-21 21:42:10 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.47 2003-02-24 21:28:28 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -242,7 +242,6 @@ class Venue(ServiceBase.ServiceBase):
             if abs(now_sec - then_sec) > self.cleanupTime:
                 print "  Removing user : ", self.users[privateId].name
                 self.RemoveUser( privateId )
-                del self.clients[privateId]
         
     def ClientHeartbeat(self, event):
         privateId = event
