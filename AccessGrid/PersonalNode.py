@@ -9,6 +9,7 @@ import os
 import win32api
 import win32event
 import win32process
+import win32con
 import _winreg
 import threading
 
@@ -102,7 +103,7 @@ class PersonalNodeManager:
 
         path = os.path.join(Platform.GetInstallDir(), "AGServiceManager.py")
 
-        arg = "python %s --pnode %s -d" % (path, self.serviceManagerArg)
+        arg = "python %s --pnode %s -d" % (path,  self.serviceManagerArg)
 
         log.debug("Start service manager with %s", arg)
 
@@ -168,8 +169,14 @@ class PersonalNodeManager:
             eobj = EventObj(name, create = 1)
             setattr(self, obj, eobj)
 
-        self.nodeServiceArg = "AG_node_svc_init:AG_svc_mgr_node_svc_synch:AG_node_svc_term"
-        self.serviceManagerArg = "AG_svc_mgr_init:AG_svc_mgr_node_svc_synch:AG_svc_mgr_term"
+
+        #
+        # OK, OK, so this isn't initializing event objects but it is sort of related.
+        #
+        myid = win32process.GetCurrentProcessId()
+
+        self.nodeServiceArg = "AG_node_svc_init:AG_svc_mgr_node_svc_synch:AG_node_svc_term:%s"  % (myid)
+        self.serviceManagerArg = "AG_svc_mgr_init:AG_svc_mgr_node_svc_synch:AG_svc_mgr_term:%s" % (myid)
 
 class PN_NodeService:
     def __init__(self, setSvcMgrCallback, getMyURLCallback, terminateCallback):
@@ -181,7 +188,7 @@ class PN_NodeService:
     def Run(self, initArg):
 
         try:
-            (init, synch, term) = initArg.split(":")
+            (init, synch, term, parentPID) = initArg.split(":")
         except ValueError, e:
             log.error("Invalid argument to PN_NodeService: %s", initArg)
             log.exception("Invalid argument to PN_NodeService: %s", initArg)
@@ -207,16 +214,41 @@ class PN_NodeService:
         self.initEvent.Set()
 
         #
+        # Get the process handle for the parent
+        #
+
+        self.hParent = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, 0, int(parentPID))
+        log.debug("got parent handle %s", self.hParent)
+        #
         # Create a thread to wait for termination
         #
 
-        self.thread = threading.Thread(target=self.waitForEnd)
+        self.thread = threading.Thread(target=self.waitForEndMult)
         self.thread.start()
 
     def waitForEnd(self):
         log.debug("Waiting for termination")
-        self.termEvent.Wait()
-        log.debug("Terminating")
+
+        # self.termEvent.Wait()
+        ret = win32event.WaitForSingleObject(self.hParent, -1)
+        log.debug("Terminating ret=%s", ret)
+        self.terminateCallback()
+
+    def waitForEndMult(self):
+        log.debug("Waiting for termination")
+
+        hlist = (self.hParent, self.termEvent.GetHandle())
+
+        ret = win32event.WaitForMultipleObjects(hlist, 0, win32event.INFINITE)
+
+        if ret == 0:
+            log.debug("NS: Terminating due to parent death")
+        elif ret == 1:
+            log.debug("NS: Terminating due to signal on term event")
+        else:
+            log.debug("NS: Other return: %s", ret)
+
+        log.debug("NS: Terminating")
         self.terminateCallback()
 
 class PN_ServiceManager:
@@ -226,7 +258,7 @@ class PN_ServiceManager:
 
     def Run(self, initArg):
         try:
-            (init, synch, term) = initArg.split(":")
+            (init, synch, term, parentPID) = initArg.split(":")
         except ValueError, e:
             log.error("Invalid argument to PN_ServiceManager: %s", initArg)
             log.exception("Invalid argument to PN_ServiceManager: %s", initArg)
@@ -247,6 +279,13 @@ class PN_ServiceManager:
         self.synchEvent.Set()
     
         #
+        # Get the process handle for the parent
+        #
+
+        self.hParent = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, 0, int(parentPID))
+        log.debug("got parent handle %s", self.hParent)
+
+        #
         # Create a thread to wait for termination
         #
 
@@ -257,6 +296,23 @@ class PN_ServiceManager:
         log.debug("Waiting for termination")
         self.termEvent.Wait()
         log.debug("Terminating")
+        self.terminateCallback()
+
+    def waitForEndMult(self):
+        log.debug("Waiting for termination")
+
+        hlist = (self.hParent, self.termEvent.GetHandle())
+
+        ret = win32event.WaitForMultipleObjects(hlist, 0, win32event.INFINITE)
+
+        if ret == 0:
+            log.debug("SM: Terminating due to parent death")
+        elif ret == 1:
+            log.debug("SM: Terminating due to signal on term event")
+        else:
+            log.debug("SM: Other return: %s", ret)
+
+        log.debug("SM: Terminating")
         self.terminateCallback()
 
 def readServiceManagerURL():
