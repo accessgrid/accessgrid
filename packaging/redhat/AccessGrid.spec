@@ -213,10 +213,6 @@ mkdir -p %{buildroot}/tmp/local_services
 /etc/init.d/agsm
 %defattr(0755,ag,ag)
 %dir %{aghome}/local_services
-%defattr(0777,nobody,nobody)
-%dir /tmp/local_services
-%defattr(0644,root,root)
-%config %{sysconfdir}/AGServiceManager.cfg
 
 #
 # Define the files that are to go into the AccessGrid-VenueClient package
