@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.147 2004-07-08 02:01:44 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.148 2004-07-12 14:18:24 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.147 2004-07-08 02:01:44 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.148 2004-07-12 14:18:24 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -25,7 +25,6 @@ import threading
 import time
 import ConfigParser
 import csv
-import resource
 
 from AccessGrid.Toolkit import Service
 from AccessGrid import Log
@@ -532,44 +531,7 @@ class VenueServer(AuthorizationMixIn):
             venue.CleanupClients()
 
     def Report(self):
-	log.error("Running report")
-	if self.report is None:
-	    self.reportFile = file("statistics.csv", "w")
-	    self.report = csv.writer(self.reportFile)
-	    self.report.writerow(["Time Stamp", "User Time",
-			  	  "System Time", "Maximum Resident Size",
-				  "Shared Memory Size","Unshared Memory Size", 
-				  "Unshared Stack Size","Page Faults (No I/O)",
-				  "Page Faults (I/O)","Swaps",
-				  "Blocked Input Ops","Blocked Output Ops",
-				  "Messages Sent","Messages Received",
-				  "Signals Received",
-				  "Voluntary Context Switches",
-				  "Involuntary Context Switches",
-				  "Number Connected Clients",
-				  "Number Event Clients",
-				  "Number Text Clients"])
-
-	record=["%s" % time.strftime("%Y-%m-%d-%H:%M:%S")]
-	try:
-	    record = record + map(str, 
-				  resource.getrusage(resource.RUSAGE_BOTH))
-	except ValueError:
-	    try:
-		record = record + map(str, 
-				  resource.getrusage(resource.RUSAGE_SELF))
-	    except ValueError:
-		return
-
-	nc = 0
-	for v in self.venues.values():
-	    nc += len(v.GetClients())
-
-	record = record + [nc, len(self.eventService.allConnections),
-			   len(self.textService.allConnections)]
-
-	self.report.writerow(record)
-	self.reportFile.flush()
+	    log.error("Running report")
 
     def Shutdown(self):
         """
