@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.147 2004-09-07 21:29:08 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.148 2004-09-09 05:40:37 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.147 2004-09-07 21:29:08 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.148 2004-09-09 05:40:37 judson Exp $"
 
 # Standard imports
 import sys
@@ -1413,7 +1413,8 @@ class VenueParamFrame(wxDialog):
    
         self.generalPanel = GeneralPanel(self.noteBook, -1, application)
         self.encryptionPanel = EncryptionPanel(self.noteBook, -1, application)
-        self.staticAddressingPanel = StaticAddressingPanel(self.noteBook, -1)
+        self.staticAddressingPanel = StaticAddressingPanel(self.noteBook, -1,
+                                                           application)
         self.authorizationPanel = AuthorizationUIPanel(self.noteBook, -1, log)
         
         self.noteBook.AddPage(self.generalPanel, "General")
@@ -1430,11 +1431,8 @@ class VenueParamFrame(wxDialog):
         boxSizer.Add(self.noteBook, 1, wxEXPAND)
 
         buttonSizer =  wxBoxSizer(wxHORIZONTAL)
-        #buttonSizer.Add(20, 20, 1)
         buttonSizer.Add(self.okButton, 0,wxEXPAND|wxRIGHT,10)
-        #buttonSizer.Add(wxSize(10, 10))
         buttonSizer.Add(self.cancelButton, 0,wxEXPAND)
-        #buttonSizer.Add(20, 20, 1)
 
         boxSizer.Add(buttonSizer, 0, wxCENTER | wxBOTTOM | wxTOP , 5)
 
@@ -1499,8 +1497,6 @@ class VenueParamFrame(wxDialog):
         return (self.generalPanel.Validate() and
                 self.staticAddressingPanel.Validate())
                      
-        #return true
-    
 class GeneralPanel(wxPanel):
     ID_TRANSFER = wxNewId()
     ID_REMOVE_EXIT = wxNewId()
@@ -1516,22 +1512,19 @@ class GeneralPanel(wxPanel):
         if IsOSX():
             self.informationTitle.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
         else:
-            self.informationTitle.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+            self.informationTitle.SetFont(wxFont(wxDEFAULT, wxNORMAL,
+                                                 wxNORMAL, wxBOLD))
 
         self.exitsTitle = wxStaticText(self, -1, "Exits")
         if IsOSX():
             self.exitsTitle.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
         else:
-            self.exitsTitle.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+            self.exitsTitle.SetFont(wxFont(wxDEFAULT, wxNORMAL,
+                                           wxNORMAL, wxBOLD))
 
         self.line1=wxStaticLine(self,-1)
-        #self.line2=wxStaticLine(self,-1)
         self.line3=wxStaticLine(self,-1)
         
-        #self.informationBox = wxStaticBox(self, -1, "Information")
-        #self.informationBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        #self.exitsBox = wxStaticBox(self, -1, "Exits")
-        #self.exitsBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         self.titleLabel =  wxStaticText(self, -1, "Title: ")
         self.title =  wxTextCtrl(self, -1, "",  size = wxSize(200, -1))
         self.descriptionLabel = wxStaticText(self, -1, "Description:")
@@ -1546,7 +1539,6 @@ class GeneralPanel(wxPanel):
                                 style = wxLB_SORT)
         self.transferVenueLabel = wxStaticText(self, -1, "Add Exit", style = wxALIGN_CENTER)
         self.transferVenueButton = wxButton(self, self.ID_TRANSFER, ">>")
-#                                                    size = wxSize(30, -1))
         self.address = wxComboBox(self, -1, self.application.serverUrl,\
                                   choices = [self.application.serverUrl],
                                   style = wxCB_DROPDOWN)
@@ -1598,7 +1590,8 @@ class GeneralPanel(wxPanel):
             
             # Remove the current venue from the list of potential exits
             if self.application.currentVenue:
-                vl = filter(lambda v,url=self.application.currentVenue.uri: v.uri != url, vl)
+                vl = filter(lambda v,url=self.application.currentVenue.uri:
+                            v.uri != url, vl)
             
             self.venues.Clear()
             cdl = map(lambda x: ConnectionDescription(x.name,
@@ -1821,8 +1814,11 @@ class EncryptionPanel(wxPanel):
         self.SetAutoLayout(1)
 
 class StaticAddressingPanel(wxPanel):
-    def __init__(self, parent, id):
+    ID_GENADDRBUTTON = wxNewId()
+
+    def __init__(self, parent, id, application):
         wxPanel.__init__(self, parent, id)
+        self.application = application
         self.ipAddressConverter = IpAddressConverter()
         self.staticAddressingButton = wxCheckBox(self, 5,
                                                  " Use Static Addressing")
@@ -1864,10 +1860,15 @@ class StaticAddressingPanel(wxPanel):
         self.audioPort = wxTextCtrl(self.panel, -1, "", size = wxSize(50,-1))
         self.audioTtl = wxTextCtrl(self.panel, -1, "", size = wxSize(30,-1))
 
+        self.genAddrButton = wxButton(self, self.ID_GENADDRBUTTON,
+                                     "Generate New Addresses")
+
         if self.staticAddressingButton.GetValue():
             self.panel.Enable(true)
+            self.genAddrButton.Enable(true)
         else:
             self.panel.Enable(false)
+            self.genAddrButton.Enable(false)
 
         self.SetValidator(StaticAddressingValidator())
 
@@ -1932,13 +1933,22 @@ class StaticAddressingPanel(wxPanel):
 
         staticAddressingSizer.Add(self.panel, 0 , wxEXPAND)
 
+        staticAddressingSizer.Add(self.genAddrButton, 0, wxLEFT, 5)
+        
         self.SetSizer(staticAddressingSizer)
         staticAddressingSizer.Fit(self)
         self.SetAutoLayout(1)
 
     def __setEvents(self):
         EVT_CHECKBOX(self, 5, self.ClickStaticButton)
+        EVT_BUTTON(self, self.ID_GENADDRBUTTON, self.ClickGenAddrButton)
 
+    def ClickGenAddrButton(self, event = None, value = None):
+        vNL = self.application.currentVenueClient.AllocateMulticastLocation()
+        self.SetStaticVideo(vNL.GetHost(), vNL.GetPort(), 127)
+        aNL = self.application.currentVenueClient.AllocateMulticastLocation()
+        self.SetStaticAudio(aNL.GetHost(), aNL.GetPort(), 127)
+        
     def SetStaticVideo(self, videoIp, videoPort, videoTtl):
         videoList = self.ipAddressConverter.StringToIp(videoIp)
         self.videoPort.SetValue(str(videoPort))
@@ -1982,8 +1992,10 @@ class StaticAddressingPanel(wxPanel):
 
     def ClickStaticButton(self, event):
         if event.Checked():
+            self.genAddrButton.Enable(true)
             self.panel.Enable(true)
         else:
+            self.genAddrButton.Enable(false)
             self.panel.Enable(false)
 
     def Validate(self):
