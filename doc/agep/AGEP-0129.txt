@@ -1,0 +1,121 @@
+=====================================
+Application Services
+=====================================
+ 
+:version: $Revision: 1.1 $
+:author: Susanne Lefvert <lefvert@mcs.anl.gov>
+:status: Draft
+:contact: ag-tech@mcs.anl.gov
+
+Abstract
+========
+
+    This document describes a proposed design for application services.
+
+Overview
+========
+    
+    
+    A plug-in application service is an external service running at a remote location. 
+    The service registers with the venue, in the same way a network service do, allowing
+    participants of the venue to use the service. Since services can be very different in
+    nature, each service will have a unique SOAP interface to provide methods
+    needed for its specific character. Additionally, each service has a client that is
+    associated with the service mimetype to interact with the SOAP interface.  When 
+    a service registers with the venue, a new entry will show up under the "Services" heading
+    in the venue client, and when a participant selects "Open" from the service menu, the 
+    custom client will be launched.  
+
+    To make it easier to develop application services, a service base class will be provided that
+    takes care of AG specific details, such as registering with the venue, starting a SOAP 
+    interface, creating descriptions, etc. Services should inherit from this base class.    
+
+Summary of Modifications
+========================
+   
+   New base class for application services:
+   
+   AGAppService
+        
+Module Organization
+-------------------
+
+    AccessGrid
+        AccessGrid
+            **AGAppService**
+            
+Specifications
+==============
+        
+**AGAppService**
+    
+    Base class for creating services. A new service should inherit this
+    class.
+
+    ::
+
+        AGAppService
+            name : string
+            description : string
+            version : int
+            mimeType : string
+            extension : string
+            visible : int
+            venueProxies : dict
+            url : string
+            log : Log
+            app : CmdlineApplication
+
+            def __init__(self, name, description, version, mimeType, extension):       
+            def Start(soapInterface)
+            def Stop()
+            def StartSignalLoop()
+            def StopSignalLoop()
+            def RegisterWithVenues(urls)
+            def UnregisterFromVenues(urls)
+            def RegisterWithVenueServer(url)
+            def UnregisterFromVenueServer(url)
+          
+            
+Open Issues
+============
+    
+    1 This service is very similar to a network service. Should they be named the same and
+    use the same descriptions? Differences: 
+        
+        * A network service has one transform method that is called from the venue when we 
+          need new streams during capability negotiation. An application service has a custom 
+          SOAP interface that is called from its custom client when a user decides to open the 
+          service.
+        * A network service should not necessarily be displayed for the user while an application
+          service should be visible in the venue client.
+
+    2 Should the venue be able to start a service locally, like we are currently doing with applications?
+     
+    3 How should we deal with heartbeats? Which method should be used to confirm the remote service is still running?
+
+    4 Should a service be persisted in the venue? Or, does a service provider have to reconnect every time the venue server is restarted similar to current bridge design?
+
+Interoperability Issues
+=======================
+
+    No interoperability issues.
+   
+Implementation
+==============
+    
+    Not implemented yet.
+
+Copyright
+=========
+
+    This document is Copyright 2003, The University of Chicago/Argonne National Laboratory.
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
