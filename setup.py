@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.27 2003-08-13 19:13:16 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.28 2003-08-13 19:50:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ setup(
                r"bin/NodeManagement.py",
                r"bin/NodeSetupWizard.py",
                r"bin/BridgeServer.py",
-               r"bin/QuickBridge",
+               r"services/network/QuickBridge/QuickBridge",
                r"sharedapps/MailcapSetup.py"
 #               r"bin/VenuesServerRegistry.py"
               ],
