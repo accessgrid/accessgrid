@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.10 2003-02-10 15:22:15 leggett Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.11 2003-02-14 23:21:52 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -22,6 +22,7 @@ from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 class MyApp(wxApp):
     def OnInit(self):
         frame = NodeManagementClientFrame(NULL, -1, "Access Grid Node Management")
+        frame.AttachToNode( "https://localhost:11000/NodeService" )
         if frame.Connected():
             frame.Update()
         frame.Show(true)
