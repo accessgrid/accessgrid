@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.25 2004-05-17 17:15:34 judson Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.26 2004-05-18 15:59:40 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.25 2004-05-17 17:15:34 judson Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.26 2004-05-18 15:59:40 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # standard imports
@@ -25,11 +25,13 @@ from AccessGrid.AppDb import AppDb
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Descriptions import ServiceDescription, DataDescription
 from AccessGrid.Descriptions import ApplicationDescription
+from AccessGrid.NetworkLocation import ProviderProfile
 from AccessGrid.Platform.Config import UserConfig, MimeConfig, AGTkConfig
 from AccessGrid.Platform import IsWindows, Config
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.VenueClient import NetworkLocationNotFound
 from AccessGrid import Events
+
 
 log = Log.GetLogger(Log.VenueClientController)
 
