@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.39 2003-02-20 16:51:46 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.40 2003-02-20 17:31:42 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -136,7 +136,7 @@ class StreamDescriptionList:
         GetStaticStreams returns a list of static stream descriptions to the caller.
         """
         staticStreams = []
-        for stream in self.streams:
+        for stream, producerList in self.streams:
             if stream.static:
                 staticStreams.append( stream )
         return staticStreams
@@ -427,7 +427,6 @@ class Venue(ServiceBase.ServiceBase):
                     streamDesc = StreamDescription( self.description.name, "noDesc",
                                              self.AllocateMulticastLocation(), 
                                              capability, self.encryptionKey )
-                    streamDesc.static = 1
                     print "added user as producer of non-existent stream"
 #FIXME - uses public id now; should use private id instead
                     self.streamList.AddStreamProducer( clientProfile.publicId, streamDesc )
