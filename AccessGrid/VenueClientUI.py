@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.3 2004-02-25 15:46:41 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.4 2004-02-26 04:58:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.3 2004-02-25 15:46:41 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.4 2004-02-26 04:58:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -822,6 +822,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     
     
     def GoToDefaultVenueCB(self,event):
+        venueUrl = self.venueClient.GetProfile().homeVenue
         self.SetVenueUrl(venueUrl)
         self.controller.GoToDefaultVenueCB()
 
@@ -1913,7 +1914,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             #log.debug("Get upload url %s" %self.dataStoreUploadUrl)
 
             # Get the user's administrative status
-            self.isVenueAdministrator = self.venueClient.IsVenueAdministrator()
+            #self.isVenueAdministrator = self.venueClient.IsVenueAdministrator()
+            self.isVenueAdministrator = 0
             
             # log.debug("Add your personal data descriptions to venue")
             wxCallAfter(self.statusbar.SetStatusText, "Add your personal data to venue")
