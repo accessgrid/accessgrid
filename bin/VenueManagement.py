@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.127 2004-04-23 15:19:09 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.128 2004-04-29 16:12:32 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.127 2004-04-23 15:19:09 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.128 2004-04-29 16:12:32 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -753,10 +753,10 @@ class VenueProfilePanel(wxPanel):
         self.venueProfileBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         venueListProfileSizer = wxStaticBoxSizer(self.venueProfileBox,
                                                  wxVERTICAL)
-        venueListProfileSizer.Add((5, 5))
+        venueListProfileSizer.Add(5, 5)
         venueListProfileSizer.Add(self.description, 4,
                                   wxEXPAND|wxLEFT|wxRIGHT, 15)
-        venueListProfileSizer.Add((5, 10))
+        venueListProfileSizer.Add(5, 10)
         venueListProfileSizer.Add(self.line, 0, wxEXPAND)
 
         paramGridSizer = wxFlexGridSizer(4, 2, 10, 10)
@@ -1227,7 +1227,7 @@ class DetailPanel(wxPanel):
         multicastBoxSizer.Add(flexSizer, 0, wxEXPAND | wxALL, 5)
         
         serviceSizer.Add(multicastBoxSizer, 0,  wxBOTTOM|wxEXPAND, 10)
-        serviceSizer.Add((5,5))
+        serviceSizer.Add(5,5)
 
         encryptionBoxSizer = wxStaticBoxSizer(self.encryptionBox, wxVERTICAL)
         encryptionBoxSizer.Add(self.encryptionButton, 5, wxALL, 10)
@@ -1273,7 +1273,7 @@ class SecurityPanel(wxPanel):
         sizer = wxBoxSizer(wxVERTICAL)
         securityBoxSizer = wxStaticBoxSizer(self.securityBox, wxHORIZONTAL)
         securityBoxSizer.Add(self.securityText, 1 , wxEXPAND|wxALL|wxCENTER, 5)
-        securityBoxSizer.Add((1,40))
+        securityBoxSizer.Add(1,40)
         securityBoxSizer.Add(self.securityButton, 0, wxALIGN_RIGHT|wxALL|wxCENTER, 5)
         sizer.Add(securityBoxSizer, 0, wxEXPAND| wxALL, 10)
 
