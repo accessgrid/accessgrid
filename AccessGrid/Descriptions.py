@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.54 2004-04-19 17:15:18 eolson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.55 2004-04-29 21:03:28 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.54 2004-04-19 17:15:18 eolson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.55 2004-04-29 21:03:28 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -657,15 +657,18 @@ def CreateAGServiceDescription(svcDescStruct):
 
 
 def CreateResource(rscStruct):
-    if rscStruct.type == 'video':
-        rsc = AGVideoResource(rscStruct.type,
-                              rscStruct.resource,
-                              rscStruct.role,
-                              rscStruct.portTypes)
+    if rscStruct:
+        if rscStruct.type == 'video':
+            rsc = AGVideoResource(rscStruct.type,
+                                  rscStruct.resource,
+                                  rscStruct.role,
+                                  rscStruct.portTypes)
+        else:
+            rsc = AGResource(rscStruct.type,
+                             rscStruct.resource,
+                             rscStruct.role)
     else:
-        rsc = AGResource(rscStruct.type,
-                         rscStruct.resource,
-                         rscStruct.role)
+        rsc = AGResource()
     return rsc
 
 def CreateServiceConfiguration(serviceConfigStruct):
