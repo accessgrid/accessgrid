@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.251 2003-09-11 22:05:28 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.252 2003-09-11 22:08:52 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -226,15 +226,15 @@ class VenueClientFrame(wxFrame):
         self.preferences.AppendSeparator()
 
         # Add node-related entries
-        self.preferences.AppendRadioItem(self.ID_USE_MULTICAST, "Use multicast",
+        self.preferences.AppendRadioItem(self.ID_USE_MULTICAST, "Use Multicast",
                                 "Use multicast to connect media")
-        self.preferences.AppendRadioItem(self.ID_USE_UNICAST, "Use unicast",
+        self.preferences.AppendRadioItem(self.ID_USE_UNICAST, "Use Unicast",
                                 "Use unicast to connect media")
         self.preferences.AppendSeparator()
-        self.preferences.AppendCheckItem(self.ID_ENABLE_VIDEO, "Enable video",
+        self.preferences.AppendCheckItem(self.ID_ENABLE_VIDEO, "Enable Video",
                                 "Enable/disable video for your node")
         self.preferences.Check(self.ID_ENABLE_VIDEO,true)
-        self.preferences.AppendCheckItem(self.ID_ENABLE_AUDIO, "Enable audio",
+        self.preferences.AppendCheckItem(self.ID_ENABLE_AUDIO, "Enable Audio",
                                 "Enable/disable audio for your node")
         self.preferences.Check(self.ID_ENABLE_AUDIO,true)
         self.preferences.Append(self.ID_MYNODE_URL, "&Set Node URL...",
@@ -243,7 +243,7 @@ class VenueClientFrame(wxFrame):
                                 "Configure your node")
         self.menubar.Append(self.preferences, "&Preferences")
         self.myVenues = wxMenu()
-        self.myVenues.Append(self.ID_MYVENUE_SETDEFAULT, "Set as home venue",
+        self.myVenues.Append(self.ID_MYVENUE_SETDEFAULT, "Set as Home Venue",
                              "Set current venue as default")
         self.myVenues.AppendSeparator()
         
@@ -271,7 +271,7 @@ class VenueClientFrame(wxFrame):
                          "")
 
         self.help.AppendSeparator()
-        self.help.Append(self.ID_HELP_BUG_REPORT, "&Submit error report or feature request","Send report to bugzilla")
+        self.help.Append(self.ID_HELP_BUG_REPORT, "&Submit Error Report or Feature Request","Send report to bugzilla")
 
         self.help.Append(self.ID_HELP_BUGZILLA, "&Bugzilla Web Site","See current error reports and feature request")
 
