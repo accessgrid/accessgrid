@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.27 2003-04-28 19:13:13 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.28 2003-04-29 19:40:37 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -64,7 +64,10 @@ class ObjectDescription:
         
     def GetURI(self):
         return self.uri
-    
+
+class BadServiceDescription(Exception):
+    pass
+
 class DataDescription(ObjectDescription):
     """
     A Data Description represents data within a venue.
@@ -217,7 +220,10 @@ class VenueDescription(ObjectDescription):
 
     def __repr__(self):
         return self.AsINIBlock()
-    
+
+class BadServiceDescription(Exception):
+    pass
+
 class ServiceDescription(ObjectDescription):
     """
     The Service Description is the Virtual Venue resident information
@@ -298,22 +304,6 @@ class AGServiceDescription:
         self.serviceManagerUri = serviceManagerUri
         self.servicePackageUri = servicePackageUri
     
-
-
-def CreateDataDescription(dataDescriptionStruct):
-    dataDescription = DataDescription(dataDescriptionStruct.name)
-
-    dataDescription.description = dataDescriptionStruct.description
-    dataDescription.uri = dataDescriptionStruct.uri
-    dataDescription.status = dataDescriptionStruct.status
-    dataDescription.size = dataDescriptionStruct.size
-    dataDescription.checksum = dataDescriptionStruct.checksum
-    dataDescription.owner = dataDescriptionStruct.owner
-    dataDescription.type = dataDescriptionStruct.type
-
-    return dataDescription
-       
-
 def CreateStreamDescription( streamDescStruct ):
     networkLocation = MulticastNetworkLocation( streamDescStruct.location.host,
                                                 streamDescStruct.location.port,

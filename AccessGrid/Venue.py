@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.83 2003-04-29 14:17:37 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.84 2003-04-29 19:40:37 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,6 +31,7 @@ from AccessGrid.Descriptions import StreamDescription, CreateStreamDescription
 from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
 from AccessGrid.Descriptions import CreateDataDescription, DataDescription
+from AccessGrid.Descriptions import BadDataDescription, BadServiceDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
 from AccessGrid import DataStore
@@ -447,7 +448,10 @@ class Venue(ServiceBase.ServiceBase):
         if not self._authorize():
             raise NotAuthorized
         else:
-            dataDescription = CreateDataDescription(dataDescriptionStruct)
+            try:
+                dataDescription = CreateDataDescription(dataDescriptionStruct)
+            except:
+                raise BadDataDescription
             return self.AddData(dataDescription)
 
     wsAddData.soap_export_as = "AddData"
@@ -911,20 +915,19 @@ class Venue(ServiceBase.ServiceBase):
         log.debug("AddData with name %s " %name)
              
         if self.data.has_key(name):
-            #
-            # We already have this data; raise an exception.
-            #
             log.exception("AddData: data already present: %s", name)
             raise VenueException("AddData: data %s already present" % (name))
 
-        self.data[name] = dataDescription
+        else:
+            self.data[name] = dataDescription
         
-        log.debug("Distribute ADD_DATA event %s", dataDescription)
-        self.server.eventService.Distribute( self.uniqueId,
-                                      Event( Event.ADD_DATA,
-                                             self.uniqueId,
-                                             dataDescription ) )
-
+            log.debug("Distribute ADD_DATA event %s", dataDescription)
+            self.server.eventService.Distribute( self.uniqueId,
+                                                 Event( Event.ADD_DATA,
+                                                        self.uniqueId,
+                                                        dataDescription ) )
+            return dataDescription
+        
     def AddService(self, serviceDescription):
         """
         The AddService method enables VenuesClients to put services in
@@ -936,18 +939,19 @@ class Venue(ServiceBase.ServiceBase):
      
 
         if self.services.has_key(name):
-            #
-            # We already have this service; raise an exception.
-            #
             log.exception("AddService: service already present: %s", name)
-            raise VenueException("AddService: service %s already present" % (name))
+            raise VenueException("AddService: service %s already present"
+                                 % (name))
 
-        self.services[serviceDescription.name] = serviceDescription
-        log.debug("Distribute ADD_SERVICE event %s", serviceDescription)
-        self.server.eventService.Distribute( self.uniqueId,
-                                             Event( Event.ADD_SERVICE,
-                                                    self.uniqueId,
-                                                    serviceDescription ) )
+        else:
+            self.services[serviceDescription.name] = serviceDescription
+            log.debug("Distribute ADD_SERVICE event %s", serviceDescription)
+            self.server.eventService.Distribute( self.uniqueId,
+                                                 Event( Event.ADD_SERVICE,
+                                                        self.uniqueId,
+                                                        serviceDescription ) )
+
+            return serviceDescription
 
     def RemoveService(self, serviceDescription):
         """
