@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.112 2003-08-07 19:22:17 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.113 2003-08-07 21:00:27 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -575,7 +575,8 @@ class Venue(ServiceBase.ServiceBase):
             'services' : self.services.values(),
             'data' : self.dataStore.GetDataDescriptions(),
             'eventLocation' : self.server.eventService.GetLocation(),
-            'textLocation' : self.server.textService.GetLocation()
+            'textLocation' : self.server.textService.GetLocation(),
+            'backupServer' : self.server.backupServer
             }
 
         return venueState
