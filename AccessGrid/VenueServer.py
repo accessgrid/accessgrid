@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.72 2003-05-16 04:17:57 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.73 2003-05-17 18:05:38 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,6 @@ import string
 from threading import Thread, Lock, Condition
 import traceback
 import logging
-import urlparse
 import time
 import ConfigParser
 
@@ -30,7 +29,7 @@ from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 
 from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
-from AccessGrid.Utilities import GetHostname
+from AccessGrid.Utilities import GetHostname, PathFromURL
 from AccessGrid.GUID import GUID
 from AccessGrid.Venue import Venue, AdministratorNotFound
 from AccessGrid.Venue import AdministratorAlreadyPresent
@@ -42,7 +41,7 @@ from AccessGrid.TextService import TextService
 
 from AccessGrid.Descriptions import ConnectionDescription, StreamDescription
 from AccessGrid.Descriptions import DataDescription, VenueDescription
-from AccessGrid.Descriptions import CreateVenueDescription
+from AccessGrid.Descriptions import CreateVenueDescription, ServiceDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.Types import Capability
 
@@ -266,7 +265,7 @@ class VenueServer(ServiceBase.ServiceBase):
                 v.cleanupTime = cp.getint(sec, 'cleanupTime')
 
                 self.venues[self.IdFromURL(v.uri)] = v
-                self.hostingEnvironment.BindService(v, self.PathFromURL(v.uri))
+                self.hostingEnvironment.BindService(v, PathFromURL(v.uri))
 
                 # Deal with connections if there are any
                 try:
@@ -314,6 +313,7 @@ class VenueServer(ServiceBase.ServiceBase):
                 else:
                     log.debug("No streams to load for venue %s", sec)
 
+                # Deal with data if there is any
                 try:
                     dataList = cp.get(sec, 'data')
                 except ConfigParser.NoOptionError:
@@ -327,15 +327,58 @@ class VenueServer(ServiceBase.ServiceBase):
                             dd.SetDescription(cp.get(d, 'description'))
                         except ConfigParser.NoOptionError:
                             log.info("LoadPersistentVenues: Data has no description")
-                        dd.SetURI(cp.get(d, 'uri'))
                         dd.SetStatus(cp.get(d, 'status'))
                         dd.SetSize(cp.getint(d, 'size'))
                         dd.SetChecksum(cp.get(d, 'checksum'))
                         dd.SetOwner(cp.get(d, 'owner'))
 
-                        v.AddData(dd)
+                        # Ick
+                        v.data[dd.name] = dd
+                        v.UpdateData(dd)
                 else:
                     log.debug("No data to load for Venue %s", sec)
+
+                # Deal with apps if there are any
+                try:
+                    appList = cp.get(sec, 'applications')
+                except ConfigParser.NoOptionError:
+                    appList = ""
+
+                if len(appList) != 0:
+                    for id in string.split(appList, ':'):
+                        name = cp.get(id, 'name')
+                        description = cp.get(id, 'description')
+                        mimeType = cp.get(id, 'mimeType')
+
+                        appDesc = v.CreateApplication(name, description,
+                                                      mimeType, id)
+                        appImpl = v.applications[appDesc.id]
+
+                        for o in cp.options(id):
+                            if o != 'name' and o != 'description' and o != 'id' and o != 'uri' and o != mimeType:
+                                value = cp.get(id, o)
+                                appImpl.app_data[o] = value
+                else:
+                    log.debug("No data to load for Venue %s", sec)
+
+                # Deal with services if there are any
+                try:
+                    serviceList = cp.get(sec, 'services')
+                except ConfigParser.NoOptionError:
+                    serviceList = ""
+
+                if len(serviceList) != 0:
+                    for id in string.split(serviceList, ':'):
+                        name = cp.get(id, 'name')
+                        description = cp.get(id, 'description')
+                        mimeType = cp.get(id, 'mimeType')
+                        uri = cp.get(id, 'uri')
+
+                        sd = ServiceDescription(name, description, uri,
+                                                mimeType)
+                        v.services[name] = sd
+                else:
+                    log.debug("No services to load for Venue %s", sec)
 
     def _Authorize(self):
         """
@@ -366,15 +409,10 @@ class VenueServer(ServiceBase.ServiceBase):
             (section, option) = string.split(k, '.')
             setattr(self, option, config[k])
 
-    def PathFromURL(self, URL):
-        """
-        """
-        return urlparse.urlparse(URL)[2]
-
     def IdFromURL(self, URL):
         """
         """
-        path = self.PathFromURL(URL)
+        path = PathFromURL(URL)
         return path.split('/')[-1]
     
     def MakeVenueURL(self, uniqueId):
@@ -1102,7 +1140,7 @@ class VenueServer(ServiceBase.ServiceBase):
         self.venues[self.IdFromURL(venue.uri)] = venue
         
         # We have to register this venue as a new service.
-        venuePath = self.PathFromURL(venue.uri)
+        venuePath = PathFromURL(venue.uri)
         if(self.hostingEnvironment != None):
             self.hostingEnvironment.BindService(venue, venuePath)
             
