@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.164 2003-05-27 18:30:46 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.165 2003-05-27 19:41:40 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -417,7 +417,7 @@ class VenueClientUI(wxApp, VenueClient):
             self.ExitVenue()
 
         MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", "Lost Connection")
-        
+    
     def RemoveUserEvent(self, user):
         """
         Note: Overridden from VenueClient
@@ -622,146 +622,125 @@ class VenueClientUI(wxApp, VenueClient):
             log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
             self.app.certificateManager.CreateProxy()
 
-        #   
-        # Add current uri to the history if the go button is pressed
-        #
-        self.__setHistory(self.venueUri, back)
-       
-        #
-        # if this venue url has a valid web service then enter venue
-        #
-        log.debug("check client for validity")
         try:
-            Client.Handle(URL).IsValid()
-        except Client.InvalidHandleException:
-            log.exception("VenueClient::EnterVenue handle.IsValid Failed.")
-            wxCallAfter(MessageDialog, None, "Client.Handle(%s).IsValid() failed." % URL)
-            return
-                          
-        self.venueUri = URL
-        self.clientHandle = Client.Handle(self.venueUri)
-        self.client = self.clientHandle.GetProxy()
-        
-        if(1):
+            #   
+            # Add current uri to the history if the go button is pressed
+            #
+            self.__setHistory(self.venueUri, back)
+            
+            #
+            # if this venue url has a valid web service then enter venue
+            #
+            self.venueUri = URL
+      
+            self.clientHandle = Client.Handle(self.venueUri)
+            self.client = self.clientHandle.GetProxy()
+            
             # Tell super class to enter venue
-            try:
-                warningString = VenueClient.EnterVenue( self, URL )
-                wxCallAfter(self.frame.statusbar.SetStatusText, "Entered venue %s successfully" %self.venueState.name)
-            #
-            # Catch all fatal exceptions that will result in an enter
-            # venue failure.
-            #
-            except Exception, e:
-                log.exception("bin.VenueClient::EnterVenue failed")
-                text = "You have not entered the venue, an error occured.  Please, try again.\n\nNote: Read VenueClient.log for more detailed information"
-                MessageDialog(None, text, "Enter Venue Error",
-                              style = wxOK  | wxICON_ERROR)
-            else:
-                # clean up ui from current venue before entering a new venue
-                if self.venueUri != None:
-                    log.debug("clean up frame")
-                    wxCallAfter(self.frame.CleanUp)
+            warningString = VenueClient.EnterVenue( self, URL )
+            wxCallAfter(self.frame.statusbar.SetStatusText, "Entered venue %s successfully" %self.venueState.name)
+            
+            # clean up ui from current venue before entering a new venue
+            if self.venueUri != None:
+                log.debug("clean up frame")
+                wxCallAfter(self.frame.CleanUp)
 
-                # Get current state of the venue
-                venueState = self.venueState
-                wxCallAfter(self.frame.venueAddressBar.SetTitle,
+            # Get current state of the venue
+            venueState = self.venueState
+            wxCallAfter(self.frame.venueAddressBar.SetTitle,
                             venueState.name, venueState.description) 
 
-                # Load clients
-                log.debug("Add participants")
-                wxCallAfter(self.frame.statusbar.SetStatusText,
+            # Load clients
+            log.debug("Add participants")
+            wxCallAfter(self.frame.statusbar.SetStatusText,
                             "Load participants")
-                for client in venueState.clients.values():
-                    wxCallAfter(self.frame.contentListPanel.AddParticipant,
-                                client)
-                    log.debug("   %s" %(client.name))
+            for client in venueState.clients.values():
+                wxCallAfter(self.frame.contentListPanel.AddParticipant,
+                            client)
+                log.debug("   %s" %(client.name))
 
-                # Load data
-                log.debug("Add data")
-                wxCallAfter(self.frame.statusbar.SetStatusText, "Load data")
-                for data in venueState.data.values():
-                    wxCallAfter(self.frame.contentListPanel.AddData, data)
-                    log.debug("   %s" %(data.name))
+            # Load data
+            log.debug("Add data")
+            wxCallAfter(self.frame.statusbar.SetStatusText, "Load data")
+            for data in venueState.data.values():
+                wxCallAfter(self.frame.contentListPanel.AddData, data)
+                log.debug("   %s" %(data.name))
 
-                # Load services
-                log.debug("Add service")
-                wxCallAfter(self.frame.statusbar.SetStatusText,
-                            "Load services")
-                for service in venueState.services.values():
-                    wxCallAfter(self.frame.contentListPanel.AddService,
-                                service)
-                    log.debug("   %s" %(service.name))
+            # Load services
+            log.debug("Add service")
+            wxCallAfter(self.frame.statusbar.SetStatusText,
+                        "Load services")
+            for service in venueState.services.values():
+                wxCallAfter(self.frame.contentListPanel.AddService,
+                            service)
+                log.debug("   %s" %(service.name))
 
-                # Load applications
-                log.debug("Add application")
-                wxCallAfter(self.frame.statusbar.SetStatusText,
-                            "Load applications")
-                for app in venueState.applications.values():
-                    wxCallAfter(self.frame.contentListPanel.AddApplication,
-                                app)
-                    log.debug("   %s" %(app.name))
+            # Load applications
+            log.debug("Add application")
+            wxCallAfter(self.frame.statusbar.SetStatusText,
+                        "Load applications")
+            for app in venueState.applications.values():
+                wxCallAfter(self.frame.contentListPanel.AddApplication,
+                            app)
+                log.debug("   %s" %(app.name))
 
-                #  Load exits
-                log.debug("Add exits")
-                wxCallAfter(self.frame.statusbar.SetStatusText, "Load exits")
-                for exit in venueState.connections.values():
-                    wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor,
-                                exit)
-                    log.debug("   %s" %(exit.name))
+            #  Load exits
+            log.debug("Add exits")
+            wxCallAfter(self.frame.statusbar.SetStatusText, "Load exits")
+            for exit in venueState.connections.values():
+                wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor,
+                            exit)
+                log.debug("   %s" %(exit.name))
 
-                #
-                # Tell the text client which location it should listen to
-                #
-                log.debug("Set text location and address bar")
-                wxCallAfter(self.frame.SetTextLocation)
-                wxCallAfter(self.frame.FillInAddress, None, URL)
-                self.venueUri = URL
+            #
+            # Tell the text client which location it should listen to
+            #
+            log.debug("Set text location and address bar")
+            wxCallAfter(self.frame.SetTextLocation)
+            wxCallAfter(self.frame.FillInAddress, None, URL)
+            self.venueUri = URL
+            
+            # Venue data storage location
+            self.upload_url = self.client.GetUploadDescriptor()
+            log.debug("Get upload url %s" %self.upload_url)
+            
+            # Add your personal data descriptions to venue
+            log.debug("Add your personal data descriptions to venue")
+            wxCallAfter(self.frame.statusbar.SetStatusText, "Add your personal data to venue")
+            personalDataWarning = self.__addPersonalDataToVenue()
+            warningString = warningString + personalDataWarning
 
-                # Venue data storage location
-                self.upload_url = self.client.GetUploadDescriptor()
-                log.debug("Get upload url %s" %self.upload_url)
-
-                # Add your personal data descriptions to venue
-                log.debug("Add your personal data descriptions to venue")
-                wxCallAfter(self.frame.statusbar.SetStatusText, "Add your personal data to venue")
-                personalDataWarning = self.__addPersonalDataToVenue()
-                warningString = warningString + personalDataWarning
-
-                # Enable menus
-                wxCallAfter(self.frame.ShowMenu)
+            # Enable menus
+            wxCallAfter(self.frame.ShowMenu)
+            
+            #
+            # Enable the application menu that is displayed over
+            # the Applications items in the list
+            # (this is not the app menu above)
+            wxCallAfter(self.frame.EnableAppMenu, true)
+            
+            # Call EnterVenue on users that are following you.
+            # This should be done last for UI update reasons.
+            log.debug("Lead followers")
+            self.LeadFollowers()
+            
+            log.debug("Entered venue")
+            
+            #
+            # Display all non fatal warnings to the user
+            #
+            if warningString != '': 
+                message = "Following non fatal problems have occured when you entered the venue:\n" + warningString
+                MessageDialog(None, message, "Notification")
                 
-                #
-                # Enable the application menu that is displayed over
-                # the Applications items in the list
-                # (this is not the app menu above)
-                wxCallAfter(self.frame.EnableAppMenu, true)
-
-                # Call EnterVenue on users that are following you.
-                # This should be done last for UI update reasons.
-                log.debug("Lead followers")
-                self.LeadFollowers()
-                
-                log.debug("Entered venue")
-
-                #
-                # Display all non fatal warnings to the user
-                #
-                if warningString != '': 
-                    message = "Following non fatal problems have occured when you entered the venue:\n" + warningString
-                    MessageDialog(None, message, "Notification")
-
                 wxCallAfter(self.frame.statusbar.SetStatusText, "Entered %s successfully" %self.venueState.name)
-        else:
-            log.debug("VenueClient::EnterVenue: Handler is not valid")
-            if not self.app.certificateManager.HaveValidProxy():
-                log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
-                self.app.certificateManager.CreateProxy()
-            else:
-                text = 'You were not able to enter the venue.  Please, make sure the venue URL address is correct.\n\nNote: If your computer clock is not synchronized you might be unable to connect to a venue.'
-                text2 = 'Invalid URL'
-
-            MessageDialog(None, text, text2)
-
+       
+        except Exception, e:
+            log.exception("bin.VenueClient::EnterVenue failed")
+            text = "You have not entered the venue located at %s.\nAn error occured.  Please, try again.\n\nNote: Read VenueClient.log for more detailed information"%URL
+            MessageDialog(None, text, "Enter Venue Error",
+                          style = wxOK  | wxICON_ERROR)
+             
     EnterVenue.soap_export_as = "EnterVenue"
 
     def __addPersonalDataToVenue(self):
