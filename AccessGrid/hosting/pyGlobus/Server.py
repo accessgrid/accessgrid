@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.13 2003-05-14 19:02:22 olson Exp $
+# RCS-ID:      $Id: Server.py,v 1.14 2003-05-14 19:22:44 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -60,7 +60,7 @@ class Server:
         # pass the fault info back ourselves.
         #
         config.returnFaultInfo = 0
-        config.dumpFaultInfo = 1
+        config.dumpFaultInfo = 0
         self._server = SOAPServer(('localhost', port),
                                   tcpAttr = attr,
                                   log = 0,
