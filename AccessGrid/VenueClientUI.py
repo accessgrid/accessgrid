@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.49 2004-05-05 21:40:48 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.50 2004-05-10 15:05:30 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.49 2004-05-05 21:40:48 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.50 2004-05-10 15:05:30 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -56,7 +56,6 @@ except:
     pass
 
     
-
 """
 
 These GUI components live in this file:
@@ -71,6 +70,7 @@ class VenueListPanel(wxSashLayoutWindow):
 class VenueList(wxScrolledWindow):
 class ContentListPanel(wxPanel):                   
 class TextClientPanel(wxPanel):
+class StatusBar(wxStatusBar):
 class ExitPanel(wxPanel):
 
 
@@ -206,6 +206,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.fl_url = "http://www.mcs.anl.gov/fl/"
         self.bugzilla_url = "http://bugzilla.mcs.anl.gov/AccessGrid"
 
+        # Make sure data can be dragged from tree to the desktop.
+        #self.SetDropTarget(DesktopDropTarget(self))
 
        
     ############################################################################
@@ -260,6 +262,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.Show(true)
         
     def __SetStatusbar(self):
+        self.SetStatusBar(self.statusbar)
         self.statusbar.SetToolTipString("Statusbar")   
     
     def __SetMenubar(self):
@@ -279,7 +282,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.venue.AppendSeparator()
         self.venue.Append(self.ID_VENUE_SAVE_TEXT,"Save Text...",
                              "Save text from chat to file.")
-        self.venue.AppendSeparator()
         self.venue.Append(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES,"Administrate Roles...",
                              "Change venue authorization settings.")
         self.venue.AppendSeparator()
@@ -471,7 +473,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def __SetProperties(self):
         self.SetTitle("Venue Client")
         self.SetIcon(icons.getAGIconIcon())
-        self.statusbar.SetStatusWidths([-1])
         self.venueListPanel.GetSize().GetHeight()
         self.venueListPanel.SetSize(wxSize(180, 300))
         
@@ -503,7 +504,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         self.Centre()
         self.menubar = wxMenuBar()
-        self.statusbar = self.CreateStatusBar(1)
+        self.statusbar = StatusBar(self)
+       
         self.venueAddressBar = VenueAddressBar(self, self.ID_WINDOW_TOP, 
                                                self.myVenuesDict,
                                                'default venue')
@@ -593,9 +595,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def __HideMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
+        self.menubar.Enable(self.ID_VENUE_PROPERTIES, false)
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
         self.menubar.Enable(self.ID_MYVENUE_SETDEFAULT, false)
-        self.menubar.Enable(self.ID_VENUE_PROPERTIES, false)
         self.menubar.Enable(self.ID_VENUE_APPLICATION, false)
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, false)
         self.serviceHeadingMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
@@ -604,11 +606,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def __ShowMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, true)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
+        self.menubar.Enable(self.ID_VENUE_PROPERTIES, true)
         self.menubar.Enable(self.ID_MYVENUE_ADD, true)
         self.menubar.Enable(self.ID_MYVENUE_GOTODEFAULT, true)
         self.menubar.Enable(self.ID_MYVENUE_SETDEFAULT, true)
-        self.menubar.Enable(self.ID_VENUE_PROPERTIES, true)
         self.menubar.Enable(self.ID_VENUE_APPLICATION, true)
+        
         
         # Only show administrate button when you can administrate a venue.
                    
@@ -804,7 +807,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         """
         streams = self.venueClient.GetVenueStreams()
         venuePropertiesDialog = VenuePropertiesDialog(self, -1,
-                                                      'Properties')
+                                                      'Venue Properties')
         venuePropertiesDialog.PopulateList(streams)
         venuePropertiesDialog.ShowModal()
        
@@ -854,7 +857,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def EditProfileCB(self, event = None):
         profile = None
         profileDialog = ProfileDialog(NULL, -1,
-                                  'Please, fill in your profile information')
+                                  'Your profile information')
         profileDialog.SetProfile(self.venueClient.GetProfile())
         if (profileDialog.ShowModal() == wxID_OK):
             profile = profileDialog.GetNewProfile()
@@ -1410,18 +1413,25 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     #
         
     def OpenUploadFilesDialog(self):
+        # Method name should change...
         #
-        # Create the dialog for the upload.
+        # Prepare statusbar for progress.
         #
-        self.uploadFilesDialog = UploadFilesDialog(self, -1, "Uploading files")
-        self.uploadFilesDialog.Show(1)
+        self.statusbar.Reset()
+        self.statusbar.SetMessage("Uploading files")
                 
     def UpdateUploadFilesDialog(self, filename, sent, total, file_done, xfer_done):
-        wxCallAfter(self.uploadFilesDialog.SetProgress,
-                    filename,sent,total,file_done,xfer_done)
+        # Method name should change...
+        #
+        text = "Uploading file %s"%filename
+                        
+        wxCallAfter(self.statusbar.SetProgress,
+                    text,sent,total,file_done,xfer_done)
         
     def UploadFilesDialogCancelled(self):
-        return self.uploadFilesDialog.IsCancelled()      
+        # Method name should change...
+        #
+        return self.statusbar.IsCancelled()      
         
     #
     # Save Files Methods
@@ -1618,7 +1628,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.preferences.Check(self.ID_USE_UNICAST, true)
 
     def SetStatusText(self,text):
-        self.statusbar.SetStatusText(text)
+        self.statusbar.SetStatusText(text,0)
 
     def GoBackCB(self):
         """
@@ -2614,7 +2624,8 @@ class ContentListPanel(wxPanel):
         EVT_RIGHT_DOWN(self.tree, self.OnRightClick)
         EVT_LEFT_DCLICK(self.tree, self.OnDoubleClick)
         EVT_TREE_KEY_DOWN(self.tree, id, self.OnKeyDown)
-        EVT_TREE_ITEM_EXPANDING(self.tree, id, self.OnExpand) 
+        EVT_TREE_ITEM_EXPANDING(self.tree, id, self.OnExpand)
+        #EVT_TREE_BEGIN_DRAG(self.tree, id, self.OnBeginDrag) 
         EVT_TREE_SEL_CHANGED(self.tree, id, self.OnSelect)
        
     def __SetImageList(self):
@@ -2974,7 +2985,24 @@ class ContentListPanel(wxPanel):
         #    # Root item
         #    if self.tree.GetItemText(item) == "":
         #        self.tree.SelectItem(self.participants)
-                        
+
+    def OnBeginDrag(self, event):
+        '''
+        Called when a tree item is being dragged.
+        '''
+        
+        item = event.GetItem()
+              
+        # Check to see if it is a data item we are trying to drag.
+        text = self.tree.GetItemText(item)
+        dropData = wxTextDataObject()
+        dropData.SetText(text)
+
+        dropSource = wxDropSource(self)
+        dropSource.SetData(dropData)
+
+        dropSource.DoDragDrop(wxDrag_AllowMove)
+                                
     def OnExpand(self, event):
         treeId = event.GetItem()
         item = self.tree.GetItemData(treeId).GetData()
@@ -3291,6 +3319,8 @@ class ContentListPanel(wxPanel):
                     "Manage application authorization.")
         EVT_MENU(self, id, lambda event: self.parent.ModifyAppRolesCB(item))
 
+        menu.AppendSeparator()
+        
         # Add properties
         id = wxNewId()
         menu.Append(id, "Properties", "View the details of this application.")
@@ -3591,16 +3621,142 @@ class TextClientPanel(wxPanel):
     def GetText(self):
         return self.textOutput.GetValue()
                
-          
- 
+################################################################################
+#
+# Statusbar
+
+
+class StatusBar(wxStatusBar):
+    def __init__(self, parent):
+        wxStatusBar.__init__(self, parent, -1)
+        self.hidden = 0
+       
+        self.sizeChanged = False
+        EVT_SIZE(self, self.OnSize)
+        EVT_IDLE(self, self.OnIdle)
+
+        self.progress = wxGauge(self, wxNewId(), 100,
+                                style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH)
+        self.progress.SetValue(True)
+
+        self.cancelButton = wxButton(self, wxNewId(), "Cancel")
+        EVT_BUTTON(self, self.cancelButton.GetId(), self.OnCancel)
+
+        self.__hideProgressUI()
+        self.Reset()
+
+        self.fields = 1
+        self.SetFieldsCount(self.fields)
+        
+    def Reset(self):
+        self.__cancelFlag = 0
+        self.transferDone = 0
+        self.fields = 3
+        self.SetFieldsCount(self.fields)
+        self.SetStatusWidths([-1,80,60])
+        # set the initial position of the progress UI.
+        self.Reposition()
+
+    def __hideProgressUI(self):
+        self.hidden = 1
+        self.progress.Hide()
+        self.cancelButton.Hide()
+       
+    def __showProgressUI(self):
+        self.hidden = 0
+        self.progress.Show()
+        self.cancelButton.Show()
+
+    def SetMessage(self, text):
+        self.SetStatusText(text,0)
+   
+    def IsCancelled(self):
+        if self.__cancelFlag:
+            self.__hideProgressUI()
+        return self.__cancelFlag
+   
+    def SetProgress(self, text, value, max, NOT_USED, doneFlag):
+        if self.hidden:
+            self.__showProgressUI()
+        
+        if doneFlag:
+            self.transferDone = doneFlag
+            self.progress.SetValue(100)
+            self.__hideProgressUI()
+            self.SetMessage("Transfer complete")
+            self.fields = 1
+            self.SetFieldsCount(self.fields)
+            return 
+        
+        self.SetMessage(text)
+
+        # Scale value to range 1-100
+        if max == 0:
+            value = 100
+        else:
+            value = int(100 * int(value) / int(max))
+        self.progress.SetValue(value)
+
+    def OnCancel(self, event):
+        '''
+        The cancel button was clicked.
+       
+        If we are still transferring, this is a cancel. 
+        If we are done transferring, this is an OK.
+        '''
+        if not self.transferDone:
+            self.__cancelFlag = 1
+            self.__hideProgressUI()
+            self.fields = 1
+            self.SetFieldsCount(self.fields)
+       
+                                    
+    def OnSize(self, evt):
+        '''
+        Handles normal size events.
+        '''
+        self.Reposition() 
+
+        # Set a flag so the idle time handler will also do the repositioning.
+        # It is done this way to get around a bug where GetFieldRect is not
+        # accurate during the EVT_SIZE resulting from a frame maximize.
+        self.sizeChanged = True
+
+    def OnIdle(self, evt):
+        '''
+        When idle, fix object positions in statusbar.
+        '''
+        if self.sizeChanged:
+            self.Reposition()
+    
+    def Reposition(self):
+        '''
+        Make sure objects are positioned correct in the statusbar.
+        '''
+        if self.fields == 1:
+            self.__hideProgressUI()
+            return
+
+        # Gauge
+        rect = self.GetFieldRect(1)
+        self.progress.SetPosition(wxPoint(rect.x+2, rect.y+2))
+        self.progress.SetSize(wxSize(rect.width-4, rect.height-4))
+        self.sizeChanged = False
+        
+        # Cancel button
+        rect = self.GetFieldRect(2)
+        self.cancelButton.SetPosition(wxPoint(rect.x+2, rect.y+2))
+        self.cancelButton.SetSize(wxSize(rect.width-4, rect.height-4))
+        self.sizeChanged = False
+        
+        
 ################################################################################
 #
 # Dialogs
 
 class SaveFileDialog(wxDialog):
     def __init__(self, parent, id, title, message, doneMessage, fileSize):
-        wxDialog.__init__(self, parent, id, title,
-                          size = wxSize(300, 200))
+        wxDialog.__init__(self, parent, id, title)
 
         self.doneMessage = doneMessage
 
@@ -3618,7 +3774,10 @@ class SaveFileDialog(wxDialog):
         self.cancelFlag = 0
 
         self.progress = wxGauge(self, wxNewId(), 100,
-                                style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH)
+                                style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH,
+                                size = wxSize(300, 20))
+
+        
 
         EVT_BUTTON(self, self.button.GetId(), self.OnButton)
 
@@ -3626,15 +3785,6 @@ class SaveFileDialog(wxDialog):
         #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
         self.Layout()
 
-    def Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add(self.text, 1, wxEXPAND)
-        sizer.Add(self.progress, 0, wxEXPAND)
-        sizer.Add(self.button, 0, wxCENTER)
-
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.SetAutoLayout(1)
 
     def OnButton(self, event):
         """
@@ -3679,6 +3829,17 @@ class SaveFileDialog(wxDialog):
         
         return self.cancelFlag
 
+    
+    def Layout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer.Add(self.text, 1, wxEXPAND| wxALL, 10)
+        sizer.Add(self.progress, 0, wxEXPAND| wxALL, 10)
+        sizer.Add(self.button, 0, wxCENTER| wxBOTTOM, 10)
+        
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+        
  
 ################################################################################
 
@@ -3854,7 +4015,9 @@ class ProfileDialog(wxDialog):
            
     def __DoLayout(self):
         self.sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, "Profile"), wxHORIZONTAL)
+        box = wxStaticBox(self, -1, "Profile")
+        box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
         self.gridSizer = wxFlexGridSizer(9, 2, 5, 5)
         self.gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
@@ -4112,7 +4275,9 @@ class ExitPropertiesDialog(wxDialog):
                                                
     def Layout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, "Properties"), wxHORIZONTAL)
+        box = wxStaticBox(self, -1, "Properties")
+        box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
         gridSizer = wxFlexGridSizer(9, 2, 5, 5)
         gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
         gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
@@ -4178,7 +4343,9 @@ class DataPropertiesDialog(wxDialog):
                                        
     def Layout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, "Profile"), wxHORIZONTAL)
+        box = wxStaticBox(self, -1, "Properties")
+        box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
         gridSizer = wxFlexGridSizer(9, 2, 5, 5)
         gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
         gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
@@ -4270,7 +4437,9 @@ class ServicePropertiesDialog(wxDialog):
                   
     def Layout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, "Profile"), wxHORIZONTAL)
+        box = wxStaticBox(self, -1, "Properties")
+        box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
         gridSizer = wxFlexGridSizer(9, 2, 5, 5)
         gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
         gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
@@ -4455,7 +4624,9 @@ class VenuePropertiesDialog(wxDialog):
         Handle UI layout.
         '''
         mainSizer = wxBoxSizer(wxVERTICAL)
-        sizer = wxStaticBoxSizer(wxStaticBox(self, -1, "Multicast Addresses"), wxVERTICAL)
+        box = wxStaticBox(self, -1, "Multicast Addresses")
+        box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+        sizer = wxStaticBoxSizer(box, wxVERTICAL)
         sizer.Add(self.list, 1, wxEXPAND| wxALL, 10)
         
         mainSizer.Add(sizer, 1, wxEXPAND| wxALL, 10)
@@ -4479,6 +4650,23 @@ class DataDropTarget(wxFileDropTarget):
     
     def OnDropFiles(self, x, y, files):
         self.app.AddDataCB(fileList = files)
+
+class DesktopDropTarget(wxFileDropTarget):
+    def __init__(self, application):
+        wxFileDropTarget.__init__(self)
+        self.app = application
+        self.do = wxFileDataObject()
+        self.SetDataObject(self.do)
+
+    def OnEnter(self, x, y, d):
+        print 'on enter'
+        
+    def OnLeave(self):
+        print 'on leave'
+
+    def OnDropFiles(self, x, y, files):
+        print 'on drop files ', files[0]
+        #self.app.AddDataToDesktop(fileList = files)
 
 
 if __name__ == "__main__":
