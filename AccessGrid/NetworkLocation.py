@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/13/12
-# RCS-ID:      $Id: NetworkLocation.py,v 1.8 2003-03-30 02:47:46 turam Exp $
+# RCS-ID:      $Id: NetworkLocation.py,v 1.9 2003-05-12 16:27:13 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,6 +27,7 @@ class NetworkLocation:
             raise TypeError("Network Location Port must be an int.")
         else:
             self.port = port
+        self.type = self.TYPE
 
     def SetHost(self, host):
         self.host = host
