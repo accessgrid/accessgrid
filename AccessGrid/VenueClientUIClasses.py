@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.137 2003-04-17 20:06:05 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.138 2003-04-18 17:48:28 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -2305,8 +2305,13 @@ def VerifyExecutionEnvironment():
         # general use, but developers may run into it.
         #
 
-        from Platform import FindRegistryEnvironmentVariable
-        (global_reg, user_reg) = FindRegistryEnvironmentVariable("GLOBUS_HOSTNAME")
+        global_reg = None
+        user_reg = None
+
+        from AccessGrid.Platform import WIN
+        if sys.platform == WIN:
+            from Platform import FindRegistryEnvironmentVariable
+            (global_reg, user_reg) = FindRegistryEnvironmentVariable("GLOBUS_HOSTNAME")
 
         msg = None
         msgbase = "If you started this program from a command window you may\n" + \
