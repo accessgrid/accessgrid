@@ -20,6 +20,10 @@ if not os.environ.has_key('AGBUILDROOT'):
     print "AGBUILDROOT environment variable must be set"
     sys.exit(1)
 
+if sys.platform == 'win32' and not os.environ.has_key('MSVC_VERSION'):
+    print "MSVC_VERSION environment must be set, or pyOpenSSL and pyGlobus will not build correctly."
+    sys.exit(1)
+    
 # Build packages according to the command line
 if sys.platform == 'win32':
     bdir = 'windows'
