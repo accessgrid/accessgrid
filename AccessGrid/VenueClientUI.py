@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.38 2004-04-23 19:27:29 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.39 2004-04-23 21:04:41 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.38 2004-04-23 19:27:29 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.39 2004-04-23 21:04:41 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -4364,9 +4364,9 @@ class VenuePropertiesDialog(wxDialog):
         mainSizer.Add(sizer, 1, wxEXPAND| wxALL, 10)
         
         self.SetSizer(mainSizer)
-        #sizer.Fit(self)
+        mainSizer.Fit(self.list)
         self.SetAutoLayout(1)
-      
+        
 
         
 
