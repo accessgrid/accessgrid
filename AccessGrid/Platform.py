@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.28 2003-08-07 12:35:04 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.29 2003-08-07 13:48:40 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -29,7 +29,7 @@ WIN = 'win32'
 WinGPI = "wgpi.exe"
 AGTkRegBaseKey = "SOFTWARE\\Access Grid Toolkit\\2.0"
 
-def isWindows:
+def isWindows():
     if sys.platform == WIN:
 	return 1
     else:
@@ -40,7 +40,7 @@ LINUX = 'linux2'
 LinuxGPI = "grid-proxy-init"
 AGTkBasePath = "/etc/AccessGrid"
 
-def isLinux:
+def isLinux():
     if sys.platform == LINUX:
 	return 1
     else:
@@ -51,7 +51,7 @@ OSX='darwin'
 DarwinGPI="grid-proxy-init"
 AGTkBasePath="/etc/AccessGrid"
         
-def isOSX:
+def isOSX():
     if sys.platform == OSX:
 	return 1
     else:
