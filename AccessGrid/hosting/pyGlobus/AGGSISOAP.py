@@ -87,11 +87,12 @@ from pyGlobus.io import GSITCPSocketServer
 from pyGlobus import ioc
 from types import *
 
+import time
 
 try: from M2Crypto import SSL
 except: pass
 
-ident = '$Id: AGGSISOAP.py,v 1.4 2003-01-14 20:55:34 turam Exp $'
+ident = '$Id: AGGSISOAP.py,v 1.5 2003-01-31 20:17:07 olson Exp $'
 
 __version__ = "0.9.7"
 
@@ -3665,7 +3666,7 @@ class MethodSig:
 
 class SOAPContext:
     def __init__(self, header, body, attrs, xmldata, connection, httpheaders,
-        soapaction, delegated_cred=None):
+        soapaction, delegated_cred=None, security_context = None):
 
         self.header     = header
         self.body       = body
@@ -3675,6 +3676,7 @@ class SOAPContext:
         self.httpheaders= httpheaders
         self.soapaction = soapaction
         self.delegated_cred = delegated_cred
+        self.security_context = security_context
 
 # A class to describe how header messages are handled
 class HeaderHandler:
@@ -3788,7 +3790,7 @@ class SOAPServer(GSITCPSocketServer):
                     status = 500
                 else:
                     try:
-                        if pass_conn_info:
+                        if 0 and pass_conn_info:
                             cinfo = SecureConnectionInfo(self.connection.get_security_context())
 
                             args.insert(0, cinfo)
@@ -3798,13 +3800,15 @@ class SOAPServer(GSITCPSocketServer):
 
                         # If it's wrapped, some special action may be needed
 
+                        # print "handling %s, class=%s isinst=%s methodsig=%s " % (f, f.__class__, issubclass(f.__class__, MethodSig), MethodSig)
                         if isinstance(f, MethodSig):
                             c = None
                             if f.context:  # Build context object
                                 c = SOAPContext(header, body, attrs, data,
-                                    self.connection, self.headers,
-                                    self.headers["soapaction"],
-                                    self.server.delegated_cred)
+                                                self.connection, self.headers,
+                                                self.headers["soapaction"],
+                                                self.server.delegated_cred,
+                                                self.connection.get_security_context())
 
                             if f.keywords:
                                 # This is lame, but have to de-unicode
@@ -3816,7 +3820,6 @@ class SOAPServer(GSITCPSocketServer):
                                     strkw[str(k)] = v
                                 if c:
                                     strkw["_SOAPContext"] = c
-                                strkw["_GSIConnectionInformation"] = cinfo
                                 fr = apply(f, (), strkw)
                             elif c:
                                 fr = apply(f, args, {'_SOAPContext':c})

@@ -5,31 +5,19 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.6 2003-01-30 15:20:39 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.7 2003-01-31 20:17:07 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+
 import socket
 from threading import Thread
 
 import ServiceObject
 import ServiceBase
-import pyGlobus.io
+import utilities
+
 from AGGSISOAP import SOAPProxy, SOAPServer, SOAPConfig
-
-class SecureConnectionInfo:
-    def __init__(self, context):
-
-        initiator, acceptor, valid_time, mechanism_oid, flags, local_flag, open_flag = context.inquire()
-
-        self.initiator = initiator
-        self.acceptor = acceptor
-
-    def get_remote_name(self):
-        return self.initiator.display()
-
-    def __repr__(self):
-        return "SecureConnectionInfo(initiator=%s, acceptor=%s)"  % (self.initiator.display(), self.acceptor.display())
 
 class Server:
 
@@ -59,38 +47,15 @@ class Server:
 
     def _create_server(self, port, server_auth_callback, debug = 0):
 
-        #
-        # Set up the TCP attributes to turn on GSSAPI and register
-        # the server_auth_callback.
-        #
-
-        attr = pyGlobus.io.TCPIOAttr()
-
-        attr.set_authentication_mode(pyGlobus.ioc.GLOBUS_IO_SECURE_AUTHENTICATION_MODE_GSSAPI)
-        authdata = pyGlobus.io.AuthData()
-
-        #
-        # If we didn't register a callback, default to
-        # allowing only processes with our identity. This may
-        # not be correct, but only time will tell.
-        #
-
-        if server_auth_callback is not None:
-            authdata.set_callback(server_auth_callback, self)
-            authmode = pyGlobus.ioc.GLOBUS_IO_SECURE_AUTHORIZATION_MODE_CALLBACK
+        if server_auth_callback is None:
+            attr = utilities.CreateTCPAttrAlwaysAuth()
         else:
-            authmode = pyGlobus.ioc.GLOBUS_IO_SECURE_AUTHORIZATION_MODE_SELF
-
-        attr.set_authorization_mode(authmode, authdata)
-
-        attr.set_delegation_mode(pyGlobus.ioc.GLOBUS_IO_SECURE_DELEGATION_MODE_NONE)
-        attr.set_restrict_port(0)
-        attr.set_reuseaddr(1)
-        attr.set_nodelay(0)
-        attr.set_channel_mode(pyGlobus.ioc.GLOBUS_IO_SECURE_CHANNEL_MODE_GSI_WRAP)
+            attr = utilities.CreateTCPAttrCallbackAuth(server_auth_callback)
 
         config = SOAPConfig()
         config.debug = debug
+        config.returnFaultInfo = 1
+        config.dumpFaultInfo = 1
         self._server = SOAPServer(('localhost', port),
                                   tcpAttr = attr,
                                   log = 0,
@@ -208,13 +173,13 @@ class Server:
 #            print "Got method ", m
             return m
         except KeyError:
-            print "service not found"
+            # print "service not found"
             raise NoServiceException
         except Exception, e:
              "Other exception ", e
 
     def get_connection_info(self, connection):
-        return SecureConnectionInfo(connection.get_security_context())
+        return utilities.SecureConnectionInfo(connection.get_security_context())
 
     def get_port(self):
         """Return the port on which this server is listening. """
@@ -222,9 +187,8 @@ class Server:
 
     def get_url_base(self):
         """Return the base URL that represents this server. """
-        ret, host = pyGlobus.utilc.get_hostname(256)
-        if ret != 0:
-            host = socket.getfqdn()
-        return "https://%s:%s" % (host, self.get_port())
+
+        hostname = utilities.GetHostname()
+        return "https://%s:%s" % (hostname, self.get_port())
 
 

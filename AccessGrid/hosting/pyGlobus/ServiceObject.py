@@ -1,3 +1,4 @@
+from AccessGrid.hosting import access_control
 
 class NoServiceMethodException(Exception):
     """No such method.
@@ -62,7 +63,22 @@ class ServiceObject:
 	self.id = id
         self.function_map = {}
         self.binding_table = {}
-#        print "Created service ", self
+        #        print "Created service ", self
+
+        self.role_manager = None
+
+    def SetRoleManager(self, roleManager):
+        """
+        Set roleManager as the role manager for this service object.
+        This will be queried by the security manager to determine the roles assigned
+        to a user.
+        """
+
+        self.role_manager = roleManager
+
+    def GetRoleManager(self):
+        return self.role_manager
+    
 
     def auth_callback(self, server, g_handle, remote_user, context):
         print "Service got auth_callback: slef=%s server=%s handle=%s remote_user=%s context=%s" % (
@@ -106,8 +122,13 @@ class ServiceObject:
 
         if name is None:
             name = function.__name__
-#        print "Service %s registers function %s as %s" % (self, function, name)
-        self.function_map[name] = (function, pass_connection_info)
+
+        #        print "Service %s registers function %s as %s" % (self, function, name)
+
+	wrapper = access_control.InvocationWrapper(function, pass_connection_info, self)
+        self.function_map[name] = (wrapper, 1)
+
+        # self.function_map[name] = (function, pass_connection_info)
 
     def _lookup_method(self, method):
         """

@@ -4,31 +4,30 @@ This module provides a helper class Client that wraps
 the creation of the SOAP server proxy.
 """
 
-def myCallback(server, g_handle, remote_user, context):
-    print "myCallback. Remote user is %s" % remote_user
-    return 1
 
 from AGGSISOAP import SOAPProxy, Config
+import AGGSISOAP
 import urllib
 import string
+
+FaultType = AGGSISOAP.faultType
 
 class AuthCallbackException(Exception):
     pass
 
 class Handle:
-    def __init__(self, url, namespace = None,
-                 authCallback = None, authCallbackArg = None):
+    def __init__(self, url, namespace = None, authCallback = None):
 
         self.url = url
         self.proxy = None
         self.namespace = namespace
         self.authCallback = authCallback
-        self.authCallbackArg = authCallbackArg
 
     def get_url(self):
         return self.url
 
     def get_proxy(self):
+
         if self.proxy is None:
             #
             # See if we're https or http - route
@@ -40,8 +39,7 @@ class Handle:
             if type == "https":
                 self.proxy = create_proxy(self.url,
                                           self.namespace,
-                                          self.authCallback,
-                                          self.authCallbackArg)
+                                          self.authCallback)
             else:
                 self.proxy = SOAPProxy(self.url, self.namespace)
 
@@ -50,41 +48,24 @@ class Handle:
     def __repr__(self):
         return self.url
 
-def create_proxy(url, namespace,
-                 authCallback = None, authCallbackArg = None):
+def create_proxy(url, namespace, authCallback = None):
     
-    from pyGlobus import io, ioc
-    from AGGSISOAP import Config
+    from AGGSISOAP import SOAPConfig
+    import utilities
 
-#    DELEGATION_MODE = ioc.GLOBUS_IO_SECURE_DELEGATION_MODE_FULL_PROXY
-    DELEGATION_MODE = ioc.GLOBUS_IO_SECURE_DELEGATION_MODE_NONE
-    CHANNEL_MODE = ioc.GLOBUS_IO_SECURE_CHANNEL_MODE_GSI_WRAP
-
-    io_attr = io.TCPIOAttr()
-    io_attr.set_authentication_mode(ioc.GLOBUS_IO_SECURE_AUTHENTICATION_MODE_GSSAPI)
-    authdata = io.AuthData()
-
-    if authCallback is not None:
-        if not callable(authCallback):
-            raise AuthCallbackException()
-        
-        print "callback is ", authCallback
-        authdata.set_callback(authCallback, None)
-        
-        io_attr.set_authorization_mode(ioc.GLOBUS_IO_SECURE_AUTHORIZATION_MODE_CALLBACK, authdata)
+    if authCallback is None:
+        io_attr = utilities.CreateTCPAttrAlwaysAuth()
     else:
-        io_attr.set_authorization_mode(ioc.GLOBUS_IO_SECURE_AUTHORIZATION_MODE_SELF, authdata)
-    
+        io_attr = utilities.CreateTCPAttrCallbackAuth(authCallback)
 
-    io_attr.set_delegation_mode(DELEGATION_MODE)
-    io_attr.set_nodelay(0)
-    io_attr.set_channel_mode(CHANNEL_MODE)
 
-    print "creating proxy on ", url
+    config = SOAPConfig(tcpAttr = io_attr)
+
+    # print "creating proxy on ", url, " ioattr is ", io_attr
 
     proxy = SOAPProxy(url, namespace,
                       transport = HTTPTransport,
-                      config = Config)
+                      config = config)
 
     return proxy
             
@@ -110,7 +91,7 @@ class HTTPTransport:
             real_path = addr.path
             
         if addr.proto == 'https':
-            r = GSIHTTP(real_addr, tcpAttr = tcpAttr)
+            r = GSIHTTP(real_addr, tcpAttr = config.tcpAttr)
         else:
             r = httplib.HTTP(real_addr)
 
