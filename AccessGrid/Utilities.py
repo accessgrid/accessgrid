@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.44 2003-09-05 18:03:58 lefvert Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.45 2003-09-10 19:57:22 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -340,8 +340,8 @@ def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
         args['short_desc'] = "Crash in Venue Client UI"
         commentAndLog = commentAndLog \
                         +"\n\n--- VenueClient.log INFORMATION ---\n\n"+GetLogText(20000, "VenueClient.log") \
-                        +"\n\n--- AGNodeService.log INFORMATION ---\n\n"+GetLogText(20000, "agns.log")\
-                        +"\n\n--- AGServiceManager.log INFORMATION ---\n\n"+GetLogText(20000, "agsm.log")\
+                        +"\n\n--- agns.log INFORMATION ---\n\n"+GetLogText(20000, "agns.log")\
+                        +"\n\n--- agsm.log INFORMATION ---\n\n"+GetLogText(20000, "agsm.log")\
                         +"\n\n--- AGService.log INFORMATION ---\n\n"+GetLogText(20000, "AGService.log")
 
     
