@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.39 2003-10-14 04:27:14 judson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.40 2003-10-20 18:51:19 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.39 2003-10-14 04:27:14 judson Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.40 2003-10-20 18:51:19 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import isWindows, isLinux, isOSX
@@ -19,7 +19,6 @@ import string
 
 try:
     import _winreg
-    from AccessGrid.Platform import Win32RegisterMimeType
 except:
     pass
 
