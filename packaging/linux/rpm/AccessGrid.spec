@@ -146,7 +146,6 @@ cat <<EOF > /tmp/AccessGrid-Postinstall.py
 #!/usr/bin/python2
 import AccessGrid
 import AccessGrid.hosting
-import AccessGrid.hosting.pyGlobus
 import os
 import os.path
 import glob
