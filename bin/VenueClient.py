@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.168 2003-05-28 22:03:18 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.169 2003-06-17 21:53:44 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -104,11 +104,9 @@ class VenueClientUI(wxApp, VenueClient):
         except Exception, e:
             log.exception("bin.VenueClient::OnInit: WXGUIApplication creation failed")
 
-            dlg = wxMessageDialog(None, "Application object creation failed\n%s\nThe venue client cannot continue." % (e,),
-                                  "Initialization failed",
-                                  wxOK)
-            dlg.ShowModal()
-            dlg.Destroy()
+            text = "Application object creation failed\n%s\nThe venue client cannot continue." % (e,)
+            ErrorDialog(None, text, "Initialization failed",
+                          style = wxOK  | wxICON_ERROR)
             sys.exit(1)
 
         try:
@@ -117,8 +115,11 @@ class VenueClientUI(wxApp, VenueClient):
 
         except Exception, e:
             log.exception("bin.VenueClient::OnInit: App initialization failed")
+            
+            #ErrorDialogWithTraceback(None, "Application initialization failed. Attempting to continue",
+            #            "Initialization failed")
 
-            ErrorDialogWithTraceback(None, "Application initialization failed. Attempting to continue",
+            ErrorDialog(None, "Application initialization failed. Attempting to continue",
                         "Initialization failed")
         
         #
@@ -436,6 +437,8 @@ class VenueClientUI(wxApp, VenueClient):
             self.frame.venueAddressBar.SetTitle("You are not in a venue",
                                                 'Click "Go" to connect to the venue, which address is displayed in the address bar') 
             self.ExitVenue()
+        else:
+            log.debug("the venue uri is not set, we do not call exit")
 
         MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", "Lost Connection")
 
@@ -772,8 +775,8 @@ class VenueClientUI(wxApp, VenueClient):
        
         except Exception, e:
             log.exception("bin.VenueClient::EnterVenue failed")
-            text = "You have not entered the venue located at %s.\nAn error occured.  Please, try again.\n\nNote: Read VenueClient.log for more detailed information"%URL
-            MessageDialog(None, text, "Enter Venue Error",
+            text = "You have not entered the venue located at %s.\nAn error occured.  Please, try again."%URL
+            ErrorDialog(None, text, "Enter Venue Error",
                           style = wxOK  | wxICON_ERROR)
              
     EnterVenue.soap_export_as = "EnterVenue"
@@ -1116,7 +1119,7 @@ class VenueClientUI(wxApp, VenueClient):
                                            checksum, progressCB)
         except DataStore.DownloadFailed, e:
             log.exception("bin.VenueClient:get_ident_and_download: Got exception on download")
-            wxCallAfter(MessageDialog, None, "The file could not be downloaded", "Download Error",  wxOK | wxICON_ERROR)
+            wxCallAfter(ErrorDialog, None, "The file could not be downloaded", "Download Error",  wxOK | wxICON_ERROR)
             
     def UploadPersonalFiles(self, fileList):
         """
@@ -1136,8 +1139,8 @@ class VenueClientUI(wxApp, VenueClient):
             log.exception("bin.VenueClient:UploadPersonalFiles failed")
             title = "Add Personal Data Error"
             text = "The file could not be added, error occured."
-            MessageDialog(self.frame, text, title, style = wxOK|wxICON_ERROR)
-         
+            ErrorDialog(self.frame, text, title,  wxOK | wxICON_ERROR)
+                               
     def UploadVenueFiles(self, file_list):
         """
         Upload the given files to the venue.
@@ -1225,7 +1228,7 @@ class VenueClientUI(wxApp, VenueClient):
 
         if error_msg is not None:
             log.exception("bin.VenueClient::get_ident_and_upload: Upload data error")
-            wxCallAfter(MessageDialog,
+            wxCallAfter(ErrorDialog,
                         None, error_msg,
                         "Upload Files Error", wxOK | wxICON_ERROR)
                
@@ -1257,7 +1260,7 @@ class VenueClientUI(wxApp, VenueClient):
 
         if error_msg is not None:
             log.exception("bin.VenueClient::UploadFilesNoDialog: Upload files failed")
-            MessageDialog(None, error_msg, "Upload Files Error", style = wxOK|wxICON_ERROR)
+            ErrorDialog(None, error_msg, "Upload Files Error", style = wxOK|wxICON_ERROR)
            
     def AddData(self, data):
         """
@@ -1275,7 +1278,7 @@ class VenueClientUI(wxApp, VenueClient):
             
         except:
             log.exception("bin.VenueClient::AddData: Error occured when trying to add data")
-            MessageDialog(None, "The files could not be added", "Add Personal Files Error")
+            ErrorDialog(None, "The files could not be added", "Add Personal Files Error")
            
     def RemoveData(self, data):
         """
@@ -1295,7 +1298,7 @@ class VenueClientUI(wxApp, VenueClient):
 
         except:
             log.exception("bin.VenueClient::RemoveData: Error occured when trying to remove data")
-            MessageDialog(None, "The file could not be removed", "Remove Personal Files Error", style = wxOK | wxICON_ERROR)
+            ErrorDialog(None, "The file could not be removed", "Remove Personal Files Error", style = wxOK | wxICON_ERROR)
           
     def AddService(self, service):
         """
@@ -1311,7 +1314,7 @@ class VenueClientUI(wxApp, VenueClient):
 
         except:
             log.exception("bin.VenueClient::AddService: Error occured when trying to add service")
-            MessageDialog(None, "The service could not be added", "Add Service Error", style = wxOK | wxICON_ERROR)
+            ErrorDialog(None, "The service could not be added", "Add Service Error", style = wxOK | wxICON_ERROR)
           
     def OpenService(self, service):
         """
@@ -1340,7 +1343,7 @@ class VenueClientUI(wxApp, VenueClient):
                         pid = wxShell(commands['open'])
             except:
                 log.exception("bin.VenueClient::OpenService: Open service failed")
-                MessageDialog(None, "The service could not be opened", "Open Service Error", style = wxOK | wxICON_ERROR)
+                ErrorDialog(None, "The service could not be opened", "Open Service Error", style = wxOK | wxICON_ERROR)
                 
     def RemoveService(self, service):
         """
@@ -1356,7 +1359,7 @@ class VenueClientUI(wxApp, VenueClient):
 
         except:
             log.exception("bin.VenueClient::RemoveService: Error occured when trying to remove service")
-            MessageDialog(None, "The service could not be removed", "Remove Service Error", style = wxOK | wxICON_ERROR)
+            ErrorDialog(None, "The service could not be removed", "Remove Service Error", style = wxOK | wxICON_ERROR)
             
     def ChangeProfile(self, profile):
         """
@@ -1382,7 +1385,7 @@ class VenueClientUI(wxApp, VenueClient):
 
             except:
                 log.exception("bin.VenueClient::ChangeProfile: Error occured when trying to update profile")
-                MessageDialog(None, "Your profile could not be changed", "Change Profile Error", style = wxOK | wxICON_ERROR)
+                ErrorDialog(None, "Your profile could not be changed", "Change Profile Error", style = wxOK | wxICON_ERROR)
         else:
             log.debug("Can not update client profile in venue - not connected")
 
