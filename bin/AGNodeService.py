@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.28 2003-08-21 21:39:49 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.29 2003-08-22 16:32:56 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -139,7 +139,10 @@ nodeService = AGNodeService()
 
 # Load default configuration if --personal node option is set
 if pnode:
-    nodeService.LoadDefaultConfig()
+    try:
+        nodeService.LoadDefaultConfig()
+    except:
+        self.log.debug("Failed to load default node configuration")
 
 # Create a hosting environment
 server = Server( port , auth_callback=AuthCallback )
