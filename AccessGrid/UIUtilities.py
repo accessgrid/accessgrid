@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.60 2004-07-26 17:10:53 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.61 2004-07-28 21:50:35 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.60 2004-07-26 17:10:53 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.61 2004-07-28 21:50:35 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -107,7 +107,7 @@ class BugReportCommentDialog(wxDialog):
         sizer.Add(self.text, 0, wxALL, 10)
         sizer.Add(self.commentText, 0, wxLEFT| wxRIGHT | wxEXPAND, 10)
         sizer.Add(self.commentBox, 0,  wxLEFT| wxRIGHT | wxEXPAND, 10)
-        sizer.Add(10,10)
+        sizer.Add((10,10))
         sizer.Add(self.emailText, 0, wxLEFT| wxRIGHT | wxTOP| wxEXPAND, 10)
         sizer.Add(self.emailBox, 0,  wxLEFT| wxRIGHT | wxBOTTOM | wxEXPAND, 10)
         sizer.Add(self.infoText, 0, wxLEFT | wxRIGHT | wxTOP |  wxEXPAND, 10)
