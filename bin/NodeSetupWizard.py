@@ -3,14 +3,13 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.43 2004-08-20 18:42:01 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.44 2004-09-07 20:00:08 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 
 import os
 import string
-import getopt
 import sys
 
 # Imports for user interface
@@ -101,13 +100,12 @@ class NodeSetupWizard(wxWizard):
     The node setup wizard guides users through the steps necessary for
     creating and testing a node configuration. 
     '''
-    def __init__(self, parent, debugMode, log, progress, app = None):
+    def __init__(self, parent, debugMode, progress, app = None):
         wxWizard.__init__(self, parent, 10,"Setup Node", wxNullBitmap)
         '''
         This class creates a wizard for node setup
         '''
         self.debugMode = debugMode
-        #self.log = log
         self.progress = progress
         self.step = 1
         self.SetIcon(icons.getAGIconIcon())
@@ -169,10 +167,9 @@ class NodeSetupWizard(wxWizard):
         '''
         This method is called when a page is changed in the wizard
         '''
-        dir = event.GetDirection()
+        direction = event.GetDirection()
         page = event.GetPage()
         forward = 1
-        backward = 0
               
         # Show users configuration in last page
         if isinstance(page.GetNext(), ConfigWindow):
@@ -188,7 +185,7 @@ class NodeSetupWizard(wxWizard):
                                     p.portCtrl.GetValue(), p.checkBox.GetValue())
 
         # Check to see if values are entered correctly
-        if dir == forward:
+        if direction == forward:
             if not page.GetValidity():
                 # Ignore event
                 event.Veto()
@@ -1064,7 +1061,7 @@ class NodeClient:
         Returns a list of video capture cards.
         '''
         self.cameraList = []
-        resorceList = []
+        resourceList = []
         mgrUri = "https://"+ machine + ":"+ port + "/ServiceManager"
       
         try:
@@ -1088,6 +1085,7 @@ class NodeClient:
         return self.node.GetConfigurations()
 
 def main():
+
     # Create the wxpython app
     wxapp = wxPySimpleApp()
 
@@ -1110,12 +1108,10 @@ def main():
     startupDialog = ProgressDialog("Starting Node Setup Wizard...", "Initializing AccessGrid Toolkit", 5)
     startupDialog.Show()
         
-    # Get the log
-    log = app.GetLog()
     debug = app.GetDebugLevel()
 
     startupDialog.UpdateOneStep("Initializing the Node Setup Wizard.")
-    nodeSetupWizard = NodeSetupWizard(None, debug, log, startupDialog, app)
+    nodeSetupWizard = NodeSetupWizard(None, debug, startupDialog, app)
        
 # The main block
 if __name__ == "__main__":
