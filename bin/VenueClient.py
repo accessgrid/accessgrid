@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.232 2003-10-14 04:28:17 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.233 2003-10-14 13:31:21 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1499,7 +1499,7 @@ if __name__ == "__main__":
 
     app = wxPySimpleApp()
 
-    dlg = ProgressDialog("Staring Venue Client...",
+    dlg = ProgressDialog("Starting Venue Client...",
                          "Loading Venue Client.", 13)
     dlg.Show()
     
