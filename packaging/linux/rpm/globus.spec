@@ -38,6 +38,7 @@ ${GPT_LOCATION}/sbin/gpt-verify
 sed -e 's,/usr/local/bin/perl,/usr/bin/perl,g' < %{buildroot}%{prefix}/bin/der_chop > %{buildroot}%{prefix}/bin/der_chop.sed
 mv -f %{buildroot}%{prefix}/bin/der_chop.sed %{buildroot}%{prefix}/bin/der_chop
 chmod 0755 %{buildroot}%{prefix}/bin/der_chop
+cp -f -p %{buildroot}%{prefix}/bin/der_chop %{buildroot}%{prefix}/bin/gcc32pthr/shared/der_chop
 
 %files
 %defattr(-,root,root)
