@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.55 2003-04-03 20:56:44 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.56 2003-04-04 22:43:08 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -648,7 +648,7 @@ class VenueListPanel(wxPanel):
         venue.connections = venue.connections.values()
         newUri = self.application.server.AddVenue(venue)
         venue.uri = newUri
-        
+
         if newUri:
             exits = venue.connections
             venue.connections = {}
@@ -660,13 +660,16 @@ class VenueListPanel(wxPanel):
             self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
 
     def ModifyVenue(self, venue):
-        if venueuri != None and venue != None:
+        if venue.uri != None:
             # ICKY HACK
+            connectionDict = venue.connections
             venue.connections = venue.connections.values()
             self.application.server.ModifyVenue(venue.uri, venue)
-            item = self.venuesList.FindString(venue)
+            item = self.venuesList.GetSelection()
             self.venuesList.SetClientData(item, venue)
-            self.venuesList.SetString(item, venue)
+            self.venuesList.SetString(item, venue.name)
+
+            venue.connections = connectionDict
             self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
 
         self.DisableStaticStreams()
@@ -1251,11 +1254,14 @@ class VenueParamFrame(wxDialog):
             self.address.Append(URL)
 
     def LoadLocalVenues(self):
+        self.__loadVenues(self.application.serverUrl)
+        """
         for venue in self.application.venueList:
             if(venue.name != self.title.GetValue()):
                 cd = ConnectionDescription(venue.name, venue.description,
                                            venue.uri)
                 self.venues.Append(cd.name, cd)
+        """
 
     def __loadVenues(self, URL):
         validVenue = false
@@ -1265,6 +1271,7 @@ class VenueParamFrame(wxDialog):
             wxLogDebug("Load venues from: %s " % URL)
             server = Client.Handle(URL)
             if(server.IsValid()):
+                venueList = []
                 vl = server.get_proxy().GetVenues()
                 for v in vl:
                     venueList.append(CreateVenueDescription(v))
@@ -1324,11 +1331,12 @@ class VenueParamFrame(wxDialog):
     def RemoveExit(self, event):
         index = self.exits.GetSelection()
         if index != -1:
-            venue = self.venues.GetClientData(index)
+            exit = self.venues.GetClientData(index)
             sv = self.application.currentVenue
-            if sv.connections.has_key(venue.uri):
-                del sv.connections[venue.uri]
-                self.exits.Delete(index)
+            if sv.connections.has_key(exit.uri):
+                del sv.connections[exit.uri]
+
+            self.exits.Delete(index)
                 
     def SetEncryption(self):
         toggled = self.encryptionPanel.encryptMediaButton.GetValue()
@@ -1663,7 +1671,11 @@ class ModifyVenueFrame(VenueParamFrame):
         wxBeginBusyCursor()
         if(VenueParamFrame.Validate(self)):
             if(self.staticAddressingPanel.Validate()):
+#FIXME - This is obviously an immediately-before-release fix;
+#        it needs to be resolved corectly
+                venueUri = self.venue.uri
                 self.Ok()
+                self.venue.uri = venueUri
                 try:
                     wxLogInfo("Modify venue")
                     self.parent.ModifyVenue(self.venue)
