@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.9 2003-09-15 15:09:56 judson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.10 2003-09-16 17:18:22 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,6 +34,9 @@ from AccessGrid.EventClient import EventClient
 from AccessGrid.Events import ConnectEvent, Event
 from AccessGrid import Platform
 from AccessGrid import DataStore
+
+class ViewerSoftwareNotInstalled(Exception):
+    pass
 
 
 # This function registers the application with the users environment
@@ -92,6 +95,15 @@ class PowerPointViewer:
         self.win = None
 
         self.pptAlreadyOpen = 0
+
+        from win32com.client import gencache
+        import pythoncom
+        pythoncom.CoInitialize()
+        try:
+            gencache.EnsureModule('{91493440-5A91-11CF-8700-00AA0060263B}', 0, 2, 6)
+        except:
+            raise ViewerSoftwareNotInstalled()
+
     
     def Start(self):
         """
@@ -626,11 +638,13 @@ class SharedPresentation:
         # This method loops, processing events that it gets from the 
         # eventQueue.
 
-        import pythoncom
-        pythoncom.CoInitialize()
+        try:
+            self.viewer = defaultViewer()
+            self.viewer.Start()
+        except ViewerSoftwareNotInstalled:
+            print "The necessary viewer software is not installed; exiting"
+            self.eventQueue.put([SharedPresEvent.LOCAL_QUIT, None])
 
-        self.viewer = defaultViewer()
-        self.viewer.Start()
 
         # Loop, processing events from the event queue
         self.running = 1
