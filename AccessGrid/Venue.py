@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.43 2003-02-21 17:37:58 olson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.44 2003-02-21 17:52:40 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -245,7 +245,7 @@ class Venue(ServiceBase.ServiceBase):
         privateId = event
         now = time.time()
         self.clients[privateId] = now
-        print "Got Client Heartbeat for %s at %s." % (event, now)
+#        print "Got Client Heartbeat for %s at %s." % (event, now)
     
     def Shutdown(self):
         """

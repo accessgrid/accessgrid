@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextService.py,v 1.6 2003-02-21 16:10:29 judson Exp $
+# RCS-ID:      $Id: TextService.py,v 1.7 2003-02-21 17:52:40 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -62,10 +62,11 @@ class ConnectionHandler(GSIRequestHandler):
                 self.server.Distribute(venue, event)
             except:
                 print "ConnectionHandler.handle: Client disconnected!"
-                print "Exception: ", formatExceptionInfo()
+#                print "Exception: ", formatExceptionInfo()
                 self.running = 0
-                if self in self.server.connections[venue]:
-                    self.server.connections[venue].remove(self)  
+                if venue in self.server.connectsion.keys():
+                    if self in self.server.connections[venue]:
+                        self.server.connections[venue].remove(self)  
                                          
 class TextService(ThreadingGSITCPSocketServer, Thread):
     """

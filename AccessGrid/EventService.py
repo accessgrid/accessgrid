@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.3 2003-02-21 16:10:29 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.4 2003-02-21 17:52:40 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -59,8 +59,9 @@ class ConnectionHandler(StreamRequestHandler):
             except:
                 print "Client disconnected!"
                 self.running = 0
-                if self in self.server.connections[event.venue]:
-                    self.server.connections[event.venue].remove(self)
+                if event.venue in self.server.connections.keys():
+                    if self in self.server.connections[event.venue]:
+                        self.server.connections[event.venue].remove(self)
                 
 class EventService(ThreadingGSITCPSocketServer, Thread):
     """
