@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.47 2004-04-13 21:45:06 olson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.48 2004-04-14 23:21:34 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.47 2004-04-13 21:45:06 olson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.48 2004-04-14 23:21:34 eolson Exp $"
 
 # Standard imports
 import os
@@ -88,7 +88,7 @@ class AppBase:
 
     # This method implements the initialization strategy outlined
     # in AGEP-0112
-    def Initialize(self, name=None):
+    def Initialize(self, name=None, args=None):
        """
        This method sets up everything for reasonable execution.
        At the first sign of any problems it raises exceptions and exits.
@@ -96,7 +96,7 @@ class AppBase:
        self.name = name
 
        # 1. Process Command Line Arguments
-       argvResult = self.ProcessArgs()
+       argvResult = self.ProcessArgs(args=args)
 
        # 2. Load the Toolkit wide configuration.
        try:
@@ -137,13 +137,16 @@ class AppBase:
        
        return argvResult
 
-    def ProcessArgs(self):
+    def ProcessArgs(self, args=None):
        """
        Process toolkit wide standard arguments. Then return the modified
        argv so the app can choose to parse more if it requires that.
        """
        
-       (self.options, args) = self.parser.parse_args()
+       if args == None:
+           (self.options, ret_args) = self.parser.parse_args()
+       else:
+           (self.options, ret_args) = self.parser.parse_args(args=args)
 
        if self.options.version:
            print "Access Grid Toolkit Version: ", GetVersion()
@@ -154,7 +157,7 @@ class AppBase:
                                            Log.GetDefaultLoggers())
            levelHandler.SetLevel(Log.DEBUG)
            
-       return args
+       return ret_args
 
     def AddCmdLineOption(self, option):
         self.parser.add_option(option)
@@ -274,12 +277,12 @@ class Application(AppBase):
 
     # This method implements the initialization strategy outlined
     # in AGEP-0112
-    def Initialize(self, name=None):
+    def Initialize(self, name=None, args=None):
        """
        This method sets up everything for reasonable execution.
        At the first sign of any problems it raises exceptions and exits.
        """
-       argvResult = AppBase.Initialize(self, name)
+       argvResult = AppBase.Initialize(self, name, args=args)
        
        # 5. Initialize Certificate Management
        # This has to be done by sub-classes
@@ -331,8 +334,8 @@ class CmdlineApplication(AppBase):
         CmdlineApplication.theAppInstance = self
         self.certMgrUI = CertificateManager.CertificateManagerUserInterface()
 
-    def Initialize(self, name=None):
-        argvResult = AppBase.Initialize(self, name)
+    def Initialize(self, name=None, args=None):
+        argvResult = AppBase.Initialize(self, name, args=args)
         
         # 5. Initialize Certificate Management
         # This has to be done by sub-classes
@@ -476,12 +479,12 @@ class Service(AppBase):
 
     # This method implements the initialization strategy outlined
     # in AGEP-0112
-    def Initialize(self, name=None):
+    def Initialize(self, name=None, args=None):
         """
         This method sets up everything for reasonable execution.
         At the first sign of any problems it raises exceptions and exits.
         """
-        argvResult = AppBase.Initialize(self, name)
+        argvResult = AppBase.Initialize(self, name, args=args)
 
         self.log.info("Service init: have profile %s", self.options.profile)
 

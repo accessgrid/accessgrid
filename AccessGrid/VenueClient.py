@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.161 2004-04-08 20:56:03 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.162 2004-04-14 23:21:34 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.161 2004-04-08 20:56:03 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.162 2004-04-14 23:21:34 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -23,7 +23,7 @@ from pyGlobus.io import GSITCPSocketException
 
 from AccessGrid import Log
 from AccessGrid import Toolkit
-from AccessGrid.Toolkit import Application
+from AccessGrid.Toolkit import Application, Service
 from AccessGrid import DataStore
 from AccessGrid import Platform
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
@@ -285,9 +285,18 @@ class VenueClient:
         if(self.profile != None):
             self.profile.venueClientURL = uri
             log.debug("__StartWebService: venueclient: %s", uri)
-                      
 
         if pnode:
+            # Initialize Toolkit.Service without VenueClient 
+            #   command-line options.
+            args = sys.argv[1:]
+            serviceArgs = []
+            # Preserve debug flag
+            if "-d" or "--debug" in args:
+                serviceArgs.append("--debug")
+
+            Service.instance().Initialize("VenueClientServices", args=serviceArgs)
+
             from AccessGrid.AGServiceManager import AGServiceManager
             from AccessGrid.AGServiceManager import AGServiceManagerI
             sm = AGServiceManager(self.server)
