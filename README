@@ -1,32 +1,151 @@
 
-The Access Grid Toolkit (AGTk)
+		    The Access Grid Toolkit (AGTk)
+			
+			       2003-2-7
+				
+	    http://www.mcs.anl.gov/fl/research/accessgrid
+	    
+		       The Access Grid Project
 
-http://www.accessgrid.org/
-http://www.mcs.anl.gov/fl/research/accessgrid
+		      http://www.accessgrid.org/
 
----------------------------------------
+----------------------------------------------------------------------
 
-Overview of the Access Grid Toolkit
+OVERVIEW OF THE ACCESS GRID TOOLKIT
 
-Obtaining the toolkit
+The Access Grid Toolkit (AGTk) provides users, developers, and service
+providers with the software components required to explore next
+generation collaborative environments.
 
-Documentation and Tutorials
+Please review the license on the software found in the file COPYING.txt.
 
-Mailing List
+. For Users
 
-Building and Installing the Access Grid Toolkit
+Users of the Access Grid seeking to collaborate can share audio, video
+and text with the basic toolkit. The experience is much like
+traditional videoconferencing except that it's multipoint, multistream
+video, with hands-free, echo-free, full-duplex audio. Additionally,
+the basic AGTk provides data sharing mechanisms for users to either
+put data into the Virtual Venue, or carry it around with them on their
+Workspace Dock. All of the audio, video, text, and file transfer are
+done via standards based GSI/OpenSSL communication.
 
-Prequisite Software
+. For Developers
 
-- Node Management
-. Globus 2.0
-. pyGlobus
-. vic
-. rat
-. Intergroup Chat (if we use it)
-.     implies Java !
+Developers wishing to contribute to the Access Grid Project or the
+Access Grid Toolkit should get familiar with the source code and the
+tools (pyGlobus, GT2.X), and then decide what part of the AGTk to work
+on. Information on where to contribute to the development can be found
+at http://www.mcs.anl.gov/fl/research/accessgrid/developers/areas.htm.
 
-Acknowledgements
+. For Service Providers
+
+Individuals wishing to provide AGTk Services, should first host some
+Virtual Venues through a Virtual Venue Server. Information on how to
+run a Virtual Venue Server can be found in the INSTALL file.
+
+OBTAINING THE TOOLKIT
+
+Downloading the latest snapshot of the toolkit from
+http://www.mcs.anl.gov/fl/research/accessgrid/developers/downloads.html
+
+CVS Access is available, information can be found at
+http://www.mcs.anl.gov/fl/research/accessgrid/developers/cvs/index.html
+
+INSTALLATION
+
+Please see the INSTALL file.
+
+BUG REPORTING
+
+Please reports bugs using the Bugzilla interface found at
+http://bugzilla.mcs.anl.gov/accessgrid.
+
+DOCUMENTATION
+
+In addition to the included documentation, more documentation can be
+found on the Futures Laboratory Access Grid Toolkit web pages
+(http://www.mcs.anl.gov/fl/research/accessgrid/developers/docs/index.html).
+
+MAILING LISTS
+
+There are a set of mailing lists for discussing various aspects of the
+AGTk, information about these lists, including how to join them can be
+found at http://www.mcs.anl.gov/fl/research/accessgrid/about/maillist.html.
+
+ACKNOWLEDGEMENTS
+
+We would like to acknowledge all of those who have helped make the
+AGTk by either providing requirements, reviewing documents, working on
+software, or providing operational support, training and enthusiasm
+since the beginning of the Access Grid Project in the Winter/Spring of
+1998/1999.  If anybody is missing please, Please, PLEASE, let us
+know. All those we'd like to acknowledge are listed here,
+
+Groups and Institutions
+=======================
+
+- The Department of Energy's Office of Science
+      http://www.science.doe.gov/
+
+- The National Science Foundation
+      http://www.nsf.gov/
+
+- The National Center for Supercomputing Applications  
+      http://www.ncsa.uiuc.edu/
+
+- Microsoft Research
+      http://www.research.microsoft.com/
+
+- The Globus Project
+      http://www.globus.org/
+
+- The pyGlobus CoG Project
+      http://www-itg.lbl.gov/gtg/projects/pyGlobus/
+- The European Access Grid Project
+      http://euroag.accessgrid.org/
+
+- The Asia Pacific Access Grid Project
+      http://apag.accessgrid.org/
 
 
+Individuals
+===========
 
+- Adam Koniak
+- Allan Spale
+- Andrew Swan 
+- Barbara A. Kucera
+- David Bernholdt
+- Bob Riddle 
+- Brett D. Ellis
+- Brian Corrie
+- Chris Greenhalgh
+- Christoph Willing
+- Cindy Sievers
+- Colin Perkins
+- Deb Agarwal
+- Don Morton
+- Gurcharan S. Khanna
+- Heisen, Andrew
+- Hiroyuki Komatsu
+- Impey, Roger
+- Jackie Kern
+- Jennifer Teig von Hoffman
+- John Shalf
+- Kabe Vanderbaan
+- Lawrence A. Rowe
+- Leslie Southern
+- Luc Renambot
+- Markus Buchhorn
+- Matthew Wolf
+- Michael Daw
+- Osland, CD (Chris) 
+- Paul B. Huang
+- Randy Groves
+- Robert McCown
+- Stephen P. Booth
+- Shawn Davis
+- shudo@ni.aist.go.jp
+- Tom Coffin
+- Wesley Miaw

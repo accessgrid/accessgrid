@@ -1,0 +1,31 @@
+============================================================================
+		  The Access Grid Toolkit TODO List
+============================================================================
+
+Core Toolkit
+     - Move to GT 2.2
+     - Move to the latest pyGlobus
+       - Native Grid Proxy Init
+
+     - Move to WSDL/Schemas for language interop
+     - Build the Services Toolkit
+       
+Basic Services
+     - Bridging
+     - Monitoring
+
+Extended Services
+     - Tunneling
+     - Display Layout
+     - Network Fault Tolerance 
+
+     - High Resolution Video
+     - Stereo Audio
+
+Application Services
+     - Build Service Interface to Voyager
+
+Network Services
+     - Audio Transcoder
+     - Video Selector
+     - Transcription
