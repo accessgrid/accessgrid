@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.43 2004-02-24 21:34:51 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.44 2004-03-04 15:31:14 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.43 2004-02-24 21:34:51 judson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.44 2004-03-04 15:31:14 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -22,6 +22,7 @@ from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.Types import Capability
 
+from AccessGrid.ClientProfile import ClientProfile
 class ObjectDescription:
     """
     An object description has four parts:
@@ -163,30 +164,6 @@ class DataDescription(ObjectDescription):
         string += 'lastModified: %s\n' % self.GetLastModified()
 
         return string
-
-def CreateDataDescription(dataDescStruct):
-    """
-    """
-    dd = DataDescription(dataDescStruct.name)
-    dd.SetId(dataDescStruct.id)
-    dd.SetName(dataDescStruct.name)
-    dd.SetDescription(dataDescStruct.description)
-    dd.SetURI(dataDescStruct.uri)
-    if dataDescStruct.type == '':
-        dd.SetType(None)
-    else:
-        dd.SetType(dataDescStruct.type)
-    dd.SetStatus(dataDescStruct.status)
-    dd.SetSize(dataDescStruct.size)
-    dd.SetChecksum(dataDescStruct.checksum)
-    dd.SetOwner(dataDescStruct.owner)
-    try:
-        dd.SetLastModified(dataDescStruct.lastModified)
-    except:
-        # This is an old description, has no lastModified parameter
-        pass
-    
-    return dd
 
 class ConnectionDescription(ObjectDescription):
     """
@@ -358,14 +335,163 @@ class AGServiceDescription:
         self.serviceManagerUri = serviceManagerUri
         self.servicePackageUri = servicePackageUri
     
-def CreateStreamDescription( streamDescStruct ):
-    if streamDescStruct.location.type == MulticastNetworkLocation.TYPE:
-        networkLocation = MulticastNetworkLocation( streamDescStruct.location.host,
-                                                    streamDescStruct.location.port,
-                                                    streamDescStruct.location.ttl )
+class VenueState:
+    def __init__( self, uniqueId, name, description, uri, connections,
+                  clients, data, eventLocation, textLocation, applications,
+                  services, backupServer=None ):
+        self.uniqueId = uniqueId
+        self.name = name
+        self.description = description
+        self.uri = uri
+        self.eventLocation = eventLocation
+        self.textLocation = textLocation
+        self.services = services
+        self.backupServer = backupServer
+        
+        self.connections = dict()
+        self.clients = dict()
+        self.data = dict()
+        self.clients = dict()
+        self.applications = dict()
+        self.services = dict()
+        
+        for connection in connections:
+            self.connections[connection.uri] = connection
+        for client in clients:
+            self.clients[client.publicId] = client
+        for datum in data:
+            self.data[datum.id] = datum
+        for app in applications:
+            self.applications[app.uri] = app
+        for service in services:
+            self.services[service.id] = service
+    def SetUniqueId(self, uniqueId):
+        self.uniqueId = uniqueId
+    def GetUniqueId(self):
+        return self.uniqueId
+    def SetDescription( self, description ):
+        self.description = description
+    def GetDescription( self ):
+        return self.description
+    def SetName( self, name ):
+        self.name = name
+    def GetName( self ):
+        return self.name
+    def SetUri( self, uri ):
+        self.uri = uri
+    def GetUri( self ):
+        return self.uri
+    def AddUser( self, userProfile ):
+        self.clients[userProfile.publicId] = userProfile
+    def RemoveUser( self, userProfile ):
+        if userProfile.publicId in self.clients.keys():
+            del self.clients[userProfile.publicId]
+    def ModifyUser( self, userProfile ):
+        if userProfile.publicId in self.clients.keys():
+            self.clients[userProfile.publicId] = userProfile
+    def GetUsers( self ):
+        return self.clients.values()
+    def AddConnection( self, connectionDescription ):
+        self.connections[connectionDescription.uri] = connectionDescription
+    def RemoveConnection( self, connectionDescription ):
+        del self.connections[connectionDescription.uri]
+    def SetConnections( self, connectionList ):
+        for connection in connectionList:
+            self.connections[connection.uri] = connection
+    def AddData( self, dataDescription ):
+        self.data[dataDescription.id] = dataDescription
+    def UpdateData( self, dataDescription ):
+        self.data[dataDescription.id] = dataDescription
+    def RemoveData( self, dataDescription ):
+        del self.data[dataDescription.id]
+    def AddService( self, serviceDescription ):
+        self.services[serviceDescription.id] = serviceDescription
+    def UpdateService(self, serviceDescription):
+        self.services[serviceDescription.id] = serviceDescription
+    def RemoveService( self, serviceDescription ):
+        del self.services[serviceDescription.id]  
+    def AddApplication( self, applicationDescription ):
+        self.applications[applicationDescription.uri] = applicationDescription
+    def UpdateApplication(self, applicationDescription):
+        self.applications[applicationDescription.uri] = applicationDescription
+    def RemoveApplication( self, applicationDescription ):
+        self.applications[applicationDescription.uri] = applicationDescription
+    def SetEventLocation( self, eventLocation ):
+        self.eventLocation = eventLocation
+    def GetEventLocation( self ):
+        return self.eventLocation
+    def SetTextLocation( self, textLocation ):
+        self.textLocation = textLocation
+    def GetTextLocation( self ):
+        return self.textLocation
+
+#
+#
+#
+#
+#
+def CreateClientProfile( clientProfileStruct ):
+    """
+    Create a client profile from a SOAP struct
+    (this function should be removed when we have 
+    WSDL support)
+    """
+    from AccessGrid.Types import Capability
+
+    clientProfile = ClientProfile()
+
+    clientProfile.distinguishedName = clientProfileStruct.distinguishedName
+    clientProfile.email = clientProfileStruct.email
+    clientProfile.homeVenue = clientProfileStruct.homeVenue
+    clientProfile.icon = clientProfileStruct.icon
+    clientProfile.location = clientProfileStruct.location
+    clientProfile.name = clientProfileStruct.name
+    clientProfile.phoneNumber = clientProfileStruct.phoneNumber
+    clientProfile.privateId = clientProfileStruct.privateId
+    clientProfile.profileFile = clientProfileStruct.profileFile
+    clientProfile.profileType = clientProfileStruct.profileType
+    clientProfile.publicId = clientProfileStruct.publicId
+    clientProfile.techSupportInfo = clientProfileStruct.techSupportInfo
+    clientProfile.venueClientURL = clientProfileStruct.venueClientURL
+
+    # should be converting capabilities here
+    clientProfile.capabilities = clientProfileStruct.capabilities
+
+    return clientProfile
+
+def CreateDataDescription(dataDescStruct):
+    """
+    """
+    dd = DataDescription(dataDescStruct.name)
+    dd.SetId(dataDescStruct.id)
+    dd.SetName(dataDescStruct.name)
+    dd.SetDescription(dataDescStruct.description)
+    dd.SetURI(dataDescStruct.uri)
+    if dataDescStruct.type == '':
+        dd.SetType(None)
     else:
-        networkLocation = UnicastNetworkLocation( streamDescStruct.location.host,
-                                                    streamDescStruct.location.port)
+        dd.SetType(dataDescStruct.type)
+    dd.SetStatus(dataDescStruct.status)
+    dd.SetSize(dataDescStruct.size)
+    dd.SetChecksum(dataDescStruct.checksum)
+    dd.SetOwner(dataDescStruct.owner)
+    try:
+        dd.SetLastModified(dataDescStruct.lastModified)
+    except:
+        # This is an old description, has no lastModified parameter
+        pass
+    
+    return dd
+
+def CreateStreamDescription( streamDescStruct ):
+    location = streamDescStruct.location
+    if streamDescStruct.location.type == MulticastNetworkLocation.TYPE:
+        networkLocation = MulticastNetworkLocation( location.host,
+                                                    location.port,
+                                                    location.ttl )
+    else:
+        networkLocation = UnicastNetworkLocation( location.host,
+                                                  location.port)
     cap = Capability( streamDescStruct.capability.role, 
                       streamDescStruct.capability.type )
     streamDescription = StreamDescription( streamDescStruct.name, 
@@ -397,6 +523,13 @@ def CreateApplicationDescription(appDescStruct):
 
     return appDescription
 
+def CreateConnectionDescription(connDescStruct):
+    connDesc = ConnectionDescription(connDescStruct.name,
+                                     connDescStruct.description,
+                                     connDescStruct.uri,
+                                     connDescStruct.id)
+    return connDesc
+
 def CreateVenueDescription(venueDescStruct):
     clist = []
     for c in venueDescStruct.connections:
@@ -417,3 +550,39 @@ def CreateVenueDescription(venueDescStruct):
     
     return vdesc
 
+def CreateVenueState(venueStateStruct):
+    connectionList = list()
+    clientList = list()
+    dataList = list()
+    applicationList = list()
+    serviceList = list()
+    
+    for conn in venueStateStruct.connections:
+        connectionList.append(CreateConnectionDescription(conn))
+
+    for client in venueStateStruct.clients:
+        clientList.append( CreateClientProfile(client) )
+
+    for data in venueStateStruct.data:
+        dataList.append( CreateDataDescription(data) )
+        
+    for application in venueStateStruct.applications:
+        applicationList.append(CreateApplicationDescription(application))
+
+    for service in venueStateStruct.services:
+        serviceList.append(CreateServiceDescription(service))
+
+    # I hate retrofitted code.
+    if not hasattr(venueStateStruct, 'backupServer'):
+        venueStateStruct.backupServer = None
+        
+    venueState = VenueState(venueStateStruct.uniqueId,
+                            venueStateStruct.name,
+                            venueStateStruct.description,
+                            venueStateStruct.uri,
+                            connectionList, clientList, dataList,
+                            venueStateStruct.eventLocation,
+                            venueStateStruct.textLocation,
+                            applicationList, serviceList,
+                            venueStateStruct.backupServer)    
+    return venueState
