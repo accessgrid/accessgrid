@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.22 2003-04-10 18:08:11 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.23 2003-04-17 16:04:06 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,6 @@ from AccessGrid.Types import Capability
 class ObjectDescription:
     """
     An object description has four parts:
-        id : string
         name : string
         description : string
         uri : uri (string)
@@ -155,11 +154,11 @@ class VenueDescription(ObjectDescription):
                  encryptionInfo=(0,''), connectionList=[], staticStreams=[]):
         ObjectDescription.__init__(self, name, description, None)
 
-        self.streams = ()
+        self.streams = []
         self.connections = {}
         self.encryptMedia = 0
         self.encryptionKey = None
-        self.administrators = ()
+        self.administrators = []
         
         self.encryptMedia = encryptionInfo[0]
         
@@ -226,6 +225,25 @@ class ServiceDescription(ObjectDescription):
     """
     def __init__(self, name, description, uri, mimetype):   
         ObjectDescription.__init__(self, name, description, uri)   
+        self.mimeType = mimetype   
+    
+    def SetMimeType(self, mimetype):   
+        self.mimeType = mimetype   
+            
+    def GetMimeType(self):   
+        return self.mimeType   
+
+class ApplicationDescription(ObjectDescription):
+    """
+    The Service Description is the Virtual Venue resident information
+    about services users can interact with. This is an extension of
+    the Object Description that adds a mimeType which should be a
+    standard mime-type.
+    """
+    def __init__(self, id, name, description, uri, mimetype):   
+        ObjectDescription.__init__(self, name, description, uri)
+        # We override the generated id
+        self.id = id
         self.mimeType = mimetype   
     
     def SetMimeType(self, mimetype):   
