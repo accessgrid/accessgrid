@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.30 2003-05-12 20:13:53 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.31 2003-05-17 18:01:55 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,10 +14,12 @@ import string
 from AccessGrid.GUID import GUID
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.Types import Capability
+from AccessGrid.Utilities import PathFromURL
 
 class ObjectDescription:
     """
     An object description has four parts:
+        id : string
         name : string
         description : string
         uri : uri (string)
@@ -40,6 +42,7 @@ class ObjectDescription:
             string += "description : %s\n" % self.description
         if self.uri != None:
             string += "uri : %s\n" % self.uri
+#            string += "uri : %s\n" % PathFromURL(self.uri)
 
         return string
 
@@ -243,6 +246,12 @@ class ServiceDescription(ObjectDescription):
     def GetMimeType(self):   
         return self.mimeType   
 
+    def AsINIBlock(self):
+        string = ObjectDescription.AsINIBlock(self)
+        string += "mimeType: %s" % self.mimeType
+
+        return string
+    
 class ApplicationDescription(ObjectDescription):
     """
     The Service Description is the Virtual Venue resident information
@@ -262,6 +271,12 @@ class ApplicationDescription(ObjectDescription):
     def GetMimeType(self):   
         return self.mimeType   
 
+    def AsINIBlock(self):
+        string = ObjectDescription.AsINIBlock(self)
+        string += "mimeType : %s\n" % self.mimeType
+        
+        return string
+        
 class StreamDescription( ObjectDescription ):
    """A Stream Description represents a stream within a venue"""
    def __init__( self, name=None, 
