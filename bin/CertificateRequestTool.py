@@ -7,14 +7,14 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: CertificateRequestTool.py,v 1.5 2004-03-15 20:07:02 judson Exp $
+# RCS_ID:      $Id: CertificateRequestTool.py,v 1.6 2004-08-04 19:47:54 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the tool used to get certificates.
 """
-__revision__ = "$Id: CertificateRequestTool.py,v 1.5 2004-03-15 20:07:02 judson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.6 2004-08-04 19:47:54 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -65,7 +65,7 @@ def Main():
 
     # This will not work if we don't have any certificates
     try:
-        args = app.Initialize()
+        args = app.Initialize('CertificateRequestTool')
     except:
         # Doesn't matter if we have certificates or proxies
         # we just want to request a new certificate
