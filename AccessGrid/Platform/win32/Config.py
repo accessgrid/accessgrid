@@ -3,19 +3,19 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.41 2004-05-13 20:15:02 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.42 2004-05-14 16:12:00 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.41 2004-05-13 20:15:02 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.42 2004-05-14 16:12:00 lefvert Exp $"
 
 import os
 import sys
 import socket
 import re
-import shutil
+
 
 from pyGlobus import utilc
 
@@ -518,61 +518,10 @@ class UserConfig(AccessGrid.Config.UserConfig):
         except:
             log.warn("No Service Dir!")
 
+        # Move old config files to new location.
         if self.initIfNeeded:
             self._Migrate()
-
-    def _CopyFile(self, oldFile, newFile):
-        '''
-        Move oldFile to newFile if newFile none existent.
-        '''
-        # Never overwrite new configs
-        if not os.path.exists(newFile) and os.path.exists(oldFile):
-            log.debug('copy %s to %s' %(oldFile, newFile))
-            shutil.copyfile(oldFile, newFile)
-               
-
-    def _CopyDir(self, oldDir, newDir):
-        '''
-        Move oldDir to newDir if newDir none existent.
-        '''
-        # Never overwrite new configs
-        if not os.path.exists(newDir) and os.path.exists(oldDir):
-            log.debug('copy %s to %s' %(oldDir, newDir))
-            shutil.copytree(oldDir, newDir)
-
-    def _Migrate(self):
-        '''
-        Make sure old info gets moved to new location.
-        '''
-        oldPath = os.path.join(self.baseDir, "profile")
-        newPath = os.path.join(self.configDir, "profile")
-        self._CopyFile(oldPath, newPath)
-
-        oldPath = os.path.join(self.baseDir, "myVenues.txt")
-        newPath = os.path.join(self.configDir, "myVenues.txt")
-        self._CopyFile(oldPath, newPath)
-        
-        
-        oldPath = os.path.join(self.baseDir, "certRepo")
-        newPath = os.path.join(self.configDir, "certRepo")
-        self._CopyDir(oldPath, newPath)
-
-        oldPath = os.path.join(self.baseDir, "trustedCACerts")
-        newPath = os.path.join(self.configDir, "trustedCACerts")
-        self._CopyDir(oldPath, newPath)
-        
-        oldPath = os.path.join(self.baseDir, "personalDataStore")
-        newPath = os.path.join(self.configDir, "personalDataStore")
-        self._CopyDir(oldPath, newPath)
-        
-        oldPath = os.path.join(self.baseDir, "profileCache")
-        newPath = os.path.join(self.configDir, "profileCache")
-        self._CopyDir(oldPath, newPath)
-        
-        oldPath = os.path.join(self.baseDir, "nodeConfig")
-        newPath = os.path.join(self.configDir, "nodeConfig")
-        self._CopyDir(oldPath, newPath)
-
+   
     def GetBaseDir(self):
         global AGTK_USER
        
