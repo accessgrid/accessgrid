@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.9 2004-03-16 22:31:03 eolson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.10 2004-03-17 16:45:46 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,13 +14,14 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.9 2004-03-16 22:31:03 eolson Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.10 2004-03-17 16:45:46 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
 import os
 import os.path
 import popen2
+import re
 
 from pyGlobus import security, io
 
@@ -393,6 +394,63 @@ def CreateGlobusProxyProgrammatic_GT24(passphrase, certFile, keyFile, certDir,
     outFile - filename for generated proxy certificate
     bits - keysize of generated proxy certificate
     hours - lifetime (in hours) of generated proxy certificate
+
+    Errors we might see:
+
+    bad password:
+
+    pyGlobus.security.GSIException: globus_gsi_credential.c:1092: globus_gsi_cred_read_key: Error reading user credential: Can't read credential's private key from PEM
+
+    Missing CA cert or expired cert. Would be nice to be able to differentiate these.
+
+    pyGlobus.security.GSIException: globus_gsi_cred_handle.c:1518: globus_gsi_cred_verify_proxy_cert_chain: Error verifying credential: Failed to verify credential
+
+
+    The corresponding error messages from grid-proxy-init from globus are as follows. Missing ca cert:
+
+    grid_proxy_init.c:947:
+    globus_gsi_cred_handle.c:1518: globus_gsi_cred_verify_proxy_cert_chain: Error verifying credential: Failed to verify credential
+    OpenSSL Error: (null):0: in library: (null), function (null): (null)
+    globus_gsi_callback.c:283: globus_i_gsi_callback_create_proxy_callback: Could not verify credential
+    globus_gsi_callback.c:443: globus_i_gsi_callback_cred_verify: Could not verify credential: unable to get issuer certificate
+
+    Expired cert:
+
+    grid_proxy_init.c:947:
+    globus_gsi_cred_handle.c:1518: globus_gsi_cred_verify_proxy_cert_chain: Error verifying credential: Failed to verify credential
+    OpenSSL Error: (null):0: in library: (null), function (null): (null)
+    globus_gsi_callback.c:283: globus_i_gsi_callback_create_proxy_callback: Could not verify credential
+    globus_gsi_callback.c:436: globus_i_gsi_callback_cred_verify: The certificate has expired: Credential with subject: /C=US/O=Globus/CN=Globus Certification Authority has expired.
+
+
+    Missing signing policy:
+
+    globus_gsi_cred_handle.c:1518: globus_gsi_cred_verify_proxy_cert_chain: Error verifying credential: Failed to verify credential
+    OpenSSL Error: (null):0: in library: (null), function (null): (null)
+    globus_gsi_callback.c:283: globus_i_gsi_callback_create_proxy_callback: Could not verify credential
+    globus_gsi_callback.c:490: globus_i_gsi_callback_cred_verify: Could not verify credential
+    globus_gsi_callback.c:850: globus_i_gsi_callback_check_signing_policy: Error with signing policy
+    globus_gsi_callback.c:927: globus_i_gsi_callback_check_gaa_auth: Error with signing policy: The signing policy file doesn't exist or can't be read
+
+    Can't open key:
+
+    globus_gsi_credential.c:1066: globus_gsi_cred_read_key: Error reading user credential: Can't open bio stream for key file: ~/.tcshrc for reading
+    OpenSSL Error: bss_file.c:106: in library: BIO routines, function BIO_new_file: system lib
+    OpenSSL Error: bss_file.c:104: in library: system library, function fopen: No such file or directory
+    OpenSSL Error: pem_lib.c:666: in library: PEM routines, function PEM_read_bio: no start line
+
+    Key file isn't actually a key:
+    
+    globus_gsi_credential.c:1092: globus_gsi_cred_read_key: Error reading user credential: Can't read credential's private key from PEM
+    OpenSSL Error: pem_lib.c:666: in library: PEM routines, function PEM_read_bio: no start line
+    OpenSSL Error: pem_lib.c:666: in library: PEM routines, function PEM_read_bio: no start line
+
+
+    Cert file isn't actually a cert:
+    globus_gsi_credential.c:1169: globus_gsi_cred_read_cert: Error reading user credential: Can't read credential cert from bio stream
+    OpenSSL Error: pem_lib.c:666: in library: PEM routines, function PEM_read_bio: no start line
+
+
     """
 
     try:
@@ -400,6 +458,7 @@ def CreateGlobusProxyProgrammatic_GT24(passphrase, certFile, keyFile, certDir,
         def cb(msg):
             print "gpi debug: ", msg
             
+        print "call gpi"
         security.grid_proxy_init(verbose = 1,
                                  verify = 1,
                                  certDir = certDir,
@@ -410,14 +469,64 @@ def CreateGlobusProxyProgrammatic_GT24(passphrase, certFile, keyFile, certDir,
                                  lifetime = hours * 60,
                                  passphrase = passphrase,
                                  debugCB = cb)
+        print "gpi returns"
 
     except security.GSIException, e:
-        str = e[0]
 
-        if str.find("Can't read credential's private key") >= 0:
-            raise InvalidPassphraseException(str)
-        else:
-            raise GridProxyInitError(str)
+        print "Got exception ", e
+        
+        #
+        # We failed. Rifle through the exception data to determine why the failure
+        # happened.
+        #
+        # error_types is a list of tuples (regexp, message, exception-class) that attempts
+        # to match the string of the exception with the high-level error that
+        # caused it.
+        #
+
+        error_types = [
+            ("Error reading user credential: Can't read credential's private key from PEM.*bad decrypt",
+             "Invalid passphrase",
+             InvalidPassphraseException),
+            ("Failed to verify credential.*unable to get issuer certificate",
+             "Missing CA Certificate",
+             GridProxyInitError),
+            ("Credential with subject:\s+(.*)\s+has expired",
+             "Expired certificate for %s",
+             GridProxyInitError),
+            ("Error with signing policy: The signing policy file doesn't exist or can't be read",
+             "Missing signing policy",
+             GridProxyInitError),
+            ("Can't open bio stream for key file:\s+(.*)\s+for reading.",
+             "Missing key file %s",
+             GridProxyInitError),
+            ("Can't read credential's private key from PEM.*no start line",
+             "Invalid key file",
+             GridProxyInitError),
+            ("Can't read credential private cert from bio stream*no start line",
+             "Invalid certificate file",
+             GridProxyInitError),
+            ]
+
+        err_short_string = e[0]
+        err_list = e[1]
+
+        err_str = "\n".join(err_list)
+        print err_str
+        
+        error_match = None
+
+        err_args = []
+
+        for etype in error_types:
+            m = re.search(etype[0], err_str, re.DOTALL)
+
+            if m:
+                print "Error matched! ", etype[1], m.groups()
+                raise etype[2](etype[1] % m.groups())
+
+        print "Did not match error"
+        raise GridProxyInitError
 
     except Exception, e:
         print "Raised exception ", e
@@ -443,5 +552,18 @@ if haveOldGlobus:
     IsGlobusProxy = IsGlobusProxy_Generic
 
 else:
-    CreateGlobusProxy = CreateGlobusProxyProgrammatic_GT24
-    IsGlobusProxy = IsGlobusProxy_GT24
+    #
+    # We're using a GT24 pyglobus; see if we have the very latest changes.
+    #
+
+    from pyGlobus import gsic
+    if hasattr(gsic, "grid_proxy_init2"):
+        print 'use new globus'
+        CreateGlobusProxy = CreateGlobusProxyProgrammatic_GT24
+        IsGlobusProxy = IsGlobusProxy_GT24
+    else:
+        print 'use old globus'
+        CreateGlobusProxy = CreateGlobusProxyGPI
+        IsGlobusProxy = IsGlobusProxy_Generic
+        
+
