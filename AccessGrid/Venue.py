@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.61 2003-03-25 15:32:48 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.62 2003-03-25 17:00:01 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -391,9 +391,34 @@ class Venue(ServiceBase.ServiceBase):
         return None
 
     # Management methods
+
+    def SetName(self, name):
+        """
+        """
+        if not self._authorize():
+            raise VenueException("You are not authorized to perform this action.")
+        self.name = name
+
+        return name
+
+    SetName.soap_export_as = "SetName"
+
+    def SetDescription(self, description):
+        """
+        """
+        if not self._authorize():
+            raise VenueException("You are not authorized to perform this action.")
+        self.description = description
+
+        return description
+
+    SetDescription.soap_export_as = "SetDescription"
+
     def AddAdministrator(self, string):
         """
         """
+        if not self._authorize():
+            raise VenueException("You are not authorized to perform this action.")
         if string not in self.administrators:
             self.administrators.append(string)
             return string
@@ -406,6 +431,8 @@ class Venue(ServiceBase.ServiceBase):
     def RemoveAdministrator(self, string):
         """
         """
+        if not self._authorize():
+            raise VenueException("You are not authorized to perform this action.")
         if string in self.administrators:
             self.administrators.remove(string)
             return string
@@ -414,10 +441,12 @@ class Venue(ServiceBase.ServiceBase):
             raise VenueException("Administrator not found")
 
     RemoveAdministrator.soap_export_as = "RemoveAdministrator"
-    
+
     def SetAdministrators(self, administratorList):
         """
         """
+        if not self._authorize():
+            raise VenueException("You are not authorized to perform this action.")
         self.administrators = self.administrators + administratorList
 
     SetAdministrators.soap_export_as = "SetAdministrators"
