@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.22 2003-04-24 22:17:54 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.23 2003-04-29 20:32:08 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,12 +22,12 @@ setup(
 # Distribution Meta-Data
     name = 'AGTk',
     fullname = 'AccessGrid Toolkit',
-    version = '2.0alpha',
+    version = '2.0RC1',
     description = "The Access Grid Toolkit",
     long_description = "The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.",
     author = "Argonne National Laboratory",
     author_email = "ag-info@mcs.anl.gov",
-    url = "http://www.accessgrid.org",
+    url = "http://www.mcs.anl.gov/fl/research/accessgrid",
     license = "AGTPL",
 
 # Package list -- There's only one
@@ -43,8 +43,8 @@ setup(
                r"bin/SetupVideo.py",
                r"bin/AGNodeService.py",
                r"bin/AGServiceManager.py",
-               r"bin/NodeManagement.py",
-               r"bin/VenuesServerRegistry.py"
+               r"bin/NodeManagement.py"
+#               r"bin/VenuesServerRegistry.py"
               ],
 
 # Data Files list -- these are things like the services, etc.
@@ -93,6 +93,7 @@ setup(
                    [r"packaging/gnome/.desktop",
                     r"packaging/gnome/NodeManagement.desktop",
                     r"packaging/gnome/VenueClient.desktop",
+                    r"packaging/gnome/VenueClient-PersonalNode.desktop",
                     r"packaging/gnome/VenueManagement.desktop"
                     ]
                    ),
@@ -100,6 +101,7 @@ setup(
                    [r"packaging/kde/.desktop",
                     r"packaging/kde/NodeManagement.desktop",
                     r"packaging/kde/VenueClient.desktop",
+                    r"packaging/kde/VenueClient-PersonalNode.desktop",
                     r"packaging/kde/VenueManagement.desktop"
                     ]
                    ),

@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.19 2003-04-24 19:35:13 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.20 2003-04-29 20:32:08 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -17,7 +17,7 @@ import getopt
 
 from AccessGrid.AGServiceManager import AGServiceManager
 from AccessGrid.hosting.pyGlobus.Server import Server
-
+from AccessGrid.Platform import Daemonize
 from AccessGrid import PersonalNode
 
 # default arguments
@@ -50,11 +50,13 @@ def Usage():
     print "    -d|--debug <filename> : debug mode  - log to console as well as logfile"
     print "    -l|--logFile <filename> : log file name"
     print "    --pnode <arg> : initialize as part of a Personal Node configuration"
+    print "    --daemonize : start as a daemon"
 
 # Parse command line options
 try:
     opts, args = getopt.getopt(sys.argv[1:], "p:l:hd",
-                               ["port=", "logfile=", "help", "pnode=", "debug"])
+                               ["port=", "logfile=", "help", "pnode=",
+                                "debug", "daemonize"])
 except getopt.GetoptError:
     Usage()
     sys.exit(2)
@@ -70,6 +72,8 @@ for o, a in opts:
         logFile = a
     elif o == "--pnode":
         pnode = a
+    elif o == "daemonize":
+        Daemonize()
     elif o in ("-h", "--help"):
         Usage()
         sys.exit(0)

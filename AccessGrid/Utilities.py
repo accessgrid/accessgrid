@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.30 2003-04-28 18:40:43 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.31 2003-04-29 20:32:08 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -289,3 +289,5 @@ def StartDetachedProcess(cmd):
         shcmd = [shell, "-c", cmd]
         os.spawnvp(os.P_NOWAIT, shell, shcmd)
 
+
+    

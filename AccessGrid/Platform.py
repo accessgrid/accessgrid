@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.21 2003-04-24 18:36:47 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.22 2003-04-29 20:32:08 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -71,7 +71,7 @@ if sys.platform == WIN:
     GPI = GPIWin32
 else:
     GPI = GPICmdline
-
+    
 try:
     import _winreg
     import win32api
@@ -379,9 +379,6 @@ def Win32RegisterMimeType(mimeType, extension, fileType, description, cmds):
             lwords[0] = "\"%s\"" % lwords[0]
 
             newcommand = " ".join(lwords)
-#            newcommand = u""
-#            for word in lwords:
-#                newcommand += "\"%s\" " % word
             _winreg.SetValueEx(cmdKey, "", 0, _winreg.REG_SZ, newcommand)
             _winreg.CloseKey(cmdKey)
             _winreg.CloseKey(verbKey)
@@ -391,3 +388,35 @@ def Win32RegisterMimeType(mimeType, extension, fileType, description, cmds):
         _winreg.CloseKey(regKey)
     except EnvironmentError, e:
         log.debug("Couldn't open registry for mime registration!")
+
+
+#
+# Unix Daemonize, this is not appropriate for Win32
+#
+
+def DaemonizeUnix(self):
+    try:
+        pid = os.fork()
+    except:
+        print "Could not fork"
+        sys.exit(1)
+
+        if pid:
+            # Let parent die !
+            sys.exit(0)
+        else:
+            try:
+                # Create new session
+                os.setsid()
+            except:
+                print "Could not create new session"
+                sys.exit(1)
+
+#
+# Determine which daemonize we should use
+#
+
+if sys.platform == WIN:
+    Deamonize = None
+else:
+    Daemonize = DaemonizeUnix

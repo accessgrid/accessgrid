@@ -231,9 +231,11 @@ mkdir -p %{buildroot}/tmp/local_services
 %{sharedir}/%{name}/services/
 %{gnomedir}/%{name}/.desktop
 %{gnomedir}/%{name}/VenueClient.desktop
+%{gnomedir}/%{name}/VenueClient-PersonalNode.desktop
 %{gnomedir}/%{name}/NodeManagement.desktop
 %{kdedir}/%{name}/.desktop
 %{kdedir}/%{name}/VenueClient.desktop
+%{kdedir}/%{name}/VenueClient-PersonalNode.desktop
 %{kdedir}/%{name}/NodeManagement.desktop
 
 #
