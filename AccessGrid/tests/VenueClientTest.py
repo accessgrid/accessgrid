@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientTest.py,v 1.5 2003-03-25 17:57:56 judson Exp $
+# RCS-ID:      $Id: VenueClientTest.py,v 1.6 2003-06-03 17:43:41 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -18,6 +18,7 @@ from wxPython.wx import *
 
 from pyGlobus.io import GSITCPSocketException
 
+from AccessGrid import DataStore
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.hosting.pyGlobus import Client
 
@@ -26,6 +27,7 @@ from AccessGrid.Platform import GPI
 from AccessGrid.VenueClient import VenueClient, EnterVenueException
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Utilities import formatExceptionInfo
+
 
 class VenueClientTest(VenueClient):
     def __init__(self, url):
@@ -51,8 +53,13 @@ class VenueClientTest(VenueClient):
         self.EnterVenue(venueUri)
 
         print '\n--------------- ADD DATA'
-        data = DataDescription('dataName')
-        self.client.AddData(data)
+        self.upload_url = self.client.GetUploadDescriptor()
+        file_list = ['test_Apps.py']
+        DataStore.GSIHTTPUploadFiles(self.upload_url, file_list, None)
+
+        print '\n--------------- REMOVE DATA'
+        data = DataDescription('test_Apps.py')
+        self.client.RemoveData(data)
 
 #         print '\n--------------- ADD SERVICE'
 #         service = ServiceDescription('serviceName', 'serviceDescription', 'serviceUri',\
@@ -75,7 +82,8 @@ class VenueClientTest(VenueClient):
         profile2 = ClientProfile('nodeProfile')
         self.SetProfile(profile2)
         self.profile.Dump()
-        
+       
+         
         print '\n--------------- EXIT VENUE'
         self.ExitVenue()
           
@@ -114,7 +122,7 @@ class VenueClientTest(VenueClient):
         print 'venue name: ', venueState.name
         print 'venue description: ',venueState.description
       
-        users = venueState.users.values()
+        users = venueState.clients.values()
         
         print '\n-------------USERS/NODES'
         for user in users:
@@ -127,11 +135,6 @@ class VenueClientTest(VenueClient):
         data = venueState.data.values()
         for d in data:
             print 'data: ', d.name
-
-        print '\n-------------NODES'
-        nodes = venueState.nodes.values()
-        for node in nodes:
-            print 'node: ', node.name
 
 #         print '\n-------------SERVICES'
 #         services = venueState.services.values()
