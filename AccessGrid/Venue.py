@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.155 2004-03-05 21:42:18 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.156 2004-03-05 22:46:03 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.155 2004-03-05 21:42:18 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.156 2004-03-05 22:46:03 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1030,9 +1030,9 @@ class Venue(AuthorizationMixIn):
         except InvalidProfileException:
             log.warn("UpdateProfileCache: InvalidProfile when storing a venue user's profile in the cache.")
 
-    def AddNetService(self, clientType, privateId):
+    def AddNetworkService(self, clientType, privateId):
         """
-        AddNetService adds a net service to those in the venue
+        AddNetworkService adds a net service to those in the venue
         """
 
         # Remove the net service if it's already registered
@@ -1041,7 +1041,7 @@ class Venue(AuthorizationMixIn):
             log.info("removing old state", privateId)
             self.RemoveNetService(privateId)
 
-        log.info("AddNetService: type=%s", clientType)
+        log.info("AddNetworkService: type=%s", clientType)
 
         netService = NetService.CreateNetService(clientType,self,privateId)
 
@@ -1049,9 +1049,9 @@ class Venue(AuthorizationMixIn):
 
         return privateId
 
-    def RemoveNetService(self, privateId):
+    def RemoveNetworkService(self, privateId):
         """
-        RemoveNetService removes a netservice from those in the venue
+        RemoveNetworkService removes a netservice from those in the venue
         """
 
         # Stop the net service
@@ -1067,6 +1067,16 @@ class Venue(AuthorizationMixIn):
 
         # Remove the netservice from the netservice list
         del self.netServices[privateId]
+
+    def GetNetworkServices(self):
+        """
+        GetNetworkServices returns a list of all the network services
+        in this venue.
+
+        *self.netServices* A list of connection descriptions.
+        """
+        #This can't really do anything until we have something to give back
+        pass
 
     def Shutdown(self):
         """
@@ -1179,6 +1189,14 @@ class Venue(AuthorizationMixIn):
                                                     self.uniqueId,
                                                     serviceDescription ) )
         return serviceDescription
+
+    def GetServices(self):
+        """
+        GetServices returns a list of all the services in this venue.
+
+        *self.services* A list of connection descriptions.
+        """
+        return self.services.values()
 
     def SetConnections(self, connDescList):
         """
@@ -1314,6 +1332,12 @@ class Venue(AuthorizationMixIn):
         """
         return self.name
 
+    def GetClients(self):
+        """
+        Return a list of the clients in this venue.
+        """
+        return self.clients.values()
+    
     def AddStream(self, inStreamDescription ):
         """
         Add a stream to the list of streams for this venue.
@@ -1582,6 +1606,12 @@ class Venue(AuthorizationMixIn):
 
         return returnValue
 
+    def GetApplications(self):
+        """
+        return a list of the applications in this venue.
+        """
+        return self.applications.values()
+        
     def CreateApplication(self, name, description, mimeType, aid = None ):
         """
         Create a new application object.  Initialize the
@@ -1840,31 +1870,52 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
 
         return r
 
-    def AddNetService(self, clientType, privateId=str(GUID())):
+    def GetClients(self):
+        """
+        retrieve the list of clients in the venue.
+        """
+        try:
+            retval = self.impl.GetClients()
+            return retval
+        except:
+            log.exception("VenueI.GetClients: exception")
+            raise
+
+    def AddNetworkService(self, clientType, privateId=str(GUID())):
         """
         AddNetService adds a net service to those in the venue
         """
 
         # Lock and do the call
         try:
-            retval = self.impl.AddNetService(clientType, privateId)
+            retval = self.impl.AddNetworkService(clientType, privateId)
+            return retval
         except:
             log.exception("VenueI.AddNetService: exception")
             raise
 
-        return retval
+    AddNetService = AddNetworkService
     
-    def RemoveNetService(self, privateId):
+    def RemoveNetworkService(self, privateId):
         """
         RemoveNetService removes a netservice from those in the venue
         """
 
         # Lock and do the call
         try:
-            self.impl.RemoveNetService(privateId)
+            self.impl.RemoveNetworkService(privateId)
         except:
             log.exception("VenueI.RemoveNetService: exception")
             raise
+
+    RemoveNetService = RemoveNetworkService
+    
+    def GetNetworkServices(self):
+        """
+        Return data on the existing network services.
+        """
+        # This can't do anything until we have something to return
+        return None
 
     def Shutdown(self):
         """
@@ -1942,6 +1993,28 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
             raise
 
         return returnValue
+
+    def GetServices(self):
+        """
+        Interface to remove a service from the venue.
+
+        **Arguments:**
+
+        **Raises:**
+
+        **Returns:**
+
+        *serviceDescriptionList* A service description is returned on success.
+
+        """
+        log.debug("VenueI.GetServices")
+
+        try:
+            returnValue = self.impl.GetServices()
+            return returnValue
+        except:
+            log.exception("VenueI.GetServices: exception")
+            raise
 
     def SetConnections(self, connDescStructList):
         """
@@ -2406,6 +2479,17 @@ tion.name with
             log.exception("VenueI.GetApplication.")
             raise
 
+    def GetApplications(self):
+        """
+        return the list of application descriptions for this venue.
+        """
+        try:
+            adl = self.impl.GetApplications()
+            return adl
+        except:
+            log.exception("VenueI.GetApplications.")
+            raise
+        
     def CreateApplication(self, name, description, mimeType, aid = None ):
         """
         Create a new application object.  Initialize the
@@ -2646,21 +2730,40 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
     def Exit(self, pid):
         return self.proxy.Exit(pid)
 
+    def GetClients(self):
+        cl = self.proxy.GetClients()
+        rcl = list()
+        for c in cl:
+            rcl.append(CreateClientProfile(c))
+
+        return rcl
+    
     def UpdateClientProfile(self, profile):
         return self.proxy.UpdateClientProfile(profile)
 
-    def AddNetService(self, type, privateID):
+    def AddNetworkService(self, type, privateID):
         return self.proxy.AddNetService(type, privateID)
 
-    def RemoveNetService(self, nid):
+    def RemoveNetworkService(self, nid):
         return self.proxy.RemoveNetService(nid)
 
+    def GetNetworkServices(self):
+        return None
+    
     def AddService(self, serviceDesc):
         return self.proxy.AddService(serviceDesc)
 
     def RemoveService(self, sid):
         return self.proxy.RemoveService(sid)
 
+    def GetServices(self):
+        sl = self.proxy.GetServices()
+        rsl = list()
+        for s in sl:
+            rsl.append(CreateServiceDescription(s))
+
+        return rsl
+    
     def AddData(self, dataDescription):
         return self.proxy.AddData(dataDescription)
 
@@ -2682,6 +2785,13 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
     def GetApplication(self, aid):
         return self.proxy.GetApplication(aid)
 
+    def GetApplications(self):
+        adl = self.proxy.GetApplications()
+        al = list()
+        for a in adl:
+            al.append(CreateAppDescription(a))
+        return al
+        
     def CreateApplication(self, appDescription):
         return self.proxy.CreateApplication(appDescription)
 
