@@ -55,6 +55,7 @@ Install()
 {
   export package="$1"
   export package_ver="$2"
+  export rpm_opts="$3"
   export package_rpm="$package-$package_ver.i386.rpm"
 
   rpm -q --quiet $package
@@ -63,11 +64,11 @@ Install()
       echo "Package already installed:" $package-$package_ver
     else
       echo "Freshening package:" $package
-      rpm -Fvh --nodeps $package_rpm
+      rpm -Fvh --nodeps $rpm_opts $package_rpm
     fi
   else
     echo "Installing package:" $package
-    rpm -Uvh $package_rpm
+    rpm -Uvh $rpm_opts $package_rpm
   fi
 }
 
@@ -107,7 +108,7 @@ Install $WXWINDOWS $WXWINDOWS_VER
 Install $LOGGING $LOGGING_VER 
 Install $PYOPENSSL $PYOPENSSL_VER 
 Install $GPT $GPT_VER 
-Install $GLOBUS $GLOBUS_VER 
+Install $GLOBUS $GLOBUS_VER --nopostun
 
 
 #
