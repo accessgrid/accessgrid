@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.12 2003-03-24 14:24:57 olson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.13 2003-03-25 15:34:41 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -17,8 +17,21 @@ import logging
 
 log = logging.getLogger("AG.Platform")
 
+# Global env var
+AGTK = 'AGTK'
+
+# Windows Defaults
+WIN = 'win32'
 WinGPI = "wgpi.exe"
+AGTkRegBaseKey = "SOFTWARE\\Access Grid Toolkit\\2.0"
+
+# Linux Defaults
+LINUX = 'linux2'
 LinuxGPI = "grid-proxy-init"
+AGTkBasePath = "/etc/AccessGrid"
+
+# Mac OS X Defaults
+# They will go here :-)
 
 def GPICmdline():
     """
@@ -42,15 +55,14 @@ def GPIWin32():
     gpiPath = os.path.join(GlobusBin, WinGPI)
 
     if os.access(gpiPath, os.X_OK):
-        log.debug("Excecuting windows gpi at %s", gpiPath)
+        log.debug("Excecuting gpi at %s", gpiPath)
         os.spawnv(os.P_WAIT, gpiPath, [])
-
 
 #
 # Determine which grid-proxy-init we should use.
 #
 
-if sys.platform == "win32":
+if sys.platform == WIN:
     GPI = GPIWin32
 else:
     GPI = GPICmdline
@@ -67,12 +79,12 @@ def GetSystemConfigDir():
     """
 
     configDir = ""
-    if sys.platform == 'win32':
-        AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Access Grid Toolkit\\2.0")
+    if sys.platform == WIN:
+        AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
         configDir, type = _winreg.QueryValueEx(AG20,"ConfigPath")
 
-    elif sys.platform == 'linux2': 
-        configDir = "/etc/AccessGrid"
+    elif sys.platform == LINUX:
+        configDir = AGTkBasePath
 
     return configDir
 
@@ -82,11 +94,11 @@ def GetUserConfigDir():
     """
 
     configDir = ""
-    if sys.platform == 'win32':
-        AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Access Grid Toolkit\\2.0")
+    if sys.platform == WIN:
+        AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
         configDir, type = _winreg.QueryValueEx(AG20,"UserConfigPath")
 
-    elif sys.platform == 'linux-i386': 
+    elif sys.platform == LINUX:
         configDir = os.path.join(os.environ["HOME"],".AccessGrid")
 
     return configDir
@@ -111,18 +123,19 @@ def GetInstallDir():
     """
 
     installDir = ""
-    if sys.platform == 'win32':
-        AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Access Grid Toolkit\\2.0")
+    if sys.platform == WIN:
+        AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
         installDir, type = _winreg.QueryValueEx(AG20,"InstallPath")
 
-    elif sys.platform == 'linux-i386': 
+    elif sys.platform == LINUX:
         installDir = "/usr/bin"
 
     return installDir
 
 def GetFilesystemFreeSpace(path):
     """
-    Determine the amount of free space available in the filesystem containing <path>.
+    Determine the amount of free space available in the filesystem
+    containing <path>.
 
     Returns a value in bytes.
     """
@@ -148,7 +161,7 @@ def GetFilesystemFreeSpace(path):
 
         freeBytes = blockSize * x.f_bavail
 
-    elif sys.platform == "win32":
+    elif sys.platform == WIN:
 
         #
         # Otherwise use win32api.GetDiskFreeSpace.
