@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/13/12
-# RCS-ID:      $Id: NetworkLocation.py,v 1.5 2003-02-10 14:47:37 judson Exp $
+# RCS-ID:      $Id: NetworkLocation.py,v 1.6 2003-02-27 20:07:20 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,10 @@ class NetworkLocation:
 
     def __init__(self, host, port):
         self.host = host
-        self.port = port
+        if type(port) != int:
+            raise TypeError("Network Location Port must be an int.")
+        else:
+            self.port = port
 
     def SetHost(self, host):
         self.host = host
@@ -32,7 +35,10 @@ class NetworkLocation:
         return self.host
 
     def SetPort(self, port):
-        self.port = port
+        if type(port) != int:
+            raise TypeError("Network Location Port must be an int.")
+        else:
+            self.port = port
 
     def GetPort(self):
         return self.port
@@ -54,11 +60,18 @@ class MulticastNetworkLocation(NetworkLocation):
     ttl = 0
 
     def __init__(self, host=None, port=0, ttl=0):
-        self.ttl = ttl
+        if type(ttl) != int:
+            raise TypeError("Multicast Network Location TTL must be an int.")
+        else:
+            self.ttl = ttl
+
         NetworkLocation.__init__(self, host, port)
 
     def SetTTL(self, ttl):
-        self.ttl = ttl
+        if type(ttl) != int:
+            raise TypeError("Multicast Network Location TTL must be an int.")
+        else:
+            self.ttl = ttl
 
     def GetTTL(self):
         return ttl
