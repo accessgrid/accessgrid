@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.193 2003-05-21 21:41:35 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.194 2003-05-21 21:59:40 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1187,6 +1187,9 @@ class VenueList(wxScrolledWindow):
 
          
 class ExitPanel(wxPanel):
+
+    ID_PROPERTIES = wxNewId()
+    
     def __init__(self, parent, id, profile):
         wxPanel.__init__(self, parent, id, wxDefaultPosition, \
 			 size = wxSize(400,200), style = wxRAISED_BORDER)
@@ -1235,6 +1238,21 @@ class ExitPanel(wxPanel):
         self.parent.GoToNewVenue(event)
 
     def onRightClick(self, event):
+        '''
+        Opens a menu for this connected venue
+        '''
+        self.x = event.GetX() + self.GetPosition().x
+        self.y = event.GetY() + self.GetPosition().y
+        
+        propertiesMenu = wxMenu()
+     	propertiesMenu.Append(self.ID_PROPERTIES,"Properties...",
+                             "View information about the venue")
+      
+       
+        self.PopupMenu(propertiesMenu, wxPoint(self.x, self.y))
+        EVT_MENU(self, self.ID_PROPERTIES, self.OpenProfileDialog)
+                
+    def OpenProfileDialog(self, event):
         '''
         Opens a profile dialog for this exit
         '''
