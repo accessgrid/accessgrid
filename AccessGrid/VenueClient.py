@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.20 2003-02-21 19:27:45 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.21 2003-02-21 21:42:10 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.EventClient import EventClient
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Types import *
-from AccessGrid.Events import Event, HeartbeatEvent
+from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
 from AccessGrid.scheduler import Scheduler
 
 class EnterVenueException(Exception):
@@ -55,7 +55,7 @@ class VenueClient( ServiceBase ):
 
     def Heartbeat(self):
         if self.eventClient != None:
-#            print "Sending heartbeat!"
+            print "Sending heartbeat!"
             self.eventClient.Send(HeartbeatEvent(self.venueId, self.privateId))
             
     def SetProfile(self, profile):
@@ -165,7 +165,8 @@ class VenueClient( ServiceBase ):
                 self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
 
             self.eventClient.start()
-
+            self.eventClient.Send(ConnectEvent(self.venueState.uniqueId))
+            
             self.heartbeatTask = self.houseKeeper.AddTask(self.Heartbeat, 15)
             self.heartbeatTask.start()
  

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextService.py,v 1.8 2003-02-21 19:27:45 judson Exp $
+# RCS-ID:      $Id: TextService.py,v 1.9 2003-02-21 21:42:10 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,8 @@ from pyGlobus.io import GSITCPSocketServer, GSIRequestHandler
 class ThreadingGSITCPSocketServer(ThreadingMixIn, GSITCPSocketServer): pass
 
 from AccessGrid.Utilities import formatExceptionInfo
-from AccessGrid.Events import HeartbeatEvent
+from AccessGrid.Events import HeartbeatEvent, ConnectEvent, TextEvent
+from AccessGrid.Events import TextPayload
 from AccessGrid.hosting.AccessControl import CreateSubjectFromGSIContext
 
 class ConnectionHandler(GSIRequestHandler):
@@ -50,15 +51,18 @@ class ConnectionHandler(GSIRequestHandler):
                 # However we assign the from address in the server, so
                 # there is some notion of security :-)
                 event = pickle.loads(pdata)
-                venue = event.venue
-                if self not in self.server.connections[venue]:
-                    self.server.connections[venue].append(self)
 
-                ctx = self.connection.get_security_context()
-                event.sender = CreateSubjectFromGSIContext(ctx).GetName()
+                if event.eventType == ConnectEvent.CONNECT:
+                    self.server.connections[event.venue].append(self)
+                    continue
+
                 
+                ctx = self.connection.get_security_context()
+                payload = event.data
+                payload.sender = CreateSubjectFromGSIContext(ctx).GetName()
+
                 # For now we send all messages to everyone
-                self.server.Distribute(venue, event)
+                self.server.Distribute(event)
             except:
                 print "ConnectionHandler.handle: Client disconnected!"
                 self.running = 0
@@ -104,20 +108,20 @@ class TextService(ThreadingGSITCPSocketServer, Thread):
         """
         return self.location
 
-    def Distribute(self, venue, data):
+    def Distribute(self, data):
         """
         Send the data to all the connections in this server.
         """
-        print "Sending Event (%s) %s" % (venue, data.recipient)
+        print "Sending Event (%s) %s" % (data.venue, data.data.recipient)
         pdata = pickle.dumps(data)
         lenStr = "%s\n" % len(pdata)
-        for c in self.connections[venue]:
+        for c in self.connections[data.venue]:
             try:
                 c.wfile.write(lenStr)
                 c.wfile.write(pdata)           
             except:
                 print "EventService.Distribute: Client disconnected!"
-                self.server.connections[venue].remove(c)
+                self.connections[data.venue].remove(c)
         
     def AddVenue(self, venueId):
         self.connections[venueId] = []

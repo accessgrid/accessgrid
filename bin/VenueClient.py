@@ -6,9 +6,11 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.48 2003-02-21 17:38:57 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.49 2003-02-21 21:42:10 judson Exp $
 # Copyright:   (c) 2002-2003
-# Licence:     See COPYING.TXT -----------------------------------------------------------------------------
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
+
 import threading
 import os
 
@@ -256,8 +258,9 @@ class VenueClientUI(wxApp, VenueClient):
                                            venueId = self.venueState.uniqueId)
             self.textClient.Show(1)
         except:
-            wxCallAfter(ErrorDialog, self.frame, "Trying to open text client!")
-
+#            wxCallAfter(ErrorDialog, self.frame, "Trying to open text client!")
+            ErrorDialog( self.frame, "Trying to open text client!")
+            print formatExceptionInfo()
         #
         # Find the upload location. HACK for now, this should come in
         # thru the venue description.

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.5 2003-02-21 16:10:29 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.6 2003-02-21 21:42:10 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -21,8 +21,9 @@ from pyGlobus.util import Buffer
 from pyGlobus import ioc
 
 from AccessGrid.Utilities import formatExceptionInfo
-from AccessGrid.Events import HeartbeatEvent
+from AccessGrid.Events import HeartbeatEvent, ConnectEvent
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
+
 class EventClient(Thread):
     """
     The Event Client maintains a client side connection to the Event
@@ -55,20 +56,6 @@ class EventClient(Thread):
         self.running = 1
         while self.sock != None and self.running:
             try:
-##                str = ""
-##                while self.running:
-##                    bytesRead = self.sock.try_read(self.buffer, 1)
-##                    if bytesRead > 0:
-##                        bString = self.buffer.as_string()
-##                        if bString[0] == '\n':
-##                            break
-##                        else:
-##                            str = str + bString[0]
-##                    
-##                # Read the size
-##                if len(str) == 0:
-##                    str = "0"
-##                    
                 str = self.rfile.readline()
                 size = int(str)
                 

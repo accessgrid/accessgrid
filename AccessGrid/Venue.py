@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.45 2003-02-21 19:27:45 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.46 2003-02-21 21:42:10 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -248,7 +248,7 @@ class Venue(ServiceBase.ServiceBase):
         privateId = event
         now = time.time()
         self.clients[privateId] = now
-#        print "Got Client Heartbeat for %s at %s." % (event, now)
+        print "Got Client Heartbeat for %s at %s." % (event, now)
     
     def Shutdown(self):
         """
@@ -288,14 +288,17 @@ class Venue(ServiceBase.ServiceBase):
                 
                 # add user as producer of non-existent stream
                 if not matchesExistingStream:
-                    capability = Capability( clientCapability.role, clientCapability.type )
+                    capability = Capability( clientCapability.role,
+                                             clientCapability.type )
                     capability.parms = clientCapability.parms
-                    streamDesc = StreamDescription( self.description.name, "noDesc",
+                    streamDesc = StreamDescription( self.description.name,
+                                                    "noDesc",
                                              self.AllocateMulticastLocation(), 
                                              capability, self.encryptionKey )
                     print "added user as producer of non-existent stream"
 #FIXME - uses public id now; should use private id instead
-                    self.streamList.AddStreamProducer( clientProfile.publicId, streamDesc )
+                    self.streamList.AddStreamProducer( clientProfile.publicId,
+                                                       streamDesc )
 
 
         #
@@ -721,7 +724,7 @@ class Venue(ServiceBase.ServiceBase):
                                                  serviceDescription ) )
         except:
             print "Exception in AddService ", sys.exc_type, sys.exc_value
-            print "Service already exists ", serviceDescription.name
+            print "Error adding service ", serviceDescription.name
 
     AddService.soap_export_as = "AddService"
 

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.5 2003-02-21 19:27:45 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.6 2003-02-21 21:42:10 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,6 +23,7 @@ from pyGlobus.io import GSITCPSocketServer
 class ThreadingGSITCPSocketServer(ThreadingMixIn, GSITCPSocketServer): pass
 
 from AccessGrid.Utilities import formatExceptionInfo
+from AccessGrid.Events import ConnectEvent
 
 class ConnectionHandler(StreamRequestHandler):
     """
@@ -46,9 +47,11 @@ class ConnectionHandler(StreamRequestHandler):
                 event = pickle.loads(pdata)
                 # Pass this event to the callback registered for this
                 # event.eventType
-                if self not in self.server.connections[event.venue]:
+                if event.eventType == ConnectEvent.CONNECT:
+                    print "Adding connection to venue %s" % event.venue
                     self.server.connections[event.venue].append(self)
-
+                    continue
+                
                 if self.server.callbacks.has_key((event.venue,
                                                     event.eventType)):
                     cb = self.server.callbacks[(event.venue, event.eventType)]
@@ -56,7 +59,7 @@ class ConnectionHandler(StreamRequestHandler):
                 else:
                     print "Got event, but don't have a callback for %s, %s events." % (event.venue, event.eventType)
             except:
-                print "Client disconnected!"
+                print "ConnectionHandler.handle Client disconnected!"
                 self.running = 0
                 # Find the connection and remove it
                 for v in self.server.connections.keys():
@@ -70,7 +73,8 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
     In the TCP case the EventService is the Server, GSI is our secure version.
     """
     def __init__(self, server_address, RequestHandlerClass=ConnectionHandler):
-        Thread.__init__(self)
+        Thread.__init__(self)#            print "Sending heartbeat!"
+
         self.location = server_address
         self.callbacks = {}
         self.connections = {}
@@ -89,6 +93,7 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         """
         Stop stops this thread, thus shutting down the service.
         """
+
         for v in self.connections.keys():
             for c in self.connections[v]:
                 c.stop()
@@ -125,8 +130,10 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
                 c.wfile.write(lenStr)
                 c.wfile.write(pdata)           
             except:
-                print "Client disconnected!"
-                self.server.connections[venue].remove(c)
+                print "EventService.Distribute Client disconnected!"
+                # This is a real error because clients should send
+                # a DisconnectEvent
+#                self.connections[venueId].remove(c)
             
     def GetLocation(self):
         """
