@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.10 2004-05-04 21:11:08 olson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.11 2004-05-04 21:27:18 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -1029,15 +1029,13 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
 
         self.text.Refresh()
         
-    def Validate(self):
-
+    def GetValidity(self):
         #
         # Go ahead and try to create the certificate request.
         #
         # We will invoke self.identityCertCreate() callback that
         # was passed to the constructor of the wizard.
         #
-        return
         wxBeginBusyCursor()
         self.Refresh()
         self.Update()
