@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.101 2003-05-29 19:42:32 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.102 2003-06-26 20:58:40 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -52,12 +52,6 @@ class VenueException(Exception):
     """
     pass
 
-class BadDataDescription(Exception):
-    """
-    The exception raised when a data description struct is not
-    successfully converted to a real data description.
-    """
-    pass
 
 class BadServiceDescription(Exception):
     """
@@ -135,19 +129,19 @@ class NotAuthorized(Exception):
     """
     pass
 
-class DataAlreadyPresent(Exception):
-    """
-    The exception raised when a data description is already present in
-    the venue.
-    """
-    pass
+#class DataAlreadyPresent(Exception):
+#    """
+#    The exception raised when a data description is already present in
+#    the venue.
+#    """
+#    pass
 
-class DataNotFound(Exception):
-    """
-    The exception raised when a data description is not found in
-    the venue.
-    """
-    pass
+#class DataNotFound(Exception):
+#    """
+#    The exception raised when a data description is not found in
+#    the venue.
+#    """
+#    pass
 
 class StreamAlreadyPresent(Exception):
     """
@@ -212,7 +206,7 @@ class Venue(ServiceBase.ServiceBase):
 
         self.connections = dict()
         self.applications = dict()
-        self.data = dict()
+ #       self.data = dict()
         self.services = dict()
         self.streamList = StreamDescriptionList()
         self.clients = dict()
@@ -267,18 +261,22 @@ class Venue(ServiceBase.ServiceBase):
 
 
         # Start the data store
+
         if self.dataStorePath is None or not os.path.isdir(self.dataStorePath):
             log.warn("Not starting datastore for venue: %s does not exist %s",
-                      self.uniqueId, self.dataStorePath)
-
+                     self.uniqueId, self.dataStorePath)
+            
         self.server.dataTransferServer.RegisterPrefix(str(self.uniqueId), self)
 
-        self.dataStore = DataStore.DataStore(self, self.dataStorePath,
-                                             str(self.uniqueId))
-        self.dataStore.SetTransferEngine(self.server.dataTransferServer)
+        try:
+            self.dataStore = DataStore.DataStore(self.dataStorePath,str(self.uniqueId))
+            self.dataStore.SetEventDistributor( self.server.eventService, self.uniqueId)
+            self.dataStore.SetTransferEngine(self.server.dataTransferServer)
+            log.info("Have upload url: %s", self.dataStore.GetUploadDescriptor())
+        except:
+            log.warn("Could not create venue data store")
 
-        log.info("Have upload url: %s", self.dataStore.GetUploadDescriptor())
-        
+                    
         #self.StartApplications()
 
         #self.AllowedEntryRole = AccessControl.Role("Venue.AllowedEntry", self)
@@ -349,17 +347,12 @@ class Venue(ServiceBase.ServiceBase):
         if len(slist):
             string += "streams : %s\n" % slist
 
-        # Get the list of data
-        # For now we have to sort out the data so we only
         # store venue data in the persistence file
-        vdata = []
-        for d in self.data.values():
-            if d.GetType() == None:
-                vdata.append(d)
-        dlist = ":".join(map( lambda data: data.GetId(), vdata ))
+        dlist = self.dataStore.AsINIBlock()
 
         if len(dlist):
             string += "data : %s\n" % dlist
+        
 
         # List of applications
         alist = ":".join(map(lambda app: app.GetId(),
@@ -379,8 +372,11 @@ class Venue(ServiceBase.ServiceBase):
         if len(clist):
             string += "".join(map(lambda conn: conn.AsINIBlock(),
                                     self.connections.values() ))
+        #if len(dlist):
+        #    string += "".join(map(lambda data: data.AsINIBlock(), vdata ))
+
         if len(dlist):
-            string += "".join(map(lambda data: data.AsINIBlock(), vdata ))
+            string += "".join(map(lambda data: data.AsINIBlock(), self.dataStore.GetDataDescriptions()))
 
         if len(slist):
             string += "".join(map(lambda stream: stream.AsINIBlock(),
@@ -425,7 +421,7 @@ class Venue(ServiceBase.ServiceBase):
                                 self.applications.values()),
             'clients' : map(lambda c: c[0], self.clients.values()),
             'services' : self.services.values(),
-            'data' : self.data.values(),
+            'data' : self.dataStore.GetDataDescriptions(),
             'eventLocation' : self.server.eventService.GetLocation(),
             'textLocation' : self.server.textService.GetLocation()
             }
@@ -739,19 +735,19 @@ class Venue(ServiceBase.ServiceBase):
             self.heartbeatLock.release()
             
             # Remove clients private data
-            for description in self.data.values():
-                
-                if description.type == client.publicId:
-                    log.debug("RemoveUser: Remove private data %s"
-                              % description.name)
+            #for description in self.data.values():
+            #    
+            #    if description.type == client.publicId:
+            #        log.debug("RemoveUser: Remove private data %s"
+            #                  % description.name)
 
                     # Send the event
-                    self.server.eventService.Distribute( self.uniqueId,
-                                                         Event( Event.REMOVE_DATA,
-                                                                self.uniqueId,
-                                                                description) )
+                    #self.server.eventService.Distribute( self.uniqueId,
+                    #                                     Event( Event.REMOVE_DATA,
+                    #                                            self.uniqueId,
+                    #                                            description) )
                     
-                    del self.data[description.name]
+                    #del self.data[description.name]
                    
             # Distribute event
             clientProfile, heartbeatTime = self.clients[privateId]
@@ -851,149 +847,6 @@ class Venue(ServiceBase.ServiceBase):
         
         return ( state, privateId, streamDescriptions )
 
-    def AddData(self, dataDescription ):
-        """
-        The AddData method enables VenuesClients to put data in the Virtual
-        Venue. Data put in the Virtual Venue through AddData is persistently
-        stored.
-
-        **Arguments:**
-
-            *dataDescription* A real data description.
-            
-        **Raises:**
-
-            *DataAlreadyPresent* Raised when data is added with the
-            same name as data already in the venue.
-            
-        **Returns:**
-
-            *dataDescription* upon successfully adding the data.
-        """
-        name = dataDescription.name
-              
-        log.debug("AddData with name %s " %name)
-             
-        if self.data.has_key(name):
-            log.exception("AddData: data already present: %s", name)
-            raise DataAlreadyPresent
-
-        self.data[name] = dataDescription
-        
-        log.debug("AddData: Distribute ADD_DATA event %s", dataDescription)
-        
-        self.server.eventService.Distribute( self.uniqueId,
-                                             Event( Event.ADD_DATA,
-                                                    self.uniqueId,
-                                                    dataDescription ) )
-        return dataDescription
-        
-    def RemoveData(self, dataDescription):
-        """
-        RemoveData removes persistent data from the Virtual Venue.
-
-        **Arguments:**
-
-            *dataDescription* A real data description.
-            
-        **Raises:**
-
-            *DataNotFound* Raised when the data is not found in the Venue.
-
-        **Returns:**
-
-            *dataDescription* Upon successfully removing the data.
-        """
-        name = dataDescription.name
-        
-        if not name in self.data:
-            self.simpleLock.release()
-            log.exception("RemoveData: Data not found.")
-            raise DataNotFound
-
-        del self.data[ dataDescription.name ]
-            
-        # This is venue resident so delete the file
-        if(dataDescription.type is None or dataDescription.type == "None"):
-            self.dataStore.DeleteFile(dataDescription.name)
-                
-        # Send the event
-        self.server.eventService.Distribute( self.uniqueId,
-                                             Event( Event.REMOVE_DATA,
-                                                    self.uniqueId,
-                                                    dataDescription ) )
-        return dataDescription
-    
-    def UpdateData(self, dataDescription):
-        """
-        Replace the current description for dataDescription.name with
-        this one.
-
-        **Arguments:**
-
-            *dataDescription* A real data description.
-            
-        **Raises:**
-
-            *DataNotFound* Raised when the data is not found in the Venue.
-
-        **Returns:**
-
-            *dataDescription* Upon successfully updating the data.
-        """
-
-        name = dataDescription.name
-
-        if not self.data.has_key(name):
-            log.exception("UpdateData: data not already present: %s", name)
-            raise DataNotFound
-
-        log.debug("Checking file %s for validity", name)
-        url = self.dataStore.GetDownloadDescriptor(name)
-        if url is None:
-            log.warn("File %s has vanished", name)
-            del self.data[name]
-        else:
-            dataDescription.SetURI(url)
-            self.data[dataDescription.name] = dataDescription
-
-        log.debug("Distribute UPDATE_DATA event %s", dataDescription)
-
-        self.server.eventService.Distribute( self.uniqueId,
-                                      Event( Event.UPDATE_DATA,
-                                             self.uniqueId,
-                                             dataDescription ) )
-
-    def GetData(self, name):
-        """
-        GetData is the method called by a VenueClient to retrieve information
-        about the data. This might also be the operation that the VenueClient
-        uses to actually retrieve the real data.
-
-        If there's not a running datastore we have to return a null
-        string, because SOAP doesn't serialize None correctly.
-
-        **Arguments:**
-
-            *name* The name of the data to be retrieved.
-            
-        **Returns:**
-
-            *dataDescription* A real data description that corresponds
-            to the name passed in.
-
-            *empty string* When the data is not found, or there is no
-            data store running.
-
-        """
-        if self.dataStore is None:
-            return ''
-
-        if self.data.has_key(name):
-            return self.data[name]
-        else:
-            return ''
-
     def AddService(self, serviceDescription):
         """
         The AddService method enables VenuesClients to put services in
@@ -1065,178 +918,6 @@ class Venue(ServiceBase.ServiceBase):
     #
     # Interface methods
     #
-
-    def wsAddData(self, dataDescriptionStruct ):
-        """
-        Interface to Add data to the Venue.
-        
-        **Arguments:**
-
-            *dataDescriptionStruct* The Data Description that's now an
-            anonymous struct that is being added to the venue.
-
-        **Raises:**
-
-            *BadDataDescription* This is raised if the data
-            description struct cannot be converted to a real data
-            description.
-            
-        **Returns:**
-
-            *dataDescription* A data description is returned on success.
-        """        
-        log.debug("wsAddData")
-
-        # if not self._Authorize():
-        #    raise NotAuthorized
-
-        try:
-            dataDescription = CreateDataDescription(dataDescriptionStruct)
-        except:
-            log.exception("wsAddData: Bad Data Description.")
-            raise BadDataDescription
-
-        try:
-            self.simpleLock.acquire()
-
-            returnValue = self.AddData(dataDescription)
-
-            self.simpleLock.release()
-        
-            return returnValue
-        except:
-            self.simpleLock.release()
-            log.exception("wsAddData: exception")
-            raise
-
-    wsAddData.soap_export_as = "AddData"
-
-    def wsRemoveData(self, dataDescriptionStruct ):
-        """
-        Interface for removing data.
-        
-        **Arguments:**
-
-            *dataDescriptionStruct* The Data Description that's now an
-            anonymous struct that is being added to the venue.
-
-        **Raises:**
-
-            *BadDataDescription* This is raised if the data
-            description struct cannot be converted to a real data
-            description.
-
-        **Returns:**
-
-            *dataDescription* A data description is returned on success.
-        """
-        log.debug("wsRemoveData")
-        
-        # if not self._Authorize():
-        #     raise NotAuthorized
-        
-        try:
-            dataDescription = CreateDataDescription(dataDescriptionStruct)
-        except:
-            log.exception("wsRemoveData: Bad Data Description.")
-            raise BadDataDescription
-
-        try:
-            self.simpleLock.acquire()
-        
-            returnValue = self.RemoveData(dataDescription)
-
-            self.simpleLock.release()
-        
-            return returnValue
-        except:
-            self.simpleLock.release()
-            log.exception("wsRemoveData: exception")
-            raise
-
-    wsRemoveData.soap_export_as = "RemoveData"
-
-    def wsUpdateData(self, dataDescriptionStruct):
-        """
-        Interface to update data that's in the venue with new data
-        (and/or description?)
-
-        **Arguments:**
-
-            *dataDescriptionStruct* The Data Description that's now an
-            anonymous struct that is being added to the venue.
-
-        **Raises:**
-
-            *BadDataDescription* This is raised if the data
-            description struct cannot be converted to a real data
-            description.
-
-        **Returns:**
-
-            *dataDescription* A data description is returned on success.
-        """
-        log.debug("wsUpdateData")
-
-        # if not self._Authorize():
-        #    raise NotAuthorized
-
-        try:
-            dataDescription = CreateDataDescription(dataDescriptionStruct)
-        except:
-            log.exception("wsUpdateData: Bad data description.")
-            raise BadDataDescription
-
-        try:
-            self.simpleLock.acquire()
-        
-            returnValue = self.UpdateData(dataDescription)
-
-            self.simpleLock.release()
-        
-            return returnValue
-        except:
-            self.simpleLock.release()
-            log.exception("wsUpdateData: exception")
-            raise
-
-    wsUpdateData.soap_export_as = "UpdateData"
-
-    def wsGetData(self, name):
-        """
-        Interface to retrieve data from the data store.
-        
-        **Arguments:**
-
-            *name* The name of the data to be retrieved.
-            
-        **Returns:**
-
-            *dataDescription* A data description is returned on success.
-
-            - or -
-            
-            *empty string* If the data is not found or there is no
-            data store, then an empty string is returned, because SOAP
-            doesn't serialize None correctly.
-
-        """
-        log.debug("wsGetData")
-
-        try:
-            self.simpleLock.acquire()
-        
-            returnValue = self.GetData(name)
-
-            self.simpleLock.release()
-
-            return returnValue
-        except:
-            self.simpleLock.release()
-            log.exception("wsGetData: exception")
-            raise
-
-    wsGetData.soap_export_as = "GetData"
 
     def wsAddService(self, servDescStruct ):
         """
@@ -1967,21 +1648,44 @@ class Venue(ServiceBase.ServiceBase):
                                              Event( Event.MODIFY_USER,
                                                     self.uniqueId,
                                                     clientProfile ) )
+
         
     UpdateClientProfile.soap_export_as = "UpdateClientProfile"
+
+    def GetDataStoreInformation(self):
+        """
+        Retrieve an upload descriptor and a URL to the Venue's DataStore 
+        
+        **Arguments:**
+        
+        **Raises:**
+        
+        **Returns:**
+        
+            *(upload description, url)* the upload descriptor to the Venue's DataStore
+            and the url to the DataStore SOAP service.
+            
+        """
+
+        if self.dataStore is None:
+            return ""
+        else:
+            return self.dataStore.GetUploadDescriptor(), self.dataStore.GetLocation()
+        
+    GetDataStoreInformation.soap_export_as = "GetDataStoreInformation"
 
     def GetUploadDescriptor(self):
         """
         Retrieve the upload descriptor from the Venue's datastore.
-
+    
         **Arguments:**
-
+    
         **Raises:**
         
         **Returns:**
-
+    
             *upload description* the upload descriptor for the data store.
-
+    
             *''* If there is not data store we return an empty string,
             because None doesn't serialize right with our SOAP
             implementation.
@@ -1990,9 +1694,9 @@ class Venue(ServiceBase.ServiceBase):
             returnValue = ''
         else:
             returnValue = self.dataStore.GetUploadDescriptor()
-
-        return returnValue
     
+        return returnValue
+     
     GetUploadDescriptor.soap_export_as = "GetUploadDescriptor"
 
     def GetApplication(self, id):
