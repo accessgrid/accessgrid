@@ -2,7 +2,6 @@
 
 import ConfigParser
 import sys
-import os
 import string
 import logging
 
@@ -71,7 +70,6 @@ def run():
 
     for sec in cp.sections():
         # Build up connections
-        current = venues[sec].connections
         exits = string.split(cp.get(sec, 'exits'), ', ')
         for x in exits:
             if venues.has_key(x):
