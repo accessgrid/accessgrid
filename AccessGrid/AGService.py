@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.16 2003-04-29 19:00:09 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.17 2003-04-29 21:08:08 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -224,5 +224,6 @@ class AGService( ServiceBase ):
       Shut down the service
       """
       self.log.info("Shut service down")
+      self.Stop()
       self.server.stop()
    Shutdown.soap_export_as = "Shutdown"
