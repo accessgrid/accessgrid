@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: SOAPInterface.py,v 1.5 2004-03-02 22:27:23 turam Exp $
+# RCS-ID:      $Id: SOAPInterface.py,v 1.6 2004-03-04 22:39:45 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ primary methods, the constructor and a default authorization for all
 interfaces.
 """
 
-__revision__ = "$Id: SOAPInterface.py,v 1.5 2004-03-02 22:27:23 turam Exp $"
+__revision__ = "$Id: SOAPInterface.py,v 1.6 2004-03-04 22:39:45 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
@@ -106,6 +106,9 @@ class SOAPInterface:
         """
         return 1
 
+    # For legacy calls
+    _IsValid = IsValid
+    
 class SOAPIWrapper:
     """
     A SOAP interface wrapper object. This object helps provide a rich
@@ -138,12 +141,8 @@ class SOAPIWrapper:
 
         @returns: the result of calling across the network to the service.
         """
-        return self.proxy._IsValid()
+        return self.proxy.IsValid()
     
-    def _IsValid(self):
-        """
-        This method is here to support calls that just want to see if there
-        is a valid server endpoint for communication from the client.
-        """
-        return 1
+    # For legacy calls
+    _IsValid = IsValid
 
