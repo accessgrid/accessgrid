@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.177 2004-05-17 17:02:39 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.178 2004-07-06 21:04:35 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.177 2004-05-17 17:02:39 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.178 2004-07-06 21:04:35 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -102,9 +102,9 @@ class VenueClient:
         self.isPersonalNode = pnode
 
         if app is not None:
-            app = app
+            self.app = app
         else:
-            app = Application.instance()
+            self.app = Application()
             
         self.nodeServiceUri = self.defaultNodeServiceUri
         self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
@@ -197,7 +197,7 @@ class VenueClient:
                 self.personalDataStorePath = None
                 
         if self.personalDataStorePath:
-            if Application.instance().GetOption("insecure"):
+            if self.app.GetOption("insecure"):
                 self.transferEngine = DataStore.HTTPTransferServer(('', self.personalDataStorePort))
             else:
                 self.transferEngine = DataStore.GSIHTTPTransferServer(('',
@@ -279,12 +279,11 @@ class VenueClient:
                 port = 11000
             else:
                 port = NetworkAddressAllocator().AllocatePort()
-        app = Application.instance()
         
-        if app.GetOption("insecure"):
-            self.server = InsecureServer((app.GetHostname(), port))
+        if self.app.GetOption("insecure"):
+            self.server = InsecureServer((self.app.GetHostname(), port))
         else:
-            self.server = SecureServer((app.GetHostname(), port))
+            self.server = SecureServer((self.app.GetHostname(), port))
         vci = VenueClientI(self)
         uri = self.server.RegisterObject(vci, path='/VenueClient')
 
@@ -767,14 +766,12 @@ class VenueClient:
         # Initialize a string of warnings that can be displayed to the user.
         self.warningString = ''
        
-        app = Application.instance()
-
         #
         # Turn this block off when fatulHandler support gets finished.
         #
-        if not app.certificateManager.HaveValidProxy():
+        if not self.app.certificateManager.HaveValidProxy():
             log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
-            app.certificateManager.CreateProxy()
+            self.app.certificateManager.CreateProxy()
 
 
         enterSuccess = 1

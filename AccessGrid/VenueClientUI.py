@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.59 2004-05-25 19:51:46 eolson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.60 2004-07-06 21:04:35 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.59 2004-05-25 19:51:46 eolson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.60 2004-07-06 21:04:35 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -157,7 +157,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_ME_DATA = wxNewId()
     ID_ME_UNFOLLOW = wxNewId()
 
-    def __init__(self, venueClient, controller):
+    def __init__(self, venueClient, controller, app):
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
         
@@ -175,7 +175,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # State kept so UI can add venue administration options.
         
         wxFrame.__init__(self, NULL, -1, "")
-        self.__BuildUI()
+        self.__BuildUI(app)
         self.SetSize(wxSize(400, 500))
         
         # Tell the UI about installed applications
@@ -263,7 +263,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.SetStatusBar(self.statusbar)
         self.statusbar.SetToolTipString("Statusbar")   
     
-    def __SetMenubar(self):
+    def __SetMenubar(self, app):
         self.SetMenuBar(self.menubar)
 
         # ---- menus for main menu bar
@@ -300,9 +300,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         gui = None
         try:
-            mgr = Toolkit.Application.instance().GetCertificateManager()
+            mgr = app.GetCertificateManager()
             gui = mgr.GetUserInterface()
-
         except:
             log.exception("VenueClientFrame.__SetMenubar: Cannot retrieve \
                            certificate mgr user interface, continuing")
@@ -498,7 +497,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             EVT_MENU(self, ID, self.GoToMenuAddressCB)
                         
 
-    def __BuildUI(self):
+    def __BuildUI(self, app):
         
         self.Centre()
         self.menubar = wxMenuBar()
@@ -525,7 +524,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.contentListPanel.SetDropTarget(dataDropTarget)
         
         self.__SetStatusbar()
-        self.__SetMenubar()
+        self.__SetMenubar(app)
         self.__SetProperties()
         self.Layout()
         self.__SetEvents()
@@ -2279,7 +2278,7 @@ class VenueAddressBar(wxSashLayoutWindow):
         venueServerAddressBox = wxBoxSizer(wxVERTICAL)
         
         box = wxBoxSizer(wxHORIZONTAL)
-        box.Add(2,5)
+        box.Add(wxSize(2,5))
         box.Add(self.backButton, 0, wxRIGHT|wxALIGN_CENTER|wxLEFT, 5)
         box.Add(self.address, 1, wxRIGHT|wxALIGN_CENTER, 5)
         box.Add(self.goButton, 0, wxRIGHT|wxALIGN_CENTER, 5)
@@ -2288,7 +2287,7 @@ class VenueAddressBar(wxSashLayoutWindow):
 
         titleBox = wxBoxSizer(wxHORIZONTAL)
         titleBox.Add(self.title, 1, wxEXPAND|wxCENTER)
-        titleBox.Add(2,5)
+        titleBox.Add(wxSize(2,5))
         self.titlePanel.SetSizer(titleBox)
         titleBox.Fit(self.titlePanel)
 
@@ -2573,7 +2572,7 @@ class ExitPanel(wxPanel):
         b = wxBoxSizer(wxHORIZONTAL)
         b.Add(self.button, 0, wxALIGN_LEFT|wxTOP|wxBOTTOM|wxRIGHT|wxLEFT, 2)
         b.Add(self.label, 1,  wxALIGN_CENTER|wxTOP|wxBOTTOM|wxRIGHT|wxEXPAND, 2)
-        b.Add(5,2)
+        b.Add(wxSize(5,2))
         self.SetSizer(b)
         b.Fit(self)
         self.SetAutoLayout(1)
@@ -2628,14 +2627,31 @@ class ContentListPanel(wxPanel):
         EVT_TREE_SEL_CHANGED(self.tree, id, self.OnSelect)
        
     def __SetImageList(self):
+        wxInitAllImageHandlers()
         imageList = wxImageList(18,18)
 
-        self.bullet = imageList.Add(icons.getBulletBitmap())
-        self.participantId = imageList.Add(icons.getDefaultParticipantBitmap())
-        self.defaultDataId = imageList.Add(icons.getDefaultDataBitmap())
-        self.serviceId = imageList.Add(icons.getDefaultServiceBitmap())
-        self.applicationId = imageList.Add(icons.getDefaultServiceBitmap())
-        self.nodeId = imageList.Add(icons.getDefaultNodeBitmap())
+        bm = icons.getBulletBitmap()
+        bm.SetWidth(18); bm.SetHeight(18)
+        self.bullet = imageList.Add(bm)
+        
+
+        bm = icons.getDefaultParticipantBitmap()
+        bm.SetWidth(18); bm.SetHeight(18)
+        self.participantId = imageList.Add(bm)
+
+        bm = icons.getDefaultDataBitmap()
+        bm.SetWidth(18); bm.SetHeight(18)
+        self.defaultDataId = imageList.Add(bm)
+
+        bm = icons.getDefaultServiceBitmap()
+        bm.SetWidth(18); bm.SetHeight(18)
+        self.serviceId = imageList.Add(bm)
+        self.applicationId = imageList.Add(bm)
+
+        bm = icons.getDefaultNodeBitmap()
+        bm = icons.getBulletBitmap()
+        bm.SetWidth(18); bm.SetHeight(18)
+        self.nodeId = imageList.Add(bm)
 
         self.tree.AssignImageList(imageList)
 
@@ -4009,7 +4025,7 @@ class AddAppDialog(wxDialog):
         sizer = wxBoxSizer(wxVERTICAL)
 
         sizer.Add(self.info, 0, wxEXPAND|wxALL, 10)
-        sizer.Add(5,5)
+        sizer.Add(wxSize(5,5))
         
         gridSizer = wxFlexGridSizer(2, 2, 10, 5)
         gridSizer.Add(self.nameText)
