@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientTest.py,v 1.1 2003-02-14 15:59:34 lefvert Exp $
+# RCS-ID:      $Id: VenueClientTest.py,v 1.2 2003-02-17 17:24:59 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -58,8 +58,7 @@ class VenueClientTest(VenueClient):
         self.EnterVenue(venueUri)
 
         print '\n--------------- ADD DATA'
-        data = DataDescription('dataName', 'dataDescription', 'dataUri', \
-                               'dataIcon', 'dataStoragetype')
+        data = DataDescription('dataName')
         self.client.AddData(data)
 
         print '\n--------------- ADD SERVICE'
@@ -75,7 +74,7 @@ class VenueClientTest(VenueClient):
 
         nodeUrl = 'http://nodeserviceurl'
         print '\n--------------- SET NODE SERVICE URL', nodeUrl  
-        self.SetNodeServiceUri(url)
+        self.SetNodeServiceUri(nodeUrl)
         print '--------------- NODE SERVICE URL: ', self.nodeServiceUri
 
    
