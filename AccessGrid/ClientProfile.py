@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.24 2003-08-07 16:49:13 eolson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.25 2003-08-12 20:59:32 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -330,7 +330,7 @@ class ClientProfileCache:
 
     def updateProfile(self, profile):
         if not profile.GetDistinguishedName():
-            log.exception("InvalidProfile")
+            raise InvalidProfileException
             return
 
         # Create a filename to store profile in the cache.
