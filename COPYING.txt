@@ -1,7 +1,7 @@
 
 Access Grid Toolkit Public License (AGTPL)
 
-Copyright (c) 2000-2003 University of Chicago. All Rights Reserved.
+Copyright (c) 2000-2004 University of Chicago. All Rights Reserved.
 
  1) The "Software", below, refers to the Access Grid Toolkit (in
  either source-code, or binary form and related documentation) and a
