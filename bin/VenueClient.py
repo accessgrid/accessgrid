@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.228 2003-10-01 20:22:09 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.229 2003-10-01 21:09:42 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -991,12 +991,6 @@ class VenueClientUI(VenueClientEventSubscriber):
             # Plumbing for getting progress callbacks to the dialog
             #
             def progressCB(progress, done, dialog = dlg):
-                # If dialog is not still open, clean it up.
-                if not dialog.IsShown():
-                    ret_value = dialog.IsCancelled()
-                    dialog.Destroy()
-                    return ret_value
-
                 if not dialog.IsCancelled():
                     wxCallAfter(dialog.SetProgress, progress, done)
                 return dialog.IsCancelled()
@@ -1011,7 +1005,7 @@ class VenueClientUI(VenueClientEventSubscriber):
 
             # Arguments to pass to get_ident_and_download
             #
-            dl_args = (url, local_pathname, size, checksum, progressCB)
+            dl_args = (url, local_pathname, size, checksum, progressCB, dlg)
                 
             download_thread = threading.Thread(target = self.get_ident_and_download,
                                                args = dl_args)
@@ -1027,8 +1021,7 @@ class VenueClientUI(VenueClientEventSubscriber):
             dlg.ShowModal()
 
             #
-            # Dialog dlg will get cleaned up in progressCB when it tries
-            #  to update progress and finds dialog is closed.
+            # Dialog dlg will get cleaned up at the end of get_ident_and_download.
             #
 
         except DataStore.DownloadFailed, e:
@@ -1101,7 +1094,7 @@ class VenueClientUI(VenueClientEventSubscriber):
             MessageDialog(None, failure_reason, "Download error",
             style = wxOK  | wxICON_ERROR)
 
-    def get_ident_and_download(self, url, local_pathname, size, checksum, progressCB):
+    def get_ident_and_download(self, url, local_pathname, size, checksum, progressCB, dialog=None):
         log.debug("Get ident and download")
         try:
             if url.startswith("https"):
@@ -1118,6 +1111,13 @@ class VenueClientUI(VenueClientEventSubscriber):
         except DataStore.DownloadFailed, e:
             log.exception("bin.VenueClient:get_ident_and_download: Got exception on download")
             wxCallAfter(MessageDialog, None, "The file could not be downloaded", "Download Error", style = wxOK  | wxICON_WARNING)
+
+        # Clean up download dialog if there is one.
+        if dialog != None:
+            # Wait until user closes it.
+            while dialog.IsShown():
+                time.sleep(2)
+            wxCallAfter(dialog.Destroy)
 
               
     def UploadPersonalFiles(self, fileList):
@@ -1234,7 +1234,7 @@ class VenueClientUI(VenueClientEventSubscriber):
         #
         # Arguments to pass to get_ident_and_upload
         #
-        ul_args = (url, file_list, progressCB)
+        ul_args = (url, file_list, progressCB, dlg)
 
         log.debug("Have args, creating thread, url: %s, files: %s", url, file_list)
 
@@ -1245,17 +1245,10 @@ class VenueClientUI(VenueClientEventSubscriber):
         dlg.ShowModal()
 
         #
-        # The dialog has returned. This is either because the upload
-        # finished and the user clicked OK, or because the user clicked
-        # Cancel to abort the upload. In either event the
-        # call to HTTPUploadFiles should return, and the thread quit.
+        # Dialog dlg will get cleaned up at the end of get_ident_and_upload.
         #
-        # Wait for the thread to finish (if it doesn't it's a bug).
-        #
-        upload_thread.join()
-        dlg.Destroy()
 
-    def get_ident_and_upload(self, upload_url, file_list, progressCB):
+    def get_ident_and_upload(self, upload_url, file_list, progressCB, dialog=None):
         log.debug("Upload: getting identity")
 
         error_msg = None
@@ -1280,7 +1273,14 @@ class VenueClientUI(VenueClientEventSubscriber):
 
         if error_msg is not None:
             log.exception("bin.VenueClient::get_ident_and_upload: Upload data error")
-            MessageDialog(None, error_msg, "Upload Files Error", wxOK | wxICON_WARNING)
+            wxCallAfter(MessageDialog, None, error_msg, "Upload Files Error", wxOK | wxICON_WARNING)
+
+        # Clean up download dialog if there is one.
+        if dialog != None:
+            # Wait until user closes it.
+            while dialog.IsShown():
+                time.sleep(2)
+            wxCallAfter(dialog.Destroy)
                
     def UploadFilesNoDialog(self, file_list):
         """
