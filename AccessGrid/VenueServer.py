@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.19 2003-01-24 04:31:33 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.20 2003-01-24 17:31:40 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,16 +18,17 @@ import string
 from threading import Thread
 import shelve
 import signal
+import traceback
 
 # AG Stuff
-from Utilities import formatExceptionInfo
+from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid import Venue
-import GUID
-import NetworkLocation
+from AccessGrid.GUID import GUID
+from AccessGrid.NetworkLocation import NetworkLocation
 from MulticastAddressAllocator import MulticastAddressAllocator
-import DataStore
-import scheduler
+from AccessGrid.DataStore import DataStore
+from AccessGrid.scheduler import Scheduler
 from AccessGrid.Descriptions import VenueDescription
 
 class VenueServer(ServiceBase.ServiceBase):
@@ -110,7 +111,7 @@ class VenueServer(ServiceBase.ServiceBase):
         # The first task we register with the houseKeeper is a periodic
         # checkpoint, this tries to ensure that the persistent store is
         # kept up to date.
-        self.houseKeeper = scheduler.Scheduler()
+        self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.Checkpoint,
                             self.config['VenueServer.houseKeeperFrequency'], 0)
 
@@ -168,7 +169,7 @@ class VenueServer(ServiceBase.ServiceBase):
                                                  venueDescription.icon,
                                                  venueDescription.extendedDescription )
 
-            venueID = GUID.GUID()
+            venueID = GUID()
             venuePath = "Venues/%s" % venueID
             venueURL = self.hostingEnvironment.get_url_base() + "/" + venuePath
             venueDescription.uri = venueURL
@@ -194,7 +195,7 @@ class VenueServer(ServiceBase.ServiceBase):
             self.venues[venueURL] = venue
 
         except:
-            print "Exception in AddVenue ", formatExceptionInfo()
+            print "Exception in AddVenue ", traceback.print_exc()
 
         # return the URL to the new venue
         return venueURL
@@ -468,8 +469,9 @@ class VenueServer(ServiceBase.ServiceBase):
 
             store.close()
         except:
-            print "Checkpoint problem!", formatExceptionInfo()
-
+            (name, args, tb) = formatExceptionInfo()
+            print "Name: ", name, "\nArgs: ", args, "\nTrace: ", tb
+            
         self.SaveConfig(file(self.configFile, 'w+'))
         
     Checkpoint.soap_export_as = "Checkpoint"
