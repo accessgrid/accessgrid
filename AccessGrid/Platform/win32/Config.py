@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.45 2004-07-30 21:47:12 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.46 2004-08-13 19:06:13 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.45 2004-07-30 21:47:12 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.46 2004-08-13 19:06:13 lefvert Exp $"
 
 import os
 import sys
@@ -602,7 +602,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
             raise Exception, "AGTkConfig: log dir does not exist %s."%self.logDir 
 
         return self.logDir
-
+    
     def GetSharedAppDir(self):
         if self.appDir == None:
             ucd = self.GetBaseDir()
@@ -1215,7 +1215,7 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
 
         log.debug("Extension: %s", extension)
 
-        if extension != None:
+        if extension != None and len(extension) > 0:
             if extension[0] != ".":
                 extension = ".%s" % extension
             try:
