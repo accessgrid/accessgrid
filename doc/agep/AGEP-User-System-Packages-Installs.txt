@@ -1,0 +1,86 @@
+=====================================
+User and System Packages and Installs
+=====================================
+ 
+:version: $Revision: 1.1 $
+:author: Eric Olson <eolson@mcs.anl.gov>
+:status: Draft
+:contact: ag-tech@mcs.anl.gov
+
+Abstract
+========
+
+This document outlines the locations and methods for installing and running components of the Access Grid software.  Making modifications to support these standard locations will improve the ease of use and installation of components such as shared applications and node services.  The locations to be used include system package, user package, system install, and user install locations.
+
+Overview
+========
+
+Shared Applications
+Currently shared applications have a system package location and a user install location.  If the two primary shared applications are not installed at the user level, they are installed locally and then run.
+It would be more convenient if:
+* The software was not installed automatically over a version the user has installed already.
+* The user did not have to install it locally and could use a system installed version automatically if one was not installed locally.
+* The user could select from packages in a system location or user location to install locally.
+
+The satisfy these needs, shared applications would have 4 locations.
+       |  Package  |  Install  |
+System |     x     | [not yet] |
+User   | [not yet] |     x     |
+
+Node Services
+Currently node services are not clearly separated into system/user and package/install locations.  If the user install is not already setup when the software is started, default services and configuration files are setup for the user.  System configurations are also copied to the user location if they are available at the first initialization.
+
+Like shared applications, node services would benefit from the creation and use of System/User and Package/Install locations.  This would give both the user and system (or system administrator) more options and flexibility when providing Access Grid services.
+
+Other components of the Access Grid may also benefit from this model.
+
+
+Summary of Modifications
+========================
+
+* The search order for locating installed shared applications and node services needs to be modified to search user and system locations.
+
+* The installation tool agpm.py needs to be able to install node services.
+
+* The software needs to be possible to place packages (via agpm.py or another method) into a location where system or user installs can find them.
+
+* agpm.py must have a method for specifying whether components are being installed into a system location or a user location.
+
+
+Specifications
+==============
+
+Four locations (User Package, User Install, System Package, and System Install) need to be determined and made available for Shared Applications and Node Services.
+
+Shared Applications
+The VenueClient will first try to use a locally installed version of a shared application.
+If the application isn't installed locally, it will try to use a system installed version.
+If the application is not installed in the system, it will notify the user of packages available to be installed from the system package location or user package location.
+
+Node Services
+When presented with a choice of services to install, the Access Grid software should look for service packages in both the system and user package location.
+When presented with a choice of services or service configurations to use, the Access Grid software should look for them in both the system and user install location.
+
+
+Implementation
+==============
+
+Not yet implemented.
+
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
