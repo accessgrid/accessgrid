@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.102 2004-06-22 13:11:31 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.103 2004-08-27 19:04:32 judson Exp $
 ;
 
 ; Set externally
@@ -113,6 +113,7 @@ Source: SharedApplications\*.agpkg; DestDir: {app}\SharedApplications
 Source: install\agicons.exe; DestDir: {app}\install
 Source: install\msvcr70.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
 ; end system files
+Source: install\msvcr71.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
 
 [Icons]
 Name: {group}\View README; Filename: {app}\README.txt; Flags: createonlyiffileexists; Comment: Read the ReadMe.
