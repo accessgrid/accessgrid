@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.48 2004-03-18 21:42:37 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.49 2004-03-31 22:12:39 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.48 2004-03-18 21:42:37 eolson Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.49 2004-03-31 22:12:39 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -27,6 +27,7 @@ from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.Descriptions import CreateAGServiceDescription, CreateResource
 from AccessGrid.Descriptions import CreateServiceConfiguration
 from AccessGrid.AGService import AGServiceIW
+from AccessGrid.AGServicePackageRepository import AGServicePackageRepository
 
 log = Log.GetLogger(Log.ServiceManager)
 hdlr = Log.StreamHandler()
@@ -43,9 +44,13 @@ class AGServiceManager:
         self.server = server
 
         self.resources = []
+        
         # note: services dict is keyed on pid
         self.services = dict()
         self.processManager = ProcessManager()
+        self.resourcesFile = os.path.join(UserConfig.instance().GetConfigDir(),
+                                          "videoresources")
+
 
         userConfig = UserConfig.instance()
         self.servicesDir = os.path.join(userConfig.GetConfigDir(),
@@ -57,7 +62,10 @@ class AGServiceManager:
             try:
                 os.mkdir(self.servicesDir)
             except:
-                log.exception("Couldn't create user services directory %s", self.servicesDir)
+                log.exception("Couldn't create user services directory %s", 
+                              self.servicesDir)
+                
+        self.packageRepo = AGServicePackageRepository(self.servicesDir)
 
         self.__DiscoverResources()
         
@@ -81,28 +89,20 @@ class AGServiceManager:
         return self.resources
 
 
-    def DiscoverResources( self ):
-        """Discover local resources (audio cards, etc.)
-        """
-        try:
-            self.__DiscoverResources()
-        except:
-            raise Exception("AGServiceManager.DiscoverResources failed: " + str( sys.exc_value ))
-
-
     ####################
     ## SERVICE methods
     ####################
 
-    def AddService( self, servicePackageUri, resourceToAssign, serviceConfig ):
+    def AddService( self, serviceDescription, resourceToAssign, serviceConfig ):
         """
         Add a service package to the service manager.  
         """
+        log.debug("AddService: %s v%f", serviceDescription.name, 
+                  serviceDescription.version)
         
         # Get the service manager url (first time only)
         if not self.url:
             self.url = self.server.FindURLForObject(self)
-
 
         #
         # Determine resource to assign to service
@@ -127,21 +127,38 @@ class AGServiceManager:
 
         try:
             #
-            # Check for local copy of service implementation
+            # Check for local copy of service package
             #
-            # -- not yet implemented
+            localSvcDesc = None
+            svcDescList = self.packageRepo.GetServiceDescriptions()
+            for svcDesc in svcDescList:
+                if svcDesc.name == serviceDescription.name:
+                    localSvcDesc = svcDesc
+                    log.debug("Found local service %s, v%d", 
+                              localSvcDesc.name,
+                              localSvcDesc.version)
+                    break                   
 
-            #
-            # Retrieve service implementation
-            #
-            servicePackageFile = self.__RetrieveServicePackage( servicePackageUri )
-            serviceDescription = AGServicePackage( servicePackageFile ).GetServiceDescription()
-            serviceDescription.servicePackageUri = servicePackageUri
+            # Retrieve the service package if there is no local copy, 
+            # or if we're adding a newer copy
+            if not localSvcDesc or localSvcDesc.version < serviceDescription.version:
+                log.debug("Retrieving service package %s", 
+                          serviceDescription.servicePackageUri)
+                #
+                # Retrieve service implementation
+                #
+                servicePackageFile = self.__RetrieveServicePackage( serviceDescription.servicePackageUri )
+                serviceDescription = AGServicePackage( servicePackageFile ).GetServiceDescription()
+            else:
+                serviceDescription = localSvcDesc
+            
             serviceDescription.resource = resource
 
         except:
-            log.exception("Service Manager failed to retrieve service implementation for %s", servicePackageUri)
-            raise Exception("AGServiceManager.AddService failed: " + str( sys.exc_value ) )
+            log.exception("Service Manager failed to retrieve service implementation for %s", 
+                          serviceDescription.servicePackageUri)
+            raise Exception("AGServiceManager.AddService failed: " + 
+                            str( sys.exc_value ) )
 
         #
         # Execute service implementation
@@ -152,11 +169,14 @@ class AGServiceManager:
             #
             # Execute the service implementation
             #
+            exeFile = os.path.join(self.servicesDir, serviceDescription.executable )
             if serviceDescription.executable.endswith(".py"):
+                # python files are executed with python
                 executable = sys.executable
-                options.append( self.servicesDir + os.sep + serviceDescription.executable )
+                options.append( exeFile )
             else:
-                executable = self.servicesDir + os.sep + serviceDescription.executable
+                # non-python files are executed directly
+                executable = exeFile
 
             # Designate port for service
             port = NetworkAddressAllocator().AllocatePort()
@@ -261,7 +281,8 @@ class AGServiceManager:
                                 foundResource = 1
 
                         if foundResource == 0:
-                            log.debug("** The resource used by the service can not be found !! : %s", service.resource.resource)
+                            log.debug("** The resource used by the service can not be found !! : %s", 
+                                      service.resource.resource)
 
                     break
 
@@ -327,7 +348,7 @@ class AGServiceManager:
         # Retrieve the service package
         #
         filename = os.path.basename( servicePackageUrl )
-        servicePackageFile = self.servicesDir + os.sep + filename
+        servicePackageFile = os.path.join(self.servicesDir, filename)
         isNewServicePackage = not os.path.exists(servicePackageFile)
         GSIHTTPDownloadFile(servicePackageUrl, servicePackageFile, None, None)
 
@@ -350,10 +371,7 @@ class AGServiceManager:
     def __DiscoverResources( self ):
         """Discover local resources (video capture cards, etc.)
         """
-        agtkConfig = AGTkConfig.instance()
-        configDir = agtkConfig.GetConfigDir()
-        filename = configDir + os.sep + "videoresources"
-        self.resources = Utilities.GetResourceList( filename )
+        self.resources = Utilities.GetResourceList( self.resourcesFile )
 
     def __ReadConfigFile( self, configFile ):
         """
@@ -408,17 +426,22 @@ class AGServiceManagerI(SOAPInterface):
         """
         self.impl.DiscoverResources()
 
-    def AddService(self, servicePackageUri, resourceStruct, serviceConfigStruct):
+    def AddService(self, serviceDescStruct, resourceStruct, serviceConfigStruct):
         """
         Interface to add a service to the service manager
 
         **Arguments:**
-            *servicePackageUri* URI from which service package can be retrieved
+            *serviceDescription* description of the service to add
             *resourceToAssign* resource to assign to service
             *serviceConfig* configuration to apply to service after it's been added
         **Raises:**
         **Returns:**
         """
+        if serviceDescStruct and serviceDescStruct != "None":
+            serviceDescription = CreateAGServiceDescription(serviceDescStruct)
+        else:   
+            serviceDescription = None
+
         if resourceStruct and resourceStruct != "None":
             resource = CreateResource(resourceStruct)
         else:
@@ -428,7 +451,7 @@ class AGServiceManagerI(SOAPInterface):
             serviceConfig = CreateServiceConfiguration(serviceConfigStruct)
         else:
             serviceConfig = None
-        return self.impl.AddService(servicePackageUri, resource, serviceConfig)
+        return self.impl.AddService(serviceDescription, resource, serviceConfig)
 
     def RemoveService(self, serviceDescStruct):
         """
@@ -510,8 +533,8 @@ class AGServiceManagerIW(SOAPIWrapper):
     def DiscoverResources(self):
         self.proxy.DiscoverResources()
 
-    def AddService(self, servicePackageUri, resource, serviceConfig):
-        serviceDescStruct = self.proxy.AddService(servicePackageUri, resource, serviceConfig)
+    def AddService(self, serviceDescription, resource, serviceConfig):
+        serviceDescStruct = self.proxy.AddService(serviceDescription, resource, serviceConfig)
         serviceDesc = CreateAGServiceDescription(serviceDescStruct)
         return serviceDesc
 
