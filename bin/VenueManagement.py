@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.90 2003-09-05 22:29:25 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.91 2003-09-10 15:50:59 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -143,8 +143,9 @@ class VenueManagementClient(wxApp):
 
 
     def OpenAboutDialog(self, event):
-        aboutDialog = AboutDialog(self.frame, wxSIMPLE_BORDER)
-        aboutDialog.Popup()
+        aboutDialog = AboutDialog(self.frame)
+        aboutDialog.ShowModal()
+        aboutDialog.Destroy()
         
     def Exit(self, event):
         self.frame.Close(true)
