@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.21 2003-02-21 21:42:10 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.22 2003-02-22 16:34:06 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -55,7 +55,7 @@ class VenueClient( ServiceBase ):
 
     def Heartbeat(self):
         if self.eventClient != None:
-            print "Sending heartbeat!"
+#            print "Sending heartbeat!"
             self.eventClient.Send(HeartbeatEvent(self.venueId, self.privateId))
             
     def SetProfile(self, profile):

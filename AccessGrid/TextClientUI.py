@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClientUI.py,v 1.6 2003-02-21 21:42:10 judson Exp $
+# RCS-ID:      $Id: TextClientUI.py,v 1.7 2003-02-22 16:34:06 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -35,11 +35,19 @@ class SimpleTextProcessor:
         self.outputThread = Thread(target = self.ProcessNetwork)
         self.outputThread.start()
 
+        self.localEcho = 0
+
+    def LocalEcho(self):
+        self.localEcho =~ self.localEcho
+        
     def Stop(self):
         self.running = 0
         
-    def ProcessForSending(self, event):
+    def Input(self, event):
         """ """
+        if self.localEcho:
+            self._RawOutput(event.data.data + '\n')
+            
         try:
             pdata = pickle.dumps(event)
             lenStr = "%s\n" % len(pdata)
@@ -51,7 +59,7 @@ class SimpleTextProcessor:
             print "Name: %s Args: %s" % (name, args)
             print "TB:\n", tb
 
-    def ProcessForDisplay(self, text):
+    def Output(self, text):
         """ """
         data = text.data
 
@@ -66,11 +74,14 @@ class SimpleTextProcessor:
         else:
             string = "Someone says, \"%s\"\n" % (data)
 
+        self._RawOutput(string)
+
+    def _RawOutput(self, string):
         try:
             wxCallAfter(self.textOut.AppendText, string)
         except:
             self.Stop()
-
+        
     def ProcessNetwork(self):
         """ """
         self.running = 1
@@ -79,7 +90,7 @@ class SimpleTextProcessor:
             size = int(str)
             pdata = self.rfile.read(size, size)
             event = pickle.loads(pdata)
-            self.ProcessForDisplay(event.data)
+            self.Output(event.data)
 
 class TextClientUI(wxFrame):
     aboutText = """PyText 1.0 -- a simple text client in wxPython and pyGlobus.
@@ -135,12 +146,11 @@ class TextClientUI(wxFrame):
                                              self.TextOutput)
 
 
-        self.Processor.ProcessForSending(ConnectEvent(self.venueId))
-        self.localEcho = 0
+        self.Processor.Input(ConnectEvent(self.venueId))
 
         EVT_MENU(self, self.fileCloseId, self.FileClose)
         EVT_MENU(self, self.helpAboutId, self.HelpAbout)
-        EVT_MENU(self, self.localEchoId, self.LocalEcho)
+        EVT_MENU(self, self.localEchoId, self.SetLocalEcho)
         EVT_TEXT_ENTER(self, self.textInId, self.LocalInput)
 
     def __set_properties(self):
@@ -164,9 +174,11 @@ class TextClientUI(wxFrame):
         self.Layout()
         # end wxGlade
 
+    def SetLocalEcho(self, event):
+        self.Processor.LocalEcho()
+        
     def FileClose(self, event):
-        self.Processor.Stop()
-        self.Close()
+        self.Stop()
 
     def HelpAbout(self, event):
         """ About dialog!"""
@@ -174,18 +186,19 @@ class TextClientUI(wxFrame):
         dlg.ShowModal()
         dlg.Destroy()
 
-    def LocalEcho(self, event):
-        """ """
-        self.localEcho = ~self.localEcho
-
     def LocalInput(self, event):
         """ User input """
-        if self.localEcho:
-            self.Processor.ProcessForLocalDisplay(event.GetString())
         textEvent = TextEvent(self.venueId, None, 0, event.GetString())
-        self.Processor.ProcessForSending(textEvent)
+        self.Processor.Input(textEvent)
         self.TextInput.Clear()
 
+    def Stop(self):
+        self.Processor.Stop()
+        self.Close()
+
+    def OnCloseWindow(self):
+        self.Destroy()
+        
 if __name__ == "__main__":
     pyText = wxPySimpleApp()
     wxInitAllImageHandlers()

@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.49 2003-02-21 21:42:10 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.50 2003-02-22 16:34:18 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -53,6 +53,8 @@ class VenueClientUI(wxApp, VenueClient):
         self.client = None
         self.gotClient = false
         self.clientHandle = None
+        self.textClient = None
+        self.venueUri = None
         return true
 
     def __createHomePath(self):
@@ -319,15 +321,24 @@ class VenueClientUI(wxApp, VenueClient):
             
             dlg.ShowModal()
             dlg.Destroy()
-             
+
+    def OnCloseWindow(self):
+        self.Destroy()
+        
     def OnExit(self):
         """
         This method performs all processing which needs to be
         done as the application is about to exit.
         """
-        self.ExitVenue()
-        os._exit(1)
-                
+        if self.textClient != None:
+            wxCallAfter(self.textClient.Stop)
+
+        # We need to test to see if we're in a Venue!?
+        if self.venueUri != None:
+            self.ExitVenue()
+
+        os._exit(0)
+    
     def SaveFile(self, data_descriptor, local_pathname):
         """
         Save a file from the datastore into a local file.
