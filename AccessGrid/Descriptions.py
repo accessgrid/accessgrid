@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.47 2004-03-10 07:19:34 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.48 2004-03-15 23:36:15 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.47 2004-03-10 07:19:34 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.48 2004-03-15 23:36:15 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -21,6 +21,7 @@ from AccessGrid.GUID import GUID
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.Types import Capability
+from AccessGrid.Types import AGResource, ServiceConfiguration
 
 from AccessGrid.ClientProfile import ClientProfile
 class ObjectDescription:
@@ -612,3 +613,43 @@ def CreateVenueState(venueStateStruct):
                             applicationList, serviceList,
                             venueStateStruct.backupServer)    
     return venueState
+
+
+def CreateAGServiceManagerDescription(svcMgrDescStruct):
+    svcMgrDesc = AGServiceManagerDescription(svcMgrDescStruct.name,
+                                           svcMgrDescStruct.uri)
+    return svcMgrDesc
+
+def CreateAGServiceDescription(svcDescStruct):
+    svcDesc = AGServiceDescription(svcDescStruct.name, 
+                                   svcDescStruct.description, 
+                                   svcDescStruct.uri, 
+                                   svcDescStruct.capabilities,
+                                   svcDescStruct.resource, 
+                                   svcDescStruct.executable, 
+                                   svcDescStruct.serviceManagerUri,
+                                   svcDescStruct.servicePackageUri )
+    return svcDesc
+
+
+def CreateResource(rscStruct):
+    rsc = AGResource(rscStruct.type,
+                     rscStruct.resource,
+                     rscStruct.role)
+    return rsc
+
+def CreateServiceConfiguration(serviceConfigStruct):
+
+    resource = None
+    print "serviceConfigStruct.resource = ", serviceConfigStruct.resource
+    if serviceConfigStruct.resource and serviceConfigStruct.resource != "None":
+        resource = CreateResource(serviceConfigStruct.resource)
+    
+    print "serviceConfigStruct.parameters = ", serviceConfigStruct.parameters
+    parameters = dict()
+    
+    serviceConfig = ServiceConfiguration(resource,
+                                         serviceConfigStruct.executable,
+                                         parameters)
+    
+    return serviceConfig
