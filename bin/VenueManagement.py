@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.78 2003-08-13 22:31:24 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.79 2003-08-15 13:01:54 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1206,9 +1206,10 @@ class VenueParamFrame(wxDialog):
         # This is the exits this venue has
         self.exits = wxListBox(self, -1, size = wxSize(250, 100),
                                style = wxLB_SORT)
-        self.modifyRolesButton = wxButton(self, self.ID_MODIFY_ROLES, "Modify Roles",
+        if isinstance(self, ModifyVenueFrame):
+            self.modifyRolesButton = wxButton(self, self.ID_MODIFY_ROLES, "Modify Roles",
                                  size = wxSize(90, 10))
-        self.rolesText = wxStaticText(self, -1, "Manage access to venue including which users are allowed to Enter and which users allowed to Administrate.")
+            self.rolesText = wxStaticText(self, -1, "Manage access to venue including which users are allowed to Enter and which users allowed to Administrate.")
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton =  wxButton(self, wxID_CANCEL, "Cancel")
 
