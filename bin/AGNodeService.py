@@ -3,14 +3,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.57 2004-06-01 20:15:47 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.58 2004-07-26 14:44:33 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.57 2004-06-01 20:15:47 judson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.58 2004-07-26 14:44:33 turam Exp $"
 
 # The standard imports
 import sys
@@ -42,13 +42,16 @@ def SignalHandler(signum, frame):
     SignalHandler catches signals and shuts down the VenueServer (and
     all of it's Venues. Then it stops the hostingEnvironment.
     """
-    global log, server, running
+    global log, server, running, nodeService
 
     log.info("Caught signal, going down.")
     log.info("Signal: %d Frame: %s", signum, frame)
     
     if server != None:
         server.Stop()
+        
+    if nodeService: 
+        nodeService.Stop()
 
     running = 0
 
@@ -103,13 +106,14 @@ def main():
     # Run the service
     server.RunInThread()
     
+    log.info("Starting Node Service URL: %s", url)
+    print "Starting Node Service URL:", url
+
     # Load the default node config
     try:
         nodeService.LoadDefaultConfig()
     except:
         print "Error loading default node configuration"
-
-    log.info("Starting Node Service URL: %s", url)
 
     # Keep the main thread busy so we can catch signals
     global running
