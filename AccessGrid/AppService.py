@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: AppService.py,v 1.4 2003-04-03 20:57:17 judson Exp $
+# RCS-ID:      $Id: AppService.py,v 1.5 2003-04-17 21:10:32 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -45,8 +45,8 @@ class AppObject(ServiceBase.ServiceBase):
         return self.impl.GetId()
     GetId.soap_export_as = "GetId"
         
-    def Join(self, profile):
-        return self.impl.Join(profile)
+    def Join(self):
+        return self.impl.Join()
     Join.soap_export_as = "Join"
 
     def GetComponents(self):
@@ -213,11 +213,12 @@ class AppObjectImpl:
     def GetId(self):
         return self.id
 
-    def Join(self, profile):
+    def Join(self):
+        public_id = str(GUID.GUID())
         private_id = str(GUID.GUID())
-        self.components[private_id] = profile
+        self.components[private_id] = public_id
 
-        return private_id
+        return (public_id, private_id)
 
     def Leave(self, private_token):
         if self.components.has_key(private_token):
@@ -234,7 +235,12 @@ class AppObjectImpl:
         if not self.components.has_key(private_token):
             raise InvalidPrivateToken
 
-        return (self.channels[0], self.eventService.GetLocation())
+        channelId = self.channels[0]
+        location = self.eventService.GetLocation()
+        log.info( "channel = " + self.channels[0] )
+        log.info( "location = " +  location[0] + ":" + str(location[1]) )
+        
+        return (channelId, location)
 
     def GetComponents(self, private_token):
         if not self.components.has_key(private_token):
