@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.32 2004-05-20 21:02:21 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.33 2004-05-20 22:40:05 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.32 2004-05-20 21:02:21 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.33 2004-05-20 22:40:05 eolson Exp $"
 
 import os
 import mimetypes
@@ -834,14 +834,16 @@ Comment=%s
 
         # Copy KDE files into place
         if len(userMimeFile) > 0 and os.path.exists(kdeUserMime):
-            mimeFd = open(userMimeFile, "w")
-            mimeFd.write(kdeMimeInfo)
-            mimeFd.close()
+            if not os.path.exists(userMimeFile): # don't overwrite
+                mimeFd = open(userMimeFile, "w")
+                mimeFd.write(kdeMimeInfo)
+                mimeFd.close()
 
         if len(userAppFile) > 0 and os.path.exists(kdeUserApps):
-            appFd = open(userAppFile, "w")
-            appFd.write(kdeAppInfo)
-            appFd.close()
+            if not os.path.exists(userAppFile): # don't overwrite
+                appFd = open(userAppFile, "w")
+                appFd.write(kdeAppInfo)
+                appFd.close()
 
 
         # --- GNOME USER REGISTRATION ---
@@ -856,17 +858,20 @@ Comment=%s
         if os.path.exists(gnomeAppDir) and os.path.exists(gnomeMimeDir):
             log.info("registering file type " + extension + " with gnome")
 
-            f = open(gnomeAppFile, "w")
-            f.write(gnomeAppInfo)
-            f.close()
+            if not os.path.exists(gnomeAppFile): # don't overwrite
+                f = open(gnomeAppFile, "w")
+                f.write(gnomeAppInfo)
+                f.close()
 
-            f = open(gnomeKeysFile, "w")
-            f.write(gnomeKeyInfo)
-            f.close()
+            if not os.path.exists(gnomeKeysFile): # don't overwrite
+                f = open(gnomeKeysFile, "w")
+                f.write(gnomeKeyInfo)
+                f.close()
 
-            f = open(gnomeMimeFile, "w")
-            f.write(gnomeMimeInfo)
-            f.close()
+            if not os.path.exists(gnomeMimeFile): # don't overwrite
+                f = open(gnomeMimeFile, "w")
+                f.write(gnomeMimeInfo)
+                f.close()
 
         else:
             log.info("gnome directory " + gnomeAppDir + " or " + gnomeMimeDir + " not found, not registering file type " + extension + " with gnome")
