@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.15 2004-05-28 17:41:28 lefvert Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.16 2004-06-01 21:18:37 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.15 2004-05-28 17:41:28 lefvert Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.16 2004-06-01 21:18:37 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -632,7 +632,7 @@ class AuthorizationUIPanel(wxPanel):
                 # Update tree
                 self.changed = 1
                 self.tree.Delete(self.dragItem)
-                itemId = self.tree.AppendItem(parent, item.name, self.participantId,
+                itemId = self.tree.AppendItem(parent, item.GetCN(), self.participantId,
                                               self.participantId)
                 self.tree.SetItemData(itemId, wxTreeItemData(item))
                                 
