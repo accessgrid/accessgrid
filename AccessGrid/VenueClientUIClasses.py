@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.64 2003-03-14 15:33:11 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.65 2003-03-14 16:21:22 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -206,7 +206,9 @@ class VenueClientFrame(wxFrame):
         self.nodeMenu.Enable(self.ID_NODE_MANAGE, false)
         self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
         self.participantMenu.Enable(self.ID_PARTICIPANT_FOLLOW, false)
-        
+        self.serviceMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
+        self.serviceMenu.Enable(self.ID_VENUE_SERVICE_DELETE, false)
+        self.meMenu.Enable(self.ID_ME_DATA, false) 
       
     def HideMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
@@ -220,8 +222,8 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, true)
         self.menubar.Enable(self.ID_VENUE_DATA_SAVE, true)
         self.menubar.Enable(self.ID_VENUE_DATA_DELETE, true)
-        self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
-        self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, true)
+        #self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
+        #self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, true)
         self.menubar.Enable(self.ID_MYVENUE_ADD, true)
          
     def __setEvents(self):
