@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.74 2004-09-03 13:30:04 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.75 2004-09-03 13:45:05 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.74 2004-09-03 13:30:04 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.75 2004-09-03 13:45:05 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -152,11 +152,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_HELP_BUGZILLA = wxNewId()
     
     ID_PARTICIPANT_PROFILE = wxNewId()
-    ID_PARTICIPANT_FOLLOW = wxNewId()
-    ID_PARTICIPANT_LEAD = wxNewId()
     ID_ME_PROFILE = wxNewId()
     ID_ME_DATA = wxNewId()
-    ID_ME_UNFOLLOW = wxNewId()
 
     def __init__(self, venueClient, controller, app):
         sys.stdout = sys.__stdout__
@@ -394,11 +391,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.participantMenu = wxMenu()
         self.participantMenu.Append(self.ID_PARTICIPANT_PROFILE,"View Profile...",\
                                            "View participant's profile information")
-        self.participantMenu.AppendSeparator()
-        self.participantMenu.Append(self.ID_PARTICIPANT_FOLLOW,"Follow",\
-                                           "Follow this person")
-        self.participantMenu.Append(self.ID_PARTICIPANT_LEAD,"Lead",\
-                                           "Lead this person")
 
         # ---- Menus for headings
         self.dataHeadingMenu = wxMenu()
@@ -416,8 +408,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # have it anyhow)
         self.preferences.Enable(self.ID_USE_UNICAST, false)
         
-        # until implemented
-        self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
 
 
     def __SetEvents(self):
@@ -458,8 +448,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # Popup Menu Events
         EVT_MENU(self, self.ID_ME_PROFILE, self.EditProfileCB)
-        EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.FollowCB)
-        EVT_MENU(self, self.ID_ME_UNFOLLOW, self.UnFollowCB)
         EVT_MENU(self, self.ID_ME_DATA, self.AddPersonalDataCB)
         EVT_MENU(self, self.ID_PARTICIPANT_PROFILE, self.ViewProfileCB)
 
@@ -1218,35 +1206,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             except:
                 self.Error("Error uploading personal data files", "Add Personal Data Error")
 
-    def FollowCB(self, event):
-        personToFollow = self.GetSelectedItem()
-        url = personToFollow.venueClientURL
-        name = personToFollow.name
-        log.debug("VenueClientFrame.Follow: You are trying to follow :%s url:%s " %(name, url))
-
-        if(self.venueClient.leaderProfile == personToFollow):
-            text = "You are already following "+name
-            title = "Notification"
-            self.Notify(text, title)
-        
-        elif (self.venueClient.pendingLeader == personToFollow):
-            text = "You have already sent a request to follow "+name+". Please, wait for answer."
-            title = "Notification"
-            self.Notify(text,title)
-        else:
-            try:
-                self.controller.FollowCB(personToFollow)
-            except:
-                text = "You can not follow "+name
-                title = "Notification"
-                self.Notify(text, title)
-                
-    def UnFollowCB(self, event):
-        try:
-            self.controller.UnFollowCB()
-            self.meMenu.Remove(self.ID_ME_UNFOLLOW)
-        except:
-            self.Error("Error occurred trying to stop following","UnFollow Error") 
             
 
     #
@@ -1549,96 +1508,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def Error(self,text,title):
         log.exception("Error")
         ErrorDialog(None, text, title)
-
-
-    #
-    # Lead/Follow
-    #
-
-    def LeadResponse(self, leaderProfile, isAuthorized):
-        """
-        This method notifies the user if the request to follow somebody is approved
-        or denied.
-
-        **Arguments:**
-        
-        *leaderProfile* The ClientProfile of the user we want to follow
-        *isAuthorized* Boolean value set to true if request is approved, else false.
-        
-        """
-        wxCallAfter(self.NotifyLeadDialog, leaderProfile, isAuthorized)
-
-    def NotifyUnLeadDialog(self, clientProfile):
-        text = clientProfile.name+" has stopped following you"
-        title = "Notification"
-        dlg = wxMessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
-        dlg.ShowModal()
-        dlg.Destroy()
-        
-    def NotifyUnLead(self, clientProfile):
-        """
-        This method  notifies the user that somebody wants to stop following him or
-        her
-
-        **Arguments:**
-        
-        *clientProfile* The ClientProfile of the client who stopped following this client
-        """
-        wxCallAfter(self.NotifyUnLeadDialog, clientProfile)
-        
-
-    def NotifyLeadDialog(self, clientProfile, isAuthorized):
-        if isAuthorized:
-            text = "You are now following "+clientProfile.name
-            self.meMenu.Append(self.ID_ME_UNFOLLOW,"Stop following %s" % clientProfile.name,
-                               "%s will not lead anymore" % clientProfile.name)
-        else:
-            text = clientProfile.name+" does not want you as a follower, the request is denied."
-
-        title = "Notification"
-        dlg = wxMessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
-        dlg.ShowModal()
-        dlg.Destroy()
-
-    def AuthorizeLead(self, clientProfile):
-        """
-        This method  notifies the user that somebody wants to follow him or
-        her and allows the user to approve the request.
-
-        **Arguments:**
-        
-        *clientProfile* The ClientProfile of the user who wish to lead this client.
-        """
-        wxCallAfter(self.AuthorizeLeadDialog, clientProfile)
-
-
-    def AuthorizeLeadDialog(self, clientProfile):
-        idPending = None
-        idLeading = None
-
-        if(self.venueClient.pendingLeader!=None):
-            idPending = self.venueClient.pendingLeader.publicId
-          
-
-        if(self.app.venueClient.leaderProfile!=None):
-            idLeading = self.venueClient.leaderProfile.publicId
-          
-          
-        if(clientProfile.publicId != idPending and clientProfile.publicId != idLeading):
-            text = "Do you want "+clientProfile.name+" to follow you?"
-            title = "Authorize follow"
-            dlg = wxMessageDialog(self, text, title, style = wxYES_NO| wxYES_DEFAULT|wxICON_QUESTION)
-            if(dlg.ShowModal() == wxID_YES):
-                self.venueClient.SendLeadResponse(clientProfile, true)
-
-            else:
-                self.venueClient.SendLeadResponse(clientProfile, false)
-
-            dlg.Destroy()
-
-        else:
-            self.venueClient.SendLeadResponse(clientProfile, false)
-
 
     #
     # Other

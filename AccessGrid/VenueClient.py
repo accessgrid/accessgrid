@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.186 2004-08-18 20:17:09 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.187 2004-09-03 13:45:05 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.186 2004-08-18 20:17:09 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.187 2004-09-03 13:45:05 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -125,12 +125,6 @@ class VenueClient:
         self.streamDescList = []
         self.transport = "multicast"
         
-        # attributes for follow/lead
-        self.pendingLeader = None
-        self.leaderProfile = None
-        self.pendingFollowers = dict()
-        self.followerProfiles = dict()
-        self.urlToFollow = None
         self.observers = []
 
         # attributes for personal data store
@@ -877,26 +871,8 @@ class VenueClient:
             except:
                 log.exception("Exception in observer")
 
-        try:
-            self.LeadFollowers()
-        except:
-            log.exception("Error leading followers")
-            self.warningString += '\nError leading followers'
-
-
         return self.warningString
         
-    def LeadFollowers(self):
-        #
-        # Update venue clients being led with stream descriptions
-        #
-        for profile in self.followerProfiles.values():
-            try:
-                v = VenueClientIW(profile.venueClientURL)
-                v.EnterVenue(self.venueUri, 0)
-            except:
-                raise Exception("LeadFollowers::Exception while leading follower")
-
     def __ExitVenue(self):
         # Clear the list of personal data requests.
         self.requests = []
@@ -1006,225 +982,6 @@ class VenueClient:
         self.__ExitVenue()
 
          
-    #
-    # Method support for FOLLOW
-    #
-        
-    def Follow( self, leaderProfile ):
-        """
-        Follow encapsulates the call to tell another client to lead this client
-        """
-        # store profile of leader to whom request is being sent
-        self.pendingLeader = leaderProfile
-
-        # request permission to follow the leader
-        # (response will come in via the LeadResponse method)
-        log.debug('Follow: Requesting permission to follow this leader: %s',
-                  leaderProfile.name)
-        v = VenueClientIW(leaderProfile.venueClientURL)
-        v.RequestLead( self.profile )
-
-    def UnFollow( self, leaderProfile ):
-        """
-        UnFollow tells this venue client to stop following the specified client
-        """
-
-        log.debug('UnFollow: Trying to unfollow: %s' %leaderProfile.name)
-        v = VenueClientIW(leaderProfile.venueClientURL)
-        v.UnLead( self.profile )
-        self.leaderProfile = None
-
-    def RequestLead( self, followerProfile):
-        """
-        RequestLead accepts requests from other clients who wish to be lead
-        """
-     
-        log.debug("RequestLead: Received request to lead %s %s" %
-                 (followerProfile.name, followerProfile.venueClientURL))
-
-        # Add profile to list of followers awaiting authorization
-        self.pendingFollowers[followerProfile.publicId] = followerProfile
-
-        # Authorize the lead request (asynchronously)
-        threading.Thread(target = self.AuthorizeLead,
-                         args = (followerProfile,) ).start()
-
-
-    def AuthorizeLead(self, clientProfile):
-        """
-        Authorize requests to lead this client.  
-        
-        Subclasses should override this method to perform their specific 
-        authorization, calling SendLeadResponse thereafter.
-        """
-     
-        response = 1
-
-        # For now, the VenueClient authorizes every Lead request
-            
-        self.SendLeadResponse(clientProfile,response)
-
-    def SendLeadResponse(self, clientProfile, response):
-        """
-        SendLeadResponse responds to requests to lead other venue clients.
-        """
-
-        # remove profile from list of pending followers
-        if clientProfile.publicId in self.pendingFollowers.keys():
-            del self.pendingFollowers[clientProfile.publicId]
-
-        if response:
-            # add profile to list of followers
-            log.debug("SendLeadResponse: Authorizing lead request for %s" %clientProfile.name)
-            self.followerProfiles[clientProfile.publicId] = clientProfile
-
-            # send the response
-            v = VenueClientIW(clientProfile.venueClientURL)
-            v.LeadResponse(self.profile, 1)
-        else:
-            v = VenueClientIW(clientProfile.venueClientURL)
-            v.LeadResponse(self.profile, 0)
-            log.debug("SendLeadResponse: Rejecting lead request for %s",
-                      clientProfile.name)
-
-    def LeadResponse(self, leaderProfile, isAuthorized):
-        """
-        LeadResponse is called by other venue clients to respond to 
-        lead requests sent by this client.  
-        """
-
-        # Detect responses from clients other than the pending leader
-        if leaderProfile.publicId != self.pendingLeader.publicId:
-            log.debug("LeadResponse: Lead response received from client other than pending leader")
-            return
-
-        # Check response
-        if isAuthorized:
-            log.debug("LeadResponse: Leader has agreed to lead you: %s, %s" %(self.pendingLeader.name, self.pendingLeader.distinguishedName))
-            self.leaderProfile = self.pendingLeader
-
-            # reset the pending leader
-            self.pendingLeader = None
-        else:
-            log.debug("LeadResponse: Leader has rejected request to lead you: %s", leaderProfile.name)
-        self.pendingLeader = None
-
-        for s in self.observers:
-            s.LeadResponse(leaderProfile, isAuthorized)
-
-    def UnLead(self, clientProfile):
-        """
-        UnLead tells this venue client to stop dragging the specified client.
-        """
-
-        log.debug( "UnLead: AccessGrid.VenueClient::Received request to unlead %s %s"
-                   %(clientProfile.name, clientProfile.venueClientURL))
-
-        if(self.followerProfiles.has_key(clientProfile.publicId)):
-            del self.followerProfiles[clientProfile.publicId]
-
-        if(self.pendingFollowers.has_key(clientProfile.publicId)):
-            del self.pendingFollowers[clientProfile.publicId]
-
-        threading.Thread(target = self.NotifyUnLead,
-                         args = (clientProfile,)).start()
-            
-    def NotifyUnLead(self, clientProfile):
-        """
-        Notify requests to stop leading this client.  
-        
-        Subclasses should override this method to perform their specific 
-        notification
-        """
-        pass
-
-    #
-    # Method support for LEAD
-    #
-    
-    def Lead( self, followerProfileList ):
-        """
-        Lead encapsulates the call to tell another client to follow this client
-        """
-               
-        # request that another client (or clients) follow this client
-        # (response will come in via the FollowResponse method)
-        for followerProfile in followerProfileList:
-            log.debug("Lead: Requesting permission to lead this client: %s", followerProfile.name )
-            self.pendingFollowers[followerProfile.publicId] = followerProfile
-            v = VenueClientIW(followerProfile.venueClientURL)
-            v.RequestFollow( self.profile )
-
-
-    def RequestFollow( self, leaderProfile):
-        """
-        RequestFollow accepts requests for other clients to lead this client
-        """
-        log.debug("RequestFollow: Received request to follow: %s", leaderProfile.name)
-
-        # Store profile of leader making request
-        self.pendingLeader = leaderProfile
-
-        # Authorize the follow request (asynchronously)
-        threading.Thread(target = self.AuthorizeFollow,
-                         args = (leaderProfile,) ).start()
-
-    def AuthorizeFollow(self, leaderProfile):
-        """
-        Authorize requests to lead this client.  
-        
-        Subclasses should override this method to perform their specific 
-        authorization, calling SendFollowResponse thereafter.
-        """
-        response = 1
-
-        # For now, the VenueClient authorizes every Lead request
-        self.SendFollowResponse(leaderProfile,response)
-
-    def SendFollowResponse(self, leaderProfile, response):
-        """
-        This method responds to requests to be led by other venue clients.
-        """
-        
-        # clear storage of pending leader
-        if leaderProfile.publicId == self.pendingLeader.publicId:
-            self.pendingLeader = None
-
-        if response:
-            # add profile to list of followers
-            log.debug("SendFollowResponse: Authorizing follow request for: %s", leaderProfile.name)
-            self.leaderProfile = leaderProfile
-
-            # send the response
-            v = VenueClientIW(self.leaderProfile.venueClientURL)
-            v.FollowResponse(self.profile,1)
-        else:
-            log.debug("SendFollowResponse: Rejecting follow request for: %s", leaderProfile.name)
-
-    def FollowResponse(self, followerProfile, isAuthorized):
-        """
-        FollowResponse is called by other venue clients to respond to 
-        follow requests sent by this client.  A UI client would override
-        this method to give the user visual feedback to the Follow request.
-        """
-        
-        # Detect responses from clients not in pending followers list
-        if followerProfile.publicId not in self.pendingFollowers.keys():
-            log.debug("FollowResponse: Follow response received from client not in pending followers list")
-            return
-
-        if isAuthorized:
-            log.debug("FollowResponse: Follower has agreed to follow you: %s", self.pendingLeader.name)
-
-            # add follower to list of followers
-            self.followerProfiles[followerProfile.publicId] = self.pendingFollowers[followerProfile.publicId]
-
-            # remove from pending follower list
-            del self.pendingFollowers[followerProfile.publicId]
-        else:
-            log.debug("FollowResponse: Follower has rejected request to follow you: %s", followerProfile.name)
-        self.pendingLeader = None
-
     #
     # NodeService-related calls
     #
@@ -1708,26 +1465,6 @@ class VenueClientI(SOAPInterface):
     def ExitVenue():
         self.impl.ExitVenue()
 
-    def RequestLead(self, followerProfile):
-        p = CreateClientProfile(followProfile)
-        self.impl.RequestLead(p)
-        
-    def LeadResponse(self, leaderProfile, isAuthorized):
-        p = CreateClientProfile(leaderProfile)
-        self.impl.LeadResponse(p, isAuthorized)
-
-    def Unlead(self, clientProfile):
-        p = CreateClientProfile(clientProfile)
-        self.impl.Unlead(p)
-
-    def RequestFollow(self, leaderProfile):
-        p = CreateClientProfile(leaderProfile)
-        self.impl.RequestFollow(p)
-        
-    def FollowResponse(self, followerProfile, isAuthorized):
-        p = CreateClientProfile(followProfile)
-        self.impl.FollowResponse(p, isAuthorized)
-
     def GetDataStoreInformation(self):
         r = self.impl.GetDataStoreInformation()
         return r
@@ -1793,21 +1530,6 @@ class VenueClientIW(SOAPIWrapper):
 
     def EnterVenue(self, url):
         return self.proxy.EnterVenue(url)
-
-    def RequestLead(self, followerProfile):
-        self.proxy.RequestLead(followerProfile)
-
-    def LeadResponse(self, leaderProfile, isAuthorized):
-        self.proxy.LeadResponse(leaderProfile, isAuthorized)
-
-    def Unlead(self, clientProfile):
-        self.proxy.Unlead(clientProfile)
-
-    def RequestFollow(self, leaderProfile):
-        self.proxy.RequestFollow(leaderProfile)
-        
-    def FollowResponse(self, followerProfile, isAuthorized):
-        self.proxy.FollowResponse(followerProfile, isAuthorized)
 
     def GetDataStoreInformation(self):
         r = self.proxy.GetDataStoreInformation()

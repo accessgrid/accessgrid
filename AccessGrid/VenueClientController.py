@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.35 2004-08-18 20:17:09 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.36 2004-09-03 13:45:05 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.35 2004-08-18 20:17:09 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.36 2004-09-03 13:45:05 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # standard imports
@@ -405,46 +405,6 @@ class VenueClientController:
             log.exception("Error adding personal data")
             raise
 
-    def FollowCB(self, personToFollow):
-        """
-        This method 
-
-        **Arguments:**
-        
-        """
-        
-        if not personToFollow or not isinstance(personToFollow,ClientProfile):
-            raise ValueError
-
-        try:
-            self.__venueClient.Follow(personToFollow)
-        except:
-            log.exception("VenueClientFrame.Follow: Can not follow %s" %personToFollow.name)
-            raise
-                
-    def UnFollowCB(self):
-        """
-        This method 
-
-        **Arguments:**
-        
-        """
-
-        log.debug("VenueClientFrame.Unfollow: In UnFollow we are being lead by %s" %self.__venueClient.leaderProfile.name)
-        if self.__venueClient.leaderProfile != None :
-           
-            try:
-              
-                self.__venueClient.UnFollow(self.__venueClient.leaderProfile)
-            except:
-               
-                log.exception("VenueClientFrame.Unfollow: Can not stop following %s" %self.__venueClient.leaderProfile.name)
-
-        else:
-            log.debug("VenueClientFrame.Unfollow: You are trying to stop following somebody you are not following")
-        
-
-
     #
     # Data Actions
     #
@@ -684,43 +644,6 @@ class VenueClientController:
                 #self.gui.Error("Your profile could not be changed", "Change Profile Error")
         else:
             log.debug("Can not update client profile in venue - not connected")
-
-    #
-    # Lead/Follow
-    #
-
-    def AuthorizeLeadDialog(self, clientProfile):
-        """
-        This method is used to prompt the user to authorize a
-        request to lead another user
-
-        **Arguments:**
-        
-        *clientProfile* Profile of the user requesting to be led
-        
-        """
-        idPending = None
-        idLeading = None
-
-        if(self.__venueClient.pendingLeader!=None):
-            idPending = self.__venueClient.pendingLeader.publicId
-          
-
-        if(self.__venueClient.leaderProfile!=None):
-            idLeading = self.__venueClient.leaderProfile.publicId
-          
-          
-        if(clientProfile.publicId != idPending and clientProfile.publicId != idLeading):
-            text = "Do you want "+clientProfile.name+" to follow you?"
-            title = "Authorize follow"
-            response = self.gui.Prompt(text, title)
-            self.__venueClient.SendLeadResponse(clientProfile, response)
-
-        else:
-            self.__venueClient.SendLeadResponse(clientProfile, 0)
-
-
-
 
     # 
     # Venue Data Access
