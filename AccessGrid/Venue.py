@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.202 2004-05-18 02:54:26 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.203 2004-05-18 03:05:51 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.202 2004-05-18 02:54:26 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.203 2004-05-18 03:05:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1398,9 +1398,11 @@ class Venue(AuthorizationMixIn):
         return self.encryptionKey
 
     def RegenerateEncryptionKeys(self):
-        if self.encryptMedia:
-            self.encryptionKey = AllocateEncryptionKey()
+        log.debug("Regenerating Encryption Key")
+            
+        self.encryptionKey = AllocateEncryptionKey()
 
+        if self.encryptMedia:
             # Make sure streams' encryption is the same as the venue's.
             for stream in self.streamList.GetStreams():
                 if stream.encryptionKey != self.encryptionKey:
@@ -1411,9 +1413,8 @@ class Venue(AuthorizationMixIn):
                                                   Event( Event.MODIFY_STREAM,
                                                          self.uniqueId,
                                                          stream ) )
-            return self.encryptionKey
-        else:
-            return None
+        return self.encryptionKey
+
         
     def SetDescription(self, description):
         """
