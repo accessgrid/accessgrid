@@ -92,7 +92,7 @@ class AGServiceManagerTestCase(unittest.TestCase):
 
     def testAddService(self):
         global serviceManager, nodeService
-        services = nodeService.GetAvailableServices()
+        services = serviceManager.GetAvailableServices()
 
         # Verify there are services to add.
         assert services is not None and len(services) > 0 
@@ -107,7 +107,7 @@ class AGServiceManagerTestCase(unittest.TestCase):
     def testRemoveService(self):
         global serviceManager, nodeService
         # First add a service to make sure we can remove one.
-        possible_services = nodeService.GetAvailableServices()
+        possible_services = serviceManager.GetAvailableServices()
 
         # Verify there are services to add.
         assert possible_services is not None and len(possible_services) > 0

@@ -115,10 +115,6 @@ class AGNodeServiceTestCase(unittest.TestCase):
 
     # Service Methods
 
-    def testGetAvailableServices(self):
-        global nodeService
-        nodeService.GetAvailableServices()
-
     def testGetServices(self):
         global nodeService
         nodeService.GetServices()
