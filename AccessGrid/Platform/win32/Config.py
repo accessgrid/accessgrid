@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.54 2004-09-10 22:00:23 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.55 2004-11-19 23:02:50 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.54 2004-09-10 22:00:23 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.55 2004-11-19 23:02:50 lefvert Exp $"
 
 import os
 import socket
@@ -211,7 +211,7 @@ class AGTkConfig(Config.AGTkConfig):
             raise IOError("AGTkConfig: log dir does not exist %s."%self.logDir)
  
         return self.logDir
-    
+      
     def GetSharedAppDir(self):
         if self.appDir == None:
             ucd = self.GetBaseDir()
@@ -498,7 +498,7 @@ class UserConfig(Config.UserConfig):
         self.nodeServicesDir = None
         self.servicesDir = None
         self.profileFilename = None
-
+        self.preferencesFilename = None
         self._Initialize()
         
     def _Initialize(self):
@@ -558,6 +558,12 @@ class UserConfig(Config.UserConfig):
             self.profileFilename = os.path.join(self.GetConfigDir(), "profile")
             
         return self.profileFilename
+
+    def GetPreferences(self):
+        if self.preferencesFilename == None:
+            self.preferencesFilename = os.path.join(self.GetConfigDir(), "preferences")
+
+        return self.preferencesFilename
 
     def GetConfigDir(self):
         if self.configDir == None:

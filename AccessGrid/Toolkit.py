@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.85 2004-11-17 21:24:36 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.86 2004-11-19 23:00:02 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.85 2004-11-17 21:24:36 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.86 2004-11-19 23:00:02 lefvert Exp $"
 
 # Standard imports
 import os
@@ -19,6 +19,7 @@ import time
 
 # AGTk imports
 from AccessGrid import Log
+from AccessGrid.Preferences import Preferences
 from AccessGrid.Security import CertificateManager
 from AccessGrid.Security import CertificateRepository
 from AccessGrid.Platform.Config import AGTkConfig, MimeConfig
@@ -52,6 +53,10 @@ class AppBase:
        """
        The application constructor that enforces the singleton pattern.
        """
+
+       # Load client preferences
+       self.preferences = Preferences()
+       
        self.parser = OptionParser()
        self.parser.add_option("-d", "--debug", action="store_true",
                               dest="debug", default=0,
@@ -146,20 +151,42 @@ class AppBase:
            self.fhLoggerLevels = Log.HandleLoggers(fh, Log.GetDefaultLoggers())
            self.fhLoggerLevels.SetLevel(Log.DEBUG)
            self.loggerLevels = self.fhLoggerLevels
-       
-       # Send the log in memory to stream (debug) or file handler.
-       if self.options.debug:
-           Log.mlh.setTarget(Log.defStreamHandler)
+
+           # Send the log in memory to stream (debug) or file handler.
+       if self.options.debug or int(self.preferences.GetPreference(Preferences.LOG_TO_CMD)):
+          Log.mlh.setTarget(Log.defStreamHandler)
        else:
-           Log.mlh.setTarget(fh)
+          Log.mlh.setTarget(fh)
        Log.mlh.close()
        Log.RemoveLoggerLevels(Log.memLevels,Log.GetLoggers())
+
+       self.__SetLogPreference()
 
        # Check if machine clock is synchronized.
        self.__CheckForInvalidClock()
        
        return argvResult
 
+    def __SetLogPreference(self):
+        """
+        Set correct log level for each log category according
+        to preferences.
+        """
+        logFiles = Log.GetCategories()
+        
+        for name in logFiles:
+            # Get level from preferences.
+            logLevel = int(self.preferences.GetPreference(name))
+            fLevels = self.GetFileLogLevels()
+            sLevels = self.GetStreamLogLevels()
+
+            # Level for files
+            if fLevels:
+                fLevels.SetLevel(logLevel, name)
+            # Level for streams
+            if sLevels:
+                sLevels.SetLevel(logLevel, name)
+            
     def __CheckForInvalidClock(self):
        """
        Check to see if the local clock is out of synch, a common reason for a
@@ -213,7 +240,7 @@ class AppBase:
            print "Access Grid Toolkit Version: ", GetVersion()
            sys.exit(0)
            
-       if self.options.debug:
+       if self.options.debug or int(self.preferences.GetPreference(Preferences.LOG_TO_CMD)):
            self.streamLoggerLevels = Log.HandleLoggers(Log.defStreamHandler,
                                            Log.GetDefaultLoggers())
            self.streamLoggerLevels.SetLevel(Log.DEBUG)
@@ -228,8 +255,22 @@ class AppBase:
 
     def AddCmdLineOption(self, option):
         self.parser.add_option(option)
-        
+
+    def GetPreferences(self):
+        '''
+        Get client preferences. 
+        '''
+        return self.preferences
+
+    def SetPreferences(self, preferences):
+        '''
+        Set preferences and save them to configuration file.
+        '''
+        self.preferences = preferences
+        self.preferences.StorePreferences()
+            
     def GetOption(self, arg):
+        
         if hasattr(self.options, arg):
             return getattr(self.options, arg)
         else:

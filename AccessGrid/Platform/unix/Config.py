@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.53 2004-09-10 03:58:53 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.54 2004-11-19 23:05:32 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.53 2004-09-10 03:58:53 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.54 2004-11-19 23:05:32 lefvert Exp $"
 
 import os
 import mimetypes
@@ -378,7 +378,6 @@ class UserConfig(AccessGrid.Config.UserConfig):
     instance = staticmethod(instance)
     
     def __init__(self, initIfNeeded):
-
         if UserConfig.theUserConfigInstance is not None:
             raise Exception, "Only one instance of User Config is allowed."
 
@@ -393,6 +392,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
         self.nodeServicesDir = None
         self.servicesDir = None
         self.profileFilename = None
+        self.preferencesFilename = None
         self.logDir = None
         
         self._Initialize()
@@ -427,6 +427,12 @@ class UserConfig(AccessGrid.Config.UserConfig):
             
         return self.profileFilename
 
+    def GetPreferences(self):
+        if self.preferencesFilename == None:
+            self.preferencesFilename = os.path.join(self.GetConfigDir(), "preferences")
+            
+        return self.preferencesFilename
+        
     def GetBaseDir(self):
         global AGTK_USER
 

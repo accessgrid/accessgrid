@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.37 2004-10-21 20:58:17 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.38 2004-11-19 23:00:02 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.37 2004-10-21 20:58:17 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.38 2004-11-19 23:00:02 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 # standard imports
 import cPickle
@@ -18,6 +18,7 @@ import time
 
 # Access Grid imports
 from AccessGrid.Toolkit import Application
+from AccessGrid.Preferences import Preferences
 from AccessGrid import Log
 from AccessGrid import DataStore
 from AccessGrid.AppDb import AppDb
@@ -31,7 +32,6 @@ from AccessGrid.Platform import IsWindows, Config
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.VenueClient import NetworkLocationNotFound
 from AccessGrid import Events
-
 
 log = Log.GetLogger(Log.VenueClientController)
 
@@ -50,8 +50,6 @@ class VenueClientController:
         # Create Process Manager
         self.processManager = ProcessManager()
         self.appProcessManager = ProcessManager()
-        
-
 
     ##########################################################################
     #
@@ -291,7 +289,7 @@ class VenueClientController:
         
         """
         # Get the current profile
-        profile = self.__venueClient.GetProfile()
+        profile = self.__venueClient.GetPreferences().GetProfile()
 
         # Update the home venue to the current venue url
         profile.homeVenue = self.__venueClient.GetVenue()
@@ -645,6 +643,43 @@ class VenueClientController:
         else:
             log.debug("Can not update client profile in venue - not connected")
 
+    #
+    # Preferences
+    #
+
+    def ChangePreferences(self, preferences):
+        """
+        This method saves preference information to file and performs
+        necessary updates to ui and node.
+
+        **Arguments:**
+        
+        *profile* The ClientProfile including the new profile information
+        """
+        # Save the preferences to file.
+        self.__venueClient.SavePreferences()
+
+        # Update node url
+        self.__venueClient.SetNodeUrl(preferences.GetPreference(Preferences.NODE_URL))
+
+        # Enable video and audio
+        self.EnableVideoCB(int(preferences.GetPreference(Preferences.ENABLE_VIDEO)))
+        self.EnableAudioCB(int(preferences.GetPreference(Preferences.ENABLE_AUDIO)))
+        
+        # Update client profile in venue
+        if self.__venueClient.GetVenue() != None:
+            log.debug("Update client profile in venue")
+
+            try:
+                self.__venueClient.UpdateClientProfile(preferences.GetProfile())
+                       
+            except:
+                log.exception("bin.VenueClient::ChangeProfile: Error occured when trying to update profile")
+                # User does not need to know about this. The profile info got saved locally anyhow.                
+                #self.gui.Error("Your profile could not be changed", "Change Profile Error")
+        else:
+            log.debug("Can not update client profile in venue - not connected")
+
     # 
     # Venue Data Access
     #
@@ -955,7 +990,8 @@ class VenueClientController:
                                          
             try:
                 my_identity = Application.instance().GetDefaultSubject()
-                self.__venueClient.dataStore.UploadLocalFiles([filepath], my_identity.name, self.__venueClient.GetProfile().publicId)
+                self.__venueClient.dataStore.UploadLocalFiles([filepath], my_identity.name,
+                                                              self.__venueClient.GetPreferences().GetProfile().publicId)
 
                 # Send an event alerting about new data (only if it is new)
                 #if newData: 
@@ -1022,7 +1058,7 @@ class VenueClientController:
         to join a shared application session.
         '''
         # Distribute event to all participants so they can join.
-        data = ApplicationCmdDescription(objDesc, verb, cmd, self.__venueClient.GetProfile())
+        data = ApplicationCmdDescription(objDesc, verb, cmd, self.__venueClient.GetPreferences().GetProfile())
         self.__venueClient.SendEvent(Events.OpenAppEvent(self.__venueClient.GetEventChannelId(), 
                                                           data))
                         

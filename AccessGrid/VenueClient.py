@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.194 2004-09-10 03:58:53 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.195 2004-11-19 23:00:02 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.194 2004-09-10 03:58:53 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.195 2004-11-19 23:00:02 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -23,6 +23,7 @@ from pyGlobus.io import GSITCPSocketException
 from AccessGrid import Log
 from AccessGrid import DataStore
 from AccessGrid.Toolkit import Application, Service
+from AccessGrid.Preferences import Preferences
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Venue import VenueIW, ServiceAlreadyPresent
@@ -70,9 +71,8 @@ class NetworkLocationNotFound(Exception):
 
 class DisconnectError(Exception):
     pass
-    
+
 log = Log.GetLogger(Log.VenueClient)
-Log.SetDefaultLevel(Log.VenueClient, Log.DEBUG)
 
 class VenueClient:
     """
@@ -81,7 +81,7 @@ class VenueClient:
     programmatic interface to the Access Grid for a Venues User
     Interface.  The VenueClient can only be in one venue at a    time.
     """    
-    defaultNodeServiceUri = "https://localhost:11000/NodeService"
+    
     
     def __init__(self, profile=None, pnode=0, port=0, progressCB=None,
                  app=None):
@@ -89,21 +89,21 @@ class VenueClient:
         This client class is used on shared and personal nodes.
         """
         self.userConf = UserConfig.instance()
-        
-        if profile:
-            self.profile = profile
-        else:
-            self.profileFile = os.path.join(self.userConf.GetConfigDir(),
-                                            "profile" )
-            self.profile = ClientProfile(self.profileFile)
-            
         self.isPersonalNode = pnode
 
         if app is not None:
             self.app = app
         else:
             self.app = Application()
-            
+
+        self.preferences = self.app.GetPreferences()
+        self.profile = self.preferences.GetProfile()
+        self.defaultNodeServiceUri = self.preferences.GetPreference(Preferences.NODE_URL) 
+        
+        if pnode == 0:
+            pnode = int(self.preferences.GetPreference(Preferences.STARTUP_MEDIA))
+            self.isPersonalNode = pnode
+                
         self.nodeServiceUri = self.defaultNodeServiceUri
         self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
         self.homeVenue = None
@@ -114,6 +114,10 @@ class VenueClient:
         if progressCB: 
             if pnode:   progressCB("Starting personal node.")
             else:       progressCB("Starting web service.")
+
+        if int(self.preferences.GetPreference(Preferences.CLIENT_PORT)) != 0:
+            port = int(self.preferences.GetPreference(Preferences.CLIENT_PORT))
+        
         self.__StartWebService(pnode, port)
         self.__InitVenueData()
         self.isInVenue = 0
@@ -153,13 +157,7 @@ class VenueClient:
         self.profileCachePath = os.path.join(self.userConf.GetConfigDir(),
                                              self.profileCachePrefix)
         self.cache = ClientProfileCache(self.profileCachePath)
-        
-        # attributes for reconnect
-        self.maxReconnects = 3
-        self.reconnectTimeout = 10
-        
-        
-        
+                
     ##########################################################################
     #
     # Private Methods
@@ -187,9 +185,13 @@ class VenueClient:
             except OSError:
                 log.exception("__createPersonalDataStore: Could not create personal data storage path")
                 self.personalDataStorePath = None
-                
+
         if self.personalDataStorePath:
+            # First, check command line options
             if self.app.GetOption("insecure"):
+                self.transferEngine = DataStore.HTTPTransferServer(('', self.personalDataStorePort))
+            # Second, check preferences
+            elif not int(self.preferences.GetPreference(Preferences.SECURE_CLIENT_CONNECTION)):
                 self.transferEngine = DataStore.HTTPTransferServer(('', self.personalDataStorePort))
             else:
                 self.transferEngine = DataStore.GSIHTTPTransferServer(('',
@@ -199,7 +201,6 @@ class VenueClient:
                                                  self.personalDataStorePrefix,
                                                  self.transferEngine)
                    
-
             #
             # load personal data from file
             #
@@ -271,11 +272,15 @@ class VenueClient:
                 port = 11000
             else:
                 port = NetworkAddressAllocator().AllocatePort()
-        
+                        
+        # First, check cmd line option
         if self.app.GetOption("insecure"):
             self.server = InsecureServer((self.app.GetHostname(), port))
+        # Second, check preferences
+        elif not int(self.preferences.GetPreference(Preferences.SECURE_CLIENT_CONNECTION)):
+            self.server = InsecureServer((self.app.GetHostname(), int(port)))
         else:
-            self.server = SecureServer((self.app.GetHostname(), port))
+            self.server = SecureServer((self.app.GetHostname(), int(port)))
         vci = VenueClientI(self)
         uri = self.server.RegisterObject(vci, path='/VenueClient')
 
@@ -291,6 +296,7 @@ class VenueClient:
             uri = self.server.RegisterObject(smi, path="/ServiceManager")
             log.debug("__StartWebService: service manager: %s",
                       uri)
+
             from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
             self.ns = AGNodeService(self.app)
             nsi = AGNodeServiceI(self.ns)
@@ -319,7 +325,6 @@ class VenueClient:
             fileH.close()
         except:
             log.exception("Error writing web service url file")
-
         
     def __StopWebService(self):
     
@@ -336,7 +341,6 @@ class VenueClient:
             os.remove(self.urlFile)
         except:
             log.exception("Error removing url file %s", self.urlFile)
-            
             
     def GetWebServiceUrl(self):
         return self.server.FindURLForObject(self)
@@ -361,7 +365,7 @@ class VenueClient:
         Reconnect to venue
         """
         numTries = 0
-        
+
         log.info("Try to reconnect to venue")
         
         venueUri = self.venueUri
@@ -376,8 +380,10 @@ class VenueClient:
             log.info("Exception exiting from venue before reconnect -- not critical")
 
         # Try to enter the venue
-        while not self.isInVenue and numTries < self.maxReconnects:
-            
+        while (not self.isInVenue and
+               numTries < int(self.preferences.GetPreference(Preferences.MAX_RECONNECT)) and 
+               int(self.preferences.GetPreference(Preferences.RECONNECT))): 
+        
             try:
                 self.__EnterVenue(venueUri)
                 self.failedHeartbeats = 0
@@ -388,9 +394,9 @@ class VenueClient:
             except:
                 log.exception("Exception reconnecting to venue")
             
-            time.sleep(self.reconnectTimeout)
+            time.sleep(int(self.preferences.GetPreference(Preferences.RECONNECT_TIMEOUT)))
             numTries += 1
-        
+
         if self.isInVenue:
             # Update observers
             
@@ -701,7 +707,7 @@ class VenueClient:
 
             log.debug("EnterVenue: Invoke venue enter")
             (venueState, self.privateId, self.streamDescList ) = self.__venueProxy.Enter( self.profile )
-
+            
             # Retrieve the connection id from within the private id
             # (when we break compatability, the server will likely pass
             #  back the private id and connection id separately)
@@ -715,14 +721,9 @@ class VenueClient:
                 self.profile.connectionId = self.profile.venueClientURL
 
             self.venueState = CreateVenueState(venueState)
-
             self.venueUri = URL
             self.venueId = self.venueState.GetUniqueId()
-
-            # Retreive stream descriptions
-            #
-            self.streamDescList = self.__venueProxy.GetStreams()
-
+                        
             #
             # Create the event client
             #
@@ -764,6 +765,8 @@ class VenueClient:
                                
             self.heartbeatTask = self.houseKeeper.AddTask(self.__Heartbeat, 5)
             self.heartbeatTask.start()
+
+            self.streamDescList = self.__venueProxy.GetStreams()
 
             #
             # Get personaldatastore information
@@ -1341,18 +1344,15 @@ class VenueClient:
     # User Info
     #
 
-    def SetProfile(self, profile):
-        self.profile = profile
-        self.isIdentitySet = 0
-        if(self.profile != None):
-           self.profile.venueClientURL = self.server.FindURLForObject(self)
-
-    def GetProfile(self):
-        return self.profile
-        
     def SaveProfile(self):
-        self.profile.Save(self.profileFile)
+        self.preferences.SetProfile(self.profile)
+        self.preferences.StorePreferences()
+    
+    def SavePreferences(self):
+        self.preferences.StorePreferences()
         
+    def GetPreferences(self):
+        return self.preferences
     #
     # Bridging Info
     #

@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.77 2004-10-21 20:53:48 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.78 2004-11-19 23:00:02 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.77 2004-10-21 20:53:48 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.78 2004-11-19 23:00:02 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -39,6 +39,7 @@ from AccessGrid.Platform import IsWindows, IsOSX, Config
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.ClientProfile import *
+from AccessGrid.Preferences import PreferencesDialog, Preferences
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription, AGNetworkServiceDescription
 from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIDialog
@@ -111,8 +112,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     user travels to another venue/room, which contents will be shown
     in the contentListPanel.
     """
-
-    
     ID_WINDOW_TOP = wxNewId()
     ID_WINDOW_LEFT  = wxNewId()
     ID_WINDOW_BOTTOM = wxNewId()
@@ -128,8 +127,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_VENUE_PROPERTIES = wxNewId()
     ID_VENUE_OPEN_CHAT = wxNewId()
     ID_VENUE_CLOSE = wxNewId()
-    ID_PROFILE = wxNewId()
-    ID_PROFILE_EDIT = wxNewId()
     ID_CERTIFICATE_MANAGE = wxNewId()
     ID_USE_MULTICAST = wxNewId()
     ID_USE_UNICAST = wxNewId()
@@ -137,6 +134,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_ENABLE_VIDEO = wxNewId()
     ID_ENABLE_AUDIO = wxNewId()
     ID_MYNODE_URL = wxNewId()
+    ID_PREFERENCES = wxNewId()
     ID_MYVENUE_ADD = wxNewId()
     ID_MYVENUE_EDIT = wxNewId()
     ID_MYVENUE_GOTODEFAULT = wxNewId()
@@ -165,7 +163,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.controller = controller
 
         self.debugMode = 0
-           
         self.browser = None
         
         self.textClientPanel = None
@@ -184,7 +181,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         #
         # Check if profile is created then open venue client
         #
-        profile = self.venueClient.GetProfile()
+        profile = self.venueClient.GetPreferences().GetProfile()
         if profile.IsDefault():  # not your profile
             log.debug("the profile is the default profile - open profile dialog")
             self.__OpenProfileDialog()
@@ -231,9 +228,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         This method opens a profile dialog, in which the user can fill in
         his or her information.
         """
+        p = self.venueClient.GetPreferences()
         profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', 1)
-        profileDialog.SetProfile(self.venueClient.GetProfile())
-
+        profileDialog.SetProfile(p.GetProfile())
+        
         if (profileDialog.ShowModal() == wxID_OK):
             profile = profileDialog.GetNewProfile()
             
@@ -258,7 +256,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         *profile* The ClientProfile you want to be associated with in the venue.
         """
 
-        self.venueAddressBar.SetAddress(self.venueClient.GetProfile().homeVenue)
+        self.venueAddressBar.SetAddress(self.venueClient.GetPreferences().GetProfile().homeVenue)
         self.Show(true)
         
     def __SetStatusbar(self):
@@ -294,8 +292,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.menubar.Append(self.venue, "&Venue")
               
         self.preferences = wxMenu()
-        self.preferences.Append(self.ID_PROFILE,"&Edit Profile...", 
-                                "Change your personal information")
+        
         #
         # Retrieve the cert mgr GUI from the application.
         #
@@ -313,25 +310,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             for item in certMenu.GetMenuItems():
 	        self.preferences.AppendItem(item)
 
-        self.preferences.AppendSeparator()
-
-        # Add node-related entries
-        self.preferences.AppendRadioItem(self.ID_USE_MULTICAST, "Use Multicast",
-                                "Use multicast to connect media")
-        self.preferences.AppendRadioItem(self.ID_USE_UNICAST, "Use Unicast",
-                                "Use unicast to connect media")
-        self.preferences.AppendSeparator()
-        self.preferences.AppendCheckItem(self.ID_ENABLE_VIDEO, "Enable Video",
-                                "Enable/disable video for your node")
-        self.preferences.Check(self.ID_ENABLE_VIDEO,true)
-        self.preferences.AppendCheckItem(self.ID_ENABLE_AUDIO, "Enable Audio",
-                                "Enable/disable audio for your node")
-        self.preferences.Check(self.ID_ENABLE_AUDIO,true)
-        self.preferences.Append(self.ID_MYNODE_URL, "&Set Node URL...",
-                                "Specify URL address to node service")
         self.preferences.Append(self.ID_MYNODE_MANAGE, "&Manage My Node...",
                                 "Configure your node")
-        self.menubar.Append(self.preferences, "&Preferences")
+        self.preferences.AppendSeparator()
+        self.preferences.Append(self.ID_PREFERENCES, "&Preferences...")
+        self.menubar.Append(self.preferences, "&Tools")
+        
         self.myVenues = wxMenu()
         self.myVenues.Append(self.ID_MYVENUE_GOTODEFAULT, "Go to Home Venue",
                              "Go to default venue")
@@ -341,7 +325,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         self.myVenues.Append(self.ID_MYVENUE_ADD, "Add &Current Venue...",
                              "Add this venue to your list of venues")
-        self.myVenues.Append(self.ID_MYVENUE_EDIT, "Edit My &Venues...",
+        self.myVenues.Append(self.ID_MYVENUE_EDIT, "Manage My &Venues...",
                              "Edit your venues")
         self.myVenues.AppendSeparator()
         
@@ -377,7 +361,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                          "Information about the application")
         self.menubar.Append(self.help, "&Help")
        
-
         # ---- Menus for items
         self.meMenu = wxMenu()
        
@@ -391,7 +374,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.participantMenu = wxMenu()
         self.participantMenu.Append(self.ID_PARTICIPANT_PROFILE,"View Profile...",\
                                            "View participant's profile information")
-
         # ---- Menus for headings
         self.dataHeadingMenu = wxMenu()
         self.dataHeadingMenu.Append(self.ID_VENUE_DATA_ADD,"Add...",
@@ -403,12 +385,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # Do not enable menus until connected
         self.__HideMenu()
-
-        # Don't allow a choice of unicast until in a venue (then we might not
-        # have it anyhow)
-        self.preferences.Enable(self.ID_USE_UNICAST, false)
-        
-
 
     def __SetEvents(self):
     
@@ -422,13 +398,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         EVT_MENU(self, self.ID_VENUE_CLOSE, self.ExitCB)
         
         # Preferences Menu
-        EVT_MENU(self, self.ID_PROFILE, self.EditProfileCB)
-        EVT_MENU(self, self.ID_USE_MULTICAST, self.UseMulticastCB)
-        EVT_MENU(self, self.ID_USE_UNICAST, self.UseUnicastCB)
-        EVT_MENU(self, self.ID_ENABLE_VIDEO, self.EnableVideoCB)
-        EVT_MENU(self, self.ID_ENABLE_AUDIO, self.EnableAudioCB)
         EVT_MENU(self, self.ID_MYNODE_URL, self.SetNodeUrlCB)
         EVT_MENU(self, self.ID_MYNODE_MANAGE, self.ManageNodeCB)
+        EVT_MENU(self, self.ID_PREFERENCES, self.PreferencesCB)
         
         # My Venues Menu
         EVT_MENU(self, self.ID_MYVENUE_GOTODEFAULT, self.GoToDefaultVenueCB)
@@ -463,7 +435,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def __SetProperties(self):
         self.SetTitle("Venue Client")
         self.SetIcon(icons.getAGIconIcon())
-        #self.venueListPanel.GetSize().GetHeight()
         self.venueListPanel.SetSize(wxSize(160, 300))
         self.venueAddressBar.SetSize(wxSize(self.GetSize().GetWidth(),65))
         
@@ -598,10 +569,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.menubar.Enable(self.ID_MYVENUE_GOTODEFAULT, true)
         self.menubar.Enable(self.ID_MYVENUE_SETDEFAULT, true)
         self.menubar.Enable(self.ID_VENUE_APPLICATION, true)
-        
-        
+                
         # Only show administrate button when you can administrate a venue.
-                   
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, true)
         self.serviceHeadingMenu.Enable(self.ID_VENUE_SERVICE_ADD, true)
 
@@ -618,27 +587,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         dlg = wxMessageDialog(self, text, title, style = wxICON_WARNING | wxOK)
         ret = dlg.ShowModal()
 
-
-    def __UpdateTransports(self):
-        """
-        This method is called when a venue stream is modified.
-        """
-        transportList = self.venueClient.GetTransportList()
-        if 'unicast' in transportList:
-            self.SetUnicastEnabled(1)
-        else:
-            self.SetUnicastEnabled(0)
-
-        transport = self.venueClient.GetTransport()
-        self.SetTransport(transport)
-
     def __OpenApplication(self, appCmdDesc):
         '''
         This method is called when someone wants to invite you to join a shared
         application session.
         '''
         
-        if self.venueClient.GetProfile().GetPublicId() == appCmdDesc.profile.GetPublicId():
+        if self.venueClient.GetPreferences().GetProfile().GetPublicId() == appCmdDesc.profile.GetPublicId():
             # I wanted to open the application client so don't pop up a message dialog.
             ret = wxID_OK
         else:
@@ -864,9 +819,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     
     def EditProfileCB(self, event = None):
         profile = None
+        p = self.venueClient.GetPreferences()
+        
         profileDialog = ProfileDialog(NULL, -1,
                                   'Your profile information', 1)
-        profileDialog.SetProfile(self.venueClient.GetProfile())
+        profileDialog.SetProfile(self.venueClient.GetPreferences().GetProfile())
         if (profileDialog.ShowModal() == wxID_OK):
             profile = profileDialog.GetNewProfile()
             log.debug("VenueClientFrame.EditProfile: change profile: %s" %profile.name)
@@ -876,15 +833,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 log.exception("Error editing profile")
                 self.Error("Modified profile could not be saved", "Edit Profile Error")
         profileDialog.Destroy()
-
-
         
     """
     ManageCertificates menu is provided by CertMgmt module
     """
 
 
-    def UseMulticastCB(self,event):
+    def UseMulticastCB(self,event = None):
         try:
             self.controller.UseMulticastCB()
         except NetworkLocationNotFound:
@@ -892,13 +847,17 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         except:
             self.Error("Error using multicast","Use Multicast")
 
-    def UseUnicastCB(self,event):
+    def UseUnicastCB(self,event = None):
 
         # Get a list of providers
         providerList = self.venueClient.GetNetworkLocationProviders()
         providerNameLocList = map( lambda provider: provider.name + "/" + provider.location,
                                    providerList )
 
+        if len(providerNameLocList) < 1:
+            self.Notify("No unicast bridge available in this venue.", "Use Unicast")
+            return
+        
         # Present the list to the user
         dialog = wxSingleChoiceDialog( self, "Select bridge", 
                                              "Bridge Dialog", 
@@ -928,11 +887,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             except:
                 self.Error("Error switching to selected bridge; reverting to previous selection", "Use Unicast Error")
                 
-        else:
-            # Set the menu checkbox appropriately
-            transport = self.venueClient.GetTransport()
-            self.SetTransport(transport)
-
     def EnableVideoCB(self,event):
         enableFlag = self.preferences.IsChecked(self.ID_ENABLE_VIDEO)
         try:
@@ -1009,13 +963,38 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 setNodeUrlDialog.Destroy()
                 self.nodeManagementFrame = None
     
+    def PreferencesCB(self, event = None):
+        profile = None
+        p = self.venueClient.GetPreferences()
+        preferencesDialog = PreferencesDialog(NULL, -1,
+                                              'Preferences', p)
+        if (preferencesDialog.ShowModal() == wxID_OK):
+            p = preferencesDialog.GetPreferences()
+                       
+            try:
+                self.controller.ChangePreferences(p)
+
+                # Check for unicast preference.
+                currentTransport = self.venueClient.GetTransport()
+                multicastPref = int(p.GetPreference(Preferences.MULTICAST))
+                
+                if multicastPref and currentTransport == "unicast":
+                    self.UseMulticastCB()
+                elif (not multicastPref) and currentTransport == "multicast":
+                    self.UseUnicastCB()
+              
+            except:
+                log.exception("Error editing preferences")
+                self.Error("Preferences could not be saved", "Edit Preferences Error")
+        preferencesDialog.Destroy()
+
     # 
     # MyVenues Menu
     #
     
     
     def GoToDefaultVenueCB(self,event):
-        venueUrl = self.venueClient.GetProfile().homeVenue
+        venueUrl = self.venueClient.GetPreferences().GetProfile().homeVenue
         self.SetVenueUrl(venueUrl)
         self.EnterVenueCB(venueUrl)
 
@@ -1143,7 +1122,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             comment = bugReportCommentDialog.GetComment()
             email = bugReportCommentDialog.GetEmail()
             
-            SubmitBug(comment, self.venueClient.GetProfile(), email)
+            SubmitBug(comment, self.venueClient.GetPreferences().GetProfile(), email)
             bugFeedbackDialog = wxMessageDialog(self, 
                                   "Your error report has been sent, thank you.",
                                   "Error Reported", 
@@ -1172,12 +1151,19 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.SetStatusText("Trying to enter venue at %s" % (venueUrl,))
 
             self.controller.EnterVenueCB(venueUrl)
+
+            # Check if unicast option is set in preferences.
+            m = int(self.venueClient.GetPreferences().GetPreference(Preferences.MULTICAST))
+            if m == 0:
+                self.UseUnicastCB()
+          
+           
             wxEndBusyCursor()
         except:
             wxEndBusyCursor()
             log.exception("VenueClientUI.EnterVenueCB: Failed to connect to %s"%venueUrl)
             self.Notify("Can not connect to venue at %s"%venueUrl, "Notification")
-            
+
     #
     # Participant Actions
     #
@@ -1313,7 +1299,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
     def StartApplicationCB(self, app):
         timestamp = time.strftime("%I:%M:%S %p %B %d, %Y")
-        id = self.venueClient.GetProfile().GetName()
+        id = self.venueClient.GetPreferences().GetProfile().GetName()
         name = "%s" % (timestamp)
         app.description = "Started by %s at %s" % (id, timestamp)
         
@@ -1513,15 +1499,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     # Other
     #
 
-    def SetUnicastEnabled(self, flag):
-        self.preferences.Enable(self.ID_USE_UNICAST, flag)
-
-    def SetTransport(self, transport):
-        if transport == "multicast":
-            self.preferences.Check(self.ID_USE_MULTICAST, true)
-        elif transport == "unicast":  
-            self.preferences.Check(self.ID_USE_UNICAST, true)
-
     def SetStatusText(self,text):
         self.statusbar.SetStatusText(text,0)
 
@@ -1556,7 +1533,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         return self.controller.GetCommands(objDesc)
         
     def GetProfile(self):
-        return self.venueClient.GetProfile()
+        return self.venueClient.GetPreferences().GetProfile()
         
     def GetVenue(self):
         return self.venueClient.GetVenue()
@@ -1918,14 +1895,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             wxCallAfter(self.venueListPanel.AddVenueDoor, connection)
 
     def AddStream(self,streamDesc):
-        wxCallAfter(self.__UpdateTransports)
-        
+        pass
+               
     def RemoveStream(self,streamDesc):
-        wxCallAfter(self.__UpdateTransports)
-        
+        pass
+               
     def ModifyStream(self,streamDesc):
-        wxCallAfter(self.__UpdateTransports)
-        
+        pass
+               
     def AddText(self,name,text):
         """
         This method is called when text is received from the text service.
@@ -2059,7 +2036,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             wxCallAfter(self.__EnableAppMenu, true)
 
             # Enable/disable the unicast menu entry appropriately
-            wxCallAfter(self.__UpdateTransports)
+            #wxCallAfter(self.__UpdateTransports)
             
             # Update the UI
             wxCallAfter(self.AddVenueToHistory, URL)
@@ -3988,6 +3965,8 @@ class ProfileDialog(wxDialog):
         self.__SetEditable(false)
         self.cancelButton.Hide()
 
+
+
 class TextValidator(wxPyValidator):
     def __init__(self, fieldName):
         wxPyValidator.__init__(self)
@@ -4031,8 +4010,10 @@ class TextValidator(wxPyValidator):
     def TransferFromWindow(self):
         return true # Prevent wxDialog from complaining.
 
- 
+
 ################################################################################
+
+
 
 class AddAppDialog(wxDialog):
     '''

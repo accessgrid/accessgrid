@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.26 2004-09-09 22:12:12 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.27 2004-11-19 23:00:02 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.26 2004-09-09 22:12:12 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.27 2004-11-19 23:00:02 lefvert Exp $"
 
 import os
 import sys
@@ -372,6 +372,10 @@ class UserConfig:
         self._CopyDir(oldPath, newPath)
     
     def GetProfile(self):
+        afdsaf
+        raise Exception, "This should not be called directly, but through a subclass."
+
+    def GetPreferences(self):
         raise Exception, "This should not be called directly, but through a subclass."
 
     def GetBaseDir(self):

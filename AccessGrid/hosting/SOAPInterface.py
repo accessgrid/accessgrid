@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: SOAPInterface.py,v 1.16 2004-05-06 14:23:00 judson Exp $
+# RCS-ID:      $Id: SOAPInterface.py,v 1.17 2004-11-19 23:00:46 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ primary methods, the constructor and a default authorization for all
 interfaces.
 """
 
-__revision__ = "$Id: SOAPInterface.py,v 1.16 2004-05-06 14:23:00 judson Exp $"
+__revision__ = "$Id: SOAPInterface.py,v 1.17 2004-11-19 23:00:46 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
@@ -169,7 +169,12 @@ class SOAPIWrapper:
 
         if self.url != None:
             try:
+                from AccessGrid.Preferences import Preferences
+                # First, check command line option
                 if Application.instance().GetOption("insecure"):
+                    self.handle = Client.InsecureHandle(self.url, faultHandler = faultHandler)
+                # Second, check preferences
+                elif not Application.instance().GetPreferences().GetPreference(Preferences.SECURE_VENUE_CONNECTION): 
                     self.handle = Client.InsecureHandle(self.url, faultHandler = faultHandler)
                 else:
                     self.handle = Client.SecureHandle(self.url, faultHandler = faultHandler)

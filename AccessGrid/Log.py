@@ -70,7 +70,11 @@ DEBUG=logging.DEBUG           # Added below
 # VERBOSE=logging.VERBOSE       # Added below
 # HIGHDETAIL=logging.HIGHDETAIL # Added below
 NOTSET=logging.NOTSET
-                                                                                
+
+def GetLogLevels():
+    return {logging.ERROR: "ERROR", logging.WARN: "WARN",
+            logging.INFO: "INFO", logging.DEBUG: "DEBUG",
+            logging.CRITICAL: "CRITICAL"}
 
 # ---- Predefined categories ----
 AGService = "AGService"
@@ -212,7 +216,11 @@ def GetUsageFormatter():
 # Does NOT Need to include all components and can be empty.
 # Will optimize if needed.
 
-#_componentNames=[AGService, AppMonitor, AuthorizationUI, BridgeServer , CertificateManager , CertificateRepository , CertificateManagerWXGUI , CertificateRequestTool , CertReqService , CRSClient , DataStoreClient , DataStore , DataService , EventService , ProcessManager , NodeManagementUIClasses , NodeSetupWizard , NodeService , Security , ProxyGen , pyGlobus , ServiceManager , SharedApplication , TextClient , SimpleTextProcessor , TextConnection , TextService , Toolkit , Types , Utilities , VenueManagement , VenueClient , VenueClientController , VenueClientUIClasses , VenueClientUI , VenueServer , EventClient , Logging, Usage]
+_categoryNames=[AGService, AppMonitor, AuthorizationUI, BridgeServer , CertificateManager , CertificateRepository , CertificateManagerWXGUI , CertificateRequestTool , CertReqService , CRSClient , DataStoreClient , DataStore , DataService , EventService , ProcessManager , NodeManagementUIClasses , NodeSetupWizard , NodeService , Security , ProxyGen , pyGlobus , ServiceManager , SharedApplication , TextClient , SimpleTextProcessor , TextConnection , TextService , Toolkit , Types , Utilities , VenueManagement , VenueClient , VenueClientController , VenueClientUIClasses , VenueClientUI , VenueServer , EventClient , Logging, Usage]
+
+def GetCategories():
+    return _categoryNames
+
 _componentNames=[]
 
 # Create defaultLoggers
@@ -220,6 +228,8 @@ defaultLoggers=copy.copy(_componentNames)
 # Don't log Usage in normal log by default.
 if Usage in defaultLoggers:
     defaultLoggers.remove(Usage)
+
+
 
 # Get the list that stores dynamically defined or predefined default loggers.
 def GetDefaultLoggers():
