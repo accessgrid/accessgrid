@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.167 2004-03-23 22:56:27 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.168 2004-03-25 23:31:51 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.167 2004-03-23 22:56:27 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.168 2004-03-25 23:31:51 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -49,6 +49,7 @@ from AccessGrid.Descriptions import CreateDataDescription
 from AccessGrid.Descriptions import CreateServiceDescription
 from AccessGrid.Descriptions import CreateApplicationDescription
 from AccessGrid.Descriptions import StreamDescription
+from AccessGrid.Descriptions import CreateNetworkLocation
 from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
 from AccessGrid.Descriptions import DataDescription, VenueState
@@ -608,7 +609,7 @@ class Venue(AuthorizationMixIn):
         for privateId in netservices_to_remove:
             log.info("Removing netservice %s with expired heartbeat time",
             privateId)
-            self.RemoveNetService(privateId)
+            self.RemoveNetworkService(privateId)
 
     def ClientHeartbeat(self, event):
         """
@@ -1053,9 +1054,9 @@ class Venue(AuthorizationMixIn):
 
         # Remove the net service if it's already registered
         if self.netServices.has_key(privateId):
-            log.info("AddNetService: id %s already registered")
-            log.info("removing old state", privateId)
-            self.RemoveNetService(privateId)
+            log.info("AddNetworkService: id already registered")
+            log.info("removing old state: id %s", privateId)
+            self.RemoveNetworkService(privateId)
 
         log.info("AddNetworkService: type=%s", clientType)
 
@@ -1072,7 +1073,7 @@ class Venue(AuthorizationMixIn):
 
         # Stop the net service
         netService = self.netServices[privateId][0]
-        log.info("RemoveNetService: type=%s privateId=%s", netService.type,
+        log.info("RemoveNetworkService: type=%s privateId=%s", netService.type,
                  privateId)
         netService.Stop()
 
@@ -1377,13 +1378,13 @@ class Venue(AuthorizationMixIn):
                   inStreamDescription.location.port,
                   inStreamDescription.location.ttl )
         
-        self.streamList.AddStream(streamDescription)
+        self.streamList.AddStream(inStreamDescription)
 
         # Distribute event announcing new stream
         self.server.eventService.Distribute(self.uniqueId,
                                             Event(Event.ADD_STREAM,
                                                    self.uniqueId,
-                                                   streamDescription))
+                                                   inStreamDescription))
 
     def RemoveStream(self, inStreamDescription):
         """
@@ -1797,8 +1798,11 @@ class Venue(AuthorizationMixIn):
         streamList = self.streamList.GetStreams()
         for stream in streamList:
             if stream.id == streamId:
-                # Add the network location to the stream
+            
+                # Set the private id as passed in
                 networkLocation.privateId = privateId
+                
+                # Add the network location to the stream
                 nid = stream.AddNetworkLocation(networkLocation)
                 log.info("Added network location %s to stream %s for private id %s",
                          nid, streamId, privateId)
@@ -1946,7 +1950,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
 
     def AddNetworkService(self, clientType, privateId=str(GUID())):
         """
-        AddNetService adds a net service to those in the venue
+        AddNetworkService adds a net service to those in the venue
         """
 
         # Lock and do the call
@@ -1954,23 +1958,23 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
             retval = self.impl.AddNetworkService(clientType, privateId)
             return retval
         except:
-            log.exception("VenueI.AddNetService: exception")
+            log.exception("VenueI.AddNetworkService: exception")
             raise
-
+            
     AddNetService = AddNetworkService
-    
+
     def RemoveNetworkService(self, privateId):
         """
-        RemoveNetService removes a netservice from those in the venue
+        RemoveNetworkService removes a netservice from those in the venue
         """
 
         # Lock and do the call
         try:
             self.impl.RemoveNetworkService(privateId)
         except:
-            log.exception("VenueI.RemoveNetService: exception")
+            log.exception("VenueI.RemoveNetworkService: exception")
             raise
-
+    
     RemoveNetService = RemoveNetworkService
     
     def GetNetworkServices(self):
@@ -2663,7 +2667,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
 
         return returnValue
         
-    def AddNetworkLocationToStream(self, privateId, streamId, networkLocation):
+    def AddNetworkLocationToStream(self, privateId, streamId, networkLocationStruct):
         """
         Add a transport to an existing stream
 
@@ -2680,6 +2684,10 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
 
         """
         try:
+            # Create a NetworkLocation object from the
+            # network location struct
+            networkLocation = CreateNetworkLocation(networkLocationStruct)
+                
             retval = self.impl.AddNetworkLocationToStream(privateId, streamId,
                                                           networkLocation)
             return retval
@@ -2825,10 +2833,10 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
         return self.proxy.UpdateClientProfile(profile)
 
     def AddNetworkService(self, type, privateID):
-        return self.proxy.AddNetService(type, privateID)
+        return self.proxy.AddNetworkService(type, privateID)
 
     def RemoveNetworkService(self, nid):
-        return self.proxy.RemoveNetService(nid)
+        return self.proxy.RemoveNetworkService(nid)
 
     def GetNetworkServices(self):
         return None
