@@ -94,7 +94,7 @@ if DST_CONFIG_DIR == "" or not os.path.exists( DST_CONFIG_DIR ):
 
 # Make sure we can find AG source.
 
-file_to_find = os.path.join(AG_BASE_DIR, "AccessGrid", "MulticastAddressAllocator.py")
+file_to_find = os.path.join(AG_BASE_DIR, "AccessGrid", "Version.py")
 if not (os.path.exists( file_to_find )):
     PrintUsage()
     print "Cannot find AccessGrid source location.", file_to_find, " not found." 
@@ -256,19 +256,14 @@ smfile.write("servicesDirectory = local_services\n\n")
 smfile.close()
 
 # New config using AGTkConfig
-try:
-    os.environ['AGTK_INSTALL'] = os.path.join( os.path.abspath(AG_BASE_DIR), "bin" )
-    os.environ['AGTK_LOCATION'] = os.path.abspath(DST_CONFIG_DIR)
-    # Add to PYTHONPATH
-    sys.path.insert(0, os.path.abspath(AG_BASE_DIR))
+os.environ['AGTK_INSTALL'] = os.path.join( os.path.abspath(AG_BASE_DIR), "bin" )
+os.environ['AGTK_LOCATION'] = os.path.abspath(DST_CONFIG_DIR)
+# Add to PYTHONPATH
+sys.path.insert(0, os.path.abspath(AG_BASE_DIR))
 
-    from AccessGrid.Platform.Config import AGTkConfig
-    # Create directory structure
-    agtkConfig = AGTkConfig.instance(initIfNeeded=1)
-except Exception, e:
-    print "Toolkit Initialization failed."
-    raise e
-    sys.exit(-1)
+from AccessGrid.Platform.Config import AGTkConfig
+# Create directory structure
+agtkConfig = AGTkConfig.instance(initIfNeeded=1)
 
 
 # Tell users how to use the new configuration files.
