@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.42 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.43 2003-10-23 16:56:10 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.42 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.43 2003-10-23 16:56:10 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -35,6 +35,10 @@ from AccessGrid import Toolkit
 # imports for Debug menu; can be removed if Debug menu is removed
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
+
+import logging, logging.handlers
+log = logging.getLogger("AG.NodeManagementUIClasses")
+log.setLevel(logging.WARN)
 
 ###
 ### MENU DEFS
@@ -246,54 +250,51 @@ class ServiceConfigurationPanel( wxPanel ):
         self.guiComponents = []
 
         rows = len(serviceConfig.parameters)
-        self.panelSizer = wxFlexGridSizer( rows, 1, 2, 2 ) #rows, cols, hgap, vgap
-
-        psz= wxBoxSizer( wxHORIZONTAL )
-        pt = wxStaticText( self, -1, "Resource", style=wxALIGN_LEFT )
-        psz.Add( pt, 1 )
+        self.panelSizer = wxFlexGridSizer( rows, 2, 2, 2 ) #rows, cols, hgap, vgap
+        self.panelSizer.AddGrowableCol(1)
+        
+        pt = wxStaticText( self, -1, "Resource", style=wxALIGN_LEFT)
         if serviceConfig.resource == "None":
             resource = "None"
         else:
             resource = serviceConfig.resource.resource
-        pComp = wxTextCtrl( self, -1, resource )
+        pComp = wxTextCtrl( self, -1, resource)
         pComp.SetEditable( false )
-        psz.Add( pComp, 2 )
-        self.panelSizer.Add( psz, -1, wxEXPAND )
+
+        self.panelSizer.Add( pt)
+        self.panelSizer.Add( pComp, 0, wxEXPAND )
         self.guiComponents.append( pComp )
 
-        psz= wxBoxSizer( wxHORIZONTAL )
         pt = wxStaticText( self, -1, "Executable", style=wxALIGN_LEFT )
-        psz.Add( pt, 1 )
         pComp = wxTextCtrl( self, -1, serviceConfig.executable )
-        psz.Add( pComp, 2 )
-        self.panelSizer.Add( psz, -1, wxEXPAND )
+
+        self.panelSizer.Add( pt )
+        self.panelSizer.Add( pComp, 0, wxEXPAND )
         self.guiComponents.append( pComp )
 
         for parameter in serviceConfig.parameters:
-
-            psz= wxBoxSizer( wxHORIZONTAL )
-
             pt = wxStaticText( self, -1, parameter.name, style=wxALIGN_LEFT )
-            psz.Add( pt, 1 )
-
+            self.panelSizer.Add(pt, -1, wxEXPAND)
+            
             pComp = None
             if parameter.TYPE == RangeParameter.TYPE:
                 pComp = wxSlider( self, -1, parameter.value, parameter.low, parameter.high, style = wxSL_LABELS )
+                
             elif parameter.TYPE == OptionSetParameter.TYPE:
                 pComp = wxComboBox( self, -1, "", style=wxCB_READONLY )
                 for option in parameter.options:
                     pComp.Append( option )
                 pComp.SetValue( parameter.value )
+
             else:
                 val = parameter.value
                 if type(val) == int:
                     val = '%d' % (val)
                 pComp = wxTextCtrl( self.panel, -1, val )
-
+            
             self.guiComponents.append( pComp )
-            psz.Add( pComp, 2 )
-
-            self.panelSizer.Add( psz, -1, wxEXPAND )
+          
+            self.panelSizer.Add( pComp, 10, wxEXPAND )
 
         self.panel.SetSizer( self.panelSizer )
         self.panel.SetAutoLayout( true )
@@ -549,7 +550,7 @@ class NodeManagementClientFrame(wxFrame):
         except:
             self.SetTitle( "Access Grid Node Management" )
             self.ClearUI()
-            print "Invalid Node Service URI: %s" % nodeServiceUri
+            log.exception("NodeManagementClientFrame.AttachToNode: Invalid Node Service URI: %s" % nodeServiceUri)
 
     def LoadConfiguration( self, event ):
         """
@@ -570,6 +571,7 @@ class NodeManagementClientFrame(wxFrame):
             try:
                 self.nodeServiceHandle.GetProxy().LoadConfiguration( conf )
             except faultType, e:
+                log.exception("NodeManagementClientFrame.LoadConfiguration: Can not load configuration from node service")
                 self.Error(e.faultstring)
 
             self.UpdateHostList()
@@ -601,6 +603,7 @@ class NodeManagementClientFrame(wxFrame):
                 try:
                     self.nodeServiceHandle.GetProxy().StoreConfiguration( configName )
                 except faultType,e:
+                    log.exception("NodeManagementClientFrame.StoreConfiguration: Can not store configuration in node service")
                     self.Error(e.faultstring)
 
                 # Set the default configuration
@@ -629,6 +632,7 @@ class NodeManagementClientFrame(wxFrame):
         try:
             self.UpdateHostList()
         except Exception:
+            log.exception("NodeManagementClientFrame.UpdateUI: Can not update host list.")
             self.Error("Error updating UI")
 
 
@@ -665,13 +669,15 @@ class NodeManagementClientFrame(wxFrame):
             try:
                 self.nodeServiceHandle.GetProxy().AddServiceManager( AGServiceManagerDescription( name, uri ) )
             except faultType, e:
-                print "Exception in AddHost", sys.exc_type, sys.exc_value
+                log.exception("NodeManagementClientFrame.AddHost: Can not add service manager to node service")
                 self.Error(e.faultstring)
                 self.ClearUI()
                 self.UpdateHostList()
                 return
+            
             except:
-                self.Error("Error adding service manager")
+                log.exception("Exception in AddHost")
+                self.Error("Can not add service manager to node service.")
                 self.ClearUI()
                 self.UpdateHostList()
                 return
@@ -736,6 +742,7 @@ class NodeManagementClientFrame(wxFrame):
         try:
             Client.Handle(uri).IsValid
         except:
+            log.exception("NodeManagementClientFrame.ServiceManagerSelectedCB: Service manager is valid call failed.")
             self.Error("Service Manager is unreachable (%s)" % uri)
             return
 
@@ -833,7 +840,7 @@ class NodeManagementClientFrame(wxFrame):
                                resourceToAssign,
                                None )
             except faultType, e:
-                print "Exception in AddService : ", sys.exc_type, sys.exc_value
+                log.exception("NodeManagementClientFrame.AddService: Exception in AddService")
                 #self.Error( "Add Service failed :" + serviceToAdd.name )
                 self.Error(e.faultstring)
 
@@ -855,14 +862,14 @@ class NodeManagementClientFrame(wxFrame):
             index = -1
             for i in range( self.serviceList.GetSelectedItemCount() ):
                 index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-                print "** Enabling Service:", self.services[index].name
+                log.debug("NodeManagementClientFrame.EnableService: Enabling Service: %s" %self.services[index].name)
                 self.nodeServiceHandle.GetProxy().SetServiceEnabled(self.services[index].uri, 1)
 
             # Update the services list
             self.UpdateServiceList()
 
         except faultType,e:
-            print "Exception in EnableService ", sys.exc_type, sys.exc_value
+            log.exception("NodeManagementClientFrame.EnableService")
             self.Error(e.faultstring)
 
     def EnableServices( self, event ):
@@ -895,7 +902,7 @@ class NodeManagementClientFrame(wxFrame):
             # Update the service list
             self.UpdateServiceList()
         except faultType,e:
-            print "Exception in EnableService ", sys.exc_type, sys.exc_value
+            log.exception("NodeManagementClientFrame.DisableService.")
             self.Error(e.faultstring)
 
 
@@ -948,6 +955,7 @@ class NodeManagementClientFrame(wxFrame):
         try:
             Client.Handle( self.services[index].uri ).IsValid()
         except:
+            log.exception("NodeManagementClientFrame.GetServiceConfiguration.")
             self.Error("Service is unreachable")
             return
             
@@ -1014,7 +1022,7 @@ class NodeManagementClientFrame(wxFrame):
                         else:
                             self.serviceList.SetStringItem( i,1, "Disabled" )
                     except:
-                        print "Exception in UpdateServiceList ", sys.exc_type, sys.exc_value
+                        log.exception("NodeManagementClientFrame.UpdateServiceList")
                     i = i + 1
 
 
@@ -1047,6 +1055,7 @@ class NodeManagementClientFrame(wxFrame):
         try:
             self.nodeServiceHandle.GetProxy().SetStreams( streamDs )
         except faultType, e:
+            log.exception("NodeManagementClientFrame.GotoTestRoom.")
             self.Error(e.faultstring)
 
         self.UpdateServiceList()
@@ -1090,7 +1099,7 @@ class NodeManagementClientFrame(wxFrame):
 
     def Error( self, message ):
         wxMessageDialog( self, message, style = wxOK ).ShowModal()
-    
+        
     def PopupServiceMenu(self, evt):
         """
         Popup the service menu
@@ -1126,3 +1135,19 @@ class NodeManagementClientFrame(wxFrame):
         """
         self.hostList.DeleteAllItems()
         self.serviceList.DeleteAllItems()
+
+
+if __name__ == "__main__":
+    from AccessGrid.AGService import AGResource
+    
+    app = wxPySimpleApp()
+
+    # Service config dialog test
+    resource = AGResource()
+    resource.resource = "resource"
+    config = ServiceConfiguration(resource, 'executable', [] )
+
+    dlg = ServiceConfigurationDialog(None, -1, "Service Config Dialog", config)
+    ret = dlg.ShowModal()
+    dlg.Destroy()
+   
