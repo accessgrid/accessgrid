@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI2.py,v 1.9 2004-07-26 23:12:03 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI2.py,v 1.10 2004-07-28 16:38:50 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI2.py,v 1.9 2004-07-26 23:12:03 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI2.py,v 1.10 2004-07-28 16:38:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -229,7 +229,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         This method opens a profile dialog, in which the user can fill in
         his or her information.
         """
-        profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile')
+        profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', 1)
         profileDialog.SetProfile(self.venueClient.GetProfile())
 
         if (profileDialog.ShowModal() == wxID_OK):
@@ -851,7 +851,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def EditProfileCB(self, event = None):
         profile = None
         profileDialog = ProfileDialog(NULL, -1,
-                                  'Your profile information')
+                                  'Your profile information', 1)
         profileDialog.SetProfile(self.venueClient.GetProfile())
         if (profileDialog.ShowModal() == wxID_OK):
             profile = profileDialog.GetNewProfile()
@@ -1169,7 +1169,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def ViewProfileCB(self, event=None):
         participant = self.GetSelectedItem()
         if(participant != None and isinstance(participant, ClientProfile)):
-            profileView = ProfileDialog(self, -1, "Profile")
+            profileView = ProfileDialog(self, -1, "Profile", 0)
             log.debug("VenueClientFrame.OpenParticipantProfile: open profile view with this participant: %s" 
                         %participant.name)
             profileView.SetDescription(participant)
@@ -3827,15 +3827,23 @@ class UrlDialog(wxDialog):
 ################################################################################
 
 class ProfileDialog(wxDialog):
-    def __init__(self, parent, id, title):
+    def __init__(self, parent, id, title, validate):
         wxDialog.__init__(self, parent, id, title)
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
-        self.nameCtrl = wxTextCtrl(self, -1, "", size = (400,-1),
-                                   validator = TextValidator("Name"))
+        if validate:
+            self.nameCtrl = wxTextCtrl(self, -1, "", size = (400,-1),
+                                       validator = TextValidator("Name"))
+        else:
+            # Don't use a validator
+            self.nameCtrl = wxTextCtrl(self, -1, "", size = (400,-1))
         self.emailText = wxStaticText(self, -1, "Email:", style=wxALIGN_LEFT)
-        self.emailCtrl = wxTextCtrl(self, -1, "",
-                                   validator = TextValidator("Email"))
+        if validate:
+            self.emailCtrl = wxTextCtrl(self, -1, "",
+                                       validator = TextValidator("Email"))
+        else:
+            # Don't use a validator
+            self.emailCtrl = wxTextCtrl(self, -1, "")
         self.phoneNumberText = wxStaticText(self, -1, "Phone Number:",
                                             style=wxALIGN_LEFT)
         self.phoneNumberCtrl = wxTextCtrl(self, -1, "")
