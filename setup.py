@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.56 2004-04-07 16:30:39 judson Exp $
+# RCS-ID:      $Id: setup.py,v 1.57 2004-04-07 19:03:33 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,12 +22,6 @@ by the set up below.
 
 cdir = os.getcwd()
 
-# Generate epydoc documentation
-if sys.platform == 'win32':
-    ep = os.path.join(os.path.dirname(sys.executable), "Scripts", "epydoc.py")
-else:
-    ep = "epydoc.py"
-
 # We pluck off the prefix, this is totally unkosher, but hey
 dest = None
 for arg in sys.argv[1:]:
@@ -36,7 +30,13 @@ for arg in sys.argv[1:]:
         if len(al) == 2:
             dest = al[1]
 
+# Generate epydoc documentation
 if dest is not None:
+    if sys.platform == 'win32':
+        ep = os.path.join(os.path.dirname(sys.executable), "Scripts", "epydoc.py")
+    else:
+        ep = "epydoc.py"
+
     cmd = [sys.executable, ep, "--html", "-o",
            os.path.join("doc", "Developer"),
            "-n", "Access Grid Toolkit", "-u",
