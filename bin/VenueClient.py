@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.130 2003-04-24 18:48:22 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.131 2003-04-24 22:09:34 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -28,7 +28,7 @@ import AccessGrid.Types
 import AccessGrid.ClientProfile
 from AccessGrid import DataStore
 
-from AccessGrid.Descriptions import DataDescription
+from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Utilities import HaveValidProxy, InitMimeTypes, GetMimeCommands
 from AccessGrid.UIUtilities import MyLog, MessageDialog
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
@@ -392,9 +392,14 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time new service is added to the venue.
         Appropriate gui updates are made in client.
         """
-        VenueClient.AddServiceEvent(self, service)
-        wxCallAfter(wxLogDebug, "EVENT - Add service: %s" %(service.name))
-        wxCallAfter(self.frame.contentListPanel.AddService, service)
+
+        # Convert the struct type to a ServiceDescription so we can use isinstance...
+        s = ServiceDescription(service.name, service.description, service.uri,
+                               service.mimeType)
+        
+        VenueClient.AddServiceEvent(self, s)
+        wxCallAfter(wxLogDebug, "EVENT - Add service: %s" %(s.name))
+        wxCallAfter(self.frame.contentListPanel.AddService, s)
 
     def RemoveServiceEvent(self, service):
         """
