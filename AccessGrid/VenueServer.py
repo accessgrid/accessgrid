@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.140 2004-04-13 03:53:27 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.141 2004-05-03 20:10:45 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.140 2004-04-13 03:53:27 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.141 2004-05-03 20:10:45 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -501,7 +501,8 @@ class VenueServer(AuthorizationMixIn):
                     if a != "":
                         xs = X509Subject.CreateSubjectFromString(a)
                         admins = self.authManager.FindRole("Administrators")
-                        admins.AddSubject(xs)
+                        if not admins.HasSubject(xs):
+                            admins.AddSubject(xs)
                         admins.SetRequireDefault(1)
                                     
             else:
