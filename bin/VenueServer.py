@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.31 2003-08-12 20:57:24 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.32 2003-08-12 21:39:31 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,12 +20,16 @@ import threading
 #
 # Preload some stuff. This speeds up app startup drastically.
 #
+# Only do this on windows, Linux is fast enough as it is.
+#
 
-from pyGlobus import utilc, gsic, ioc
-from AccessGrid.hosting.pyGlobus import Utilities
-utilc.globus_module_activate(gsic.get_module())
-utilc.globus_module_activate(ioc.get_module())
-Utilities.CreateTCPAttrAlwaysAuth()
+if sys.platform == "win32":
+
+    from pyGlobus import utilc, gsic, ioc
+    from AccessGrid.hosting.pyGlobus import Utilities
+    utilc.globus_module_activate(gsic.get_module())
+    utilc.globus_module_activate(ioc.get_module())
+    Utilities.CreateTCPAttrAlwaysAuth()
 
 #
 # Back to your normal imports.
