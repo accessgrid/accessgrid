@@ -48,9 +48,15 @@ if needBuild:
 for f in ratFiles:
     ratFile = os.path.join(DEST,f)
     if os.path.exists(ratFile):
+        destFile = os.path.join(servicesDir,ratFile)
+        # rename rat-kill on linux
+        if ratFile.endswith('kill'):
+            destFile = os.path.join(servicesDir,'rat-kill')
+            indx = ratFiles.index(f)
+            ratFiles[indx] = 'rat-kill'
         print 'Copying %s' % (ratFile,)
         copyCmd = '%s %s %s' % (copyExe,ratFile,
-                                servicesDir)
+                                destFile)
         os.system(copyCmd)
     else:
         print '** Error: %s does not exist; not copying' % (ratFile,)
