@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.23 2003-07-11 21:12:33 eolson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.24 2003-08-07 19:17:16 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -312,7 +312,10 @@ class EventClient:
         self.running = 0
 
         log.debug("Cancel pending callbacks")
-        self.sock.cancel(1)
+        try:
+            self.sock.cancel(1)
+        except IOBaseException:
+            pass
         if self.cbHandle:
             log.debug("Free callback %s", self.cbHandle)
             self.sock.free_callback(self.cbHandle)
