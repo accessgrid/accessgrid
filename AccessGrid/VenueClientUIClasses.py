@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.298 2003-10-21 03:28:28 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.299 2003-10-21 03:41:37 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.298 2003-10-21 03:28:28 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.299 2003-10-21 03:41:37 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2361,7 +2361,14 @@ class ContentListPanel(wxPanel):
                 shell = os.environ['ComSpec']
                 realCommand = "%s %s %s" % (shell, "/c", realCommand)
         else:
-            realCommand = command % namedVars
+            try:
+                realCommand = command % namedVars
+            except:
+                import pprint
+                log.exception("Command failed, probably misconfigured. \
+                Tried to run, %s with named arguments %s", command,
+                              pprint.pformat(namedVars))
+                return
 
         aList = realCommand.split(' ')
         print "CMD: ", realCommand
