@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.28 2003-09-03 17:58:49 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.29 2003-09-04 21:51:36 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -25,7 +25,7 @@ from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
 from AccessGrid import icons
 
-from AccessGrid.Utilities import SubmitBug
+from AccessGrid.Utilities import SubmitBug, VENUE_CLIENT_LOG
 from AccessGrid.Utilities import formatExceptionInfo
 from Toolkit import GetVersion
 from AccessGrid.Platform import GetUserConfigDir
@@ -38,7 +38,9 @@ class MessageDialog:
         messageDialog.Destroy()
       
 class ErrorDialog:
-    def __init__(self, frame, text, text2 = "", style =  wxICON_ERROR |wxYES_NO | wxNO_DEFAULT):
+    def __init__(self, frame, text, text2 = "",
+                 style =  wxICON_ERROR |wxYES_NO | wxNO_DEFAULT, logFile = VENUE_CLIENT_LOG):
+        
         info = text + "\n\nDo you wish to send an automated error report?"
         errorDialog = wxMessageDialog(frame, info, text2, wxICON_ERROR |wxYES_NO | wxNO_DEFAULT)
 
@@ -52,7 +54,7 @@ class ErrorDialog:
                 profile = bugReportCommentDialog.GetProfile()
                 email = bugReportCommentDialog.GetEmail()
 
-                SubmitBug(comment, profile, email)
+                SubmitBug(comment, profile, email, logFile)
                 bugFeedbackDialog = wxMessageDialog(frame, "Your error report has been sent, thank you.",
                                                     "Error Reported", style = wxOK|wxICON_INFORMATION)
                 bugFeedbackDialog.ShowModal()

@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.42 2003-09-03 19:11:04 lefvert Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.43 2003-09-04 21:51:36 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -25,6 +25,12 @@ import logging
 log = logging.getLogger("AG.Utilities")
 
 from AccessGrid.Platform import GetUserConfigDir
+
+# Global variables for sending log files
+VENUE_CLIENT_LOG = 0
+VENUE_MANAGEMENT_LOG = 1
+NODE_SETUP_WIZARD_LOG = 2
+
 
 def LoadConfig(fileName, config=dict(), separator="."):
     """
@@ -166,29 +172,29 @@ def GetResourceList( resourceFile ):
 
     return resources
 
-def GetLogText(maxSize):
+def GetLogText(maxSize, logFileName):
     '''
-    Reads log records, based on todays date, from VenueClient.log.  
+    Reads log records, based on todays date, from log file.  
 
     **Arguments:**
-        
-    *maxSize* The maximum number of bytes we want to read from the VenueClient.log file.
+    
+    *logFileName* Name of log file to read from.
+    *maxSize* The maximum number of bytes we want to read from the log file.
       
     **Returns:**
     
     *test* a string including log records from todays date.
-    If the VenueClient.log file is missing, GetLogText will return the error message
+    If the log file is missing, GetLogText will return the error message
     received when trying to read the file.  If the log file does not include any
     records from today, the last "maxSize" bytes of the file will be included in the string.
     '''
         
     try:
         #
-        # Try to get text from VenueClient.log
+        # Try to get text from the log file.
         #
-        # logFileLocation = os.path.join(GetInstallDir(), "VenueClient.log")
-        # logFile = file(logFileLocation)
-        logFile = file(os.path.join(GetUserConfigDir(), "VenueClient.log"))
+      
+        logFile = file(os.path.join(GetUserConfigDir(), logFileName))
         
         #
         # Move to a position "maxSize" bytes from the end of the file. 
@@ -215,9 +221,10 @@ def GetLogText(maxSize):
         traceback = ""
         for x in traceback_string_list:
             traceback += x + "\n"
-        
-        info = "\n\n"+"Type: "+str(sys.exc_type)+"\n"+"Value: "+str(sys.exc_value) + "\nTraceback:\n" + traceback
-        text = "VenueClient.log could not be located "+ info # text for error report
+
+  
+        #info = "\n\n"+"Type: "+str(sys.exc_type)+"\n"+"Value: "+str(sys.exc_value) + "\nTraceback:\n" + traceback
+        text = logFileName + " could not be located " #+ info # text for error report
 
     #
     # Seek for todays date to just include relevant
@@ -238,7 +245,7 @@ def GetLogText(maxSize):
     return text
 
 
-def SubmitBug(comment, profile, email):
+def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
     '''
     Submits a bug to bugzilla. 
 
@@ -289,8 +296,7 @@ def SubmitBug(comment, profile, email):
     args['submit'] = "    Commit    "
     args['form_name'] = "enter_bug"
     
-    # Bug information goes here
-    args['short_desc'] = "Crash in Client UI"
+   
     
     #
     # Combine comment, profile, and log file information
@@ -309,10 +315,29 @@ def SubmitBug(comment, profile, email):
         # This reporter does not want to be contacted. Do not submit email address.
         email = "This reporter does not want to be contacted.  No email address specified."
 
+        
     commentAndLog = "\n\n--- EMAIL TO CONTACT REPORTER ---\n\n" + str(email) \
                     +"\n\n--- REPORTER CLIENT PROFILE --- \n\n" + profileString \
-                    +"\n\n--- COMMENT FROM REPORTER --- \n\n" + comment \
-                    +"\n\n--- VENUECLIENT.LOG INFORMATION ---\n\n" + GetLogText(20000)
+                    +"\n\n--- COMMENT FROM REPORTER --- \n\n" + comment 
+
+    if logFile == VENUE_MANAGEMENT_LOG:
+        args['short_desc'] = "Crash in Venue Management UI"
+        commentAndLog = commentAndLog \
+                        +"\n\n--- VenueManagement.log INFORMATION ---\n\n"+GetLogText(20000, "VenueManagement.log")
+        
+    elif logFile == NODE_SETUP_WIZARD_LOG:
+        args['short_desc'] = "Crash in Node Setup Wizard UI"
+        commentAndLog = commentAndLog \
+                        +"\n\n--- NodeSetupWizard.log INFORMATION ---\n\n"+GetLogText(20000, "NodeSetupWizard.log")
+
+    else:
+        args['short_desc'] = "Crash in Venue Client UI"
+        commentAndLog = commentAndLog \
+                        +"\n\n--- VenueClient.log INFORMATION ---\n\n"+GetLogText(20000, "VenueClient.log") \
+                        +"\n\n--- AGNodeService.log INFORMATION ---\n\n"+GetLogText(20000, "agns.log")\
+                        +"\n\n--- AGServiceManager.log INFORMATION ---\n\n"+GetLogText(20000, "agsm.log")\
+                        +"\n\n--- AGService.log INFORMATION ---\n\n"+GetLogText(20000, "AGService.log")
+
     
     args['comment']= commentAndLog
       
