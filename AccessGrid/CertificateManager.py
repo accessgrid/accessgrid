@@ -291,8 +291,6 @@ class CertificateManager(object):
         userKey = certLocations['user_key']
         caDir = certLocations['cert_dir']
 
-        userCert= userKey = None
-
         #
         # First the user cert.
         #
