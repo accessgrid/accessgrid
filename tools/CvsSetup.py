@@ -194,6 +194,9 @@ nsfile.close()
 config_file = os.path.join(AGTkConfig.instance().GetConfigDir(), "AGServiceManager.cfg")
 bak_file = os.path.join(AGTkConfig.instance().GetConfigDir(), "AGServiceManager.cfg.bak")
 
+agtk_location = os.path.join(os.path.abspath(options.srcdir))
+python_path = os.path.abspath(options.srcdir)
+
 BackupFile(config_file, bak_file)
 
 smfile = open(config_file, 'w', )
@@ -221,25 +224,48 @@ elif isLinux() or isOSX():
 else:
     print "Error, your platform is not defined.  Please add it to CvsSetup.py"
 
-print "       set AGTK_LOCATION to", os.path.join( os.path.abspath(options.srcdir), "bin" )
-print "       set PYTHONPATH to", os.path.abspath(options.srcdir)
+print "       set AGTK_LOCATION to", agtk_location
+print "       set PYTHONPATH to", python_path
 print ""
 
 if isLinux() or isOSX():
+
+    #
+    # Write bourne/bash shell version
+    #
+    
     fh = open("env-init.sh", "w")
-    fh.write("export AGTK_LOCATION=%s\n" % (os.path.join(os.path.abspath(options.srcdir), "bin")))
-    fh.write("export PYTHONPATH=%s\n" % os.path.abspath(options.srcdir))
+    fh.write("""
+export AGTK_LOCATION=%(agtk_location)s
+
+DELIM=
+if [ -n "$PYTHONPATH" ] ; then
+    DELIM=:
+fi
+export PYTHONPATH=${PYTHONPATH}${DELIM}%(python_path)s
+""" % locals())
     fh.close()
 
+    #
+    # Write csh version
+    #
+
     fh = open("env-init.csh", "w")
-    fh.write("setenv AGTK_LOCATION %s\n" % (os.path.join( os.path.abspath(options.srcdir), "bin")))
-    fh.write("setenv PYTHONPATH %s\n" % os.path.abspath(options.srcdir))
+    fh.write("""
+setenv AGTK_LOCATION %(agtk_location)s
+if ($?PYTHONPATH) then
+    setenv PYTHONPATH ${PYTHONPATH}:%(python_path)s
+else
+    setenv PYTHONPATH %(python_path)s
+endif
+""" % locals())
     fh.close()
     print "Wrote csh config to env-init.csh, bash config to env-init.sh"
+    
 elif isWindows():
     fh = open("env-init.bat", "w")
-    fh.write("set AGTK_LOCATION=%s\n" % (os.path.join( os.path.abspath(options.srcdir), "bin")))
-    fh.write("set PYTHONPATH=%s\n" % os.path.abspath(options.srcdir))
+    fh.write("set AGTK_LOCATION=%s\n" % (agtk_location))
+    fh.write("set PYTHONPATH=%s\n" % (python_path))
     fh.close()
     print "Wrote win32 batchfile init to env-init.bat"
 else:
