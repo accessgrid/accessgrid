@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.31 2003-09-16 07:20:17 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.32 2003-09-19 16:35:59 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.31 2003-09-16 07:20:17 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.32 2003-09-19 16:35:59 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -663,7 +663,7 @@ class CertificateManager(object):
                     break
                 i = i + 1
                     
-            print "CA cert %s: hash=%s dest=%s" % (c.GetSubject(), nameHash, destPath)
+#            print "CA cert %s: hash=%s dest=%s" % (c.GetSubject(), nameHash, destPath)
             shutil.copyfile(c.GetPath(), destPath)
 
             #
@@ -1153,7 +1153,7 @@ class CertificateManagerUserInterface:
                 break
                 
 
-        print "done, success=", success
+#        print "done, success=", success
 
         return success
 
