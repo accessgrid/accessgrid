@@ -91,7 +91,7 @@ from types import *
 try: from M2Crypto import SSL
 except: pass
 
-ident = '$Id: AGGSISOAP.py,v 1.3 2003-01-07 20:27:13 judson Exp $'
+ident = '$Id: AGGSISOAP.py,v 1.4 2003-01-14 20:55:34 turam Exp $'
 
 __version__ = "0.9.7"
 
@@ -3285,16 +3285,19 @@ class SOAPBuilder:
                 tag = ns + tag
             self.out += "<%s%s%s%s%s>\n" % (tag, ndecl, id, a, r)
 
+
             # If we have order use it.
             order = 1
-
             for i in obj._keys():
                 if i not in obj._keyord:
                     order = 0
                     break
             if order:
                 for i in range(len(obj._keyord)):
-                    self.dump(obj._aslist[i], obj._keyord[i], 1, ns_map)
+                    self.dump(obj.__dict__[obj._keyord[i]], obj._keyord[i], 1, ns_map)
+# turam - favor the class attribute over the list item, since users of the class
+#           will change the class attribute
+                    #self.dump(obj._aslist[i], obj._keyord[i], 1, ns_map)
             else:
                 # don't have pristine order information, just build it.
                 for (k, v) in obj.__dict__.items():
