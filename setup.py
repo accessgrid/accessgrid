@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.10 2003-03-13 23:41:16 leggett Exp $
+# RCS-ID:      $Id: setup.py,v 1.11 2003-03-14 22:10:10 leggett Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -55,11 +55,11 @@ setup(
                     ]
                    ),
                   ('etc/AccessGrid',
-                   [r"etc/AccessGrid/AGNodeService",
-                    r"etc/AccessGrid/AGServiceManager"
+                   [r"etc/AccessGrid/AGNodeService.cfg",
+                    r"etc/AccessGrid/AGServiceManager.cfg"
                     ]
                    ),
-                  ('share/AccessGrid',
+                  ('share/AccessGrid/nodeConfig',
                    [r"etc/AccessGrid/defaultLinux",
                     r"etc/AccessGrid/defaultWindows"
                     ]
@@ -99,8 +99,6 @@ setup(
                     "README",
                     "TODO",
                     "VERSION",
-                    r"etc/AccessGrid/defaultLinux",
-                    r"etc/AccessGrid/defaultWindows"
                     ]
                    )
                   ]
