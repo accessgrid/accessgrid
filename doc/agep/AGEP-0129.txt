@@ -2,7 +2,7 @@
 Application Services
 =====================================
  
-:version: $Revision: 1.2 $
+:version: $Revision: 1.3 $
 :author: Susanne Lefvert <lefvert@mcs.anl.gov>
 :status: Draft
 :contact: ag-tech@mcs.anl.gov
@@ -33,9 +33,84 @@ Overview
 Summary of Modifications
 ========================
    
-   New base class for application services:
+   **New base class for application services:**
    
    AGAppService
+
+
+   **Changes to Descriptions.py**
+
+   Remove (line 238):
+   ::
+
+       def __init__(self, name, description, uri, mimetype):   
+
+   Add (line 238):
+   ::
+           
+           def __init__(self, name, description, uri, mimetype,
+                    extension = None, version = None, visible = 1):  
+
+               self.extension = extension
+               self.version = version
+               self.visible = visible
+   
+   **Changes to VenueClientController.py**
+
+   Remove (line 1121):
+   ::
+   
+         elif isinstance(objDesc, ServiceDescription):
+             # Fix odd commands
+             if IsWindows():
+                 if command.find("%1") != -1:
+                     command = command.replace("%1", "")
+                 if command.find("%L") != -1:
+                     command = command.replace("%L", "")
+                 if command.find("%*") != -1:
+                     command = command.replace("%*", "")
+             else:
+                 if command.find("%s") != -1:
+                     command = command.replace("%s", "")
+ 
+             command = command.strip()
+             
+             if len(command) > 1:
+                 if command.find("%") == -1:
+                     command = command+" %(appUrl)s"
+             else:
+                 command = "\"%(appUrl)s\""
+
+    Add (line 1126):
+    ::
+
+        if (isinstance(objDesc, ApplicationDescription) or
+           isinstance(objDesc, AGNetworkServiceDescription) or
+           isinstance(objDesc, ServiceDescription)):
+
+    Remove (line 1336)
+    :: 
+        
+         if isinstance(objDesc,ServiceDescription):
+             # Data and Service commands are retrieved from the mime db
+             list = objDesc.name.split('.')
+             ext = ""
+             
+             if len(list) == 2:
+                 ext = list[1]
+
+             commandList = self.mimeConfig.GetMimeCommands(
+                 mimeType = objDesc.mimeType,
+                 ext = ext)
+     
+    Add (line 1350):
+    ::
+        
+         elif isinstance(objDesc, ServiceDescription):
+             commandList = dict()
+             commandList.update(self.userAppDatabase.GetCommands(objDesc.mimeType))
+             commandList.update(self.systemAppDatabase.GetCommands(objDesc.mimeType))
+    
         
 Module Organization
 -------------------
@@ -90,13 +165,13 @@ Open Issues
         * A network service should not necessarily be displayed for the user while an application
           service should be visible in the venue client.
 
-    2 Should the venue be able to start a service locally, like we are currently doing with applications? If so,
-      is it ok if the service registers with the venue via the venue SOAP interface. In that case it would be
-      very trivial to implement this.
+    2 Should the venue be able to start a service locally, like we are currently doing with applications? 
      
     3 How should we deal with heartbeats? Which method should be used to confirm the remote service is still running? The heartbeat mechanism should probably be implemented in the same way as we do for venue clients (i.e. soap calls?).
 
     4 Should a service be persisted in the venue? Or, does a service provider have to reconnect every time the venue server is restarted similar to current bridge design?
+
+    5 What should we call the application service directory in cvs and packaging? Currently, I added AccessGrid/services/applications with the code in cvs and application clients get extracted to Application Data/SharedApplications
 
 Interoperability Issues
 =======================
@@ -125,17 +200,8 @@ Implementation
    **Instructions:**
 
 
-   1 In Descriptions.py modify ServiceDescription.__init__ to
-   
-       ::
-           
-           def __init__(self, name, description, uri, mimetype,
-                    extension = None, version = None, visible = 1):  
-
-               self.extension = extension
-               self.version = version
-               self.visible = visible
- 
+   1 Modify Descriptions.py and VenueClientController.py according to section "Summary of Modifications"
+    
    2 Run local venue server
 
    3 Run DebugService.py
