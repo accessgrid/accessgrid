@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.137 2003-04-29 15:37:11 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.138 2003-05-07 14:25:08 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -322,13 +322,13 @@ class VenueClientUI(wxApp, VenueClient):
 
         VenueClient.AddUserEvent(self, profile)
 
-        if(profile.profileType == 'user'):
-            wxCallAfter(self.frame.contentListPanel.AddParticipant, profile)
-            wxCallAfter(wxLogDebug, "  add user: %s" %(profile.name))
+        #if(profile.profileType == 'user'):
+        wxCallAfter(self.frame.contentListPanel.AddParticipant, profile)
+        wxCallAfter(wxLogDebug, "  add user: %s" %(profile.name))
 
-        else:
-            wxCallAfter(self.frame.contentListPanel.AddNode, profile)
-            wxCallAfter(wxLogDebug, "  add node: %s" %(profile.name))
+        #else:
+        #    wxCallAfter(self.frame.contentListPanel.AddNode, profile)
+        #    wxCallAfter(wxLogDebug, "  add node: %s" %(profile.name))
 
     def RemoveUserEvent(self, user):
         """
@@ -338,12 +338,12 @@ class VenueClientUI(wxApp, VenueClient):
         """
         VenueClient.RemoveUserEvent(self, user)
 
-        if(user.profileType == 'user'):
-            wxCallAfter(self.frame.contentListPanel.RemoveParticipant, user)
-            wxCallAfter(wxLogDebug,"  remove user: %s" %(user.name))
-        else:
-            wxCallAfter(self.frame.contentListPanel.RemoveNode, user)
-            wxCallAfter(wxLogDebug,"  remove node: %s" %(user.name))
+        #if(user.profileType == 'user'):
+        wxCallAfter(self.frame.contentListPanel.RemoveParticipant, user)
+        wxCallAfter(wxLogDebug,"  remove user: %s" %(user.name))
+        #else:
+        #    wxCallAfter(self.frame.contentListPanel.RemoveNode, user)
+        #    wxCallAfter(wxLogDebug,"  remove node: %s" %(user.name))
 
 
     def ModifyUserEvent(self, data):
@@ -491,14 +491,14 @@ class VenueClientUI(wxApp, VenueClient):
 
             for client in clients:
                 # Participants
-                if(client.profileType == 'user'):
+                #if(client.profileType == 'user'):
                     wxCallAfter(self.frame.contentListPanel.AddParticipant, client)
                     wxCallAfter(wxLogDebug, "   %s" %(client.name))
 
                     # Nodes
-                else:
-                    wxCallAfter(self.frame.contentListPanel.AddNode, client)
-                    wxCallAfter(wxLogDebug, "   %s" %(client.name))
+                #else:
+                #    wxCallAfter(self.frame.contentListPanel.AddNode, client)
+                #    wxCallAfter(wxLogDebug, "   %s" %(client.name))
 
             # --- Load data
             data = venueState.data.values()
