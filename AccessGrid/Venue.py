@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.154 2004-03-04 15:32:33 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.155 2004-03-05 21:42:18 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.154 2004-03-04 15:32:33 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.155 2004-03-05 21:42:18 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -29,8 +29,6 @@ import logging
 from threading import Condition, Lock
 
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
-from AccessGrid.hosting import GetSOAPContext
-from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
 
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
@@ -38,12 +36,13 @@ from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 from AccessGrid.Security import X509Subject, Role
 
-from AccessGrid import AppService
 from AccessGrid import DataStore
 from AccessGrid import NetService
 from AccessGrid.Types import Capability
+from AccessGrid.SharedApplication import SharedApplication, SharedApplicationI
 from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.Descriptions import CreateStreamDescription
+from AccessGrid.Descriptions import CreateConnectionDescription
 from AccessGrid.Descriptions import CreateDataDescription
 from AccessGrid.Descriptions import CreateServiceDescription
 from AccessGrid.Descriptions import CreateApplicationDescription
@@ -72,7 +71,6 @@ class VenueException(Exception):
     A generic exception type to be raised by the Venue code.
     """
     pass
-
 
 class BadServiceDescription(Exception):
     """
@@ -133,6 +131,12 @@ class ConnectionNotFound(Exception):
     """
     The exception raised when a connection is not found in the venues
     list of connections.
+    """
+    pass
+
+class ConnectionAlreadyPresent(Exception):
+    """
+    This exception is raised when a connection is added the second time.
     """
     pass
 
@@ -295,15 +299,23 @@ class Venue(AuthorizationMixIn):
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
     """
     def __init__(self, server, name, description, dataStoreLocation,
-                 id=str(GUID())):
+                 oid=None):
         """
         Venue constructor.
         """
+        if oid:
+            self.uniqueId = oid
+        else:
+            self.uniqueId = str(GUID())
+
+        print self.uniqueId
+
         AuthorizationMixIn.__init__(self)
         self.AddRequiredRole(Role.Role("AllowedEntry"))
         self.AddRequiredRole(Role.Role("DisallowedEntry"))
         self.AddRequiredRole(Role.Role("VenueUsers"))
         self.AddRequiredRole(Role.Role("Administrators"))
+        # Set parent auth mgr to server so administrators cascades?
 
         log.debug("------------ STARTING VENUE")
         self.server = server
@@ -322,9 +334,7 @@ class Venue(AuthorizationMixIn):
         self.simpleLock = ServerLock("venue")
         self.heartbeatLock = ServerLock("heartbeat")
         self.clientDisconnectOK = {}
-
-        self.uniqueId = id
-
+        
         self.cleanupTime = 30
 
         self.connections = list()
@@ -415,7 +425,8 @@ class Venue(AuthorizationMixIn):
 
         *string* Simple string representation of the Venue.
         """
-        retStr = "Venue: name=%s id=%s" % (self.name, id(self))
+        retStr = "Venue: name=%s id=%s url=%s" % (self.name, id(self),
+                                                  self.uri)
         return retStr
 
     def AsINIBlock(self):
@@ -428,7 +439,7 @@ class Venue(AuthorizationMixIn):
         string = "\n[%s]\n" % self.uniqueId
         string += "type : %s\n" % sclass[-1]
         string += "name : %s\n" % self.name
-
+        string += "uri  : %s\n" % self.uri
         # Don't store these control characters, but lets make sure we
         # bring them back
         desc = re.sub("\r\n", "<CRLF>", self.description)
@@ -494,7 +505,9 @@ class Venue(AuthorizationMixIn):
                                 (self.encryptMedia, self.encryptionKey),
                                 self.connections,
                                 self.GetStaticStreams())
-        desc.SetURI(self.uri)
+        uri = self.server.MakeVenueURL(self.uniqueId)
+        print "Setting uri to: ", uri
+        desc.SetURI(uri)
 
         return desc
 
@@ -532,6 +545,12 @@ class Venue(AuthorizationMixIn):
                                 self.server.backupServer)
         return venueState
 
+    def GetId(self):
+        """
+        @returns: the id of this object.
+        """
+        return self.uniqueId
+    
     def StartApplications(self):
         """
         Restart the application services after a server restart.
@@ -542,7 +561,7 @@ class Venue(AuthorizationMixIn):
 
         for appImpl in self.applications.values():
             appImpl.Awaken(self.server.eventService)
-            app = AppService.AppObject(appImpl)
+            app = SharedApplicationI(appImpl)
             hostObj = self.server.hostingEnvironment.BindService(app)
             appHandle = hostObj.GetHandle()
             appImpl.SetHandle(appHandle)
@@ -1217,7 +1236,7 @@ class Venue(AuthorizationMixIn):
 
         *self.connections* A list of connection descriptions.
         """
-        return cl
+        return self.connections
 
     def SetEncryptMedia(self, value, key=None):
         """
@@ -1537,13 +1556,13 @@ class Venue(AuthorizationMixIn):
                 log.exception("Venue.GetUploadDescriptor.")
                 raise
 
-    def GetApplication(self, id):
+    def GetApplication(self, aid):
         """
         Return the application state for the given application object.
 
         **Arguments:**
 
-        *id* The id of the application being retrieved.
+        *aid* The id of the application being retrieved.
 
         **Raises:**
 
@@ -1554,16 +1573,16 @@ class Venue(AuthorizationMixIn):
 
         *appState* The state of the application object.
         """
-        if not self.applications.has_key(id):
+        if not self.applications.has_key(aid):
             log.exception("GetApplication: Application not found.")
             raise ApplicationNotFound
 
-        app = self.applications[id]
+        app = self.applications[aid]
         returnValue = app.GetState()
 
         return returnValue
 
-    def CreateApplication(self, name, description, mimeType, id = None ):
+    def CreateApplication(self, name, description, mimeType, aid = None ):
         """
         Create a new application object.  Initialize the
         implementation, and create a web service interface for it.
@@ -1585,18 +1604,28 @@ class Venue(AuthorizationMixIn):
         log.debug("CreateApplication: name=%s description=%s",
                   name, description)
 
-        appImpl = AppService.CreateApplication(name, description, mimeType, 
-                                               self.server.eventService, id)
-        appImpl.SetVenueURL(self.uri)
+        # Create the shared application object
+        app = SharedApplication(name, description, mimeType, 
+                                  self.server.eventService, aid)
+        app.SetVenueURL(self.uri)
+        appId = app.GetId()
+        self.applications[appId] = app
 
-        app = AppService.AppObject(appImpl)
+        # Create the interface object
+        appI = SharedApplicationI(app)
 
-        hostObj = self.server.hostingEnvironment.BindService(app)
-        appHandle = hostObj.GetHandle()
-        appImpl.SetHandle(appHandle)
+        # pull out the venue path, so these can be a subspace
+        path = self.hostingEnvironment.FindPathForObject(self)
+        path = path + "/apps/%s" % appId
 
-        self.applications[appImpl.GetId()] = appImpl
+        # register the app with the hosting environment
+        self.server.hostingEnvironment.RegisterObject(appI, path=path)
 
+        # pull the url back out and put it in the app object
+        appURL = self.server.hostingEnvironment.GetURLForObject(app)
+        app.SetHandle(appURL)
+
+        # grab the description, and update the universe with it
         appDesc = appImpl.AsApplicationDescription()
 
         self.server.eventService.Distribute( self.uniqueId,
@@ -1636,11 +1665,11 @@ class Venue(AuthorizationMixIn):
         # Shut down the application
         app.Shutdown()
 
+        # Remove the interface
+        self.server.hostingEnvironment.UnregisterObject(app)
+        
         # Create the application description
-        appImpl = self.applications[appId]
-        ad = ApplicationDescription(appImpl.GetId(), appImpl.name,
-        appImpl.description,
-        appImpl.handle, appImpl.mimeType)
+        appDesc = appImpl.AsApplicationDescription()
 
         # Send the remove application event
         self.server.eventService.Distribute(self.uniqueId,
@@ -1677,9 +1706,9 @@ class Venue(AuthorizationMixIn):
             if stream.id == streamId:
                 # Add the network location to the stream
                 networkLocation.privateId = privateId
-                id = stream.AddNetworkLocation(networkLocation)
+                nid = stream.AddNetworkLocation(networkLocation)
                 log.info("Added network location %s to stream %s for private id %s",
-                         id, streamId, privateId)
+                         nid, streamId, privateId)
                 
                 # Send a ModifyStream event
                 self.server.eventService.Distribute( self.uniqueId,
@@ -1688,7 +1717,7 @@ class Venue(AuthorizationMixIn):
                                                             stream ) )
                 
                 
-                return id
+                return nid
             
         return None
 
@@ -1705,14 +1734,14 @@ class Venue(AuthorizationMixIn):
             if stream.id == streamId:
                 # Remove network location from stream
                 log.info("Removing network location %s from stream %s",
-                networkLocationId, streamId)
+                         networkLocationId, streamId)
                 stream.RemoveNetworkLocation(networkLocationId)
 
                 # Send a ModifyStream event
                 self.server.eventService.Distribute( self.uniqueId,
-                Event( Event.MODIFY_STREAM,
-                self.uniqueId,
-                stream ) )
+                                                     Event( Event.MODIFY_STREAM,
+                                                            self.uniqueId,
+                                                            stream ) )
 
 
     def RemoveNetworkLocationsByPrivateId(self, privateId):
@@ -1797,20 +1826,9 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         log.debug("Interface Enter: Called.")
 
         # Rebuild the profile
-        
         clientProfile = CreateClientProfile(clientProfileStruct)
 
-        # Assign the DN into the profile
-        # so users can't lie
-        soap_ctx = GetSOAPContext()
-
-        try:
-            sec_ctx = soap_ctx.connection.get_security_context()
-        except:
-            raise
-        
-        subject = CreateSubjectFromGSIContext(sec_ctx)
-        
+        subject = self._GetCaller()
         clientProfile.distinguishedName = subject.name
 
         # Call Enter
@@ -1881,7 +1899,8 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         *serviceDescription* A service description is returned on success.
 
         """
-        log.debug("VenueI.AddService")
+        log.debug("VenueI.AddService")            
+
 
         serviceDescription = CreateServiceDescription(servDescStruct)
 
@@ -2296,7 +2315,8 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
 
     def UpdateData(self, dataDescriptionStruct):
         """
-        Replace the current description for dataDescription.name with
+        Replace the current description for dataDescrip            
+tion.name with
         this one.
         """
         dataDescription = CreateDataDescription(dataDescriptionStruct)
@@ -2362,7 +2382,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
             log.exception("VenueI.GetUploadDescriptor.")
             raise
 
-    def GetApplication(self, id):
+    def GetApplication(self, aid):
         """
         Return the application state for the given application object.
 
@@ -2380,13 +2400,13 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         *appState* The state of the application object.
         """
         try:
-            as = self.impl.GetApplication(id)
+            as = self.impl.GetApplication(aid)
             return as
         except:
             log.exception("VenueI.GetApplication.")
             raise
 
-    def CreateApplication(self, name, description, mimeType, id = None ):
+    def CreateApplication(self, name, description, mimeType, aid = None ):
         """
         Create a new application object.  Initialize the
         implementation, and create a web service interface for it.
@@ -2405,7 +2425,8 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         *appHandle* A url to the new application object/service.
         """
         try:
-            retval = self.impl.CreateApplication(name, description, mimeType, id)
+            retval = self.impl.CreateApplication(name, description, mimeType,
+                                                 aid)
             return retval
         except:
             log.exception("VenueI.CreateApplication.")
@@ -2597,8 +2618,8 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
     def AddConnection(self, connection):
         return self.proxy.AddConnection(connection)
 
-    def RemoveConnection(self, id):
-        return self.proxy.RemoveConnection(id)
+    def RemoveConnection(self, cid):
+        return self.proxy.RemoveConnection(cid)
 
     def GetConnections(self):
         return self.proxy.GetConnections()
@@ -2606,8 +2627,8 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
     def AddStream(self, streamDesc):
         return self.proxy.AddStream(streamDesc)
 
-    def RemoveStream(self, id):
-        return self.proxy.RemoveStream(id)
+    def RemoveStream(self, sid):
+        return self.proxy.RemoveStream(sid)
 
     def GetStreams(self):
         return self.proxy.GetStreams()
@@ -2622,8 +2643,8 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
         (r1, r2, r3) = self.proxy.Enter(profile)
         return (r1, r2, r3)
 
-    def Exit(self, id):
-        return self.proxy.Exit(id)
+    def Exit(self, pid):
+        return self.proxy.Exit(pid)
 
     def UpdateClientProfile(self, profile):
         return self.proxy.UpdateClientProfile(profile)
@@ -2631,20 +2652,20 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
     def AddNetService(self, type, privateID):
         return self.proxy.AddNetService(type, privateID)
 
-    def RemoveNetService(self, id):
-        return self.proxy.RemoveNetService(id)
+    def RemoveNetService(self, nid):
+        return self.proxy.RemoveNetService(nid)
 
     def AddService(self, serviceDesc):
         return self.proxy.AddService(serviceDesc)
 
-    def RemoveService(self, id):
-        return self.proxy.RemoveService(id)
+    def RemoveService(self, sid):
+        return self.proxy.RemoveService(sid)
 
     def AddData(self, dataDescription):
         return self.proxy.AddData(dataDescription)
 
-    def RemoveData(self, id):
-        return self.proxy.RemoveData(id)
+    def RemoveData(self, did):
+        return self.proxy.RemoveData(did)
 
     def UpdateData(self, dataDescription):
         return self.proxy.UpdateData(dataDescription)
@@ -2658,14 +2679,14 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
     def GetUploadDescriptor(self):
         return self.proxy.GetUploadDescriptor()
 
-    def GetApplication(self, id):
-        return self.proxy.GetApplication(id)
+    def GetApplication(self, aid):
+        return self.proxy.GetApplication(aid)
 
     def CreateApplication(self, appDescription):
         return self.proxy.CreateApplication(appDescription)
 
-    def DestroyApplication(self, id):
-        return self.proxy.DestroyApplication(id)
+    def DestroyApplication(self, aid):
+        return self.proxy.DestroyApplication(aid)
 
     def AddNetworkLocationToStream(self, privId, streamId, networkLocation):
         return self.proxy.AddNetworkLocationToStream(privId, streamId,
