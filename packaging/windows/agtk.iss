@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.41 2004-04-07 02:28:27 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.42 2004-04-07 02:31:41 judson Exp $
 ;
 
 ; Set externally
@@ -81,7 +81,7 @@ UsePreviousGroup=true
 Source: Lib\site-packages\*.*; DestDir: GetPythonDir({#PythonVersion})\Lib\site-packages; Flags: recursesubdirs overwritereadonly restartreplace
 
 ; Documentation
-Source: doc\Developer\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
+;Source: doc\Developer\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
 Source: doc\VenueClientManual\*.*; DestDir: {app}\doc\VenueClientManual; Flags: recursesubdirs
 Source: doc\VenueManagementManual\*.*; DestDir: {app}\doc\VenueManagementManual; Flags: recursesubdirs
 
@@ -103,10 +103,10 @@ Source: bin\NodeSetupWizard.py; DestDir: {app}\bin; DestName: NodeSetupWizard.py
 Source: bin\SetupVideo.py; DestDir: {app}\bin; DestName: SetupVideo.pyw
 
 ; Service packages
-Source: services\*.zip; DestDir: {app}\NodeServices
+Source: NodeServices\*.zip; DestDir: {app}\NodeServices
 
 ; Shared Application packages
-Source: sharedapps\*.shared_app_pkg; DestDir: {app}\SharedApplications
+Source: SharedApplications\*.shared_app_pkg; DestDir: {app}\SharedApplications
 
 ; icons file (? I forget what for)
 Source: install\agicons.exe; DestDir: {app}\install
