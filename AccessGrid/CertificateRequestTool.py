@@ -18,27 +18,46 @@ from AccessGrid import CertificateRepository
 from AccessGrid.CertificateRepository import RepoDoesNotExist
 import string
 
+import logging, logging.handlers
+log = logging.getLogger("AG.CertificateRequestTool")
+
 class CertificateRequestTool(wxWizard):
     '''
     This wizard guides users through the steps necessary for
     requesting either an identity, host, or service certificate. 
     '''
-    def __init__(self, parent, flag = None):
+    def __init__(self, parent, certificateType = None, requestId = None):
+        '''
+        Creates all ui components.
+        If certificateType is set to None all wizard pages will appear.
+        If you know you want to request one specific type of certificate,
+        set certificateType to IDENTITY, HOST, or SERVICE and only relevant
+        pages for that certificate type will be shown when running the wizard.
+
+        If you want to get and install a certificate already requested,
+        run this wizard with the retreived requestId.
+        '''
+
         wizardId =  wxNewId()
         wxWizard.__init__(self, parent, wizardId,"", wxNullBitmap)
+        self.log = self.GetLog()
+        
+        self.log.debug("__init__:Start Certificate Request Wizard")
+        
         self.step = 1
         self.maxStep = 4
         self.SetPageSize(wxSize(450, 80))
 
-        self.page0 = IntroWindow(self, "Welcome to the Certificate Request Wizard")
-        self.page1 = SelectCertWindow(self, "Select Certificate")
+        self.page0 = IntroWindow(self, "Welcome to the Certificate Request Wizard", )
+        self.page1 = SelectCertWindow(self, "Select Certificate Type")
         self.page2 = IdentityCertWindow(self, "Enter Your Information")
         self.page3 = ServiceCertWindow(self, "Enter Service Information")
         self.page4 = HostCertWindow(self, "Enter Host Information")
         self.page5 = SubmitReqWindow(self, "Submit Request")
         self.FitToPage(self.page1)
 
-        # Set the initial order of the pages
+        self.log.debug("__init__:Set the initial order of the pages")
+        
         self.page0.SetNext(self.page1)
         self.page1.SetNext(self.page2)
         self.page2.SetNext(self.page5)
@@ -51,36 +70,57 @@ class CertificateRequestTool(wxWizard):
         self.page4.SetPrev(self.page1)
         self.page5.SetPrev(self.page4)
       
+        self.log.debug("__init__:Handle arguments for certificate type")
         
-        if flag:
+        if certificateType:
             self.maxStep = 3
-            if flag == "IDENTITY":
+            if certificateType == "IDENTITY":
                 self.page0.SetNext(self.page2)
                 self.page2.SetPrev(self.page0)
                 self.SetTitle("Request Certificate - Step 1 of %s"
                               %self.maxStep)
                         
-            elif flag == "SERVICE":
+            elif certificateType == "SERVICE":
                 self.page0.SetNext(self.page3)
                 self.page3.SetPrev(self.page0)
                 self.SetTitle("Request Certificate - Step 1 of %s"
                               %self.maxStep)
                     
-            elif flag == "HOST":
+            elif certificateType == "HOST":
                 self.page0.SetNext(self.page4)
                 self.page4.SetPrev(self.page0)
                 self.SetTitle("Request Certificate - Step 1 of %s"
                               %self.maxStep)
             else:
-                raise Exception("Flag is either IDENTITY, SERVICE or HOST")
-        # Create the pages
+                self.log.info("__init__:Handle arguments for certificate type")
+                raise Exception("Flag should be either IDENTITY, SERVICE or HOST")
+
+        self.log.debug("__init__:Create the pages")
+
         EVT_WIZARD_PAGE_CHANGING(self, wizardId, self.ChangingPage)
         EVT_WIZARD_CANCEL(self, wizardId, self.CancelPage) 
         
-        # Run the wizard
+        self.log.debug("__init__:Run the wizard")
+        
         self.RunWizard(self.page0)
+
+
+    def GetLog(self):
+        """
+        Create a log with our standard format and return it
+        """
+        log = logging.getLogger("AG.CertificateRequestTool")
+        log.setLevel(logging.DEBUG)
+        logFile="CertificateRequestTool.log"
+        hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
+        logFormat = "%(asctime)s %(levelname)-5s %(message)s (%(filename)s)"
+        hdlr.setFormatter(logging.Formatter(logFormat))
+        log.addHandler(hdlr)
+        
+        return log
                          
     def CancelPage(self, event):
+        self.log.debug(" CancelPage:Cancel wizard")
         dlg = wxMessageDialog(self,"Your certificate request is not complete. If you quit now, the request will not be submitted. \nCancel request?.", "", style = wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION)
         if(dlg.ShowModal() == wxID_NO):
             event.Veto()
@@ -91,17 +131,23 @@ class CertificateRequestTool(wxWizard):
         '''
         Makes sure right values are entered in following page
         '''
+        
         dir = event.GetDirection()
         page = event.GetPage()
         forward = 1
         backward = 0
+        
 
         if dir == forward:
-            # Check to see if values are entered correctly
+            self.log.debug("ChangingPage: From %s to %s"
+                           %(page.__class__, page.GetNext().__class__))
+           
             if not page.Validate():
-                # If not, ignore the event
+                self.log.debug("ChangingPage:Values are not correct, do not change page")
                 event.Veto()
             else:
+                self.log.debug("ChangingPage:Values are correct")
+
                 self.step = self.step+1
                 self.SetTitle("Request Certificate - Step %i of %i"
                               %(self.step, self.maxStep))
@@ -132,6 +178,8 @@ class CertificateRequestTool(wxWizard):
                     next.SetPrev(page)
                 
         elif dir == backward:
+            self.log.debug("ChangingPage: Go back from %s to %s"
+                           %(page.__class__, page.GetPrev().__class__))
             self.step = self.step-1
             self.SetTitle("Request Certificate - Step %i of %i"
                           %(self.step, self.maxStep))
@@ -194,7 +242,7 @@ class IntroWindow(TitledPage):
     def __init__(self, parent, title):
        
         TitledPage.__init__(self, parent, title)
-        self.info = wxStaticText(self, -1, "Certificates are used to identify everyone connected to the AccessGrid. \n\nYou are required to have a certificate to use the program. It is your electronic \nidentity card verifying that you are who you say you are. \n\nClick 'Next' to continue.")
+        self.info = wxStaticText(self, -1, "This wizard will help you request a certificare.\n\nCertificates are used to identify everyone connected to the AccessGrid. \nIt is your electronic identity card verifying that you are who you say you are. \n\nClick 'Next' to continue.")
         self.Layout()
   
     def Layout(self):
@@ -213,7 +261,7 @@ class SelectCertWindow(TitledPage):
         self.selections = wxComboBox(self, -1, self.selectionList[0], choices = self.selectionList, style = wxCB_READONLY)
         self.info = wxStaticText(self, -1, "There are three kinds of certificates:")
         self.info1 = wxStaticText(self, -1, "Identity Certificate:")
-        self.info2 = wxStaticText(self, -1, "To identify an individual")
+        self.info2 = wxStaticText(self, -1, "To identify an individual.")
         self.info3 = wxStaticText(self, -1, "Service Certificate:")
         self.info4 = wxStaticText(self, -1, "To identify a service.")
         self.info5 = wxStaticText(self, -1, "Host Certificate:")
@@ -315,15 +363,6 @@ class IdentityCertWindow(TitledPage):
         item.SetBackgroundColour("white")
         item.Refresh()
 
-    #def GetNext(self):
-    #    '''
-    #    Gives the following page and is also setting the following page to
-    #    point to this page as previous.
-    #    Note: Overrides super class method
-    #    '''
-    #    self.next.next.next.SetPrev(self)
-    #    return self.next.next.next
-                          
     def Layout(self):
         '''
         Handles UI layout.
@@ -728,6 +767,7 @@ class SubmitReqWindow(TitledPage):
     def __init__(self, parent, title):
         TitledPage.__init__(self, parent, title)
         self.info = ""
+        self.parent = parent
         self.text = wxTextCtrl(self, -1, self.info, size = wxSize(10,80),
                                style = wxNO_BORDER | wxNO_3D | wxTE_MULTILINE |
                                wxTE_RICH2 | wxTE_READONLY)
@@ -765,31 +805,40 @@ class SubmitReqWindow(TitledPage):
                         
 
     def Validate(self):
-        # Create a certificate request
+       
         repositoryPath = "/home/lefvert/AccessGrid/AccessGrid/repo"
         try:
+            log =  self.parent.log
+            log.debug("SubmitRequest:Validate:Create a certificate request")
+            
             repo = CertificateRepository.CertificateRepository(repositoryPath)
-
-       
+            
             name = [("O", "Argonne"),
                     ("OU", "mcs.anl.gov"),
                     ("CN", "Susanne Lefvert")]
-            desc = repo.CreateCertificateRequest(name, "Identity Certificate")
-            print desc.ExportPEM()
-            print "subj is ", desc.GetSubject()
-            print "mod is ", desc.GetModulus()
-            print "modhash is ", desc.GetModulusHash()
+            certificateRequest = repo.CreateCertificateRequest(name, "Identity Certificate")
+            pem =  certificateRequest.ExportPEM()
+            log.debug("SubmitRequest:Validate: ExportPEM returns %s"  %pem)
+            log.debug("SubmitRequest:Validate: subj is %s" %certificateRequest.GetSubject())
+            log.debug("SubmitRequest:Validate: mod is %s"%certificateRequest.GetModulus())
+            log.debug("SubmitRequest:Validate:modhash is %s"%scertificateRequest.GetModulusHash())
+
+            serverUrl = "https://serverurl"
+            
+            log.debug("SubmitRequest:Validate:Send request to certificate authority using url %s"%serverUrl)
+                        
+            certificateClient = CRSClient(serverUrl)
+            requestId = certificateClient.RequestCertificate(certificateRequest)
+
+            log.debug("SubmitRequest:Validate:Request id is %i"%requestId)
             
         except RepoDoesNotExist:
-            MessageDialog(self, "You do not have a certificate repository. Certificate request can not be created.", style = wxICON_ERROR)
-            
+            log.exception("SubmitRequest:Validate:You do not have a certificate repository. Certificate request can not be completed.")
+            MessageDialog(self, "You do not have a certificate repository. Certificate request can not be completed.", style = wxICON_ERROR)
 
-        # Send certificate request to open certificate authority
-
-        #
-        # ?
-        #
-
+        except:
+            log.exception("SubmitRequest:Validate: Certificate request can not be completed")
+            MessageDialog(self, "Error occured. Certificate request can not be completed.", style = wxICON_ERROR)
 
         return true
 
@@ -799,6 +848,117 @@ class SubmitReqWindow(TitledPage):
         '''
         self.sizer.Add(self.text, 0, wxALL|wxEXPAND, 5)
 
+
+class CertificateStatusDialog(wxDialog):
+    '''
+    Dialog showing submitted certificate requests.  It allows users to check status
+    of requests and store them to right location.
+    '''
+    def __init__(self, parent, id, title):
+        wxDialog.__init__(self, parent, id, title, style=wxDEFAULT_DIALOG_STYLE)
+        self.SetSize(wxSize(400,250))
+        self.info = wxStaticText(self, -1, "You have requested following certificates:")
+        self.list = wxListCtrl(self, wxNewId(),
+                               style = wxLC_REPORT | wxLC_SORT_ASCENDING | wxSUNKEN_BORDER)
+        
+        self.text = wxStaticText(self, -1, "Click 'Ok' to check their status.")
+        self.certificateClient = CRSClient("a url")
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.newRequestButton = wxButton(self, wxNewId(), "New Request")
+        self.certReqDict = {}
+        self.requestStatus = {}
+        self.beforeStatus = 0
+        self.afterStatus = 1
+        self.state = self.beforeStatus
+
+       
+        self.__setProperties()
+        self.__layout()
+        self.__setEvents()
+
+        self.AddCertificates()
+                                     
+    def __setEvents(self):
+        EVT_BUTTON(self, self.okButton.GetId(), self.Ok)
+        EVT_BUTTON(self, self.newRequestButton.GetId(), self.RequestCertificate)
+
+    def __layout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer.Add(self.info, 0, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10)
+        sizer.Add(self.list, 1, wxEXPAND|wxALL, 10)
+        sizer.Add(self.text, 0, wxEXPAND|wxALL, 10)
+        sizer.Add(10,10)
+        sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND)
+
+        box = wxBoxSizer(wxHORIZONTAL)
+        box.Add(self.okButton, 0 , wxALL, 5)
+        box.Add(self.cancelButton, 0 , wxALL, 5)
+        box.Add(self.newRequestButton, 0 , wxALL, 5)
+
+        sizer.Add(box, 0, wxCENTER)
+
+        self.SetAutoLayout(1)
+        self.SetSizer(sizer)
+        self.Layout()
+
+        self.list.SetColumnWidth(0, self.list.GetSize().GetWidth()/3.0)
+        self.list.SetColumnWidth(1, self.list.GetSize().GetWidth()/3.0)
+        self.list.SetColumnWidth(2, self.list.GetSize().GetWidth()/3.0)
+                
+    def __setProperties(self):
+        self.list.InsertColumn(0, "Certificate Type")
+        self.list.InsertColumn(1, "Date")
+        self.list.InsertColumn(2, "Status")
+           
+    def Ok(self, event):
+        if self.state == self.beforeStatus:
+            self.CheckStatus()
+            self.state = self.afterStatus
+        else:
+            self.Close()
+            
+    def RequestCertificate(self, event):
+        self.Hide()
+        certReq = CertificateRequestTool(self)
+                            
+    def AddCertificates(self):
+        
+        self.certReqDict = self.certificateClient.GetRequestedCertificates()
+
+        row = 0 
+        for requestId, request in self.certReqDict.items():
+            type, date, status = request
+            self.list.InsertStringItem(row, type)
+            self.list.SetStringItem(row, 1, date)
+            self.list.SetStringItem(row, 2, status)
+            self.requestStatus[requestId] = row
+            row = row+1
+                                
+    def CheckStatus(self):
+        nrOfApprovedCerts = 0
+                
+        # Check status of certificate requests
+        for requestId in self.certReqDict.keys():
+                       
+            # Get certificate and save it
+            cert = self.certificateClient.RetrieveCertificate(requestId)
+            row = self.requestStatus[requestId]
+            self.cancelButton.Enable(false)
+
+            if cert != "":
+                self.certificateClient.SaveCertificate(cert)
+                nrOfApprovedCerts = nrOfApprovedCerts + 1
+                # Change the status text
+                self.text.SetLabel("%i of you certificates are installed. Click 'Ok' to start using them." %nrOfApprovedCerts)
+                self.list.SetStringItem(row, 2, "Installed")
+
+            else:
+                # Change status text to something else
+                self.list.SetStringItem(row, 2, "Not approved")
+                self.text.SetLabel("Your certificates have not been approved yet. \nPlease try again later.")
+                
+                        
 #
 # Certificate Request Service Client
 #
@@ -810,10 +970,23 @@ class CRSClientInvalidURL(Exception):
 class CRSClient:
     def __init__(self, url):
         self.url = url
-        if self.url != None:
-            self.proxy = ServerProxy(url)
-        else:
-            raise CRSClientInvalidURL
+        print 'create client'
+        #if self.url != None:
+        #    self.proxy = ServerProxy(url)
+        #else:
+        #    raise CRSClientInvalidURL
+
+    def GetRequestedCertificates(self):
+        '''
+        Returns a dictionary containing certificate requests that have been
+        submitted. Checks stored requestIds/token in dir
+        '''
+        
+        # key: token, value: certificate request
+        requestedCerts = {1:("Identity", "06-02-03", ""),
+                          2:("Service", "04-02-03", "")}
+               
+        return requestedCerts
 
     def RequestCertificate(self, certReq):
         """
@@ -821,13 +994,20 @@ class CRSClient:
             certificateRequest is a string containing the certificate request
             certificateToken is a unique token used to retrieve the certificate
                 when it's ready.
-        """        
-        token = None
-        try:
-            token = self.proxy.RequestCertificate(certReq)
-        except StandardError, v:
-#            print "Error = %s", v
-            raise v
+        """
+        token = 1
+
+        print 'request certificate'
+        #try:
+        #    token = self.proxy.RequestCertificate(certReq)
+        #except StandardError, v:
+        #     print "Error = %s", v
+        #    raise v
+
+        #
+        # this should also remove the token from the directory so
+        # we don't have to request status for this cert again
+        #
             
         return token
 
@@ -838,17 +1018,33 @@ class CRSClient:
                 when it's ready.
             certificate is the actual signed certificate from the CA
         """
-        certificate = None
-        try:
-            certificate = self.proxy.RetrieveCertificate(token)
-        except StandardError, v:
-#            print "Error = %s", v
-            raise v
-
+        certificate = ""
+        print "retrieve certificate"
+        #try:
+        #    certificate = self.proxy.RetrieveCertificate(token)
+        #except StandardError, v:
+        #     print "Error = %s", v
+        #    raise v
+        #
         return certificate
+
+    def SaveCertificate(self, certificate):
+        print "save certificate"
+        # Save certificate to right directory in cert repo
 
 if __name__ == "__main__":
     pp = wxPySimpleApp()
-    certReq = CertificateRequestTool(None)
-    certReq.Destroy()
-     
+
+    # Check if we have any pending certificate requests
+    certificateClient = CRSClient("url")
+    nrOfReq = certificateClient.GetRequestedCertificates().keys()
+        
+    if nrOfReq > 0:
+        # Show pending requests
+        certStatus = CertificateStatusDialog(None, -1, "Certificate Status Dialog")
+        certStatus.ShowModal()    
+
+    else:
+        # Show certificate request wizard
+        certReq = CertificateRequestTool(None)
+        certReq.Destroy()
