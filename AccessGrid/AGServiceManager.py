@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.66 2004-05-10 19:41:49 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.67 2004-05-11 19:50:19 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.66 2004-05-10 19:41:49 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.67 2004-05-11 19:50:19 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -214,7 +214,7 @@ class AGServiceManager:
             #
             # Execute the service implementation
             #
-            exeFile = os.path.join(self.servicesDir, serviceDescription.executable )
+            exeFile = os.path.join(servicePath, serviceDescription.executable )
             if serviceDescription.executable.endswith(".py"):
                 # python files are executed with python
                 executable = sys.executable
@@ -228,11 +228,7 @@ class AGServiceManager:
             options.append( port )
             log.info("Running Service; options: %s %s", executable, str(options))
             
-            # 
-            # Change to the services directory to start the process
-            # Note: services rely on this being true
-            #
-            os.chdir(servicePath)
+            # Execute the service process 
             pid = self.processManager.StartProcess( executable, options )
 
             # Wait for service to boot and become reachable,
