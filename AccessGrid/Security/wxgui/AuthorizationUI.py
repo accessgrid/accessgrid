@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.13 2004-05-04 15:45:30 lefvert Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.14 2004-05-26 14:47:59 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.13 2004-05-04 15:45:30 lefvert Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.14 2004-05-26 14:47:59 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -998,7 +998,7 @@ class CreateRoleDialog(wxDialog):
     '''
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title,
-                          style=wxOK|wxRESIZE_BORDER)
+                          style=wxOK|wxRESIZE_BORDER|wxCAPTION)
         self.SetSize(wxSize(300, 150))
         self.infoText = wxStaticText(self, -1,
                                      "Enter the name of the new role.")
