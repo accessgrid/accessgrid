@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.171 2004-05-06 15:57:44 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.172 2004-05-12 18:40:46 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.171 2004-05-06 15:57:44 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.172 2004-05-12 18:40:46 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -1343,15 +1343,15 @@ class VenueClient:
             # Ignore this until we have authorization in place.
             raise NotAuthorizedError
 
-    def ModifyData(self, data):
-        log.debug("Modify data: %s from venue" %data.name)
+    def UpdateData(self, data):
+        log.debug("Update data: %s from venue" %data.name)
         
         if data.type == None or data.type == 'None':
             # Venue data
             try:
-                self.__venueProxy.ModifyData(data)
+                self.__venueProxy.UpdateData(data)
             except:
-                log.exception("Error modifying data")
+                log.exception("Error updating data")
                 raise
             
         elif(data.type == self.profile.publicId):

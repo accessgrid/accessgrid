@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.23 2004-05-10 17:02:05 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.24 2004-05-12 18:40:46 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.23 2004-05-10 17:02:05 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.24 2004-05-12 18:40:46 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # standard imports
@@ -500,7 +500,7 @@ class VenueClientController:
         self.__venueClient.RemoveData(data)
 
 
-    def ModifyDataCB(self,data):
+    def UpdateDataCB(self,data):
         """
         This method modifies the specified data in the venue
 
@@ -513,7 +513,7 @@ class VenueClientController:
         if not data or not isinstance(data,DataDescription):
             raise ValueError
             
-        self.__venueClient.ModifyData(data)
+        self.__venueClient.UpdateData(data)
 
 
     #
@@ -1375,6 +1375,7 @@ class VenueClientApp:
         elif isinstance(objDesc,DataDescription):
             # Data and Service commands are retrieved from the mime db
             list = objDesc.name.split('.')
+            ext = ""
             if len(list) == 2:
                 ext = list[1]
             commandList = self.mimeConfig.GetMimeCommands(ext = ext)

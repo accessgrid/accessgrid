@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.55 2004-05-10 18:56:05 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.56 2004-05-12 18:40:46 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.55 2004-05-10 18:56:05 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.56 2004-05-12 18:40:46 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1270,12 +1270,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         else:
             self.Notify("Please, select the data you want to delete", "No file selected")
         
-    def ModifyDataCB(self,dataDesc):
+    def UpdateDataCB(self,dataDesc):
         try:
-            self.controller.ModifyDataCB(dataDesc)
+            self.controller.UpdateDataCB(dataDesc)
         except:
-            log.exception("bin.VenueClient::ModifyData: Error occured when trying to modify data")
-            self.Error("The file could not be modified", "Modify Files Error")
+            log.exception("bin.VenueClient::UpdateData: Error occured when trying to update data")
+            self.Error("The file could not be updated", "Update Files Error")
 
     #
     # Service Actions
@@ -3342,9 +3342,9 @@ class ContentListPanel(wxPanel):
                 # If name is different, change data in venue
                 if newDesc.name != desc.name:
                     try:
-                        self.parent.ModifyDataCB(newDesc)
+                        self.parent.UpdateDataCB(newDesc)
                     except:
-                        log.exception("VenueClientUIClasses: Modify data failed")
+                        log.exception("VenueClientUIClasses: Update data failed")
                         MessageDialog(None, "Update data failed.", "Notification", 
                                       style = wxOK|wxICON_INFORMATION) 
             
@@ -4165,16 +4165,13 @@ class DataPropertiesDialog(wxDialog):
         if not editable:
             # Name is always editable
             self.nameCtrl.SetEditable(false)
-            
+           
+        else:
+            self.nameCtrl.SetEditable(true)
             self.ownerCtrl.SetEditable(false)
             self.sizeCtrl.SetEditable(false)
             self.lastModCtrl.SetEditable(false)
-                     
-        else:
-            self.nameCtrl.SetEditable(true)
-            self.ownerCtrl.SetEditable(true)
-            self.sizeCtrl.SetEditable(true)
-            self.lastModCtrl.SetEditable(true)
+                                 
                                        
     def Layout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
