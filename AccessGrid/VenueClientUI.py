@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.15 2004-03-12 05:23:11 judson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.16 2004-03-16 07:15:40 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.15 2004-03-12 05:23:11 judson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.16 2004-03-16 07:15:40 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -61,7 +61,7 @@ These GUI components live in this file:
 Main window components
 ----------------------
 
-class VenueClientUI(VenueClientEventSubscriber):
+class VenueClientUI(VenueClientObserver):
 class VenueClientFrame(wxFrame):
 class VenueAddressBar(wxSashLayoutWindow):
 class VenueListPanel(wxSashLayoutWindow):
