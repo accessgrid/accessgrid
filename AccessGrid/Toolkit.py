@@ -2,20 +2,30 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.20 2004-03-12 20:51:39 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.21 2004-03-12 20:54:58 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.20 2004-03-12 20:51:39 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.21 2004-03-12 20:54:58 judson Exp $"
 
 # Standard imports
 import os
 import sys
 import getopt
 
-from optik import OptionParser
+if sys.version.startswith('2.2'):
+    try:
+        from optik import OptionParser
+    except:
+        raise Exception, "Missing module optik necessary for the AG Toolkit."
+
+if sys.version.startswith('2.3'):
+    try:
+        from optparse import OptionParse
+    except:
+        raise Exception, "Missing module optparse, check your python installation."
 
 # AGTk imports
 from AccessGrid import Log
