@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.31 2003-03-20 22:59:00 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.32 2003-03-20 23:25:02 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -197,8 +197,10 @@ class VenueClient( ServiceBase):
             #
             # Update venue clients being led with stream descriptions
             #
-            for profile in self.followerProfiles.values():
-                Client.Handle( profile.venueClientUri ).get_proxy().wsEnterVenue( URL )
+
+            #------------ SHOULD THIS BE HERE???
+            #for profile in self.followerProfiles.values():
+            #    Client.Handle( profile.venueClientUri ).get_proxy().wsEnterVenue( URL )
 
             # Finally, set the venue uri now that we have successfully
             # entered the venue
