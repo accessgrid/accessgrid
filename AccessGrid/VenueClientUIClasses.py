@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.143 2003-04-19 16:36:22 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.144 2003-04-20 21:52:11 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -26,6 +26,7 @@ from AccessGrid import Utilities
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid.ClientProfile import *
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
+from AccessGrid.Descriptions import ApplicationDescription
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import MyLog 
@@ -72,7 +73,7 @@ class VenueClientFrame(wxFrame):
     ID_VENUE_SERVICE_ADD = wxNewId()
     ID_VENUE_SERVICE_DELETE = wxNewId()
     ID_VENUE_APPLICATION = wxNewId() 
-    ID_VENUE_APPLICATION_ADD = wxNewId()
+    ID_VENUE_APPLICATION_JOIN = wxNewId()
     ID_VENUE_APPLICATION_DELETE = wxNewId()
     ID_VENUE_OPEN_CHAT = wxNewId()
     ID_VENUE_CLOSE = wxNewId()
@@ -182,11 +183,17 @@ class VenueClientFrame(wxFrame):
         self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",
                               self.serviceMenu)
 
+        # Create menu to pop over the application list heading
 	self.applicationMenu = wxMenu()
-	self.applicationMenu.Append(self.ID_VENUE_APPLICATION_ADD,"Add...",
-                                    "Add application to the venue")
-        self.applicationMenu.Append(self.ID_VENUE_APPLICATION_DELETE, "Delete",
-                                    "Remove selected application")
+
+        # Create menu to pop over an application entry
+        self.applicationEntryMenu = wxMenu()
+	self.applicationEntryMenu.Append(self.ID_VENUE_APPLICATION_JOIN,"Join",
+                                    "Join application")
+        self.applicationEntryMenu.Append(self.ID_VENUE_APPLICATION_DELETE, "Delete",
+                                    "Delete application")
+
+
         self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"&Applications",
                               self.applicationMenu)
      
@@ -226,7 +233,7 @@ class VenueClientFrame(wxFrame):
                                            "View participant's profile information")
         self.meMenu.Append(self.ID_ME_DATA,"Add personal data...",\
                                            "Add data you can bring to other venues")
-
+       
         self.participantMenu = wxMenu()
 	self.participantMenu.Append(self.ID_PARTICIPANT_PROFILE,"View Profile...",\
                                            "View participant's profile information")
@@ -251,11 +258,7 @@ class VenueClientFrame(wxFrame):
         self.nodeMenu.Enable(self.ID_NODE_LEAD, false)
         self.nodeMenu.Enable(self.ID_NODE_MANAGE, false)
         self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
-        self.serviceMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
-        self.serviceMenu.Enable(self.ID_VENUE_SERVICE_DELETE, false)
-        self.applicationMenu.Enable(self.ID_VENUE_APPLICATION_ADD, false)
-        self.applicationMenu.Enable(self.ID_VENUE_APPLICATION_DELETE, false)
-                   
+
     def HideMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
         self.menubar.Enable(self.ID_VENUE_PERSONAL_DATA_ADD, false)
@@ -304,7 +307,9 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_NODE_PROFILE, self.OpenParticipantProfile)
         EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.Follow)
         EVT_MENU(self, self.ID_NODE_FOLLOW, self.Follow)
-         	
+        EVT_MENU(self, self.ID_VENUE_APPLICATION_JOIN, self.JoinApp)
+        EVT_MENU(self, self.ID_VENUE_APPLICATION_DELETE, self.RemoveApp)
+
     def __setProperties(self):
         font = wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana")
         self.SetTitle("You are not in a venue")
@@ -358,9 +363,7 @@ class VenueClientFrame(wxFrame):
         if(self.app.leaderProfile == personToFollow):
             text = "You are already following "+name
             title = "Notification"
-            dlg = wxMessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
+            MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
             
         elif (self.app.pendingLeader == personToFollow):
             text = "You have already sent a request to follow "+name+". Please, wait for answer."
@@ -736,6 +739,42 @@ class VenueClientFrame(wxFrame):
     def __showNoSelectionDialog(self, text):
         MessageDialog(self, text)
 
+    #
+    # Applications Integration code
+    #
+    def SetInstalledApps(self, applicationList):
+        """
+        Build the menu of installed applications
+        """
+        
+        # Remove existing menu items
+        for item in self.applicationMenu.GetMenuItems():
+            self.applicationMenu.Delete(item)
+
+        # Add applications in the appList to the menu
+        for app in applicationList:
+            menuEntryLabel = "Start " + app.name
+            appId = wxNewId()
+            self.applicationMenu.Append(appId,menuEntryLabel,menuEntryLabel)
+            callback = lambda event,theApp=app: self.StartApp(event,theApp)
+            EVT_MENU(self, appId, callback)
+
+    def EnableAppMenu(self, flag):
+        for entry in self.applicationMenu.GetMenuItems():
+            self.applicationMenu.Enable( entry.GetId(), flag )
+
+    def StartApp(self,event,app):
+        self.app.StartApp( app )
+
+    def JoinApp(self,event):
+        id = self.contentListPanel.tree.GetSelection()
+        app =  self.contentListPanel.tree.GetItemData(id).GetData()
+        self.app.JoinApp( app )
+    
+    def RemoveApp(self,event):
+        id = self.contentListPanel.tree.GetSelection()
+        app =  self.contentListPanel.tree.GetItemData(id).GetData()
+        self.app.RemoveApp( app )
             
     def CleanUp(self):
         self.venueListPanel.CleanUp()
@@ -1290,7 +1329,7 @@ class ContentListPanel(wxPanel):
         self.applicationDict[appDesc.uri] = application
         self.tree.Expand(self.applications)
       
-    def RemoveService(self, appDesc):
+    def RemoveApplication(self, appDesc):
         if(self.applicationDict.has_key(appDesc.uri)):
             id = self.applicationDict[appDesc.uri]
             del self.applicationDict[appDesc.uri]
@@ -1365,14 +1404,19 @@ class ContentListPanel(wxPanel):
       
         if key == WXK_DELETE:
             treeId = self.tree.GetSelection()
-            dataItem = self.tree.GetItemData(treeId).GetData()
-            #serviceItem = self.tree.GetItemData(treeId).GetData()
+            item = self.tree.GetItemData(treeId).GetData()
 
-            # data
-            for object in self.dataDict:
-                if dataItem != None and dataItem.name == object:
-                    self.app.RemoveData(dataItem)
-                    break
+            if item:
+
+                if isinstance(item,DataDescription):
+                    # data
+                    self.app.RemoveData(item)
+                elif isinstance(item,ServiceDescription):
+                    # service
+                    self.app.RemoveService(item)
+                elif isinstance(item,ApplicationDescription):
+                    # application
+                    self.app.RemoveApp(item)
 
             # service
             #for object in self.serviceDict:
@@ -1387,16 +1431,17 @@ class ContentListPanel(wxPanel):
         item = self.tree.GetItemData(treeId).GetData()
         text = self.tree.GetItemText(treeId)
 
-        if text == 'Data' or item != None and self.dataDict.has_key(item.name):
+        if text == 'Data' or isinstance(item,DataDescription):
             self.PopupMenu(self.parent.dataMenu, wxPoint(self.x, self.y))
 
-        elif text == 'Services' or item != None and \
-                 self.serviceDict.has_key(item.name):
+        elif text == 'Services' or isinstance(item,ServiceDescription):
             self.PopupMenu(self.parent.serviceMenu, wxPoint(self.x, self.y))
 
-        elif text == 'Applications' or item != None and \
-                 self.applicationDict.has_key(item.name):
+        elif text == 'Applications':
             self.PopupMenu(self.parent.applicationMenu,
+                           wxPoint(self.x, self.y))
+        elif isinstance(item,ApplicationDescription):
+            self.PopupMenu(self.parent.applicationEntryMenu,
                            wxPoint(self.x, self.y))
             
         elif text == 'Participants' or text == 'Nodes' or item == None:
@@ -1404,9 +1449,8 @@ class ContentListPanel(wxPanel):
 
         elif self.personalDataDict.has_key(item.name):
             self.PopupMenu(self.parent.dataMenu, wxPoint(self.x, self.y))
-            
-        elif self.participantDict.has_key(item.publicId) or self.nodeDict.has_key(item.publicId):
 
+        elif isinstance(item,ClientProfile):
             wxLogDebug("Is this me? public is = %s, my id = %s "%(item.publicId, self.app.profile.publicId))
             if(item.publicId == self.app.profile.publicId):
                 wxLogDebug("This is me")
