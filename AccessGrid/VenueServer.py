@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.89 2003-08-21 19:56:27 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.90 2003-08-21 20:14:05 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -26,6 +26,10 @@ from AccessGrid import Toolkit
 from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.hosting import AccessControl
 from AccessGrid.hosting.pyGlobus import ServiceBase
+from AccessGrid.DataStore import DataService
+
+from AccessGrid.hosting.pyGlobus import Client
+from AccessGrid import NetService
 
 from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
 from AccessGrid.Utilities import GetHostname, PathFromURL
@@ -102,6 +106,7 @@ class VenueServer(ServiceBase.ServiceBase):
     configDefaults = {
             "VenueServer.eventPort" : 8002,
             "VenueServer.textPort" : 8004,
+            "VenueServer.dataServiceUrl" : '',
             "VenueServer.dataPort" : 8006,
             "VenueServer.encryptAllMedia" : 1,
             "VenueServer.houseKeeperFrequency" : 30,
@@ -136,10 +141,11 @@ class VenueServer(ServiceBase.ServiceBase):
         self.venues = {}
         self.services = []
         self.configFile = configFile
-        self.dataStorageLocation = None
-        self.dataPort = 0
+        #self.dataStorageLocation = None
+        #self.dataPort = 0
         self.eventPort = 0
         self.textPort = 0
+               
         # Create a role manager so it can be used when loading persistent data. 
         self.roleManager = RoleManager()
         self.RegisterDefaultRoles() 
@@ -163,25 +169,22 @@ class VenueServer(ServiceBase.ServiceBase):
 
         # Read in and process a configuration
         self.InitFromFile(LoadConfig(self.configFile, self.configDefaults))
-
-        # Check for and if necessary create the data store directory
-        if not os.path.exists(self.dataStorageLocation):
+       
+        if self.dataServiceUrl != '':
+            # Connect to a remote data service
             try:
-                os.mkdir(self.dataStorageLocation)
-            except OSError:
-                log.exception("Could not create VenueServer Data Store.")
-                self.dataStorageLocation = None
-
-        # Start Venue Server wide services
-        self.dataTransferServer = GSIHTTPTransferServer(('',
-                                                         int(self.dataPort)),
-                                                        numThreads = 4,
-                                                        sslCompat = 0)
-        self.dataTransferServer.run()
+                dataServiceProxy = Client.Handle(self.dataServiceUrl).GetProxy()
+            except:
+                log.info('Can not connect to remote data service at %s', self.dataServiceUrl)
+                self.dataServiceUrl = None
+                
+        else:
+            dataService = DataService(self.dataStorageLocation, self.dataPort, 8600)
+            self.dataServiceUrl = dataService.GetHandle()
 
         self.eventService = EventService((self.hostname, int(self.eventPort)))
         self.eventService.start()
-
+        
         self.textService = TextService((self.hostname, int(self.textPort)))
         self.textService.start()
 
@@ -189,6 +192,7 @@ class VenueServer(ServiceBase.ServiceBase):
         # open a temporary store, but it'll be empty.
         try:
             self.LoadPersistentVenues(self.persistenceFilename)
+            
         except VenueServerException, ve:
             log.exception(ve)
             try:
@@ -205,6 +209,7 @@ class VenueServer(ServiceBase.ServiceBase):
         
         if len(self.defaultVenue) != 0 and self.defaultVenue in self.venues.keys():
             log.debug("Setting default venue")
+           
             self.SetDefaultVenue(self.MakeVenueURL(self.defaultVenue))
         else:
             log.debug("Creating default venue")
@@ -234,9 +239,9 @@ class VenueServer(ServiceBase.ServiceBase):
         self.RegisterDefaultSubjects() # Register primary user as administrator
 
         # Some simple output to advertise the location of the service
-        print("Server URL: %s \nEvent Port: %d Text Port: %d Data Port: %d" %
+        print("Server URL: %s \nEvent Port: %d Text Port: %d" %
               ( self.service.GetHandle(), int(self.eventPort),
-                int(self.textPort), int(self.dataPort) ) )
+                int(self.textPort) ) )
 
     def BindRoleManager(self):
         """ This method you to bind a role manager to our service object. """
@@ -267,8 +272,7 @@ class VenueServer(ServiceBase.ServiceBase):
             role.AddSubject(defaultIdentity.GetSubject())
 
     def LoadPersistentVenues(self, filename):
-        """
-        This method loads venues from a persistent store.
+        """        This method loads venues from a persistent store.
 
         **Arguments:**
 
@@ -308,10 +312,9 @@ class VenueServer(ServiceBase.ServiceBase):
                     except ConfigParser.NoOptionError:
                         log.warn("specific role %s details not in venue %s, registering default users", role_name, sec)
                         roleManager = None   # default roles and users will be used.
-
+              
                 v = Venue(self, cp.get(sec, 'name'),
-                          cp.get(sec, 'description'), roleManager,
-                          self.dataStorageLocation, id=sec)
+                          cp.get(sec, 'description'), roleManager, id=sec)
                 # Make sure the venue Role Manager knows about the VenueServer role manager.
                 v.GetRoleManager().RegisterExternalRoleManager("VenueServer", self.roleManager)
                 v.encryptMedia = cp.getint(sec, 'encryptMedia')
@@ -327,6 +330,7 @@ class VenueServer(ServiceBase.ServiceBase):
                 # Bind the venue's role manager to the service.
                 v.BindRoleManager()
 
+               
                 # Deal with connections if there are any
                 try:
                     connections = cp.get(sec, 'connections')
@@ -390,37 +394,18 @@ class VenueServer(ServiceBase.ServiceBase):
                 else:
                     log.debug("No streams to load for venue %s", sec)
 
-                # Deal with data if there is any
+                    
+                # Register with data service
+                privateId = v.AddNetService(NetService.DataStoreNetService.TYPE)
+                (eventServiceLocation, channelId) = v.GetEventServiceLocation()
+
                 try:
-                    dataList = cp.get(sec, 'data')
-                except ConfigParser.NoOptionError:
-                    dataList = ""
-
-                persistentData = []
-
-                if len(dataList) != 0:
-                    for d in string.split(dataList, ':'):
-                        dd = DataDescription(cp.get(d, 'name'))
-                        dd.SetId(d)
-                        try:
-                            dd.SetDescription(cp.get(d, 'description'))
-                        except ConfigParser.NoOptionError:
-                            log.info("LoadPersistentVenues: Data has no description")
-                        dd.SetStatus(cp.get(d, 'status'))
-                        dd.SetSize(cp.getint(d, 'size'))
-                        dd.SetChecksum(cp.get(d, 'checksum'))
-                        dd.SetOwner(cp.get(d, 'owner'))
-
-                        persistentData.append(dd)
-                        
-                v.dataStore.LoadPersistentData(persistentData)
-                        # Ick
-                #        v.data[dd.name] = dd
-                #        v.UpdateData(dd)
-                #else:
-                #    log.debug("No data to load for Venue %s", sec)
-
-
+                    dataService = Client.Handle(self.dataServiceUrl).GetProxy()
+                    dataStoreUrl = dataService.RegisterVenue(privateId, eventServiceLocation, v.uniqueId)
+                    v.SetDataStore(dataStoreUrl)
+                except:
+                    log.exception("VenueServer Can not connect to data store %s"%self.dataServiceUrl)
+                                   
                 # Deal with apps if there are any
                 try:
                     appList = cp.get(sec, 'applications')
@@ -1236,11 +1221,13 @@ class VenueServer(ServiceBase.ServiceBase):
         Venue Object, complete with a event service, then makes it
         available from this Venue Server.
         """
+     
         # Create a new Venue object pass it the server
         # Usually the venueDesc will not have Role information 
         #   and defaults will be used.
+      
         venue = Venue(self, venueDesc.name, venueDesc.description,
-                      venueDesc.roleManager, self.dataStorageLocation)
+                      venueDesc.roleManager)
 
         # Make sure new venue knows about server's external role manager.
         if "VenueServer" not in venue.GetRoleManager().GetExternalRoleManagerList():
@@ -1271,7 +1258,20 @@ class VenueServer(ServiceBase.ServiceBase):
         # If this is the first venue, set it as the default venue
         if(len(self.venues) == 1):
             self.SetDefaultVenue(venue.uri)
-                
+
+            
+        # Register with the venue
+        privateId = venue.AddNetService(NetService.DataStoreNetService.TYPE)
+        (eventServiceLocation, channelId) = venue.GetEventServiceLocation()
+
+       
+        try:
+            dataService = Client.Handle(self.dataServiceUrl).GetProxy()
+            dataStoreUrl = dataService.RegisterVenue(privateId, eventServiceLocation, venue.uniqueId)
+            venue.SetDataStore(dataStoreUrl)
+        except:
+            log.exception("VenueServer Can not connect to data store %s"%self.dataServiceUrl)
+                                
         # return the URL to the new venue
         return venue.uri
 
@@ -1554,6 +1554,7 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         Shutdown shuts down the server.
         """
+            
         if not self._IsInRole("VenueServer.Administrators"):
             log.exception("Shutdown: Not authorized.")
             raise NotAuthorized
@@ -1575,8 +1576,8 @@ class VenueServer(ServiceBase.ServiceBase):
         self.textService.Stop()
         log.info("                         event")
         self.eventService.Stop()
-        log.info("                         data")
-        self.dataTransferServer.stop()
+        #log.info("                         data")
+        #self.dataTransferServer.stop()
 
         self.hostingEnvironment.Stop()
         del self.hostingEnvironment
