@@ -13,7 +13,7 @@ class SharedAppClient:
     The SharedAppClient may be used when building shared applications.
     This class encapsulates a handler to the application service and
     the event service associated with the application.  The SharedAppClient
-    provides an interface to the AppService.
+    provides an interface to the Shared Application.
     '''
     
     def __init__(self, appName):
@@ -95,9 +95,10 @@ class SharedAppClient:
        
     def Join(self, appServiceUrl, clientProfile = None):
         '''
-        Connect registers this client with the AppService at specified URL.
-        The registration gives access to the EventService used
-        for data communication among applications connected to this service.  
+        Connect registers this client with the SharedApplication at
+        specified URL.  The registration gives access to the
+        EventService used for data communication among applications
+        connected to this service.
         
         **Arguments**
         
