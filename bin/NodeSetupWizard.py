@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.33 2004-07-27 19:21:20 eolson Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.34 2004-07-28 22:48:36 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -957,8 +957,6 @@ class NodeClient:
         self.node = AGNodeServiceIW(url)
         
         self.server.RunInThread()
-
-        self.serviceList = self.node.GetAvailableServices()
         
     def Stop(self):
         # Exit cleanly
@@ -984,7 +982,8 @@ class NodeClient:
         serviceAvailable = None
 
         # Check if we have a video producer service installed
-        for service in self.serviceList:
+        serviceList = AGServiceManagerIW(serviceManagerUrl).GetAvailableServices()
+        for service in serviceList:
             if service.name == type:
                 serviceAvailable = service
 
@@ -994,7 +993,7 @@ class NodeClient:
                 
                 for captureCard in self.cameraList:
                     log.debug("NodeClient.AddService: Video Producer Service %s %s %s" %
-                                (serviceAvailable.servicePackageUri, 
+                                (serviceAvailable.servicePackageFile, 
                                  serviceManagerUrl, captureCard))
                     serviceDesc = self.node.AddService(serviceAvailable,
                                                        serviceManagerUrl, captureCard, None)
