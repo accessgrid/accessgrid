@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.47 2003-02-21 16:09:05 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.48 2003-02-21 17:38:57 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT -----------------------------------------------------------------------------
 import threading
@@ -262,7 +262,7 @@ class VenueClientUI(wxApp, VenueClient):
         # Find the upload location. HACK for now, this should come in
         # thru the venue description.
         #
-#        self.upload_url = self.client.GetUploadDescriptor()
+        self.upload_url = self.client.GetUploadDescriptor()
 
     def ExitVenue(self):
         """
@@ -395,10 +395,15 @@ class VenueClientUI(wxApp, VenueClient):
             #
 
             def get_ident_and_download(url, local_pathname, size, checksum, progressCB):
-                my_identity = GetDefaultIdentityDN()
                 try:
-                    DataStore.HTTPDownloadFile(my_identity, url, local_pathname, size,
-                                               checksum, progressCB)
+                    if url.startswith("https"):
+                        DataStore.GSIHTTPDownloadFile(url, local_pathname, size,
+                                                      checksum, progressCB)
+
+                    else:
+                        my_identity = GetDefaultIdentityDN()
+                        DataStore.HTTPDownloadFile(my_identity, url, local_pathname, size,
+                                                   checksum, progressCB)
                 except DataStore.DownloadFailed, e:
                     print "Got exception on download: ", e
 
@@ -491,13 +496,15 @@ class VenueClientUI(wxApp, VenueClient):
         def get_ident_and_upload(upload_url, file_list, progressCB):
             print "Upload: getting identity"
             
-            my_identity = GetDefaultIdentityDN()
-
-            print "Got identity ", my_identity
-
             error_msg = None
             try:
-                DataStore.HTTPUploadFiles(my_identity, upload_url, file_list, progressCB)
+                if upload_url.startswith("https:"):
+                    DataStore.GSIHTTPUploadFiles(upload_url, file_list, progressCB)
+                else:
+                    my_identity = GetDefaultIdentityDN()
+                    print "Got identity ", my_identity
+                    DataStore.HTTPUploadFiles(my_identity, upload_url, file_list, progressCB)
+                    
             except DataStore.FileNotFound, e:
                 error_msg = "File not found: %s" % (e[0])
             except DataStore.NotAPlainFile, e:
@@ -565,13 +572,16 @@ class VenueClientUI(wxApp, VenueClient):
         """
 
         print "getting identity"
-        my_identity = GetDefaultIdentityDN()
         upload_url = self.upload_url
         print "Have identity=%s upload_url=%s" % (my_identity, upload_url)
 
         error_msg = None
         try:
-            DataStore.HTTPUploadFiles(my_identity, upload_url, file_list)
+            if upload_url.startswith("https:"):
+                DataStore.GSIHTTPUploadFiles(upload_url, file_list)
+            else:
+                my_identity = GetDefaultIdentityDN()
+                DataStore.HTTPUploadFiles(my_identity, upload_url, file_list)
         except DataStore.FileNotFound, e:
             error_msg = "File not found: %s" % (e[0])
         except DataStore.NotAPlainFile, e:
