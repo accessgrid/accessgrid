@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.141 2004-05-03 20:10:45 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.142 2004-05-05 19:10:20 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.141 2004-05-03 20:10:45 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.142 2004-05-05 19:10:20 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -753,7 +753,6 @@ class VenueServer(AuthorizationMixIn):
             the venue is not found in the list of venues for this server.
 
         """
-
         log.debug("RemoveVenue: id = %s", oid)
 
         # Get the venue object
@@ -771,7 +770,12 @@ class VenueServer(AuthorizationMixIn):
         except Exception, e:
             self.simpleLock.release()
             log.exception(e)
-            raise UnbindVenueError
+           
+            # For now, comment out error. SOAPpy needs a fix.
+            #
+            #raise UnbindVenueError
+
+
         except:
             self.simpleLock.release()
             log.exception("RemoveVenue: Couldn't unbind venue.")
