@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.38 2004-04-07 01:27:13 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.39 2004-04-07 01:32:39 judson Exp $
 ;
 
 ; Set externally
@@ -103,10 +103,10 @@ Source: bin\NodeSetupWizard.py; DestDir: {app}\bin; DestName: NodeSetupWizard.py
 Source: bin\SetupVideo.py; DestDir: {app}\bin; DestName: SetupVideo.pyw
 
 ; Service packages
-Source: services\*.zip; DestDir: {app}\services
+Source: services\*.zip; DestDir: {app}\NodeServices
 
 ; Shared Application packages
-Source: sharedapps\*.shared_app_pkg; DestDir: {app}\sharedapps
+Source: sharedapps\*.shared_app_pkg; DestDir: {app}\SharedApplications
 
 ; icons file (? I forget what for)
 Source: install\agicons.exe; DestDir: {app}\install
