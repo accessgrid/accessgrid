@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.68 2003-03-14 21:14:50 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.69 2003-03-20 23:14:27 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,6 +29,8 @@ from AccessGrid.UIUtilities import MyLog
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN 
 from AccessGrid import DataStore
 
+from AccessGrid.hosting.pyGlobus import Server
+
 if sys.platform == "win32":
     from win32com.shell import shell, shellcon
     
@@ -49,6 +51,8 @@ class VenueClientUI(wxApp, VenueClient):
         This method initiates all gui related classes.
         """
         VenueClient.__init__(self)
+        #self.CreateFollowLeadServer()
+        print '----venue client ui is started'
         self.__setLogger()
         self.__createHomePath()
         self.frame = VenueClientFrame(NULL, -1,"", self)
@@ -236,7 +240,15 @@ class VenueClientUI(wxApp, VenueClient):
         performs its own operations when the client enters a venue.
         """
         wxCallAfter(wxLogDebug, "EVENT- Enter venue with url: %s" %(URL))
+
+        # clean up ui from last venue
+        if self.oldUri != None:
+            wxCallAfter(wxLogDebug, "clean up frame and exit")
+            wxCallAfter(self.frame.CleanUp)
+            #self.ExitVenue()
+
         VenueClient.EnterVenue( self, URL )
+       
         venueState = self.venueState
         wxCallAfter(self.frame.SetLabel, venueState.description.name)
         #name = self.profile.name
@@ -294,6 +306,10 @@ class VenueClientUI(wxApp, VenueClient):
         self.upload_url = self.client.GetUploadDescriptor()
         wxCallAfter(wxLogDebug, "Get upload url %s" %self.upload_url)
 
+        # Make people you lead go to this venue
+        print '--------- Get followers'
+        self.__getFollowers(URL)
+
     def ExitVenue(self):
         """
         Note: Overloaded from VenueClient
@@ -341,18 +357,19 @@ class VenueClientUI(wxApp, VenueClient):
         the venue he or she just left. 
          """
         wxLogDebug("Go to new venue")
-        oldUri = None
+        self.oldUri = None
         
         if not HaveValidProxy():
             wxLogDebug("You don't have a valid proxy")
             GPI()
                                
         if self.venueUri != None:
-            oldUri = self.venueUri
+            self.oldUri = self.venueUri
         else:
-            oldUri = None
+            self.oldUri = None
             
         try: # is this a server
+            wxLogDebug("Is this a server")
             venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
             wxLogDebug("server url: %s" %venueUri)
             
@@ -367,21 +384,24 @@ class VenueClientUI(wxApp, VenueClient):
             try:
                 self.client = self.clientHandle.get_proxy()
                 self.gotClient = true
-                if oldUri != None:
-                    wxLogDebug("clean up frame and exit")
-                    wxCallAfter(self.frame.CleanUp)
-                    self.ExitVenue()
+                #if self.oldUri != None:
+                #    wxLogDebug("clean up frame and exit")
+                #    wxCallAfter(self.frame.CleanUp)
+                #    self.ExitVenue()
 
-                wxLogDebug("enter venue %s" %venueUri)
+                wxLogDebug("--enter venue %s" %venueUri)
+                wxLogDebug(str(Client.Handle(venueUri).IsValid()))
                 self.EnterVenue(venueUri)
-                self.__setHistory(oldUri, back)
+                wxLogDebug("--after enter venue %s" %venueUri)
+                self.__setHistory(self.oldUri, back)
                 wxCallAfter(self.frame.ShowMenu)
                
             except:
                 wxLogError("Error while trying to enter venue")
-                if oldUri != None:
+                if self.oldUri != None:
                     wxLogDebug("Go back to old venue")
-                    self.EnterVenue(oldUri) # go back to venue where we came from        
+                    self.EnterVenue(self.oldUri) # go back to venue where we came from
+                    
         else:
             wxLogDebug("Handler is not valid")
             if not HaveValidProxy():
@@ -402,7 +422,17 @@ class VenueClientUI(wxApp, VenueClient):
 
             wxLogMessage(text)
             wxLog_GetActiveTarget().Flush()
-                        
+
+    def __getFollowers(self, venueUrl):
+        wxLogDebug('Tell followers to go to url:%s ' %venueUrl)
+        for id in self.followerProfiles.keys():
+            url = self.followerProfiles[id].venueClientURL
+            followerHandle = Client.Handle(url)
+            if(followerHandle.IsValid()):
+                wxLogDebug("the follower handler is valid")
+                followerProxy = self.clientHandle.get_proxy()
+                followerProxy.EnterVenue(venueUri)
+                                                    
     def OnExit(self):
         """
         This method performs all processing which needs to be
@@ -674,6 +704,22 @@ class VenueClientUI(wxApp, VenueClient):
             wxCallAfter(wxLogMessage, error_msg)
             wxCallAfter(wxLog_GetActiveTarget().Flush)
            
+
+    def FollowParticipant(self, personToFollow):
+        #url = personToFollow.venueClientURL
+        #followHandle = Client.Handle(url)
+        #if(followHandle.IsValid()):
+        #    wxLogDebug("the follow handler is valid")
+        try:
+            #personToFollowProxy = self.clientHandle.get_proxy()
+            #personToFollowProxy.Follow(personToFollow.venueClientURL)
+            wxLogDebug("You are trying to follow %s" %personToFollow.name)
+            self.Follow(personToFollow.venueClientURL)
+            wxLogDebug("You are following %s" %personToFollow.name)
+                
+        except:
+            wxLogError("Can not follow %s" %personToFollow.name)
+
     def AddData(self, data):
         """
         This method adds data to the venue
