@@ -1,26 +1,19 @@
 #-----------------------------------------------------------------------------
 # Name:        Utilities.py
 # Purpose:     pyGlobus helper code
-#
-# Author:      Robert D. Olson
-#
 # Created:     2003/08/02
-# RCS-ID:      $Id: Utilities.py,v 1.5 2004-09-09 14:21:00 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.6 2004-09-10 03:58:53 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
-
 
 """
 pyGlobus hosting environment utility classes and functions.
 """
 
-__revision__ = "$Id: Utilities.py,v 1.5 2004-09-09 14:21:00 turam Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: Utilities.py,v 1.6 2004-09-10 03:58:53 judson Exp $"
 
-import pyGlobus.io
-import pyGlobus.ioc
-import pyGlobus.security
+from pyGlobus import io, ioc, security
 
 from AccessGrid.Security.X509Subject import X509Subject
 
@@ -45,11 +38,11 @@ def CreateTCPAttrDefault():
 
     """
 
-    attr = pyGlobus.io.TCPIOAttr()
+    attr = io.TCPIOAttr()
 
-    attr.set_authentication_mode(pyGlobus.ioc.GLOBUS_IO_SECURE_AUTHENTICATION_MODE_GSSAPI)
-    attr.set_channel_mode(pyGlobus.ioc.GLOBUS_IO_SECURE_CHANNEL_MODE_GSI_WRAP)
-    attr.set_delegation_mode(pyGlobus.ioc.GLOBUS_IO_SECURE_DELEGATION_MODE_NONE)
+    attr.set_authentication_mode(ioc.GLOBUS_IO_SECURE_AUTHENTICATION_MODE_GSSAPI)
+    attr.set_channel_mode(ioc.GLOBUS_IO_SECURE_CHANNEL_MODE_GSI_WRAP)
+    attr.set_delegation_mode(ioc.GLOBUS_IO_SECURE_DELEGATION_MODE_NONE)
     
     attr.set_restrict_port(0)
     attr.set_reuseaddr(1)
@@ -64,11 +57,11 @@ def CreateTCPAttrDefaultSSL():
 
     """
 
-    attr = pyGlobus.io.TCPIOAttr()
+    attr = io.TCPIOAttr()
 
-    attr.set_authentication_mode(pyGlobus.ioc.GLOBUS_IO_SECURE_AUTHENTICATION_MODE_GSSAPI)
-    attr.set_channel_mode(pyGlobus.ioc.GLOBUS_IO_SECURE_CHANNEL_MODE_SSL_WRAP)
-    attr.set_delegation_mode(pyGlobus.ioc.GLOBUS_IO_SECURE_DELEGATION_MODE_FULL_PROXY)
+    attr.set_authentication_mode(ioc.GLOBUS_IO_SECURE_AUTHENTICATION_MODE_GSSAPI)
+    attr.set_channel_mode(ioc.GLOBUS_IO_SECURE_CHANNEL_MODE_SSL_WRAP)
+    attr.set_delegation_mode(ioc.GLOBUS_IO_SECURE_DELEGATION_MODE_FULL_PROXY)
     
     attr.set_restrict_port(0)
     attr.set_reuseaddr(1)
@@ -86,9 +79,9 @@ def CreateTCPAttrSelfAuth():
     """
 
     attr = CreateTCPAttrDefault()
-    authdata = pyGlobus.io.AuthData()
+    authdata = io.AuthData()
 
-    authmode = pyGlobus.ioc.GLOBUS_IO_SECURE_AUTHORIZATION_MODE_SELF
+    authmode = ioc.GLOBUS_IO_SECURE_AUTHORIZATION_MODE_SELF
 
     attr.set_authorization_mode(authmode, authdata)
 
@@ -106,10 +99,10 @@ def CreateTCPAttrCallbackAuth(auth_cb):
 
     attr = CreateTCPAttrDefault()
 
-    authdata = pyGlobus.io.AuthData()
+    authdata = io.AuthData()
 
     authdata.set_callback(auth_cb, None)
-    authmode = pyGlobus.ioc.GLOBUS_IO_SECURE_AUTHORIZATION_MODE_CALLBACK
+    authmode = ioc.GLOBUS_IO_SECURE_AUTHORIZATION_MODE_CALLBACK
 
     attr.set_authorization_mode(authmode, authdata)
 
@@ -126,10 +119,10 @@ def CreateTCPAttrCallbackAuthSSL(auth_cb):
 
     attr = CreateTCPAttrDefaultSSL()
 
-    authdata = pyGlobus.io.AuthData()
+    authdata = io.AuthData()
 
     authdata.set_callback(auth_cb, None)
-    authmode = pyGlobus.ioc.GLOBUS_IO_SECURE_AUTHORIZATION_MODE_CALLBACK
+    authmode = ioc.GLOBUS_IO_SECURE_AUTHORIZATION_MODE_CALLBACK
 
     attr.set_authorization_mode(authmode, authdata)
 

@@ -1,19 +1,15 @@
 #-----------------------------------------------------------------------------
 # Name:        __init__.py
 # Purpose:     
-#
-# Author:      Ivan R. Judson
-#
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.8 2004-04-09 13:38:57 judson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.9 2004-09-10 03:58:53 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 Platform sub modules.
 """
-__revision__ = "$Id: __init__.py,v 1.8 2004-04-09 13:38:57 judson Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: __init__.py,v 1.9 2004-09-10 03:58:53 judson Exp $"
 
 # mechanisms to support multiple hosting environments and to set defaults
 import sys
@@ -59,5 +55,4 @@ elif IsLinux() or IsOSX():
     from AccessGrid.Platform.unix import Config as Config
     from AccessGrid.Platform.unix import ProcessManager as ProcessManager
 else:
-    log.warn("Platform doesn't have a platform-specific module for %s",
-             sys.platform)
+    print "No support for Platform %s" % sys.platform

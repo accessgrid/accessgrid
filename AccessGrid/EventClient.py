@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.45 2004-09-09 22:12:12 turam Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.46 2004-09-10 03:58:53 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.45 2004-09-09 22:12:12 turam Exp $"
+__revision__ = "$Id: EventClient.py,v 1.46 2004-09-10 03:58:53 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -110,7 +110,6 @@ class EventClient:
     def __del__(self):
         if self.running:
             self.Stop()
-        
 
     def QueueThreadMain(self):
         """
@@ -125,23 +124,16 @@ class EventClient:
         quit:  Terminate the event processing thread.
         call:  Invoke a callback. The callback is tuple[1], the event to
         pass to it is tuple[2].
-
         """
 
         while 1:
-#            log.debug("Queue waiting for data")
             dat = self.queue.get()
-#            log.debug("Queue got data %s", dat)
 
             if dat[0] == "quit":
-#                log.debug("Queue exiting")
                 return
             elif dat[0] == "call":
                 try:
-                    #
                     # Invoke the callback.
-                    #
-                    
                     callback = dat[1]
                     event = dat[2]
                     callback(event)
@@ -174,13 +166,15 @@ class EventClient:
         """
         
         try:
-            return self.readCallback(arg, handle, result, buf, n)
+            retval = self.readCallback(arg, handle, result, buf, n)
         except Exception:
             log.exception("readcallback failed")
-                
-    def readCallback(self, arg, handle, result, buf, n):
+            retval = -1
 
-        log.debug("Got read handle=%s result=%s  n=%s \n", handle, result, n)
+        return retval
+    
+    def readCallback(self, arg, handle, result, buf, n):
+        log.debug("Read Callback called arg=%s handle=%s result=%s  n=%s \n", arg, handle, result, n)
 
         if result[0] != 0:
             log.debug("readCallback gets failure in result: %s %s", result[0], result[1])
@@ -191,7 +185,6 @@ class EventClient:
 
             self.connected = 0
             return
-                
 
         if n == 0:
             log.debug("EventClient got EOF")

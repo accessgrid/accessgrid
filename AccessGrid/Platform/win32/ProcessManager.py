@@ -2,14 +2,13 @@
 # Name:        ProcessManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.8 2004-05-09 05:33:16 turam Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.9 2004-09-10 03:58:53 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.8 2004-05-09 05:33:16 turam Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: ProcessManager.py,v 1.9 2004-09-10 03:58:53 judson Exp $"
 
 import win32api
 import win32con
@@ -53,8 +52,6 @@ class ProcessManager:
 
             cmdline += " " + arg
 
-        rc = None
-
         try:
 
             startup_info = win32process.STARTUPINFO()
@@ -92,12 +89,15 @@ class ProcessManager:
                 else:
                     # Gotta kill it, sigh
                     self.TerminateProcess(pHandle)
-                return exitCode
+                retval = exitCode
             else:
-                return pHandle
+                retval = pHandle
                 
         except win32process.error, e:
             log.exception("process creation failed: %s", e)
+            retval = None
+
+        return retval
 
     def TerminateAllProcesses(self):
         """

@@ -1,11 +1,8 @@
 #-----------------------------------------------------------------------------
 # Name:        Client.py
 # Purpose:     
-#
-# Author:      Robert D. Olson, Ivan R. Judson
-#
 # Created:     2003/08/02
-# RCS-ID:      $Id: Client.py,v 1.10 2004-04-10 23:41:40 judson Exp $
+# RCS-ID:      $Id: Client.py,v 1.11 2004-09-10 03:58:54 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,15 +13,13 @@ This module provides a helper class Client that wraps
 the creation of the SOAP server proxy.
 """
 
-__revision__ = "$Id: Client.py,v 1.10 2004-04-10 23:41:40 judson Exp $"
+__revision__ = "$Id: Client.py,v 1.11 2004-09-10 03:58:54 judson Exp $"
 
 # External imports
 from SOAPpy import SOAPProxy
 from SOAPpy import SOAPConfig
 from SOAPpy.GSIServer import GSIConfig
 from SOAPpy import Types
-
-import urllib
 
 # Exception mapping for SOAPpy
 MethodNotFound = Types.MethodNotFound

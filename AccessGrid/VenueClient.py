@@ -2,15 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.193 2004-09-08 20:53:58 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.194 2004-09-10 03:58:53 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.193 2004-09-08 20:53:58 turam Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: VenueClient.py,v 1.194 2004-09-10 03:58:53 judson Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -26,7 +25,7 @@ from AccessGrid import DataStore
 from AccessGrid.Toolkit import Application, Service
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.Platform.ProcessManager import ProcessManager
-from AccessGrid.Venue import VenueIW
+from AccessGrid.Venue import VenueIW, ServiceAlreadyPresent
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.hosting import SecureServer, InsecureServer
 from AccessGrid.Utilities import LoadConfig
@@ -48,9 +47,7 @@ from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.Descriptions import CreateServiceDescription
 from AccessGrid.Descriptions import CreateApplicationDescription
 from AccessGrid.Descriptions import CreateStreamDescription
-from AccessGrid.Venue import VenueIW, ServiceAlreadyPresent
 from AccessGrid.AGNodeService import AGNodeServiceIW
-from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
 
 class EnterVenueException(Exception):
@@ -375,7 +372,7 @@ class VenueClient:
         # Exit the venue (internally)
         try:
             self.__ExitVenue()
-        except Exception, e:
+        except Exception:
             log.info("Exception exiting from venue before reconnect -- not critical")
 
         # Try to enter the venue
@@ -667,10 +664,11 @@ class VenueClient:
         @return: a true value if the invocation should be retried.
 
         """
-
+        log.debug("SOAP FAULT: %s %s", proxy, ex)
+        
         log.exception("SOAP fault occurred")
-        return 0
 
+        return 0
         
             
     # end Event Handlers
@@ -795,8 +793,6 @@ class VenueClient:
                 # This is a non fatal error, users should be notified
                 # but still enter the venue
                 log.warn("EnterVenue: Error updating node service")
-                errorInNode = 1
-    
                     
     def EnterVenue(self, URL):
         """
@@ -1231,7 +1227,7 @@ class VenueClient:
         """
                
         if self.dataStore is None:
-            return ""
+            return (None, None)
         else:
             return self.dataStore.GetUploadDescriptor(), self.dataStore.GetLocation()
         
@@ -1425,7 +1421,7 @@ class VenueClient:
                 if r.name == "Administrators":
                     isVenueAdministrator = 1
 
-        except Exception, e:
+        except Exception:
         
             log.exception("Error retrieving admin list; possibly old server")
             try:
@@ -1435,7 +1431,7 @@ class VenueClient:
                 roleNameList = prox.DetermineSubjectRoles()
                 if "Venue.Administrators" in roleNameList :        
                     isVenueAdministrator = 1
-            except Exception, e:
+            except Exception:
                 log.exception("Error retrieving admin list using legacy method")
                 
         return isVenueAdministrator

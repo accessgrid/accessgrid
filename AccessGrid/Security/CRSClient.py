@@ -2,7 +2,7 @@
 # Name:        CRSClient.py
 # Purpose:     Certificate Request Service Client code.
 # Created:     2002/12/12
-# RCS-ID:      $Id: CRSClient.py,v 1.7 2004-05-19 02:36:10 judson Exp $
+# RCS-ID:      $Id: CRSClient.py,v 1.8 2004-09-10 03:58:53 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -21,7 +21,7 @@ proxy = xmlrpclib.ServerProxy(url, transport = transport, verbose=1)
 
 """
 
-__revision__ = "$Id: CRSClient.py,v 1.7 2004-05-19 02:36:10 judson Exp $"
+__revision__ = "$Id: CRSClient.py,v 1.8 2004-09-10 03:58:53 judson Exp $"
 
 import xmlrpclib
 from AccessGrid import Log
@@ -73,7 +73,7 @@ class CRSClient:
         log.debug("request certificate")
         try:
             token = self.proxy.RequestCertificate(emailAddress, certReq)
-        except IOError, e:
+        except IOError:
             log.exception("IOError on Proxy.RequestCertificate")
             raise CRSClientConnectionFailed
         except StandardError, v:
@@ -105,7 +105,7 @@ class CRSClient:
 
         try:
             certificate = self.proxy.RetrieveCertificate(token)
-        except IOError, e:
+        except IOError:
             log.exception("IOError on Proxy.RetrieveCertificate")
             raise CRSClientConnectionFailed
         except StandardError, v:
@@ -129,7 +129,7 @@ class CRSClient:
 
         try:
             rval = self.proxy.RetrieveCACertificates()
-        except IOError, e:
+        except IOError:
             log.exception("IOError on Proxy.RetrieveCACertificates")
             raise CRSClientConnectionFailed
         except StandardError, v:

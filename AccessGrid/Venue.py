@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.226 2004-08-25 16:32:38 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.227 2004-09-10 03:58:53 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,8 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.226 2004-08-25 16:32:38 turam Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: Venue.py,v 1.227 2004-09-10 03:58:53 judson Exp $"
 
 import sys
 import time
@@ -908,12 +907,9 @@ class Venue(AuthorizationMixIn):
                       
         # Use network services to resolve mismatches.
         if len(mismatchedStreams)>0:
-            matchingStreams = self.networkServicesManager.ResolveMismatch(mismatchedStreams,
-                                                                          clientProfile.capabilities)
+            matchingStreams = self.networkServicesManager.ResolveMismatch(
+                mismatchedStreams, clientProfile.capabilities)
             
-            # Add new streams that got created by network services during matching.
-            streamIds = map(lambda x: x.id, self.streamList.GetStreams())
-                                  
             for s in matchingStreams:
                 c = ServiceCapability.CreateServiceCapability(s.capability.xml)
                 
@@ -1813,19 +1809,15 @@ class Venue(AuthorizationMixIn):
 
         *dataDescription* Upon successfully removing the data.
         """
-
-        name = dataDescription.name
-
         # This is venue resident so delete the file
         if(dataDescription.type is None or dataDescription.type == "None"):
-            list = []
-            list.append(dataDescription)
-            self.dataStore.RemoveFiles(list)
+            datalist = []
+            datalist.append(dataDescription)
+            self.dataStore.RemoveFiles(datalist)
             self.server.eventService.Distribute( self.uniqueId,
                                                  Event( Event.REMOVE_DATA,
                                                         self.uniqueId,
                                                         dataDescription ) )
-            
         else:
             log.info("Venue.RemoveData tried to remove non venue data.")
 
@@ -1836,11 +1828,9 @@ class Venue(AuthorizationMixIn):
         Replace the current description for dataDescription.name with
         this one.
         """
-        #
         # This method is called both from the data store and from clients.
         # The data store only wants to distribute an event, while clients
         # need to modify the actual data store.
-        #
         
         if dataStoreCall:
             self.server.eventService.Distribute( self.uniqueId,
@@ -1849,9 +1839,6 @@ class Venue(AuthorizationMixIn):
                                                         dataDescription ) )
             return
 
-
-        name = dataDescription.name
-        
         # This is venue resident so modify the file
         if(dataDescription.type is None or dataDescription.type == "None"):
             self.dataStore.ModifyData(dataDescription)
@@ -2236,7 +2223,7 @@ class Venue(AuthorizationMixIn):
         """
         Adds user to list of users authorized for a specific role.
         """
-        subj = X509.CreateSubjectFromString(subject)
+        subj = X509Subject.CreateSubjectFromString(subject)
         role = self.authManager.FindRole(role_string)
         role.AddSubject(subj)
         
@@ -2245,8 +2232,8 @@ class Venue(AuthorizationMixIn):
         Removes a user from list of those authorized for a specific
         role.
         """
-        subj = X509.CreateSubjectFromString(subject)
-        role = self.authManager.FindRole(role_string)
+        subj = X509Subject.CreateSubjectFromString(subject)
+        role = self.authManager.FindRole(role)
         role.RemoveSubject(subj)
 
     def SetSubjectsInRole(self, subject_list, role_string):
@@ -2254,9 +2241,11 @@ class Venue(AuthorizationMixIn):
         Sets the users in a role.  Be extra careful so we don't
         wipe out all the subjects in this role if there's an error.
         """
-        sl = map(lambda x: X509.CreateSubjectFromString(x), subject_list)
+        sl = map(lambda x: X509Subject.CreateSubjectFromString(x),
+                 subject_list)
         role = self.authManager.FindRole(role_string)
-        
+        role.SetSubjects(sl)
+
     def GetUsersInRole(self, role_string):
         """
         Returns a list of strings of users' names.
@@ -2295,6 +2284,8 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         The authorization callback. We should be able to implement this
         just once and remove a bunch of the older code.
         """
+        log.debug("Authorizing %s %s", args, *kw)
+        
         if self.impl.servicePtr.GetOption("insecure"):
             return 1
 
@@ -2727,7 +2718,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         try:
             return self.impl.RegenerateEncryptionKeys()
         except:
-            log.exception("Failed to regenerate encryption keys.", e)
+            log.exception("Failed to regenerate encryption keys.")
             raise
         
     def SetDescription(self, description):
@@ -2982,6 +2973,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
 
         try:
             returnValue = self.impl.UpdateData(dataDescription)
+            return returnValue
         except:
             log.exception("VenueI.UpdateData: exception")
             raise

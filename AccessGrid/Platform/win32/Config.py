@@ -3,23 +3,21 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.50 2004-09-10 03:43:28 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.51 2004-09-10 03:58:53 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.50 2004-09-10 03:43:28 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.51 2004-09-10 03:58:53 judson Exp $"
 
 import os
-import sys
 import socket
 import re
 
+from pyGlobus import utilc, gsic, ioc
 
-from pyGlobus import utilc
-
-import AccessGrid.Config
+from AccessGrid import Config
 from AccessGrid import Log
 from AccessGrid.Platform import AGTK_USER, AGTK_LOCATION
 from AccessGrid.Version import GetVersion
@@ -27,8 +25,6 @@ from AccessGrid.Types import AGVideoResource
 
 log = Log.GetLogger(Log.Toolkit)
 
-# To speed things up on windows
-from pyGlobus import utilc, gsic, ioc
 from AccessGrid.Security import Utilities as SecurityUtilities
 utilc.globus_module_activate(gsic.get_module())
 utilc.globus_module_activate(ioc.get_module())
@@ -43,7 +39,7 @@ except:
     log.exception("Python windows extensions are missing, but required!")
     pass
 
-class AGTkConfig(AccessGrid.Config.AGTkConfig):
+class AGTkConfig(Config.AGTkConfig):
     """
     This class encapsulates a system configuration for the Access Grid
     Toolkit. This object provides primarily read-only access to configuration
@@ -82,7 +78,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
             raise Exception, "Only one instance of AGTkConfig is allowed."
 
         # Create the singleton
-        AccessGrid.Config.AGTkConfig.__init__(self)
+        Config.AGTkConfig.__init__(self)
         AGTkConfig.theAGTkConfigInstance = self
 
         # Set the flag to initialize if needed
@@ -275,7 +271,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
         return self.servicesDir
 
-class GlobusConfig(AccessGrid.Config.GlobusConfig):
+class GlobusConfig(Config.GlobusConfig):
     """
     This object encapsulates the information required to correctly configure
     Globus and pyGlobus for use with the Access Grid Toolkit.
@@ -411,19 +407,19 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         # configure our environment later on.
         # 
         try:
-            (self.distKeyFileName, type) = _winreg.QueryValueEx(gsikey,
+            (self.distKeyFileName, val_type) = _winreg.QueryValueEx(gsikey,
                                                              "x509_user_key")
         except WindowsError:
             pass
 
         try:
-            (self.distCertFileName, type) = _winreg.QueryValueEx(gsikey,
+            (self.distCertFileName, val_type) = _winreg.QueryValueEx(gsikey,
                                                                  "x509_user_cert")
         except WindowsError:
             pass
 
         try:
-            (self.distCACertDir, type) = _winreg.QueryValueEx(gsikey,
+            (self.distCACertDir, val_type) = _winreg.QueryValueEx(gsikey,
                                                              "x509_cert_dir")
         except WindowsError:
             pass
@@ -438,7 +434,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         Configure globus runtime for using a cert and key pair.
         """
 
-        AccessGrid.Config.GlobusConfig.SetUserCert(self, cert, key)
+        Config.GlobusConfig.SetUserCert(self, cert, key)
 
         #
         # On windows, if there's a proxy setting in the registry,
@@ -452,7 +448,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         except WindowsError:
             pass
         
-class UserConfig(AccessGrid.Config.UserConfig):
+class UserConfig(Config.UserConfig):
     """
     A user config object encapsulates all of the configuration data for
     a running instance of the Access Grid Toolkit software.
@@ -486,7 +482,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
         if UserConfig.theUserConfigInstance is not None:
             raise Exception, "Only one instance of User Config is allowed."
 
-        AccessGrid.Config.UserConfig.__init__(self)
+        Config.UserConfig.__init__(self)
         UserConfig.theUserConfigInstance = self
 
         self.initIfNeeded = initIfNeeded
@@ -661,7 +657,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
         return self.servicesDir
 
-class SystemConfig(AccessGrid.Config.SystemConfig):
+class SystemConfig(Config.SystemConfig):
     """
     The SystemConfig object encapsulates all system dependent
     configuration data, it should be extended to retrieve and store
@@ -684,7 +680,7 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
         if SystemConfig.theSystemConfigInstance is not None:
             raise Exception, "Only one instance of SystemConfig is allowed."
 
-        AccessGrid.Config.SystemConfig.__init__(self)
+        Config.SystemConfig.__init__(self)
         SystemConfig.theSystemConfigInstance = self
         
         self.tempDir = None
@@ -1104,7 +1100,7 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
                           path)
             raise
     
-class MimeConfig(AccessGrid.Config.MimeConfig):
+class MimeConfig(Config.MimeConfig):
     """
     The MimeConfig object encapsulates in single object the management
     of mime types. This provides a cross platform solution so the AGTk
@@ -1225,7 +1221,7 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
             _winreg.CloseKey(shellKey)
 
             _winreg.CloseKey(regKey)
-        except EnvironmentError, e:
+        except EnvironmentError:
             log.debug("Couldn't open registry for mime registration!")
 
     def GetMimeCommands(self, mimeType = None, ext = None):
@@ -1267,7 +1263,7 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
             try:
                 key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
                                    "MIME\Database\Content Type\%s" % mimeType)
-                extension, type = _winreg.QueryValueEx(key, "Extension")
+                extension, vtype = _winreg.QueryValueEx(key, "Extension")
                 _winreg.CloseKey(key)
             except WindowsError:
                 log.warn("Couldn't open registry for mime types: %s",
@@ -1282,7 +1278,7 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
             try:
                 key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
                                       "%s" % extension)
-                filetype, type = _winreg.QueryValueEx(key, "")
+                filetype, vtype = _winreg.QueryValueEx(key, "")
                 _winreg.CloseKey(key)
             except WindowsError:
                 log.warn("Couldn't open registry for file extension: %s.",
@@ -1306,7 +1302,7 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
                     # Always use caps for names to make life easier
                     try:
                         ckey = _winreg.OpenKey(key, "%s\command" % commandName)
-                        command, type = _winreg.QueryValueEx(ckey,"")
+                        command, vtype = _winreg.QueryValueEx(ckey,"")
                         _winreg.CloseKey(ckey)
                     except:
                         log.warn("Couldn't get command for name: <%s>",
@@ -1332,7 +1328,7 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
                 try:
                     key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
                                           "%s" % extension)
-                    mimeType, type = _winreg.QueryValueEx(key, "Content Type")
+                    mimeType, vtype = _winreg.QueryValueEx(key, "Content Type")
                     _winreg.CloseKey(key)
                 except WindowsError:
                     log.warn("Couldn't open registry for file extension: %s.",

@@ -1,11 +1,8 @@
 #-----------------------------------------------------------------------------
 # Name:        CertificateManager.py
 # Purpose:     Cert management code.
-#
-# Author:      Robert Olson
-#
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.37 2004-09-09 14:21:00 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.38 2004-09-10 03:58:53 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,8 +31,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.37 2004-09-09 14:21:00 turam Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: CertificateManager.py,v 1.38 2004-09-10 03:58:53 judson Exp $"
 
 import re
 import os
@@ -55,8 +51,6 @@ from AccessGrid.Platform.Config import GlobusConfig
 from AccessGrid.Security import CertificateRepository, ProxyGen
 from AccessGrid.Security import CRSClient
 from AccessGrid import Platform
-
-from OpenSSL_AG import crypto
 
 log = Log.GetLogger(Log.CertificateManager)
 
@@ -910,6 +904,8 @@ class CertificateManager(object):
         for the identity we're creating a proxy (future support for
         multiple active identities).
         """
+        log.debug("Looking for identity (unused) %s", identity)
+        
         # For now, ignore the value of identity.
         #
         # Look up in Globus for its idea of where a proxy cert
@@ -1224,14 +1220,17 @@ class CertificateManager(object):
 
         return out
 
-    def CheckRequestedCertificate(self, req, token, server, proxyHost = None, proxyPort = None):
+    def CheckRequestedCertificate(self, req, token, server, proxyHost = None,
+                                  proxyPort = None):
         """
         Check the server to see if the given request has been granted.
         Return a tuple of (success, msg). If successful, success=1
         and msg is the granted certificate. If not successful, success=0
         and msg is an error message.
         """
-
+        log.debug("CheckRequestedCertificate: req=%s, token=%s, server=%s",
+                  req, token, server)
+        
         client = CRSClient.CRSClient(server, proxyHost, proxyPort)
         try:
             certRet = client.RetrieveCertificate(token)
@@ -1472,11 +1471,10 @@ class CertificateManagerUserInterface:
                 if not retry:
                     break
 
-            except Exception, e:
+            except Exception:
                 log.exception("Error Initializing environment.")
                 raise
                 break
-                
 
         log.debug("done, success=%s", success)
 
@@ -1651,10 +1649,12 @@ class CertificateManagerUserInterface:
 
 
             print "Your certificate repository is not initialized; certificate request cannot be completed"
+            return 0
 
         except:
             log.exception("SubmitRequest:Validate: Certificate request can not be completed")
             print "Error occured. Certificate request can not be completed.",
+            return 0
 
 if __name__ == "__main__":
 

@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Subject.py,v 1.12 2004-03-31 21:05:50 eolson Exp $
+# RCS-ID:      $Id: Subject.py,v 1.13 2004-09-10 03:58:53 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ Subjects are the basic security handle on entities that want to be a
 part of the secure Access Grid Toolkit.
 """
 
-__revision__ = "$Id: Subject.py,v 1.12 2004-03-31 21:05:50 eolson Exp $"
+__revision__ = "$Id: Subject.py,v 1.13 2004-09-10 03:58:53 judson Exp $"
 
 # External Imports
 import xml.dom.minidom
@@ -215,10 +215,10 @@ if __name__ == "__main__":
     subDict[s1] = "1"
     subDict[s2] = "2"
     subDict[s3] = "3"
-    list = []
-    list.append(s1)
-    list.append(s2)
-    list.append(s3)
+    sllist = []
+    sllist.append(s1)
+    sllist.append(s2)
+    sllist.append(s3)
     
     print 'is s1 == r1 ', s1 == r1
     print 's1 is s1 ', s1 is s1
@@ -229,11 +229,11 @@ if __name__ == "__main__":
     print 'is s2 in subdir', s2 in subDict
     print 'is r1 in subdir', r1 in subDict
     print 'subdict hads key r1 ', r1 in subDict.keys()
-    print 'is s1 in the list ', s1 in list
+    print 'is s1 in the list ', s1 in sllist
     print 'is s1 r1', s1 is r1
 
-    list.remove(s3)
-    for i in list:
+    sllist.remove(s3)
+    for i in sllist:
         print i.name
     
     '''

@@ -1,15 +1,11 @@
 #-----------------------------------------------------------------------------
 # Name:        CertificateRepository.py
 # Purpose:     Cert management code.
-#
-# Author:      Robert Olson
-#
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.21 2004-08-25 17:13:59 turam Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.22 2004-09-10 03:58:53 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
-
 """
 Certificate management module.
 
@@ -27,9 +23,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.21 2004-08-25 17:13:59 turam Exp $"
-__docformat__ = "restructuredtext en"
-
+__revision__ = "$Id: CertificateRepository.py,v 1.22 2004-09-10 03:58:53 judson Exp $"
 
 from __future__ import generators
 
@@ -267,29 +261,21 @@ class CertificateRepository:
             os.mkdir(os.path.join(self.dir, "privatekeys"))
             os.mkdir(os.path.join(self.dir, "requests"))
             os.mkdir(os.path.join(self.dir, "certificates"))
-            #
             # Create the dbhash too.
-            #
-
             self.db = bsddb.hashopen(self.dbPath, 'n')
             self.db.sync()
         else:
-            #
             # Just check for directory existence now; we can/should
             # add more checks that the repo dir actually does contain
             # a valid repository.
-            #
-            
             if not os.path.isdir(self.dir):
                 raise RepoDoesNotExist
 
-            #
             # Look for other stuff too
-            #
-
             invalidRepo = 0
 
-            for mustExist in ('user_files', 'privatekeys', 'requests', 'certificates'):
+            for mustExist in ('user_files', 'privatekeys', 'requests',
+                              'certificates'):
                 if not os.path.isdir(os.path.join(self.dir, mustExist)):
                     invalidRepo = 1
 
@@ -311,10 +297,7 @@ class CertificateRepository:
                 except:
                     pass
 
-                #
                 # See if this might be an old-style DB hash (pre-python2.3)
-                #
-
                 if sys.version[:3] >= "2.3":
                     try:
                         import bsddb185
@@ -458,14 +441,12 @@ class CertificateRepository:
             m = re.match("(.*).pem", f)
             if m:
                 p = os.path.join(self.dir, "privatekeys", f)
-                #
                 # Ugh. m.group(1) is returning unicode, and forcing more stuff
                 # later to unicode, and breaking the bsddb.
-                #
-                hash = str(m.group(1))
-                privatekeys[hash] = p
-                log.info("Found private key %s", hash)
-                self.RecoverPrivateKey(hash, p)
+                mhash = str(m.group(1))
+                privatekeys[mhash] = p
+                log.info("Found private key %s", mhash)
+                self.RecoverPrivateKey(mhash, p)
 
         #
         # Now scan the certificates directory. Recall that this is organized
@@ -510,18 +491,13 @@ class CertificateRepository:
 
         try:
             keyText = open(path).read()
-            pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, keyText, "")
+            crypto.load_privatekey(crypto.FILETYPE_PEM, keyText, "")
 
-            #
             # Not encrypted
-            #
             self.SetPrivatekeyMetadata(hash, "System.encrypted", "0")
 
         except crypto.Error:
-            #
             # Encrypted.
-            #
-            
             self.SetPrivatekeyMetadata(hash, "System.encrypted", "1")
 
         except IOError:
@@ -681,10 +657,7 @@ class CertificateRepository:
         the certificate, as that may require a passphrase.
         """
 
-        #
         # Load the cert into a pyOpenSSL data structure.
-        #
-
         cert = Certificate(certFile, keyFile, self)
         path = self._GetCertDirPath(cert)
         # print "Would put cert in dir ", path
@@ -782,23 +755,17 @@ class CertificateRepository:
                 #print "Modulus match: ", pkey.get_modulus()
                 pass
 
-        #
         # Preliminary checks successful. We can go ahead and import.
         #
         # Import the private key first, so that if we get an exception
         # on the passphrase we're not left with intermediate state.
         # (aie, transactions anyone?)
-        #
-
         if pkey is not None:
             self._ImportPrivateKey(pkey, passphrase)
 
         self._ImportCertificate(cert, path)
 
-        #
         # Import done, set the metadata about the cert.
-        #
-
         cert.SetMetadata("System.importTime", str(time.time()))
         cert.SetMetadata("System.certImportedFrom", certFile)
         if keyFile:
@@ -817,63 +784,49 @@ class CertificateRepository:
 
         """
 
-        #
         # The certificate wrapper class we use in this module
         # requires that the certificate be loaded from a file.
-        #
-
-        io = cStringIO.StringIO(crypto.dump_certificate(crypto.FILETYPE_PEM, certobj))
+        io = cStringIO.StringIO(crypto.dump_certificate(crypto.FILETYPE_PEM,
+                                                        certobj))
         cert = Certificate(None, certHandle = io)
         io.close()
 
         path = self._GetCertDirPath(cert)
         # print "Would put cert in dir ", path
 
-        #
         # Double check that someone's not trying to import a
         # globus proxy cert.
-        #
-
         if cert.IsGlobusProxy():
             raise RepoInvalidCertificate, "Cannot import a Globus proxy certificate"
 
-        #
         # If the path already exists, we already have this (uniquely named)
         # certificate.
-        #
-
         if os.path.isdir(path):
             raise RepoInvalidCertificate, "Certificate already in repository at %s" % (path)
-        #
+
         # Load the private key. This will require getting the
         # passphrase for the key. Do that here, so we can pass
         # that passphrase down to the importPrivateKey call
         # so it is imported with the same passphrase.
         #
         # We try to load the key without a passphrase first.
-        #
 
         if pkey:
-            #
             # Doublecheck that the pubkey modulus on the
             # certificate we're importing matches hte
             # modulus on this private key. Otherwise,
             # they're not a matching pair.
-            #
-
             if pkey.get_modulus() != cert.GetModulus():
                 raise Exception, "Private key does not match certificate"
             else:
                 #print "Modulus match: ", pkey.get_modulus()
                 pass
 
-        #
         # Preliminary checks successful. We can go ahead and import.
         #
         # Import the private key first, so that if we get an exception
         # on the passphrase we're not left with intermediate state.
         # (aie, transactions anyone?)
-        #
 
         if pkey is not None:
             passphrase = passphraseCB(0)
@@ -887,42 +840,26 @@ class CertificateRepository:
 
         cert.SetMetadata("System.importTime", str(time.time()))
         cert.SetMetadata("System.certImportedFrom", certFile)
-        if keyFile:
-            cert.SetMetadata("System.keyImportedFrom", keyFile)
-            cert.SetMetadata("System.hasKey", "1")
-        else:
-            cert.SetMetadata("System.hasKey", "0")
+        cert.SetMetadata("System.hasKey", "0")
 
         return CertificateDescriptor(cert, self)
             
     def ImportRequestedCertificate(self, certFile, passphraseCB = None):
         """
         Import a certificate that we earlier issued a request for.
-
         """
 
-        #
         # Load the cert into a pyOpenSSL data structure.
-        #
-
         cert = Certificate(certFile, repo = self)
         path = self._GetCertDirPath(cert)
-        # print "Would put cert in dir ", path
 
-        #
         # If the path already exists, we already have this (uniquely named)
         # certificate.
-        #
-
         if os.path.isdir(path):
             raise RepoInvalidCertificate, "Certificate already in repository at %s" % (path)
 
-        #
         # Check to see that we have a private key already for this cert.
-        #
-
         mhash = cert.GetModulusHash()
-
         pkeyPath = self.GetPrivateKeyPath(mhash)
 
         log.debug("Importing requested certificate subj=%s path=%s",
@@ -933,16 +870,10 @@ class CertificateRepository:
             log.error("we don't have a private key for this certificate")
             raise RepoInvalidCertificate("No private key exists for this certificate")
 
-        #
         # Preliminary checks successful. We can go ahead and import.
-        #
-
         self._ImportCertificate(cert, path)
 
-        #
         # Import done, set the metadata about the cert.
-        #
-
         cert.SetMetadata("System.importTime", str(time.time()))
         cert.SetMetadata("System.certImportedFrom", certFile)
         cert.SetMetadata("System.hasKey", "1")
@@ -978,11 +909,11 @@ class CertificateRepository:
 
         desc = CertificateRequestDescriptor(req, self)
 
-        hash = desc.GetModulusHash()
+        mhash = desc.GetModulusHash()
 
         path = os.path.join(self.dir,
                             "requests",
-                            "%s.pem" % (hash))
+                            "%s.pem" % (mhash))
 
         log.info("_ImportCertificateRequest writing to %s", path)
         fh = open(path, 'w')
@@ -1014,26 +945,24 @@ class CertificateRepository:
         #
 
         dig = md5.new(pkey.get_modulus())
-        hash = dig.hexdigest()
+        hhash = dig.hexdigest()
 
-        path = self.GetPrivateKeyPath(hash)
+        path = self.GetPrivateKeyPath(hhash)
         
         log.info("_ImportPrivateKey importing pkey to %s", path)
-        #
-        # If passwdCB is none, don't encrypt.
-        #
 
+        # If passwdCB is none, don't encrypt.
         if passwdCB is None:
             pktext = crypto.dump_privatekey(crypto.FILETYPE_PEM,
                                             pkey)
-            self.SetPrivatekeyMetadata(hash, "System.encrypted", "0")
+            self.SetPrivatekeyMetadata(hhash, "System.encrypted", "0")
 
         else:
             pktext = crypto.dump_privatekey(crypto.FILETYPE_PEM,
                                             pkey,
                                             "DES3",
                                             passwdCB)
-            self.SetPrivatekeyMetadata(hash, "System.encrypted", "1")
+            self.SetPrivatekeyMetadata(hhash, "System.encrypted", "1")
             
         fh = open(path, 'w')
         fh.write(pktext)
@@ -1206,9 +1135,9 @@ class CertificateRepository:
         Remove the specificed certificate request from the repository.
         """
 
-        hash = req.GetModulusHash()
+        mhash = req.GetModulusHash()
 
-        path = os.path.join(self.dir, "requests", "%s.pem" % (hash))
+        path = os.path.join(self.dir, "requests", "%s.pem" % (mhash))
 
         try:
             os.unlink(path)
@@ -1219,7 +1148,7 @@ class CertificateRepository:
         # Remove any metadata.
         #
 
-        metaPrefix = "|".join(["request", hash])
+        metaPrefix = "|".join(["request", mhash])
 
         try:
             for key in self.db.keys():
@@ -1285,8 +1214,8 @@ class CertificateRepository:
 
         reqRE = re.compile("^.*\.pem$")
         files = filter(reqRE.search, files)
-        for file in files:
-            path = os.path.join(reqDir, file)
+        for fileN in files:
+            path = os.path.join(reqDir, fileN)
             if os.path.isfile(path):
 
                 try:
@@ -1681,11 +1610,11 @@ class Certificate:
         return hashkey
 
     def GetFilePath(self, filename):
-        dir = os.path.join(self.repo._GetCertDirPath(self), "user_files")
-        if not os.path.isdir(dir):
-            log.debug("GetFilePath: create %s", dir)
-            os.mkdir(dir)
-        return os.path.join(dir, filename)
+        dirN = os.path.join(self.repo._GetCertDirPath(self), "user_files")
+        if not os.path.isdir(dirN):
+            log.debug("GetFilePath: create %s", dirN)
+            os.mkdir(dirN)
+        return os.path.join(dirN, filename)
 
     def GetMetadata(self, key):
         hashkey = self._GetMetadataKey(key)
@@ -1740,8 +1669,8 @@ class Certificate:
         Returns a tuple (type, fingerprint)
         """
         
-        (type, fp) = self.cert.get_fingerprint()
-        return type, string.join(map(lambda a: "%02X" % (a), fp), ":")
+        (ctype, fp) = self.cert.get_fingerprint()
+        return ctype, string.join(map(lambda a: "%02X" % (a), fp), ":")
 
     def GetVerboseText(self):
         fmt = ""
@@ -1753,8 +1682,8 @@ class Certificate:
         fmt += "Not valid before: %s\n" % (self.GetNotValidBeforeText())
         fmt += "Not valid after: %s\n" %  (self.GetNotValidAfterText())
 
-        (type, fp) = cert.get_fingerprint()
-        fmt += "%s Fingerprint: %s\n"  % (type,
+        (ctype, fp) = cert.get_fingerprint()
+        fmt += "%s Fingerprint: %s\n"  % (ctype,
                                           string.join(map(lambda a: "%02X" % (a), fp), ":"))
         fmt += "Certificate location: %s\n" % (self.GetPath(),)
         
@@ -1777,8 +1706,8 @@ class Certificate:
         fmt += "<b>Not valid before:</b> %s<br>\n" % (self.GetNotValidBeforeText())
         fmt += "<b>Not valid after:</b> %s<br>\n" %  (self.GetNotValidAfterText())
 
-        (type, fp) = cert.get_fingerprint()
-        fmt += "<b>%s Fingerprint:</b> %s<br>\n"  % (type,
+        (ctype, fp) = cert.get_fingerprint()
+        fmt += "<b>%s Fingerprint:</b> %s<br>\n"  % (ctype,
                                           string.join(map(lambda a: "%02X" % (a), fp), ":"))
         fmt += "<b>Certificate location:</b> %s<br>\n" % (self.GetPath(),)
         pkeyloc = self.GetKeyPath()
@@ -1848,7 +1777,7 @@ def utc2tuple(t):
         month = t[2:4]
         day = t[4:6]
         hour = t[6:8]
-        min = t[8:10]
+        minute = t[8:10]
         sec = t[10:12]
         zone = t[12]
         if zone != "Z":
@@ -1859,7 +1788,7 @@ def utc2tuple(t):
         month = t[4:6]
         day = t[6:8]
         hour = t[8:10]
-        min = t[10:12]
+        minute = t[10:12]
         sec = t[12:14]
         zone = t[14]
         if zone != "Z":
@@ -1867,7 +1796,8 @@ def utc2tuple(t):
     else:
         raise ValueError("utc2tuple received unknown timeformat (unknown length): " + t)
     
-    ttuple = (year, int(month), int(day), int(hour), int(min), int(sec), 0, 0, -1)
+    ttuple = (year, int(month), int(day), int(hour), int(minute),
+              int(sec), 0, 0, -1)
     return ttuple
 
 def utc2time(t):

@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.12 2004-04-09 18:39:03 judson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.13 2004-09-10 03:58:54 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 AG Hosting environment tools.
 """
-__revision__ = "$Id: __init__.py,v 1.12 2004-04-09 18:39:03 judson Exp $"
+__revision__ = "$Id: __init__.py,v 1.13 2004-09-10 03:58:54 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
@@ -112,9 +112,9 @@ def IdFromURL(URL):
     """
     """
     path = PathFromURL(URL)
-    id = path.split('/')[-1]
+    oid = path.split('/')[-1]
 
-    return id
+    return oid
 
 # Set the default
 SetHostingImpl(__hostingImpl)

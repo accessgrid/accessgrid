@@ -1,19 +1,15 @@
 #-----------------------------------------------------------------------------
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
-#
-# Author:      Robert Olson
-#
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.73 2004-09-09 22:12:12 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.74 2004-09-10 03:58:53 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.73 2004-09-09 22:12:12 turam Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: DataStore.py,v 1.74 2004-09-10 03:58:53 judson Exp $"
 
 import os
 import time
@@ -379,9 +375,9 @@ class DataStore:
 
         # Get files in data store path
         files = os.listdir(self.path)
-        for file in files:
-            stat = os.stat(os.path.join(self.path,file))
-            fileList.append( (file,stat.st_size) )
+        for fileN in files:
+            stat = os.stat(os.path.join(self.path,fileN))
+            fileList.append( (fileN,stat.st_size) )
 
         return fileList
 
@@ -570,13 +566,8 @@ class DataStore:
         raise a FileNotFound exception.
 
         """
-        # print "OpenFile: dn=%s filename=%s" % (dn, filename)
-
-        #
+        log.debug("Get download: id='%s' path='%s'", id_token, url_path)
         # Authorization check for dn goes here
-        #
-
-        
         path = os.path.join(self.pathname, url_path)
         
         log.debug("DataStore::GetDownloadFilename: path %s, pathname: %s, url_path: %s"
@@ -600,6 +591,8 @@ class DataStore:
         Need to test to see if the client is currently logged into the venue.
         """
 
+        log.debug("CanUploadFile: dn %s fi %s", dn, file_info)
+        
         filename = file_info['name']
 
         self.cbLock.acquire()
@@ -624,11 +617,9 @@ class DataStore:
         destination for a file upload.
 
         """
+        log.debug("GetUploadFilename: dn %s fi %s", dn, file_info)
 
-        #
         # First verify that we have a state=pending description in the venue.
-        #
-
         filename = file_info['name']
         
         self.cbLock.acquire()
@@ -1583,6 +1574,7 @@ class GSIHTTPTransferServer(io.GSITCPSocketServer, TransferServer):
     def stop(self):
         self.done = 1
         for workerNum in range(self.numThreads):
+            log.debug("Quitting thread %d", workerNum)
             self.requestQueue.put("quit")
         self.server_close()
 
@@ -1849,11 +1841,11 @@ class HTTPUploadEngine:
 
         log.debug("Upload: check files")
 
-        for file in file_list:
-            if not os.path.exists(file):
-                raise FileNotFound(file)
-            elif not os.path.isfile(file):
-                raise NotAPlainFile(file)
+        for fileN in file_list:
+            if not os.path.exists(fileN):
+                raise FileNotFound(fileN)
+            elif not os.path.isfile(fileN):
+                raise NotAPlainFile(fileN)
 
         log.debug("Upload: create manifest")
         (manifest, file_info) = self.constructManifest(file_list)

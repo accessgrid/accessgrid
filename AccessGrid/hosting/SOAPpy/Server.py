@@ -2,7 +2,7 @@
 # Name:        Server.py
 # Purpose:     
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.18 2004-07-22 14:56:06 turam Exp $
+# RCS-ID:      $Id: Server.py,v 1.19 2004-09-10 03:58:54 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@ SOAPpy server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.18 2004-07-22 14:56:06 turam Exp $"
+__revision__ = "$Id: Server.py,v 1.19 2004-09-10 03:58:54 judson Exp $"
 
 # External imports
 import urlparse
@@ -151,7 +151,7 @@ class _Server:
                     del self._serving[u]
         try:
             self._server.unregisterObject(obj, namespace, path)
-        except KeyError, e:
+        except KeyError:
             log.exception("Couldn't remove object from SOAP Server: %s", obj)
             raise 
 

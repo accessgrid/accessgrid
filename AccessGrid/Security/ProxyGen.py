@@ -1,11 +1,8 @@
 #-----------------------------------------------------------------------------
 # Name:        ProxyGen.py
 # Purpose:     Proxy Generation utitities.
-#
-# Author:      Robert D. Olson, Ivan R. Judson
-#
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.19 2004-05-27 23:11:33 olson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.20 2004-09-10 03:58:53 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,8 +11,7 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.19 2004-05-27 23:11:33 olson Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: ProxyGen.py,v 1.20 2004-09-10 03:58:53 judson Exp $"
 
 import sys
 import os
@@ -28,10 +24,8 @@ from pyGlobus import security, io
 from AccessGrid import Log
 from AccessGrid import Platform
 
-#
 # Try importing this. We ensure further below that
 # we won't try to use it if it wasn't imported.
-#
 
 try:
     from pyGlobus import sslutilsc
@@ -194,7 +188,6 @@ def CreateGlobusProxyGPI(passphrase, certFile, keyFile, certDir, outFile,
 
                 err_elts = l.strip().split(":")
                 if len(err_elts) == 7:
-                    err_num = err_elts[1]
                     err_str = err_elts[4]
 
                     if err_str == "wrong pass phrase":
@@ -507,8 +500,6 @@ def CreateGlobusProxyProgrammatic_GT24(passphrase, certFile, keyFile, certDir,
 
         err_str = e[0]
         
-        error_match = None
-
         for etype in error_types:
             m = re.search(etype[0], err_str, re.DOTALL)
 
@@ -517,7 +508,7 @@ def CreateGlobusProxyProgrammatic_GT24(passphrase, certFile, keyFile, certDir,
 
         raise GridProxyInitError
 
-    except Exception, e:
+    except Exception:
         log.debug("grid_proxy_init raised unknown exception")
         raise
 
@@ -532,25 +523,18 @@ def IsGlobusProxy_GT24(certObj):
         attrstring, attrs = security.grid_proxy_info(0, certObj.GetPath())
         return attrs['type'] is not None
     
-    except security.GSIException, ex:
-        #
+    except security.GSIException:
         # If there was an error, it's not a proxy.
-        #
         return None
 
 if haveOldGlobus:
-
     if Platform.IsWindows():
         CreateGlobusProxy = CreateGlobusProxyProgrammatic
     else:
         CreateGlobusProxy = CreateGlobusProxyGPI
     IsGlobusProxy = IsGlobusProxy_Generic
-
 else:
-    #
     # We're using a GT24 pyglobus; see if we have the very latest changes.
-    #
-
     import pyGlobus
     if hasattr(pyGlobus, "gsic"):
 	from pyGlobus import gsic

@@ -1,11 +1,8 @@
 #-----------------------------------------------------------------------------
 # Name:        Tools.py
 # Purpose:     
-#
-# Author:      Ivan R. Judson
-#
 # Created:     2003/08/02
-# RCS-ID:      $Id: Tools.py,v 1.9 2004-04-06 18:06:44 eolson Exp $
+# RCS-ID:      $Id: Tools.py,v 1.10 2004-09-10 03:58:54 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,11 +13,13 @@ This module defines methods for making serialization and other things simpler
 when using the SOAPpy module.
 """
 
-__revision__ = "$Id: Tools.py,v 1.9 2004-04-06 18:06:44 eolson Exp $"
+__revision__ = "$Id: Tools.py,v 1.10 2004-09-10 03:58:54 judson Exp $"
 
-# External imports
 import sys
 import types
+
+# External imports
+from SOAPpy.Types import structType, typedArrayType, arrayType
 
 def Decorate(obj):
     """
@@ -55,10 +54,6 @@ def Decorate(obj):
 
     return retval
 
-# External imports
-from SOAPpy.Types import structType, typedArrayType, arrayType
-from types import DictType
-
 def Reconstitute(obj):
     """
     This method takes an object that has been sent across the network
@@ -80,7 +75,7 @@ def Reconstitute(obj):
                 setattr(f, ok, Reconstitute(obj[ok]))
         else:
             f = obj
-    elif isinstance(obj, DictType):
+    elif isinstance(obj, types.DictType):
         if obj.has_key("ag_class"):
             k = obj["ag_class"]
             del obj["ag_class"]

@@ -58,12 +58,12 @@ class NetworkServicesManager:
             self.log.error('UnRegisterService: Missing network service parameter, failed to remove service.')
             raise Exception, 'Missing network service description parameter'
             
-        id = networkServiceDescription.url
+        nid = networkServiceDescription.url
 
-        if self.__services.has_key(id):
+        if self.__services.has_key(nid):
             self.log.debug('UnRegisterService: Unregister service %s'
                            %networkServiceDescription.ToString())
-            del self.__services[id]
+            del self.__services[nid]
         else:
             self.log.exception('UnRegisterService: Service %s is already unregistered'
                                %networkServiceDescription.url)

@@ -19,7 +19,7 @@ class ServiceCapability:
     RTP_PAYLOAD_TYPE = 'RTP_PAYLOAD_TYPE'
     RTP_PROFILE = 'RTP_PROFILE'
        
-    def __init__(self, name, role, type, config):
+    def __init__(self, name, role, stype, config):
         '''
         Initiates the class.
 
@@ -32,7 +32,7 @@ class ServiceCapability:
 
         self.__name = name
         self.role = role
-        self.type = type
+        self.type = stype
         self.parms = {}
         self.__config = config
             
@@ -60,7 +60,7 @@ class ServiceCapability:
         capabilityElements = domP.getElementsByTagName("General")
         name = capabilityElements[0].attributes["name"].value
         role = capabilityElements[0].attributes["role"].value
-        type = capabilityElements[0].attributes["type"].value
+        stype = capabilityElements[0].attributes["type"].value
 
         configElements = domP.getElementsByTagName("Configuration")
         
@@ -68,7 +68,7 @@ class ServiceCapability:
             for key in element.attributes.keys():
                 config[str(key)] = str(element.attributes[key].value)
 
-        return ServiceCapability(name, role, type, config)
+        return ServiceCapability(name, role, stype, config)
 
     # Makes it possible to access the method without an instance.
     CreateServiceCapability = staticmethod(CreateServiceCapability)
@@ -200,7 +200,7 @@ class ServiceCapability:
         '''
         return self.role
 
-    def SetType(self, type):
+    def SetType(self, stype):
         '''
         Set the type of this capability
 
@@ -208,7 +208,7 @@ class ServiceCapability:
 
         * type * the type of this capability (audio/video/text)
         '''
-        self.type = type
+        self.type = stype
 
     def GetType(self):
         '''

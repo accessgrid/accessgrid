@@ -2,14 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.168 2004-09-07 20:37:04 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.169 2004-09-10 03:58:53 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.168 2004-09-07 20:37:04 turam Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: VenueServer.py,v 1.169 2004-09-10 03:58:53 judson Exp $"
 
 # Standard stuff
 import sys
@@ -146,6 +145,24 @@ class VenueServer(AuthorizationMixIn):
         - *configFile* the filename of a configuration file for this venue server.
 
         """
+        # Set attributes
+        self.eventPort = -1
+        self.textPort = -1
+        self.dataPort = -1
+        self.encryptAllMedia = 1
+        self.houseKeeperFrequency = 300
+        self.persistenceFilename = "VenueServer.dat"
+        self.serverPrefix = "VenueServer"
+        self.venuePathPrefix = "Venues"
+        self.dataStorageLocation = "Data"
+        self.backupServer = ''
+        self.addressAllocationMethod = MulticastAddressAllocator.RANDOM
+        self.baseAddress = MulticastAddressAllocator.SDR_BASE_ADDRESS
+        self.addressMask = MulticastAddressAllocator.SDR_MASK_SIZE
+        self.performanceReportFile = ''
+        self.performanceReportFrequency = 0
+        self.authorizationPolicy = None
+        
         # Basic variable initializations
         self.perfFile = None
 
@@ -258,12 +275,12 @@ class VenueServer(AuthorizationMixIn):
         log.debug("CFG: Default Venue: %s", self.defaultVenue)
         if self.defaultVenue != '' and self.defaultVenue in self.venues.keys():
             log.debug("Setting default venue.")
-            self.SetDefaultVenue(self.defaultVenue)
         else:
             log.debug("Creating default venue")
-            self.defaultVenue = ''
             uri = self.AddVenue(self.defaultVenueDesc)
-            v = self.hostingEnvironment.FindObjectForURL(uri)
+            self.defaultVenue = self.hostingEnvironment.FindObjectForURL(uri)
+
+        self.SetDefaultVenue(self.defaultVenue)
         # End of Loading of Venues from persistence
         
         # The houseKeeper is a task that is doing garbage collection and
@@ -294,7 +311,7 @@ class VenueServer(AuthorizationMixIn):
 
                 self.houseKeeper.AddTask(self.Report,
                                          int(self.performanceReportFrequency))
-            except Exception, e:
+            except Exception:
                 log.exception("Error starting reporting thread.")
                 self.perfFile = None
         else:
@@ -533,7 +550,7 @@ class VenueServer(AuthorizationMixIn):
                try:
                   self.authManager.ImportPolicy(pol)
                   setattr(self, option, pol)
-               except InvalidAuthorizationPolicy:
+               except:
                   log.exception("Invalid authorization policy import")
                   setattr(self, option, config[k])
             elif option == "administrators" and len(config[k]) > 0:
@@ -1060,7 +1077,7 @@ class VenueServer(AuthorizationMixIn):
         """
         return self.multicastAddressAllocator.GetAddressMask( )
 
-    def DumpDebugInfo(self,flag=None):
+    def DumpDebugInfo(self):
         """
         Dump debug info.  The 'flag' argument is not used now,
         but could be used later to control the dump
@@ -1081,6 +1098,8 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         The authorization callback. We should be able to implement this
         just once and remove a bunch of the older code.
         """
+        log.debug("Authorizing with %s, %s", args, *kw)
+        
         if self.impl.servicePtr.GetOption("insecure"):
             return 1
 
@@ -1269,7 +1288,7 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         *subjStr* The DN of the administrator added.
         """
         try:
-            self.impl.authManager.AddSubjectToRole(subStr,
+            xs = self.impl.authManager.AddSubjectToRole(subjStr,
                                                Role.Administrators.GetName())
             return xs
         except:
@@ -1432,7 +1451,7 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         """
         try:
             self.impl.RegenerateEncryptionKeys()
-        except Exception, e:
+        except Exception:
             log.exception("Failed to regenerate all encryption keys.")
             raise
             

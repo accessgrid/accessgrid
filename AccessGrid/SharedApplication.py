@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.20 2004-09-09 22:12:12 turam Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.21 2004-09-10 03:58:53 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,11 +14,11 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.20 2004-09-09 22:12:12 turam Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.21 2004-09-10 03:58:53 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
-from AccessGrid import GUID
+from AccessGrid.GUID import GUID
 from AccessGrid import Events
 from AccessGrid.Events import Event
 from AccessGrid.Descriptions import ApplicationDescription, AppParticipantDescription, AppDataDescription
@@ -99,7 +99,7 @@ class SharedApplication(AuthorizationMixIn):
         self.channels = []
         self.app_data = {}
         if id == None:
-            self.id = str(GUID.GUID())
+            self.id = str(GUID())
         else:
             self.id = id
 
@@ -224,8 +224,8 @@ class SharedApplication(AuthorizationMixIn):
         # Takes a client profile until venue client has been refactored
         # to include  a connection ID.
 
-        public_id = str(GUID.GUID())
-        private_id = str(GUID.GUID())
+        public_id = str(GUID())
+        private_id = str(GUID())
 
         # Create participant description
         participant = AppParticipantDescription(public_id, clientProfile,
@@ -410,7 +410,7 @@ class SharedApplication(AuthorizationMixIn):
         Returns the channel ID and the location of its event service.
         """
         
-        channel_id = str(GUID.GUID())
+        channel_id = str(GUID())
 
         self.channels.append(channel_id)
 
@@ -475,6 +475,8 @@ class SharedApplicationI(SOAPInterface, AuthorizationIMixIn):
     def _authorize(self, *args, **kw):
         """
         """
+
+        log.debug("Authorizing %s %s", args, *kw)
         
         if self.impl.servicePtr.GetOption("insecure"):
             return 1
