@@ -1,0 +1,182 @@
+====================================
+Shared Application Changes for 2.1.3 
+====================================
+
+: version $Revision: 1.1 $
+: author: Susanne Lefvert <lefvert@mcs.anl.gov>
+: status: Draft
+
+Abstract
+========
+
+    This enhancement proposal includes changes and additions to the shared application implementation and interface currently available in AGTk 2.0.  The suggested modifications address several issues that will enhance the shared application infrastructure in the toolkit. 
+
+
+Application Monitor
+===================
+
+Overview
+----------
+
+    To increase usability of shared applications, it would be beneficial to be able to create a monitor that remotely can connect to a shared application and display application state including name, description, and data as well as current participants and their status (see feature request in Bugzilla, [1]).  Ideally, the Application Monitor would also include event logging that would make it possible to display who is doing what, for example, who is changing a web page in the shared browser. 
+
+
+Design
+-------
+
+    In order to display participant and application information, this have to be stored somewhere accessible for the monitor.  The monitor also needs to get updated whenever the application state is changed.  With the AppService.py class already containing application state and methods to retrieve the state, minor additions to the AppService would allow us to use this interface for monitoring purposes. 
+
+Methods:
+''''''''
+
+    **Modifications to SharedApps.py interface:**
+
+    * void Join(ClientProfile = None)
+    
+    **Additions to SharedApps.py interface:**
+
+    * [ParticipantDescription] GetParticipants()
+    * void SetParticipantStatus(privateId, statusString)
+    * {key:value} GetAllData()
+    * AppState GetState()
+
+New Events:
+'''''''''''
+
+    * PARTICIPANT_JOIN (distributed in Join method)
+    * PARTICIPANT_LEAVE (distributed in Leave method)
+    * UPDATE_PARTICIPANT_STATUS (distributed in SetParticipantStatus method)
+    * SET_DATA (distributed in SetData method)
+        
+New Descriptions:
+'''''''''''''''''
+
+    AppParticipantDescription(appId, clientProfile, status)
+
+        * *appId* - unique ID for the application client
+        * *clientProfile* - profile used by application client
+        * *status* - current status for client (string)
+
+    AppDataDescription(appId, key, value)
+    
+        * *appId* - unique ID of client sending this data
+        * *key* - data key
+        * *value* - data value
+        
+
+Reference Implementation
+-------------------------
+    Sample code can be found at [2].  
+
+Relevant classes:
+'''''''''''''''''
+    * Descriptions.py - New descriptions
+    * Events.py - New events
+    * AppService.py - Added and modified methods
+    * AppMonitor.py - UI prototype
+    * SharedBrowser.py - Client profile added to Join method
+
+Rationale
+----------
+    By adding a ClientProfile as parameter to the Join method, information about participants can be saved in the AppService.py class.  Even though the ClientProfile includes a unique id, the private application ID created in the Join method will still act as unique identifier for application clients.
+
+    **Why not use the private ID from the client profile as unique app ID?**
+
+    1. If the private ID found in the ClientProfile would be used as 
+       unique application ID, a participant can not open more than one shared 
+       application client successfully at the same time.  
+  
+    2. To preserve backwards compatibility, the clientProfile parameter
+       in Join can be set to None. Another private ID is then necessary to 
+       identify the client.
+    
+    3. The application monitor should be able to run independently, invisible 
+       for people participating in the application session.  To achieve this, the 
+       monitor would join with ClientProfile set to None.  Another private ID is 
+       then necessary to identify the participant.    
+
+    **Why not use AppParticipantDescription/AppDataDescription as parameters instead of privateId/(dataKey,dataValue)?**
+
+    To preserve backwards compatibility.  For example, the Join method would then return an AppParticipantDescription instead of privateId and that would break old shared applications.
+
+    **Why creating new descriptions?**
+    
+    The application service has to notify when state information changes in order for a monitor to update properly. Events that are distributed from the event service take a data parameter that can be used for this purpose.  Data could be sent as tuples, however, it is easier to document more complex messages that are exchanged between SOAP connections if they are created as description classes.
+
+Interoperability Issues
+------------------------
+
+    Already implemented shared applications will not be affected by the changes described.  However, to be displayed as a participant in an application monitor, the shared application has to include a ClientProfile when calling the Join method.  Also, if more status values other than 'connected' are desirable for participants, calls to the SetParticipantStatus method have to be added.
+
+
+Open Issues
+-----------
+
+    Should new events be introduced in Events.py? 
+
+    Should new descriptions be added to Descriptions.py?
+
+
+Application distribution information
+=====================================
+
+Overview
+---------
+
+    If a venue participant does not have a shared application installed, he or she should be able to find a URL to the shared application installer, possibly in the properties of the application (see feature request in Bugzilla, [3]). This would allow a participant to download and install an application to use in the venue.
+
+Design
+-------
+
+    Information about shared applications are summarized in the **<application name>.app** file. It would be appropriate to extend that file to include installer location that would get loaded into the description of the application.  The ApplicationDescription class currently has an unused **description** parameter that is shown in the **Properties** dialog of an application and could be used for this purpose.  By adding a description field in the .app file, the developer can decide which information to include, for example installation URL, author, and so forth.  This solution would also require minor UI changes to the properties dialog so that random length descriptions always are visible.
+
+    **Example -  SharedPresentation.app file:**
+
+    ::
+
+        [application]
+
+        name = Shared Presentation
+        mimetype = application/x-ag-shared-presentation
+        extension = sharedpresentation
+        files = SharedPresentation.py
+        description = You can download application from: http://www.install_url.com
+
+        [commands]
+        Open = %(python)s SharedPresentation.py -v %(venueUrl)s -a %(appUrl)s
+ 
+
+Add Application User Scenario
+==============================
+
+Overview
+---------
+    Current user scenario for adding applications seem confusing to participants. It is easy to add several shared applications that are named the same, consequently making it hard to know which session to join (see feature request in Bugzilla, [4]).  
+
+Design
+-------
+    By allowing participants to re-name a shared application before adding it to the **Application** heading, the separation of applications would be more obvious.  This is a simple UI fix that would let a participant input the application name and change the name parameter in the ApplicationDescription that is created and distributed.
+
+
+References
+===========
+    .. [1] http://bugzilla.mcs.anl.gov/accessgrid/show_bug.cgi?id=322
+
+    .. [2] Reference implementation: http://www-unix.mcs.anl.gov/~lefvert/AGEP/AGEP.html (AGPE Shared Application Changes for AGTk 2.0 - App Monitor)
+    
+    .. [3] http://bugzilla.mcs.anl.gov/accessgrid/show_bug.cgi?id=317
+
+    .. [4] http://bugzilla.mcs.anl.gov/accessgrid/show_bug.cgi?id=311
+
+Copyright
+=========
+    This document falls under the AGTkPL.
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
