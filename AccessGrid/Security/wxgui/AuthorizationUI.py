@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.24 2004-07-30 17:00:23 binns Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.25 2004-07-30 17:05:05 binns Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.24 2004-07-30 17:00:23 binns Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.25 2004-07-30 17:05:05 binns Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -76,7 +76,7 @@ class AuthorizationUIPanel(wxPanel):
                                                     size = wxSize(400,200))
         self.rolePanel = wxPanel(self.leftSashWindow ,  wxNewId(),
                                  style = wxSUNKEN_BORDER)
-        self.roleTitle = wxStaticText(self.leftSashWindow, -1, "Roles", size=wxSize(100,-1), style=wxALIGN_LEFT)
+        self.roleTitle = wxStaticText(self.rolePanel, -1, "Roles", size=wxSize(100,-1), style=wxALIGN_LEFT)
         if IsOSX():
             self.roleTitle.SetFont(wxFont(12,wxNORMAL,wxNORMAL,wxBOLD))
         else:
