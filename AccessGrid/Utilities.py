@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.46 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.47 2003-09-18 14:55:06 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.46 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.47 2003-09-18 14:55:06 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -200,7 +200,7 @@ def GetLogText(maxSize, logFileName):
         #
         # Try to get text from the log file.
         #
-      
+              
         logFile = file(os.path.join(GetUserConfigDir(), logFileName))
         
         #
@@ -208,14 +208,17 @@ def GetLogText(maxSize, logFileName):
         # The read will now just include the end of the file with a maximum
         # of "maxSize" bytes
         #
+                   
         try:
             # If the file is smaller than "maxSize" this will fail
             # and the entire file will be read.
             logFile.seek(-maxSize, 2)
+           
         except:
-            pass
-        
-        text = logFile.read(maxSize) # text for error report
+            # Start from beginning of file again
+            logFile.seek(0)
+
+        text = logFile.read(maxSize) # text for error report             
         logFile.close()
     
     except Exception,e:
@@ -240,7 +243,7 @@ def GetLogText(maxSize, logFileName):
     
     todaysDate = time.strftime("%m/%d/%Y", time.localtime())
     dateIndex = text.find(str(todaysDate))
-
+    
     if dateIndex != -1:
         #
         # If today's date is found, send log info starting from that index.
