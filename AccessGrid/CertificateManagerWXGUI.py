@@ -52,8 +52,14 @@ class CertificateManagerWXGUI(CertificateManagerUserInterface):
         return certMenu
 
     def OpenTrustedCertDialog(self, event, win):
-        dlg = TrustedCertDialog(win, -1, "View trusted certificates",
-                                self.certificateManager.trustedCARepo)
+        if self.certificateManager.trustedCARepo:
+            dlg = TrustedCertDialog(win, -1, "View trusted certificates",
+                                    self.certificateManager.trustedCARepo)
+        else:
+            dlg = wxMessageDialog(self,
+                                  "System CA certificate directory %s not found" % (self.certificateManager.systemCACertDir),
+                                  "Certificate directory not available",
+                                  style = wxOK)
         dlg.ShowModal()
         dlg.Destroy()
 
