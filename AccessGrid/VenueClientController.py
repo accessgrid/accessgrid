@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.4 2004-02-27 19:15:07 judson Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.5 2004-03-01 20:14:21 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
@@ -647,12 +647,12 @@ class VenueClientController:
         *name* User-specified name of the application to start
         *app* ApplicationDescription of the application we want to start
         """
-        log.debug("VenueClientFrame.StartApp: Creating application: %s" % app.name)
+        log.debug("VenueClientFrame.StartApp: Creating application: %s" % appDesc.name)
 
         appName = appDesc.name + ' - ' + name
         self.__venueClient.CreateApplication( appName,
                                             appDesc.description,
-                                            app.mimeType )
+                                            appDesc.mimeType )
               
     def RunApplicationCB(self, appDesc, cmd='Open'):
         """
