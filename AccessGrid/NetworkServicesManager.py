@@ -34,14 +34,14 @@ class NetworkServicesManager:
             self.log.error("RegisterService: Missing network service parameter, failed to add service.")
             raise Exception, 'Missing network service parameter, failed to add service.'
                            
-        if self.__services.has_key(nsd.url):
+        if self.__services.has_key(nsd.uri):
             self.log.error('RegisterService: A service at url %s is already present, failed to add service.'
-                           %nsd.url)
-            raise Exception, 'A service at url %s is already present, failed to add service.'%nsd.url
+                           %nsd.uri)
+            raise Exception, 'A service at url %s is already present, failed to add service.'%nsd.uri
         
         self.log.debug('RegisterService: Register network service %s'
                        %nsd.ToString())
-        self.__services[nsd.url] = nsd
+        self.__services[nsd.uri] = nsd
         
         return nsd
         
@@ -61,13 +61,14 @@ class NetworkServicesManager:
         nid = networkServiceDescription.url
 
         if self.__services.has_key(nid):
+
             self.log.debug('UnRegisterService: Unregister service %s'
                            %networkServiceDescription.ToString())
             del self.__services[nid]
         else:
             self.log.exception('UnRegisterService: Service %s is already unregistered'
-                               %networkServiceDescription.url)
-            raise Exception, 'Service %s is already unregistered'%networkServiceDescription.url
+                               %networkServiceDescription.uri)
+            raise Exception, 'Service %s is already unregistered'%networkServiceDescription.uri
                 
     def ResolveMismatch(self, streamList, nodeCapabilities):
         '''
@@ -85,44 +86,45 @@ class NetworkServicesManager:
         * matchedStreams * a list of new streams that matches given node capabilities.
         
         '''
-        
+        self.log.debug('ResolveMismatch: Match streams to capabilities')
+               
         if not nodeCapabilities:
             self.log.error('ResolveMismatch: Missing node capabilities parameter.')
-            raise Exception, 'NetworkServicesManager.Match: Capability parameter is missing, can not complete matching'
+            raise Exception, 'NetworkServicesManager.ResolveMismatch: Capability parameter is missing, can not complete matching'
         
         if not streamList:
             self.log.error('ResolveMismatch: Missing stream list parameter.')
-            raise Exception, 'NetworkServicesManager.Match: Stream list parameter is missing, can not complete matching'
-            
-        self.log.debug('Match: Match streams to capabilities')
-       
+            raise Exception, 'NetworkServicesManager.ResolveMismatch: Stream list parameter is missing, can not complete matching'
+        
         matchedStreams = []
         
         # Returns a list containing tuple objects ([stream],[networkService]) that
         # describes a chain of services to use for a set of streams.
         if len(self.__services) > 0:
+            self.log.debug("ResolveMismatch: we have network services, use matcher")
             streamServiceList = self.__matcher.Match(streamList,
                                                      nodeCapabilities,
                                                      self.__services.values())
         else:
+            self.log.debug("ResolveMismatch: There are no network services available, ignore matching")
             streamServiceList = []
-            self.log.info('Match: There are no network services available.')
 
         # Resolve mismatches!
         for resolution in streamServiceList:
+            self.log.debug('ResolveMismatch: Start transform')
             streams = resolution[0]
             netServices = resolution[1]
             
             # Perform the chain of stream transformation.
             # streams -> net service -> net service -> net service -> streams
             for service in netServices:
-                netServiceProxy = AGNetworkServiceIW(service.url)
+                self.log.debug('ResolveMismatch: Call transform method for services running at %s'%service.uri)
+                netServiceProxy = AGNetworkServiceIW(service.uri)
 
                 try:
                     streams = netServiceProxy.Transform(streams)
-                
                 except:
-                    self.log.exception('Match: Transform for service %s failed'%service.ToString())
+                    self.log.exception('ResolveMismatch: Transform for service %s failed'%service.ToString())
                     streams = []
         
             # Add new streams to list
