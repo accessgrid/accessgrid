@@ -3,6 +3,6 @@ Name=Node Manager
 Comment=Manage your Access Grid Node
 TryExec=NodeManagement.py
 Exec=NodeManagement.py
-Icon=gnome-chat.png
+Icon=/usr/share/AccessGrid/ag.ico
 Terminal=0
 Type=Application
