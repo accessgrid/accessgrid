@@ -3,6 +3,7 @@
 ============================================================================
 
 Core Toolkit
+     - Build Test Suite
      - Move to New Authorization/Security Code
      - Format/Naming of hosting/*.py and hosting/pyGlobus/*.py
      - Consider renaming non-web service methods with _'s for somewhat
