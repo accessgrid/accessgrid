@@ -47,10 +47,12 @@
         <tr>
         <td>
         
-<a href="#ProcessForDisplay">ProcessForDisplay</a><br>
-<a href="#ProcessForSending">ProcessForSending</a><br>
+<a href="#Input">Input</a><br>
+<a href="#LocalEcho">LocalEcho</a><br>
+<a href="#Output">Output</a><br>
 <a href="#ProcessNetwork">ProcessNetwork</a><br>
 <a href="#Stop">Stop</a><br>
+<a href="#_RawOutput">_RawOutput</a><br>
 <a href="#__init__">__init__</a><br>
 
 
@@ -62,7 +64,7 @@
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="ProcessForDisplay"></a>&nbsp;
+                  <a name="Input"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -70,13 +72,13 @@
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">ProcessForDisplay&nbsp;</font>
+                <font color="#000000">Input&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-ProcessForDisplay ( self,  text )
+Input ( self,  event )
 
 </pre></font>
 
@@ -89,7 +91,7 @@ ProcessForDisplay ( self,  text )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="ProcessForSending"></a>&nbsp;
+                  <a name="LocalEcho"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -97,13 +99,40 @@ ProcessForDisplay ( self,  text )
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">ProcessForSending&nbsp;</font>
+                <font color="#000000">LocalEcho&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-ProcessForSending ( self,  event )
+LocalEcho ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Output"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">Output&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+Output ( self,  text )
 
 </pre></font>
 
@@ -170,6 +199,33 @@ Stop ( self )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="_RawOutput"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">_RawOutput&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+_RawOutput ( self,  string )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="__init__"></a>&nbsp;
                 </font>
             </th>
@@ -206,7 +262,7 @@ __init__ (
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 21 09:03:33 2003 by
+        on Thu Feb 27 07:37:21 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

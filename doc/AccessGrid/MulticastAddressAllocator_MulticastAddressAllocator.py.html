@@ -312,10 +312,11 @@ SetAddressAllocationMethod ( self,  method )
         <tr>
         <td>
         <font color="#000088"><pre>
-SetAddressMask ( self,  addressMask=None )
+SetAddressMask ( self,  addressMaskSize=24 )
 
 </pre></font>
 
+<p>These don't mean what they did before! IRJ-2002-2-22</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -369,7 +370,7 @@ SetBaseAddress ( self,  baseAddress )
 __init__ (
         self,
         baseAddress=None,
-        addressMask=None,
+        addressMaskSize=24,
         portBase=49152,
         )
 
@@ -392,7 +393,7 @@ __init__ (
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 21 09:03:33 2003 by
+        on Thu Feb 27 07:37:21 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

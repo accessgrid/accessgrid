@@ -47,14 +47,11 @@
         <tr>
         <td>
         
-<b>from</b> AccessGrid.AGParameter <b>import</b> *<br>
-<b>from</b> AccessGrid.MulticastAddressAllocator <b>import</b> MulticastAddressAllocator<br>
-<b>from</b> AccessGrid.hosting.pyGlobus.Utilities <b>import</b> GetHostname<br>
-<b>import</b> <a href="http://www.python.org/doc/current/lib/module-SimpleHTTPServer.html">SimpleHTTPServer</a><br>
-<b>import</b> <a href="http://www.python.org/doc/current/lib/module-SocketServer.html">SocketServer</a><br>
+<b>from</b> AccessGrid.AGParameter <b>import</b> ValueParameter, RangeParameter, OptionSetParameter, CreateParameter<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-os.html">os</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-socket.html">socket</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-string.html">string</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-sys.html">sys</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-thread.html">thread</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-time.html">time</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-zipfile.html">zipfile</a><br>
@@ -85,13 +82,16 @@
         
 <table border="0" cellpadding="3" cellspacing="0">
 <tr><td valign="top" align="left"><a href="Types_AGResource.py.html">AGResource</a></td><td valign="top" align="left"></td></tr>
-<tr><td valign="top" align="left"><a href="Types_AGServiceDescription.py.html">AGServiceDescription</a></td><td valign="top" align="left"></td></tr>
-<tr><td valign="top" align="left"><a href="Types_AGServiceImplementationRepository.py.html">AGServiceImplementationRepository</a></td><td valign="top" align="left"></td></tr>
-<tr><td valign="top" align="left"><a href="Types_AGServiceManagerDescription.py.html">AGServiceManagerDescription</a></td><td valign="top" align="left"></td></tr>
-<tr><td valign="top" align="left"><a href="Types_AGServicePackage.py.html">AGServicePackage</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="Types_AGServicePackage.py.html">AGServicePackage</a></td><td valign="top" align="left">
+<p>Class to represent a service package, a zipfile containing a</p>
+</td></tr>
 <tr><td valign="top" align="left"><a href="Types_AGVideoResource.py.html">AGVideoResource</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="Types_Capability.py.html">Capability</a></td><td valign="top" align="left"></td></tr>
-<tr><td valign="top" align="left"><a href="Types_ServiceConfiguration.py.html">ServiceConfiguration</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="Types_InvalidServiceDescription.py.html">InvalidServiceDescription</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="Types_InvalidServicePackage.py.html">InvalidServicePackage</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="Types_ServiceConfiguration.py.html">ServiceConfiguration</a></td><td valign="top" align="left">
+<p>ServiceConfiguration encapsulates the configuration of</p>
+</td></tr>
 <tr><td valign="top" align="left"><a href="Types_VenueState.py.html">VenueState</a></td><td valign="top" align="left"></td></tr>
 </table>
 </td></tr>
@@ -107,7 +107,7 @@
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 21 09:03:33 2003 by
+        on Thu Feb 27 07:37:21 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -47,7 +47,7 @@
         <tr>
         <td>
         
-<b>from</b> AccessGrid <b>import</b> DataStore<br>
+<b>from</b> AccessGrid.DataStore <b>import</b> GSIHTTPTransferServer<br>
 <b>from</b> AccessGrid.Descriptions <b>import</b> VenueDescription<br>
 <b>from</b> AccessGrid.EventService <b>import</b> EventService<br>
 <b>from</b> AccessGrid.GUID <b>import</b> GUID<br>
@@ -55,9 +55,12 @@
 <b>from</b> AccessGrid.TextService <b>import</b> TextService<br>
 <b>from</b> AccessGrid.Utilities <b>import</b> formatExceptionInfo, LoadConfig, SaveConfig, GetHostname<br>
 <b>from</b> AccessGrid.Venue <b>import</b> Venue<br>
+<b>from</b> AccessGrid.hosting <b>import</b> AccessControl<br>
 <b>from</b> AccessGrid.hosting.pyGlobus <b>import</b> ServiceBase<br>
 <b>from</b> AccessGrid.hosting.pyGlobus.Utilities <b>import</b> GetDefaultIdentityDN<br>
 <b>from</b> AccessGrid.scheduler <b>import</b> Scheduler<br>
+<b>import</b> logging<br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-os.html">os</a><br>
 <b>import</b> os.path<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-shelve.html">shelve</a><br>
 <b>import</b> signal<br>
@@ -66,6 +69,7 @@
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-sys.html">sys</a><br>
 <b>from</b> <a href="http://www.python.org/doc/current/lib/module-threading.html">threading</a> <b>import</b> Thread<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-traceback.html">traceback</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-urlparse.html">urlparse</a><br>
 
 </td></tr>
 
@@ -95,6 +99,9 @@
 <tr><td valign="top" align="left"><a href="VenueServer_VenueServer.py.html">VenueServer</a></td><td valign="top" align="left">
 <p>The Virtual Venue Server object is responsible for creating,</p>
 </td></tr>
+<tr><td valign="top" align="left"><a href="VenueServer_VenueServerException.py.html">VenueServerException</a></td><td valign="top" align="left">
+<p>A generic exception type to be raised by the Venue code.</p>
+</td></tr>
 </table>
 </td></tr>
 </td></tr>
@@ -109,7 +116,7 @@
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 21 09:03:33 2003 by
+        on Thu Feb 27 07:37:21 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

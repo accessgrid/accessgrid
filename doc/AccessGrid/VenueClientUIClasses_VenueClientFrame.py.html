@@ -24,7 +24,7 @@
         <td>
         
 <h3>VenueClientFrame. </h3>
-<p>    The VenueClientFrame is the main frame of the application, creating statusbar, toolbar,
+<p>    The VenueClientFrame is the main frame of the application, creating statusbar, dock,
     venueListPanel, and contentListPanel.  The contentListPanel represents current venue and
     has information about all participants in the venue, it also shows what data and services 
     are available in the venue, as well as nodes connected to the venue.  It represents a room
@@ -94,13 +94,16 @@ wxFrame<br>
 <a href="#FillInAddress">FillInAddress</a><br>
 <a href="#Follow">Follow</a><br>
 <a href="#HideMenu">HideMenu</a><br>
+<a href="#OnSashDrag">OnSashDrag</a><br>
+<a href="#OnSize">OnSize</a><br>
 <a href="#OpenAboutDialog">OpenAboutDialog</a><br>
 <a href="#OpenAddDataDialog">OpenAddDataDialog</a><br>
 <a href="#OpenAddServiceDialog">OpenAddServiceDialog</a><br>
-<a href="#OpenConnectToVenueDialog">OpenConnectToVenueDialog</a><br>
-<a href="#OpenDataProfileDialog">OpenDataProfileDialog</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#OpenChat">OpenChat</a><br>
+<a href="#OpenConnectToVenueDialog">OpenConnectToVenueDialog</a><br>
+<a href="#OpenDataProfileDialog">OpenDataProfileDialog</a><br>
 <a href="#OpenNodeMgmtApp">OpenNodeMgmtApp</a><br>
 <a href="#OpenParticipantProfile">OpenParticipantProfile</a><br>
 <a href="#OpenParticipantProfileDialog">OpenParticipantProfileDialog</a><br>
@@ -110,18 +113,19 @@ wxFrame<br>
 <a href="#RemoveData">RemoveData</a><br>
 <a href="#RemoveService">RemoveService</a><br>
 <a href="#SaveData">SaveData</a><br>
+</td>
+<td align="LEFT" valign="TOP">
 <a href="#ShowMenu">ShowMenu</a><br>
 <a href="#UpdateLayout">UpdateLayout</a><br>
 <a href="#__doLayout">__doLayout</a><br>
-</td>
-<td align="LEFT" valign="TOP">
+<a href="#__fillTempHelp">__fillTempHelp</a><br>
 <a href="#__init__">__init__</a><br>
 <a href="#__loadMyVenues">__loadMyVenues</a><br>
+<a href="#__setDock">__setDock</a><br>
 <a href="#__setEvents">__setEvents</a><br>
 <a href="#__setMenubar">__setMenubar</a><br>
 <a href="#__setProperties">__setProperties</a><br>
 <a href="#__setStatusbar">__setStatusbar</a><br>
-<a href="#__setToolbar">__setToolbar</a><br>
 <a href="#__showNoSelectionDialog">__showNoSelectionDialog</a><br>
 </td>
 </tr>
@@ -326,6 +330,60 @@ HideMenu ( self )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="OnSashDrag"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">OnSashDrag&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+OnSashDrag ( self,  event )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="OnSize"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">OnSize&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+OnSize ( self,  event=None )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="OpenAboutDialog"></a>&nbsp;
                 </font>
             </th>
@@ -395,6 +453,33 @@ OpenAddDataDialog ( self,  event=None )
         <td>
         <font color="#000088"><pre>
 OpenAddServiceDialog ( self,  event )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="OpenChat"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">OpenChat&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+OpenChat ( self,  event=None )
 
 </pre></font>
 
@@ -785,6 +870,33 @@ __doLayout ( self )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="__fillTempHelp"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">__fillTempHelp&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+__fillTempHelp ( self,  x )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="__init__"></a>&nbsp;
                 </font>
             </th>
@@ -836,6 +948,35 @@ __loadMyVenues ( self,  venueURL=None )
 
 </pre></font>
 
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="__setDock"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">__setDock&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+__setDock ( self )
+
+</pre></font>
+
+<p>self.dock.AddSimpleTool(20, icons.getWordBitmap(),                                    &quot;ImportantPaper.doc&quot;, &quot;ImportantPaper.doc&quot;,)
+        self.dock.AddSimpleTool(21, icons.getPowerPointBitmap(),                                    &quot;Presentation.ppt&quot;, &quot;Presentation.ppt&quot;,)</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -953,35 +1094,6 @@ __setStatusbar ( self )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="__setToolbar"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">__setToolbar&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-__setToolbar ( self )
-
-</pre></font>
-
-<p>self.toolbar.AddSimpleTool(20, icons.getWordBitmap(),                                    &quot;ImportantPaper.doc&quot;, &quot;ImportantPaper.doc&quot;,)
-        self.toolbar.AddSimpleTool(21, icons.getPowerPointBitmap(),                                    &quot;Presentation.ppt&quot;, &quot;Presentation.ppt&quot;,)</p>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
                   <a name="__showNoSelectionDialog"></a>&nbsp;
                 </font>
             </th>
@@ -1013,7 +1125,7 @@ __showNoSelectionDialog ( self,  text )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 21 09:03:33 2003 by
+        on Thu Feb 27 07:37:21 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -48,15 +48,20 @@
         <td>
         
 <b>from</b> AccessGrid.AuthorizationManager <b>import</b> AuthorizationManager<br>
+<b>from</b> AccessGrid.DataStore <b>import</b> GSIHTTPTransferServer<br>
+<b>from</b> AccessGrid.Descriptions <b>import</b> AGServiceDescription, AGServiceManagerDescription<br>
+<b>from</b> AccessGrid.MulticastAddressAllocator <b>import</b> MulticastAddressAllocator<br>
 <b>from</b> AccessGrid.Platform <b>import</b> GetConfigFilePath<br>
-<b>from</b> AccessGrid.Types <b>import</b> AGServiceImplementationRepository, AGServiceDescription, ServiceConfiguration, AGServiceManagerDescription<br>
+<b>from</b> AccessGrid.Types <b>import</b> ServiceConfiguration, AGServicePackage, InvalidServicePackage<br>
 <b>from</b> AccessGrid.hosting.pyGlobus <b>import</b> Client<br>
 <b>from</b> AccessGrid.hosting.pyGlobus.AGGSISOAP <b>import</b> faultType<br>
 <b>from</b> AccessGrid.hosting.pyGlobus.ServiceBase <b>import</b> ServiceBase<br>
+<b>from</b> AccessGrid.hosting.pyGlobus.Utilities <b>import</b> GetHostname<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-os.html">os</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-pickle.html">pickle</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-string.html">string</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-sys.html">sys</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-thread.html">thread</a><br>
 
 </td></tr>
 
@@ -86,6 +91,9 @@
 <tr><td valign="top" align="left"><a href="AGNodeService_AGNodeService.py.html">AGNodeService</a></td><td valign="top" align="left">
 <p>AGNodeService is the central engine of an Access Grid node.</p>
 </td></tr>
+<tr><td valign="top" align="left"><a href="AGNodeService_AGServicePackageRepository.py.html">AGServicePackageRepository</a></td><td valign="top" align="left">
+<p>AGServicePackageRepository encapsulates knowledge about local service</p>
+</td></tr>
 </table>
 </td></tr>
 </td></tr>
@@ -100,7 +108,7 @@
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 21 09:03:33 2003 by
+        on Thu Feb 27 07:37:21 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

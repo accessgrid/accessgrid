@@ -26,21 +26,26 @@
 <p>The Virtual Venue Server object is responsible for creating,
     destroying, and configuring Virtual Venue objects.<p>    The Virtual Venue Server object is:</p>
 <dl>
-<dt>    configFile</dt>
-<dd>string
-    config -- dictionary of Key/Value pairs that holds configuration
-    parameters.
-    adminstrators -- list of strings (each is a DN of a adminsitrative user)
-    dataStorageLocation -- string
-    defaultVenue -- VenueURL
-    hostingEnvironment -- AccessGrid.hosting.pyGlobus.Server
-    multicastAddressAllocator -- AccessGrid.MulticastAddressAllocator
-    venues -- a list of Venues Objects that are being made available
-    services -- a list of service descriptions, these are either network or
+<dt>    . adminstrators</dt>
+<dd>list of strings (each is a DN of a adminsitrative user)
+    . defaultVenue -- VenueURL
+    . hostingEnvironment -- AccessGrid.hosting.pyGlobus.Server
+    . multicastAddressAllocator -- AccessGrid.MulticastAddressAllocator
+    . hostname -- the hostname of the local machine
+    . venues -- a list of Venues Objects that are being made available
+    . dataStorageLocation -- string
+    . eventPort -- the local port to run the EventService on.
+    . textPort -- the local port to run the TextService on.
+    . configFile -- string
+    . dataTransferServer -- a DataStore Transfer Server for storing files.
+    . eventService -- an Event Service so all venues can have event
+    infrastructure.
+    . textService -- a Text Service for all venues.
+    . services -- a list of service descriptions, these are either network or
                application services that are available so any venue hosted
                by this venue server can add these to the services available
                from within that venue
-    houseKeeper -- Scheduler</dd>
+    . houseKeeper -- Scheduler</dd>
 </dl>
 </p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
@@ -108,26 +113,31 @@ ServiceBase.ServiceBase<br>
 <a href="#GetAdministrators">GetAdministrators</a><br>
 <a href="#GetBaseAddress">GetBaseAddress</a><br>
 <a href="#GetDefaultVenue">GetDefaultVenue</a><br>
+<a href="#GetEncryptAllMedia">GetEncryptAllMedia</a><br>
 </td>
 <td align="LEFT" valign="TOP">
 <a href="#GetStorageLocation">GetStorageLocation</a><br>
 <a href="#GetVenues">GetVenues</a><br>
 <a href="#InitFromFile">InitFromFile</a><br>
+<a href="#LoadPersistentVenues">LoadPersistentVenues</a><br>
+<a href="#MakeVenueURI">MakeVenueURI</a><br>
 <a href="#ModifyService">ModifyService</a><br>
 <a href="#ModifyVenue">ModifyVenue</a><br>
 <a href="#RegisterServer">RegisterServer</a><br>
 <a href="#RemoveAdministrator">RemoveAdministrator</a><br>
 <a href="#RemoveService">RemoveService</a><br>
-<a href="#RemoveVenue">RemoveVenue</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#RemoveVenue">RemoveVenue</a><br>
 <a href="#SetAddressAllocationMethod">SetAddressAllocationMethod</a><br>
 <a href="#SetAddressMask">SetAddressMask</a><br>
 <a href="#SetBaseAddress">SetBaseAddress</a><br>
 <a href="#SetDefaultVenue">SetDefaultVenue</a><br>
+<a href="#SetEncryptAllMedia">SetEncryptAllMedia</a><br>
 <a href="#SetStorageLocation">SetStorageLocation</a><br>
 <a href="#Shutdown">Shutdown</a><br>
 <a href="#__init__">__init__</a><br>
+<a href="#_authorize">_authorize</a><br>
 </td>
 </tr>
             </table>
@@ -161,6 +171,34 @@ AddAdministrator ( self,  string )
 
 <p>AddAdminstrator adds an administrator to the list of administrators
         for this VenueServer.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -191,6 +229,34 @@ AddService ( self,  serviceDescription )
 <p>AddService adds a service description to the list of service
         descriptions that are available to the Virtual Venues hosted by
         this VenueServer.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -221,6 +287,35 @@ AddVenue ( self,  venueDescription )
 <p>The AddVenue method takes a venue description and creates a new
         Venue Object, complete with a event service, then makes it
         available from this Venue Server.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "Couldn't Add Venue." )<br>
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -254,6 +349,35 @@ Checkpoint ( self )
         state that is lost (the longer the time between checkpoints, the more
         that can be lost).</p>
 </p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "Checkpoint Failed!" )<br>
+e<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -408,6 +532,34 @@ GetDefaultVenue ( self )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="GetEncryptAllMedia"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetEncryptAllMedia&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetEncryptAllMedia ( self )
+
+</pre></font>
+
+<p>Get the server wide default for venue media encryption.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="GetStorageLocation"></a>&nbsp;
                 </font>
             </th>
@@ -456,6 +608,34 @@ GetVenues ( self )
 
 <p>GetVenues returns a list of Venues Descriptions for the venues hosted by
         this VenueServer.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "GetVenues Failed!" )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -492,6 +672,90 @@ InitFromFile ( self,  config )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="LoadPersistentVenues"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">LoadPersistentVenues&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+LoadPersistentVenues ( self,  filename )
+
+</pre></font>
+
+<p>This method just encapsulates persistent venue loading.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "Failed to load persistent venues." )<br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="MakeVenueURI"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">MakeVenueURI&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+MakeVenueURI ( self,  uniqueId )
+
+</pre></font>
+
+<p>Helper method to make a venue URI from a uniqueId.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="ModifyService"></a>&nbsp;
                 </font>
             </th>
@@ -516,6 +780,34 @@ ModifyService (
 
 <p>ModifyService updates a service description that is in the
         list of services for this VenueServer.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -548,6 +840,34 @@ ModifyVenue (
 </pre></font>
 
 <p>ModifyVenue updates a Venue Description.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -578,6 +898,34 @@ RegisterServer ( self,  URL )
 <p>This method should register the server with the venues
         registry at the URL passed in. This is by default a
         registration page at Argonne for now.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -607,6 +955,34 @@ RemoveAdministrator ( self,  string )
 
 <p>RemoveAdministrator removes an administrator from the list of
         administrators for this VenueServer.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -640,6 +1016,34 @@ RemoveService (
 
 <p>RemoveService removes a service description from the list of
         service descriptions that this VenueServer knows about.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -668,6 +1072,34 @@ RemoveVenue ( self,  URL )
 </pre></font>
 
 <p>RemoveVenue removes a venue from the VenueServer.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -697,6 +1129,34 @@ SetAddressAllocationMethod ( self,  addressAllocationMethod )
 
 <p>Set the method used for multicast address allocation:
             either RANDOM or INTERVAL (defined in MulticastAddressAllocator)</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -726,6 +1186,34 @@ SetAddressMask ( self,  mask )
 
 <p>Set address mask used when allocating multicast addresses in
         an interval</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -755,6 +1243,34 @@ SetBaseAddress ( self,  address )
 
 <p>Set base address used when allocating multicast addresses in
         an interval</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -784,6 +1300,90 @@ SetDefaultVenue ( self,  venueURL )
 
 <p>SetDefaultVenue sets which Venue is the default venue for the
         VenueServer.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetEncryptAllMedia"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetEncryptAllMedia&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetEncryptAllMedia ( self,  value )
+
+</pre></font>
+
+<p>Turn on or off server wide default for venue media encryption.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -812,6 +1412,34 @@ SetStorageLocation ( self,  dataStorageLocation )
 </pre></font>
 
 <p>Set the path for data storage</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -840,6 +1468,34 @@ Shutdown ( self,  secondsFromNow )
 </pre></font>
 
 <p>Shutdown shuts down the server.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueServerException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -874,6 +1530,33 @@ __init__ (
 <p>The constructor creates a new Venue Server object, initializes
         that object, then registers signal handlers so the venue can cleanly
         shutdown in the event of catastrophic signals.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="_authorize"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">_authorize&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+_authorize ( self )
+
+</pre></font>
+
 </td></tr>
 </td></tr>
 </table>
@@ -887,7 +1570,7 @@ __init__ (
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 21 09:03:33 2003 by
+        on Thu Feb 27 07:37:21 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -90,13 +90,15 @@ ServiceBase.ServiceBase<br>
 <a href="#ClientHeartbeat">ClientHeartbeat</a><br>
 <a href="#Enter">Enter</a><br>
 <a href="#Exit">Exit</a><br>
+<a href="#FindUserByProfile">FindUserByProfile</a><br>
 <a href="#GetConnections">GetConnections</a><br>
 <a href="#GetData">GetData</a><br>
 <a href="#GetDescription">GetDescription</a><br>
+<a href="#GetEncryptMedia">GetEncryptMedia</a><br>
 <a href="#GetNetworkServices">GetNetworkServices</a><br>
-<a href="#GetNextPrivateId">GetNextPrivateId</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#GetNextPrivateId">GetNextPrivateId</a><br>
 <a href="#GetState">GetState</a><br>
 <a href="#GetStaticStreams">GetStaticStreams</a><br>
 <a href="#GetStreams">GetStreams</a><br>
@@ -114,8 +116,8 @@ ServiceBase.ServiceBase<br>
 <a href="#SetDescription">SetDescription</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#SetEncryptMedia">SetEncryptMedia</a><br>
 <a href="#SetMulticastAddressAllocator">SetMulticastAddressAllocator</a><br>
-<a href="#Shutdown">Shutdown</a><br>
 <a href="#Start">Start</a><br>
 <a href="#UpdateClientProfile">UpdateClientProfile</a><br>
 <a href="#UpdateData">UpdateData</a><br>
@@ -123,6 +125,7 @@ ServiceBase.ServiceBase<br>
 <a href="#__init__">__init__</a><br>
 <a href="#__repr__">__repr__</a><br>
 <a href="#__setstate__">__setstate__</a><br>
+<a href="#_authorize">_authorize</a><br>
 <a href="#startDataStore">startDataStore</a><br>
 <a href="#wsAddData">wsAddData</a><br>
 <a href="#wsGetData">wsGetData</a><br>
@@ -160,6 +163,35 @@ AddConnection ( self,  connectionDescription )
 
 <p>AddConnection allows an administrator to add a connection to a
         virtual venue to this virtual venue.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "Add Connection Failed!" )<br>
+VenueException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -246,8 +278,36 @@ AddNetworkService ( self,  networkServiceDescription )
 </pre></font>
 
 <p>AddNetworkService allows an administrator to add functionality to
-        the Venue. Network services are described in the design documents.<p> Management methods</p>
-</p>
+        the Venue. Network services are described in the design documents.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "Add Network Service Failed!" )<br>
+VenueException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -276,6 +336,34 @@ AddService ( self,  serviceDescription )
 </pre></font>
 
 <p>This method adds a service description to the Venue.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "AddService: " )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -304,6 +392,34 @@ AddStream ( self,  inStreamDescription )
 </pre></font>
 
 <p>Add a stream to the list of streams &quot;in&quot; the venue</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -416,6 +532,34 @@ Enter ( self,  clientProfile )
 <p>The Enter method is used by a VenueClient to gain access to the
         services, users, and content found within a Virtual Venue.<p> Client Methods</p>
 </p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "Enter: " )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -446,6 +590,63 @@ Exit ( self,  privateId )
 <p>The Exit method is used by a VenueClient to cleanly leave a Virtual
         Venue. Cleanly leaving a Virtual Venue allows the Venue to cleanup
         any state associated (or caused by) the VenueClients presence.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "ExitVenue: " )<br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="FindUserByProfile"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">FindUserByProfile&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+FindUserByProfile ( self,  profile )
+
+</pre></font>
+
+<p>Find out if a given user is in the venue from their client profile.
+        If they are return their private id, if not, return None.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -542,6 +743,34 @@ GetDescription ( self )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="GetEncryptMedia"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetEncryptMedia&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetEncryptMedia ( self )
+
+</pre></font>
+
+<p>Return whether we are encrypting streams or not.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="GetNetworkServices"></a>&nbsp;
                 </font>
             </th>
@@ -617,9 +846,7 @@ GetState ( self )
 
 </pre></font>
 
-<p>GetState enables a VenueClient to poll the Virtual Venue for the
-        current state of the Virtual Venue.<p> Internal Methods</p>
-</p>
+<p>GetState returns the current state of the Virtual Venue.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -647,7 +874,8 @@ GetStaticStreams ( self )
 
 </pre></font>
 
-<p>GetStaticStreams returns a list of static stream descriptions to the caller.</p>
+<p>GetStaticStreams returns a list of static stream descriptions
+        to the caller.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -756,14 +984,19 @@ IsValidPrivateId ( self,  privateId )
         <tr>
         <td>
         <font color="#000088"><pre>
-NegotiateCapabilities ( self,  clientProfile )
+NegotiateCapabilities (
+        self,
+        clientProfile,
+        privateId,
+        )
 
 </pre></font>
 
-<p>This method takes a client profile and finds a set of streams that
-        matches the client profile. Later this method could use network
-        services to find The Best Match of all the network services,
-        the existing streams, and all the client capabilities.</p>
+<p>This method takes a client profile and matching privateId, then it
+        finds a set of streams that matches the client profile. Later this
+        method could use network services to find The Best Match of all the
+        network services, the existing streams, and all the client
+        capabilities.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -793,6 +1026,35 @@ RemoveConnection ( self,  connectionDescription )
 
 <p>RemoveConnection removes a connection to another virtual venue
         from this virtual venue. This is an administrative operation.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "Remove Connection Failed!" )<br>
+VenueException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -821,6 +1083,34 @@ RemoveData ( self,  dataDescription )
 </pre></font>
 
 <p>RemoveData removes persistent data from the Virtual Venue.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "Cannot remove data!" )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -850,6 +1140,35 @@ RemoveNetworkService ( selfnetworkServiceDescription )
 
 <p>RemoveNetworkService removes a network service from a venue, making
         it unavailable to users of the venue.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "Remove Network Service Failed!" )<br>
+VenueException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -879,6 +1198,34 @@ RemoveService ( self,  serviceDescription )
 
 <p>This method removes a service description from the list of services
         in the Virtual Venue.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "RemoveService: " )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -907,6 +1254,34 @@ RemoveStream ( self,  streamDescription )
 </pre></font>
 
 <p>Remove the given stream from the venue</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -965,6 +1340,35 @@ SetConnections ( self,  connectionList )
         connections for this venue. Alternatively the user could iterate over
         a list of connections adding them one by one, but this is more
         desirable.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "Set Connections Failed!" )<br>
+VenueException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1023,6 +1427,95 @@ SetDescription ( self,  description )
 
 <p>SetDescription allows an administrator to set the venues description
         to something new.</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetEncryptMedia"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetEncryptMedia&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetEncryptMedia (
+        self,
+        value,
+        key=None,
+        )
+
+</pre></font>
+
+<h3>Turn media encryption on or off.</h3>
+<p> Management methods</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Exceptions">Exceptions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+VenueException( "You are not authorized to perform this action." )<br>
+
+</td></tr>
+</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1052,36 +1545,6 @@ SetMulticastAddressAllocator ( self,  multicastAllocator )
 
 <p>Set the Multicast Address Allocator for the Venue. This is usually
         set to the allocator the venue server uses.</p>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Shutdown"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">Shutdown&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-Shutdown ( self )
-
-</pre></font>
-
-<p>This method cleanly shuts down all active threads associated with the
-        Virtual Venue. Currently there are a few threads in the Event
-        Service.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1335,6 +1798,33 @@ __setstate__ ( self,  pickledDict )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="_authorize"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">_authorize&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+_authorize ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="startDataStore"></a>&nbsp;
                 </font>
             </th>
@@ -1457,7 +1947,7 @@ wsUpdateData ( self,  dataDescription )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 21 09:03:33 2003 by
+        on Thu Feb 27 07:37:21 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

@@ -55,7 +55,7 @@
         <tr>
         <td>
         
-wxPanel<br>
+wxSashLayoutWindow<br>
 
 </td></tr>
 </table>
@@ -84,7 +84,9 @@ wxPanel<br>
         <td>
         
 <a href="#CleanUp">CleanUp</a><br>
+<a href="#Hide">Hide</a><br>
 <a href="#OnClick">OnClick</a><br>
+<a href="#Show">Show</a><br>
 <a href="#__addEvents">__addEvents</a><br>
 <a href="#__doLayout">__doLayout</a><br>
 <a href="#__init__">__init__</a><br>
@@ -125,6 +127,33 @@ CleanUp ( self )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="Hide"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">Hide&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+Hide ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="OnClick"></a>&nbsp;
                 </font>
             </th>
@@ -140,6 +169,33 @@ CleanUp ( self )
         <td>
         <font color="#000088"><pre>
 OnClick ( self,  event )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Show"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">Show&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+Show ( self )
 
 </pre></font>
 
@@ -223,6 +279,7 @@ __doLayout ( self )
 __init__ (
         self,
         parent,
+        id,
         app,
         )
 
@@ -241,7 +298,7 @@ __init__ (
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 21 09:03:33 2003 by
+        on Thu Feb 27 07:37:21 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         
