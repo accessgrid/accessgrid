@@ -5,15 +5,17 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.42 2003-10-13 21:31:05 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.43 2004-02-19 17:59:02 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.42 2003-10-13 21:31:05 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.43 2004-02-19 17:59:02 eolson Exp $"
 __docformat__ = "restructuredtext en"
+
+from AccessGrid.hosting.pyGlobus import Client
 
 import os
 import sys
@@ -23,7 +25,6 @@ import ConfigParser
 import logging
 import shutil
 
-from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType

@@ -5,15 +5,17 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.18 2003-09-16 07:20:56 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.19 2004-02-19 17:59:02 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Server.py,v 1.18 2003-09-16 07:20:56 judson Exp $"
+__revision__ = "$Id: Server.py,v 1.19 2004-02-19 17:59:02 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
+from pyGlobus.io import GSITCPSocketException
+from AGGSISOAP import SOAPProxy, SOAPServer, SOAPConfig
 import socket
 from threading import Thread, Event
 
@@ -21,8 +23,6 @@ from threading import Thread, Event
 import ServiceObject
 import ServiceBase
 import Utilities
-from AGGSISOAP import SOAPProxy, SOAPServer, SOAPConfig
-from pyGlobus.io import GSITCPSocketException
 
 class Server:
 

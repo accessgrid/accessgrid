@@ -6,14 +6,15 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.110 2003-10-30 22:18:18 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.111 2004-02-19 17:59:02 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.110 2003-10-30 22:18:18 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.111 2004-02-19 17:59:02 eolson Exp $"
 
+from AccessGrid.hosting.pyGlobus import Client
 import webbrowser
 import string
 import time
@@ -25,8 +26,6 @@ from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
 
 from pyGlobus.io import GSITCPSocketException
-
-from AccessGrid.hosting.pyGlobus import Client
 
 from AccessGrid.Descriptions import StreamDescription, ConnectionDescription
 from AccessGrid.Descriptions import VenueDescription, CreateVenueDescription

@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.37 2003-09-22 14:12:08 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.38 2004-02-19 17:59:02 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.37 2003-09-22 14:12:08 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.38 2004-02-19 17:59:02 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -19,6 +19,7 @@ import sys
 import getopt
 import signal
 import time
+from AccessGrid.hosting.pyGlobus import Server
 import logging, logging.handlers
 import threading
 
@@ -40,7 +41,6 @@ if sys.platform == "win32":
 # Back to your normal imports.
 #
 
-from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.VenueServer import VenueServer
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid import Toolkit

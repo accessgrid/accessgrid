@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.126 2004-02-13 22:07:45 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.127 2004-02-19 17:59:02 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,9 +13,10 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.126 2004-02-13 22:07:45 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.127 2004-02-19 17:59:02 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
+from AccessGrid.hosting.pyGlobus import Client
 import sys
 import urlparse
 import string

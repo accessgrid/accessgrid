@@ -5,16 +5,17 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.24 2003-09-16 07:20:17 judson Exp $
+# RCS-ID:      $Id: AGService.py,v 1.25 2004-02-19 17:59:02 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.24 2003-09-16 07:20:17 judson Exp $"
+__revision__ = "$Id: AGService.py,v 1.25 2004-02-19 17:59:02 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
+from AccessGrid.hosting.pyGlobus import Client
 import os
 import sys
 import logging

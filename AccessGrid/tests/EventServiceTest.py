@@ -6,11 +6,12 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: EventServiceTest.py,v 1.4 2003-11-14 22:08:24 lefvert Exp $
+# RCS-ID:      $Id: EventServiceTest.py,v 1.5 2004-02-19 17:59:02 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
+from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.Utilities import GetHostname
 from AccessGrid.EventServiceAsynch import EventService
 from AccessGrid.EventClient import EventClient

@@ -5,11 +5,12 @@
 # Author:      Eric Olson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: CommandLineVenueClient.py,v 1.7 2003-12-12 02:04:45 eolson Exp $
+# RCS-ID:      $Id: CommandLineVenueClient.py,v 1.8 2004-02-19 17:59:02 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
+from AccessGrid.hosting.pyGlobus import Client
 import os, time, threading
 import cmd
 from threading import Thread

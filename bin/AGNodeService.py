@@ -6,23 +6,23 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.34 2003-11-19 06:48:03 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.35 2004-02-19 17:59:02 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.34 2003-11-19 06:48:03 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.35 2004-02-19 17:59:02 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
+from AccessGrid.hosting.pyGlobus.Server import Server
 import sys
 import signal, time, os
 import logging, logging.handlers
 import getopt
 
 from AccessGrid.AGNodeService import AGNodeService
-from AccessGrid.hosting.pyGlobus.Server import Server
 
 from AccessGrid import PersonalNode
 from AccessGrid.Platform import GetUserConfigDir

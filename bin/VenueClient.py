@@ -6,10 +6,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.243 2004-02-13 22:01:21 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.244 2004-02-19 17:59:02 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
+
+from AccessGrid.hosting.pyGlobus import Server
+from AccessGrid.hosting.pyGlobus import Client
+
 import threading
 import os
 import logging, logging.handlers
@@ -37,9 +41,6 @@ if sys.platform == "win32":
 
 # Back to your normal imports.
 from wxPython.wx import *
-
-from AccessGrid.hosting.pyGlobus import Server
-from AccessGrid.hosting.pyGlobus import Client
 
 import AccessGrid.Types
 import AccessGrid.ClientProfile

@@ -5,11 +5,12 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: TextServiceTest.py,v 1.1 2003-11-14 22:13:47 lefvert Exp $
+# RCS-ID:      $Id: TextServiceTest.py,v 1.2 2004-02-19 17:59:02 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
+from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.Utilities import GetHostname
 from AccessGrid.TextServiceAsynch import TextService
 from AccessGrid.TextClient import TextClient

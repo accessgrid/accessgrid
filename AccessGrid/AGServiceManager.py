@@ -5,22 +5,22 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.36 2003-10-13 21:33:31 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.37 2004-02-19 17:59:02 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.36 2003-10-13 21:33:31 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.37 2004-02-19 17:59:02 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
+from AccessGrid.hosting.pyGlobus import Client
 import sys
 import os
 import time
 import logging
 
-from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
 

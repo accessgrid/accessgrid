@@ -5,14 +5,16 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.48 2003-10-23 21:35:07 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.49 2004-02-19 17:59:02 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.48 2003-10-23 21:35:07 lefvert Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.49 2004-02-19 17:59:02 eolson Exp $"
 __docformat__ = "restructuredtext en"
+
+from AccessGrid.hosting.pyGlobus import Client
 
 import sys
 
@@ -20,7 +22,6 @@ from wxPython.wx import *
 from wxPython.lib.dialogs import wxMultipleChoiceDialog
 
 # AG2 imports
-from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 

@@ -6,10 +6,11 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.20 2003-11-19 05:48:05 turam Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.21 2004-02-19 17:59:02 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+from AccessGrid.hosting.pyGlobus import Client
 import os
 import sys
 from wxPython.wx import *
