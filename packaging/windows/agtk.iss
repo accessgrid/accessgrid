@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.79 2004-05-11 13:46:30 lefvert Exp $
+; RCS-ID: $Id: agtk.iss,v 1.80 2004-05-18 16:17:08 judson Exp $
 ;
 
 ; Set externally
@@ -96,6 +96,9 @@ Source: README; DestDir: {app}; Flags: isreadme; DestName: README.txt
 ; Program Files
 Source: bin\*.*; DestDir: {app}\bin
 
+; GoToVenues.py File
+Source: tools\GoToVenue.py; DestDir: {app}\bin; DestName: GoToVenue.pyw
+
 ; Special short cuts to invoke without the python console
 
 Source: bin\CertificateRequestTool.py; DestDir: {app}\bin; DestName: CertificateRequestTool.pyw
@@ -145,7 +148,14 @@ Name: {commondesktop}\Access Grid Venue Client; Filename: {reg:HKLM\Software\Pyt
 Root: HKLM; Subkey: SOFTWARE\{#AppName}; ValueType: none; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersion}; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersion}; ValueType: expandsz; ValueName: VersionInformation; ValueData: {#VersionInformation}; Flags: uninsdeletekey
-
+Root: HKCR; Subkey: MIME\Database\Content Type\application/x-ag-venueclient; ValueType: string; ValueName: Extension; ValueData: .vv2d
+Root: HKCR; Subkey: .vv2d; ValueType: string; ValueName: @; ValueData: x-ag-venueclient
+Root: HKCR; Subkey: .vv2d; ValueType: string; ValueName: Content Type; ValueData: application/x-ag-venueclient
+Root: HKCR; Subkey: x-ag-venueclient; ValueType: dword; ValueName: EditFlags; ValueData: 00010000
+Root: HKCR; Subkey: x-ag-venueclient; ValueType: dword; ValueName: BrowserFlags; ValueData: 00000008
+Root: HKCR; Subkey: x-ag-venueclient; ValueType: string; ValueName: @; ValueData: Access Grid Virtual Venue Description
+Root: HKCR; Subkey: x-ag-venueclient\shell; ValueType: string; ValueName: @; ValueData: Open
+Root: HKCR; Subkey: x-ag-venueclient\shell\Open\command; ValueType: string; ValueName: @; ValueData: "\""PYTHON \""AGINSTALLDIR\\bin\\GoToVenue.py --file %1\""\"""
 [Tasks]
 Name: desktopicon; Description: Create &Desktop Icons; GroupDescription: Additional icons:
 Name: quicklaunchicon; Description: Create a &Quick Launch Icon; GroupDescription: Additional icons:; Flags: unchecked
