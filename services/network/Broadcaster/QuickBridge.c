@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.40 2004-12-17 23:27:47 leggett Exp $
+ * $Id: QuickBridge.c,v 1.41 2004-12-17 23:28:21 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -1135,14 +1135,6 @@ int main( int argc, char *argv[] )
       print_usage( progname );
       exit( 1 );
     }
-
-  s = setup_session( ucport, mcport, multicastaddress, ttl, forward, s );
-  if ( ! s )
-    {
-      print_usage( progname );
-      exit( 1 );
-    }
-  
   for ( foo = s; foo; foo = foo->next )
     {
       printf( " ucfd[data]: %d mcfd[data]: %d uc: %s/%d mc: %s/%d\n", foo->ucfd[data], foo->mcfd[data], inet_ntoa( foo->ucaddr[data].sin_addr ), ntohs( foo->ucaddr[data].sin_port ),
@@ -1153,6 +1145,14 @@ int main( int argc, char *argv[] )
 
   sleep( 10 );
 
+
+  s = setup_session( ucport, mcport, multicastaddress, ttl, forward, s );
+  if ( ! s )
+    {
+      print_usage( progname );
+      exit( 1 );
+    }
+  
 
   /* code for gateway mode */
   set_acl(ACLFILE);
