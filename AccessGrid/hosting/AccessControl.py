@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: AccessControl.py,v 1.18 2003-08-27 20:30:38 judson Exp $
+# RCS-ID:      $Id: AccessControl.py,v 1.19 2003-09-05 05:07:32 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -460,15 +460,16 @@ class SecurityManager:
                 # Check if this role contains references to other roles.
                 # If so, call this function again to process the an external role.
                 for r in role.GetSubjectList():
-                    if r.startswith("Role."):
-                        #print "recursing with :", r
-                        tmp2_recursed_roles = recursed_roles[:]
-                        tmp2_recursed_roles.append(role_name) # append current role so we don't infinitely recurse.
-                        ret_val = self.ValidateSubjectInRole(user, r, role_manager, tmp2_recursed_roles)
-                        if ret_val:
-                            log.debug("User %s authorized for role %s", user, role.name)
-                            #print "User",user,"authorized for role",  role.name
-                            return 1
+                    if type(r) == type(""):
+                        if r.startswith("Role."):
+                            #print "recursing with :", r
+                            tmp2_recursed_roles = recursed_roles[:]
+                            tmp2_recursed_roles.append(role_name) # append current role so we don't infinitely recurse.
+                            ret_val = self.ValidateSubjectInRole(user, r, role_manager, tmp2_recursed_roles)
+                            if ret_val:
+                                log.debug("User %s authorized for role %s", user, role.name)
+                                #print "User",user,"authorized for role",  role.name
+                                return 1
                 
             # Failed to find user in role. 
             log.debug("User %s not authorized for role: %s", user, role.name)
