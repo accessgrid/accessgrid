@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.14 2004-03-11 20:16:10 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.15 2004-03-12 05:23:11 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.14 2004-03-11 20:16:10 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.15 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -33,20 +33,17 @@ Log.SetDefaultLevel(Log.VenueClientUI, Log.WARN)
 
 from AccessGrid import icons
 from AccessGrid import Toolkit
+from AccessGrid.Platform import isWindows, Config
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
-from AccessGrid.Platform import GetMimeCommands
 from AccessGrid.ClientProfile import *
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription
-from AccessGrid.Platform import GetTempDir, GetSharedDocDir
-from AccessGrid.Platform import isWindows
-from AccessGrid.AuthorizationUI import AddPeopleDialog
+from AccessGrid.Security.wxgui.AuthorizationUI import AddPeopleDialog
 from AccessGrid.Utilities import SubmitBug
 from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.AppMonitor import AppMonitor
 from AccessGrid.Venue import ServiceAlreadyPresent
-from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.VenueClient import NetworkLocationNotFound, NotAuthorizedError
 from AccessGrid.VenueClient import DisconnectError
 
@@ -200,7 +197,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.nodeManagementFrame = None
 
         # Help Doc locations
-        self.manual_url = os.path.join(GetSharedDocDir(), "VenueClientManual",
+        agtkConfig = Config.AGTkConfig.instance()
+        self.manual_url = os.path.join(agtkConfig.GetDocDir(),
+                                       "VenueClientManual",
                                        "VenueClientManualHTML.htm")
         self.agdp_url = "http://www.accessgrid.org/agdp"
         self.ag_url = "http://www.accessgrid.org/"
@@ -298,7 +297,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         gui = None
         try:
-            mgr = Toolkit.GetApplication().GetCertificateManager()
+            mgr = Toolkit.Application.instance().GetCertificateManager()
             gui = mgr.GetUserInterface()
 
         except:
@@ -1093,7 +1092,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             comment = bugReportCommentDialog.GetComment()
             email = bugReportCommentDialog.GetEmail()
             
-            SubmitBug(comment, email)
+            #SubmitBug(comment, email)
+            SubmitBug(comment, self.venueClient.GetProfile(), email,
+                      Config.UserConfig.instance())
             bugFeedbackDialog = wxMessageDialog(self, 
                                   "Your error report has been sent, thank you.",
                                   "Error Reported", 
@@ -2922,6 +2923,7 @@ class ContentListPanel(wxPanel):
                 MessageDialog(None, "%s's data could not be retrieved."%item.name)
                 
     def OnDoubleClick(self, event):
+        mimeConfig = Config.MimeConfig.instance()
         self.x = event.GetX()
         self.y = event.GetY()
         treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
@@ -2946,14 +2948,14 @@ class ContentListPanel(wxPanel):
                     list = item.name.split('.')
                     if len(list) == 2:
                         (name, ext) = list
-                    commands = GetMimeCommands(ext = ext)
+                    commands = mimeConfig.GetMimeCommands(ext = ext)
                     if commands.has_key('Open'):
                         openCmd = commands['Open']
                 elif isinstance(item, ServiceDescription):
                     list = item.name.split('.')
                     if len(list) == 2:
                         (name, ext) = list
-                    commands = GetMimeCommands(mimeType = item.mimeType,
+                    commands = mimeConfig.GetMimeCommands(mimeType = item.mimeType,
                                                ext = ext)
                     if commands.has_key('Open'):
                         openCmd = commands['Open']
@@ -3032,13 +3034,14 @@ class ContentListPanel(wxPanel):
         # This is to flag between using the system OpenShared command
         # and the AG defined one (in case of collision we use the system)
         # useLocal = 0
+        mimeConfig = Config.MimeConfig.instance()
         
         # Path where temporary file will exist if opened/used.
         ext = item.name.split('.')[-1]
 
         log.debug("looking for mime commands for extension: %s", ext)
         
-        commands = GetMimeCommands(ext = ext)
+        commands = mimeConfig.GetMimeCommands(ext = ext)
 
         log.debug("Commands: %d %s", len(commands), str(commands))
         menu = wxMenu()
@@ -3091,10 +3094,13 @@ class ContentListPanel(wxPanel):
         passed in.
         """
        
+        mimeConfig = Config.MimeConfig.instance()
+
         # Path where temporary file will exist if opened/used.
         ext = item.name.split('.')[-1]
         
-        commands = GetMimeCommands(mimeType = item.mimeType, ext = ext)
+        commands = mimeConfig.GetMimeCommands(mimeType = item.mimeType,
+                                              ext = ext)
 
         menu = wxMenu()
 

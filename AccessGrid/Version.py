@@ -5,13 +5,13 @@
 # Author:      Eric Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Version.py,v 1.2 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: Version.py,v 1.3 2004-03-12 05:23:11 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Version.py,v 1.2 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: Version.py,v 1.3 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Call GetVersion() to get AGTK version information.
@@ -107,7 +107,7 @@ def GetVersion():
     """ Use this to get the current version of AGTK. """
     global MAJOR_VERSION, MINOR_VERSION, POINT_VERSION
     ver = CreateVersionFromTuple3((MAJOR_VERSION,
-    MINOR_VERSION, POINT_VERSION))
+                                   MINOR_VERSION, POINT_VERSION))
     
     return ver
 

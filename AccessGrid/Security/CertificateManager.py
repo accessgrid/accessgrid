@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.4 2004-03-10 23:17:08 eolson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.5 2004-03-12 05:23:12 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.4 2004-03-10 23:17:08 eolson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.5 2004-03-12 05:23:12 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -45,10 +45,12 @@ import getpass
 import sys
 import time
 
+from OpenSSL_AG import crypto
+
 from AccessGrid import Log
-from AccessGrid import Platform
 from AccessGrid import Utilities
-from AccessGrid.Security import CertificateRepository, ProxyGen, CRSClient
+from AccessGrid.Security import CertificateRepository, ProxyGen
+from AccessGrid.Security import CRSClient
 from AccessGrid.Security.Utilities import get_certificate_locations
 
 from OpenSSL_AG import crypto
@@ -667,7 +669,6 @@ class CertificateManager(object):
         should be viewed as the current appropriate mechanism for
         setting defaultIdentity.
         """
-
         #
         # Write out the trusted CA dir as well, and set that
         # environment variable. We do this first so that we
@@ -676,28 +677,7 @@ class CertificateManager(object):
 
         self._InitializeCADir()
 
-        idCerts = self.GetIdentityCerts()
-
-        if len(idCerts) == 0:
-            raise NoCertificates
-
-        if len(idCerts) == 1:
-            idCerts[0].SetMetadata("AG.CertificateManager.isDefaultIdentity", "1")
-
-        #
-        # Now we know we have at least one certificate. Make sure we have a unique
-        # default identity.
-        #
-        
-        defaultIdCerts = self.GetDefaultIdentityCerts()
-
-        if len(defaultIdCerts) == 0:
-            raise NoDefaultIdentity
-        elif len(defaultIdCerts) > 1:
-            log.warn("Found multiple (%s) default identities, using the first",
-                     len(defaultIdCerts))
-
-        defaultIdentity = defaultIdCerts[0]
+        idCerts, defaultIdCerts, defaultIdentity = self.CheckConfiguration()
 
         log.debug("Using default identity %s", defaultIdentity.GetSubject())
 
@@ -741,7 +721,6 @@ class CertificateManager(object):
                     break
                 i = i + 1
                     
-#            print "CA cert %s: hash=%s dest=%s" % (c.GetSubject(), nameHash, destPath)
             shutil.copyfile(c.GetPath(), destPath)
 
             #
@@ -900,7 +879,6 @@ class CertificateManager(object):
         #
         # Check to see if the proxy file exists.
         #
-
         if not os.path.isfile(userProxy):
             raise NoProxyFound
         
@@ -1073,17 +1051,28 @@ class CertificateManager(object):
         # identity cert repository.
         #
 
-        identityCerts = self.certRepo.FindCertificatesWithMetadata("AG.CertificateManager.certType",
-                                                                   "identity")
+        identityCerts = self.GetIdentityCerts()
+
         if len(identityCerts) == 0:
             log.error("No identity certs found")
 
+        if len(identityCerts) == 1:
+            identityCerts[0].SetMetadata("AG.CertificateManager.isDefaultIdentity", "1")
         #
         # Find the default identity.
         #
 
-        defaultIdCerts = self.certRepo.FindCertificatesWithMetadata("AG.CertificateManager.isDefaultIdentity",
-                                                                   "1")
+        defaultIdCerts = self.GetDefaultIdentityCerts()
+        
+        if len(defaultIdCerts) == 0:
+            raise NoDefaultIdentity
+        elif len(defaultIdCerts) > 1:
+            log.warn("Found multiple (%s) default identities, using the first",
+                     len(defaultIdCerts))
+        else:
+            defaultId = defaultIdCerts[0]
+
+        return (identityCerts, defaultIdCerts, defaultId)
     #
     # Certificate request stuff
     #
@@ -1428,7 +1417,8 @@ class CertificateManagerUserInterface:
 if __name__ == "__main__":
 
     h = Log.StreamHandler()
-    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
+    h.setFormatter(Log.GetFormatter())
+    Log.HandleLoggers(h, Log.GetDefaultLoggers())
 
     os.system("rm -r foo")
     os.mkdir("foo")

@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.61 2004-03-10 23:17:07 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.62 2004-03-12 05:23:11 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.61 2004-03-10 23:17:07 eolson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.62 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -39,7 +39,7 @@ from pyGlobus import io
 from AccessGrid import Log
 import AccessGrid.GUID
 from AccessGrid import Platform
-from AccessGrid.NetUtilities import GetHostname
+from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.Descriptions import DataDescription, CreateDataDescription
 from AccessGrid.EventServiceAsynch import EventService
 from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent,  AddDataEvent
@@ -1444,14 +1444,17 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer, TransferServer):
         
 
     def GetUploadDescriptor(self, prefix):
+        hn = SystemConfig.instance().GetHostname()
         return urlparse.urlunparse(("http",
-                                 "%s:%d" % (GetHostname(), self.socket.getsockname()[1]),
+                                 "%s:%d" % (hn, self.socket.getsockname()[1]),
                                  prefix,    # Path
                                  "", "", ""))
                                  
     def GetDownloadDescriptor(self, prefix, path):
+        hn = SystemConfig.instance().GetHostname()
         return urlparse.urlunparse(("http",
-                                    "%s:%d" % (GetHostname(), self.socket.getsockname()[1]),
+                                    "%s:%d" % (hn,
+                                               self.socket.getsockname()[1]),
                                     "%s/%s" % (prefix, urllib.quote(path)),
                                     "", "", ""))
                                  
@@ -1573,14 +1576,16 @@ n
         return self.port
 
     def GetUploadDescriptor(self, prefix):
+        hn = SystemConfig.instance().GetHostname()
         return urlparse.urlunparse(("https",
-                                 "%s:%d" % (GetHostname(), self._GetListenPort()),
+                                 "%s:%d" % (hn, self._GetListenPort()),
                                  prefix,
                                  "", "", ""))
                                  
     def GetDownloadDescriptor(self, prefix, path):
+        hn = SystemConfig.instance().GetHostname()
         return urlparse.urlunparse(("https",
-                                    "%s:%d" % (GetHostname(), self._GetListenPort()),
+                                    "%s:%d" % (hn, self._GetListenPort()),
                                     "%s/%s" % (prefix, urllib.quote(path)),
                                     "", "", ""))
                                  

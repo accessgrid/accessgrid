@@ -6,7 +6,7 @@
 # Author:      Robert Olson
 #
 # Created:     9/10/2003
-# RCS-ID:      $Id: certmgr.py,v 1.5 2004-03-10 23:17:09 eolson Exp $
+# RCS-ID:      $Id: certmgr.py,v 1.6 2004-03-12 05:23:13 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This tool is used on the command line to interact with the users certificate
 environment.
 """
-__revision__ = "$Id: certmgr.py,v 1.5 2004-03-10 23:17:09 eolson Exp $"
+__revision__ = "$Id: certmgr.py,v 1.6 2004-03-12 05:23:13 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -95,22 +95,22 @@ class CertMgrCmdProcessor(cmd.Cmd):
 
     def do_id(self, arg):
         """
-Usage:
+        Usage:
 
         id
 
-Change to identity certificate manipulation mode.
-"""
+        Change to identity certificate manipulation mode.
+        """
         self.setIdentityMode()
 
     def do_ca(self, arg):
         """
-Usage:
+        Usage:
 
         ca
 
-Change to CA certificate manipulation mode.
-"""
+        Change to CA certificate manipulation mode.
+        """
         self.setCAMode()
 
     def do_EOF(self, arg):
@@ -121,22 +121,22 @@ Change to CA certificate manipulation mode.
 
     def do_quit(self, arg):
         """
-Usage:
+        Usage:
 
         quit
 
-Quit the certificate manager.
-"""
+        Quit the certificate manager.
+        """
         return 1
 
     def do_list(self, line):
         """
-Usage:
+        Usage:
 
         list
 
-List the available certificates.
-"""
+        List the available certificates.
+        """
 
         self.loadCerts()
 
@@ -151,12 +151,12 @@ List the available certificates.
 
     def do_show(self, line):
         """
-Usage:
+        Usage:
 
         show <certnum>
 
-Show detailed information about certificate <certnum>.
-"""
+        Show detailed information about certificate <certnum>.
+        """
         args = line.split()
         if len(args) != 1:
             print "Usage: show <certnum>"
@@ -176,12 +176,12 @@ Show detailed information about certificate <certnum>.
 
     def do_delete(self, line):
         """
-Usage:
+        Usage:
 
         delete <certnum>
 
-Delete certificate <certnum>.
-"""
+        Delete certificate <certnum>.
+        """
         args = line.split()
         if len(args) != 1:
             print "Usage: delete <certnum>"
@@ -218,22 +218,21 @@ Delete certificate <certnum>.
 
     def do_globus_init(self, line):
         """
-Usage:
+        Usage:
         globus_init
 
-Initialize certificates from the default Globus locations,
-if possible.
-"""
+        Initialize certificates from the default Globus locations,
+        if possible.
+        """
         self.certMgr.InitRepoFromGlobus(self.certRepo)
         self.loadCerts()
 
     def do_export(self, line):
         """
-Usage: export <num> <certfile> [<keyfile>]
+        Usage: export <num> <certfile> [<keyfile>]
 
-If <keyfile> is not specified, and the certificate has
-a private key, it will be included in <certfile>
-
+        If <keyfile> is not specified, and the certificate has
+        a private key, it will be included in <certfile>
         """
 
         args = split_quoted(line)
@@ -335,12 +334,12 @@ a private key, it will be included in <certfile>
 
     def do_default(self, line):
         """
-Usage:
+        Usage:
 
         default <certnum>
 
-Set certificate <certnum> to be the default identity certificate.
-"""
+        Set certificate <certnum> to be the default identity certificate.
+        """
 
         if not self.inIdentityMode():
             print "Must be in identity mode to set default certficate."
@@ -680,10 +679,9 @@ def main():
     The main routine.
     """
     app = Toolkit.CmdlineApplication()
-    app.Initialize()
+    args = app.Initialize()
 
     cmd = CertMgrCmdProcessor(app.GetCertificateManager())
-
     cmd.cmdloop()
 
 

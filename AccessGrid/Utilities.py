@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.56 2004-03-10 23:17:07 eolson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.57 2004-03-12 05:23:11 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.56 2004-03-10 23:17:07 eolson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.57 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -32,7 +32,6 @@ from AccessGrid import Log
 log = Log.GetLogger(Log.Utilities)
 
 from AccessGrid.Version import GetVersion
-from AccessGrid.Platform import GetUserConfigDir
 
 # Global variables for sending log files
 VENUE_CLIENT_LOG = 0
@@ -202,8 +201,7 @@ def GetLogText(maxSize, logFileName):
         #
         # Try to get text from the log file.
         #
-              
-        logFile = file(os.path.join(GetUserConfigDir(), logFileName))
+        logFile = file(logFileName)
         
         #
         # Move to a position "maxSize" bytes from the end of the file. 
@@ -256,8 +254,7 @@ def GetLogText(maxSize, logFileName):
 
     return text
 
-
-def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
+def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
     """
     Submits a bug to bugzilla. 
 
@@ -314,7 +311,8 @@ def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
     # Combine comment, profile, and log file information
     #
 
-        
+    userConfigDir = userConfig.GetConfigDir()
+    
     if profile:
         # Always set profile email to empty string so we don't write to wrong email address.
         profile.email = ""
@@ -335,26 +333,25 @@ def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
 
     if logFile == NO_LOG:
         args['short_desc'] = "Feature or bug report from menu option"
-        
-    
+
     elif logFile == VENUE_MANAGEMENT_LOG:
         args['short_desc'] = "Crash in Venue Management UI"
+
         commentAndLog = commentAndLog \
-                        +"\n\n--- VenueManagement.log INFORMATION ---\n\n"+GetLogText(20000, "VenueManagement.log")
+                        +"\n\n--- VenueManagement.log INFORMATION ---\n\n"+GetLogText(20000, os.path.join(userConfigDir, "VenueManagement.log"))
         
     elif logFile == NODE_SETUP_WIZARD_LOG:
         args['short_desc'] = "Crash in Node Setup Wizard UI"
         commentAndLog = commentAndLog \
-                        +"\n\n--- NodeSetupWizard.log INFORMATION ---\n\n"+GetLogText(20000, "NodeSetupWizard.log")
+                        +"\n\n--- NodeSetupWizard.log INFORMATION ---\n\n"+GetLogText(20000, os.path.join(userConfigDir, "NodeSetupWizard.log"))
 
     else:
         args['short_desc'] = "Automatic Bug Report"
-#        args['short_desc'] = "Crash in Venue Client UI"
         commentAndLog = commentAndLog \
-                        +"\n\n--- VenueClient.log INFORMATION ---\n\n"+GetLogText(20000, "VenueClient.log") \
-                        +"\n\n--- agns.log INFORMATION ---\n\n"+GetLogText(20000, "agns.log")\
-                        +"\n\n--- agsm.log INFORMATION ---\n\n"+GetLogText(20000, "agsm.log")\
-                        +"\n\n--- AGService.log INFORMATION ---\n\n"+GetLogText(20000, "AGService.log")
+                        +"\n\n--- VenueClient.log INFORMATION ---\n\n"+GetLogText(20000, os.path.join(userConfigDir, "VenueClient.log")) \
+                        +"\n\n--- agns.log INFORMATION ---\n\n"+GetLogText(20000, os.path.join(userConfigDir, "agns.log"))\
+                        +"\n\n--- agsm.log INFORMATION ---\n\n"+GetLogText(20000, os.path.join(userConfigDir, "agsm.log"))\
+                        +"\n\n--- AGService.log INFORMATION ---\n\n"+GetLogText(20000, os.path.join(userConfigDir, "AGService.log"))
 
     
     args['comment']= commentAndLog

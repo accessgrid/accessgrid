@@ -4,7 +4,7 @@ from AccessGrid import Log
 from AccessGrid.EventClient import EventClient
 from AccessGrid.Events import ConnectEvent, Event
 from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.hosting import Client
 
 class SharedAppClient:
@@ -458,7 +458,8 @@ if __name__ == "__main__":
     sharedAppClient.InitLogging()
 
     # Get client profile
-    clientProfileFile = os.path.join(GetUserConfigDir(), "profile")
+    clientProfileFile = os.path.join(UserConfig.instance().GetConfigDir(),
+                                     "profile")
     clientProfile = ClientProfile(clientProfileFile)
     
     # Connect to shared application service. 
@@ -502,7 +503,8 @@ if __name__ == "__main__":
     for p in sharedAppClient.GetComponents():
         print p
     
-    clientProfileFile = os.path.join(GetUserConfigDir(), "profile")
+    clientProfileFile = os.path.join(UserConfig.instance().GetConfigDir(),
+                                     "profile")
     clientProfile = ClientProfile(clientProfileFile)
     clientProfile.name = "new name"
     print "\n--set profile with name 'new name'"

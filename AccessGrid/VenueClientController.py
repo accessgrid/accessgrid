@@ -2,16 +2,13 @@
 #-----------------------------------------------------------------------------
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
-#
-# Author:      Thomas D. Uram
-#
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.8 2004-03-10 23:17:08 eolson Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.9 2004-03-12 05:23:11 judson Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.8 2004-03-10 23:17:08 eolson Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.9 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -24,19 +21,15 @@ import time
 
 
 # Access Grid imports
+from AccessGrid import Toolkit
 from AccessGrid import Log
 from AccessGrid import DataStore
 from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid.Descriptions import ServiceDescription,DataDescription,ApplicationDescription
-from AccessGrid.Platform import GetUserConfigDir,GetUserAppPath
-
-from AccessGrid.Platform import GetMimeCommands
-from AccessGrid.Platform import GetSharedDocDir, GetTempDir
+from AccessGrid.Descriptions import ServiceDescription, DataDescription
+from AccessGrid.Descriptions import ApplicationDescription
+from AccessGrid.Platform.Config import UserConfig, MimeConfig
 from AccessGrid.Platform import isWindows
 
-#from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
-
-from AccessGrid import Toolkit
 
 log = Log.GetLogger(Log.VenueClientController)
 
@@ -48,6 +41,80 @@ class VenueClientController:
 
     def __init__(self):
         self.__venueClientApp = VenueClientApp()
+
+        self.history = []
+        self.myVenuesDict = dict()
+        self.userConf = UserConfig.instance()
+        self.myVenuesFile = os.path.join(self.userConf.GetConfigDir(),
+                                         "myVenues.txt" )
+        
+        #self.__LoadMyVenues()
+
+
+    ##########################################################################
+    #
+    # Private Methods
+
+    def __SetHistory(self, uri, back):
+        """
+        This method sets the history list, which stores visited
+        venue urls used by the back button.  A venue URL does not get
+        saved if the back (<<) button is clicked.
+
+        **Arguments:**
+        
+        *uri* A string containing the venue address we want to add to the history list
+        *back* Boolean value, true if the back button was pressed, else false.
+        """
+        log.debug("Set history url: %s " %uri)
+        length = len(self.history)
+        last = length -1
+
+        if(length>0):
+            
+            #
+            # Clicked the "Go" button
+            #
+            if not back:
+                #
+                # Just add the url once even if we press "Go" several times
+                #
+                if(self.history[last] != uri):
+                    self.history.append(uri)
+            #
+            # Clicked the "<<" button
+            #
+            else:
+                del self.history[last] # clicked back button
+
+        elif(uri is not None):
+            #
+            # If this is the first time connecting to a venue, just add the url
+            #
+            self.history.append(uri)
+            
+            
+    def __LoadMyVenues(self):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
+        try:
+            myVenuesFileH = open(self.myVenuesFile, 'r')
+        except:
+            myVenuesFileH = None
+            log.exception("Failed to load MyVenues file")
+        else:
+            self.myVenuesDict = cPickle.load(myVenuesFileH)
+
+        if myVenuesFileH:
+            myVenuesFileH.close()
+        
+    # end Private Methods
+    #
+    ##########################################################################
 
     ##########################################################################
     #
@@ -641,18 +708,19 @@ class VenueClientController:
         *cmd* Command to execute on the app
         
         """
+        pass
         
-        if not appDesc or not isinstance(appDesc,ApplicationDescription):
-            raise ValueError("Invalid appDesc argument")
+#         if not appDesc or not isinstance(appDesc,ApplicationDescription):
+#             raise ValueError("Invalid appDesc argument")
             
-        if not cmd:
-            raise ValueError("Invalid cmd argument")
+#         if not cmd:
+#             raise ValueError("Invalid cmd argument")
         
-        appdb = Toolkit.GetApplication().GetAppDatabase()
+#         appdb = Toolkit.GetApplication().GetAppDatabase()
         
-        cmdline = appdb.GetCommandLine(appDesc.mimeType, cmd)
+#        cmdline = appdb.GetCommandLine(appDesc.mimeType, cmd)
 
-        self.__venueClientApp.StartCmd(cmdline, appDesc, verb=cmd)
+#        self.__venueClientApp.StartCmd(cmdline, appDesc, verb=cmd)
         
     def UpdateApplicationCB(self,appDesc):
         """
@@ -669,6 +737,32 @@ class VenueClientController:
             
         self.__venueClient.UpdateApplication(appDesc)
         
+    #
+    # Application Integration code
+    #
+    def JoinApp(self,appDesc):
+        """
+        Join the specified application
+
+        **Arguments:**
+        
+        *appDesc* The ApplicationDescription of the application we want to join
+        """
+        log.debug("Joining application: %s / %s" % (appDesc.name, appDesc.mimeType))
+        commands = None
+        #appdb = Toolkit.GetApplication().GetAppDatabase()
+        #commands = appdb.GetCommandNames(appDesc.mimeType)
+
+        if commands == None:
+            message = "No client registered for the selected application\n(mime type = %s)" % appDesc.mimeType
+            self.gui.Prompt(message,message )
+            log.debug(message)
+        else:
+            if 'Open' in commands:
+                #cmdLine = appdb.GetCommandLine(appDesc.mimeType, 'Open')
+                log.debug("executing cmd: %s" % cmdLine)
+                pid = wxExecute(cmdLine)
+                
     def GetMimeCommandNames(self,mimeType):
         """
         This method returns mime command names for the given mime type
@@ -678,8 +772,9 @@ class VenueClientController:
         *mimeType* A mime type
         
         """
-        appdb = Toolkit.GetApplication().GetAppDatabase()
-        commands = appdb.GetCommandNames(mimeType = mimeType)
+        commands = None
+        #appdb = Toolkit.GetApplication().GetAppDatabase()
+        #commands = appdb.GetCommandNames(mimeType = mimeType)
         return commands
         
     def GetMimeCommandLine(self,mimeType,command):
@@ -693,8 +788,9 @@ class VenueClientController:
         *command* Related command
         
         """
-        appdb = Toolkit.GetApplication().GetAppDatabase()
-        commandLine = appdb.GetCommandLine(mimeType,command)        
+        commandLine = ""
+        #appdb = Toolkit.GetApplication().GetAppDatabase()
+        #commandLine = appdb.GetCommandLine(mimeType,command)        
         return commandLine
     #
     # Text Actions
@@ -1199,7 +1295,7 @@ class VenueClientController:
                 name = appdb.GetNameForMimeType(item.mimeType)
                 if name != None:
                     appName = '_'.join(name.split(' '))
-                    appDir = os.path.join(GetUserAppPath(), appName)
+                    appDir = os.path.join(self.userConf.GetAppDir(), appName)
                     try:
                         os.chdir(appDir)
                     except:
@@ -1280,7 +1376,9 @@ class VenueClientApp:
         
         # MyVenues
         self.myVenuesDict = dict()
-        self.myVenuesFile = os.path.join(GetUserConfigDir(), "myVenues.txt" )
+        self.userConf = UserConfig.instance()
+        self.myVenuesFile = os.path.join(self.userConf.GetConfigDir(),
+                                         "myVenues.txt" )
         self.__LoadMyVenues()
         
         # Venue History
@@ -1325,20 +1423,23 @@ class VenueClientApp:
         try:
             myVenuesFileH = open(self.myVenuesFile, 'r')
         except:
+            myVenuesFileH = None
             log.exception("Failed to load MyVenues file")
         else:
             self.myVenuesDict = cPickle.load(myVenuesFileH)
-            
-        myVenuesFileH.close()
+
+        if myVenuesFileH:
+            myVenuesFileH.close()
         
     #
     # Applications Methods
     # 
     
     def GetInstalledApps(self):
-        app = Toolkit.GetApplication()
-        appdb = app.GetAppDatabase()
-        appDescList = appdb.ListAppsAsAppDescriptions()
+        #app = Toolkit.Application.instance()
+        #appdb = app.GetAppDatabase()
+        #appDescList = appdb.ListAppsAsAppDescriptions()
+        appDescList = []
         return appDescList
 
     

@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.2 2004-03-10 23:17:08 eolson Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.3 2004-03-12 05:23:12 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.2 2004-03-10 23:17:08 eolson Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.3 2004-03-12 05:23:12 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import win32process
@@ -23,16 +23,24 @@ class ProcessManager:
     def __init__(self):
         self.processes = []
 
-    def start_process(self, command, arglist):
+    def StartProcess(self, command, arglist, detached = 1):
         """
         Start a new process.
-        Command is the name of the command to be
-        started. It can either be a full pathname or a command name to
-        be found on the default path.  Arglist is a list of the
-        arguments to the command.  On windows, these will all be
-        joined together into a string to be passed to CreateProcess.
-        """
 
+        @param command : the name of the command to be started. It can
+        either be a full pathname or a command name to be found on the
+        default path.
+        
+        @param arglist : is a list of the arguments to the command.
+
+        @param detached : a flag indicating whether this process
+        should be run detached or the process manager should wait for
+        it to complete execution to return.
+        
+        @type command: string
+        @type arglist: list of strings
+        @type detached: integer
+        """
         cmdline = command
         for arg in arglist:
             arg = str(arg)
@@ -74,7 +82,10 @@ class ProcessManager:
 
         return rc
 
-    def terminate_all_processes(self):
+    def TerminateAllProcesses(self):
+        """
+        Cleanly shutdown all processes this manager has created.
+        """
         for phandle in self.processes:
             try:
                 win32process.TerminateProcess(phandle, 0)
@@ -82,20 +93,66 @@ class ProcessManager:
                 log.exception("couldn't terminate process %s: %s", phandle, e)
         self.processes = []
 
-    def terminate_process(self, phandle):
+    def TerminateProcess(self, pid):
+        """
+        Cleanly shutdown the specified process this manager has created.
+
+        @param pid: the id of the process to terminate.
+        @type pid: string? integer?
+        """
         try:
             win32process.TerminateProcess(phandle, 0)
             self.processes.remove(phandle)
         except win32process.error, e:
             log.exception("couldn't terminate process %s: %s", phandle, e)
 
+    def KillAllProcesses(self):
+        """
+        Kill all processes this manager has created.
+
+        @warning: this is not a clean shutdown, but a forced shutdown
+        that may result in system cruft.
+        """
+        raise "Not implemented Yet."
+
+    def KillProcess(self, pid):
+        """
+        Kill a single process this manager has created.
+
+        @warning: this is not a clean shutdown, but a forced shutdown
+        that may result in system cruft.
+        
+        @param pid: the id of the process to terminate.
+        @type pid: string? integer?
+        """
+        raise "Not implemented Yet."
+
+    def ListProcesses(self):
+        """
+        Return a list of process id's for this process manager.
+        @returns: a list of process id's
+        """
+        raise "This should not be called directly, but by a subclass."
+
 if __name__ == "__main__":
     import time
     mgr = ProcessManager()
-    mgr.start_process("notepad", [r"\boot.ini"])
+
+    try:
+        mgr.StartProcess("notepad", [r"\boot.ini"])
+    except Exception, e:
+        print "Exception starting process: ", e
+
+    try:
+        print mgr.ListProcesses()
+    except Exception, e:
+        print "Exception listing processes: ", e
 
     time.sleep(5)
 
-    mgr.terminate_all_processes()
+    try:
+        mgr.TerminateAllProcesses()
+    except Exception, e:
+        print "Exception terminating processes: ", e
 
     

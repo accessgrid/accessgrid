@@ -2,8 +2,7 @@ from wxPython.wx import *
 
 from AccessGrid import Log
 from AccessGrid.Events import Event
-from AccessGrid.Platform import isWindows
-from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.Platform import isWindows, Config
 from AccessGrid.ClientProfile import ClientProfile
 
 from AccessGrid.SharedAppClient import SharedAppClient
@@ -459,7 +458,8 @@ def SetLogging():
     debugMode = 1
     
     if logFile is None:
-        logname = os.path.join(GetUserConfigDir(), "NodeSetupWizard.log")
+        logname = os.path.join(UserConfig.instance().GetConfigDir(),
+                               "NodeSetupWizard.log")
     else:
         logname = logFile
         

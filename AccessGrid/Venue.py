@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.158 2004-03-10 23:17:07 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.159 2004-03-12 05:23:11 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.158 2004-03-10 23:17:07 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.159 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -60,8 +60,7 @@ from AccessGrid.Events import ClientExitingEvent
 from AccessGrid.Events import MarshalledEvent
 from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import ServerLock, PathFromURL
-from AccessGrid.NetUtilities import GetHostname
-from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.ClientProfile import ClientProfileCache
 
 log = Log.GetLogger(Log.VenueServer)
@@ -409,7 +408,8 @@ class Venue(AuthorizationMixIn):
         # each venue if you wanted to track who entered certain venues (secure
         # venues or conference venues for example).
         self.profileCachePrefix = "serverProfileCache"
-        self.profileCachePath = os.path.join(GetUserConfigDir(),
+        userConfig = UserConfig.instance()
+        self.profileCachePath = os.path.join(userConfig.GetConfigDir(),
                                              self.profileCachePrefix)
         self.cache = ClientProfileCache(self.profileCachePath)
 

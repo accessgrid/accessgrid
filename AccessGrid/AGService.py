@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.27 2004-03-12 00:31:20 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.28 2004-03-12 05:23:11 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.27 2004-03-12 00:31:20 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.28 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -20,13 +20,13 @@ import sys
 import Platform
 
 from AccessGrid import Log
-from AccessGrid.Log import handlers
 
 from AccessGrid.Types import *
 from AccessGrid.AGParameter import *
 from AccessGrid.Descriptions import StreamDescription
-from AccessGrid.AuthorizationManager import AuthorizationManager
-from AccessGrid.Platform import GetUserConfigDir, isWindows, isLinux
+from AccessGrid.Security.AuthorizationManager import AuthorizationManager
+from AccessGrid.Platform import isWindows, isLinux
+from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.ProcessManager import ProcessManager
 
 def GetLog():
@@ -35,13 +35,13 @@ def GetLog():
     """
     log = Log.GetLogger(Log.AGService)
     Log.SetDefaultLevel(Log.AGService, Log.DEBUG)
-    logFile = os.path.join(GetUserConfigDir(), "AGService.log")
+    ucd = UserConfig.instance().GetConfigDir()
+    logFile = os.path.join(ucd, "AGService.log")
     hdlr = Log.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
     hdlr.setFormatter(Log.GetFormatter())
     Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
     return log
-
 
 class AGService:
     """

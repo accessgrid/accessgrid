@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.33 2004-03-10 23:17:07 eolson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.34 2004-03-12 05:23:11 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.33 2004-03-10 23:17:07 eolson Exp $"
+__revision__ = "$Id: TextClient.py,v 1.34 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -25,7 +25,6 @@ from AccessGrid import Log
 from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
 from AccessGrid.Events import DisconnectEvent, ClientExitingEvent, TextEvent
 from AccessGrid.Security.Utilities import CreateTCPAttrAlwaysAuth
-from AccessGrid.NetUtilities import GetHostname
 
 class SimpleTextProcessor:
     def __init__(self, myProfile=None, textConnection=None,

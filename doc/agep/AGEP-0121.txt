@@ -2,7 +2,7 @@
 Display Node Service
 =====================================
  
-:version: $Revision: 1.1 $
+:version: $Revision: 1.2 $
 :author: Ivan R. Judson <judson@mcs.anl.gov>
 :status: Draft
 :contact: ag-tech@mcs.anl.gov
@@ -53,13 +53,13 @@ DisplayTypes.py
 
     id : unique id
 
-    sizeX : integer
+    width : integer
 
-    sizeY : integer
+    height : integer
 
-    locationX : integer
+    left : integer
 
-    locationY : integer
+    top : integer
 
     def GetId(self): => id
 

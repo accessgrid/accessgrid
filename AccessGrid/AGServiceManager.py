@@ -1,18 +1,15 @@
 #-----------------------------------------------------------------------------
 # Name:        AGServiceManager.py
 # Purpose:     
-#
-# Author:      Thomas D. Uram
-#
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.43 2004-03-12 00:30:19 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.44 2004-03-12 05:23:11 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.43 2004-03-12 00:30:19 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.44 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -21,22 +18,21 @@ import time
 
 from AccessGrid import Log
 from AccessGrid.hosting import Client
-from AccessGrid.NetUtilities import GetHostname
-
-from AccessGrid import Platform
-from AccessGrid.Platform import ProcessManager
+from AccessGrid.Platform.ProcessManager import ProcessManager
+from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
+from AccessGrid import Utilities
 from AccessGrid.Types import AGServicePackage
 from AccessGrid.DataStore import GSIHTTPDownloadFile
-from AccessGrid import Utilities
-from AccessGrid.Platform import GetConfigFilePath, GetSystemConfigDir, GetInstallDir
-from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
+from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
+from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 
 log = Log.GetLogger(Log.ServiceManager)
 
 class AGServiceManager:
     """
-    AGServiceManager : exposes local resources and configures services
-    to deliver them
+    AGServiceManager :
+
+    exposes local resources and configures services to deliver them
     """
 
     def __init__( self, server ):
@@ -45,14 +41,13 @@ class AGServiceManager:
         self.resources = []
         # note: services dict is keyed on pid
         self.services = dict()
-        self.processManager = ProcessManager.ProcessManager()
+        self.processManager = ProcessManager()
 
-        self.servicesDir = os.path.join(Platform.GetUserConfigDir(),"local_services")
+        userConfig = UserConfig.instance()
+        self.servicesDir = os.path.join(userConfig.GetConfigDir(),
+                                        "local_services")
 
-
-        #
         # Create directory if not exist
-        #
         if not os.path.exists(self.servicesDir):
             log.info("Creating user services directory %s", self.servicesDir)
             try:
@@ -153,11 +148,11 @@ class AGServiceManager:
                 executable = self.servicesDir + os.sep + serviceDescription.executable
 
             # Designate port for service
-            port = MulticastAddressAllocator().AllocatePort()
+            port = NetworkAddressAllocator().AllocatePort()
             options.append( port )
             log.debug("Running Service; options: %s %s", executable, str(options))
             
-            pid = self.processManager.start_process( executable, options )
+            pid = self.processManager.StartProcess( executable, options )
 
             #
             # Wait for service to boot and become reachable,
@@ -242,7 +237,7 @@ class AGServiceManager:
                     #
                     # Kill service
                     #
-                    self.processManager.terminate_process(pid)
+                    self.processManager.TerminateProcess(pid)
 
                     #
                     # Free the resource
@@ -343,10 +338,10 @@ class AGServiceManager:
     def __DiscoverResources( self ):
         """Discover local resources (video capture cards, etc.)
         """
-        configDir = GetSystemConfigDir()
+        agtkConfig = AGTkConfig.instance()
+        configDir = agtkConfig.GetConfigDir()
         filename = configDir + os.sep + "videoresources"
         self.resources = Utilities.GetResourceList( filename )
-
 
     def __ReadConfigFile( self, configFile ):
         """
@@ -361,13 +356,6 @@ class AGServiceManager:
             # If relative path in config file, use SystemConfigDir as the base
             if not os.path.isabs(self.servicesDir):
                 self.servicesDir = GetConfigFilePath(self.servicesDir)
-
-
-
-
-
-
-from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 
 class AGServiceManagerI(SOAPInterface):
     """

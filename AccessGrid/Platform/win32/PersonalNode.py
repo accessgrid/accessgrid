@@ -1,11 +1,11 @@
 #-----------------------------------------------------------------------------
 # Name:        PersonalNode.py
-# Purpose:     Support for PersonalNode startup on Windows.
+# Purpose:     Support for PersonalNode startup using unix pipes for synchronization.
 #
 # Author:      Robert Olson
 #
-# Created:     2002/12/12
-# RCS-ID:      $Id: PersonalNode.py,v 1.3 2004-03-11 23:07:37 eolson Exp $
+# Created:     2003/05/05
+# RCS-ID:      $Id: PersonalNode.py,v 1.4 2004-03-12 05:23:12 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,66 +14,139 @@
 Classes for managing the startup and synchronization of the components
 of a Personal Node.
 
+This is the Linux (well, nonWindows) version. It uses standard unix pipes
+to synchronize the service and app startup.
+
+We can use fewer pipes than we needed for the event-object implementation, as
+we can utilize the bidirectional nature of pipes and the detection of their
+closure to detect process death.
+
+The protocol is as follows:
+
+VC: Create svc-mgr-pipe, node-svc-pipe, synch-pipe
+    Start service mgr, pass svc-mgr-pipe and synch-pipe.write
+    Start node mgr, pass node-svc-pipe and synch-pipe.read
+    read svc-mgr-url from svc-mgr-pipe
+    read node-mgr-url from node-svc-pipe
+    go
+
+Node svc:
+    init pipes from cmdline
+    read svc-mgr-url from synch-pipe.read
+    init node svc
+    write node svc url to node-svc-pipe
+    go
+
+Svc mgr:
+    init pipes from cmdline
+    init svc mgr
+    write svc mgr url to synch-pipe.write
+    write svc mgr url to svc-mgr-pipe
+    go
+
 """
 
-__revision__ = "$Id: PersonalNode.py,v 1.3 2004-03-11 23:07:37 eolson Exp $"
+__revision__ = "$Id: PersonalNode.py,v 1.4 2004-03-12 05:23:12 judson Exp $"
 __docformat__ = "restructuredtext en"
 
+import sys
+import time
 import os
-import win32api
-import win32event
-import win32process
-import win32con
-import _winreg
+import signal
 import threading
 import urlparse
 import re
-
+import errno
+import struct
+import string
 
 from AccessGrid import Log
-from AccessGrid.Platform import Platform
+from AccessGrid.Platform.Config import AGTkConfig
+from AccessGrid.Platform.ProcessManager import ProcessManager
 
 log = Log.GetLogger(Log.PersonalNode)
-Log.SetDefaultLevel(Log.PersonalNode, Log.WARN)
 
-NodeServiceURIKey = "NodeServiceURI"
-ServiceManagerURIKey = "ServiceManagerURI"
+class Pipe:
+    """
+    Simple wrapper for a pipe endpoint, solely for the purposes of this module
 
-class EventObj:
-    def __init__(self, name, create = 0):
-        self.name = name
-        if create:
-            self.eventObj = win32event.CreateEvent(None, 1, 0, name)
-        else:
-            self.eventObj = win32event.OpenEvent(win32event.EVENT_ALL_ACCESS,
-                                                 0, name)
+    Operations supported are writeURL, readURL, close.
 
-    def GetName(self):
-        return self.name
-    
-    def GetHandle(self):
-        return self.eventObj
+    """
 
-    def Set(self):
-        log.debug("SetEvent on %s", self.name)
-        win32event.SetEvent(self.eventObj)
+    def __init__(self, readFD = None, writeFD = None):
+        self.readFD = readFD
+        self.writeFD = writeFD
 
-    def Reset(self):
-        log.debug("ResetEvent on %s", self.name)
-        win32event.ResetEvent(self.eventObj)
+        if self.readFD:
+            self.readFP = os.fdopen(self.readFD, "r")
 
-    def Wait(self):
-        log.debug("Waiting on %s", self.name)
-        win32event.WaitForSingleObject(self.eventObj, -1)
-        log.debug("Done waiting on %s", self.name)
+        if self.writeFD:
+            self.writeFP = os.fdopen(self.writeFD, "w")
+
+    def __del__(self):
+        self.close()
+
+    def close(self):
+        self.closeRead()
+        self.closeWrite()
+
+    def closeRead(self):
+        if self.readFD is not None:
+            self.readFP.close()
+            self.readFP = None
+            self.readFD = None
+
+    def closeWrite(self):
+        if self.writeFD is not None:
+            self.writeFP.close()
+            self.writeFP = None
+            self.writeFD = None
+        
+    def writeURL(self, url):
+
+        if self.writeFD is None:
+            raise Exception, "Cannot write to pipe: writeFD unavailable"
+        
+        # Ensure it's a string.
+        urlstr = str(url)
+        l = len(urlstr)
+        s = struct.pack("<l%ss" % (l,), l, urlstr)
+        self.writeFP.write(s)
+        self.writeFP.flush()
+
+    def readURL(self):
+
+        if self.readFD is None:
+            raise Exception, "Cannot read from pipe: readFD unavailable"
+
+        log.debug("waiting on read on %d", self.readFD)
+        lsiz = struct.calcsize("<l")
+        lstr = self.readFP.read(lsiz)
+
+        if lstr is None or lstr == "":
+            log.debug("first read %d returns none", self.readFD)
+            return None
+
+        (n,) = struct.unpack("<l", lstr)
+        
+        print "Got len '%s'" % (n,)
+        str = self.readFP.read(n)
+
+        if str is None or str == "":
+            log.debug("second read %d returns none", self.readFD)
+            return None
+            
+        print "Read url ", str
+
+        return str
 
 class PersonalNodeManager:
-    def __init__(self, setNodeServiceCallback, debugMode, progressCallback):
-        self.setNodeServiceCallback = setNodeServiceCallback
+    def __init__(self, debugMode, progressCallback):
         self.debugMode = debugMode
         self.progressCallback = progressCallback
-        
-        self.initEventObjects()
+        self.processManager = ProcessManager()
+        self.initPipes()
 
     def Run(self):
         """
@@ -87,27 +160,31 @@ class PersonalNodeManager:
         self.startServiceManager()
         self.startNodeService()
 
+        #self.closeUnusedPipeEnds()
+
         #
         # Wait for the service mgr to initialize.
         #
 
-        self.svc_mgr_init.Wait()
-
-        url = readServiceManagerURL()
-        self.progressCallback("Started service manager.")
+        url = self.svc_mgr_init_pipe.readURL()
 
         log.debug("Service manager running at %s", url)
+        self.progressCallback("Started service manager.")
         
+        self.svc_mgr_init_pipe.close()
+
         #
         # Now wait for the node service to initialize
         #
 
-        self.node_svc_init.Wait()
-        url = readNodeServiceURL()
+        url = self.node_svc_init_pipe.readURL()
 
         log.debug("Node service running at %s", url)
+
         self.progressCallback("Started node service.")
-        
+
+        self.node_svc_init_pipe.close()
+
         comps = urlparse.urlparse(url)
         if comps[1] != "":
             #
@@ -128,7 +205,7 @@ class PersonalNodeManager:
                 url = urlparse.urlunparse(ncomps)
                 log.debug("Reconstituted url as %s", url)
 
-        self.setNodeServiceCallback(url)
+        return url
 
         #
         # Okay, we're done!
@@ -139,101 +216,132 @@ class PersonalNodeManager:
         #
 
     def startServiceManager(self):
+        path = os.path.join(AGTkConfig.instance().GetInstallDir(),
+                            "AGServiceManager.py")
 
-        path = os.path.join(Platform.GetInstallDir(), "AGServiceManager.py")
-        path = win32api.GetShortPathName(path)
-
+        python = sys.executable
         if self.debugMode:
-            python = "python"
             dflag = "--debug"
         else:
-            python = "pythonw"
             dflag = ""
 
-        arg = "%s %s --pnode %s %s" % (python, path,  self.serviceManagerArg, dflag)
+#        args = [python, path, "--pnode", self.serviceManagerArg]
+        args = [path, "--pnode", self.serviceManagerArg]
 
-        log.debug("Start service manager with %s", arg)
+        if dflag != "":
+            args.append(dflag)
 
-        pinfo = win32process.CreateProcess(None,
-                                           arg,
-                                           None,
-                                           None,
-                                           0,
-                                           win32process.NORMAL_PRIORITY_CLASS,
-                                           None,
-                                           None,
-                                           win32process.STARTUPINFO())
-        log.debug("info is ", pinfo)
+        log.debug("Start service manager with %s", args)
+
+#        pinfo = os.spawnvp(os.P_NOWAIT, python, args)
+        pinfo = self.processManager.StartProcess(python, args, 1)
+
+        print "info is ", pinfo
         self.serviceManagerPInfo = pinfo
 
     def startNodeService(self):
-        path = os.path.join(Platform.GetInstallDir(), "AGNodeService.py")
-        path = win32api.GetShortPathName(path)
+        path = os.path.join(AGTkConfig.instance().GetInstallDir(),
+                            "AGNodeService.py")
 
+        python = sys.executable
         if self.debugMode:
-            python = "python"
             dflag = "--debug"
         else:
-            python = "pythonw"
             dflag = ""
 
-        arg = "%s %s --pnode %s %s" % (python, path, self.nodeServiceArg, dflag)
+#        args = [python, path, "--pnode", self.nodeServiceArg]
+        args = [path, "--pnode", self.nodeServiceArg]
+        if dflag != "":
+            args.append(dflag)
 
-        log.debug("Start node service with %s", arg)
+        log.debug("Start node service with %s", args)
 
-        pinfo = win32process.CreateProcess(None,
-                                           arg,
-                                           None,
-                                           None,
-                                           0,
-                                           win32process.NORMAL_PRIORITY_CLASS,
-                                           None,
-                                           None,
-                                           win32process.STARTUPINFO())
-        log.debug("info is ", pinfo)
+#        pinfo = os.spawnvp(os.P_NOWAIT, python, args)
+        pinfo = self.processManager.StartProcess(python, args)
+
+        print "info is ", pinfo
         self.nodeServicePInfo = pinfo
-                                           
 
     def Stop(self):
         """
         Stop the subprocesses.
 
-        We do this by signalling the terminate event objects, and waiting
+        We do this by closing the pipes to the nodes, and waiting
         a bit. If they don't die, then call TerminateProcess.
 
         """
 
         log.debug("Stop node service")
-        self.node_svc_term.Set()
-        rc = win32event.WaitForSingleObject(self.nodeServicePInfo[0], 1000)
-        log.debug("Wait returns %d", rc)
+        
 
         log.debug("Stop svc mgr")
-        self.svc_mgr_term.Set()
-        rc = win32event.WaitForSingleObject(self.serviceManagerPInfo[0], 1000)
-        log.debug("Wait returns %d", rc)
+        self.svc_mgr_term_pipe.close()
 
-    def initEventObjects(self):
-        for obj in ['svc_mgr_init',
-                    'svc_mgr_term',
-                    'svc_mgr_node_svc_synch',
-                    'node_svc_init',
-                    'node_svc_term']:
-            name = "AG_" + obj
+        log.debug("Stop node svc")
+        self.node_svc_term_pipe.close()
 
-            eobj = EventObj(name, create = 1)
-            setattr(self, obj, eobj)
+        log.debug("Wait for node service %s to die", self.nodeServicePInfo)
+        ensureProcessDead(self.nodeServicePInfo)
 
-        # OK, OK, so this isn't initializing event objects but it is sort
-        # of related.
-        myid = win32api.GetCurrentProcessId()
+        log.debug("Wait for service manager %s to die", self.serviceManagerPInfo)
+        ensureProcessDead(self.serviceManagerPInfo)
 
-        self.nodeServiceArg = "AG_node_svc_init:AG_svc_mgr_node_svc_synch:AG_node_svc_term:%s"  % (myid)
-        self.serviceManagerArg = "AG_svc_mgr_init:AG_svc_mgr_node_svc_synch:AG_svc_mgr_term:%s" % (myid)
+    def initPipes(self):
+        """
+        Create the pipes used to communicate between
+        the venue client and the service mgrs.
+
+        
+
+        """
+
+        all_fds = []
+        for obj in ['svc_mgr_init_pipe',
+                    'svc_mgr_term_pipe',
+                    'svc_mgr_node_svc_synch_pipe',
+                    'node_svc_init_pipe',
+                    'node_svc_term_pipe']:
+
+            (r, w) = os.pipe()
+
+            all_fds.append(str(r))
+            all_fds.append(str(w))
+
+            pobj = Pipe(r, w)
+
+            print "%s: r=%d w=%d" % (obj, r, w)
+
+            setattr(self, obj, pobj)
+
+        all_str = string.join(all_fds, ",")
+        self.nodeServiceArg = "%s:%s:%s:%s" % (self.node_svc_init_pipe.writeFD,
+                                               self.svc_mgr_node_svc_synch_pipe.readFD,
+                                               self.node_svc_term_pipe.readFD,
+                                               all_str)
+
+        self.serviceManagerArg = "%s:%s:%s:%s" % (self.svc_mgr_init_pipe.writeFD,
+                                                  self.svc_mgr_node_svc_synch_pipe.writeFD,
+                                                  self.svc_mgr_term_pipe.readFD,
+                                                  all_str)
+
+    def closeUnusedPipeEnds(self):
+        """
+        Close the ends of the pipes that the venue client isn't using.
+        Must be done *after* the children are created.
+        """
+
+        log.debug("Closing unused pipe ends")
+        self.node_svc_init_pipe.closeWrite()
+        self.node_svc_term_pipe.closeRead()
+        self.svc_mgr_init_pipe.closeWrite()
+        self.svc_mgr_term_pipe.closeRead()
+        self.svc_mgr_node_svc_synch_pipe.close()
+        
 
 class PN_NodeService:
     def __init__(self, terminateCallback):
         self.terminateCallback = terminateCallback
+
 
     def RunPhase1(self, initArg):
         """
@@ -241,24 +349,41 @@ class PN_NodeService:
 
         Returns the URL to the service manager.
         """
+
         try:
-            (init, synch, term, self.parentPID) = initArg.split(":")
+            (init, synch, term, all) = initArg.split(":")
         except ValueError, e:
             log.error("Invalid argument to PN_NodeService: %s", initArg)
             log.exception("Invalid argument to PN_NodeService: %s", initArg)
             raise e
 
-        self.initEvent = EventObj(init)
-        self.synchEvent = EventObj(synch)
-        self.termEvent = EventObj(term)
+
+        #
+        # Close all the pipe fds except the ones we want
+        #
+
+        init = int(init)
+        synch = int(synch)
+        term = int(term)
+        want = {init: 1, synch: 1, term: 1}
+
+#        for fd in all.split(","):
+#            fd = int(fd)
+#            if not fd in want:
+#                os.close(fd)
+
+        self.initPipe = Pipe(writeFD = init)
+        self.synchPipe = Pipe(readFD = synch)
+        self.termPipe = Pipe(readFD = term)
 
         #
         # Start the interlock protocol.
         #
 
-        self.synchEvent.Wait()
-        url = readServiceManagerURL()
+        url = self.synchPipe.readURL()
         log.debug("Node service: synch wait completes with url %s", url)
+
+        self.synchPipe.close()
 
         return url
 
@@ -269,49 +394,23 @@ class PN_NodeService:
         myURL is the handle for our node service.
 
         """
-        writeNodeServiceURL(myURL)
 
         log.debug("signalling node svc event")
-        self.initEvent.Set()
+        self.initPipe.writeURL(myURL)
+        self.initPipe.close()
 
-        #
-        # Get the process handle for the parent
-        #
-
-        self.hParent = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS,
-                                            0, int(self.parentPID))
-        log.debug("got parent handle %s", self.hParent)
         #
         # Create a thread to wait for termination
         #
 
-        self.thread = threading.Thread(target=self.waitForEndMult)
+        self.thread = threading.Thread(target=self.waitForEnd)
         self.thread.start()
 
     def waitForEnd(self):
-        log.debug("Waiting for termination")
+        log.debug("NS waiting for termination")
 
-        # self.termEvent.Wait()
-        ret = win32event.WaitForSingleObject(self.hParent, -1)
-        log.debug("Terminating ret=%s", ret)
-        self.terminateCallback()
-
-    def waitForEndMult(self):
-        log.debug("Waiting for termination")
-
-        hlist = (self.hParent, self.termEvent.GetHandle())
-
-        ret = win32event.WaitForMultipleObjects(hlist, 0, win32event.INFINITE)
-
-        if ret == 0:
-            log.debug("NS: Terminating due to parent death")
-        elif ret == 1:
-            log.debug("NS: Terminating due to signal on term event")
-        else:
-            log.debug("NS: Other return: %s", ret)
-
-        log.debug("NS: Terminating")
-        deleteNodeServiceURL()
+        ret = self.termPipe.readURL()
+        log.debug("NS terminating ret=%s", ret)
         self.terminateCallback()
 
 class PN_ServiceManager:
@@ -321,113 +420,150 @@ class PN_ServiceManager:
 
     def Run(self, initArg):
         try:
-            (init, synch, term, parentPID) = initArg.split(":")
+            (init, synch, term, all) = initArg.split(":")
         except ValueError, e:
             log.error("Invalid argument to PN_ServiceManager: %s", initArg)
             log.exception("Invalid argument to PN_ServiceManager: %s", initArg)
             raise e
 
-        self.initEvent = EventObj(init)
-        self.synchEvent = EventObj(synch)
-        self.termEvent = EventObj(term)
+        #
+        # Close all the pipe fds except the ones we want
+        #
+
+        init = int(init)
+        synch = int(synch)
+        term = int(term)
+        want = {init: 1, synch: 1, term: 1}
+
+#        for fd in all.split(","):
+#            fd = int(fd)
+#            if not fd in want:
+#                os.close(fd)
+
+        self.initPipe = Pipe(writeFD = init)
+        self.synchPipe = Pipe(writeFD = synch)
+        self.termPipe = Pipe(readFD = term)
+
 
         #
         # Start the interlock protocol.
         #
 
         myURL = self.getMyURLCallback()
-        writeServiceManagerURL(myURL)
         log.debug("signalling synch event")
-        self.initEvent.Set()
-        self.synchEvent.Set()
+        self.initPipe.writeURL(myURL)
+        self.synchPipe.writeURL(myURL)
+
+        self.initPipe.close()
+        self.synchPipe.close()
     
-        #
-        # Get the process handle for the parent
-        #
-
-        self.hParent = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS,
-                                            0, int(parentPID))
-        log.debug("got parent handle %s", self.hParent)
-
         #
         # Create a thread to wait for termination
         #
 
-        self.thread = threading.Thread(target=self.waitForEndMult)
+        self.thread = threading.Thread(target=self.waitForEnd)
         self.thread.start()
 
     def waitForEnd(self):
-        log.debug("Waiting for termination")
-        self.termEvent.Wait()
-        log.debug("Terminating")
+        log.debug("SM waiting for termination")
+        r = self.termPipe.readURL()
+        log.debug("SM terminating, got %s", r)
         self.terminateCallback()
 
-    def waitForEndMult(self):
-        log.debug("Waiting for termination")
 
-        hlist = (self.hParent, self.termEvent.GetHandle())
+def waitForProcessExit(pid, nTries, waitTime):
+    for i in range(nTries):
+        try:
+            rc = os.waitpid(pid, os.WNOHANG)
+            if rc[0] != 0:
+                status = rc[1]
+                if os.WIFEXITED(status):
+                    log.debug("process %s exited with return code %s",
+                              pid, os.WEXITSTATUS(status))
+                    return 1
+                elif os.WIFSIGNALED(status):
+                    log.debug("process %s exited from signal %s",
+                              pid, os.WTERMSIG(status))
+                    return 1
 
-        ret = win32event.WaitForMultipleObjects(hlist, 0, win32event.INFINITE)
+            time.sleep(waitTime)
+            
+        except OSError, e:
+            if e[0] == errno.ECHILD:
+                log.debug("process %s was already dead", pid)
+                return 1
+            else:
+                log.exception("Unexpected exception in waitForProcessExit")
+                return 1
+    return 0
 
-        if ret == 0:
-            log.debug("SM: Terminating due to parent death")
-        elif ret == 1:
-            log.debug("SM: Terminating due to signal on term event")
-        else:
-            log.debug("SM: Other return: %s", ret)
+def ensureProcessDead(pid):
+    """
+    Wait for process pid to die. If we have to wait
+    too long, kill it and wait some more. If it doesn't
+    want to die, shoot it down with SIGKILL. If it
+    still doesn't die, log an error.
 
-        log.debug("SM: Terminating")
-        deleteServiceManagerURL()
-        self.terminateCallback()
+    Algorithm:
+        for nTries times:
+            Probe to see if process has exited.
+            If not, wait waitTime seconds
+        if process has not exited:
+            send pid a SIGKILL
+            for nTries times:
+                Probe to see if process has exited.
+                If not, wait waitTime seconds
+            if process has not exited:
+                send pid a SIGKILL
+                
 
-def readServiceManagerURL():
-    k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, Platform.AGTkRegBaseKey)
-    (val, type) = _winreg.QueryValueEx(k, ServiceManagerURIKey)
-    k.Close()
-    return str(val)
+    """
 
-def writeServiceManagerURL(url):
-    k = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, Platform.AGTkRegBaseKey)
-    _winreg.SetValueEx(k, ServiceManagerURIKey, 0, _winreg.REG_SZ, url)
-    k.Close()
+    exited = waitForProcessExit(pid, 20, 0.1)
 
-def deleteServiceManagerURL():
-    try:
-        k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, Platform.AGTkRegBaseKey,
-                            0, _winreg.KEY_ALL_ACCESS)
-        _winreg.DeleteValue(k, ServiceManagerURIKey)
-        
-    except EnvironmentError:
-        #
-        # It's okay for this to fail.
-        #
-        log.exception("Ignoring exception on deleteServiceManagerURL()")
+    if exited:
+        return
+
+    log.debug("sending SIGTERM to %s", pid)
+    os.kill(pid, signal.SIGTERM)
+
+    exited = waitForProcessExit(pid, 5, 0.1)
+
+    if exited:
+        return
     
-    k.Close()
+    log.debug("sending SIGKILL to %s", pid)
+    os.kill(pid, signal.SIGKILL)
 
+    exited = waitForProcessExit(pid, 5, 0.1)
 
-def readNodeServiceURL():
-    k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, Platform.AGTkRegBaseKey)
-    (val, type) = _winreg.QueryValueEx(k, NodeServiceURIKey)
-    k.Close()
-    return str(val)
+    if exited:
+        return
 
-def writeNodeServiceURL(url):
-    k = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, Platform.AGTkRegBaseKey)
-    _winreg.SetValueEx(k, NodeServiceURIKey, 0, _winreg.REG_SZ, url)
-    k.Close()
-    
-def deleteNodeServiceURL():
-    try:
-        k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, Platform.AGTkRegBaseKey,
-                            0, _winreg.KEY_ALL_ACCESS)
-        _winreg.DeleteValue(k, NodeServiceURIKey)
-    except EnvironmentError:
-        #
-        # It's okay for this to fail.
-        #
-        log.exception("Ignoring exception on deleteServiceManagerURL()")
-    
-    k.Close()
+    log.error("Process %s would not die", pid)
 
-    
+if __name__ == "__main__":
+    log = Log.GetLogger(Log.PersonalNode)
+    hdlr = Log.StreamHandler()
+    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
+
+    def progress(status):
+        print "PROGRESS CALLBACK: ", status
+
+    pm = PersonalNodeManager(1, progress)
+    pm.Run()
+
+#     pid = os.spawnlp(os.P_NOWAIT, "sleep", "sleep", "10")
+#     print "pid is ", pid
+
+#     ensureProcessDead(pid)
+
+#     pid = os.spawnlp(os.P_NOWAIT, "date", "date")
+#     print "pid is ", pid
+
+#     ensureProcessDead(pid)
+
+#     pid = os.spawnlp(os.P_NOWAIT, "python", "python", "AccessGrid/ignore.py")
+#     print "pid is ", pid
+
+#     ensureProcessDead(pid)

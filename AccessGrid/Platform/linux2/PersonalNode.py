@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/05
-# RCS-ID:      $Id: PersonalNode.py,v 1.3 2004-03-10 23:17:08 eolson Exp $
+# RCS-ID:      $Id: PersonalNode.py,v 1.4 2004-03-12 05:23:12 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ Svc mgr:
 
 """
 
-__revision__ = "$Id: PersonalNode.py,v 1.3 2004-03-10 23:17:08 eolson Exp $"
+__revision__ = "$Id: PersonalNode.py,v 1.4 2004-03-12 05:23:12 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -61,7 +61,8 @@ import struct
 import string
 
 from AccessGrid import Log
-from AccessGrid.Platform import Platform
+from AccessGrid.Platform.Config import AGTkConfig
+from AccessGrid.Platform.ProcessManager import ProcessManager
 
 log = Log.GetLogger(Log.PersonalNode)
 
@@ -84,26 +85,20 @@ class Pipe:
             self.writeFP = os.fdopen(self.writeFD, "w")
 
     def __del__(self):
-
         self.close()
 
     def close(self):
-
         self.closeRead()
         self.closeWrite()
 
     def closeRead(self):
-
         if self.readFD is not None:
-            log.debug("Close read %d", self.readFD)
             self.readFP.close()
             self.readFP = None
             self.readFD = None
 
     def closeWrite(self):
-
         if self.writeFD is not None:
-            log.debug("Close write %d", self.writeFD)
             self.writeFP.close()
             self.writeFP = None
             self.writeFD = None
@@ -113,9 +108,7 @@ class Pipe:
         if self.writeFD is None:
             raise Exception, "Cannot write to pipe: writeFD unavailable"
         
-        #
         # Ensure it's a string.
-        #
         urlstr = str(url)
         l = len(urlstr)
         s = struct.pack("<l%ss" % (l,), l, urlstr)
@@ -149,11 +142,10 @@ class Pipe:
         return str
 
 class PersonalNodeManager:
-    def __init__(self, setNodeServiceCallback, debugMode, progressCallback):
-        self.setNodeServiceCallback = setNodeServiceCallback
+    def __init__(self, debugMode, progressCallback):
         self.debugMode = debugMode
         self.progressCallback = progressCallback
-
+        self.processManager = ProcessManager()
         self.initPipes()
 
     def Run(self):
@@ -212,7 +204,7 @@ class PersonalNodeManager:
                 url = urlparse.urlunparse(ncomps)
                 log.debug("Reconstituted url as %s", url)
 
-        self.setNodeServiceCallback(url)
+        return url
 
         #
         # Okay, we're done!
@@ -223,8 +215,8 @@ class PersonalNodeManager:
         #
 
     def startServiceManager(self):
-
-        path = os.path.join(Platform.GetInstallDir(), "AGServiceManager.py")
+        path = os.path.join(AGTkConfig.instance().GetInstallDir(),
+                            "AGServiceManager.py")
 
         python = sys.executable
         if self.debugMode:
@@ -232,19 +224,23 @@ class PersonalNodeManager:
         else:
             dflag = ""
 
-        args = [python, path, "--pnode", self.serviceManagerArg]
+#        args = [python, path, "--pnode", self.serviceManagerArg]
+        args = [path, "--pnode", self.serviceManagerArg]
+
         if dflag != "":
             args.append(dflag)
 
         log.debug("Start service manager with %s", args)
 
-        pinfo = os.spawnvp(os.P_NOWAIT, python, args)
+#        pinfo = os.spawnvp(os.P_NOWAIT, python, args)
+        pinfo = self.processManager.StartProcess(python, args)
 
         print "info is ", pinfo
         self.serviceManagerPInfo = pinfo
 
     def startNodeService(self):
-        path = os.path.join(Platform.GetInstallDir(), "AGNodeService.py")
+        path = os.path.join(AGTkConfig.instance().GetInstallDir(),
+                            "AGNodeService.py")
 
         python = sys.executable
         if self.debugMode:
@@ -252,13 +248,15 @@ class PersonalNodeManager:
         else:
             dflag = ""
 
-        args = [python, path, "--pnode", self.nodeServiceArg]
+#        args = [python, path, "--pnode", self.nodeServiceArg]
+        args = [path, "--pnode", self.nodeServiceArg]
         if dflag != "":
             args.append(dflag)
 
         log.debug("Start node service with %s", args)
 
-        pinfo = os.spawnvp(os.P_NOWAIT, python, args)
+#        pinfo = os.spawnvp(os.P_NOWAIT, python, args)
+        pinfo = self.processManager.StartProcess(python, args)
 
         print "info is ", pinfo
         self.nodeServicePInfo = pinfo
@@ -545,22 +543,27 @@ def ensureProcessDead(pid):
     log.error("Process %s would not die", pid)
 
 if __name__ == "__main__":
-
+    log = Log.GetLogger(Log.PersonalNode)
     hdlr = Log.StreamHandler()
-    hdlr.setLevel(Log.DEBUG)
     Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
-    pid = os.spawnlp(os.P_NOWAIT, "sleep", "sleep", "10")
-    print "pid is ", pid
+    def progress(status):
+        print "PROGRESS CALLBACK: ", status
 
-    ensureProcessDead(pid)
+    pm = PersonalNodeManager(1, progress)
+    pm.Run()
 
-    pid = os.spawnlp(os.P_NOWAIT, "date", "date")
-    print "pid is ", pid
+#     pid = os.spawnlp(os.P_NOWAIT, "sleep", "sleep", "10")
+#     print "pid is ", pid
 
-    ensureProcessDead(pid)
+#     ensureProcessDead(pid)
 
-    pid = os.spawnlp(os.P_NOWAIT, "python", "python", "AccessGrid/ignore.py")
-    print "pid is ", pid
+#     pid = os.spawnlp(os.P_NOWAIT, "date", "date")
+#     print "pid is ", pid
 
-    ensureProcessDead(pid)
+#     ensureProcessDead(pid)
+
+#     pid = os.spawnlp(os.P_NOWAIT, "python", "python", "AccessGrid/ignore.py")
+#     print "pid is ", pid
+
+#     ensureProcessDead(pid)

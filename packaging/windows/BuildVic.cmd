@@ -17,7 +17,7 @@ goto end
 
 :do_compile
 echo Building ag-vic
-devenv %VICDIR%\vic\vic.sln /rebuild "DDraw Release"
+devenv %VICDIR%\vic\vic.2003.sln /rebuild "DDraw Release"
 goto do_copy
 :end
 

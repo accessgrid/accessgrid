@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.117 2004-03-10 23:17:09 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.118 2004-03-12 05:23:13 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.117 2004-03-10 23:17:09 eolson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.118 2004-03-12 05:23:13 judson Exp $"
 
 import string
 import time
@@ -31,6 +31,9 @@ from AccessGrid.hosting import Client
 from AccessGrid.VenueServer import VenueServerIW
 from AccessGrid.Venue import VenueIW
 
+from AccessGrid import Toolkit
+from AccessGrid.Platform.Config import UserConfig, AGTkConfig
+
 from AccessGrid.Descriptions import StreamDescription, ConnectionDescription
 from AccessGrid.Descriptions import VenueDescription, CreateVenueDescription
 from AccessGrid.Descriptions import Capability
@@ -38,10 +41,8 @@ from AccessGrid.Security.CertificateManager import CertificateManager
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid import icons
-from AccessGrid.Platform import GetUserConfigDir, GetSharedDocDir
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog
 from AccessGrid.Utilities import VENUE_MANAGEMENT_LOG
-from AccessGrid import Toolkit
 from AccessGrid.AuthorizationUI import AuthorizationUIPanel # AddPeopleDialog
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
 
@@ -63,8 +64,9 @@ class VenueManagementClient(wxApp):
     def OnInit(self):
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
-      
-        self.manual_url = os.path.join(GetSharedDocDir(),
+
+        self.agtkConf = AGTkConfig.instance()
+        self.manual_url = os.path.join(self.agtkConf.GetDocDir(),
                                        "VenueManagementManual",
                                        "VenueManagementManualHTML.htm")
         self.server = None
@@ -87,7 +89,6 @@ class VenueManagementClient(wxApp):
 
         self.app = Toolkit.WXGUIApplication()
         self.app.Initialize()
-        self.app.InitGlobusEnvironment()
 
         return true
 
@@ -179,7 +180,7 @@ class VenueManagementClient(wxApp):
     def ConnectToServer(self, URL):
         log.debug("VenueManagementClient.ConnectToServer: Connect to server %s" %URL)
 
-        certMgt = Toolkit.GetApplication().GetCertificateManager()
+        certMgt = Toolkit.Application.instance().GetCertificateManager()
         if not certMgt.HaveValidProxy():
             log.debug("VenueManagementClient.ConnectToServer:: no valid proxy")
             certMgt.CreateProxy()

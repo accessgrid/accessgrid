@@ -1,18 +1,15 @@
 #-----------------------------------------------------------------------------
 # Name:        AGNodeService.py
 # Purpose:     
-#
-# Author:      Thomas D. Uram
-#
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.48 2004-03-12 00:29:52 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.49 2004-03-12 05:23:11 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.48 2004-03-12 00:29:52 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.49 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -22,17 +19,16 @@ import thread
 import ConfigParser
 import shutil
 
-from AccessGrid import Log
+from AccessGrid.Toolkit import Application
+from AccessGrid.Platform.Config import SystemConfig, UserConfig, AGTkConfig
 from AccessGrid.hosting import Client
-from AccessGrid.NetUtilities import GetHostname
-
-from AccessGrid import Platform
+from AccessGrid import Log
 from AccessGrid.Descriptions import AGServiceDescription
 from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid.AGServiceManager import AGServiceManagerIW
 from AccessGrid.AGService import AGServiceIW
 from AccessGrid.Types import ServiceConfiguration, AGResource
-from AccessGrid.Utilities import LoadConfig
+from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.AGParameter import ValueParameter
 
 log = Log.GetLogger(Log.NodeService)
@@ -54,8 +50,10 @@ class AGNodeService:
         self.serviceManagers = dict()
         self.config = None
         self.defaultConfig = None
-        self.configDir = os.path.join(Platform.GetUserConfigDir(),"nodeConfig")
-        self.servicesDir = os.path.join(Platform.GetSystemConfigDir(),"services")
+        self.configDir = os.path.join(UserConfig.instance().GetConfigDir(),
+                                      "nodeConfig")
+        self.servicesDir = os.path.join(AGTkConfig.instance().GetConfigDir(),
+                                        "services")
         self.streamDescriptionList = dict()
         self.profile = None
 
@@ -73,7 +71,7 @@ class AGNodeService:
                 # Copy node configurations from system node config directory
                 # to user node config directory
                 log.info("Copying system node configs to user node config dir")
-                systemNodeConfigDir = os.path.join(Platform.GetSystemConfigDir(),"nodeConfig")
+                systemNodeConfigDir = os.path.join(AGTkConfig.instance().GetConfigDir(), "nodeConfig")
                 configFiles = os.listdir(systemNodeConfigDir)
                 for configFile in configFiles:
                     log.info("  node config: %s", configFile)
@@ -103,13 +101,15 @@ class AGNodeService:
         """Load default node configuration (service managers and services)"""
         
         if self.defaultConfig:
-            log.debug("Loading default node config: %s", self.defaultConfig)
             try:
                 self.LoadConfiguration( self.defaultConfig ) 
             except:
                 log.exception("Exception loading default configuration.")
-                raise Exception("Failed to load default configuration %s" %self.defaultConfig)
-
+                raise Exception("Failed to load default configuration <%s>",
+                                self.defaultConfig)
+        else:
+            log.warn("There is no default configuration.")
+            
     def Stop(self):
         self.servicePackageRepository.Stop()
 
@@ -325,18 +325,17 @@ class AGNodeService:
                 self.executable = None
                 self.parameters = None
 
-
-        #
         # Read config file
-        #
-        configFile = self.configDir + os.sep + configName
+        configFile = os.path.join(self.configDir, configName)
 
         if not os.path.exists(configFile):
-            raise Exception("Configuration file does not exist")
+            raise Exception("Configuration file does not exist (%s)", configFile)
+        else:
+            log.info("Trying to load default configuration from: %s", configFile)
 
         try:
             config = ConfigParser.ConfigParser()
-            config.read( self.configDir + os.sep + configName )
+            config.read( configFile )
 
             #
             # Parse config file into usable structures
@@ -600,12 +599,26 @@ class AGNodeService:
         Note:  it is read from the user config dir if it exists, 
                then from the system config dir
         """
+        app = Application.instance()
 
-        configFile = Platform.GetConfigFilePath(AGNodeService.NodeConfigFile)
+        try:
+            configFile = app.FindConfigFile(AGNodeService.NodeConfigFile)
+        except Exception, e:
+            log.exception("Error finding config file: %s",
+                          AGNodeService.NodeConfigFile)
+            raise
+
+        log.debug("DEFAULT NODE SERVICE CONFIG: %s", configFile)
+        
         if configFile and os.path.exists(configFile):
 
             log.info("Reading node service config file: %s" % configFile)
-            self.config = LoadConfig( configFile )
+
+            try:
+                self.config = LoadConfig( configFile )
+            except Exception, e:
+                log.exception("Error loading file.")
+                raise
 
             # Process default config option
             if AGNodeService.defaultNodeConfigurationOption in self.config.keys():
@@ -618,10 +631,8 @@ class AGNodeService:
 
         It is always written to the user's config directory
         """
-        from AccessGrid.Utilities import SaveConfig
-
-        configDir = Platform.GetUserConfigDir()
-        configFile = os.path.join(configDir, AGNodeService.NodeConfigFile)
+        configFile = os.path.join(UserConfig.instance().GetConfigDir(),
+                                  AGNodeService.NodeConfigFile)
 
         log.info("Writing node service config file: %s" % configFile)
 
@@ -656,7 +667,7 @@ class AGNodeService:
             raise SetStreamException(failedSends)
 
 
-from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
+from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
 from AccessGrid.Types import AGServicePackage, InvalidServicePackage
 from AccessGrid import DataStore
 
@@ -670,7 +681,7 @@ class AGServicePackageRepository:
 
         # if port is 0, find a free port
         if port == 0:
-            port = MulticastAddressAllocator().AllocatePort()
+            port = NetworkAddressAllocator().AllocatePort()
 
         self.httpd_port = port
         self.servicesDir = servicesDir
@@ -680,8 +691,9 @@ class AGServicePackageRepository:
         # 
         # Define base url
         #
+        hn = SystemConfig.instance().GetHostname()
         prefix = "packages"
-        self.baseUrl = 'https://%s:%d/%s/' % ( GetHostname(), self.httpd_port, prefix )
+        self.baseUrl = 'https://%s:%d/%s/' % ( hn, self.httpd_port, prefix )
 
         #
         # Start the transfer server

@@ -1,18 +1,14 @@
 #-----------------------------------------------------------------------------
 # Name:        AuthorizationUI.py
 # Purpose:     Roles Management UI
-#
-# Author:      Susanne Lefvert 
-#
-#
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.5 2004-03-10 23:17:07 eolson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.6 2004-03-12 05:23:11 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.5 2004-03-10 23:17:07 eolson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.6 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string

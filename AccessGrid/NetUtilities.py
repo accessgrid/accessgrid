@@ -5,13 +5,13 @@
 # Author:      Robert Olson
 #
 # Created:     9/11/2003
-# RCS-ID:      $Id: NetUtilities.py,v 1.6 2004-02-26 16:46:10 judson Exp $
+# RCS-ID:      $Id: NetUtilities.py,v 1.7 2004-03-12 05:23:11 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetUtilities.py,v 1.6 2004-02-26 16:46:10 judson Exp $"
+__revision__ = "$Id: NetUtilities.py,v 1.7 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -19,19 +19,8 @@ import struct
 import time
 import select
 import socket
-from AccessGrid.Platform import isOSX, isWindows, isLinux
 
 TIME1970 = 2208988800L      # Thanks to F.Lundh
-
-if isWindows():
-    from AccessGrid.Platform.win32.NetUtilities import *
-elif isLinux():
-    from AccessGrid.Platform.linux2.NetUtilities import *
-elif isOSX():
-    from AccessGrid.Platform.darwin.NetUtilities import *
-else:
-    log.warn("NetUtilities doesn't have a platform-specific module for %s",
-             sys.platform)
 
 #
 # Thanks the ASPN python recipes folks for this.
@@ -70,20 +59,3 @@ def GetSNTPTime(server, timeout):
     else:
         client.close()
         return None
-
-import socket
-import pyGlobus.utilc
-
-def GetHostname():
-    """
-    Return the local hostname.
-
-    This uses the pyGlobus mechanism when possible, in order
-    to get a hostname that Globus will be happy with.
-
-    """
-    ret, host = pyGlobus.utilc.get_hostname(256)
-    if ret != 0:
-        host = socket.getfqdn()
-    return host
-

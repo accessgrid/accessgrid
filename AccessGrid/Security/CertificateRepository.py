@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.3 2004-03-10 23:17:08 eolson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.4 2004-03-12 05:23:12 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.3 2004-03-10 23:17:08 eolson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.4 2004-03-12 05:23:12 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -288,8 +288,8 @@ class CertificateRepository:
                 except:
                     pass
                 #
-                # Try to figure out what's going on. Stat the db and its directory and log
-                # the information.
+                # Try to figure out what's going on. Stat the db and
+                # its directory and log the information.
                 
                 try:
                     xx = os.stat(self.dbPath)

@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.46 2004-03-10 23:04:07 olson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.47 2004-03-12 05:23:11 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.46 2004-03-10 23:04:07 olson Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.47 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import isWindows, isLinux, isOSX
@@ -22,17 +22,16 @@ try:
 except:
     pass
 
-#from wxPython.wx import wxTheMimeTypesManager as mtm
 from wxPython.wx import wxFileTypeInfo
 from wxPython.lib.throbber import Throbber
 from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
-from AccessGrid import icons
 
+from AccessGrid import icons
 from AccessGrid.Utilities import SubmitBug, VENUE_CLIENT_LOG
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Version import GetVersion
-from AccessGrid.Platform import GetUserConfigDir, GetSharedDocDir
+from AccessGrid.Platform.Config import UserConfig
 
 class MessageDialog:
     def __init__(self, frame, text, text2 = "", style = wxOK|wxICON_INFORMATION):

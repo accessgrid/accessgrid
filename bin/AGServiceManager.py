@@ -2,36 +2,30 @@
 #-----------------------------------------------------------------------------
 # Name:        AGServiceManager.py
 # Purpose:     
-#
-# Author:      Thomas D. Uram
-#
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.31 2004-03-11 22:20:11 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.32 2004-03-12 05:23:12 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
-from AccessGrid.hosting import Server
+
+# The standard imports
 import sys
 import signal, time, os
 import getopt
 
-from AccessGrid import Log
-from AccessGrid import Platform
+# Our imports
+from AccessGrid.hosting import Server
+from AccessGrid.Toolkit import CmdlineApplication
+from AccessGrid.Platform import PersonalNode, isLinux
+from AccessGrid.Platform.Config import UserConfig, AGTkConfig, SystemConfig
 from AccessGrid.AGServiceManager import AGServiceManager, AGServiceManagerI
 from AccessGrid.Platform import PersonalNode
 from AccessGrid import Toolkit
 
 # default arguments
-port = 12000
-logFile = os.path.join(Platform.GetUserConfigDir(), "agsm.log")
-identityCert = None
-identityKey = None
-
-def Shutdown():
-    global running
-    # shut down the service manager, saving config or whatever
-    serviceManager.Shutdown()
-    running = 0
+log = None
+serviceManager = None
+server = None
 
 # Signal handler to shut down cleanly
 def SignalHandler(signum, frame):
@@ -39,133 +33,131 @@ def SignalHandler(signum, frame):
     SignalHandler catches signals and shuts down the VenueServer (and
     all of it's Venues. Then it stops the hostingEnvironment.
     """
-    Shutdown()
+    global log, serviceManager, running
+
+    log.info("Caught signal, going down.")
+    log.info("Signal: %d Frame: %s", signum, frame)
+
+    serviceManager.Shutdown()
+    running = 0
     
-# Authorization callback for Globus security
-def AuthCallback(server, g_handle, remote_user, context):
-    return 1
-
 # Print out the usage
-def Usage():
-    print "%s:" % sys.argv[0]
-    print "    -h|--help : print usage"
-    print "    -p|--port <int> : <port number to listen on>"
-    print "    -d|--debug <filename> : debug mode  - log to console as well as logfile"
-    print "    -l|--logFile <filename> : log file name"
-    print "    --pnode <arg> : initialize as part of a Personal Node configuration"
-    print "    --daemonize : start as a daemon"
-    print "    --cert <filename>: identity certificate"
-    print "    --key <filename>: identity certificate's private key"
+def Usage(agtk):
+    """
+    """
+    print "USAGE: %s:" % os.path.split(sys.argv[0])[1]
 
-# Parse command line options
-try:
-    opts, args = getopt.getopt(sys.argv[1:], "p:l:hd",
-                               ["port=", "logfile=", "help", "pnode=",
-                                "debug", "daemonize", "key=", "cert="])
-except getopt.GetoptError:
-    Usage()
-    sys.exit(2)
+    print " Toolkit Options:"
+    agtk.Usage()
 
-pnode = None
-debugMode = 0
-for o, a in opts:
-    if o in ("-p", "--port"):
-        port = int(a)
-    elif o in ("-d", "--debug"):
-        debugMode = 1
-    elif o in ("-l", "--logfile"):
-        logFile = a
-    elif o == "--pnode":
-        pnode = a
-    elif o == "daemonize":
-        Platform.Daemonize()
-    elif o == "--key":
-        identityKey = a
-    elif o == "--cert":
-        identityCert = a
-    elif o in ("-h", "--help"):
-        Usage()
+    print " Service Manager Options:"
+    
+    print "\t-p|--port <int> : <port number to listen on>"
+    print "\t--pnode <arg> : initialize as part of a Personal Node configuration"
+
+def ProcessArgs(app, argv):
+    """
+    """
+    options = dict()
+
+    # Parse command line options
+    try:
+        opts, args = getopt.getopt(argv, "p:l:hd", ["port=", "pnode="])
+    except getopt.GetoptError, e:
+        log.exception("Exception processing cmdline args:", e)
+        Usage(app)
+        sys.exit(2)
+
+    for opt, arg in opts:
+        if opt in ("-p", "--port"):
+            port = int(arg)
+            options['port'] = port
+            options['p'] = port
+        elif opt  == "--pnode":
+            pnode = arg
+            options['pnode'] = pnode
+
+    if app.GetCmdlineArg('help') or app.GetCmdlineArg('h'):
+        Usage(app)
         sys.exit(0)
 
-# Create the hosting environment
-server = Server( ('localhost',port))
+    return options
 
-# Create the Service Manager
-serviceManager = AGServiceManager(server)
+def main():
+    """
+    """
+    global serviceManager, log
 
-# Create the Service Manager Service
-smi = AGServiceManagerI(serviceManager)
-server.RegisterObject(smi,path="/ServiceManager")
-url = server.GetURLForObject(serviceManager)
+    # defaults
+    port = 12000
 
-#
-# If we are starting as a part of a personal node,
-# initialize that state.
-#
+    app = CmdlineApplication()
+    try:
+        args = app.Initialize(sys.argv[1:], "ServiceManager")
+    except Exception, e:
+        print "Toolkit Initialization failed, exiting."
+        print " Initialization Error: ", e
+        sys.exit(-1)
 
-if pnode is not None:
-    def getMyURL(url = url):
-        return url
+    log = app.GetLog()
 
-    personalNode = PersonalNode.PN_ServiceManager(getMyURL, Shutdown)
-    personalNode.Run(pnode)
-else:  
-    if identityCert is not None or identityKey is not None:
-        #
-        # Sanity check on identity cert stuff
-        #
+    options = ProcessArgs(app, args)
 
-        if identityCert is None or identityKey is None:
-            #log.critical("Both a certificate and key must be provided")
-            print "Both a certificate and key must be provided"
-            sys.exit(0)
-            
-        #
-        # Init toolkit with explicit identity.
-        #
-
-        app = Toolkit.ServiceApplicationWithIdentity(identityCert, identityKey)
-
+    if options.has_key('pnode'):
+        pnode = options['pnode']
     else:
-        #
-        # Init toolkit with standard environment.
-        #
+        pnode = None
+        
+    if options.has_key('port'):
+        port = options['port']
 
-        app = Toolkit.CmdlineApplication()
+    if options.has_key('p'):
+        port = options['p']
+        
+    # Create the hosting environment
+    hostname = SystemConfig.instance().GetHostname()
+    server = Server((hostname, port))
 
-    app.InitGlobusEnvironment()
+    # Create the Service Manager
+    serviceManager = AGServiceManager(server)
 
-# Start up the logging
-log = Log.GetLogger(Log.ServiceManager)
-hdlr = Log.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
-hdlr.setLevel(Log.DEBUG)
-fmt = Log.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-hdlr.setFormatter(fmt)
-Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
-if debugMode:
-    Log.HandleLoggers(Log.StreamHandler(), Log.GetDefaultLoggers())
+    # Create the Service Manager Service
+    smi = AGServiceManagerI(serviceManager)
+    server.RegisterObject(smi,path="/ServiceManager")
+    url = server.GetURLForObject(serviceManager)
 
+    # If we are starting as a part of a personal node,
+    # initialize that state.
 
+    if pnode is not None:
+        def getMyURL(url = url):
+            return url
 
+        personalNode = PersonalNode.PN_ServiceManager(getMyURL,
+                                                      serviceManager.Shutdown)
+        print "PNODE: ", pnode
+        personalNode.Run(pnode)
 
+    # Register the signal handler so we can shut down cleanly
+    signal.signal(signal.SIGINT, SignalHandler)
+    if isLinux():
+        signal.signal(signal.SIGHUP, SignalHandler)
 
-# Register the signal handler so we can shut down cleanly
-signal.signal(signal.SIGINT, SignalHandler)
-if sys.platform == Platform.LINUX:
-    signal.signal(signal.SIGHUP, SignalHandler)
+    # Start the service
+    server.RunInThread()
 
-# Start the service
-server.RunInThread()
+    # Tell the world where to find the service manager
+    log.info("Starting service; URI: %s", url)
+    print "AGServiceManager URL: ", url
 
-# Tell the world where to find the service manager
-log.info("Starting service; URI: %s", url)
-print "AGServiceManager URL: ", url
+    # Keep the main thread busy so we can catch signals
+    running = 1
+    while running:
+        time.sleep(1)
 
-# Keep the main thread busy so we can catch signals
-running = 1
-while running:
-    time.sleep(1)
-
-# Exit cleanly
-server.Stop()
-
+    # Exit cleanly
+    server.Stop()
+    sys.exit(0)
+    
+if __name__ == "__main__":
+    main()

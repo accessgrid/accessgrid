@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.33 2003-10-30 19:38:44 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.34 2004-03-12 05:23:13 judson Exp $
 ;
 
 #define SourceDir "C:\Software\AccessGrid\AccessGrid"
@@ -19,8 +19,8 @@ Name: mkdir; Parameters: C:\Software\AccessGrid\AccessGrid\dist\services
 Name: mkdir; Parameters: C:\Software\AccessGrid\AccessGrid\dist\sharedapps
 Name: python; Parameters: C:\Software\AccessGrid\AccessGrid\packaging\makeServicePackages.py C:\Software\AccessGrid\AccessGrid\services\node C:\Software\AccessGrid\AccessGrid\dist\services; Flags: abortonerror
 Name: python; Parameters: C:\Software\AccessGrid\AccessGrid\packaging\makeAppPackages.py C:\Software\AccessGrid\AccessGrid\sharedapps C:\Software\AccessGrid\AccessGrid\dist\sharedapps; Flags: abortonerror
-Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\Software\AccessGrid\ag-vic C:\Software\AccessGrid\AccessGrid\dist\bin; Flags: abortonerror
-Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: C:\Software\AccessGrid\ag-rat C:\Software\AccessGrid\AccessGrid\dist\bin; Flags: abortonerror
+Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\Software\AccessGrid\ag-media C:\Software\AccessGrid\AccessGrid\dist\bin; Flags: abortonerror
+Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: C:\Software\AccessGrid\ag-media C:\Software\AccessGrid\AccessGrid\dist\bin; Flags: abortonerror
 Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildPutty.cmd; Parameters: C:\software\AccessGrid\putty C:\software\AccessGrid\AccessGrid\dist; Flags: abortonerror
 Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildPythonModules.cmd; Parameters: C:\Software\AccessGrid C:\Software\AccessGrid\AccessGrid\dist; Flags: abortonerror
 

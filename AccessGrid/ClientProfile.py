@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.33 2004-03-04 15:30:21 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.34 2004-03-12 05:23:11 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.33 2004-03-04 15:30:21 judson Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.34 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -22,7 +22,7 @@ import md5
 
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.GUID import GUID
-from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.Platform.Config import UserConfig
 
 class InvalidProfileException(Exception):
     """
@@ -314,7 +314,9 @@ class ClientProfileCache:
         if len(cachePath):
             self.cachePath = cachePath
         else:
-            self.cachePath = os.path.join(GetUserConfigDir(), "profileCache")
+            userConfig = UserConfig().instance()
+            self.cachePath = os.path.join(userConfig.GetUserConfigDir(),
+                                          "profileCache")
         if not os.path.exists( self.cachePath ):
             os.mkdir (self.cachePath)
 

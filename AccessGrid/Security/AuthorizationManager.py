@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.10 2004-03-09 16:57:58 lefvert Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.11 2004-03-12 05:23:12 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.10 2004-03-09 16:57:58 lefvert Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.11 2004-03-12 05:23:12 judson Exp $"
 
 # External Imports
 import os
@@ -37,7 +37,7 @@ from AccessGrid.Security.Action import MethodAction
 from AccessGrid.Security import X509Subject
 
 from AccessGrid.ClientProfile import ClientProfileCache
-from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.Platform.Config import UserConfig
 
 class InvalidParent(Exception):
     """
@@ -70,7 +70,8 @@ class AuthorizationManager:
 
         # Yeah, I know
         self.profileCachePrefix = "serverProfileCache"
-        self.profileCachePath = os.path.join(GetUserConfigDir(),
+        userConfig = UserConfig.instance()
+        self.profileCachePath = os.path.join(userConfig.GetConfigDir(),
                                              self.profileCachePrefix)
         self.profileCache = ClientProfileCache(self.profileCachePath)
         

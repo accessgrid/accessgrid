@@ -184,7 +184,7 @@ logging.getLogger(pyGlobus).setLevel(WARN)
 
 # ---- Formats ----
 _defaultFormatter = Formatter("%(asctime)s %(thread)s %(name)s \
-    #%(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
+    %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
 
 # Default Formatter
 def GetFormatter():

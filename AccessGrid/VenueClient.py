@@ -1,19 +1,15 @@
 #-----------------------------------------------------------------------------
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
-#
-# Author:      Ivan R. Judson, Thomas D. Uram
-#
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.143 2004-03-11 20:16:10 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.144 2004-03-12 05:23:11 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-
-__revision__ = "$Id: VenueClient.py,v 1.143 2004-03-11 20:16:10 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.144 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -29,8 +25,8 @@ from AccessGrid import Log
 from AccessGrid import Toolkit
 from AccessGrid import DataStore
 from AccessGrid import Platform
-from AccessGrid.Platform import GetUserConfigDir
-from AccessGrid.Platform import ProcessManager
+from AccessGrid.Platform.Config import UserConfig
+from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Venue import VenueIW
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.hosting import Server
@@ -92,7 +88,9 @@ class VenueClient:
         if profile:
             self.profile = profile
         else:
-            self.profileFile = os.path.join(GetUserConfigDir(), "profile" )
+            self.userConf = UserConfig.instance()
+            self.profileFile = os.path.join(self.userConf.GetConfigDir(),
+                                            "profile" )
             self.profile = ClientProfile(self.profileFile)
         
         
@@ -126,7 +124,7 @@ class VenueClient:
         # attributes for personal data store
         self.personalDataStorePrefix = "personalDataStore"
         self.personalDataStorePort = 0
-        self.personalDataStorePath = os.path.join(GetUserConfigDir(),
+        self.personalDataStorePath = os.path.join(self.userConf.GetConfigDir(),
                                                   self.personalDataStorePrefix)
         self.personalDataFile = os.path.join(self.personalDataStorePath,
                                              "myData.txt" )
@@ -148,11 +146,11 @@ class VenueClient:
         # specifically, the cache makes it easier to add roles when
         # managing venues.
         self.profileCachePrefix = "profileCache"
-        self.profileCachePath = os.path.join(GetUserConfigDir(),
+        self.profileCachePath = os.path.join(self.userConf.GetConfigDir(),
                                              self.profileCachePrefix)
         self.cache = ClientProfileCache(self.profileCachePath)
 
-        self.processManager = ProcessManager.ProcessManager()
+        self.processManager = ProcessManager()
         
     ###########################################################################################
     #
@@ -538,7 +536,7 @@ class VenueClient:
         # Initialize a string of warnings that can be displayed to the user.
         self.warningString = ''
        
-        app = Toolkit.GetApplication()
+        app = Toolkit.Application.instance()
         if not app.certificateManager.HaveValidProxy():
             log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
             app.certificateManager.CreateProxy()
@@ -1216,7 +1214,7 @@ class VenueClient:
     #
         
     def StartProcess(self,command,argList):
-        pid = self.processManager.start_process(command,argList)
+        pid = self.processManager.StartProcess(command,argList)
         
     #
     # TextClient wrapping
@@ -1460,9 +1458,10 @@ class VenueClient:
         return isVenueAdministrator
 
     def GetInstalledApps(self):
-        app = Toolkit.GetApplication()
-        appdb = app.GetAppDatabase()
-        appDescList = appdb.ListAppsAsAppDescriptions()
+        #app = Toolkit.Application.instance()
+        #appdb = app.GetAppDatabase()
+        #appDescList = appdb.ListAppsAsAppDescriptions()
+        appDescList = list()
         return appDescList
 
 class VenueClientI(SOAPInterface):

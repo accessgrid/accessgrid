@@ -27,7 +27,7 @@ goto end
 :do_compile_rat
 
 echo Building ag-rat
-devenv %RATDIR%\rat\rat.sln /rebuild Release
+devenv %RATDIR%\rat\rat.2003.sln /rebuild Release
 
 goto do_copy
 

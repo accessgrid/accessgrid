@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.3 2004-02-26 16:48:27 judson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.4 2004-03-12 05:23:12 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 Platform sub modules.
 """
-__revision__ = "$Id: __init__.py,v 1.3 2004-02-26 16:48:27 judson Exp $"
+__revision__ = "$Id: __init__.py,v 1.4 2004-03-12 05:23:12 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # mechanisms to support multiple hosting environments and to set defaults
@@ -50,19 +50,17 @@ def isOSX():
         return 0
 
 if isWindows():
-    from AccessGrid.Platform.win32.Platform import *
-    from AccessGrid.Platform.win32 import Platform
-    from AccessGrid.Platform.win32 import PersonalNode
-    from AccessGrid.Platform.win32 import NetUtilities
-    from AccessGrid.Platform.win32 import ProcessManager
+    from AccessGrid.Platform.win32 import Config as Config
+    from AccessGrid.Platform.win32 import PersonalNode as PersonalNode
+    from AccessGrid.Platform.win32 import ProcessManager as ProcessManager
 elif isLinux():
-    from AccessGrid.Platform.linux2.Platform import *
-    from AccessGrid.Platform.linux2 import Platform
-    from AccessGrid.Platform.linux2 import PersonalNode
-    from AccessGrid.Platform.linux2 import NetUtilities
-    from AccessGrid.Platform.linux2 import ProcessManager
+    from AccessGrid.Platform.linux2 import Config as Config
+    from AccessGrid.Platform.linux2 import PersonalNode as PersonalNode
+    from AccessGrid.Platform.linux2 import ProcessManager as ProcessManager
 elif isOSX():
-    from AccessGrid.Platform.darwin.Platform import *
+    from AccessGrid.Platform.darwin import Config as Config
+    from AccessGrid.Platform.darwin import PersonalNode as PersonalNode
+    from AccessGrid.Platform.darwin import ProcessManager as ProcessManager
 else:
     log.warn("Platform doesn't have a platform-specific module for %s",
              sys.platform)

@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.4 2004-03-10 23:17:08 eolson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.5 2004-03-12 05:23:12 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.4 2004-03-10 23:17:08 eolson Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.5 2004-03-12 05:23:12 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -23,7 +23,9 @@ import os.path
 import popen2
 
 from pyGlobus import security, io
+
 from AccessGrid import Log
+from AccessGrid import Platform
 
 #
 # Try importing this. We ensure further below that
@@ -36,7 +38,6 @@ try:
 except:
     haveOldGlobus = 0
 
-from AccessGrid.Platform import isWindows
 
 log = Log.GetLogger(Log.ProxyGen)
 Log.SetDefaultLevel(Log.ProxyGen, Log.DEBUG)
@@ -133,13 +134,10 @@ def CreateGlobusProxyGPI(passphrase, certFile, keyFile, certDir, outFile,
     caPath = certDir
     outPath = outFile
 
-    isWindows = sys.platform == "win32"
-
     #
     # turn on gpi debugging
     #
     debugFlag = "-debug"
-    #debugFlag = ""
 
     cmd = '"%s" %s -pwstdin -bits %s -hours %s -cert "%s" -key "%s" -certdir "%s" -out "%s"'
     cmd = cmd % (gpiPath, debugFlag, bits, hours, certPath, keyPath, caPath, outPath)
@@ -148,7 +146,7 @@ def CreateGlobusProxyGPI(passphrase, certFile, keyFile, certDir, outFile,
     # Windows pipe code needs to have the whole thing quoted. Linux doesn't.
     #
 
-    if isWindows:
+    if Platform.isWindows:
         cmd = '"%s"' % (cmd)
 
     log.debug("Running command: '%s'", cmd)
@@ -165,7 +163,7 @@ def CreateGlobusProxyGPI(passphrase, certFile, keyFile, certDir, outFile,
 
         wr.write(passphrase + "\n")
 
-        if not isWindows:
+        if not Platform.isWindows:
             wr.close()
 
         while 1:
@@ -200,7 +198,7 @@ def CreateGlobusProxyGPI(passphrase, certFile, keyFile, certDir, outFile,
 
         rd.close()
 
-        if isWindows:
+        if Platform.isWindows:
             wr.close()
 
     except IOError:
@@ -362,7 +360,7 @@ def findCertInArgs(args):
 
     return data
 
-if isWindows() and haveOldGlobus:
+if Platform.isWindows() and haveOldGlobus:
     CreateGlobusProxy = CreateGlobusProxyProgrammatic
 else:
     CreateGlobusProxy = CreateGlobusProxyGPI

@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.122 2004-03-10 23:17:08 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.123 2004-03-12 05:23:11 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.122 2004-03-10 23:17:08 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.123 2004-03-12 05:23:11 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -25,8 +25,8 @@ from threading import Thread, Lock, Condition
 import time
 import ConfigParser
 
+from AccessGrid.Toolkit import Application
 from AccessGrid import Log
-from AccessGrid import Toolkit
 from AccessGrid.hosting import Server
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
@@ -37,9 +37,10 @@ from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 from AccessGrid.Security import X509Subject, Role
 from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
 
+from AccessGrid.Platform.Config import SystemConfig
+
 from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
 from AccessGrid.Utilities import PathFromURL
-from AccessGrid.NetUtilities import GetHostname
 from AccessGrid.GUID import GUID
 from AccessGrid.Venue import Venue, VenueI
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
@@ -146,7 +147,7 @@ class VenueServer(AuthorizationMixIn):
         self.authManager.AddRoles(rl)
 
         # Get the silly default subject this really should be fixed
-        certMgr = Toolkit.GetApplication().GetCertificateManager()
+        certMgr = Application.instance().GetCertificateManager()
         di = certMgr.GetDefaultIdentity().GetSubject()
         ds = X509Subject.CreateSubjectFromString(di)
         admins = self.authManager.FindRole("Administrators")
@@ -162,7 +163,7 @@ class VenueServer(AuthorizationMixIn):
         self.venuePathPrefix = 'Venues'
         self.defaultVenue = ''
         self.multicastAddressAllocator = MulticastAddressAllocator()
-        self.hostname = GetHostname()
+        self.hostname = SystemConfig.instance().GetHostname()
         self.venues = {}
         self.services = []
         self.configFile = configFile

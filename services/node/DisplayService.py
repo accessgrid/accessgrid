@@ -1,9 +1,6 @@
 #-----------------------------------------------------------------------------
 # Name:        DisplayService.py
 # Purpose:     Generic display service for use on Win32/X11 displays
-#
-# Author:      Justin Binns
-#
 # Created:     2003/31/03
 # RCS-ID:      
 # Copyright:   (c) 2003
@@ -12,39 +9,50 @@
 import sys
 import socket
 import os
-from AccessGrid.hosting.pyGlobus.Server import Server
-from AccessGrid.Types import Capability
-from AccessGrid.AGService import AGService
-from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter
+
 from wxPython.wx import wxGetDisplaySize;
 
-class DisplayService( AGService ):
+from AccessGrid.hosting.Server import Server
+from AccessGrid.Types import Capability
+from AccessGrid.AGService import AGService
+from AccessGrid.AGParameter import ValueParameter, OptionSetParameter
+from AccessGrid.AGParameter import RangeParameter
 
+from AccessGrid.Platform import isWindows, isLinux, isOSX
+from AccessGrid.NetUtilities import GetHostname
+
+class DisplayService( AGService ):
+   name = "display"
+   locationStr = "Location"
+   widthStr = "Width"
+   heightStr = "Height"
+   depthStr = "Depth"
+   sizeStr = "Size"
+   
    def __init__( self ):
       AGService.__init__( self )
 
-      tmpCapability=Capability(Capability.CONSUMER, "display")
-      tmpCapability.parms["DisplayContact"]=self.getDisplayContact()
-      tmpCapability.parms["PixelSize"]=self.getPixelSize()
+      tmpCapability=Capability(Capability.CONSUMER, self.name)
+      tmpCapability.parms[self.locationStr]=self.getLocation()
+      tmpCapability.parms[self.sizeStr]=self.getSize()
       self.capabilities = [ tmpCapability ]
-      self.configuration["Power"] = OptionSetParameter( "power", "On", ["On","Off"])
+      self.executable = None
 
-      self.executable = "echo"
-      #
       # Set configuration parameters
-      #
-      pass
 
-   def getDisplayContact( self ):
-      if sys.platform == "win32":
-         return "Win32://" + socket.getfqdn()
-      else:
+   def getLocation( self ):
+      hn = GetHostname()
+      if isWindows()
+         return "Win32://" + hn
+      elif isLinux():
          if os.getenv("DISPLAY"):
-            return "X11://" + socket.getfqdn() + ":" + os.getenv("DISPLAY").split(":")[-1]
+            return "X11://" + hn + ":" + os.getenv("DISPLAY").split(":")[-1]
          else:
-            return "X11://" + socket.getfqdn() + ":0.0"
-
-   def getPixelSize( self ):
+            return "X11://" + hn + ":0.0"
+      else:
+         return "Unknown://hn"
+      
+   def getSize( self ):
       myDisplaySize=wxGetDisplaySize()
       return "%dx%d"%(myDisplaySize.GetWidth(),myDisplaySize.GetHeight())
 

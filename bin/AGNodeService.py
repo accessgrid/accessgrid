@@ -2,203 +2,180 @@
 #-----------------------------------------------------------------------------
 # Name:        AGNodeService.py
 # Purpose:     
-#
-# Author:      Thomas D. Uram
-#
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.39 2004-03-11 22:20:11 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.40 2004-03-12 05:23:12 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.39 2004-03-11 22:20:11 eolson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.40 2004-03-12 05:23:12 judson Exp $"
 __docformat__ = "restructuredtext en"
 
+# The standard imports
 import sys
 import signal, time, os
 import getopt
 
-from AccessGrid import Log
+# Our imports
+from AccessGrid.Toolkit import CmdlineApplication
 from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
+from AccessGrid import Log
+from AccessGrid.Platform import PersonalNode
+from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.hosting import Server
 
-from AccessGrid.Platform import PersonalNode
-from AccessGrid.Platform import GetUserConfigDir
-from AccessGrid import Toolkit
-
 # default arguments
-port = 11000
-logFile = os.path.join(GetUserConfigDir(), "agns.log")
-identityCert = None
-identityKey = None
+log = None
+nodeService = None
+server = None
 
-def Shutdown():
-    """
-    This is used by the signal handler to shut down the node service.
-    """
-    global running
-    global server
-    server.Stop()
-    # shut down the node service, saving config or whatever
-    running = 0
-
-# Signal handler to catch signals and shutdown
+# Signal handler for clean shutdown
 def SignalHandler(signum, frame):
     """
     SignalHandler catches signals and shuts down the VenueServer (and
     all of it's Venues. Then it stops the hostingEnvironment.
     """
-    Shutdown()
+    global log, server, running
 
-# Authorization callback for globus
-def AuthCallback(server, g_handle, remote_user, context):
-    """
-    The Authorization callback implements null auth, none.
-    """
-    return 1
+    log.info("Caught signal, going down.")
+    log.info("Signal: %d Frame: %s", signum, frame)
+    
+    server.Stop()
+
+    running = 0
 
 # Print usage
-def Usage():
+def Usage(agtk):
     """
     Print out how to run this program.
     """
-    print "%s:" % sys.argv[0]
-    print """
-    -h|--help : print usage
-    -d|--debug <filename> : debug mode  - log to console as well as logfile
-    -p|--port <int> : <port number to listen on>
-    -l|--logFile <filename> : log file name
-    --pnode <arg> : initialize as part of a Personal Node configuration
-    --cert <filename>: identity certificate
-    --key <filename>: identity certificate's private key
+    print "USAGE %s:" % os.path.split(sys.argv[0])[1]
+
+    print " Toolkit Options:"
+    agtk.Usage()
+
+    print " Node Service Specific Options:"
+    print "\t-p|--port <int> : <port number to listen on>"
+    print "\t--pnode <arg> : Run as part of a Personal Node"
+
+def ProcessArgs(app, argv):
     """
+    """
+    global log
+    
+    options = dict()
+    
+    # Parse command line options
+    try:
+        opts, args = getopt.getopt(argv, "p:", ["port=", "pnode="])
+    except getopt.GetoptError, e:
+        log.exception("Exception processing cmdline args:", e)
+        Usage(app)
+        sys.exit(2)
+        
+    for opt, arg in opts:
+        if opt in ("-p", "--port"):
+            port = int(arg)
+            options['port'] = port
+            options['p'] = port
+        elif opt  == "--pnode":
+            pnode = arg
+            options['pnode'] = pnode
 
-# Parse command line options
-try:
-    opts, args = getopt.getopt(sys.argv[1:], "p:l:hd",
-                               ["port=", "logfile=", "debug", "pnode=",
-                               "help", "key=", "cert="])
-except getopt.GetoptError:
-    Usage()
-    sys.exit(2)
-
-debugMode = 0
-pnode = None
-for o, a in opts:
-    if o in ("-p", "--port"):
-        port = int(a)
-    elif o in ("-d", "--debug"):
-        debugMode = 1
-    elif o in ("-l", "--logfile"):
-        logFile = a
-    elif o == "--pnode":
-        pnode = a
-    elif o == "--key":
-        identityKey = a
-    elif o == "--cert":
-        identityCert = a
-    elif o in ("-h", "--help"):
-        Usage()
+    if app.GetCmdlineArg('help') or app.GetCmdlineArg('h'):
+        Usage(app)
         sys.exit(0)
 
-if pnode is not None:
+    return options
 
-    #log.debug("Starting personal node")
+def main():
+    """
+    """
+    global nodeService, log
 
-    personalNode = PersonalNode.PN_NodeService(Shutdown)
-    serviceManagerURL =  personalNode.RunPhase1(pnode)
+    #defaults
+    port = 11000
 
-    #log.debug("Got service mgr %s", serviceManagerURL)
+    app = CmdlineApplication()
+    try:
+        args = app.Initialize(sys.argv[1:], "NodeService")
+    except Exception, e:
+        print "Toolkit Initialization failed, exiting."
+        print " Initialization Error: ", e
+        sys.exit(-1)
 
-else:
-    if identityCert is not None or identityKey is not None:
-        #
-        # Sanity check on identity cert stuff
-        #
+    log = app.GetLog()
 
-        if identityCert is None or identityKey is None:
-            #log.critical("Both a certificate and key must be provided")
-            print "Both a certificate and key must be provided"
-            sys.exit(0)
-            
-        #
-        # Init toolkit with explicit identity.
-        #
+    options = ProcessArgs(app, args)
 
-        app = Toolkit.ServiceApplicationWithIdentity(identityCert, identityKey)
-
+    if options.has_key('pnode'):
+        pnode = options['pnode']
     else:
-        #
-        # Init toolkit with standard environment.
-        #
+        pnode = None
 
-        app = Toolkit.CmdlineApplication()
+    if options.has_key('port'):
+        port = options['port']
 
-    app.InitGlobusEnvironment()
+    if options.has_key('p'):
+        port = options['p']
+        
+    # Create a Node Service
+    nodeService = AGNodeService()
 
-# Start up the logging
-log = Log.GetLogger(Log.NodeService)
-hdlr = Log.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
-hdlr.setLevel(Log.DEBUG)
-fmt = Log.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-hdlr.setFormatter(fmt)
-Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
-if debugMode:
-    Log.HandleLoggers(Log.StreamHandler(), Log.GetDefaultLoggers())
+    if pnode is not None:
+        log.debug("Starting personal node")
+        personalNode = PersonalNode.PN_NodeService(nodeService.Stop())
+        serviceManagerURL =  personalNode.RunPhase1(pnode)
+        log.debug("Got service mgr %s", serviceManagerURL)
 
+    # Load default configuration if --personal node option is set
+    try:
+        nodeService.LoadDefaultConfig()
+    except:
+        log.debug("Failed to load default node configuration")
 
-# Create a Node Service
-nodeService = AGNodeService()
+    # Create a hosting environment
+    hostname = SystemConfig.instance().GetHostname()
+    server = Server((hostname, port), debug = app.GetDebugLevel())
+    
+    # Create the Node Service Service
+    nsi = AGNodeServiceI(nodeService)
+    server.RegisterObject(nsi, path="/NodeService")
+    url = server.GetURLForObject(nodeService)
 
-# Load default configuration if --personal node option is set
-try:
-    nodeService.LoadDefaultConfig()
-except:
-    log.debug("Failed to load default node configuration")
+    # If we are starting as a part of a personal node,
+    # initialize that state.
+    if pnode is not None:
+        log.debug("Starting personal node, phase 2")
+        personalNode.RunPhase2(nodeService.GetHandle())
+        log.debug("Personal node done")
 
-# Create a hosting environment
-server = Server( ('localhost',port))
+    # Tell the world where to find the service
+    log.info("Starting service; URI: %s", url)
 
-# Create the Node Service Service
-nsi = AGNodeServiceI(nodeService)
-server.RegisterObject(nsi, path="/NodeService")
-url = server.GetURLForObject(nodeService)
+    # Register a signal handler so we can shut down cleanly
+    try:
+        signal.signal(signal.SIGINT, SignalHandler)
+    except SystemError, v:
+        log.exception(v)
 
-#
-# If we are starting as a part of a personal node,
-# initialize that state.
-#
+    # Run the service
+    server.RunInThread()
 
-if pnode is not None:
+    print "AGNodeService URL: ", url
 
-    log.debug("Starting personal node, phase 2")
+    # Keep the main thread busy so we can catch signals
+    running = 1
+    while running:
+        time.sleep(1)
 
-    personalNode.RunPhase2(nodeService.GetHandle())
-
-    log.debug("Personal node done")
-
-# Tell the world where to find the service
-log.info("Starting service; URI: %s", url)
-
-# Register a signal handler so we can shut down cleanly
-try:
-    signal.signal(signal.SIGINT, SignalHandler)
-except SystemError, v:
-    log.exception(v)
-
-# Run the service
-server.RunInThread()
-
-print "AGNodeService URL: ", url
-
-# Keep the main thread busy so we can catch signals
-running = 1
-while running:
-    time.sleep(1)
-
-# Exit cleanly
-nodeService.Stop()
-server.Stop()
-
+    # Exit cleanly
+    nodeService.Stop()
+    server.Stop()
+    sys.exit(0)
+    
+if __name__ == "__main__":
+    main()
+    
