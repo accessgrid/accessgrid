@@ -5,12 +5,12 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: ImportExportUtils.py,v 1.1 2004-03-12 15:39:36 olson Exp $
+# RCS-ID:      $Id: ImportExportUtils.py,v 1.2 2004-03-12 22:23:36 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-__revision__ = "$Id: ImportExportUtils.py,v 1.1 2004-03-12 15:39:36 olson Exp $"
+__revision__ = "$Id: ImportExportUtils.py,v 1.2 2004-03-12 22:23:36 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -767,6 +767,7 @@ def ImportPEMIdentityCertificate(certMgr, certFile, keyFile):
     """
 
     try:
+        print "Import PEM, looking for cb"
         cb = certMgr.GetUserInterface().GetPassphraseCallback("Private key passphrase",
                                                               "Enter the passphrase to your private key.")
 
