@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.8 2003-10-22 19:55:44 judson Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.9 2004-01-06 21:37:46 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -32,13 +32,72 @@ class AudioService( AGService ):
       #
       # Set configuration parameters
       #
-      #self.configuration["microphonegain"] = RangeParameter( "microphonegain", 30, 0, 100 )
-      #self.configuration["speakervolume"] = RangeParameter( "speakervolume", 50, 0, 100 ) 
+      self.talk = OptionSetParameter( "Talk", "On", ["On", "Off"] )
+      self.inputGain = RangeParameter( "Input gain", 50, 0, 100 )
+      self.outputGain = RangeParameter( "Output gain", 50, 0, 100 )
+      
+      self.configuration.append(self.talk)
+      self.configuration.append(self.inputGain)
+      self.configuration.append(self.outputGain)
+
+   def WriteRatDefaults(self):
+         if Platform.isWindows():
+             import _winreg
+             
+             # Write defaults into registry
+             key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\Mbone Applications\\rat", 0,
+                                   _winreg.KEY_SET_VALUE)
+             if self.talk.value == "On":    mute = 0
+             else:                          mute = 1
+             _winreg.SetValueEx(key, "audioInputMute", 0, _winreg.REG_DWORD, 
+                 mute)
+             _winreg.SetValueEx(key, "audioInputGain", 0, _winreg.REG_DWORD, 
+                 self.inputGain.value )
+             _winreg.SetValueEx(key, "audioOutputGain", 0, _winreg.REG_DWORD, 
+                 self.outputGain.value )
+                 
+             _winreg.CloseKey(key)
+             
+         elif Platform.isLinux():
+         
+             ratDefaultsFile = os.path.join(os.environ["HOME"],".RATdefaults")
+             ratDefaults = dict()
+             
+             # Read file first, to preserve settings therein
+             if os.access(ratDefaultsFile, os.R_OK):
+                f = open(ratDefaultsFile,"r")
+                lines = f.readlines()
+                for line in lines:
+                    line = line.strip()
+                    if line:
+                        k,v = line.split(':',1)
+                        ratDefaults[k] = v
+                f.close()
+                
+             # Update settings
+             if self.talk.value == "On":    mute = 0
+             else:                          mute = 1
+             ratDefaults["*audioInputMute"] = str(mute)
+             ratDefaults["*audioInputGain"] = str(self.inputGain.value )
+             ratDefaults["*audioOutputGain"] = str(self.outputGain.value )
+
+             # Write file with these settings
+             f = open(ratDefaultsFile, "w")
+             for k,v in ratDefaults.items():
+                f.write("%s: %s\n" % (k,v) )
+             f.close()
+             
+             
+             
+         else:
+             raise Exception("Unknown platform: %s" % sys.platform)
 
 
    def Start( self ):
       """Start service"""
       try:
+      
+         self.WriteRatDefaults()
 
          # 
          # Start the service; in this case, store command line args in a list and let
@@ -69,8 +128,10 @@ class AudioService( AGService ):
          options.append( '%s/%d' % ( self.streamDescription.location.host, self.streamDescription.location.port ) )
          self.log.info("Starting AudioService")
          self.log.info(" executable = %s" % self.executable)
+         
          self.log.info(" options = %s" % options)
          self._Start( options )
+         
       except:
          self.log.exception("Exception in AudioService.Start")
          raise Exception("Failed to start service")
