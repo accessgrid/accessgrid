@@ -66,6 +66,17 @@ class DataStoreClient:
             self.dataCache.append(ddict)
             self.dataIndex[str(ddict['name'])] = ddict
 
+    def QueryMatchingFilesMultiple(self, patternList):
+
+        fnames = {}
+        for pat in patternList:
+            match = self.QueryMatchingFiles(pat)
+            for m in match:
+                fnames[m] = 1
+        files = fnames.keys()
+
+        return files
+
     def QueryMatchingFiles(self, pattern):
         """
         Return a list of filenames that match the given pattern.
@@ -108,6 +119,13 @@ class DataStoreClient:
             for err in errlist:
                 print err
 
+    def RemoveFile(self, file):
+        try:
+            data = self.dataIndex[file]
+            self.datastoreProxy.RemoveFiles([data])
+        except:
+            print "Error removing data ", e
+
 
 import cmd
 class DataStoreShell(cmd.Cmd):
@@ -145,11 +163,49 @@ class DataStoreShell(cmd.Cmd):
     def do_more(self, arg):
         for file in arg.split():
             self.pageFile(file, "more")
+        return 0
     
     def do_less(self, arg):
         for file in arg.split():
             self.pageFile(file, "less")
-    
+        return 0
+
+    def do_update(self, arg):
+        print "Loading data from venue..."
+        self.dsc.LoadData()
+        print "... done"
+        return 0
+
+    def do_lpwd(self, arg):
+        print os.getcwd()
+        return 0
+
+    def do_lcd(self, arg):
+        try:
+            os.chdir(arg)
+        except OSError, e:
+            print "chdir failed: ", e.args[0]
+
+        return 0
+
+    def do_get(self, arg):
+        self.dsc.Download(arg, arg)
+        return 0
+
+    def do_put(self, arg):
+        self.dsc.Upload(arg)
+        self.dsc.LoadData()
+        return 0
+
+    def do_del(self, arg):
+        files = self.dsc.QueryMatchingFilesMultiple(arg.split())
+        for file in files:
+            self.dsc.RemoveFile(file)
+        self.dsc.LoadData()
+        return 0
+
+    def do_rm(self, arg):
+        return self.do_del(arg)
         
     #
     # Impls
@@ -195,21 +251,16 @@ class DataStoreShell(cmd.Cmd):
         if args == []:
             args.append("*")
 
-        fnames = {}
-        for pat in args:
-            match = self.dsc.QueryMatchingFiles(pat)
-            for m in match:
-                fnames[m] = 1
-        files = fnames.keys()
+        files = self.dsc.QueryMatchingFilesMultiple(args)
             
         files.sort()
         for f in files:
             if verb and url:
                 data = self.dsc.GetFileData(f)
-                print "%-20s %5s %s" % (f, data['size'], data['uri'])
+                print "%-20s %5s %-12s %s" % (f, data['size'], data['type'], data['uri'])
             elif verb:
                 data = self.dsc.GetFileData(f)
-                print "%-20s %5s" % (f, data['size'])
+                print "%-20s %5s %s " % (f, data['size'], data['type'])
             elif url:
                 data = self.dsc.GetFileData(f)
                 print "%-20s %s" % (f, data['uri'])
