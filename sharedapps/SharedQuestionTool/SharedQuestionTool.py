@@ -4,8 +4,8 @@
 #
 # Author:      Susanne Lefvert
 #
-# Created:     $Date: 2004-06-03 19:21:56 $
-# RCS-ID:      $Id: SharedQuestionTool.py,v 1.1 2004-06-03 19:21:56 lefvert Exp $
+# Created:     $Date: 2004-06-03 21:11:34 $
+# RCS-ID:      $Id: SharedQuestionTool.py,v 1.2 2004-06-03 21:11:34 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -67,16 +67,17 @@ class SharedQuestionTool(Model):
         # Register event callback
         self.sharedAppClient.RegisterEventCallback(self.SEND_QUESTION, self.SendQuestionCb)
         self.sharedAppClient.RegisterEventCallback(self.REMOVE_QUESTION, self.RemoveQuestionCb)
-      
+
         # Get all questions currently stored in the application service
-        clients = self.sharedAppClient.GetComponents()
+        clients = self.sharedAppClient.GetDataKeys()
         
-        for client in clients:
+        for clientId in clients:
             try:
-                list = self.__FromXML(self.sharedAppClient.GetData(client.appId))
-                for question in list:
-                    # Make sure soap type gets converted properly.
-                    self.allQuestions.append(self.__CreateQuestion(question))
+                list = self.sharedAppClient.GetData(clientId)
+                if len(list) > 0:
+                    qlist = self.__FromXML(list)
+                    for question in qlist:
+                        self.allQuestions.append(question)
             except:
                 self.log.exception("SharedQuestionTool.__init__: Failed to get questions")
                 
@@ -552,7 +553,7 @@ if __name__ == "__main__":
     #app.Initialize("SharedQuestionTool")
 
     # Url from app properties dialog in venue client.
-    #appUrl = 'https://zuz.mcs.anl.gov:8000/Venues/000000fccc7e8f4f00a900fe00d5000ffdb/apps/000000fceb483730008c00dd000a000f98c'
+    #appUrl = 'https://ag2-test.mcs.anl.gov:9000/Venues/default/apps/000000fcec30fd48008c00dd000b0037daf'
     #debugMode = 1
     
     if not appUrl:
