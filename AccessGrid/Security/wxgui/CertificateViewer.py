@@ -71,6 +71,9 @@ class CertificateViewerPanel(wxPanel):
 
         self._writeValue("Modulus", cert.GetModulus())
         self._writeValue("Modulus hash", cert.GetModulusHash())
+
+        self.text.SetInsertionPoint(0)
+
         path = self.certMgr.GetCertificatePath(cert)
 
         #
