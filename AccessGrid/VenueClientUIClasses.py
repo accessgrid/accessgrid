@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.38 2003-02-21 19:42:00 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.39 2003-02-21 20:00:15 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -673,12 +673,13 @@ class VenueList(wxScrolledWindow):
     def HideDoors(self):
         #self.EnableScrolling(false, false)
         for item in self.doorsAndLabelsList:
-            self.column.Hide(item)
+            item.Hide()
+            #       self.column.Hide(item)
 
     def ShowDoors(self):
         #self.EnableScrolling(true, false)
         for item in self.doorsAndLabelsList:
-            self.column.Show(item)
+            item.Show()
                    
 
 class ContentListPanel(wxPanel):                   
