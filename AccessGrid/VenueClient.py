@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.174 2004-05-14 22:23:57 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.175 2004-05-17 16:49:06 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.174 2004-05-14 22:23:57 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.175 2004-05-17 16:49:06 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -300,8 +300,6 @@ class VenueClient:
             # Preserve debug flag
             if "-d" in args or "--debug" in args:
                 serviceArgs.append("--debug")
-
-            Service.instance().Initialize("VenueClientServices", args=serviceArgs)
 
             from AccessGrid.AGServiceManager import AGServiceManager
             from AccessGrid.AGServiceManager import AGServiceManagerI
