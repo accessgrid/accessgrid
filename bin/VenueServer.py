@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.46 2004-03-12 05:23:13 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.47 2004-03-12 19:57:43 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.46 2004-03-12 05:23:13 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.47 2004-03-12 19:57:43 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -148,7 +148,7 @@ def main():
     log.debug("Stopped Hosting Environment, exiting.")
 
     for thrd in threading.enumerate():
-        log.debug("Thread ", thrd)
+        log.debug("Thread %s", thrd)
 
     # Exit cleanly
     sys.exit(0)
