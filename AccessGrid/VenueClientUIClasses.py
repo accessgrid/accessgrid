@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.185 2003-05-13 16:51:55 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.186 2003-05-13 19:10:29 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1657,24 +1657,27 @@ class ContentListPanel(wxPanel):
             #        break
 
     def OnDoubleClick(self, event):
-        treeId = self.tree.GetSelection()
-        item = self.tree.GetItemData(treeId).GetData()
-        text = self.tree.GetItemText(treeId)
-        
-        if item == None:
-            pass
+        self.x = event.GetX()
+        self.y = event.GetY()
+        treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
+       
+        if(treeId.IsOk() and flag & wxTREE_HITTEST_ONITEMLABEL):
+            item = self.tree.GetItemData(treeId).GetData()
+            text = self.tree.GetItemText(treeId)
+            if item == None:
+                pass
 
-        elif isinstance(item,ClientProfile):
-            self.parent.OpenParticipantProfile(None)
-
-        elif isinstance(item, DataDescription):
-            self.parent.OpenData(None)
-            
-        elif isinstance(item, ServiceDescription):
-            self.parent.OpenService(None)
-            
-        elif isinstance(item, ApplicationDescription):
-            self.JoinApp(None)
+            elif isinstance(item,ClientProfile):
+                self.parent.OpenParticipantProfile(None)
+                
+            elif isinstance(item, DataDescription):
+                self.parent.OpenData(None)
+                
+            elif isinstance(item, ServiceDescription):
+                self.parent.OpenService(None)
+                
+            elif isinstance(item, ApplicationDescription):
+                self.JoinApp(None)
                 
     def OnRightClick(self, event):
         self.x = event.GetX()
