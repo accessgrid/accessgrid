@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.90 2004-06-01 16:15:06 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.91 2004-06-01 16:21:40 judson Exp $
 ;
 
 ; Set externally
@@ -174,6 +174,11 @@ Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath
 Name: {app}; Type: filesandordirs
 Name: {app}\bin\*.dat; Type: files
 Name: {app}\bin\*.cfg; Type: files
+Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\AccessGrid; Type: filesandordirs
+Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\OpenSSL_AG; Type: filesandordirs
+Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\pyGlobus; Type: filesandordirs
+Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\SOAPpy; Type: filesandordirs
+Name: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\fpconst.*; Type: files
 
 [Dirs]
 Name: {app}\config\nodeConfig
@@ -201,6 +206,3 @@ Filename: {app}\config\nodeConfig\defaultWindows; Section: serviceconfig0; Key: 
 
 Filename: {app}\config\AGNodeService.cfg; Section: Node Configuration; Key: defaultNodeConfiguration; String: defaultWindows
 
-[InstallDelete]
-Name: {userappdata}\AccessGrid\certmgr.cfg; Type: files
-Name: {pf}\Access Grid Toolkit; Type: filesandordirs
