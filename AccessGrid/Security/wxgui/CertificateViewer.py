@@ -69,6 +69,8 @@ class CertificateViewerPanel(wxPanel):
         if pkloc and os.access(pkloc, os.R_OK):
             self._writeValue("Private key location", pkloc)
 
+        self._writeValue("Modulus", cert.GetModulus())
+        self._writeValue("Modulus hash", cert.GetModulusHash())
         path = self.certMgr.GetCertificatePath(cert)
 
         #
