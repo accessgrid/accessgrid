@@ -1,9 +1,9 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.12 2003-05-29 18:45:56 leggett Exp $
+; RCS-ID: $Id: agtk.iss,v 1.13 2003-05-30 22:08:34 judson Exp $
 ;
 
-#define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
-#define OutputDir "C:\AccessGridBuild\Builds"
+#define SourceDir "C:\Software\AccessGrid\AccessGrid\Release"
+#define OutputDir "C:\xfer"
 #define AppName "Access Grid Toolkit"
 #define AppNameShort "AGTk"
 #define AppVersionLong "2.0"
@@ -15,18 +15,16 @@
 
 [_ISTool]
 EnableISX=true
-LogFile=C:\AccessGridBuild\Builds\AGTk-installer.log
-LogFileAppend=false
 
 [_ISToolPreCompile]
 ; It would be a good idea to figure out how to pass the SourceDir as a
 ; parameter to prebuild. Ti and I have chatted about this, it's on the
 ; to do list :-)
 ;
-Name: python; Parameters: C:\AccessGridBuild\AccessGrid\packaging\makeServicePackages.py C:\AccessGridBuild\AccessGrid\services\node; Flags: abortonerror
-Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildAccessGrid.cmd; Parameters: C:\AccessGridBuild\AccessGrid; Flags: abortonerror
-Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\AccessGridBuild\ag-vic C:\AccessGridBuild\AccessGrid\Release\bin; Flags: abortonerror
-Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: C:\AccessGridBuild\ag-rat C:\AccessGridBuild\AccessGrid\Release\bin; Flags: abortonerror
+Name: python; Parameters: C:\Software\AccessGrid\AccessGrid\packaging\makeServicePackages.py C:\Software\AccessGrid\AccessGrid\services\node; Flags: abortonerror
+Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildAccessGrid.cmd; Parameters: C:\Software\AccessGrid\AccessGrid; Flags: abortonerror
+Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\Software\AccessGrid\ag-vic C:\Software\AccessGrid\AccessGrid\Release\bin; Flags: abortonerror
+Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: C:\Software\AccessGrid\ag-rat C:\Software\AccessGrid\AccessGrid\Release\bin; Flags: abortonerror
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -51,23 +49,23 @@ OutputDir={#OutputDir}
 OutputBaseFilename={#AppNameShort}-{#AppVersionShort}
 
 AppName=AGTk
-AppCopyright=Copyright © 2003 University of Chicago. All Rights Reserved.
+AppCopyright=Copyright © 2003 Argonne National Laboratory / University of Chicago. All Rights Reserved.
 AppPublisher=Futures Laboratory / Argonne National Laboratory
 AppPublisherURL=http://www.mcs.anl.gov/fl
 AppSupportURL=http://bugzilla.mcs.anl.gov/accessgrid
 AppUpdatesURL=http://www.mcs.anl.gov/fl/research/accessgrid
 AppID={907B1500-42CA-4148-8F13-2004654CCA06}
 Compression=zip/9
-MinVersion=0,5.0.2195sp3
-LicenseFile=C:\AccessGridBuild\AccessGrid\COPYING.txt
+MinVersion=0,5.0.2195
+LicenseFile=C:\Software\AccessGrid\AccessGrid\COPYING.txt
 DisableDirPage=false
-DefaultGroupName={#AppName} {#AppVersionShort}
-DefaultDirName={pf}\{#AppName}
+DefaultGroupName={#AppNameShort} {#AppVersionShort}
+DefaultDirName={pf}\{#AppNameShort} {#AppVersionShort}
 UsePreviousAppDir=false
 UserInfoPage=false
 WindowVisible=false
 
-UninstallDisplayName={#AppName} {#AppVersionLong}
+UninstallDisplayName={#AppNameShort} {#AppVersionShort}
 DisableStartupPrompt=false
 WindowResizable=false
 AlwaysShowComponentsList=true
@@ -82,17 +80,17 @@ WindowStartMaximized=false
 WizardImageFile=compiler:wizmodernimage.bmp
 WizardSmallImageFile=compiler:wizmodernsmallimage.bmp
 UninstallFilesDir={app}\uninst
-InfoBeforeFile=C:\AccessGridBuild\AccessGrid\Install.WINDOWS
+InfoBeforeFile=C:\Software\AccessGrid\AccessGrid\Install.WINDOWS
 ShowTasksTreeLines=true
 PrivilegesRequired=admin
 UninstallDisplayIcon={app}\config\agicons.exe
 
 [Components]
-Name: Venue_Client; Description: Basic client software to use Access Grid Virtual Venues.; Types: custom compact full; Flags: fixed
-Name: Video_Producer; Description: Basic Node Service that allows you to produce video streams; Types: full
-Name: Video_Consumer; Description: Basic Node Service that allows you to receive video streams; Types: custom full
-Name: Audio_Service; Description: Basic Node Service that allows you to receive and produce audio streams; Types: full
-Name: Venue_Server; Description: Server Software that allows you to host your own Virtual Venue Server; Types: full
+Name: Venue_Client; Description: Minimum AGTk Client software.; Flags: fixed; Types: custom compact full
+Name: Video_Producer; Description: Enables the sending of video.; Types: full
+Name: Video_Consumer; Description: Enables the recpeption and display of video streams; Types: full
+Name: Audio_Service; Description: Enables full-duplex audio.; Types: full
+Name: Venue_Server; Description: Server Software that allows you to host your own Virtual Venue Server; Types: custom
 
 [Files]
 ; The Python Module: AccessGrid
@@ -115,8 +113,12 @@ Source: Scripts\NodeManagement.py; DestDir: {app}; Components: Venue_Client
 Source: Scripts\AGNodeService.py; DestDir: {app}; Components: Venue_Client
 Source: Scripts\AGServiceManager.py; DestDir: {app}
 Source: Scripts\SetupVideo.py; DestDir: {app}; Components: Video_Producer
+
 Source: Scripts\VenueManagement.py; DestDir: {app}; Components: Venue_Server
 Source: Scripts\VenueServer.py; DestDir: {app}; Components: Venue_Server
+
+;Source: Scripts\VenuesServerRegistry.py; DestDir: {app}; Components: Venue_Server
+
 Source: Scripts\MailcapSetup.py; DestDir: {app}
 
 ; Default node configuration
@@ -126,7 +128,9 @@ Source: share\AccessGrid\nodeConfig\defaultWindows; DestDir: {commonappdata}\Acc
 Source: share\AccessGrid\agicons.exe; DestDir: {app}\config
 
 ; Documentation
-;Source: doc\AccessGrid\*.*; DestDir: {app}\Documentation
+Source: doc\Developer\*.*; DestDir: {app}\Documentation\Developer
+Source: doc\VenueClientManual\*.*; DestDir: {app}\Documentation\VenueClientManual
+Source: doc\VenueManagementManual\*.*; DestDir: {app}\Documentation\VenueManagementManual
 
 ; Post install scripts
 Source: share\AccessGrid\packaging\windows\Postinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
@@ -139,31 +143,34 @@ Source: bin\rat-kill.exe; DestDir: {app}; Components: Audio_Service
 Source: bin\rat.exe; DestDir: {app}; Components: Audio_Service
 Source: bin\ratmedia.exe; DestDir: {app}; Components: Audio_Service
 Source: bin\ratui.exe; DestDir: {app}; Components: Audio_Service
+Source: COPYING.txt; DestDir: {app}
+Source: README; DestDir: {app}; Flags: isreadme; DestName: README.txt
 
 [Icons]
-Name: {group}\Uninstall the AGTk; Filename: {uninstallexe}
-Name: {group}\Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py --personalNode; IconFilename: {app}\config\agicons.exe; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
-Name: {group}\Node Manager; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: NodeManagement.py; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
-Name: {group}\Setup Video; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: SetupVideo.py; WorkingDir: {app}; Components: Video_Producer; IconIndex: 0
-Name: {group}\Venue Server; IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueServer.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
-Name: {group}\Venue Management; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueManagement.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
-Name: {group}\Debug\Venue Client; IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueClient.py; Parameters: --personalNode --debug; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
-Name: {group}\Debug\Node Manager; IconFilename: {app}\config\agicons.exe; Filename: {app}\NodeManagement.py; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
-Name: {group}\Debug\Setup Video; IconFilename: {app}\config\agicons.exe; Filename: {app}\SetupVideo.py; WorkingDir: {app}; Components: Video_Producer; IconIndex: 0
-Name: {group}\Debug\Venue Server; IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueServer.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
-Name: {group}\Debug\Venue Management; IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueManagement.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
-Name: {commondesktop}\Access Grid Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py --personalNode; IconFilename: {app}\config\agicons.exe; WorkingDir: {app}; Tasks: desktopicon; Components: Venue_Client; IconIndex: 0
+Name: {group}\Uninstall the AGTk; Filename: {uninstallexe}; Comment: Uninstall the Access Grid Toolkit.
+;Name: {group}\Node Manager; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: NodeManagement.py; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
+;Name: {group}\Debug\Node Manager; IconFilename: {app}\config\agicons.exe; Filename: {app}\NodeManagement.py; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
+;Name: {group}\Debug\Setup Video; IconFilename: {app}\config\agicons.exe; Filename: {app}\SetupVideo.py; WorkingDir: {app}; Components: Video_Producer; IconIndex: 0
+;Name: {group}\Debug\Venue Management; IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueManagement.py; Paramters: --debug; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
+Name: {commondesktop}\Access Grid Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py --personalNode; IconFilename: {app}\config\agicons.exe; WorkingDir: {app}; Tasks: desktopicon; Components: Venue_Client; Comment: Run the Venue Client!
 Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Access Grid Venue Client; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py --personalNode; WorkingDir: {app}; Tasks: quicklaunchicon; Components: Venue_Client; IconIndex: 0
-Name: {group}\Documentation\README; Filename: {app}\Documentation\README
-Name: {group}\Documentation\Developers Documentation; Filename: {app}\Documentation\index.html
-Name: {group}\Documentation\License; IconFilename: {app}\config\ag.ico; Filename: {app}\COPYING.txt
+Name: {group}\Documentation\Venue Client Manual; Filename: {app}\Documentation\VenueClient\index.html; Comment: Read the Venue Client Manual.
+Name: {group}\Documentation\Developers Documentation; Filename: {app}\Documentation\Developer\index.html; Comment: Happy Doc generated documentation for developers.
+Name: {group}\Documentation\View README; Filename: {app}\README.txt; Flags: createonlyiffileexists; Comment: Read the ReadMe.
+Name: {group}\Documentation\View License; IconFilename: {app}\config\ag.ico; Filename: {app}\COPYING.txt; Comment: Read the software license the AGTk is distributed under.
+Name: {group}\Venue Server\Venue Server; IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueServer.py; WorkingDir: {app}; Components: Venue_Server; Comment: Run the venue server software.
+Name: {group}\Venue Server\Venue Server (Debug); IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueServer.py; Parameters: --debug; WorkingDir: {app}; Components: Venue_Server; Comment: Run the venue server software in debugging mode.
+Name: {group}\Venue Server\Manage Venue Servers; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueManagement.py; WorkingDir: {app}; Components: Venue_Server; Comment: Run the venue management tool.
+Name: {group}\Venue Client (Debug Mode); IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueClient.py; Parameters: --personalNode --debug; WorkingDir: {app}; Components: Venue_Client; Comment: Run the venue client in debugging mode.
+Name: {group}\Search for Video Devices; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: SetupVideo.py; WorkingDir: {app}; Components: Video_Producer; Comment: Search for video devices for the Video Producer service.
+Name: {group}\Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py --personalNode; IconFilename: {app}\config\agicons.exe; WorkingDir: {app}; Components: Venue_Client; Comment: Run the venue client software.
 
 [Registry]
 Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: ConfigPath; ValueData: {commonappdata}\AccessGrid; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: UserConfigPath; ValueData: {userappdata}\Access Grid Toolkit\config; Flags: uninsdeletekey
+Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit; ValueType: none; Flags: uninsdeletekey
 
-[Types]
 
 [Tasks]
 Name: desktopicon; Description: Create &Desktop Icons; GroupDescription: Additional icons:; Components: Audio_Service Video_Consumer Video_Producer Venue_Client
@@ -175,11 +182,13 @@ WelcomeLabel2=This will install the [name/ver] on your computer.%n%nIt is strong
 
 [Run]
 Filename: {app}\config\Postinstall.py; Flags: shellexec runminimized
-Filename: {app}\SetupVideo.py; WorkingDir: {app}; Description: Setup what video devices will produce video streams; Components: Video_Producer; Flags: postinstall unchecked shellexec
+
+Filename: {app}\SetupVideo.py; WorkingDir: {app}; Description: Setup what video devices will produce video streams; Components: Video_Producer; Flags: postinstall unchecked shellexec runminimized
 
 [UninstallDelete]
 Name: {reg:HKLM\Software\Python\PythonCore\2.2\PythonPath\win32com,|C:\Python22\Lib\site-packages}\AccessGrid; Type: filesandordirs
-Name: {userappdata}\Access Grid Toolkit\certmgr.cfg; Type: files
+Name: {userappdata}\AccessGrid\certmgr.cfg; Type: files
+Name: {app}; Type: filesandordirs
 
 [Dirs]
 Name: {app}\config; Components: Venue_Client
@@ -210,3 +219,4 @@ Filename: {commonappdata}\AccessGrid\AGServiceManager.cfg; Section: Service Mana
 
 [InstallDelete]
 Name: {userappdata}\Access Grid Toolkit\certmgr.cfg; Type: files
+Name: {pf}\Access Grid Toolkit; Type: filesandordirs
