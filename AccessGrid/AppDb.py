@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.11 2003-10-10 17:07:59 judson Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.12 2004-03-16 03:25:23 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,15 +15,15 @@ used by client software that wants to keep track of what AG specific
 tools are appropriate for specific data types. It also keeps track of
 how to invoke those tools.
 """
-__revision__ = "$Id: AppDb.py,v 1.11 2003-10-10 17:07:59 judson Exp $"
+__revision__ = "$Id: AppDb.py,v 1.12 2004-03-16 03:25:23 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
 import sys
 import shutil
 
+from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.Utilities import LoadConfig, SaveConfig
-from AccessGrid.Platform import GetUserConfigDir, GetUserAppPath
 from AccessGrid.Descriptions import ApplicationDescription
 from AccessGrid.GUID import GUID
 
@@ -72,17 +72,21 @@ class AppDb:
     information on a per user basis about what applications are
     installed and how to run them.
     """
-    defaultPath = GetUserConfigDir()
     defaultName = "ApplicationDatabase"
-    defaultFile = os.path.join(defaultPath, defaultName)
     defaultSeparator = ":"
 
-    def __init__(self, file=defaultFile):
+    def __init__(self, file=None):
         """
         The constructor for the AppDb, it uses a file for persistent storage.
         """
-        self.fileName = file
         self.AppDb = dict()
+
+        self.userConfig = UserConfig.instance()
+
+        if file is None:
+            self.fileName = os.path.join(self.userConfig.GetConfigDir(), self.defaultName)
+        else:
+            self.fileName = file
 
         try:
             self.AppDb = LoadConfig(self.fileName, dict(), self.defaultSeparator)
@@ -395,7 +399,8 @@ class AppDb:
 
             if dstPath == None:
                 noSpaceName = '_'.join(name.split(' '))
-                dstPath = os.path.join(GetUserAppPath(), noSpaceName)
+                dstPath = os.path.join(self.userConfig.GetSharedAppDir(),
+                                       noSpaceName)
 
             if not os.path.exists(dstPath):
                 try:
