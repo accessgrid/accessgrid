@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.176 2003-07-03 22:00:22 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.177 2003-07-15 20:03:05 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -76,6 +76,7 @@ class VenueClientUI(wxApp):
         self.venueClient = VenueClient()
         self.venueClient.AddEventSubscriber(self)
         wxApp.__init__(self, false)
+        self.onExitCalled = false
         
     def OnInit(self):
         """
@@ -790,31 +791,35 @@ class VenueClientUI(wxApp):
         This method performs all processing which needs to be
         done as the application is about to exit.
         """
-        log.info("--------- END VenueClient")
 
-        #
-        # If we are connected to a venue, exit the venue
-        # Do this before terminating services, since we need
-        # to message them to shut down their services first
-        #
-        if self.venueClient.isInVenue:
-            self.venueClient.ExitVenue()
+        # Ensure things are not shut down twice.
+        if not self.onExitCalled:
+            self.onExitCalled = true
+            log.info("--------- END VenueClient")
 
-        #
-        # If we're running as a personal node, terminate the services.
-        #
-        if self.isPersonalNode:
-            log.debug("Terminating services")
-            self.personalNode.Stop()
+            #
+            # If we are connected to a venue, exit the venue
+            # Do this before terminating services, since we need
+            # to message them to shut down their services first
+            #
+            if self.venueClient.isInVenue:
+                self.venueClient.ExitVenue()
 
-      
-        #
-        # stop personal data server
-        #  
-        if self.transferEngine:
-            self.transferEngine.stop()
+            #
+            # If we're running as a personal node, terminate the services.
+            #
+            if self.isPersonalNode:
+                log.debug("Terminating services")
+                self.personalNode.Stop()
 
-        os._exit(0)
+            self.venueClient.Shutdown()      
+
+            self.ExitMainLoop()
+
+            #os._exit(0)  # this should not be necessary, replace if needed.
+
+        else:
+            log.info("note that bin.VenueClient.OnExit() was called twice.")
 
     def SaveFile(self, data_descriptor, local_pathname):
         """
