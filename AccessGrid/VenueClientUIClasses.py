@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.103 2003-03-25 20:57:19 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.104 2003-03-25 21:17:20 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -379,7 +379,7 @@ class VenueClientFrame(wxFrame):
         except:
             pass
 
-    def AuthorizeLeadDialog(self):
+    def AuthorizeLeadDialog(self, clientProfile):
         text = "Do you want "+clientProfile.name+" to follow you?"
         title = "Authorize follow"
         dlg = wxMessageDialog(self.frame, text, title, style = wxOK| wxCANCEL|wxICON_QUESTION)
