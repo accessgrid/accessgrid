@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.38 2003-08-22 14:12:17 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.39 2003-08-22 14:18:33 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -540,8 +540,10 @@ def LinuxGetMimeType(extension = None):
     """
     fauxFn = ".".join(["Faux", extension])
     mimetypes.init()
+
+    # This is always a tuple so this is Ok
+    mimeType = mimetypes.guess_type(fauxFn)[0]
     
-    mimeType = mimetypes.guess_type(fauxFn)
     return mimeType
 
 def LinuxGetMimeCommands(mimeType = None, ext = None):
