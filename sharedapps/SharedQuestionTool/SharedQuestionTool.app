@@ -1,7 +1,7 @@
 [application]
 name = Shared Question Tool
 mimetype = application/x-ag-question-tool
-extension = sharedquestiontool
+extension = sqtool
 files = SharedQuestionTool.py, ObserverPattern.py
 
 [commands] 
