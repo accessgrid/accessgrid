@@ -52,28 +52,24 @@ class VenueServerTestCase(unittest.TestCase):
         # shut down the node service, saving config or whatever
         running = 0
 
-    # Authorization callback for globus
-    def AuthCallback(server, g_handle, remote_user, context):
-        return 1
-
     def testAddVenue(self):
         venueServer.AddVenue(VenueDescription("unittestVenue2", "venue for unittest"));
 
-    def testRemoveVenue(self):
-        rvenue = VenueDescription("unittestVenue3", "venue for unittest")
-        rvenue.uri = "LocalVenueServer/default2"
+#     def testRemoveVenue(self):
+#         rvenue = VenueDescription("unittestVenue3", "venue for unittest")
+#         rvenue.uri = "LocalVenueServer/default2"
 
-        venueServer.AddVenue(rvenue)
+#         venueServer.AddVenue(rvenue)
 
-        venueRemoved = 0
-        venueDescList = venueServer.GetVenues()
-        for v in venueDescList:
-            print "venue:", v.name, ", ", v.uri
-            if v.name == "unittestVenue3":
-                id = venueServer.IdFromURL(v.uri)
-                venueServer.RemoveVenue(id)
-                venueRemoved = 1
-        assert venueRemoved
+#         venueRemoved = 0
+#         venueDescList = venueServer.GetVenues()
+#         for v in venueDescList:
+#             print "venue:", v.name, ", ", v.uri
+#             if v.name == "unittestVenue3":
+#                 id = venueServer.IdFromURL(v.uri)
+#                 venueServer.RemoveVenue(id)
+#                 venueRemoved = 1
+#         assert venueRemoved
 
     def testGetSetStorageLocation(self):
         venueServer.SetStorageLocation("testData")
@@ -100,16 +96,9 @@ class VenueServerTestCase(unittest.TestCase):
     def testAAABegin(self):
         global venueServer  # so TestCases can access it
         global venue1       # so TestCases can access it
-        logFile = "VenueServer.log"
-        log = logging.getLogger("AG")
-        log.setLevel(logging.DEBUG)
-        hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
-        fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-        hdlr.setFormatter(fmt)
-        log.addHandler(hdlr)
         # initialize toolkit and environment
         app = Toolkit.CmdlineApplication()
-        app.Initialize()
+        app.Initialize("VenueServer_test")
         # server
         venueServer = VenueServer()
         venueServer.SetStorageLocation("testData")

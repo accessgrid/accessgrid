@@ -184,7 +184,7 @@ class AGServiceDescriptionTestCase(unittest.TestCase):
     """A test case for ServiceDescription."""
 
     def testAGServiceDescriptionConstructor(self):
-       s = AGServiceDescription("name", "description", "http://someuri", "some capabilities", "some resource", "some executable", "http://some_servicemanageruri", "http://some_servicepackageuri")
+       s = AGServiceDescription("name", "description", "http://someuri", "some capabilities", "some resource", "some executable", "http://some_servicemanageruri", "http://some_servicepackageuri", "version")
        assert s.name == "name"
        assert s.description == "description"
        assert s.uri == "http://someuri"
@@ -193,7 +193,8 @@ class AGServiceDescriptionTestCase(unittest.TestCase):
        assert s.executable == "some executable"
        assert s.serviceManagerUri == "http://some_servicemanageruri"
        assert s.servicePackageUri == "http://some_servicepackageuri"
-
+       assert s.version == "version"
+       
 def suite():
     """Returns a suite containing all the test cases in this module."""
     suite1 = unittest.makeSuite(ObjectDescriptionTestCase)

@@ -29,9 +29,8 @@ import signal, time, os
 import logging, logging.handlers
 from AccessGrid.AGServiceManager import AGServiceManager
 from AccessGrid.AGNodeService import AGNodeService
-from AccessGrid.hosting.pyGlobus.Server import Server
-from AccessGrid.Platform import GetConfigFilePath, AGTK_LOCATION 
-from AccessGrid.Platform import *
+from AccessGrid.hosting import Server
+from AccessGrid.Platform import AGTK_LOCATION 
 
 # AGServiceManager unittests below assume a basic initialization works 
 #   in their setup so we'll just confirm it works in a separate test.
@@ -40,7 +39,7 @@ class AGServiceManagerBasicTest(unittest.TestCase):
 
     def testInit(self):
         """Test initialization"""
-        self.serviceManager = AGServiceManager(Server(0))
+        self.serviceManager = AGServiceManager(Server(('',0)))
         self.serviceManager.Shutdown()
         time.sleep(1)
 

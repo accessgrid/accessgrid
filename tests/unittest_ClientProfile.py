@@ -17,15 +17,15 @@ Unittest for ClientProfile
 
 import signal, time, os
 import unittest
-from AccessGrid import Platform
+from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.ClientProfile import ClientProfile, InvalidProfileException
 
 class ClientProfileTestCase(unittest.TestCase):
     """A test case for ClientProfile."""
 
     def testSaveLoad(self):
-       c = ClientProfile() 
-       filename = os.path.join( Platform.GetTempDir(),".testProfile") 
+       c = ClientProfile()
+       filename = os.path.join( SystemConfig.instance().GetTempDir(),".testProfile") 
        c.Save(filename)
 
        d = ClientProfile()

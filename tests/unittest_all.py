@@ -14,9 +14,19 @@ import unittest
 
 def suite():
     # List modules to test
-    modules_to_test = ['unittest_VenueServer',
-                       'unittest_version',
-                       ]
+    modules_to_test = [
+        'unittest_AGNodeService',
+        'unittest_AGParameter',
+        'unittest_AGServiceManager',
+        'unittest_ClientProfile',
+        'unittest_Descriptions',
+        'unittest_GUID',
+        'unittest_MulticastAddressAllocator',
+        'unittest_NetworkLocation',
+        'unittest_Platform',
+        'unittest_VenueServer',
+        'unittest_version'
+        ]
 
     alltests = unittest.TestSuite()
     for module in map(__import__, modules_to_test):

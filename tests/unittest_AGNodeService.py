@@ -34,7 +34,7 @@ import logging, logging.handlers
 from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid.AGServiceManager import AGServiceManager
 from AccessGrid.Descriptions import AGServiceManagerDescription
-from AccessGrid.hosting.pyGlobus.Server import Server
+from AccessGrid.hosting import Server
 
 global nodeService
 global server
@@ -86,7 +86,7 @@ class AGNodeServiceTestSuite(unittest.TestSuite):
 
         # Create a hosting environment
         global server
-        server = Server( port , auth_callback=self.AuthCallback )
+        server = Server(('', port))
 
         # Create the Node Service Service
         global service
