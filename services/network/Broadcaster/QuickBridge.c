@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.48 2004-12-18 00:23:08 leggett Exp $
+ * $Id: QuickBridge.c,v 1.49 2004-12-18 00:26:52 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -564,7 +564,6 @@ void session_set( Session *head, fd_set *readfds )
       FD_SET( s->ucfd[rtcp], readfds );
       if ( s->use_multicast )
 	{
-	  printf( "SESSION_SET: ucfd[data] %d, ucfd[rtcp] %d mcfd[data] %d mcfd[rtcp] %d\n", s->ucfd[data], s->ucfd[rtcp], s->mcfd[data], s->mcfd[rtcp] );
 	  FD_SET( s->mcfd[data], readfds );
 	  FD_SET( s->mcfd[rtcp], readfds );
 	}
@@ -598,13 +597,13 @@ void process_session( Session *head, fd_set *readfds, u_long myip )
 	  do_send = s->forward_unicast;
 	  if ( FD_ISSET( s->ucfd[i], readfds ) )
 	    {
-	      //printf("\nready to receive data on s->ucfd[%d]!\n",i);
+	      printf("\nready to receive data on s->ucfd[%d]!\n",i);
 	      sourceaddrlen = sizeof( sourceaddr );
 	      memset( (char *)&sourceaddr,0, sourceaddrlen );
-	      //debug( 9, "Before recvfrom( )\n" );
-	      //nr = recvfrom( s->ucfd[i], recvbuf, MSGBUFSIZE, 0,
-	      //(struct sockaddr *)&sourceaddr, &sourceaddrlen );
-	      //debug( 2, "\nreading from ucfd[%d], got data from %s:%d\n", i, inet_ntoa( sourceaddr.sin_addr ), ntohs( sourceaddr.sin_port ) );
+	      debug( 9, "Before recvfrom( )\n" );
+	      nr = recvfrom( s->ucfd[i], recvbuf, MSGBUFSIZE, 0,
+			     (struct sockaddr *)&sourceaddr, &sourceaddrlen );
+	      debug( 2, "\nreading from ucfd[%d], got data from %s:%d\n", i, inet_ntoa( sourceaddr.sin_addr ), ntohs( sourceaddr.sin_port ) );
 	      if ( debugFlag > 0 )
 		{
 		  ucrecvfromcalls[i] = ucrecvfromcalls[i] + 1;
