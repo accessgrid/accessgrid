@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.148 2004-02-27 19:11:36 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.149 2004-02-27 21:52:46 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.148 2004-02-27 19:11:36 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.149 2004-02-27 21:52:46 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -972,9 +972,6 @@ class Venue(AuthorizationMixIn):
             log.debug("Enter: Client already in venue: %s", privateId)
         # raise ClientAlreadyPresent
 
-        print "IN ENTER"
-        print clientProfile
-        print "----"
         #
         # Send this before we set up client state, so that
         # we don't end up getting our own enter event enqueued.
@@ -1007,11 +1004,6 @@ class Venue(AuthorizationMixIn):
             log.exception("Enter: Can't get state.")
             raise InvalidVenueState
 
-        print "About to return from Enter:"
-        print state
-        print privateId
-        print streamDescriptions
-        print "====="
         return ( state, privateId, streamDescriptions )
 
     def AddNetService(self, clientType, privateId):
@@ -1824,8 +1816,6 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
             raise
 
         retval = Decorate(r)
-        print retval
-        print "End Interface Enter."
         
         return retval
 
@@ -2640,22 +2630,10 @@ class VenueIW(IWrapper, AuthorizationIWMixIn):
 
         (r1, r2, r3) = self.proxy.Enter(p)
 
-        print "Returns: "
         r1v = Reconstitute(r1)
-        print "1"
-        print r1v
-
-        print "2"
-        print r2
-
         r3v = Reconstitute(r3)
-        print "3"
-        print r3v
         
-        retval = (r1v, r2, r3v)
-
-        print "IW Done"
-        return retval
+        return (r1v, r2, r3v)
 
     def Exit(self, id):
         return self.proxy.Exit(id)

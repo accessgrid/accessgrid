@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.133 2004-02-27 19:15:07 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.134 2004-02-27 21:52:46 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.133 2004-02-27 19:15:07 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.134 2004-02-27 21:52:46 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -558,82 +558,11 @@ class VenueClient:
             self.venueProxy = VenueIW(URL)
 
             log.debug("EnterVenue: Invoke venue enter")
-            print type(self.profile)
             (self.venueState, self.privateId, self.streamDescList ) = self.venueProxy.Enter( self.profile )
 
-
-            #
-            # construct a venue state that consists of real objects
-            # instead of the structs we get back from the SOAP call
-            # (this code can be removed when SOAP returns real objects)
-            #
-#             connectionList = []
-#             for conn in venueState.connections:
-#                 connectionList.append( ConnectionDescription( conn.name, conn.description, conn.uri ) )
-
-#             clientList = []
-#             for client in venueState.clients:
-#                 profile = ClientProfile()
-#                 profile.profileFile = client.profileFile
-#                 profile.profileType = client.profileType
-#                 profile.name = client.name
-#                 profile.email = client.email
-#                 profile.phoneNumber = client.phoneNumber
-#                 profile.icon = client.icon
-#                 profile.publicId = client.publicId
-#                 profile.location = client.location
-#                 profile.venueClientURL = client.venueClientURL
-#                 profile.techSupportInfo = client.techSupportInfo
-#                 profile.homeVenue = client.homeVenue
-#                 profile.privateId = client.privateId
-#                 profile.distinguishedName = client.distinguishedName
-
-#                 # should also objectify the capabilities, but not doing it 
-#                 # for now (until it's a problem ;-)
-#                 profile.capabilities = client.capabilities
-
-#                 clientList.append( profile )
-
-#             dataList = []
-#             for data in venueState.data:
-#                 dataDesc = CreateDataDescription(data)
-#                 dataList.append( dataDesc )
-                
-#             applicationList = []
-#             for application in venueState.applications:
-#                 appDesc = CreateApplicationDescription(application)
-#                 applicationList.append(appDesc)
-
-#             serviceList = []
-#             for service in venueState.services:
-#                 serviceDesc = CreateServiceDescription(service)
-#                 serviceList.append(serviceDesc)
-
-#             # I hate retrofitted code.
-#             if hasattr(venueState, 'backupServer'):
-#                 bs = venueState.backupServer
-#             else:
-#                 bs = None
-                
-#             self.venueState = VenueState( venueState.uniqueId,
-#                                           venueState.name,
-#                                           venueState.description,
-#                                           venueState.uri,
-#                                           connectionList, 
-#                                           clientList,
-#                                           dataList,
-#                                           venueState.eventLocation,
-#                                           venueState.textLocation,
-#                                           applicationList,
-#                                           serviceList,
-#                                           bs)
-
-            print self.venueState
-            print dir(self.venueState)
-            
             self.venueUri = URL
             self.venueId = self.venueState.GetUniqueId()
-            host, port = venueState.eventLocation
+            host, port = self.venueState.eventLocation
 
             #
             # Create the event client
@@ -705,7 +634,8 @@ class VenueClient:
             log.debug("Updating profile cache.")
             # Cache profiles from venue.
             for client in self.venueState.clients.values():
-                self.UpdateProfileCache(client)
+                pass
+                #self.UpdateProfileCache(client)
                 
             # Finally, set the flag that we are in a venue
             self.isInVenue = 1
