@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.97 2004-06-01 18:34:13 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.98 2004-06-01 19:15:31 judson Exp $
 ;
 
 ; Set externally
@@ -46,7 +46,7 @@ Compression=zip/9
 MinVersion=0,5.0.2195
 LicenseFile=COPYING.txt
 DisableDirPage=false
-DefaultGroupName={#AppName} (#AppVersion}
+DefaultGroupName={#AppName} {#AppVersion}
 DefaultDirName={pf}\{#AppNameShort}-{#AppVersion}
 UsePreviousAppDir=false
 UserInfoPage=false
