@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.78 2003-05-28 18:38:07 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.79 2003-06-26 20:50:47 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -329,6 +329,8 @@ class VenueServer(ServiceBase.ServiceBase):
                 except ConfigParser.NoOptionError:
                     dataList = ""
 
+                persistentData = []
+
                 if len(dataList) != 0:
                     for d in string.split(dataList, ':'):
                         dd = DataDescription(cp.get(d, 'name'))
@@ -342,11 +344,15 @@ class VenueServer(ServiceBase.ServiceBase):
                         dd.SetChecksum(cp.get(d, 'checksum'))
                         dd.SetOwner(cp.get(d, 'owner'))
 
+                        persistentData.append(dd)
+                        
+                v.dataStore.LoadPersistentData(persistentData)
                         # Ick
-                        v.data[dd.name] = dd
-                        v.UpdateData(dd)
-                else:
-                    log.debug("No data to load for Venue %s", sec)
+                #        v.data[dd.name] = dd
+                #        v.UpdateData(dd)
+                #else:
+                #    log.debug("No data to load for Venue %s", sec)
+
 
                 # Deal with apps if there are any
                 try:
