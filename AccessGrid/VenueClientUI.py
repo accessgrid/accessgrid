@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.23 2004-03-19 22:44:38 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.24 2004-03-22 20:06:53 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.23 2004-03-19 22:44:38 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.24 2004-03-22 20:06:53 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -792,6 +792,16 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             except:
                 log.exception("VenueClientFrame.SaveText: Can not save text.")
                 self.Error("Text could not be saved.", "Save Text")
+
+    def ModifyAppRolesCB(self, event):
+        appUrl = event.uri
+                
+        # Open the dialog
+        f = AuthorizationUIDialog(None, -1, "Manage Roles", log)
+        f.ConnectToAuthManager(appUrl)
+        if f.ShowModal() == wxID_OK:
+            f.panel.Apply()
+        f.Destroy()
 
         
     def ModifyVenueRolesCB(self,event):
@@ -3223,6 +3233,12 @@ class ContentListPanel(wxPanel):
         menu.Append(id, "Open Monitor...", 
                     "View data and participants present in this application session.")
         EVT_MENU(self, id, lambda event: self.parent.MonitorAppCB(item))
+
+        # - Application Monitor
+        id = wxNewId()
+        menu.Append(id, "Manage Roles...", 
+                    "Manage application authorization.")
+        EVT_MENU(self, id, lambda event: self.parent.ModifyAppRolesCB(item))
 
         # Add properties
         id = wxNewId()
