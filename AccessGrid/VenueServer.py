@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.172 2004-09-10 16:14:40 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.173 2004-09-10 20:38:50 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.172 2004-09-10 16:14:40 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.173 2004-09-10 20:38:50 judson Exp $"
 
 # Standard stuff
 import sys
@@ -557,9 +557,13 @@ class VenueServer(AuthorizationMixIn):
                   log.exception("Invalid authorization policy import")
                   setattr(self, option, config[k])
             elif option == "administrators" and len(config[k]) > 0:
+               aName = Role.Administrators.GetName()
+
+               if self.authManager.FindRole(aName) is None:
+                  self.authManager.AddRole(Role.Administrators)
+
                for a in config[k].split(':'):
-                  self.authManager.AddSubjectToRole(a,
-                                     Role.Administrators.GetName())
+                  self.authManager.AddSubjectToRole(a, aName)
             else:
                 setattr(self, option, config[k])
 
