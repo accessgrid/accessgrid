@@ -55,9 +55,13 @@ Obsoletes:	pyGlobus
 Obsoletes:	logging
 
 %description
-The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
+The Access Grid Toolkit provides the necessary components for users to
+participate in Access Grid based collaborations, and also for developers
+to work on network services, applications services and node services to
+extend the functionality of the Access Grid.
 
-This module provides the core components to start participating in the Access Grid.
+This module provides the core components to start participating in the
+Access Grid.
 
 %prep
 %setup -n AccessGrid-%{version} -c
