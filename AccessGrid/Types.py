@@ -3,13 +3,13 @@
 # Purpose:     
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.54 2004-09-01 15:40:07 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.55 2004-09-08 00:14:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.54 2004-09-01 15:40:07 turam Exp $"
+__revision__ = "$Id: Types.py,v 1.55 2004-09-08 00:14:10 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -104,11 +104,11 @@ class AGServicePackage:
             zf = zipfile.ZipFile( self.file, "r" )
             files = zf.namelist()
             zf.close()
-            for file in files:
-                if file.endswith(".svc"):
-                    self.descriptionFile = file
+            for f in files:
+                if f.endswith(".svc"):
+                    self.descriptionFile = f
                 else:
-                    self.exeFile = file
+                    self.exeFile = f
                     if self.exeFile.endswith(".py"):
                         self.isPython = 1
 
@@ -223,7 +223,7 @@ class AGServicePackage:
                     pathparts = string.split(filename, '/')
                     if len(pathparts) == 2:
                         temp_dir = os.path.join(path, pathparts[0])
-                        if os.access(temp_dir, os.F_OK) == False:
+                        if not os.access(temp_dir, os.F_OK):
                             os.mkdir(temp_dir)
                     destfilename = os.path.join(path,filename)
 
@@ -237,8 +237,8 @@ class AGServicePackage:
                     # Mark the file executable (indiscriminately)
                     os.chmod(destfilename,0755)
                     
-                    s = os.stat(destfilename)
-                    #print "%s mode %d", destfilename, s[0]
+                    #s = os.stat(destfilename)
+                    #print "%s mode %d" % (destfilename, s[0])
                 except:
                     log.exception("Error extracting file %s", filename)
 
