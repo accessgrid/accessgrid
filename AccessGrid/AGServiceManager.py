@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.29 2003-05-28 22:00:18 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.30 2003-08-01 21:23:27 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -29,7 +29,7 @@ from AccessGrid.Types import AGServicePackage
 from AccessGrid.AuthorizationManager import AuthorizationManager
 from AccessGrid.DataStore import GSIHTTPDownloadFile
 from AccessGrid import Utilities
-from AccessGrid.Platform import GetConfigFilePath, GetSystemConfigDir
+from AccessGrid.Platform import GetConfigFilePath, GetSystemConfigDir, GetInstallDir
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 
 log = logging.getLogger("AG.ServiceManager")
@@ -338,6 +338,16 @@ class AGServiceManager( ServiceBase ):
     StopServices.soap_export_as = "StopServices"
 
 
+    def GetInstallDir(self):
+        """
+        Returns the install directory path where services are expected to be found.
+        """
+        print '------------ get install dir ', GetInstallDir()
+
+        return GetInstallDir()
+    
+    GetInstallDir.soap_export_as = "GetInstallDir"
+        
     ####################
     ## INTERNAL methods
     ####################
