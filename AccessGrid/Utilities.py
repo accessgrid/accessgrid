@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.28 2003-04-28 00:44:58 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.29 2003-04-28 18:26:15 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,16 +22,6 @@ import mailcap
 
 import logging
 log = logging.getLogger("AG.Utilities")
-
-
-try:
-    import _winreg
-    from AccessGrid.Platform import Win32RegisterMimeType
-except:
-    pass
-
-from wxPython.wx import wxTheMimeTypesManager as mtm
-from wxPython.wx import wxFileTypeInfo
 
 from AccessGrid.Platform import GetInstallDir
 
@@ -250,50 +240,6 @@ except ImportError:
     import socket
     GetHostname = socket.getfqdn()
 
-def InitMimeTypes(file):
-    """
-    This function is used to load in our AG specific mimetypes.
-    """
-    success = 0
-
-    # This only works for augmenting the mailcap entries on Linux
-    if os.path.isfile(file):
-        success = mtm.ReadMailcap(file, 1)
-    else:
-        return 0
-    
-    # For windows we have cope with the fact that it's the registry
-    # that's dealt with during the "creating new associations" sequence
-    # for now we load the mailcap file and stuff things in the registry
-    if sys.platform == 'win32':
-        fp = open(file)
-        caps = mailcap.readmailcapfile(fp)
-        fp.close()
-
-        ftl = []
-        for k in caps.keys():
-            opencmd = u""
-            printcmd = u""
-            desc = u""
-            ext = None
-            cmds = []
-            stuff = caps[k][0]
-            for k2 in stuff.keys():
-                if k2 == 'view':
-                    cmds.append(('open', stuff[k2].replace('%s', '%1'), ''))
-                elif k2 == 'description':
-                    desc = stuff[k2]
-                elif k2 == 'nametemplate':
-                    ext = "." + stuff[k2].split('.')[1]
-                elif k2 == 'print':
-                    cmds.append((k2, stuff[k2].replace('%s', '%1'), ''))
-
-            fileType = k.split('/')[1]
-            fileType.replace('-', '.')
-            Win32RegisterMimeType(k, ext, fileType, desc, cmds)
-                    
-    return success
-    
 def SetMimeTypeAssociation(mimetype, ext=None, desc=None, cmds=None):
     """
     This function registers information with the local machines mime types
