@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.126 2003-08-21 23:01:40 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.127 2003-08-21 23:10:39 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -643,7 +643,7 @@ class Venue(ServiceBase.ServiceBase):
 
         # Close the connection to the net service
         if netService.connObj is not None:
-            self.venue.server.eventService.CloseConnection(netService.connObj)
+            self.server.eventService.CloseConnection(netService.connObj)
         netService.connObj = None
         
         # Remove the netservice from the netservice list
