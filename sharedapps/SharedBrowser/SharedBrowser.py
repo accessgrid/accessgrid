@@ -218,8 +218,16 @@ class SharedBrowser( wxApp ):
         self.sharedAppClient = SharedAppClient("SharedBrowser")
         self.log = self.sharedAppClient.InitLogging(debugMode, logFile)
 
+        # Get client profile
+        try:
+            clientProfileFile = os.path.join(GetUserConfigDir(), "profile")
+            clientProfile = ClientProfile(clientProfileFile)
+        except:
+            self.log.info("SharedAppClient.Connect: Could not load client profile, set clientProfile = None")
+            clientProfile = None
+
         # Connect to shared application service. 
-        self.sharedAppClient.Join(appUrl)
+        self.sharedAppClient.Join(appUrl, clientProfile)
 
         #
         # Register browse event callback
@@ -243,7 +251,10 @@ class SharedBrowser( wxApp ):
         
         if len(currentUrl) > 0:
             self.browser.navigate(currentUrl)
-            self.sharedAppClient.SetParticipantStatus(currentUrl)
+            try:
+                self.sharedAppClient.SetParticipantStatus(currentUrl)
+            except:
+                self.log.exception("SharedBrowser:__init__: Failed to set participant status")
 
         self.frame.Show(1)
         self.SetTopWindow(self.frame)
@@ -273,8 +284,11 @@ class SharedBrowser( wxApp ):
             self.log.debug("Browse to "+ url)
             self.browser.navigate(url)
 
-        self.sharedAppClient.SetParticipantStatus(url)
-
+        try:
+            self.sharedAppClient.SetParticipantStatus(url)
+        except:
+            self.log.exception("SharedBrowser:__init__: Failed to set participant status")
+            
             
 class ArgumentManager:
     def __init__(self):
