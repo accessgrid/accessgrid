@@ -2,7 +2,7 @@
 # Name:        unittest_all.py
 # Purpose:     Automatic testing with machine readable output
 # Created:     2004/04/014
-# RCS-ID:      $Id: test_dist.py,v 1.1 2004-04-16 17:19:56 judson Exp $
+# RCS-ID:      $Id: test_dist.py,v 1.2 2004-04-16 17:22:33 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -183,7 +183,7 @@ if __name__ == '__main__':
                       action="store_const", const="text", default=None,
                       help="Output TEXT results.")
 
-    parser_add_option("-p", "--path", dest="path", metavar="PATH",
+    parser.add_option("-p", "--path", dest="path", metavar="PATH",
                       default=None, help="Path to the dist lib for adding to the python path")
     
     options, args = parser.parse_args()
