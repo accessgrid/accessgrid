@@ -104,7 +104,7 @@ class SharedAppClient:
         except Exception, e:
 #        except Client.MethodFailed, e:
 
-            self.log.excpetion("SharedAppClient.Join failed: %s",
+            self.log.exception("SharedAppClient.Join failed: %s",
                                self.__appUrl)
             try:
                 (self.__publicId, self.__privateId) = self.__appProxy.Join()
