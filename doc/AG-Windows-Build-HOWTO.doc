@@ -1,25 +1,25 @@
 {\rtf1\ansi\ansicpg1252\uc1\deff0\stshfdbch0\stshfloch0\stshfhich0\stshfbi0\deflang1033\deflangfe1041{\fonttbl{\f0\froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}{\f1\fswiss\fcharset0\fprq2{\*\panose 020b0604020202020204}Arial;}
 {\f2\fmodern\fcharset0\fprq1{\*\panose 02070309020205020404}Courier New;}{\f3\froman\fcharset2\fprq2{\*\panose 05050102010706020507}Symbol;}{\f5\fmodern\fcharset0\fprq1{\*\panose 02070409020205020404}Courier;}
-{\f10\fnil\fcharset2\fprq2{\*\panose 05000000000000000000}Wingdings;}{\f35\fswiss\fcharset0\fprq2{\*\panose 020b0604030504040204}Tahoma;}{\f36\froman\fcharset238\fprq2 Times New Roman CE;}{\f37\froman\fcharset204\fprq2 Times New Roman Cyr;}
-{\f39\froman\fcharset161\fprq2 Times New Roman Greek;}{\f40\froman\fcharset162\fprq2 Times New Roman Tur;}{\f41\froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\f42\froman\fcharset178\fprq2 Times New Roman (Arabic);}
-{\f43\froman\fcharset186\fprq2 Times New Roman Baltic;}{\f44\froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\f46\fswiss\fcharset238\fprq2 Arial CE;}{\f47\fswiss\fcharset204\fprq2 Arial Cyr;}{\f49\fswiss\fcharset161\fprq2 Arial Greek;}
-{\f50\fswiss\fcharset162\fprq2 Arial Tur;}{\f51\fswiss\fcharset177\fprq2 Arial (Hebrew);}{\f52\fswiss\fcharset178\fprq2 Arial (Arabic);}{\f53\fswiss\fcharset186\fprq2 Arial Baltic;}{\f54\fswiss\fcharset163\fprq2 Arial (Vietnamese);}
-{\f56\fmodern\fcharset238\fprq1 Courier New CE;}{\f57\fmodern\fcharset204\fprq1 Courier New Cyr;}{\f59\fmodern\fcharset161\fprq1 Courier New Greek;}{\f60\fmodern\fcharset162\fprq1 Courier New Tur;}{\f61\fmodern\fcharset177\fprq1 Courier New (Hebrew);}
-{\f62\fmodern\fcharset178\fprq1 Courier New (Arabic);}{\f63\fmodern\fcharset186\fprq1 Courier New Baltic;}{\f64\fmodern\fcharset163\fprq1 Courier New (Vietnamese);}{\f386\fswiss\fcharset238\fprq2 Tahoma CE;}{\f387\fswiss\fcharset204\fprq2 Tahoma Cyr;}
-{\f389\fswiss\fcharset161\fprq2 Tahoma Greek;}{\f390\fswiss\fcharset162\fprq2 Tahoma Tur;}{\f391\fswiss\fcharset177\fprq2 Tahoma (Hebrew);}{\f392\fswiss\fcharset178\fprq2 Tahoma (Arabic);}{\f393\fswiss\fcharset186\fprq2 Tahoma Baltic;}
-{\f394\fswiss\fcharset163\fprq2 Tahoma (Vietnamese);}{\f395\fswiss\fcharset222\fprq2 Tahoma (Thai);}}{\colortbl;\red0\green0\blue0;\red0\green0\blue255;\red0\green255\blue255;\red0\green255\blue0;\red255\green0\blue255;\red255\green0\blue0;
-\red255\green255\blue0;\red255\green255\blue255;\red0\green0\blue128;\red0\green128\blue128;\red0\green128\blue0;\red128\green0\blue128;\red128\green0\blue0;\red128\green128\blue0;\red128\green128\blue128;\red192\green192\blue192;\red217\green217\blue217;
-}{\stylesheet{\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext0 \styrsid7955307 Normal;}{
-\s1\qc \li0\ri0\sb240\sa60\keepn\widctlpar\aspalpha\aspnum\faauto\outlinelevel0\adjustright\rin0\lin0\itap0 \b\f1\fs32\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext0 \styrsid7955307 heading 1;}{
-\s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx360\aspalpha\aspnum\faauto\ls38\outlinelevel1\adjustright\rin0\lin360\itap0 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon22 \snext0 \sautoupd \styrsid7955307 
-heading 2;}{\s3\ql \fi-432\li792\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx1080\aspalpha\aspnum\faauto\ls38\ilvl1\outlinelevel2\adjustright\rin0\lin792\itap0 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 
-\sbasedon0 \snext0 \sautoupd \styrsid1342044 heading 3;}{\*\cs10 \additive \ssemihidden \styrsid7955307 Default Paragraph Font;}{\*
+{\f10\fnil\fcharset2\fprq2{\*\panose 05000000000000000000}Wingdings;}{\f45\fswiss\fcharset0\fprq2{\*\panose 020b0604030504040204}Tahoma;}{\f173\froman\fcharset238\fprq2 Times New Roman CE;}{\f174\froman\fcharset204\fprq2 Times New Roman Cyr;}
+{\f176\froman\fcharset161\fprq2 Times New Roman Greek;}{\f177\froman\fcharset162\fprq2 Times New Roman Tur;}{\f178\froman\fcharset177\fprq2 Times New Roman (Hebrew);}{\f179\froman\fcharset178\fprq2 Times New Roman (Arabic);}
+{\f180\froman\fcharset186\fprq2 Times New Roman Baltic;}{\f181\froman\fcharset163\fprq2 Times New Roman (Vietnamese);}{\f183\fswiss\fcharset238\fprq2 Arial CE;}{\f184\fswiss\fcharset204\fprq2 Arial Cyr;}{\f186\fswiss\fcharset161\fprq2 Arial Greek;}
+{\f187\fswiss\fcharset162\fprq2 Arial Tur;}{\f188\fswiss\fcharset177\fprq2 Arial (Hebrew);}{\f189\fswiss\fcharset178\fprq2 Arial (Arabic);}{\f190\fswiss\fcharset186\fprq2 Arial Baltic;}{\f191\fswiss\fcharset163\fprq2 Arial (Vietnamese);}
+{\f193\fmodern\fcharset238\fprq1 Courier New CE;}{\f194\fmodern\fcharset204\fprq1 Courier New Cyr;}{\f196\fmodern\fcharset161\fprq1 Courier New Greek;}{\f197\fmodern\fcharset162\fprq1 Courier New Tur;}
+{\f198\fmodern\fcharset177\fprq1 Courier New (Hebrew);}{\f199\fmodern\fcharset178\fprq1 Courier New (Arabic);}{\f200\fmodern\fcharset186\fprq1 Courier New Baltic;}{\f201\fmodern\fcharset163\fprq1 Courier New (Vietnamese);}
+{\f623\fswiss\fcharset238\fprq2 Tahoma CE;}{\f624\fswiss\fcharset204\fprq2 Tahoma Cyr;}{\f626\fswiss\fcharset161\fprq2 Tahoma Greek;}{\f627\fswiss\fcharset162\fprq2 Tahoma Tur;}{\f628\fswiss\fcharset177\fprq2 Tahoma (Hebrew);}
+{\f629\fswiss\fcharset178\fprq2 Tahoma (Arabic);}{\f630\fswiss\fcharset186\fprq2 Tahoma Baltic;}{\f631\fswiss\fcharset163\fprq2 Tahoma (Vietnamese);}{\f632\fswiss\fcharset222\fprq2 Tahoma (Thai);}}{\colortbl;\red0\green0\blue0;\red0\green0\blue255;
+\red0\green255\blue255;\red0\green255\blue0;\red255\green0\blue255;\red255\green0\blue0;\red255\green255\blue0;\red255\green255\blue255;\red0\green0\blue128;\red0\green128\blue128;\red0\green128\blue0;\red128\green0\blue128;\red128\green0\blue0;
+\red128\green128\blue0;\red128\green128\blue128;\red192\green192\blue192;\red217\green217\blue217;}{\stylesheet{\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 
+\snext0 \styrsid7955307 Normal;}{\s1\qc \li0\ri0\sb240\sa60\keepn\widctlpar\aspalpha\aspnum\faauto\outlinelevel0\adjustright\rin0\lin0\itap0 \b\f1\fs32\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext0 \styrsid7955307 
+heading 1;}{\s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx360\aspalpha\aspnum\faauto\ls38\outlinelevel1\adjustright\rin0\lin360\itap0 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 
+\sbasedon22 \snext0 \sautoupd \styrsid7955307 heading 2;}{\s3\ql \fi-432\li792\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx1080\aspalpha\aspnum\faauto\ls38\ilvl1\outlinelevel2\adjustright\rin0\lin792\itap0 
+\b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext0 \sautoupd \styrsid1342044 heading 3;}{\*\cs10 \additive \ssemihidden \styrsid7955307 Default Paragraph Font;}{\*
 \ts11\tsrowd\trftsWidthB3\trpaddl108\trpaddr108\trpaddfl3\trpaddft3\trpaddfb3\trpaddfr3\tscellwidthfts0\tsvertalt\tsbrdrt\tsbrdrl\tsbrdrb\tsbrdrr\tsbrdrdgl\tsbrdrdgr\tsbrdrh\tsbrdrv 
 \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs20\lang1024\langfe1024\cgrid\langnp1024\langfenp1024 \snext11 \ssemihidden Normal Table;}{\s15\ql \li720\ri720\widctlpar\aspalpha\aspnum\faauto\adjustright\rin720\lin720\itap0 
 \cbpat17 \f2\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext15 \sautoupd \styrsid7955307 Plain Text,Literal Code;}{\s16\ql \li0\ri0\widctlpar\tqc\tx4320\tqr\tx8640\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 
 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext16 \styrsid7955307 header;}{\s17\ql \li0\ri0\widctlpar\tqc\tx4320\tqr\tx8640\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 
-\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext17 \styrsid7955307 footer;}{\s18\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \cbpat9 \f35\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 
-\sbasedon0 \snext18 \ssemihidden \styrsid7955307 Document Map;}{\s19\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f35\fs16\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext19 \ssemihidden \styrsid7955307 
+\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext17 \styrsid7955307 footer;}{\s18\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \cbpat9 \f45\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 
+\sbasedon0 \snext18 \ssemihidden \styrsid7955307 Document Map;}{\s19\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f45\fs16\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext19 \ssemihidden \styrsid7955307 
 Balloon Text;}{\*\cs20 \additive \ul\cf2 \sbasedon10 \styrsid7955307 Hyperlink;}{\s21\qc \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext21 \styrsid7955307 
 Author Information;}{\s22\ql \fi-360\li360\ri0\widctlpar\jclisttab\tx360{\*\pn \pnlvlbody\ilvl0\ls5\pnrnot0\pndec }\aspalpha\aspnum\faauto\ls5\adjustright\rin0\lin360\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 
 \sbasedon0 \snext22 \styrsid7955307 List Number;}{\s23\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \sbasedon0 \snext23 \ssemihidden \styrsid723770 footnote text;}{\*
@@ -279,19 +279,20 @@ Table Contemporary;}}{\*\latentstyles\lsdstimax156\lsdlockeddef0}{\*\listtable{\
 \'10\'00.\'01.\'02.\'03.\'04.\'05.\'06.\'07.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d\'0f;}\fbias0 \fi-1224\li3744\jclisttab\tx4320\lin3744 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0
 {\leveltext\'12\'00.\'01.\'02.\'03.\'04.\'05.\'06.\'07.\'08.;}{\levelnumbers\'01\'03\'05\'07\'09\'0b\'0d\'0f\'11;}\fbias0 \fi-1440\li4320\jclisttab\tx4680\lin4320 }{\listname ;}\listid2145195998}}{\*\listoverridetable{\listoverride\listid-120
 \listoverridecount0\ls1}{\listoverride\listid-120\listoverridecount0\ls2}{\listoverride\listid-120\listoverridecount0\ls3}{\listoverride\listid-120\listoverridecount0\ls4}{\listoverride\listid-120\listoverridecount0\ls5}{\listoverride\listid-120
-\listoverridecount0\ls6}{\listoverride\listid-120\listoverridecount0\ls7}{\listoverride\listid1314830010\listoverridecount0\ls8}{\listoverride\listid1314830010\listoverridecount0\ls9}{\listoverride\listid897059950\listoverridecount0\ls10}
-{\listoverride\listid1314830010\listoverridecount0\ls11}{\listoverride\listid63668384\listoverridecount0\ls12}{\listoverride\listid1705248686\listoverridecount0\ls13}{\listoverride\listid1244681304\listoverridecount0\ls14}{\listoverride\listid1632905741
-\listoverridecount0\ls15}{\listoverride\listid635722587\listoverridecount0\ls16}{\listoverride\listid2040616483\listoverridecount0\ls17}{\listoverride\listid1424766927\listoverridecount0\ls18}{\listoverride\listid884172567\listoverridecount0\ls19}
-{\listoverride\listid1553225547\listoverridecount0\ls20}{\listoverride\listid1553225547\listoverridecount0\ls21}{\listoverride\listid1553225547\listoverridecount0\ls22}{\listoverride\listid1553225547\listoverridecount0\ls23}{\listoverride\listid1553225547
-\listoverridecount0\ls24}{\listoverride\listid652297125\listoverridecount0\ls25}{\listoverride\listid636226911\listoverridecount0\ls26}{\listoverride\listid2145195998\listoverridecount0\ls27}{\listoverride\listid30113750\listoverridecount0\ls28}
-{\listoverride\listid1448699525\listoverridecount0\ls29}{\listoverride\listid1632204139\listoverridecount0\ls30}{\listoverride\listid2057578451\listoverridecount0\ls31}{\listoverride\listid165748336\listoverridecount0\ls32}{\listoverride\listid654451606
-\listoverridecount0\ls33}{\listoverride\listid1560046321\listoverridecount0\ls34}{\listoverride\listid260648589\listoverridecount0\ls35}{\listoverride\listid2132819547\listoverridecount0\ls36}{\listoverride\listid1374307091\listoverridecount0\ls37}
-{\listoverride\listid73670441\listoverridecount0\ls38}{\listoverride\listid737289296\listoverridecount0\ls39}{\listoverride\listid1095324078\listoverridecount0\ls40}{\listoverride\listid1248727650\listoverridecount0\ls41}{\listoverride\listid1130057130
-\listoverridecount0\ls42}{\listoverride\listid1805417949\listoverridecount0\ls43}{\listoverride\listid1328367498\listoverridecount0\ls44}{\listoverride\listid1968582646\listoverridecount0\ls45}{\listoverride\listid73670441\listoverridecount0\ls46}
-{\listoverride\listid73670441\listoverridecount0\ls47}}{\*\rsidtbl \rsid29896\rsid476073\rsid723770\rsid745434\rsid940529\rsid1048881\rsid1342044\rsid1388885\rsid1473236\rsid1605311\rsid1786378\rsid2294845\rsid2782713\rsid3279060\rsid3544207\rsid4356097
-\rsid5786873\rsid6170613\rsid6181997\rsid6322569\rsid7481329\rsid7623692\rsid7955307\rsid9529738\rsid10565486\rsid10755175\rsid11079813\rsid11499157\rsid12414110\rsid12848784\rsid13643647\rsid13717741\rsid14036421\rsid14094397\rsid14098695\rsid14556582
-\rsid14573281\rsid14632027\rsid14767862\rsid16399190\rsid16719781}{\*\generator Microsoft Word 11.0.5604;}{\info{\title Access Grid Windows Packaging How To}{\subject Packaging- windows}{\author Ivan R. Judson}{\operator Ivan R. Judson}
-{\creatim\yr2003\mo5\dy16\hr13\min6}{\revtim\yr2004\mo4\dy7\hr13\min32}{\version25}{\edmins847}{\nofpages15}{\nofwords3867}{\nofchars22047}{\*\company  }{\nofcharsws25863}{\vern24689}}\margl1440\margr1440 
+\listoverridecount0\ls6}{\listoverride\listid-120\listoverridecount0\ls7}{\listoverride\listid-120\listoverridecount0\ls8}{\listoverride\listid1314830010\listoverridecount0\ls9}{\listoverride\listid1314830010\listoverridecount0\ls10}
+{\listoverride\listid897059950\listoverridecount0\ls11}{\listoverride\listid1314830010\listoverridecount0\ls12}{\listoverride\listid63668384\listoverridecount0\ls13}{\listoverride\listid1705248686\listoverridecount0\ls14}{\listoverride\listid1244681304
+\listoverridecount0\ls15}{\listoverride\listid1632905741\listoverridecount0\ls16}{\listoverride\listid635722587\listoverridecount0\ls17}{\listoverride\listid2040616483\listoverridecount0\ls18}{\listoverride\listid1424766927\listoverridecount0\ls19}
+{\listoverride\listid884172567\listoverridecount0\ls20}{\listoverride\listid1553225547\listoverridecount0\ls21}{\listoverride\listid1553225547\listoverridecount0\ls22}{\listoverride\listid1553225547\listoverridecount0\ls23}{\listoverride\listid1553225547
+\listoverridecount0\ls24}{\listoverride\listid1553225547\listoverridecount0\ls25}{\listoverride\listid652297125\listoverridecount0\ls26}{\listoverride\listid636226911\listoverridecount0\ls27}{\listoverride\listid2145195998\listoverridecount0\ls28}
+{\listoverride\listid30113750\listoverridecount0\ls29}{\listoverride\listid1448699525\listoverridecount0\ls30}{\listoverride\listid1632204139\listoverridecount0\ls31}{\listoverride\listid2057578451\listoverridecount0\ls32}{\listoverride\listid165748336
+\listoverridecount0\ls33}{\listoverride\listid654451606\listoverridecount0\ls34}{\listoverride\listid1560046321\listoverridecount0\ls35}{\listoverride\listid260648589\listoverridecount0\ls36}{\listoverride\listid2132819547\listoverridecount0\ls37}
+{\listoverride\listid1374307091\listoverridecount0\ls38}{\listoverride\listid73670441\listoverridecount0\ls39}{\listoverride\listid737289296\listoverridecount0\ls40}{\listoverride\listid1095324078\listoverridecount0\ls41}{\listoverride\listid1248727650
+\listoverridecount0\ls42}{\listoverride\listid1130057130\listoverridecount0\ls43}{\listoverride\listid1805417949\listoverridecount0\ls44}{\listoverride\listid1328367498\listoverridecount0\ls45}{\listoverride\listid1968582646\listoverridecount0\ls46}
+{\listoverride\listid73670441\listoverridecount0\ls47}{\listoverride\listid73670441\listoverridecount0\ls48}}{\*\rsidtbl \rsid29896\rsid476073\rsid723770\rsid745434\rsid940529\rsid1048881\rsid1342044\rsid1388885\rsid1473236\rsid1605311\rsid1786378
+\rsid2294845\rsid2782713\rsid3279060\rsid3544207\rsid4356097\rsid5786873\rsid6170613\rsid6181997\rsid6322569\rsid7015169\rsid7481329\rsid7623692\rsid7686512\rsid7955307\rsid8259515\rsid8925393\rsid9505191\rsid9529738\rsid10565486\rsid10755175\rsid10903266
+\rsid10967543\rsid11079813\rsid11499157\rsid12414110\rsid12848784\rsid13448200\rsid13643647\rsid13717741\rsid14036421\rsid14094397\rsid14098695\rsid14556582\rsid14573281\rsid14632027\rsid14767862\rsid15750911\rsid15826014\rsid16015910\rsid16399190
+\rsid16719781}{\*\generator Microsoft Word 11.0.5604;}{\info{\title Access Grid Windows Packaging How To}{\subject Packaging- windows}{\author Ivan R. Judson}{\operator Ivan R. Judson}{\creatim\yr2003\mo5\dy16\hr13\min6}
+{\revtim\yr2004\mo4\dy12\hr10\min12}{\version35}{\edmins865}{\nofpages16}{\nofwords4081}{\nofchars23263}{\*\company  }{\nofcharsws27290}{\vern24689}}\margl1440\margr1440 
 \widowctrl\ftnbj\aenddoc\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\hyphcaps0\horzdoc\dghspace120\dgvspace120\dghorigin1701\dgvorigin1984\dghshow0\dgvshow3\jcompress\viewkind1\viewscale100\nolnhtadjtbl\rsidroot7481329 \fet0{\*\template 
 C:\\software\\AccessGrid\\AccessGrid\\doc\\HowTo.dot}{\*\ftnsep \pard\plain \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid11499157 \chftnsep 
 \par }}{\*\ftnsepc \pard\plain \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid11499157 \chftnsepc 
@@ -307,54 +308,113 @@ C:\\software\\AccessGrid\\AccessGrid\\doc\\HowTo.dot}{\*\ftnsep \pard\plain \ql 
 {\*\pnseclvl5\pndec\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl6\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl7\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl8
 \pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl9\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}\pard\plain 
 \s1\qc \li0\ri0\sb240\sa60\keepn\widctlpar\aspalpha\aspnum\faauto\outlinelevel0\adjustright\rin0\lin0\itap0\pararsid745434 \b\f1\fs32\lang1033\langfe1033\kerning32\cgrid\langnp1033\langfenp1033 {\insrsid7481329 Access Grid Windows }{\insrsid6170613 
-Packaging}{\insrsid7481329  }{\insrsid1473236 How To}{\insrsid7481329\charrsid1388885 
-\par }\pard\plain \s21\qc \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid745434 \f1\fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid6170613 Date}{\insrsid29896 : March 25, 2004
+Packaging}{\insrsid7481329  }{\insrsid13448200 How-}{\insrsid1473236 To}{\insrsid7481329\charrsid1388885 
 \par {\listtext\pard\plain\s2 \b\i\f1\fs28\lang1033\langfe1033\langfenp1033\insrsid29896 \hich\af1\dbch\af0\loch\f1 1.\tab}}\pard\plain \s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar
-\jclisttab\tx360\aspalpha\aspnum\faauto\ls38\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid2294845 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid29896 Packaging Overview
+\jclisttab\tx360\aspalpha\aspnum\faauto\ls39\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid2294845 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid29896 Packaging Overview
 \par }\pard\plain \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid29896 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid13717741 Packaging the AG Toolkit for windows results i
 n windows installer that contains everything necessary to get \'93up and running\'94 using the Access Grid. In order to build this from the sources, the following assumptions are made:
 \par 
-\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid13717741 \hich\af2\dbch\af0\loch\f2 o\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls45\adjustright\rin0\lin720\itap0\pararsid11499157 {\insrsid13717741 
-Python 2.2.3+ is installed
-\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid13717741 \hich\af2\dbch\af0\loch\f2 o\tab}epydoc is installed
-\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid13717741 \hich\af2\dbch\af0\loch\f2 o\tab}InnoSetup 4.0+ is installed
-\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid13717741 \hich\af2\dbch\af0\loch\f2 o\tab}Some version of MS Visual studio is installed (I\rquote m currently using vs.net 2003)
+\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid13717741 \hich\af2\dbch\af0\loch\f2 o\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls46\adjustright\rin0\lin720\itap0\pararsid11499157 {\insrsid13717741 
+Python 2.2.3+ is installed}{\insrsid8925393  (with windows extensions)}{\insrsid13717741 
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid8925393 \hich\af0\dbch\af0\loch\f0 a.\tab}}\pard \ql \fi-360\li1440\ri0\widctlpar\jclisttab\tx1440\aspalpha\aspnum\faauto\ls46\ilvl1\adjustright\rin0\lin1440\itap0\pararsid8925393 
+{\field{\*\fldinst {\insrsid8925393  HYPERLINK "}{\insrsid8925393\charrsid8925393 http://www.python.org/2.2.3/}{\insrsid8925393 " }{\insrsid8925393 {\*\datafield 
+00d0c9ea79f9bace118c8200aa004ba90b02000000170000001d00000068007400740070003a002f002f007700770077002e0070007900740068006f006e002e006f00720067002f0032002e0032002e0033002f000000e0c9ea79f9bace118c8200aa004ba90b3a00000068007400740070003a002f002f00770077007700
+2e0070007900740068006f006e002e006f00720067002f0032002e0032002e0033002f000000}}}{\fldrslt {\cs20\ul\cf2\insrsid8925393\charrsid221232 http://www.python.org/2.2.3/}}}{\insrsid8925393 
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid8925393 \hich\af0\dbch\af0\loch\f0 b.\tab}}\pard \ql \fi-360\li1440\ri0\widctlpar\jclisttab\tx1440\aspalpha\aspnum\faauto\ls46\ilvl1\adjustright\rin0\lin1440\itap0\pararsid15826014 
+{\field{\*\fldinst {\insrsid8925393  HYPERLINK "}{\insrsid8925393\charrsid8925393 http://starship.python.net/crew/mhammond/}{\insrsid8925393 " }{\insrsid8925393 {\*\datafield 
+00d0c9ea79f9bace118c8200aa004ba90b02000000170000002a00000068007400740070003a002f002f00730074006100720073006800690070002e0070007900740068006f006e002e006e00650074002f0063007200650077002f006d00680061006d006d006f006e0064002f000000e0c9ea79f9bace118c8200aa004b
+a90b5400000068007400740070003a002f002f00730074006100720073006800690070002e0070007900740068006f006e002e006e00650074002f0063007200650077002f006d00680061006d006d006f006e0064002f000000}}}{\fldrslt {\cs20\ul\cf2\insrsid8925393\charrsid221232 
+http://starship.python.net/crew/mhammond/}}}{\insrsid8925393 
+\par }\pard \ql \li1080\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin1080\itap0\pararsid15826014 {\insrsid8925393 Or
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid8925393 \hich\af0\dbch\af0\loch\f0 c.\tab}}\pard \ql \fi-360\li1440\ri0\widctlpar\jclisttab\tx1440\aspalpha\aspnum\faauto\ls46\ilvl1\adjustright\rin0\lin1440\itap0\pararsid15826014 
+{\field{\*\fldinst {\insrsid8925393  HYPERLINK "}{\insrsid8925393\charrsid8925393 http://www.activestate.com/Products/Download/Download.plex?id=ActivePython}{\insrsid8925393 " }{\insrsid8925393 {\*\datafield 
+00d0c9ea79f9bace118c8200aa004ba90b02000000170000004b00000068007400740070003a002f002f007700770077002e00610063007400690076006500730074006100740065002e0063006f006d002f00500072006f00640075006300740073002f0044006f0077006e006c006f00610064002f0044006f0077006e00
+6c006f00610064002e0070006c00650078003f00690064003d0041006300740069007600650050007900740068006f006e000000e0c9ea79f9bace118c8200aa004ba90b9600000068007400740070003a002f002f007700770077002e00610063007400690076006500730074006100740065002e0063006f006d002f0050
+0072006f00640075006300740073002f0044006f0077006e006c006f00610064002f0044006f0077006e006c006f00610064002e0070006c00650078003f00690064003d0041006300740069007600650050007900740068006f006e000000}}}{\fldrslt {\cs20\ul\cf2\insrsid8925393\charrsid221232 
+http://www.activestate.com/Products/Download/Download.plex?id=ActivePython}}}{\insrsid8925393 
+\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid13717741 \hich\af2\dbch\af0\loch\f2 o\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls46\adjustright\rin0\lin720\itap0\pararsid11499157 {\insrsid13717741 
+epydoc is installed
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid8925393 \hich\af0\dbch\af0\loch\f0 a.\tab}}\pard \ql \fi-360\li1440\ri0\widctlpar\jclisttab\tx1440\aspalpha\aspnum\faauto\ls46\ilvl1\adjustright\rin0\lin1440\itap0\pararsid8925393 
+{\field{\*\fldinst {\insrsid8925393  HYPERLINK "}{\insrsid8925393\charrsid8925393 http://sourceforge.net/project/showfiles.php?group_id=32455}{\insrsid8925393 " }{\insrsid8925393 {\*\datafield 
+00d0c9ea79f9bace118c8200aa004ba90b02000000170000003c00000068007400740070003a002f002f0073006f00750072006300650066006f007200670065002e006e00650074002f00700072006f006a006500630074002f00730068006f007700660069006c00650073002e007000680070003f00670072006f007500
+70005f00690064003d00330032003400350035000000e0c9ea79f9bace118c8200aa004ba90b7800000068007400740070003a002f002f0073006f00750072006300650066006f007200670065002e006e00650074002f00700072006f006a006500630074002f00730068006f007700660069006c00650073002e00700068
+0070003f00670072006f00750070005f00690064003d00330032003400350035000000}}}{\fldrslt {\cs20\ul\cf2\insrsid8925393\charrsid221232 http://sourceforge.net/project/showfiles.php?group_id=32455}}}{\insrsid8925393 
+\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid13717741 \hich\af2\dbch\af0\loch\f2 o\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls46\adjustright\rin0\lin720\itap0\pararsid11499157 {\insrsid13717741 
+InnoSetup 4.0+ is installed
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid8925393 \hich\af0\dbch\af0\loch\f0 a.\tab}}\pard \ql \fi-360\li1440\ri0\widctlpar\jclisttab\tx1440\aspalpha\aspnum\faauto\ls46\ilvl1\adjustright\rin0\lin1440\itap0\pararsid8925393 
+{\field{\*\fldinst {\insrsid8925393  HYPERLINK "}{\insrsid8925393\charrsid8925393 http://www.jrsoftware.org/isdl.php}{\insrsid8925393 " }{\insrsid8925393 {\*\datafield 
+00d0c9ea79f9bace118c8200aa004ba90b02000000170000002300000068007400740070003a002f002f007700770077002e006a00720073006f006600740077006100720065002e006f00720067002f006900730064006c002e007000680070000000e0c9ea79f9bace118c8200aa004ba90b460000006800740074007000
+3a002f002f007700770077002e006a00720073006f006600740077006100720065002e006f00720067002f006900730064006c002e007000680070000000}}}{\fldrslt {\cs20\ul\cf2\insrsid8925393\charrsid221232 http://www.jrsoftware.org/isdl.php}}}{\insrsid8925393  
+\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid13717741 \hich\af2\dbch\af0\loch\f2 o\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls46\adjustright\rin0\lin720\itap0\pararsid11499157 {\insrsid13717741 
+Some version of MS Visual studio is installed (I\rquote m currently using vs.net 2003)
 \par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid13717741 \hich\af2\dbch\af0\loch\f2 o\tab}The sources are all located in some build directory, referred to AGBUILDROOT.
 \par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid13717741 {\insrsid13717741 
-\par }{\insrsid14556582 The process that results in windows package is the execution of a python script (build_snapshot.py). The script follows these steps:
+\par }{\insrsid14556582 The process that results in windows package is the execution of }{\insrsid8259515 the ag-packaging\\build_snapshot.py }{\insrsid14556582 script.}{\insrsid8259515  The package building process has a platform independent
+ phase at the beginning then, completes with a platform dependant set of }{\insrsid10967543 steps that results in the final package.
 \par 
-\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid14556582 \hich\af0\dbch\af0\loch\f0 1.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls40\adjustright\rin0\lin720\itap0\pararsid14556582 {\insrsid14556582 
+\par }{\insrsid14556582 The }{\insrsid10967543 build_snapshot.py }{\insrsid14556582 script follows these steps:
+\par 
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid14556582 \hich\af0\dbch\af0\loch\f0 1.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls41\adjustright\rin0\lin720\itap0\pararsid14556582 {\insrsid14556582 
 Initialize defaults from environment
 \par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid14556582 \hich\af0\dbch\af0\loch\f0 2.\tab}Process command line arguments
 \par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid14556582 \hich\af0\dbch\af0\loch\f0 3.\tab}Export a copy of the AGToolkit from cvs tagged for the build
 \par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid14767862 \hich\af0\dbch\af0\loch\f0 4.\tab}}{\insrsid14767862 Use the setup.py from the AGToolkit to setup the distribution directory.
-\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid14556582 \hich\af0\dbch\af0\loch\f0 5.\tab}}{\insrsid14556582 Run a set of scripts:
-\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid14556582 \hich\af0\dbch\af0\loch\f0 a.\tab}}\pard \ql \fi-360\li1440\ri0\widctlpar\jclisttab\tx1440\aspalpha\aspnum\faauto\ls40\ilvl1\adjustright\rin0\lin1440\itap0\pararsid14556582 {
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid16015910 \hich\af0\dbch\af0\loch\f0 5.\tab}}{\insrsid16015910 Do Platform Specific Steps 
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid16015910 \hich\af0\dbch\af0\loch\f0 a.\tab}}\pard \ql \fi-360\li1440\ri0\widctlpar\jclisttab\tx1440\aspalpha\aspnum\faauto\ls41\ilvl1\adjustright\rin0\lin1440\itap0\pararsid16015910 {
+\insrsid16015910 Run a set of scripts to get external software in place:}{\insrsid14556582 
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid14556582 \hich\af0\dbch\af0\loch\f0 i.\tab}}\pard \ql \fi-180\li2160\ri0\widctlpar\jclisttab\tx2160\aspalpha\aspnum\faauto\ls41\ilvl2\adjustright\rin0\lin2160\itap0\pararsid16015910 {
 \insrsid14556582 BuildVic.cmd \endash  builds and copies vic to the distribution directory
-\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid14556582 \hich\af0\dbch\af0\loch\f0 b.\tab}BuildRat.cmd \endash  builds and copies rat (and accessories) to distribution directory
-\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid14556582 \hich\af0\dbch\af0\loch\f0 c.\tab}BuildPythonModules.cmd \endash  builds and copies python modules to the distribution directory
-\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid14094397 \hich\af0\dbch\af0\loch\f0 6.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls40\adjustright\rin0\lin720\itap0\pararsid13717741 {\insrsid14094397 
-Run innosetup, to generate the resulting installer.}{\insrsid14556582 
-\par {\listtext\pard\plain\s2 \b\i\f1\fs28\lang1033\langfe1033\langfenp1033\insrsid16719781 \hich\af1\dbch\af0\loch\f1 2.\tab}}\pard\plain \s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar
-\jclisttab\tx360\aspalpha\aspnum\faauto\ls38\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid11499157 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid16719781 Packaging Preparation}{\insrsid11499157\charrsid11499157 
-\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid11499157 \hich\af0\dbch\af0\loch\f0 1.\tab}}\pard\plain \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls42\adjustright\rin0\lin720\itap0\pararsid11499157 
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid14556582 \hich\af0\dbch\af0\loch\f0 ii.\tab}BuildRat.cmd \endash  builds and copies rat (and accessories) to distribution directory
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid14556582 \hich\af0\dbch\af0\loch\f0 iii.\tab}BuildPythonModules.cmd \endash  builds and copies python modules to the distribution directory
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid14094397 \hich\af0\dbch\af0\loch\f0 b.\tab}}\pard \ql \fi-360\li1440\ri0\widctlpar\jclisttab\tx1440\aspalpha\aspnum\faauto\ls41\ilvl1\adjustright\rin0\lin1440\itap0\pararsid16015910 {
+\insrsid14094397 Run innosetup, to generate the resulting}{\insrsid16015910  windows}{\insrsid14094397  installer.}{\insrsid14556582 
+\par {\listtext\pard\plain\s2 \b\i\f1\fs28\lang1033\langfe1033\langfenp1033\insrsid8259515 \hich\af1\dbch\af0\loch\f1 2.\tab}}\pard\plain \s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx360\aspalpha\aspnum\faauto\ls39\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid11499157 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid8259515 \page }{\insrsid16719781 Packaging Preparation}{
+\insrsid11499157\charrsid11499157 
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid11499157 \hich\af0\dbch\af0\loch\f0 1.\tab}}\pard\plain \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls43\adjustright\rin0\lin720\itap0\pararsid11499157 
 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid11499157 Create a directory that will be the AGBUILDROOT.
 \par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid11499157 \hich\af0\dbch\af0\loch\f0 2.\tab}Set the AGBUILDROOT environment variable (optional)
-\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid11499157 \hich\af0\dbch\af0\loch\f0 3.\tab}Get the following software, and put it in the AGBUILDROOT:}{\insrsid13643647 
-\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid3544207 \hich\af2\dbch\af0\loch\f2 o\tab}}\pard \ql \fi-360\li1080\ri0\widctlpar\jclisttab\tx1080\aspalpha\aspnum\faauto\ls44\adjustright\rin0\lin1080\itap0\pararsid11499157 {
-\insrsid3544207 Checkout the ag-dist-win module from the FL CVS repository.}{\insrsid12848784\charrsid13643647 
-\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid4356097 \hich\af2\dbch\af0\loch\f2 o\tab}}{\insrsid4356097 fpconst-0.6.0}{\insrsid12848784 \tab \tab }{\insrsid12848784\charrsid12848784 
-http://www.analytics.washington.edu/statcomp/projects/rzope/fpconst/}{\insrsid4356097 
-\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid4356097 \hich\af2\dbch\af0\loch\f2 o\tab}logging-0.4.7}{\insrsid12848784 \tab \tab }{\insrsid12848784\charrsid12848784 http://www.red-dove.com/python_logging.html}{\insrsid4356097 
-\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid9529738 \hich\af2\dbch\af0\loch\f2 o\tab}}{\insrsid9529738 openssl-0.9.7}{\insrsid6181997 d}{\insrsid9529738 \tab }{\insrsid12848784 \tab }{\insrsid12848784\charrsid12848784 
-http://www.openssl.org/source/}{\insrsid4356097 
-\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid4356097 \hich\af2\dbch\af0\loch\f2 o\tab}Optik-1.4.1}{\insrsid12848784  \tab \tab }{\insrsid12848784\charrsid12848784 http://optik.sourceforge.net/}{\insrsid4356097 
-\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid4356097 \hich\af2\dbch\af0\loch\f2 o\tab}SOAPpy}{\insrsid12848784   \tab \tab }{\insrsid11499157 \tab }{\insrsid12848784\charrsid12848784 http://pywebsvcs.sourceforge.net/}{\insrsid4356097 
-
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid8259515 \hich\af0\dbch\af0\loch\f0 3.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls43\adjustright\rin0\lin720\itap0\pararsid8259515 {\insrsid8259515 
+Checkout the ag-dist-win module from the FL CVS repository.
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid8259515 \hich\af0\dbch\af0\loch\f0 a.\tab}}\pard \ql \fi-360\li1440\ri0\widctlpar\jclisttab\tx1440\aspalpha\aspnum\faauto\ls43\ilvl1\adjustright\rin0\lin1440\itap0\pararsid8259515 {
+\insrsid8259515 Be sure you check it out into the AGBUILDROOT directory.
+\par {\listtext\pard\plain\lang1033\langfe1033\langfenp1033\insrsid11499157 \hich\af0\dbch\af0\loch\f0 4.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls43\adjustright\rin0\lin720\itap0\pararsid11499157 {\insrsid11499157 
+Get the following software, and put it in the AGBUILDROOT:}{\insrsid13643647 
+\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid4356097 \hich\af2\dbch\af0\loch\f2 o\tab}}\pard \ql \fi-360\li1080\ri0\widctlpar\jclisttab\tx1080\aspalpha\aspnum\faauto\ls45\adjustright\rin0\lin1080\itap0\pararsid11499157 {
+\insrsid4356097 fpconst-0.6.0}{\insrsid12848784 \tab \tab }{\field{\*\fldinst {\insrsid8259515  HYPERLINK "}{\insrsid8259515\charrsid12848784 http://www.analytics.washington.edu/statcomp/projects/rzope/fpconst/}{\insrsid8259515 " }{\insrsid8259515 
+{\*\datafield 
+00d0c9ea79f9bace118c8200aa004ba90b02000000170000004500000068007400740070003a002f002f007700770077002e0061006e0061006c00790074006900630073002e00770061007300680069006e00670074006f006e002e006500640075002f00730074006100740063006f006d0070002f00700072006f006a00
+65006300740073002f0072007a006f00700065002f006600700063006f006e00730074002f000000e0c9ea79f9bace118c8200aa004ba90b8a00000068007400740070003a002f002f007700770077002e0061006e0061006c00790074006900630073002e00770061007300680069006e00670074006f006e002e00650064
+0075002f00730074006100740063006f006d0070002f00700072006f006a0065006300740073002f0072007a006f00700065002f006600700063006f006e00730074002f000000}}}{\fldrslt {\cs20\ul\cf2\insrsid8259515\charrsid221232 
+http://www.analytics.washington.edu/statcomp/projects/rzope/fpconst/}}}{\insrsid8259515  }{\insrsid4356097 
+\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid4356097 \hich\af2\dbch\af0\loch\f2 o\tab}logging-0.4.7}{\insrsid12848784 \tab \tab }{\field{\*\fldinst {\insrsid8259515  HYPERLINK "}{\insrsid8259515\charrsid12848784 
+http://www.red-dove.com/python_logging.html}{\insrsid8259515 " }{\insrsid8259515 {\*\datafield 
+00d0c9ea79f9bace118c8200aa004ba90b02000000170000002c00000068007400740070003a002f002f007700770077002e007200650064002d0064006f00760065002e0063006f006d002f0070007900740068006f006e005f006c006f006700670069006e0067002e00680074006d006c000000e0c9ea79f9bace118c82
+00aa004ba90b5800000068007400740070003a002f002f007700770077002e007200650064002d0064006f00760065002e0063006f006d002f0070007900740068006f006e005f006c006f006700670069006e0067002e00680074006d006c000000}}}{\fldrslt {\cs20\ul\cf2\insrsid8259515\charrsid221232 
+http://www.red-dove.com/python_logging.html}}}{\insrsid8259515  }{\insrsid4356097 
+\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid9529738 \hich\af2\dbch\af0\loch\f2 o\tab}}{\insrsid9529738 openssl-0.9.7}{\insrsid6181997 d}{\insrsid9529738 \tab }{\insrsid12848784 \tab }{\field{\*\fldinst {\insrsid8259515  HYPERLINK "}{
+\insrsid8259515\charrsid12848784 http://www.openssl.org/source/}{\insrsid8259515 " }{\insrsid8259515 {\*\datafield 
+00d0c9ea79f9bace118c8200aa004ba90b02000000170000001f00000068007400740070003a002f002f007700770077002e006f00700065006e00730073006c002e006f00720067002f0073006f0075007200630065002f000000e0c9ea79f9bace118c8200aa004ba90b3e00000068007400740070003a002f002f007700
+770077002e006f00700065006e00730073006c002e006f00720067002f0073006f0075007200630065002f000000}}}{\fldrslt {\cs20\ul\cf2\insrsid8259515\charrsid221232 http://www.openssl.org/source/}}}{\insrsid8259515  }{\insrsid4356097 
+\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid4356097 \hich\af2\dbch\af0\loch\f2 o\tab}Optik-1.4.1}{\insrsid12848784  \tab \tab }{\field{\*\fldinst {\insrsid8259515  HYPERLINK "}{\insrsid8259515\charrsid12848784 
+http://optik.sourceforge.net/}{\insrsid8259515 " }{\insrsid8259515 {\*\datafield 
+00d0c9ea79f9bace118c8200aa004ba90b02000000170000001e00000068007400740070003a002f002f006f007000740069006b002e0073006f00750072006300650066006f007200670065002e006e00650074002f000000e0c9ea79f9bace118c8200aa004ba90b3c00000068007400740070003a002f002f006f007000
+740069006b002e0073006f00750072006300650066006f007200670065002e006e00650074002f000000}}}{\fldrslt {\cs20\ul\cf2\insrsid8259515\charrsid221232 http://optik.sourceforge.net/}}}{\insrsid8259515  }{\insrsid4356097 
+\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid4356097 \hich\af2\dbch\af0\loch\f2 o\tab}SOAPpy}{\insrsid12848784   \tab \tab }{\insrsid11499157 \tab }{\field{\*\fldinst {\insrsid8259515  HYPERLINK "}{\insrsid8259515\charrsid12848784 
+http://pywebsvcs.sourceforge.net/}{\insrsid8259515 " }{\insrsid8259515 {\*\datafield 
+00d0c9ea79f9bace118c8200aa004ba90b02000000170000002200000068007400740070003a002f002f007000790077006500620073007600630073002e0073006f00750072006300650066006f007200670065002e006e00650074002f000000e0c9ea79f9bace118c8200aa004ba90b4400000068007400740070003a00
+2f002f007000790077006500620073007600630073002e0073006f00750072006300650066006f007200670065002e006e00650074002f000000}}}{\fldrslt {\cs20\ul\cf2\insrsid8259515\charrsid221232 http://pywebsvcs.sourceforge.net/}}}{\insrsid4356097 
+\par {\listtext\pard\plain\f2\lang1033\langfe1033\langfenp1033\insrsid8259515 \hich\af2\dbch\af0\loch\f2 o\tab}}{\insrsid8259515 pyGlobus\tab \tab \tab }{\field{\*\fldinst {\insrsid8259515  HYPERLINK "}{\insrsid8259515\charrsid8259515 
+http://www-itg.lbl.gov/gtg/projects/pyGlobus/}{\insrsid8259515 " }{\insrsid8259515 {\*\datafield 
+00d0c9ea79f9bace118c8200aa004ba90b02000000170000002e00000068007400740070003a002f002f007700770077002d006900740067002e006c0062006c002e0067006f0076002f006700740067002f00700072006f006a0065006300740073002f007000790047006c006f006200750073002f000000e0c9ea79f9ba
+ce118c8200aa004ba90b5c00000068007400740070003a002f002f007700770077002d006900740067002e006c0062006c002e0067006f0076002f006700740067002f00700072006f006a0065006300740073002f007000790047006c006f006200750073002f000000}}}{\fldrslt {
+\cs20\ul\cf2\insrsid8259515\charrsid221232 http://www-itg.lbl.gov/gtg/projects/pyGlobus/}}}{\cs24\super\insrsid8259515 \chftn {\footnote \pard\plain \s23\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 
+\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\cs24\super\insrsid8259515 \chftn }{\insrsid8259515  For now you use the one in the FL cvs repository, before the 2.2 release we hope to change to the cvs copy from pyGlobus.}}}{\insrsid8259515  
+(See FootNote)
 \par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid13717741 {\insrsid13717741 
 \par }{\insrsid11499157 The AGBUILDROOT should look like this}{\insrsid13717741 :
-\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid16719781 {\insrsid14767862 {\*\shppict{\pict{\*\picprop\shplid1028{\sp{\sn shapeType}{\sv 75}}{\sp{\sn fFlipH}{\sv 0}}
-{\sp{\sn fFlipV}{\sv 0}}{\sp{\sn fLine}{\sv 0}}{\sp{\sn fLayoutInCell}{\sv 1}}}\picscalex100\picscaley100\piccropl0\piccropr0\piccropt0\piccropb0
+\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid16719781 {\insrsid7686512 {\*\shppict{\pict{\*\picprop\shplid1025{\sp{\sn shapeType}{\sv 75}}{\sp{\sn fFlipH}{\sv 0}}
+{\sp{\sn fFlipV}{\sv 0}}{\sp{\sn fLine}{\sv 0}}{\sp{\sn fLayoutInCell}{\sv 1}}{\sp{\sn fLayoutInCell}{\sv 1}}}\picscalex100\picscaley100\piccropl0\piccropr0\piccropt0\piccropb0
 \picw15584\pich7990\picwgoal8835\pichgoal4530\pngblip\bliptag2030150911{\*\blipuid 7901a4ff19165c79126106b7ae215513}89504e470d0a1a0a0000000d494844520000024d0000012e08020000001c10b166000000017352474200aece1ce90000610049444154785eedbd09782547792e
 5cf22cf67819ef1eef3e837e6e8664c296d517888f980012e2262199e72724370e41222004c106894902e1f70f3781b1844300452c128b2101df2b486e7285e4
 80d071c0bf09be100cc393c9cd33ccf182376c3c1e6ccf783c63fd5f55755757575775579feeb3eaede73c3347756af9eaadeafaeaabfaeaadbe471fb98be101
@@ -9090,50 +9150,45 @@ f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7
 f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f76b737b00040000002701ffff030000000000}}}{
 \insrsid11499157 
 \par }{\insrsid16719781 
-\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid13643647 {\insrsid13643647 The usage of build_snapshot.py is:
+\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid13643647 {\insrsid15826014 \page }{\insrsid13643647 The usage of build_snapshot.py is:
 \par 
-\par }{\f5\fs20\insrsid13643647\charrsid14556582 build_snapshot.py:
-\par     -h|--help : print usage
+\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid15826014 {\f5\fs20\insrsid15826014\charrsid15826014 C:}{\f5\fs20\insrsid15826014 \\}{\f5\fs20\insrsid15826014\charrsid15826014 >build_snapshot.py -h
+\par usage: build_snapshot.py [options]
 \par 
-\par     -s|--sourcedir <directory>
-\par        The directory the AG source code is in. If the code is in
-\par        }{\f5\fs20\highlight16\insrsid13643647\charrsid14556582 The default is: \\software\\AccessGrid\\build}{\f5\fs20\insrsid13643647\charrsid14556582 
+\par options:
+\par   -h, --help            show this help message and exit
+\par   -sSOURCEDIR, --sourcedir=SOURCEDIR
+\par                         The directory the AG source code is in.
+\par   -mMETAINFO, --meta=METAINFO
+\par                         Meta information string about this release.
+\par   -e, --cvs-export      A flag that indicates the snapshot should be built from}{\f5\fs20\insrsid15826014  }{\f5\fs20\insrsid15826014\charrsid15826014 a}{\f5\fs20\insrsid7015169 n exported cvs source directory}{\f5\fs20\insrsid15750911 
+, as opposed to just a checkout}{\f5\fs20\insrsid9505191 .}{\f5\fs20\insrsid15826014\charrsid15826014 
+\par   -v, --verbose         A flag that indicates to build verbosely.
+\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid10903266 {\f5\fs20\highlight16\insrsid10903266\charrsid15826014 (}{\f5\fs20\highlight16\insrsid10903266 See Footnote}{
+\f5\fs20\highlight16\insrsid10903266\charrsid15826014 )}{\f5\fs20\insrsid10903266 
+\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid15826014 {\f5\fs20\insrsid15826014\charrsid15826014   -pPYTHONVERSION, --pythonversion=PYTHONVERSION}{\cs24\f5\fs20\super\insrsid15826014 \chftn {\footnote 
+\pard\plain \s23\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\cs24\super\insrsid15826014 \chftn }{\insrsid15826014  
+Currently only python 2.2 is supported, until we update the innosetup file to be more dynamic, that is in progress (for the 2.2 release).}}}{\f5\fs20\insrsid15826014\charrsid15826014 
+\par                         Which version of python to build the installer for.
+\par }{\f5\fs20\highlight16\insrsid15826014\charrsid15826014 (These options are un-implemented yet)}{\f5\fs20\insrsid15826014 
+\par }{\f5\fs20\insrsid15826014\charrsid15826014   -r, --rebuild         Rebuild an installer from a previously used build dir.
+\par   --no-checkout         A flag that indicates the snapshot should be built from}{\f5\fs20\insrsid15826014  }{\f5\fs20\insrsid15826014\charrsid15826014 a previously exported source directory.
 \par 
-\par     -m|--meta <name>
-\par        Meta information string about this release.
-\par        The default is: Snapshot 20040326-084923
-\par 
-\par     -c|--checkoutcvs
-\par        A flag that indicates the snapshot should be built from an
-\par        exported cvs checkout. This is cleaner.
-\par 
-\par     -i|--innopath <directory>
-\par        The path to the isxtool.
-\par        If this is not specified on the command line, the value is 
-\par \tab   Retrieved from the system registry.
-\par 
-\par     -v|--verbose
-\par        The option to be very very spammy when run.
-\par }{\insrsid13643647 
-\par NOTE: The highlighted default above is automatically retrieved from the AGBUILDROOT environment variable.
-\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid16719781 {\insrsid13643647\charrsid16719781 
 \par {\listtext\pard\plain\s2 \b\i\f1\fs28\lang1033\langfe1033\langfenp1033\insrsid16719781 \hich\af1\dbch\af0\loch\f1 3.\tab}}\pard\plain \s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar
-\jclisttab\tx360\aspalpha\aspnum\faauto\ls38\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid16719781 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid16719781 Packaging Guidelines}{\insrsid16719781\charrsid16719781 
-\par {\listtext\pard\plain\s2 \b\i\f1\fs28\lang1033\langfe1033\langfenp1033\insrsid16719781 \hich\af1\dbch\af0\loch\f1 4.\tab}}\pard \s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar
-\jclisttab\tx360\aspalpha\aspnum\faauto\ls38\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid2294845 {\insrsid16719781 Packaging Details
+\jclisttab\tx360\aspalpha\aspnum\faauto\ls39\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid2294845 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid16719781 Packaging Details
 \par }\pard\plain \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid723770 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid723770 
-Once the Access Grid software has been prepared for packaging (e.g. the AGBUILDDIR is created, populated with software and the AGBUILDDIR environment variable set), the process of buil
-ding the software release is as simple as possible. The build_snapshot.py script does all the work necessary to create a }{\insrsid16399190 software package.
+Once the Access Grid software has been prepared for packaging (e.g. the AGBUILDDIR is created, populated
+ with software and the AGBUILDDIR environment variable set), the process of building the software release is as simple as possible. The build_snapshot.py script does all the work necessary to create a }{\insrsid16399190 software package.
 \par 
 \par The first real step in building the software package is to export a copy of the Access Grid module from cvs to a time stamped directory. }{\insrsid723770 
-Once the exported Access Grid module exists, all the work of building the software package is transferred to this exported copy of the software. At this point a set of ex}{\insrsid16399190 ternal build scripts create a time stamped (corresponding to the 
-exported time stamp) distribution directory, then build and copy the software to this distribution directory. Finally, the innosetup compiler is invoked with a setup file that is pointed at the distribution directory, which builds a windows installer from
- the distribution directory.}{\insrsid723770 
-\par {\listtext\pard\plain\s3 \b\f1\fs26\lang1033\langfe1033\langfenp1033\insrsid723770 \hich\af1\dbch\af0\loch\f1 4.1.\tab}}\pard\plain \s3\ql \fi-432\li792\ri0\sb240\sa60\keepn\widctlpar
-\jclisttab\tx1080\aspalpha\aspnum\faauto\ls38\ilvl1\outlinelevel2\adjustright\rin0\lin792\itap0\pararsid1342044 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid723770 Distribution Directory Structure
+Once the exported Access Grid module exists, all the work of building the software package is transferred to this exported copy of the software. At this point a set of ex}{\insrsid16399190 
+ternal build scripts create a time stamped (corresponding to the exported time stamp) distribution directory, then build and copy the software to this distribution directory. Finally, the innosetup compiler is invoked with a setup file that 
+is pointed at the distribution directory, which builds a windows installer from the distribution directory.}{\insrsid723770 
+\par {\listtext\pard\plain\s3 \b\f1\fs26\lang1033\langfe1033\langfenp1033\insrsid723770 \hich\af1\dbch\af0\loch\f1 3.1.\tab}}\pard\plain \s3\ql \fi-432\li792\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx1080\aspalpha\aspnum\faauto\ls39\ilvl1\outlinelevel2\adjustright\rin0\lin792\itap0\pararsid1342044 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid723770 Distribution Directory Structure
 \par }\pard\plain \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid723770 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid723770 The first script executed in the set of external build scripts created the }{
 \insrsid1048881 distribution directory structure. A listing of the distribution directory is shown here:}{\insrsid723770 
-\par }{\insrsid12414110 {\*\shppict{\pict{\*\picprop\shplid1026{\sp{\sn shapeType}{\sv 75}}{\sp{\sn fFlipH}{\sv 0}}{\sp{\sn fFlipV}{\sv 0}}{\sp{\sn fLine}{\sv 0}}{\sp{\sn fLayoutInCell}{\sv 1}}{\sp{\sn fLayoutInCell}{\sv 1}}}
+\par }{\insrsid7686512 {\*\shppict{\pict{\*\picprop\shplid1026{\sp{\sn shapeType}{\sv 75}}{\sp{\sn fFlipH}{\sv 0}}{\sp{\sn fFlipV}{\sv 0}}{\sp{\sn fLine}{\sv 0}}{\sp{\sn fLayoutInCell}{\sv 1}}{\sp{\sn fLayoutInCell}{\sv 1}}}
 \picscalex100\picscaley100\piccropl0\piccropr0\piccropt0\piccropb0\picw15584\pich8625\picwgoal8835\pichgoal4890\pngblip\bliptag-916279736{\*\blipuid c962ae48a27b3ac66e99c7f6ee265953}
 89504e470d0a1a0a0000000d494844520000024d000001460802000000f8b73c51000000017352474200aece1ce9000065f349444154785eedbd09945d47792e
 5a6dc9833cc803b6e5d947f4e346240a53465f20ee4601ba11370989d62324370ea19b80680853374a02e1f9c14d40eec68c4a33a8190c09706f437293db743b
@@ -18553,19 +18608,18 @@ f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7
 f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f7eff7f7e7f7f7eff7ffe7f7f76b737b00040000002701ffff030000000000}}}{
 \insrsid1048881 
 \par 
-\par The BuildAccessGridDist.cmd script creates the bin, CAcertificates, doc, install, services, and shared apps directories (definitions appear in the table below). During the creation of the distribution directory, python programs build the AG service
- and shared applications packages and put them in the correct location in the distribution directory. Then module documentation for the Access Grid module is created using epydoc, this is put in the doc\\
-Developer directory. Pre-existing documentation for the client programs is copied ot the doc\\VenueClientManual directory and the doc\\VeneuManagementManual directory. }{\insrsid1605311 
+\par The BuildAccessGridDist.cmd script creates the bin, CAcertificates, doc, install, services, and shared apps directories (definitions appear in the table below). During the creation of the distribution directory, python programs build the AG service and sh
+ared applications packages and put them in the correct location in the distribution directory. Then module documentation for the Access Grid module is created using epydoc, this is put in the doc\\
+Developer directory. Pre-existing documentation for the client programs is copied ot the doc\\VenueClientMa}{\insrsid15826014 nual directory and the doc\\Venue}{\insrsid1048881 ManagementManual directory. }{\insrsid1605311 
 Finally, the BuildAccessGridDist.cmd copies the license, install file, the CA certificates that we distribute and various binary installation programs.
 \par 
 \par }{\insrsid1048881 The BuildVic.cmd and BuildRat.cmd scripts build the respective media tools and copy them to the bin directory.
 \par }{\insrsid1605311 
 \par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid1605311 {\insrsid1605311 The BuildGlobus.cmd script builds the winglobus libraries (in-place) in preparation for building python modules that require it.
 \par 
-\par The Lib directory is created by the BuildPythonModules.cmd script. 
-\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid723770 {\insrsid1605311\charrsid723770 
-\par {\listtext\pard\plain\s3 \b\f1\fs26\lang1033\langfe1033\langfenp1033\insrsid16719781\charrsid1388885 \hich\af1\dbch\af0\loch\f1 4.2.\tab}}\pard\plain \s3\ql \fi-432\li792\ri0\sb240\sa60\keepn\widctlpar
-\jclisttab\tx1080\aspalpha\aspnum\faauto\ls38\ilvl1\outlinelevel2\adjustright\rin0\lin792\itap0\pararsid1342044 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid16719781\charrsid1388885 Inno Setup
+\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid723770 {\insrsid1605311 The Lib directory is created by the BuildPythonModules.cmd script. }{\insrsid1605311\charrsid723770 
+\par {\listtext\pard\plain\s3 \b\f1\fs26\lang1033\langfe1033\langfenp1033\insrsid16719781\charrsid1388885 \hich\af1\dbch\af0\loch\f1 3.2.\tab}}\pard\plain \s3\ql \fi-432\li792\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx1080\aspalpha\aspnum\faauto\ls39\ilvl1\outlinelevel2\adjustright\rin0\lin792\itap0\pararsid1342044 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid16719781\charrsid1388885 Inno Setup
 \par }\pard\plain \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid16719781 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid16719781 
 Inno Setup is a free, open source windows package that allows anyone to make a coherent and rather attractive an
 d modern windows installer. It's quite flexible on what it can handle and report, and there is also a scripting language for doing more complex tasks. Inno Setup uses a plain text file with keywords and predefined constants to layout how the installer wil
@@ -18619,19 +18673,19 @@ itions appear in the table below). Values for these are specified on the innoset
 \insrsid14632027\charrsid16399190 \trowd \irow4\irowband4\lastrow \ts25\trgaph108\trleft-108\trbrdrh\brdrs\brdrw45\brdrcf8 \trbrdrv\brdrs\brdrw45\brdrcf8 
 \trftsWidth1\trftsWidthB3\trftsWidthA3\trautofit1\trpaddl108\trpaddr108\trpaddfl3\trpaddft3\trpaddfb3\trpaddfr3\tscbandsh1 \clvertalt\clbrdrt\brdrs\brdrw45\brdrcf8 \clbrdrl\brdrtbl \clbrdrb\brdrtbl \clbrdrr\brdrs\brdrw45\brdrcf8 
 \clcfpat1\clcbpat8\clshdng500\cltxlrtb\clftsWidth3\clwWidth4453\clcbpatraw8\clcfpatraw1\clshdngraw500 \cellx4345\clvertalt\clbrdrt\brdrs\brdrw45\brdrcf8 \clbrdrl\brdrs\brdrw45\brdrcf8 \clbrdrb\brdrtbl \clbrdrr\brdrtbl 
-\clcfpat1\clcbpat8\clshdng500\cltxlrtb\clftsWidth3\clwWidth4332\clcbpatraw8\clcfpatraw1\clshdngraw500 \cellx8677\row {\listtext\pard\plain\s2 \b\i\f1\fs28\lang1033\langfe1033\langfenp1033\insrsid10755175 \hich\af1\dbch\af0\loch\f1 5.\tab}}\pard\plain 
-\s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx360\aspalpha\aspnum\faauto\ls38\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid1605311 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid10755175 References}{
+\clcfpat1\clcbpat8\clshdng500\cltxlrtb\clftsWidth3\clwWidth4332\clcbpatraw8\clcfpatraw1\clshdngraw500 \cellx8677\row {\listtext\pard\plain\s2 \b\i\f1\fs28\lang1033\langfe1033\langfenp1033\insrsid10755175 \hich\af1\dbch\af0\loch\f1 4.\tab}}\pard\plain 
+\s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar\jclisttab\tx360\aspalpha\aspnum\faauto\ls39\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid1605311 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid10755175 References}{
 \insrsid1605311\charrsid1605311 
 \par }\pard\plain \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid7481329 Inno Setup :: http://www.jrsoftware.org/isinfo.php}{\insrsid7481329\charrsid10565486 
-\par }{\insrsid7481329 Python distutils :: }{\field{\*\fldinst {\insrsid1605311  HYPERLINK "http://www.python.org/dev/doc/devel/dist/dist.html" }{\insrsid12414110 {\*\datafield 
+\par }{\insrsid7481329 Python distutils :: }{\field{\*\fldinst {\insrsid1605311  HYPERLINK "http://www.python.org/dev/doc/devel/dist/dist.html" }{\insrsid7686512 {\*\datafield 
 00d0c9ea79f9bace118c8200aa004ba90b02000000170000003300000068007400740070003a002f002f007700770077002e0070007900740068006f006e002e006f00720067002f006400650076002f0064006f0063002f0064006500760065006c002f0064006900730074002f0064006900730074002e00680074006d00
-6c000000e0c9ea79f9bace118c8200aa004ba90b6600000068007400740070003a002f002f007700770077002e0070007900740068006f006e002e006f00720067002f006400650076002f0064006f0063002f0064006500760065006c002f0064006900730074002f0064006900730074002e00680074006d006c00000000}
-}}{\fldrslt {\cs20\ul\cf2\insrsid1605311\charrsid7623692 http://www.python.org/dev/doc/devel/dist/dist.html}}}{\insrsid7481329 
+6c000000e0c9ea79f9bace118c8200aa004ba90b6600000068007400740070003a002f002f007700770077002e0070007900740068006f006e002e006f00720067002f006400650076002f0064006f0063002f0064006500760065006c002f0064006900730074002f0064006900730074002e00680074006d006c00000000
+00}}}{\fldrslt {\cs20\ul\cf2\insrsid1605311\charrsid7623692 http://www.python.org/dev/doc/devel/dist/dist.html}}}{\insrsid7481329 
 \par }{\insrsid1605311 
-\par {\listtext\pard\plain\s2 \b\i\f1\fs28\lang1033\langfe1033\langfenp1033\insrsid1605311 \hich\af1\dbch\af0\loch\f1 6.\tab}}\pard\plain \s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar
-\jclisttab\tx360\aspalpha\aspnum\faauto\ls38\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid1605311 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid1605311 Appendix
-\par {\listtext\pard\plain\s3 \b\f1\fs26\lang1033\langfe1033\langfenp1033\insrsid1605311 \hich\af1\dbch\af0\loch\f1 6.1.\tab}}\pard\plain \s3\ql \fi-432\li792\ri0\sb240\sa60\keepn\widctlpar
-\jclisttab\tx1080\aspalpha\aspnum\faauto\ls38\ilvl1\outlinelevel2\adjustright\rin0\lin792\itap0\pararsid1342044 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid1605311 Build Script
+\par {\listtext\pard\plain\s2 \b\i\f1\fs28\lang1033\langfe1033\langfenp1033\insrsid1605311 \hich\af1\dbch\af0\loch\f1 5.\tab}}\pard\plain \s2\ql \fi-360\li360\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx360\aspalpha\aspnum\faauto\ls39\outlinelevel1\adjustright\rin0\lin360\itap0\pararsid1605311 \b\i\f1\fs28\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid1605311 Appendix
+\par {\listtext\pard\plain\s3 \b\f1\fs26\lang1033\langfe1033\langfenp1033\insrsid1605311 \hich\af1\dbch\af0\loch\f1 5.1.\tab}}\pard\plain \s3\ql \fi-432\li792\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx1080\aspalpha\aspnum\faauto\ls39\ilvl1\outlinelevel2\adjustright\rin0\lin792\itap0\pararsid1342044 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid1605311 Build Script
 \par }\pard\plain \s15\ql \li720\ri720\widctlpar\aspalpha\aspnum\faauto\adjustright\rin720\lin720\itap0\pararsid1342044 \cbpat17 \f2\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid1342044\charrsid1342044 #
 \par # Build a windows installer snapshot.
 \par #
@@ -18838,8 +18892,8 @@ itions appear in the table below). Values for these are specified on the innoset
 \par 
 \par os.system(iscc_cmd)
 \par }\pard\plain \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid1342044 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid1342044\charrsid1342044 
-\par {\listtext\pard\plain\s3 \b\f1\fs26\lang1033\langfe1033\langfenp1033\insrsid1605311 \hich\af1\dbch\af0\loch\f1 6.2.\tab}}\pard\plain \s3\ql \fi-432\li792\ri0\sb240\sa60\keepn\widctlpar
-\jclisttab\tx1080\aspalpha\aspnum\faauto\ls38\ilvl1\outlinelevel2\adjustright\rin0\lin792\itap0\pararsid1342044 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid1605311 Access Grid InnoSetup File
+\par {\listtext\pard\plain\s3 \b\f1\fs26\lang1033\langfe1033\langfenp1033\insrsid1605311 \hich\af1\dbch\af0\loch\f1 5.2.\tab}}\pard\plain \s3\ql \fi-432\li792\ri0\sb240\sa60\keepn\widctlpar
+\jclisttab\tx1080\aspalpha\aspnum\faauto\ls39\ilvl1\outlinelevel2\adjustright\rin0\lin792\itap0\pararsid1342044 \b\f1\fs26\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid1605311 Access Grid InnoSetup File
 \par }\pard\plain \s15\ql \li720\ri720\widctlpar\aspalpha\aspnum\faauto\adjustright\rin720\lin720\itap0\pararsid1342044 \cbpat17 \f2\fs20\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\insrsid1342044 ;
 \par ; RCS-ID: $Id: agtk.iss,v 1.36 2004/03/25 21:37:25 judson Exp $
 \par ;
@@ -18980,8 +19034,8 @@ VenueServer.py"" --debug"; WorkingDir: %APPDATA%\\AccessGrid; Comment: Run the v
 AGServiceManager.py"" --debug"; WorkingDir: %APPDATA%\\AccessGrid; Comment: Run the venue server software in debugging mode.
 \par Name: \{group\}\\Services\\Service Manager; IconFilename: \{app\}\\install\\agicons.exe; Filename: \{reg:HKLM\\Software\\Python\\PythonCore\\2.2\\InstallPath,|C:\\Python22\}\\python.exe; Parameters: """\{app\}\\bin\\
 AGServiceManager.py"" --debug"; WorkingDir: %APPDATA%\\AccessGrid; Comment: Run the venue server software in debugging mode.
-\par Name: \{group\}\\Services\\Node Service (Debug); IconFilename: \{app\}\\install\\agicons.exe; Filename: \{reg:HKLM\\Software\\Python\\PythonCore\\2.2\\InstallPath,|C:\\Python22\}\\python.exe; Parameters: """\{app\}\\bin\\
-AGNodeService.py"" --debug"; WorkingDir: %APPDATA%\\AccessGrid; Comment: Run the venue server software in debugging mode.
+\par Name: \{group\}\\Services\\Node Service (Debug); IconFilename: \{app\}\\install\\agicons.exe; Filename: \{reg:HKLM\\Software\\Python\\PythonCore\\2.2\\InstallPath,|C:\\Python22\}\\python.exe; Parameters: """\{app\}\\bin\\AG
+NodeService.py"" --debug"; WorkingDir: %APPDATA%\\AccessGrid; Comment: Run the venue server software in debugging mode.
 \par Name: \{group\}\\Services\\Node Service; IconFilename: \{app\}\\install\\agicons.exe; Filename: \{reg:HKLM\\Software\\Python\\PythonCore\\2.2\\InstallPath,|C:\\Python22\}\\python.exe; Parameters: """\{app\}\\bin\\
 AGNodeService.py"" --debug"; WorkingDir: %APPDATA%\\AccessGrid; Comment: Run the venue server software in debugging mode.
 \par 
@@ -19015,8 +19069,8 @@ agicons.exe; WorkingDir: %APPDATA%\\AccessGrid; Tasks: desktopicon; Comment: Run
 \par 
 \par [Messages]
 \par DirExists=The directory:%n%n%1%n%nalready exists and appears to have an \{#AppName\} installation in it.%n%nIt is recommended that you uninstall any existing \{#AppName\} software before proceeding.  Do you wish to proceed anyway?
-\par WelcomeLabel2=This will install the \{#AppName\} \{#AppVersion\}-\{#VersionInformation\} on your computer.%n%nIt is strongly recommended that you uninstall any previous version of the \{#AppName\} before contin
-uing.%n%nIt is also strongly recommended that you close all other applications you have running before continuing with this installation.%n%nThese steps will help prevent any conflicts during the installation process.
+\par WelcomeLabel2=This will install the \{#AppName\} \{#AppVersion\}-\{#VersionInformation\} on your computer.%n%nIt is strongly recommended that you uninstall any previous version of the \{#AppName\} before continuing.%n%nIt 
+is also strongly recommended that you close all other applications you have running before continuing with this installation.%n%nThese steps will help prevent any conflicts during the installation process.
 \par 
 \par [Run]
 \par Filename: \{reg:HKLM\\Software\\Python\\PythonCore\\2.2\\InstallPath,|C:\\Python22\}\\python.exe; WorkingDir: \{app\}\\bin; Description: Setup what video devices will produce video streams; Flags: runminimized nowait shellexec; Parameters: SetupVideo.pyw
