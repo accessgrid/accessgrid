@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.71 2003-03-20 23:54:38 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.72 2003-03-21 00:03:06 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -52,7 +52,6 @@ class VenueClientUI(wxApp, VenueClient):
         """
         VenueClient.__init__(self)
         #self.CreateFollowLeadServer()
-        print '----venue client ui is started'
         self.__setLogger()
         self.__createHomePath()
         self.frame = VenueClientFrame(NULL, -1,"", self)
