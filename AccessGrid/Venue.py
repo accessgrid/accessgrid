@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.55 2003-03-14 17:44:52 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.56 2003-03-14 20:46:35 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -120,7 +120,7 @@ class Venue(ServiceBase.ServiceBase):
         odict["description"].uri = venuePath
         
         # We don't save things in this list
-        keys = ("users", "clients", "nodes", "multicastAllocator",
+        keys = ("users", "clients", "nodes", 
                 "producerCapabilities", "consumerCapabilities",
                 "server", "_service_object", "houseKeeper",
                 "dataStore")
@@ -143,7 +143,6 @@ class Venue(ServiceBase.ServiceBase):
         self.users = dict()
         self.clients = dict()
         self.nodes = dict()
-        self.multicastAllocator = None
         self.cleanupTime = 30
         self.nextPrivateId = 1
         self.dataStore = None
@@ -210,13 +209,6 @@ class Venue(ServiceBase.ServiceBase):
             else:
                 desc.SetURI(url)
                 self.UpdateData(desc)
-
-    def SetMulticastAddressAllocator(self, multicastAllocator):
-        """
-        Set the Multicast Address Allocator for the Venue. This is usually
-        set to the allocator the venue server uses.
-        """
-        self.multicastAllocator = multicastAllocator
 
     def SetDataStore(self, dataStore):
         """
@@ -348,8 +340,8 @@ class Venue(ServiceBase.ServiceBase):
         """
         defaultTtl = 127
         return MulticastNetworkLocation(
-            self.multicastAllocator.AllocateAddress(),
-            self.multicastAllocator.AllocatePort(),
+            self.server.multicastAllocator.AllocateAddress(),
+            self.server.multicastAllocator.AllocatePort(),
             defaultTtl )
 
     def GetNextPrivateId( self ):
