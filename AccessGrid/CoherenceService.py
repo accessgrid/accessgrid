@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceService.py,v 1.13 2003-01-23 14:24:46 judson Exp $
+# RCS-ID:      $Id: CoherenceService.py,v 1.14 2003-01-23 14:59:07 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,7 +22,6 @@ from SocketServer import ThreadingMixIn, StreamRequestHandler
 from pyGlobus.io import GSITCPSocketServer
 
 from AccessGrid.NetworkLocation import UnicastNetworkLocation
-from AccessGrid.Events import PickleEventSerializer
 from AccessGrid.Utilities import formatExceptionInfo
 
 # This really should be defined in pyGlobus.io
