@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.63 2003-05-09 20:45:53 olson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.64 2003-05-12 21:59:07 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.Utilities import formatExceptionInfo, HaveValidProxy
 from AccessGrid import icons
 from AccessGrid.Platform import GPI
-from AccessGrid.UIUtilities import MyLog
+from AccessGrid.UIUtilities import MyLog, AboutDialog
 from AccessGrid import Toolkit
 
 import logging, logging.handlers
@@ -39,6 +39,9 @@ class VenueManagementClient(wxApp):
     The VenueManagementClient class creates the main frame of the
     application as well as the VenueManagementTabs and statusbar.
     """
+    ID_FILE_EXIT = wxNewId()
+    ID_HELP_ABOUT = wxNewId()
+    
     server = None
     serverUrl = None
     currentVenueClient = None
@@ -54,14 +57,33 @@ class VenueManagementClient(wxApp):
         self.address = VenueServerAddress(self.frame, self)
         self.tabs = VenueManagementTabs(self.frame, -1, self)
         self.statusbar = self.frame.CreateStatusBar(1)
+        self.menubar = wxMenuBar()
         self.__doLayout()
+        self.__setMenuBar()
         self.__setProperties()
         self.__setLogger()
+        self.__setEvents()
 
         self.app = Toolkit.WXGUIApplication()
         self.app.Initialize()
 
         return true
+
+    def __setEvents(self):
+        EVT_MENU(self, self.ID_FILE_EXIT, self.Exit)
+        EVT_CLOSE(self, self.OnCloseWindow)
+        EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialog)
+
+    def __setMenuBar(self):
+        self.frame.SetMenuBar(self.menubar)
+
+        self.fileMenu = wxMenu()
+        self.fileMenu.Append(self.ID_FILE_EXIT,"&Exit", "Quit Venue Management")
+        self.menubar.Append(self.fileMenu, "&File")
+
+        self.helpMenu = wxMenu()
+        self.helpMenu.Append(self.ID_HELP_ABOUT, "&About\t", "Information about the application")
+        self.menubar.Append(self.helpMenu, "&Help")
 
     def __setLogger(self):
         log = logging.getLogger("AG.VenueManagement")
@@ -89,9 +111,16 @@ class VenueManagementClient(wxApp):
         box.Add(self.tabs, 1, wxEXPAND)
         self.frame.SetSizer(box)
 
-    def OnExit(self):
-        wxLogInfo("--------- END VenueManagement")
+    def OpenAboutDialog(self, event):
+        aboutDialog = AboutDialog(self.frame, wxSIMPLE_BORDER)
+        aboutDialog.Popup()
+        
+    def Exit(self, event):
+        self.frame.Close(true)
 
+    def OnCloseWindow(self, event):
+        self.frame.Destroy()
+     
     def ConnectToServer(self, URL):
         wxLogDebug("Connect to server %s" %URL)
 
@@ -1888,7 +1917,7 @@ class EditPathDialog(wxDialog):
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         info = "Please, enter the path where you want the data storage to be located for this server"
         self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
-        self.addressText = wxStaticText(self, -1, "Address: ", style=wxALIGN_LEFT)
+        self.addressText = wxStaticText(self, -1, "Path: ", style=wxALIGN_LEFT)
         self.address = wxTextCtrl(self, -1, "", size = wxSize(200,20))
         self.Layout()
 
