@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.2 2003-05-05 20:29:23 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.3 2003-05-12 16:29:16 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,6 +17,7 @@ from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter
 from AccessGrid import Platform
+from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
 class AudioService( AGService ):
 
@@ -47,8 +48,15 @@ class AudioService( AGService ):
             options.append( self.streamDescription.name )
          options.append( "-f" )
          options.append( "L16-16K-Mono" )
-         options.append( "-t" )
-         options.append( '%d' % (self.streamDescription.location.ttl ) )
+         # Check whether the network location has a "type" attribute
+         # Note: this condition is only to maintain compatibility between
+         # older venue servers creating network locations without this attribute
+         # and newer services relying on the attribute; it should be removed
+         # when the incompatibility is gone
+         if self.streamDescription.location.__dict__.has_key("type"):
+             if self.streamDescription.location.type == MulticastNetworkLocation.TYPE:
+                options.append( "-t" )
+                options.append( '%d' % (self.streamDescription.location.ttl ) )
          if self.streamDescription.encryptionFlag != 0:
             options.append( "-crypt" )
             options.append( self.streamDescription.encryptionKey )
@@ -97,14 +105,18 @@ class AudioService( AGService ):
    def ConfigureStream( self, streamDescription ):
       """Configure the Service according to the StreamDescription, and stop and start rat"""
 
+      # Configure the stream
       ret = AGService.ConfigureStream( self, streamDescription )
-      if ret:
+      if ret and self.started:
+         # service is already running with this config; ignore
          return
 
-      # restart rat, since this is the only way to change the 
-      # stream location (for now!)
+      # If started, stop
       if self.started:
          self.Stop()
+
+      # If enabled, start
+      if self.enabled:
          self.Start()
    ConfigureStream.soap_export_as = "ConfigureStream"
 
