@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.4 2003-01-14 18:46:06 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.5 2003-01-15 17:42:26 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,8 +15,6 @@ from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid.Types import Capability, Event, VenueState
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid import NetworkLocation
-
-
 
 def list_append_unique( list, inputItem, key ):
     itemExists = False
@@ -45,8 +43,6 @@ def list_remove( list, inputItem, key ):
 
     if itemExists == False:
         raise ValueError()
-
-
 
 class Venue(ServiceBase.ServiceBase):
     """
@@ -372,6 +368,10 @@ class Venue(ServiceBase.ServiceBase):
 
 
     # Internal Methods
+    def Shutdown(self):
+        """ """
+        self.coherenceService.stop()
+
     def NegotiateCapabilities(self, clientProfile):
         """ """
         streamDescriptions = []
