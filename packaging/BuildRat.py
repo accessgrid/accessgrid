@@ -31,6 +31,7 @@ if sys.platform == 'win32':
 elif sys.platform == 'linux2':
     dir = os.path.join(RATDIR,'rat')
     ratFiles = [ os.path.join(dir,'rat'),
+                 os.path.join(dir,'rat-4.2.22'),
                  os.path.join(dir,'rat-4.2.22-media'),
                  os.path.join(dir,'rat-4.2.22-ui'),
                  os.path.join(dir,'rat-4.2.22-kill') ]
