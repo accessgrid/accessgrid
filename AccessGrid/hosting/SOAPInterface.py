@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: SOAPInterface.py,v 1.14 2004-05-06 05:44:02 judson Exp $
+# RCS-ID:      $Id: SOAPInterface.py,v 1.15 2004-05-06 13:47:18 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ primary methods, the constructor and a default authorization for all
 interfaces.
 """
 
-__revision__ = "$Id: SOAPInterface.py,v 1.14 2004-05-06 05:44:02 judson Exp $"
+__revision__ = "$Id: SOAPInterface.py,v 1.15 2004-05-06 13:47:18 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
@@ -163,28 +163,11 @@ class SOAPIWrapper:
         @raises InvalidURL: if the url doesn't point ot a service
         @raises ConnectionFailed: if client can't connection to the service.
         """
-        self.proxy = None
-
-        # This code makes it so that if you don't specify a port
-        # we default to trying port 8000 first.
-        
         self.defaultPort = 8000
-        
-        urlist = urlparse.urlsplit(url)
-        nurl = list()
-        nurl.append(urlist[0])
-        hp = urlist[1]
-        if len(hp.split(':')) == 1:
-            nurl.append('%s:%d' % (hp, self.defaultPort))
-        else:
-            nurl.append(hp)
+        self.proxy = None
+        self.url = self.__CheckUrl(url, self.defaultPort)
 
-        for i in urlist[2:]:
-            nurl.append(i)
-
-        self.url = urlparse.urlunsplit(nurl)
-
-        if url != None:
+        if self.url != None:
             try:
                 if Application.instance().GetOption("insecure"):
                     self.handle = Client.InsecureHandle(self.url, faultHandler = faultHandler)
@@ -202,6 +185,28 @@ class SOAPIWrapper:
         else:
             raise InvalidURL
 
+    def __CheckUrl(self, url, defaultPort):
+        if defaultPort is not None:
+            urlist = urlparse.urlsplit(url)
+            nurl = list()
+            nurl.append(urlist[0])
+            hp = urlist[1]
+            if len(hp.split(':')) == 1:
+                nurl.append('%s:%d' % (hp, self.defaultPort))
+            else:
+                nurl.append(hp)
+                
+            for i in urlist[2:]:
+                nurl.append(i)
+
+            print "NURL: ", nurl
+            new_url = urlparse.urlunsplit(nurl)
+            print "NE: ", new_url
+        else:
+            new_url = url
+
+        return new_url
+    
     def IsValid(self):
         """
         Method to provide interface verification.
