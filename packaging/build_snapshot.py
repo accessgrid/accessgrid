@@ -39,9 +39,6 @@ parser.add_option("-m", "--meta", dest="metainfo", metavar="METAINFO",
 parser.add_option("--no-checkout", action="store_true", dest="nocheckout",
                   default=0,
                   help="A flag that indicates the snapshot should be built from a previously exported source directory.")
-parser.add_option("-e", "--cvs-export", action="store_true", dest="exportcvs",
-                  default=0,
-                  help="A flag that indicates the snapshot should be built from an exported cvs source directory.")
 parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
                   default=0,
                   help="A flag that indicates to build verbosely.")
@@ -94,14 +91,9 @@ if not options.nocheckout:
     # cvs (linux) complains about checking out to an absolute path
     os.chdir(SourceDir)
 
-    cvs_base = "cvs -z6 -d %s CMD -d %s -D now AccessGrid" % (cvsroot,
+    cvs_base = "cvs -z6 -d %s export -d %s -D now AccessGrid" % (cvsroot,
                                                               BuildDirName)
     
-    if options.exportcvs:
-        cvs_cmd = cvs_base.replace('CMD', 'export')
-    else:
-        cvs_cmd = cvs_base.replace('CMD', 'checkout')
-        
     if options.verbose:
         print "BUILD: Checking out code with command: ", cvs_cmd
 
