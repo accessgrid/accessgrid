@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.107 2003-08-04 22:16:07 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.108 2003-08-04 22:34:47 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1876,7 +1876,7 @@ class Venue(ServiceBase.ServiceBase):
 
         subject = AccessControl.GetSecurityManager().GetSubject()
         log.info("Removing Subject %s from Role Venue.VenueUsers", subject)
-        rm = AccessControlSecurityManager().role_manager
+        rm = self.GetRoleManager()
         rm.validRoles["Venue.VenueUsers"].RemoveSubject(subject)
 
     Exit.soap_export_as = "Exit"
