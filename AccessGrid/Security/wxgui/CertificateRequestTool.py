@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.4 2004-03-25 19:45:39 olson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.5 2004-04-16 20:33:21 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -27,7 +27,7 @@ from AccessGrid.Security import CertificateRepository, CertificateManager
 from AccessGrid.Security.CertificateRepository import RepoDoesNotExist
 from AccessGrid.Security.CertificateRepository import RepoInvalidCertificate
 from AccessGrid.Security.CRSClient import CRSClient
-from HTTPProxyConfigPanel import HTTPProxyConfigPanel
+from AccessGrid.Security.wxgui.HTTPProxyConfigPanel import HTTPProxyConfigPanel
 from AccessGrid.ServiceProfile import ServiceProfile
 
 import string
@@ -81,10 +81,11 @@ class CertificateRequestTool(wxWizard):
 
         self.page0 = IntroWindow(self, "Welcome to the Certificate Request Wizard", )
         self.page1 = SelectCertWindow(self, "Select Certificate Type")
-        self.page2 = IdentityCertWindow(self, "Enter Your Information")
-        self.page3 = ServiceCertWindow(self, "Enter Service Information")
-        self.page4 = HostCertWindow(self, "Enter Host Information")
-        self.page5 = SubmitReqWindow(self, "Submit Request")
+        self.idpage = self.page2 = IdentityCertWindow(self, "Enter Your Information")
+        self.servicepage = self.page3 = ServiceCertWindow(self, "Enter Service Information")
+        self.hostpage = self.page4 = HostCertWindow(self, "Enter Host Information")
+        self.anonpage = self.page4a = AnonCertWindow(self, "Anonymous Certificate")
+        self.submitpage = self.page5 = SubmitReqWindow(self, "Submit Request")
         self.FitToPage(self.page1)
 
         self.log.debug("__init__:Set the initial order of the pages")
@@ -94,6 +95,7 @@ class CertificateRequestTool(wxWizard):
         self.page2.SetNext(self.page5)
         self.page3.SetNext(self.page5)
         self.page4.SetNext(self.page5)
+        self.page4a.SetNext(self.page5)
 
         self.page1.SetPrev(self.page0)
         self.page2.SetPrev(self.page1)
@@ -120,6 +122,12 @@ class CertificateRequestTool(wxWizard):
             elif certificateType == "HOST":
                 self.page0.SetNext(self.page4)
                 self.page4.SetPrev(self.page0)
+                self.SetTitle("Request Certificate - Step 1 of %s"
+                              %self.maxStep)
+
+            elif certificateType == "ANONYMOUS":
+                self.page0.SetNext(self.page4a)
+                self.page4a.SetPrev(self.page0)
                 self.SetTitle("Request Certificate - Step 1 of %s"
                               %self.maxStep)
             else:
@@ -215,6 +223,9 @@ class CertificateRequestTool(wxWizard):
                         email = page.emailCtrl.GetValue()
                         certInfo = CertificateManager.ServiceCertificateRequestInfo(name, host, email)
 
+                    elif isinstance(page, AnonCertWindow):
+                        certInfo = CertificateManager.AnonymousCertificateRequestInfo()
+                        
                     next.SetText(certInfo, password)
                     next.SetPrev(page)
                 next.OnPageShow()
@@ -307,15 +318,17 @@ class SelectCertWindow(TitledPage):
         '''
         TitledPage.__init__(self, parent, title)
         self.text = wxStaticText(self, -1, "Select Certificate Type: ")
-        self.selectionList = ["Identity", "Service", "Host"]
+        self.selectionList = ["Identity", "Service", "Anonymous"]
         self.selections = wxComboBox(self, -1, self.selectionList[0], choices = self.selectionList, style = wxCB_READONLY)
-        self.info = wxStaticText(self, -1, "There are three kinds of certificates:")
+        self.info = wxStaticText(self, -1, "There are two kinds of certificates:")
         self.info1 = wxStaticText(self, -1, "Identity Certificate:")
         self.info2 = wxStaticText(self, -1, "To identify an individual.")
         self.info3 = wxStaticText(self, -1, "Service Certificate:")
         self.info4 = wxStaticText(self, -1, "To identify a service.")
-        self.info5 = wxStaticText(self, -1, "Host Certificate:")
-        self.info6 = wxStaticText(self, -1, "To identify a machine.")
+        self.info5 = wxStaticText(self, -1, "Anonymous Certificate:")
+        self.info6 = wxStaticText(self, -1, "Allows access but not per-user identification.")
+        # self.info5 = wxStaticText(self, -1, "Host Certificate:")
+        # self.info6 = wxStaticText(self, -1, "To identify a machine.")
         self.parent = parent
         self.__setProperties()
         self.Layout()
@@ -337,8 +350,8 @@ class SelectCertWindow(TitledPage):
             self.parent.page3.SetPrev(self)
             
         elif value == self.selectionList[2]:
-            next = self.parent.page4
-            self.parent.page4.SetPrev(self)
+            next = self.parent.page4a
+            self.parent.page4a.SetPrev(self)
             
         return next
 
@@ -645,6 +658,25 @@ class IdentityCertValidator(wxPyValidator):
         return true # Prevent wxDialog from complaining.
 
   
+class AnonCertWindow(TitledPage):
+    '''
+    Includes information for requesting a host certificate.
+    '''
+    def __init__(self, parent, title):
+        TitledPage.__init__(self, parent, title)
+        self.text1 = wxStaticText(self, -1,
+                                 "An anonymous certificate carries no identification information.")
+        self.text2 = wxStaticText(self, -1,
+                                 "You may not be able to use this certificate to gain entry to some venues.")
+        self.Layout()
+
+    def Layout(self):
+        '''
+        Handles UI layout.
+        '''
+        self.sizer.Add(self.text1, 0, wxALL, 5)
+        self.sizer.Add(self.text2, 0, wxALL, 5)
+
 class HostCertWindow(TitledPage):
     '''
     Includes information for requesting a host certificate.
@@ -1008,11 +1040,22 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
             proxyInfo = self.proxyPanel.GetInfo()
             certMgr = Toolkit.Application.instance().GetCertificateManager()
             gui = certMgr.GetUserInterface()
+
+            #
+            # Sigh, continue to hardcode URLs. Next turn of the crank
+            # we'll hopefully get these out of here.
+            #
+
+            crsURL = None
+            if self.certInfo.GetType() == "anonymous":
+                crsURL = "http://www-unix.mcs.anl.gov/~olson/AG/auth/anonReqServer.cgi"
+            
             success = gui.RequestCertificate(self.certInfo,
                                              self.password,
                                              proxyInfo[0],
                                              proxyInfo[1],
-                                             proxyInfo[2])
+                                             proxyInfo[2],
+                                             crsURL)
         finally:
             wxEndBusyCursor()
             self.Refresh()
