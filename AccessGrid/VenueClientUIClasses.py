@@ -172,8 +172,8 @@ class VenueListPanel(wxPanel):
 	self.maximizeButton.SetToolTipString("Show Sidebar")
 	self.maximizeButton.Hide()
 	self.SetBackgroundColour(self.maximizeButton.GetBackgroundColour())
-        print 'siiiiiiiiiiiiiiiiiiiiiiiiiiiiiize'
-      	print self.GetSize().width
+#        print 'siiiiiiiiiiiiiiiiiiiiiiiiiiiiiize'
+#      	print self.GetSize().width
 	self.imageList = wxImageList(16,16)
 	self.__doLayout()
 	self.__addEvents()
