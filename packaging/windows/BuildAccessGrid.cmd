@@ -35,10 +35,18 @@
 @set LIB=%MSVCDir%\ATLMFC\LIB;%MSVCDir%\LIB;%MSVCDir%\PlatformSDK\lib\prerelease;%MSVCDir%\PlatformSDK\lib;%FrameworkSDKDir%\lib;%LIB%
 
 @set AGDIR=%1
+@set DESTDIR=%AGDIR%\Release
 
 @rmdir /s /q %AGDIR%\Release
 @rmdir /s /q %AGDIR%\build
 @cd %AGDIR%
+
+@mkdir %DESTDIR%\doc
+@mkdir %DESTDIR%\doc\Developer
+@xcopy %AGDIR%\doc\AccessGrid %DESTDIR%\doc\Developer
+@copy %AGDIR%\COPYING.txt %DESTDIR%\COPYING.txt
+@copy %AGDIR%\README %DESTDIR%\README
+
 @echo Building AG
 @python setup.py build
-@python setup.py install --prefix=%AGDIR%\Release --no-compile
+@python setup.py install --prefix=%DESTDIR% --no-compile
