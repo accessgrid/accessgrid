@@ -6,6 +6,8 @@ from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.Utilities import formatExceptionInfo 
 from AccessGrid import Utilities  
 
+from pyGlobus.io import GSITCPSocketException
+
 class VenueManagementClient(wxApp):
     '''VenueManagementClient. 
     
@@ -40,9 +42,11 @@ class VenueManagementClient(wxApp):
         try:
             self.client = Client.Handle(URL).get_proxy()
             venueList = self.client.GetVenues()
-            
+
+        except GSITCPSocketException:
+            ErrorDialog(self.frame, sys.exc_info()[1][0])
         except:
-            
+            print "Can't connect to server!", formatExceptionInfo()
             ErrorDialog(self.frame, 'The server you are trying to connect to is not running!')
                  
         else:
