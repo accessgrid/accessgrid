@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.4 2003-11-16 23:45:25 judson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.5 2004-02-03 21:29:37 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This program is used to register applications with the users AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.4 2003-11-16 23:45:25 judson Exp $"
+__revision__ = "$Id: agpm.py,v 1.5 2004-02-03 21:29:37 eolson Exp $"
 
 import os
 import re
@@ -174,6 +174,7 @@ def main():
         os.chdir(workingDir)
 
     # Process the App File we've gotten
+    appInfo = None
     if appFile:
         appInfo, commands = ProcessAppFile(appFile)
                 
