@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.13 2003-09-17 15:44:09 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.14 2003-09-17 17:13:47 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -95,7 +95,8 @@ class NodeSetupWizard(wxWizard):
         '''
         This class creates a wizard for node setup
         '''
-        self.CheckCertificate()
+        if not self.CheckCertificate():
+            return None
         self.__setLogger()
         self.step = 1
         self.SetPageSize(wxSize(510, 310))
@@ -187,23 +188,28 @@ class NodeSetupWizard(wxWizard):
           
         except Exception, e:
             #log.exception("NodeSetupWizard: WXGUIApplication creation failed")
-            
+            print "Couldn't create application"
             text = "Could not start the Node Setup Wizard. \nIs your certificate configured correctly?"
-            ErrorDialog(None, text, "Node Setup Wizard failed",
-                          style = wxOK  | wxICON_ERROR, logFile = NODE_SETUP_WIZARD_LOG)
-            sys.exit(1)
+            MessageDialog(None, text, "Node Setup Wizard failed")
+            return 0
 
         try:
             self.app.InitGlobusEnvironment()
             
         except Exception, e:
+            print "Couldn't initialize globus environment"
             text = "Could not start the Node Setup Wizard. \nIs your certificate configured correctly?"
             #log.exception("NodeSetupWizard: App initialization failed")
-            ErrorDialog(None, text, "Node Setup Wizard failed", logFile = NODE_SETUP_WIZARD_LOG)
+            MessageDialog(None, text, "Node Setup Wizard failed")
+            return 0
 
         if not self.app.certificateManager.HaveValidProxy():
             #log.debug("NodeSetupWizard: You don't have a valid proxy")
-            self.app.certificateManager.CreateProxy()
+            ret = self.app.certificateManager.CreateProxy()
+            if not ret:
+                return 0
+    
+        return 1
             
     def ChangingPage(self, event):
         '''
@@ -1038,4 +1044,5 @@ class NodeClient:
 if __name__ == "__main__":
     pp = wxPySimpleApp()
     n = NodeSetupWizard(None)
-    n.Destroy()
+    if n:
+        n.Destroy()
