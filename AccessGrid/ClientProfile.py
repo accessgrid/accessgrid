@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.30 2003-09-19 16:36:18 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.31 2003-09-26 22:40:54 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.30 2003-09-19 16:36:18 judson Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.31 2003-09-26 22:40:54 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -85,12 +85,13 @@ class ClientProfile:
         self.distinguishedName = None
         self.capabilities = []
 
-        if profileFile != None:
+        if profileFile != None and os.path.exists(profileFile):
             self.Load(self.profileFile)
         else:
             self.profile = ClientProfile.defaultProfile.copy()
             self.profile['ClientProfile.id'] = self.publicId
-            
+            self._SetFromConfig() # Get the values from the config
+
     def Load(self, fileName, loadDnDetails=0):
 	"""
         loadDnDetails is used by the cache to include the reading
@@ -99,6 +100,13 @@ class ClientProfile:
         profile = ClientProfile.defaultProfile.copy()
         self.profile = LoadConfig(fileName, profile)
 
+        self._SetFromConfig() # Get the values from the config
+
+        if loadDnDetails: # DN used with profileCache, not in standard profile.
+            if 'ClientProfile.distinguishedname' in self.profile:
+                self.distinguishedName = self.profile['ClientProfile.distinguishedname']
+
+    def _SetFromConfig(self):
         if self.CheckProfile():
             self.profileType = self.profile['ClientProfile.type']
             self.name = self.profile['ClientProfile.name']
@@ -110,12 +118,9 @@ class ClientProfile:
             self.venueClientURL = self.profile['ClientProfile.venueclienturl']
             self.techSupportInfo = self.profile['ClientProfile.techsupportinfo']
             self.homeVenue = self.profile['ClientProfile.home']
-            if loadDnDetails:
-                if 'ClientProfile.distinguishedname' in self.profile:
-                    self.distinguishedName = self.profile['ClientProfile.distinguishedname']
         else:
             raise InvalidProfileException
-        
+
     def Dump(self):
         """
         """
