@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.79 2003-03-20 15:27:37 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.80 2003-03-20 15:32:36 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -589,7 +589,7 @@ class VenueClientFrame(wxFrame):
             
 
         else:
-            self.__showNoSelectionDialog("Please, select the data you want to delete")
+            self.__showNoSelectionDialog("Please, select the data you want to save")
 
     def RemoveData(self, event):
         id = self.contentListPanel.tree.GetSelection()
