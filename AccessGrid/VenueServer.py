@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.166 2004-09-03 16:00:09 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.167 2004-09-07 19:05:30 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.166 2004-09-03 16:00:09 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.167 2004-09-07 19:05:30 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -39,7 +39,7 @@ from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 from AccessGrid.Security import X509Subject, Role
 from AccessGrid.Security .Action import ActionAlreadyPresent
-
+from AccessGrid.Security.Subject import InvalidSubject
 from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
 
 from AccessGrid.Platform.Config import SystemConfig, UserConfig
@@ -762,7 +762,7 @@ class VenueServer(AuthorizationMixIn):
         if len(self.venues) == 1 and self.defaultVenue == '':
             self.SetDefaultVenue(oid)
 
-        a = venue.authManager.GetActions()
+        venue.authManager.GetActions()
         
         # return the URL to the new venue
         return venue.uri
