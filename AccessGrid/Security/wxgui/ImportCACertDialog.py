@@ -1,6 +1,7 @@
 import os
 
 import logging
+import re
 log = logging.getLogger("AG.CertificateManagerWXGUI")
 
 from wxPython.wx import *
