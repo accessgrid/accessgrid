@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.123 2003-10-20 18:41:55 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.124 2003-10-20 20:10:06 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.123 2003-10-20 18:41:55 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.124 2003-10-20 20:10:06 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -989,6 +989,7 @@ class VenueClient( ServiceBase):
                 try:
                     dataDescriptionList = Client.Handle(url).get_proxy().GetDataDescriptions()
                 except:
+                    log.exception("VenueClient.GetPersonalData: GetDataDescriptions call failed")
                     raise GetDataDescriptionsError()
                 
                 dataList = []
