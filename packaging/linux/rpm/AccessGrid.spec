@@ -33,11 +33,13 @@ Requires:	wxPythonGTK-py2.2
 Requires:	globus-accessgrid
 Obsoletes:	AccessGrid-2.0alpha
 Obsoletes:	AccessGrid-2.0beta
-Provides:       AccessGrid-VenueClient
-Provides:       AccessGrid-VenueServer
-Provides:       AccessGrid-BridgeServer
-Provides:       pyGlobus
-Provides:       pyOpenSSL_AG
+Obsoletes:	AccessGrid-BridgeServer
+Obsoletes:	AccessGrid-VenueServer
+Obsoletes:	AccessGrid-VenueClient
+Obsoletes:	AccessGrid-rat
+Obsoletes:	AccessGrid-vic
+Obsoletes:	pyOpenSSL_AG
+Obsoletes:	pyGlobus
 
 
 %description
