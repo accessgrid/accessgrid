@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.4 2003-04-29 22:16:36 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.5 2003-04-30 02:33:23 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ vicstartup="""option add Vic.muteNewSources true startupFile
 option add Vic.maxbw 6000 startupFile
 option add Vic.bandwidth %d startupFile
 option add Vic.framerate %d startupFile
-option add Vic.quality 85 startupFile
+option add Vic.quality 75 startupFile
 option add Vic.defaultFormat %s startupFile
 option add Vic.inputType NTSC startupFile
 set device \"%s\"
