@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.19 2004-03-12 20:44:14 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.20 2004-03-12 20:51:39 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.19 2004-03-12 20:44:14 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.20 2004-03-12 20:51:39 judson Exp $"
 
 # Standard imports
 import os
@@ -156,8 +156,8 @@ class Application:
        if self.parser == None:
            self.parser = OptionParser()
            
-       self.parser.add_option("-d", "--debug", action="store", type="int",
-                              dest="debug", default=0,
+       self.parser.add_option("-d", "--debug", action="store_true", dest="debug",
+                              default=0,
                               help="Set the debug level of this program.")
        self.parser.add_option("-l", "--logfile", dest="logfilename",
                               metavar="LOGFILE", default=None,
