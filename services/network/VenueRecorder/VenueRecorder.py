@@ -4,8 +4,8 @@
 # 
 # Author:      Susanne Lefvert 
 # 
-# Created:     $Date: 2005-03-02 21:20:40 $ 
-# RCS-ID:      $Id: VenueRecorder.py,v 1.3 2005-03-02 21:20:40 lefvert Exp $ 
+# Created:     $Date: 2005-03-03 18:33:12 $ 
+# RCS-ID:      $Id: VenueRecorder.py,v 1.4 2005-03-03 18:33:12 lefvert Exp $ 
 # Copyright:   (c) 2002 
 # Licence:     See COPYING.TXT 
 #----------------------------------------------------------------------------- 
@@ -652,7 +652,7 @@ class VenueRecorderModel(Model):
         '''
         return self.__path
                               
-class VenueRecorderUI(wxApp): 
+class VenueRecorderUI: 
     ''' 
     The main class for user interface control. This class 
     creates a venue recorder model and view instance. 
@@ -669,7 +669,6 @@ class VenueRecorderUI(wxApp):
         Create ui components and register them as observers to the 
         venue recorder model. 
         ''' 
-        wxApp.__init__(self, False) 
         wxInitAllImageHandlers() 
         self.log = log 
          
@@ -682,7 +681,6 @@ class VenueRecorderUI(wxApp):
         self.venueRecorderModel.RegisterObserver(self.venueRecorderView) 
          
         # Init UI
-        self.SetTopWindow(self.venueRecorderView) 
         self.venueRecorderView.Show(1) 
                  
 class VenueRecorderView(wxFrame, Observer): 
@@ -1433,5 +1431,5 @@ if __name__ == "__main__":
     uiApp = VenueRecorderUI(v, app.GetLog()) 
 
     # Start application main thread
-    uiApp.MainLoop()
+    wxapp.MainLoop()
    
