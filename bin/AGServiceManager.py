@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.15 2003-04-08 14:15:30 olson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.16 2003-04-08 16:35:27 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -25,18 +25,22 @@ if sys.platform == "win32":
 port = 12000
 logFile = "./agsm.log"
 
+def Shutdown():
+    global running
+    global server
+    server.stop()
+    serviceManager.RemoveServices()
+    # shut down the node service, saving config or whatever
+    running = 0
+
 # Signal handler to shut down cleanly
 def SignalHandler(signum, frame):
     """
     SignalHandler catches signals and shuts down the VenueServer (and
     all of it's Venues. Then it stops the hostingEnvironment.
     """
-    global running
-    global server
-    server.stop()
-    # shut down the node service, saving config or whatever
-    running = 0
-
+    Shutdown()
+    
 # Authorization callback for Globus security
 def AuthCallback(server, g_handle, remote_user, context):
     return 1
@@ -105,10 +109,7 @@ if pnode is not None:
     def getMyURL(url = serviceManager.get_handle()):
         return url
 
-    def terminate():
-        os._exit(0)
-
-    personalNode = PersonalNode.PN_ServiceManager(getMyURL, terminate)
+    personalNode = PersonalNode.PN_ServiceManager(getMyURL, Shutdown)
     personalNode.Run(pnode)
 
 # Register the signal handler so we can shut down cleanly

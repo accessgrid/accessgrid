@@ -103,9 +103,6 @@ section = ""
 
 for l in fp:
 
-    l = re.sub("^\s*;.*", "", l)
-
-
     l = re.sub(fix_vic_src, fix_vic_dst, l)
     l = re.sub(fix_rat_src, fix_rat_dst, l)
 

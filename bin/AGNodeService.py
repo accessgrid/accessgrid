@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.13 2003-04-08 14:15:30 olson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.14 2003-04-08 16:35:27 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -26,17 +26,21 @@ if sys.platform == "win32":
 port = 11000
 logFile = "./agns.log"
 
+def Shutdown():
+    global running
+    global server
+    server.stop()
+    # shut down the node service, saving config or whatever
+    running = 0
+
 # Signal handler to catch signals and shutdown
 def SignalHandler(signum, frame):
     """
     SignalHandler catches signals and shuts down the VenueServer (and
     all of it's Venues. Then it stops the hostingEnvironment.
     """
-    global running
-    global server
-    server.stop()
-    # shut down the node service, saving config or whatever
-    running = 0
+
+    Shutdown()
 
 # Authorization callback for globus
 def AuthCallback(server, g_handle, remote_user, context):
@@ -107,12 +111,9 @@ if pnode is not None:
     def getMyURL(url = nodeService.get_handle()):
         return url
 
-    def terminate():
-        os._exit(0)
-
     log.debug("Starting personal node")
 
-    personalNode = PersonalNode.PN_NodeService(setSvcMgr, getMyURL, terminate)
+    personalNode = PersonalNode.PN_NodeService(setSvcMgr, getMyURL, Shutdown)
     personalNode.Run(pnode)
 
 # Tell the world where to find the service
