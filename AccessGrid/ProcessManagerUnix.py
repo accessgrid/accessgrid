@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.5 2003-04-09 06:55:57 turam Exp $
+# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.6 2003-04-29 19:01:14 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -59,21 +59,47 @@ class ProcessManagerUnix:
         waitTime = 1
         while elapsedWaits < maxWaits:
             (retpid,status) = os.waitpid(pid, os.WNOHANG )
-            # print "waitpid returns ", retpid, status
+            #print "waitpid returns ", retpid, status
             if retpid == pid and os.WIFEXITED(status):
                 break
             time.sleep(waitTime)
             elapsedWaits += 1
-
         if retpid == pid:
             if os.WIFEXITED(status):
                 rc = os.WEXITSTATUS(status)
-                print "process exited normally with rc ", rc
             elif os.WIFSIGNALED(status):
                 sig = os.WTERMSIG(status)
-                print "Process was killed with signal ", sig
         else:
-            print "couldn't terminate process (no exception)"
+            self._kill_process(pid)
+
+    def kill_all_processes(self):
+        for pid in self.processes:
+            try:
+                self._kill_process(pid)   
+            except OSError, e:
+                print "couldn't kill process: ", e
+
+        self.processes = []
+
+    def _kill_process(self, pid):
+       os.kill(pid,signal.SIGKILL)
+       maxWaits = 5
+       waitTime = 1
+       elapsedWaits = 0
+       while elapsedWaits < maxWaits:
+           (retpid,status) = os.waitpid(pid, os.WNOHANG )
+           if retpid == pid and os.WIFSIGNALED(status):
+               break
+           time.sleep(waitTime)
+           elapsedWaits += 1
+       if retpid == pid:
+           if os.WIFEXITED(status):
+               rc = os.WEXITSTATUS(status)
+           elif os.WIFSIGNALED(status):
+               sig = os.WTERMSIG(status)
+       else:
+           print "couldn't kill process (no exception)"
+
 
 if __name__ == "__main__":
 
