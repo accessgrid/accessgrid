@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.31 2003-09-29 20:52:12 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.32 2004-01-15 00:46:58 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.31 2003-09-29 20:52:12 judson Exp $"
+__revision__ = "$Id: EventClient.py,v 1.32 2004-01-15 00:46:58 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from threading import Thread, Lock
@@ -215,13 +215,13 @@ class EventClient:
 
         if self.waitingLen == 0:
 
-            sz = struct.calcsize('i')
+            sz = struct.calcsize('<i')
             
             if len(self.dataBuffer) < sz:
                 return
 
             lenstr = self.dataBuffer[:sz]
-            dlen = struct.unpack('i', lenstr)
+            dlen = struct.unpack('<i', lenstr)
 
             self.dataBuffer = self.dataBuffer[sz:]
 
@@ -287,7 +287,7 @@ class EventClient:
             raise EventClientWriteDataException
         try:
             pdata = pickle.dumps(data)
-            size = struct.pack("i", len(pdata))
+            size = struct.pack("<i", len(pdata))
             self.lock.acquire()
             self.sock.write(size, 4)
             self.sock.write(pdata, len(pdata))

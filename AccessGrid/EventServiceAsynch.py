@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.21 2003-09-24 03:27:30 judson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.22 2004-01-15 00:46:58 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.21 2003-09-24 03:27:30 judson Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.22 2004-01-15 00:46:58 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -161,13 +161,13 @@ class ConnectionHandler:
 
         if self.waitingLen == 0:
 
-            sz = struct.calcsize('i')
+            sz = struct.calcsize('<i')
             
             if len(self.dataBuffer) < sz:
                 return
 
             lenstr = self.dataBuffer[:sz]
-            dlen = struct.unpack('i', lenstr)
+            dlen = struct.unpack('<i', lenstr)
 
             self.dataBuffer = self.dataBuffer[sz:]
 
