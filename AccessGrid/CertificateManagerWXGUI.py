@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.29 2003-09-23 20:23:37 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.30 2003-09-24 01:46:46 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.29 2003-09-23 20:23:37 olson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.30 2003-09-24 01:46:46 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -653,10 +653,10 @@ class RepositoryBrowser(wxPanel):
         """
         Create the RepositoryBrowser.
 
-        certMgr - the certificate manager instance for this browser.
+        @param certMgr: the certificate manager instance for this browser.
 
-        browerType - either TYPE_IDENTITY (for browsing identity certs)
-        	or TYPE_CA (for browsing trusted CA certs)
+        @param browserType: either TYPE_IDENTITY (for browsing identity certs)
+        or TYPE_CA (for browsing trusted CA certs)
 
         """
 
@@ -716,8 +716,15 @@ class RepositoryBrowser(wxPanel):
                 self._UpdateCertInfo(cert, isDefault)
 
             idx += 1
-        print "done"
 
+        #
+        # If there is a selection, enable the export button.
+        #
+        if self.certList.GetSelection() >= 0:
+            self.buttonExport.Enable(1)
+        else:
+            self.buttonExport.Enable(0)
+            
 
     def _IsIdentityBrowser(self):
         return self.browserType == self.TYPE_IDENTITY
@@ -849,6 +856,8 @@ class RepositoryBrowser(wxPanel):
         cert, isDefault = self.certList.GetClientData(sel)
         print "Selected cert ", sel, cert
 
+        self.buttonExport.Enable(1)
+
         self._UpdateCertInfo(cert, isDefault)
 
     def _UpdateCertInfo(self, cert, isDefault):
@@ -867,6 +876,10 @@ class RepositoryBrowser(wxPanel):
         self.nameText.AppendText(self.__formatNameForGUI(cert.GetSubject()))
         self.issuerText.AppendText(self.__formatNameForGUI(cert.GetIssuer()))
         self.certText.AppendText(self.__formatCertForGUI(cert))
+
+        self.nameText.ShowPosition(0)
+        self.issuerText.ShowPosition(0)
+        self.certText.ShowPosition(0)
 
         event = CertSelectedEvent(self.GetId(), cert)
         self.GetEventHandler().AddPendingEvent(event)
