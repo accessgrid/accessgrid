@@ -5,15 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.78 2004-09-09 22:12:12 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.79 2004-09-09 22:52:24 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.78 2004-09-09 22:12:12 turam Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: Utilities.py,v 1.79 2004-09-09 22:52:24 judson Exp $"
 
 import os
 import string
@@ -115,9 +114,9 @@ def AllocateEncryptionKey():
     rg = Random(time.time())
     
     intKey = GetRandInt(rg)
-    
-    for i in range(1, 8):
-        intKey = intKey ^ rg.randrange(1, sys.maxint)
+
+    for i in xrange(8):
+        intKey = intKey ^ rg.randrange(i, sys.maxint)
 
     return "Rijndael/%x" % intKey
 
@@ -167,11 +166,9 @@ def GetLogText(maxSize, logFileName):
         logFile.close()
 
     
-    except Exception,e:
-        #
+    except Exception:
         # If reading the log file failed somehow, the text sent in the
         # error report contains the received error message
-        #
         (name, args, traceback_string_list) = formatExceptionInfo()
         
         traceback = ""
@@ -180,21 +177,6 @@ def GetLogText(maxSize, logFileName):
 
   
         text = logFileName + " could not be located "
-
-    # Seek for todays date to just include relevant
-    # log messages in the error report
-    #
-    
-    #todaysDate = time.strftime("%m/%d/%Y", time.localtime())
-    #dateIndex = text.find(str(todaysDate))
-    
-    #if dateIndex != -1:
-        #
-        # If today's date is found, send log info starting from that index.
-        # Else, the last "maxSize" bytes of the log file is sent
-        #
-        
-        #text = text[dateIndex:]
 
     return text
 
@@ -385,21 +367,21 @@ class ServerLock:
     def acquire(self):
         if self.verbose:
             c = (traceback.extract_stack())[-2]
-            file = c[0]
+            fileName = c[0]
             line = c[1]
-            log.debug("Try to acquire server lock %s...      %s:%s", self.name, file, line)
+            log.debug("Try to acquire server lock %s...      %s:%s", self.name, fileName, line)
 
         self.lock.acquire()
 
         if self.verbose:
-            log.debug("Try to acquire server lock %s...done  %s:%s", self.name, file, line)
+            log.debug("Try to acquire server lock %s...done  %s:%s", self.name, fileName, line)
 
     def release(self):
         if self.verbose:
             c = (traceback.extract_stack())[-2]
-            file = c[0]
+            fileName = c[0]
             line = c[1]
-            log.debug("Releasing server lock %s  %s:%s", self.name, file, line)
+            log.debug("Releasing server lock %s  %s:%s", self.name, fileName, line)
         self.lock.release()
 
 #
