@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.63 2003-03-14 15:25:58 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.64 2003-03-14 15:33:11 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -648,7 +648,9 @@ class VenueAddressBar(wxSashLayoutWindow):
             self.address.Append(url)
 
     def GoBack(self, event):
+        wxBeginBusyCursor()
         self.application.GoBack()
+        wxEndBusyCursor()
       
     def callAddress(self, event):
         venueUri = self.address.GetValue()
