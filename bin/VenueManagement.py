@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.129 2004-04-29 18:47:36 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.130 2004-05-03 20:32:19 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.129 2004-04-29 18:47:36 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.130 2004-05-03 20:32:19 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -897,14 +897,12 @@ class VenueListPanel(wxPanel):
                                        delete venue %s" %venueToDelete.name)
                         text = "The venue could not be deleted" + venueToDelete.name
                         ErrorDialog(None, text, "Delete Venue Error",
-                                    style = wxOK  | wxICON_ERROR,
                                     logFile = VENUE_MANAGEMENT_LOG)
                 except:
                     log.exception("VenueListPanel.DeleteVenue: Could \
                                    not delete venue %s" %venueToDelete.name)
                     text = "The venue could not be deleted" + venueToDelete.name
                     ErrorDialog(None, text, "Delete Venue Error",
-                                style = wxOK  | wxICON_ERROR,
                                 logFile = VENUE_MANAGEMENT_LOG)
                  
                 else:
@@ -1115,13 +1113,13 @@ class DetailPanel(wxPanel):
                  self.encryptionButton.SetValue(not event.Checked())
                  log.exception("DetailPanel.ClickedOnEncrypt: Set encryption failed")
                  text = "The encryption option could not be set"
-                 ErrorDialog(None, text, "Set Encryption Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                 ErrorDialog(None, text, "Set Encryption Error", logFile = VENUE_MANAGEMENT_LOG)
         except:
             self.encryptionButton.SetValue(not event.Checked())
             log.exception("DetailPanel.ClickedOnEncrypt: Set encryption failed")
             text = "The encryption option could not be set"
             ErrorDialog(None, text, "Set Encryption Error",
-                        style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                        logFile = VENUE_MANAGEMENT_LOG)
           
     def ClickedOnRandom(self, event):
         self.ipAddress.Enable(false)
@@ -1140,7 +1138,7 @@ class DetailPanel(wxPanel):
             else:
                 log.exception("DetailPanel.ClickedOnEncrypt: Set multicast address to random failed")
                 text = "The multicast option could not be set."
-                ErrorDialog(None, text, "Set Multicast Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                ErrorDialog(None, text, "Set Multicast Error", logFile = VENUE_MANAGEMENT_LOG)
 
         except:
             self.ipAddress.Enable(true)
@@ -1149,7 +1147,7 @@ class DetailPanel(wxPanel):
             log.exception("DetailPanel.ClickedOnEncrypt: Set multicast address to random failed")
             text = "The multicast option could not be set."
             ErrorDialog(None, text, "Set Multicast Error",
-                        style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                        logFile = VENUE_MANAGEMENT_LOG)
          
     def ClickedOnInterval(self, event):
         self.ipAddress.Enable(true)
@@ -1171,7 +1169,7 @@ class DetailPanel(wxPanel):
             else:
                 log.exception("DetailPanel.ClickedOnInterval: Set multicast address to interval failed")
                 text = "The multicast option could not be set."
-                ErrorDialog(None, text, "Set Multicast Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                ErrorDialog(None, text, "Set Multicast Error", logFile = VENUE_MANAGEMENT_LOG)
 
         except:
             self.ipAddress.Enable(false)
@@ -1180,7 +1178,7 @@ class DetailPanel(wxPanel):
             log.exception("DetailPanel.ClickedOnInterval: Set multicast address to interval failed")
             text = "The multicast option could not be set."
             ErrorDialog(None, text, "Set Multicast Error",
-                        style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                        logFile = VENUE_MANAGEMENT_LOG)
         
     def SetAddress(self, ipAddress, mask):
         oldIpAddress = self.ipAddress.GetLabel()
@@ -1202,14 +1200,14 @@ class DetailPanel(wxPanel):
             else:
                 log.exception("DetailPanel.SetAddress: Set ip and mask failed")
                 text = "The multicast option could not be set."
-                ErrorDialog(None, text, "Set Multicast Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                ErrorDialog(None, text, "Set Multicast Error", logFile = VENUE_MANAGEMENT_LOG)
 
         except:
             self.ipAddress.SetLabel(oldIpAddress)
             log.exception("DetailPanel.SetAddress: Set ip and mask failed")
             text = "The multicast option could not be set."
             ErrorDialog(None, text, "Set Multicast Error",
-                        style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                        logFile = VENUE_MANAGEMENT_LOG)
          
     def OpenIntervalDialog(self, event):
         MulticastDialog(self, -1, "Multicast Address - Custom Range")
@@ -1890,12 +1888,12 @@ class AddVenueFrame(VenueParamFrame):
                         log.exception("AddVenueFrame.OnOk: Could not add venue")
                         text = "Could not add venue %s" %self.venue.name
                         ErrorDialog(None, text, "Add Venue Error",
-                                    style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                                    logFile = VENUE_MANAGEMENT_LOG)
                 except:
                     log.exception("AddVenueFrame.OnOk: Could not add venue")
                     text = "Could not add venue %s" %self.venue.name
                     ErrorDialog(None, text, "Add Venue Error",
-                                style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                                logFile = VENUE_MANAGEMENT_LOG)
 
                 if self.generalPanel.defaultVenue.IsChecked():
                     try:
@@ -1948,7 +1946,7 @@ class ModifyVenueFrame(VenueParamFrame):
                     if hasattr(e, "string"):
                         text = text + "\n%s" % e.string
                     ErrorDialog(None, text, "Modify Venue Error",
-                                style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                                logFile = VENUE_MANAGEMENT_LOG)
 
                 if self.generalPanel.defaultVenue.IsChecked():
                     try:
