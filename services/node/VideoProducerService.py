@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.10 2003-05-28 18:51:32 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.11 2003-08-07 14:54:39 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ option add Vic.bandwidth %d startupFile
 option add Vic.framerate %d startupFile
 option add Vic.quality 75 startupFile
 option add Vic.defaultFormat %s startupFile
-option add Vic.inputType NTSC startupFile
+option add Vic.inputType %s startupFile
 set device \"%s\"
 set defaultPort($device) %s
 option add Vic.device $device startupFile
@@ -42,6 +42,7 @@ proc user_hook {} {
 class VideoProducerService( AGService ):
 
    encodings = [ "h261" ]
+   standards = [ "NTSC", "PAL" ]
 
    def __init__( self, server ):
       AGService.__init__( self, server )
@@ -57,6 +58,7 @@ class VideoProducerService( AGService ):
       self.configuration["streamname"] = TextParameter( "streamname", "Video" )
       self.configuration["port"] = TextParameter( "port", "" ) 
       self.configuration["encoding"] = OptionSetParameter( "encoding", "h261", VideoProducerService.encodings )
+      self.configuration["standard"] = OptionSetParameter( "standard", "NTSC", VideoProducerService.standards )
       self.configuration["bandwidth"] = RangeParameter( "bandwidth", 800, 0, 3072 ) 
       self.configuration["framerate"] = RangeParameter( "framerate", 25, 1, 30 ) 
 
@@ -83,6 +85,7 @@ class VideoProducerService( AGService ):
          f.write( vicstartup % (self.configuration["bandwidth"].value, 
                                     self.configuration["framerate"].value, 
                                     self.configuration["encoding"].value, 
+				    self.configuration["standard"].value,
                                     vicDevice,                 
                                     self.configuration["port"].value  ) )
          f.close()
