@@ -1,0 +1,14 @@
+#
+# Format:
+#------------------------------------------------------------------------
+#  token type  | def.authority |                value              
+#--------------|---------------|-----------------------------------------
+# EACL entry #1|
+
+ access_id_CA      X509         '/O=Access Grid/O=Argonne National Laboratory/OU=Futures Lab Anonymous Authority/CN=Anonymous Certificate Authority'
+
+ pos_rights        globus        CA:sign
+
+ cond_subjects     globus       '"/O=Access Grid/O=Argonne National Laboratory/OU=Futures Lab Anonymous Authority/*"'
+
+# end of EACL
