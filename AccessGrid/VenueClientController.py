@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.20 2004-04-27 17:22:51 judson Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.21 2004-04-30 20:37:02 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.20 2004-04-27 17:22:51 judson Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.21 2004-04-30 20:37:02 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # standard imports
@@ -1178,7 +1178,6 @@ class VenueClientController:
                     else:
                         raise Exception, "Couldn't find shared app client"
                         
-                    command = os.path.join(appDir,command)
                     try:
                         os.chdir(appDir)
                     except:
