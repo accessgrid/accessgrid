@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.109 2003-03-26 15:36:30 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.110 2003-03-26 17:35:28 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -33,6 +33,8 @@ from AccessGrid.TextClient import SimpleTextProcessor
 from pyGlobus.io import GSITCPSocket
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 from AccessGrid.Events import ConnectEvent, TextEvent, DisconnectEvent
+
+#https://vv2.mcs.anl.gov:8880/Venues/000000f42b3dd2fc008c00dd000b0037a34
 
 class VenueClientFrame(wxFrame):
     
@@ -339,33 +341,39 @@ class VenueClientFrame(wxFrame):
     def UnFollow(self, event):
         wxLogDebug("VenueClientUIClasses: In UnFollow")
         if self.personToFollow != None :
-            try:
+            #try:
                 self.app.UnFollow(self.personToFollow)
                 self.personToFollow = None
-            except:
-                wxLogError("VenueClientUIClasses: Can stop following %s" %personToFollow.name)
+                self.meMenu.Remove(self.ID_ME_UNFOLLOW)
+            #except:
+           #     wxLogError("VenueClientUIClasses: Can not stop following %s" %self.personToFollow.name)
         
     def Follow(self, event):
         wxLogDebug("VenueClientUIClasses: In Follow")
         id = self.contentListPanel.tree.GetSelection()
         personToFollow = self.contentListPanel.tree.GetItemData(id).GetData()
         url = personToFollow.venueClientURL
-        wxLogDebug("VenueClientUIClasses: Follow name:%s url:%s " %(personToFollow.name, url))
+        name = personToFollow.name
+        wxLogDebug("VenueClientUIClasses: You are trying to follow :%s url:%s " %(name, url))
 
-        try:
-            self.app.Follow(personToFollow)
-            self.meMenu.Append(self.ID_ME_UNFOLLOW,"Stop following %s" %personToFollow.name,
-                               "%s will not lead anymore" %personToFollow.name)
-            self.personToFollow = personToFollow
-            
-        except:
-            wxLogError("VenueClientUIClasses: Can not follow %s" %personToFollow.name)
+        if(self.personToFollow == personToFollow):
+            text = "You are already following "+name
+            title = "Notification"
+            dlg = wxMessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
 
+        else:
+            try:
+                self.app.Follow(personToFollow)
+                self.meMenu.Append(self.ID_ME_UNFOLLOW,"Stop following %s" %name,
+                                   "%s will not lead anymore" %name)
+                self.personToFollow = personToFollow
+                
+            except:
+                wxLogError("VenueClientUIClasses: Can not follow %s" %personToFollow.name)
+                wxLog_GetActiveTarget().Flush()
 
-    
-        
-
-        
     def __fillTempHelp(self, x):
         if x == '\\':
             x = '/'
@@ -411,8 +419,8 @@ class VenueClientFrame(wxFrame):
         dlg.Destroy()
 
     def NotifyUnLeadDialog(self, clientProfile):
-        text = clientProfile.name+" is not following you anymore?"
-        title = "Stop follow"
+        text = clientProfile.name+" has stopped following you"
+        title = "Notification"
         dlg = wxMessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
@@ -1407,6 +1415,7 @@ class TextClientPanel(wxPanel):
                 self.TextInput.Clear()
             except:
                 wxLogError("Could not send message successfully")
+                wxLog_GetActiveTarget().Flush()
         else:
             wxLogMessage( "Please, go to a venue before using the chat")
             wxLog_GetActiveTarget().Flush()
