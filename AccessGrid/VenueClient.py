@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.87 2003-08-06 20:18:02 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.88 2003-08-07 21:01:14 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -482,7 +482,8 @@ class VenueClient( ServiceBase):
                                           venueState.eventLocation,
                                           venueState.textLocation,
                                           applicationList,
-                                          serviceList)
+                                          serviceList,
+                                          venueState.backupServer)
             self.venueUri = URL
             self.venueId = self.venueState.GetUniqueId()
             self.venueProxy = Client.Handle( URL ).get_proxy()
