@@ -2,19 +2,28 @@
 # Name:        VideoService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.1 2005-01-06 23:18:49 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.2 2005-01-14 23:52:46 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import re
 import sys, os
-try:    import _winreg
+
+# for linux device detection
+import fcntl
+import struct
+import glob
+
+try:   
+    import win32api
+    import _winreg
 except: pass
 
-from AccessGrid.Types import Capability
+
+from AccessGrid.Descriptions import Capability, ResourceDescription
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
-from AccessGrid.Platform import IsWindows, IsLinux
+from AccessGrid.Platform import IsWindows, IsLinux, IsOSX
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid import Toolkit
@@ -75,6 +84,14 @@ def OnOff(onOffVal):
         return "false"
     raise Exception,"OnOff value neither On nor Off: %s" % onOffVal
 
+class VideoResourceDescription(ResourceDescription):
+    def __init__(self,name,ports=[]):
+        ResourceDescription.__init__(self,name)
+        self.ports = ports
+    def SetPorts(self,ports):
+        self.ports = ports
+    def GetPorts(self):
+        return self.ports      
 
 class VideoService( AGService ):
 
@@ -102,15 +119,15 @@ class VideoService( AGService ):
 
         # Set configuration parameters
         # note: the datatype of the port parameter changes when a resource is set!
-        self.streamname = TextParameter( "streamname", "Video" )
+        self.streamname = TextParameter( "Stream Name", "Video" )
         self.port = TextParameter( "port", "" )
-        self.encoding = OptionSetParameter( "encoding", "h261", VideoService.encodingOptions )
-        self.standard = OptionSetParameter( "standard", "NTSC", VideoService.standardOptions )
-        self.bandwidth = RangeParameter( "bandwidth", 800, 0, 3072 )
-        self.framerate = RangeParameter( "framerate", 24, 1, 30 )
-        self.quality = RangeParameter( "quality", 75, 1, 100 )
-        self.transmitOnStart = OptionSetParameter( "transmitonstartup", "On", VideoService.onOffOptions )
-        self.muteSources = OptionSetParameter( "mutesources", "Off", VideoService.onOffOptions )
+        self.encoding = OptionSetParameter( "Encoding", "h261", VideoService.encodingOptions )
+        self.standard = OptionSetParameter( "Standard", "NTSC", VideoService.standardOptions )
+        self.bandwidth = RangeParameter( "Bandwidth", 800, 0, 3072 )
+        self.framerate = RangeParameter( "Frame Rate", 24, 1, 30 )
+        self.quality = RangeParameter( "Quality", 75, 1, 100 )
+        self.transmitOnStart = OptionSetParameter( "Transmit on Startup", "On", VideoService.onOffOptions )
+        self.muteSources = OptionSetParameter( "Mute Sources", "Off", VideoService.onOffOptions )
 
         self.configuration.append( self.streamname )
         self.configuration.append( self.port )
@@ -121,6 +138,9 @@ class VideoService( AGService ):
         self.configuration.append (self.quality )
         self.configuration.append (self.transmitOnStart )
         self.configuration.append (self.muteSources )
+
+        self.__GetResources()
+
 
     def __SetRTPDefaults(self, profile):
         """
@@ -209,7 +229,9 @@ class VideoService( AGService ):
                 _winreg.CloseKey(key)
                 
     def Start( self ):
-        """Start service"""
+        """
+        Start service
+        """
         try:
             # Enable firewall
             self.sysConf.AppFirewallConfig(self.executable, 1)
@@ -218,13 +240,13 @@ class VideoService( AGService ):
             if self.resource == "None":
                 vicDevice = "None"
             else:
-                vicDevice = self.resource.resource
+                vicDevice = self.resource.name
                 vicDevice = vicDevice.replace("[","\[")
                 vicDevice = vicDevice.replace("]","\]")
 
             if IsWindows():
                 try:
-                    self.MapWinDevice(self.resource.resource)
+                    self.MapWinDevice(self.resource.name)
                 except:
                     self.log.exception("Exception mapping device")
 
@@ -252,10 +274,6 @@ class VideoService( AGService ):
             if self.profile:
                 name = self.profile.name
                 email = self.profile.email
-            else:
-                # Error case
-                name = email = Toolkit.GetDefaultSubject().GetCN()
-                self.log.error("Starting service without profile set")
                 
             f.write( vicstartup % ( disableAutoplace,
                                     OnOff(self.muteSources.value),
@@ -317,7 +335,9 @@ class VideoService( AGService ):
             raise Exception("Failed to start service")
 
     def Stop( self ):
-        """Stop the service"""
+        """
+        Stop the service
+        """
 
         # vic doesn't die easily (on linux at least), so force it to stop
         AGService.ForceStop(self)
@@ -325,8 +345,11 @@ class VideoService( AGService ):
         # Disable firewall
         self.sysConf.AppFirewallConfig(self.executable, 0)
 
-    def ConfigureStream( self, streamDescription ):
-        """Configure the Service according to the StreamDescription"""
+    def SetStream( self, streamDescription ):
+        """
+        Configure the Service according to the StreamDescription
+        """
+        self.log.info("SetStream called")
 
         ret = AGService.ConfigureStream( self, streamDescription )
         if ret and self.started:
@@ -340,36 +363,49 @@ class VideoService( AGService ):
         # if enabled, start
         if self.enabled:
             self.Start()
+            
+    def GetResource(self):
+        return self.resource
 
     def SetResource( self, resource ):
-        """Set the resource used by this service"""
+        """
+        Set the resource used by this service
+        """
 
-        self.log.info("VideoService.SetResource : %s" % resource.resource )
-        self.resource = resource
-        if "portTypes" in self.resource.__dict__.keys():
+        self.log.info("VideoService.SetResource : %s" % resource.name )
+        foundResource = 0
+        for r in self.resources:
+            if r.name == resource.name:
+                self.resource = r
+                foundResource = 1
+        if not foundResource:
+            raise Exception("Unknown resource %s" % (resource.name))
 
-            # Find the config element that refers to "port"
-            try:
-                index = self.configuration.index(self.port)
-                found = 1
-            except ValueError:
-                found = 0
+        # Find the config element that refers to "port"
+        try:
+            index = self.configuration.index(self.port)
+            found = 1
+        except ValueError:
+            found = 0
 
-            # Create the port parameter as an option set parameter, now
-            # that we have multiple possible values for "port"
-            # If self.port is valid, keep it instead of setting the default value.
-            if ( isinstance(self.port, TextParameter) or isinstance(self.port, ValueParameter) ) and self.port.value != "" and self.port.value in self.resource.portTypes:
-                self.port = OptionSetParameter( "port", self.port.value,
-                                                             self.resource.portTypes )
-            else:
-                self.port = OptionSetParameter( "port", self.resource.portTypes[0],
-                                                             self.resource.portTypes )
+        # Create the port parameter as an option set parameter, now
+        # that we have multiple possible values for "port"
+        # If self.port is valid, keep it instead of setting the default value.
+        if (( isinstance(self.port, TextParameter) or isinstance(self.port, ValueParameter) ) 
+                and self.port.value != "" and self.port.value in self.resource.ports):
+            self.port = OptionSetParameter( "Port", self.port.value,
+                                                         self.resource.ports )
+        else:
+            self.port = OptionSetParameter( "Port", self.resource.ports[0],
+                                                         self.resource.ports )
 
-            # Replace or append the "port" element
-            if found:
-                self.configuration[index] = self.port
-            else:
-                self.configuration.append(self.port)
+        # Replace or append the "port" element
+        if found:
+            self.configuration[index] = self.port
+        else:
+            self.configuration.append(self.port)
+            
+        print "self.port.value = ", self.port.value
 
     def SetIdentity(self, profile):
         """
@@ -378,6 +414,176 @@ class VideoService( AGService ):
         self.log.info("SetIdentity: %s %s", profile.name, profile.email)
         self.profile = profile
         self.__SetRTPDefaults(profile)
+
+    def GetResources(self):
+        return self.resources
+        
+    def __GetResources(self):
+    
+        if IsWindows():
+            self.resources = self.win32GetResources()
+        elif IsLinux():
+            self.resources = self.linuxGetResources()
+        elif IsOSX():
+            self.resources = self.osxGetResources()
+            
+    def osxGetResources(self):
+        self.log.info("osxGetResources not yet implemented")
+        return []
+
+    def linuxGetResources(self):
+        # V4L video_capability struct defined in linux/videodev.h :
+        #   struct video_capability {
+        #     char name[32];
+        #     int type;
+        #     int channels;   # Num channels
+        #     int audios;     # Num audio devices
+        #     int maxwidth;   # Supported width
+        #     int maxheight;  # and height
+        #     int minwidth;   # Supported width
+        #     int minheight;  # and height
+        #   };
+        VIDIOCGCAP_FMT = "32siiiiiii"   # video_capability struct format string
+        VIDIOCGCAP     = -2143521279    # 0x803C7601
+
+        # V4L video_channel struct defined in linux/videodev.h :
+        #   struct video_channel {
+        #     int channel;
+        #     char name[32];
+        #     int tuners;
+        #     __u32 flags;
+        #     __u16 type;
+        #     __u16 norm;
+        #   };
+        VIDIOCGCHAN_FMT = "i32siIHH"   # video_channel struct format string
+        VIDIOCGCHAN     = -1070565886  # 0xC0307602
+
+        VID_TYPE_CAPTURE = 0x1 # V4L device can capture capability flag
+
+        # Determine ports for devices
+        deviceList = dict()
+        for device in glob.glob("/dev/video[0-9]*"):
+            if os.path.isdir(device):
+                continue
+
+            fd = None
+            try:
+                fd = os.open(device, os.O_RDWR)
+            except Exception, e:
+                self.log.info("open: %s", e)
+                continue
+
+            desc = ""; capType = 0; numPorts = 0
+            try:
+                cap = struct.pack(VIDIOCGCAP_FMT, "", 0, 0, 0, 0, 0, 0, 0);
+                r = fcntl.ioctl(fd, VIDIOCGCAP, cap)
+                (desc, capType, numPorts, x, x, x, x, x) = struct.unpack(VIDIOCGCAP_FMT, r)
+                desc.replace("\x00", "")
+            except Exception, e:
+                self.log.info("ioctl %s VIDIOCGCAP: %s", device, e)
+                os.close(fd)
+                continue
+
+            self.log.info("V4L %s description: %s", device, desc)
+
+            if not (capType & VID_TYPE_CAPTURE):
+                os.close(fd)
+                self.log.info("V4L %s: device can not capture", device)
+                continue
+
+            portList = []
+            for i in range(numPorts):
+                port = ""
+                try:
+                    chan = struct.pack(VIDIOCGCHAN_FMT, i, "", 0, 0, 0, 0);
+                    r = fcntl.ioctl(fd, VIDIOCGCHAN, chan)
+                    port = struct.unpack(VIDIOCGCHAN_FMT, r)[1]
+                except Exception, e:
+                    self.log.info("ioctl %s VIDIOCGCHAN: %s", device, e)
+                    os.close(fd)
+                    continue
+                portList.append(port.replace("\x00", ""))
+
+            os.close(fd)
+
+            if len(portList) > 0:
+                deviceList[device] = portList
+                self.log.info("V4L %s has ports: %s", device, portList)
+            else:
+                self.log.info("V4L %s: no suitable input ports found", device)
+
+
+        # Force x11 onto the list
+        deviceList['x11'] = ['x11']
+
+        # Create resource objects
+        resourceList = list()
+        for device,portList in deviceList.items():
+            try:
+                resourceList.append(VideoResourceDescription(device,portList))
+            except Exception, e:
+                self.log.exception("Unable to add video resource to list. device: " + device + "  portlist: " + str(portList))
+        
+        return resourceList
+
+    def win32GetResources(self):
+        """ 
+        Return a list of the resources available on the system
+        """
+    
+        deviceList = list()
+        
+        try:
+            vfwscanexe = os.path.join(AGTkConfig.instance().GetBinDir(),
+                                      'vfwscan.exe')
+            vfwscanexe = win32api.GetShortPathName(vfwscanexe)
+            if os.path.exists(vfwscanexe):
+                try:
+                    self.log.info("Using vfwscan to get devices")
+                    self.log.debug("vfwscanexe = %s", vfwscanexe)
+                    f = os.popen(vfwscanexe,'r')
+                    filelines = f.readlines()
+                    f.close()
+
+                    self.log.debug("filelines = %s", filelines)
+
+                    deviceList = map( lambda d: d.strip(), filelines)
+                except:
+                    self.log.exception("vfw device scan failed")
+            
+            if not len(deviceList):
+                self.log.info("Retrieving devices from registry")
+                
+                # Get the name of the video key in the registry
+                key = "SYSTEM\\ControlSet001\\Control\\MediaResources\\msvideo"
+                videoKey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key)
+
+                # Get the number of subkeys (devices) in the key
+                (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(videoKey)
+
+                for i in range(nSubKeys):
+                    # Open the key
+                    sVal = _winreg.EnumKey(videoKey, 0)
+                    sKey = _winreg.OpenKey(videoKey, sVal)
+                    (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(sKey)
+
+                    # Find the device name among the key's values
+                    for i in range(0, nValues):
+                        (vName, vData, vType) = _winreg.EnumValue(sKey, i)
+                        if vName == "FriendlyName":
+                            deviceList.append(vData)
+                    
+            self.log.info("GetResources: %s", deviceList)
+
+        except Exception:
+            self.log.exception("Exception getting video devices")
+            raise
+    
+        resourceList = list()
+        for d in deviceList:
+            resourceList.append(VideoResourceDescription(d,['external-in']))
+        return resourceList
+
 
 if __name__ == '__main__':
 

@@ -5,6 +5,8 @@ capabilities = Capability1 Capability2
 executable = VideoService.py
 platform = neutral
 version = 2.5
+inlineClass = VideoService
+resourceNeeded = 1
 
 [Capability1]
 role = producer
