@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.19 2003-03-14 14:29:19 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.20 2003-03-14 17:11:45 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -513,7 +513,7 @@ class AGServicePackageRepository:
         """
         Implementation of Handler interface for DataStore
         """
-        log.exception("Download filename : %s",
+        log.info("Download filename : %s",
                       self.servicesDir + os.sep + url_path)
         return self.servicesDir + os.sep + url_path 
 
