@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.13 2003-03-27 16:26:17 leggett Exp $
+# RCS-ID:      $Id: setup.py,v 1.14 2003-03-28 20:34:14 leggett Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -73,10 +73,19 @@ setup(
                     r"AccessGrid/services/VideoProducerService.svc"
                     ]
                    ),
+                  ('share/AccessGrid',
+                   [r"packaging/windows/AG.ico"]
+                   ),
                   ('share/AccessGrid/services',
                    [r"AccessGrid/services/AudioService.zip",
                     r"AccessGrid/services/VideoConsumerService.zip",
                     r"AccessGrid/services/VideoProducerService.zip"
+                    ]
+                   ),
+                  ('share/AccessGrid/packaging/windows',
+                   [r"packaging/windows/Postinstall.py",
+                    r"packaging/windows/AGNodeServicePostinstall.py",
+                    r"packaging/windows/AGServiceManagerPostinstall.py"
                     ]
                    ),
                   ('share/gnome/apps/AccessGrid',
@@ -98,7 +107,7 @@ setup(
                     "INSTALL",
                     "README",
                     "TODO",
-                    "VERSION",
+                    "VERSION"
                     ]
                    )
                   ]
