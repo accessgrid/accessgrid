@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.282 2003-09-19 16:17:28 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.283 2003-09-19 21:59:08 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.282 2003-09-19 16:17:28 olson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.283 2003-09-19 21:59:08 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -29,6 +29,7 @@ import webbrowser
 import traceback
 import cPickle
 import pyGlobus.utilc
+import pyGlobus.sslutilsc
 import re
 
 log = logging.getLogger("AG.VenueClientUIClasses")
@@ -3288,6 +3289,83 @@ def VerifyExecutionEnvironment(mainApp = None):
 
         sys.exit(1)
 
+    #
+    # Test for per-user Globus settings, in the Windows case.
+    #
+
+    if isWindows():
+
+        try:
+            certLocations = pyGlobus.sslutilsc.get_certificate_locations()
+            log.debug("In VerifyExecutionEnvironment: certLocations=%s", certLocations)
+
+            if certLocations is None:
+
+                #
+                # Search for globus_init.py.
+                #
+
+                cmds = ['globus_init.py', 'globus_init.pyw']
+                locs = [os.path.join(os.environ['GLOBUS_LOCATION'], "config"),
+                        GetInstallDir(),
+                        r"\Program Files\Access Grid Toolkit\bin"]
+
+                globusInit = None
+
+                for loc in locs:
+                    for cmd in cmds:
+                        path = os.path.join(loc, cmd)
+                        if os.access(path, os.R_OK):
+                            globusInit = path
+                            break
+                log.debug("Found globus_init at %s", globusInit)
+
+                if globusInit is None:
+
+                    dlg = wxMessageDialog(None,
+                                          "We were not able to determine some Globus configuration\n" +
+                                          "information; this may be due to use of the venue client\n" +
+                                          "in an account other than the one under which the AG software was\n" +
+                                          "installed. Please invoke the Globus configuration wizard available at\n" +
+                                          "Start Menu -> Programs -> Access Grid Toolkit -> Configure -> Reconfigure Gloubus",
+                                          "Globus error",
+                                          style = wxOK | wxICON_INFORMATION)
+                    dlg.ShowModal()
+                    dlg.Destroy()
+
+                else:
+
+                    dlg = wxMessageDialog(None,
+                                          "We were not able to determine some Globus configuration\n" +
+                                          "information; this may be due to use of the venue client\n" +
+                                          "in an account other than the one under which the AG software\n" +
+                                          "was installed. We will now invoke the Globus configuration wizard\n" +
+                                          "to perform this configuration. ",
+                                          "Globus error",
+                                          style = wxOK | wxICON_INFORMATION)
+                    dlg.ShowModal()
+                    dlg.Destroy()
+            
+                    import win32api
+                    shortpath = win32api.GetShortPathName(globusInit)
+                    
+                    log.debug("Invoking %s %s", sys.executable, shortpath)
+                    os.system("%s %s" % (sys.executable, shortpath))
+                    log.debug("After running wizard, have locations %s",
+                              pyGlobus.sslutilsc.get_certificate_locations())
+            else:
+                log.debug("Certificate locations correct")
+
+        except AttributeError:
+            ErrorDialog(None,
+                        "It appears that your system has an out-of-date version of \n" +
+                        "pyGlobus installed. You should check your configuration.\n" +
+                        "We will attempt to work around the problem, but you may see\n" +
+                        "other errors in the execution of your software.",
+                        "Invalid pyGlobus version",
+                        style = wxOK | wxICON_ERROR,
+                        logFile = VENUE_CLIENT_LOG)
+                
     #
     # Check to see  if we are running as root (on non-windows platforms)
     #
