@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.20 2003-05-20 21:45:36 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.21 2003-08-12 12:46:00 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -61,7 +61,7 @@ class AGService( ServiceBase ):
         self.authManager = AuthorizationManager()
         self.started = 1
         self.enabled = 1
-        self.configuration = dict()
+        self.configuration = []
         self.streamDescription = StreamDescription()
         self.processManager = ProcessManager()
 
@@ -161,8 +161,9 @@ class AGService( ServiceBase ):
             self.executable = configuration.executable
 
             for parm in configuration.parameters:
-                if parm.name in self.configuration.keys():
-                    self.configuration[parm.name].SetValue( parm.value )
+                for i in range(len(self.configuration)):
+                    if parm.name == self.configuration[i].name:
+                       self.configuration[i].SetValue( parm.value )
         except:
             self.log.exception("Exception in AGService.SetConfiguration")
             raise Exception("AGService.SetConfiguration failed : " + str(sys.exc_value) )
@@ -172,7 +173,8 @@ class AGService( ServiceBase ):
     def GetConfiguration( self ):
         """Return configuration of service"""
         try:
-            serviceConfig = ServiceConfiguration( self.resource, self.executable, self.configuration.values() )
+            serviceConfig = ServiceConfiguration( self.resource, self.executable, self.configuration )
+
         except:
             self.log.exception("Exception in GetConfiguration ")
             raise Exception("AGService.GetConfiguration failed : " + str(sys.exc_value) )
