@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.25 2003-05-19 22:52:53 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.26 2003-05-20 21:43:06 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -378,8 +378,7 @@ class NodeManagementClientFrame(wxFrame):
         self.services = []
         self.nodeServiceHandle = Client.Handle("")
         
-        self.app = Toolkit.WXGUIApplication()
-        self.app.Initialize()
+        self.app = Toolkit.GetApplication()
         
         menuBar = wxMenuBar()
 
