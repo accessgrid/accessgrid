@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.67 2003-03-14 21:08:13 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.68 2003-03-14 21:14:50 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -146,12 +146,12 @@ class VenueClientUI(wxApp, VenueClient):
     def RemoveUserEvent(self, user):
         if(user.profileType == 'user'):
             wxCallAfter(self.frame.contentListPanel.RemoveParticipant, user)
-            wxCallAfter(wxLogDebug, "   %s" %(user.name))
+            wxCallAfter(wxLogDebug,"   %s" %(user.name))
         else:
             wxCallAfter(self.frame.contentListPanel.RemoveNode, user)
-            wxCallAfter(wxLogDebug, "   %s" %(user.name)
-        
-              
+            wxCallAfter(wxLogDebug,"   %s" %(user.name))
+                        
+                        
     def ModifyUserEvent(self, data):
         """
         Note: Overloaded from VenueClient
