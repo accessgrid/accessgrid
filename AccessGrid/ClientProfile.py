@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.3 2003-01-13 18:37:50 turam Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.4 2003-01-15 23:59:32 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,21 +20,6 @@ class ClientProfile:
     The client profile is all public data, however only the author of the
     profile is allowed to modify it.
     """
-
-    profileFile = ''
-    profileType = ''
-    name = ''
-    email = ''
-    phoneNumber = ''
-    icon = None
-    publicId = ''
-    location = ''
-    venueClientURL = ''
-    technicalSupportInformation = ''
-    homeVenue = ''
-    privateId = None
-    distinguishedName = None
-    capabilities = []
 
     _defaultProfile = {
         'VenueClient.profileType' : 'user',
@@ -54,6 +39,21 @@ class ClientProfile:
         if profileFile != None:
             self.fileName = profileFile
             self._LoadFromFile(self.fileName)
+        #self.profileFile = ''
+        self.profileType = ''
+        self.name = ''
+        self.email = ''
+        self.phoneNumber = ''
+        self.icon = None
+        self.publicId = ''
+        self.location = ''
+        self.venueClientURL = ''
+        self.technicalSupportInformation = ''
+        self.homeVenue = ''
+        self.privateId = None
+        self.distinguishedName = None
+        self.capabilities = []
+
 
     def _LoadFromFile(self, fileName):
 	"""
