@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.12 2003-05-07 20:40:59 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.13 2003-05-08 22:02:56 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -26,6 +26,33 @@ from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 class TextClientConnectException(Exception):
     """
     This gets returned when a connect fails.
+    """
+    pass
+
+class TextClientReadDataException(Exception):
+    """
+    This exception is used to indicate a read error.
+
+    This is usually thrown when an IOBaseException has occured on the
+    underlying GSITCPSocket. It can also be thrown if the read succeeds,
+    but the data resulting is bad.
+    """
+    pass
+
+class TextClientWriteDataException(Exception):
+    """
+    This exception is used to indicate a write error.
+
+    This is usually thrown when an IOBaseException has occured on the
+    underlying GSITCPSocket.
+    """
+    pass
+
+class TextClientBadDataException(Exception):
+    """
+    This exception is used to indicate bad data has been received.
+
+    This is usually thrown when an EOFError has occured on during unpickling.
     """
     pass
 
@@ -66,7 +93,8 @@ class SimpleTextProcessor:
             self.wfile.write(pdata)
         except:
             self.log.exception("SimpleTextProcessor: Filed to write data")
-           
+            raise TextClientWriteDataException
+        
     def Output(self, text):
         """ """
         data = text.data
@@ -98,30 +126,32 @@ class SimpleTextProcessor:
             except IOBaseException:
                 data = None
                 self.running = 0
-                self.log.debug("TextClient: Read data failed.")
-
+                self.log.exception("TextClient: Read data failed.")
+                raise TextClientReadDataException
+            
             if data != None and len(data) == 4:
                 sizeTuple = struct.unpack('i', data)
                 size = sizeTuple[0]
                 self.log.debug("Unpacked %d", size)
             else:
-                continue
+                self.log.exception("TextClient: Read data failed.")
+                raise TextClientReadDataException
             
             try:
                 pdata = self.rfile.read(size)
                 self.log.debug("TextClient: Read data.")
             except:
                 self.running = 0
-                self.log.debug("TextClient: Read data failed.")
-                continue
+                self.log.exception("TextClient: Read data failed.")
+                raise TextClientReadDataException
 
             # Unpickle the data
             try:
                 event = pickle.loads(pdata)
             except EOFError, e:
                 self.running = 0
-                log.debug("TextClient: unpickle got EOF.")
-                continue
+                log.exception("TextClient: unpickle got EOF.")
+                raise TextClientBadDataException
 
             # Handle the data
             self.Output(event.data)

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.15 2003-04-28 19:24:24 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.16 2003-05-08 22:02:56 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -30,6 +30,25 @@ class EventClientConnectionException(Exception):
     """
     This exception is used to indicate a problem connecting to an
     Event Service.
+    """
+    pass
+
+class EventClientReadDataException(Exception):
+    """
+    This exception is used to indicate a read error.
+
+    This is usually thrown when an IOBaseException has occured on the
+    underlying GSITCPSocket. It can also be thrown if the read succeeds,
+    but the data resulting is bad.
+    """
+    pass
+
+class EventClientWriteDataException(Exception):
+    """
+    This exception is used to indicate a write error.
+
+    This is usually thrown when an IOBaseException has occured on the
+    underlying GSITCPSocket.
     """
     pass
 
@@ -77,8 +96,8 @@ class EventClient(Thread):
             except IOBaseException:
                 data = None
                 self.running = 0
-                log.debug("EventClient: Connection Lost.")
-                continue
+                log.exception("EventClient: ReadDataException.")
+                raise EventClientReadDataException
 
             if data != None and len(data) == 4:
                 sizeTupe = struct.unpack('i', data)
@@ -87,17 +106,17 @@ class EventClient(Thread):
             else:
                 size = 0
                 self.running = 0
-                log.debug("EventClient: Connection Lost.")
-                continue
+                log.exception("EventClient: Connection Lost.")
+                raise EventClientReadDataException
             
             # Read the data
             try:
                 pdata = self.rfile.read(size)
                 log.debug("EventClient: Read data.")
             except:
-                log.debug("EventClient: Read data failed.")
                 self.running = 0
-                continue
+                log.exception("EventClient: Read data failed.")
+                raise EventClientReadDataException
 
             # Unpack the data
             event = pickle.loads(pdata)
@@ -130,8 +149,9 @@ class EventClient(Thread):
             self.sock.write(pdata, len(pdata))
         except:
             self.running = 0
-            log.debug("EventClient.Send Error.")
-            
+            log.exception("EventClient.Send Error: socket write failed.")
+            raise EventClientWriteDataException
+        
     def Stop(self):
         self.running = 0
 
