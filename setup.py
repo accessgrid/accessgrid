@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.65 2004-04-26 17:15:10 olson Exp $
+# RCS-ID:      $Id: setup.py,v 1.66 2004-05-05 18:10:13 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -79,22 +79,76 @@ linux_data = [('etc/init.d',
                [r"packaging/ag.ico"
                 ]
                ),
+               
               ('share/gnome/apps/AccessGrid',
-               [r"packaging/linux/gnome/.desktop",
-                r"packaging/linux/gnome/NodeManagement.desktop",
+               [
+                r"packaging/linux/gnome/Readme.desktop",
                 r"packaging/linux/gnome/VenueClient.desktop",
-                r"packaging/linux/gnome/VenueClient-PersonalNode.desktop",
-                r"packaging/linux/gnome/VenueManagement.desktop"
+                r"packaging/linux/gnome/VenueClient-Debug.desktop",
+                r"packaging/linux/gnome/VenueManagement.desktop",
+                r"packaging/linux/gnome/CertificateRequestTool.desktop",
                 ]
                ),
-              ('share/applnk/AccessGrid',
-               [r"packaging/linux/kde/.desktop",
-                r"packaging/linux/kde/NodeManagement.desktop",
+              ('share/gnome/apps/AccessGrid/Configure',
+               [
+                r"packaging/linux/gnome/SetupVideo.desktop",
+                r"packaging/linux/gnome/NodeSetupWizard.desktop",
+                r"packaging/linux/gnome/NodeManagement.desktop",
+                ]
+               ),
+              ('share/gnome/apps/AccessGrid/Services',
+               [
+                r"packaging/linux/gnome/VenueServer.desktop",
+                r"packaging/linux/gnome/VenueServer-Debug.desktop",
+                r"packaging/linux/gnome/ServiceManager.desktop",
+                r"packaging/linux/gnome/ServiceManager-Debug.desktop",
+                r"packaging/linux/gnome/NodeService.desktop",
+                r"packaging/linux/gnome/NodeService-Debug.desktop",
+                ]
+               ),
+              ('share/gnome/apps/AccessGrid/Documentation',
+               [
+                r"packaging/linux/gnome/VenueClientManual.desktop",
+                r"packaging/linux/gnome/VenueManagementManual.desktop",
+                r"packaging/linux/gnome/License.desktop",
+                r"packaging/linux/gnome/DevelopersDocumentation.desktop",
+                ]
+               ),
+               
+              ('share/applnk/apps/AccessGrid',
+               [
+                r"packaging/linux/kde/Readme.desktop",
                 r"packaging/linux/kde/VenueClient.desktop",
-                r"packaging/linux/kde/VenueClient-PersonalNode.desktop",
-                r"packaging/linux/kde/VenueManagement.desktop"
+                r"packaging/linux/kde/VenueClient-Debug.desktop",
+                r"packaging/linux/kde/VenueManagement.desktop",
+                r"packaging/linux/kde/CertificateRequestTool.desktop",
                 ]
                ),
+              ('share/applnk/apps/AccessGrid/Configure',
+               [
+                r"packaging/linux/kde/SetupVideo.desktop",
+                r"packaging/linux/kde/NodeSetupWizard.desktop",
+                ]
+               ),
+              ('share/applnk/apps/AccessGrid/Services',
+               [
+                r"packaging/linux/kde/VenueServer.desktop",
+                r"packaging/linux/kde/VenueServer-Debug.desktop",
+                r"packaging/linux/kde/ServiceManager.desktop",
+                r"packaging/linux/kde/ServiceManager-Debug.desktop",
+                r"packaging/linux/kde/NodeService.desktop",
+                r"packaging/linux/kde/NodeService-Debug.desktop",
+                ]
+               ),
+              ('share/applnk/apps/AccessGrid/Documentation',
+               [
+                r"packaging/linux/kde/VenueClientManual.desktop",
+                r"packaging/linux/kde/VenueManagementManual.desktop",
+                r"packaging/linux/kde/License.desktop",
+                r"packaging/linux/kde/DevelopersDocumentation.desktop",
+                ]
+               ),
+
               ('share/doc/AccessGrid',
                ["COPYING.txt",
                 "Install.LINUX",
