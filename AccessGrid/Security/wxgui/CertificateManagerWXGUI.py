@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.1 2004-03-10 23:07:10 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.2 2004-03-10 23:51:29 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,22 +15,24 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.1 2004-03-10 23:07:10 olson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.2 2004-03-10 23:51:29 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
 import string
-import logging
+
 import os
 import os.path
 import re
 import shutil
 
-log = logging.getLogger("AG.CertificateManagerWXGUI")
 
 from OpenSSL_AG import crypto
 from wxPython.wx import *
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog, ErrorDialogWithTraceback
+from AccessGrid import Log
+
+log = Log.GetLogger(Log.CertificateManagerWXGUI)
 
 from AccessGrid.Security import CertificateManager
 from AccessGrid.Security import CertificateRepository
