@@ -173,7 +173,7 @@ class CertificateRequestTool(wxWizard):
                     password = ""
 
                     if isinstance(page, IdentityCertWindow):
-                        name = page.nameCtrl.GetValue()
+                        name = page.firstNameCtrl.GetValue() +" "+page.lastNameCtrl.GetValue()
                         email = page.emailCtrl.GetValue()
                         domain = page.domainCtrl.GetValue()
                         request = "identity"
@@ -345,18 +345,22 @@ class IdentityCertWindow(TitledPage):
         self.text = wxStaticText(self, -1,"""The name field should contain your first and last name; requests with incomplete \nnames may be rejected. The e-mail address will be used for verification; \nplease make sure it is valid. Remember your password.
             """)
 
-        self.nameId = wxNewId()
+        self.firstNameId = wxNewId()
+        self.lastNameId = wxNewId()
         self.emailId = wxNewId()
         self.domainId = wxNewId()
         self.passwrdId = wxNewId()
         self.passwrd2Id = wxNewId()
        
-        self.nameText = wxStaticText(self, -1, "Name:")
+        self.firstNameText = wxStaticText(self, -1, "First name:")
+        self.lastNameText = wxStaticText(self, -1, "Last name:")
         self.emailText = wxStaticText(self, -1, "E-mail:")
         self.domainText = wxStaticText(self, -1, "Domain:")
         self.passwordText = wxStaticText(self, -1, "Password:")
-        self.passwordVerText = wxStaticText(self, -1, "Retype Password:")
-        self.nameCtrl = wxTextCtrl(self, self.nameId ,
+        self.passwordVerText = wxStaticText(self, -1, "Retype password:")
+        self.firstNameCtrl = wxTextCtrl(self, self.firstNameId ,
+                                   validator = IdentityCertValidator())
+        self.lastNameCtrl = wxTextCtrl(self, self.lastNameId ,
                                    validator = IdentityCertValidator())
         self.emailCtrl = wxTextCtrl(self, self.emailId,
                                     validator = IdentityCertValidator())
@@ -369,7 +373,8 @@ class IdentityCertWindow(TitledPage):
                                           style = wxTE_PASSWORD,
                                           validator = IdentityCertValidator())
 
-        EVT_TEXT(self, self.nameId, self.EnterText)
+        EVT_TEXT(self, self.firstNameId, self.EnterText)
+        EVT_TEXT(self, self.lastNameId, self.EnterText)
         EVT_TEXT(self.emailCtrl, self.emailId, self.EnterEmailText)
         EVT_TEXT(self.domainCtrl, self.domainId, self.EnterDomainText)
         EVT_TEXT(self.passwordCtrl, self.passwrdId , self.EnterText)
@@ -427,8 +432,18 @@ class IdentityCertWindow(TitledPage):
         self.sizer.Add(self.text, 0, wxALL, 5)
         self.sizer.Add(10, 10)
         gridSizer = wxFlexGridSizer(4, 2, 6, 6)
-        gridSizer.Add(self.nameText)
-        gridSizer.Add(self.nameCtrl, 0, wxEXPAND)
+        #gridSizer.Add(self.nameText)
+        box = wxBoxSizer(wxHORIZONTAL)
+        box.Add(self.firstNameText)
+        gridSizer.Add(box)
+
+        box = wxBoxSizer(wxHORIZONTAL)
+        box.Add(self.firstNameCtrl, 1, wxRIGHT, 10)
+        box.Add(self.lastNameText, 0,wxRIGHT, 5)
+        box.Add(self.lastNameCtrl, 1, wxEXPAND)
+        gridSizer.Add(box, 1, wxEXPAND)
+        
+        #gridSizer.Add(self.nameCtrl, 0, wxEXPAND)
         gridSizer.Add(self.emailText)
         gridSizer.Add(self.emailCtrl, 0, wxEXPAND)
         gridSizer.Add(self.domainText)
@@ -534,15 +549,22 @@ class IdentityCertValidator(wxPyValidator):
         '''
         Checks if win has correct parameters.
         '''
-        name = win.nameCtrl.GetValue()
+        firstName = win.firstNameCtrl.GetValue()
+        lastName = win.lastNameCtrl.GetValue()
         email = win.emailCtrl.GetValue()
         domain = win.domainCtrl.GetValue()
         password = win.passwordCtrl.GetValue()
         password2 = win.passwordVerCtrl.GetValue()
+       
         
-        if name == "":
-            MessageDialog(NULL, "Please enter your name.", style = wxOK | wxICON_INFORMATION)
-            self.helpClass.SetColour(win.nameCtrl)
+        if firstName == "":
+            MessageDialog(NULL, "Please enter your first name.", style = wxOK | wxICON_INFORMATION)
+            self.helpClass.SetColour(win.firstNameCtrl)
+            return false
+
+        elif lastName == "":
+            MessageDialog(NULL, "Please enter your last name.", style = wxOK | wxICON_INFORMATION)
+            self.helpClass.SetColour(win.lastNameCtrl)
             return false
         
         elif email == "":
