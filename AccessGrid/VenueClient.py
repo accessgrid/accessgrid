@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.142 2004-03-10 23:17:07 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.143 2004-03-11 20:16:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.142 2004-03-10 23:17:07 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.143 2004-03-11 20:16:10 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -70,6 +70,9 @@ class NotAuthorizedError(Exception):
 class NetworkLocationNotFound(Exception):
     pass
 
+class DisconnectError(Exception):
+    pass
+    
 log = Log.GetLogger(Log.VenueClient)
 Log.SetDefaultLevel(Log.VenueClient, Log.DEBUG)
 
@@ -277,6 +280,8 @@ class VenueClient:
                 log.exception("Heartbeat: Heartbeat exception is caught, exit venue.")
                 isSuccess = 0
                 self.ExitVenue()
+                for s in self.observers:
+                    s.HandleError(DisconnectError())
 
 
     # end Private Methods

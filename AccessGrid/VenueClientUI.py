@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.13 2004-03-10 23:17:08 eolson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.14 2004-03-11 20:16:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.13 2004-03-10 23:17:08 eolson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.14 2004-03-11 20:16:10 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -48,6 +48,7 @@ from AccessGrid.AppMonitor import AppMonitor
 from AccessGrid.Venue import ServiceAlreadyPresent
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.VenueClient import NetworkLocationNotFound, NotAuthorizedError
+from AccessGrid.VenueClient import DisconnectError
 
 try:
     import win32api
@@ -2111,7 +2112,15 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # Disable menus
         wxCallAfter(self.__HideMenu)
-        
+
+
+    def HandleError(self,err):
+        if isinstance(err,DisconnectError):
+            wxCallAfter(MessageDialog, None, 
+                        "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", 
+                        "Lost Connection")
+        else:
+            log.info("Unhandled observer exception in VenueClientUI")
 
 
     # end Implementation of VenueClientObserver
