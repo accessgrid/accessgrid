@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.4 2003-02-14 20:43:32 olson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.5 2003-02-21 16:10:29 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -30,7 +30,7 @@ class EventClient(Thread):
     events through the event service.
     """
     bufsize = 128
-    def __init__(self, location = ('localhost', 6500)):
+    def __init__(self, location):
         """
         The EventClient constructor takes a host, port.
         """
@@ -78,7 +78,6 @@ class EventClient(Thread):
                     
                     # Unpack the data
                     event = pickle.loads(pdata)
-#                    print "Got Event: %s" % event.eventType
                     if self.running:
                         # Send it on its way
                         calls = []

@@ -5,12 +5,14 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.18 2003-02-14 21:14:39 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.19 2003-02-21 16:10:29 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import sys
+import urlparse
+import string
 
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus import Client
@@ -54,7 +56,7 @@ class VenueClient( ServiceBase ):
     def Heartbeat(self):
         if self.eventClient != None:
 #            print "Sending heartbeat!"
-            self.eventClient.Send(HeartbeatEvent(self.privateId))
+            self.eventClient.Send(HeartbeatEvent(self.venueId, self.privateId))
             
     def SetProfile(self, profile):
         self.profile = profile
@@ -126,11 +128,17 @@ class VenueClient( ServiceBase ):
             # Enter the venue
             #
             (venueState, self.privateId, self.streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
-            self.venueState = VenueState( venueState.description, venueState.connections, 
+            self.venueState = VenueState( venueState.uniqueId,
+                                          venueState.description,
+                                          venueState.connections, 
                                           venueState.users, venueState.nodes, 
-                                          venueState.data, venueState.services, 
-                                          venueState.eventLocation, venueState.textLocation )
+                                          venueState.data,
+                                          venueState.services, 
+                                          venueState.eventLocation,
+                                          venueState.textLocation )
             self.venueUri = URL
+            self.venueId = self.venueState.GetUniqueId()
+            
             self.venueProxy = Client.Handle( self.venueUri ).get_proxy()
 
             #
@@ -151,10 +159,12 @@ class VenueClient( ServiceBase ):
             }
 
             self.eventClient = EventClient(self.venueState.eventLocation)
+
             for e in coherenceCallbacks.keys():
                 self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
+
             self.eventClient.start()
-            
+
             self.heartbeatTask = self.houseKeeper.AddTask(self.Heartbeat, 15)
             self.heartbeatTask.start()
  
@@ -241,60 +251,60 @@ class VenueClient( ServiceBase ):
     # Web Service methods
     #
 
-    def wsSetProfile(self, connectionInfo, profile):
+    def wsSetProfile(self, profile):
         self.SetProfile( profile )
-    wsSetProfile.pass_connection_info = 1
+
     wsSetProfile.soap_export_as = "wsSetProfile"
 
-    def wsEnterVenue(self, connectionInfo, venueUri ):
+    def wsEnterVenue(self, venueUri ):
         try:
             self.EnterVenue( venueUri )
         except:
             print "EXception in wsEnterVenue ", sys.exc_type, sys.exc_value
-    wsEnterVenue.pass_connection_info = 1
+
     wsEnterVenue.soap_export_as = "wsEnterVenue"
         
-    def wsExitVenue(self, connectionInfo ):
+    def wsExitVenue(self):
         self.ExitVenue()
-    wsExitVenue.pass_connection_info = 1
+
     wsExitVenue.soap_export_as = "wsExitVenue"
         
-    def wsGetVenue(self, connectionInfo):
+    def wsGetVenue(self):
         return self.GetVenue()
-    wsGetVenue.pass_connection_info = 1
+
     wsGetVenue.soap_export_as = "wsGetVenue"
         
-    def wsGetHomeVenue(self, connectionInfo ):
+    def wsGetHomeVenue(self):
         return self.GetHomeVenue()
-    wsGetHomeVenue.pass_connection_info = 1
+
     wsGetHomeVenue.soap_export_as = "wsGetHomeVenue"
         
-    def wsSetHomeVenue(self, connectionInfo, venueUri ):
+    def wsSetHomeVenue(self, venueUri ):
         self.SetHomeVenue( venueUri )
-    wsSetHomeVenue.pass_connection_info = 1
+
     wsSetHomeVenue.soap_export_as = "wsSetHomeVenue"
         
-    def wsLead( self, connectionInfo, clientProfile):
+    def wsLead( self, clientProfile):
         self.Lead( clientProfile )
-    wsLead.pass_connection_info = 1
+
     wsLead.soap_export_as = "wsLead"
 
-    def wsUnlead( self, connectionInfo, clientProfile):
+    def wsUnlead( self, clientProfile):
         self.Unlead( clientProfile )
-    wsUnlead.pass_connection_info = 1
+
     wsUnlead.soap_export_as = "wsUnlead"
 
-    def wsFollow(self, connectionInfo, venueClientUri ):
+    def wsFollow(self, venueClientUri ):
         self.Follow( venueClientUri )
-    wsFollow.pass_connection_info = 1
+
     wsFollow.soap_export_as = "wsFollow"
 
-    def wsUnfollow(self, connectionInfo, venueClientUri ):
+    def wsUnfollow(self, venueClientUri ):
         self.Unfollow( venueClientUri )
-    wsUnfollow.pass_connection_info = 1
+
     wsUnfollow.soap_export_as = "wsUnfollow"
 
-    def wsSetNodeServiceUri( self, connectionInfo, nodeServiceUri ):
+    def wsSetNodeServiceUri( self, nodeServiceUri ):
         self.SetNodeServiceUri( nodeServiceUri )
-    wsSetNodeServiceUri.pass_connection_info = 1
+
     wsSetNodeServiceUri.soap_export_as = "wsSetNodeServiceUri"

@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.4 2003-02-14 20:43:53 olson Exp $
+# RCS-ID:      $Id: Events.py,v 1.5 2003-02-21 16:10:29 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,25 +23,15 @@ class Event:
     SET_CONNECTIONS = "Set connections"
     UPDATE_VENUE_STATE = "Update venue state"
     
-    def __init__( self, eventType, data ):
+    def __init__( self, eventType, venueId, data ):
         self.eventType = eventType
+        self.venue = venueId
         self.data = data
 
-class TestEvent(Event):
-    TEST = "Test Event"
-    
-    def __init__(self, data):
-        Event.__init__(self, TestEvent.TEST, data)
-        
 class HeartbeatEvent(Event):
     HEARTBEAT = "Client Heartbeat"
     
-    def __init__(self, data):
-        Event.__init__(self, HeartbeatEvent.HEARTBEAT, data)
+    def __init__(self, venueId, data):
+        Event.__init__(self, HeartbeatEvent.HEARTBEAT, venueId, data)
         
-class TextEvent(Event):
-    TEXT = "Text"
-    
-    def __init__(self, data):
-        Event.__init__(self, TextEvent.TEXT, data)
 

@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.20 2003-02-18 21:17:48 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.21 2003-02-21 16:10:29 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -21,8 +21,9 @@ import string
 from AccessGrid.AGParameter import *
         
 class VenueState:
-    def __init__( self, description, connections, users,
+    def __init__( self, uniqueId, description, connections, users,
                   nodes, data, services, eventLocation, textLocation ):
+        self.uniqueId = uniqueId
         self.description = description
         self.eventLocation = eventLocation
         self.textLocation = textLocation
@@ -47,6 +48,11 @@ class VenueState:
         for service in services:
             self.services[service.uri] = service
 
+    def SetUniqueId(self, uniqueId):
+        self.uniqueId = uniqueId
+    def GetUniqueId(self):
+        return self.uniqueId
+    
     def SetDescription( self, description ):
         self.description = description
     def GetDescription( self ):

@@ -2,10 +2,10 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 #
-# Author:      Ivan R. Judson, Thomas D. Uram
+# Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.37 2003-02-18 17:36:56 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.38 2003-02-21 16:10:29 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,16 +22,20 @@ import os.path
 
 # AG Stuff
 from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
+from AccessGrid.Utilities import GetHostname
+
 from AccessGrid.hosting.pyGlobus import ServiceBase
-from AccessGrid.hosting.AccessControl import GetSecurityManager
-from AccessGrid.hosting.AccessControl import SecurityManager
+from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
+
 from AccessGrid.Venue import Venue
 from AccessGrid.GUID import GUID
-from AccessGrid.NetworkLocation import NetworkLocation
-from MulticastAddressAllocator import MulticastAddressAllocator
+from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.DataStore import DataStore
+from AccessGrid.EventService import EventService
 from AccessGrid.scheduler import Scheduler
 from AccessGrid.Descriptions import VenueDescription
+
+from AccessGrid.TextService import TextService
 
 class VenueServer(ServiceBase.ServiceBase):
     """
@@ -40,26 +44,33 @@ class VenueServer(ServiceBase.ServiceBase):
 
     The Virtual Venue Server object is:
 
-    configFile : string
-    config : dictionary of Key/Value pairs that holds configuration parameters.
-    adminstrators : list of strings (each is a DN of a adminsitrative user)
-    dataStorageLocation : string
-    defaultVenue : VenueURL
-    hostingEnvironment : AccessGrid.hosting.pyGlobus.Server
-    multicastAddressAllocator : AccessGrid.MulticastAddressAllocator
-    venues : a list of Venues Objects that are being made available
-    services : a list of service descriptions, these are either network or
+    configFile -- string
+    config -- dictionary of Key/Value pairs that holds configuration
+    parameters.
+    adminstrators -- list of strings (each is a DN of a adminsitrative user)
+    dataStorageLocation -- string
+    defaultVenue -- VenueURL
+    hostingEnvironment -- AccessGrid.hosting.pyGlobus.Server
+    multicastAddressAllocator -- AccessGrid.MulticastAddressAllocator
+    venues -- a list of Venues Objects that are being made available
+    services -- a list of service descriptions, these are either network or
                application services that are available so any venue hosted
                by this venue server can add these to the services available
                from within that venue
-    houseKeeper : Scheduler
+    houseKeeper -- Scheduler
     """
 
     configDefaults = {
+            "VenueServer.serverPort" : 8000,
+            "VenueServer.eventPort" : 8002,
+            "VenueServer.textPort" : 8004,
+            "VenueServer.dataPort" : 8006,
             "VenueServer.houseKeeperFrequency" : 30,
             "VenueServer.persistenceFilename" : 'VenueServer.dat',
+            "VenueServer.serverPrefix" : 'VenueServer',
             "VenueServer.venuePathPrefix" : 'Venues',
-            "VenueServer.dataStorageLocation" : 'Data'
+            "VenueServer.dataLocation" : 'Data',
+            "VenueServer.dataSize" : '10M'
             }
 
     defaultVenueDescription = VenueDescription("Venue Server Lobby", 
@@ -73,14 +84,18 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         # Initialize our state
         # We need to get the first administrator from somewhere
-        self.administrators = []
+        self.administrators = [GetDefaultIdentityDN()]
         self.defaultVenue = ''
         self.hostingEnvironment = hostEnvironment
         self.multicastAddressAllocator = MulticastAddressAllocator()
+        self.hostname = GetHostname()
         self.venues = {}
         self.services = []
-        self.dataStorageLocation = None
-
+        self.dataLocation = None
+        self.eventPort = 0
+        self.textPort = 0
+        self.dataService = None
+        
         # Figure out which configuration file to use for the
         # server configuration. If no configuration file was specified
         # look for a configuration file named VenueServer.cfg
@@ -89,11 +104,22 @@ class VenueServer(ServiceBase.ServiceBase):
             classpath = string.split(str(self.__class__), '.')
             self.configFile = classpath[-1]+'.cfg'
         else:
-            self.configFile = configFile
+           self.configFile = configFile
 
         # Read in and process a configuration
         self.InitFromFile(LoadConfig(self.configFile, self.configDefaults))
+
+        # Start Venue Server wide services
+        print "HN: %s EP: %d TP: %d DP: %d" % ( self.hostname,
+                                                int(self.eventPort),
+                                                int(self.textPort),
+                                                int(self.dataPort) )
         
+        self.eventService = EventService((self.hostname, int(self.eventPort)))
+        self.eventService.start()
+        self.textService = TextService((self.hostname, int(self.textPort)))
+        self.textService.start()
+
         # Try to open the persistent store for Venues. If we fail, we
         # open a temporary store, but it'll be empty.
         try:
@@ -104,8 +130,9 @@ class VenueServer(ServiceBase.ServiceBase):
             for vURL in store.keys():
                 print "Loading Venue: %s" % vURL
                 self.venues[vURL] = store[vURL]
-                self.venues[vURL].SetMulticastAddressAllocator(self.multicastAddressAllocator)
-                self.venues[vURL].Start()
+                self.venues[vURL].Start(self.multicastAddressAllocator,
+                                        self.dataService, self.eventService,
+                                        self.textService)
                 
                 venuePath = "%s/%s" % (self.venuePathPrefix,
                                        self.venues[vURL].uniqueId)
@@ -124,11 +151,9 @@ class VenueServer(ServiceBase.ServiceBase):
         # Reinitialize the default venue
         #
         if len(self.defaultVenue) != 0 and self.defaultVenue in self.venues:
-            defaultVenue = self.hostingEnvironment.create_service_object(pathId = 'Venues/default')
-            self.venues[self.defaultVenue]._bind_to_service(defaultVenue)
+            self.SetDefaultVenue(self.defaultVenue)
         else:
-            self.defaultVenue = self.AddVenue(self.defaultVenueDescription)
-
+            self.AddVenue(self.defaultVenueDescription)
 
         # The houseKeeper is a task that is doing garbage collection and
         # other general housekeeping tasks for the Venue Server.
@@ -162,51 +187,50 @@ class VenueServer(ServiceBase.ServiceBase):
                                                  venueDescription.icon,
                                                  venueDescription.extendedDescription )
 
-            venueID = GUID()
+            venueID = str(GUID())
             venuePath = "Venues/%s" % venueID
             venueURL = self.hostingEnvironment.get_url_base() + "/" + venuePath
             venueDescription.uri = venueURL
 
-            # Create a new Venue object pass it the server's Multicast Address 
-            # Allocator, and the server's Data Storage object
-            administrator = ""
-                    
             #
             # Create the directory to hold the venue's data.
             #
 
-            if self.dataStorageLocation is None or not os.path.exists(self.dataStorageLocation):
+            if self.dataLocation is None or not os.path.exists(self.dataLocation):
                 print "Creating venue: Data storage location %s not valid" % (self.dataStorageLocation)
                 venueStoragePath = None
             else:
-                venueStoragePath = os.path.join(self.dataStorageLocation, str(venueID))
+                venueStoragePath = os.path.join(self.dataLocation, str(venueID))
                 try:
                     os.mkdir(venueStoragePath)
                 except os.OSError, e:
                     print "Could not create venueStoragePath: ", e
                     venueStoragePath = None
             
-            venue = Venue(venueID, venueDescription,
-                          administrator, self.multicastAddressAllocator, 
-                          venueStoragePath)
 
-            venue.Start()
+            # Create a new Venue object pass it the server's Multicast Address 
+            # Allocator, and the server's Data Storage object
+                    
+            venue = Venue(venueID, venueDescription,
+                          GetDefaultIdentityDN())
+
+            venue.Start(self.multicastAddressAllocator, 
+                        self.dataService, self.eventService,
+                        self.textService)
             
             # Somehow we have to register this venue as a new service
-            # on the server.  This gets tricky, since we're not assuming
+            # on The server.  This gets tricky, since we're not assuming
             # the VenueServer knows about the SOAP server.
             if(self.hostingEnvironment != None):
                 venueService = self.hostingEnvironment.create_service_object(pathId = venuePath)
                 venue._bind_to_service(venueService)
 
-            # If this is the first venue, set it as the default venue
-            if(len(self.venues) == 0):
-                defaultVenue = self.hostingEnvironment.create_service_object(pathId = 'Venues/default')
-                venue._bind_to_service(defaultVenue)
-                self.SetDefaultVenue(venueURL)
-
             # Add the venue to the list of venues
             self.venues[venueURL] = venue
+
+            # If this is the first venue, set it as the default venue
+            if(len(self.venues) == 1):
+                self.SetDefaultVenue(venueURL)
 
         except:
             "Exception in AddVenue ", traceback.print_exc()
@@ -338,6 +362,8 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         self.defaultVenue = venueURL
         self.config["VenueServer.defaultVenue"] = venueURL
+        defaultVenue = self.hostingEnvironment.create_service_object('Venues/default')
+        self.venues[venueURL]._bind_to_service(defaultVenue)
 
     SetDefaultVenue.soap_export_as = "SetDefaultVenue"
 
@@ -437,9 +463,10 @@ class VenueServer(ServiceBase.ServiceBase):
         state that is lost (the longer the time between checkpoints, the more
         that can be lost).
         """
-        print "Checkpointing"
+#        print "Checkpointing"
         
         try:
+            # We should make a backup copy of this file first
             store = shelve.open(self.persistenceFilename)
             
             for vURL in self.venues.keys():

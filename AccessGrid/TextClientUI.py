@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClientUI.py,v 1.3 2003-02-14 20:44:52 olson Exp $
+# RCS-ID:      $Id: TextClientUI.py,v 1.4 2003-02-21 16:10:29 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,6 +13,7 @@
 import os
 import sys
 import pickle
+import string
 
 from wxPython.wx import *
 from threading import Thread
@@ -21,10 +22,19 @@ from pyGlobus.io import GSITCPSocket
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 
+class TextEvent:
+    def __init__(self, venue, recipient, private, data):
+        self.venue = venue
+        self.sender = None
+        self.recipient = recipient
+        self.private = private
+        self.data = data
+        
 class SimpleTextProcessor:
-    def __init__(self, socket, textOut):
+    def __init__(self, socket, venueId, textOut):
         """ """
         self.socket = socket
+        self.venueId = venueId
         self.textOut = textOut
         self.wfile = self.socket.makefile('wb', 0)
         self.rfile = self.socket.makefile('rb', -1)
@@ -37,11 +47,10 @@ class SimpleTextProcessor:
         
     def ProcessForSending(self, event):
         """ """
-        textEvent = {
-            'To' : None,
-            'Private' : 0,
-            'Data' : event.GetString()
-            }
+        data = event.GetString()
+
+        textEvent = TextEvent(self.venueId, None, 0, data)
+
         try:
             pdata = pickle.dumps(textEvent)
             lenStr = "%s\n" % len(pdata)
@@ -55,7 +64,21 @@ class SimpleTextProcessor:
 
     def ProcessForDisplay(self, text):
         """ """
-        self.textOut.AppendText(text + '\n')
+        data = text.data
+
+        if text.sender != None:
+            name = text.sender
+            stuff = name.split('/')
+            for s in stuff[1:]:
+                (k,v) = s.split('=')
+                if k == 'CN':
+                    name = v
+            string = "%s says, \"%s\"\n" % (name, data)
+        else:
+            string = "Someone says, \"%s\"\n" % (data)
+
+        self.textOut.AppendText(string)
+            
 
     def ProcessNetwork(self):
         """ """
@@ -63,9 +86,9 @@ class SimpleTextProcessor:
         while self.running:
             str = self.rfile.readline()
             size = int(str)
-            pdata = self.rfile.read(size)
+            pdata = self.rfile.read(size, size)
             event = pickle.loads(pdata)
-            self.ProcessForDisplay(event['Data'])
+            self.ProcessForDisplay(event)
 
 class TextClientUI(wxFrame):
     aboutText = """PyText 1.0 -- a simple text client in wxPython and pyGlobus.
@@ -78,6 +101,9 @@ class TextClientUI(wxFrame):
         self.host = self.location[0]
         self.port = self.location[1]
 
+        self.venueId = kwds["venueId"]
+        del kwds["venueId"]
+        
         # begin wxGlade: TextClientUI.__init__
         kwds["style"] = wxDEFAULT_FRAME_STYLE
         wxFrame.__init__(self, *args, **kwds)
@@ -114,7 +140,8 @@ class TextClientUI(wxFrame):
         self.attr = CreateTCPAttrAlwaysAuth()
         self.socket = GSITCPSocket()
         self.socket.connect(self.host, self.port, self.attr)
-        self.Processor = SimpleTextProcessor(self.socket, self.TextOutput)
+        self.Processor = SimpleTextProcessor(self.socket, self.venueId,
+                                             self.TextOutput)
 
         self.localEcho = 0
 

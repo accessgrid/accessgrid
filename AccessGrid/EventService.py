@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.2 2003-02-05 21:36:46 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.3 2003-02-21 16:10:29 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,6 @@ from pyGlobus.io import GSITCPSocketServer
 class ThreadingGSITCPSocketServer(ThreadingMixIn, GSITCPSocketServer): pass
 
 from AccessGrid.Utilities import formatExceptionInfo
-from AccessGrid.Events import HeartbeatEvent
 
 class ConnectionHandler(StreamRequestHandler):
     """
@@ -35,10 +34,6 @@ class ConnectionHandler(StreamRequestHandler):
         self.running = 0
          
     def handle(self):
-        
-        # register setup stuff
-        self.server.connections.append(self)
-        
         # loop getting data and handing it to the server
         self.running = 1
         while(self.running == 1):
@@ -46,19 +41,26 @@ class ConnectionHandler(StreamRequestHandler):
                 # Get the size of the pickled event data
                 size = int(self.rfile.readline())
                 # Get the pickled event data
-                pdata = self.rfile.read(size)
+                pdata = self.rfile.read(size, size)
                 # Unpickle the event data
                 event = pickle.loads(pdata)
                 # Pass this event to the callback registered for this
                 # event.eventType
-                if self.server.callbacks.has_key(event.eventType):
-                    self.server.callbacks[event.eventType](event.data)
+                if event.venue not in self.server.connections.keys():
+                    self.server.connections[event.venue] = []
+                    self.server.connections[event.venue].append(self)
+
+                if self.server.callbacks.has_key((event.venue,
+                                                    event.eventType)):
+                    cb = self.server.callbacks[(event.venue, event.eventType)]
+                    cb(event.data)
                 else:
-                     print "Got event, but don't have a callback for %s events." % event.eventType   
+                    print "Got event, but don't have a callback for %s, %s events." % (event.venue, event.eventType)
             except:
                 print "Client disconnected!"
                 self.running = 0
-                self.server.connections.remove(self)
+                if self in self.server.connections[event.venue]:
+                    self.server.connections[event.venue].remove(self)
                 
 class EventService(ThreadingGSITCPSocketServer, Thread):
     """
@@ -70,7 +72,7 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         Thread.__init__(self)
         self.location = server_address
         self.callbacks = {}
-        self.connections = []
+        self.connections = {}
         ThreadingGSITCPSocketServer.__init__(self, server_address, 
                                                 RequestHandlerClass)
 
@@ -86,19 +88,20 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         """
         Stop stops this thread, thus shutting down the service.
         """
-        for c in self.connections:
-            c.stop()
+        for v in self.connections.keys():
+            for c in self.connections[v]:
+                c.stop()
             
         self.running = 0
         
     def DefaultCallback(self, event):
         print "Got callback for %s event!" % event.eventType
         
-    def RegisterCallback(self, eventType, callback):
+    def RegisterCallback(self, venueId, eventType, callback):
         # Callbacks just take the event data as the argument
-        self.callbacks[eventType] = callback
+        self.callbacks[(venueId, eventType)] = callback
         
-    def RegisterObject(self, object):
+    def RegisterObject(self, venueId, object):
         """
         RegisterObject is short hand for registering multiple callbacks on the
         same object. The object being registered has to define a table named
@@ -106,18 +109,24 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         Then these are automatically registered.
         """
         for c in object.callbacks.keys():
-            self.RegisterCallback(c, object.callbacks[c])
+            self.RegisterCallback(c, venueId, object.callbacks[c])
             
-    def Distribute(self, data):
+    def Distribute(self, venueId, data):
         """
         Distribute sends the data to all connections.
         """
         print "Sending Event %s" % data.eventType
         # This should be more generic
         pdata = pickle.dumps(data)
-        for c in self.connections:
-            c.wfile.write("%s\n" % len(pdata))
-            c.wfile.write(pdata)
+        lenStr = "%s\n" % len(pdata)
+        if self.connections.has_key(venueId):
+            for c in self.connections[venueId]:
+                try:
+                    c.wfile.write(lenStr)
+                    c.wfile.write(pdata)           
+                except:
+                    print "Client disconnected!"
+                    self.server.connections[venue].remove(c)
             
     def GetLocation(self):
         """

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.41 2003-02-20 19:11:33 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.42 2003-02-21 16:10:29 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
 from AccessGrid.TextService import TextService
 from AccessGrid.EventService import EventService
-from AccessGrid.Events import Event, HeartbeatEvent, TextEvent
+from AccessGrid.Events import Event, HeartbeatEvent
 from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import GetHostname
 from AccessGrid.scheduler import Scheduler
@@ -43,8 +43,7 @@ class Venue(ServiceBase.ServiceBase):
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
     """
-    def __init__(self, uniqueId, description, administrator,
-                 multicastAllocator, dataStorePath):
+    def __init__(self, uniqueId, description, administrator):
         """
         Venue constructor.
 
@@ -52,7 +51,6 @@ class Venue(ServiceBase.ServiceBase):
         should use for storing its files.
 
         """
-
         self.connections = dict()
         self.services = dict()
         self.networkServices = []
@@ -71,14 +69,6 @@ class Venue(ServiceBase.ServiceBase):
         self.clients = dict()
         self.nodes = dict()
 
-        self.multicastAllocator = multicastAllocator
-        self.dataStorePath = dataStorePath
-        # This is the actual data store object
-        self.dataStore = None 
-
-        self.textHost = GetHostname()
-        self.eventHost = GetHostname()
-        
         self.producerCapabilities = []
         self.consumerCapabilities = []
 
@@ -101,9 +91,8 @@ class Venue(ServiceBase.ServiceBase):
         odict = self.__dict__.copy()
         # We don't save things in this list
         keys = ("users", "clients", "nodes", "multicastAllocator",
-                "producerCapabilities", "consumerCapabilities", "dataStore",
-                "textHost", "testPort", "textService",
-                "eventHost", "eventPort", "eventService",
+                "producerCapabilities", "consumerCapabilities", 
+                "textService", "eventService", "dataService",
                 "_service_object", "houseKeeper")
         for k in odict.keys():
             if k in keys:
@@ -121,38 +110,33 @@ class Venue(ServiceBase.ServiceBase):
         """
         self.__dict__ = pickledDict
 
-        self.__dict__["users"] = dict()
-        self.__dict__["clients"] = dict()
-        self.__dict__["nodes"] = dict()
-        self.__dict__["dataStore"] = None
-        self.__dict__["multicastAddressAllocator"] = None
-        self.__dict__["cleanupTime"] = 30
-        self.__dict__["nextPrivateId"] = 1
-        self.__dict__["encryptionKey"] = AllocateEncryptionKey()
+        self.users = dict()
+        self.clients = dict()
+        self.nodes = dict()
+        self.multicastAllocator = None
+        self.cleanupTime = 30
+        self.nextPrivateId = 1
+        self.encryptionKey = AllocateEncryptionKey()
 
-    def Start(self):
+    def Start(self, multicastAllocator, dataService,
+              eventService, textService):
         """ """
         # We assume the multicast allocator has been set by now
         # this is an icky assumption and can be fixed when I clean up
         # other icky things (description, state, venue) issues -- IRJ
-        self.textHost = GetHostname()
-        self.textPort = self.multicastAllocator.AllocatePort()
-        self.eventHost = GetHostname()
-        self.eventPort = self.multicastAllocator.AllocatePort()
-        
-        self.eventService = EventService((self.eventHost, self.eventPort))
-        self.eventService.RegisterCallback(HeartbeatEvent.HEARTBEAT, 
-                                    self.ClientHeartbeat)
-        self.eventService.start()
-        
-        self.textService = TextService((self.textHost, self.textPort))
-        self.textService.start()
+
+        self.multicastAllocator = multicastAllocator
+        self.dataService = dataService
+        self.eventService = eventService
+        self.textService = textService
+
+        self.eventService.RegisterCallback(self.uniqueId,
+                                           HeartbeatEvent.HEARTBEAT, 
+                                           self.ClientHeartbeat)
         
         self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.CleanupClients, 45)
         self.houseKeeper.StartAllTasks()
-
-        self.startDataStore()
 
     def startDataStore(self):
         """
@@ -207,7 +191,7 @@ class Venue(ServiceBase.ServiceBase):
         """
         self.dataStore = dataStore
     
-   # Internal Methods
+    # Internal Methods
     def GetState(self):
         """
         GetState enables a VenueClient to poll the Virtual Venue for the
@@ -218,6 +202,7 @@ class Venue(ServiceBase.ServiceBase):
            print "Called GetState on ", self.uniqueId
 
            venueState = {
+               'uniqueId' : self.uniqueId,
                'description' : self.description,
                'connections' : self.connections.values(),
                'users' : self.users.values(),
@@ -247,7 +232,7 @@ class Venue(ServiceBase.ServiceBase):
         privateId = event
         now = time.time()
         self.clients[privateId] = now
-#        print "Got Client Heartbeat for %s at %s." % (event, now)
+        print "Got Client Heartbeat for %s at %s." % (event, now)
     
     def Shutdown(self):
         """
@@ -255,11 +240,6 @@ class Venue(ServiceBase.ServiceBase):
         Virtual Venue. Currently there are a few threads in the Event
         Service.
         """
-        if self.eventService != None:
-            self.eventService.Stop()
-
-        if self.textService != None:
-            self.textService.Stop()
 
     def NegotiateCapabilities(self, clientProfile):
         """
@@ -379,8 +359,10 @@ class Venue(ServiceBase.ServiceBase):
         try:
 
             self.connections[connectionDescription.uri] = connectionDescription
-            self.eventService.Distribute( Event( Event.ADD_CONNECTION, 
-                                                connectionDescription ) )
+            self.eventService.Distribute( self.uniqueId,
+                                          Event( Event.ADD_CONNECTION,
+                                                 self.uniqueId,
+                                                 connectionDescription ) )
         except:
             print "Connection already exists ", connectionDescription.uri
 
@@ -393,7 +375,10 @@ class Venue(ServiceBase.ServiceBase):
         """
         try:
             del self.connections[ connectionDescription.uri ]
-            self.eventService.Distribute( Event( Event.REMOVE_CONNECTION, connectionDescription ) )
+            self.eventService.Distribute( self.uniqueId,
+                                          Event( Event.REMOVE_CONNECTION,
+                                                 self.uniqueId,
+                                                 connectionDescription ) )
         except:
             print "Exception in RemoveConnection", sys.exc_type, sys.exc_value
             print "Connection does not exist ", connectionDescription.uri
@@ -420,7 +405,9 @@ class Venue(ServiceBase.ServiceBase):
             self.connections = dict()
             for connection in connectionList:
                 self.connections[connection.uri] = connection
-            self.eventService.Distribute( Event( Event.SET_CONNECTIONS,
+            self.eventService.Distribute( self.uniqueId,
+                                          Event( Event.SET_CONNECTIONS,
+                                                 self.uniqueId,
                                                  connectionList ) )
 
         except:
@@ -507,7 +494,9 @@ class Venue(ServiceBase.ServiceBase):
 
             # negotiate to get stream descriptions to return
             streamDescriptions = self.NegotiateCapabilities(clientProfile)
-            self.eventService.Distribute( Event( Event.ENTER,
+            self.eventService.Distribute( self.uniqueId,
+                                          Event( Event.ENTER,
+                                                 self.uniqueId,
                                                  clientProfile ) )
 
         except:
@@ -544,12 +533,14 @@ class Venue(ServiceBase.ServiceBase):
 
         # Distribute event
         clientProfile = self.users[privateId]
-        self.eventService.Distribute( Event( Event.EXIT,
+        self.eventService.Distribute( self.uniqueId,
+                                      Event( Event.EXIT,
+                                             self.uniqueId,
                                              clientProfile ) )
 
         # Remove user from venue
         del self.users[privateId]
-
+        del self.clients[privateId]
 
     def UpdateClientProfile(self, clientProfile):
         """
@@ -560,7 +551,9 @@ class Venue(ServiceBase.ServiceBase):
         for user in self.users.values():
             if user.publicId == clientProfile.publicId:
                 self.users[user.privateId] = clientProfile
-            self.eventService.Distribute( Event( Event.MODIFY_USER,
+            self.eventService.Distribute( self.uniqueId,
+                                          Event( Event.MODIFY_USER,
+                                                 self.uniqueId,
                                                  clientProfile ) )
         
     UpdateClientProfile.soap_export_as = "UpdateClientProfile"
@@ -588,7 +581,9 @@ class Venue(ServiceBase.ServiceBase):
             raise VenueException("AddData: data %s already present" % (name))
 
         self.data[dataDescription.name] = dataDescription
-        self.eventService.Distribute( Event( Event.ADD_DATA,
+        self.eventService.Distribute( self.uniqueId,
+                                      Event( Event.ADD_DATA,
+                                             self.uniqueId,
                                              dataDescription ) )
 
     def wsUpdateData(self, dataDescription):
@@ -615,7 +610,9 @@ class Venue(ServiceBase.ServiceBase):
             raise VenueException("UpdateData: data %s not already present" % (name))
 
         self.data[dataDescription.name] = dataDescription
-        self.eventService.Distribute( Event( Event.UPDATE_DATA,
+        self.eventService.Distribute( self.uniqueId,
+                                      Event( Event.UPDATE_DATA,
+                                             self.uniqueId,
                                              dataDescription ) )
 
     def wsGetData(self, name):
@@ -646,8 +643,10 @@ class Venue(ServiceBase.ServiceBase):
             # data description -- I guess that's later :-)
             del self.data[ dataDescription.name ]
             self.dataStore.DeleteFile(dataDescription.name)
-            self.eventService.Distribute( Event( Event.REMOVE_DATA,
-                                                     dataDescription ) )
+            self.eventService.Distribute( self.uniqueId,
+                                          Event( Event.REMOVE_DATA,
+                                                 self.uniqueId,
+                                                 dataDescription ) )
         except:
             print "Exception in RemoveData", sys.exc_type, sys.exc_value
             print "Data does not exist", dataDescription.name
@@ -675,8 +674,10 @@ class Venue(ServiceBase.ServiceBase):
         print "Adding service ", serviceDescription.name, serviceDescription.uri
         try:
             self.services[serviceDescription.uri] = serviceDescription
-            self.eventService.Distribute( Event( Event.ADD_SERVICE,
-                                                     serviceDescription ) )
+            self.eventService.Distribute( self.uniqueId,
+                                          Event( Event.ADD_SERVICE,
+                                                 self.uniqueId,
+                                                 serviceDescription ) )
         except:
             print "Exception in AddService ", sys.exc_type, sys.exc_value
             print "Service already exists ", serviceDescription.name
@@ -691,8 +692,10 @@ class Venue(ServiceBase.ServiceBase):
         
         try:
             del self.services[serviceDescription.uri]
-            self.eventService.Distribute( Event( Event.REMOVE_SERVICE,
-                                                     serviceDescription ) )
+            self.eventService.Distribute( self.uniqueId,
+                                          Event( Event.REMOVE_SERVICE,
+                                                 self.uniqueId,
+                                                 serviceDescription ) )
         except:
             print "Exception in RemoveService", sys.exc_type, sys.exc_value
             print "Service does not exist ", serviceDescription.name

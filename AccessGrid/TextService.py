@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextService.py,v 1.5 2003-02-10 14:47:37 judson Exp $
+# RCS-ID:      $Id: TextService.py,v 1.6 2003-02-21 16:10:29 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,6 +24,7 @@ class ThreadingGSITCPSocketServer(ThreadingMixIn, GSITCPSocketServer): pass
 
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import HeartbeatEvent
+from AccessGrid.hosting.AccessControl import CreateSubjectFromGSIContext
 
 class ConnectionHandler(GSIRequestHandler):
     """
@@ -35,15 +36,6 @@ class ConnectionHandler(GSIRequestHandler):
         self.running = 0
          
     def handle(self):
-        # See what I know about the universe
-   
-        ctx = self.connection.get_security_context()
-        (remote, local) = ctx.inquire()[0:2]
-        print remote.display(), " : ", local.display()
-        
-        # register setup stuff
-        self.server.connections.append(self)
-                
         # loop getting data and handing it to the server
         self.running = 1
         while(self.running == 1):
@@ -51,21 +43,29 @@ class ConnectionHandler(GSIRequestHandler):
                 # Get the size of the text message
                 evtSize = int(self.rfile.readline())
                 # Get the real text message
-                pdata = self.rfile.read(evtSize)
+                pdata = self.rfile.read(evtSize, evtSize)
                 # Parse the text structure
                 # When this is advanced you can route things, for now
                 # this is a simple text reflector
                 # However we assign the from address in the server, so
                 # there is some notion of security :-)
                 event = pickle.loads(pdata)
-                event['From'] = remote.display()
-                pdata = pickle.dumps(event)
+                venue = event.venue
+                if venue not in self.server.connections.keys():
+                    self.server.connections[venue] = []
+                    self.server.connections[venue].append(self)
+
+                ctx = self.connection.get_security_context()
+                event.sender = CreateSubjectFromGSIContext(ctx).GetName()
+                
                 # For now we send all messages to everyone
-                self.server.Distribute(pdata)
+                self.server.Distribute(venue, event)
             except:
-                print "Client disconnected!"
+                print "ConnectionHandler.handle: Client disconnected!"
+                print "Exception: ", formatExceptionInfo()
                 self.running = 0
-                self.server.connections.remove(self)  
+                if self in self.server.connections[venue]:
+                    self.server.connections[venue].remove(self)  
                                          
 class TextService(ThreadingGSITCPSocketServer, Thread):
     """
@@ -76,7 +76,7 @@ class TextService(ThreadingGSITCPSocketServer, Thread):
     def __init__(self, server_address, RequestHandlerClass=ConnectionHandler):
         Thread.__init__(self)
         self.location = server_address
-        self.connections = []
+        self.connections = {}
         ThreadingGSITCPSocketServer.__init__(self, server_address, 
                                                 RequestHandlerClass)
 
@@ -92,8 +92,9 @@ class TextService(ThreadingGSITCPSocketServer, Thread):
         """
         Stop stops this thread, thus shutting down the service.
         """
-        for c in self.connections:
-            c.stop()
+        for v in self.connections.keys():
+            for c in self.connections[v]:
+                c.stop()
             
         self.running = 0
             
@@ -103,18 +104,21 @@ class TextService(ThreadingGSITCPSocketServer, Thread):
         """
         return self.location
 
-    def Distribute(self, data):
+    def Distribute(self, venue, data):
         """
         Send the data to all the connections in this server.
         """
-        lenStr = "%s\n" % len(data)
-        for c in self.connections:
-            try:
-                c.wfile.write(lenStr)
-                c.wfile.write(data)           
-            except:
-                print "Client disconnected!"
-                self.server.connections.remove(c)
+        print "Sending Event (%s) %s" % (venue, data.recipient)
+        pdata = pickle.dumps(data)
+        lenStr = "%s\n" % len(pdata)
+        if self.connections.has_key(venue):
+            for c in self.connections[venue]:
+                try:
+                    c.wfile.write(lenStr)
+                    c.wfile.write(pdata)           
+                except:
+                    print "EventService.Distribute: Client disconnected!"
+                    self.server.connections[venue].remove(c)
         
 if __name__ == "__main__":
   import string
