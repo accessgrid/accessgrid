@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.87 2003-03-20 22:43:17 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.88 2003-03-20 22:53:13 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -321,7 +321,7 @@ class VenueClientFrame(wxFrame):
         wxLogDebug("VenueClientUIClasses: Follow name:%s url:%s " %(personToFollow.name, url))
 
         try:
-            self.app.Follow(personToFollow)
+            self.app.Follow(url)
             
         except:
                 wxLogError("VenueClientUIClasses: Can not follow %s" %personToFollow.name)
