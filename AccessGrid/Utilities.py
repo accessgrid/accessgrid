@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.43 2003-09-04 21:51:36 lefvert Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.44 2003-09-05 18:03:58 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -30,6 +30,7 @@ from AccessGrid.Platform import GetUserConfigDir
 VENUE_CLIENT_LOG = 0
 VENUE_MANAGEMENT_LOG = 1
 NODE_SETUP_WIZARD_LOG = 2
+NO_LOG = 3
 
 
 def LoadConfig(fileName, config=dict(), separator="."):
@@ -320,7 +321,12 @@ def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
                     +"\n\n--- REPORTER CLIENT PROFILE --- \n\n" + profileString \
                     +"\n\n--- COMMENT FROM REPORTER --- \n\n" + comment 
 
-    if logFile == VENUE_MANAGEMENT_LOG:
+
+    if logFile == NO_LOG:
+        args['short_desc'] = "Feature or bug report from menu option"
+        
+    
+    elif logFile == VENUE_MANAGEMENT_LOG:
         args['short_desc'] = "Crash in Venue Management UI"
         commentAndLog = commentAndLog \
                         +"\n\n--- VenueManagement.log INFORMATION ---\n\n"+GetLogText(20000, "VenueManagement.log")
