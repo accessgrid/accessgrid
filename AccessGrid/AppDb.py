@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.1 2003-08-21 23:27:45 judson Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.2 2003-08-22 19:16:20 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -140,7 +140,7 @@ class AppDb:
     
         nameStr = self.defaultSeparator.join(["name", name])
         extStr = self.defaultSeparator.join(["extension", extension])
-        mimeStr = self.defaultSeparator.join(["None", mimeType])
+        mimeStr = self.defaultSeparator.join([mimeType, "None"])
         
         self.AppDb[nameStr] = mimeType
         self.AppDb[extStr] = mimeType
