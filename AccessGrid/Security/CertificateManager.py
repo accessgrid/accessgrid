@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.33 2004-08-23 18:11:31 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.34 2004-09-03 14:22:50 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.33 2004-08-23 18:11:31 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.34 2004-09-03 14:22:50 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -326,13 +326,17 @@ class CertificateManager(object):
         if userCert is not None and userKey is not None:
             # Shh, don't tell. Create a cert object so we can
             # extract the subject name to tell the user.
-
             try:
                 certObj = CertificateRepository.Certificate(userCert)
             except IOError:
-                self.GetUserInterface().ReportError("Identity certificate does not exist at\n" +
-                                                    userCert + "\n" +
-                                                    "You will have to import a valid identity certificate later.")
+                if userCert.endswith(os.path.join("globus", "usercert.pem")):
+                    log.warn("Didn't find certficate in old globus path: %s",
+                             userCert)
+                else:
+                    self.GetUserInterface().ReportError(
+                        "Identity certificate does not exist at\n" +
+                        userCert + "\n" +
+                 "You will have to import a valid identity certificate later.")
                 certObj = None
 
             impCert = None
