@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.138 2003-04-18 17:48:28 eolson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.139 2003-04-18 20:38:28 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -42,7 +42,6 @@ try:
 except Exception, e:
     HaveCertificateManager = 0
 
-#https://vv2.mcs.anl.gov:8880/Venues/000000f42b3dd2fc008c00dd000b0037a34
 class VenueClientFrame(wxFrame):
     
     '''VenueClientFrame. 
@@ -64,7 +63,8 @@ class VenueClientFrame(wxFrame):
     ID_VENUE_DATA = wxNewId()
     ID_VENUE_DATA_OPEN = wxNewId() 
     ID_VENUE_DATA_PROPERTIES = wxNewId() 
-    ID_VENUE_DATA_ADD = wxNewId() 
+    ID_VENUE_DATA_ADD = wxNewId()
+    ID_VENUE_PERSONAL_DATA_ADD = wxNewId()
     ID_VENUE_DATA_SAVE = wxNewId() 
     ID_VENUE_DATA_DELETE = wxNewId() 
     ID_VENUE_SERVICE = wxNewId() 
@@ -110,8 +110,6 @@ class VenueClientFrame(wxFrame):
         self.myVenuesFile = os.path.join(self.app.accessGridPath, "myVenues.txt" )
 	self.menubar = wxMenuBar()
 	self.statusbar = self.CreateStatusBar(1)
-	#self.dock = wxToolBar(self, 600, pos = wxDefaultPosition, \
-        #                      size = (300, 30), style = wxTB_TEXT| wxTB_HORIZONTAL| wxTB_FLAT)
         self.venueAddressBar = VenueAddressBar(self, self.ID_WINDOW_TOP, app, \
                                                self.myVenuesDict, 'default venue')
         self.TextWindow = wxSashLayoutWindow(self, self.ID_WINDOW_BOTTOM, wxDefaultPosition,
@@ -119,15 +117,11 @@ class VenueClientFrame(wxFrame):
         self.textClientPanel = TextClientPanel(self.TextWindow, -1)
         self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT, app)
         self.contentListPanel = ContentListPanel(self, app)
-               
-        #fileDropTarget = FileDropTarget(self.dock)
-        #self.dock.SetDropTarget(fileDropTarget)
         dataDropTarget = DataDropTarget(self.app)
         self.contentListPanel.tree.SetDropTarget(dataDropTarget)
         self.__setStatusbar()
 	self.__setMenubar()
-        #self.__setDock()
-	self.__setProperties()
+        self.__setProperties()
         self.Layout()
         self.__setEvents()
         self.__loadMyVenues()
@@ -165,21 +159,25 @@ class VenueClientFrame(wxFrame):
 
         self.venue = wxMenu()
 	self.dataMenu = wxMenu()
-	self.dataMenu.Append(self.ID_VENUE_DATA_OPEN,"Open...",
-                             "Open the data")
-	self.dataMenu.Append(self.ID_VENUE_DATA_ADD,"Add...",
+        self.dataMenu.Append(self.ID_VENUE_DATA_ADD,"Add data to venue...",
                              "Add data to the venue")
+        self.dataMenu.Append(self.ID_VENUE_PERSONAL_DATA_ADD,"Add personal data...",
+                             "Add personal data")
+        self.dataMenu.AppendSeparator()
+        self.dataMenu.Append(self.ID_VENUE_DATA_OPEN,"Open",
+                             "Open selected data")
 	self.dataMenu.Append(self.ID_VENUE_DATA_SAVE,"Save...",
-                             "Save data to local disk")
-	self.dataMenu.Append(self.ID_VENUE_DATA_DELETE,"Delete", "Remove data")
-	self.dataMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties",
-                             "View the data properties")
+                             "Save selected data to local disk")
+	self.dataMenu.Append(self.ID_VENUE_DATA_DELETE,"Delete", "Remove selected data")
+        self.dataMenu.AppendSeparator()
+	self.dataMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties...",
+                             "View the selected data properties")
         self.venue.AppendMenu(self.ID_VENUE_DATA,"&Data", self.dataMenu)
 	self.serviceMenu = wxMenu()
 	self.serviceMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
                                 "Add service to the venue")
         self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete",
-                                "Remove service")
+                                "Remove selected service")
         self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",
                               self.serviceMenu)
 
@@ -187,7 +185,7 @@ class VenueClientFrame(wxFrame):
 	self.applicationMenu.Append(self.ID_VENUE_APPLICATION_ADD,"Add...",
                                     "Add application to the venue")
         self.applicationMenu.Append(self.ID_VENUE_APPLICATION_DELETE, "Delete",
-                                    "Remove application")
+                                    "Remove selected application")
         self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"&Applications",
                               self.applicationMenu)
      
@@ -225,7 +223,7 @@ class VenueClientFrame(wxFrame):
         self.meMenu = wxMenu()
         self.meMenu.Append(self.ID_ME_PROFILE,"View Profile...",\
                                            "View participant's profile information")
-        self.meMenu.Append(self.ID_ME_DATA,"Add private data...",\
+        self.meMenu.Append(self.ID_ME_DATA,"Add personal data...",\
                                            "Add data you can bring to other venues")
 
         self.participantMenu = wxMenu()
@@ -248,32 +246,35 @@ class VenueClientFrame(wxFrame):
                                            "Follow this node")
         self.nodeMenu.Append(self.ID_NODE_LEAD,"Lead",\
                                            "Lead this node")
-        # until implemented
+
         self.nodeMenu.Enable(self.ID_NODE_LEAD, false)
-        #self.nodeMenu.Enable(self.ID_NODE_FOLLOW, false)
         self.nodeMenu.Enable(self.ID_NODE_MANAGE, false)
         self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
-        #self.serviceMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
-        #self.serviceMenu.Enable(self.ID_VENUE_SERVICE_DELETE, false)
+        self.serviceMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
+        self.serviceMenu.Enable(self.ID_VENUE_SERVICE_DELETE, false)
         self.applicationMenu.Enable(self.ID_VENUE_APPLICATION_ADD, false)
         self.applicationMenu.Enable(self.ID_VENUE_APPLICATION_DELETE, false)
-        #self.meMenu.Enable(self.ID_ME_DATA, false)
-        
-      
+                   
     def HideMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
+        self.menubar.Enable(self.ID_VENUE_PERSONAL_DATA_ADD, false)
         self.menubar.Enable(self.ID_VENUE_DATA_SAVE, false)
+        self.menubar.Enable(self.ID_VENUE_DATA_OPEN, false)
         self.menubar.Enable(self.ID_VENUE_DATA_DELETE, false)
-        #self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
-        #self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, false)
+        self.menubar.Enable(self.ID_VENUE_DATA_PROPERTIES, false)
+        self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
+        self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, false)
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
                  
     def ShowMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, true)
+        self.menubar.Enable(self.ID_VENUE_PERSONAL_DATA_ADD, true)
         self.menubar.Enable(self.ID_VENUE_DATA_SAVE, true)
+        self.menubar.Enable(self.ID_VENUE_DATA_OPEN, true)
         self.menubar.Enable(self.ID_VENUE_DATA_DELETE, true)
-        #self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
-        #self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, true)
+        self.menubar.Enable(self.ID_VENUE_DATA_PROPERTIES, true)
+        self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
+        self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, true)
         self.menubar.Enable(self.ID_MYVENUE_ADD, true)
          
     def __setEvents(self):
@@ -283,6 +284,7 @@ class VenueClientFrame(wxFrame):
                 
         EVT_MENU(self, self.ID_VENUE_DATA_OPEN, self.OpenData)
         EVT_MENU(self, self.ID_VENUE_DATA_ADD, self.OpenAddDataDialog)
+        EVT_MENU(self, self.ID_VENUE_PERSONAL_DATA_ADD, self.OpenAddPersonalDataDialog)
         EVT_MENU(self, self.ID_VENUE_DATA_SAVE, self.SaveData)
         EVT_MENU(self, self.ID_VENUE_DATA_DELETE, self.RemoveData)
         EVT_MENU(self, self.ID_VENUE_SERVICE_ADD, self.OpenAddServiceDialog)
@@ -301,16 +303,7 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_NODE_PROFILE, self.OpenParticipantProfile)
         EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.Follow)
         EVT_MENU(self, self.ID_NODE_FOLLOW, self.Follow)
-        
-    def __setDock(self):
-        """
-	self.dock.AddSimpleTool(20, icons.getWordBitmap(), \
-                                   "ImportantPaper.doc", "ImportantPaper.doc",)
-	self.dock.AddSimpleTool(21, icons.getPowerPointBitmap(), \
-                                   "Presentation.ppt", "Presentation.ppt",)
-        """
-        pass
-       	
+         	
     def __setProperties(self):
         font = wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana")
         self.SetTitle("You are not in a venue")
@@ -341,22 +334,6 @@ class VenueClientFrame(wxFrame):
 
         wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
         
-        
-        #self.venueClientSizer = wxBoxSizer(wxVERTICAL)
-        #self.venueClientSizer.Add(self.venueAddressBar, 0, wxEXPAND)
-        #self.venueContentSizer = wxBoxSizer(wxHORIZONTAL)
-        
-	#self.venueContentSizer.Add(self.venueListPanel, 0 , wxEXPAND)
-
-	#self.venueContentSizer.Add(self.contentListPanel, 2, wxEXPAND)
-	#self.venueClientSizer.Add(self.venueContentSizer, 1, wxEXPAND)
-	#self.venueClientSizer.Add(self.dock)
-        
-	#self.SetSizer(self.venueClientSizer)
-        #self.venueClientSizer.Fit(self)
-	#self.SetAutoLayout(1)
-        #self.Layout()
-
     def UnFollow(self, event):
         wxLogDebug("VenueClientUIClasses: In UnFollow we are being lead by %s" %self.app.leaderProfile.name)
         if self.app.leaderProfile != None :
@@ -394,10 +371,7 @@ class VenueClientFrame(wxFrame):
         else:
             try:
                 self.app.Follow(personToFollow)
-                #self.meMenu.Append(self.ID_ME_UNFOLLOW,"Stop following %s" %name,
-                #                   "%s will not lead anymore" %name)
-                #self.personToFollow = personToFollow
-                
+
             except:
                 wxLogError("VenueClientUIClasses: Can not follow %s" %personToFollow.name)
                 wxLog_GetActiveTarget().Flush()
@@ -515,18 +489,7 @@ class VenueClientFrame(wxFrame):
         wxLogDebug("Show profile view")
         profileView.ShowModal()
         profileView.Destroy()
-        
-    def ConnectToMyVenue(self, event):
-        url = self.menubar.GetLabel(event.GetId())
-        connectToVenueDialog = UrlDialogCombo(self, -1, 'Connect to server', url, list = self.myVenuesDict)
-        if (connectToVenueDialog.ShowModal() == wxID_OK):
-            venueUri = connectToVenueDialog.address.GetValue()
-            wxBeginBusyCursor()
-            self.app.GoToNewVenue(venueUri)
-            wxEndBusyCursor()
-                                  
-        connectToVenueDialog.Destroy()
-       
+         
     def __loadMyVenues(self, venueURL = None):
         for id in self.myVenuesMenuIds:
             self.myVenues.Delete(id)
@@ -661,16 +624,6 @@ class VenueClientFrame(wxFrame):
 
         addServiceDialog.Destroy()
 
-    def OpenConnectToVenueDialog(self, event = None):
-        connectToVenueDialog = UrlDialogCombo(self, -1, 'Connect to server', list = self.myVenuesDict)
-        if (connectToVenueDialog.ShowModal() == wxID_OK):
-            venueUri = connectToVenueDialog.address.GetValue()
-            wxBeginBusyCursor()
-            self.app.GoToNewVenue(venueUri)
-            wxEndBusyCursor()
-                  
-        connectToVenueDialog.Destroy()
-
     def OpenNodeMgmtApp(self, event):
         frame = NodeManagementClientFrame(self, -1, "Access Grid Node Management")
         wxLogDebug("open node management")
@@ -740,16 +693,19 @@ class VenueClientFrame(wxFrame):
         """
         id = self.contentListPanel.tree.GetSelection()
         data = self.contentListPanel.tree.GetItemData(id).GetData()
-        name = data.name
-        ext = name.split('.')[-1]
-        if data != None:
-            tfilepath = os.path.join(GetTempDir(), name)
-            
-            self.app.SaveFile(data, tfilepath)
-            fileType = wxTheMimeTypesManager.GetFileTypeFromExtension(ext)
-            mimetype = fileType.GetMimeType()
-            wxExecute(fileType.GetOpenCommand(tfilepath, mimetype))
-            
+        if(data != None):
+            name = data.name
+            ext = name.split('.')[-1]
+            if data != None:
+                tfilepath = os.path.join(GetTempDir(), name)
+                
+                self.app.SaveFile(data, tfilepath)
+                fileType = wxTheMimeTypesManager.GetFileTypeFromExtension(ext)
+                mimetype = fileType.GetMimeType()
+                wxExecute(fileType.GetOpenCommand(tfilepath, mimetype))
+        else:
+            self.__showNoSelectionDialog("Please, select the data you want to open")     
+    
     def RemoveData(self, event):
         id = self.contentListPanel.tree.GetSelection()
         data = self.contentListPanel.tree.GetItemData(id).GetData()
@@ -989,7 +945,6 @@ class VenueList(wxScrolledWindow):
         index = self.doorsAndLabelsList.index(panel)
                       
         self.box.Insert(index, panel, 0, wxEXPAND)
-        #self.column.Insert(index, panel, 1, wxEXPAND)
 
         id = panel.GetButtonId()
 
@@ -1041,10 +996,10 @@ class ExitPanel(wxPanel):
         self.button.SetToolTipString(profile.description)
         self.Layout()
         
-        EVT_LEFT_DOWN(self.button, self.onClick) # could create my own event...
+        EVT_LEFT_DOWN(self.button, self.onClick) 
         EVT_LEFT_DOWN(self.label, self.onClick)
         EVT_LEFT_DOWN(self, self.onClick)
-        EVT_ENTER_WINDOW(self, self.onMouseEnter) # could create my own event...
+        EVT_ENTER_WINDOW(self, self.onMouseEnter)
         EVT_LEAVE_WINDOW(self, self.onMouseLeave)
             
     def onMouseEnter(self, event):
@@ -1143,7 +1098,7 @@ class ContentListPanel(wxPanel):
         for data in dataList:
             participantData = self.tree.AppendItem(participant, data.name, \
                                                    self.defaultDataId, self.defaultDataId)
-            self.personalDataDict[data.name] = participantData  # data gets new tree id
+            self.personalDataDict[data.name] = participantData 
             self.tree.SetItemData(participantData, wxTreeItemData(data)) 
             
     def RemoveParticipantData(self, dataTreeId):
@@ -1160,7 +1115,7 @@ class ContentListPanel(wxPanel):
                 if id!=None:
                     wxLogDebug("Removed participant from tree")
                     self.tree.Delete(id)
-                    
+
                 wxLogDebug("Delete participant from dictionary")
                 del self.participantDict[description.publicId]
                
@@ -1382,8 +1337,7 @@ class ContentListPanel(wxPanel):
         
     def __setProperties(self):
         pass
-        # self.tree.SetToolTipString("Contents of this venue")
-
+      
     def UnSelectList(self):
         self.tree.Unselect()
 
@@ -1475,7 +1429,7 @@ class ContentListPanel(wxPanel):
 
         for index in self.applicationDict.values():
             self.tree.Delete(index)       
-        
+
         self.participantDict.clear()
         self.dataDict.clear()
         self.serviceDict.clear()
@@ -1527,8 +1481,7 @@ class TextClientPanel(wxPanel):
         
         self.Processor = SimpleTextProcessor(self.socket, self.venueId,
                                              self.OutputText)
-                                            # self.TextOutput.AppendText)
-        
+                                                   
         self.Processor.Input(ConnectEvent(self.venueId))
         self.TextOutput.Clear()
         self.TextInput.Clear()
@@ -1784,7 +1737,6 @@ class EditMyVenuesDialog(wxDialog):
             wxLogMessage('Please, select the venue you want to rename')
             wxLog_GetActiveTarget().Flush()
             
-
     def Rename(self, name):
         self.dictCopy[name] = self.dictCopy[self.currentItem]
         del self.dictCopy[self.currentItem]
@@ -1801,10 +1753,6 @@ class EditMyVenuesDialog(wxDialog):
         self.PopupMenu(self.menu, wxPoint(self.x, self.y))
         event.Skip()
 
-    #def OnRightClick(self, event):
-    #    self.PopupMenu(self.menu, wxPoint(self.x, self.y))
-    #    event.Skip()
-
     def OnBeginEdit(self, event):
         print 'begin'
 
@@ -1813,7 +1761,6 @@ class EditMyVenuesDialog(wxDialog):
 
     def __setEvents(self):
         EVT_RIGHT_DOWN(self.myVenuesList, self.OnRightDown)
-        #EVT_RIGHT_UP(self.myVenuesList, self.OnRightClick)
         EVT_LIST_ITEM_SELECTED(self.myVenuesList, self.ID_LIST, self.OnItemSelected)
         EVT_MENU(self.menu, self.ID_RENAME, self.OnRename)
         EVT_MENU(self.menu, self.ID_DELETE, self.OnDelete)
@@ -1843,6 +1790,7 @@ class EditMyVenuesDialog(wxDialog):
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.SetAutoLayout(1)
+
 
 class RenameDialog(wxDialog):
     def __init__(self, parent, id, title):
@@ -1916,7 +1864,7 @@ class AddMyVenueDialog(wxDialog):
         self.SetAutoLayout(1)
 
 
-class MainUrlDialog(wxDialog):
+class UrlDialog(wxDialog):
     def __init__(self, parent, id, title, address = "", text = None):
         wxDialog.__init__(self, parent, id, title)
         self.okButton = wxButton(self, wxID_OK, "Ok")
@@ -1929,6 +1877,8 @@ class MainUrlDialog(wxDialog):
         self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
         self.addressText = wxStaticText(self, -1, "Address: ", style=wxALIGN_LEFT)
         #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
+        self.address = wxTextCtrl(self, -1, address, size = wxSize(300,20))
+        self.Layout()
         
     def Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
@@ -1951,46 +1901,6 @@ class MainUrlDialog(wxDialog):
         sizer.Fit(self)
         self.SetAutoLayout(1)
 
-
-class UrlDialogCombo(MainUrlDialog):
-    def __init__(self, parent, id, title, address = "", text = None, list = None):
-        MainUrlDialog.__init__(self, parent, id, title, address, text)
-        self.address = wxComboBox(self, -1, address, size = wxSize(300,20), choices = list)
-        self.Layout()
-
-     
-class UrlDialog(MainUrlDialog):
-     def __init__(self, parent, id, title, address = "", text = None):
-         MainUrlDialog.__init__(self, parent, id, title, address, text)
-         self.address = wxTextCtrl(self, -1, address, size = wxSize(300,20))
-         self.Layout()
-
-
-class WelcomeDialog(wxDialog):
-    def __init__(self, parent, id, title, name, venueTitle, description):
-        wxDialog.__init__(self, parent, id, title)
-        self.Centre()
-        self.okButton = wxButton(self, wxID_OK, "Ok")
-        text1 = "Welcome, "+name+", to "+venueTitle
-        self.text = wxStaticText(self, -1, text1, style=wxALIGN_LEFT)
-        self.description = wxTextCtrl(self, -1, description, \
-                                      size = wxSize(300, 100), style = wxTE_MULTILINE )
-        self.description.SetBackgroundColour(self.GetBackgroundColour())
-        #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
-        self.Layout()
-        self.ShowModal()
-        self.Destroy()
-
-    def Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
-        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
-        sizer1.Add(self.description, 0, wxEXPAND | wxALL, 20)
-        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.SetAutoLayout(1)
     
 class ProfileDialog(wxDialog):
     def __init__(self, parent, id, title):
@@ -2232,22 +2142,7 @@ class DataDropTarget(wxFileDropTarget):
 
         else:
             self.app.UploadVenueFiles(files)
-             
-#class FileDropTarget(wxFileDropTarget):
-#    def __init__(self, dock):
-#        wxFileDropTarget.__init__(self)
-#        self.dock = dock
-#        self.do = wxFileDataObject()
-#        self.SetDataObject(self.do)
-#        
-#    def OnDropFiles(self, x, y, filenames):
-#        wxLogDebug('Drop files  %s' %str(filenames))
-#        for file in filenames:
-#            fileNameList = file.split('/')
-#            fileName = fileNameList[len(fileNameList)-1]
-#            self.dock.AddSimpleTool(20, icons.getDefaultDataBitmap(), fileName)
-#        return true
-
+ 
     def OnData(self, x, y, d):
         wxLogDebug('on data')
         self.GetData()
