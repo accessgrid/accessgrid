@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.35 2003-08-22 20:09:31 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.36 2003-09-10 20:36:54 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -120,6 +120,22 @@ def main():
         Usage()
         sys.exit(0)
 
+    if identityCert is not None or identityKey is not None:
+        # Sanity check on identity cert stuff
+        if identityCert is None or identityKey is None:
+            print "Both a certificate and key must be provided"
+            sys.exit(0)
+
+        # Init toolkit with explicit identity.
+        app = Toolkit.ServiceApplicationWithIdentity(identityCert, identityKey)
+
+    else:
+        # Init toolkit with standard environment.
+        app = Toolkit.CmdlineApplication()
+
+    app.Initialize()
+    app.InitGlobusEnvironment()
+
     # Start up the logging
     log = logging.getLogger("AG")
     log.setLevel(logging.DEBUG)
@@ -133,23 +149,6 @@ def main():
         hdlr = logging.StreamHandler()
         hdlr.setFormatter(fmt)
         log.addHandler(hdlr)
-
-    if identityCert is not None or identityKey is not None:
-        # Sanity check on identity cert stuff
-        if identityCert is None or identityKey is None:
-            log.critical("Both a certificate and key must be provided")
-            print "Both a certificate and key must be provided"
-            sys.exit(0)
-
-        # Init toolkit with explicit identity.
-        app = Toolkit.ServiceApplicationWithIdentity(identityCert, identityKey)
-
-    else:
-        # Init toolkit with standard environment.
-        app = Toolkit.CmdlineApplication()
-
-    app.Initialize()
-    app.InitGlobusEnvironment()
 
     me = app.GetDefaultIdentityDN()
     log.debug("VenueServer running as %s", me)

@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.9 2003-09-10 15:02:03 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.10 2003-09-10 20:36:54 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -95,8 +95,8 @@ class NodeSetupWizard(wxWizard):
         '''
         This class creates a wizard for node setup
         '''
-        self.__setLogger()
         self.CheckCertificate()
+        self.__setLogger()
         self.step = 1
         self.SetPageSize(wxSize(510, 310))
         self.nodeClient = NodeClient()
@@ -186,7 +186,7 @@ class NodeSetupWizard(wxWizard):
             self.app = Toolkit.WXGUIApplication()
           
         except Exception, e:
-            log.exception("NodeSetupWizard: WXGUIApplication creation failed")
+            #log.exception("NodeSetupWizard: WXGUIApplication creation failed")
             
             text = "Could not start the Node Setup Wizard. \nIs your certificate configured correctly?"
             ErrorDialog(None, text, "Node Setup Wizard failed",
@@ -198,11 +198,11 @@ class NodeSetupWizard(wxWizard):
             
         except Exception, e:
             text = "Could not start the Node Setup Wizard. \nIs your certificate configured correctly?"
-            log.exception("NodeSetupWizard: App initialization failed")
+            #log.exception("NodeSetupWizard: App initialization failed")
             ErrorDialog(None, text, "Node Setup Wizard failed", logFile = NODE_SETUP_WIZARD_LOG)
 
         if not self.app.certificateManager.HaveValidProxy():
-            log.debug("NodeSetupWizard: You don't have a valid proxy")
+            #log.debug("NodeSetupWizard: You don't have a valid proxy")
             self.app.certificateManager.CreateProxy()
             
     def ChangingPage(self, event):
@@ -869,18 +869,15 @@ class ConfigWindow(TitledPage):
             errors = errors + "The configuration could not be saved. Error occured.\n\n"
             
             
-        # Set configuration as default if checkbox is marked.
-        if self.checkBox.GetValue():
-         
-            try:
-                self.nodeClient.GetNodeService().SetDefaultConfiguration(self.name)
-            except:
-                log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not set default configuration.")
-                errors = errors + "The configuration could not be set as default. Error occured.\n\n"
+        # Set configuration as default
+        try:
+            self.nodeClient.GetNodeService().SetDefaultConfiguration(self.name)
+        except:
+            log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not set default configuration.")
+            errors = errors + "The configuration could not be set as default. Error occured.\n\n"
 
         if errors != "":
             ErrorDialog(self, errors, "Error", logFile = NODE_SETUP_WIZARD_LOG)
-            
      
         wxEndBusyCursor()
         return true
@@ -1039,4 +1036,4 @@ class NodeClient:
 if __name__ == "__main__":
     pp = wxPySimpleApp()
     n = NodeSetupWizard(None)
- 
+    n.Destroy()

@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.30 2003-08-23 00:00:42 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.31 2003-09-10 20:36:54 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -89,24 +89,14 @@ for o, a in opts:
         Usage()
         sys.exit(0)
 
-# Start up the logging
-log = logging.getLogger("AG")
-log.setLevel(logging.DEBUG)
-hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
-fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-hdlr.setFormatter(fmt)
-log.addHandler(hdlr)
-if debugMode:
-    log.addHandler(logging.StreamHandler())
-
 if pnode is not None:
 
-    log.debug("Starting personal node")
+    #log.debug("Starting personal node")
 
     personalNode = PersonalNode.PN_NodeService(Shutdown)
     serviceManagerURL =  personalNode.RunPhase1(pnode)
 
-    log.debug("Got service mgr %s", serviceManagerURL)
+    #log.debug("Got service mgr %s", serviceManagerURL)
 
 else:
     if identityCert is not None or identityKey is not None:
@@ -115,7 +105,7 @@ else:
         #
 
         if identityCert is None or identityKey is None:
-            log.critical("Both a certificate and key must be provided")
+            #log.critical("Both a certificate and key must be provided")
             print "Both a certificate and key must be provided"
             sys.exit(0)
             
@@ -133,6 +123,17 @@ else:
         app = Toolkit.CmdlineApplication()
 
     app.InitGlobusEnvironment()
+
+# Start up the logging
+log = logging.getLogger("AG")
+log.setLevel(logging.DEBUG)
+hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
+fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
+hdlr.setFormatter(fmt)
+log.addHandler(hdlr)
+if debugMode:
+    log.addHandler(logging.StreamHandler())
+
 
 # Create a Node Service
 nodeService = AGNodeService()

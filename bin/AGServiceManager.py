@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.24 2003-08-21 21:39:49 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.25 2003-09-10 20:36:54 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -87,16 +87,6 @@ for o, a in opts:
         Usage()
         sys.exit(0)
 
-# Start up the logging
-log = logging.getLogger("AG")
-log.setLevel(logging.DEBUG)
-hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
-fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-hdlr.setFormatter(fmt)
-log.addHandler(hdlr)
-if debugMode:
-    log.addHandler(logging.StreamHandler())
-
 # Create the hosting environment
 server = Server( port, auth_callback=AuthCallback )
 
@@ -106,6 +96,7 @@ serviceManager = AGServiceManager(server)
 # Create the Service Manager Service
 service = server.CreateServiceObject("ServiceManager")
 serviceManager._bind_to_service( service )
+
 
 #
 # If we are starting as a part of a personal node,
@@ -125,7 +116,7 @@ else:
         #
 
         if identityCert is None or identityKey is None:
-            log.critical("Both a certificate and key must be provided")
+            #log.critical("Both a certificate and key must be provided")
             print "Both a certificate and key must be provided"
             sys.exit(0)
             
@@ -143,7 +134,21 @@ else:
         app = Toolkit.CmdlineApplication()
 
     app.InitGlobusEnvironment()
-    
+
+# Start up the logging
+log = logging.getLogger("AG")
+log.setLevel(logging.DEBUG)
+hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
+fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
+hdlr.setFormatter(fmt)
+log.addHandler(hdlr)
+if debugMode:
+    log.addHandler(logging.StreamHandler())
+
+
+
+
+
 # Register the signal handler so we can shut down cleanly
 signal.signal(signal.SIGINT, SignalHandler)
 if sys.platform == Platform.LINUX:
