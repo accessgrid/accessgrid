@@ -45,7 +45,7 @@
 @echo Building ag-rat
 @devenv %RATDIR%\rat\rat.sln /rebuild Release
 @echo Building ag-vic
-@devenv %VICDIR%\vic\vic.sln /rebuild Release
+@devenv %VICDIR%\vic\vic.sln /rebuild "DDraw Release"
 
 @rmdir /s /q %AGDIR%\Release
 @rmdir /s /q %AGDIR%\build
