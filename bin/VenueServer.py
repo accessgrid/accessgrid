@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.28 2003-05-29 20:22:42 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.29 2003-08-12 17:22:02 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,18 +24,14 @@ from AccessGrid.Platform import GPI
 from AccessGrid import Toolkit
 
 # defaults
-port = 8000
-configFile = None
-logFile = "VenueServer.log"
-identityCert = None
-identityKey = None
 log = None
+venueServer = None
 
 # Signal Handler for clean shutdown
 def SignalHandler(signum, frame):
     """
     SignalHandler catches signals and shuts down the VenueServer (and
-    all of it's Venues. Then it stops the hostingEnvironment.
+    all of it's Venues. 
     """
     global venueServer
     print "Got Signal!!!!"
@@ -57,8 +53,15 @@ def Usage():
     print "    --key <filename>: identity certificate's private key"
 
 def main():
-    global port, configFile, logFile, identityKey, identityCert
-    global venueServer, hostingEnvironment, log
+
+    global venueServer, log
+
+    # defaults
+    port = 8000
+    configFile = None
+    logFile = "VenueServer.log"
+    identityCert = None
+    identityKey = None
 
     # Parse command line options
     try:
