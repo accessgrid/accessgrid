@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: SharedBrowser.iss,v 1.2 2003-05-28 18:01:57 leggett Exp $
+; RCS-ID: $Id: SharedBrowser.iss,v 1.3 2003-05-29 18:41:37 leggett Exp $
 ;
 
 #define SourceDir "C:\AccessGridBuild\AccessGrid\sharedapps\SharedBrowser"
@@ -8,9 +8,6 @@
 #define AppVersionLong "1.0-1"
 #define AppVersionShort "1.0-1"
 #define AppShortName "SharedBrowser"
-#define MimeType "application/x-ag-shared-browser"
-#define Description "This is the shared browser application"
-#define NameType "%s.sharedbrowser"
 
 ;
 ; This doesn't work.
@@ -56,7 +53,7 @@ MinVersion=0,5.00.2195
 
 DisableDirPage=false
 DefaultGroupName=Access Grid Toolkit
-DefaultDirName={reg:HKLM\SOFTWARE\Access Grid Toolkit\2.0,InstallPath}\applications\{#AppShortName}
+DefaultDirName={reg:HKLM\SOFTWARE\Access Grid Toolkit\2.0,ConfigPath|{commonappdata}\AccessGrid}\applications\{#AppShortName}
 UsePreviousAppDir=false
 UserInfoPage=false
 WindowVisible=false
@@ -91,7 +88,10 @@ Source: ag.ico; DestDir: {app}
 WelcomeLabel2=This will install the [name/ver] on your computer.%n%nIt is strongly recommended that you uninstall any previous version of the [name] before continuing.%n%nIt is also strongly recommended that you close all other applications you have running before continuing with this installation.%n%nThese steps will help prevent any conflicts during the installation process.
 
 [Run]
-Filename: {reg:HKLM\SOFTWARE\Access Grid Toolkit\2.0,InstallPath|{pf}\Access Grid Tookit}\MailcapSetup.py; Flags: shellexec runminimized; Parameters: "--system --mime-type ""{#MimeType}"" --executable ""{app}\{#AppShortName}.py %s"" --description ""{#Description}"" --nametemplate ""{#NameType}"""
+Filename: {reg:HKLM\SOFTWARE\Access Grid Toolkit\2.0,InstallPath|{pf}\Access Grid Tookit}\MailcapSetup.py; Flags: shellexec runminimized; Parameters: "--system --mime-type ""application/x-ag-shared-browser"" --executable ""{app}\SharedBrowser.py"" --description ""This is the shared browser"" --nametemplate ""sharedbrowser"""
+Filename: {reg:HKLM\SOFTWARE\Access Grid Toolkit\2.0,InstallPath|{pf}\Access Grid Tookit}\MailcapSetup.py; Flags: shellexec runminimized; Parameters: "--mime-type ""application/x-ag-shared-browser"" --executable ""{app}\SharedBrowser.py"" --description ""This is the shared browser"" --nametemplate ""sharedbrowser"""
 
 [UninstallRun]
-Filename: {reg:HKLM\SOFTWARE\Access Grid Toolkit\2.0,InstallPath|{pf}\Access Grid Tookit}\MailcapSetup.py; Parameters: "--system --uninstall --mime-type ""{#MimeType}"""; Flags: shellexec runminimized
+Filename: {reg:HKLM\SOFTWARE\Access Grid Toolkit\2.0,InstallPath|{pf}\Access Grid Tookit}\MailcapSetup.py; Flags: shellexec runminimized; Parameters: "--system --uninstall --mime-type ""application/x-ag-shared-browser"""
+Filename: {reg:HKLM\SOFTWARE\Access Grid Toolkit\2.0,InstallPath|{pf}\Access Grid Tookit}\MailcapSetup.py; Flags: shellexec runminimized; Parameters: "--uninstall --mime-type ""application/x-ag-shared-browser"""
+
