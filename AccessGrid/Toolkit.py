@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.69 2004-07-13 19:17:50 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.70 2004-07-17 02:23:05 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.69 2004-07-13 19:17:50 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.70 2004-07-17 02:23:05 judson Exp $"
 
 # Standard imports
 import os
@@ -132,7 +132,6 @@ class AppBase:
            Log.mlh.setTarget(fh)
        Log.mlh.close()
        Log.RemoveLoggerLevels(Log.memLevels,Log.GetLoggers())
-       #del Log.mlh  # Comment out to allow and App and Service to call Initialize in the same program.
        
        return argvResult
 
@@ -396,7 +395,6 @@ class WXGUIApplication(Application):
                 "Access Grid Virtual Venue Description",
                 [ ("GoToVenue.py", vcCmd, "Open") ] )
 
-
 class Service(AppBase):
     """
     The service object is one of the top level objects used to
@@ -475,7 +473,6 @@ class Service(AppBase):
         # Check status. Note that if a proxy is required, we
         # may not be using it. However, underlying library might
         # set it up if the environment requires it.
-        
         status = certMgr.CheckRequestedCertificate(request, token, server)
         success, certText = status
         if not success:
@@ -548,7 +545,7 @@ class Service(AppBase):
         self.globusConfig = self.certificateManager.GetGlobusConfig()
         
         self.log.info("Initialized cert mgmt.")
-        
+
         # If we have a service profile, load and parse, then configure
         # certificate manager appropriately.
         if self.profile:
@@ -567,7 +564,7 @@ class Service(AppBase):
         self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
 
         self.log.info("Initialized Globus.")
-        
+
         # 6. Do one final check, if we don't have a default
         #    Identity we bail, there's nothing useful to do.
 
