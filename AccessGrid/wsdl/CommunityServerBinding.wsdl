@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  targetNamespace="http://www.accessgrid.org/v3.0">
+
+  <import namespace="http://www.accessgrid.org/v3.0" 
+          location="CommunityServerInterface.wsdl"/>
+
+  <binding name="CommunityServer" type="agtk:CommunityServer">
+	<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<operation name="RequestAccount">
+	  <soap:operation soapAction="urn:#RequestAccount"/>
+ 	    <input>
+	      <soap:body use="literal"/>
+	    </input>
+	    <output>
+	      <soap:body use="literal"/>
+	    </output>
+
+		</operation>
+		<operation name="ApproveAccount">
+			<soap:operation soapAction="urn:#ApproveAccount"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="DenyAccount">
+			<soap:operation soapAction="urn:#DenyAccount"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="RetrieveAccountInformation">
+			<soap:operation soapAction="urn:#RetrieveAccountInformation"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="GetStatistics">
+			<soap:operation soapAction="urn:#GetStatistics"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="Publish">
+			<soap:operation soapAction="urn:#Publish"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="Subscribe">
+			<soap:operation soapAction="urn:#Subscribe"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+	</binding>
+	<service name="CommunityServer">
+		<port name="CommunityServer" binding="agtk:CommunityServer">
+   		  <soap:address location="http://localhost:6000/"/>
+		</port>
+	</service>
+</definitions>

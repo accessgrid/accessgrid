@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  targetNamespace="http://www.accessgrid.org/v3.0">
+
+    <types>
+      <schema targetNamespace="http://www.accessgrid.org/v3.0" 
+              elementFormDefault="qualified" 
+	      attributeFormDefault="unqualified" 
+              xmlns="http://www.w3.org/2001/XMLSchema">
+
+	  <include schemaLocation="AccessGrid_Types.xsd"/>
+
+      </schema>
+    </types>
+
+	<message name="RequestAccountRequest"/>
+	<message name="RequestAccountResponse"/>
+	<message name="ApproveAccountRequest"/>
+	<message name="ApproveAccountResponse"/>
+	<message name="DenyAccountRequest"/>
+	<message name="DenyAccountResponse"/>
+	<message name="RetrieveAccountInformationRequest"/>
+	<message name="RetrieveAccountInformationResponse"/>
+	<message name="GetStatisticsRequest"/>
+	<message name="GetStatisticsResponse"/>
+	<message name="PublishRequest"/>
+	<message name="PublishResponse"/>
+	<message name="SubscribeRequest"/>
+	<message name="SubscribeResponse"/>
+	<portType name="CommunityServer">
+		<operation name="RequestAccount">
+			<input message="agtk:RequestAccountRequest"/>
+			<output message="agtk:RequestAccountResponse"/>
+		</operation>
+		<operation name="ApproveAccount">
+			<input message="agtk:ApproveAccountRequest"/>
+			<output message="agtk:ApproveAccountResponse"/>
+		</operation>
+		<operation name="DenyAccount">
+			<input message="agtk:DenyAccountRequest"/>
+			<output message="agtk:DenyAccountResponse"/>
+		</operation>
+		<operation name="RetrieveAccountInformation">
+			<input message="agtk:RetrieveAccountInformationRequest"/>
+			<output message="agtk:RetrieveAccountInformationResponse"/>
+		</operation>
+		<operation name="GetStatistics">
+			<input message="agtk:GetStatisticsRequest"/>
+			<output message="agtk:GetStatisticsResponse"/>
+		</operation>
+		<operation name="Publish">
+			<input message="agtk:PublishRequest"/>
+			<output message="agtk:PublishResponse"/>
+		</operation>
+		<operation name="Subscribe">
+			<input message="agtk:SubscribeRequest"/>
+			<output message="agtk:SubscribeResponse"/>
+		</operation>
+	</portType>
+</definitions>
