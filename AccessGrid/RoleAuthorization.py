@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: RoleAuthorization.py,v 1.10 2003-09-16 07:20:18 judson Exp $ 
+# RCS_ID:      $Id: RoleAuthorization.py,v 1.11 2003-10-21 16:39:51 eolson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: RoleAuthorization.py,v 1.10 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: RoleAuthorization.py,v 1.11 2003-10-21 16:39:51 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -525,7 +525,7 @@ class AddPeopleDialog(wxDialog):
         
         self.selections.SetValue(self.selectedRole)
         for item in  self.infoDict[self.selectedRole]:
-            print '--------- insert item to addlist ', item
+            #print '--------- insert item to addlist ', item
             self.addList.InsertStringItem(0, item)
 
         self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
@@ -705,7 +705,7 @@ class AddPeopleDialog(wxDialog):
         #self.groupList.SetColumnWidth(0, self.groupList.GetSize().GetWidth()-4)
         self.groupList.SetColumnWidth(0, wxLIST_AUTOSIZE)
         #self.addList.SetColumnWidth(0, self.addList.GetSize().GetWidth()-4)
-        print '--------- auto rezize add list'
+        #print '--------- auto rezize add list'
         self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
 
 class RoleAuthorizationFrame(wxFrame):
