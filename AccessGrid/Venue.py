@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.149 2004-02-27 21:52:46 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.150 2004-03-02 19:07:52 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.149 2004-02-27 21:52:46 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.150 2004-03-02 19:07:52 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -28,8 +28,8 @@ import logging
 
 from threading import Condition, Lock
 
-from AccessGrid.hosting.SOAPInterface import SOAPInterface
-from AccessGrid.hosting import Decorate, Reconstitute, IWrapper, GetSOAPContext
+from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
+from AccessGrid.hosting import Decorate, Reconstitute, GetSOAPContext
 from AccessGrid.Security.pyGlobus.Utilities import CreateSubjectFromGSIContext
 
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
@@ -2572,9 +2572,9 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         rnl = map(lambda x: x.GetName(), rl)
         return rnl
 
-class VenueIW(IWrapper, AuthorizationIWMixIn):
+class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
     def __init__(self, url):
-        IWrapper.__init__(self, url)
+        SOAPIWrapper.__init__(self, url)
 
     def SetEncryptMedia(self, value, key):
         return self.proxy.SetEncryptMedia(value, key)
