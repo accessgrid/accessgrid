@@ -6,13 +6,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.25 2003-02-11 16:16:18 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.26 2003-02-13 18:14:46 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
 
+from AccessGrid.Platform import GPI 
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.Descriptions import VenueDescription
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
@@ -58,6 +59,7 @@ class VenueManagementClient(wxApp):
         except GSITCPSocketException:
             GPI()
 ##            ErrorDialog(self.frame, sys.exc_info()[1][0])
+            self.client = Client.Handle(URL).get_proxy()
             venueList = self.client.GetVenues()
         except:
             print "Can't connect to server!", formatExceptionInfo()
@@ -346,6 +348,17 @@ class VenueListPanel(wxPanel):
 	EVT_BUTTON(self, 20, self.OpenModifyVenueDialog)  
 	EVT_BUTTON(self, 30, self.DeleteVenue)
         EVT_LISTBOX(self, 50, self.EvtListBox)
+        EVT_LISTBOX_DCLICK(self, 50, self.OnDoubleClick)
+        EVT_KEY_UP(self.venuesList, self.OnKey)
+
+    def OnKey(self, event):
+        key = event.GetKeyCode()
+        if key == WXK_DELETE:
+            self.DeleteVenue()
+    
+    def OnDoubleClick(self, event):
+        modifyVenueDialog = ModifyVenueFrame(self, -1, "", \
+                                                 self.venuesList, self.application)
 
     def EvtListBox(self, event):
         list = event.GetEventObject()
@@ -365,7 +378,7 @@ class VenueListPanel(wxPanel):
                                                  self.venuesList, self.application)
             #	modifyVenueDialog.InsertData(self.venuesList)
 	
-    def DeleteVenue(self, event):
+    def DeleteVenue(self, event = None):
         if (self.venuesList.GetSelection() != -1):
             index = self.venuesList.GetSelection()
             venueToDelete = self.venuesList.GetClientData(index)
@@ -479,7 +492,7 @@ class AdministratorsListPanel(wxPanel):
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D)
         self.application = application
 	self.administratorsListBox = wxStaticBox(self, -1, "Administrators", name = 'venueListBox')
-	self.administratorsList = wxListBox(self, -1, name = 'venueList')
+	self.administratorsList = wxListBox(self, 90, name = 'venueList')
 	self.addButton = wxButton(self, 60, 'Add', \
 				  size = wxSize(50, 20), name = 'addButton')
 	self.deleteButton = wxButton(self, 61, 'Delete',\
@@ -493,8 +506,19 @@ class AdministratorsListPanel(wxPanel):
         EVT_BUTTON(self, 60, self.OpenAddAdministratorDialog)
         EVT_BUTTON(self, 61, self.DeleteAdministrator)
         EVT_BUTTON(self, 62, self.OpenModifyAdministratorDialog)
+        EVT_LISTBOX_DCLICK(self, 90, self.OnDoubleClick)
+        EVT_KEY_UP(self.administratorsList, self.OnKey)
 
-    def DeleteAdministrator(self, event):
+    def OnKey(self, event):
+        key = event.GetKeyCode()
+        if key == WXK_DELETE:
+            self.DeleteAdministrator()
+    
+    def OnDoubleClick(self, event):
+        self.OpenModifyAdministratorDialog()
+
+
+    def DeleteAdministrator(self, event = None):
         index = self.administratorsList.GetSelection()
         if (index != -1):
             adminToDelete = self.administratorsList.GetClientData(index)
@@ -510,13 +534,13 @@ class AdministratorsListPanel(wxPanel):
                     self.administratorsList.SetSelection(0)
                 
     def OpenAddAdministratorDialog(self, title): 
-        addAdministratorDialog = AddAdministratorFrame(self, -1, "")
+        addAdministratorDialog = AddAdministratorFrame(self, -1, "Add Venue Server Administrator")
 
-    def OpenModifyAdministratorDialog(self, title):
+    def OpenModifyAdministratorDialog(self, event = None):
         index =  self.administratorsList.GetSelection()
         name = self.administratorsList.GetString(index)
-        self.administratorsList.Delete(index)
-        modifyAdministratorDialog = ModifyAdministratorFrame(self, -1, "", name)
+        modifyAdministratorDialog = ModifyAdministratorFrame(self, -1, "Modify Venue Server Administrator", name)
+        #self.administratorsList.Delete(index)
                
     def InsertAdministrator(self, data):
         try:
@@ -530,6 +554,8 @@ class AdministratorsListPanel(wxPanel):
 
     def ModifyAdministrator(self, oldName, newName):
         try:
+            index =  self.administratorsList.GetSelection()
+            self.administratorsList.Delete(index)
             self.application.ModifyAdministrator(oldName, newName)
 
         except:
@@ -941,6 +967,7 @@ class ModifyVenueFrame(VenueParamFrame):
     def __setCurrentVenueInfo(self):
         item = self.list.GetSelection()
         data = self.list.GetClientData(item)
+              
         self.title.AppendText(data.name)
         self.description.AppendText(data.description)
         exitsList = Client.Handle(data.uri).get_proxy().GetConnections()
@@ -951,6 +978,7 @@ class AdministratorParamFrame(wxDialog):
     def __init__(self, *args):
         wxDialog.__init__(self, *args)
 	self.SetSize(wxSize(400, 40))
+        self.text = wxStaticText(self, -1, "Please, fill in the distinguished name \nfor the administator you want to add.")
         self.informationBox = wxStaticBox(self, -1, "Information")
         self.nameLabel =  wxStaticText(self, -1, "DN Name:")
 	self.name =  wxTextCtrl(self, -1, "",  size = wxSize(200, 20))
@@ -962,8 +990,9 @@ class AdministratorParamFrame(wxDialog):
         topSizer = wxBoxSizer(wxVERTICAL)
         boxSizer = wxStaticBoxSizer(self.informationBox, wxVERTICAL)
 
+        boxSizer.Add(self.text, 0, wxALL, 10)
         paramFrameSizer = wxFlexGridSizer(10, 2, 10, 10)
-       	paramFrameSizer.Add(self.nameLabel, 0, wxALIGN_RIGHT)
+        paramFrameSizer.Add(self.nameLabel, 0, wxALIGN_RIGHT)
 	paramFrameSizer.Add(self.name, 0, wxEXPAND)
         paramFrameSizer.AddGrowableCol(2) 	
         boxSizer.Add(paramFrameSizer, 1,  wxEXPAND|wxALL, 10)
@@ -995,11 +1024,12 @@ class AddAdministratorFrame(AdministratorParamFrame):
 class ModifyAdministratorFrame(AdministratorParamFrame):
     def __init__(self, parent, id, title, oldName):
         AdministratorParamFrame.__init__(self, parent, id, title)
+        self.text.SetLabel("Please, fill in a new distinguished\nname for the administator")
         self.parent = parent
         self.name.Clear()
         self.name.AppendText(oldName)
         if (self.ShowModal() == wxID_OK ):
-            self.parent.ModifyAdministrator(oldName, self.name.GetValue())      
+            self.parent.ModifyAdministrator(oldName, self.name.GetValue())
         self.Destroy();
 
 class RemoteServerUrlDialog(wxDialog):
