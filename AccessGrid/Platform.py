@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.42 2003-08-22 19:17:17 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.43 2003-08-22 20:10:13 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -30,7 +30,7 @@ AGTK_INSTALL = 'AGTK_INSTALL'
 
 # Windows Defaults
 WIN = 'win32'
-WinGPI = "wgpi.exe"
+
 # This gets updated with a call to get the version
 # AGTkRegBaseKey = "SOFTWARE\\Access Grid Toolkit\\%s" % Version.AsString()
 AGTkRegBaseKey = "SOFTWARE\\Access Grid Toolkit\\2.1.1"
@@ -43,7 +43,6 @@ def isWindows():
 
 # Linux Defaults
 LINUX = 'linux2'
-LinuxGPI = "grid-proxy-init"
 AGTkBasePath = "/etc/AccessGrid"
 
 def isLinux():
@@ -54,7 +53,6 @@ def isLinux():
 
 # Mac OS X Defaults
 OSX='darwin'
-DarwinGPI="grid-proxy-init"
 AGTkBasePath="/etc/AccessGrid"
         
 def isOSX():
@@ -63,41 +61,6 @@ def isOSX():
     else:
 	return 0
 
-
-def GPICmdline():
-    """
-    Run grid-proxy-init to get a new proxy.
-    """
-    
-    GlobusBin = os.path.join(os.environ['GLOBUS_LOCATION'], 'bin')
-
-    gpiPath = os.path.join(GlobusBin, LinuxGPI)
-
-    if os.access(gpiPath, os.X_OK):
-        log.debug("Found grid-proxy-init at %s, not executing", gpiPath)
-
-def GPIWin32():
-    """
-    Run wgpi.exe to get a new proxy.
-    """
-    
-    GlobusBin = os.path.join(os.environ['GLOBUS_LOCATION'], 'bin')
-    
-    gpiPath = os.path.join(GlobusBin, WinGPI)
-
-    if os.access(gpiPath, os.X_OK):
-        log.debug("Excecuting gpi at %s", gpiPath)
-        os.spawnv(os.P_WAIT, gpiPath, [])
-
-#
-# Determine which grid-proxy-init we should use.
-#
-
-if isWindows():
-    GPI = GPIWin32
-else:
-    GPI = GPICmdline
-    
 try:
     import _winreg
     import win32api
@@ -484,7 +447,7 @@ def Win32GetMimeCommands(mimeType = None, ext = None):
             extension, type = _winreg.QueryValueEx(key, "Extension")
             _winreg.CloseKey(key)
         except WindowsError:
-            log.exception("Couldn't open registry for mime types: %s",
+            log.warn("Couldn't open registry for mime types: %s",
                           mimeType)
             return cdict
 
@@ -496,7 +459,7 @@ def Win32GetMimeCommands(mimeType = None, ext = None):
             filetype, type = _winreg.QueryValueEx(key, "")
             _winreg.CloseKey(key)
         except WindowsError:
-            log.exception("Couldn't open registry for file extension: %s.",
+            log.warn("Couldn't open registry for file extension: %s.",
                           extension)
             return cdict
 
@@ -516,7 +479,7 @@ def Win32GetMimeCommands(mimeType = None, ext = None):
                     command, type = _winreg.QueryValueEx(ckey,"")
                     _winreg.CloseKey(ckey)
                 except:
-                    log.exception("Couldn't get command for name: <%s>",
+                    log.warn("Couldn't get command for name: <%s>",
                                   commandName)
                 commandName = commandName.capitalize()
                 cdict[commandName] = command
@@ -524,7 +487,7 @@ def Win32GetMimeCommands(mimeType = None, ext = None):
             _winreg.CloseKey(key)
             
         except EnvironmentError:
-            log.exception("Couldn't retrieve list of commands: (mimeType: %s) (fileType: %s)", mimeType, filetype)
+            log.warn("Couldn't retrieve list of commands: (mimeType: %s) (fileType: %s)", mimeType, filetype)
             return cdict
 
     return cdict
@@ -539,7 +502,7 @@ def Win32GetMimeType(extension = None):
             mimeType, type = _winreg.QueryValueEx(key, "Content Type")
             _winreg.CloseKey(key)
         except WindowsError:
-            log.exception("Couldn't open registry for file extension: %s.",
+            log.warn("Couldn't open registry for file extension: %s.",
                           extension)
             return mimeType
         
