@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.40 2004-07-30 19:08:36 lefvert Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.41 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.40 2004-07-30 19:08:36 lefvert Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.41 2004-09-09 22:12:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -321,8 +321,8 @@ class ClientProfileCache:
         # Hash is almost always unique.  If there ever is 
         #   a filename collision, it's not the end of the 
         #   world, only the most recent profile gets cached.
-        hash = md5.new(profile.GetDistinguishedName())
-        short_filename = hash.hexdigest()
+        hsh = md5.new(profile.GetDistinguishedName())
+        short_filename = hsh.hexdigest()
         filename = os.path.join(self.cachePath, short_filename)
 
         # If profile in cache, load it and see if it's different
@@ -338,8 +338,8 @@ class ClientProfileCache:
             profile.Save(filename, saveDnDetails=1)
 
     def loadProfileFromDN(self, distinguished_name):
-        hash = md5.new(distinguished_name)
-        short_filename = hash.hexdigest()
+        hsh = md5.new(distinguished_name)
+        short_filename = hsh.hexdigest()
         filename = os.path.join(self.cachePath, short_filename)
         profile = ClientProfile()
         profile.Load(filename, loadDnDetails=1)
@@ -348,8 +348,8 @@ class ClientProfileCache:
     def loadAllProfiles(self):
         profiles = []
         files = os.listdir(self.cachePath)
-        for file in files:
-            long_filename = os.path.join(self.cachePath, file)
+        for f in files:
+            long_filename = os.path.join(self.cachePath, f)
             profile = ClientProfile()
             profile.Load(long_filename, loadDnDetails=1)
             if profile:

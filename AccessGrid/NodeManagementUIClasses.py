@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.72 2004-09-08 21:10:52 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.73 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.72 2004-09-08 21:10:52 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.73 2004-09-09 22:12:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -283,6 +283,7 @@ class ServiceConfigurationPanel( wxPanel ):
     def __init__( self, parent, ID, pos=wxDefaultPosition, size=(400,400), style=0 ):
         wxPanel.__init__( self, parent, ID, pos, size, style )
         self.panel = self
+        self.parent = parent
         self.callback = None
         self.CentreOnParent()
         
@@ -291,10 +292,6 @@ class ServiceConfigurationPanel( wxPanel ):
 
     def SetResource(self,resourceIn):
         self.resource = resourceIn
-        if not resourceIn or resourceIn == "None":
-            resource = "None"
-        else:
-            resource = resourceIn
             
             
     def GetResource(self):
@@ -1181,7 +1178,7 @@ if __name__ == "__main__":
     resource.resource = "resource"
     config = []
 
-    dlg = ServiceConfigurationDialog(None, -1, "Service Config Dialog", config)
+    dlg = ServiceConfigurationDialog(None, -1, "Service Config Dialog", resource,config)
     ret = dlg.ShowModal()
     dlg.Destroy()
    

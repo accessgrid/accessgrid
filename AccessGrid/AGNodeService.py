@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.82 2004-09-08 20:56:42 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.83 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.82 2004-09-08 20:56:42 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.83 2004-09-09 22:12:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -207,7 +207,7 @@ class AGNodeService:
             raise Exception("Error adding service: " + e.string )
         except Exception, e:
             log.exception("Error adding service")
-            raise Exception("Error adding service %s", serviceDesc.name )
+            raise Exception("Error adding service %s" % serviceDesc.name )
         
         # Set the identity for the service
         if self.profile:
@@ -223,7 +223,7 @@ class AGNodeService:
         except SetStreamException:
             log.exception("Unable to update service %s",
                           serviceDescription.name)
-            raise Exception("Unable to update service %s",
+            raise Exception("Unable to update service %s" %
                             serviceDescription.name)
 
         return serviceDescription
@@ -523,11 +523,6 @@ class AGNodeService:
 
         configFile = os.path.join(self.configDir, configName)
 
-        # read file
-        f = file(configFile,'r')
-        lines = f.readlines()
-        f.close()
-        
         # do migration
         wasMigrated = 0
         

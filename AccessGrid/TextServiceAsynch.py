@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.31 2004-07-16 14:02:58 judson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.32 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.31 2004-07-16 14:02:58 judson Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.32 2004-09-09 22:12:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -654,7 +654,6 @@ class TextService:
         from all-channels.
         """
 
-        connId = connObj.GetId()
         self.CloseConnection(connObj)
 
     def HandleEventForDisconnectedChannel(self, event, connObj):

@@ -18,7 +18,7 @@ class NetworkServicesManager:
         
         self.__services = dict()
         self.__matcher = NetworkServiceMatcher()
-        self.log = Log.GetLogger(Log.VenueServer)
+        self.log = Log.GetLogger('NetworkServicesManager')
         
     def RegisterService(self, networkServiceDescription):
         '''
@@ -149,7 +149,7 @@ class NetworkServiceMatcher:
     '''
     
     def __init__(self):
-        pass
+        self.log = Log.GetLogger('NetworkServiceMatcher')
 
     def __MatchInCapabilities(self, stream, services):
         '''
@@ -254,7 +254,6 @@ class NetworkServiceMatcher:
         streamServiceList = []
 
         for stream in streams:
-            serviceToUse = None
 
             # Find network services that have matching in capabilities.
             matchingServices = self.__MatchInCapabilities(stream, services)
@@ -276,7 +275,11 @@ class NetworkServiceMatcher:
         return streamServiceList
 
 if __name__ == "__main__":
+
+    from AccessGrid.Descriptions import AGNetworkServiceDescription
+    
+
     nsm = NetworkServicesManager()
 
-    ns = NetworkServiceDescription("TestNS", "Audio Transcoder", 'https://ns', 'https://vs',
-                                   NetworkServiceCapability(), NetworkServiceCapability(), '1.0')
+    ns = AGNetworkServiceDescription("TestNS", "Audio Transcoder", 'https://ns', 'https://vs',
+                                   ServiceCapability(), ServiceCapability(), '1.0')

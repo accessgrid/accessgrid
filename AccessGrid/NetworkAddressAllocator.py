@@ -2,18 +2,16 @@
 # Name:        NetworkAddressAllocator.py
 # Purpose:     This class manages multicast address allocation.
 # Created:     2002/12/12
-# RCS-ID:      $Id: NetworkAddressAllocator.py,v 1.5 2004-09-07 13:49:35 judson Exp $
+# RCS-ID:      $Id: NetworkAddressAllocator.py,v 1.6 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetworkAddressAllocator.py,v 1.5 2004-09-07 13:49:35 judson Exp $"
+__revision__ = "$Id: NetworkAddressAllocator.py,v 1.6 2004-09-09 22:12:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
-import sys
 import socket
-import struct
 from random import Random
 
 class NoFreePortsError(Exception):

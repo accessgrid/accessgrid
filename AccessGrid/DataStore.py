@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.72 2004-08-04 18:21:21 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.73 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.72 2004-08-04 18:21:21 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.73 2004-09-09 22:12:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -30,7 +30,6 @@ import md5
 import ConfigParser
 import cStringIO
 import Queue
-from time import localtime , strftime
 import BaseHTTPServer
 
 from pyGlobus.io import GSITCPSocketException
@@ -175,8 +174,6 @@ class DataDescriptionContainer:
         **Raises:**
             *DataNotFound* Raised when the data is not found.
         """
-        name = dataDescription.name
-
         if self.data.has_key(dataDescription.id):
             del self.data[ dataDescription.id ]
             
@@ -445,7 +442,7 @@ class DataStore:
                         
             if not os.path.exists(oldPath):
                 errorFlag = 1
-                log.error("DataStore.ModifyData: The path does not exist %s"%path)
+                log.error("DataStore.ModifyData: The path does not exist %s"%oldPath)
            
             try:
                 os.rename(oldPath, newPath)
@@ -465,7 +462,7 @@ class DataStore:
         '''
         Get current time to use in descriptions.
         '''
-        return strftime("%a, %b %d, %Y, %H:%M:%S", localtime() )
+        return time.strftime("%a, %b %d, %Y, %H:%M:%S", time.localtime() )
         
     def UploadLocalFiles(self, fileList, dn, id):
         '''
@@ -474,8 +471,8 @@ class DataStore:
         for filename in fileList:
             try:
                 # Transfer file from local path to local data store path
-                input = open(filename, 'rb')
-                fileString = input.read()
+                infile = open(filename, 'rb')
+                fileString = infile.read()
                 
                 path, name = os.path.split(filename)
 
@@ -492,7 +489,7 @@ class DataStore:
                     log.debug("DataStore::AddFile: Personal datastorage is located at %s"%dataStorePath)
                     output = open(dataStorePath, 'wb')
                     output.write(fileString)
-                    input.close()
+                    infile.close()
                     output.close()
                     
                     # Create DataDescription
@@ -681,7 +678,7 @@ class DataStore:
         log.debug("Checking file %s for validity", desc.name)
         
         if url is None:
-            log.warn("File %s has vanished", name)
+            log.warn("File %s has vanished", desc.name)
             self.cbLock.acquire()
             self.dataDescContainer.RemoveData(desc)
             self.cbLock.release()
@@ -919,7 +916,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             bytesFree = SystemConfig.instance().GetFileSystemFreeSpace(upload_dir)
             # bytesFree = 10
             if bytesFree is None:
-                log.debug("HTTPTransferHandler::ProcessFileUpload: Cannot determine free space for %s", upload_Dir)
+                log.debug("HTTPTransferHandler::ProcessFileUpload: Cannot determine free space for %s", upload_dir)
             else:
                 if size > (0.95 * bytesFree):
                     log.info("HTTPTransferHandler::ProcessFileUpload: Upload failing: not enough disk space. Free=%d needed=%d",
@@ -968,10 +965,10 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             left = int(size)
             bufsize = 4096
             while left > 0:
-                if left < 4096:
+                if left < bufsize:
                     n = left
                 else:
-                    n = 4096
+                    n = bufsize
 
                 buf = self.rfile.read(n)
 
@@ -1150,8 +1147,8 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if upload_okay:
             transfer_key = self.server.RegisterManifest(manifest)
 
-            for file in file_list:
-                transfer_handler.AddPendingUpload(identityToken, file)
+            for f in file_list:
+                transfer_handler.AddPendingUpload(identityToken, f)
 
             output += "return_code: 0\n"
             output += "transfer_key: %s\n" % (transfer_key)
@@ -1434,7 +1431,7 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer, TransferServer):
         except KeyError:
              dn = None
 
-        wxLogDebug("GetIdentityToken returns dn = %s" %dn)
+        log.debug("GetIdentityToken returns dn = %s", dn)
 
         return HTTPIdentityToken(dn)
         
@@ -1951,7 +1948,6 @@ class HTTPUploadEngine:
         log.debug("sending file")
 
         try:
-            left = 0
             while size - n_sent > 0:
                 buf = fp.read(4096)
                 if buf == "":
@@ -2125,8 +2121,6 @@ if __name__ == "__main__":
     hdlr = Log.StreamHandler()
     hdlr.setLevel(Log.GetHighestLevel())
     Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
-
-    from AccessGrid.Events import Event
     
     #
     # Test DataDescriptionContainer

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.24 2004-09-07 20:15:01 turam Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.25 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ used by client software that wants to keep track of what AG specific
 tools are appropriate for specific data types. It also keeps track of
 how to invoke those tools.
 """
-__revision__ = "$Id: AppDb.py,v 1.24 2004-09-07 20:15:01 turam Exp $"
+__revision__ = "$Id: AppDb.py,v 1.25 2004-09-09 22:12:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -25,7 +25,6 @@ import stat
 
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.Utilities import LoadConfig, SaveConfig
-from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.Descriptions import ApplicationDescription
 from AccessGrid.GUID import GUID
 from AccessGrid import Log
@@ -170,6 +169,7 @@ class AppDb:
             if section == "priv_names":
                 if option == pName:
                     return self.AppDb[key]
+        return None
 
     def _GetPrivVerb(self, verb, mimeType):
         """
@@ -195,6 +195,7 @@ class AppDb:
             if section == "priv_cmds":
                 if option == pVerb:
                     return self.AppDb[key]
+        return None
 
     def GetMimeType(self, name = None, extension = None):
         """
@@ -526,7 +527,9 @@ class AppDb:
         for key in self.AppDb.keys():
             (section, option) = key.split(self.defaultSeparator)
             if section == 'name':
-                apps.append(self._GetNiceName(option))
+                name = self._GetNiceName(option)
+                if name:
+                    apps.append(name)
 
         return apps
 
@@ -564,13 +567,14 @@ class AppDb:
                 continue
             if section == 'name':
                 name = self._GetNiceName(option)
-                mimetype = self.AppDb[key]
-                startableStr = self.defaultSeparator.join(["startable", mimetype])
-                if startableStr in self.AppDb.keys():
-                    startable = self.AppDb[startableStr]
-                else:
-                    startable = 1
-                apps.append(ApplicationDescription(None, name, None, None, mimetype, startable))
+                if name:
+                    mimetype = self.AppDb[key]
+                    startableStr = self.defaultSeparator.join(["startable", mimetype])
+                    if startableStr in self.AppDb.keys():
+                        startable = self.AppDb[startableStr]
+                    else:
+                        startable = 1
+                    apps.append(ApplicationDescription(None, name, None, None, mimetype, startable))
 
         return apps
 

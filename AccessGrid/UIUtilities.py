@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.63 2004-08-12 20:53:58 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.64 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.63 2004-08-12 20:53:58 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.64 2004-09-09 22:12:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -27,8 +27,6 @@ try:
 except:
     pass
 
-from wxPython.wx import wxFileTypeInfo
-from wxPython.lib.throbber import Throbber
 from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
 
@@ -504,7 +502,6 @@ class SecureTextCtrl(wxTextCtrl):
         self.SetInsertionPoint(pos + 1)
     
     def OnKeyDown(self, event):
-        t = event.GetEventObject()
         k = event.GetKeyCode()
 
         #
@@ -532,9 +529,7 @@ class SecureTextCtrl(wxTextCtrl):
             event.Skip()
 
     def OnChar(self, event):
-        t = event.GetEventObject()
         k = event.GetKeyCode()
-        kr = event.GetRawKeyCode()
 
         if k == WXK_BACK:
             sel = self.GetSelection()
@@ -964,8 +959,6 @@ class RenameDialog(wxDialog):
     def DoesNameExist(self, name):
         return self.parent.DoesNameExist(name)
         
-    def GetValue(self):
-        return self.address.GetValue()
         
         
 class MyUrlsEditValidator(wxPyValidator):

@@ -70,9 +70,6 @@ DEBUG=logging.DEBUG           # Added below
 # HIGHDETAIL=logging.HIGHDETAIL # Added below
 NOTSET=logging.NOTSET
                                                                                 
-def GetHighestLevel():
-    return HIGHEST_LEVEL
-
 
 # ---- Predefined categories ----
 AGService = "AGService"

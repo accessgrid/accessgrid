@@ -6,6 +6,7 @@ from AccessGrid.Platform import IsWindows, Config
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Toolkit import WXGUIApplication
 from AccessGrid.SharedAppClient import SharedAppClient
+from AccessGrid.Platform.Config import UserConfig
 
 import os
 import getopt

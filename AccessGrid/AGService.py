@@ -2,19 +2,18 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.38 2004-09-09 05:20:40 judson Exp $
+# RCS-ID:      $Id: AGService.py,v 1.39 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.38 2004-09-09 05:20:40 judson Exp $"
+__revision__ = "$Id: AGService.py,v 1.39 2004-09-09 22:12:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
 import sys
-import Platform
 
 from AccessGrid import Log
 
@@ -346,8 +345,6 @@ def SignalHandler(signum, frame, service):
 def RunService(service,serviceInterface,port):
     import signal, time
     from AccessGrid.hosting import SecureServer as Server
-    from AccessGrid.Platform.Config import SystemConfig
-    
     
     serviceName = service.GetName()
     

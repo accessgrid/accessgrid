@@ -8,6 +8,8 @@ from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.hosting import Client
 from AccessGrid.SharedApplication import SharedApplicationIW
 
+import SOAPpy
+
 class SharedAppClient:
     '''
     The SharedAppClient may be used when building shared applications.
@@ -301,7 +303,7 @@ class SharedAppClient:
 
         try:
             state = self.__appProxy.GetState(self.__privateId)
-        except Client.MethodNotFound, e:
+        except Client.MethodNotFound:
             self.log.exception("SharedAppClient.GetApplicationState: Failed to get application state")
             raise Exception, "The server you are connecting to is running old software. This method is not implemented in that version." 
         except:
@@ -350,7 +352,7 @@ class SharedAppClient:
 
         try:
             participants = self.__appProxy.GetParticipants(self.__privateId)
-        except Client.MethodNotFound, e:
+        except Client.MethodNotFound:
             self.log.exception("SharedAppClient.GetParticipants: Failed to get participants")
             raise Exception, "The server you are connecting to is running old software. This method is not implemented in that version." 
                            
@@ -372,7 +374,7 @@ class SharedAppClient:
         try:
             components = self.__appProxy.GetComponents(self.__privateId)
           
-        except Client.MethodNotFound, e:
+        except Client.MethodNotFound:
             self.log.exception("SharedAppClient.GetComponents: Failed to get components")
             raise Exception, "The server you are connecting to is running old software. This method is not implemented in that version." 
                            
@@ -393,7 +395,7 @@ class SharedAppClient:
 
         try:
             keys = self.__appProxy.GetDataKeys(self.__privateId)
-        except Client.MethodNotFound, e:
+        except Client.MethodNotFound:
             self.log.exception("SharedAppClient.GetDataKeys: Failed to get data keys")
             raise Exception, "The server you are connecting to is running old software. This method is not implemented in that version." 
 
@@ -438,7 +440,7 @@ class SharedAppClient:
 
         try:
             self.__appProxy.SetParticipantProfile(self.__privateId, profile)
-        except Client.MethodNotFound, e:
+        except Client.MethodNotFound:
             self.log.exception("SharedAppClient.SetParticipantProfile: Failed to set participant profile")
             raise Exception, "The server you are connecting to is running old software. This method is not implemented in that version." 
         except:

@@ -3,7 +3,7 @@
 # Purpose:     
 #
 # Created:     2004/03/30
-# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.12 2004-07-28 22:43:35 turam Exp $
+# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.13 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ class AGServicePackageRepository:
     packages and avails them to clients (service managers) via http(s)
     """
 
-    def __init__( self, servicesDir, port=0, prefix=None):
+    def __init__( self, servicesDir):
         self.servicesDir = servicesDir
 
     def GetServicesDir(self):
@@ -59,19 +59,19 @@ class AGServicePackageRepository:
             return []
 
         files = os.listdir(self.servicesDir)
-        for file in files:
-            if file.endswith('.zip'):
+        for f in files:
+            if f.endswith('.zip'):
                 try:
-                    servicePkg = AGServicePackage(os.path.join(self.servicesDir,file))
+                    servicePkg = AGServicePackage(os.path.join(self.servicesDir,f))
                     
                     # Set the service package url in the service description
                     sd = servicePkg.GetServiceDescription()
-                    sd.servicePackageFile = file
+                    sd.servicePackageFile = f
                     servicePkg.SetServiceDescription(sd)
                     
                     servicePackages.append(servicePkg)
                 except:
-                    log.exception("Invalid service package: %s", file)
+                    log.exception("Invalid service package: %s", f)
                     invalidServicePackages += 1
                     
         if invalidServicePackages:

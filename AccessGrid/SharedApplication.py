@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.19 2004-09-09 22:01:30 lefvert Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.20 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.19 2004-09-09 22:01:30 lefvert Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.20 2004-09-09 22:12:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -30,7 +30,6 @@ from AccessGrid.Toolkit import Application, Service
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
-from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 from AccessGrid.Security import X509Subject, Role
 
@@ -204,9 +203,6 @@ class SharedApplication(AuthorizationMixIn):
     def SetVenueURL(self, url):
         self.venueURL = url
 
-    def GetVenueURL(self):
-        return self.venueURL
-    
     def GetEventServiceLocation(self):
         return self.eventService.GetLocation()
         
@@ -464,7 +460,7 @@ def CreateApplication(name, description, mimeType, eventService, id=None ):
     """
     Factory method for creating application objects
     """
-    return SharedApplicationImpl(name, description, mimeType, eventService, id)
+    return SharedApplication(name, description, mimeType, eventService, id)
 
 class SharedApplicationI(SOAPInterface, AuthorizationIMixIn):
     """

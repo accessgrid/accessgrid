@@ -46,6 +46,9 @@ class AGNetworkService:
         self.app.AddCmdLineOption(Option("-s", "--venueServerUrl",
                                          dest="venueServerUrl",
                                          help="Register with all venues at server located at this url."))
+                                         
+        self.inCapabilities = []
+        self.outCapabilities = []
                     
     def Start(self, service):
         '''
@@ -112,7 +115,7 @@ class AGNetworkService:
         while flag:
             try:
                 time.sleep(0.5)
-            except IOError, e:
+            except IOError:
                 flag = 0
                 self.log.debug("AGNetworkService.StartSignalLoop: Signal loop interrupted, exiting.")
 

@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.44 2004-09-08 23:20:30 eolson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.45 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.44 2004-09-08 23:20:30 eolson Exp $"
+__revision__ = "$Id: EventClient.py,v 1.45 2004-09-09 22:12:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -20,7 +20,6 @@ from threading import Thread, Lock
 import Queue
 import pickle
 import struct
-import types
 
 from AccessGrid import Log
 from pyGlobus.io import GSITCPSocket, TCPIOAttr, AuthData, IOBaseException
@@ -354,7 +353,7 @@ class EventClient:
         self.start()
         
 if __name__ == "__main__":
-    import sys, os, time
+    import os, time
     from AccessGrid import Toolkit
     from AccessGrid import ClientProfile
     from AccessGrid.GUID import GUID

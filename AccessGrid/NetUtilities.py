@@ -5,18 +5,16 @@
 # Author:      Robert Olson
 #
 # Created:     9/11/2003
-# RCS-ID:      $Id: NetUtilities.py,v 1.7 2004-03-12 05:23:11 judson Exp $
+# RCS-ID:      $Id: NetUtilities.py,v 1.8 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetUtilities.py,v 1.7 2004-03-12 05:23:11 judson Exp $"
+__revision__ = "$Id: NetUtilities.py,v 1.8 2004-09-09 22:12:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
-import sys
 import struct
-import time
 import select
 import socket
 

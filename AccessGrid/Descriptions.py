@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.64 2004-08-18 20:17:09 lefvert Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.65 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.64 2004-08-18 20:17:09 lefvert Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.65 2004-09-09 22:12:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -526,8 +526,6 @@ def CreateClientProfile( clientProfileStruct ):
     (this function should be removed when we have 
     WSDL support)
     """
-    from AccessGrid.Types import Capability
-
     clientProfile = ClientProfile()
 
     clientProfile.distinguishedName = clientProfileStruct.distinguishedName

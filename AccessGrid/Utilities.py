@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.77 2004-08-30 18:37:46 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.78 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.77 2004-08-30 18:37:46 turam Exp $"
+__revision__ = "$Id: Utilities.py,v 1.78 2004-09-09 22:12:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -22,9 +22,7 @@ import traceback
 import ConfigParser
 import time
 from random import Random
-import sha
 import urllib
-import urlparse
 from threading import Lock, Condition
 import re
 
@@ -95,7 +93,7 @@ def SaveConfig(fileName, config, separator="."):
 
     try:
         outFile = file(fileName, 'w+')
-    except IOError, e:
+    except IOError:
         print "Couldn't open file for writing, database mods lost."
         return
     
@@ -518,11 +516,11 @@ def IsExecFileAvailable(file, path=None):
         #print "Checking full path:", fullpath
         if os.access(fullpath, os.X_OK):
             return 1
+    return 0
 
 # split_quoted ()
 
 if __name__ == "__main__":
-    SubmitBug("This is just a test for the Bug Reporting Tool", profile=None,
-              email="", userConfig=Config.UserConfig.instance(),
-              logFile=NO_LOG)
+    SubmitBug("This is just a test for the Bug Reporting Tool", None,
+              "",logFile=NO_LOG)
 

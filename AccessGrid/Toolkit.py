@@ -2,18 +2,17 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.82 2004-09-07 19:51:45 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.83 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.82 2004-09-07 19:51:45 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.83 2004-09-09 22:12:12 turam Exp $"
 
 # Standard imports
 import os
 import sys
-import getopt
 import md5
 from optparse import OptionParser, Option
 import time
@@ -45,6 +44,8 @@ class AppBase:
        The interface for getting the one true instance of this object.
        """
        raise Exception, "This should never be called directly."
+       
+    instance = staticmethod(instance)
 
     # The real constructor
     def __init__(self):
@@ -82,6 +83,8 @@ class AppBase:
        self.systemConfig = SystemConfig.instance()
        self.log = None
        
+       self.certificateManager = None
+       
        # This initializes logging
        self.log = Log.GetLogger(Log.Toolkit)
        self.log.debug("Initializing AG Toolkit version %s", GetVersion())
@@ -101,14 +104,14 @@ class AppBase:
        # 2. Load the Toolkit wide configuration.
        try:
            self.agtkConfig = AGTkConfig.instance(0)
-       except Exception, e:
+       except Exception:
            self.log.exception("Toolkit Initialization failed.")
            sys.exit(-1)
 
        # 3. Load the user configuration, creating one if necessary.
        try:
            self.userConfig = UserConfig.instance(initIfNeeded=1)
-       except Exception, e:
+       except Exception:
            self.log.exception("User Initialization failed.")
            sys.exit(-1)
        

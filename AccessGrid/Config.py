@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.25 2004-09-09 13:16:46 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.26 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.25 2004-09-09 13:16:46 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.26 2004-09-09 22:12:12 turam Exp $"
 
 import os
 import sys
@@ -123,7 +123,10 @@ class GlobusConfig:
 
         @type initEnvIfNeeded: integer
         """
-        pass
+        self.distCACertDir = None
+        self.distCertFileName = None
+        self.distKeyFileName = None
+        self.proxyFileName = None
 
     def __str__(self):
         return self._repr_()
@@ -135,6 +138,12 @@ class GlobusConfig:
         tmpstr += "Proxy Filename: %s\n" % self.GetProxyFileName()
         
         return tmpstr
+        
+    def _SetHostnameToLocalIP(self):
+        """
+        Set the hostname to the IP address
+        """
+        raise Exception, "This should not be called directly, but through a subclass."
 
     # We define our own setenv/unsetenv to prod both the pyGlobus
     # environment and the standard python environment.
@@ -295,7 +304,8 @@ class UserConfig:
     @type configDir: string
     """
     def __init__(self):
-        pass
+        self.configDir = None
+        self.baseDir = None
 
     def _repr_(self):
         tmpstr = "User Configuration:\n"
@@ -412,6 +422,20 @@ class SystemConfig:
 
     def __str__(self):
         return self._repr_()
+        
+    def GetUsername(self):
+        """
+        Get the name of the user
+        """
+        raise Exception, "This should not be called directly, but through a subclass."
+
+        
+    def EnumerateInterfaces(self):
+        """
+        Enumerate network interfaces
+        """
+        raise Exception, "This should not be called directly, but through a subclass."
+        
     
     def GetTempDir(self):
         """
@@ -662,5 +686,6 @@ class MimeConfig:
     def GetMimeCommands(self,mimeType = None, ext = None):
         raise Exception, "This should not be called directly, but through a subclass."
 
-    def RegisterMimeType(self):
+    def RegisterMimeType(self, mimeType, extension, fileType, description,
+                         cmds):
         raise Exception, "This should not be called directly, but through a subclass."

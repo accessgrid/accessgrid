@@ -2,17 +2,17 @@
 # Name:        ProcessManager.py
 # Purpose:     Interface definitions for ProcessManager
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.6 2004-03-12 05:35:24 judson Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.7 2004-09-09 22:12:12 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.6 2004-03-12 05:35:24 judson Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.7 2004-09-09 22:12:12 turam Exp $"
 
 class ProcessManager:
     def __init__(self):
-        raise "This should not be called directly, but by a subclass."
+        raise Exception, "This should not be called directly, but by a subclass."
 
     def StartProcess(self, command, arglist, detached = 1):
         """
@@ -32,13 +32,13 @@ class ProcessManager:
         @type arglist: list of strings
         @type detached: integer
         """
-        raise "This should not be called directly, but by a subclass."
+        raise Exception, "This should not be called directly, but by a subclass."
 
     def TerminateAllProcesses(self):
         """
         Cleanly shutdown all processes this manager has created.
         """
-        raise "This should not be called directly, but by a subclass."
+        raise Exception, "This should not be called directly, but by a subclass."
 
     def TerminateProcess(self, pid):
         """
@@ -55,7 +55,7 @@ class ProcessManager:
         @warning: this is not a clean shutdown, but a forced shutdown
         that may result in system cruft.
         """
-        raise "This should not be called directly, but by a subclass."
+        raise Exception, "This should not be called directly, but by a subclass."
 
     def KillProcess(self, pid):
         """
@@ -67,11 +67,11 @@ class ProcessManager:
         @param pid: the id of the process to terminate.
         @type pid: string? integer?
         """
-        raise "This should not be called directly, but by a subclass."
+        raise Exception, "This should not be called directly, but by a subclass."
 
     def ListProcesses(self):
         """
         Return a list of process id's for this process manager.
         @returns: a list of process id's
         """
-        raise "This should not be called directly, but by a subclass."
+        raise Exception, "This should not be called directly, but by a subclass."
