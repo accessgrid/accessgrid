@@ -278,7 +278,15 @@ rm -f /tmp/AccessGrid-Preuninstall.py
 # - Run SetupVideo to detect video devices
 #
 %post VenueClient
-/usr/bin/SetupVideo.py
+xdpyinfo >/dev/null 2>/dev/null
+if [ "$?" == 0 ]
+then
+    echo "Detecting video capture devices..."
+    /usr/bin/SetupVideo.py
+else
+    echo "Can't open X display; run SetupVideo.py as root to"
+    echo "detect video capture devices."
+fi
 
 #
 # After the RPMs have been successfully built remove the temporary build
