@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.66 2004-05-04 15:41:26 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.67 2004-05-06 17:51:50 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.66 2004-05-04 15:41:26 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.67 2004-05-06 17:51:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -176,20 +176,20 @@ class AGNodeService:
     ####################
     ## SERVICE methods
     ####################
-    def AddService( self, servicePackageUri, serviceManagerUri, 
+    def AddService( self, serviceDesc, serviceManagerUri, 
                     resourceToAssign, serviceConfig ):
         """
         Add a service package to the service manager.  
         """
         
-        log.debug("AddService %s", servicePackageUri.name)
+        log.debug("AddService %s", serviceDesc.name)
         
         serviceDescription = None
         
         # Add the service to the service manager
         try:
             serviceDescription = AGServiceManagerIW(
-                serviceManagerUri ).AddService( servicePackageUri,
+                serviceManagerUri ).AddService( serviceDesc,
                                                 resourceToAssign,
                                                 serviceConfig )
         except SOAPException, e:
@@ -749,7 +749,7 @@ class AGNodeServiceI(SOAPInterface):
         Interface to add a service
 
         **Arguments:**
-            *servicePackageUri* The URI from where the service package can be retrieved
+            *serviceDesc* Service Description of service to add
             *serviceManagerUri* The URI of the service manager to which the service should be added
             *resourceToAssign* The resource to assign to the service
             *serviceConfig* The service configuration to apply after adding the service
@@ -992,9 +992,9 @@ class AGNodeServiceIW(SOAPIWrapper):
             smList.append(CreateAGServiceManagerDescription(sm))
         return smList
             
-    def AddService( self, servicePackageUri, serviceManagerUri, 
+    def AddService( self, serviceDesc, serviceManagerUri, 
                     resourceToAssign, serviceConfig ):
-        serviceDescStruct = self.proxy.AddService(servicePackageUri, serviceManagerUri, 
+        serviceDescStruct = self.proxy.AddService(serviceDesc, serviceManagerUri, 
                     resourceToAssign, serviceConfig )
         serviceDescription = CreateAGServiceDescription(serviceDescStruct)
         return serviceDescription
