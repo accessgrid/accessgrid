@@ -32,12 +32,12 @@ class NetworkServicesManager:
         nsd = networkServiceDescription
         if not nsd:
             self.log.error("RegisterService: Missing network service parameter, failed to add service.")
-            raise 'Missing network service parameter, failed to add service.'
+            raise Exception, 'Missing network service parameter, failed to add service.'
                            
         if self.__services.has_key(nsd.url):
             self.log.error('RegisterService: A service at url %s is already present, failed to add service.'
                            %nsd.url)
-            raise 'A service at url %s is already present, failed to add service.'%nsd.url
+            raise Exception, 'A service at url %s is already present, failed to add service.'%nsd.url
         
         self.log.debug('RegisterService: Register network service %s'
                        %nsd.ToString())
@@ -56,7 +56,7 @@ class NetworkServicesManager:
 
         if not networkServiceDescription:
             self.log.error('UnRegisterService: Missing network service parameter, failed to remove service.')
-            raise 'Missing network service description parameter'
+            raise Exception, 'Missing network service description parameter'
             
         id = networkServiceDescription.url
 
@@ -67,7 +67,7 @@ class NetworkServicesManager:
         else:
             self.log.exception('UnRegisterService: Service %s is already unregistered'
                                %networkServiceDescription.url)
-            raise 'Service %s is already unregistered'%networkServiceDescription.url
+            raise Exception, 'Service %s is already unregistered'%networkServiceDescription.url
                 
     def ResolveMismatch(self, streamList, nodeCapabilities):
         '''
@@ -88,11 +88,11 @@ class NetworkServicesManager:
         
         if not nodeCapabilities:
             self.log.error('ResolveMismatch: Missing node capabilities parameter.')
-            raise 'NetworkServicesManager.Match: Capability parameter is missing, can not complete matching'
+            raise Exception, 'NetworkServicesManager.Match: Capability parameter is missing, can not complete matching'
         
         if not streamList:
             self.log.error('ResolveMismatch: Missing stream list parameter.')
-            raise 'NetworkServicesManager.Match: Stream list parameter is missing, can not complete matching'
+            raise Exception, 'NetworkServicesManager.Match: Stream list parameter is missing, can not complete matching'
             
         self.log.debug('Match: Match streams to capabilities')
        
@@ -245,11 +245,11 @@ class NetworkServiceMatcher:
 
         if not capabilities:
             self.log.exception('NetworkServiceMatcher.Match: Capability parameter is None.')
-            raise 'NetworkServiceMatcher.Match: Capability parameter is None.'
+            raise Exception, 'NetworkServiceMatcher.Match: Capability parameter is None.'
         
         if len(services) < 1:
             self.log.exception('NetworkServiceMatcher.Match: Network services parameter contains an empty list.')
-            raise 'NetworkServiceMatcher.Match: Network services parameter contains an empty list.'
+            raise Exception, 'NetworkServiceMatcher.Match: Network services parameter contains an empty list.'
                
         streamServiceList = []
 

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.217 2004-07-26 17:20:04 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.218 2004-07-27 19:21:20 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.217 2004-07-26 17:20:04 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.218 2004-07-27 19:21:20 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -510,7 +510,7 @@ class Venue(AuthorizationMixIn):
                 if not action.HasRole(everybodyRole):
                     action.AddRole(everybodyRole)
             else:
-                raise "DefaultActionNotFound " + actionName
+                raise Exception, "DefaultActionNotFound " + actionName
 
         # Add default entry roles to venueusers actions.
         # Currently no actions include VenueUsers
@@ -521,7 +521,7 @@ class Venue(AuthorizationMixIn):
                 if not action.HasRole(venueUsersRole):
                     action.AddRole(venueUsersRole)
             else:
-                raise "DefaultActionNotFound " + actionName
+                raise Exception, "DefaultActionNotFound " + actionName
 
     def AsINIBlock(self):
         """
@@ -1281,7 +1281,7 @@ class Venue(AuthorizationMixIn):
             self.networkServicesManager.RegisterService(nsd)
         except:
             log.exception('Venue.RegisterNetworkService: Failed')
-            raise 'Venue.RegisterNetworkService: Failed'
+            raise Exception, 'Venue.RegisterNetworkService: Failed'
            
     def UnRegisterNetworkService(self, networkServiceDescription):
         """
@@ -1294,7 +1294,7 @@ class Venue(AuthorizationMixIn):
             self.networkServicesManager.UnRegisterService(nsd)
         except:
             log.exception('Venue.UnRegisterNetworkService: Failed')
-            raise 'Venue.UnRegisterNetworkService: Failed'
+            raise Exception, 'Venue.UnRegisterNetworkService: Failed'
 
     def GetNetworkServices(self):
         """
@@ -1307,7 +1307,7 @@ class Venue(AuthorizationMixIn):
             s = self.networkServicesManager.GetServices()
         except:
             log.exception('Venue.GetNetworkServices: Failed')
-            raise 'Venue.GetNetworkServices: Failed.'
+            raise Exception, 'Venue.GetNetworkServices: Failed.'
         return s
         
     def AddNetworkService(self, clientType, privateId):

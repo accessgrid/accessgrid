@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.72 2004-07-26 22:07:47 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.73 2004-07-27 19:21:20 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.72 2004-07-26 22:07:47 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.73 2004-07-27 19:21:20 eolson Exp $"
 
 # Standard imports
 import os
@@ -42,7 +42,7 @@ class AppBase:
        """
        The interface for getting the one true instance of this object.
        """
-       raise "This should never be called directly."
+       raise Exception, "This should never be called directly."
 
     # The real constructor
     def __init__(self):

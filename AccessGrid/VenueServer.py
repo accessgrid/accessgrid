@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.155 2004-07-27 19:06:51 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.156 2004-07-27 19:21:20 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.155 2004-07-27 19:06:51 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.156 2004-07-27 19:21:20 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -338,7 +338,7 @@ class VenueServer(AuthorizationMixIn):
         # Default to giving administrators access to all actions.
         adminRole = self.authManager.FindRole('Administrators')
         if adminRole == None:
-            raise "AdminRoleNotFound"
+            raise Exception, "AdminRoleNotFound"
         allActions = self.authManager.GetActions()
         for action in allActions:
             if not action.HasRole(adminRole):

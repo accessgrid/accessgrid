@@ -132,7 +132,7 @@ class AGNetworkService:
         * urls * list of venue urls. 
         '''
         if type(urls) != list:
-            raise 'AGNetworkService.RegisterWithVenues: urls argument has to be a list of venue urls.'
+            raise Exception, 'AGNetworkService.RegisterWithVenues: urls argument has to be a list of venue urls.'
         
         # Create a NetworkServiceDescription and register with the venue. 
         for url in urls:
@@ -260,12 +260,12 @@ if __name__ == "__main__":
     vProxy.RegisterNetworkService(nsd)
     services = vProxy.GetNetworkServices()
     if services[0].url != nsd.url:
-        raise 'venue.RegisterNetworkService failed'
+        raise Exception, 'venue.RegisterNetworkService failed'
 
     vProxy.UnRegisterNetworkService(nsd)
     services = vProxy.GetNetworkServices()
     if len(services) != 0:
-        raise 'venue.UnRegisterNetworkService failed'
+        raise Exception, 'venue.UnRegisterNetworkService failed'
     
     # Test network service interface.
     service.RegisterWithVenueServer('https://localhost:8000/VenueServer')
@@ -277,11 +277,11 @@ if __name__ == "__main__":
 
     result = nsProxy.Transform([])
     if not result == []:
-        raise 'Transform failed'
+        raise Exception, 'Transform failed'
     
     result = nsProxy.StopTransform([])
     if not result == []:
-        raise 'Stop transform failed'
+        raise Exception, 'Stop transform failed'
     
     service.Stop()
     

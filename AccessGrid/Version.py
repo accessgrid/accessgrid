@@ -5,13 +5,13 @@
 # Author:      Eric Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Version.py,v 1.7 2004-05-25 22:29:04 turam Exp $
+# RCS-ID:      $Id: Version.py,v 1.8 2004-07-27 19:21:20 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Version.py,v 1.7 2004-05-25 22:29:04 turam Exp $"
+__revision__ = "$Id: Version.py,v 1.8 2004-07-27 19:21:20 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Call GetVersion() to get AGTK version information.
@@ -100,7 +100,7 @@ def CreateVersionFromTuple3( (major, minor, point) ):
 def CreateVersionFromString(strng):
     ver_list = strng.split(".")
     if len(ver_list) > 3 or len(ver_list) < 2:
-        raise "InvalidVersionString"
+        raise Exception, "InvalidVersionString"
     ver = Version()
     ver.major = int(ver_list[0])
     ver.minor = int(ver_list[1])

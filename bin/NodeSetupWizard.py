@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.32 2004-06-01 21:08:35 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.33 2004-07-27 19:21:20 eolson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -965,11 +965,11 @@ class NodeClient:
         try:
             self.nodeService.Stop()
         except:
-            raise "Can not stop node service"
+            raise Exception, "Can not stop node service"
         try:
             self.server.Stop()
         except:
-            raise 'Can not stop server'
+            raise Exception, 'Can not stop server'
         
         sys.exit(0)
                        
