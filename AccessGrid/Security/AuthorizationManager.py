@@ -1,11 +1,8 @@
 #-----------------------------------------------------------------------------
 # Name:        AuthorizationManager.py
 # Purpose:     The class that does the authorization work.
-#
-# Author:      Ivan R. Judson
-#
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.30 2004-09-10 03:58:53 judson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.31 2004-09-10 15:33:24 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +16,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.30 2004-09-10 03:58:53 judson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.31 2004-09-10 15:33:24 judson Exp $"
 
 # External Imports
 import os
@@ -738,7 +735,7 @@ class AuthorizationManagerI(SOAPInterface):
         if role == None:
             # This is not a great engineering solution, and we should
             # probably revisit it with a better plan.
-            profiles = cache.LoadAllProfiles()
+            profiles = self.impl.profileCache.LoadAllProfiles()
             subjs = map(lambda x:
                 X509Subject.CreateSubjectFromString(x.GetDistinguishedName()),
                         profiles)
@@ -1231,8 +1228,12 @@ class AuthorizationMixIn:
        """
        # This hosting enviroment is assumed to come from the implementation
        # not the actual authorization manager. This is icky mix-in design.
-       return self.hostingEnvironment.FindURLForObject(self.authManager)
-
+       if hasattr(self, 'hostingEnvironment'):
+           return self.hostingEnvironment.FindURLForObject(self.authManager)
+       else:
+           log.error("No hosting environment, can't find auth manager")
+           return None
+   
    def GetRequiredRoles(self):
        """
        Return a list of roles required by this implementation for
