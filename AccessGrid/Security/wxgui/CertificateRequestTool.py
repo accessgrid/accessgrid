@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.14 2004-07-19 14:55:11 binns Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.15 2004-08-02 21:12:54 binns Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -22,6 +22,7 @@ from AccessGrid import Toolkit
 from AccessGrid import Platform
 from AccessGrid import NetUtilities, Utilities
 from AccessGrid.Platform.Config import SystemConfig
+from AccessGrid.Platform import IsOSX
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.Security import CertificateRepository, CertificateManager
 from AccessGrid.Security.CertificateRepository import RepoDoesNotExist
@@ -78,7 +79,7 @@ class CertificateRequestTool(wxWizard):
         
         self.step = 1
         self.maxStep = 4
-        self.SetPageSize(wxSize(430, 80))
+        self.SetPageSize(wxSize(430, 320))
 
         self.page0 = IntroWindow(self, "Welcome to the Certificate Request Wizard", )
         self.page1 = SelectCertWindow(self, "Select Certificate Type")
@@ -426,7 +427,7 @@ remember it: it is not possible to determine the passphrase from the certificate
         EVT_TEXT(self.passwordCtrl, self.passwrdId , self.EnterText)
         EVT_TEXT(self.passwordVerCtrl, self.passwrd2Id, self.EnterText)
         EVT_CHAR(self.domainCtrl, self.EnterDomainChar)
-        self.Layout()
+        self.__Layout()
 
         #
         # State to set if the user entered anything in the domain
@@ -474,13 +475,13 @@ remember it: it is not possible to determine the passphrase from the certificate
         item.SetBackgroundColour("white")
         item.Refresh()
 
-    def Layout(self):
+    def __Layout(self):
         '''
         Handles UI layout.
         '''
         self.sizer.Add(self.text, 0, wxALL, 5)
-        self.sizer.Add(wxSize(10, 10))
-        gridSizer = wxFlexGridSizer(4, 2, 6, 6)
+        #self.sizer.Add(wxSize(10, 10))
+        gridSizer = wxFlexGridSizer(0, 2, 6, 6)
         #gridSizer.Add(self.nameText)
         box = wxBoxSizer(wxHORIZONTAL)
         box.Add(self.firstNameText)
@@ -504,7 +505,8 @@ remember it: it is not possible to determine the passphrase from the certificate
         gridSizer.AddGrowableCol(1)
 
         self.sizer.Add(gridSizer, 0, wxALL | wxEXPAND, 5)
-
+        self.sizer.Fit(self)
+        self.Layout()
 
 class ValidatorHelp(wxPyValidator):
     '''
@@ -981,8 +983,7 @@ class SubmitReqWindow(TitledPage):
         self.ExportProfileButton = wxButton(self, -1, "Export service profile...")
         EVT_BUTTON(self, self.ExportProfileButton.GetId(),
                    self.ExportServiceProfile)
-        self.Layout()
-
+        self.__Layout()
 
     def SetText(self, certInfo, password):
         '''
@@ -995,6 +996,11 @@ class SubmitReqWindow(TitledPage):
         reqType = certInfo.GetType()
         reqName = certInfo.GetName()
         reqEmail = certInfo.GetEmail()
+        
+        # Fix for dorky OS X wxDEFAULT insanity
+        pointSize=wxDEFAULT
+        if IsOSX():
+            pointSize=12
         
         if reqType == "anonymous":
 
@@ -1017,19 +1023,19 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
             emailStart = 127 + len(reqType) + len(reqName)
 
             self.text.SetInsertionPoint(0)
-            f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
+            f = wxFont(pointSize, wxNORMAL, wxNORMAL, wxBOLD)
             textAttr = wxTextAttr(wxNullColour)
             textAttr.SetFont(f)
             self.text.SetStyle(nameStart, nameStart+len(reqName), textAttr)
             self.text.SetInsertionPoint(0)
 
-            f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
+            f = wxFont(pointSize, wxNORMAL, wxNORMAL, wxBOLD)
             textAttr = wxTextAttr(wxNullColour)
             textAttr.SetFont(f)
             self.text.SetStyle(emailStart, emailStart+len(reqEmail), textAttr)
             self.text.SetInsertionPoint(0)
 
-            f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
+            f = wxFont(pointSize, wxNORMAL, wxNORMAL, wxBOLD)
             textAttr = wxTextAttr(wxNullColour)
             textAttr.SetFont(f)
             self.text.SetStyle(requestStart, requestStart+len(reqType), textAttr)
@@ -1076,21 +1082,23 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
 
         return success
 
-    def Layout(self):
+    def __Layout(self):
         '''
         Handles UI layout.
         '''
         self.sizer.Add(self.text, 1, wxALL|wxEXPAND, 5)
 
-        hs = wxBoxSizer(wxHORIZONTAL);
+        hs = wxBoxSizer(wxVERTICAL);
         hs.Add(self.proxyPanel, 1, wxEXPAND | wxALL, 3)
 
         box = wxStaticBox(self, -1, "Service profile")
-        boxs = wxStaticBoxSizer(box, wxHORIZONTAL);
-        boxs.Add(self.ExportProfileButton, 0, wxALIGN_CENTER)
+        boxs = wxStaticBoxSizer(box, wxVERTICAL);
+        boxs.Add(self.ExportProfileButton, 0, wxEXPAND|wxCENTER)
 
         hs.Add(boxs, 0, wxEXPAND | wxALL, 3)
         self.sizer.Add(hs, 0, wxEXPAND | wxALIGN_BOTTOM)
+        #self.SetSizer(self.sizer)
+        #self.Layout()
 
     def ExportServiceProfile(self, event):
 
