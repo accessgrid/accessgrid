@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.75 2003-08-12 19:20:47 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.76 2003-08-12 20:57:24 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -77,6 +77,7 @@ class VenueManagementClient(wxApp):
 
         self.app = Toolkit.WXGUIApplication()
         self.app.Initialize()
+        self.app.InitGlobusEnvironment()
 
         return true
 

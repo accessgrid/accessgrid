@@ -6,10 +6,11 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.187 2003-08-12 19:24:59 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.188 2003-08-12 20:57:24 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+
 
 import threading
 import os
@@ -20,8 +21,21 @@ import sys
 import urlparse
 import time
 
-
 log = logging.getLogger("AG.VenueClient")
+
+#
+# Preload some stuff. This speeds up app startup drastically.
+#
+
+from pyGlobus import utilc, gsic, ioc
+from AccessGrid.hosting.pyGlobus import Utilities
+utilc.globus_module_activate(gsic.get_module())
+utilc.globus_module_activate(ioc.get_module())
+Utilities.CreateTCPAttrAlwaysAuth()
+
+#
+# Back to your normal imports.
+#
 
 from wxPython.wx import *
 from wxPython.wx import wxTheMimeTypesManager as mtm
@@ -69,14 +83,12 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
     fallbackRecoveryUrl = None
     
     def __init__(self):
-       
-        
+
         if not os.path.exists(self.accessGridPath):
             try:
                 os.mkdir(self.accessGridPath)
             except OSError, e:
                 log.exception("bin.VenueClient::__init__: Could not create base path")
-
         self.venueClient = VenueClient()
         self.venueClient.AddEventSubscriber(self)
         wxApp.__init__(self, false)
@@ -112,7 +124,6 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
             sys.exit(1)
 
         try:
-            
             self.app.Initialize()
 
         except Exception, e:
@@ -152,6 +163,13 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
 
             self.personalNode = PersonalNode.PersonalNodeManager(setSvcCallback, self.debugMode)
             self.personalNode.Run()
+
+
+        #
+        # Initialize globus runtime stuff.
+        #
+
+        self.app.InitGlobusEnvironment()
 
         return true
 
@@ -1418,6 +1436,6 @@ if __name__ == "__main__":
     from AccessGrid.Types import *
 
     wxInitAllImageHandlers()
-    
+
     vc = VenueClientUI()
     vc.ConnectToVenue()
