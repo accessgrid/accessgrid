@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.27 2003-02-06 20:47:04 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.28 2003-02-06 21:09:35 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -128,7 +128,7 @@ class VenueServer(ServiceBase.ServiceBase):
         # kept up to date.
         self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.Checkpoint, self.houseKeeperFrequency, 0)
-
+        self.houseKeeper.StartAllTasks()
 
     def InitFromFile(self, config):
         """
