@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.28 2004-04-13 18:46:43 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.29 2004-04-13 18:49:57 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.28 2004-04-13 18:46:43 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.29 2004-04-13 18:49:57 judson Exp $"
 
 import os
 import sys
@@ -1530,93 +1530,34 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
 # are working
 
 if __name__ == "__main__":
-    print "AGTk Configuration:"
-
     try:
         tkConf = AGTkConfig.instance()
     except Exception, e:
         tkConf = None
         print "Error trying to retrieve AGTk Configuration:\n", e
+    else:
+        print tkConf
 
-    if tkConf is not None:
-        try:
-            print "\tVersion: ", tkConf.GetVersion()
-            print "\tInstallDir: ", tkConf.GetInstallDir()
-            print "\tDocDir: ", tkConf.GetDocDir()
-            print "\tConfigDir: ", tkConf.GetConfigDir()
-            print "\tPkgCacheDir: ", tkConf.GetPkgCacheDir()
-            print "\tSharedAppDir: ", tkConf.GetSharedAppDir()
-            print "\tNodeServiceDir: ", tkConf.GetNodeServicesDir()
-            print "\tServiceDir: ", tkConf.GetServicesDir()
-            print "\tLogDir: ", tkConf.GetLogDir()
-        except Exception, e:
-            print "Error trying to retrieve AGTk Configuration:\n", e
-            
-    print "Globus Configuration:"
     try:
         globusConf = GlobusConfig.instance(0)
     except Exception, e:
         print "Error retrieving Globus Configuration:\n", e
         globusConf = None
-        
-    if globusConf is not None:
-        try:
-            print "\tGlobus Location: ", globusConf.GetLocation()
-            print "\tGlobus Hostname: ", globusConf.GetHostname()
-            print "\tGlobus CA Cert Dir: ", globusConf.GetCACertDir()
-            print "\tGlobus Proxy File: ", globusConf.GetProxyFileName()
-            print "\tGlobus Cert File: ", globusConf.GetCertFileName()
-            print "\tGlobus Key File: ", globusConf.GetKeyFileName()
-        except Exception, e:
-            print "Error trying to retrieve the Globus Configuration:\n", e
     else:
-        print "The globus config object is: ", globusConf
+        print globusConf
         
-    print "System Configuration:"
     try:
         sysConf = SystemConfig.instance()
     except Exception, e:
         print "Error trying to retrieve the System Configuration:\n", e
         sysConf = None
-
-    if sysConf is not None:
-        try:
-            print "\tSystem Hostname: ", sysConf.GetHostname()
-            print "\tSystem Temp Dir: ", sysConf.GetTempDir()
-            freespace = sysConf.FileSystemFreeSpace(os.path.join("."))
-            print "\tSystem File System Free Space (on /): ", freespace
-            print "\tSystem Current Username: ", sysConf.GetUsername()
-            iflist = sysConf.EnumerateInterfaces()
-            print "\tSystem Network Interface: "
-            for interface in iflist:
-                print "\t\tName: %8s IP: %15s DNS: %s" % (interface['name'],
-                                                        interface['ip'],
-                                                        interface['dns'])
-            print "\tSystem Local IP: ", sysConf.GetLocalIPAddress()
-        except Exception, e:
-            print "Error trying to retrieve the System Configuration:\n", e
     else:
-        print "Thee system config object is: ", sysConf
-
-    print "User Configuration:"
+        print sysConf
+        
     try:
         userConf = UserConfig.instance(0)
     except Exception, e:
         print "Error trying to retrieve the User Configuration:\n", e
         userConf = None
-
-    if userConf is not None:
-        try:
-            print "\tProfile: ", userConf.GetProfile()
-            print "\tConfiguration Base: ", userConf.GetBaseDir()
-            print "\tConfiguration Dir: ", userConf.GetConfigDir()
-            print "\tPackage Cache Dir: ", userConf.GetPkgCacheDir()
-            print "\tLog Dir: ", userConf.GetLogDir()
-            print "\tTemp Dir: ", userConf.GetTempDir()
-            print "\tShared App Dir: ", userConf.GetSharedAppDir()
-            print "\tNode Service Dir: ", userConf.GetNodeServicesDir()
-            print "\tService Dir: ", userConf.GetServicesDir()
-        except Exception, e:
-            print "Error trying to retrieve the user Configuration:\n", e
     else:
-        print "The user config object is: ", userConf
+        print userConf
