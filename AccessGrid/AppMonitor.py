@@ -7,6 +7,7 @@ from AccessGrid.Events import Event
 from AccessGrid.Platform import isWindows
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.ClientProfile import ClientProfile
+from AccessGrid.Platform import isWindows
 
 import logging, logging.handlers
 
@@ -150,7 +151,7 @@ class AppMonitorFrame(wxFrame):
         self.SetSize(wxSize(400,300))
         self.panel = wxPanel(self, -1)
 
-        self.textCtrl = wxTextCtrl(self.panel, -1, style = wxTE_MULTILINE | wxTE_READONLY)
+        self.textCtrl = wxTextCtrl(self.panel, -1, style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH)
 
         self.nameText = wxStaticText(self.panel, -1, "This is the name", style = wxALIGN_CENTER)
         font = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
@@ -226,6 +227,8 @@ class AppMonitorFrame(wxFrame):
         self.textCtrl.SetDefaultStyle(wxTextAttr(wxBLUE))
         self.textCtrl.AppendText(message+'\n')
         self.textCtrl.SetDefaultStyle(wxTextAttr(wxBLACK))
+
+        self.__SetRightScroll()
                         
     def AddInitParticipant(self, pDesc):
         """
@@ -260,6 +263,20 @@ class AppMonitorFrame(wxFrame):
             item = self.partListCtrl.FindItemData(-1, id)
         
             self.partListCtrl.DeleteItem(item)
+
+            #Add event text
+            message = pDesc.clientProfile.name + " left this session "
+            
+            # Add time to event message
+            dateAndTime = strftime("%a, %d %b %Y, %H:%M:%S", localtime() )
+            message = message + " ("+dateAndTime+")" 
+            
+            # Events are coloured blue
+            self.textCtrl.SetDefaultStyle(wxTextAttr(wxBLUE))
+            self.textCtrl.AppendText(message+'\n')
+            self.textCtrl.SetDefaultStyle(wxTextAttr(wxBLACK))
+
+            self.__SetRightScroll()
         
 
     def GetProfile(self, appId):
@@ -292,7 +309,17 @@ class AppMonitorFrame(wxFrame):
             self.partListCtrl.SetStringItem(id, 0, pDesc.clientProfile.name)
             self.partListCtrl.SetStringItem(id, 1, pDesc.status)
 
-                             
+    def __SetRightScroll(self):
+        '''
+        Scrolls to right position in text output field 
+        '''
+
+        if isWindows():
+            # Added due to wxPython bug. The wxTextCtrl doesn't
+            # scroll properly when the wxTE_AUTO_URL flag is set. 
+            pos = self.textCtrl.GetInsertionPoint()
+            self.textCtrl.ShowPosition(pos - 1)
+            
     def AddData(self, appDataDesc):
         '''
         Print data event in text window.
@@ -307,6 +334,8 @@ class AppMonitorFrame(wxFrame):
         text = name+" changed: "+str(appDataDesc.key) + " = " + str(appDataDesc.value) + '\n'
         self.textCtrl.AppendText(text)
 
+        self.__SetRightScroll()
+
     def AddInitData(self, dataDict):
         """
         Display data text in event window. Initially done when connecting to service. No time
@@ -318,6 +347,8 @@ class AppMonitorFrame(wxFrame):
         for key in dataDict.keys():
             text = str(key) + "=" + str(dataDict[key]) + '\n'
             self.textCtrl.AppendText(text)
+            
+            self.__SetRightScroll()
 
         self.textCtrl.SetDefaultStyle(wxTextAttr(wxBLACK))
                             
