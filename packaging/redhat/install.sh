@@ -41,7 +41,7 @@ AccessGrid-AudioService
 AccessGrid-VideoConsumer
 AccessGrid-VideoProducer
 AccessGrid-BridgeServer"
-export AG_VER="2.1-1"
+export AG_VER="2.1.2-4"
 
 
 #################################################################
@@ -81,6 +81,9 @@ echo "This script installs the necessary RPMS for the Access Grid software, "
 echo "with the exception of python and wxPython.  "
 echo "When prompted whether you want to continue, respond with 'y'"
 echo "When prompted whether you want to save and quit, respond with 'q'"
+echo ""
+echo "After the installation, you must log out and back in before using"
+echo "the software."
 echo "Continue?"
 read response
 if [ "$response" != 'y' ] && [ "$response" != "Y" ]
@@ -152,3 +155,8 @@ for package in $AG ; do
     Install $package $AG_VER 
 done
 
+echo ""
+echo "Installation finished."
+echo ""
+echo "Important: Log out and back in before using the software, to"
+echo "allow proper initialization of the execution environment"
