@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.143 2004-02-18 17:39:16 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.144 2004-02-20 20:12:32 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.143 2004-02-18 17:39:16 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.144 2004-02-20 20:12:32 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -537,11 +537,11 @@ class Venue(ServiceBase.ServiceBase):
 
         if len(alist):
             string += "applications : %s\n" % alist
-
+       
         # List of services
         servlist = ":".join(map(lambda service: service.GetId(),
         self.services.values()))
-
+      
         if len(servlist):
             string += "services: %s\n" % servlist
 
@@ -597,7 +597,7 @@ class Venue(ServiceBase.ServiceBase):
         'uri' : self.uri,
         'connections' : self.connections.values(),
         'applications': map(lambda x: x.AsApplicationDescription(),
-        self.applications.values()),
+                        self.applications.values()),
         'clients' : map(lambda c: c.GetClientProfile(), self.clients.values()),
         'services' : self.services.values(),
         'data' : dList,
@@ -1164,7 +1164,6 @@ class Venue(ServiceBase.ServiceBase):
         """
 
         if self.services.has_key(serviceDescription.id):
-            self.simpleLock.release()
             log.exception("AddService: service already present: %s",
                           serviceDescription.name)
             raise ServiceAlreadyPresent
@@ -1198,7 +1197,6 @@ class Venue(ServiceBase.ServiceBase):
         *serviceDescription* Upon successfully adding the service.
         """
         if not self.services.has_key(serviceDescription.id):
-            self.simpleLock.release()
             log.exception("Service not found!")
             raise ServiceNotFound
 
@@ -1230,8 +1228,8 @@ class Venue(ServiceBase.ServiceBase):
 
         *serviceDescription* Upon successfully removing the service.
         """
+              
         if not serviceDescription.id in self.services:
-            self.simpleLock.release()
             log.exception("Service not found!")
             raise ServiceNotFound
 
@@ -1369,11 +1367,11 @@ class Venue(ServiceBase.ServiceBase):
 
         try:
             self.simpleLock.acquire()
-
+            
             returnValue = self.RemoveService(serviceDescription)
-
+            
             self.simpleLock.release()
-
+        
             return returnValue
         except:
             self.simpleLock.release()
@@ -2350,7 +2348,11 @@ class Venue(ServiceBase.ServiceBase):
             log.exception("wsUpdateApplication: Bad application description.")
             raise BadApplicationDescription
 
-        self.applications[applicationDesc.id] = applicationDesc
+        appImpl = self.applications[applicationDesc.id]
+        appImpl.name = applicationDesc.name
+        appImpl.description = applicationDesc.description
+        
+        self.applications[applicationDesc.id] = appImpl
         
         self.server.eventService.Distribute( self.uniqueId,
                                              Event( Event.UPDATE_APPLICATION,
