@@ -10,27 +10,40 @@ Capabilities
 Abstract
 ========
 
-    This document describes a schema for describing node and network service capabilities.
+    This document outlines a schema for describing node and network service capabilities.
 
 Overview
 ========
 
     In order to develop a framework for network services that seamlessly can 
-    bridge the gap between different client capabilities we need a general way to describe
-    available capabilities. 
+    bridge the gap between different client capabilities we need a general way 
+    to describe nodes and available services.  
 
 Summary of Modifications
 ========================
 
-    New classes that would include serializer/deserializer methods for XML:
+    One requirement for the capability schema is to use XML to describe nodes and services. 
+    Since the AG currently does not include python to XML converters, description classes
+    written in Python will include serializer/deserializers for XML.
+
+    New classes:
     
-    * ServiceCapability
-    * NodeCapability
-    * NetworkServiceCapability
+    * **ServiceCapability**
       
-    Old capability class would be replaced with the new ServiceCapability class. 
-    The venue client provides one NodeCapability object when entering the venue 
-    including all service capabilities, preferences, and node settings.
+      Describing node services such as VideoProducer, VideoConsumer etc.
+    
+    * **NodeCapability**
+    
+      Describing the entire node including services, network connectivity, preferences etc.
+   
+    * **NetworkServiceCapability**
+    
+      Describing a network service
+      
+    The old capability class included in all node services would be replaced with the new 
+    ServiceCapability class.  The venue client provides one NodeCapability object when 
+    entering the venue (including all service capabilities, preferences, etc) instead of just 
+    a list of service capabilities.
         
 Module Organization
 -------------------
@@ -55,7 +68,8 @@ Specifications
     ::
 
         ServiceCapability
-            id : int
+            serviceId : int
+            host : string
             type : video|audio
             role : consumer|producer
             priority : int
@@ -64,11 +78,29 @@ Specifications
             sampleRate : int
             channel : int
 
+            def __init__(name, role, type, host, id)
+            def CreateServiceCapability(xml) 
+            def ToXML()                       
             def Match(ServiceCapability)
-            def ToXML()
-            def FromXML()
-
-       
+            def GetId()
+            def GetHost()
+            def GetType()
+            def GetRole()
+            def GetPriority()
+            def GetCodec()
+            def GetBitRate()
+            def GetSampleRate()
+            def GetChannel()
+            def SetId(id)
+            def SetHost(host)
+            def SetType(type)
+            def SetRole(role)
+            def SetPriority(prio)
+            def SetCodec(codec)
+            def SetBitRate(brate)
+            def SetSampleRate(srate)
+            def SetChannel(channel)              
+                   
     ToXML() Example:
 
     ::
@@ -79,8 +111,8 @@ Specifications
             <Role> consumer </Role>
             <Priority> 1 </Role>
             <Codec> "H.261" </Codec>
-            <BitRate> 64 </BitRate>
-            <SampleRate> 16000 </SampleRate>
+            <BitRate> 128 </BitRate>
+            <SampleRate> 8 </SampleRate>
             <Channel> -1 </Channel>
         </ServiceCapability>
          
@@ -90,8 +122,8 @@ Specifications
     and general settings such as multicast availability, bandwidth, and so forth.  
     Each node service (AudioService, VideoService, etc) has a list of possible capabilities.  
     Each capability has a priority field that determines which capabilities are preferred for a 
-    certain service.  The NodeCapabiliity class replaces the old list of capabilities that are 
-    shipped to the venue when a client enters. 
+    certain service.  The NodeCapability class replaces the old list of capabilities that are 
+    provided by the client during capability negotiation in the venue. 
     
     ::
 
@@ -103,9 +135,21 @@ Specifications
             multicast : int
             nodeServices : {ServiceId :[ServiceCapability]}     
 
+            def __init__(name, host, id)
+            def CreateNodeCapability(xml)
             def ToXML()
-            def FromXML()
-            
+            def GetId()
+            def GetHost()
+            def GetName()
+            def GetBandwidht()
+            def GetMulticast()
+            def SetId(id)            
+            def SetHost(host)
+            def SetName(name)
+            def SetBandwidth(bw)
+            def SetMulticast(multicast)
+          
+
     ToXML() Example:
     
     ::
@@ -124,8 +168,8 @@ Specifications
                     <Priority> 1 </Priority>
                     <Host> lib-video.mcs.anl.gov </Host>
                     <Codec> "H.261" </Codec>
-                    <BitRate> 64 </BitRate>
-                    <SampleRate> 16000 </SampleRate>
+                    <BitRate> 128 </BitRate>
+                    <SampleRate> 8 </SampleRate>
                     <Channel> -1 </Channel>
                 </ServiceCapability>
                 <ServiceCapability>
@@ -134,16 +178,16 @@ Specifications
                     <Role> consumer </Role>
                     <Priority> 2 </Priority>
                     <Host> lib-video.mcs.anl.gov </Host>
-                    <Codec> "H.261" </Codec>
-                    <BitRate> 64 </BitRate>
-                    <SampleRate> 8000 </SampleRate>
+                    <Codec> "H.263" </Codec>
+                    <BitRate> 128 </BitRate>
+                    <SampleRate> 8 </SampleRate>
                     <Channel> -1 </Channel>
                 </ServiceCapability>
             </Service>
         </NodeCapability>
 
 
-** NetworkServiceCapability **
+**NetworkServiceCapability**
     
     The network service capability class has a list of in and out ServiceCapabilities 
     that a network service is able to input and output.    
@@ -154,8 +198,9 @@ Specifications
             input = [ServiceCapability]
             output = [ServiceCapability]
     
+            def __init__()
+            def CreateNetworkServiceCapability(xml)
             def ToXML()
-            def FromXML()
 
     ToXML() Example:
     
@@ -174,7 +219,7 @@ Specifications
                     <Channel> 1 </Channel>
                 </ServiceCapability>
                 <ServiceCapability>
-                    <Id> 093948748302 </Id>
+                    <Id> 3982738404 </Id>
                     <Type> audio </Type>
                     <Role> consumer </Role>
                     <Priority> 2 </Priority>
@@ -186,7 +231,7 @@ Specifications
             </Input>
             <Output>
                 <ServiceCapability>
-                    <Id> 453343444432 </Id>
+                    <Id> 3982738404 </Id>
                     <Type> audio </Type>
                     <Role> producer </Role>
                     <Priority> 1 </Priority>
@@ -196,7 +241,7 @@ Specifications
                     <Channel> 1 </Channel>
                 </ServiceCapability>
                 <ServiceCapability>
-                    <Id> 2342342211115 </Id>
+                    <Id> 3982738404 </Id>
                     <Type> audio </Type>
                     <Role> producer </Role>
                     <Priority> 2 </Priority>
@@ -207,6 +252,24 @@ Specifications
                 </ServiceCapability>
             </Output>    
             
+Open Issues
+============
+
+    1 How should svc files for node services look like? 
+
+          I would like to write capabilities in XML, i.e. just dump the capability class into the svc file.
+
+    2 How do we want the user to set preferences?
+
+          * General preference "I want high quality video" 
+
+          * Preference for each service "I want high quality for the presenter video but low quality for the audience" 
+          
+          With the schema described in this document, we would be able to use the priority field in 
+          each service capability to set preferences for individual services.  However, each stream
+          description sent back to the client would have to include the capability/capabilities it 
+          got matched to so the client knows which service should have which stream.         
+
 Interoperability Issues
 =======================
 
@@ -217,13 +280,6 @@ Implementation
 
     The XML would be created from python objects using xml.dom see 
     http://www.python.org/doc/current/lib/module-xml.dom.html
-
-    The goal for preferences is for the user to be able to select them via a 
-    user interface, possibly from the node manager.  One solution would be to 
-    allow users to pick preferences for each node service based on available
-    services.  The default preference would be the consumer that has the lowest 
-    priority field set.  This solution allows us to send different video/audio 
-    formats to different services.     
 
 Copyright
 =========
