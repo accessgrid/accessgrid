@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.312 2004-01-26 21:06:00 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.313 2004-01-28 16:20:17 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.312 2004-01-26 21:06:00 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.313 2004-01-28 16:20:17 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -79,22 +79,11 @@ class VenueClientFrame(wxFrame):
     ID_WINDOW_LEFT  = wxNewId()
     ID_WINDOW_BOTTOM = wxNewId()
     ID_VENUE_DATA = wxNewId()
-    ID_VENUE_DATA_OPEN = wxNewId() 
-    ID_VENUE_DATA_PROPERTIES = wxNewId() 
     ID_VENUE_DATA_ADD = wxNewId()
     ID_VENUE_ADMINISTRATE_VENUE_ROLES = wxNewId()
-    ID_VENUE_PERSONAL_DATA_ADD = wxNewId()
-    ID_VENUE_DATA_SAVE = wxNewId() 
-    ID_VENUE_DATA_DELETE = wxNewId() 
     ID_VENUE_SERVICE = wxNewId() 
     ID_VENUE_SERVICE_ADD = wxNewId()
-    ID_VENUE_SERVICE_OPEN = wxNewId()
-    ID_VENUE_SERVICE_DELETE = wxNewId()
-    ID_VENUE_SERVICE_PROPERTIES = wxNewId() 
     ID_VENUE_APPLICATION = wxNewId() 
-    ID_VENUE_APPLICATION_JOIN = wxNewId()
-    ID_VENUE_APPLICATION_DELETE = wxNewId()
-    ID_VENUE_APPLICATION_PROPERTIES = wxNewId()
     ID_VENUE_APPLICATION_MONITOR = wxNewId()
     ID_VENUE_SAVE_TEXT = wxNewId() 
     ID_VENUE_OPEN_CHAT = wxNewId()
@@ -320,29 +309,6 @@ class VenueClientFrame(wxFrame):
         self.participantMenu.Append(self.ID_PARTICIPANT_LEAD,"Lead",\
                                            "Lead this person")
 
-        self.dataEntryMenu = wxMenu()
-        self.dataEntryMenu.Append(self.ID_VENUE_DATA_OPEN,"Open",
-                             "Open selected data")
-	self.dataEntryMenu.Append(self.ID_VENUE_DATA_SAVE,"Save...",
-                             "Save selected data to local disk")
-	self.dataEntryMenu.Append(self.ID_VENUE_DATA_DELETE,"Delete", "Remove selected data")
-        self.dataEntryMenu.AppendSeparator()
-	self.dataEntryMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties...",
-                             "View information about the selected data")
-
-        self.personalDataEntryMenu = wxMenu()
-        self.personalDataEntryMenu.Append(self.ID_VENUE_PERSONAL_DATA_ADD,"Add personal data...",
-                             "Add personal data")
-        self.personalDataEntryMenu.AppendSeparator()
-        self.personalDataEntryMenu.Append(self.ID_VENUE_DATA_OPEN,"Open",
-                             "Open selected data")
-	self.personalDataEntryMenu.Append(self.ID_VENUE_DATA_SAVE,"Save...",
-                             "Save selected data to local disk")
-	self.personalDataEntryMenu.Append(self.ID_VENUE_DATA_DELETE,"Delete", "Remove selected data")
-        self.personalDataEntryMenu.AppendSeparator()
-	self.personalDataEntryMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties...",
-                             "View information about the selected data")
-
         # ---- Menus for headings
         self.dataHeadingMenu = wxMenu()
         self.dataHeadingMenu.Append(self.ID_VENUE_DATA_ADD,"Add...",
@@ -394,19 +360,10 @@ class VenueClientFrame(wxFrame):
         EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_TOP,
                                self.ID_WINDOW_BOTTOM, self.OnSashDrag)
         EVT_SIZE(self, self.OnSize)
-                
-        EVT_MENU(self, self.ID_VENUE_DATA_OPEN, self.OpenData)
         EVT_MENU(self, self.ID_VENUE_DATA_ADD, self.OpenAddDataDialog)
         EVT_MENU(self, self.ID_VENUE_SAVE_TEXT, self.SaveText)
         EVT_MENU(self, self.ID_VENUE_ADMINISTRATE_VENUE_ROLES, self.OpenModifyVenueRolesDialog)
-        EVT_MENU(self, self.ID_VENUE_PERSONAL_DATA_ADD, self.OpenAddPersonalDataDialog)
-        EVT_MENU(self, self.ID_VENUE_DATA_SAVE, self.SaveData)
-        EVT_MENU(self, self.ID_VENUE_DATA_DELETE, self.RemoveData)
-        EVT_MENU(self, self.ID_VENUE_DATA_PROPERTIES, self.OpenDataProfile)
         EVT_MENU(self, self.ID_VENUE_SERVICE_ADD, self.OpenAddServiceDialog)
-        EVT_MENU(self, self.ID_VENUE_SERVICE_OPEN, self.OpenService)
-        EVT_MENU(self, self.ID_VENUE_SERVICE_DELETE, self.RemoveService)
-        EVT_MENU(self, self.ID_VENUE_SERVICE_PROPERTIES, self.OpenServiceProfile)
         EVT_MENU(self, self.ID_VENUE_CLOSE, self.Exit)
         EVT_MENU(self, self.ID_PROFILE, self.OpenMyProfileDialog)
         EVT_MENU(self, self.ID_USE_MULTICAST, self.UseMulticast)
@@ -440,13 +397,7 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_HELP_BUGZILLA,
                  lambda event, url=self.bugzilla_url: self.OpenHelpURL(url))
                  
-
         EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.Follow)
-
-        EVT_MENU(self, self.ID_VENUE_APPLICATION_JOIN, self.OpenApp)
-        EVT_MENU(self, self.ID_VENUE_APPLICATION_DELETE, self.RemoveApp)
-        EVT_MENU(self, self.ID_VENUE_APPLICATION_PROPERTIES, self.OpenApplicationProfile)
-        EVT_MENU(self, self.ID_VENUE_APPLICATION_MONITOR, self.OpenAppMonitor)
 
         EVT_CLOSE(self, self.Exit)
 
@@ -527,32 +478,33 @@ class VenueClientFrame(wxFrame):
             log.debug("VenueClientFrame.Unfollow: You are trying to stop following somebody you are not following")
         
     def Follow(self, event):
-        id = self.contentListPanel.tree.GetSelection()
-        personToFollow = self.contentListPanel.tree.GetItemData(id).GetData()
-        url = personToFollow.venueClientURL
-        name = personToFollow.name
-        log.debug("VenueClientFrame.Follow: You are trying to follow :%s url:%s " %(name, url))
+        personToFollow = self.contentListPanel.GetLastClickedTreeItem()
 
-        if(self.app.venueClient.leaderProfile == personToFollow):
-            text = "You are already following "+name
-            title = "Notification"
-            MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
-            
-        elif (self.app.venueClient.pendingLeader == personToFollow):
-            text = "You have already sent a request to follow "+name+". Please, wait for answer."
-            title = "Notification"
-            dlg = wxMessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()  
+        if(personToFollow != None and isinstance(personToFollow, ClientProfile)):
+            url = personToFollow.venueClientURL
+            name = personToFollow.name
+            log.debug("VenueClientFrame.Follow: You are trying to follow :%s url:%s " %(name, url))
 
-        else:
-            try:
-                self.app.venueClient.Follow(personToFollow)
-            except:
-                log.exception("VenueClientFrame.Follow: Can not follow %s" %personToFollow.name)
-                text = "You can not follow "+name
+            if(self.app.venueClient.leaderProfile == personToFollow):
+                text = "You are already following "+name
                 title = "Notification"
                 MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
+            
+            elif (self.app.venueClient.pendingLeader == personToFollow):
+                text = "You have already sent a request to follow "+name+". Please, wait for answer."
+                title = "Notification"
+                dlg = wxMessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
+                dlg.ShowModal()
+                dlg.Destroy()  
+
+            else:
+                try:
+                    self.app.venueClient.Follow(personToFollow)
+                except:
+                    log.exception("VenueClientFrame.Follow: Can not follow %s" %personToFollow.name)
+                    text = "You can not follow "+name
+                    title = "Notification"
+                    MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
                 
     def __fillTempHelp(self, x):
         if x == '\\':
@@ -656,47 +608,9 @@ class VenueClientFrame(wxFrame):
                                      
         dlg.Destroy()
 
-    def OpenDataProfile(self, event):
-        id = self.contentListPanel.tree.GetSelection()
-        data = self.contentListPanel.tree.GetItemData(id).GetData()
-        
-        if(data != None and isinstance(data, DataDescription)):
-            dataView = DataDialog(self, -1, "Data Properties")
-            dataView.SetDescription(data)
-            dataView.ShowModal()
-            dataView.Destroy()
-        else:
-            self.__showNoSelectionDialog("Please, select the data yow want to view information about")
-
-    def OpenServiceProfile(self, event):
-        id = self.contentListPanel.tree.GetSelection()
-        service = self.contentListPanel.tree.GetItemData(id).GetData()
-
-        if(service != None and isinstance(service, ServiceDescription)):
-            serviceView = ServiceDialog(self, -1, "Service Properties")
-            serviceView.SetDescription(service)
-            serviceView.ShowModal()
-            serviceView.Destroy()
-        else:
-             self.__showNoSelectionDialog("Please, select the service yow want to view information about")
-
-    def OpenApplicationProfile(self, event):
-        id = self.contentListPanel.tree.GetSelection()
-        application = self.contentListPanel.tree.GetItemData(id).GetData()
-
-        if(application != None and isinstance(application, ApplicationDescription)):
-            # For now, use service dialog since app and service have same properties
-            applicationView = ServiceDialog(self, -1, "Application Properties")
-            applicationView.SetDescription(application)
-            applicationView.ShowModal()
-            applicationView.Destroy()
-        else:
-            self.__showNoSelectionDialog("Please, select the application yow want to view information about") 
-
     def OpenParticipantProfile(self, event):
-        id = self.contentListPanel.tree.GetSelection()
-        participant =  self.contentListPanel.tree.GetItemData(id).GetData()
-        
+        participant = self.contentListPanel.GetLastClickedTreeItem()
+                   
         if(participant != None and isinstance(participant, ClientProfile)):
             profileView = ProfileDialog(self, -1, "Profile")
             log.debug("VenueClientFrame.OpenParticipantProfile: open profile view with this participant: %s" %participant.name)
@@ -992,10 +906,8 @@ class VenueClientFrame(wxFrame):
         
     def SaveData(self, event):
         log.debug("VenueClientFrame.SaveData: Save data")
-        id = self.contentListPanel.tree.GetSelection()
-        data =  self.contentListPanel.tree.GetItemData(id).GetData()
-
-        
+        data = self.contentListPanel.GetLastClickedTreeItem()
+                
         if(data != None and isinstance(data, DataDescription)):
             name = data.name
             dlg = wxFileDialog(self, "Save file as",
@@ -1018,8 +930,8 @@ class VenueClientFrame(wxFrame):
     def OpenData(self, event):
         """
         """
-        id = self.contentListPanel.tree.GetSelection()
-        data = self.contentListPanel.tree.GetItemData(id).GetData()
+        data = self.contentListPanel.GetLastClickedTreeItem()
+       
         if(data != None and isinstance(data, DataDescription)):
             name = data.name
             commands = GetMimeCommands(ext = name.split('.')[-1])
@@ -1068,7 +980,6 @@ class VenueClientFrame(wxFrame):
 
         for id in idList:
             service =  self.contentListPanel.tree.GetItemData(id).GetData()
-
                        
             if(service != None and isinstance(service, ServiceDescription)):
                 text ="Are you sure you want to delete "+ service.name + "?"
@@ -1145,8 +1056,9 @@ class VenueClientFrame(wxFrame):
     def OpenApp(self, event):
         """
         """
-        id = self.contentListPanel.tree.GetSelection()
-        data = self.contentListPanel.tree.GetItemData(id).GetData()
+      
+        data = self.contentListPanel.GetLastClickedTreeItem()
+        
         if data != None and isinstance(data, ApplicationDescription):
             self.RunApp(data)
         else:
@@ -1160,10 +1072,7 @@ class VenueClientFrame(wxFrame):
         self.contentListPanel.StartCmd(cmdline, appDesc, verb=cmd)
         
     def OpenService(self,event):
-        id = self.contentListPanel.tree.GetSelection()
-        self.tree.SelectItem(id)
-
-        service =  self.contentListPanel.tree.GetItemData(id).GetData()
+        service =  self.contentListPanel.tree.GetLastClickedTreeItem()
         
         if(service != None and isinstance(service, ServiceDescription)):
             self.app.OpenService( service )
@@ -1699,7 +1608,17 @@ class ContentListPanel(wxPanel):
         self.nodeId = imageList.Add(icons.getDefaultNodeBitmap())
 
         self.tree.AssignImageList(imageList)
-                      
+
+    def GetLastClickedTreeItem(self):
+        # x and y is set when we right click on a participnat
+        treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
+        if treeId.IsOk():
+            item = self.tree.GetItemData(treeId).GetData()
+        else:
+            item = None
+            
+        return item
+        
     def AddParticipant(self, profile, dataList = []):
         imageId = None
                 
@@ -1839,15 +1758,6 @@ class ContentListPanel(wxPanel):
                         self.tree.SetItemData(dataId, wxTreeItemData(profile))
                         self.personalDataDict[profile.id] = dataId
                         self.tree.SortChildren(participantId)
-                      
-                        #
-                        # I select the participant to ensure the twist button is
-                        # visible when first data item is added. I have to do
-                        # this due to a bug in wxPython.
-                        #              
-                        if(self.tree.GetSelection() == participantId):
-                            self.tree.Unselect()
-
                         self.tree.SelectItem(participantId)
 
                     else:
@@ -2030,8 +1940,8 @@ class ContentListPanel(wxPanel):
                 MessageDialog(None, "%s's data could not be retrieved."%item.name)
                 
     def OnDoubleClick(self, event):
-        self.x = event.GetX()
-        self.y = event.GetY()
+        x = event.GetX()
+        y = event.GetY()
         treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
         ext = None
         name = None
@@ -2336,17 +2246,20 @@ class ContentListPanel(wxPanel):
         menu.AppendSeparator()
             
         # Do the rest
+        othercmds = 0
+        
         if commands != None:
             for key in commands:
                 if key != 'Open' and key != 'Join':
+                    othercmds = 1
                     id = wxNewId()
                     menu.Append(id, string.capwords(key))
                     EVT_MENU(self, id, lambda event, cmd=key, itm=item:
                              self.StartCmd(appdb.GetCommandLine(item.mimeType,
                                                                 cmd),
                                            item=itm, verb=cmd))
-
-        menu.AppendSeparator()
+        if othercmds:
+            menu.AppendSeparator()
 
         # Add Application Monitor
         id = wxNewId()
