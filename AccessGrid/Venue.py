@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.123 2003-08-21 19:56:27 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.124 2003-08-21 20:19:04 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -33,13 +33,14 @@ from AccessGrid.Descriptions import CreateDataDescription, DataDescription
 from AccessGrid.Descriptions import BadDataDescription, BadServiceDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
-from AccessGrid import DataStore
+from AccessGrid import DataService
 from AccessGrid.scheduler import Scheduler
 from AccessGrid.Events import Event, HeartbeatEvent, DisconnectEvent, ClientExitingEvent
 from AccessGrid.Events import MarshalledEvent
 from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import GetHostname, ServerLock
 from AccessGrid.hosting.AccessControl import RoleManager, Subject
+from AccessGrid.hosting.pyGlobus import Client
 
 # these imports are for dealing with SOAP structs, which we won't have to 
 # do when we have WSDL; at that time, these imports and the corresponding calls
@@ -186,7 +187,6 @@ class VenueClientState:
     delivered to those services (after the client connects, before the
     client's event client connects to the service).
     """
-    
 
     def __init__(self, venue, privateId, profile):
         self.venue = venue
@@ -277,14 +277,13 @@ class Venue(ServiceBase.ServiceBase):
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
     """
-    def __init__(self, server, name, description, roleManager,
-                 dataStoreLocation, id=None):
+    def __init__(self, server, name, description, roleManager, id=None):
         """
         Venue constructor.
         """
 
         log.debug("------------ STARTING VENUE")
-
+        self.dataStoreProxy = None
         self.server = server
         self.name = name
         self.description = description
@@ -315,7 +314,6 @@ class Venue(ServiceBase.ServiceBase):
 
         self.connections = dict()
         self.applications = dict()
- #       self.data = dict()
         self.services = dict()
         self.streamList = StreamDescriptionList()
         self.clients = dict()
@@ -328,7 +326,7 @@ class Venue(ServiceBase.ServiceBase):
         self.clientsBeingRemoved = {}
         self.clientsBeingRemovedLock = ServerLock("clientRemove")
 
-        self.dataStore = None
+        #self.dataStore = None
         self.producerCapabilities = []
         self.consumerCapabilities = []
 
@@ -350,42 +348,8 @@ class Venue(ServiceBase.ServiceBase):
                                                   ClientExitingEvent.CLIENT_EXITING,
                                                   self.EventServiceClientExits)
 
-        #
-        # Create the directory to hold the venue's data.
-        #
 
-        log.debug("data store location: %s" % dataStoreLocation)
-        
-        if dataStoreLocation is None or not os.path.exists(dataStoreLocation):
-            log.warn("Creating venue: Data storage path %s not valid",
-                     dataStoreLocation)
-            self.dataStorePath = None
-        else:
-            self.dataStorePath = os.path.join(dataStoreLocation, self.uniqueId)
-            if not os.path.exists(self.dataStorePath):
-                try:
-                    os.mkdir(self.dataStorePath)
-                except OSError:
-                    log.exception("Could not create venueStoragePath.")
-                    self.dataStorePath = None
-
-
-        # Start the data store
-
-        if self.dataStorePath is None or not os.path.isdir(self.dataStorePath):
-            log.warn("Not starting datastore for venue: %s does not exist %s",
-                     self.uniqueId, self.dataStorePath)
-            
-        self.server.dataTransferServer.RegisterPrefix(str(self.uniqueId), self)
-
-        try:
-            self.dataStore = DataStore.DataStore(self.dataStorePath,str(self.uniqueId))
-            self.dataStore.SetEventDistributor( self.server.eventService, self.uniqueId)
-            self.dataStore.SetTransferEngine(self.server.dataTransferServer)
-            log.info("Have upload url: %s", self.dataStore.GetUploadDescriptor())
-        except:
-            log.warn("Could not create venue data store")
-
+       
         #self.StartApplications()
 
     def __repr__(self):
@@ -507,14 +471,7 @@ class Venue(ServiceBase.ServiceBase):
                               self.streamList.GetStaticStreams() ))
         if len(slist):
             string += "streams : %s\n" % slist
-
-        # store venue data in the persistence file
-        dlist = self.dataStore.AsINIBlock()
-
-        if len(dlist):
-            string += "data : %s\n" % dlist
-        
-
+    
         # List of applications
         alist = ":".join(map(lambda app: app.GetId(),
                              self.applications.values()))
@@ -533,12 +490,7 @@ class Venue(ServiceBase.ServiceBase):
         if len(clist):
             string += "".join(map(lambda conn: conn.AsINIBlock(),
                                     self.connections.values() ))
-        #if len(dlist):
-        #    string += "".join(map(lambda data: data.AsINIBlock(), vdata ))
-
-        if len(dlist):
-            string += "".join(map(lambda data: data.AsINIBlock(), self.dataStore.GetDataDescriptions()))
-
+      
         if len(slist):
             string += "".join(map(lambda stream: stream.AsINIBlock(),
                                     self.streamList.GetStaticStreams()))
@@ -572,6 +524,13 @@ class Venue(ServiceBase.ServiceBase):
         This creates a Venue State filled in with the data from this
         venue.
         """
+      
+        try:
+            dList = self.dataStoreProxy.GetDataDescriptions()
+        except:
+            log.exception("Venue::AsVenueState: Failed to connect to datastore.")
+            dList = []
+             
         venueState = {
             'uniqueId' : self.uniqueId,
             'name' : self.name,
@@ -582,12 +541,12 @@ class Venue(ServiceBase.ServiceBase):
                                 self.applications.values()),
             'clients' : map(lambda c: c.GetClientProfile(), self.clients.values()),
             'services' : self.services.values(),
-            'data' : self.dataStore.GetDataDescriptions(),
+            'data' : dList,
             'eventLocation' : self.server.eventService.GetLocation(),
             'textLocation' : self.server.textService.GetLocation(),
             'backupServer' : self.server.backupServer
             }
-
+     
         return venueState
     
     def StartApplications(self):
@@ -608,17 +567,18 @@ class Venue(ServiceBase.ServiceBase):
                       appImpl.GetId(), appHandle)
 
 
-    def SetDataStore(self, dataStore):
+    def SetDataStore(self, dataStoreUrl):
         """
-        Set the Data Store for the Venue. This is usually set to the data
-        store the venue server uses.
+        Set the Data Store for the Venue. 
 
         **Arguments:**
 
-            *dataStore* Path to the data store.
+            *dataStore* Url to data store service.
 
         """
-        self.dataStore = dataStore
+        self.dataStoreProxy = Client.Handle(dataStoreUrl).GetProxy()
+              
+    SetDataStore.soap_export_as = "SetDataStore"
 
     def CleanupClients(self):
         """
@@ -668,6 +628,7 @@ class Venue(ServiceBase.ServiceBase):
         netService = NetService.CreateNetService(clientType,self,privateId)
         self.netServices[privateId] = (netService, time.time())
         return privateId
+
     AddNetService.soap_export_as = "AddNetService"
 
     def RemoveNetService(self, privateId):
@@ -710,7 +671,7 @@ class Venue(ServiceBase.ServiceBase):
         
         # log.debug("Got Client Heartbeat for %s at %s." % (privateId, now))
 
-        if event.venue != self.uniqueId:
+        if event.venue is not self.uniqueId:
             log.info("ClientHeartbeat: Received heartbeat for a different venue %s", event.venue)
        
         if self.clients.has_key(privateId):
@@ -770,7 +731,13 @@ class Venue(ServiceBase.ServiceBase):
         Virtual Venue. Currently there are a few threads in the Event
         Service.
         """
-        self.dataStore.Shutdown()
+               
+        try:
+            # Shut down data store in data service
+            dataService = Client.Handle(self.server.dataServiceUrl).GetProxy()
+            dataService.UnRegisterVenue(self.uniqueId)
+        except:
+            log.exception("Venue.ShutDown Could not shut down data store")
 
     def NegotiateCapabilities(self, vcstate):
         """
@@ -1074,6 +1041,7 @@ class Venue(ServiceBase.ServiceBase):
             streamDescriptions are the stream descriptions the venue
             has found best match this clients capabilities.
         """
+
         log.debug("Enter called.")
         
         privateId = None
@@ -1089,14 +1057,14 @@ class Venue(ServiceBase.ServiceBase):
             log.debug("Enter: Client already in venue: %s", privateId)
             # raise ClientAlreadyPresent
 
-
+        
         #
         # Send this before we set up client state, so that
         # we don't end up getting our own enter event enqueued.
         #
         
         self.DistributeEvent(Event(Event.ENTER, self.uniqueId, clientProfile))
-
+      
         #
         # Create venue client state object
         #
@@ -1104,8 +1072,9 @@ class Venue(ServiceBase.ServiceBase):
         vcstate = self.clients[privateId] = VenueClientState(self,
                                                              privateId,
                                                              clientProfile)
+     
         vcstate.UpdateAccessTime()
-        
+     
         # negotiate to get stream descriptions to return
         streamDescriptions = self.NegotiateCapabilities(vcstate)
 
@@ -1113,10 +1082,11 @@ class Venue(ServiceBase.ServiceBase):
         for c in self.clients.values():
             log.debug("   " + str(c))
         log.debug("Enter: Distribute enter event ")
-
+      
         try:
             state = self.AsVenueState()
             log.debug("state: %s", state)
+      
         except:
             log.exception("Enter: Can't get state.")
             raise InvalidVenueState
@@ -1404,9 +1374,10 @@ class Venue(ServiceBase.ServiceBase):
         #
 
         #rm = AccessControl.GetSecurityManager().role_manager
+
         sm = AccessControl.GetSecurityManager()
         rm = self.GetRoleManager()
-
+        
         # Special Case: if all users are DisallowedEntry, then specific users are allowed.
         if "ALL_USERS" in rm.validRoles["Venue.DisallowedEntry"].GetSubjectList():
             if not self._IsInRole("Venue.AllowedEntry"):
@@ -1416,18 +1387,19 @@ class Venue(ServiceBase.ServiceBase):
             if self._IsInRole("Venue.DisallowedEntry") or not self._IsInRole("Venue.AllowedEntry"):
                 raise NotAuthorized
 
+
         subject = AccessControl.GetSecurityManager().GetSubject()
         #print "Approved entry for", subject
         log.info("User %s Approved entry to %s", sm.GetSubject(), self )
         rm.validRoles["Venue.VenueUsers"].AddSubject(subject)
-
+        
         log.debug("wsEnter: Called.")
         
         clientProfile = CreateClientProfile(clientProfileStruct)
-
+     
         if clientProfile == None:
             raise InvalidClientProfileException
-
+     
         clientProfile.distinguishedName = AccessControl.GetSecurityManager().GetSubject().GetName()
 
         try:
@@ -1978,10 +1950,20 @@ class Venue(ServiceBase.ServiceBase):
             
         """
 
-        if self.dataStore is None:
+        if self.dataStoreProxy is None:
             return ""
         else:
-            return self.dataStore.GetUploadDescriptor(), self.dataStore.GetLocation()
+
+            descriptor = ""
+            location = ""
+            
+            try:
+                descriptor = self.dataStoreProxy.GetUploadDescriptor(),
+                location = self.dataStoreProxy.GetLocation()
+            except:
+                log.exception("Venue.GetDataStoreInformation Could not get data store location")
+            
+            return descriptor, location
         
     GetDataStoreInformation.soap_export_as = "GetDataStoreInformation"
 
@@ -2102,13 +2084,17 @@ class Venue(ServiceBase.ServiceBase):
         
         *dataDescription* Upon successfully removing the data.
         """
+               
         name = dataDescription.name
                          
         # This is venue resident so delete the file
         if(dataDescription.type is None or dataDescription.type == "None"):
             list = []
             list.append(dataDescription)
-            self.dataStore.RemoveFiles(list)
+            self.dataStoreProxy.RemoveFiles(list)
+
+        else:
+            log.info("Venue.RemoveData tried to remove non venue data. That should not happen")
             
         return dataDescription
 
@@ -2129,11 +2115,14 @@ class Venue(ServiceBase.ServiceBase):
             because None doesn't serialize right with our SOAP
             implementation.
         """
-        if self.dataStore is None:
-            returnValue = ''
-        else:
-            returnValue = self.dataStore.GetUploadDescriptor()
-    
+        returnValue = ''
+
+        if self.dataStoreProxy is not None:
+            try:
+                returnValue = self.dataStoreProxy.GetUploadDescriptor()
+            except:
+                log.exception("Venue.GetUploadDescription Failed to connect to datastore")
+                
         return returnValue
      
     GetUploadDescriptor.soap_export_as = "GetUploadDescriptor"
