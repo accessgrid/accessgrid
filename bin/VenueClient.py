@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.87 2003-03-25 21:42:55 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.88 2003-03-26 15:33:46 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -118,11 +118,19 @@ class VenueClientUI(wxApp, VenueClient):
     def AuthorizeLead(self, clientProfile):
         """
         Note: Overloaded from VenueClient
-        This method calls the notifies the user that somebody wants to follow him or
+        This method  notifies the user that somebody wants to follow him or
         her and allows the user to approve the request.
         """
         wxCallAfter(self.frame.AuthorizeLeadDialog, clientProfile)
-        
+
+    
+    def NotifyUnLead(self, clientProfile):
+        """
+        Note: Overloaded from VenueClient
+        This method  notifies the user that somebody wants to stop following him or
+        her
+        """
+        wxCallAfter(self.frame.NotifyUnLeadDialog, clientProfile)
 
     def __openProfileDialog(self):
         """
@@ -319,6 +327,7 @@ class VenueClientUI(wxApp, VenueClient):
             wxCallAfter(self.frame.CleanUp)
         except:
             pass
+        
         VenueClient.ExitVenue(self)
 
     def __setHistory(self, uri, back):
