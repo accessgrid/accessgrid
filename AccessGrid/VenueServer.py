@@ -1,9 +1,11 @@
 #-----------------------------------------------------------------------------
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
-# Author:      Ivan R. Judson
+#
+# Author:      Ivan R. Judson, Thomas D. Uram
+#
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.12 2003-01-17 17:26:35 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.13 2003-01-20 19:40:52 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -163,7 +165,7 @@ class VenueServer(ServiceBase.ServiceBase):
             coherencePort = self.config['CoherenceService.coherencePortBase'] + len(self.venues.keys())
 
             # Build the new coherenceService
-            coherenceService = CoherenceService.CoherenceService(NetworkLocation.UnicastNetworkLocation(socket.getfqdn(), coherencePort))
+            coherenceService = CoherenceService.CoherenceService( NetworkLocation.UnicastNetworkLocation(socket.getfqdn(), coherencePort))
 
             venueID = GUID.GUID()
             venuePath = "Venues/%s" % venueID
@@ -355,6 +357,46 @@ class VenueServer(ServiceBase.ServiceBase):
 
     GetCoherencePortBase.pass_connection_info = 1
     GetCoherencePortBase.soap_export_as = "GetCoherencePortBase"
+
+
+    def SetStorageLocation( self, path ):
+        """
+        Set the path for data storage
+        """
+        self.path = path
+    SetStorageLocation.pass_connection_info = 1
+    SetStorageLocation.soap_export_as = "SetStorageLocation"
+
+
+    def SetAddressAllocationMethod( self, addressAllocationMethod ):
+        """
+        Set the method used for multicast address allocation:
+            either RANDOM or INTERVAL (defined in MulticastAddressAllocator)
+        """
+        self.addressAllocationMethod = addressAllocationMethod
+    SetAddressAllocationMethod.pass_connection_info = 1
+    SetAddressAllocationMethod.soap_export_as = "SetAddressAllocationMethod"
+
+
+    def SetBaseAddress( self, address ):
+        """
+        Set base address used when allocating multicast addresses in
+        an interval
+        """
+        self.multicastAddressAllocator.SetBaseAddress( address )
+    SetBaseAddress.pass_connection_info = 1
+    SetBaseAddress.soap_export_as = "SetBaseAddress"
+
+
+    def SetAddressMask( self, mask ):
+        """
+        Set address mask used when allocating multicast addresses in
+        an interval
+        """
+        self.multicastAddressAllocator.SetAddressMask( mask )
+    SetAddressMask.pass_connection_info = 1
+    SetAddressMask.soap_export_as = "SetAddressMask"
+
 
     def Shutdown(self, connectionInfo, secondsFromNow):
         """
