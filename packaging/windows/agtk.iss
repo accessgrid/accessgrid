@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.80 2004-05-18 16:17:08 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.81 2004-05-18 16:31:09 judson Exp $
 ;
 
 ; Set externally
@@ -95,9 +95,7 @@ Source: README; DestDir: {app}; Flags: isreadme; DestName: README.txt
 
 ; Program Files
 Source: bin\*.*; DestDir: {app}\bin
-
-; GoToVenues.py File
-Source: tools\GoToVenue.py; DestDir: {app}\bin; DestName: GoToVenue.pyw
+Source: bin\GoToVenue.py; DestDir: {app}\bin; DestName: GoToVenue.pyw
 
 ; Special short cuts to invoke without the python console
 
