@@ -237,9 +237,9 @@ mkdir -p %{buildroot}/tmp/local_services
 %defattr(0644,root,root)
 %config %{sysconfdir}/AGNodeService.cfg
 %defattr(0644,ag,ag)
-%config %{sharedir}/%{name}/nodeConfig/defaultLinux
+%config %{sysconfdir}/nodeConfig/defaultLinux
 %defattr(-,root,root)
-%{sharedir}/%{name}/services/
+%{sysconfdir}/services/
 %{gnomedir}/%{name}/.desktop
 %{gnomedir}/%{name}/VenueClient.desktop
 %{gnomedir}/%{name}/VenueClient-PersonalNode.desktop
