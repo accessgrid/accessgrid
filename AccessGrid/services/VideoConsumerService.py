@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.8 2003-02-28 17:24:45 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.9 2003-03-14 17:34:13 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -38,8 +38,9 @@ class VideoConsumerService( AGService ):
          # Start the service; in this case, store command line args in a list and let
          # the superclass _Start the service
          options = []
-         options.append( "-C" )
-         options.append( '"' + self.streamDescription.name + '"' )
+         if self.streamDescription.name and len(self.streamDescription.name.strip()) > 0:
+            options.append( "-C" )
+            options.append( self.streamDescription.name )
          if self.streamDescription.encryptionKey != 0:
             options.append( "-K" )
             options.append( self.streamDescription.encryptionKey )
@@ -47,6 +48,7 @@ class VideoConsumerService( AGService ):
          options.append( '%d' % ( self.streamDescription.location.ttl ) )
          options.append( '%s/%d' % ( self.streamDescription.location.host, 
                                      self.streamDescription.location.port ) )
+         print "starting with options:", options
          self._Start( options )
       except:
          print "Exception in VideoConsumerService.Start", sys.exc_type, sys.exc_value
