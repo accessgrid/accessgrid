@@ -3,7 +3,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.3 2003-01-30 01:17:03 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.4 2003-01-30 21:43:21 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ print "Service running at: %s" % venueServer.get_handle()
 # We register signal handlers for the VenueServer. In the event of
 # a signal we just try to shut down cleanly.
 signal.signal(signal.SIGINT, SignalHandler)
-signal.signal(signal.SIGBREAK, SignalHandler)
+#signal.signal(signal.SIGBREAK, SignalHandler)
 signal.signal(signal.SIGTERM, SignalHandler)
 
 # We start the execution
