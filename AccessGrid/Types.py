@@ -5,13 +5,13 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.40 2004-02-20 20:11:23 lefvert Exp $
+# RCS-ID:      $Id: Types.py,v 1.41 2004-02-27 19:10:53 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.40 2004-02-20 20:11:23 lefvert Exp $"
+__revision__ = "$Id: Types.py,v 1.41 2004-02-27 19:10:53 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -24,8 +24,9 @@ log = logging.getLogger("AG.Types")
 from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetParameter, CreateParameter
 
 class VenueState:
-    def __init__( self, uniqueId, name, description, uri, connections, clients,
-                  data, eventLocation, textLocation, applications, services, backupServer=None ):
+    def __init__( self, uniqueId, name, description, uri, connections,
+                  clients, data, eventLocation, textLocation, applications,
+                  services, backupServer=None ):
         self.uniqueId = uniqueId
         self.name = name
         self.description = description
@@ -76,7 +77,8 @@ class VenueState:
     def AddUser( self, userProfile ):
         self.clients[userProfile.publicId] = userProfile
     def RemoveUser( self, userProfile ):
-        log.debug("removing user name=%s publicId=%s", userProfile.name, userProfile.publicId)
+        log.debug("removing user name=%s publicId=%s",
+                  userProfile.name, userProfile.publicId)
         log.debug("clients = %s", self.clients.items())
         del self.clients[userProfile.publicId]
         log.debug("RemoveUser complete")
