@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!C:\Python22\python.exe
+
 
 #-----------------------------------------------------------------------------
 # Name:        MailcapSetup.py
@@ -10,7 +11,7 @@
 # Author:      Ti Leggett
 # Copyright:   (c) 2002-2003
 # License:     See COPYING.txt
-# RCS-ID:      $Id: MailcapSetup.py,v 1.3 2003-05-20 17:57:09 leggett Exp $
+# RCS-ID:      $Id: MailcapSetup.py,v 1.4 2003-05-29 18:40:58 leggett Exp $
 #-----------------------------------------------------------------------------
 
 import os
@@ -18,11 +19,11 @@ import os.path
 import sys
 import AccessGrid.Platform
 import getopt
+import time
+import pprint
 
-#try:
-#    import win32api
-#except:
-#    pass
+if sys.platform == 'win32':
+    import win32api
 
 class Mailcap:
     def __init__(self):
@@ -87,11 +88,20 @@ class Mailcap:
             elif opt in ('-m', '--mime-type'):
                 self.mimetype = arg
             elif opt in ('-e', '--executable'):
-                self.executable = arg
+                if sys.platform == 'win32':
+                    try:
+                        self.executable = win32api.GetShortPathName(arg)
+                    except:
+                        import traceback
+                        traceback.print_exc()
+                else:
+                    self.executable = arg
+                self.executable = self.executable + " %s"
             elif opt in ('-d', '--description'):
                 self.description = arg
             elif opt in ('-n', '--nametemplate'):
                 self.nametemplate = arg
+                self.nametemplate = "%s." + self.nametemplate
             elif opt == '--mailcap':
                 self.mailcap = arg
             elif opt == '--uninstall':
