@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.188 2003-05-16 16:02:28 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.189 2003-05-16 19:29:37 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -36,6 +36,7 @@ from AccessGrid.TextClient import TextClientConnectException
 from pyGlobus.io import GSITCPSocket
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth, GetHostname
 from AccessGrid.Events import ConnectEvent, TextEvent, DisconnectEvent
+from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 
 try:
     import win32api
@@ -113,7 +114,7 @@ class VenueClientFrame(wxFrame):
                                                self.myVenuesDict, 'default venue')
         self.TextWindow = wxSashLayoutWindow(self, self.ID_WINDOW_BOTTOM, wxDefaultPosition,
                                              wxSize(200, 35))
-        self.textClientPanel = TextClientPanel(self.TextWindow, -1)
+        self.textClientPanel = TextClientPanel(self.TextWindow, -1, app)
         self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT, app)
         self.contentListPanel = ContentListPanel(self, app)
       
@@ -1646,10 +1647,12 @@ class TextClientPanel(wxPanel):
     location = None
     Processor = None
     ID_BUTTON = wxNewId()
-        
-    def __init__(self, *args, **kwds):
-        wxPanel.__init__(self, *args, **kwds)
+    textMessage = ''
+    
+    def __init__(self, parent, id, application):
+        wxPanel.__init__(self, parent, id)
         self.textOutputId = wxNewId()
+        self.app = application
         self.TextOutput = wxTextCtrl(self, self.textOutputId, "",
                                      style= wxTE_MULTILINE|wxTE_READONLY)
         self.label = wxStaticText(self, -1, "Your message:")
@@ -1704,8 +1707,20 @@ class TextClientPanel(wxPanel):
         self.TextOutput.Clear()
         self.TextInput.Clear()
 
-    def OutputText(self, text):
-        wxCallAfter( self.TextOutput.AppendText, text)
+    def OutputText(self, textPayload):
+        message, profile = textPayload.data
+
+        self.textMessage = ''
+
+        if textPayload.sender == GetDefaultIdentityDN():
+            self.textMessage =  "You say, \"%s\"\n" % (message)
+        elif(textPayload.sender != None):
+            self.textMessage = "%s says, \"%s\"\n" % (profile.name, message)
+        else:
+            self.textMessage = "Someone says, \"%s\"\n" % (profile.name, message)
+            log.info("Received text without a sender, SOMETHING IS WRONG")
+            
+        wxCallAfter( self.TextOutput.AppendText, self.textMessage)
 
     def __set_properties(self):
         self.SetSize((375, 225))
@@ -1728,8 +1743,11 @@ class TextClientPanel(wxPanel):
         if(self.venueId != None):
             log.debug("VenueClientUIClasses.py: User writes: %s"
                        % self.TextInput.GetValue())
+
+            # Both text message and profile is sent in the data parameter of TextPayload
+            # to use the profile information for text output.
             textEvent = TextEvent(self.venueId, None, 0,
-                                  self.TextInput.GetValue())
+                                  (self.TextInput.GetValue(), self.app.profile))
             try:
                 self.Processor.Input(textEvent)
                 self.TextInput.Clear()

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.13 2003-05-08 22:02:56 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.14 2003-05-16 19:29:37 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -97,23 +97,25 @@ class SimpleTextProcessor:
         
     def Output(self, text):
         """ """
-        data = text.data
+      
+        # The check is now made in the ui.
+        
+        #if text.sender == GetDefaultIdentityDN():
+        #    string = "You say, \"%s\"\n" % (data)
+        #elif text.sender != None:
+        #    name = text.sender
+        #    stuff = name.split('/')
+        #    for s in stuff[1:]:
+        #        if len(s):
+        #            (k,v) = s.split('=')
+        #            if k == 'CN':
+        #                name = v
+        #                string = "%s says, \"%s\"\n" % (name, data)
+        #            else:
+        #                string = "Someone says, \"%s\"\n" % (data)
 
-        if text.sender == GetDefaultIdentityDN():
-            string = "You say, \"%s\"\n" % (data)
-        elif text.sender != None:
-            name = text.sender
-            stuff = name.split('/')
-            for s in stuff[1:]:
-                if len(s):
-                    (k,v) = s.split('=')
-                    if k == 'CN':
-                        name = v
-                        string = "%s says, \"%s\"\n" % (name, data)
-                    else:
-                        string = "Someone says, \"%s\"\n" % (data)
-
-        self.textOutCallback(string)
+        # Added sender to the string.
+        self.textOutCallback(text)
 
     def ProcessNetwork(self):
         """ """
