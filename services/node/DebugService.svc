@@ -1,15 +1,15 @@
 [ServiceDescription]
 name = DebugService
 description = Example Debug Service
-capabilities = Capability1 Capability2 Capability3 Capability4
+capabilities = Capability1 Capability2
 executable = DebugService.py
 platform = neutral
 version = 1.0
 
-[Capability2]
+[Capability1]
 role = consumer
 type = audio
 
-[Capability4]
+[Capability2]
 role = consumer
 type = video
