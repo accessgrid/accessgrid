@@ -64,7 +64,8 @@ print "Building pyOpenSSL_AG"
 SetupModule("pyOpenSSL", SOURCE, DEST)
 
 print "Building pyGlobus"
-if sys.platform == 'win32':
+if sys.platform ==
+ 'win32':
     os.environ['GLOBUS_LOCATION']=os.path.join(SOURCE,'WinGlobus')
     flavor = 'win32'
 elif sys.platform == 'linux2':
@@ -76,12 +77,20 @@ else:
 os.chdir(os.path.join(SOURCE,'pyGlobus'))
 os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','clean',
           '--all')
-os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','build',
-          '--with-modules=io,security,util',
-          '--flavor=%s' % (flavor,))
-os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','install',
-          '--with-modules=io,security,util',
-          '--flavor=%s' % (flavor,),
-          '--prefix=%s' % (DEST,), 
-          '--no-compile')
-
+if sys.platform == 'win32':
+    os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','build',
+              '--flavor=%s' % (flavor,))
+    os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','install',
+              '--flavor=%s' % (flavor,),
+              '--prefix=%s' % (DEST,), 
+              '--no-compile')
+else:
+    os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','build',
+              '--with-modules=io,security,util',
+              '--flavor=%s' % (flavor,))
+    os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','install',
+              '--with-modules=io,security,util',
+              '--flavor=%s' % (flavor,),
+              '--prefix=%s' % (DEST,), 
+              '--no-compile')
+    
