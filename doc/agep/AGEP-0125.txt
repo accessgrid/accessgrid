@@ -1,0 +1,100 @@
+=====================================
+Node Service Improvement
+=====================================
+ 
+:version: $Revision: 1.1 $
+:author: Thoms Uram <turam@mcs.anl.gov>
+:status: Draft
+
+Abstract
+========
+
+
+
+Overview
+========
+
+This revision of the node service infrastructure aims to reach the goals we initially set out:
+
+- Ease of configuration
+- Ease of operation
+- Node automation
+- Performance improvements
+
+These goals will be fulfilled through the following tasks:
+
+- Run node components as services (init.d on linux, services on windows)
+- Make node components discoverable on the network (Rendezvous)
+- Enable services to discover and communicate with each other
+- Enable services to be imported and run in-process to eliminate SOAP calls
+    in addition to current execution of services
+- Executed processes should call back to service manager upon starting
+    instead of waiting for the service manager to contact them
+- Provide headless video capture tool (OpenMash)
+    - Need network control interface
+- Provide headless audio tool
+    - Need network control interface (pyMbus)
+- Provide necessary hooks for development of operator panel
+- Push resource discovery down to services, and aggregate with core resources discovered by service manager
+- Allow services to include a custom client and register it via mimetypes
+- Track execution of services (restart?)
+- Need more exception info returned through SOAP calls
+- Allow secure/insecure communications between components
+
+  
+
+Summary of Modifications
+========================
+
+FILL IN SUMMARY OF MODIFICATIONS
+
+Module Organization
+-------------------
+
+FILL IN MODULE ORGANIZATION
+   
+Specifications
+==============
+
+FILL IN SPECIFICATIONS
+
+Security Issues
+===============
+
+
+Interoperability Issues
+=======================
+
+FILL IN INTEROPERABILITY ISSUES
+
+Related AGEPs
+=============
+
+FILL IN RELATED AGEPS
+
+Implementation
+==============
+
+FILL IN IMPLEMENTATION
+
+References
+==========
+
+FILL IN REFERENCES
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
