@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.50 2003-02-22 16:34:18 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.51 2003-02-24 19:56:10 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -32,7 +32,8 @@ from AccessGrid.UIUtilities import ErrorDialog
 
 from AccessGrid.TextClientUI import TextClientUI
 from AccessGrid import DataStore
-
+from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
+ 
 class VenueClientUI(wxApp, VenueClient):
     """
     VenueClientUI is a wrapper for the base VenueClient.
