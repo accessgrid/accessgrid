@@ -12,4 +12,3 @@ if sys.platform == 'win32':
     AGNodeServiceFD.write("configDirectory = " + ConfigDir + "\n")
     AGNodeServiceFD.write("defaultNodeConfiguration = defaultWindows\n")
     AGNodeServiceFD.close()
-    
