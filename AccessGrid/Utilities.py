@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.41 2003-09-03 18:00:40 lefvert Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.42 2003-09-03 19:11:04 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -300,7 +300,7 @@ def SubmitBug(comment, profile, email):
     if profile:
         # Always set profile email to empty string so we don't write to wrong email address.
         profile.email = ""
-        profileString = profile.AsString()
+        profileString = str(profile)
 
     else:
         profileString = "This reporter does not have a client profile"
