@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.52 2003-02-24 22:53:17 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.53 2003-02-26 15:31:54 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -251,6 +251,10 @@ class VenueClientUI(wxApp, VenueClient):
     def GoToNewVenue(self, uri):
         if not HaveValidProxy():
             GPI()
+            
+       
+
+
                    
         if self.venueUri != None:
             oldUri = self.venueUri
@@ -280,11 +284,16 @@ class VenueClientUI(wxApp, VenueClient):
                     self.EnterVenue(oldUri) # go back to venue where we came from
                          
         else:
-            dlg = wxMessageDialog(self.frame, 
-                                  'The venue URL you specified is not valid',
-                                  "Invalid URL",
-                                  style = wxOK|wxICON_INFORMATION)
-            
+            if not HaveValidProxy():
+                text = 'You do not have a valid proxy.' +\
+                       '\nPlease, run "grid-proxy-init" on the command line"'
+                text2 = 'Invalid proxy'
+
+            else:
+                text = 'The venue URL you specified is not valid'
+                text2 = 'Invalid URL'
+
+            dlg = wxMessageDialog(self.frame, text, text2, style = wxOK|wxICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
 
