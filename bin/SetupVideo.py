@@ -6,11 +6,12 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: SetupVideo.py,v 1.4 2003-02-13 15:31:22 leggett Exp $
+# RCS-ID:      $Id: SetupVideo.py,v 1.5 2003-03-14 16:31:42 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 import os
+from AccessGrid import Platform
 
 tclScript = """set id [ open "videoresources" "w" ]
 if { [ info exists inputDeviceList] == 1 } { 
@@ -33,8 +34,12 @@ close $id
 adios
 """
 
-# modify path to include current dir
-os.environ["PATH"] = "." + os.pathsep + os.environ["PATH"]
+# modify path to include install dir so vic is found
+installDir = Platform.GetInstallDir()
+os.environ["PATH"] = installDir + os.pathsep + os.environ["PATH"]
+
+# change directory to config dir so videoresources file gets written there
+os.chdir( Platform.GetSystemConfigDir() )
 
 # write tcl script
 tclScriptFile="tclScript"
