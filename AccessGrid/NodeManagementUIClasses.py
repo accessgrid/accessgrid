@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.21 2003-04-01 17:26:02 eolson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.22 2003-04-22 21:53:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,6 +24,7 @@ from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid import icons
 from AccessGrid import Platform
 from AccessGrid.Utilities import HaveValidProxy
+from AccessGrid.UIUtilities import AboutDialog
 
 # imports for Debug menu; can be removed if Debug menu is removed
 from AccessGrid.Descriptions import StreamDescription
@@ -142,6 +143,62 @@ class MultiTextFieldDialog(wxDialog):
             fieldValues.append( textCtrl.GetValue() )
         return fieldValues
 
+class StoreConfigDialog(wxDialog):
+    """
+    StoreConfigDialog displays the following:
+    - a list of configurations
+    - a text field (which is filled from selections in the
+      list and can be edited)
+    - a default checkbox, to specify that the saved config
+      should be the default for the node
+    """
+    def __init__(self, parent, id, title, choices ):
+
+        wxDialog.__init__(self, parent, id, title, style = 
+                          wxDEFAULT_DIALOG_STYLE)
+        
+        # Set up sizers
+        gridSizer = wxFlexGridSizer(5, 1, 5, 5)
+        gridSizer.AddGrowableCol(0)
+        sizer1 = wxBoxSizer(wxVERTICAL)
+        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxHORIZONTAL)
+        sizer2.Add(gridSizer, 1, wxALL, 10)
+        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
+        self.SetSizer( sizer1 )
+        self.SetAutoLayout(1)
+
+        # Create config list label and listctrl
+        configLabel = wxStaticText(self,-1,"Configuration name")
+        self.configList = wxListBox(self,-1, style=wxLB_SINGLE, choices=choices)
+        gridSizer.Add( configLabel, 1 )
+        gridSizer.Add( self.configList, 0, wxEXPAND )
+        EVT_LISTBOX(self, self.configList.GetId(), self.__ListItemSelectedCallback)
+
+        # Create config text label and field
+        self.configText = wxTextCtrl(self,-1,"")
+        gridSizer.Add( self.configText, 1, wxEXPAND )
+
+        # Create default checkbox
+        self.defaultCheckbox = wxCheckBox(self,-1,"Set as default")
+        gridSizer.Add( self.defaultCheckbox, 1, wxEXPAND )
+    
+        # Create ok/cancel buttons
+        sizer3 = wxBoxSizer(wxHORIZONTAL)
+        okButton = wxButton( self, wxID_OK, "OK" )
+        cancelButton = wxButton( self, wxID_CANCEL, "Cancel" )
+        sizer3.Add(okButton, 0, wxALL, 10)
+        sizer3.Add(cancelButton, 0, wxALL, 10)
+        sizer1.Add(sizer3, 0, wxALIGN_CENTER)
+
+        sizer1.Fit(self)
+
+    def __ListItemSelectedCallback(self, event):
+        self.configText.SetValue( event.GetString() )
+
+    def GetValue(self):
+        # Get value of textfield and checkbox
+        return (self.configText.GetValue(), self.defaultCheckbox.IsChecked())
+
 class ServicePopup(wxPopupTransientWindow):
     """
     Popup for the service menu
@@ -251,11 +308,11 @@ class ServiceConfigurationPanel( wxPanel ):
             self.panelSizer.Add( psz, -1, wxEXPAND )
 
         psz = wxBoxSizer( wxVERTICAL )
-        b = wxButton( self.panel, 310, "Apply" )
+        b = wxButton( self.panel, 310, "OK" )
+        psz.Add( b, 0, wxALIGN_CENTER )
         if self.callback:
             EVT_BUTTON( self, 310, self.callback )
 
-        psz.Add( b, 0, wxALIGN_CENTER )
         self.panelSizer.Add( psz, -1, wxALIGN_CENTER )
 
 
@@ -278,6 +335,9 @@ class ServiceConfigurationPanel( wxPanel ):
 
     def SetCallback( self, callback ):
         self.callback = callback
+
+    def Cancel(self, event):
+        self.Destroy()
 
 
 class NodeManagementClientFrame(wxFrame):
@@ -329,7 +389,7 @@ class NodeManagementClientFrame(wxFrame):
         menuBar.Append(menu, "&Service");
 
         ## DEBUG menu
-
+        #"""
         debugMenu = wxMenu()
         debugMenu.Append(ID_VENUE_TESTROOM, "Go to Test Room", "Dum")
         debugMenu.Append(ID_VENUE_ARGONNE, "Go to Argonne", "Dum")
@@ -338,6 +398,7 @@ class NodeManagementClientFrame(wxFrame):
         debugMenu.AppendSeparator()
         debugMenu.Append(ID_DUM, "Kill Services", "")
         menuBar.Append(debugMenu, "&Debug");
+        #"""
 
         ## HELP menu
         helpMenu = wxMenu()
@@ -367,7 +428,7 @@ class NodeManagementClientFrame(wxFrame):
 
         # Handle events in the service managers list
         EVT_LIST_ITEM_RIGHT_CLICK(self, self.hostList.GetId(), self.PopupHostMenu)
-        EVT_LIST_ITEM_SELECTED( self, self.hostList.GetId(), self.UpdateServiceList )
+        EVT_LIST_ITEM_SELECTED( self, self.hostList.GetId(), self.ServiceManagerSelectedCB )
         EVT_LIST_ITEM_DESELECTED( self, self.hostList.GetId(), self.UpdateServiceList )
 
 
@@ -466,7 +527,7 @@ class NodeManagementClientFrame(wxFrame):
         """
         Load a configuration for the node service
         """
-        configs = self.nodeServiceHandle.get_proxy().GetConfigurations()
+        configs = self.nodeServiceHandle.GetProxy().GetConfigurations()
 
         d = wxSingleChoiceDialog( self, "Select a configuration file to load", "Load Configuration Dialog", configs.data )
         ret = d.ShowModal()
@@ -478,7 +539,7 @@ class NodeManagementClientFrame(wxFrame):
                 self.Error( "No selection made" )
                 return
 
-            self.nodeServiceHandle.get_proxy().LoadConfiguration( conf )
+            self.nodeServiceHandle.GetProxy().LoadConfiguration( conf )
             self.UpdateHostList()
             self.UpdateServiceList()
 
@@ -486,17 +547,34 @@ class NodeManagementClientFrame(wxFrame):
         """
         Store a node service configuration
         """
-        d = wxTextEntryDialog( self, "Enter configuration name", "Store Configuration Dialog" )
+
+        # Get known configurations from the Node Service
+        configs = self.nodeServiceHandle.GetProxy().GetConfigurations().data
+
+        # Prompt user to name the configuration
+        d = StoreConfigDialog(self,-1,"Store Configuration", configs )
         ret = d.ShowModal()
 
         if ret == wxID_OK:
-            configName = d.GetValue()
+            ret = d.GetValue()
+            if ret:
+                (configName,isDefault) = ret
+                #print "config = ", configName, isDefault
 
-            if len( configName ) == 0:
-                self.Error( "No selection made" )
-                return
+                # Handle error cases
+                if len( configName ) == 0:
+                    self.Error( "Invalid config name specified" )
+                    return
 
-            self.nodeServiceHandle.get_proxy().StoreConfiguration( configName )
+                # Store the configuration
+                self.nodeServiceHandle.GetProxy().StoreConfiguration( configName )
+
+                # Set the default configuration
+                if isDefault:
+                    self.nodeServiceHandle.GetProxy().SetDefaultConfiguration( configName )
+
+        d.Destroy()
+
 
     def TimeToQuit(self, event):
         """
@@ -548,7 +626,7 @@ class NodeManagementClientFrame(wxFrame):
             uri = 'https://%s:%s/ServiceManager' % (host,port)
             name = '%s:%s' % (host,port)
             try:
-                self.nodeServiceHandle.get_proxy().AddServiceManager( AGServiceManagerDescription( name, uri ) )
+                self.nodeServiceHandle.GetProxy().AddServiceManager( AGServiceManagerDescription( name, uri ) )
             except:
                 print "Exception in AddHost", sys.exc_type, sys.exc_value
                 self.Error( "Add Host failed" )
@@ -571,7 +649,7 @@ class NodeManagementClientFrame(wxFrame):
         index = -1
         for i in range( self.hostList.GetSelectedItemCount() ):
             index = self.hostList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-            self.nodeServiceHandle.get_proxy().RemoveServiceManager( self.serviceManagers[index] )
+            self.nodeServiceHandle.GetProxy().RemoveServiceManager( self.serviceManagers[index] )
 
         # Update the service manager list
         self.UpdateHostList()
@@ -593,7 +671,7 @@ class NodeManagementClientFrame(wxFrame):
 
         # Add service managers to the list
         i = 0
-        self.serviceManagers = self.nodeServiceHandle.get_proxy().GetServiceManagers()
+        self.serviceManagers = self.nodeServiceHandle.GetProxy().GetServiceManagers()
         for serviceManager in self.serviceManagers:
             item = self.hostList.InsertStringItem( i, serviceManager.name )
 
@@ -606,6 +684,14 @@ class NodeManagementClientFrame(wxFrame):
         # Update the service list
         if selectedServiceManagerUri:
             self.UpdateServiceList()
+
+    def ServiceManagerSelectedCB(self, event):
+        index = self.hostList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
+        if not Client.Handle( self.serviceManagers[index].uri ).IsValid():
+            self.Error("Service Manager is unreachable")
+            return
+
+        self.UpdateServiceList()
 
     ############################
     ## SERVICE menu
@@ -629,7 +715,7 @@ class NodeManagementClientFrame(wxFrame):
         serviceManager = self.serviceManagers[index]
 
         # Get services available
-        availServices =  self.nodeServiceHandle.get_proxy().GetAvailableServices()
+        availServices =  self.nodeServiceHandle.GetProxy().GetAvailableServices()
         availServiceNames = map( lambda serviceDesc: serviceDesc.name, availServices )
         
         #
@@ -654,7 +740,7 @@ class NodeManagementClientFrame(wxFrame):
             # Prompt for resource to assign
             #
             resourceToAssign = None
-            resources = Client.Handle( serviceManager.uri ).get_proxy().GetResources().data
+            resources = Client.Handle( serviceManager.uri ).GetProxy().GetResources().data
             if len(resources) > 0:
 
                 applicableResources1 = []
@@ -700,7 +786,7 @@ class NodeManagementClientFrame(wxFrame):
                 #
                 if serviceToAdd == None:
                     raise Exception("Can't add NULL service")
-                Client.Handle( serviceManager.uri ).get_proxy().AddService( serviceToAdd.servicePackageUri, 
+                Client.Handle( serviceManager.uri ).GetProxy().AddService( serviceToAdd.servicePackageUri, 
                                resourceToAssign,
                                None )
             except:
@@ -726,7 +812,7 @@ class NodeManagementClientFrame(wxFrame):
             for i in range( self.serviceList.GetSelectedItemCount() ):
                 index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
                 print "** Starting Service:", index
-                Client.Handle( self.services[index].uri ).get_proxy().Start()
+                Client.Handle( self.services[index].uri ).GetProxy().Start()
 
             # Update the services list
             self.UpdateServiceList()
@@ -738,9 +824,9 @@ class NodeManagementClientFrame(wxFrame):
         """ 
         Start all known services
         """
-        services = self.nodeServiceHandle.get_proxy().GetServices()
+        services = self.nodeServiceHandle.GetProxy().GetServices()
         for service in services:
-            Client.Handle( service.uri ).get_proxy().Start()
+            Client.Handle( service.uri ).GetProxy().Start()
 
         self.UpdateServiceList()
 
@@ -758,7 +844,7 @@ class NodeManagementClientFrame(wxFrame):
         index = -1
         for i in range( self.serviceList.GetSelectedItemCount() ):
             index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-            Client.Handle( self.services[index].uri ).get_proxy().Stop()
+            Client.Handle( self.services[index].uri ).GetProxy().Stop()
 
         # Update the service list
         self.UpdateServiceList()
@@ -767,9 +853,9 @@ class NodeManagementClientFrame(wxFrame):
         """
         Stop all known services
         """
-        svcs = self.nodeServiceHandle.get_proxy().GetServices()
+        svcs = self.nodeServiceHandle.GetProxy().GetServices()
         for svc in svcs:
-            Client.Handle( svc.uri ).get_proxy().Stop()
+            Client.Handle( svc.uri ).GetProxy().Stop()
 
         self.UpdateServiceList()
 
@@ -787,7 +873,7 @@ class NodeManagementClientFrame(wxFrame):
         index = -1
         for i in range( self.serviceList.GetSelectedItemCount() ):
             index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-            Client.Handle( self.services[index].serviceManagerUri ).get_proxy().RemoveService( self.services[index] )
+            Client.Handle( self.services[index].serviceManagerUri ).GetProxy().RemoveService( self.services[index] )
 
         # Update the service list
         self.UpdateServiceList()
@@ -807,8 +893,14 @@ class NodeManagementClientFrame(wxFrame):
 
         # Retrieve the service configuration 
         index = self.serviceList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
-        config = Client.Handle( self.services[index].uri ).get_proxy().GetConfiguration()
 
+        # Trap service unreachable
+        if not Client.Handle( self.services[index].uri ).IsValid():
+            self.Error("Service is unreachable")
+            return
+
+        # Get configuration
+        config = Client.Handle( self.services[index].uri ).GetProxy().GetConfiguration()
         if config == None or len(config) == 0 or config=="None":
             self.Error("No configurable parameters for service")
             return
@@ -861,7 +953,7 @@ class NodeManagementClientFrame(wxFrame):
         index = self.serviceList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
 
         # Send the modified configuration to the service
-        Client.Handle( self.services[index].uri ).get_proxy().SetConfiguration( serviceConfig )
+        Client.Handle( self.services[index].uri ).GetProxy().SetConfiguration( serviceConfig )
 
 
     def UpdateServiceList( self, event=None ):
@@ -878,12 +970,12 @@ class NodeManagementClientFrame(wxFrame):
 
         if len(self.serviceManagers) > 0 and index >= 0:
             for index in indices:
-                self.services = Client.Handle( self.serviceManagers[index].uri ).get_proxy().GetServices()
+                self.services = Client.Handle( self.serviceManagers[index].uri ).GetProxy().GetServices()
                 for svc in self.services:
                     itemindex = self.serviceList.InsertStringItem( i, svc.name )
                     self.serviceList.SetItemImage( itemindex, 0, 0 )
                     try:
-                        if Client.Handle( svc.uri ).get_proxy().IsStarted() == 1:
+                        if Client.Handle( svc.uri ).GetProxy().IsStarted() == 1:
                             self.serviceList.SetStringItem( i,1, "Started" )
                         else:
                             self.serviceList.SetStringItem( i,1, "Stopped" )
@@ -900,12 +992,8 @@ class NodeManagementClientFrame(wxFrame):
         """
         Display about AG info
         """
-        dlg = wxMessageDialog(self, "Access Grid 2.0\n"
-                              "www.accessgrid.org\n"
-                              "Argonne National Laboratory",
-                              "About AG2", wxOK | wxICON_INFORMATION)
-        dlg.ShowModal()
-        dlg.Destroy()
+        aboutDialog = AboutDialog(self, wxSIMPLE_BORDER)
+        aboutDialog.Popup()
 
 
 
@@ -914,45 +1002,52 @@ class NodeManagementClientFrame(wxFrame):
     ############################
     def GotoTestRoom( self, event=None ):
         streamDs = []
-        streamDs.append( StreamDescription( "Test Room", "",
+        streamDs.append( StreamDescription( "Test Room", 
                              MulticastNetworkLocation( "233.2.171.39", 42000, 127 ),
-                             Capability( Capability.CONSUMER, Capability.AUDIO ) ) )
-        streamDs.append( StreamDescription( "Test Room", "",
+                             Capability( Capability.CONSUMER, Capability.AUDIO ) ) ,
+                             0, None, 0 )
+        streamDs.append( StreamDescription( "Test Room", 
                              MulticastNetworkLocation( "233.2.171.38", 42002, 127 ),
-                             Capability( Capability.CONSUMER, Capability.VIDEO ) ) )
-        self.nodeServiceHandle.get_proxy().ConfigureStreams( streamDs )
+                             Capability( Capability.CONSUMER, Capability.VIDEO ) ),
+                             0, None, 0 )
+        self.nodeServiceHandle.GetProxy().ConfigureStreams( streamDs )
 
         self.UpdateServiceList()
 
     def GotoArgonne( self, event=None ):
         streamDs = []
-        streamDs.append( StreamDescription( "ANL", "",
+        streamDs.append( StreamDescription( "ANL", 
                              MulticastNetworkLocation( "233.2.171.251", 59988, 127 ),
-                             Capability( Capability.CONSUMER, Capability.AUDIO ) ) )
-        streamDs.append( StreamDescription( "ANL", "",
+                             Capability( Capability.CONSUMER, Capability.AUDIO ) ),
+                             0, None, 0 )
+        streamDs.append( StreamDescription( "ANL", 
                              MulticastNetworkLocation( "233.2.171.251", 59986, 127 ),
-                             Capability( Capability.CONSUMER, Capability.VIDEO ) ) )
-        self.nodeServiceHandle.get_proxy().ConfigureStreams( streamDs )
+                             Capability( Capability.CONSUMER, Capability.VIDEO ) ),
+                             0, None, 0 )
+        self.nodeServiceHandle.GetProxy().ConfigureStreams( streamDs )
 
         self.UpdateServiceList()
 
     def GotoLobby( self, event=None ):
         streamDs = []
-        streamDs.append( StreamDescription( "Lobby", "",
+        streamDs.append( StreamDescription( "Lobby", 
                              MulticastNetworkLocation( "224.2.177.155", 55524, 127 ),
-                             Capability( Capability.CONSUMER, Capability.VIDEO ) ) )
-        streamDs.append( StreamDescription( "Lobby", "",
+                             Capability( Capability.CONSUMER, Capability.VIDEO ) ),
+                             0, None, 0 )
+        streamDs.append( StreamDescription( "Lobby", 
                              MulticastNetworkLocation( "224.2.211.167", 16964, 127 ),
-                             Capability( Capability.CONSUMER, Capability.AUDIO ) ) )
-        self.nodeServiceHandle.get_proxy().ConfigureStreams( streamDs )
+                             Capability( Capability.CONSUMER, Capability.AUDIO ) ),
+                             0, None, 0 )
+        self.nodeServiceHandle.GetProxy().ConfigureStreams( streamDs )
         self.UpdateServiceList()
 
     def GotoLocal( self, event=None ):
         streamDs = []
-        streamDs.append( StreamDescription( "", "",
+        streamDs.append( StreamDescription( "", 
                              MulticastNetworkLocation( "localhost", 55524, 127 ),
-                             Capability( Capability.CONSUMER, Capability.VIDEO ) ) )
-        self.nodeServiceHandle.get_proxy().ConfigureStreams( streamDs )
+                             Capability( Capability.CONSUMER, Capability.VIDEO ) ),
+                             0, None, 0 )
+        self.nodeServiceHandle.GetProxy().ConfigureStreams( streamDs )
 
         self.UpdateServiceList()
 
