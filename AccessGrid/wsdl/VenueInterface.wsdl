@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  targetNamespace="http://www.accessgrid.org/v3.0">
+
+    <types>
+      <schema targetNamespace="http://www.accessgrid.org/v3.0" 
+              elementFormDefault="qualified" 
+	      attributeFormDefault="unqualified" 
+              xmlns="http://www.w3.org/2001/XMLSchema">
+
+	  <include schemaLocation="AccessGrid_Types.xsd"/>
+
+      </schema>
+    </types>
+
+    <message name="EnterRequest">
+	<part name="clientProfile" type="agtk:ClientProfile"/>
+    </message>
+    <message name="EnterResponse">
+	<part name="connectionId" type="xsd:string"/>
+    </message>
+    <message name="ExitRequest">
+	<part name="connectionId" type="xsd:string"/>
+    </message>
+    <message name="GetStateRequest">
+    </message>
+    <message name="GetStateResponse">
+    </message>
+    <message name="NegotiateCapabilitiesRequest">
+	<part name="capabilities" type="agtk:CapabilityList"/>
+	<part name="preferences" type="agtk:Preferences"/>
+    </message>
+    <message name="NegotiateCapabilitiesResponse">
+	<part name="streams" type="agtk:StreamList"/>
+    </message>
+    <message name="CreateApplicationRequest">
+	<part name="appDescription" type="agtk:ApplicationDescription"/>
+    </message>
+    <message name="CreateApplicationResponse">
+	<part name="appDescription" type="agtk:ApplicationDescription"/>
+    </message>
+    <message name="DestroyApplicationRequest">
+	<part name="appId" type="xsd:string"/>
+    </message>
+    <message name="AllocateMulticastLocationRequest">
+    </message>
+    <message name="AllocateMulticastLocationResponse">
+	<part name="multicastLocation" type="agtk:MulticastNetworkLocation"/>
+    </message>
+    <message name="RecycleMulticastLocationRequest">
+	<part name="multicastLocation" type="agtk:MulticastNetworkLocation"/>
+    </message>
+    <message name="AddNetworkLocationToStreamRequest">
+	<part name="streamId" type="xsd:string"/>
+	<part name="location" type="agtk:NetworkLocation"/>
+    </message>
+    <message name="AddNetworkLocationToStreamResponse">
+	<part name="id" type="xsd:string"/>
+    </message>
+    <message name="ShutdownRequest">
+	<part name="secondsFromNow" type="xsd:integer"/>
+    </message>
+    <message name="RegenerateEncryptionKeysRequest">
+    </message>
+    <message name="RegenerateEncryptionKeysResponse">
+	<part name="key" type="xsd:string"/>
+    </message>
+    <message name="ImportPolicyRequest">
+	<part name="policy" type="agtk:AuthorizationPolicy"/>
+    </message>
+    <message name="ExportPolicyRequest">
+    </message>
+    <message name="ExportPolicyResponse">
+	<part name="policy" type="agtk:AuthorizationPolicy"/>
+    </message>
+    <message name="GetPropertyRequest">
+	<part name="propertyDictionary" type="agtk:Dictionary"/>
+    </message>
+    <message name="GetPropertyResponse">
+        <part name="result" type="agtk:Dictionary"/>
+    </message>
+    <message name="SetPropertyRequest">
+	<part name="propertyDictionary" type="agtk:Dictionary"/>
+    </message>
+    <message name="SetPropertyResponse">
+	<part name="result" type="agtk:Dictionary"/>
+    </message>
+
+    <portType name="Venue">
+	<operation name="Enter">
+	    <input message="agtk:EnterRequest"/>
+	    <output message="agtk:EnterResponse"/>
+	</operation>
+	<operation name="Exit">
+	    <input message="agtk:ExitRequest"/>
+	</operation>
+	<operation name="GetState">
+	    <input message="agtk:GetStateRequest"/>
+	    <output message="agtk:GetStateResponse"/>
+	</operation>
+	<operation name="NegotiateCapabilities">
+	    <input message="agtk:NegotiateCapabilitiesRequest"/>
+	    <output message="agtk:NegotiateCapabilitiesResponse"/>
+	</operation>
+	<operation name="CreateApplication">
+	    <input message="agtk:CreateApplicationRequest"/>
+	    <output message="agtk:CreateApplicationResponse"/>
+	</operation>
+	<operation name="DestroyApplication">
+	    <input message="agtk:DestroyApplicationRequest"/>
+	</operation>
+	<operation name="AllocateMulticastLocation">
+	    <input message="agtk:AllocateMulticastLocationRequest"/>
+	    <output message="agtk:AllocateMulticastLocationResponse"/>
+	</operation>
+	<operation name="RecycleMulticastLocation">
+	    <input message="agtk:RecycleMulticastLocationRequest"/>
+	</operation>
+	<operation name="AddNetworkLocationToStream">
+	    <input message="agtk:AddNetworkLocationToStreamRequest"/>
+	    <output message="agtk:AddNetworkLocationToStreamResponse"/>
+	</operation>
+	<operation name="Shutdown">
+	    <input message="agtk:ShutdownRequest"/>
+	</operation>
+	<operation name="RegenerateEncryptionKeys">
+	    <input message="agtk:RegenerateEncryptionKeysRequest"/>
+	    <output message="agtk:RegenerateEncryptionKeysResponse"/>
+	</operation>
+	<operation name="ImportPolicy">
+	    <input message="agtk:ImportPolicyRequest"/>
+	</operation>
+	<operation name="ExportPolicy">
+	    <input message="agtk:ExportPolicyRequest"/>
+	    <output message="agtk:ExportPolicyResponse"/>
+	</operation>
+	<operation name="GetProperty">
+	    <input message="agtk:GetPropertyRequest"/>
+	    <output message="agtk:GetPropertyResponse"/>
+	</operation>
+	<operation name="SetProperty">
+	    <input message="agtk:SetPropertyRequest"/>
+            <output message="agtk:SetPropertyResponse"/>
+	</operation>
+    </portType>
+
+</definitions>

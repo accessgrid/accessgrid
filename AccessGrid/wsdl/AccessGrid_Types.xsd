@@ -3,11 +3,31 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema" 
         elementFormDefault="qualified" 
 	attributeFormDefault="unqualified">
+   
+    <xs:complexType name="NetworkLocation">
+      <xs:sequence>
+        <xs:element name="id" type="xs:string"/>
+        <xs:element name="host" type="xs:string"/>
+        <xs:element name="port" type="xs:integer"/>
+      </xs:sequence>
+    </xs:complexType>
 
-<!--
-    <xs:element name="VenueDescription" type="tns:VenueDescription"/>
-    <xs:element name="Dictionary" type="tns:Dictionary"/>
--->
+    <xs:complexType name="UnicastNetworkLocation">
+      <xs:complexContent>
+        <xs:extension base="tns:NetworkLocation">
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="MulticastNetworkLocation">
+      <xs:complexContent>
+        <xs:extension base="tns:NetworkLocation">
+          <xs:sequence>
+            <xs:element name="ttl" type="xs:integer"/>
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
 
     <xs:complexType name="Dictionary">
       <xs:sequence>
@@ -39,6 +59,25 @@
       </xs:sequence>
     </xs:complexType>
 	
+    <xs:complexType name="StreamDescription">
+      <xs:sequence>
+        <xs:element name = "id" type = "xs:string"/>
+        <xs:element name = "name" type = "xs:string"/>
+        <xs:element name = "location" type = "tns:NetworkLocation"/>
+        <xs:element name = "description" type = "xs:string"/>
+        <xs:element name = "encryptionFlag" type = "xs:integer"/>
+        <xs:element name = "encryptionKey" type = "xs:string"/>
+        <xs:element name = "static" type = "xs:boolean"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="StreamList">
+      <xs:sequence>
+        <xs:element name="streams" minOccurs="0" maxOccurs="unbounded" 
+                 type="tns:StreamDescription"/>
+      </xs:sequence>
+    </xs:complexType>
+	
     <xs:complexType name="VenueDescription">
       <xs:sequence>
 	<xs:element name="id" type="xs:string"/>
@@ -48,10 +87,30 @@
 	<xs:element name="encryptMedia" type="xs:integer"/>
 	<xs:element name="encryptionKey" type="xs:string"/>
 	<xs:element name="connections" type="tns:ConnectionList"/>
-<!--
-        <xs:element name="streams" type="tns:StreamDescription"/>
--->
+        <xs:element name="streams" type="tns:StreamList"/>
       </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CapabilityList">
+      <xs:sequence>
+        <xs:element name="streams" minOccurs="0" maxOccurs="unbounded" 
+                 type="tns:Capability"/>
+      </xs:sequence>
+    </xs:complexType>
+	
+    <xs:complexType name="ClientProfile">
+    </xs:complexType>
+
+    <xs:complexType name="Capability">
+    </xs:complexType>
+
+    <xs:complexType name="ApplicationDescription">
+    </xs:complexType>
+
+    <xs:complexType name="AuthorizationPolicy">
+    </xs:complexType>
+
+    <xs:complexType name="Preferences">
     </xs:complexType>
 
  </xs:schema>

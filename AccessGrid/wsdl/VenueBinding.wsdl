@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions 
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:agtk="http://www.accessgrid.org/v3.0"
+  targetNamespace="http://www.accessgrid.org/v3.0">
+
+  <import namespace="http://www.accessgrid.org/v3.0" 
+          location="VenueInterface.wsdl"/>
+
+  <binding name="SOAPBinding" type="agtk:Venue">
+    <soap:binding style="document" 
+                  transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="Enter">
+	    <soap:operation soapAction="urn:#Enter"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+	<operation name="Exit">
+	    <soap:operation soapAction="urn:#Exit"/>
+            <output>
+		<soap:body use="literal"/> 
+	    </output>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	</operation>
+   	<operation name="Shutdown">
+	    <soap:operation soapAction="urn:#Shutdown"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+	<operation name="GetState">
+	    <soap:operation soapAction="urn:#GetState"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+	<operation name="NegotiateCapabilities">
+	    <soap:operation soapAction="urn:#NegotiateCapabilities"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+	<operation name="GetProperty">
+	    <soap:operation soapAction="urn:#GetProperty"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	    <output>
+		<soap:body use="literal"/> 
+	    </output>
+	</operation>
+	<operation name="SetProperty">
+	    <soap:operation soapAction="urn:#SetProperty"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	</operation>
+	<operation name="CreateApplication">
+	    <soap:operation soapAction="urn:#CreateApplication"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	</operation>
+	<operation name="DestroyApplication">
+	    <soap:operation soapAction="urn:#DestroyApplication"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	</operation>
+	<operation name="AllocateMulticastLocation">
+	    <soap:operation soapAction="urn:#AllocateMulticastLocation"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	</operation>
+	<operation name="RecycleMulticastLocation">
+	    <soap:operation soapAction="urn:#RecycleMulticastLocation"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	</operation>
+	<operation name="AddNetworkLocationToStream">
+	    <soap:operation soapAction="urn:#AddNetworkLocationToStream"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	</operation>
+	<operation name="RegenerateEncryptionKeys">
+	    <soap:operation soapAction="urn:#RegenerateEncryptionKeys"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	</operation>
+	<operation name="ImportPolicy">
+	    <soap:operation soapAction="urn:#ImportPolicy"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	</operation>
+	<operation name="ExportPolicy">
+	    <soap:operation soapAction="urn:#ExportPolicy"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	</operation>
+    </binding>
+
+    <service name="Venue">
+        <port name="VenueSOAP" binding="agtk:SOAPBinding">
+	    <soap:address location="http://localhost:7000"/>
+	</port>
+    </service>
+
+</definitions>
