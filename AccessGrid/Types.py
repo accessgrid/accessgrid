@@ -9,6 +9,25 @@ import SocketServer
 from AGParameter import *
 
 
+
+class Event:
+    def __init__( self, eventType, data ):
+        self.eventType = eventType
+        self.data = data
+
+    ENTER = "Enter"
+    EXIT = "Exit"
+    ADD_DATA = "Add data"
+    REMOVE_DATA = "Remove data"
+    ADD_SERVICE = "Add service"
+    REMOVE_SERVICE = "Remove service"
+    ADD_CONNECTION = "Add connection"
+    REMOVE_CONNECTION = "Remove connection"
+
+
+
+
+
 class AGResource:
    def __init__( self, type=None, resource=None ):
       self.type = type
@@ -21,7 +40,7 @@ class AGResource:
       self.type = type
    
    def GetResource( self ):      
-      return self.type
+      return self.resource
    def SetResource( self, resource ): 
       self.resource = resource
 
@@ -165,13 +184,9 @@ class AGServiceImplementationRepository:
 # FIXME - location of services should be configurable by clients
       files = os.listdir("services")
       for file in files:
-         """
-         serviceImpl = AGServiceImplementation()
-         serviceImpl.ReadServiceImplementationFile( "services/"+file )
-         self.serviceImplementations.append( serviceImpl )
-         """
-         self.serviceImplementations.append( 'http://%s:%d/services/%s' % 
-            ( socket.gethostname(), self.httpd_port, file ) )
+         if file.endswith(".zip"):
+            self.serviceImplementations.append( 'http://%s:%d/services/%s' % 
+               ( socket.gethostname(), self.httpd_port, file ) )
 
 
    def GetServiceImplementations( self ):
