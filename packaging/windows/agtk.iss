@@ -1,12 +1,19 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.105 2004-09-08 18:06:37 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.106 2004-09-08 18:34:53 judson Exp $
 ;
 
 ; Set externally
 ; SourceDir : The location of the AccessGrid Build Tree
+; BuildDir : The location of the prebuilt distribution
 ; AppVersion : what version are you packaging
 ; VersionInformation: a string indicating the more version information
-; PythonVersion: a string indicating the version of python (2.2 or 2.3)
+; PythonSubVersion: a string indicating the version of python (2.2 or 2.3)
+
+;#define SourceDir "\software\AccessGrid\build"
+;#define BuildDir "\software\AccessGrid\build\dist-20040908_130651"
+;#define AppVersion "2.3"
+;#define VersionInformation "Test Final"
+;#define PythonSubVersion "3"
 
 #ifndef SourceDir
 #error "SourceDir must be defined to build a package."
@@ -22,6 +29,10 @@
 
 #ifndef VersionInformation
 #error "VersionInformation must be defined to build a package."
+#endif
+
+#ifndef PythonSubVersion
+#error "PythonSubVersion must be defined to build a package."
 #endif
 
 ; used internally
@@ -112,6 +123,7 @@ Source: SharedApplications\*.agpkg; DestDir: {app}\SharedApplications
 ; System wide files, windows wierdness no doubt
 Source: install\agicons.exe; DestDir: {app}\install
 Source: install\msvcr70.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
+Source: install\msvcr71.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
 ; end system files
 
 [Icons]
