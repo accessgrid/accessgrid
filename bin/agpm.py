@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.3 2003-10-21 03:27:40 judson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.4 2003-11-16 23:45:25 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This program is used to register applications with the users AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.3 2003-10-21 03:27:40 judson Exp $"
+__revision__ = "$Id: agpm.py,v 1.4 2003-11-16 23:45:25 judson Exp $"
 
 import os
 import re
@@ -62,7 +62,7 @@ def UnpackZip(filename):
                                 or parts[1] == 'shared_app_pkg'):
             appFile = filename
         bytes = zipArchive.read(filename)
-        out = file(os.path.join(workingDir, filename), "w")
+        out = file(os.path.join(workingDir, filename), "wb")
         out.write(bytes)
         out.close()
 
