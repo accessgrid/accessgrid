@@ -31,6 +31,7 @@
     <message name="GetStateRequest">
     </message>
     <message name="GetStateResponse">
+	<part name="isStateValid" type="xsd:integer"/>
     </message>
     <message name="NegotiateCapabilitiesRequest">
 	<part name="capabilities" type="agtk:CapabilityList"/>
