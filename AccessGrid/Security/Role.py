@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.6 2004-03-12 05:23:12 judson Exp $
+# RCS-ID:      $Id: Role.py,v 1.7 2004-03-16 18:07:13 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ much more dynamic. We programmatically create, destroy and modify
 roles.
 """
 
-__revision__ = "$Id: Role.py,v 1.6 2004-03-12 05:23:12 judson Exp $"
+__revision__ = "$Id: Role.py,v 1.7 2004-03-16 18:07:13 lefvert Exp $"
 
 # external imports
 import xml.dom.minidom
@@ -186,7 +186,7 @@ class Role:
         if not isinstance(subject, Subject):
             raise InvalidSubject
 
-        cm = Application.instance().GetCertififcateManager()
+        cm = Application.instance().GetCertificateManager()
         di = cm.GetDefaultIdentity()
 
         if di == subject:
