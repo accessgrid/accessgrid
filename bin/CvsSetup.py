@@ -27,6 +27,7 @@ import os
 import sys
 import shutil
 import getopt
+import re
 
 
 # Borrowed from Platform.py
@@ -157,11 +158,32 @@ os.system(mk_command)
 
 # Copy default configuration files
 
-win_config_src = os.path.join( AG_BASE_DIR, "packaging", "config", "defaultWindows")
-win_config_dst = os.path.join( DST_CONFIG_DIR, "nodeConfig", "defaultWindows")
-if verbose:
-    print "    copying file ", win_config_src, "to ", win_config_dst
-shutil.copyfile( win_config_src, win_config_dst )
+if sys.platform == 'win32':
+    win_config_src = os.path.join( AG_BASE_DIR, "packaging", "config", "defaultWindows")
+    win_config_dst = os.path.join( DST_CONFIG_DIR, "nodeConfig", "defaultWindows")
+    #if verbose:
+        #print "    copying file ", win_config_src, "to ", win_config_dst
+    #shutil.copyfile( win_config_src, win_config_dst )
+
+    # Remove the "c:\program files\access grid toolkit" in the defaultWindows file so we don't require a previous installation.
+    executable_path_replace = re.compile('c:\program files\access grid toolkit')
+
+    print "\n    Creating file", win_config_dst, "from", win_config_src
+    if verbose:
+        print r"        removing \"c:\program files\access grid toolkit\" from rat and vic paths"
+
+    file = open(win_config_src) 
+    new_file = open(win_config_dst, "w")
+
+    # Remove the path 
+    for line in file:
+        if line.startswith("executable"): 
+            line = executable_path_replace.sub("", line)
+        new_file.write(line)
+
+    file.close()
+    new_file.close()
+
 
 unix_config_src = os.path.join( AG_BASE_DIR, "packaging", "config", "defaultLinux")
 unix_config_dst = os.path.join( DST_CONFIG_DIR, "nodeConfig", "defaultLinux")
@@ -228,7 +250,9 @@ smfile.close()
 
 # Tell users how to use the new configuration files.
 
-print "\n"
+
+print "\n    --------------------------------------------------------------"
+print ""
 print "    If you want to setup video resources for this configuration,"
 print "       set the environment as instructed below, "
 print "       and run: \"python SetupVideo.py\" \n"
