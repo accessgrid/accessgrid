@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.62 2004-08-04 18:51:37 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.63 2004-08-12 20:53:58 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.62 2004-08-04 18:51:37 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.63 2004-08-12 20:53:58 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -380,6 +380,7 @@ class FileLocationWidget(wxPanel):
         self.path = self.text.GetValue()
         if self.fileSelectCB is not None:
             self.fileSelectCB(self, self.path)
+        event.Skip()
 
     def OnBrowse(self, event):
         path = self.path
