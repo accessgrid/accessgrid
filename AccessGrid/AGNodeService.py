@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.21 2003-03-19 23:09:25 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.22 2003-04-03 20:56:08 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -20,7 +20,6 @@ import logging
 
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
-from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
 
 from AccessGrid.Descriptions import AGServiceDescription, AGServiceManagerDescription
@@ -84,7 +83,7 @@ class AGNodeService( ServiceBase ):
             self.__PushAuthorizedUserList()
         except:
             log.exception("Exception in AGNodeService.AddAuthorizedUser.")
-            raise faultType("Failed to add user authorization: " + authorizedUser )
+            raise Exception("Failed to add user authorization: " + authorizedUser )
     AddAuthorizedUser.soap_export_as = "AddAuthorizedUser"
 
 
@@ -95,7 +94,7 @@ class AGNodeService( ServiceBase ):
             self.__PushAuthorizedUserList()
         except:
             log.exception("Exception in AGNodeService.RemoveAuthorizedUser.")
-            raise faultType("Failed to remove user authorization: " + authorizedUser )
+            raise Exception("Failed to remove user authorization: " + authorizedUser )
     RemoveAuthorizedUser.soap_export_as = "RemoveAuthorizedUser"
 
 
@@ -109,7 +108,7 @@ class AGNodeService( ServiceBase ):
         # Try to reach the service manager
         if not Client.Handle( serviceManager.uri ).IsValid():
             log.exception("Exception in AddServiceManager.")
-            raise faultType("Service Manager is unreachable: "
+            raise Exception("Service Manager is unreachable: "
                             + serviceManager.uri )
 
         #
@@ -121,7 +120,7 @@ class AGNodeService( ServiceBase ):
                            self.authManager.GetAuthorizedUsers() )
         except:
             log.exception("Exception in AGNodeService.AddServiceManager.")
-            raise faultType("Failed to set Service Manager user authorization: " + 
+            raise Exception("Failed to set Service Manager user authorization: " + 
                             serviceManager.uri )
         
     AddServiceManager.soap_export_as = "AddServiceManager"
@@ -137,7 +136,7 @@ class AGNodeService( ServiceBase ):
                     break
         except:
             log.exception("Exception in AGNodeService.RemoveServiceManager.")
-            raise faultType("AGNodeService.RemoveServiceManager failed: " + 
+            raise Exception("AGNodeService.RemoveServiceManager failed: " + 
                             serviceManagerToRemove.uri )
     RemoveServiceManager.soap_export_as = "RemoveServiceManager"
 
@@ -173,7 +172,7 @@ class AGNodeService( ServiceBase ):
 
         except:
             log.exception("Exception in AGNodeService.GetServices.")
-            raise faultType("AGNodeService.GetServices failed: " + str( sys.exc_value ) )
+            raise Exception("AGNodeService.GetServices failed: " + str( sys.exc_value ) )
         return services
     GetServices.soap_export_as = "GetServices"
 
@@ -190,15 +189,15 @@ class AGNodeService( ServiceBase ):
         """
         services = self.GetServices()
         for service in services:
-            try:
-                serviceCapabilities = []
-                serviceCapabilities = map(lambda cap: cap.type, Client.Handle( service.uri ).get_proxy().GetCapabilities() )
-                for streamDescription in streamDescriptions:
+            serviceCapabilities = []
+            serviceCapabilities = map(lambda cap: cap.type, Client.Handle( service.uri ).get_proxy().GetCapabilities() )
+            for streamDescription in streamDescriptions:
+                try:
                     if streamDescription.capability.type in serviceCapabilities:
                         Client.Handle( service.uri ).get_proxy().ConfigureStream( streamDescription )
-            except:
-                log.exception("Exception in AGNodeService.ConfigureStreams.")
-                raise faultType("AGNodeService.ConfigureStreams failed: " + str( sys.exc_value ) )
+                except:
+                    log.exception("Exception in AGNodeService.ConfigureStreams.")
+                    
     ConfigureStreams.soap_export_as = "ConfigureStreams"
 
 
@@ -409,7 +408,7 @@ class AGNodeService( ServiceBase ):
 
         except:
             log.exception("Exception in AGNodeService.GetCapabilities.")
-            raise faultType("AGNodeService.GetCapabilities failed: " + str( sys.exc_value ) )
+            raise Exception("AGNodeService.GetCapabilities failed: " + str( sys.exc_value ) )
         return capabilities
     GetCapabilities.soap_export_as = "GetCapabilities"
 
