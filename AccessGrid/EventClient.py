@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.38 2004-04-07 12:59:43 turam Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.39 2004-04-09 14:23:57 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.38 2004-04-07 12:59:43 turam Exp $"
+__revision__ = "$Id: EventClient.py,v 1.39 2004-04-09 14:23:57 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from threading import Thread, Lock
@@ -59,12 +59,12 @@ class EventClientWriteDataException(Exception):
     """
     pass
 
-def readCallbackWrap(arg, handle, ret, buf, n):
+def readCallbackWrap(arg, handle, result, buf, n):
     log.debug("wrap: arg=%s", arg)
     obj = arg()
     if obj:
         log.debug("Got obj %s", obj)
-        obj.readCallbackWrap(None, handle, ret, buf, n)
+        obj.readCallbackWrap(None, handle, result, buf, n)
 
 class EventClient:
     """
@@ -166,7 +166,7 @@ class EventClient:
         self.cbHandle = h
         log.debug("Have callback handle %s", self.cbHandle)
 
-    def readCallbackWrap(self, arg, handle, ret, buf, n):
+    def readCallbackWrap(self, arg, handle, result, buf, n):
         """
         Asynch read callback.
 
@@ -175,28 +175,23 @@ class EventClient:
         """
         
         try:
-            return self.readCallback(arg, handle, ret, buf, n)
+            return self.readCallback(arg, handle, result, buf, n)
         except Exception:
             log.exception("readcallback failed")
                 
-    def readCallback(self, arg, handle, ret, buf, n):
+    def readCallback(self, arg, handle, result, buf, n):
 
-        log.debug("Got read handle=%s ret=%s  n=%s \n", handle, ret, n)
+        log.debug("Got read handle=%s result=%s  n=%s \n", handle, result, n)
 
-        #
-        # Check for new-style status returns
-        # 
+        if result[0] != 0:
+            log.debug("readCallback gets failure in result: %s %s", result[0], result[1])
+            try:
+                self.sock.close()
+            except IOBaseException:
+                pass
 
-        if type(ret) == types.TupleType:
-            if ret[0] != 0:
-                log.debug("readCallback gets failure in result: %s %s", ret[1], ret[2])
-                try:
-                    self.sock.close()
-                except IOBaseException:
-                    pass
-
-                self.connected = 0
-                return
+            self.connected = 0
+            return
                 
 
         if n == 0:
