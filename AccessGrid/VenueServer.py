@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.91 2003-09-02 22:27:57 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.92 2003-09-03 20:38:10 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -145,6 +145,7 @@ class VenueServer(ServiceBase.ServiceBase):
         #self.dataPort = 0
         self.eventPort = 0
         self.textPort = 0
+        self.internalDataService = None
                
         # Create a role manager so it can be used when loading persistent data. 
         self.roleManager = RoleManager()
@@ -179,8 +180,8 @@ class VenueServer(ServiceBase.ServiceBase):
                 self.dataServiceUrl = None
                 
         else:
-            dataService = DataService(self.dataStorageLocation, self.dataPort, 8600)
-            self.dataServiceUrl = dataService.GetHandle()
+            self.internalDataService = DataService(self.dataStorageLocation, self.dataPort, 8600)
+            self.dataServiceUrl = self.internalDataService.GetHandle()
 
         self.eventService = EventService((self.hostname, int(self.eventPort)))
         self.eventService.start()
@@ -1576,8 +1577,9 @@ class VenueServer(ServiceBase.ServiceBase):
         self.textService.Stop()
         log.info("                         event")
         self.eventService.Stop()
-        #log.info("                         data")
-        #self.dataTransferServer.stop()
+        if self.internalDataService:
+            log.info("                         data service")
+            self.internalDataService.Shutdown()
 
         self.hostingEnvironment.Stop()
         del self.hostingEnvironment
