@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.27 2004-08-23 18:19:57 judson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.28 2004-09-03 18:07:00 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.27 2004-08-23 18:19:57 judson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.28 2004-09-03 18:07:00 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -57,15 +57,13 @@ class AuthorizationUIPanel(wxPanel):
     def __init__(self, parent, id, log):
         wxPanel.__init__(self, parent, id, wxDefaultPosition)
         self.log = log
-        self.cacheRoleName = 'Registered People'
-        self.cacheRole = Role(self.cacheRoleName)
+        self.cacheRole = None
         self.roleToTreeIdDict = dict()
         self.x = -1
         self.y = -1
         self.currentRole = None
         self.allActions = []
         self.allRoles = []
-        self.allRoles.append(self.cacheRole)
         self.dragItem = None
         self.copyItem = None
         self.authClient = None
@@ -144,7 +142,23 @@ class AuthorizationUIPanel(wxPanel):
                 self.allRoles.append(r)
         except:
             self.log.exception("AuthorizationUIPanel.ConnectToAuthManager:Failed to list roles. %s"%(authUrl))
-        
+
+
+        # Add cached subjects.
+        self.cacheRoleName = 'Registered People'
+       
+        # Check if we already have the Registered People role.
+        for r in self.allRoles:
+            if r.GetName() == self.cacheRoleName:
+                self.cacheRole = r
+               
+        # Add Registered People role.
+        if not self.cacheRole:
+            self.cacheRole = Role(self.cacheRoleName)
+            self.allRoles.append(self.cacheRole)
+
+        self.__AddCachedSubjects()
+                        
         # Get Actions
         try:
            
@@ -160,7 +174,6 @@ class AuthorizationUIPanel(wxPanel):
             self.allActions = []
             #MessageDialog(None, "Failed to load actions", "Error")
 
-        self.__AddCachedSubjects()
         self.__initTree()
 
     def __AddCachedSubjects(self):
@@ -745,8 +758,8 @@ class AuthorizationUIPanel(wxPanel):
         authP = authDoc.documentElement
 
         for role in self.allRoles:
-            if self.cacheRoleName != role.name:
-                authP.appendChild(role.ToXML(authDoc))
+            #if self.cacheRoleName != role.name:
+            authP.appendChild(role.ToXML(authDoc))
         
         for a in self.allActions:
             authP.appendChild(a.ToXML(authDoc, 1))
@@ -786,8 +799,12 @@ class AuthorizationUIPanel(wxPanel):
             self.changed = 1
             
             # Save subject
-            activeRole.AddSubject(subject)
-                        
+            try:
+                activeRole.AddSubject(subject)
+
+            except:
+                log.exception("Error adding person to role")
+                MessageDialog(self, "Can not add person to this role.", "Notification")
             # Insert subject in tree
             index = self.roleToTreeIdDict[activeRole]
             subjectId = self.tree.AppendItem(index, subject.GetCN(),
