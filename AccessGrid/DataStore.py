@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.30 2003-07-15 20:19:38 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.31 2003-08-07 16:11:52 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -347,7 +347,12 @@ class DataStore(ServiceBase):
             #
             if url is None:
                 log.debug("DataStore.LoadPersistentData: File %s is not valid, remove it" %data.name)
-                self.callbackClass.Remove(data)
+
+                try:
+                    self.callbackClass.RemoveData(data)
+                except:
+                    # Data has vanished
+                    pass
 
             #
             # Change url if data storage location has changed
@@ -412,7 +417,7 @@ class DataStore(ServiceBase):
                 # We don't have to raise an exception for this
 
             path = os.path.join(self.pathname, data.name)
-                        
+                                   
             if not os.path.exists(path):
                 errorFlag = 1
                 log.error("DataStore.RemoveFiles: The path does not exist %s"%path)
@@ -2053,8 +2058,7 @@ if __name__ == "__main__":
     #
     # Test DataDescriptionContainer
     # 
-    print '------------ Test DataDescriptionContainer'
-
+  
     class FAKEEvent:
         '''
         To test DataDescriptionContainer
