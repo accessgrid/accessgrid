@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.10 2003-01-24 04:30:08 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.11 2003-01-29 22:13:26 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,6 +23,7 @@ class Event:
 
     ENTER = "Enter"
     EXIT = "Exit"
+    MODIFY_USER = "Modify user"
     ADD_DATA = "Add data"
     REMOVE_DATA = "Remove data"
     ADD_SERVICE = "Add service"
