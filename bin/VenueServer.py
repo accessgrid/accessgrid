@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.18 2003-04-25 03:56:14 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.19 2003-04-26 07:00:40 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,6 +18,8 @@ import threading
 
 from AccessGrid.hosting.pyGlobus import Server, ServiceBase
 from AccessGrid.VenueServer import VenueServer
+from AccessGrid.Utilities import HaveValidProxy
+from AccessGrid.Platform import GPI
 
 # defaults
 running = 0
@@ -85,7 +87,11 @@ if debugMode:
     hdlr.setFormatter(fmt)
     log.addHandler(hdlr)
 
-# First thing we do is create a hosting environment
+# Real first thing we do is get a sane environment
+if not HaveValidProxy():
+    GPI()
+
+# Second thing we do is create a hosting environment
 hostingEnvironment = Server.Server(port, auth_callback=AuthCallback)
 
 # Then we create a VenueServer, giving it the hosting environment
