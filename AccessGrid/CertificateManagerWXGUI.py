@@ -89,17 +89,19 @@ class PassphraseDialog(wxDialog):
         grid = wxFlexGridSizer(cols = 2, hgap = 3, vgap = 3)
         sizer.Add(grid, 1, wxEXPAND | wxALL, 4)
 
-        t = wxStaticText(self, -1, "Passphrase:")
+        t = wxStaticText(self, -1, "Pass phrase:")
         grid.Add(t, 0, wxALL, 4)
 
-        self.passphraseText = wxTextCtrl(self, -1,
-                                         style = wxTE_PASSWORD)
+        passId = wxNewId()
+        self.passphraseText = wxTextCtrl(self, passId,
+                                         style = wxTE_PASSWORD | wxTE_PROCESS_ENTER )
         grid.Add(self.passphraseText, 0, wxEXPAND | wxALL, 4)
 
         t = wxStaticText(self, -1, "Key size:")
         grid.Add(t, 0, wxALL, 4)
 
-        self.keyList = wxComboBox(self, -1,
+        keyId = wxNewId()
+        self.keyList = wxComboBox(self, keyId,
                                   style = wxCB_READONLY,
                                   choices = ["512", "1024", "2048", "4096"])
         self.keyList.SetSelection(1)
@@ -108,7 +110,8 @@ class PassphraseDialog(wxDialog):
         t = wxStaticText(self, -1, "Proxy lifetime (hours):")
         grid.Add(t, 0, wxALL, 4)
 
-        self.lifetimeText = wxTextCtrl(self, -1, "8")
+        lifeTimeId = wxNewId()
+        self.lifetimeText = wxTextCtrl(self, lifeTimeId, "8", style = wxTE_PROCESS_ENTER )
         grid.Add(self.lifetimeText, 0, wxEXPAND | wxALL, 4)
 
         grid.AddGrowableCol(1)
@@ -125,6 +128,10 @@ class PassphraseDialog(wxDialog):
         h.Add(b, 0, wxALL, 4)
         EVT_BUTTON(self, b.GetId(), self.OnCancel)
 
+        EVT_TEXT_ENTER(self, passId, self.KeyDown)
+        EVT_TEXT_ENTER(self, keyId, self.KeyDown)
+        EVT_TEXT_ENTER(self, lifeTimeId, self.KeyDown)
+       
         self.SetSizer(sizer)
         self.SetAutoLayout(True)
         self.Fit()
@@ -139,6 +146,9 @@ class PassphraseDialog(wxDialog):
 
     def OnCancel(self, event):
         self.EndModal(wxID_CANCEL)
+
+    def KeyDown(self, event):
+        self.EndModal(wxID_OK)
 
 
 class RepositoryBrowser(wxPanel):
