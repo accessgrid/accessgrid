@@ -56,7 +56,7 @@ class ImportIdentityCertDialog(wxDialog):
         """
 
         ret = self.ShowModal()
-        print "Ret is", wxID_OK
+        # print "Ret is", wxID_OK
         if ret != wxID_OK:
             return None
 
@@ -207,7 +207,7 @@ it. The private key may be included in the certificate file.
     def SetRequirePKFile(self, requireFile):
         self.RequirePKFile = requireFile
         self.pkWidget.Enable(requireFile)
-        print "Set radio button to ", requireFile
+        #print "Set radio button to ", requireFile
         self.pkFileRadioButton.SetValue(requireFile)
         self.pkCertRadioButton.SetValue(not requireFile)
         
@@ -220,8 +220,6 @@ it. The private key may be included in the certificate file.
         a file browser or by the user hitting enter in the
         cert file text widget.
         """
-
-        print "path is ", path
 
         classify = CertificateRepository.ClassifyCertificate(path)
 
@@ -271,7 +269,7 @@ it. The private key may be included in the certificate file.
         ret = dlg.ShowModal()
 
         if ret == wxID_YES:
-            print "Retrying"
+            #print "Retrying"
             return
         else:
             self.EndModal(wxID_CANCEL)
@@ -327,7 +325,7 @@ it. The private key may be included in the certificate file.
 
         classify = CertificateRepository.ClassifyCertificate(certPath)
 
-        print "Classify %s returns %s" % (certPath, classify)
+        # print "Classify %s returns %s" % (certPath, classify)
 
         #
         # If it fails, we're most likely not going to be able
