@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.75 2004-09-15 22:02:25 eolson Exp $
+# RCS-ID:      $Id: setup.py,v 1.76 2004-09-16 18:18:22 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -181,6 +181,8 @@ mac_scripts = [ r"bin/VenueServer.py",
                   r"bin/NodeManagement.py",
                   r"bin/NodeSetupWizard.py",
                   r"bin/CertificateRequestTool.py",
+                  r"bin/CertificateManager.py",
+                  r"bin/AGNodeService.py",
                   r"bin/BridgeServer.py",
                   r"bin/certmgr.py",
                   r"bin/agpm.py",
