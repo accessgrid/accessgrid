@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.136 2003-04-11 23:37:47 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.137 2003-04-17 20:06:05 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1257,6 +1257,7 @@ class ContentListPanel(wxPanel):
             wxLogDebug("This is personal data")
             id = profile.type
             if(self.participantDict.has_key(id)):
+                wxLogDebug("Data belongs to a participant")
                 participantId = self.participantDict[id]
                 dataId = self.tree.AppendItem(participantId, profile.name, \
                                      self.defaultDataId, self.defaultDataId)
@@ -1264,11 +1265,16 @@ class ContentListPanel(wxPanel):
                 self.personalDataDict[profile.name] = dataId
 
             elif (self.nodeDict.has_key(id)):
+                wxLogDebug("Data belongs to a node")
                 nodeId = self.nodeDict[id]
                 dataId = self.tree.AppendItem(nodeId, profile.name, \
                                      self.defaultDataId, self.defaultDataId)
                 self.tree.SetItemData(dataId, wxTreeItemData(profile))
                 self.personalDataDict[profile.name] = dataId
+
+            elif (self.nodeDict.has_key(id)):
+                wxLogInfo("Owner of data does not exist")
+            
        
     def UpdateData(self, profile):
         id = None
@@ -1439,6 +1445,7 @@ class ContentListPanel(wxPanel):
         elif self.participantDict.has_key(item.publicId) or \
                  self.nodeDict.has_key(item.publicId):
 
+            wxLogDebug("Is this me? public is = %s, my id = %s "%(item.publicId, self.app.profile.publicId))
             if(item.publicId == self.app.profile.publicId):
                 wxLogDebug("This is me")
                 self.PopupMenu(self.parent.meMenu, wxPoint(self.x, self.y))
@@ -1460,8 +1467,8 @@ class ContentListPanel(wxPanel):
         for index in self.nodeDict.values():
             self.tree.Delete(index)
         
-        #for index in self.serviceDict.values():
-        #    self.tree.Delete(index)
+        for index in self.serviceDict.values():
+            self.tree.Delete(index)
         
         for index in self.dataDict.values():
             self.tree.Delete(index)
@@ -1471,7 +1478,7 @@ class ContentListPanel(wxPanel):
         
         self.participantDict.clear()
         self.dataDict.clear()
-        # self.serviceDict.clear()
+        self.serviceDict.clear()
         self.nodeDict.clear()
         self.applicationDict.clear()
                             
@@ -2226,20 +2233,20 @@ class DataDropTarget(wxFileDropTarget):
         else:
             self.app.UploadVenueFiles(files)
              
-class FileDropTarget(wxFileDropTarget):
-    def __init__(self, dock):
-        wxFileDropTarget.__init__(self)
-        self.dock = dock
-        self.do = wxFileDataObject()
-        self.SetDataObject(self.do)
-        
-    def OnDropFiles(self, x, y, filenames):
-        wxLogDebug('Drop files  %s' %str(filenames))
-        for file in filenames:
-            fileNameList = file.split('/')
-            fileName = fileNameList[len(fileNameList)-1]
-            self.dock.AddSimpleTool(20, icons.getDefaultDataBitmap(), fileName)
-        return true
+#class FileDropTarget(wxFileDropTarget):
+#    def __init__(self, dock):
+#        wxFileDropTarget.__init__(self)
+#        self.dock = dock
+#        self.do = wxFileDataObject()
+#        self.SetDataObject(self.do)
+#        
+#    def OnDropFiles(self, x, y, filenames):
+#        wxLogDebug('Drop files  %s' %str(filenames))
+#        for file in filenames:
+#            fileNameList = file.split('/')
+#            fileName = fileNameList[len(fileNameList)-1]
+#            self.dock.AddSimpleTool(20, icons.getDefaultDataBitmap(), fileName)
+#        return true
 
     def OnData(self, x, y, d):
         wxLogDebug('on data')
