@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.24 2003-04-24 18:36:47 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.25 2003-04-24 19:55:37 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -239,6 +239,7 @@ def InitMimeTypes(file):
     """
     This function is used to load in our AG specific mimetypes.
     """
+    success = 0
     # This only works for augmenting the mailcap entries on Linux
     if os.path.isfile(file):
         success = mtm.ReadMailcap(file, 1)
