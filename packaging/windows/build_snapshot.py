@@ -26,6 +26,7 @@ import win32con
 import getopt
 import _winreg
 from win32com.shell import shell, shellcon
+import shutil
 
 def usage():
     print "%s:" % sys.argv[0]
@@ -39,24 +40,6 @@ def usage():
     print "    -c|--checkoutcvs : get a fresh copy from cvs"
     print "    -v|--verbose : be noisy"
 
-def del_dir(path):
-    for file in os.listdir(path):
-        file_or_dir = os.path.join(path,file)
-        if os.path.isdir(file_or_dir) and not os.path.islink(file_or_dir):
-            #it's a directory reucursive call to function again
-            del_dir(file_or_dir) 
-        else:
-            try:
-                #it's a file, delete it
-                os.remove(file_or_dir) 
-            except:
-                #probably failed because it is not a normal file
-                win32api.SetFileAttributes(file_or_dir,
-                                           win32con.FILE_ATTRIBUTE_NORMAL)
-                #it's a file, delete it
-                os.remove(file_or_dir)
-        #delete the directory here
-        os.rmdir(path) 
 
 # Names for the software
 long_version_name = ""
@@ -131,7 +114,22 @@ for o, a in opts:
         usage()
         sys.exit(0)
 
-# Obvious variables we can use are SYSTEMDRIVE and HOMEDRIVE.
+
+# Make sure destination directory is valid
+
+if not os.path.exists(DestDir):
+    print "Creating desination directory:",DestDir
+    try:
+        os.mkdir(DestDir)
+    except OSError:
+        print "\nError: Could not create Desination Dir:",DestDir
+        print "\nPlease specify a different Destination Directory with command-line option -d."
+        sys.exit()
+if not os.path.exists(DestDir):
+    print "Destination Dir is invalid:",DestDir
+    sys.exit()
+
+
 build_dir = os.path.join(TempDir, BuildTime)
 
 #
@@ -235,7 +233,7 @@ fix_srcdir_dst = SourceDir.replace('\\', r'\\')
 if verbose:
     print "S SRC:",  fix_srcdir_src, " S DST: ", fix_srcdir_dst
 
-fix_dstdir_src = re.escape(r'C:\Software\AccessGrid-Build')
+fix_dstdir_src = re.escape(r'C:\AccessGridBuild\AccessGrid-Build')
 fix_dstdir_dst = DestDir.replace('\\', r'\\')
 if verbose:
     print "D SRC: ", fix_dstdir_src, " D DST: ", fix_dstdir_dst
@@ -259,10 +257,12 @@ section = ""
 for line in file:
 
     # Fix up vic, rat, source, and destination paths
+
+    line = re.sub(fix_dstdir_src, fix_dstdir_dst, line)
     line = re.sub(fix_vic_src, fix_vic_dst, line)
     line = re.sub(fix_rat_src, fix_rat_dst, line)
+    # Replace srcdir last is a substring of dstdir, rat_src, and vic_src
     line = re.sub(fix_srcdir_src, fix_srcdir_dst, line)
-    line = re.sub(fix_dstdir_src, fix_dstdir_dst, line)
 
     # Fix up application version strings
     if line.startswith("#define AppVersionLong"):
@@ -311,7 +311,12 @@ for cmd, args in commands:
 # Now we can compile
 #
 
-os.system(inno_compiler + " " + iss_new)
+# Add quotes around command.
+inno_compiler_exec = "\"" + inno_compiler + "\""
+inno_compiler_command = inno_compiler_exec + " " + iss_new
+if verbose:
+    print "Executing:",inno_compiler_command, "from directory: ", os.getcwd()
+os.system(inno_compiler_command)
 
 #
 # Now we clean up
@@ -319,6 +324,7 @@ os.system(inno_compiler + " " + iss_new)
 
 #os.remove(iss_new)
 
-del_dir(build_dir)
-del_dir(os.path.join(SourceDir, "AccessGrid\Release"))
-del_dir(os.path.join(SourceDir, "AccessGrid\build"))
+shutil.rmtree(build_dir)
+shutil.rmtree(os.path.join(SourceDir, r"AccessGrid\Release"))
+shutil.rmtree(os.path.join(SourceDir, r"AccessGrid\build"))
+
