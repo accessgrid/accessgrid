@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.85 2003-03-25 21:16:51 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.86 2003-03-25 21:41:27 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -94,7 +94,7 @@ class VenueClientUI(wxApp, VenueClient):
         except:
             wxLogDebug("profile does not exist")
             os.mkdir(self.accessGridPath)
-            
+           https://vv2.mcs.anl.gov:8880/Venues/000000f42704a7fa008c00dd000b00371fc 
     def ConnectToVenue(self):
         """
         This method is called during program startup. If this is the first time
@@ -235,7 +235,7 @@ class VenueClientUI(wxApp, VenueClient):
         wxCallAfter(wxLogDebug, "EVENT- Enter venue with url: %s" %(URL))
 
         # Make people you lead go to this venue
-        self.__getFollowers(URL)
+        #self.__getFollowers(URL)
 
         if self.venueUri != None:
             self.oldUri = self.venueUri
