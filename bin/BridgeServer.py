@@ -802,14 +802,14 @@ portMax = 40000
 
 # Lobby of ag-2 server
 [https://ag-2:8000/Venues/default]
-type = venue
+type = Venue
 # use this special port range for this venue
 portMin = 24000
 portMax = 24006
 
 # Entire transitional venue server
 [https://vv2.mcs.anl.gov:9000/VenueServer]
-type = venueServer
+type = VenueServer
 
 
 
