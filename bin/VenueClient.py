@@ -1,7 +1,6 @@
-import threading
 import os
-
 from wxPython.wx import *
+
 import AccessGrid.Types
 import AccessGrid.Utilities
 from AccessGrid.VenueClientUIClasses import VenueClient
@@ -26,11 +25,6 @@ class VenueClientUI(wxApp, VenueClient):
         self.gotClient = false
         return true
 
- #   def ConnectToServer(self):
-  #      venueServerUri = url
-   #     venueUri = Client.Handle( venueServerUri ).get_proxy().GetDefaultVenue()
-   #     self.ConnectToVenue(venueUri, file)
-        
     def ConnectToVenue(self):
         # venueServerUri = "https://localhost:6000/VenueServer"
         # venueUri = Client.Handle( venueServerUri ).get_proxy().GetDefaultVenue()
@@ -48,7 +42,6 @@ class VenueClientUI(wxApp, VenueClient):
                   
         if self.profile.IsDefault():  # not your profile
             self.__openProfileDialog()
-
         else:
             self.__startMainLoop(self.profile)
 
@@ -67,12 +60,6 @@ class VenueClientUI(wxApp, VenueClient):
         self.gotClient = true
         self.SetProfile(profile)
         uri = self.profile.homeVenue
-        try: # is this a server
-            venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
-            
-        except: # no, it is a venue
-            venueUri = uri
-
         try:
             self.client = Client.Handle(venueUri).get_proxy()
             self.EnterVenue(venueUri)
@@ -87,7 +74,6 @@ class VenueClientUI(wxApp, VenueClient):
 
             try: # is this a server
                 venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
-
             except: # no, it is a venue
                 venueUri = uri
 
@@ -246,6 +232,8 @@ if __name__ == "__main__":
     from AccessGrid.ClientProfile import ClientProfile
     from AccessGrid.Types import *
 
+    wxInitAllImageHandlers()
+    
     vc = VenueClientUI()
     vc.ConnectToVenue()
        
