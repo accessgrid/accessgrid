@@ -344,8 +344,7 @@ class SharedAppClient:
 
         try:
             components = self.__appProxy.GetComponents(self.__privateId)
-            print '----------------------- get components 2'
-            #components = self.__appProxy.GetComponents()
+          
         except Client.MethodNotFound, e:
             self.log.exception("SharedAppClient.GetComponents: Failed to get components")
             raise "The server you are connecting to is running old software. This method is not implemented in that version." 
