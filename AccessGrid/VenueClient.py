@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.59 2003-05-12 17:22:07 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.60 2003-05-12 17:58:50 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -78,7 +78,10 @@ class VenueClient( ServiceBase):
 
     def Heartbeat(self):
         if self.eventClient != None:
-            self.eventClient.Send(HeartbeatEvent(self.venueId, self.privateId))
+            try:
+                self.eventClient.Send(HeartbeatEvent(self.venueId, self.privateId))
+            except:
+                log.info("AccessGrid.VenueClient:: Heartbeat failed")
             
     def SetProfile(self, profile):
         self.profile = profile
@@ -317,8 +320,8 @@ class VenueClient( ServiceBase):
             
         self.eventClient.start()
         self.eventClient.Send(ConnectEvent(self.venueState.uniqueId,
-                                           self.privateId))
-            
+                                               self.privateId))
+                    
         self.heartbeatTask = self.houseKeeper.AddTask(self.Heartbeat, 5)
         self.heartbeatTask.start()
          
@@ -374,9 +377,9 @@ class VenueClient( ServiceBase):
 
         # Stop the event client
         log.info(" Stopping event client")
-        self.eventClient.Send(DisconnectEvent(self.venueState.uniqueId,
-                                              self.privateId))
         try:
+            self.eventClient.Send(DisconnectEvent(self.venueState.uniqueId,
+                                                  self.privateId))
             self.eventClient.Stop()
         except:
             # An exception is always thrown for some reason when I exit
