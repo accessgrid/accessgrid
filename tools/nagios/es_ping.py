@@ -25,7 +25,7 @@ hostOption = Option("--host", dest="host", metavar="HOST",
 	           default="localhost", 
 		   help="hostanme the event service.")
 app.AddCmdLineOption(hostOption)
-portOption = Option("--port", dest="port", metavar="PORT",
+portOption = Option("--port", dest="port", metavar="PORT", type="int",
 	           default=8002, 
 		   help="port of the event service.")
 app.AddCmdLineOption(portOption)
@@ -34,7 +34,7 @@ channelOption = Option("--channel", dest="channel", metavar="CHANNEL",
 		   help="channel of the event service.")
 app.AddCmdLineOption(channelOption)
 countOption = Option("--count", dest="count", metavar="COUNT",
-	           default=3, 
+	           default=3, type="int", 
 		   help="number of times to test.")
 app.AddCmdLineOption(countOption)
 timeoutOption = Option("-t", "--timeout", dest="timeout", 
