@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.208 2004-07-08 02:00:00 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.209 2004-07-08 19:13:41 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.208 2004-07-08 02:00:00 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.209 2004-07-08 19:13:41 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1803,7 +1803,10 @@ class Venue(AuthorizationMixIn):
         """
         return a list of the applications in this venue.
         """
-        return self.applications.values()
+        
+        # Create a list of application descriptions to return
+        adl = map( lambda a: a.AsApplicationDescription(), self.applications.values() )
+        return adl
         
     def CreateApplication(self, name, description, mimeType, aid = None ):
         """
