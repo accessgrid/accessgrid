@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.221 2003-09-24 22:30:25 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.222 2003-09-26 15:15:57 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1129,10 +1129,11 @@ class VenueClientUI(VenueClientEventSubscriber):
         for file in fileList:
 
             # Check if data is already added
-            pathParts = file.split('/')
+            pathParts = os.path.split(file)
             index = len(pathParts)-1
             name = pathParts[index]
 
+            newData = 1
             dataDescriptions = self.venueClient.dataStore.GetDataDescriptions()
             for data in dataDescriptions:
                 if data.name == name:
@@ -1142,12 +1143,19 @@ class VenueClientUI(VenueClientEventSubscriber):
                     # Overwrite?
                     if dlg.ShowModal() == wxID_OK:
                         self.venueClient.dataStore.RemoveFiles([data])
+                        newData = 0
                     else:
                         return
                      
             try:
                 my_identity = self.app.GetDefaultIdentityDN()
                 self.venueClient.dataStore.UploadLocalFiles([file], my_identity, self.venueClient.profile.publicId)
+
+                # Send an event alerting about new data (only if it is new)
+                if newData: 
+                    dataDescription = self.venueClient.dataStore.GetDescription(name)
+                    self.venueClient.SendEvent(Events.AddDataEvent(self.venueClient.GetEventChannelId(), 
+                                                            dataDescription))
             except DataStore.DuplicateFile, e:
                 title = "Duplicated File"
                 info = "This file %s is already added. Rename your file and add it again." %e
@@ -1291,6 +1299,8 @@ class VenueClientUI(VenueClientEventSubscriber):
         
         try:
             self.venueClient.RemoveData(data, ownerProfile)
+            self.venueClient.SendEvent(Events.RemoveDataEvent(self.venueClient.GetEventChannelId(), 
+                                                       data))
 
         except NotAuthorizedError:
             log.info("bin.VenueClient::RemoveData: Not authorized to  remove data")
