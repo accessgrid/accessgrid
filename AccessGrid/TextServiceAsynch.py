@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.13 2003-09-26 16:34:03 turam Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.14 2003-09-28 23:16:15 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.13 2003-09-26 16:34:03 turam Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.14 2003-09-28 23:16:15 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import socket
@@ -533,6 +533,8 @@ class TextService:
 
         for ch in self.channels.keys():
             self.RemoveChannel(ch)
+            if self.channels.has_key(ch):
+                del self.channels[ch]
             
         self.running = 0
         self.queueThread.join()
