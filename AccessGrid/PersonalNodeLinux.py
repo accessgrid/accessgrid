@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: PersonalNodeLinux.py,v 1.2 2003-04-23 20:30:04 olson Exp $
+# RCS-ID:      $Id: PersonalNodeLinux.py,v 1.3 2003-04-23 21:35:28 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -142,11 +142,10 @@ class PersonalNodeManager:
 
         path = os.path.join(Platform.GetInstallDir(), "AGServiceManager.py")
 
+        python = sys.executable
         if self.debugMode:
-            python = "python"
             dflag = "--debug"
         else:
-            python = "python"
             dflag = ""
 
         args = [python, path, "--pnode", self.serviceManagerArg]
@@ -163,11 +162,10 @@ class PersonalNodeManager:
     def startNodeService(self):
         path = os.path.join(Platform.GetInstallDir(), "AGNodeService.py")
 
+        python = sys.executable
         if self.debugMode:
-            python = "python"
             dflag = "--debug"
         else:
-            python = "python"
             dflag = ""
 
         args = [python, path, "--pnode", self.nodeServiceArg]
