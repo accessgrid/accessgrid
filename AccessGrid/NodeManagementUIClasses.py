@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.47 2003-10-23 21:31:03 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.48 2003-10-23 21:35:07 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.47 2003-10-23 21:31:03 lefvert Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.48 2003-10-23 21:35:07 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -815,6 +815,8 @@ class NodeManagementClientFrame(wxFrame):
         #
         dlg = wxSingleChoiceDialog( self, "Select Service to Add", "Add Service: Select Service",
                                     availServiceNames )
+
+        dlg.SetSize(wxSize(300,200))
         ret = dlg.ShowModal()
 
         if ret == wxID_OK:
