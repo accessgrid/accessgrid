@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.31 2003-05-28 19:44:43 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.32 2003-05-28 22:00:42 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -945,7 +945,7 @@ class NodeManagementClientFrame(wxFrame):
         # Trap service unreachable
         try:
             Client.Handle( self.services[index].uri ).IsValid()
-        except Client.InvalidHandleException:
+        except:
             self.Error("Service is unreachable")
             return
             

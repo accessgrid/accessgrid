@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.28 2003-05-27 19:52:04 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.29 2003-05-28 22:00:18 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -197,7 +197,7 @@ class AGServiceManager( ServiceBase ):
                     Client.Handle(serviceUrl).IsValid()
                     print "* * Service handle is valid ! "
                     break
-                except Client.InvalidHandleException:
+                except:
                     print "Wait another sec for service to boot"
                     print " - elapsedTries = ", elapsedTries
                     time.sleep(1)
