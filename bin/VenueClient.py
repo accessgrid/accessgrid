@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.55 2003-02-27 21:25:15 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.56 2003-02-28 15:06:49 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -41,6 +41,8 @@ class VenueClientUI(wxApp, VenueClient):
     It updates its UI when it enters or exits a venue or
     receives a coherence event. 
     """
+    upload_url = None
+    
     def OnInit(self):
         """
         This method initiates all gui related classes.
@@ -251,13 +253,11 @@ class VenueClientUI(wxApp, VenueClient):
         VenueClient.ExitVenue(self)
         
     def GoToNewVenue(self, uri):
+        oldUri = None
+        
         if not HaveValidProxy():
             GPI()
             
-       
-
-
-                   
         if self.venueUri != None:
             oldUri = self.venueUri
         else:
@@ -286,7 +286,13 @@ class VenueClientUI(wxApp, VenueClient):
                     self.EnterVenue(oldUri) # go back to venue where we came from
                          
         else:
+            if(oldUri is not None):
+                wxCallAfter(self.frame.FillInAddress, None, oldUri)
+            else:
+                wxCallAfter(self.frame.FillInAddress, None, self.profile.homeVenue)
+            
             if not HaveValidProxy():
+                
                 text = 'You do not have a valid proxy.' +\
                        '\nPlease, run "grid-proxy-init" on the command line"'
                 text2 = 'Invalid proxy'
@@ -294,7 +300,7 @@ class VenueClientUI(wxApp, VenueClient):
             else:
                 text = 'The venue URL you specified is not valid'
                 text2 = 'Invalid URL'
-
+                
             dlg = wxMessageDialog(self.frame, text, text2, style = wxOK|wxICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()

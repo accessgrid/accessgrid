@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.50 2003-02-27 21:25:41 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.51 2003-02-28 15:07:47 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -40,35 +40,35 @@ class VenueClientFrame(wxFrame):
     venue/room, which contents will be shown in the contentListPanel.
     
     '''
-    ID_WINDOW_TOP    = 5100
-    ID_WINDOW_LEFT1  = 5101
-    ID_WINDOW_LEFT2  = 5102
-    ID_WINDOW_BOTTOM = 5103
-    ID_VENUE_DATA = NewId()
-    ID_VENUE_DATA_ADD = NewId() 
-    ID_VENUE_DATA_SAVE = NewId() 
-    ID_VENUE_DATA_DELETE = NewId() 
-    ID_VENUE_SERVICE = NewId() 
-    ID_VENUE_SERVICE_ADD = NewId()
+    ID_WINDOW_TOP           = NewId()
+    ID_WINDOW_LEFT1         = NewId()
+    ID_WINDOW_LEFT2         = NewId()
+    ID_WINDOW_BOTTOM        = NewId()
+    ID_VENUE_DATA           = NewId()
+    ID_VENUE_DATA_ADD       = NewId() 
+    ID_VENUE_DATA_SAVE      = NewId() 
+    ID_VENUE_DATA_DELETE    = NewId() 
+    ID_VENUE_SERVICE        = NewId() 
+    ID_VENUE_SERVICE_ADD    = NewId()
     ID_VENUE_SERVICE_DELETE = NewId()
-    ID_VENUE_VIRTUAL = NewId()
-    ID_VENUE_TEXT = NewId()
-    ID_VENUE_CLOSE = NewId()
-    ID_PROFILE = NewId()
-    ID_PROFILE_EDIT = NewId()
-    ID_MYNODE_MANAGE = NewId()
-    ID_MYNODE_URL = NewId()
-    ID_MYVENUE_ADD = NewId()
-    ID_HELP = NewId()
-    ID_HELP_ABOUT = NewId()
-    ID_PARTICIPANT_PROFILE = NewId()
-    ID_PARTICIPANT_FOLLOW = NewId()
-    ID_PARTICIPANT_LEAD = NewId()
-    ID_NODE_PROFILE = NewId()
-    ID_NODE_FOLLOW = NewId()
-    ID_NODE_LEAD = NewId()
-    ID_NODE_MANAGE = NewId()
-    ID_ME_PROFILE = NewId()
+    ID_VENUE_VIRTUAL        = NewId()
+    ID_VENUE_TEXT           = NewId()
+    ID_VENUE_CLOSE          = NewId()
+    ID_PROFILE              = NewId()
+    ID_PROFILE_EDIT         = NewId()
+    ID_MYNODE_MANAGE        = NewId()
+    ID_MYNODE_URL           = NewId()
+    ID_MYVENUE_ADD          = NewId()
+    ID_HELP                 = NewId()
+    ID_HELP_ABOUT           = NewId()
+    ID_PARTICIPANT_PROFILE  = NewId()
+    ID_PARTICIPANT_FOLLOW   = NewId()
+    ID_PARTICIPANT_LEAD     = NewId()
+    ID_NODE_PROFILE         = NewId()
+    ID_NODE_FOLLOW          = NewId()
+    ID_NODE_LEAD            = NewId()
+    ID_NODE_MANAGE          = NewId()
+    ID_ME_PROFILE           = NewId()
       
     def __init__(self, parent, id, title, app = None):
         wxFrame.__init__(self, parent, id, title)
@@ -96,6 +96,7 @@ class VenueClientFrame(wxFrame):
         self.venueListPanel.SetAlignment(wxLAYOUT_LEFT)
         
         self.contentListPanel = ContentListPanel(self, app)
+        self.venueListPanel.Show()
         wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
         
         #fileDropTarget = FileDropTarget(self.dock)
@@ -204,6 +205,7 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_DATA_DELETE, false)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
         self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, false)
+        self.menubar.Enable(self.ID_MYVENUE_ADD , false)
        
     def ShowMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, true)
@@ -211,6 +213,7 @@ class VenueClientFrame(wxFrame):
         self.menubar.Enable(self.ID_VENUE_DATA_DELETE, true)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
         self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, true)
+        self.menubar.Enable(self.ID_MYVENUE_ADD, true)
      
     def __setEvents(self):
         EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_TOP,
@@ -289,7 +292,6 @@ class VenueClientFrame(wxFrame):
             fixedUrl = ""
             for x in fixedUrlList:
                 fixedUrl = fixedUrl + x
-
         else:
             fixedUrl = url
         
@@ -344,31 +346,33 @@ class VenueClientFrame(wxFrame):
             id = NewId()
             self.myVenues.Append(id, url, url)
             EVT_MENU(self, id, self.FillInAddress)
-
+   
     def AddToMyVenues(self, event):
-        #setMyVenueUrlDialog = UrlDialog(self, -1, "Add venue URL to your venues", \
-        #                                '', "Please, specify the URL of the venue you want to add to\nyour venues")
-        #if setMyVenueUrlDialog.ShowModal() == wxID_OK:
-            id = NewId()
-            url = self.app.venueUri#setMyVenueUrlDialog.address.GetValue()
-
-            text = url + " \nis added to your venues"
-            dlg = wxMessageDialog(self, text, "Add venue",
-                                  wxOK | wxICON_INFORMATION)
-            if(dlg.ShowModal() == wxID_OK):
+        id = NewId()
+        url = self.app.venueUri
+        
+        if url is not None:
+            if(url not in self.myVenuesList):
                 self.myVenues.Append(id, url)
                 self.myVenuesList.append(url)
                 EVT_MENU(self, id, self.FillInAddress)
-
+                
                 myVenuesFile = open(self.myVenuesFile, 'w')
+                text = url + " \nis added to your venues"
+                
                 for venueUrl in self.myVenuesList:
                     myVenuesFile.write(venueUrl+'\n')
+                    
                 myVenuesFile.close()
-
+                                       
+            else:
+                text = url + " \nis already added to your venues"
+                    
+            dlg = wxMessageDialog(self, text, "Add venue",
+                                          wxOK | wxICON_INFORMATION)
+            dlg.ShowModal()
             dlg.Destroy()
-                                               
-        #setMyVenueUrlDialog.Destroy()
-                       
+                                  
     def Exit(self, event):
         '''
         Called when the window is closed using the built in close button
@@ -842,7 +846,10 @@ class ContentListPanel(wxPanel):
 			       | wxTR_NO_LINES  \
                               # | wxTR_TWIST_BUTTONS \
 			       | wxTR_HIDE_ROOT)
-	
+        
+	fileDropTarget = FileDropTarget(self)
+        self.tree.SetDropTarget(fileDropTarget)
+        
         self.participantDict = {}
         self.dataDict = {}
         self.serviceDict = {}
@@ -850,13 +857,11 @@ class ContentListPanel(wxPanel):
 	self.__setImageList()
 	self.__setTree()
 	self.__setProperties()
-        
-        	
+           	
 	EVT_SIZE(self, self.OnSize)
         EVT_RIGHT_DOWN(self.tree, self.OnRightClick)
         EVT_TREE_KEY_DOWN(self.tree, id, self.OnKeyDown) 
 	EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
-
 	
     def __setImageList(self):
 	imageList = wxImageList(32,19)
@@ -1489,31 +1494,95 @@ class AddServiceDialog(wxDialog):
         sizer1.Fit(self)
         self.SetAutoLayout(1)
 
- 
+    def OpenAddDataDialog(self, event = None):
+
+        #
+        # Verify that we have a valid upload URL. If we don't have one,
+        # then there isn't a data upload service available.
+        #
+
+        print "Tyring to upload to '%s'" % (self.app.upload_url)
+        if self.app.upload_url is None or self.app.upload_url == "":
+        
+            dlg = wxMessageDialog(self,
+                                 "Cannot add data: Venue does not have an operational\ndata storage server.",
+                                  "Cannot upload",
+                                  wxOK | wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+        
+        dlg = wxFileDialog(self, "Choose a file:", style = wxOPEN | wxMULTIPLE)
+
+        if dlg.ShowModal() == wxID_OK:
+            files = dlg.GetPaths()
+            print "Got files: ", files
+
+            # upload!
+
+            self.app.UploadFiles(files)
+                          
+            # data = DataDescription(dlg.GetFilename())
+            # self.app.AddData(data)
+
+        dlg.Destroy()
+
 class FileDropTarget(wxFileDropTarget):
-    def __init__(self, dock):
+    def __init__(self, panel):
         wxFileDropTarget.__init__(self)
-        self.dock = dock
+        self.contentListPanel = panel
         self.do = wxFileDataObject()
         self.SetDataObject(self.do)
         
     def OnDropFiles(self, x, y, filenames):
-        print 'on drop files'
-        for file in filenames:
-            fileNameList = file.split('/')
-            fileName = fileNameList[len(fileNameList)-1]
-            self.dock.AddSimpleTool(20, icons.getDefaultDataBitmap(), fileName)
-        return true
+        if self.contentListPanel.app.venueUri is None:
+            dlg = wxMessageDialog(self.contentListPanel,
+                                  "Please, connect to venue before you try to add data.",
+                                  "Cannot upload",
+                                  wxOK | wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+        
+        elif self.contentListPanel.app.upload_url is None or \
+               self.contentListPanel.app.upload_url == "":
+            
+            dlg = wxMessageDialog(self.contentListPanel,
+                                  "Cannot add data: Venue does not have an operational\ndata storage server.",
+                                  "Cannot upload",
+                                  wxOK | wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
 
-    def OnData(self, x, y, d):
-        print 'on data'
-        self.GetData()
-        files = self.do.GetFilenames()
-        for file in files:
-            fileNameList = file.split('/')
-            fileName = fileNameList[len(fileNameList)-1]
-            self.dock.AddSimpleTool(20, icons.getDefaultDataBitmap(), fileName)
-        return d
+        else:
+            self.app.UploadFiles(filenames)
+            return true
+
+    
+#class FileDropTarget(wxFileDropTarget):
+#    def __init__(self, dock):
+#        wxFileDropTarget.__init__(self)
+#        self.dock = dock
+#        self.do = wxFileDataObject()
+#        self.SetDataObject(self.do)
+        
+#    def OnDropFiles(self, x, y, filenames):
+#        print 'on drop files'
+#        for file in filenames:
+#            fileNameList = file.split('/')
+#            fileName = fileNameList[len(fileNameList)-1]
+#            self.dock.AddSimpleTool(20, icons.getDefaultDataBitmap(), fileName)
+#        return true
+
+#    def OnData(self, x, y, d):
+#        print 'on data'
+#        self.GetData()
+#        files = self.do.GetFilenames()
+#        for file in files:
+#            fileNameList = file.split('/')
+#            fileName = fileNameList[len(fileNameList)-1]
+#       self.dock.AddSimpleTool(20, icons.getDefaultDataBitmap(), fileName)
+#        return d
         
 
 
