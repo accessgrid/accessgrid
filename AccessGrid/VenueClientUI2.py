@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI2.py,v 1.10 2004-07-28 16:38:50 turam Exp $
+# RCS-ID:      $Id: VenueClientUI2.py,v 1.11 2004-07-28 21:50:07 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI2.py,v 1.10 2004-07-28 16:38:50 turam Exp $"
+__revision__ = "$Id: VenueClientUI2.py,v 1.11 2004-07-28 21:50:07 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2995,7 +2995,7 @@ class ContentListPanel(wxPanel):
                         self.parent.RemoveServiceCB(event)
                     elif isinstance(item,ApplicationDescription):
                         # application
-                        self.parent.RemoveAppCB(event)
+                        self.parent.RemoveApplicationCB(event)
 
 
     def OnSelect(self, event):
@@ -3208,6 +3208,7 @@ class ContentListPanel(wxPanel):
         ext = item.name.split('.')[-1]
         
         # Get commands for the service type
+
         commands = self.parent.GetCommands(item)
 
         #
@@ -3219,6 +3220,7 @@ class ContentListPanel(wxPanel):
         id = wxNewId()
                
         menu.Append(id, "Open", "Open this service.")
+       
         if commands != None and commands.has_key('Open'):
             EVT_MENU(self, id, lambda event,
                      cmd=commands['Open'], itm=item: 

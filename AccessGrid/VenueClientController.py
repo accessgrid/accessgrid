@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.32 2004-07-16 16:18:28 eolson Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.33 2004-07-28 21:45:51 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.32 2004-07-16 16:18:28 eolson Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.33 2004-07-28 21:45:51 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # standard imports
@@ -1381,15 +1381,20 @@ class VenueClientApp:
     #
     def GetCommands(self,objDesc):
         commandList = None
+        print '--------- get commands'
         if isinstance(objDesc,ServiceDescription):
+            print '------ THIS IS A SERVICE DESCRIPTION'
             # Data and Service commands are retrieved from the mime db
-            list = objDesc.name.split('.')
+            list = objDesc.mimeType.split('.')
             ext = ""
+            
             if len(list) == 2:
                 ext = list[1]
+
             commandList = self.mimeConfig.GetMimeCommands(
-                                        mimeType = objDesc.mimeType,
-                                        ext = ext)
+                mimeType = objDesc.mimeType,
+                ext = ext)
+
         elif isinstance(objDesc,DataDescription):
             # Data and Service commands are retrieved from the mime db
             list = objDesc.name.split('.')
