@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.31 2003-08-28 18:45:54 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.32 2003-08-28 20:36:13 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,17 +14,11 @@ import os
 import time
 import logging
 
-try:     import win32process
-except:  pass
-if sys.platform == 'win32':
-    from AccessGrid.ProcessManagerWin32 import ProcessManagerWin32 as ProcessManager
-else:
-    from AccessGrid.ProcessManagerUnix import ProcessManagerUnix as ProcessManager
-
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
 
+from AccessGrid.ProcessManager import ProcessManager
 from AccessGrid.Types import AGServicePackage
 from AccessGrid.AuthorizationManager import AuthorizationManager
 from AccessGrid.DataStore import GSIHTTPDownloadFile

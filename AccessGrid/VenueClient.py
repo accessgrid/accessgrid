@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.103 2003-08-22 19:20:08 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.104 2003-08-28 20:36:13 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -37,12 +37,8 @@ from AccessGrid import DataStore
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
+from AccessGrid.ProcessManager import ProcessManager
 
-if Platform.isWindows():
-    from AccessGrid.ProcessManagerWin32 import ProcessManagerWin32 as ProcessManager
-else:
-    from AccessGrid.ProcessManagerUnix import ProcessManagerUnix as ProcessManager
-    
 class EnterVenueException(Exception):
     pass
    

@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.22 2003-08-20 19:27:02 eolson Exp $
+# RCS-ID:      $Id: AGService.py,v 1.23 2003-08-28 20:36:13 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,21 +15,14 @@ import logging
 import logging.handlers
 import Platform
 
-try:     import win32process
-except:  pass
-
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 
 from AccessGrid.Types import *
 from AccessGrid.AGParameter import *
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.AuthorizationManager import AuthorizationManager
-from AccessGrid.Platform import GetUserConfigDir
-
-if sys.platform == 'win32':
-    from AccessGrid.ProcessManagerWin32 import ProcessManagerWin32 as ProcessManager
-else:
-    from AccessGrid.ProcessManagerUnix import ProcessManagerUnix as ProcessManager
+from AccessGrid.Platform import GetUserConfigDir, isWindows, isLinux
+from AccessGrid.ProcessManager import ProcessManager
 
 def GetLog():
     """
@@ -104,10 +97,10 @@ class AGService( ServiceBase ):
         """
         Forcefully stop the service
         """
-        if sys.platform == Platform.WIN:
+        if isWindows():
            # windows : do nothing special to force stop; it's forced anyway
            AGService.Stop(self)
-        elif sys.platform == Platform.LINUX:
+        elif isLinux():
            # linux : kill vic, instead of terminating
            self.started = 0
            self.processManager.kill_all_processes()
