@@ -3,11 +3,11 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 #
-# $Author: lefvert $
+# Author:      lefvert 
 #
 #
-# $Date: 2003-08-12 21:24:19 $
-# $Id: NodeSetupWizard.py,v 1.3 2003-08-12 21:24:19 lefvert Exp $ 
+# Created:     2003/08/12
+# RCS_ID:      $id$ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
