@@ -111,6 +111,7 @@ Source: Scripts\VenuesServerRegistry.py; DestDir: {app}; Components: Venue_Serve
 Source: share\AccessGrid\nodeConfig\defaultWindows; DestDir: {app}\config; Flags: confirmoverwrite
 
 ; AG Icon for programs and stuff
+Source: share\AccessGrid\agicons.exe; DestDir: {app}\config
 
 ; Documentation
 Source: share\doc\AccessGrid\*.*; DestDir: {app}\Documentation
@@ -127,7 +128,6 @@ Source: ..\..\ag-vic\vic\vic___win32_ddraw_release\vic.exe; DestDir: {app}; Comp
 Source: ..\..\ag-rat\rat\Release\rat.exe; DestDir: {app}; Components: Audio_Service
 Source: ..\..\ag-rat\rat\Release\ratmedia.exe; DestDir: {app}; Components: Audio_Service
 Source: ..\..\ag-rat\rat\Release\ratui.exe; DestDir: {app}; Components: Audio_Service
-Source: ..\..\..\..\..\Documents and Settings\leggett\My Documents\Visual Studio Projects\agicons.exe; DestDir: {app}\config
 
 
 [Icons]
@@ -137,11 +137,11 @@ Name: {group}\Node Manager; IconFilename: {app}\config\agicons.exe; Filename: {r
 Name: {group}\Setup Video; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: SetupVideo.py; WorkingDir: {app}; Components: Video_Producer; IconIndex: 0
 Name: {group}\Venue Server; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueServer.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
 Name: {group}\Venue Management; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueManagement.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
-Name: {group}\Debug\Venue Client; Filename: VenueClient.py; IconFilename: {app}\config\agicons.exe; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
-Name: {group}\Debug\Node Manager; IconFilename: {app}\config\agicons.exe; Filename: NodeManagement.py; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
-Name: {group}\Debug\Setup Video; IconFilename: {app}\config\agicons.exe; Filename: SetupVideo.py; WorkingDir: {app}; Components: Video_Producer; IconIndex: 0
-Name: {group}\Debug\Venue Server; IconFilename: {app}\config\agicons.exe; Filename: VenueServer.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
-Name: {group}\Debug\Venue Management; IconFilename: {app}\config\agicons.exe; Filename: VenueManagement.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
+Name: {group}\Debug\Venue Client; IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueClient.py; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
+Name: {group}\Debug\Node Manager; IconFilename: {app}\config\agicons.exe; Filename: {app}\NodeManagement.py; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
+Name: {group}\Debug\Setup Video; IconFilename: {app}\config\agicons.exe; Filename: {app}\SetupVideo.py; WorkingDir: {app}; Components: Video_Producer; IconIndex: 0
+Name: {group}\Debug\Venue Server; IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueServer.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
+Name: {group}\Debug\Venue Management; IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueManagement.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
 Name: {commondesktop}\Access Grid Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py; IconFilename: {app}\config\agicons.exe; WorkingDir: {app}; Tasks: desktopicon; Components: Venue_Client; IconIndex: 0
 Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Access Grid Venue Client; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py; WorkingDir: {app}; Tasks: quicklaunchicon; Components: Venue_Client; IconIndex: 0
 Name: {group}\Documentation\README; Filename: {app}\Documentation\README
