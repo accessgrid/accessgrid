@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.13 2003-11-07 22:04:48 judson Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.14 2004-01-23 21:31:21 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.13 2003-11-07 22:04:48 judson Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.14 2004-01-23 21:31:21 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -298,9 +298,10 @@ class DataStoreClient:
             log.debug("Upload %s to %s", localFile, self.uploadURL)
             DataStore.GSIHTTPUploadFiles(self.uploadURL, [localFile], None)
         except DataStore.UploadFailed, e:
-            rc, errlist = e.args[0]
-            for err in errlist:
-                print err
+            #rc, errlist = e.args[0]
+            #for err in errlist:
+            #    print err
+            raise e
 
     def RemoveFile(self, file):
         try:
@@ -311,8 +312,9 @@ class DataStoreClient:
             # the proxy is the venue, so this needs to be:
             self.datastoreProxy.RemoveData(data)
         except Exception, e:
-            print "Error removing data ", e
-
+            #print "Error removing data ", e
+            raise e
+            
     def OpenFile(self, file, mode = "r"):
 
         if mode == "r":
