@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: SOAPInterface.py,v 1.11 2004-04-12 17:33:31 judson Exp $
+# RCS-ID:      $Id: SOAPInterface.py,v 1.12 2004-04-12 17:48:42 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ primary methods, the constructor and a default authorization for all
 interfaces.
 """
 
-__revision__ = "$Id: SOAPInterface.py,v 1.11 2004-04-12 17:33:31 judson Exp $"
+__revision__ = "$Id: SOAPInterface.py,v 1.12 2004-04-12 17:48:42 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
@@ -81,7 +81,7 @@ class SOAPInterface:
         @returns: a tuple of (subject, action)
         """
         soap_ctx = GetSOAPContext()
-        action = MethodAction(soap_ctx.soapaction).strip("\"")
+        action = MethodAction(soap_ctx.soapaction.strip("\""))
         subject = self._GetCaller()
 
         return subject, action
