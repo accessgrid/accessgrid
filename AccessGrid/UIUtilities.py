@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.58 2004-05-27 21:38:55 eolson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.59 2004-05-27 23:08:28 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.58 2004-05-27 21:38:55 eolson Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.59 2004-05-27 23:08:28 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -611,9 +611,6 @@ class PassphraseDialog(wxDialog):
         self.SetAutoLayout(1)
         self.Fit()
 
-    def __del__(self):
-        self.FlushChars()
-        
     def OnClose(self, event):
         self.FlushChars()
         self.EndModal(wxID_CANCEL)
@@ -699,9 +696,6 @@ class PassphraseVerifyDialog(wxDialog):
         self.SetAutoLayout(1)
         self.Fit()
 
-    def __del__(self):
-        self.FlushChars()
-        
     def OnClose(self, event):
         self.FlushChars()
         self.EndModal(wxID_CANCEL)
