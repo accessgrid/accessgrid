@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.10 2003-03-14 16:49:25 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.11 2003-03-14 18:23:54 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -47,8 +47,8 @@ def Usage():
 
 # Parse command line options
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "p:l:c:h",
-                               ["port", "logfile", "configfile", "help"])
+    opts, args = getopt.getopt(sys.argv[1:], "p:l:h",
+                               ["port", "logfile", "help"])
 except getopt.GetoptError:
     Usage()
     sys.exit(2)
