@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.66 2003-04-22 21:52:23 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.67 2003-04-28 00:44:58 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,9 +22,9 @@ import logging
 import urlparse
 import time
 import ConfigParser
-from AccessGrid.hosting.pyGlobus import Server
 
 # AG Stuff
+from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.hosting import AccessControl
 from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
@@ -112,7 +112,7 @@ class VenueServer(ServiceBase.ServiceBase):
         self.administrators = ''
         self.administratorList = []
         self.defaultVenue = ''
-        if None != hostEnvironment: 
+        if hostEnvironment != None:
             self.hostingEnvironment = hostEnvironment
             self.internalHostingEnvironment = 0 # False
         else:
@@ -137,6 +137,14 @@ class VenueServer(ServiceBase.ServiceBase):
 
         # Read in and process a configuration
         self.InitFromFile(LoadConfig(self.configFile, self.configDefaults))
+
+        # Check for and if necessary create the data store directory
+        if not os.path.exists(self.dataStorageLocation):
+            try:
+                os.mkdir(self.dataStorageLocation)
+            except OSError, e:
+                log.exception("Could not create VenueServer Data Store.")
+                self.dataStorageLocation = None
 
         # If there are no administrators set then we set it to the
         # owner of the current running process
@@ -203,17 +211,19 @@ class VenueServer(ServiceBase.ServiceBase):
         cp = ConfigParser.ConfigParser()
         cp.read(filename)
 
+        log.debug("Reading persisted Venues from: %s", filename)
+        
+        # Load the global defaults first
         for sec in cp.sections():
-            if cp.has_option(sec, "type"):
-                name = cp.get(sec, 'name')
-                description = cp.get(sec, 'description')
+            if cp.has_option(sec, 'type'):
+                log.debug("Loading Venue: %s", sec)
                 administrators = string.split(cp.get(sec, 'administrators'),
                                               ':')
-                v = Venue(self, name, description, administrators,
-                          self.dataStorageLocation)
+                v = Venue(self, cp.get(sec, 'name'),
+                          cp.get(sec, 'description'), administrators,
+                          self.dataStorageLocation, id=sec)
                 v.encryptMedia = cp.getint(sec, 'encryptMedia')
                 v.cleanupTime = cp.getint(sec, 'cleanupTime')
-                v._ChangeUniqueId(sec)
 
                 self.venues[self.IdFromURL(v.uri)] = v
                 self.hostingEnvironment.BindService(v, self.PathFromURL(v.uri))
@@ -221,11 +231,11 @@ class VenueServer(ServiceBase.ServiceBase):
                 cl = {}
                 for c in string.split(cp.get(sec, 'connections'), ':'):
                     if len(c) != 0:
-                        name = cp.get(c, 'name')
-                        desc = cp.get(c, 'description')
                         uri = self.MakeVenueURL(self.IdFromURL(cp.get(c,
                                                                       'uri')))
-                        cd = ConnectionDescription(name, desc, uri)
+                        cd = ConnectionDescription(cp.get(c, 'name'),
+                                                   cp.get(c, 'description'),
+                                                   uri)
                         cl[cd.uri] = cd
                         
                 v.SetConnections(cl)
@@ -240,7 +250,8 @@ class VenueServer(ServiceBase.ServiceBase):
                         (addr, port, ttl) = string.split(cp.get(s, 'location'),
                                                          " ")
                         capability = cp.get(s, 'capability')
-                        loc = MulticastNetworkLocation(addr, int(port), int(ttl))
+                        loc = MulticastNetworkLocation(addr, int(port),
+                                                       int(ttl))
                         cap = Capability(string.split(capability, ' '))
                         
                         uri = self.MakeVenueURL(self.IdFromURL(cp.get(s,
@@ -249,7 +260,22 @@ class VenueServer(ServiceBase.ServiceBase):
                                                encryptionFlag, encryptionKey,
                                                static)
                         v.AddStream(sd)
-
+                    else:
+                        log.debug("Not loading stream: %s", sec)
+                        
+                for d in string.split(cp.get(sec, 'data'), ':'):
+                    if len(d) != 0:
+                        dd = DataDescription(cp.get(d, 'name'))
+                        dd.SetId(d)
+                        dd.SetDescription(cp.get(d, 'description'))
+                        dd.SetURI(cp.get(d, 'uri'))
+                        dd.SetStatus(cp.get(d, 'status'))
+                        dd.SetSize(cp.getint(d, 'size'))
+                        dd.SetChecksum(cp.get(d, 'checksum'))
+                        dd.SetOwner(cp.get(d, 'owner'))
+                        v.AddData(dd)
+                    else:
+                        log.debug("Not loading data: %s", sec)
     def _authorize(self):
         """
         """
@@ -651,31 +677,35 @@ class VenueServer(ServiceBase.ServiceBase):
         state that is lost (the longer the time between checkpoints, the more
         that can be lost).
         """
-        try:
-            # Before we backup we copy the previous backup to a safe place
-            if os.path.isfile(self.persistenceFilename):
-                nfn = self.persistenceFilename + '.bak'
-                if os.path.isfile(nfn):
-                    try:
-                        os.remove(nfn)
-                    except OSError, e:
-                        log.exception("Couldn't remove backup file.")
+        # Before we backup we copy the previous backup to a safe place
+        if os.path.isfile(self.persistenceFilename):
+            nfn = self.persistenceFilename + '.bak'
+            if os.path.isfile(nfn):
                 try:
-                    os.rename(self.persistenceFilename, nfn)
+                    os.remove(nfn)
                 except OSError, e:
-                    log.exception("Couldn't rename backup file.")
-                    raise e
+                    log.exception("Couldn't remove backup file.")
+            try:
+                os.rename(self.persistenceFilename, nfn)
+            except OSError, e:
+                log.exception("Couldn't rename backup file.")
+                raise e
 
-            # Open the persistent store
-            store = file(self.persistenceFilename, "w")
-            
+        # Open the persistent store
+        store = file(self.persistenceFilename, "w")
+
+        try:            
             for venuePath in self.venues.keys():
                 # Change out the uri for storage, we store the path
                 venueURI = self.venues[venuePath].uri
                 self.venues[venuePath].uri = venuePath
 
-                # Store the venue.
-                store.write(self.venues[venuePath].AsINIBlock())
+                try:            
+                    # Store the venue.
+                    store.write(self.venues[venuePath].AsINIBlock())
+                except:
+                    log.exception("Exception Storing Venue!")
+                    raise VenueServerException("Failed to store venue.!")
                 
                 # Change the URI back
                 self.venues[venuePath].uri = venueURI

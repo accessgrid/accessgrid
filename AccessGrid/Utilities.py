@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.27 2003-04-25 08:37:12 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.28 2003-04-28 00:44:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -255,10 +255,13 @@ def InitMimeTypes(file):
     This function is used to load in our AG specific mimetypes.
     """
     success = 0
+
     # This only works for augmenting the mailcap entries on Linux
     if os.path.isfile(file):
         success = mtm.ReadMailcap(file, 1)
-
+    else:
+        return 0
+    
     # For windows we have cope with the fact that it's the registry
     # that's dealt with during the "creating new associations" sequence
     # for now we load the mailcap file and stuff things in the registry

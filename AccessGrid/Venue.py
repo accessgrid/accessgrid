@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.79 2003-04-27 21:02:11 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.80 2003-04-28 00:44:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,7 +29,8 @@ from AccessGrid import AppService
 from AccessGrid.Types import Capability
 from AccessGrid.Descriptions import StreamDescription, CreateStreamDescription
 from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
-from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription, DataDescription
+from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
+from AccessGrid.Descriptions import CreateDataDescription, DataDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
 from AccessGrid import DataStore
@@ -61,7 +62,7 @@ class Venue(ServiceBase.ServiceBase):
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
     """
     def __init__(self, server, name, description, administrators,
-                 dataStoreLocation):
+                 dataStoreLocation, id=None):
         """
         Venue constructor.
 
@@ -77,7 +78,11 @@ class Venue(ServiceBase.ServiceBase):
         self.encryptMedia = server.GetEncryptAllMedia()
         self.encryptionKey = None
 
-        self.uniqueId = str(GUID())
+        if id == None:
+            self.uniqueId = str(GUID())
+        else:
+            self.uniqueId = id
+            
         self.uri = self.server.MakeVenueURL(self.uniqueId)
         log.info("URI %s", self.uri)
 
@@ -92,19 +97,20 @@ class Venue(ServiceBase.ServiceBase):
         # Create the directory to hold the venue's data.
         #
 
-        log.debug("data store location: %s"%dataStoreLocation)
+        log.debug("data store location: %s" % dataStoreLocation)
         
         if dataStoreLocation is None or not os.path.exists(dataStoreLocation):
-            log.warn("Creating venue: Data storage location %s not valid",
+            log.warn("Creating venue: Data storage path %s not valid",
                      dataStoreLocation)
             self.dataStorePath = None
         else:
             self.dataStorePath = os.path.join(dataStoreLocation, self.uniqueId)
-            try:
-                os.mkdir(self.dataStorePath)
-            except OSError, e:
-                log.exception("Could not create venueStoragePath.")
-                self.dataStorePath = None
+            if not os.path.exists(self.dataStorePath):
+                try:
+                    os.mkdir(self.dataStorePath)
+                except OSError, e:
+                    log.exception("Could not create venueStoragePath.")
+                    self.dataStorePath = None
                 
         if self.encryptMedia == 1:
             self.encryptionKey = AllocateEncryptionKey()
@@ -128,12 +134,24 @@ class Venue(ServiceBase.ServiceBase):
 
         self.startDataStore()
 
+        self.server.eventService.AddChannel(self.uniqueId)
+        self.server.textService.AddChannel(self.uniqueId)
+        log.debug("Registering heartbeat for %s", self.uniqueId)
+        self.server.eventService.RegisterCallback(self.uniqueId,
+                                           HeartbeatEvent.HEARTBEAT,
+                                           self.ClientHeartbeat)
+        # This might make things better
+        self.server.eventService.RegisterCallback(self.uniqueId,
+                                                  DisconnectEvent.DISCONNECT,
+                                                  self.EventServiceDisconnect)
+
         #self.StartApplications()
 
         #self.AllowedEntryRole = AccessControl.Role("Venue.AllowedEntry", self)
         #self.VenueUsersRole = AccessControl.Role("Venue.VenueUsers", self)
 
     def AsINIBlock(self):
+        # The Venue Block
         sclass = str(self.__class__).split('.')
         string = "[%s]\n" % self.uniqueId
         string += "type : %s\n" % sclass[-1]
@@ -143,26 +161,28 @@ class Venue(ServiceBase.ServiceBase):
         string += "encryptMedia : %d\n" % self.encryptMedia
         if self.encryptMedia:
             string += "encryptionKey : %s\n" % self.encryptionKey
-        string += "dataStorePath : %s\n" % self.dataStorePath
         clist = ":".join(map( lambda conn: conn.GetId(),
                               self.connections.values() ))
         string += "connections : %s\n" % clist
-        # Data is persisted entirely within the datastore
-        # I should figure out the call to get a list of data descriptions
-        # dlist = ":".join(map( lambda data: self.server.IdFromURL(data.GetId()),
-        # self.data.values() ))
+
+        # For now we have to sort out the data so we only
+        # store venue data in the persistence file
+        vdata = []
+        for d in self.data.values():
+            if d.GetType() == None:
+                vdata.append(d)
+        dlist = ":".join(map( lambda data: data.GetId(), vdata ))
         
-        # string += "data : %s\n" % dlist
+        string += "data : %s\n" % dlist
         slist = ":".join(map( lambda stream: stream.GetId(),
                               self.streamList.GetStaticStreams() ))
         string += "streams : %s\n" % slist
         string += "cleanupTime : %d\n\n" % self.cleanupTime
-        
+
+        # The blocks for other data
         string += "\n".join(map(lambda conn: conn.AsINIBlock(),
                                 self.connections.values() ))
-        # This is data descriptions again, see above
-        # string += "\n".join(map(lambda data: data.AsINIBlock(),
-        #                         self.data.values() ))
+        string += "\n".join(map(lambda data: data.AsINIBlock(), vdata ))
         string += "\n".join(map(lambda stream: stream.AsINIBlock(),
                        self.streamList.GetStaticStreams()))
 
@@ -196,28 +216,6 @@ class Venue(ServiceBase.ServiceBase):
 
     def __repr__(self):
         return "Venue: name=%s id=%s" % (self.name, id(self))
-
-    def _ChangeUniqueId(self, id):
-        if self.uniqueId != None:
-#            self.server.eventService.UnregisterCallback(self.uniqueId,
-#                                                        self.ClientHeartbeat)
-            self.server.eventService.RemoveChannel(self.uniqueId)
-            self.server.textService.RemoveChannel(self.uniqueId)
-        
-        self.uniqueId = id
-        self.uri = self.server.MakeVenueURL(id)
-        log.info("URI %s", self.uri)
-
-        self.server.eventService.AddChannel(self.uniqueId)
-        self.server.textService.AddChannel(self.uniqueId)
-        log.debug("Registering heartbeat for %s", self.uniqueId)
-        self.server.eventService.RegisterCallback(self.uniqueId,
-                                           HeartbeatEvent.HEARTBEAT,
-                                           self.ClientHeartbeat)
-        # This might make things better
-        self.server.eventService.RegisterCallback(self.uniqueId,
-                                                  DisconnectEvent.DISCONNECT,
-                                                  self.EventServiceDisconnect)
 
     def startDataStore(self):
         """
@@ -454,10 +452,22 @@ class Venue(ServiceBase.ServiceBase):
 
     wsAddData.soap_export_as = "AddData"
 
-    def wsUpdateData(self, dataDescription):
+    # Interface methods
+    def wsRemoveData(self, dataDescriptionStruct ):
+        log.debug("wsRemoveData")
         if not self._authorize():
             raise NotAuthorized
         else:
+            dataDescription = CreateDataDescription(dataDescriptionStruct)
+            return self.RemoveData(dataDescription)
+
+    wsRemoveData.soap_export_as = "RemoveData"
+
+    def wsUpdateData(self, dataDescriptionStruct):
+        if not self._authorize():
+            raise NotAuthorized
+        else:
+            dataDescription = CreateDataDescription(dataDescriptionStruct)
             return self.UpdateData(dataDescription)
 
     wsUpdateData.soap_export_as = "UpdateData"
@@ -907,7 +917,7 @@ class Venue(ServiceBase.ServiceBase):
             log.exception("AddData: data already present: %s", name)
             raise VenueException("AddData: data %s already present" % (name))
 
-        self.data[dataDescription.name] = dataDescription
+        self.data[name] = dataDescription
         
         log.debug("Distribute ADD_DATA event %s", dataDescription)
         self.server.eventService.Distribute( self.uniqueId,
@@ -915,12 +925,11 @@ class Venue(ServiceBase.ServiceBase):
                                              self.uniqueId,
                                              dataDescription ) )
 
-   
     def AddService(self, serviceDescription):
         """
-        The AddService method enables VenuesClients to put services in the Virtual
-        Venue. Service put in the Virtual Venue through AddService is persistently
-        stored.
+        The AddService method enables VenuesClients to put services in
+        the Virtual Venue. Service put in the Virtual Venue through
+        AddService is persistently stored.
         """
 
         name = serviceDescription.name
@@ -1012,26 +1021,23 @@ class Venue(ServiceBase.ServiceBase):
         """
         RemoveData removes persistent data from the Virtual Venue.
         """
-        try:
-            # We actually have to remove the real data, not just the
-            # data description -- I guess that's later :-)
-            if dataDescription.name in self.data:
-                del self.data[ dataDescription.name ]
-
-                if(dataDescription.type == None):
-                    self.dataStore.DeleteFile(dataDescription.name)
-                self.server.eventService.Distribute( self.uniqueId,
-                                                     Event( Event.REMOVE_DATA,
-                                                            self.uniqueId,
-                                                            dataDescription ) )
-            else:
-                log.exception("Data not found!")
-                raise VenueException("Data not found.")
-        except:
-            log.exception("Exception in RemoveData!")
-            raise VenueException("Cannot remove data!")
-
-    RemoveData.soap_export_as = "RemoveData"
+        name = dataDescription.name
+        
+        if name in self.data:
+            del self.data[ dataDescription.name ]
+            
+            # This is venue resident so delete the file
+            if(dataDescription.type == None):
+                self.dataStore.DeleteFile(dataDescription.name)
+                
+            # Send the event
+            self.server.eventService.Distribute( self.uniqueId,
+                                                 Event( Event.REMOVE_DATA,
+                                                        self.uniqueId,
+                                                        dataDescription ) )
+        else:
+            log.exception("Data not found!")
+            raise VenueException("Data not found.")
 
     def GetUploadDescriptor(self):
         """

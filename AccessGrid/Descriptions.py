@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.25 2003-04-27 21:02:11 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.26 2003-04-28 00:44:58 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -41,6 +41,9 @@ class ObjectDescription:
 
         return string
 
+    def SetId(self, id):
+        self.id = id
+        
     def GetId(self):
         return self.id
     
@@ -99,7 +102,7 @@ class DataDescription(ObjectDescription):
     def SetType(self, type):
         self.type = type
 
-    def GetType():
+    def GetType(self):
         return self.type
 
     def SetStatus(self, status):
@@ -138,6 +141,25 @@ class DataDescription(ObjectDescription):
         string += "owner: %s\n" % self.owner
 
         return string
+
+def CreateDataDescription(dataDescStruct):
+    """
+    """
+    dd = DataDescription(dataDescStruct.name)
+    dd.SetId(dataDescStruct.id)
+    dd.SetName(dataDescStruct.name)
+    dd.SetDescription(dataDescStruct.description)
+    dd.SetURI(dataDescStruct.uri)
+    if dataDescStruct.type == '':
+        dd.SetType(None)
+    else:
+        dd.SetType(dataDescStruct.type)
+    dd.SetStatus(dataDescStruct.status)
+    dd.SetSize(dataDescStruct.size)
+    dd.SetChecksum(dataDescStruct.checksum)
+    dd.SetOwner(dataDescStruct.owner)
+
+    return dd
 
 class ConnectionDescription(ObjectDescription):
     """
