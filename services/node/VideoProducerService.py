@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.13 2003-09-08 15:45:19 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.14 2003-09-11 19:30:23 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,6 +34,7 @@ option add Vic.device $device startupFile
 option add Vic.transmitOnStartup true startupFile
 option add Vic.defaultTTL 127 startupFile
 proc user_hook {} {
+    update_note 0 \"%s\"
 }
 """
 
@@ -92,7 +93,8 @@ class VideoProducerService( AGService ):
                                  self.encoding.value,
                                  self.standard.value,
                                  vicDevice,                 
-                                 self.port.value  ) )
+                                 self.port.value,
+                                 self.streamname.value ) )
          f.close()
 
          # Replace double backslashes in the startupfile name with single
