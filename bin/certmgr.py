@@ -3,7 +3,7 @@
 # Name:        certmgr.py
 # Purpose:     Command line certificate management tool.
 # Created:     9/10/2003
-# RCS-ID:      $Id: certmgr.py,v 1.9 2004-04-05 18:34:24 olson Exp $
+# RCS-ID:      $Id: certmgr.py,v 1.10 2004-07-16 00:49:12 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This tool is used on the command line to interact with the users certificate
 environment.
 """
-__revision__ = "$Id: certmgr.py,v 1.9 2004-04-05 18:34:24 olson Exp $"
+__revision__ = "$Id: certmgr.py,v 1.10 2004-07-16 00:49:12 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -239,6 +239,32 @@ class CertMgrCmdProcessor(cmd.Cmd):
         self.certMgr.InitRepoFromGlobus(self.certRepo)
         self.loadCerts()
 
+    def do_gen_proxy(self, line):
+        """
+        Usage:
+        gen_proxy
+
+        Create a proxy from the default certificate.
+        """
+        self.certMgr.CreateProxy()
+
+    def do_check_proxy(self, line):
+        """
+        Usage:
+        check_proxy
+
+        Check to see if there is a valid proxy.
+        """
+        try:
+            proxy = self.certMgr.GetGlobusProxyCert()
+        except Exception, e:
+            proxy = None
+
+        if proxy is None:
+            print "No proxy found."
+        else:
+            print "Proxy will expire: %s" % proxy.GetNotValidAfterText()
+        
     def do_export(self, line):
         """
         Usage: export <num> <certfile> [<keyfile>]
