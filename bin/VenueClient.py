@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.105 2003-04-03 22:05:21 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.106 2003-04-07 22:14:59 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,6 +15,9 @@ import threading
 import os
 import logging, logging.handlers
 import cPickle
+import getopt
+
+log = logging.getLogger("AG.VenueClient")
 
 from wxPython.wx import *
 
@@ -31,6 +34,8 @@ from AccessGrid.UIUtilities import MyLog
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN 
 from AccessGrid import DataStore
 from AccessGrid.GUID import GUID
+
+from AccessGrid import PersonalNode
 
 try:
     from AccessGrid import CertificateManager
@@ -61,13 +66,21 @@ class VenueClientUI(wxApp, VenueClient):
     #personalDataFile = os.path.join(personalDataStorePath, "myData.txt" )
 
     def __init__(self):
+
+        self.isPersonalNode = 0
+        self.debugMode = 0
+
         wxApp.__init__(self, false)
         VenueClient.__init__(self)
+
 
     def OnInit(self):
         """
         This method initiates all gui related classes.
         """
+
+        self.__processArgs()
+        
         self.__setLogger()
         self.__createHomePath()
         self.__createPersonalDataStore()
@@ -81,8 +94,44 @@ class VenueClientUI(wxApp, VenueClient):
         self.frame = VenueClientFrame(NULL, -1,"", self)
         self.frame.SetSize(wxSize(500, 400))
         self.SetTopWindow(self.frame)
+
+        if self.isPersonalNode:
+            def setSvcCallback(svcUrl, self = self):
+                log.debug("setting node service URI to %s from PersonalNode", svcUrl)
+                self.SetNodeServiceUri(svcUrl)
+            self.personalNode = PersonalNode.PersonalNodeManager(setSvcCallback)
+            self.personalNode.Run()
         
         return true
+
+    def __Usage(self):
+        print "%s:" % (sys.argv[0])
+        print "  -h|--help:      print usage"
+        print "  --personalNode: manage services as a personal node"
+        
+    def __processArgs(self):
+        """
+        Handle any arguments we're interested in.
+
+        --personalNode: Handle startup of local node services.
+
+        """
+
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], "hd",
+                                       ["personalNode", "debug", "help"])
+        except getopt.GetoptError:
+            self.__Usage()
+            sys.exit(2)
+
+        for opt, arg in opts:
+            if opt in ('-h', '--help'):
+                self.__Usage()
+                sys.exit(0)
+            elif opt == '--personalNode':
+                self.isPersonalNode = 1
+            elif opt in ('--debug', '-d'):
+                self.debugMode = 1
 
     def __createPersonalDataStore(self):
         self.personalDataStorePath = os.path.join(self.accessGridPath, self.personalDataStorePrefix)
@@ -127,6 +176,9 @@ class VenueClientUI(wxApp, VenueClient):
         fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
         hdlr.setFormatter(fmt)
         log.addHandler(hdlr)
+
+        if self.debugMode:
+            log.addHandler(logging.StreamHandler())
 
         wxLog_SetActiveTarget(wxLogGui())  
         wxLog_SetActiveTarget(wxLogChain(MyLog(log)))
@@ -517,6 +569,14 @@ class VenueClientUI(wxApp, VenueClient):
         done as the application is about to exit.
         """
         wxLogInfo("--------- END VenueClient")
+
+        #
+        # If we're running as a personal node, terminate the services.
+        #
+
+        if self.isPersonalNode:
+            log.debug("Terminating services")
+            self.personalNode.Stop()
                         
         if self.venueUri != None:
             self.ExitVenue()
