@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.62 2003-04-06 08:01:22 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.63 2003-04-07 20:47:22 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -355,14 +355,7 @@ class VenueServer(ServiceBase.ServiceBase):
         """   
         ModifyVenue updates a Venue Description.   
         """
-        print "URL: %s" % URL
-        
         id = self.IdFromURL(URL)   
-
-        print "ID: %s" % id
-
-        print "VD: %s %s" % (venueDesc.AsINIBlock(), type(venueDesc))
-        
         if(venueDesc.uri == URL):
             self.venues[id].name = venueDesc.name
             self.venues[id].description = venueDesc.description
@@ -376,8 +369,6 @@ class VenueServer(ServiceBase.ServiceBase):
             
             for sd in venueDesc.streams:
                 self.venues[id].AddStream(sd)
-
-        print "Done with modify Venue."
         
     def RemoveVenue(self, URL):
         """
