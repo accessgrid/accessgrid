@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.84 2004-09-10 22:12:37 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.85 2004-10-22 15:02:28 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.84 2004-09-10 22:12:37 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.85 2004-10-22 15:02:28 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -503,6 +503,13 @@ class AGNodeService:
         configFile = os.path.join(self.configDir, configName)
 
         ret = 0
+        
+        f = file(configFile,'r')
+        firstLine = f.readline()
+        f.close()
+        if firstLine.startswith('# AGTk 2.3'):
+            log.debug("Node config %s already migrated; not migrating", configName)
+            return 0
 
         cp = ConfigParser.ConfigParser()
         cp.read(configFile)
