@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.165 2003-05-27 19:41:40 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.166 2003-05-28 13:25:26 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -33,6 +33,7 @@ from AccessGrid import DataStore
 from AccessGrid import PersonalNode
 from AccessGrid import Toolkit
 
+from AccessGrid import Events
 from AccessGrid.Utilities import HaveValidProxy
 from AccessGrid.CertificateManager import CertificateManager
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
@@ -214,9 +215,11 @@ class VenueClientUI(wxApp, VenueClient):
 
         """
 
+        self.logFile = None
+
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "hd",
-                                       ["personalNode", "debug", "help"])
+            opts, args = getopt.getopt(sys.argv[1:], "hdl:",
+                                       ["personalNode", "debug", "help", "logfile="])
 
         except getopt.GetoptError:
             self.__Usage()
@@ -230,6 +233,8 @@ class VenueClientUI(wxApp, VenueClient):
                 self.isPersonalNode = 1
             elif opt in ('--debug', '-d'):
                 self.debugMode = 1
+            elif opt in ('--logfile', '-l'):
+                self.logFile = arg
 
     def __createPersonalDataStore(self):
         """
@@ -280,7 +285,12 @@ class VenueClientUI(wxApp, VenueClient):
         """
         log = logging.getLogger("AG")
         log.setLevel(logging.DEBUG)
-        logname = "VenueClient.log"
+
+        if self.logFile is None:
+            logname = "VenueClient.log"
+        else:
+            logname = self.logFile
+            
         hdlr = logging.FileHandler(logname)
         extfmt = logging.Formatter("%(asctime)s %(thread)s %(name)s %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
         fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
@@ -306,6 +316,7 @@ class VenueClientUI(wxApp, VenueClient):
             log.debug("the profile is the default profile - open profile dialog")
             self.__openProfileDialog()
         else:
+            # self.profile.publicId = str(GUID())
             self.__startMainLoop(self.profile)
 
     #
@@ -359,7 +370,7 @@ class VenueClientUI(wxApp, VenueClient):
     # Methods handling events sent when venue state changes
     #
 
-    def AddUserEvent(self, user):
+    def AddUserEvent(self, event):
         """
         Note: Overridden from VenueClient
         This method is called every time a venue participant enters
@@ -369,6 +380,9 @@ class VenueClientUI(wxApp, VenueClient):
         
         *user* The ClientProfile of the participant who just  entered the venue
         """
+
+        user = event.data
+        
         wxCallAfter(self.frame.statusbar.SetStatusText, "%s just entered the venue" %user.name)
         profile = ClientProfile()
         profile.profileFile = user.profileFile
@@ -389,7 +403,14 @@ class VenueClientUI(wxApp, VenueClient):
         # for now (until it's a problem ;-)
         profile.capabilities = user.capabilities
 
-        VenueClient.AddUserEvent(self, profile)
+        #
+        # Ugh. The baseclass appears to want the processed event data,
+        # so we'll create a new event object that has the processed
+        # data.
+        #
+
+        newEvent = Events.Event(event.eventType, event.venue, profile)
+        VenueClient.AddUserEvent(self, event)
 
         wxCallAfter(self.frame.contentListPanel.AddParticipant, profile)
         log.debug("  add user: %s" %(profile.name))
@@ -417,8 +438,8 @@ class VenueClientUI(wxApp, VenueClient):
             self.ExitVenue()
 
         MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", "Lost Connection")
-    
-    def RemoveUserEvent(self, user):
+
+    def RemoveUserEvent(self, event):
         """
         Note: Overridden from VenueClient
         This method is called every time a venue participant exits
@@ -429,13 +450,14 @@ class VenueClientUI(wxApp, VenueClient):
         *user* The ClientProfile of the participant who just exited the venue
         """
 
+        user = event.data
         wxCallAfter(self.frame.statusbar.SetStatusText, "%s just left the venue" %user.name)
-        VenueClient.RemoveUserEvent(self, user)
+        VenueClient.RemoveUserEvent(self, event)
 
         wxCallAfter(self.frame.contentListPanel.RemoveParticipant, user)
         log.debug("  remove user: %s" %(user.name))
 
-    def ModifyUserEvent(self, user):
+    def ModifyUserEvent(self, event):
         """
         Note: Overridden from VenueClient
         This method is called every time a venue participant changes
@@ -445,12 +467,14 @@ class VenueClientUI(wxApp, VenueClient):
         
         *user* The modified ClientProfile of the participant that just changed profile information
         """
+
+        user = event.data
         wxCallAfter(self.frame.statusbar.SetStatusText, "%s just changed profile information" %user.name)
-        VenueClient.ModifyUserEvent(self, user)
+        VenueClient.ModifyUserEvent(self, event)
         log.debug("EVENT - Modify participant: %s" %(user.name))
         wxCallAfter(self.frame.contentListPanel.ModifyParticipant, user)
 
-    def AddDataEvent(self, data):
+    def AddDataEvent(self, event):
         """
         Note: Overridden from VenueClient
         This method is called every time new data is added to the venue.
@@ -460,18 +484,19 @@ class VenueClientUI(wxApp, VenueClient):
         
         *data* The DataDescription representing data that just got added to the venue
         """
-        
+
+        data = event.data
         if data.type == "None" or data.type == None:
             wxCallAfter(self.frame.statusbar.SetStatusText, "file '%s' just got added to venue" %data.name)
         else:
             # Personal data is handled in VenueClientUIClasses to find out who the data belongs to
             pass
             
-        VenueClient.AddDataEvent(self, data)
+        VenueClient.AddDataEvent(self, event)
         log.debug("EVENT - Add data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.AddData, data)
 
-    def UpdateDataEvent(self, data):
+    def UpdateDataEvent(self, event):
         """
         Note: Overridden from VenueClient
         This method is called when a data item has been updated in the venue.
@@ -481,11 +506,12 @@ class VenueClientUI(wxApp, VenueClient):
         
         *data* The DataDescription representing data that just got updated in the venue
         """
-        VenueClient.UpdateDataEvent(self, data)
+        data = event.data
+        VenueClient.UpdateDataEvent(self, event)
         log.debug("EVENT - Update data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.UpdateData, data)
 
-    def RemoveDataEvent(self, data):
+    def RemoveDataEvent(self, event):
         """
         Note: Overridden from VenueClient
         This method is called every time data is removed from the venue.
@@ -495,7 +521,8 @@ class VenueClientUI(wxApp, VenueClient):
         
         *data* The DataDescription representing data that just got removed from the venue
         """
-         
+
+        data = event.data
         if data.type == "None" or data.type == None:
             wxCallAfter(self.frame.statusbar.SetStatusText, "file '%s' just got added to venue" %data.name)
         else:
@@ -503,11 +530,11 @@ class VenueClientUI(wxApp, VenueClient):
             pass
         
         wxCallAfter(self.frame.statusbar.SetStatusText, "File '%s' just got removed from the venue" %data.name)
-        VenueClient.RemoveDataEvent(self, data)
+        VenueClient.RemoveDataEvent(self, event)
         log.debug("EVENT - Remove data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.RemoveData, data)
 
-    def AddApplicationEvent(self, app):
+    def AddApplicationEvent(self, event):
         """
         Note: Overridden from VenueClient
         This method is called every time a new application is added to the venue.
@@ -517,11 +544,13 @@ class VenueClientUI(wxApp, VenueClient):
         
         *app* The ApplicationDescription representing the application that just got added to the venue
         """
+        app = event.data
         wxCallAfter(self.frame.statusbar.SetStatusText, "Application '%s' just got added to the venue" %app.name)
         log.debug("EVENT - Add application: %s, Mime Type: %s" %(app.name, app.mimeType))
         wxCallAfter(self.frame.contentListPanel.AddApplication, app)
+        VenueClient.AddApplicationEvent(self, event)
 
-    def RemoveApplicationEvent(self, app):
+    def RemoveApplicationEvent(self, event):
         """
         Note: Overridden from VenueClient
         This method is called every time an application is removed from the venue.
@@ -531,11 +560,13 @@ class VenueClientUI(wxApp, VenueClient):
         
         *app* The ApplicationDescription representing the application that just got removed from the venue
         """
+        app = event.data
         wxCallAfter(self.frame.statusbar.SetStatusText, "Application '%s' just got removed from the venue" %app.name)
         log.debug("EVENT - Remove application: %s" %(app.name))
         wxCallAfter(self.frame.contentListPanel.RemoveApplication, app)
+        VenueClient.RemoveApplicationEvent(self, event)
 
-    def AddServiceEvent(self, service):
+    def AddServiceEvent(self, event):
         """
         Note: Overridden from VenueClient
         This method is called every time new service is added to the venue.
@@ -545,12 +576,13 @@ class VenueClientUI(wxApp, VenueClient):
         
         *service* The ServiceDescription representing the service that just got added to the venue
         """
+        service = event.data
         wxCallAfter(self.frame.statusbar.SetStatusText, "Service '%s' just got added to the venue" %service.name)
-        VenueClient.AddServiceEvent(self, service)
+        VenueClient.AddServiceEvent(self, event)
         log.debug("EVENT - Add service: %s" %(service.name))
         wxCallAfter(self.frame.contentListPanel.AddService, service)
 
-    def RemoveServiceEvent(self, service):
+    def RemoveServiceEvent(self, event):
         """
         Note: Overridden from VenueClient
         This method is called every time service is removed from the venue.
@@ -560,12 +592,13 @@ class VenueClientUI(wxApp, VenueClient):
         
         *service* The ServiceDescription representing the service that just got removed from the venue
         """
+        service = event.data
         wxCallAfter(self.frame.statusbar.SetStatusText, "Service '%s' just got removed from the venue" %service.name)
-        VenueClient.RemoveServiceEvent(self, service)
+        VenueClient.RemoveServiceEvent(self, event)
         log.debug("EVENT - Remove service: %s" %(service.name))
         wxCallAfter(self.frame.contentListPanel.RemoveService, service)
 
-    def AddConnectionEvent(self, connection):
+    def AddConnectionEvent(self, event):
         """
         Note: Overridden from VenueClient
         This method is called every time a new exit is added to the venue.
@@ -575,12 +608,13 @@ class VenueClientUI(wxApp, VenueClient):
         
         *connection* The ConnectionDescription representing the exit that just got added to the venue
         """
+        connection = event.data
         wxCallAfter(self.frame.statusbar.SetStatusText, "A new exit, '%s', just got added to the venue" %connection.name)  
-        VenueClient.AddConnectionEvent(self, connection)
+        VenueClient.AddConnectionEvent(self, event)
         log.debug("EVENT - Add connection: %s" %(connection.name))
         wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, connection)
 
-    def SetConnectionsEvent(self, connections):
+    def SetConnectionsEvent(self, event):
         """
         Note: Overridden from VenueClient
         This method is called every time a new exit is added to the venue.
@@ -590,7 +624,8 @@ class VenueClientUI(wxApp, VenueClient):
         
         *connections* A list of ConnectionDescriptions representing all the exits in the venue.
         """
-        VenueClient.SetConnectionsEvent(self, connections)
+        connections = event.data
+        VenueClient.SetConnectionsEvent(self, event)
         log.debug("EVENT - Set connections")
         wxCallAfter(self.frame.venueListPanel.CleanUp)
 
