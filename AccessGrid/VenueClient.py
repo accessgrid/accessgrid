@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.181 2004-07-14 20:38:24 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.182 2004-07-16 22:07:31 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.181 2004-07-14 20:38:24 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.182 2004-07-16 22:07:31 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -359,7 +359,7 @@ class VenueClient:
                 
                 # If the event client connection has broken,
                 # reconnect the venue client
-                if not self.eventClient.connected:
+                if not self.eventClient.connected and not self.exiting:
                     self.__Reconnect()
                 
     def __Reconnect(self):
@@ -882,6 +882,12 @@ class VenueClient:
             self.heartbeatTask.stop()
 
         try:
+            self.__venueProxy.Exit( self.privateId )
+            
+        except Exception:
+            log.exception("ExitVenue: ExitVenue exception")
+
+        try:
             if self.eventClient:
                 log.debug("ExitVenue: Stop event client obj")
                 self.eventClient.Stop()
@@ -945,22 +951,17 @@ class VenueClient:
         # 
 
         # Stop the event client
-        log.info("ExitVenue: Stopping event client")
-        try:
-          
-          if self.eventClient:
-            log.debug("ExitVenue: Send client exiting event")
-            self.eventClient.Send(ClientExitingEvent(self.venueState.uniqueId,
-                                                     self.privateId))
-        except:
-            log.exception("ExitVenue: Can not send client exiting event to event client")
+        # NOT USED, so comment out for now
+        #log.info("ExitVenue: Stopping event client")
+        #try:
+          #
+          #if self.eventClient:
+            #log.debug("ExitVenue: Send client exiting event")
+            #self.eventClient.Send(ClientExitingEvent(self.venueState.uniqueId,
+                                                     #self.privateId))
+        #except:
+            #log.exception("ExitVenue: Can not send client exiting event to event client")
         
-        try:
-            self.__venueProxy.Exit( self.privateId )
-            
-        except Exception:
-            log.exception("ExitVenue: ExitVenue exception")
-
         # Stop the node services
         try:
             log.info("ExitVenue: Stopping node services")
