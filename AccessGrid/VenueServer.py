@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.133 2004-03-29 18:16:07 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.134 2004-03-30 16:51:50 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.133 2004-03-29 18:16:07 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.134 2004-03-30 16:51:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -331,11 +331,11 @@ class VenueServer(AuthorizationMixIn):
 
                 name = cp.get(sec, 'name')
                 oid = sec
-                encryptMedia = cp.getint(sec, 'encryptMedia')
-                if encryptMedia:
-                    encryptKey = cp.get(sec, 'encryptionKey')
+                venueEncryptMedia = cp.getint(sec, 'encryptMedia')
+                if venueEncryptMedia:
+                    venueEncryptionKey = cp.get(sec, 'encryptionKey')
                 else:
-                    encryptKey = None
+                    venueEncryptionKey = None
                 cleanupTime = cp.getint(sec, 'cleanupTime')
 
                 # Deal with connections if there are any
@@ -372,14 +372,14 @@ class VenueServer(AuthorizationMixIn):
                         else:
                             encryptionKey = None
 
-                        if encryptionFlag != v.encryptMedia:
+                        if encryptionFlag != venueEncryptMedia:
                             log.info("static stream\"" + name +
                         "\"encryption did not match its venue.  Setting it.")
-                            encryptionFlag = v.encryptMedia
-                            if encryptionKey != v.encryptionKey:
+                            encryptionFlag = venueEncryptMedia
+                            if encryptionKey != venueEncryptionKey:
                                 log.info("static stream\"" + name +
                      "\"encryption key did not match its venue.  Setting it.")
-                                encryptionKey = v.encryptionKey
+                                encryptionKey = venueEncryptionKey
 
                         locationAttrs = string.split(cp.get(s, 'location'),
                                                      " ")
@@ -402,10 +402,11 @@ class VenueServer(AuthorizationMixIn):
                         sl.append(sd)
 
                 # do the real work
-                vd = VenueDescription(name, desc, (encryptMedia, encryptKey),
+                vd = VenueDescription(name, desc, (venueEncryptMedia, venueEncryptionKey),
                                       cl, sl, oid)
                 uri = self.AddVenue(vd)
-                v = self.hostingEnvironment.FindObjectForURL(uri)
+                vif = self.hostingEnvironment.FindObjectForURL(uri)
+                v = vif.impl
                 v.cleanupTime = cleanupTime
                 
                 # Deal with apps if there are any
@@ -449,15 +450,19 @@ class VenueServer(AuthorizationMixIn):
                                                         mimeType))
 
                 # Deal with authorization
-                authPolicy =  cp.get(sec, 'authorizationPolicy')
+                try:
+                    authPolicy =  cp.get(sec, 'authorizationPolicy')
 
-                # We can't persist crlf or cr or lf, so we replace them
-                # on each end (when storing and loading)
-                authPolicy  = re.sub("<CRLF>", "\r\n", authPolicy )
-                authPolicy  = re.sub("<CR>", "\r", authPolicy )
-                authPolicy  = re.sub("<LF>", "\n", authPolicy )
+                    # We can't persist crlf or cr or lf, so we replace them
+                    # on each end (when storing and loading)
+                    authPolicy  = re.sub("<CRLF>", "\r\n", authPolicy )
+                    authPolicy  = re.sub("<CR>", "\r", authPolicy )
+                    authPolicy  = re.sub("<LF>", "\n", authPolicy )
 
-                v.ImportAuthorizationPolicy(authPolicy)
+                    v.ImportAuthorizationPolicy(authPolicy)
+                except ConfigParser.NoOptionError:
+                    authPolicy = ''
+
                 
 
     def InitFromFile(self, config):
@@ -791,6 +796,7 @@ class VenueServer(AuthorizationMixIn):
         SetDefaultVenue sets which Venue is the default venue for the
         VenueServer.
         """
+        log.info("Setting default venue; oid=%s",oid)
         defaultPath = "/Venues/default"
         defaultAuthPath = defaultPath+"/Authorization"
         self.defaultVenue = oid
