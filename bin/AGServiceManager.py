@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.47 2004-08-18 17:01:06 lefvert Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.48 2004-08-25 14:55:25 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -107,7 +107,9 @@ def main():
         # Create the Node Service Service
         nsi = AGNodeServiceI(nodeService)
         server.RegisterObject(nsi, path="/NodeService")
-        url = server.FindURLForObject(nodeService)
+        nsurl = server.FindURLForObject(nodeService)
+        log.info("Starting Node Service URL: %s", nsurl)
+        print "Starting Node Service URL:", nsurl
     
     # Register the signal handler so we can shut down cleanly
     signal.signal(signal.SIGINT, SignalHandler)
