@@ -28,12 +28,12 @@ pyGlobus is the python wrapper for Globus.
 %build
 #. /etc/profile.d/gpt.sh
 #. /etc/profile.d/globus.sh
-python2.3 ./setup.py build --run-swig --with-modules=io,security,util --flavor="gcc32pthr"
+python2.2 ./setup.py build --run-swig --with-modules=io,security,util --flavor="gcc32pthr"
 
 %install
 #. /etc/profile.d/gpt.sh
 #. /etc/profile.d/globus.sh
-python2.3 ./setup.py install --with-modules=io,security,util --flavor="gcc32pthr" --prefix="%{buildroot}%{prefix}" --no-compile
+python2.2 ./setup.py install --with-modules=io,security,util --flavor="gcc32pthr" --prefix="%{buildroot}%{prefix}" --no-compile
 
 %files
 %defattr(-,root,root)
@@ -41,7 +41,7 @@ python2.3 ./setup.py install --with-modules=io,security,util --flavor="gcc32pthr
 
 %post
 cat <<EOF > /tmp/pyGlobus-Postinstall.py
-#!/usr/bin/python2.3
+#!/usr/bin/python2.2
 import pyGlobus
 import os
 import os.path
@@ -65,7 +65,7 @@ rm -f /tmp/pyGlobus-Postinstall.py
 
 %preun
 cat <<EOF > /tmp/pyGlobus-Preuninstall.py
-#!/usr/bin/python2.3
+#!/usr/bin/python2.2
 import pyGlobus
 import os
 import os.path

@@ -14,7 +14,6 @@
 
 #
 # The following defines the AccessGrid rpm
-# Required: /usr/lib/python2.2
 # Required: pyGlobus rpm installed
 # Required: logging rpm installed
 # Obsoletes: AccessGrid-2.0alpha
@@ -31,7 +30,7 @@ Vendor:		Argonne National Laboratory
 Source:		%{name}-%{version}.tar.gz
 BuildRoot:	%{buildroot}
 Requires:	wxGTK
-Requires:	wxPythonGTK-py2.3
+Requires:	wxPythonGTK-py2.2
 Requires:	globus-accessgrid
 Requires:	pyGlobus
 Requires:	pyOpenSSL_AG
@@ -55,6 +54,7 @@ This module provides the core components to start participating in the Access Gr
 #
 
 %build
+echo %{pyver}
 
 #
 # The following installs the package in the buildroot,
@@ -85,7 +85,7 @@ mv bin usr/bin
 #
 %files
 %defattr(-,root,root)
-%{prefix}/lib/python2.3/site-packages/AccessGrid
+%{prefix}/lib/python2.2/site-packages/AccessGrid
 /etc
 %{sharedir}/%{name}/ag.ico
 %defattr(0755,root,root)
@@ -107,9 +107,6 @@ mv bin usr/bin
 %{prefix}/bin/agpm.py
 %{prefix}/bin/SetupVideo.py
 %{sharedir}/doc/AccessGrid
-%defattr(0644,root,root)
-%config %{sysconfdir}/AGNodeService.cfg
-%config %{sysconfdir}/nodeConfig/defaultLinux
 %defattr(-,root,root)
 %{gnomedir}/%{name}/.desktop
 %{gnomedir}/%{name}/VenueClient.desktop
@@ -146,7 +143,7 @@ mv bin usr/bin
 
 %post
 cat <<EOF > /tmp/AccessGrid-Postinstall.py
-#!/usr/bin/python2.3
+#!/usr/bin/python2.2
 import AccessGrid
 import AccessGrid.hosting
 import AccessGrid.hosting.pyGlobus
@@ -165,7 +162,8 @@ def modimport(module):
 sys.stdout.write("Compiling Access Grid Python modules.... ")
 modimport(AccessGrid)
 modimport(AccessGrid.hosting)
-modimport(AccessGrid.hosting.pyGlobus)
+modimport(AccessGrid.Security)
+modimport(AccessGrid.Platform)
 sys.stdout.write("Done\n")
 EOF
 chmod +x /tmp/AccessGrid-Postinstall.py
@@ -194,10 +192,9 @@ fi
 
 %preun
 cat <<EOF > /tmp/AccessGrid-Preuninstall.py
-#!/usr/bin/python2.3
+#!/usr/bin/python2.2
 import AccessGrid
 import AccessGrid.hosting
-import AccessGrid.hosting.pyGlobus
 import os
 import os.path
 import glob
@@ -209,7 +206,10 @@ def delcompiled(module):
         except os.error:
             pass
 
-delcompiled(AccessGrid.hosting.pyGlobus)
+delcompiled(AccessGrid.Security)
+delcompiled(AccessGrid.Platform.unix)
+delcompiled(AccessGrid.Platform)
+delcompiled(AccessGrid.hosting.SOAPpy)
 delcompiled(AccessGrid.hosting)
 delcompiled(AccessGrid)
 EOF
