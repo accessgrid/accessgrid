@@ -2,19 +2,16 @@
 #-----------------------------------------------------------------------------
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
-#
-# Author:      Ivan R. Judson
-#
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.12 2004-04-01 16:29:53 turam Exp $
+# RCS-ID:      $Id: agpm.py,v 1.13 2004-05-05 18:29:33 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
-This program is used to register applications with the users AGTk
+This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.12 2004-04-01 16:29:53 turam Exp $"
+__revision__ = "$Id: agpm.py,v 1.13 2004-05-05 18:29:33 judson Exp $"
 
 import os
 import re
@@ -23,18 +20,7 @@ import sys
 import getopt
 import zipfile
 import tempfile
-
-if sys.version.startswith('2.2'):
-    try:
-        from optik import OptionParser
-    except:
-        raise Exception, "Missing module optik necessary for the AG Toolkit."
-
-if sys.version.startswith('2.3'):
-    try:
-        from optparse import OptionParser
-    except:
-        raise Exception, "Missing module optparse, check your python installation."
+from optparse import OptionParser
 
 from AccessGrid.AppDb import AppDb
 from AccessGrid.Utilities import LoadConfig
@@ -43,8 +29,6 @@ from AccessGrid.Platform.Config import SystemConfig, AGTkConfig, UserConfig
 tempfile.tmpdir = SystemConfig.instance().GetTempDir()
 
 def ProcessArgs():
-    """
-    """
     doc = """
     By default this program registers/installs a shared application
     with the users environment. Using the -u argument applications can
@@ -73,7 +57,16 @@ def ProcessArgs():
                       dest="sys_install", default=0,
                       help="Install the package for all users. \
                       (This requires administrative access)")
-
+    parser.add_option("--post-install", action="store_true",
+                      dest="post_install", default=0,
+                      help="Do a post-installation run, which will install \
+                      all apps distributed with the toolkit in the system \
+                      if possible. (This requires administrative access)")
+    parser.add_option("--wait-for-input", action="store_true",
+                      dest="wait_for_input", default=0,
+                      help="After completing wait for the user to confirm by\
+                      pressing a key.")
+    
     (options, args) = parser.parse_args()
 
     return options
@@ -84,6 +77,7 @@ def UnpackZip(filename):
     directory it unpacked the zip into.
     """
     zipArchive = zipfile.ZipFile(filename)
+
     # We have to unpack things some where we can use them
     workingDir = tempfile.mktemp()
     os.mkdir(workingDir)
@@ -145,6 +139,9 @@ def main():
     # file and the other parts of the shared application.
 
     options = ProcessArgs()
+
+    if options.post_install:
+        pass
     
     if options.sys_install:
         appdb = AppDb(path=tkConf.GetConfigDir())
@@ -232,6 +229,12 @@ def main():
         import shutil
         os.chdir(origDir)
         shutil.rmtree(workingDir)
+
+    if options.wait_for_input:
+        try:
+            raw_input('AGPM: hit return to exit.')
+        except EOFError:
+            pass
         
 if __name__ == "__main__":
     main()
