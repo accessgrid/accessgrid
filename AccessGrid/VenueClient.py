@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.116 2003-09-19 22:12:48 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.117 2003-09-22 21:36:48 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.116 2003-09-19 22:12:48 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.117 2003-09-22 21:36:48 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -21,6 +21,7 @@ import urlparse
 import string
 import threading
 import cPickle
+import time
 
 import logging, logging.handlers
 
@@ -39,10 +40,12 @@ from AccessGrid import Platform
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
 from AccessGrid.Descriptions import DataDescription, ConnectionDescription
 from AccessGrid.Utilities import LoadConfig
+from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid import DataStore
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.ProcessManager import ProcessManager
+import pyGlobus.io
 
 class EnterVenueException(Exception):
     pass
@@ -639,6 +642,23 @@ class VenueClient( ServiceBase):
             if errorInNode:
                 self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences-My Node" from the main menu'
 
+        except pyGlobus.io.GSITCPSocketException, e:
+            enterSuccess = 0
+
+            log.error("globus tcp exception: %s", e.args)
+
+            
+            if e.args[0] == 'an authentication operation failed':
+                self.__CheckForInvalidClock()
+
+            else:
+                log.exception("AccessGrid.VenueClient::EnterVenue failed")
+                # pass a flag to UI if we fail to enter.
+                enterSuccess = 0
+                # put error in warningString, in redesign will be raised to UI as exception.
+                if isinstance(e, faultType):
+                    self.warningString = str(e.faultstring)
+                
         except Exception, e:
             log.exception("AccessGrid.VenueClient::EnterVenue failed")
             # pass a flag to UI if we fail to enter.
@@ -655,6 +675,57 @@ class VenueClient( ServiceBase):
         return self.warningString
         
     EnterVenue.soap_export_as = "EnterVenue"
+
+
+    def __CheckForInvalidClock(self):
+        """
+        Check to see if the local clock is out of synch, a common reason for a
+        failed authentication.
+
+        This routine only currently sets self.warningString, and should only be
+        invoked from the GSITCPSocketException-handling code in EnterVenue.
+
+        """
+
+        timeserver = "ntp-1.accessgrid.org"
+        timeout = 0.3
+        maxOffset = 10
+
+        try:
+            serverTime = GetSNTPTime(timeserver, timeout)
+        except:
+            log.exception("Connection to sntp server at %s failed", timeserver)
+            serverTime = None
+
+        if serverTime is not None:
+
+            diff = int(time.time() - serverTime)
+            absdiff = abs(diff)
+
+            if absdiff > maxOffset:
+
+                if diff > 0:
+                    direction = "fast"
+                else:
+                    direction = "slow"
+
+                self.warningString = ("Authorization failure connecting to server. \n" + \
+                                     "This may be due to the clock being incorrect on\n" + \
+                                     "your computer: it is %s seconds %s with respect\n" + \
+                                     "to the time server at %s.") % \
+                                     (absdiff, direction, timeserver)
+            else:
+                #
+                # Time is okay.
+                #
+                log.exception("AccessGrid.VenueClient::EnterVenue failed; time is okay (offset=%s", diff)
+
+                self.warningString = "Authorization failure connecting to server."
+        else:
+            self.warningString = "Authorization failure connecting to server. \n" + \
+                                 "Please check the time on your computer; an incorrect\n" + \
+                                 "local clock can cause authorization to fail."
+
 
     def LeadFollowers(self):
         #

@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.219 2003-09-19 19:04:05 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.220 2003-09-22 21:36:48 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -672,8 +672,7 @@ class VenueClientUI(VenueClientEventSubscriber):
         *back* Boolean value, true if the back button was pressed, else false.
         
         """
-        log.debug("bin.VenueClient::EnterVenue: Enter venue with url: %s"
-                  % URL)
+        log.debug("bin.VenueClient::EnterVenue: Enter venue with url: %s", URL)
 
         if not enterSuccess:
             # Currently receives type of error in warningString.  This will go back
@@ -681,6 +680,10 @@ class VenueClientUI(VenueClientEventSubscriber):
             if warningString == "NotAuthorized":
                 text = "You are not authorized to enter the venue located at %s.\n." % URL
                 MessageDialog(None, text, "Notification")
+            elif warningString.startswith("Authorization failure connecting to server"):
+                text = warningString
+                MessageDialog(None, text, "Authorization failure")
+                log.debug(warningString)
             else:
                 log.debug("warningString: %s" %warningString)
                 text = "Can not connect to venue located at %s.  Please, try again." % URL
