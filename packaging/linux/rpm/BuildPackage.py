@@ -68,9 +68,10 @@ for pkg in [ "logging-0.4.7", "Optik-1.4.1", "fpconst-0.6.0", "SOAPpy"]:
 # (must build with our spec file)
 # - create tar file for the rpmbuild
 os.chdir(SourceDir)
-cmd = "ln -s pyOpenSSL pyOpenSSL_AG-0.5.1"
-print "cmd = ", cmd
-os.system(cmd)
+if os.path.exists('pyOpenSSL'):
+    cmd = "ln -s pyOpenSSL pyOpenSSL_AG-0.5.1"
+    print "cmd = ", cmd
+    os.system(cmd)
 cmd = "tar czhf /usr/src/redhat/SOURCES/pyOpenSSL_AG-0.5.1.tar.gz pyOpenSSL_AG-0.5.1"
 print "cmd = ", cmd
 os.system(cmd)
@@ -82,7 +83,7 @@ print "cmd = ", cmd
 os.system(cmd)
 
 # - copy the rpm to the dest dir
-cmd = "cp /usr/src/redhat/RPMSW/i386/pyOpenSSL_AG-0.5.1-4.386.rpm %s" % (DestDir,)
+cmd = "cp /usr/src/redhat/RPMS/i386/pyOpenSSL_AG-0.5.1-4.i386.rpm %s" % (DestDir,)
 print "cmd = ", cmd
 os.system(cmd)
 
@@ -91,10 +92,11 @@ os.system(cmd)
 #
 # - create tar file for the rpm
 os.chdir(SourceDir)
-cmd = "ln -s pyGlobus pyGlobus-cvs"
-print "cmd = ", cmd
-os.system(cmd)
-cmd = "tar cvzhf /usr/src/redhat/SOURCES/pyGlobus-cvs.tar.gz"
+if os.path.exists('pyGlobus'):
+    cmd = "ln -s pyGlobus pyGlobus-cvs"
+    print "cmd = ", cmd
+    os.system(cmd)
+cmd = "tar czhf /usr/src/redhat/SOURCES/pyGlobus-cvs.tar.gz pyGlobus-cvs"
 print "cmd = ", cmd
 os.system(cmd)
 
@@ -115,15 +117,9 @@ os.system(cmd)
 # - build the targz file for the AG rpms
 os.chdir(DestDir)
 tar_dst_filename = "AccessGrid-%s.tar.gz" % (version)
-tar_src_filename = "AccessGrid-%s" % (version)
-
-if not os.path.exists(tar_src_filename):
-    cmd = "ln -s AccessGrid AccessGrid-%s" % (version,)
-    print "cmd = ", cmd
-    os.system(cmd)
 
 rpm_srcdir = "/usr/src/redhat/SOURCES"
-tar_command = "tar czhf %s %s" % ( os.path.join(rpm_srcdir, tar_dst_filename), tar_src_filename)
+tar_command = "tar czhf %s ." % ( os.path.join(rpm_srcdir, tar_dst_filename), )
 print "tar_command = ", tar_command
 rc = os.system(tar_command)
 if rc != 0:
@@ -133,7 +129,7 @@ if rc != 0:
 # - build the rpms
 os.chdir(BuildDir)
 os.chdir(os.path.join("packaging","linux","rpm"))
-cmd = "rpmbuild -bb AccessGrid.spec" 
+cmd = "rpmbuild -ba AccessGrid.spec" 
 print "cmd = ", cmd
 os.system(cmd)
 
