@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Client.py,v 1.7 2003-02-14 22:21:32 olson Exp $
+# RCS-ID:      $Id: Client.py,v 1.8 2003-02-21 16:15:24 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -197,7 +197,7 @@ class HTTPTransport:
             debugFooter(s)
 
         if config.dumpSOAPIn:
-            data = r.getfile().read(contentLen)
+            data = r.getfile().read(contentLen, contentLen)
 
             s = 'Incoming SOAP len=%s contentLen=%s' % (len(data), contentLen)
             debugHeader(s)
@@ -210,7 +210,7 @@ class HTTPTransport:
             raise HTTPError(code, msg)
 
         if not config.dumpSOAPIn:
-            data = r.getfile().read(contentLen)
+            data = r.getfile().read(contentLen, contentLen)
 
         # return response payload
         return data

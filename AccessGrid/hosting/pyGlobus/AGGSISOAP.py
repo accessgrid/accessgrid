@@ -91,7 +91,7 @@ import time
 try: from M2Crypto import SSL
 except: pass
 
-ident = '$Id: AGGSISOAP.py,v 1.9 2003-02-14 22:21:32 olson Exp $'
+ident = '$Id: AGGSISOAP.py,v 1.10 2003-02-21 16:15:24 judson Exp $'
 
 __version__ = "0.9.7"
 
@@ -1891,7 +1891,7 @@ class UnderflowError(exceptions.ArithmeticError):
     pass
 
 def debugHeader(title):
-    s = '*** ' + title + ' '
+    s = '*** ' + str(title) + ' '
     print s + ('*' * (72 - len(s)))
 
 def debugFooter(title):
@@ -3474,7 +3474,7 @@ class HTTPTransport:
             debugFooter(s)
 
         if config.dumpSOAPIn:
-            data = r.getfile().read(contentLen)
+            data = r.getfile().read(contentLen, contentLen)
 
             s = 'Incoming SOAP : Content-length=%s Length=%s' % (contentLen, len(data))
             debugHeader(s)
@@ -3487,7 +3487,7 @@ class HTTPTransport:
             raise HTTPError(code, msg)
 
         if not config.dumpSOAPIn:
-            data = r.getfile().read(contentLen)
+            data = r.getfile().read(contentLen, contentLen)
 
         # return response payload
         return data
@@ -3741,7 +3741,8 @@ class SOAPServer(GSITCPSocketServer):
                         self.headers.headers))
                     debugFooter(s)
 
-                data = self.rfile.read(int(self.headers["content-length"]))
+                clen = int(self.headers["content-length"])
+                data = self.rfile.read(clen, clen)
 
                 if self.server.config.dumpSOAPIn:
                     s = 'Incoming SOAP'
