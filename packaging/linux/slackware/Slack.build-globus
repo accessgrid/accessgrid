@@ -3,7 +3,6 @@ name=globus-accessgrid
 version=2.4
 release=1
 arch=i486
-python=python2.3
 here=`pwd`
 
 buildroot=/var/tmp
