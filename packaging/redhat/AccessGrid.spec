@@ -55,9 +55,9 @@ Version:	%{version}
 Release:	%{release}
 Group:		Utilities/System
 Requires:	AccessGrid = %{version}-%{release}
-Obsoletes:	AccessGrid-AudioService <= 2.1.2
-Obsoletes:	AccessGrid-VideoProducer <= 2.1.2
-Obsoletes:	AccessGrid-VideoConsumer <= 2.1.2
+Obsoletes:	AccessGrid-AudioService <= 2.1
+Obsoletes:	AccessGrid-VideoProducer <= 2.1
+Obsoletes:	AccessGrid-VideoConsumer <= 2.1
 
 %description VenueClient
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
