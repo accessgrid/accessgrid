@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.69 2004-05-11 14:42:50 lefvert Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.70 2004-05-11 15:30:14 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.69 2004-05-11 14:42:50 lefvert Exp $"
+__revision__ = "$Id: Utilities.py,v 1.70 2004-05-11 15:30:14 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -141,7 +141,11 @@ def GetLogText(maxSize, logFileName):
         #
         # Try to get text from the log file.
         #
-        logFile = file(logFileName)
+
+        userConfig = Config.UserConfig.instance()
+        logDir = userConfig.GetLogDir()
+                
+        logFile = file(os.path.join(logDir, logFileName))
         
         #
         # Move to a position "maxSize" bytes from the end of the file. 
@@ -160,6 +164,7 @@ def GetLogText(maxSize, logFileName):
 
         text = logFile.read(maxSize) # text for error report             
         logFile.close()
+
     
     except Exception,e:
         #
@@ -192,7 +197,7 @@ def GetLogText(maxSize, logFileName):
 
     return text
 
-def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
+def SubmitBug(comment, profile, email, NOT_USED, logFile = VENUE_CLIENT_LOG):
     """
     Submits a bug to bugzilla. 
 
@@ -247,11 +252,12 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
     args['form_name'] = "enter_bug"
     
     # Combine comment, profile, and log file information
-    logDir = userConfig.GetLogDir()
-    
+
+    userConfig = Config.UserConfig.instance()
+       
     # Get config information
     configData =  "\n%s" % Config.AGTkConfig.instance()
-    configData += "\n%s" % Config.UserConfig.instance()
+    configData += "\n%s" % userConfig
     configData += "\n%s" % Config.GlobusConfig.instance()
     configData += "\n%s\n" % Config.SystemConfig.instance()
 
@@ -274,6 +280,23 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
         # email address.
         email = "This reporter does not want to be contacted.  No email address specified."
 
+    
+    def AppendNodeLogs(text):
+        text = text +"\n\n--- VenueClientServices.log INFORMATION ---\n\n"+ \
+               GetLogText(10000,"VenueClientServices.log")\
+               +"\n\n--- ServiceManager.log INFORMATION ---\n\n"+ \
+               GetLogText(10000, "ServiceManager.log")\
+             
+        logDir = userConfig.GetLogDir()
+        otherServiceLogs = os.listdir(logDir)          
+
+        for serviceLog in otherServiceLogs:
+            if serviceLog.endswith('Service.log'):
+                text = text \
+                       +"\n\n--- %s INFORMATION ---\n\n" % (serviceLog,)    \
+                       +GetLogText(10000, serviceLog)
+
+        return text
         
     commentAndLog = "\n\n--- EMAIL TO CONTACT REPORTER ---\n\n" + str(email) \
                 +"\n\n--- REPORTER CLIENT PROFILE --- \n\n" + profileString \
@@ -289,8 +312,7 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
         args['product'] = "Virtual Venue Server Software"
         args['component'] = "Management UI"
         
-        logText = GetLogText(20000, os.path.join(logDir,
-                                                 "VenueManagement.log"))
+        logText = GetLogText(20000, "VenueManagement.log")
         commentAndLog = commentAndLog \
             +"\n\n--- VenueManagement.log INFORMATION ---\n\n"+ logText
         
@@ -300,33 +322,22 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
         args['product'] = "Node Management Software"
         args['component'] = "NodeSetupWizard"
 
-        logText = GetLogText(20000, os.path.join(logDir,
-                                                 "NodeSetupWizard.log"))
+        logText = GetLogText(20000, "NodeSetupWizard.log")
         commentAndLog = commentAndLog \
             +"\n\n--- NodeSetupWizard.log INFORMATION ---\n\n"+ logText
 
+        commentAndLog = AppendNodeLogs(commentAndLog)
+
     else:
         args['short_desc'] = "Automatic Bug Report - Venue Client"
-        logToSearch = GetLogText(20000, os.path.join(logDir,
-                                                     "VenueClient.log"))
+        logToSearch = GetLogText(20000, "VenueClient.log")
       
         commentAndLog = commentAndLog \
              +"\n\n--- VenueClient.log INFORMATION ---\n\n"+ logToSearch \
-             +"\n\n--- VenueClientServices.log INFORMATION ---\n\n"+GetLogText(10000,
-                                 os.path.join(logDir, "VenueClientServices.log"))\
-             +"\n\n--- ServiceManager.log INFORMATION ---\n\n"+GetLogText(10000,
-                                 os.path.join(logDir, "ServiceManager.log"))\
-           
-        # Append other service logs, too
-        otherServiceLogs = os.listdir(logDir)
-               
-        for serviceLog in otherServiceLogs:
-            if serviceLog.endswith('Service.log'):
-                commentAndLog = commentAndLog \
-                                +"\n\n--- %s INFORMATION ---\n\n" % (serviceLog,)    \
-                                +GetLogText(10000,os.path.join(logDir, serviceLog))
 
-   
+        commentAndLog = AppendNodeLogs(commentAndLog)
+
+         
     # If we've got a logToSearch, look at it to find a GSI exception
     # at the end.  If it has one, mark the component as Certificate
     # Management.
@@ -344,7 +355,6 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
     args['comment']= configData + "\n\n" + commentAndLog
       
     # Now submit to the form.
-      
     params = urllib.urlencode(args)
     f = urllib.urlopen(url, params)
 
