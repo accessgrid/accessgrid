@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.272 2003-09-17 17:58:25 eolson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.273 2003-09-17 20:28:06 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.272 2003-09-17 17:58:25 eolson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.273 2003-09-17 20:28:06 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1895,8 +1895,7 @@ class ContentListPanel(wxPanel):
                         self.AddData(data)
             except:
                 log.exception("ContentListPanel.OnExpand: Could not get personal data.")
-                ErrorDialog(None, "%s's data could not be retrieved."%item.name ,
-                            style = wxOK  | wxICON_ERROR)
+                MessageDialog(None, "%s's data could not be retrieved."%item.name)
                 
     def OnDoubleClick(self, event):
         self.x = event.GetX()
