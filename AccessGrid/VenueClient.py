@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.91 2003-08-12 01:49:14 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.92 2003-08-12 01:59:56 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -502,7 +502,7 @@ class VenueClient( ServiceBase):
                                                         service.uri, service.mimeType ) )
 
             # I hate retrofitted code.
-            if hasattr(venueState, backupServer):
+            if hasattr(venueState, 'backupServer'):
                 bs = venueState.backupServer
             else:
                 bs = None
