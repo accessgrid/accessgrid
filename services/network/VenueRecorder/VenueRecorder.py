@@ -4,8 +4,8 @@
 # 
 # Author:      Susanne Lefvert 
 # 
-# Created:     $Date: 2005-03-03 18:33:12 $ 
-# RCS-ID:      $Id: VenueRecorder.py,v 1.4 2005-03-03 18:33:12 lefvert Exp $ 
+# Created:     $Date: 2005-03-03 18:57:22 $ 
+# RCS-ID:      $Id: VenueRecorder.py,v 1.5 2005-03-03 18:57:22 lefvert Exp $ 
 # Copyright:   (c) 2002 
 # Licence:     See COPYING.TXT 
 #----------------------------------------------------------------------------- 
@@ -661,17 +661,17 @@ class VenueRecorderUI:
     def OnInit(self): 
         ''' 
         Expected by wxPython 
-        ''' 
+        '''
         return 1 
  
     def __init__(self, venueRecorderModel, log): 
         ''' 
         Create ui components and register them as observers to the 
         venue recorder model. 
-        ''' 
-        wxInitAllImageHandlers() 
+        '''
+        wxInitAllImageHandlers()
         self.log = log 
-         
+
         # Create model 
         self.venueRecorderModel = venueRecorderModel 
  
@@ -682,7 +682,7 @@ class VenueRecorderUI:
          
         # Init UI
         self.venueRecorderView.Show(1) 
-                 
+                         
 class VenueRecorderView(wxFrame, Observer): 
     ''' 
     View for venue recorder containing ui components.
@@ -1421,15 +1421,16 @@ if __name__ == "__main__":
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
         sys.exit(-1)
-   
-    if not app.certificateManager.HaveValidProxy():
-        sys.exit(-1)
 
+    if not app.certificateManager.HaveValidProxy():
+        print "\n **** Check your certificates ***\n"
+        sys.exit(-1)
+    
     # Create model and view 
     v = VenueRecorderModel(app.GetLog())
     log = app.GetLog()
+
     uiApp = VenueRecorderUI(v, app.GetLog()) 
 
     # Start application main thread
-    wxapp.MainLoop()
-   
+    wxapp.MainLoop() 
