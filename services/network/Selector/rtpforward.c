@@ -160,6 +160,7 @@ void* start(void* address)
   struct session_data   data;
   char *from_addr, *to_addr;
   int   from_port, to_port;
+  int ret;
 
   struct address* addr;
   addr = (struct address*) address;
@@ -168,7 +169,9 @@ void* start(void* address)
 
   data.selected = 0;
   
+  /* 
   printf("from address %s, from port %d, to address %s, to port %d \n", addr->fromAddr, addr->fport, addr->toAddr, addr->tport);
+  */
   
   from_addr = addr->fromAddr ; from_port = addr->fport;
   to_addr = addr->toAddr; to_port = addr->tport;
@@ -220,12 +223,13 @@ void* start(void* address)
       rtp_send_ctrl(from_session, rtp_ts, NULL);
       
       /* Receive control and data packets */
-      timeout.tv_sec  = 0;
+      timeout.tv_sec  = 1;
       timeout.tv_usec = 0;
-      rtp_recv(from_session, &timeout, rtp_ts);
+      ret = rtp_recv(from_session, &timeout, rtp_ts);
       
       /* State maintenance */
-      rtp_update(from_session);
+      if(ret)
+          rtp_update(from_session);
 
       xmemchk();
     }
