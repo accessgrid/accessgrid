@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.66 2004-08-06 17:07:09 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.67 2004-08-11 19:42:44 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.66 2004-08-06 17:07:09 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.67 2004-08-11 19:42:44 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -311,8 +311,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         if gui is not None:
             certMenu = gui.GetMenu(self)
-            self.preferences.AppendMenu(self.ID_CERTIFICATE_MANAGE,
-                                    "&Manage Certificates", certMenu)
+            for item in certMenu.GetMenuItems():
+	        self.preferences.AppendItem(item)
 
         self.preferences.AppendSeparator()
 
