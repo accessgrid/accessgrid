@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.19 2004-03-24 16:33:15 turam Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.20 2004-03-31 21:59:06 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ used by client software that wants to keep track of what AG specific
 tools are appropriate for specific data types. It also keeps track of
 how to invoke those tools.
 """
-__revision__ = "$Id: AppDb.py,v 1.19 2004-03-24 16:33:15 turam Exp $"
+__revision__ = "$Id: AppDb.py,v 1.20 2004-03-31 21:59:06 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -456,7 +456,7 @@ class AppDb:
         return (1, cmdName)
 
     def RegisterApplication(self, name, mimeType, extension, commandDict,
-                            fileList, srcPath, dstPath=None):
+                            fileList, srcPath, dstPath):
         """
         Encapsulate all the actions required to register a new application.
         returns 0 on failure, 1 on success
@@ -472,10 +472,8 @@ class AppDb:
                 if not result:
                     return 0
 
-            if dstPath == None:
-                noSpaceName = '_'.join(name.split(' '))
-                dstPath = os.path.join(UserConfig.instance().GetSharedAppDir(),
-                                       noSpaceName)
+            noSpaceName = '_'.join(name.split(' '))
+            dstPath = os.path.join(dstPath, noSpaceName)
 
             if not os.path.exists(dstPath):
                 try:
