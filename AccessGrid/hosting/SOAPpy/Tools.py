@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Tools.py,v 1.5 2004-02-27 22:38:21 judson Exp $
+# RCS-ID:      $Id: Tools.py,v 1.6 2004-02-27 23:50:51 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ This module defines methods for making serialization and other things simpler
 when using the SOAPpy module.
 """
 
-__revision__ = "$Id: Tools.py,v 1.5 2004-02-27 22:38:21 judson Exp $"
+__revision__ = "$Id: Tools.py,v 1.6 2004-02-27 23:50:51 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -109,6 +109,8 @@ def Reconstitute(obj):
                 setattr(f, ok, Reconstitute(obj[ok]))
         else:
             f = obj
+            for ok in obj.keys():
+                f[ok] = Reconstitute(obj[ok])
     elif isinstance(obj, typedArrayType):
         f = list()
         for o in obj:
