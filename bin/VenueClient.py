@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.64 2003-03-12 16:44:17 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.65 2003-03-12 20:04:29 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -49,11 +49,11 @@ class VenueClientUI(wxApp, VenueClient):
         This method initiates all gui related classes.
         """
         VenueClient.__init__(self)
+        self.__setLogger()
         self.__createHomePath()
         self.frame = VenueClientFrame(NULL, -1,"", self)
         self.frame.SetSize(wxSize(500, 400))
         self.SetTopWindow(self.frame)
-        self.__setLogger()
         return true
     
     def __setLogger(self):
