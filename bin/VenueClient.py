@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.161 2003-05-23 21:01:58 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.162 2003-05-23 21:37:36 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -59,7 +59,7 @@ class VenueClientUI(wxApp, VenueClient):
     clientHandle = None
     venueUri = None
     personalDataStorePrefix = "personalDataStore"
-    personalDataStorePort = 9999
+    personalDataStorePort = 0
     personalDataDict = {}
     accessGridPath = GetUserConfigDir()
     profileFile = os.path.join(accessGridPath, "profile" )
@@ -633,7 +633,7 @@ class VenueClientUI(wxApp, VenueClient):
             Client.Handle(URL).IsValid()
         except Client.InvalidHandleException:
             log.exception("VenueClient::EnterVenue handle.IsValid Failed.")
-            MessageDialog("Client.Handle(%s).IsValid() failed." % URL)
+            wxCallAfter(MessageDialog, None, "Client.Handle(%s).IsValid() failed." % URL)
             return
                           
         self.venueUri = URL
@@ -727,7 +727,8 @@ class VenueClientUI(wxApp, VenueClient):
 
                 # Enable menus
                 wxCallAfter(self.frame.ShowMenu)
-
+                
+                #
                 # Enable the application menu that is displayed over
                 # the Applications items in the list
                 # (this is not the app menu above)
