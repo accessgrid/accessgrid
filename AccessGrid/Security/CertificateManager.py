@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.2 2004-03-04 21:24:33 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.3 2004-03-10 23:04:46 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.2 2004-03-04 21:24:33 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.3 2004-03-10 23:04:46 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -46,12 +46,12 @@ import getpass
 import sys
 import time
 
-from OpenSSL_AG import crypto
-
 from AccessGrid import Platform
 from AccessGrid import Utilities
 from AccessGrid.Security import CertificateRepository, ProxyGen, CRSClient
 from AccessGrid.Security.Utilities import get_certificate_locations
+
+from OpenSSL_AG import crypto
 
 log = logging.getLogger("AG.CertificateManager")
 
@@ -463,6 +463,12 @@ class CertificateManager(object):
         impCert.SetMetadata("AG.CertificateManager.certType", "identity")
         return impCert
         
+    def ImportIdentityCertificateX509(self, repo, certObj, pkeyObj, passphraseCB):
+        impCert = repo.ImportCertificateX509(certObj, pkeyObj, passphraseCB)
+        
+        impCert.SetMetadata("AG.CertificateManager.certType", "identity")
+        return impCert
+        
     def ImportCACertificatePEM(self, repo, cert):
         impCert = repo.ImportCertificatePEM(cert)
         
@@ -510,7 +516,6 @@ class CertificateManager(object):
             subj = str(c.GetSubject())
             print "Check ", subj
             if c.GetSubject().get_der() == c.GetIssuer().get_der():
-                print "Reached root"
                 good = 1
                 break
 
@@ -527,8 +532,8 @@ class CertificateManager(object):
 
             issuers = filter(lambda x: not x.IsExpired(), issuers)
             
-            log.debug("Issuers of %s are %s", subj,
-                      map(lambda x: x.GetSubject(), issuers))
+            #log.debug("Issuers of %s are %s", subj,
+            #          map(lambda x: x.GetSubject(), issuers))
             if len(issuers) == 0:
                 break
             
