@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.67 2003-04-01 23:23:48 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.68 2003-04-03 15:35:48 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -84,7 +84,7 @@ class Venue(ServiceBase.ServiceBase):
         # Create the directory to hold the venue's data.
         #
 
-        log.debug("------------ data store location: %s"%dataStoreLocation)
+        log.debug("data store location: %s"%dataStoreLocation)
         
         if dataStoreLocation is None or not os.path.exists(dataStoreLocation):
             log.warn("Creating venue: Data storage location %s not valid",
@@ -95,7 +95,7 @@ class Venue(ServiceBase.ServiceBase):
             try:
                 os.mkdir(self.dataStorePath)
             except OSError, e:
-                log.exception("++++++++++++++ Could not create venueStoragePath.")
+                log.exception("Could not create venueStoragePath.")
                 self.dataStorePath = None
                 
         if self.encryptMedia == 1:
@@ -106,6 +106,7 @@ class Venue(ServiceBase.ServiceBase):
         self.connections = dict()
         self.applications = {}
         self.data = dict()
+        self.services = dict()
         self.streamList = StreamDescriptionList()
 
         self.users = dict()
@@ -431,6 +432,14 @@ class Venue(ServiceBase.ServiceBase):
             return self.GetData(name)
 
     wsGetData.soap_export_as = "GetData"
+
+    def wsAddService(self, serviceDescription ):
+        if not self._authorize():
+            raise NotAuthorized
+        else:
+            return self.AddService(serviceDescription)
+        
+    wsAddService.soap_export_as = "AddService"
 
     # Management methods
     def AddAdministrator(self, string):
@@ -853,6 +862,50 @@ class Venue(ServiceBase.ServiceBase):
                                       Event( Event.ADD_DATA,
                                              self.uniqueId,
                                              dataDescription ) )
+
+    def AddService(self, serviceDescription):
+        """
+        The AddService method enables VenuesClients to put services in the Virtual
+        Venue. Service put in the Virtual Venue through AddService is persistently
+        stored.
+        """
+
+        name = serviceDescription.name
+
+        if self.services.has_key(name):
+            #
+            # We already have this service; raise an exception.
+            #
+            log.exception("AddService: service already present: %s", name)
+            raise VenueException("AddService: service %s already present" % (name))
+
+        self.services[serviceDescription.name] = serviceDescription
+        log.debug("Send ADD_SERVICE event %s", serviceDescription)
+        self.server.eventService.Distribute( self.uniqueId,
+                                             Event( Event.ADD_SERVICE,
+                                                    self.uniqueId,
+                                                    serviceDescription ) )
+
+    def RemoveService(self, serviceDescription):
+        """
+        RemoveService removes persistent service from the Virtual Venue.
+        """
+        try:
+            if serviceDescription.name in self.services:
+                del self.services[serviceDescription.name ]
+                self.server.eventService.Distribute( self.uniqueId,
+                                                     Event( Event.REMOVE_SERVICE,
+                                                            self.uniqueId,
+                                                            serviceDescription ) )
+            else:
+                log.exception("Service not found!")
+                raise VenueException("Service not found.")
+        except:
+            log.exception("Exception in RemoveService!")
+            raise VenueException("Cannot remove service!")
+
+    RemoveService.soap_export_as = "RemoveService"
+
 
     def UpdateData(self, dataDescription):
         """

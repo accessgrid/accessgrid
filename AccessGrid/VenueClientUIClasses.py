@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.117 2003-04-01 23:23:48 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.118 2003-04-03 15:35:47 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -628,19 +628,14 @@ class VenueClientFrame(wxFrame):
     def OpenProfileDialog(self, event):
         profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile information')
         profileDialog.SetProfile(self.app.profile)
-        #        lastType = self.app.profile.type
-           
+                
         if (profileDialog.ShowModal() == wxID_OK):
             profile = profileDialog.GetNewProfile()
             self.app.ChangeProfile(profile)
-            wxLogDebug("------------change profile: %s" %profile.name)
-         #   if(profile.type != lastType):
-         #       if profile.type == 'Node':#
-         #
-         #                elif profile.type == 'User':
-                    
+            wxLogDebug("change profile: %s" %profile.name)
 
         profileDialog.Destroy()
+
 
     def OpenAddServiceDialog(self, event):
         addServiceDialog = AddServiceDialog(self, -1, 'Please, fill in service details')
@@ -699,6 +694,7 @@ class VenueClientFrame(wxFrame):
         aboutDialog.Popup()
         
     def SaveData(self, event):
+        wxLogDebug("Save data")
         id = self.contentListPanel.tree.GetSelection()
         data =  self.contentListPanel.tree.GetItemData(id).GetData()
 
@@ -1078,7 +1074,7 @@ class ContentListPanel(wxPanel):
     '''
     participantDict = {}
     dataDict = {}
-    #serviceDict = {}
+    serviceDict = {}
     nodeDict = {}
     applicationDict = {}
     personalDataDict = {}
@@ -1108,7 +1104,7 @@ class ContentListPanel(wxPanel):
         #self.participantFollowId = imageList.Add(icons.getParticipantFollowBitmap())
         #self.participantLeadId = imageList.Add(icons.getParticipantLeadBitmap())
         self.defaultDataId = imageList.Add(icons.getDefaultDataBitmap())
-	#self.serviceId = imageList.Add(icons.getDefaultServiceBitmap())
+	self.serviceId = imageList.Add(icons.getDefaultServiceBitmap())
         self.applicationId = imageList.Add(icons.getDefaultServiceBitmap())
         self.nodeId = imageList.Add(icons.getDefaultNodeBitmap())
         #self.nodeFollowId = imageList.Add(icons.getNodeFollowBitmap())
