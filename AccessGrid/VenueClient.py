@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.56 2003-04-25 15:55:40 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.57 2003-05-09 16:28:03 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -351,7 +351,14 @@ class VenueClient( ServiceBase):
             self.heartbeatTask.stop()
         self.eventClient.Send(DisconnectEvent(self.venueState.uniqueId,
                                               self.privateId))
-        self.eventClient.Stop()
+        try:
+            self.eventClient.Stop()
+        except:
+            # An exception is always thrown for some reason when I exit
+            # the event client
+            pass
+            
+                    
         self.venueProxy.Exit( self.privateId )
         self.__InitVenueData__()
 
