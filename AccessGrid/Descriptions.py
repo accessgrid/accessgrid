@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.53 2004-04-05 20:34:38 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.54 2004-04-19 17:15:18 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.53 2004-04-05 20:34:38 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.54 2004-04-19 17:15:18 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -343,6 +343,19 @@ class AGServiceDescription:
         self.serviceManagerUri = serviceManagerUri
         self.servicePackageUri = servicePackageUri
         self.version = version
+
+class AppParticipantDescription:
+    def __init__(self, appId, clientProfile, status):
+        self.appId = appId
+        self.clientProfile = clientProfile
+        self.status = status
+        
+
+class AppDataDescription:
+    def __init__(self, appId, key, value):
+        self.appId = appId
+        self.key = key
+        self.value = value
     
 class VenueState:
     def __init__( self, uniqueId, name, description, uri, connections,
