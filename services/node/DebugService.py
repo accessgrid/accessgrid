@@ -15,6 +15,7 @@ from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.GUID import GUID
 from AccessGrid.AGService import AGService, AGServiceI, AGServiceIW, RunService
+from AccessGrid.Types import Capability
 
 class DebugService(AGService):
    """
@@ -28,6 +29,10 @@ class DebugService(AGService):
 
       # a fictional debug level
       self.level = 0
+      
+      self.capabilities = [ Capability( Capability.CONSUMER, Capability.AUDIO ),
+                            Capability( Capability.CONSUMER, Capability.VIDEO ),
+                            Capability( Capability.PRODUCER, "debug" ) ]
 
    def SetLevel(self, level):
       self.level = level
