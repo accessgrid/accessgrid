@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.51 2004-03-18 19:53:27 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.52 2004-03-26 20:40:39 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.51 2004-03-18 19:53:27 eolson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.52 2004-03-26 20:40:39 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -36,6 +36,7 @@ from AccessGrid.Descriptions import CreateCapability
 from AccessGrid.Descriptions import CreateResource
 from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.Descriptions import CreateServiceConfiguration
+from AccessGrid.Descriptions import CreateStreamDescription
 
 from SOAPpy.Types import SOAPException
 
@@ -234,11 +235,9 @@ class AGNodeService:
 
             if enabled:
                 self.__SendStreamsToService( serviceUri )
-        except faultType,e:
+        except:
             log.exception(serviceUri)
-            raise Exception(e.faultstring)
-
-
+            raise 
 
     def SetServiceEnabledByMediaType(self, mediaType, enableFlag):
         """
@@ -247,7 +246,8 @@ class AGNodeService:
 
         serviceList = self.GetServices()
         for service in serviceList:
-            serviceMediaTypes = map( lambda cap: cap.type, service.capabilities )
+            serviceMediaTypes = map( lambda cap: cap.type,
+                                     service.capabilities )
             if mediaType in serviceMediaTypes:
                 self.SetServiceEnabled( service.uri, enableFlag) 
 
@@ -456,14 +456,14 @@ class AGNodeService:
       """
       try:
                 
-        file = self.configDir + os.sep + configName
+        fileName = self.configDir + os.sep + configName
 
         # Catch inability to write config file
         if((not os.path.exists(self.configDir)) or
            (not os.access(self.configDir,os.W_OK)) or
-           (os.path.exists(file) and not os.access(file, os.W_OK) )):
-            log.exception("Can't write config file %s" % (file))
-            raise Exception("Can't write config file %s" % (file))
+           (os.path.exists(fileName) and not os.access(fileName, os.W_OK) )):
+            log.exception("Can't write config file %s" % (fileName))
+            raise Exception("Can't write config file %s" % (fileName))
 
         numServiceManagers = 0
         numServices = 0
@@ -532,7 +532,7 @@ class AGNodeService:
         #
         # Write config file
         #
-        fp = open( file, "w" )
+        fp = open( fileName, "w" )
         config.write(fp)
         fp.close()
 
@@ -613,7 +613,7 @@ class AGNodeService:
 
         try:
             configFile = app.FindConfigFile(AGNodeService.NodeConfigFile)
-        except Exception, e:
+        except:
             log.exception("Error finding config file: %s",
                           AGNodeService.NodeConfigFile)
             raise
@@ -626,7 +626,7 @@ class AGNodeService:
 
             try:
                 self.config = LoadConfig( configFile )
-            except Exception, e:
+            except:
                 log.exception("Error loading file.")
                 raise
 
