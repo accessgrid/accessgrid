@@ -2,82 +2,224 @@
 Logging Enhancement for 213
 ===========================
  
-:version: $Revision: 1.1 $
-:author: Ivan R. Judson <judson@mcs.anl.gov>
+:version: $Revision: 1.2 $
+:author: Eric C. Olson <eolson@mcs.anl.gov>
 :status: Draft
 :contact: ag-tech@mcs.anl.gov
 
 Abstract
 ========
 
-This enhancement provides a logging functionality that is abstracted
-from the actual implementation. This means we can avoid requiring the
-python logging module that is included in python 2.3 when we run on
-python 2.2, and we can extend the logging factory to know about other
-logging solutions like netLogger.
+This enhancement provides a logging functionality for the AccessGrid Toolkit.
+It leverages existing logging capabilities and extends them for the needs of
+the toolkit.
 
 Overview
 ========
 
-This enhancement creates a LogFactory class, and two logging classes,
-PseudoLogger and the native python logger. The PseudoLogger is used
-when running in the absence of the logginer module. By defining these
-three classes we can hide the details of logging from the developers
-and users.
+User Requirements
+Primary:
+  All important data is in default log.
+  It's easy to turn logging level up.
+  Log file names are fairly simple or files are simple to retrieve.
+Secondary:
+  It's easy to turn logging level up in individual lower level sections.
 
-- Module level logging
-- Class level logging
-- Usage level logging
+Developer Requirements
+Primary:
+  Common code such as format should be standardized and not hardcoded in each module.
+  Logs should be able to go to to multiple locations. (such as usage, error file, net)
+     The different locations should be able to select their logging level.
+  Logs should be capable of differentiating between threads.
+  Log entries should not be missed -- i.e. prevent "no handlers" errors.
+
+Secondary:
+  It would be useful if the different output locations could have a per
+    component log level such as turning up or down the detail on the event service
+    without disturbing other handlers (will not work on python logging module without an extension).
+  Would like to be able to add an instance specific detail to help tell the difference 
+    between multiple instances of the same object (when threads can't be used).
+
 
 Summary of Modifications
 ========================
 
-Create two new classes:
+Possible Modifications
 
-LogFactory
+A. Write a complete abstraction and implementation for Toolkit logging, so it can occur without 
+the existence of the python logging module.
+  Positives: Can replace logging module when needed.
+  Negatives: It creates a lot of new code that hasn't been tested as much as the logging module.
+             It creates quite a bit of code that seems to be redundant to the logging module code.
+             When not using the python logging, we may lack some features of the more mature 
+                logging module.
 
-PsuedoLog
+B. Write an abstraction for Toolkit logging, but use the python logging module as its base.
+  Positives: Uses code that has been tested.
+             Reduces amount of code that we write and maintain.
+  Negatives: Relies on the logging module permanently (which seems like it will stay)
+             May or may not be best at handling some (one?) our needs specifically.
+                We can extend it to handle one of the secondary developer requirements,
+                but it needs to be tested to make sure it is an efficient performing solution.
 
-Module Organization
--------------------
+* Choosing Option (B)
 
-- AccessGrid
 
-  - Logging
-  
-    - LogFactory
+Naming issues
 
-    - PsuedoLog
+We have been naming logs "AG.module.xxxx", but that format can't really model our system very
+  well since our objects are not mapped specifically to modules.  Also a.b.c is a simple tree 
+  and some of our objects are used by many different objects.
 
-Deprecated Packages
--------------------
+A Log based on the object hierarchy does not seem very feasible or reasonable at this time.  
+  Logs would have to know about the contents of every dynamic object.
 
-FILL IN DEPRECATED PACKAGES
+It's ideal to group things into human readable categories.
+  I suggest a format such as:
+    Security, VenueClient, VenueServer, EventService, Transport, ServiceManager, ...
+
+
+Hierarchy
+  * Dynamic list:  Since the "a.b.c" tree form is static, we'll store ours in a dynamic list instead.
+  This allows us to make sure all new loggers are handled when they are dynamically added.
+  This also avoids the rigidity of a "a.b.c" format.
+
+  A default list is used to help ensure all loggers are handled.  Additional lists
+    can also be used.
+
+  Handling the old hierarchy form.
+  If subcategories such as "a.b" or "a.b.c" are still desired, they will still work.  However, 
+    our extension to set per input logging levels will only set the highest parent's level.  This
+    prevents duplicate log entries from loggers such as "a" and "a.b".
+
 
 Specifications
 ==============
 
-FILL IN SPECIFICATIONS
+Choosing design B from above:
 
-Security Issues
-===============
+Diagram located here: <img src="http://www-unix.mcs.anl.gov/~eolson/agep/0118/logfactor.png">
 
-FILL IN SECURITY ISSUES
+Log Module API:
 
-Interoperability Issues
-=======================
+    import logging, logging.handlers
+        Other files should import logging through the Log module in case we need to add 
+            things such as higher levels of detail.
 
-FILL IN INTEROPERABILITY ISSUES
+    def GetLogger(name, defaultHandled=1, defaultLoggerList=defaultLoggers):
+        Global function to get logger, usually just called like this: GetLogger(name)
+        Tells existing (level) handlers when there are new loggers to ensure
+           all loggers are handled by default.
+
+    class LoggerLevels:
+        def __init__(self, loggerNamesList, handler, handleDefaults=1, 
+                defaultLoggerList=defaultLoggers):
+            Allow setting of logging level on a per logger basis.
+            Takes a list of logger names and a handler as parameter.
+            If the default list is used, new logs will also be included.
+
+        def setLevel(self, level, inputLoggerName=None):
+            Set the level of an logger local to this handler.
+
+        def _handleLogger(self, inputLoggerName):
+            Include input from a new logger using self's default level.  Usually occurs when
+                a logger name was not predefined.
+
+    class LevelHandler(logging.handlers.BufferingHandler):
+        Used by LoggerLevels class above.
+        Holds a level for an individual logger.  Passes log entries through that the
+            level allows.
+         def __init__(self, handler, level=HIGHEST_LEVEL):
+         def setLevel(self, level):
+         def flush(self):
+             # Override parent class flush
+         def addHandler(self, handler):
+             # add output handler (usually only one)
+
+    def GetFormatter():
+        returns the default formatter for the toolkit.  If a different format
+        is desired for specific uses, it could be added in a similar way.
+
+    _componentNames = [Security, Transport, VenueClient, VenueServer, Usage, ...]
+        List of AccessGrid predefined categories.
+
+    defaultLoggers =  [Security, Transport, VenueClient, VenueServer, ...]
+        List of components default handlers should handle (i.e. not things like Usage).
+
+    _loggerLevels = {}
+        Dictionary of all LoggerLevels objects so they can be notified of new loggers.
+
+    Definitions of established categories:
+    Security = "Security"
+    VenueServer = "VenueServer"
+    ....
+                                                                                                      
+    Definitions of levels
+    CRITICAL=logging.CRITICAL
+    ERROR=logging.ERROR
+    ...
+
+
+Example 1:
+
+    # Setup the logger for the current file
+    from AccessGrid import Log
+    from AccessGrid.Log import logging
+
+    log = Log.GetLogger(Log.VenueClient)
+
+    # Setup a new output (file handler).
+    hdlr = logging.FileHandler("VenueClient.log")
+    hdlr.setFormatter(Log.DefaultFormatter)
+
+    # Setup input loggers to this handler.  This allows their
+    #   individual logging levels to be set locally to this handler.
+    level_hdlr = LoggerLevels(Log.defaultLoggers, hdlr)
+
+    # Set the default level for all input loggers to this handler.
+    level_hdlr.setLevel(Log.WARN)
+    # Set the level on a specific logger
+    level_hdlr.setLevel(Log.DEBUG, Log.EventService)
+    # Or multiple loggers
+    level_hdlr.setLevel(Log.DEBUG, [Log.Security, Log.Transport])
+
+
+Example 2:
+    Since we are taking precautions to ensure all loggers are handled (by default),
+      you can also setup an output handler before establishing all input loggers.
+
+    # Setup the output file which handles new loggers by default.
+    hdlr = Log.logging.FileHandler("TestLog2.log")
+    hdlr.setFormatter(Log.GetFormatter())
+    level_hdlr = Log.LoggerLevels(Log.defaultLoggers, hdlr)
+    # Set base level for all inputs
+    level_hdlr.setLevel(Log.DEBUG)
+
+    # Create and use a new logger
+    log = Log.GetLogger("Test")
+    log.debug("Test debug")
+
+
+Example 3:
+    How to establish a logger that isn't handled by default, such as Usage.
+
+    # Setup the logger
+    usage_log = Log.GetLogger(Log.Usage, defaultHandled=0)
+
+    # Setup the handler
+    usage_hdlr = Log.logging.FileHandler("Usage.log")
+    # Since the list of names we'll pass isn't the default list, we won't handle
+    #   new loggers by default either.
+    usage_level_hdlr = Log.LoggerLevels([Log.Usage], usage_hdlr)
+
+    # Log an entry
+    usage_log.info("a usage entry")
+
 
 Related AGEPs
 =============
 
 FILL IN RELATED AGEPS
-
-Implementation
-==============
-
-FILL IN IMPLEMENTATION
 
 References
 ==========
