@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.16 2003-08-23 01:25:47 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.17 2003-09-10 14:48:05 turam Exp $
 ;
 
 #define SourceDir "C:\Software\AccessGrid\AccessGrid"
@@ -205,11 +205,7 @@ Filename: {userappdata}\AccessGrid\nodeConfig\defaultWindows; Section: servicema
 Filename: {userappdata}\AccessGrid\nodeConfig\defaultWindows; Section: serviceconfig1; Key: ";key "; String: value
 Filename: {userappdata}\AccessGrid\nodeConfig\defaultWindows; Section: serviceconfig0; Key: ";key"; String: value
 
-Filename: {userappdata}\AccessGrid\AGNodeService.cfg; Section: Node Configuration; Key: servicesDirectory; String: {app}\services
-Filename: {userappdata}\AccessGrid\AGNodeService.cfg; Section: Node Configuration; Key: configDirectory; String: {userappdata}\AccessGrid\nodeConfig
 Filename: {userappdata}\AccessGrid\AGNodeService.cfg; Section: Node Configuration; Key: defaultNodeConfiguration; String: defaultWindows
-
-Filename: {userappdata}\AccessGrid\AGServiceManager.cfg; Section: Service Manager; Key: servicesDirectory; String: {userappdata}\AccessGrid\local_services
 
 [InstallDelete]
 Name: {userappdata}\AccessGrid\certmgr.cfg; Type: files
