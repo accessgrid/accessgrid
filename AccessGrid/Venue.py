@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.88 2003-05-13 18:52:32 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.89 2003-05-14 16:34:48 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1328,6 +1328,8 @@ class Venue(ServiceBase.ServiceBase):
 
         self.simpleLock.notify()
         self.simpleLock.release()
+
+        return returnValue
 
     wsEnter.soap_export_as = "Enter"
 
