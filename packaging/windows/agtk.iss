@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.71 2004-04-27 01:51:11 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.72 2004-05-04 17:31:31 judson Exp $
 ;
 
 ; Set externally
@@ -107,7 +107,7 @@ Source: bin\SetupVideo.py; DestDir: {app}\bin; DestName: SetupVideo.pyw
 Source: NodeServices\*.zip; DestDir: {app}\NodeServices
 
 ; Shared Application packages
-Source: SharedApplications\*.shared_app_pkg; DestDir: {app}\SharedApplications
+Source: SharedApplications\*.agpkg; DestDir: {app}\SharedApplications
 
 ; System wide files, windows wierdness no doubt
 Source: install\agicons.exe; DestDir: {app}\install
