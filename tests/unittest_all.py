@@ -24,5 +24,7 @@ def suite():
     return alltests
 
 if __name__ == '__main__':
-    unittest.main(defaultTest='suite')
+    #unittest.main(defaultTest='suite')
+    print "\n    unittest_all is temporarily disabled until we can better combine different"
+    print "        test suites to work with the unittest module.\n"
 
