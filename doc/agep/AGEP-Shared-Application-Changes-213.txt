@@ -2,7 +2,7 @@
 Shared Application Changes for 2.1.3 
 ====================================
 
-: version $Revision: 1.2 $
+: version $Revision: 1.3 $
 : author: Susanne Lefvert <lefvert@mcs.anl.gov>
 : status: Draft
 
@@ -148,7 +148,9 @@ Design
 
 Implementation
 --------------
-    ** Additions to AppDb.py**
+    **Additions to AppDb.py**
+
+    *New Methods*
     ::
         
         def AddDescription(self, name, description):
@@ -165,18 +167,35 @@ Implementation
                       if option == pName:
                           return self.AppDb[key]
 
+    
 
-    *In RegisterApplication*
+
+    *In RegisterApplication Method*
+
         self.AddDescription(name, description)
 
-    *Change RegisterApplication interface*
+    *Change RegisterApplication Interface*
+
         def RegisterApplication(self, name, mimeType, extension, commandDict,
                                 fileList, srcPath, dstPath=None, description = None):
 
-    *In ListAppsAsAppDescriptions*
+    *In ListAppsAsAppDescriptions Method*
+
         description = self._GetDescription(option)
         apps.append(ApplicationDescription(None, name, description, None, mimetype))
 
+
+    **Additions to agpm.py**
+
+    *In main*
+	
+	::
+
+	    appdb.RegisterApplication(appName, appInfo["application.mimetype"], 
+	                              appInfo["application.extension"], commands, 
+                                      files, workingDir, description = appInfo["application.description"])
+
+	
 
 Add Application User Scenario
 ==============================
