@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.13 2004-04-27 02:17:37 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.14 2004-04-27 17:16:09 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.13 2004-04-27 02:17:37 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.14 2004-04-27 17:16:09 judson Exp $"
 
 import os
 import sys
@@ -124,6 +124,9 @@ class GlobusConfig:
         """
         raise "This should not be called directly, but through a subclass."
 
+    def __str__(self):
+        return self._repr_()
+
     def _repr_(self):
         str = "Globus Configuration:\n"
         str += "Location: %s\n" % self.GetLocation()
@@ -143,10 +146,7 @@ class GlobusConfig:
 
         os.environ[name] = val
         
-        print "normal setenv %s=%s" %(name, val)
-        
         if pyGlobusSetenv:
-            print "pyGlobus setenv %s=%s" %(name, val)
             pyGlobusSetenv(name, val)
             
     def Unsetenv(self, name):
@@ -165,9 +165,6 @@ class GlobusConfig:
             return pyGlobusGetenv(name)
         else:
             return os.getenv(name)
-
-    def __str__(self):
-        return self._repr_()
 
     def SetHostname(self):
         """
