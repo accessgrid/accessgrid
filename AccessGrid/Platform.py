@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.47 2003-09-11 20:05:28 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.48 2003-09-15 15:02:10 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 The Platform Module is to isolate OS specific interfaces.
 """
-__revision__ = "$Id: Platform.py,v 1.47 2003-09-11 20:05:28 judson Exp $"
+__revision__ = "$Id: Platform.py,v 1.48 2003-09-15 15:02:10 judson Exp $"
 
 import os
 import sys
@@ -554,18 +554,11 @@ def LinuxGetMimeCommands(mimeType = None, ext = None):
 
     return cdict
 
-if isWindows():
-    GetMimeCommands = Win32GetMimeCommands
-    GetMimeType = Win32GetMimeType
-else:
-    GetMimeCommands = LinuxGetMimeCommands
-    GetMimeType = LinuxGetMimeType
-
 #
 # Unix Daemonize, this is not appropriate for Win32
 #
 
-def DaemonizeUnix():
+def LinuxDaemonize():
     try:
         pid = os.fork()
     except:
@@ -582,18 +575,6 @@ def DaemonizeUnix():
             except:
                 print "Could not create new session"
                 sys.exit(1)
-
-#
-# Determine which daemonize we should use
-#
-
-if isWindows():
-    Daemonize = lambda : None
-else:
-    Daemonize = DaemonizeUnix
-
-
-
 
 def SetRtpDefaultsWin( profile ):
     """
@@ -631,11 +612,17 @@ def SetRtpDefaultsUnix( profile ):
     profile.publicId ) )
     rtpDefaultsFile.close()
 
-#
-# Determine which SetRtpInfo we should use
-#
-
 if isWindows():
     SetRtpDefaults = SetRtpDefaultsWin
+    Daemonize = lambda : None
+    RegisterMimeType = Win32RegisterMimeType
+    GetMimeCommands = Win32GetMimeCommands
+    GetMimeType = Win32GetMimeType
 else:
     SetRtpDefaults = SetRtpDefaultsUnix
+    # We do need this on linux
+    RegisterMimeType = lambda : None
+    GetMimeCommands = LinuxGetMimeCommands
+    GetMimeType = LinuxGetMimeType
+    Daemonize = LinuxDaemonize
+
