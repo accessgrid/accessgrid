@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: X509Subject.py,v 1.5 2004-03-19 16:09:54 lefvert Exp $
+# RCS-ID:      $Id: X509Subject.py,v 1.6 2004-04-06 18:29:58 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ Subjects are the basic security handle on entities that want to be a
 part of the security environment.
 """
 
-__revision__ = "$Id: X509Subject.py,v 1.5 2004-03-19 16:09:54 lefvert Exp $"
+__revision__ = "$Id: X509Subject.py,v 1.6 2004-04-06 18:29:58 eolson Exp $"
 
 
 # external imports
@@ -22,6 +22,12 @@ from OpenSSL_AG.crypto import X509NameType
                                           
 # imports from the AGTk
 from AccessGrid.Security.Subject import Subject, InvalidSubject
+
+class InvalidString(Exception):
+    """
+    A type other than string was present when a string was expected.
+    """
+    pass
 
 class X509Subject(Subject):
     """
@@ -71,6 +77,9 @@ def CreateSubjectFromString(subjectString):
     @param subjectString: the DN of the subject
     @type subjectString: string.
     """
+    if type(subjectString) != type(""):
+        raise InvalidString
+
     return X509Subject(subjectString)
 
 
