@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.7 2003-02-10 15:30:14 leggett Exp $
+# RCS-ID:      $Id: AGService.py,v 1.8 2003-02-12 20:57:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -44,14 +44,10 @@ class AGService( ServiceBase ):
       self.outputStreamConfiguration = None
       self.capabilities = []
       self.authManager = AuthorizationManager()
-      self.started = 0
+      self.started = 1
       self.childPid = None
-
       self.configuration = dict()
-
       self.streamDescription = StreamDescription()
-
-
       self.processManager = ProcessManager()
 
 
