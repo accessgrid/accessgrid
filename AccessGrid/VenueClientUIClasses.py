@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.198 2003-05-23 20:06:03 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.199 2003-05-23 20:23:04 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -20,6 +20,7 @@ from wxPython.wx import *
 from wxPython.wx import wxTheMimeTypesManager as mtm
 from wxPython.wx import wxFileTypeInfo
 import string
+import webbrowser
 
 log = logging.getLogger("AG.VenueClientUIClasses")
 
@@ -92,6 +93,11 @@ class VenueClientFrame(wxFrame):
     ID_MYVENUE_EDIT = wxNewId()
     ID_HELP = wxNewId()
     ID_HELP_ABOUT = wxNewId()
+    ID_HELP_MANUAL = wxNewId()
+    ID_HELP_AGDP = wxNewId()
+    ID_HELP_AGORG = wxNewId()
+    ID_HELP_FL = wxNewId()
+    ID_HELP_FLAG = wxNewId()
     ID_PARTICIPANT_PROFILE = wxNewId()
     ID_PARTICIPANT_FOLLOW = wxNewId()
     ID_PARTICIPANT_LEAD = wxNewId()
@@ -110,6 +116,11 @@ class VenueClientFrame(wxFrame):
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
         self.Centre()
+        self.help_open = 0
+        self.agdp_url = "http://www.accessgrid.org/agdp"
+        self.ag_url = "http://www.accessgrid.org/"
+        self.flag_url = "http://www.mcs.anl.gov/fl/research/accessgrid"
+        self.fl_url = "http://www.mcs.anl.gov/fl/"
 	self.app = app
         self.parent = parent
         self.myVenuesFile = os.path.join(self.app.accessGridPath, "myVenues.txt" )
@@ -166,7 +177,7 @@ class VenueClientFrame(wxFrame):
         # ---- menus for main menu bar
         self.venue = wxMenu()
 #	self.dataMenu = wxMenu()
-        self.venue.Append(self.ID_VENUE_DATA_ADD,"Add Data",
+        self.venue.Append(self.ID_VENUE_DATA_ADD,"Add Data...",
                              "Add data to the venue.")
 #        self.dataMenu.Append(self.ID_VENUE_PERSONAL_DATA_ADD,"Add personal data...",
 #                             "Add personal data")
@@ -183,7 +194,7 @@ class VenueClientFrame(wxFrame):
 #        self.venue.AppendMenu(self.ID_VENUE_DATA,"&Data", self.dataMenu)
 
 #	self.serviceMenu = wxMenu()
-	self.venue.Append(self.ID_VENUE_SERVICE_ADD,"Add Service",
+	self.venue.Append(self.ID_VENUE_SERVICE_ADD,"Add Service...",
                                 "Add a service to the venue.")
 #         self.serviceMenu.Append(self.ID_VENUE_SERVICE_OPEN,
 #                                      "Open",  "Launch service client")
@@ -205,7 +216,7 @@ class VenueClientFrame(wxFrame):
      	self.menubar.Append(self.venue, "&Venue")
       	
         self.preferences = wxMenu()
-        self.preferences.Append(self.ID_PROFILE,"&Profile...\t", "Change your personal information")
+        self.preferences.Append(self.ID_PROFILE,"&Edit Profile...", "Change your personal information")
         #
         # Retrieve the cert mgr GUI from the application.
         #
@@ -221,21 +232,40 @@ class VenueClientFrame(wxFrame):
         if gui is not None:
             certMenu = gui.GetMenu(self)
             self.preferences.AppendMenu(self.ID_CERTIFICATE_MANAGE,
-                                    "&Certificates...", certMenu)
+                                    "&Manage Certificates", certMenu)
         self.preferences.AppendSeparator()
-        self.preferences.Append(self.ID_MYNODE_MANAGE, "&Manage My Node...\t", "Configure your node")
-        self.preferences.Append(self.ID_MYNODE_URL, "&Set Node URL...\t", "Specify URL address to node service")
+        self.preferences.Append(self.ID_MYNODE_MANAGE, "&Manage My Node...",
+                                "Configure your node")
+        self.preferences.Append(self.ID_MYNODE_URL, "&Set Node URL...",
+                                "Specify URL address to node service")
         self.menubar.Append(self.preferences, "&Preferences")
         self.myVenues = wxMenu()
-        self.myVenues.Append(self.ID_MYVENUE_ADD, "Add &Current Venue...\t", "Add this venue to your list of venues")
-        self.myVenues.Append(self.ID_MYVENUE_EDIT, "Edit My &Venues...\t", "Edit your venues")
+        self.myVenues.Append(self.ID_MYVENUE_ADD, "Add &Current Venue",
+                             "Add this venue to your list of venues")
+        self.myVenues.Append(self.ID_MYVENUE_EDIT, "Edit My &Venues...",
+                             "Edit your venues")
         self.myVenues.AppendSeparator()
 
         self.menubar.Append(self.myVenues, "My Ven&ues")
 
               
       	self.help = wxMenu()
-        self.help.Append(self.ID_HELP_ABOUT, "&About\t", "Information about the application")
+        self.help.Append(self.ID_HELP_MANUAL, "Venue Client &Help",
+                         "Venue Client Manual")
+        self.help.Append(self.ID_HELP_AGDP,
+                         "AG &Documentation Project Web Site",
+                         "")
+        self.help.AppendSeparator()
+        self.help.Append(self.ID_HELP_AGORG, "Access &Grid (ag.org) Web Site",
+                         "")
+        self.help.Append(self.ID_HELP_FLAG, "Access Grid &Toolkit Web Site",
+                         "")
+        self.help.Append(self.ID_HELP_FL, "&Futures Laboratory Web Site",
+                         "")
+
+        self.help.AppendSeparator()
+        self.help.Append(self.ID_HELP_ABOUT, "&About",
+                         "Information about the application")
         self.menubar.Append(self.help, "&Help")
        
 
@@ -316,43 +346,53 @@ class VenueClientFrame(wxFrame):
         self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
 
     def HideMenu(self):
-#        self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
+        self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
+        self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
+
 #        self.menubar.Enable(self.ID_VENUE_PERSONAL_DATA_ADD, false)
 #        self.menubar.Enable(self.ID_VENUE_DATA_SAVE, false)
 #        self.menubar.Enable(self.ID_VENUE_DATA_OPEN, false)
 #        self.menubar.Enable(self.ID_VENUE_DATA_DELETE, false)
 #        self.menubar.Enable(self.ID_VENUE_DATA_PROPERTIES, false)
-#        self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
 #        self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, false)
 #        self.menubar.Enable(self.ID_VENUE_SERVICE_OPEN, false)
 #        self.menubar.Enable(self.ID_VENUE_SERVICE_PROPERTIES, false)
+
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
 
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, false)
+
       	self.serviceHeadingMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
         
-        self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_JOIN, false)
-        self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_DELETE, false)
-        self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_PROPERTIES, false)
+        self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_JOIN,
+                                         false)
+        self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_DELETE,
+                                         false)
+        self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_PROPERTIES,
+                                         false)
                  
     def ShowMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, true)
-        self.menubar.Enable(self.ID_VENUE_PERSONAL_DATA_ADD, true)
-        self.menubar.Enable(self.ID_VENUE_DATA_SAVE, true)
-        self.menubar.Enable(self.ID_VENUE_DATA_OPEN, true)
-        self.menubar.Enable(self.ID_VENUE_DATA_DELETE, true)
-        self.menubar.Enable(self.ID_VENUE_DATA_PROPERTIES, true)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
-        self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, true)
-        self.menubar.Enable(self.ID_VENUE_SERVICE_OPEN, true)
-        self.menubar.Enable(self.ID_VENUE_SERVICE_PROPERTIES, true)
+
+#        self.menubar.Enable(self.ID_VENUE_PERSONAL_DATA_ADD, true)
+#        self.menubar.Enable(self.ID_VENUE_DATA_SAVE, true)
+#        self.menubar.Enable(self.ID_VENUE_DATA_OPEN, true)
+#        self.menubar.Enable(self.ID_VENUE_DATA_DELETE, true)
+#        self.menubar.Enable(self.ID_VENUE_DATA_PROPERTIES, true)
+#        self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, true)
+#        self.menubar.Enable(self.ID_VENUE_SERVICE_OPEN, true)
+#        self.menubar.Enable(self.ID_VENUE_SERVICE_PROPERTIES, true)
+
         self.menubar.Enable(self.ID_MYVENUE_ADD, true)
 
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, true)
+
       	self.serviceHeadingMenu.Enable(self.ID_VENUE_SERVICE_ADD, true)
 
         self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_JOIN, true)
-        self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_DELETE, true)
+        self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_DELETE,
+                                         true)
         self.applicationEntryMenu.Enable(self.ID_VENUE_APPLICATION_PROPERTIES, true)
          
     def __setEvents(self):
@@ -372,7 +412,6 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_VENUE_SERVICE_PROPERTIES, self.OpenServiceProfile)
         EVT_MENU(self, self.ID_VENUE_CLOSE, self.Exit)
         EVT_MENU(self, self.ID_PROFILE, self.OpenMyProfileDialog)
-        EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialog)
         EVT_MENU(self, self.ID_MYNODE_MANAGE, self.OpenNodeMgmtApp)
         EVT_MENU(self, self.ID_MYNODE_URL, self.OpenSetNodeUrlDialog)
         EVT_MENU(self, self.ID_MYVENUE_ADD, self.AddToMyVenues)
@@ -381,6 +420,16 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_ME_UNFOLLOW, self.UnFollow)
         EVT_MENU(self, self.ID_ME_DATA, self.OpenAddPersonalDataDialog)
         EVT_MENU(self, self.ID_PARTICIPANT_PROFILE, self.OpenParticipantProfile)
+        EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialog)
+        EVT_MENU(self, self.ID_HELP_AGDP,
+                 lambda event, url=self.agdp_url: self.OpenHelpURL(url))
+        EVT_MENU(self, self.ID_HELP_AGORG,
+                 lambda event, url=self.ag_url: self.OpenHelpURL(url))
+        EVT_MENU(self, self.ID_HELP_FLAG, 
+                 lambda event, url=self.flag_url: self.OpenHelpURL(url))
+        EVT_MENU(self, self.ID_HELP_FL,
+                 lambda event, url=self.fl_url: self.OpenHelpURL(url))
+
         EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.Follow)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_JOIN, self.JoinApp)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_DELETE, self.RemoveApp)
@@ -417,7 +466,19 @@ class VenueClientFrame(wxFrame):
         self.venueListPanel.SetAlignment(wxLAYOUT_LEFT)
 
         wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
+
+    def OpenHelpURL(self, url):
+        """
+        """
+
+        needNewWindow = not self.help_open
         
+        if needNewWindow:
+            self.help_open = 1
+            self.browser = webbrowser.get()
+
+        self.browser.open(url, needNewWindow)
+
     def UnFollow(self, event):
         log.debug("VenueClientUIClasses: In UnFollow we are being lead by %s" %self.app.leaderProfile.name)
         if self.app.leaderProfile != None :
@@ -1698,22 +1759,27 @@ class ContentListPanel(wxPanel):
 
         # We always have open
         id = wxNewId()
-        menu.Append(id, "Open", "Open this item.")
+        menu.Append(id, "Open", "Open this data.")
         if commands != None and commands.has_key('open'):
             EVT_MENU(self, id, lambda event,
                      cmd=commands['open']: self.StartCmd(cmd))
         else:
-            text = "You have nothing configured to open this item."
+            text = "You have nothing configured to open this data."
             title = "Notification"
             EVT_MENU(self, id, lambda event, text=text, title=title:
                      MessageDialog(self, text, title,
                                    style = wxOK|wxICON_INFORMATION))
 #            EVT_MENU(self, id, lambda event, item=item:
 #                     self.MakeAssociation(event, item))
-            
+
+        # We alwyas have save for data
+        id = wxNewId()
+        menu.Append(id, "Save", "Save this item locally.")
+        EVT_MENU(self, id, lambda event: self.parent.SaveData(event))
+        
         # We always have Remove
         id = wxNewId()
-        menu.Append(id, "Remove", "Remove this item.")
+        menu.Append(id, "Delete", "Delete this data from the venue.")
         EVT_MENU(self, id, lambda event: self.parent.RemoveData(event))
             
         # Do the rest
@@ -1729,7 +1795,7 @@ class ContentListPanel(wxPanel):
 
         # We always have properties
         id = wxNewId()
-        menu.Append(id, "Properties", "View the details of this item.")
+        menu.Append(id, "Properties", "View the details of this data.")
         EVT_MENU(self, id, lambda event, item=item:
                  self.LookAtProperties(item))
 
@@ -1746,12 +1812,12 @@ class ContentListPanel(wxPanel):
 
         # We always have open
         id = wxNewId()
-        menu.Append(id, "Open", "Open this item.")
+        menu.Append(id, "Open", "Open this service.")
         if commands != None and commands.has_key('open'):
             EVT_MENU(self, id, lambda event, cmd=commands['open']:
                      self.StartCmd(cmd))
         else:
-            text = "You have nothing configured to open this item."
+            text = "You have nothing configured to open this service."
             title = "Notification"
             EVT_MENU(self, id, lambda event, text=text, title=title:
                      MessageDialog(self, text, title,
@@ -1761,7 +1827,7 @@ class ContentListPanel(wxPanel):
 
         # We always have Remove
         id = wxNewId()
-        menu.Append(id, "Remove", "Remove this item.")
+        menu.Append(id, "Delete", "Delete this service.")
         EVT_MENU(self, id, lambda event: self.parent.RemoveService(event))
             
         # Do the rest
@@ -1777,7 +1843,7 @@ class ContentListPanel(wxPanel):
 
         # Add properties
         id = wxNewId()
-        menu.Append(id, "Properties", "View the details of this item.")
+        menu.Append(id, "Properties", "View the details of this service.")
         EVT_MENU(self, id, lambda event, item=item:
                  self.LookAtProperties(item))
 
