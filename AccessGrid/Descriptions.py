@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.72 2005-01-06 23:31:22 eolson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.73 2005-01-12 20:41:59 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.72 2005-01-06 23:31:22 eolson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.73 2005-01-12 20:41:59 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -317,8 +317,8 @@ class Capability:
 class StreamDescription( ObjectDescription ):
    """A Stream Description represents a stream within a venue"""
    def __init__( self, name=None, 
-                 location=MulticastNetworkLocation(), 
-                 capability=Capability(),
+                 location=0, 
+                 capability=0,
                  encryptionFlag=0, encryptionKey=None,
                  static=0):
       ObjectDescription.__init__( self, name, None, None)
