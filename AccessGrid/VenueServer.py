@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.24 2003-02-03 14:12:37 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.25 2003-02-03 14:34:13 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -139,7 +139,7 @@ class VenueServer(ServiceBase.ServiceBase):
     def AddVenue(self, connectionInfo, venueDescription):
         """
         The AddVenue method takes a venue description and creates a new
-        Venue Object, complete with a coherence service, then makes it
+        Venue Object, complete with a event service, then makes it
         available from this Venue Server.
         """
         try:
@@ -156,9 +156,8 @@ class VenueServer(ServiceBase.ServiceBase):
             venueURL = self.hostingEnvironment.get_url_base() + "/" + venuePath
             venueDescription.uri = venueURL
 
-            # Create a new Venue object, pass it the coherenceService,
-            #       the server's Multicast Address Allocator, and the server's
-            #       Data Storage object
+            # Create a new Venue object pass it the server's Multicast Address 
+            # Allocator, and the server's Data Storage object
             venue = Venue(venueID, venueDescription,
                           connectionInfo.get_remote_name(),
                           self.multicastAddressAllocator, self.dataStorage)
@@ -325,25 +324,6 @@ class VenueServer(ServiceBase.ServiceBase):
 
     SetDefaultVenue.pass_connection_info = 1
     SetDefaultVenue.soap_export_as = "SetDefaultVenue"
-
-    def SetCoherencePortBase(self, connectionInfo, portBase):
-        """
-        SetCoherencePortBase sets the base port for the coherence service.
-        """
-        self.portBase = coherencePortBase
-
-    SetCoherencePortBase.pass_connection_info = 1
-    SetCoherencePortBase.soap_export_as = "SetCoherencePortBase"
-
-    def GetCoherencePortBase(self, connectionInfo):
-        """
-        GetCoherencePortBase returns the base port for the coherence service.
-        """
-        return self.coherencePortBase
-
-    GetCoherencePortBase.pass_connection_info = 1
-    GetCoherencePortBase.soap_export_as = "GetCoherencePortBase"
-
 
     def SetStorageLocation( self, connectionInfo, dataStorageLocation ):
         """

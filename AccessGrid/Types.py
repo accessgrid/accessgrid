@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.14 2003-02-03 14:12:37 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.15 2003-02-03 14:34:13 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -89,10 +89,10 @@ class VenueState:
     def RemoveConnection( self, connectionDescription ):
         del self.connections[connectionDescription.uri]
 
-    def SetCoherenceLocation( self, coherenceLocation ):
-        self.coherenceLocation = coherenceLocation
-    def GetCoherenceLocation( self ):
-        return self.coherenceLocation
+    def SetEventLocation( self, eventLocation ):
+        self.eventLocation = eventLocation
+    def GetEventLocation( self ):
+        return self.eventLocation
 
 class AGResource:
     def __init__( self, type=None, resource=None ):
