@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.74 2003-08-12 18:40:48 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.75 2003-08-12 19:20:47 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -153,10 +153,11 @@ class VenueManagementClient(wxApp):
 
         handle = Client.Handle(URL)
 
-        if not self.app.certificateManager.HaveValidProxy():
+        certMgt = Toolkit.GetApplication().GetCertificateManager()
+        if not certMgt.HaveValidProxy():
             log.debug("VenueManagement::ConnectToServer: no valid proxy")
 
-            self.app.certificateManager.CreateProxy()
+            certMgt.CreateProxy()
 
         log.debug("check client for validity")
 
@@ -254,7 +255,8 @@ class VenueManagementClient(wxApp):
                                                        str(sys.exc_value)))
                
         else:
-            if not HaveValidProxy():
+            certMgt = Toolkit.GetApplication().GetCertifiateManager()
+            if not certMgt.HaveValidProxy():
                 text = 'You do not have a valid proxy.' +\
                        '\nPlease, run "grid-proxy-init" on the command line"'
                 text2 = 'Invalid proxy'
