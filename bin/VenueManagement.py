@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.89 2003-09-05 21:17:11 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.90 2003-09-05 22:29:25 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid import icons
 from AccessGrid.Platform import GetUserConfigDir
-from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog, SimpleWarningDialog
+from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog
 from AccessGrid.Utilities import VENUE_MANAGEMENT_LOG
 from AccessGrid import Toolkit
 from AccessGrid.hosting.AccessControl import RoleManager
@@ -680,10 +680,9 @@ class VenueListPanel(wxPanel):
                     self.application.DeleteVenue(venueToDelete)
 
                 except Exception, e:
-                    if isinstance(e, faultType):
-                        if str(e.faultstring) == "NotAuthorized":
+                    if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
                             text = "You are not a server administrator and are not authorized to delete venues from this server.\n"
-                            SimpleWarningDialog(None, text, "Not Authorized")
+                            MessageDialog(None, text, "Not Authorized", style=wxOK|wxICON_WARNING)
                             log.info("DeleteVenue: Not authorized to delete venue from server.")
                     else:
                         log.exception("VenueListPanel.DeleteVenue: Could not delete venue %s" %venueToDelete.name)
@@ -1794,7 +1793,7 @@ class AddVenueFrame(VenueParamFrame):
                     if isinstance(e, faultType):
                         if str(e.faultstring) == "NotAuthorized":
                             text = "You are not a server administrator and are not authorized to add venues to this server.\n"
-                            SimpleWarningDialog(None, text, "Authorization Error")
+                            MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
                             log.info("AddVenueFrame.OnOK: Not authorized to add venue to server.")
                     else:
                         log.exception("AddVenueFrame.OnOk: Could not add venue")
@@ -1857,7 +1856,7 @@ class ModifyVenueFrame(VenueParamFrame):
                     if isinstance(e, faultType):
                         if str(e.faultstring) == "NotAuthorized":
                             text = "You are not authorized to modify this venue.\n"
-                            SimpleWarningDialog(None, text, "Authorization Error")
+                            MessageDialog(None, text, "Authorization Error", style=wxOK|wxICON_WARNING)
                             log.info("ModifyVenueFrame.OnOK: Not authorized to modify venue.")
                 except:
                     log.exception("ModifyVenueFrame.OnOk: Modify venue failed")

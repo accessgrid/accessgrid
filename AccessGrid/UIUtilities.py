@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.30 2003-09-05 21:17:11 eolson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.31 2003-09-05 22:29:25 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -37,12 +37,6 @@ class MessageDialog:
         messageDialog.ShowModal()
         messageDialog.Destroy()
 
-class SimpleWarningDialog:
-    def __init__(self, frame, text, text2 = "", style = wxOK|wxICON_WARNING):
-        messageDialog = wxMessageDialog(frame, text, text2, style)
-        messageDialog.ShowModal()
-        messageDialog.Destroy()
-      
 class ErrorDialog:
     def __init__(self, frame, text, text2 = "",
                  style =  wxICON_ERROR |wxYES_NO | wxNO_DEFAULT, logFile = VENUE_CLIENT_LOG):
