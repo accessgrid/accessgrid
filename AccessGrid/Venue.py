@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.138 2003-09-29 13:26:31 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.139 2003-10-14 21:44:04 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.138 2003-09-29 13:26:31 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.139 2003-10-14 21:44:04 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -2025,6 +2025,50 @@ class Venue(ServiceBase.ServiceBase):
         Event( Event.UPDATE_DATA,
         self.uniqueId,
         dataDescription ) )
+
+
+    def GetDataStoreInformation(self):
+        """
+        Retrieve an upload descriptor and a URL to the Venue's DataStore 
+        
+        **Arguments:**
+        
+        **Raises:**
+        
+        **Returns:**
+        
+            *(upload description, url)* the upload descriptor to the Venue's DataStore
+            and the url to the DataStore SOAP service.
+            
+        """
+
+        descriptor = ""
+        location = ""
+        
+        if self.dataStore is not None:
+            
+            try:
+                descriptor = self.dataStore.GetUploadDescriptor()
+                location = str(self.uri)
+            except:
+                log.exception("Venue.GetUploadDescription Failed to connect to datastore")
+        
+        return descriptor, location
+        
+    GetDataStoreInformation.soap_export_as = "GetDataStoreInformation"
+
+    def GetDataDescriptions(self):
+
+        try:
+            dList = self.dataStore.GetDataDescriptions()
+        except:
+            log.exception("Venue::AsVenueState: Failed to connect to datastore.")
+            dList = []
+
+        return dList
+
+    GetDataDescriptions.soap_export_as = "GetDataDescriptions"
+
     def GetUploadDescriptor(self):
         """
         Retrieve the upload descriptor from the Venue's datastore.
