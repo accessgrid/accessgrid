@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.4 2004-03-12 22:22:44 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.5 2004-03-19 22:19:21 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.4 2004-03-12 22:22:44 olson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.5 2004-03-19 22:19:21 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -450,9 +450,12 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                     return 0
             except ProxyGen.GridProxyInitError, e:
                 msg = "Error in proxy initialization:\n"
-                msg += e.args[0] 
-                if e.args[1] != "":
-                    msg += "\n" + e.args[1]
+                if len(e.args) == 0:
+                    msg += str(e);
+                else:
+                    msg += e.args[0] 
+                    if e.args[1] != "":
+                        msg += "\n" + e.args[1]
                 msg += "\nTry again? "
                 dlg = wxMessageDialog(None, msg,
                                       "Error in proxy initialization",
