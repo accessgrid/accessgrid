@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.7 2003-08-21 21:39:49 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.8 2003-09-04 22:10:39 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -20,12 +20,14 @@ from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid import Toolkit
 
+import os
 import logging, logging.handlers
 
 # Imports for user interface
 from wxPython.wx import *
 from wxPython.wizard import *
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
+from AccessGrid.Utilities import NODE_SETUP_WIZARD_LOG
 from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 
 log = logging.getLogger("AG.NodeSetupWizard")
@@ -93,7 +95,7 @@ class NodeSetupWizard(wxWizard):
         '''
         This class creates a wizard for node setup
         '''
-
+        self.__setLogger()
         self.CheckCertificate()
         self.step = 1
         self.SetPageSize(wxSize(510, 310))
@@ -130,8 +132,9 @@ class NodeSetupWizard(wxWizard):
         try:
             self.nodeClient.StartNodeService()
         except:
-            log.error("NodeSetupWizard:__init__: Can not start node service")
-            ErrorDialog(self, "Can not start Node Setup Wizard.",  "Error", style = wxICON_ERROR|wxOK)
+            log.exception("NodeSetupWizard:__init__: Can not start node service")
+            ErrorDialog(self, "Can not start Node Setup Wizard.",
+                        "Error", style = wxICON_ERROR|wxOK, logFile = NODE_SETUP_WIZARD_LOG)
 
         else:
             # Run the wizard
@@ -144,7 +147,36 @@ class NodeSetupWizard(wxWizard):
                 try:
                     node.Stop()
                 except:
-                    log.error("NodeSetupWizard:__init__: Can not stop node service")
+                    log.exception("NodeSetupWizard:__init__: Can not stop node service")
+
+
+    def __setLogger(self):
+        """
+        Sets the logging mechanism.
+        """
+        # Should be set from command window.
+        self.logFile = None
+        self.debugMode = 0
+        
+        log = logging.getLogger("AG")
+        log.setLevel(logging.DEBUG)
+        
+        if self.logFile is None:
+            logname = os.path.join(GetUserConfigDir(), "NodeSetupWizard.log")
+        else:
+            logname = self.logFile
+            
+        hdlr = logging.FileHandler(logname)
+        extfmt = logging.Formatter("%(asctime)s %(thread)s %(name)s %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
+        fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
+        hdlr.setFormatter(extfmt)
+        log.addHandler(hdlr)
+
+        if self.debugMode:
+            hdlr = logging.StreamHandler()
+            hdlr.setFormatter(fmt)
+            log.addHandler(hdlr)
+       
 
     def CheckCertificate(self):
         
@@ -158,7 +190,7 @@ class NodeSetupWizard(wxWizard):
             
             text = "Could not start the Node Setup Wizard. \nIs your certificate configured correctly?"
             ErrorDialog(None, text, "Node Setup Wizard failed",
-                          style = wxOK  | wxICON_ERROR)
+                          style = wxOK  | wxICON_ERROR, logFile = NODE_SETUP_WIZARD_LOG)
             sys.exit(1)
 
         try:
@@ -167,7 +199,7 @@ class NodeSetupWizard(wxWizard):
         except Exception, e:
             text = "Could not start the Node Setup Wizard. \nIs your certificate configured correctly?"
             log.exception("NodeSetupWizard: App initialization failed")
-            ErrorDialog(None, text, "Node Setup Wizard failed")
+            ErrorDialog(None, text, "Node Setup Wizard failed", logFile = NODE_SETUP_WIZARD_LOG)
 
         if not self.app.certificateManager.HaveValidProxy():
             log.debug("NodeSetupWizard: You don't have a valid proxy")
@@ -297,8 +329,9 @@ class VideoCaptureWindow(TitledPage):
             try:
                 cards = self.nodeClient.GetCaptureCards(self.machineCtrl.GetValue(), self.portCtrl.GetValue())
             except:
-                log.error("NodeSetupWizard:VideoCaptureWindow:Validate: Can not get capture cards from service manager")
-                ErrorDialog(self, "Could not find your installed video capture cards.", "Error")
+                log.exception("NodeSetupWizard:VideoCaptureWindow:Validate: Can not get capture cards from service manager")
+                ErrorDialog(self, "Could not find your installed video capture cards.", "Error",
+                            logFile = NODE_SETUP_WIZARD_LOG)
                                
             if self.next:
                 # Set capture cards
@@ -777,11 +810,11 @@ class ConfigWindow(TitledPage):
             try:
                 # Add video producer services
                 self.nodeClient.AddService( self.videoCaptUrl, "VideoProducerService", self.cameraPorts)
-            
+                
             except ServiceUnavailableException:
-                log.error("NodeSetupWindow:ConfigWindow:Validate: Could not add service to video capture machine.")
+                log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not add service to video capture machine.")
                 errors = errors + "No services supporting video capture are installed.\nThe video capture machine is not added to the configuration.\n\n"
-            
+                
             except:
                 errors = errors + "The video capture machine could not be added to the configuration. An error occured..\n\n"
                 
@@ -800,7 +833,7 @@ class ConfigWindow(TitledPage):
                 self.nodeClient.AddService(self.videoDispUrl, "VideoConsumerService")
                 
             except ServiceUnavailableException:
-                log.error("NodeSetupWindow:ConfigWindow:Validate: Could not add service to video display machine.")
+                log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not add service to video display machine.")
                 errors = errors +"No services supporting video display are installed. \nThe video display machine is not added to the configuration.\n\n"
                 
             except:
@@ -821,7 +854,7 @@ class ConfigWindow(TitledPage):
                 self.nodeClient.AddService(self.audioUrl, "AudioService")
                 
             except ServiceUnavailableException:
-                log.error("NodeSetupWindow:ConfigWindow:Validate: Could not add service to audio machine.")
+                log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not add service to audio machine.")
                 errors = errors + "No services supporting audio are installed. \nThe audio machine is not added to the configuration.\n\n"
             except:
                 errors = errors + "The audio machine could not be added to the configuration. An error occured.\n\n"
@@ -832,7 +865,7 @@ class ConfigWindow(TitledPage):
         try:
             self.nodeClient.GetNodeService().StoreConfiguration(self.name)
         except:
-            log.error("NodeSetupWindow:ConfigWindow:Validate: Could not store node configuration.")
+            log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not store node configuration.")
             errors = errors + "The configuration could not be saved. Error occured.\n\n"
             
             
@@ -840,11 +873,11 @@ class ConfigWindow(TitledPage):
         try:
             self.nodeClient.GetNodeService().SetDefaultConfiguration(self.name)
         except:
-            log.error("NodeSetupWindow:ConfigWindow:Validate: Could not set default configuration.")
+            log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not set default configuration.")
             errors = errors + "The configuration could not be set as default. Error occured.\n\n"
 
         if errors != "":
-            ErrorDialog(self, errors, "Error")
+            ErrorDialog(self, errors, "Error", logFile = NODE_SETUP_WIZARD_LOG)
      
         wxEndBusyCursor()
         return true
@@ -911,7 +944,7 @@ class NodeClient:
     def StartNodeService(self):
         self.node = AGNodeService()
         self.serviceList = self.node.GetAvailableServices()
-                
+                    
     def GetNodeService(self):
         return self.node
    
@@ -990,7 +1023,7 @@ class NodeClient:
             # Get available services
             resourceList = Client.Handle(mgrUri).GetProxy().GetResources()
         except:
-            log.error("GetCaptureCards: Could not find resources")
+            log.exception("GetCaptureCards: Could not find resources")
             return []
 
         for resource in resourceList:
