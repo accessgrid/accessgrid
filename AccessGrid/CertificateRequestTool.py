@@ -947,7 +947,7 @@ class CertificateStatusDialog(wxDialog):
 
         self.getStatusButton = wxButton(self, -1, "Update Status")
         self.closeButton = wxButton(self, wxID_CLOSE, "Close")
-        self.newRequestButton = wxButton(self, wxNewId(), "Create New Request")
+        #self.newRequestButton = wxButton(self, wxNewId(), "Create New Request")
         self.certReqDict = {}
         self.certStatus = {}
         self.beforeStatus = 0
@@ -966,7 +966,7 @@ class CertificateStatusDialog(wxDialog):
         EVT_BUTTON(self, self.deleteButton.GetId(), self.OnDeleteRequest)
         EVT_BUTTON(self, self.getStatusButton.GetId(), self.OnUpdateStatus)
         EVT_BUTTON(self, self.closeButton.GetId(), self.OnClose)
-        EVT_BUTTON(self, self.newRequestButton.GetId(), self.RequestCertificate)
+        #EVT_BUTTON(self, self.newRequestButton.GetId(), self.RequestCertificate)
 
         EVT_LIST_ITEM_SELECTED(self.list, self.list.GetId(),
                                self.OnCertSelected)
@@ -990,7 +990,7 @@ class CertificateStatusDialog(wxDialog):
 
         box = wxBoxSizer(wxHORIZONTAL)
         box.Add(self.getStatusButton, 0 , wxALL, 5)
-        box.Add(self.newRequestButton, 0 , wxALL, 5)
+        #box.Add(self.newRequestButton, 0 , wxALL, 5)
         box.Add(self.closeButton, 0 , wxALL, 5)
 
         sizer.Add(box, 0, wxCENTER)
