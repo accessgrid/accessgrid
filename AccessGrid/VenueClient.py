@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.105 2003-09-05 20:54:57 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.106 2003-09-10 16:50:40 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -616,10 +616,7 @@ class VenueClient( ServiceBase):
 
             # Cache profiles from venue.
             for client in self.venueState.clients.values():
-                try:
-                    self.cache.updateProfile(client)
-                except InvalidProfileException:
-                    log.info("InvalidProfile when storing a venue user's profile in the cache.")
+                self.UpdateProfileCache(client)
 
             self.dataStore.SetEventDistributor(self.eventClient, self.venueState.uniqueId)
                  
@@ -1211,4 +1208,9 @@ class VenueClient( ServiceBase):
 
         return providerList
                     
+    def UpdateProfileCache(self, profile):
+        try:
+            self.cache.updateProfile(profile)
+        except InvalidProfileException:
+            log.info("InvalidProfile when storing a venue user's profile in the cache.")
             

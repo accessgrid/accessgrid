@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.205 2003-09-10 15:23:49 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.206 2003-09-10 16:50:40 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -356,6 +356,9 @@ class VenueClientUI(VenueClientEventSubscriber):
         newEvent = Events.Event(event.eventType, event.venue, profile)
 
         wxCallAfter(self.frame.contentListPanel.AddParticipant, profile)
+
+        self.venueClient.UpdateProfileCache(profile)
+
         log.debug("  add user: %s" %(profile.name))
 
     def Heartbeat(self, isSuccess):
