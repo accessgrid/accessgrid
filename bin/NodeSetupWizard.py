@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.10 2003-09-10 20:36:54 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.11 2003-09-16 19:24:29 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -870,11 +870,13 @@ class ConfigWindow(TitledPage):
             
             
         # Set configuration as default
-        try:
-            self.nodeClient.GetNodeService().SetDefaultConfiguration(self.name)
-        except:
-            log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not set default configuration.")
-            errors = errors + "The configuration could not be set as default. Error occured.\n\n"
+        if self.checkBox.GetValue():
+             
+            try:
+                self.nodeClient.GetNodeService().SetDefaultConfiguration(self.name)
+            except:
+                log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not set default configuration.")
+                errors = errors + "The configuration could not be set as default. Error occured.\n\n"
 
         if errors != "":
             ErrorDialog(self, errors, "Error", logFile = NODE_SETUP_WIZARD_LOG)
