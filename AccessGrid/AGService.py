@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.31 2004-04-27 19:22:19 judson Exp $
+# RCS-ID:      $Id: AGService.py,v 1.32 2004-04-29 15:54:38 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.31 2004-04-27 19:22:19 judson Exp $"
+__revision__ = "$Id: AGService.py,v 1.32 2004-04-29 15:54:38 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -33,20 +33,6 @@ from AccessGrid.Descriptions import CreateServiceConfiguration
 from AccessGrid.Descriptions import CreateCapability
 from AccessGrid.Descriptions import CreateClientProfile
 
-def GetLog():
-    """
-    Create a log with our standard format and return it
-    """
-    log = Log.GetLogger(Log.AGService)
-    Log.SetDefaultLevel(Log.AGService, Log.DEBUG)
-    ucd = Service.instance().GetUserConfig().GetConfigDir()
-    logFile = os.path.join(ucd, "AGService.log")
-    hdlr = Log.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
-    hdlr.setFormatter(Log.GetFormatter())
-    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
-
-    return log
-
 class AGService:
     """
     AGService : Base class for developing services for the AG
@@ -64,8 +50,8 @@ class AGService:
         self.configuration = []
         self.streamDescription = StreamDescription()
         self.processManager = ProcessManager()
-
-        self.log = GetLog()
+        
+        self.log = Service.instance().GetLog()
         
         self.running = 1
 
@@ -231,7 +217,6 @@ class AGService:
 
 
 
-
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 
 class AGServiceI(SOAPInterface):
@@ -383,9 +368,14 @@ def SignalHandler(signum, frame, service):
 
 def RunService(service,serviceInterface,port):
     import signal, time
-    from AccessGrid.hosting import Server
+    from AccessGrid.hosting import SecureServer as Server
     from AccessGrid.Platform.Config import SystemConfig
-
+    
+    # Initialize the service
+    svc = Service.instance()
+    svc.Initialize(Log.AGService)
+    log = svc.GetLog()
+    
     # Create the server
     hostname = Service.instance().GetHostname()
     server = Server( (hostname, port) )
@@ -395,6 +385,10 @@ def RunService(service,serviceInterface,port):
     
     # Start the server
     server.RunInThread()
+    
+    url = server.FindURLForObject(service)
+    log.debug("Starting Service URI: %s", url)
+    print "Starting Service URI: %s" % url
     
     # Register the signal handler so we can shut down cleanly
     # lambda is used to pass the service instance to the 
