@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: AppService.py,v 1.3 2003-04-01 16:04:10 turam Exp $
+# RCS-ID:      $Id: AppService.py,v 1.4 2003-04-03 20:57:17 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -106,9 +106,10 @@ class AppObjectImpl:
 
         Persistence policy.
 
-        We do not keep the list of components in persistent storage. However, we do
-        keep the set of channel names. When the app object is reawakened, it will
-        recreate event channels for each of the channels that were registered.
+        We do not keep the list of components in persistent
+        storage. However, we do keep the set of channel names. When
+        the app object is reawakened, it will recreate event channels
+        for each of the channels that were registered.
         """
             
         self.name = name
