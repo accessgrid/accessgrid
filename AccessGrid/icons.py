@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: icons.py,v 1.23 2003-05-08 22:24:35 lefvert Exp $
+# RCS-ID:      $Id: icons.py,v 1.24 2003-05-09 15:38:16 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -10404,5 +10404,79 @@ catalog['DefaultData'].getData = getDefaultDataData
 catalog['DefaultData'].getImage = getDefaultDataImage
 catalog['DefaultData'].getBitmap = getDefaultDataBitmap
 catalog['DefaultData'].getIcon = getDefaultDataIcon
+
+
+#----------------------------------------------------------------------
+def getDefaultServiceData():
+    return zlib.decompress(
+'x\xda\x019\x01\xc6\xfe\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x13\
+\x00\x00\x00\x12\x08\x06\x00\x00\x00\xb9\x0c\xe5i\x00\x00\x00\x04sBIT\x08\
+\x08\x08\x08|\x08d\x88\x00\x00\x00\xf0IDATx\x9c\xa5TA\x92\xc3 \x0c\x93;}\x18\
+?\x8b\xf8\x19\xdc\xf2+\xf5\xc0\x9a\x1aHZvW3\x9e\x10ldc\x04&I\xd8\x80\x99\x81\
+$\x00\xe08\x0e\xe4\x9c\x07?I<\xe7\x0536s\xb5\xf5\xb1\xb2\x98\xdd\xb3\xb9\xfb\
+*\xd1U\xe6\x0e\x00\x02 \x92}<\xfbIJ\x92J)\xdd<\xee\xf1iK\xbf\xd9"\x00<|\x0bn\
+\x11q\xde}W\xcdw<\xcd\x0c\x08}Z\xc6\xa1o\x00PkEJ\xe9\x9al\xa7\xfcZ+J)\x00pK\
+\xd4\xc9\xec<\xfbD\xec\x92\x9dg\xff\xffD\xd2\xe3I*\xca\xe1\x1bH.\xc4)%Hj:\
+\xf3\x866]\xb5\x80\x9c\xbde\x1c\x88\xe6\xb1\x7f%\xad:\x93\x9a\x91\xab\xce\
+\xde1\x1b:\xfb\x0b\xfc`\x80\x1f\x9d\xed\xc2\xcc \xa9\xeb\xac\x942\\\xb9m\xb2\
+H\x94RZ\x88\x80M\x9d\xe5\x9c\x07"?\xcd\xf9\xba\r\xaf\x86W\xe0\xb8{1\xee\xee\
+\xecB\xf6\x1f\xbc\x00\x10O\xf3k\xabg\xd5\xfb\x00\x00\x00\x00IEND\xaeB`\x82~\
+\xc4\x83\x0e' )
+
+def getDefaultServiceBitmap():
+    return wxBitmapFromImage(getDefaultServiceImage())
+
+def getDefaultServiceImage():
+    stream = cStringIO.StringIO(getDefaultServiceData())
+    return wxImageFromStream(stream)
+
+def getDefaultServiceIcon():
+    icon = wxEmptyIcon()
+    icon.CopyFromBitmap(getDefaultServiceBitmap())
+    return icon
+
+index.append('DefaultService')
+catalog['DefaultService'] = ImageClass()
+catalog['DefaultService'].getData = getDefaultServiceData
+catalog['DefaultService'].getImage = getDefaultServiceImage
+catalog['DefaultService'].getBitmap = getDefaultServiceBitmap
+catalog['DefaultService'].getIcon = getDefaultServiceIcon
+
+
+#----------------------------------------------------------------------
+def getDefaultServiceData():
+    return zlib.decompress(
+'x\xda\x010\x01\xcf\xfe\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x13\
+\x00\x00\x00\x12\x08\x06\x00\x00\x00\xb9\x0c\xe5i\x00\x00\x00\x04sBIT\x08\
+\x08\x08\x08|\x08d\x88\x00\x00\x00\xe7IDATx\x9c\x9d\x93Q\x0e\x84 \x0cD\xa7\
+\x1b\xef%7\xb3\xdc\x0c\xfe\xbc\xd5\xec\x87\xb4\x0b\x08\x06w\x12\xa2Ry\xad\
+\xed($\x89"\x11A/\x0b\x8b\x08T\x15\x00p\x1c\x07b\x8c\xcd{\xaa\x8amvx\x06\x7f\
+\x92\xd4\x95\x19\x80\xa4_\xdf\x80?\xabY\r\xac\xaa \x89\x94\x92/\x8b\x0bI\xf6\
+Y\xad\xb2\x194\xe7\xdc\xec\x85\x10@\x12\x9b\x88\x00\xa5\xb1%u{_*1\xf5\xa0Z\
+\xb7\x01\x8c\x94s\xf6\xcf\t!<\xc3\xe4<}\xa3\x9e\x86\x9c\xa7??A\xfc\xfd\xb7=\
+\x03\xe0U\x9a\xbcgv\xd8\xe9"\x0e\xea\\\xe3\xf1\x99\x1ak\\\xde\x02\xc8\xab\
+\xf7\xb3\x83\xfb\xbe\x0f\xab\\\xf6\xd9/\x19\xfdWJ)\xb9\xef^\xc1jP\x08\xe1\
+\x06\x02\x16\xad\x11cl@6\xd9[OY\xa9\xc4I\x82\xaa\xa0\x85q9\xc6\xd7LK\x95\x8d\
+\xa6:R\x03\xeb\xfd\xb5\n\x19\xc2\xfe\x01\xd4\xfa\x02\xba\xd6\xceH\xd5e\xa2t\
+\x00\x00\x00\x00IEND\xaeB`\x82\x90\xf1{\xd3' )
+
+def getDefaultServiceBitmap():
+    return wxBitmapFromImage(getDefaultServiceImage())
+
+def getDefaultServiceImage():
+    stream = cStringIO.StringIO(getDefaultServiceData())
+    return wxImageFromStream(stream)
+
+def getDefaultServiceIcon():
+    icon = wxEmptyIcon()
+    icon.CopyFromBitmap(getDefaultServiceBitmap())
+    return icon
+
+index.append('DefaultService')
+catalog['DefaultService'] = ImageClass()
+catalog['DefaultService'].getData = getDefaultServiceData
+catalog['DefaultService'].getImage = getDefaultServiceImage
+catalog['DefaultService'].getBitmap = getDefaultServiceBitmap
+catalog['DefaultService'].getIcon = getDefaultServiceIcon
 
 
