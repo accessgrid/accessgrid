@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.25 2003-05-15 03:05:30 turam Exp $
+# RCS-ID:      $Id: Platform.py,v 1.26 2003-05-30 22:05:30 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -167,6 +167,33 @@ def GetInstallDir():
         installDir = "/usr/bin"
 
     return installDir
+
+def GetSharedDocDir():
+    """ 
+    Determine the shared doc directory
+    """
+
+    try:
+        sharedDocDir = os.environ[AGTK_INSTALL]
+    except:
+        sharedDocDir = ""
+
+    if sharedDocDir != "":
+        return sharedDocDir;
+
+    if sys.platform == WIN:
+        try:
+            AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
+            sharedDocDir, type = _winreg.QueryValueEx(AG20,"InstallPath")
+            sharedDocDir = os.path.join(sharedDocDir, "Documentation")
+        except WindowsError:
+            log.exception("Cannot open InstallPath directory reg key")
+            sharedDocDir = ""
+
+    elif sys.platform == LINUX:
+        sharedDocDir = "/usr/share/AccessGrid/Documentation"
+
+    return sharedDocDir
 
 def GetTempDir():
     """

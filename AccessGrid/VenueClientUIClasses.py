@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.210 2003-05-30 21:20:46 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.211 2003-05-30 22:06:11 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -35,7 +35,7 @@ from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
-from AccessGrid.Platform import GetTempDir, GetInstallDir
+from AccessGrid.Platform import GetTempDir, GetInstallDir, GetSharedDocDir
 from AccessGrid.TextClient import SimpleTextProcessor
 from AccessGrid.TextClient import TextClientConnectException
 from pyGlobus.io import GSITCPSocket
@@ -119,6 +119,8 @@ class VenueClientFrame(wxFrame):
         sys.stderr = sys.__stderr__
         self.Centre()
         self.help_open = 0
+        self.manual_url = os.path.join(GetSharedDocDir(), "VenueClientManual",
+                                       "VenueClientManualHTML.htm")
         self.agdp_url = "http://www.accessgrid.org/agdp"
         self.ag_url = "http://www.accessgrid.org/"
         self.flag_url = "http://www.mcs.anl.gov/fl/research/accessgrid"
@@ -259,7 +261,7 @@ class VenueClientFrame(wxFrame):
 
               
       	self.help = wxMenu()
-        self.help.Append(self.ID_HELP_MANUAL, "Venue Client &Help",
+        self.help.Append(self.ID_HELP_MANUAL, "Venue Client &Manual",
                          "Venue Client Manual")
         self.help.Append(self.ID_HELP_AGDP,
                          "AG &Documentation Project Web Site",
@@ -431,6 +433,8 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_ME_DATA, self.OpenAddPersonalDataDialog)
         EVT_MENU(self, self.ID_PARTICIPANT_PROFILE, self.OpenParticipantProfile)
         EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialog)
+        EVT_MENU(self, self.ID_HELP_MANUAL,
+                 lambda event, url=self.manual_url: self.OpenHelpURL(url))
         EVT_MENU(self, self.ID_HELP_AGDP,
                  lambda event, url=self.agdp_url: self.OpenHelpURL(url))
         EVT_MENU(self, self.ID_HELP_AGORG,
@@ -488,6 +492,7 @@ class VenueClientFrame(wxFrame):
             self.help_open = 1
             self.browser = webbrowser.get()
 
+        log.debug("OpenHelpURL: Opening: %s", url)
         self.browser.open(url, needNewWindow)
 
     def UnFollow(self, event):
