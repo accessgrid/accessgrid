@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.82 2003-07-14 21:08:01 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.83 2003-07-14 21:08:43 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -590,7 +590,7 @@ class VenueClient( ServiceBase):
 
         # Tell UI and others that we are exiting.
         for s in self.eventSubscribers:
-            s.ExitEvent()
+            s.ExitVenue()
 
         # Stop sending heartbeats
         if self.heartbeatTask != None:
