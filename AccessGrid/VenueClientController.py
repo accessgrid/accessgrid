@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.21 2004-04-30 20:37:02 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.22 2004-05-03 22:18:34 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.21 2004-04-30 20:37:02 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.22 2004-05-03 22:18:34 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # standard imports
@@ -187,7 +187,7 @@ class VenueClientController:
         """
         if not profile or not isinstance(profile,ClientProfile):
             raise ValueError
-        
+
         self.ChangeProfile(profile)
         
 
@@ -363,9 +363,9 @@ class VenueClientController:
         """
         if not venueUrl:
             raise ValueError
-        
-        # Push the new venue onto the history list
-        self.__venueClientApp.PushHistory(venueUrl)
+
+        # Push your own venue url to the history list
+        self.__venueClientApp.PushHistory(self.__venueClient.GetVenue())
 
         # Exit the venue you are currently in before entering a new venue
         if self.__venueClient.IsInVenue():
