@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.92 2003-09-10 16:32:45 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.93 2003-09-10 17:46:45 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -2081,8 +2081,8 @@ class DigitValidator(wxPyValidator):
             MessageDialog(None, "Please, fill in mask.", "Notification")
             return false
 
-        elif self.flag == MASK and (int(val)>24 or int(val)<0):
-            MessageDialog(None, "Allowed values for mask are between 0 - 24.", "Notification")
+        elif self.flag == MASK and (int(val)>31 or int(val)<0):
+            MessageDialog(None, "Allowed values for mask are between 0 - 31.", "Notification")
             return false
 
         return true
