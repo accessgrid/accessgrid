@@ -1,4 +1,3 @@
-#!/usr/bin/python2
 #-----------------------------------------------------------------------------
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
@@ -6,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.207 2003-09-11 19:26:50 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.208 2003-09-11 20:46:07 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -47,7 +46,6 @@ import AccessGrid.ClientProfile
 from AccessGrid import DataStore
 from AccessGrid import PersonalNode
 from AccessGrid import Toolkit
-from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
 
 from AccessGrid import Events
 from AccessGrid.CertificateManager import CertificateManager
@@ -641,7 +639,7 @@ class VenueClientUI(VenueClientEventSubscriber):
             log.exception("Error setting history.")
 
     def EnterVenue(self, URL, back = false, warningString="",
-                   enterSuccess=AG_TRUE):
+                   enterSuccess=1):
         """
         Note: Overridden from VenueClient
         This method calls the venue client method and then
@@ -682,7 +680,7 @@ class VenueClientUI(VenueClientEventSubscriber):
             self.app.certificateManager.CreateProxy()
 
         # initialize flag in case of failure
-        enterUISuccess = AG_TRUE
+        enterUISuccess = 1
 
         try:
             
@@ -757,11 +755,11 @@ class VenueClientUI(VenueClientEventSubscriber):
             # Determine if we are an administrator so we can add administrator features to UI.
             try:
                 if "Venue.Administrators" in self.venueClient.venueProxy.DetermineSubjectRoles():
-                    self.isVenueAdministrator = AG_TRUE
+                    self.isVenueAdministrator = 1
                 else:
-                    self.isVenueAdministrator = AG_FALSE
+                    self.isVenueAdministrator = 0
             except Exception, e:
-                self.isVenueAdministrator = AG_FALSE
+                self.isVenueAdministrator = 0
                 if e.faultstring == "No method DetermineSubjectRoles found":
                     log.info("Server has no method DetermineSubjectRoles.  Probably 2.0 server.")
                 else:
@@ -808,7 +806,7 @@ class VenueClientUI(VenueClientEventSubscriber):
        
         except Exception, e:
             log.exception("bin.VenueClient::EnterVenue failed")
-            enterUISuccess = AG_FALSE
+            enterUISuccess = 0
 
         if not enterUISuccess:
             text = "You have not entered the venue located at %s.\nAn error occured.  Please, try again."%URL

@@ -1,3 +1,15 @@
+#-----------------------------------------------------------------------------
+# Name:        CommandLineVenueClient.py
+# Purpose:     This is the client software for the user, in a command line.
+#
+# Author:      Eric Olson
+#
+# Created:     2003/06/02
+# RCS-ID:      $Id: CommandLineVenueClient.py,v 1.5 2003-09-11 20:45:33 judson Exp $
+# Copyright:   (c) 2002-2003
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
+
 import os, time, threading
 import cmd
 from threading import Thread
@@ -9,7 +21,7 @@ from AccessGrid.Platform import GetUserConfigDir
 log = logging.getLogger("AG.VenueClient")
 
 from AccessGrid.VenueClient import VenueClient
-from AccessGrid.Toolkit import AG_TRUE, AG_FALSE, CmdlineApplication
+from AccessGrid.Toolkit import CmdlineApplication
 from AccessGrid.VenueClientEventSubscriber import VenueClientEventSubscriber
 from AccessGrid.hosting.AccessControl import Subject
 
@@ -70,7 +82,7 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
     def SetCmdLineInterface(self, cmdLineInterface):
         self.cmdLineInterface = cmdLineInterface
 
-    def PreEnterVenue(self, URL, back=AG_FALSE):
+    def PreEnterVenue(self, URL, back=0):
         """
         Before we enter any venues, make sure we have a valid certificate.
         """
@@ -114,8 +126,8 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
 
     # --- Callbacks called from AccessGrid.VenueClient() ---
 
-    def EnterVenue(self, URL, back = AG_FALSE, warningString="", enterSuccess=AG_TRUE):
-        if enterSuccess == AG_TRUE:
+    def EnterVenue(self, URL, back = 0, warningString="", enterSuccess=1):
+        if enterSuccess == 1:
             self.ClearCaches() # clear exits, etc. from last venue
             self.OutputText("Successfully entered venue: " + URL)
         else:
@@ -135,17 +147,17 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
         self.venueClient.EnterVenue(v)
         return self.venueClient.isInVenue
 
-    def InitiateExitVenue(self, keep_quiet=AG_FALSE):
+    def InitiateExitVenue(self, keep_quiet=0):
         wasInVenue = self.venueClient.isInVenue
         self.venueClient.ExitVenue()
         if wasInVenue:
             if not keep_quiet:
                 self.OutputText("Successfully exited venue.")
-            return AG_TRUE
+            return 1
         else:
             if not keep_quiet:
                 self.OutputText("Attempted to Exit venue.  You were not in a venue.")
-            return AG_FALSE
+            return 0
 
     def ListParticipants(self):    
         if self.venueClient.isInVenue:
@@ -153,10 +165,10 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
             for client in self.venueClient.venueState.clients.values():
                 strng += client.name + "\n"
             self.OutputText("Participants:\n" + strng)
-            return AG_TRUE
+            return 1
         else:
             self.OutputText("You are not in a venue and are unable to list participants.")
-            return AG_FALSE
+            return 0
 
     def ListExits(self):
         if self.venueClient.isInVenue:
@@ -170,10 +182,10 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
             self.OutputText("Exits:\n" + strng)
             # Replace exit list with new exit list.
             self.cachedExitList = exitList
-            return AG_TRUE
+            return 1
         else:
             self.OutputText("You are not in a venue and are unable to list exits.")
-            return AG_FALSE
+            return 0
 
     def UseExit(self, index):
         if len(self.cachedExitList) == 0:
@@ -186,7 +198,7 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
 
     def InitiateShutdown(self):
         self.venueClient.Shutdown()
-        return AG_TRUE
+        return 1
 
     def GetStatus(self):
         if self.venueClient.isInVenue:
@@ -204,21 +216,21 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
             else:
                 strng = "Data:\n" + strng
             self.OutputText(strng)
-            return AG_TRUE
+            return 1
         else:
             self.OutputText("You are not in a venue and are unable to list data.")
-            return AG_FALSE
+            return 0
 
     def AddUserToRole(self, user, role):
         if self.venueClient.isInVenue:
             if self.venueClient.venueProxy.AddSubjectToRole(user, role):
                 self.OutputText("Successfully added user: " + user + "  to role: " + role)
-                return AG_TRUE
+                return 1
             else:
                 self.OutputText("Failed to add user: " + user + "  to role: " + role)
         else:
             self.OutputText("You are not in a venue and are unable to add a user to a role.")
-        return AG_FALSE
+        return 0
 
     def ListUsersInRole(self, role):
         if self.venueClient.isInVenue:
@@ -319,7 +331,7 @@ class CmdLineController(cmd.Cmd, Thread):
     do_x = do_exitvenue
 
     def do_quit(self, argline):
-        self.cmdLineVC.InitiateExitVenue(keep_quiet=AG_TRUE)
+        self.cmdLineVC.InitiateExitVenue(keep_quiet=1)
         self.cmdLineVC.InitiateShutdown()
  
         return 1 # stops cmdloop()
