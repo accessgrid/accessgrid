@@ -2,7 +2,7 @@
 Application Services
 =====================================
  
-:version: $Revision: 1.1 $
+:version: $Revision: 1.2 $
 :author: Susanne Lefvert <lefvert@mcs.anl.gov>
 :status: Draft
 :contact: ag-tech@mcs.anl.gov
@@ -90,9 +90,11 @@ Open Issues
         * A network service should not necessarily be displayed for the user while an application
           service should be visible in the venue client.
 
-    2 Should the venue be able to start a service locally, like we are currently doing with applications?
+    2 Should the venue be able to start a service locally, like we are currently doing with applications? If so,
+      is it ok if the service registers with the venue via the venue SOAP interface. In that case it would be
+      very trivial to implement this.
      
-    3 How should we deal with heartbeats? Which method should be used to confirm the remote service is still running?
+    3 How should we deal with heartbeats? Which method should be used to confirm the remote service is still running? The heartbeat mechanism should probably be implemented in the same way as we do for venue clients (i.e. soap calls?).
 
     4 Should a service be persisted in the venue? Or, does a service provider have to reconnect every time the venue server is restarted similar to current bridge design?
 
@@ -104,7 +106,43 @@ Interoperability Issues
 Implementation
 ==============
     
-    Not implemented yet.
+   *  **AGAppService** - Application service base class 
+        
+         http://www-unix.mcs.anl.gov/~lefvert/AGEP/AGEP-0129/DebugService/AGAppService.py
+   
+   * **DebugService.py** - Example on how to implement a service using the AGAppService base class 
+        
+         http://www-unix.mcs.anl.gov/~lefvert/AGEP/AGEP-0129/DebugService/DebugService.py
+   
+   * **DebugClient.py** - Example service client and app file 
+         
+         http://www-unix.mcs.anl.gov/~lefvert/AGEP/AGEP-0129/DebugService/DebugClient.py
+
+   * **DebugService.app** - Example app file for service and client registration with the agpm (This still needs some client modifications in order to work properly) 
+         
+         http://www-unix.mcs.anl.gov/~lefvert/AGEP/AGEP-0129/DebugService/DebugService.app
+
+   **Instructions:**
+
+
+   1 In Descriptions.py modify ServiceDescription.__init__ to
+   
+       ::
+           
+           def __init__(self, name, description, uri, mimetype,
+                    extension = None, version = None, visible = 1):  
+
+               self.extension = extension
+               self.version = version
+               self.visible = visible
+ 
+   2 Run local venue server
+
+   3 Run DebugService.py
+
+   4 In the venue client, open debug service properties and copy the *url*
+
+   5 Run DebugService.py --s *url*
 
 Copyright
 =========
