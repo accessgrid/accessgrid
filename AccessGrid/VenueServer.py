@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.115 2004-03-01 17:26:38 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.116 2004-03-02 19:16:40 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.115 2004-03-01 17:26:38 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.116 2004-03-02 19:16:40 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -26,11 +26,11 @@ import logging
 import time
 import ConfigParser
 
-from AccessGrid.hosting import Decorate, Reconstitute, IWrapper, GetSOAPContext
+from AccessGrid.hosting import Decorate, Reconstitute, GetSOAPContext
 
 from AccessGrid import Toolkit
 from AccessGrid.hosting import Server
-from AccessGrid.hosting.SOAPInterface import SOAPInterface
+from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerI
 from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
@@ -1371,11 +1371,11 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
             log.exception("GetAddressMask: exception")
             raise
 
-class VenueServerIW(IWrapper, AuthorizationIWMixIn):
+class VenueServerIW(SOAPIWrapper, AuthorizationIWMixIn):
     """
     """
     def __init__(self, url=None):
-        IWrapper.__init__(self, url)
+        SOAPIWrapper.__init__(self, url)
 
     def Shutdown(self, secondsFromNow):
         return self.proxy.Shutdown(secondsFromNow)
