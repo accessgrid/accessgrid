@@ -6,11 +6,10 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.193 2003-08-14 17:27:35 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.194 2003-08-14 18:54:01 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
-
 
 import threading
 import os
@@ -70,7 +69,7 @@ from AccessGrid.VenueClient import VenueClient
 from AccessGrid.VenueClientEventSubscriber import VenueClientEventSubscriber
 from AccessGrid.Platform import GetUserConfigDir
 
-class VenueClientUI(wxApp, VenueClientEventSubscriber):
+class VenueClientUI(VenueClientEventSubscriber):
     """
     VenueClientUI is a wrapper for the base VenueClient.
     It updates its UI when it enters or exits a venue or
@@ -96,20 +95,12 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
                 log.exception("bin.VenueClient::__init__: Could not create base path")
         self.venueClient = VenueClient()
         self.venueClient.AddEventSubscriber(self)
-        wxApp.__init__(self, false)
         self.onExitCalled = false
+
         self.startupDialog.UpdateOneStep()
         # State kept so UI can add venue administration options.
         self.isVenueAdministrator = false
         
-    def OnInit(self):
-        """
-        This method initiates all gui related classes.
-
-        **Returns:**
-
-        *Integer* 1 if initiation is successful 
-        """
         self.startupDialog.UpdateOneStep()
          
         self.__processArgs()
@@ -120,12 +111,11 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
         # globus environment.
         #
         self.startupDialog.UpdateOneStep()
-
+        
         VerifyExecutionEnvironment()
        
         try:
             self.startupDialog.UpdateOneStep()
-            
             self.app = Toolkit.WXGUIApplication()
 
         except Exception, e:
@@ -141,10 +131,6 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
 
         except Exception, e:
             log.exception("bin.VenueClient::OnInit: App initialization failed")
-            
-            #ErrorDialogWithTraceback(None, "Application initialization failed. Attempting to continue",
-            #            "Initialization failed")
-
             ErrorDialog(None, "Application initialization failed. Attempting to continue",
                         "Initialization failed")
         
@@ -152,16 +138,13 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
         # Initiate user interface components
         #
         self.startupDialog.UpdateOneStep()
-         
         self.frame = VenueClientFrame(NULL, -1,"", self)
         self.frame.SetSize(wxSize(500, 400))
-        self.SetTopWindow(self.frame)
         
         #
         # Tell the UI about installed applications
         #
         self.startupDialog.UpdateOneStep()
-        
         self.frame.SetInstalledApps( self.venueClient.GetInstalledApps() )
         self.frame.EnableAppMenu( false )
        
@@ -169,12 +152,10 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
         # Load user mailcap from AG Config Dir
         #
         self.startupDialog.UpdateOneStep()
-         
         mailcap = os.path.join(GetUserConfigDir(), "mailcap")
         InitMimeTypes(mailcap)
 
         log.debug("bin.VenueClient::OnInit: ispersonal=%s", self.isPersonalNode)
-
         if self.isPersonalNode:
             def setSvcCallback(svcUrl, self = self):
                 log.debug("bin.VenueClient::OnInit: setting node service URI to %s from PersonalNode", svcUrl)
@@ -184,18 +165,24 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
             self.personalNode = PersonalNode.PersonalNodeManager(setSvcCallback, self.debugMode)
             self.personalNode.Run()
 
-
         #
         # Initialize globus runtime stuff.
         #
         self.startupDialog.UpdateOneStep()
-
         self.app.InitGlobusEnvironment()
-
-        self.startupDialog.UpdateOneStep()
        
-        return true
-
+        #
+        # Check if profile is created then open venue client
+        #
+        self.venueClient.profile = ClientProfile(self.profileFile)
+        self.startupDialog.UpdateOneStep()
+        
+        if self.venueClient.profile.IsDefault():  # not your profile
+            log.debug("the profile is the default profile - open profile dialog")
+            self.__openProfileDialog()
+        else:
+            self.__openVenueClient(self.venueClient.profile)
+       
     def __openProfileDialog(self):
         """
         This method opens a profile dialog, in which the user can fill in
@@ -216,13 +203,13 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
             #
             # Start the main wxPython thread
             #
-            self.__startMainLoop(self.venueClient.profile)
+            self.__openVenueClient(self.venueClient.profile)
 
         else:
             profileDialog.Destroy()
             os._exit(0)
 
-    def __startMainLoop(self, profile):
+    def __openVenueClient(self, profile):
         """
         This method is called during client startup.  It sets the
         participant profile, enters the venue, and finally starts the
@@ -231,16 +218,13 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
         **Arguments:**
         
         *profile* The ClientProfile you want to be associated with in the venue.
-        
         """
 
         log.debug("bin.VenueClient: SetProfile")
         self.venueClient.SetProfile(profile)
         self.frame.venueAddressBar.SetAddress(self.venueClient.profile.homeVenue)
         self.frame.Show(true)
-        log.debug("bin.VenueClient::__startMainLoop: start wxApp main loop/thread")
-        self.MainLoop()
-
+        
     def __Usage(self):
         print "%s:" % (sys.argv[0])
         print "  -h|--help:      print usage"
@@ -275,7 +259,6 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
                 self.debugMode = 1
             elif opt in ('--logfile', '-l'):
                 self.logFile = arg
-
   
     def __setLogger(self):
         """
@@ -300,23 +283,6 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
             hdlr.setFormatter(fmt)
             log.addHandler(hdlr)
        
-    def ConnectToVenue(self):
-        """
-        This method is called during program startup. If this is the first time
-        a user starts the client, a dialog is opened where the user can fill in
-        his or her information.  The information is saved in a configuration file,
-        when the program starts next time this profile information will be loaded
-        automatically.
-        """
-        self.venueClient.profile = ClientProfile(self.profileFile)
-
-        if self.venueClient.profile.IsDefault():  # not your profile
-            log.debug("the profile is the default profile - open profile dialog")
-            self.__openProfileDialog()
-        else:
-            # self.profile.publicId = str(GUID())
-            self.__startMainLoop(self.venueClient.profile)
-
     #
     # Methods to support follow
     #
@@ -847,20 +813,6 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
             ErrorDialog(None, text, "Enter Venue Error",
                           style = wxOK  | wxICON_ERROR)
              
-#     def ExitVenue(self):
-#         """
-#         Note: Overridden from VenueClient
-#         This method calls the venue client method and then
-#         performs its own operations when the client exits a venue.
-#         """
-#         log.debug("exit venue")
-
-#         #
-#         # Shut down the text client
-#         #
-
-#         wxCallAfter(self.frame.CloseTextConnection)
-
     def __setHistory(self, uri, back):
         """
         This method sets the history list, which stores visited
@@ -924,6 +876,12 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
             self.onExitCalled = true
             log.info("--------- END VenueClient")
 
+            # Shut down startup progress dialog
+            # if it is still open
+
+            if self.startupDialog:
+                self.startupDialog.Destroy()
+
             #
             # If we are connected to a venue, exit the venue
             # Do this before terminating services, since we need
@@ -932,6 +890,7 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
             if self.venueClient.isInVenue:
                 self.venueClient.ExitVenue()
 
+            
             #
             # If we're running as a personal node, terminate the services.
             #
@@ -939,9 +898,9 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
                 log.debug("Terminating services")
                 self.personalNode.Stop()
 
-            self.venueClient.Shutdown()      
-
-            self.ExitMainLoop()
+            self.venueClient.Shutdown()
+            
+            self.frame.Destroy()
 
             #os._exit(0)  # this should not be necessary, replace if needed.
 
@@ -1467,11 +1426,11 @@ if __name__ == "__main__":
     wxInitAllImageHandlers()
 
     app = wxPySimpleApp()
-    max = 10
-    
-    dlg = ProgressDialog("Startup", "Loading Venue Client. Please be patient.", max)
+
+    dlg = ProgressDialog("Startup", "Loading Venue Client. Please be patient.", 10, None)
     dlg.Show()
     
     vc = VenueClientUI(dlg)
-    vc.ConnectToVenue()
+    dlg.Destroy()
+    app.MainLoop()
     
