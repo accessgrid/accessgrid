@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.76 2005-01-06 22:24:50 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.77 2005-01-12 20:40:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.76 2005-01-06 22:24:50 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.77 2005-01-12 20:40:09 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -201,55 +201,6 @@ def BuildServiceMenu( ):
     return svcmenu
 
 
-class MultiTextFieldDialog(wxDialog):
-    """
-    MultiTextFieldDialog accepts a dictionary and presents its
-    contents as label/textfield pairs in a dialog.  The GetData
-    method returns a list of the values, possibly modified.
-    """
-    def __init__(self, parent, id, title, fieldNames ):
-
-        wxDialog.__init__(self, parent, id, title, style =
-                          wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
-              
-        # Set up sizers
-        gridSizer = wxFlexGridSizer(len(fieldNames), 2, 5, 5)
-        sizer1 = wxBoxSizer(wxVERTICAL)
-        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxHORIZONTAL)
-        sizer2.Add(gridSizer, 1, wxALL, 10)
-        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
-       
-        gridSizer.AddGrowableCol(1)
-
-        # Create label/textfield pairs for field names
-        self.textCtrlList = []
-        for name,value in fieldNames.items():
-            labelCtrl = wxStaticText( self, -1, name)
-            textCtrl = wxTextCtrl( self, -1, value, size = wxSize(200, 20))
-            self.textCtrlList.append( textCtrl )
-                    
-            gridSizer.Add( labelCtrl)
-            gridSizer.Add( textCtrl, 0, wxEXPAND)
-          
-        # Create ok/cancel buttons
-        sizer3 = wxBoxSizer(wxHORIZONTAL)
-        okButton = wxButton( self, wxID_OK, "OK")
-        cancelButton = wxButton( self, wxID_CANCEL, "Cancel" )
-        sizer3.Add(okButton, 0, wxALL, 10)
-        sizer3.Add(cancelButton, 0, wxALL, 10)
-        sizer1.Add(sizer3, 0, wxALIGN_CENTER)
-        
-        self.SetSizer( sizer1 )
-        sizer1.Fit(self)
-        self.SetAutoLayout(1)
-        
-    def GetData(self):
-        # Get data from textfields
-        fieldValues = []
-        for textCtrl in self.textCtrlList:
-            fieldValues.append( textCtrl.GetValue() )
-        return fieldValues
-
 class StoreConfigDialog(wxDialog):
     """
     StoreConfigDialog displays the following:
@@ -326,59 +277,6 @@ class StoreConfigDialog(wxDialog):
         return (self.configText.GetValue(), self.defaultCheckbox.IsChecked())
 
 
-class ServiceListCtrl( wxListCtrl ):
-
-    def __init__(self, parent, ID, pos=wxDefaultPosition,
-                  size=wxDefaultSize, style=wxLC_REPORT):
-        listId = wxNewId()
-        wxListCtrl.__init__(self, parent, listId, pos, size, style=style)
-
-        self.InsertColumn( 0, "Service Name", width=100 )
-        self.InsertColumn( 1, "Resource", width=wxLIST_AUTOSIZE )
-        self.InsertColumn( 2, "Status", width=wxLIST_AUTOSIZE )
-        
-        bmap = icons.getDefaultServiceBitmap()
-        imageList = wxImageList( bmap.GetWidth(), bmap.GetHeight() )
-        imageList.Add( bmap )
-        self.AssignImageList( imageList, wxIMAGE_LIST_NORMAL)
-        
-        self.colWidths = [ .4, .4, .2 ]
-        
-        EVT_LIST_COL_END_DRAG(self,listId,self.OnColEndDrag)
-
-        if IsWindows():
-            # This breaks on linux
-            EVT_SIZE(self, self.OnSize)
-
-        self.Layout()
-       
-    def OnSize(self, event):
-        """
-        Sets correct column widths.
-        """
-        w,h = self.GetSize()
-        numCols = self.GetColumnCount()
-       
-        for i in range(numCols):
-            self.SetColumnWidth(i, w * self.colWidths[i] - 5)
-
-                   
-    def OnColEndDrag(self,event):
-        """
-        Sets correct column widths after drag
-        """
-        w,h = self.GetSize()
-        numCols = self.GetColumnCount()
-        total = 0
-        for i in range(numCols-1):
-            self.colWidths[i] = self.GetColumnWidth(i) / float(w)
-            total += self.colWidths[i]
-            
-        # Make the last column take all available space
-        i = numCols-1
-        self.colWidths[i] = 1.0 - total
-        self.SetColumnWidth(i,w * self.colWidths[i])
-        
               
 class ServiceConfigurationPanel( wxPanel ):
     """
@@ -942,7 +840,7 @@ class NodeManagementClientFrame(wxFrame):
         # Get services available
         try:
             wxBeginBusyCursor()
-            servicePackages =  AGServiceManagerIW(serviceManager.uri).GetServicePackages()
+            servicePackages =  AGServiceManagerIW(serviceManager.uri).GetServicePackageDescriptions()
         except:
             log.exception("Exception getting service packages")
         wxEndBusyCursor()
@@ -969,51 +867,6 @@ class NodeManagementClientFrame(wxFrame):
 
             if serviceToAdd == None:
                 raise Exception("Can't add NULL service")
-
-#             #
-#             # Prompt for resource to assign
-#             #
-#             resourceToAssign = AGResource()
-#             try:
-#                 wxBeginBusyCursor()
-#                 resources = AGServiceManagerIW( serviceManager.uri ).GetResources()
-#             except:
-#                 log.exception("Exception getting resources")
-#             wxEndBusyCursor()
-#             if len(resources) > 0:
-# 
-#                 # Find resources applicable to this service
-#                 applicableResources = []
-#                 for resource in resources:
-#                     for cap in serviceToAdd.capabilities:
-#                         if resource.type == cap.type:
-#                             applicableResources.append( resource )
-# 
-#                 if len(applicableResources) > 0:
-#                     log.info("%d resources found; prompt", len(applicableResources))
-#                     choices = map( lambda res: res.resource, applicableResources )
-#                     dlg = wxSingleChoiceDialog( self, "Select resource for service", "Add Service: Select Resource",
-#                            choices )
-# 
-#                     dlg.SetSize(wxSize(300,200))
-# 
-#                     ret = dlg.ShowModal()
-# 
-#                     if ret != wxID_OK:
-#                         return
-# 
-#                     selectedResource = dlg.GetStringSelection()
-# 
-#                     for resource in applicableResources:
-#                         if selectedResource == resource.resource:
-#                             resourceToAssign = resource
-#                             break
-#                 else:
-#                     log.info("No applicable resources found")
-# 
-
-
-                
 
             try:
                 #
