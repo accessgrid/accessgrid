@@ -66,7 +66,7 @@ Install()
       echo "Package already installed:" $package-$package_ver
     else
       echo "Freshening package:" $package
-      rpm -Fvh $package_rpm
+      rpm -Fvh --nodeps $package_rpm
     fi
   else
     echo "Installing package:" $package
