@@ -20,6 +20,22 @@ if not os.environ.has_key('AGBUILDROOT'):
     print "AGBUILDROOT environment variable must be set"
     sys.exit(1)
 
+# Build packages according to the command line
+if sys.platform == 'win32':
+    bdir = 'windows'
+elif sys.platform == 'linux2':
+    bdir = 'linux'
+elif sys.platform == 'darwin':
+    print "Sorry; darwin not supported yet ;-)"
+    bdir = 'darwin'
+    sys.exit(1)
+else:
+    print "Unsupported platform: %s; exiting" % (sys.platform,)
+    bdir = None
+    sys.exit(1)
+
+
+
 # Source Directory
 #  We assume the following software is in this directory:
 #    ag-rat, ag-vic, and AccessGrid
@@ -156,7 +172,7 @@ else:
 # setup a new python path
 if sys.platform == 'win32':
     npath = os.path.join(DestDir, "Lib", "site-packages")
-else:
+elif sys.platform == 'linux2':
     npath = os.path.join(DestDir, "lib", "python2.2", "site-packages")
 if not oldpath:
     nppath = os.pathsep.join([npath, oldpath])
@@ -174,7 +190,7 @@ os.system("%s test_dist.py --html -o %s -t %s" % (sys.executable,
 if sys.platform == 'win32':
     ep = os.path.join(os.path.dirname(sys.executable), "Scripts",
                       "epydoc.py")
-else:
+elif sys.platform == 'linux2':
     ep = find_executable("epydoc")
 
 cmd = "%s %s --html -o %s -n 'Access Grid Toolkit' -u %s AccessGrid" % \
@@ -187,16 +203,6 @@ os.system(cmd)
 if oldpath is not None:
     os.environ['PYTHONPATH'] = oldpath
 
-# Build packages according to the command line
-if sys.platform == 'win32':
-    bdir = 'windows'
-elif sys.platform == 'linux2':
-    bdir = 'linux'
-elif sys.platform == 'darwin':
-    print "Sorry not supported yet ;-)"
-    bdir = 'darwin'
-else:
-    bdir = None
 
 # Build the QuickBridge executable
 if sys.platform == 'linux2':
