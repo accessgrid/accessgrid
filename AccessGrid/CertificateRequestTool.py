@@ -799,6 +799,53 @@ class SubmitReqWindow(TitledPage):
         '''
         self.sizer.Add(self.text, 0, wxALL|wxEXPAND, 5)
 
+#
+# Certificate Request Service Client
+#
+from xmlrpclib import ServerProxy
+
+class CRSClientInvalidURL(Exception):
+    pass
+
+class CRSClient:
+    def __init__(self, url):
+        self.url = url
+        if self.url != None:
+            self.proxy = ServerProxy(url)
+        else:
+            raise CRSClientInvalidURL
+
+    def RequestCertificate(self, certReq):
+        """
+        certificateToken = CRSClient.RequestCertificate(certificateRequest)
+            certificateRequest is a string containing the certificate request
+            certificateToken is a unique token used to retrieve the certificate
+                when it's ready.
+        """        
+        token = None
+        try:
+            token = self.proxy.RequestCertificate(certReq)
+        except StandardError, v:
+#            print "Error = %s", v
+            raise v
+            
+        return token
+
+    def RetrieveCertificate(self, token):
+        """
+        certificate = CRSClient.RetrieveCertificate(certificateToken)
+            certificateToken is a unique token used to retrieve the certificate
+                when it's ready.
+            certificate is the actual signed certificate from the CA
+        """
+        certificate = None
+        try:
+            certificate = self.proxy.RetrieveCertificate(token)
+        except StandardError, v:
+#            print "Error = %s", v
+            raise v
+
+        return certificate
 
 if __name__ == "__main__":
     pp = wxPySimpleApp()
