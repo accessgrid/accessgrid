@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.15 2003-04-08 21:04:48 olson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.16 2003-04-14 23:44:15 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -135,5 +135,6 @@ while running:
     time.sleep(1)
 
 # Exit cleanly
-os._exit(0)
+nodeService.Stop()
+server.Stop()
 

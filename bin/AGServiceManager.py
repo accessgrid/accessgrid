@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.16 2003-04-08 16:35:27 olson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.17 2003-04-14 23:44:15 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -124,5 +124,5 @@ while running:
     time.sleep(1)
 
 # Exit cleanly
-os._exit(0)
+server.Stop()
 

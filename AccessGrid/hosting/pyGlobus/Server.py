@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.10 2003-04-01 23:25:19 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.11 2003-04-14 23:44:15 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,6 +18,7 @@ import ServiceBase
 import Utilities
 
 from AGGSISOAP import SOAPProxy, SOAPServer, SOAPConfig
+from pyGlobus.io import GSITCPSocketException
 
 class Server:
 
@@ -74,9 +75,18 @@ class Server:
         self._running = 1
 
         while(self._running):
-            self._server.handle_request()
+            try:
+                self._server.handle_request()
+            # catch interruption to handle_request() when server is closed. 
+            except GSITCPSocketException:
+                pass
 
-        self._server.server_close()
+        # Don't call server_close() here because handle_request() is blocking.
+        #   We break out of handle_request() when server_close() is called from 
+        #   Stop().  If we start doing non-blocking calls in handle_request(), 
+        #   we can call server_close() here instead of in Stop().
+        #   
+        # self._server.server_close()
         
     def RunInThread(self):
         """
@@ -91,7 +101,9 @@ class Server:
         server_thread.start()
 
     def Stop(self):
-        self._running = 0
+        if self._running:
+           self._running = 0
+           self._server.server_close()
 
     def CreateService(self, service_class, pathId = None, *args):
 	"""
@@ -211,3 +223,4 @@ class Server:
     allocate_id = AllocateId
     get_port = GetPort
     get_url_base = GetURLBase
+

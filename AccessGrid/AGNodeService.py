@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.22 2003-04-03 20:56:08 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.23 2003-04-14 23:44:15 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -71,6 +71,9 @@ class AGNodeService( ServiceBase ):
                 self.LoadConfiguration( self.defaultConfig ) 
             except:
                 log.exception("Exception loading default configuration.")
+
+    def Stop(self):
+        self.servicePackageRepository.Stop()
 
     ####################
     ## AUTHORIZATION methods
@@ -502,6 +505,12 @@ class AGServicePackageRepository:
         self.s = GSIHTTPTransferServer(('', self.httpd_port)) 
         self.s.RegisterPrefix(prefix, self)
         thread.start_new_thread( self.s.run, () )
+        self.running = 1
+
+    def Stop(self):
+        if self.running:
+            self.running = 0
+            self.s.stop()
 
     def GetDownloadFilename(self, id_token, url_path):
         """
