@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.39 2004-04-09 14:23:57 turam Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.40 2004-04-09 18:33:57 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.39 2004-04-09 14:23:57 turam Exp $"
+__revision__ = "$Id: EventClient.py,v 1.40 2004-04-09 18:33:57 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from threading import Thread, Lock
@@ -26,7 +26,6 @@ from pyGlobus.io import GSITCPSocket, TCPIOAttr, AuthData, IOBaseException
 from pyGlobus.util import Buffer
 from pyGlobus import ioc
 
-from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import HeartbeatEvent, ConnectEvent, DisconnectEvent
 from AccessGrid.Security.Utilities import CreateTCPAttrAlwaysAuth
 

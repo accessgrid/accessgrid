@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.25 2004-04-09 14:20:09 turam Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.26 2004-04-09 18:34:40 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.25 2004-04-09 14:20:09 turam Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.26 2004-04-09 18:34:40 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -28,7 +28,6 @@ from pyGlobus.io import GSITCPSocketServer, GSIRequestHandler, GSITCPSocket
 from pyGlobus.io import GSITCPSocketException, IOBaseException, Buffer
 
 from AccessGrid import Log
-from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import HeartbeatEvent, ConnectEvent, TextEvent
 from AccessGrid.Events import DisconnectEvent, MarshalledEvent
 from AccessGrid.Events import TextPayload
