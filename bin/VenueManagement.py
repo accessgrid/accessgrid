@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.32 2003-02-25 15:04:14 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.33 2003-02-27 15:55:26 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -119,14 +119,19 @@ class VenueManagementClient(wxApp):
 #                   self.address.Append(URL)
 
         else:
-            dlg = wxMessageDialog(self.frame, 
-                                  'The venue server URL you specified is not valid',
-                                  "Invalid URL",
-                                  style = wxOK|wxICON_INFORMATION)
-            
+            if not HaveValidProxy():
+                text = 'You do not have a valid proxy.' +\
+                       '\nPlease, run "grid-proxy-init" on the command line"'
+                text2 = 'Invalid proxy'
+
+            else:
+                text = 'The venue URL you specified is not valid'
+                text2 = 'Invalid URL'
+
+            dlg = wxMessageDialog(self.frame, text, text2, style = wxOK|wxICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
-                        
+
     def AddVenue(self, venue, exitsList):
         uri = self.client.AddVenue(venue)
         if exitsList != []:
