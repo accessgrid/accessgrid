@@ -79,7 +79,7 @@ class LauncherFrame(wxFrame):
         self.mainButtonList.append(wxButton(self,self.BUTTON_CM_ID,"Certificate Management"));
         self.mainButtonActions.append([self.RunPython,"%s/bin/CertificateManager.py"%(agtk_location),[]]);
         self.mainButtonList.append(wxButton(self,self.BUTTON_NS_ID,"Node Service"));
-        self.mainButtonActions.append([self.RunPython,"%s/bin/AGNodeService.py"%(agtk_location),[]]);
+        self.mainButtonActions.append([self.RunPython,"%s/bin/AGServiceManager.py"%(agtk_location),['-n']]);
         self.mainButtonList.append(wxButton(self,self.BUTTON_SM_ID,"Service Manager"));
         self.mainButtonActions.append([self.RunPython,"%s/bin/AGServiceManager.py"%(agtk_location),[]]);
         self.mainButtonList.append(wxButton(self,self.BUTTON_VS_ID,"Venue Server"));
@@ -90,13 +90,13 @@ class LauncherFrame(wxFrame):
         self.docsButtonList=[];
         self.docsButtonActions=[];
         self.docsButtonList.append(wxButton(self,self.BUTTON_README_ID,"Read Me"));
-        self.docsButtonActions.append([self.LoadURL,"file://%s/README"%(agtk_location),[]]);
+        self.docsButtonActions.append([self.LoadURL,"file://%s/share/doc/AccessGrid/README"%(agtk_location),[]]);
         self.docsButtonList.append(wxButton(self,self.BUTTON_VCM_ID,"Venue Client Manual"));
-        self.docsButtonActions.append([self.LoadURL,"file://%s/doc/VenueClientManual/VenueClientManualHTML.htm"%(agtk_location),[]]);
+        self.docsButtonActions.append([self.LoadURL,"file://%s/share/doc/AccessGrid/Documentation/VenueClientManual/VenueClientManualHTML.htm"%(agtk_location),[]]);
         self.docsButtonList.append(wxButton(self,self.BUTTON_VMCM_ID,"Venue Management Manual"));
-        self.docsButtonActions.append([self.LoadURL,"file://%s/doc/VenueManagementManual/VenueManagementManualHTML.htm"%(agtk_location),[]]);
+        self.docsButtonActions.append([self.LoadURL,"file://%s/share/doc/AccessGrid/Documentation/VenueManagementManual/VenueManagementManualHTML.htm"%(agtk_location),[]]);
         self.docsButtonList.append(wxButton(self,self.BUTTON_LIC_ID,"License"));
-        self.docsButtonActions.append([self.LoadURL,"file://%s/COPYING.txt"%(agtk_location),[]]);
+        self.docsButtonActions.append([self.LoadURL,"file://%s/share/doc/AccessGrid/COPYING.txt"%(agtk_location),[]]);
         for button in self.docsButtonList:
             button.Show(false);
         
@@ -120,7 +120,7 @@ class LauncherFrame(wxFrame):
         self.debugButtonList.append(wxButton(self,self.BUTTON_CMD_ID,"Certificate Management (Debug)"));
         self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/CertificateManager.py"%(agtk_location),["-d"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_NSD_ID,"Node Service (Debug)"));
-        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/AGNodeService.py"%(agtk_location),["-d"]]);
+        self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/AGServiceManager.py"%(agtk_location),["-d", "-n"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_SMD_ID,"Service Manager (Debug)"));
         self.debugButtonActions.append([self.RunPythonDebug,"%s/bin/AGServiceManager.py"%(agtk_location),["-d"]]);
         self.debugButtonList.append(wxButton(self,self.BUTTON_VSD_ID,"Venue Server (Debug)"));
