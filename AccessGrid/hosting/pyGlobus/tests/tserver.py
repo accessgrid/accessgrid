@@ -1,8 +1,8 @@
+from AccessGrid.hosting.pyGlobus import Server, ServiceBase
 import logging
 import time
 import os
 from AccessGrid.hosting import AccessControl
-from AccessGrid.hosting.pyGlobus import Server, ServiceBase
 
 class C(ServiceBase.ServiceBase):
     def meth(self, x):
