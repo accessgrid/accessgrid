@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.80 2004-09-03 21:50:28 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.81 2004-09-08 19:08:21 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.80 2004-09-03 21:50:28 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.81 2004-09-08 19:08:21 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -213,6 +213,9 @@ class AGNodeService:
         if self.profile:
             AGServiceIW( serviceDescription.uri ).SetIdentity(
                 self.profile )
+        else:
+            log.info("Not setting identity for service %s; no profile",
+                     serviceDescription.name)
 
         # Configure the service with the appropriate stream description
         try:
@@ -484,6 +487,10 @@ class AGNodeService:
                     if self.profile:
                         AGServiceIW( serviceDesc.uri ).SetIdentity(
                             self.profile )
+                    else:
+                        log.info("Not setting identity for service %s; no profile",
+                                 serviceDescription.name)
+                        
                         
                 except:
                     log.exception("Exception adding service %s" % (service.packageName))
