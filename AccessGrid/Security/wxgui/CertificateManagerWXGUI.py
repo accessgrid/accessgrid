@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.9 2004-03-25 20:11:06 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.10 2004-03-29 20:55:43 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.9 2004-03-25 20:11:06 olson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.10 2004-03-29 20:55:43 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -30,6 +30,7 @@ import shutil
 from OpenSSL_AG import crypto
 from wxPython.wx import *
 from AccessGrid import UIUtilities
+from AccessGrid import Platform
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog, ErrorDialogWithTraceback
 from AccessGrid import Log
 
@@ -119,6 +120,22 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
     def __init__(self):
         CertificateManager.CertificateManagerUserInterface.__init__(self)
+
+        #
+        # Perform a check to see if we're root, if we're not on windows.
+        # Globus behaves badly when run as root.
+        #
+
+        if not Platform.isWindows():
+            if Platform.Config.SystemConfig.instance().GetUsername() == "root":
+                dlg = wxMessageDialog(None,
+                                      "You may have problems running the Access Grid Venue Client\n" +
+                                      "as the root user. We strongly recommend running it only in a\n" +
+                                      "normal user account.",
+                                      "Running as root",
+                                      style = wxOK)
+                dlg.ShowModal()
+                dlg.Destroy()
 
     def GetPassphraseCallback(self, caption, message):
         return lambda rwflag, caption = caption, message = message, self = self: \
