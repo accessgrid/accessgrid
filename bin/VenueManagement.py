@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.139 2004-07-28 19:19:34 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.140 2004-07-28 19:58:46 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.139 2004-07-28 19:19:34 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.140 2004-07-28 19:58:46 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -1081,11 +1081,11 @@ class DetailPanel(wxPanel):
                                          size = wxSize(500, 50),
                                          name = 'encryptionBox')
         self.encryptionBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-
-        self.randomButton = wxRadioButton(self, self.ID_RANDOM,
+        self.intervalButton = wxCheckBox(self, self.ID_INTERVAL,
+                                         "Custom Range: ")
+        self.randomButton = wxCheckBox(self, self.ID_RANDOM,
                                           "Standard Range")
-        self.intervalButton = wxRadioButton(self, self.ID_INTERVAL,
-                                            "Custom Range: ")
+        
         self.ipAddress = wxStaticText(self, -1, "224.2.128.0/17")
         self.changeButton = wxButton(self, self.ID_CHANGE, "Change")
         self.encryptionButton = wxCheckBox(self, self.ID_ENCRYPT,
@@ -1099,8 +1099,8 @@ class DetailPanel(wxPanel):
 
     def __setEvents(self):
         EVT_BUTTON(self, self.ID_CHANGE, self.OpenIntervalDialog)
-        EVT_RADIOBUTTON(self.randomButton, self.ID_RANDOM, self.ClickedOnRandom)
-        EVT_RADIOBUTTON(self.intervalButton, self.ID_INTERVAL, self.ClickedOnInterval)
+        EVT_CHECKBOX(self.randomButton, self.ID_RANDOM, self.ClickedOnRandom)
+        EVT_CHECKBOX(self.intervalButton, self.ID_INTERVAL, self.ClickedOnInterval)
         EVT_CHECKBOX(self, self.ID_ENCRYPT, self.ClickedOnEncrypt)
                        
     def ClickedOnEncrypt(self, event):
@@ -1132,6 +1132,7 @@ class DetailPanel(wxPanel):
         try:
             log.debug("DetailPanel.ClickedOnRandom: Set multicast address to random")
             self.application.SetRandom()
+            self.intervalButton.SetValue(false)
         except Exception, e:
             self.ipAddress.Enable(true)
             self.changeButton.Enable(true)
@@ -1162,7 +1163,7 @@ class DetailPanel(wxPanel):
         try:
             log.debug("DetailPanel.ClickedOnInterval: Set multicast address to interval")
             self.application.SetInterval(self.ipString, maskInt)
-
+            self.randomButton.SetValue(false)
         except Exception, e:
             log.exception('DetailPanel.ClickedOnInterval: failed')
             self.ipAddress.Enable(false)
@@ -1363,8 +1364,8 @@ class VenueParamFrame(wxDialog):
         self.application = application
    
         self.generalPanel = GeneralPanel(self.noteBook, -1, application)
-        self.staticAddressingPanel = StaticAddressingPanel(self.noteBook, -1)
         self.encryptionPanel = EncryptionPanel(self.noteBook, -1, application)
+        self.staticAddressingPanel = StaticAddressingPanel(self.noteBook, -1)
         self.authorizationPanel = AuthorizationUIPanel(self.noteBook, -1, log)
         
         self.noteBook.AddPage(self.generalPanel, "General")
