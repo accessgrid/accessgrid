@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.25 2003-08-28 18:45:54 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.26 2003-09-11 13:32:19 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -294,7 +294,10 @@ class EventClient:
         except:
             self.running = 0
             self.connected = 0
-            self.sock.close()
+            try:
+                self.sock.close()
+            except IOBaseException:
+                pass
             log.exception("EventClient.Send Error: socket write failed.")
             raise EventClientWriteDataException
         
