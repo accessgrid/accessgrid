@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.57 2004-12-08 16:48:07 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.58 2005-01-06 22:52:45 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.57 2004-12-08 16:48:07 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.58 2005-01-06 22:52:45 turam Exp $"
 
 import os
 import socket
@@ -21,7 +21,6 @@ from AccessGrid import Config
 from AccessGrid import Log
 from AccessGrid.Platform import AGTK_USER, AGTK_LOCATION
 from AccessGrid.Version import GetVersion
-from AccessGrid.Types import AGVideoResource
 
 log = Log.GetLogger(Log.Toolkit)
 
@@ -206,7 +205,7 @@ class AGTkConfig(Config.AGTkConfig):
 
     def GetNodeConfigDir(self):
         if self.nodeConfigDir == None:
-            ucd = self.GetBaseDir()
+            ucd = self.GetConfigDir()
             self.nodeConfigDir = os.path.join(ucd, "nodeConfig")
 
         # Check dir and create it if needed.
@@ -765,65 +764,6 @@ class SystemConfig(Config.SystemConfig):
         #
         return def_routes[0][1]
         
-    def GetResources(self):
-        """ 
-        Return a list of the resources available on the system
-        """
-    
-        deviceList = list()
-        
-        try:
-            vfwscanexe = os.path.join(AGTkConfig.instance().GetBinDir(),
-                                      'vfwscan.exe')
-            vfwscanexe = win32api.GetShortPathName(vfwscanexe)
-            if os.path.exists(vfwscanexe):
-                try:
-                    log.info("Using vfwscan to get devices")
-                    log.debug("vfwscanexe = %s", vfwscanexe)
-                    f = os.popen(vfwscanexe,'r')
-                    filelines = f.readlines()
-                    f.close()
-
-                    log.debug("filelines = %s", filelines)
-
-                    deviceList = map( lambda d: d.strip(), filelines)
-                except:
-                    log.exception("vfw device scan failed")
-            
-            if not len(deviceList):
-                log.info("Retrieving devices from registry")
-                
-                # Get the name of the video key in the registry
-                key = "SYSTEM\\ControlSet001\\Control\\MediaResources\\msvideo"
-                videoKey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key)
-
-                # Get the number of subkeys (devices) in the key
-                (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(videoKey)
-
-                for i in range(nSubKeys):
-                    # Open the key
-                    sVal = _winreg.EnumKey(videoKey, 0)
-                    sKey = _winreg.OpenKey(videoKey, sVal)
-                    (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(sKey)
-
-                    # Find the device name among the key's values
-                    for i in range(0, nValues):
-                        (vName, vData, vType) = _winreg.EnumValue(sKey, i)
-                        if vName == "FriendlyName":
-                            deviceList.append(vData)
-                    
-            log.info("GetResources: %s", deviceList)
-
-        except Exception:
-            log.exception("Exception getting video devices")
-            raise
-    
-        resourceList = list()
-        for d in deviceList:
-            r = AGVideoResource('video',d,['external-in'])
-            resourceList.append(r)
-        return resourceList
-
     def PerformanceSnapshot(self):
         """
         This method grabs a snapshot of relevent system information to report
