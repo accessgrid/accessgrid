@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.7 2003-05-19 22:44:19 eolson Exp $
+# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.8 2003-05-20 19:32:58 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -13,6 +13,9 @@ import signal
 import string
 import os
 import time
+import logging
+
+log = logging.getLogger("AG.ProcessManagerUnix")
 
 class ProcessManagerUnix:
 
@@ -41,7 +44,7 @@ class ProcessManagerUnix:
             try:
                 self._terminate_process(pid)   
             except OSError, e:
-                print "couldn't terminate process: ", e
+                log.debug( "couldn't terminate process: %s", e )
 
         self.processes = []
 
@@ -50,7 +53,7 @@ class ProcessManagerUnix:
             self._terminate_process(pid)    
             self.processes.remove(pid)
         except OSError, e:
-            print "couldn't terminate process: ", e
+            log.debug ( "couldn't terminate process: %s", e )
     
     def _terminate_process(self, pid):
         os.kill(pid, signal.SIGINT)
@@ -67,7 +70,7 @@ class ProcessManagerUnix:
                 time.sleep(waitTime)
                 elapsedWaits += 1
         except OSError, e:
-                print "_terminate_process(",pid,"):", e
+                log.debug( "_terminate_process( %i ): %s", pid, e )
 
         if retpid == pid:
             if os.WIFEXITED(status):
@@ -82,7 +85,7 @@ class ProcessManagerUnix:
             try:
                 self._kill_process(pid)   
             except OSError, e:
-                print "couldn't kill process: ", e
+                log.debug ("couldn't kill process: %s", e)
 
         self.processes = []
 
@@ -100,14 +103,14 @@ class ProcessManagerUnix:
                time.sleep(waitTime)
                elapsedWaits += 1
        except OSError, e:
-           print "_kill_process, waitpid",pid,":", e
+           log.debug ( "_kill_process, waitpid %i : %s", pid, e )
        if retpid == pid:
            if os.WIFEXITED(status):
                rc = os.WEXITSTATUS(status)
            elif os.WIFSIGNALED(status):
                sig = os.WTERMSIG(status)
        else:
-           print "_kill_process, process",pid ,"not killed or waitpid() failed."
+           log.debug("_kill_process, process %i not killed or waitpid() failed.", pid)
 
 
 if __name__ == "__main__":
