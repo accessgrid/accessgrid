@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.9 2004-03-25 19:01:07 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.10 2004-03-29 20:16:56 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.9 2004-03-25 19:01:07 olson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.10 2004-03-29 20:16:56 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -736,7 +736,7 @@ class CertificateRepository:
                             cert.GetIssuerSerialHash())
         return path
 
-    def RemoveCertificate(self, cert):
+    def RemoveCertificate(self, cert, retainPrivateKey = 0):
         """
         Remove the specificed certificate from the repository.
         """
@@ -784,21 +784,23 @@ class CertificateRepository:
         # Remove any private keys.
         #
 
-        pkeyfile = os.path.join(self.dir,
-                                "privatekeys",
-                                "%s.pem" % (cert.GetModulusHash()))
+        if not retainPrivateKey:
 
-        if not os.path.isfile(pkeyfile):
-            log.debug("No private key dir found at %s", pkeyfile)
-        else:
-            try:
-                #
-                # Need to chmod it writable before we can remove.
-                #
-                os.chmod(pkeyfile, 0600)
-                os.remove(pkeyfile)
-            except:
-                log.exception("Error removing private key directory at %s", pkeyfile)
+            pkeyfile = os.path.join(self.dir,
+                                    "privatekeys",
+                                    "%s.pem" % (cert.GetModulusHash()))
+
+            if not os.path.isfile(pkeyfile):
+                log.debug("No private key dir found at %s", pkeyfile)
+            else:
+                try:
+                    #
+                    # Need to chmod it writable before we can remove.
+                    #
+                    os.chmod(pkeyfile, 0600)
+                    os.remove(pkeyfile)
+                except:
+                    log.exception("Error removing private key directory at %s", pkeyfile)
         
     #
     # Certificate Request support
