@@ -171,17 +171,17 @@ os.system("%s test_dist.py --html -o %s -t %s" % (sys.executable,
                                                   BuildTime))
 
 # Generate epydoc documentation
-if dest is not None:
-    if sys.platform == 'win32':
-        ep = os.path.join(os.path.dirname(sys.executable), "Scripts",
-                          "epydoc.py")
-    else:
-        ep = find_executable("epydoc")
+if sys.platform == 'win32':
+    ep = os.path.join(os.path.dirname(sys.executable), "Scripts",
+                      "epydoc.py")
+else:
+    ep = find_executable("epydoc")
 
-    cmd = "%s %s --html -o %s -n 'Access Grid Toolkit' -u %s AccessGrid" % \
-          (sys.executable, ep, "http://www.mcs.anl.gov/fl/research/accessgrid")
+cmd = "%s %s --html -o %s -n 'Access Grid Toolkit' -u %s AccessGrid" % \
+      (sys.executable, ep, os.path.join('doc','Developer'),
+       "http://www.mcs.anl.gov/fl/research/accessgrid")
 
-    os.system(cmd)
+os.system(cmd)
 
 # put the old python path back
 if oldpath is not None:
