@@ -10,6 +10,7 @@ from wxPython.iewin import *
 from AccessGrid.SharedAppClient import SharedAppClient
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.ClientProfile import ClientProfile
+from AccessGrid import icons
     
 class WebBrowser(wxPanel):
     """
@@ -269,8 +270,10 @@ class SharedBrowser( wxApp ):
             except:
                 self.log.exception("SharedBrowser:__init__: Failed to set participant status")
 
+        self.frame.SetIcon(icons.getAGIconIcon())
         self.frame.Show(1)
         self.SetTopWindow(self.frame)
+
 
     def IBrowsedCallback(self,data):
         '''
@@ -365,6 +368,7 @@ if __name__ == "__main__":
     if not appUrl:
         am.Usage()
     else:
+        wxInitAllImageHandlers()
         sb = SharedBrowser( appUrl, debugMode, logging)
         sb.MainLoop()
         

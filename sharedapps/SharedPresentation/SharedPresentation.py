@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.22 2004-01-29 16:50:02 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.23 2004-01-29 17:32:42 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -44,6 +44,7 @@ from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.UIUtilities import MessageDialog
+from AccessGrid import icons
 
 class ViewerSoftwareNotInstalled(Exception):
     pass
@@ -267,6 +268,8 @@ class SharedPresentationFrame(wxFrame):
      	menubar.Append(fileMenu, "&File")
         self.SetMenuBar(menubar)
 
+        self.SetIcon(icons.getAGIconIcon())
+      
         # - Create main panel
         self.panel = wxPanel(self, -1, size = wxSize(320, 260))
         
@@ -776,11 +779,11 @@ class SharedPresentation:
         try:
             self.viewer = defaultViewer()
             self.viewer.Start()
+           
         except ViewerSoftwareNotInstalled:
             print "The necessary viewer software is not installed; exiting"
             self.eventQueue.put([SharedPresEvent.LOCAL_QUIT, None])
-
-
+               
         # Loop, processing events from the event queue
         self.running = 1
         while self.running:
@@ -1531,6 +1534,8 @@ if __name__ == "__main__":
     venueDataUrl = None
     logName = "SharedPresentation"
     debug = 0
+
+    wxInitAllImageHandlers()
 
     # Here we parse command line options
     try:
