@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.172 2003-06-27 17:02:51 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.173 2003-06-27 19:16:25 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1245,7 +1245,7 @@ class VenueClientUI(wxApp):
         self.venueClient.profile = ClientProfile(self.profileFile)
         self.venueClient.SetProfile(self.venueClient.profile)
 
-        if(self.venuceClient.venueUri != None):
+        if(self.venueClient.venueUri != None):
             log.debug("Update client profile in venue")
 
             try:
