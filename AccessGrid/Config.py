@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.5 2004-04-07 03:10:54 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.6 2004-04-09 18:45:04 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.5 2004-04-07 03:10:54 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.6 2004-04-09 18:45:04 judson Exp $"
 
 import sys
 import struct
@@ -96,7 +96,19 @@ class GlobusConfig:
     def GetLocation(self):
         raise "This should not be called directly, but through a subclass."
     
+    def SetLocation(self):
+        raise "This should not be called directly, but through a subclass."
+    
+    def RemoveLocation(self):
+        raise "This should not be called directly, but through a subclass."
+    
     def GetCACertDir(self):
+        raise "This should not be called directly, but through a subclass."
+    
+    def SetCACertDir(self):
+        raise "This should not be called directly, but through a subclass."
+    
+    def RemoveCACertDir(self):
         raise "This should not be called directly, but through a subclass."
     
     def GetHostname(self):
@@ -118,14 +130,38 @@ class GlobusConfig:
             self.hostname = socket.getfqdn()
 
         return self.hostname
-    
+
+    def SetHostname(self):
+        raise "This should not be called directly, but through a subclass."
+
+    def RemoveHostname(self):
+        raise "This should not be called directly, but through a subclass."
+
     def GetProxyFileName(self):
+        raise "This should not be called directly, but through a subclass."
+    
+    def SetProxyFileName(self):
+        raise "This should not be called directly, but through a subclass."
+    
+    def RemoveProxyFileName(self):
         raise "This should not be called directly, but through a subclass."
     
     def GetCertFileName(self):
         raise "This should not be called directly, but through a subclass."
 
+    def SetCertFileName(self):
+        raise "This should not be called directly, but through a subclass."
+
+    def RemoveCertFileName(self):
+        raise "This should not be called directly, but through a subclass."
+
     def GetKeyFileName(self):
+        raise "This should not be called directly, but through a subclass."    
+
+    def SetKeyFileName(self):
+        raise "This should not be called directly, but through a subclass."    
+
+    def RemoveKeyFileName(self):
         raise "This should not be called directly, but through a subclass."    
 
 class UserConfig:
