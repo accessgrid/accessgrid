@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.54 2004-04-27 19:22:19 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.55 2004-04-29 13:22:45 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.54 2004-04-27 19:22:19 judson Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.55 2004-04-29 13:22:45 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -22,7 +22,7 @@ from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
 from AccessGrid.Types import AGServicePackage
-from AccessGrid.DataStore import GSIHTTPDownloadFile
+from AccessGrid.DataStore import GSIHTTPDownloadFile, HTTPDownloadFile
 from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.Descriptions import CreateAGServiceDescription, CreateResource
@@ -352,7 +352,12 @@ class AGServiceManager:
         filename = os.path.basename( servicePackageUrl )
         servicePackageFile = os.path.join(self.servicesDir, filename)
         isNewServicePackage = not os.path.exists(servicePackageFile)
-        GSIHTTPDownloadFile(servicePackageUrl, servicePackageFile, None, None)
+        if self.app.GetOption("insecure"):
+            HTTPDownloadFile(None, servicePackageUrl, servicePackageFile,
+                             None, None)
+        else:
+            GSIHTTPDownloadFile(servicePackageUrl, servicePackageFile,
+                                None, None)
 
         #
         # Extract the executable from the service package
