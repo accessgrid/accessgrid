@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.75 2004-08-03 14:41:43 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.76 2004-08-18 20:42:29 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.75 2004-08-03 14:41:43 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.76 2004-08-18 20:42:29 lefvert Exp $"
 
 # Standard imports
 import os
@@ -16,6 +16,7 @@ import sys
 import getopt
 import md5
 from optparse import OptionParser, Option
+import time
 
 # AGTk imports
 from AccessGrid import Log
@@ -27,6 +28,7 @@ from AccessGrid.Platform import IsWindows
 from AccessGrid.ServiceProfile import ServiceProfile
 from AccessGrid.Version import GetVersion
 from AccessGrid.Security import X509Subject
+from AccessGrid.NetUtilities import GetSNTPTime
 
 class AppBase:
     """
@@ -141,9 +143,49 @@ class AppBase:
            Log.mlh.setTarget(fh)
        Log.mlh.close()
        Log.RemoveLoggerLevels(Log.memLevels,Log.GetLoggers())
+
+       # Check if machine clock is synchronized.
+       self.__CheckForInvalidClock()
        
        return argvResult
 
+    def __CheckForInvalidClock(self):
+       """
+       Check to see if the local clock is out of synch, a common reason for a
+       failed authentication.
+       
+       This routine loggs a warningString.
+       """
+       
+       timeserver = "ntp-1.accessgrid.org"
+       timeout = 0.3
+       maxOffset = 10
+       
+       try:
+           serverTime = GetSNTPTime(timeserver, timeout)
+       except:
+           self.log.exception("Toolkit.__CheckForValidClock: Connection to sntp server at %s failed", timeserver)
+           serverTime = None
+           
+       if serverTime is not None:
+
+           diff = int(time.time() - serverTime)
+           absdiff = abs(diff)
+
+           if absdiff > maxOffset:
+               
+               if diff > 0:
+                   direction = "fast"
+               else:
+                   direction = "slow"
+                   
+               warningString = ("The machine clock is incorrect on\n" + \
+                                "your computer: it is %s seconds %s with respect\n" + \
+                                "to the time server at %s.") % \
+                                (absdiff, direction, timeserver)
+
+               self.log.warn("Toolkit.__CheckForValidClock: %s" %warningString)
+                 
     def ProcessArgs(self, args=None):
        """
        Process toolkit wide standard arguments. Then return the modified
