@@ -37,12 +37,12 @@ WIN = 'win32'
 LINUX = 'linux2'
 
 parser = OptionParser()
-parser.add_option("-a", "--agdir", dest="agsrcdir", metavar="SRCDIR",
+parser.add_option("-a", "--agdir", dest="agsrcdir", metavar="AGSRCDIR",
                   default="..",
                   help="Location of the AGTk Sources")
 parser.add_option("-s", "--srcdir", dest="srcdir", metavar="SRCDIR",
                   default="../..",
-                  help="Location of the AGTk Sources")
+                  help="Location of dependency sources (ag-media should reside here)")
 parser.add_option("-v", "--verbose", dest="verbose", action="store_true",
                   default=0, help="Run with verbose output.")
 
