@@ -1,0 +1,42 @@
+============================
+AG1 to AG2 Transitional Plan
+============================
+
+Overview
+
+This document describes the plan to transition the Access Grid infrastructure away from the AG1 software
+to the AG2 software. Since there is a large user community using the Access Grid software, this must be
+carefully done so as to not disable users from getting their work done.
+
+The transition plan to move AG1 users to AG2 is:
+	- To migrate the community to the latest reliable software
+	- Scheduled to coincide with university summer schedules
+	- To ease the support load on the AG Dev Team
+	- Sufficiently long to enable all AG1 Users to find appropriate time to transition
+	- Supported by more formal weekly test sessions.
+
+May 4, 2003: 
+	Alpha AGTk 2.2 Software Released.
+	AG 2 Institutional Venue Services begin.
+	  - Service Details: Minimal Support, No Bridging, 1 Venues per Institution, No Security/Authorization (yet)
+	Moratorium on the creation of all AG 1 Venues, and AG 1 Bridge registrations.
+
+May 18, 2003:
+	Beta AGTk 2.2 Software Released.
+
+June 1, 2003: 
+	Final AGTk 2.2 Software Released.
+
+June 9, 10, 11:
+	Access Grid Retreat, Ryerson University.
+
+August 2003: 
+	Alpha AGTk 2.3 Software Release (Date TBD)
+	Beta AGTk 2.3 Software Release (Date TBD)
+
+August/September, 2003:
+	Final AGTk 2.3 Software Release (Date TBD)
+
+September 6th, 2003: AG 1 Institutional Venues (and their AG1 Bridges) are turned off.
+
+December 1, 2003: AG 1 Core Venues and remaining AG 1 Bridging are turned off.

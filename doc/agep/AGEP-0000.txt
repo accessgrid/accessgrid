@@ -1,7 +1,7 @@
 pep: 0
 Title: Index of Access Grid Enhancement Proposals (AGEPs)
-Version: $Revision: 1.3 $
-Last-Modified: $Date: 2004-03-29 16:41:59 $
+Version: $Revision: 1.4 $
+Last-Modified: $Date: 2004-05-06 05:42:33 $
 Author: Ivan R. Judson <judson@mcs.anl.gov>
 Status: Active
 Type: Informational
@@ -44,7 +44,7 @@ Index by Category
  I   103  Access Grid 2.1.3 Release Schedule           IRJ
  I   109  Firewall Configuration for AGTk 2.X          IRJ      
  I   113  Access Grid Code Testing Strategy	       EO
- I   117  Transition from AG1 to AG2		       IRJ
+ I   124  Transition from AG1 to AG2		       IRJ
  I   119  Access Grid Distribution Plan		       EO
 
  Accepted AGEPs (accepted; may not be implemented yet)
