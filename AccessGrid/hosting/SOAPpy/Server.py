@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.4 2004-02-27 22:38:21 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.5 2004-03-01 17:24:32 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Server.py,v 1.4 2004-02-27 22:38:21 judson Exp $"
+__revision__ = "$Id: Server.py,v 1.5 2004-03-01 17:24:32 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from SOAPpy.GSIServer import ThreadingGSISOAPServer, GSIConfig
@@ -132,7 +132,6 @@ class SecureServer(Server):
         # This is where you set things for debugging
         self.config = GSIConfig()
         self.config.debug = debug
-        self.config.simplify_objects = 1
         if debug:
             self.config.dumpFaultInfo = 1
 
