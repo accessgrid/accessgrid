@@ -5,7 +5,7 @@
 # Author:      Robert Olson, Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.14 2003-08-12 15:44:48 turam Exp $
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.15 2003-09-12 04:03:55 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -70,6 +70,7 @@ class MulticastAddressAllocator:
     # These don't mean what they did before! IRJ-2002-2-22
     def SetAddressMask(self, addressMaskSize = 24):
         self.addressMaskSize = addressMaskSize
+        self.addressMask = socket.htonl(~((1<<(32-self.addressMaskSize))-1))
         return self.addressMaskSize
 
     def GetAddressMask( self ):
@@ -127,7 +128,7 @@ class MulticastAddressAllocator:
     def RecycleAddress(self, address):
         self.allocatedAddresses.remove(address)
         return address
-    
+
 if __name__ == "__main__":
     iter = 10
     multicastAddressAllocator = MulticastAddressAllocator()
@@ -143,3 +144,9 @@ if __name__ == "__main__":
     print "%d random ports:" % (iter)
     for i in range(0, iter):
         print multicastAddressAllocator.AllocatePort()
+
+    mask = 28
+    multicastAddressAllocator.SetAddressMask(mask)
+    print "%d random addresses with mask %d:" % (iter,mask)
+    for i in range(0, iter):
+        print multicastAddressAllocator.AllocateAddress()
