@@ -159,7 +159,9 @@ os.chdir(s)
 for cmd in [
     "BuildVic.cmd",
     "BuildRat.cmd",
-    "BuildGlobus.cmd",
+    # I have decided we'll assume these are built *outside* of our build
+    # process, so we don't build globus in either packaging anymore.
+    #"BuildGlobus.cmd",
     "BuildPythonModules.cmd"
     ]:
     cmd = "%s %s %s %s %s" % (cmd, SourceDir, BuildDir, DestDir, options.pyver)
