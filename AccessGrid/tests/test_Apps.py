@@ -1,5 +1,5 @@
 
-import sys
+import sys, os
 from AccessGrid.hosting.pyGlobus import Client
 
 
