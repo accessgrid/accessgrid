@@ -22,6 +22,11 @@ class CertificateBrowserBase(wxPanel):
 
         self.__build()
 
+        certMgr.GetCertificateRepository().RegisterObserver(self.OnRepoUpdate)
+
+        self.Load()
+
+    def OnRepoUpdate(self, repo):
         self.Load()
 
     def Load(self):

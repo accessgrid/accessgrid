@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.24 2004-04-23 17:07:01 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.25 2004-05-17 21:15:45 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.24 2004-04-23 17:07:01 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.25 2004-05-17 21:15:45 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -439,18 +439,21 @@ class CertificateManager(object):
             self.SetDefaultIdentity(impCert)
             self.GetUserInterface().InitGlobusEnvironment()
         
+        repo.NotifyObservers()
         return impCert
         
     def ImportIdentityCertificatePEM(self, repo, userCert, userKey, passphraseCB):
         impCert = repo.ImportCertificatePEM(userCert, userKey, passphraseCB)
         
         impCert.SetMetadata("AG.CertificateManager.certType", "identity")
+        repo.NotifyObservers()
         return impCert
         
     def ImportIdentityCertificateX509(self, repo, certObj, pkeyObj, passphraseCB):
         impCert = repo.ImportCertificateX509(certObj, pkeyObj, passphraseCB)
         
         impCert.SetMetadata("AG.CertificateManager.certType", "identity")
+        repo.NotifyObservers()
         return impCert
         
     def ImportCACertificatePEM(self, repo, cert):
@@ -458,6 +461,7 @@ class CertificateManager(object):
         
         impCert.SetMetadata("AG.CertificateManager.certType", "trustedCA")
  
+        repo.NotifyObservers()
         return impCert
         
     def CheckValidity(self, cert):

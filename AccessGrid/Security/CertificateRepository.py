@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.16 2004-05-17 17:29:55 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.17 2004-05-17 21:15:45 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.16 2004-05-17 17:29:55 olson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.17 2004-05-17 21:15:45 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -41,6 +41,8 @@ import time
 import string
 import md5
 import struct
+import weakref
+
 from AccessGrid.Platform import IsOSX
 
 if IsOSX():
@@ -383,6 +385,13 @@ class CertificateRepository:
                     
                     raise Exception("Cannot open repository, and cannot initialize new repository")
 
+        #
+        # We maintain a list of observers that may be interested in
+        # updates to the state of the repo (certificates deleted or imported).
+        #
+
+        self.observers = []
+
     def RecoverFromDirectory(self):
         """
         Attempt to recover a repository index from the flat-files
@@ -412,9 +421,19 @@ class CertificateRepository:
 
         if os.path.isfile(self.dbPath):
             #
-            # If there's one there, move it out of the way.
+            # If there's one there, move it out of the way. (but only if we
+            # (haven't done it yet).
             #
-            os.rename(self.dbPath, self.dbPath + ".before_recovery")
+
+            backup = self.dbPath + ".before_recovery"
+
+            if not os.path.isfile(backup):
+                try:
+                    os.rename(self.dbPath, backup)
+
+                except:
+                    log.exception("rename from %s to %s failed", self.dbPath, backup)
+                    return 0
         try:
             self.db = bsddb.hashopen(self.dbPath, 'n')
             self.db.sync()
@@ -572,6 +591,62 @@ class CertificateRepository:
 
             cert.SetMetadata("AG.CertificateManager.certType", "trustedCA")
 
+
+    def RegisterObserver(self, observer):
+        """
+        Register an observer with the cert repo.
+
+        @param observer: a callable object which will be invoked
+        with a single argument, a handle to this repo.
+
+        """
+
+        #
+        # Use a weakref so we don't unnecessarily hold
+        # a reference to the observer.
+        wr = weakref.ref(observer)
+
+        log.debug("Register observer %s", observer)
+        if wr not in self.observers:
+            log.debug("Adding %s", wr)
+            self.observers.append(wr)
+
+    def UnregisterObserver(self, observer):
+        """
+        Unregister an observer from the cert repo.
+
+        @param observer: The observer to be removed.
+
+        """
+
+        wr = weakref.ref(observer)
+
+        if wr in self.observers:
+            self.observers.remove(wr)
+
+    def NotifyObservers(self):
+        """
+        Send a notification to the observers.
+        """
+        
+        removeList = []
+        for obs in self.observers:
+            obj = obs()
+            if obj is None:
+                #
+                # Referent is gone, remove from list.
+                #
+                removeList.append(obs)
+            else:
+                try:
+                    log.debug("NOTIFYing %s", obj)
+                    obj(self)
+                except:
+                    log.exception("Exception raised when calling observer %s", obj)
+                    removeList.append(obs)
+
+        for obs in removeList:
+            self.observers.remove(obs)
 
     def LockMetadata(self):
         """
@@ -876,7 +951,7 @@ class CertificateRepository:
 
         certPath = os.path.join(path, "cert.pem")
         cert.WriteCertificate(certPath)
-        
+
     def _ImportCertificateRequest(self, req):
         """
         Import the given certificate request into the repository.
@@ -1031,6 +1106,7 @@ class CertificateRepository:
                 except:
                     log.exception("Error removing private key directory at %s", pkeyfile)
         
+        self.NotifyObservers()
     #
     # Certificate Request support
     #
