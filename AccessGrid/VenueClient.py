@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.36 2003-03-21 17:13:12 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.37 2003-03-24 20:26:12 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,6 +23,7 @@ from AccessGrid.EventClient import EventClient
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Types import *
 from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
+from AccessGrid.Events import DisconnectEvent
 from AccessGrid.scheduler import Scheduler
 
 class EnterVenueException(Exception):
@@ -149,11 +150,12 @@ class VenueClient( ServiceBase):
                 applications = {}
             
             self.venueState = VenueState( venueState.uniqueId,
+                                          venueState.name,
                                           venueState.description,
+                                          venueState.uri,
                                           venueState.connections, 
                                           venueState.users, venueState.nodes, 
                                           venueState.data,
-                                          venueState.services, 
                                           venueState.eventLocation,
                                           venueState.textLocation,
                                           applications)
@@ -178,8 +180,8 @@ class VenueClient( ServiceBase):
                Event.SET_CONNECTIONS: self.SetConnectionsEvent,
             }
 
-            self.eventClient = EventClient(self.venueState.eventLocation)
-
+            self.eventClient = EventClient(self.venueState.eventLocation,
+                                           self.venueState.uniqueId)
             for e in coherenceCallbacks.keys():
                 self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
 
@@ -219,7 +221,9 @@ class VenueClient( ServiceBase):
         ExitVenue removes this client from the specified venue.
         """
         self.heartbeatTask.stop()
+        self.eventClient.Send(DisconnectEvent(self.venueState.uniqueId))
         self.eventClient.Stop()
+
         #self.followLeadClient.Stop()
         self.venueProxy.Exit( self.privateId )
         self.__InitVenueData__()

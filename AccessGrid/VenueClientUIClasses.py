@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.95 2003-03-21 22:59:49 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.96 2003-03-24 20:26:12 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -24,29 +24,31 @@ from AccessGrid import Utilities
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid.ClientProfile import *
 from AccessGrid.Descriptions import DataDescription
-from AccessGrid.Descriptions import ServiceDescription
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import MyLog 
 #from AccessGrid.TextClientUI import TextClientPanel
 
 # for TextClientPanel
-from AccessGrid.TextClientUI import SimpleTextProcessor
+from AccessGrid.TextClient import SimpleTextProcessor
 from pyGlobus.io import GSITCPSocket
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
-from AccessGrid.Events import ConnectEvent, TextEvent
+from AccessGrid.Events import ConnectEvent, TextEvent, DisconnectEvent
 
 class VenueClientFrame(wxFrame):
     
     '''VenueClientFrame. 
 
-    The VenueClientFrame is the main frame of the application, creating statusbar, dock,
-    venueListPanel, and contentListPanel.  The contentListPanel represents current venue and
-    has information about all participants in the venue, it also shows what data and services 
-    are available in the venue, as well as nodes connected to the venue.  It represents a room
-    with its contents visible for the user.  The venueListPanel contains a list of connected 
-    venues/exits to current venue.  By clicking on a door icon the user travels to another 
-    venue/room, which contents will be shown in the contentListPanel.
+    The VenueClientFrame is the main frame of the application,
+    creating statusbar, dock, venueListPanel, and contentListPanel.
+    The contentListPanel represents current venue and has information
+    about all participants in the venue, it also shows what data and
+    services are available in the venue, as well as nodes connected to
+    the venue.  It represents a room with its contents visible for the
+    user.  The venueListPanel contains a list of connected
+    venues/exits to current venue.  By clicking on a door icon the
+    user travels to another venue/room, which contents will be shown
+    in the contentListPanel.
     '''
     ID_WINDOW_TOP = NewId()
     ID_WINDOW_LEFT  = NewId()
@@ -823,7 +825,7 @@ class VenueList(wxScrolledWindow):
                
     def GoToNewVenue(self, event):
         id = event.GetId()
-                       
+
         if(self.exitsDict.has_key(id)):
             description = self.exitsDict[id]
             wxBeginBusyCursor()
@@ -1133,6 +1135,13 @@ class ContentListPanel(wxPanel):
             if(id != None):
                 self.tree.Delete(id)
 
+    def AddApplication(self, profile):
+        application = self.tree.AppendItem(self.applications, profile.name,
+                                           self.serviceId, self.serviceId)
+        self.tree.SetItemData(application, wxTreeItemData(profile)) 
+        self.serviceDict[profile.name] = service
+        self.tree.Expand(self.applications)
+      
     def AddNode(self, profile):
         node = self.tree.AppendItem(self.nodes, profile.name, \
                                        self.nodeId, self.nodeId)
@@ -1150,15 +1159,21 @@ class ContentListPanel(wxPanel):
         
         self.root = self.tree.AddRoot("The Lobby", index, index)
                     
-	self.participants = self.tree.AppendItem(self.root, "Participants", index, index)
+	self.participants = self.tree.AppendItem(self.root, "Participants",
+                                                 index, index)
        
 	self.tree.SetItemBold(self.participants)
              
 	self.data = self.tree.AppendItem(self.root, "Data", index, index) 
 	self.tree.SetItemBold(self.data)
              
-	self.services = self.tree.AppendItem(self.root, "Services", index, index)
+	self.services = self.tree.AppendItem(self.root, "Services", index,
+                                             index)
 	self.tree.SetItemBold(self.services)
+             
+	self.applications = self.tree.AppendItem(self.root, "Applications",
+                                             index, index)
+	self.tree.SetItemBold(self.applications)
              
 	self.nodes = self.tree.AppendItem(self.root, "Nodes", index, index)
 	self.tree.SetItemBold(self.nodes)
@@ -1297,8 +1312,10 @@ class TextClientPanel(wxPanel):
 
     def SetLocation(self, location, venueId):
         if self.Processor != None:
+            self.Processor.Input(DisconnectEvent(self.venueId))
             self.Processor.Stop()
-
+            self.socket.close()
+            
         self.host = location[0]
         self.port = location[1]
         self.venueId = venueId
@@ -1310,7 +1327,7 @@ class TextClientPanel(wxPanel):
                    %(self.host,self.port, self.venueId, str(self.attr), str(self.socket)))
         
         self.Processor = SimpleTextProcessor(self.socket, self.venueId,
-                                             self.TextOutput)
+                                             self.TextOutput.AppendText)
         
         self.Processor.Input(ConnectEvent(self.venueId))
         self.TextOutput.Clear()
@@ -1335,8 +1352,10 @@ class TextClientPanel(wxPanel):
     def LocalInput(self, event):
         """ User input """
         if(self.venueId != None):
-            wxLogDebug("VenueClientUIClasses.py: User writes: %s" %self.TextInput.GetValue())
-            textEvent = TextEvent(self.venueId, None, 0, self.TextInput.GetValue())
+            wxLogDebug("VenueClientUIClasses.py: User writes: %s"
+                       % self.TextInput.GetValue())
+            textEvent = TextEvent(self.venueId, None, 0,
+                                  self.TextInput.GetValue())
             try:
                 self.Processor.Input(textEvent)
                 self.TextInput.Clear()

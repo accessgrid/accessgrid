@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.2 2003-03-19 22:54:07 lefvert Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.3 2003-03-24 20:26:12 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,40 +23,29 @@ from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
-from AccessGrid.Events import ConnectEvent, TextEvent
  
-from wxPython.wx import *
-
 class SimpleTextProcessor:
-    def __init__(self, socket, venueId, textOut):
+    def __init__(self, socket, venueId, callback):
         """ """
         self.socket = socket
         self.venueId = venueId
-        self.textOut = textOut
+        self.textOutCallback = callback
         self.wfile = self.socket.makefile('wb', 0)
         self.rfile = self.socket.makefile('rb', -1)
 
-        self.outputThread = Thread(target = self.ProcessNetwork)
-        self.outputThread.start()
-
-        self.localEcho = 0
-        self.__setLogger()
-      
-    def __setLogger(self):
-        logger = logging.getLogger("AG.TextClient")
-        logger.setLevel(logging.DEBUG)
         logname = "TextClient.log"
         hdlr = logging.handlers.RotatingFileHandler(logname, "a", 10000000, 0)
         fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
         hdlr.setFormatter(fmt)
-        logger.addHandler(hdlr)
+        
         self.log = logging.getLogger("AG.TextClient")
+        self.log.addHandler(hdlr)
+        self.log.setLevel(logging.DEBUG)
         self.log.info("--------- START TextClient")
 
-    def LocalEcho(self):
-        self.log.debug("Local echo")
-        self.localEcho =~ self.localEcho
-        
+        self.outputThread = Thread(target = self.ProcessNetwork)
+        self.outputThread.start()
+
     def Stop(self):
         self.log.debug("Stop")
         self.running = 0
@@ -65,19 +54,14 @@ class SimpleTextProcessor:
     def Input(self, event):
         """ """
         self.log.debug("EVENT --- Input")
-        if self.localEcho:
-            self.log.debug("Raw output:%s"%event.data.data)
-            self._RawOutput(event.data.data + '\n')
-
+        self.log.debug("%s", event)
+        
         # the exception should be caught in UI not here.
         try: 
-            self.log.debug("Before dump event")
             pdata = pickle.dumps(event)
             lenStr = "%s\n" % len(pdata)
-            self.log.debug("Before write")
             self.wfile.write(lenStr)
             self.wfile.write(pdata)
-            self.log.debug("pdata:%s" %pdata)
         except:
             self.log.debug("in except")
            
@@ -85,7 +69,6 @@ class SimpleTextProcessor:
         """ """
         data = text.data
 
-        #        print "TS: %s GDI: %s" % (text.sender, GetDefaultIdentityDN())
         if text.sender == GetDefaultIdentityDN():
             string = "You say, \"%s\"\n" % (data)
         elif text.sender != None:
@@ -99,22 +82,15 @@ class SimpleTextProcessor:
         else:
             string = "Someone says, \"%s\"\n" % (data)
 
-        self._RawOutput(string)
+        self.textOutCallback(string)
 
-    def _RawOutput(self, string):
-        try:
-            self.log.debug("Raw output:%s" %string)
-            wxCallAfter(self.textOut.AppendText, string)
-        except:
-            self.log.debug("except in _RawOutput - stop text client")
-            self.Stop()
-        
     def ProcessNetwork(self):
         """ """
         self.log.debug("Process network")
         self.running = 1
         while self.running:
             str = self.rfile.readline()
+            self.log.debug("READ /%s/ from network.", str)
             size = int(str)
             pdata = self.rfile.read(size, size)
             event = pickle.loads(pdata)

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.9 2003-03-19 16:08:16 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.10 2003-03-24 20:26:12 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,9 +24,9 @@ from pyGlobus.io import GSITCPSocketServer
 class ThreadingGSITCPSocketServer(ThreadingMixIn, GSITCPSocketServer): pass
 
 from AccessGrid.Utilities import formatExceptionInfo
-from AccessGrid.Events import ConnectEvent
+from AccessGrid.Events import ConnectEvent, DisconnectEvent
 
-log = logging.getLogger("AG.EventService")
+log = logging.getLogger("AG.VenueServer")
 
 class ConnectionHandler(StreamRequestHandler):
     """
@@ -38,40 +38,58 @@ class ConnectionHandler(StreamRequestHandler):
         self.running = 0
          
     def handle(self):
+        log.debug("In request Handler!")
+        
         # loop getting data and handing it to the server
         self.running = 1
         while(self.running == 1):
             try:
                 # Get the size of the pickled event data
                 size = int(self.rfile.readline())
+
                 # Get the pickled event data
                 pdata = self.rfile.read(size, size)
+                
                 # Unpickle the event data
                 event = pickle.loads(pdata)
+                
                 # Pass this event to the callback registered for this
                 # event.eventType
                 log.debug("Received event %s %s", event.eventType, event.venue)
+
                 if event.eventType == ConnectEvent.CONNECT:
-                    log.info("Adding connection to venue %s", event.venue)
+                    log.debug("EventService: Adding connection to venue %s",
+                              event.venue)
                     self.server.connections[event.venue].append(self)
                     continue
                 
+                # Disconnect Event
+                if event.eventType == DisconnectEvent.DISCONNECT:
+                    log.debug("EventService: Removing client connection to %s",
+                              event.venue)
+                    self.server.connections[event.venue].remove(self)
+                    continue
+                
+                # Pass this event to the callback registered for this
+                # event.eventType
                 if self.server.callbacks.has_key((event.venue,
                                                     event.eventType)):
                     cb = self.server.callbacks[(event.venue, event.eventType)]
-                    log.debug("invoke callback %s", cb)
-                    cb(event.data)
+                    if cb != None:
+                        log.debug("invoke callback %s", str(cb))
+                        cb(event.data)
                 elif self.server.callbacks.has_key((event.venue,)):
                     #
                     # Default handler for this channel.
                     cb = self.server.callbacks[(event.venue,)]
-                    log.debug("invoke channel callback %s", cb)
-                    cb(event.eventType, event.data)
+                    if cb != None:
+                        log.debug("invoke channel callback %s", cb)
+                        cb(event.eventType, event.data)
                 else:
-                    log.info("Got event, but don't have a callback for %s, %s events.",
-                              event.venue, event.eventType)
+                    log.info("EventService: No callback for %s, %s events.",
+                             event.venue, event.eventType)
             except:
-#                print "ConnectionHandler.handle Client disconnected!"
+                log.debug("ConnectionHandler.handle Client disconnected!")
                 self.running = 0
                 # Find the connection and remove it
                 for v in self.server.connections.keys():
@@ -93,6 +111,18 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         ThreadingGSITCPSocketServer.__init__(self, server_address, 
                                                 RequestHandlerClass)
 
+
+#     def ConnectCallback(self, cv, handle, result):
+#         print "In connect callback"
+#         return
+
+#     def WriteCallback(self, cv, handle, result, buf, length):
+#         print "In write callback"
+#         return
+
+#     def ReadCallBack(self, cv, handle, result, buf, length):
+#         return
+
     def run(self):
         """
         run is defined to override the Thread.run method so Thread.start works.
@@ -113,11 +143,11 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         self.running = 0
         
     def DefaultCallback(self, event):
-        log.info("Got DefaultCallback for %s event!", event.eventType)
+        log.info("EventService: Got callback for %s event!", event.eventType)
         
-    def RegisterCallback(self, venueId, eventType, callback):
+    def RegisterCallback(self, channel, eventType, callback):
         # Callbacks just take the event data as the argument
-        self.callbacks[(venueId, eventType)] = callback
+        self.callbacks[(channel, eventType)] = callback
         
     def RegisterChannelCallback(self, channel, callback):
         """
@@ -126,7 +156,7 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         # Callbacks just take the event data as the argument
         self.callbacks[(channel,)] = callback
         
-    def RegisterObject(self, venueId, object):
+    def RegisterObject(self, channel, object):
         """
         RegisterObject is short hand for registering multiple callbacks on the
         same object. The object being registered has to define a table named
@@ -134,28 +164,26 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         Then these are automatically registered.
         """
         for c in object.callbacks.keys():
-            self.RegisterCallback(c, venueId, object.callbacks[c])
+            self.RegisterCallback(c, channel, object.callbacks[c])
             
-    def Distribute(self, venueId, data):
+    def Distribute(self, channel, data):
         """
         Distribute sends the data to all connections.
         """
-        log.debug("Sending Event %s", data.eventType)
+        log.debug("EventService: Sending Event %s", data.eventType)
+
         # This should be more generic
         pdata = pickle.dumps(data)
         lenStr = "%s\n" % len(pdata)
-        for c in self.connections[venueId]:
-            try:
-                log.debug("write length '%s'", lenStr)
-                c.wfile.write(lenStr)
-                log.debug("write data")
-                c.wfile.write(pdata)           
-            except:
-                log.exception("EventService.Distribute Client %s disconnected",
-                          venueId)
-                # This is a real error because clients should send
-                # a DisconnectEvent
-#                self.connections[venueId].remove(c)
+        if self.connections.has_key(channel):
+            for c in self.connections[channel]:
+                try:
+                    log.debug("write length '%s'", lenStr)
+                    c.wfile.write(lenStr)
+                    log.debug("write data")
+                    c.wfile.write(pdata)           
+                except:
+                    log.exception("EventService.Distribute Client disconnected!")
             
     def GetLocation(self):
         """
@@ -171,8 +199,13 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
 
 if __name__ == "__main__":
   import string
+
+  log.addHandler(logging.StreamHandler())
+  log.setLevel(logging.DEBUG)
+    
   host = string.lower(socket.getfqdn())
   port = 6500
   print "Creating new EventService at %s %d." % (host, port)
-  eventChannel = EventService((host, port))
-  eventChannel.start()
+  eventService = EventService((host, port))
+  eventService.AddChannel('Test')
+  eventService.start()

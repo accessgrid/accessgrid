@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.78 2003-03-21 17:59:26 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.79 2003-03-24 20:26:13 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -192,24 +192,6 @@ class VenueClientUI(wxApp, VenueClient):
         wxCallAfter(wxLogDebug, "EVENT - Remove data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.RemoveData, data)
         
-    def AddServiceEvent(self, data):
-        """
-        Note: Overloaded from VenueClient
-        This method is called every time a service is added to the venue.
-        Appropriate gui updates are made in client.
-        """
-        wxCallAfter(wxLogDebug, "EVENT - Add service: %s" %(data.name))
-        wxCallAfter(self.frame.contentListPanel.AddService,data)
-      
-    def RemoveServiceEvent(self, data):
-        """
-        Note: Overloaded from VenueClient
-        This method is called every time a service is removed from the venue.
-        Appropriate gui updates are made in client.
-        """
-        wxCallAfter(wxLogDebug, "EVENT - Remove service: %s" %(data.name))
-        wxCallAfter(self.frame.contentListPanel.RemoveService, data)
-      
     def AddConnectionEvent(self, data):
         """
         Note: Overloaded from VenueClient
@@ -257,10 +239,10 @@ class VenueClientUI(wxApp, VenueClient):
         VenueClient.EnterVenue( self, URL )
        
         venueState = self.venueState
-        wxCallAfter(self.frame.SetLabel, venueState.description.name)
+        wxCallAfter(self.frame.SetLabel, venueState.name)
         #name = self.profile.name
-        #title = self.venueState.description.name
-        #description = self.venueState.description.description
+        #title = self.venueState.name
+        #description = self.venueState.description
         # welcomeDialog = WelcomeDialog(NULL, -1, 'Enter Venue', name,
         #                               title, description)
 
@@ -288,13 +270,6 @@ class VenueClientUI(wxApp, VenueClient):
         for node in nodes:
             wxCallAfter(self.frame.contentListPanel.AddNode, node)
             wxCallAfter(wxLogDebug, "   %s" %(node.name))
-
-        # Load services
-        wxCallAfter(wxLogDebug, "Add services")
-        services = venueState.services.values()
-        for service in services:
-            wxCallAfter(self.frame.contentListPanel.AddService, service)
-            wxCallAfter(wxLogDebug, "   %s" %(service.name))
 
         # Load exits
         wxCallAfter(wxLogDebug, "Add exits")
@@ -356,11 +331,12 @@ class VenueClientUI(wxApp, VenueClient):
       
     def GoToNewVenue(self, uri, back = false):
         """
-        GoToNewVenue(url, back) transports the user to a new venue with same url as
-        the input parameter.  If the url is a server address, we will instead enter
-        the default venue on the server.  If the url is invalid, the user re-enters
-        the venue he or she just left. 
-         """
+        GoToNewVenue(url, back) transports the user to a new venue
+        with same url as the input parameter.  If the url is a server
+        address, we will instead enter the default venue on the
+        server.  If the url is invalid, the user re-enters the venue
+        he or she just left.
+        """
         wxLogDebug("Go to new venue")
         self.oldUri = None
         
@@ -405,8 +381,8 @@ class VenueClientUI(wxApp, VenueClient):
                 wxLogError("Error while trying to enter venue")
                 if self.oldUri != None:
                     wxLogDebug("Go back to old venue")
-                    self.EnterVenue(self.oldUri) # go back to venue where we came from
-                    
+                    # go back to venue where we came from
+                    self.EnterVenue(oldUri) 
         else:
             wxLogDebug("Handler is not valid")
             if not HaveValidProxy():

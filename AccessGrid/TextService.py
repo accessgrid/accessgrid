@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextService.py,v 1.11 2003-02-28 16:28:18 judson Exp $
+# RCS-ID:      $Id: TextService.py,v 1.12 2003-03-24 20:26:12 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,6 +15,7 @@ import socket
 import sys
 import pickle
 from threading import Thread
+import logging
 
 from SocketServer import ThreadingMixIn, StreamRequestHandler
 from pyGlobus.io import GSITCPSocketServer, GSIRequestHandler
@@ -24,8 +25,11 @@ class ThreadingGSITCPSocketServer(ThreadingMixIn, GSITCPSocketServer): pass
 
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import HeartbeatEvent, ConnectEvent, TextEvent
+from AccessGrid.Events import DisconnectEvent
 from AccessGrid.Events import TextPayload
 from AccessGrid.hosting.AccessControl import CreateSubjectFromGSIContext
+
+log = logging.getLogger("AG.VenueServer")
 
 class ConnectionHandler(GSIRequestHandler):
     """
@@ -53,18 +57,24 @@ class ConnectionHandler(GSIRequestHandler):
                 event = pickle.loads(pdata)
 
                 if event.eventType == ConnectEvent.CONNECT:
+                    # Connection Event
                     self.server.connections[event.venue].append(self)
                     continue
+                elif event.eventType == DisconnectEvent.DISCONNECT:
+                    # Disconnection Event
+                    self.server.connections[event.venue].remove(self)
+                    continue
+                else:
+                    # Tag the event with the sender, which is obtained
+                    # from the security layer to avoid spoofing
+                    ctx = self.connection.get_security_context()
+                    payload = event.data
+                    payload.sender = CreateSubjectFromGSIContext(ctx).GetName()
 
-                
-                ctx = self.connection.get_security_context()
-                payload = event.data
-                payload.sender = CreateSubjectFromGSIContext(ctx).GetName()
-
-                # For now we send all messages to everyone
-                self.server.Distribute(event)
+                    # For now we send all messages to everyone
+                    self.server.Distribute(event)
             except:
-#                print "ConnectionHandler.handle: Client disconnected!"
+                log.exception("ConnectionHandler.handle: Client disconnected!")
                 self.running = 0
                 # Find the connection and remove it
                 for v in self.server.connections.keys():
@@ -112,7 +122,7 @@ class TextService(ThreadingGSITCPSocketServer, Thread):
         """
         Send the data to all the connections in this server.
         """
-#        print "Sending Event (%s) %s" % (data.venue, data.data.recipient)
+        log.debug("Sending Event (%s) %s", data.venue, data.data.recipient)
         pdata = pickle.dumps(data)
         lenStr = "%s\n" % len(pdata)
         for c in self.connections[data.venue]:
@@ -120,8 +130,7 @@ class TextService(ThreadingGSITCPSocketServer, Thread):
                 c.wfile.write(lenStr)
                 c.wfile.write(pdata)           
             except:
-#                print "EventService.Distribute: Client disconnected!"
-                self.connections[data.venue].remove(c)
+                log.exception("EventService.Distribute: Client disconnected!")
         
     def AddChannel(self, channelId):
         self.connections[channelId] = []
@@ -133,6 +142,6 @@ if __name__ == "__main__":
   import string
   host = string.lower(socket.getfqdn())
   port = 6600
-#  print "Creating new TextService at %s %d." % (host, port)
+  print "Creating new TextService at %s %d." % (host, port)
   textChannel = TextService((host, port))
   textChannel.start()

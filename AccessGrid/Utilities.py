@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.20 2003-03-21 23:29:44 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.21 2003-03-24 20:26:12 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -51,6 +51,7 @@ def SaveConfig(fileName, config):
     cp.write(file(fileName, 'w+'))
 
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
+
 def HaveValidProxy():
     """
     This method determines whether a valid proxy exists

@@ -1,5 +1,7 @@
 [_ISTool]
-EnableISX=false
+EnableISX=true
+LogFile=C:\Documents and Settings\judson\Desktop\installer.log
+LogFileAppend=false
 
 ; This section sets the standard variables needed for the installer
 
@@ -16,14 +18,15 @@ AppUpdatesURL=http://www.mcs.anl.gov/fl/research/accessgrid
 AppVersion=2.0b2
 AppID=Access Grid Toolkit
 ; What to build the installer from
-SourceDir=C:\AccessGridBuild
+SourceDir=C:\xfer\AccessGrid
 ; Where to put the built installer
-OutputDir=C:\AccessGridBuild\AccessGrid-Build
+OutputDir=C:\xfer
 ; Name with version information
 OutputBaseFilename=agtk-2.0b2
 Compression=zip/9
 MinVersion=0,5.00.2195
-LicenseFile=AccessGrid\COPYING.txt
+LicenseFile=COPYING.txt
+AdminPrivilegesRequired=true
 ChangesAssociations=true
 DisableDirPage=false
 DefaultGroupName=Access Grid Toolkit
@@ -47,8 +50,10 @@ WindowStartMaximized=false
 WizardImageFile=compiler:wizmodernimage.bmp
 WizardSmallImageFile=compiler:wizmodernsmallimage.bmp
 UninstallFilesDir={app}\uninst
-InfoBeforeFile=AccessGrid\Install.WINDOWS
-PrivilegesRequired=admin
+InfoBeforeFile=Install.WINDOWS
+BackColor=clNavy
+BackColor2=clRed
+ShowTasksTreeLines=false
 
 [Components]
 Name: Venue_Client; Description: Basic client software to use Access Grid Virtual Venues.; Types: custom compact full
@@ -59,71 +64,62 @@ Name: Venue_Server; Description: Server Software that allows you to host your ow
 
 [Files]
 ; The Python Module: AccessGrid
-Source: AccessGrid\Release\Lib\site-packages\AccessGrid\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.2\PythonPath\win32com,|C:\Python22\Lib\site-packages}\AccessGrid; Flags: recursesubdirs
+Source: AccessGrid\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.2\PythonPath\win32com,|C:\Python22\Lib\site-packages}\AccessGrid; Flags: recursesubdirs
 
 ; Service packages
-Source: AccessGrid\Release\share\AccessGrid\services\*.zip; DestDir: {app}\services; Components: Venue_Client
+Source: services\*.zip; DestDir: {app}\services; Components: Venue_Client
 
 ; Preinstalled services
-Source: AccessGrid\Release\var\lib\ag\local_services\AudioService.py; DestDir: {app}\local_services; Components: Audio_Service
-Source: AccessGrid\Release\var\lib\ag\local_services\AudioService.svc; DestDir: {app}\local_services; Components: Audio_Service
-Source: AccessGrid\Release\var\lib\ag\local_services\VideoConsumerService.py; DestDir: {app}\local_services; Components: Video_Consumer
-Source: AccessGrid\Release\var\lib\ag\local_services\VideoConsumerService.svc; DestDir: {app}\local_services; Components: Video_Consumer
-Source: AccessGrid\Release\var\lib\ag\local_services\VideoProducerService.py; DestDir: {app}\local_services; Components: Video_Producer
-Source: AccessGrid\Release\var\lib\ag\local_services\VideoProducerService.svc; DestDir: {app}\local_services; Components: Video_Producer
+Source: AccessGrid\services\AudioService.py; DestDir: {app}\local_services; Components: Audio_Service
+Source: AccessGrid\services\AudioService.svc; DestDir: {app}\local_services; Components: Audio_Service
+Source: AccessGrid\services\VideoConsumerService.py; DestDir: {app}\local_services; Components: Video_Consumer
+Source: AccessGrid\services\VideoConsumerService.svc; DestDir: {app}\local_services; Components: Video_Consumer
+Source: AccessGrid\services\VideoProducerService.py; DestDir: {app}\local_services; Components: Video_Producer
+Source: AccessGrid\services\VideoProducerService.svc; DestDir: {app}\local_services; Components: Video_Producer
 
 ; Programs for the user to run
-Source: AccessGrid\Release\Scripts\RunMe.py; DestDir: {app}; Components: Venue_Client
-Source: AccessGrid\Release\Scripts\RunMe.py; DestDir: {app}; DestName: RunMe.pyw; Components: Venue_Client
-Source: AccessGrid\Release\Scripts\VenueClient.py; DestDir: {app}; Components: Venue_Client
-Source: AccessGrid\Release\Scripts\VenueClient.py; DestDir: {app}; DestName: VenueClient.pyw; Components: Venue_Client
-Source: AccessGrid\Release\Scripts\NodeManagement.py; DestDir: {app}; Components: Venue_Client
-Source: AccessGrid\Release\Scripts\NodeManagement.py; DestDir: {app}; DestName: NodeManagement.pyw; Components: Venue_Client
-Source: AccessGrid\Release\Scripts\AGNodeService.py; DestDir: {app}; Components: Venue_Client
-Source: AccessGrid\Release\Scripts\AGNodeService.py; DestDir: {app}; DestName: AGNodeService.pyw; Components: Venue_Client
-Source: AccessGrid\Release\Scripts\AGServiceManager.py; DestDir: {app}
-Source: AccessGrid\Release\Scripts\AGServiceManager.py; DestDir: {app}; DestName: AGServiceManager.pyw
-Source: AccessGrid\Release\Scripts\SetupVideo.py; DestDir: {app}; Components: Video_Producer
-Source: AccessGrid\Release\Scripts\SetupVideo.py; DestDir: {app}; DestName: SetupVideo.pyw; Components: Video_Producer
-Source: AccessGrid\Release\Scripts\VenueManagement.py; DestDir: {app}; Components: Venue_Server
-Source: AccessGrid\Release\Scripts\VenueManagement.py; DestDir: {app}; DestName: VenueManagement.pyw; Components: Venue_Server
-Source: AccessGrid\Release\Scripts\VenueServer.py; DestDir: {app}; Components: Venue_Server
-Source: AccessGrid\Release\Scripts\VenueServer.py; DestDir: {app}; DestName: VenueServer.pyw; Components: Venue_Server
-Source: AccessGrid\Release\Scripts\VenuesServerRegistry.py; DestDir: {app}; Components: Venue_Server
-Source: AccessGrid\Release\Scripts\VenuesServerRegistry.py; DestDir: {app}; DestName: VenuesServerRegistry.pyw; Components: Venue_Server
+Source: bin\RunMe.py; DestDir: {app}; Components: Venue_Client
+Source: bin\VenueClient.py; DestDir: {app}; Components: Venue_Client
+Source: bin\NodeManagement.py; DestDir: {app}; Components: Venue_Client
+Source: bin\AGNodeService.py; DestDir: {app}; Components: Venue_Client
+Source: bin\AGServiceManager.py; DestDir: {app}
+Source: bin\SetupVideo.py; DestDir: {app}; Components: Video_Producer
+Source: bin\VenueManagement.py; DestDir: {app}; Components: Venue_Server
+Source: bin\VenueServer.py; DestDir: {app}; Components: Venue_Server
+Source: bin\VenuesServerRegistry.py; DestDir: {app}; Components: Venue_Server
 
 ; Default node configuration
-Source: AccessGrid\Release\share\AccessGrid\nodeConfig\defaultWindows; DestDir: {app}\config; Flags: confirmoverwrite
+Source: etc\AccessGrid\defaultWindows; DestDir: {app}\config; Flags: confirmoverwrite
 
 ; AG Icon for programs and stuff
-Source: AccessGrid\packaging\windows\AG.ico; DestDir: {app}\config
+Source: packaging\windows\AG.ico; DestDir: {app}\config
 
 ; Documentation
-Source: AccessGrid\Release\share\doc\AccessGrid\*.*; DestDir: {app}\Documentation
+Source: doc\AccessGrid\*.*; DestDir: {app}\Documentation
 
 ; Post install scripts
-Source: AccessGrid\packaging\windows\Postinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
-Source: AccessGrid\packaging\windows\AGNodeServicePostinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
-Source: AccessGrid\packaging\windows\AGServiceManagerPostinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
+Source: packaging\windows\Postinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
+Source: packaging\windows\AGNodeServicePostinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
+Source: packaging\windows\AGServiceManagerPostinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
 
 ; Vic Video Tool
-Source: ag-vic\vic\Release\vic.exe; DestDir: {app}; Components: Video_Consumer Video_Producer
+Source: ..\ag-vic\vic\DDraw_Release\vic.exe; DestDir: {app}; Components: Video_Consumer Video_Producer
 
 ; Rat Audio Tool
-Source: ag-rat\rat\Release\rat.exe; DestDir: {app}; Components: Audio_Service
-Source: ag-rat\rat\Release\ratmedia.exe; DestDir: {app}; Components: Audio_Service
-Source: ag-rat\rat\Release\ratui.exe; DestDir: {app}; Components: Audio_Service
+Source: ..\ag-rat\rat\Release\rat.exe; DestDir: {app}; Components: Audio_Service
+Source: ..\ag-rat\rat\Release\ratmedia.exe; DestDir: {app}; Components: Audio_Service
+Source: ..\ag-rat\rat\Release\ratui.exe; DestDir: {app}; Components: Audio_Service
 
 
 [Icons]
-Name: {group}\Venue Client; Filename: {app}\RunMe.pyw; IconFilename: {app}\config\AG.ico; WorkingDir: {app}; Components: Venue_Client
+Name: {group}\Venue Client; Filename: {app}\RunMe.py; IconFilename: {app}\config\AG.ico; WorkingDir: {app}; Components: Venue_Client
 Name: {group}\Uninstall the AGTk; Filename: {uninstallexe}
-Name: {group}\Node Manager; IconFilename: {app}\config\AG.ico; Filename: {app}\NodeManagement.pyw; WorkingDir: {app}; Components: Venue_Client
-Name: {group}\Setup Video; IconFilename: {app}\config\AG.ico; Filename: {app}\SetupVideo.pyw; WorkingDir: {app}; Components: Video_Producer
-Name: {group}\Venue Server; IconFilename: {app}\config\AG.ico; Filename: {app}\VenueServer.pyw; WorkingDir: {app}; Components: Venue_Server
-Name: {group}\Venue Management; IconFilename: {app}\config\AG.ico; Filename: {app}\VenueManagement.pyw; WorkingDir: {app}; Components: Venue_Server
-Name: {commondesktop}\Access Grid Venue Client; Filename: {app}\RunMe.pyw; IconFilename: {app}\config\AG.ico; WorkingDir: {app}; Tasks: desktopicon; Components: Venue_Client
-Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Access Grid Venue Client; IconFilename: {app}\config\AG.ico; Filename: {app}\RunMe.pyw; Tasks: quicklaunchicon; Components: Venue_Client
+Name: {group}\Node Manager; IconFilename: {app}\config\AG.ico; Filename: {app}\NodeManagement.py; WorkingDir: {app}; Components: Venue_Client
+Name: {group}\Setup Video; IconFilename: {app}\config\AG.ico; Filename: {app}\SetupVideo.py; WorkingDir: {app}; Components: Video_Producer
+Name: {group}\Venue Server; IconFilename: {app}\config\AG.ico; Filename: {app}\VenueServer.py; WorkingDir: {app}; Components: Venue_Server
+Name: {group}\Venue Management; IconFilename: {app}\config\AG.ico; Filename: {app}\VenueManagement.py; WorkingDir: {app}; Components: Venue_Server
+Name: {commondesktop}\Access Grid Venue Client; Filename: {app}\RunMe.py; IconFilename: {app}\config\AG.ico; WorkingDir: {app}; Tasks: desktopicon; Components: Venue_Client
+Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Access Grid Venue Client; IconFilename: {app}\config\AG.ico; Filename: {app}\RunMe.py; Tasks: quicklaunchicon; Components: Venue_Client
 Name: {group}\Documentation\README; IconFilename: {app}\config\AG.ico; Filename: {app}\Documentation\README
 Name: {group}\Documentation\Developers Documentation; Filename: {app}\Documentation\index.html
 Name: {group}\Documentation\License; IconFilename: {app}\config\AG.ico; Filename: {app}\COPYING.txt
@@ -159,6 +155,5 @@ Name: {app}\config; Components: Venue_Client
 ; It would be a good idea to figure out how to pass the SourceDir as a
 ; parameter to prebuild. Ti and I have chatted about this, it's on the
 ; to do list :-)
-Name: python; Parameters: C:\AccessGridBuild\AccessGrid\packaging\makeServicePackages.py C:\AccessGridBuild\AccessGrid\AccessGrid\services; Flags: abortonerror
-Name: C:\AccessGridBuild\AccessGrid\packaging\windows\Prebuild.cmd; Parameters: "  "; Flags: abortonerror
-
+;Name: C:\AccessGridBuild\AccessGrid\packaging\windows\Prebuild.cmd; Parameters: SourceDir; Flags: abortonerror
+Name: packaging\makeServicePackages.py; Parameters: SourceDir\AccessGrid\services SourceDir\services; Flags: abortonerror

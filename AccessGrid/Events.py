@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.6 2003-02-21 21:42:10 judson Exp $
+# RCS-ID:      $Id: Events.py,v 1.7 2003-03-24 20:26:12 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,6 +18,8 @@ class Event:
     REMOVE_DATA = "Remove data"
     ADD_SERVICE = "Add service"
     REMOVE_SERVICE = "Remove service"
+    ADD_APPLICATION = "Add application"
+    REMOVE_APPLICATION = "Remove application"
     ADD_CONNECTION = "Add connection"
     REMOVE_CONNECTION = "Remove connection"
     SET_CONNECTIONS = "Set connections"
@@ -34,6 +36,12 @@ class ConnectEvent(Event):
     def __init__(self, venueId):
         Event.__init__(self, ConnectEvent.CONNECT, venueId, None)
         
+class DisconnectEvent(Event):
+    DISCONNECT = "Disconnect"
+
+    def __init__(self, venueId):
+        Event.__init__(self, DisconnectEvent.DISCONNECT, venueId, None)
+        
 class HeartbeatEvent(Event):
     HEARTBEAT = "Client Heartbeat"
     
@@ -47,13 +55,24 @@ class TextPayload:
         self.recipient = recipient
         self.private = private
         self.data = data
+
+    def __repr__(self):
+        string = "Sender: %s, Recipient: %s, " % (self.sender, self.recipient)
+        string += "Private: %d, Data: %s" % (self.private, self.data)
+
+        return string
     
 class TextEvent(Event):
     TEXT = "Text Event"
     def __init__(self, venue, recipient, private, data):
 
-        payload = TextPayload(None, recipient, private, data)
+        self.venue = venue
+        self.payload = TextPayload(None, recipient, private, data)
+        Event.__init__(self, TextEvent.TEXT, self.venue, self.payload)
 
-        Event.__init__(self, TextEvent.TEXT, venue, payload)
-        
+    def __repr__(self):
+        string = "Text Event: Venue: %s, " % self.venue
+        string += "Payload: %s" % self.payload
+
+        return string
 

@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.49 2003-03-21 22:56:18 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.50 2003-03-24 20:26:13 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ from wxPython.lib.imagebrowser import *
 
 from AccessGrid.hosting.pyGlobus import Client
 
-from AccessGrid.Descriptions import VenueDescription, StreamDescription
+from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.Descriptions import Capability
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
@@ -111,7 +111,7 @@ class VenueManagementClient(wxApp):
                 self.tabs.Enable(true)
                 if len(self.venueList) != 0 :
                     for venue in self.venueList:
-                        wxLogDebug("Add venue: %s" %venue.name)
+                        wxLogDebug("Add venue: %s" % venue.name)
                         self.tabs.venuesPanel.venuesListPanel.venuesList.Append(venue.name, venue)
                     currentVenue = self.tabs.venuesPanel.venuesListPanel.venuesList.GetClientData(0)
                     self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(currentVenue)
@@ -211,17 +211,19 @@ class VenueManagementClient(wxApp):
             self.currentVenue = None
             self.currentVenueClient = None
 
-        elif self.currentVenue == None or self.currentVenue.uri != venue.uri:
-            wxLogDebug("Set current venue to: %s, %s" %(str(venue.name), str(venue.uri)))
+        elif self.currentVenue == None or self.currentVenue['uri'] != venue['uri']:
+            wxLogDebug("Set current venue to: %s, %s" % (str(venue['name']), str(venue['uri'])))
             self.currentVenue = venue
-            self.currentVenueClient = Client.Handle(venue.uri).get_proxy()
+            self.currentVenueClient = Client.Handle(venue['uri']).get_proxy()
 
     def AddVenue(self, venue, exitsList):
         venueUri = ""
-        venueUri = self.server.AddVenue(venue)
-        venue.uri = venueUri
+        venueUri = self.server.AddVenue(venue['name'], venue['description'])
+        venue['uri'] = venueUri
         s = ""
-        for e in exitsList:  # because I have <AccessGrid.hosting.pyGlobus.AGGSISOAP.structType
+
+        # because I have <AccessGrid.hosting.pyGlobus.AGGSISOAP.structType
+        for e in exitsList:  
             s = s + e.name
 
         wxLogDebug("Adding venue %s with exits %s"%(str(venue),s))
@@ -268,9 +270,9 @@ class VenueManagementClient(wxApp):
         self.currentVenueClient.SetEncryptMedia(int(value), str(key))
                            
     def ModifyVenue(self, venue, exitsList):
-        wxLogDebug("Modify venue: %s" %str(venue.uri))
-        self.server.ModifyVenue(venue.uri, venue)
-        wxLogDebug("Set connections: %s" %str(exitsList))
+#        wxLogDebug("Modify venue: %s" %str(venue.uri))
+#        self.server.ModifyVenue(venue.uri, venue)
+        wxLogDebug("Set connections: %s" % str(exitsList))
         self.SetCurrentVenue(venue)
         self.currentVenueClient.SetConnections(exitsList)
                                
@@ -469,8 +471,8 @@ class VenueProfilePanel(wxPanel):
             self.application.SetCurrentVenue(data)
             exitsList = self.application.currentVenueClient.GetConnections()
 
-            self.venueProfileBox.SetLabel(data.name)
-            self.url.SetValue(data.uri)
+            self.venueProfileBox.SetLabel(data['name'])
+            self.url.SetValue(data['uri'])
             self.exits.Clear()
             index = 0
             while index < len(exitsList):
@@ -480,7 +482,7 @@ class VenueProfilePanel(wxPanel):
             self.exitsLabel.Show()
             self.url.Show()
             self.urlLabel.Show()
-            self.description.SetValue(data.description)
+            self.description.SetValue(data['description'])
             self.exits.Show()
 
     def __doLayout(self):
@@ -612,8 +614,8 @@ class VenueListPanel(wxPanel):
         newUri = self.application.AddVenue(data, exitsList)
 
         if newUri :
-            data.uri = newUri
-            self.venuesList.Append(data.name, data)
+            data['uri'] = newUri
+            self.venuesList.Append(data['name'], data)
             self.venuesList.Select(self.venuesList.Number()-1)
             self.parent.venueProfilePanel.ChangeCurrentVenue(data)
 
@@ -625,10 +627,10 @@ class VenueListPanel(wxPanel):
     def ModifyCurrentVenue(self, data, exitsList):
         item = self.venuesList.GetSelection()
         clientData =  self.venuesList.GetClientData(item)
-        clientData.name = data.name
-        clientData.description = data.description
+        clientData.name = data['name']
+        clientData.description = data['description']
         self.application.ModifyVenue(clientData, exitsList)
-        self.venuesList.SetString(item, data.name)
+        self.venuesList.SetString(item, data['name'])
         self.parent.venueProfilePanel.ChangeCurrentVenue(clientData)
 
     def SetStaticVideo(self, videoAddress, videoPort, videoTtl):
@@ -1170,8 +1172,10 @@ class VenueParamFrame(wxDialog):
             self.exitsList.append(self.exits.GetClientData(index))
             index = index + 1
 
-        self.venue = VenueDescription(self.title.GetValue(), \
-                                self.description.GetValue(), "", None)
+        venue = {}
+        venue['name'] = self.title.GetValue()
+        venue['description'] = self.description.GetValue()
+        self.venue = venue
 
     def __doLayout(self):
         boxSizer = wxBoxSizer(wxVERTICAL)
@@ -1500,8 +1504,8 @@ class ModifyVenueFrame(VenueParamFrame):
         item = self.list.GetSelection()
         data = self.list.GetClientData(item)
 
-        self.title.AppendText(data.name)
-        self.description.AppendText(data.description)
+        self.title.AppendText(data['name'])
+        self.description.AppendText(data['description'])
 
         try:
             wxLogDebug("Get venue information")

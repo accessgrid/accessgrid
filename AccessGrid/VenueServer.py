@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.47 2003-03-19 02:57:26 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.48 2003-03-24 20:26:12 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,11 +17,12 @@ import os.path
 import socket
 import string
 from threading import Thread, RLock
-import shelve
 import signal
 import traceback
 import logging
 import urlparse
+import time
+import ConfigParser
 
 # AG Stuff
 from AccessGrid.hosting import AccessControl
@@ -31,13 +32,17 @@ from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
 from AccessGrid.Utilities import GetHostname
 from AccessGrid.GUID import GUID
-from AccessGrid.Descriptions import VenueDescription
 from AccessGrid.Venue import Venue
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.DataStore import GSIHTTPTransferServer
 from AccessGrid.EventService import EventService
 from AccessGrid.scheduler import Scheduler
 from AccessGrid.TextService import TextService
+
+from AccessGrid.Descriptions import ConnectionDescription, StreamDescription
+from AccessGrid.Descriptions import DataDescription
+from AccessGrid.NetworkLocation import MulticastNetworkLocation
+from AccessGrid.Types import Capability
 
 log = logging.getLogger("AG.VenueServer")
 
@@ -88,8 +93,8 @@ class VenueServer(ServiceBase.ServiceBase):
             "VenueServer.dataSize" : '10M'
             }
 
-    defaultVenueDescription = VenueDescription("Venue Server Lobby",
-            """This is the lobby of the Venue Server, it has been created because there are no venues yet. Please configure your Venue Server! For more information see http://www.accessgrid.org/ and http://www.mcs.anl.gov/fl/research/accessgrid.""", "", None)
+    defaultVenueName = "Venue Server Lobby"
+    defaultVenueDescription = """This is the lobby of the Venue Server, it has been created because there are no venues yet. Please configure your Venue Server! For more information see http://www.accessgrid.org/ and http://www.mcs.anl.gov/fl/research/accessgrid."""
 
     def __init__(self, hostEnvironment = None, configFile=None):
         """
@@ -98,8 +103,6 @@ class VenueServer(ServiceBase.ServiceBase):
         shutdown in the event of catastrophic signals.
         """
         # Initialize our state
-        # We need to get the first administrator from somewhere
-        self.administrators = ''
         self.administratorList = []
         self.defaultVenue = ''
         self.hostingEnvironment = hostEnvironment
@@ -111,7 +114,6 @@ class VenueServer(ServiceBase.ServiceBase):
         self.dataStorageLocation = None
         self.eventPort = 0
         self.textPort = 0
-        self.lock = RLock()
         
         # Figure out which configuration file to use for the
         # server configuration. If no configuration file was specified
@@ -136,7 +138,8 @@ class VenueServer(ServiceBase.ServiceBase):
                                                     int(self.textPort),
                                                     int(self.dataPort) ) )
 
-        self.dataTransferServer = GSIHTTPTransferServer(('', int(self.dataPort)))
+        self.dataTransferServer = GSIHTTPTransferServer(('',
+                                                         int(self.dataPort)))
         self.dataTransferServer.run()
 
         self.eventService = EventService((self.hostname, int(self.eventPort)))
@@ -160,16 +163,16 @@ class VenueServer(ServiceBase.ServiceBase):
         #
         # Reinitialize the default venue
         #
-        if len(self.defaultVenue) != 0 and self.defaultVenue in self.venues:
+        log.debug("CFG: Default Venue: %s", self.defaultVenue)
+        
+        if len(self.defaultVenue) != 0 and \
+               self.defaultVenue in self.venues.keys():
             self.SetDefaultVenue(self.MakeVenueURI(self.defaultVenue))
         else:
-            self.AddVenue(self.defaultVenueDescription)
+            self.AddVenue(self.defaultVenueName, self.defaultVenueDescription)
 
         # The houseKeeper is a task that is doing garbage collection and
         # other general housekeeping tasks for the Venue Server.
-        # The first task we register with the houseKeeper is a periodic
-        # checkpoint, this tries to ensure that the persistent store is
-        # kept up to date.
         self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.Checkpoint,
                                  int(self.houseKeeperFrequency), 0)
@@ -177,47 +180,98 @@ class VenueServer(ServiceBase.ServiceBase):
 
     def LoadPersistentVenues(self, filename):
         """
-        This method just encapsulates persistent venue loading.
         """
-        try:
-            # Open the persistent store
-            store = shelve.open(filename)
+        cp = ConfigParser.ConfigParser()
+        cp.read(filename)
 
-            # Load Venues
-            for venuePath in store.keys():
-                log.info("Loading Venue: %s", venuePath)
+        for sec in cp.sections():
+            if cp.has_option(sec, "type"):
+                name = cp.get(sec, 'name')
+                description = cp.get(sec, 'description')
+                dsp = cp.get(sec, 'dataStorePath')
+                administrators = string.split(cp.get(sec, 'administrators'),
+                                              ':')
+                v = Venue(self, name, description, administrators, dsp)
+                v.encryptMedia = cp.getint(sec, 'encryptMedia')
+                v.cleanupTime = cp.getint(sec, 'cleanupTime')
+                v._ChangeUniqueId(sec)
 
-                # Rebuild the venue
-                self.venues[venuePath] = store[venuePath]
+                self.venues[self.IdFromURL(v.uri)] = v
+                vs = self.hostingEnvironment.CreateServiceObject(self.PathFromURL(v.uri))
+                v._bind_to_service(vs)
+                
+                cl = []
+                for c in string.split(cp.get(sec, 'connections'), ':'):
+                    if len(c) != 0:
+                        name = cp.get(c, 'name')
+                        desc = cp.get(c, 'description')
+                        uri = self.MakeVenueURI(self.IdFromURL(cp.get(c,
+                                                                      'uri')))
+                        cd = ConnectionDescription(name, desc, uri)
+                        cl.append(cd)
+                        
+                v.SetConnections(cl)
+                        
+                for s in string.split(cp.get(sec, 'streams'), ':'):
+                    if len(s) != 0:
+                        name = cp.get(s, 'name')
+                        desc = cp.get(s, 'description')
+                        encryptionKey = cp.get(s, 'encryptionKey')
+                        (addr, port, ttl) = string.split(cp.get(s, 'location'),
+                                                         " ")
+                        capability = cp.get(s, 'capability')
+                        l = MulticastNetworkLocation(addr, int(port), int(ttl))
+                        c = Capability(string.split(capability, ' '))
+                        
+                        uri = self.MakeVenueURI(self.IdFromURL(cp.get(s,
+                                                                      'uri')))
+                        sd = StreamDescription(name, desc, l, c)
+                        #v.AddStream(sd)
 
-                # Start the venue
-		self.venues[venuePath].Start(self)
-
-                log.info("VS.LoadPV %s", self.venues[venuePath].description.uri)
-                # Somehow we have to register this venue as a new service
-                # on the server.  This gets tricky, since we're not assuming
-                # the VenueServer knows about the SOAP server.
-                if(self.hostingEnvironment != None):
-                    venueService = self.hostingEnvironment.CreateServiceObject(venuePath)
-                    self.venues[venuePath]._bind_to_service(venueService)
+                for d in string.split(cp.get(sec, 'data'), ':'):
+                    if len(d) != 0:
+                        print "Data: %s" % d
                     
-            # When we're done close the persistent store
-            store.close()
-        except:
-            log.exception("Failed to load persistent venues")
-            raise VenueServerException("Failed to load persistent venues.")
+#     def LoadPersistentVenues(self, filename):
+#         """
+#         This method just encapsulates persistent venue loading.
+#         """
+#         try:
+#             # Open the persistent store
+#             store = shelve.open(filename)
 
-    def _authorize(self):
-        """
-        """
-        sm = AccessControl.GetSecurityManager()
-        if sm == None:
-            return 1
-        elif sm.GetSubject().GetName() in self.administratorList:
-            return 1
-        else:
-            log.exception("Authorization failed for %s", sm.GetSubject().GetName())
-            return 0
+#             # Load Venues
+#             for venuePath in store.keys():
+#                 log.info("Loading Venue: %s", venuePath)
+
+#                 # Rebuild the venue
+#                 self.venues[venuePath] = store[venuePath]
+
+#                 log.info("VS.LoadPV %s", self.venues[venuePath].uri)
+#                 # Somehow we have to register this venue as a new service
+#                 # on the server.  This gets tricky, since we're not assuming
+#                 # the VenueServer knows about the SOAP server.
+#                 if(self.hostingEnvironment != None):
+#                     venueService = self.hostingEnvironment.CreateServiceObject(venuePath)
+#                     self.venues[venuePath]._bind_to_service(venueService)
+                    
+#             # When we're done close the persistent store
+#             store.close()
+#         except:
+#             log.exception("Failed to load persistent venues")
+#             raise VenueServerException("Failed to load persistent venues.")
+
+#     def _authorize(self):
+#         """
+#         """
+#         sm = AccessControl.GetSecurityManager()
+#         if sm == None:
+#             return 1
+#         elif sm.GetSubject().GetName() in self.administratorList:
+#             return 1
+#         else:
+#             log.exception("Authorization failed for %s", sm.GetSubject().GetName())
+#             return 0
 
     def InitFromFile(self, config):
         """
@@ -246,7 +300,7 @@ class VenueServer(ServiceBase.ServiceBase):
                            self.venuePathPrefix, uniqueId], '/')
         return uri
 
-    def AddVenue(self, venueDescription):
+    def AddVenue(self, name, description):
         """
         The AddVenue method takes a venue description and creates a new
         Venue Object, complete with a event service, then makes it
@@ -257,62 +311,26 @@ class VenueServer(ServiceBase.ServiceBase):
             log.exception("Unauthorized attempt to Add Venue.")
             raise VenueServerException("You are not authorized to perform this action.")
         try:
-            # instantiate a local venueDecription from the input,
-            # since it probably came from a SOAP client and we don't
-            # want to store it
-            venueDescription = VenueDescription( venueDescription.name,
-                                                 venueDescription.description,
-                                                 venueDescription.icon,
-                                         venueDescription.extendedDescription )
-
-            venueId = str(GUID())
-            venueDescription.uri = '/'.join(['', self.venuePathPrefix, venueId])
-            
-            #
-            # Create the directory to hold the venue's data.
-            #
-
-            if self.dataStorageLocation is None or not os.path.exists(self.dataStorageLocation):
-                log.warn("Creating venue: Data storage location %s not valid",
-                          self.dataStorageLocation)
-                venueStoragePath = None
-            else:
-                venueStoragePath = os.path.join(self.dataStorageLocation,
-                                                venueId)
-                try:
-                    os.mkdir(venueStoragePath)
-                except OSError, e:
-                    log.exception("Could not create venueStoragePath.")
-                    venueStoragePath = None
-
-
             # Create a new Venue object pass it the server
+            venue = Venue(self, name, description, [GetDefaultIdentityDN()],
+                          self.dataStorageLocation)
 
-            venue = Venue(venueId, venueDescription,
-                          GetDefaultIdentityDN(), venueStoragePath)
+            venuePath = self.PathFromURL(venue.uri)
 
-            venue.Start(self)
+            # Add the venue to the list of venues
+            self.venues[self.IdFromURL(venue.uri)] = venue
 
-            venue.SetEncryptMedia(int(self.encryptAllMedia))
-
-            venuePath = self.PathFromURL(venue.description.uri)
-
-            log.info("VS. PATH: %s URI: %s", venuePath, venue.description.uri)
-            
             # We have to register this venue as a new service.
             if(self.hostingEnvironment != None):
                 venueService = self.hostingEnvironment.CreateServiceObject(venuePath)
                 venue._bind_to_service(venueService)
 
-            # Add the venue to the list of venues
-            self.venues[venuePath] = venue
-
             # If this is the first venue, set it as the default venue
             if(len(self.venues) == 1):
-                self.SetDefaultVenue(venue.description.uri)
+                self.SetDefaultVenue(venue.uri)
 
             # return the URL to the new venue
-            return venue.description.uri
+            return venue.uri
 
         except:
             log.exception("Exception in AddVenue!")
@@ -320,19 +338,19 @@ class VenueServer(ServiceBase.ServiceBase):
 
     AddVenue.soap_export_as = "AddVenue"
 
-    def ModifyVenue(self, URL, venueDescription):
-        """
-        ModifyVenue updates a Venue Description.
-        """
-        if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
+#     def ModifyVenue(self, URL, venueDescription):
+#         """
+#         ModifyVenue updates a Venue Description.
+#         """
+#         if not self._authorize():
+#             raise VenueServerException("You are not authorized to perform this action.")
 
-        path = self.PathFromURL(URL)
+#         path = self.PathFromURL(URL)
         
-        if(venueDescription.uri == URL):
-            self.venues[path].description = venueDescription
+#         if(venueDescription.uri == URL):
+#             self.venues[path].description = venueDescription
 
-    ModifyVenue.soap_export_as = "ModifyVenue"
+#     ModifyVenue.soap_export_as = "ModifyVenue"
 
     def RemoveVenue(self, URL):
         """
@@ -448,8 +466,14 @@ class VenueServer(ServiceBase.ServiceBase):
         hosted by this VenueServer.
         """
         try:
-            venueDescriptionList = map( lambda venue: venue.GetDescription(),
-                                        self.venues.values() )
+#            venueDescriptionList = map( lambda venue: venue.GetDescription(),
+#                                        self.venues.values() )
+            venueDescriptionList = map( lambda venue: {
+                'name' : venue.name,
+                'description' : venue.description,
+                'uri' : venue.uri
+                }, self.venues.values() )
+
             for d in venueDescriptionList:
                 log.info("%s", d)
                 
@@ -488,7 +512,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
         self.config["VenueServer.defaultVenue"] = id
 
-        self.venues[path]._bind_to_service(defaultVenue)
+        self.venues[id]._bind_to_service(defaultVenue)
 
     SetDefaultVenue.soap_export_as = "SetDefaultVenue"
 
@@ -611,7 +635,6 @@ class VenueServer(ServiceBase.ServiceBase):
         log.info("                            done")
         
         # This blocks anymore checkpoints from happening
-        self.lock.acquire()
         log.info("Shutting down services...")
         log.info("                         text")
         self.textService.Stop()
@@ -635,11 +658,6 @@ class VenueServer(ServiceBase.ServiceBase):
         state that is lost (the longer the time between checkpoints, the more
         that can be lost).
         """
-        log.info("Checkpointing")
-
-        # This locks access to the persistence file
-        self.lock.acquire()
-        
         try:
             # Before we backup we copy the previous backup to a safe place
             if os.path.isfile(self.persistenceFilename):
@@ -656,20 +674,18 @@ class VenueServer(ServiceBase.ServiceBase):
                     raise e
 
             # Open the persistent store
-            store = shelve.open(self.persistenceFilename)
-
+            store = file(self.persistenceFilename, "w")
+            
             for venuePath in self.venues.keys():
                 # Change out the uri for storage, we store the path
-                venueURI = self.venues[venuePath].description.uri
-                self.venues[venuePath].description.uri = venuePath
+                venueURI = self.venues[venuePath].uri
+                self.venues[venuePath].uri = venuePath
 
-                # Store the venue, it looks bizarre, but it's
-                # required by the semantics of the shelve module
-                venue = self.venues[venuePath]
-                store[venuePath] = venue
-
+                # Store the venue.
+                store.write(self.venues[venuePath].AsINIBlock())
+                
                 # Change the URI back
-                self.venues[venuePath].description.uri = venueURI
+                self.venues[venuePath].uri = venueURI
 
             # Close the persistent store
             store.close()
@@ -678,10 +694,8 @@ class VenueServer(ServiceBase.ServiceBase):
             log.exception("Exception Checkpointing!")
             raise VenueServerException("Checkpoint Failed!")
 
-        log.info("Checkpoint Complete.")
+        log.info("Checkpointing completed at %s.", time.asctime())
 
         # Finally we save the current config
         SaveConfig(self.configFile, self.config)
 
-        # Unlock the shelve
-        self.lock.release()

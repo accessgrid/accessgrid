@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.59 2003-03-19 16:08:16 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.60 2003-03-24 20:26:12 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,14 +18,17 @@ import socket
 import os.path
 import logging
 import urlparse
+import ConfigParser
 
 from AccessGrid.hosting.pyGlobus import ServiceBase
+from AccessGrid.GUID import GUID
 
 from AccessGrid.hosting import AccessControl
 
 from AccessGrid import AppService
 from AccessGrid.Types import Capability
 from AccessGrid.Descriptions import StreamDescription, CreateStreamDescription
+from AccessGrid.Descriptions import ConnectionDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
 from AccessGrid import DataStore
@@ -48,7 +51,8 @@ class Venue(ServiceBase.ServiceBase):
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
     """
-    def __init__(self, uniqueId, description, administrator, dataStorePath):
+    def __init__(self, server, name, description, administrators,
+                 dataStoreLocation):
         """
         Venue constructor.
 
@@ -56,18 +60,46 @@ class Venue(ServiceBase.ServiceBase):
         should use for storing its files.
 
         """
-        self.connections = dict()
-        self.services = dict()
-        self.networkServices = []
-        self.administrators = []
-        self.encryptMedia = 1
-
-        self.uniqueId = uniqueId
-        # This contains a name, description, uri, icon, extended description
-        # eventlocation, and textlocation
+        self.server = server
+        self.name = name
         self.description = description
-        self.administrators.append(administrator)
+        self.administrators = administrators
+        self.encryptMedia = server.GetEncryptAllMedia()
 
+        self.uniqueId = str(GUID())
+        self.uri = self.server.MakeVenueURI(self.uniqueId)
+        log.info("URI %s", self.uri)
+
+        self.server.eventService.AddChannel(self.uniqueId)
+        self.server.textService.AddChannel(self.uniqueId)
+        log.debug("Registering heartbeat for %s", self.uniqueId)
+        self.server.eventService.RegisterCallback(self.uniqueId,
+                                           HeartbeatEvent.HEARTBEAT,
+                                           self.ClientHeartbeat)
+
+        #
+        # Create the directory to hold the venue's data.
+        #
+        
+        if dataStoreLocation is None or not os.path.exists(dataStoreLocation):
+            log.warn("Creating venue: Data storage location %s not valid",
+                     dataStoreLocation)
+            self.dataStorePath = None
+        else:
+            self.dataStorePath = os.path.join(dataStoreLocation, self.uniqueId)
+            try:
+                os.mkdir(self.dataStorePath)
+            except OSError, e:
+                log.exception("Could not create venueStoragePath.")
+                self.dataStorePath = None
+                
+        if self.encryptMedia == 1:
+            self.encryptionKey = AllocateEncryptionKey()
+
+        self.cleanupTime = 30
+
+        self.connections = dict()
+        self.applications = {}
         self.data = dict()
         self.streamList = StreamDescriptionList()
 
@@ -75,34 +107,52 @@ class Venue(ServiceBase.ServiceBase):
         self.clients = dict()
         self.nodes = dict()
 
-        self.dataStorePath = dataStorePath
         self.dataStore = None
-
         self.producerCapabilities = []
         self.consumerCapabilities = []
 
-        self.cleanupTime = 30
-        self.nextPrivateId = 1
+        self.houseKeeper = Scheduler()
+        self.houseKeeper.AddTask(self.CleanupClients, 10)
+        self.houseKeeper.StartAllTasks()
 
-        # self.AllowedEntryRole = AccessControl.Role("Venue.AllowedEntry", self)
-        # self.VenueUsersRole = AccessControl.Role("Venue.VenueUsers", self)
+        self.startDataStore()
 
-        if self.encryptMedia == 1:
-            self.encryptionKey = AllocateEncryptionKey()
+        #self.StartApplications()
 
-        #
-        # Application support
-        #
-        # self.applications is a dictionary of the AppObjectImpl instances
-        # representing the applications created in this venue. It is keyed
-        # on the application's unique identifier.
-        #
-        # As such, they can be persisted and later reawakened without
-        # too much hassle.
-        #
+        #self.AllowedEntryRole = AccessControl.Role("Venue.AllowedEntry", self)
+        #self.VenueUsersRole = AccessControl.Role("Venue.VenueUsers", self)
 
-        self.applications = {}
+    def AsINIBlock(self):
+        sclass = str(self.__class__).split('.')
+        string = "[%s]\n" % self.uniqueId
+        string += "type : %s\n" % sclass[-1]
+        string += "name : %s\n" % self.name
+        string += "description : %s\n" % self.description
+        string += "administrators : %s\n" % ":".join(self.administrators)
+        string += "encryptMedia : %d\n" % self.encryptMedia
+        if self.encryptMedia:
+            string += "encryptionKey : %s\n" % self.encryptionKey
+        string += "dataStorePath : %s\n" % self.dataStorePath
+        clist = ":".join(map( lambda conn: conn.GetId(),
+                              self.connections.values() ))
+        string += "connections : %s\n" % clist
+        dlist = ":".join(map( lambda data: self.server.IdFromURL(data.GetId()),
+                              self.data.values() ))
+        string += "data : %s\n" % dlist
+        slist = ":".join(map( lambda stream: stream.GetId(),
+                              self.streamList.GetStaticStreams() ))
+        string += "streams : %s\n" % slist
+        string += "cleanupTime : %d\n\n" % self.cleanupTime
+        
+        string += "\n".join(map(lambda conn: conn.AsINIBlock(),
+                                self.connections.values() ))
+        string += "\n".join(map(lambda data: data.AsINIBlock(),
+                                self.data.values() ))
+        string += "\n".join(map(lambda stream: stream.AsINIBlock(),
+                       self.streamList.GetStaticStreams()))
 
+        return string
+    
     def _authorize(self):
         """
         """
@@ -118,75 +168,25 @@ class Venue(ServiceBase.ServiceBase):
             return 0
 
     def __repr__(self):
-        return "Venue: name=%s id=%s" % (self.description.name, id(self))
+        return "Venue: name=%s id=%s" % (self.name, id(self))
 
-    def __getstate__(self):
-        """
-        Retrieve the state of object attributes for pickling.
-
-        We don't pickle any object instances, except for the
-        uniqueId and description.
-
-        """
-        odict = self.__dict__.copy()
-
-        # Transform the URI
-        venuePath = urlparse.urlparse(odict["description"].uri)[2]
-        odict["description"].uri = venuePath
+    def _ChangeUniqueId(self, id):
+        if self.uniqueId != None:
+#            self.server.eventService.UnregisterCallback(self.uniqueId,
+#                                                        self.ClientHeartbeat)
+            self.server.eventService.RemoveChannel(self.uniqueId)
+            self.server.textService.RemoveChannel(self.uniqueId)
         
-        # We don't save things in this list
-        keys = ("users", "clients", "nodes", 
-                "producerCapabilities", "consumerCapabilities",
-                "server", "_service_object", "houseKeeper",
-                "dataStore")
-        for k in odict.keys():
-            if k in keys:
-                del odict[k]
+        self.uniqueId = id
+        self.uri = self.server.MakeVenueURI(id)
+        log.info("URI %s", self.uri)
 
-        return odict
-
-    def __setstate__(self, pickledDict):
-        """
-        Resurrect the state of this object after unpickling.
-
-        Restore  the attribute dictionary and start up the
-        services.
-
-        """
-        self.__dict__ = pickledDict
-
-        self.users = dict()
-        self.clients = dict()
-        self.nodes = dict()
-        self.cleanupTime = 30
-        self.nextPrivateId = 1
-        self.dataStore = None
-        if self.encryptMedia == 1:
-            self.encryptionKey = AllocateEncryptionKey()
-
-    def Start(self, server):
-        """ """
-        self.server = server
         self.server.eventService.AddChannel(self.uniqueId)
         self.server.textService.AddChannel(self.uniqueId)
-
         log.debug("Registering heartbeat for %s", self.uniqueId)
         self.server.eventService.RegisterCallback(self.uniqueId,
                                            HeartbeatEvent.HEARTBEAT,
                                            self.ClientHeartbeat)
-
-        # We reconstitute the real url here
-        self.description.uri = self.server.MakeVenueURI(self.uniqueId)
-        
-        log.info("URI %s", self.description.uri)
-        
-        self.houseKeeper = Scheduler()
-        self.houseKeeper.AddTask(self.CleanupClients, 10)
-        self.houseKeeper.StartAllTasks()
-
-        self.StartApplications()
-
-        self.startDataStore()
 
     def startDataStore(self):
         """
@@ -246,11 +246,12 @@ class Venue(ServiceBase.ServiceBase):
 
         venueState = {
             'uniqueId' : self.uniqueId,
+            'name' : self.name,
             'description' : self.description,
+            'uri' : self.uri,
             'connections' : self.connections.values(),
             'users' : self.users.values(),
             'nodes' : self.nodes.values(),
-            'services' : self.services.values(),
             'eventLocation' : self.server.eventService.GetLocation(),
             'textLocation' : self.server.textService.GetLocation(),
             'applications': map(lambda x: x.GetState(),
@@ -333,7 +334,7 @@ class Venue(ServiceBase.ServiceBase):
                         key = self.encryptionKey
 
                     addr = self.AllocateMulticastLocation()
-                    streamDesc = StreamDescription( self.description.name,
+                    streamDesc = StreamDescription( self.name,
                                                     "noDesc", addr,
                                                     capability, key)
                     log.debug("added user as producer of non-existent stream")
@@ -501,11 +502,15 @@ class Venue(ServiceBase.ServiceBase):
         if not self._authorize():
             raise VenueException("You are not authorized to perform this action.")
         try:
-            self.connections[connectionDescription.uri] = connectionDescription
+            print "Add Connection: ", connectionDescription
+            print "-- ", dir(connectionDescription)
+            c = ConnectionDescription(connectionDescription.name,
+                                      connectionDescription.description,
+                                      connectionDescription.uri)
+            self.connections[connectionDescription.uri] = c
             self.server.eventService.Distribute( self.uniqueId,
                                           Event( Event.ADD_CONNECTION,
-                                                 self.uniqueId,
-                                                 connectionDescription ) )
+                                                 self.uniqueId, c ) )
         except:
             log.exception("Exception in AddConnection!")
             raise VenueException("Add Connection Failed!")
@@ -550,13 +555,18 @@ class Venue(ServiceBase.ServiceBase):
         desirable.
         """
         log.debug("Calling SetConnections.")
-        
         if not self._authorize():
             raise VenueException("You are not authorized to perform this action.")
         try:
+            # Reset the connections
             self.connections = dict()
+
+            # Add them all
             for connection in connectionList:
-                self.connections[connection.uri] = connection
+                c = ConnectionDescription(connection.name, connection.description, connection.uri)
+                self.connections[connection.uri] = c
+
+            # Send the event
             self.server.eventService.Distribute( self.uniqueId,
                                           Event( Event.SET_CONNECTIONS,
                                                  self.uniqueId,
@@ -595,12 +605,15 @@ class Venue(ServiceBase.ServiceBase):
         log.debug("%s - Adding Stream: ", self.uniqueId)
         
         streamDescription = CreateStreamDescription( inStreamDescription )
-        log.debug("%s - Location: %s %d", self.uniqueId, streamDescription.location.GetHost(),
-                  streamDescription.location.GetPort())
-        log.debug("%s - Capability: %s %s", self.uniqueId, streamDescription.capability.role,
-                  streamDescription.capability.type)
-        log.debug("%s - Encyrption Key: %s", self.uniqueId, streamDescription.encryptionKey)
-        log.debug("%s - Static: %d", self.uniqueId, streamDescription.static)
+#         log.debug("%s - Location: %s %d", self.uniqueId,
+#                   streamDescription.location.GetHost(),
+#                   streamDescription.location.GetPort())
+#         log.debug("%s - Capability: %s %s", self.uniqueId,
+#                   streamDescription.capability.role,
+#                   streamDescription.capability.type)
+#         log.debug("%s - Encyrption Key: %s", self.uniqueId,
+#                   streamDescription.encryptionKey)
+#         log.debug("%s - Static: %d", self.uniqueId, streamDescription.static)
         
         self.streamList.AddStream( streamDescription )
 
@@ -629,8 +642,6 @@ class Venue(ServiceBase.ServiceBase):
         GetStaticStreams returns a list of static stream descriptions
         to the caller.
         """
-        log.debug("Called Venue.GetStaticStreams.")
-        
         return self.streamList.GetStaticStreams()
 
     GetStaticStreams.soap_export_as = "GetStaticStreams"
@@ -679,7 +690,11 @@ class Venue(ServiceBase.ServiceBase):
                 privateId = self.GetNextPrivateId()
                 log.debug("Assigning private id: %s", privateId)
                 clientProfile.distinguishedName = AccessControl.GetSecurityManager().GetSubject().GetName()
-                self.users[privateId] = clientProfile
+                if clientProfile.profileType == "user":
+                    self.users[privateId] = clientProfile
+                elif clientProfile.profileType == "node":
+                    self.nodes[privateId] = clientProfile
+                self.clients[privateId] = time.time()
                 state['users'] = self.users.values()
 
             # negotiate to get stream descriptions to return
@@ -705,7 +720,7 @@ class Venue(ServiceBase.ServiceBase):
         any state associated (or caused by) the VenueClients presence.
         """
         try:
-            log.debug("Called Venue Exit on ...")
+            log.debug("Called Venue Exit on %s", privateId)
 
             if self.IsValidPrivateId( privateId ):
                 log.debug("Deleting user %s %s", privateId,
@@ -732,7 +747,10 @@ class Venue(ServiceBase.ServiceBase):
                                                     clientProfile ) )
 
         # Remove user from venue
-        del self.users[privateId]
+        if clientProfile.profileType == "user":
+            del self.users[privateId]
+        elif clientProfile.profileType == "node":
+            del self.nodes[privateId]
         del self.clients[privateId]
 
     def UpdateClientProfile(self, clientProfile):
@@ -876,42 +894,6 @@ class Venue(ServiceBase.ServiceBase):
 
     GetUploadDescriptor.soap_export_as = "GetUploadDescriptor"
 
-    def AddService(self, serviceDescription):
-        """
-        This method adds a service description to the Venue.
-        """
-        log.debug("Adding service %s at %s", serviceDescription.name,
-                  serviceDescription.uri)
-        try:
-            self.services[serviceDescription.uri] = serviceDescription
-            self.server.eventService.Distribute( self.uniqueId,
-                                          Event( Event.ADD_SERVICE,
-                                                 self.uniqueId,
-                                                 serviceDescription ) )
-        except:
-            log.exception("Exception in AddService!")
-            raise VenueException("AddService: ")
-
-    AddService.soap_export_as = "AddService"
-
-    def RemoveService(self, serviceDescription):
-        """
-        This method removes a service description from the list of services
-        in the Virtual Venue.
-        """
-
-        try:
-            del self.services[serviceDescription.uri]
-            self.server.eventService.Distribute( self.uniqueId,
-                                          Event( Event.REMOVE_SERVICE,
-                                                 self.uniqueId,
-                                                 serviceDescription ) )
-        except:
-            log.exception("Exception in removeService!")
-            raise VenueException("RemoveService: ")
-
-    RemoveService.soap_export_as = "RemoveService"
-
     #
     # Application support
     #
@@ -1006,27 +988,6 @@ class StreamDescriptionList:
     def __init__( self ):
         self.streams = []
 
-    def __getstate__(self):
-        """
-        Prepare stream list for pickling
-        - remove non-static streams
-        - strip the producerList from each item, so only the stream descriptions remain
-        """
-        log.debug("Calling Venue.__getstate__.")
-
-        odict = self.__dict__.copy()
-        odict['streams'] = self.GetStaticStreams()
-        return odict
-
-    def __setstate__(self, dict):
-        """
-        Rebuild list tuples from incoming dictionary
-        """
-        log.debug("Calling Venue.__setstate_.")
-        
-        dict['streams'] = map( lambda stream: ( stream, [] ), dict['streams'] )
-        self.__dict__ = dict
-
     def AddStream( self, stream ):
         """
         Add a stream to the list, only if it doesn't already exist
@@ -1110,20 +1071,18 @@ class StreamDescriptionList:
         GetStaticStreams returns a list of static stream descriptions
         to the caller.
         """
-        log.debug("Called StreamDescriptionList.GetStaticStreams.")
-
         staticStreams = []
         for stream, producerList in self.streams:
-            log.debug("GetStaticStreams - Location: %s %d", 
-                      stream.location.GetHost(),
-                      stream.location.GetPort())
-            log.debug("GetStaticStreams - Capability: %s %s",
-                      stream.capability.role,
-                      stream.capability.type)
-            log.debug("GetStaticStreams - Encyrption Key: %s",
-                      stream.encryptionKey)
-            log.debug("GetStaticStreams - Static: %d",
-                      stream.static)
+#             log.debug("GetStaticStreams - Location: %s %d", 
+#                       stream.location.GetHost(),
+#                       stream.location.GetPort())
+#             log.debug("GetStaticStreams - Capability: %s %s",
+#                       stream.capability.role,
+#                       stream.capability.type)
+#             log.debug("GetStaticStreams - Encyrption Key: %s",
+#                       stream.encryptionKey)
+#             log.debug("GetStaticStreams - Static: %d",
+#                       stream.static)
             if stream.static:
                 staticStreams.append( stream )
         return staticStreams

@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.27 2003-03-21 23:29:44 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.28 2003-03-24 20:26:12 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -21,10 +21,12 @@ import sys
 from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetParameter, CreateParameter
 
 class VenueState:
-    def __init__( self, uniqueId, description, connections, users,
-                  nodes, data, services, eventLocation, textLocation, applications ):
+    def __init__( self, uniqueId, name, description, uri, connections, users,
+                  nodes, data, eventLocation, textLocation, applications ):
         self.uniqueId = uniqueId
+        self.name = name
         self.description = description
+        self.uri = uri
         self.eventLocation = eventLocation
         self.textLocation = textLocation
 
@@ -32,7 +34,6 @@ class VenueState:
         self.users = dict()
         self.nodes = dict()
         self.data = dict()
-        self.services = dict()
         self.clients = dict()
         self.applications = dict()
         
@@ -46,8 +47,6 @@ class VenueState:
             self.clients[nodes.publicId] = time.localtime()
         for datum in data:
             self.data[datum.name] = datum
-        for service in services:
-            self.services[service.uri] = service
         for app in applications:
             self.applications[app.id] = app
 
@@ -60,6 +59,16 @@ class VenueState:
         self.description = description
     def GetDescription( self ):
         return self.description
+
+    def SetName( self, description ):
+        self.name = name
+    def GetName( self ):
+        return self.name
+
+    def SetUri( self, uri ):
+        self.uri = uri
+    def GetUri( self ):
+        return self.uri
 
     def AddUser( self, userProfile ):
         self.users[userProfile.publicId] = userProfile
@@ -92,11 +101,6 @@ class VenueState:
         self.data[dataDescription.name] = dataDescription
     def RemoveData( self, dataDescription ):
         del self.data[dataDescription.name]
-
-    def AddService( self, serviceDescription ):
-        self.services[serviceDescription.uri] = serviceDescription
-    def RemoveService( self, serviceDescription ):
-        del self.services[serviceDescription.uri]
 
     def AddConnection( self, connectionDescription ):
         self.connections[connectionDescription.uri] = connectionDescription
@@ -148,6 +152,10 @@ class Capability:
         self.role = role
         self.type = type
         self.parms = dict()
+
+    def __repr__(self):
+        string = "%s %s" % (self.role, self.type)
+        return string
 
     def matches( self, capability ):
         if self.type != capability.type:

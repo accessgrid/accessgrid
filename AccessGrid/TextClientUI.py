@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClientUI.py,v 1.15 2003-03-14 15:49:55 lefvert Exp $
+# RCS-ID:      $Id: TextClientUI.py,v 1.16 2003-03-24 20:26:12 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,6 +14,7 @@ import os
 import sys
 import pickle
 import string
+import logging
 
 from wxPython.wx import *
 from threading import Thread
@@ -24,6 +25,8 @@ from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 from AccessGrid.Events import ConnectEvent, TextEvent
+
+log = logging.getLogger("AG.VenueClient")
 
 class SimpleTextProcessor:
     def __init__(self, socket, venueId, textOut):
@@ -57,16 +60,13 @@ class SimpleTextProcessor:
             self.wfile.write(lenStr)
             self.wfile.write(pdata)
         except:
-            (name, args, tb) = formatExceptionInfo()
-            print "Error trying to send data"
-            print "Name: %s Args: %s" % (name, args)
-            print "TB:\n", tb
+            log.exception("Couldn't send data.")
 
     def Output(self, text):
         """ """
         data = text.data
 
-#        print "TS: %s GDI: %s" % (text.sender, GetDefaultIdentityDN())
+        log.debug("TS: %s GDI: %s", (text.sender, GetDefaultIdentityDN()))
         if text.sender == GetDefaultIdentityDN():
             string = "You say, \"%s\"\n" % (data)
         elif text.sender != None:
@@ -93,6 +93,7 @@ class SimpleTextProcessor:
         self.running = 1
         while self.running:
             str = self.rfile.readline()
+            log.debug("TextClient Read %s", str)
             size = int(str)
             pdata = self.rfile.read(size, size)
             event = pickle.loads(pdata)

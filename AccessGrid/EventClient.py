@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.7 2003-03-19 16:08:16 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.8 2003-03-24 20:26:12 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,10 +22,10 @@ from pyGlobus.util import Buffer
 from pyGlobus import ioc
 
 from AccessGrid.Utilities import formatExceptionInfo
-from AccessGrid.Events import HeartbeatEvent, ConnectEvent
+from AccessGrid.Events import HeartbeatEvent, ConnectEvent, DisconnectEvent
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 
-log = logging.getLogger("AG.EventClient")
+log = logging.getLogger("AG.VenueClient")
 
 class EventClient(Thread):
     """
@@ -34,14 +34,14 @@ class EventClient(Thread):
     events through the event service.
     """
     bufsize = 128
-    def __init__(self, location):
+    def __init__(self, location, channel):
         """
         The EventClient constructor takes a host, port.
         """
         # Standard initialization
+        self.channel = channel
         self.buffer = Buffer(EventClient.bufsize)
         self.location = location
-        self.id = id
         self.callbacks = []
         Thread.__init__(self)
         
@@ -49,7 +49,6 @@ class EventClient(Thread):
         self.sock = GSITCPSocket()
         self.sock.connect(location[0], location[1], attr)
         self.rfile = self.sock.makefile('rb', -1)
-        self.wfile = self.sock.makefile('wb', 0)
 
     def run(self):
         """
@@ -57,7 +56,7 @@ class EventClient(Thread):
         processing event data provided by a EventService.
         """
         self.running = 1
-        while self.sock != None and self.running:
+        while self.rfile != None and self.running:
             try:
                 str = self.rfile.readline()
                 if str == "":
@@ -89,16 +88,23 @@ class EventClient(Thread):
                             log.info("No callback for %s!", event.eventType)
                             self.DefaultCallback(event)                            
                     else:
-                        self.sock.close()
+                        running = 0
                         break
             except:
-                print "Server closed connection!", formatExceptionInfo()
-                self.sock.close()
+                log.exception("Server closed connection!")
+                try:
+                    running = 0
+                except:
+                    log.exception("Couldn't close socket!")
+
+            self.sock.close()
 
     def Send(self, data):
         """
         This method sends data to the Event Service.
         """
+        log.info("Sending data: %s", str(data))
+        
         try:
             # Pickle the data
             pdata = pickle.dumps(data)
@@ -108,14 +114,15 @@ class EventClient(Thread):
             # Then send the pickled data
             self.sock.write(pdata, len(pdata))
         except:
-            (name, args, tb) = formatExceptionInfo()
-            print "EventClient.Send Error: %s, %s" % (name, args)
+            log.exception("EventClient.Send Error.")
 
     def Stop(self):
         self.running = 0
 
+        self.Send(DisconnectEvent(self.channel))
+
     def DefaultCallback(self, event):
-        print "Got callback for %s event!" % event.eventType
+        log.info("Got callback for %s event!", event.eventType)
 
     def RegisterCallback(self, eventType, callback):
         # Callbacks just take the event data as the argument
@@ -131,13 +138,34 @@ class EventClient(Thread):
         for c in object.callbacks.keys():
             self.RegisterCallback(c, object.callbacks[c])
 
+    def Start(self):
+        self.start()
+        
 if __name__ == "__main__":
-    import sys
+    import sys, os, time
     # command line arguments are:
     # 1) host for event service
     # 2) port for event service
+    # 3) channel for event service
+    log.addHandler(logging.StreamHandler())
+    log.setLevel(logging.DEBUG)
+    
     if len(sys.argv) > 1:
-        eventClient = EventClient(location = ( sys.argv[1], sys.argv[2]) )
+        eventClient = EventClient((sys.argv[1], int(sys.argv[2])),
+                                  sys.argv[3])
     else:
         eventClient = EventClient()
-    eventClient.start()
+
+    eventClient.Start()
+    
+    eventClient.Send(ConnectEvent(sys.argv[3]))
+        
+    for i in range(1,5):
+        eventClient.Send(HeartbeatEvent(sys.argv[3], "foo"))
+        time.sleep(1)
+
+    time.sleep(1)
+    
+    eventClient.Stop()
+
+    os._exit(0)
