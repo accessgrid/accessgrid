@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.8 2003-02-21 16:09:05 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.9 2003-02-21 17:39:29 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,6 +31,15 @@ def SignalHandler(signum, frame):
 def AuthCallback(server, g_handle, remote_user, context):
     print "Server gets identity ", remote_user
     return 1
+
+
+try:
+    import logging
+    logger = logging.getLogger("AG")
+    logger.addHandler(logging.StreamHandler())
+    logger.setLevel(logging.DEBUG)
+except:
+    pass
 
 
 port = 8000
