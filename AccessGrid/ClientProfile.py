@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.10 2003-01-28 04:12:15 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.11 2003-01-28 17:20:31 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,6 +15,13 @@ import ConfigParser
 import string
 
 from AccessGrid.Utilities import LoadConfig, SaveConfig
+
+class InvalidProfileException(Exception):
+    """
+    This is a bad profile.
+    """
+    pass
+
 class ClientProfile:
     """
     The client profile is used to represent the clients throughout the AG.
@@ -22,6 +29,20 @@ class ClientProfile:
     profile is allowed to modify it.
     """
 
+    configSection = 'ClientProfile'
+    
+    validOptions = [
+        'type',
+        'name',
+        'email',
+        'phone',
+        'icon',
+        'id',
+        'location',
+        'venueclienturl',
+        'techsupportinfo',
+        'home']
+        
     defaultProfile = {
         'ClientProfile.type' : "user",
         'ClientProfile.name' : 'John Doe',
@@ -62,19 +83,20 @@ class ClientProfile:
 	"""
 	"""
         self.profile = LoadConfig(fileName, ClientProfile.defaultProfile)
-        
-        self.profileType = self.profile['ClientProfile.type']
-        self.name = self.profile['ClientProfile.name']
-        self.email = self.profile['ClientProfile.email']
-        self.phoneNumber = self.profile['ClientProfile.phone']
-        self.icon = self.profile['ClientProfile.icon']
-        self.publicId = self.profile['ClientProfile.id']
-        self.location = self.profile['ClientProfile.location']
-        self.venueClientURL = self.profile['ClientProfile.venueclienturl']
-        self.techSupportInfo = self.profile['ClientProfile.techsupportinfo']
-        self.homeVenue = self.profile['ClientProfile.home']
 
-        self.Dump()
+        if self.CheckProfile():
+            self.profileType = self.profile['ClientProfile.type']
+            self.name = self.profile['ClientProfile.name']
+            self.email = self.profile['ClientProfile.email']
+            self.phoneNumber = self.profile['ClientProfile.phone']
+            self.icon = self.profile['ClientProfile.icon']
+            self.publicId = self.profile['ClientProfile.id']
+            self.location = self.profile['ClientProfile.location']
+            self.venueClientURL = self.profile['ClientProfile.venueclienturl']
+            self.techSupportInfo = self.profile['ClientProfile.techsupportinfo']
+            self.homeVenue = self.profile['ClientProfile.home']
+        else:
+            raise InvalidProfileException
         
     def Dump(self):
         """
@@ -105,7 +127,22 @@ class ClientProfile:
         config['ClientProfile.home'] = self.GetHomeVenue()
         
         SaveConfig(fileName, config)
-        
+
+    def IsDefault(self):
+        if self.profile == ClientProfile.defaultProfile:
+            return 1
+        else:
+            return 0
+
+    def CheckProfile(self):
+        for x in self.profile.keys():
+            (section, option) = string.split(x, '.')
+            if (section != ClientProfile.configSection and
+                section != string.lower(ClientProfile.configSection)
+                or option not in ClientProfile.validOptions):
+                return 0
+        return 1
+    
     def SetProfileType(self, profileType):
         """ """
         self.profileType = profileType
