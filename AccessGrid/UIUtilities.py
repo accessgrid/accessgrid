@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.41 2003-11-06 22:41:50 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.42 2003-11-06 23:01:30 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.41 2003-11-06 22:41:50 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.42 2003-11-06 23:01:30 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import isWindows, isLinux, isOSX
@@ -204,23 +204,29 @@ class AboutDialog(wxDialog):
             
     def __init__(self, parent):
         wxDialog.__init__(self, parent, -1, str(GetVersion()) )
-
+        print 'in about dialog'
         version = str(GetVersion())       
         bmp = icons.getAboutBitmap()
         info = "Version: %s \nPlease visit www.accessgrid.org for more information" %version
         self.ReadLicenseFile()
+
+        print bmp.GetWidth()
         
         self.SetSize(wxSize(bmp.GetWidth()+20, 400))
-                
-        self.panel = wxPanel(self, -1)
+        
+        self.panel = wxPanel(self, -1, size = wxSize(bmp.GetWidth()+20, 400))
         self.image = wxStaticBitmap(self.panel, -1, bmp,
                                     size = wxSize(bmp.GetWidth(), bmp.GetHeight()))
         self.text = wxStaticText(self.panel, -1, info)
+        self.text.SetBackgroundColour("WHITE")
         self.license = wxTextCtrl(self.panel, -1, self.licenseText,
-                                  size = wxSize(bmp.GetWidth()-10, 100),
+                                  size = wxSize(bmp.GetWidth()-10, 200),
                                   style = wxTE_MULTILINE)
         self.okButton = wxButton(self.panel, wxID_OK, "Ok" )
         self.panel.SetBackgroundColour("WHITE")
+
+        self.okButton.SetDefault()
+        self.okButton.SetFocus()
 
         self.__layout()
 
@@ -237,6 +243,10 @@ class AboutDialog(wxDialog):
         '''
         Handle UI layout.
         '''
+        sizer = wxBoxSizer(wxHORIZONTAL)
+        self.SetSizer(sizer)
+        sizer.Add(self.panel)
+        
         boxSizer = wxBoxSizer(wxVERTICAL)
         boxSizer.Add(5,5)
         boxSizer.Add(self.image, 0 ,wxALIGN_CENTER)
@@ -245,9 +255,9 @@ class AboutDialog(wxDialog):
         boxSizer.Add(wxStaticLine(self.panel, -1), 0, wxALL | wxEXPAND, 10)
         boxSizer.Add(self.okButton, 0, wxALIGN_CENTER|wxBOTTOM, 10)
         
-        self.panel.SetAutoLayout(1)
-        self.panel.SetSizer(boxSizer)
-        self.panel.Layout()
+        self.SetAutoLayout(1)
+        self.SetSizer(boxSizer)
+        boxSizer.Fit(self)
         
         
 class AppSplash(wxSplashScreen):
@@ -329,7 +339,7 @@ def AboutDialogTest():
     dlg = AboutDialog(None)
     dlg.ShowModal()
     dlg.Destroy()
-   
+       
 if __name__ == "__main__":
     app = wxPySimpleApp()
 
