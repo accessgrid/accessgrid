@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.56 2004-05-09 02:57:45 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.57 2004-05-12 17:10:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.56 2004-05-09 02:57:45 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.57 2004-05-12 17:10:07 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -23,7 +23,6 @@ from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.NetworkLocation import ProviderProfile
 from AccessGrid.Types import Capability
 from AccessGrid.Types import AGResource, AGVideoResource
-from AccessGrid.Types import ServiceConfiguration
 
 from AccessGrid.ClientProfile import ClientProfile
 class ObjectDescription:
@@ -676,22 +675,6 @@ def CreateResource(rscStruct):
         rsc = AGResource()
     return rsc
 
-def CreateServiceConfiguration(serviceConfigStruct):
-
-    resource = None
-    print "serviceConfigStruct.resource = ", serviceConfigStruct.resource
-    if serviceConfigStruct.resource and serviceConfigStruct.resource != "None":
-        resource = CreateResource(serviceConfigStruct.resource)
-    
-    print "serviceConfigStruct.parameters = ", serviceConfigStruct.parameters
-    parameters = dict()
-    
-    serviceConfig = ServiceConfiguration(resource,
-                                         serviceConfigStruct.executable,
-                                         parameters)
-    
-    return serviceConfig
-
 def CreateNetworkLocation(networkLocationStruct):
     
     if networkLocationStruct.type == UnicastNetworkLocation.TYPE:
@@ -708,3 +691,23 @@ def CreateNetworkLocation(networkLocationStruct):
     networkLocation.id = networkLocationStruct.id
     networkLocation.privateId = networkLocationStruct.privateId
     return networkLocation
+
+
+def CreateParameter( parmstruct ):
+    """
+    Object factory to create parameter instances from SOAPStructs
+    """
+    from AGParameter import OptionSetParameter, TextParameter
+    from AGParameter import RangeParameter, ValueParameter
+    if parmstruct.type == OptionSetParameter.TYPE:
+        parameter = OptionSetParameter( parmstruct.name, parmstruct.value, parmstruct.options )
+    elif parmstruct.type == RangeParameter.TYPE:
+        parameter = RangeParameter( parmstruct.name, parmstruct.value, parmstruct.low, parmstruct.high )
+    elif parmstruct.type == ValueParameter.TYPE:
+        parameter = ValueParameter( parmstruct.name, parmstruct.value )
+    elif parmstruct.type == TextParameter.TYPE:
+        parameter = TextParameter( parmstruct.name, parmstruct.value )
+    else:
+        raise TypeError("Unknown parameter type:", parmstruct.type )
+
+    return parameter
