@@ -5,11 +5,15 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerWin32.py,v 1.4 2003-03-31 15:29:38 turam Exp $
+# RCS-ID:      $Id: ProcessManagerWin32.py,v 1.5 2003-04-09 15:40:54 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 import win32process
+
+import logging
+
+log = logging.getHandler("AG.ProcessManagerWin32")
 
 class ProcessManagerWin32:
     def __init__(self):
@@ -36,11 +40,13 @@ class ProcessManagerWin32:
 
             cmdline += " " + arg
 
+        rc = None
+
         try:
 
             startup_info = win32process.STARTUPINFO()
 
-            print "cmdline is ", cmdline
+            log.debug("Creating process: %s", cmdline)
 
             info = win32process.CreateProcess(
                 None,                   # AppName
@@ -53,21 +59,23 @@ class ProcessManagerWin32:
                 None,                   # Current directory
                 startup_info)
 
-            print "info is ", info
+            log.debug("Create process returns: %s", info)
 
             self.processes.append(info[0])
 
-        except win32process.error, e:
-            print "process creation failed: ", e
+            rc = info[0]
 
-        return info[0]
+        except win32process.error, e:
+            log.exception("process creation failed: %s", e)
+
+        return rc
 
     def terminate_all_processes(self):
         for phandle in self.processes:
             try:
                 win32process.TerminateProcess(phandle, 0)
             except win32process.error, e:
-                print "couldn't terminate process: ", e
+                log.exception("couldn't terminate process %s: %s", phandle, e)
         self.processes = []
 
     def terminate_process(self, phandle):
@@ -75,7 +83,7 @@ class ProcessManagerWin32:
             win32process.TerminateProcess(phandle, 0)
             self.processes.remove(phandle)
         except win32process.error, e:
-            print "couldn't terminate process: ", e
+            log.exception("couldn't terminate process %s: %s", phandle, e)
 
 if __name__ == "__main__":
 
