@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.39 2003-08-22 14:18:33 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.40 2003-08-22 14:40:06 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -559,7 +559,10 @@ def LinuxGetMimeCommands(mimeType = None, ext = None):
     caps = mailcap.getcaps()
     
     # This always returns a tuple, so this should be safe
-    match = mailcap.findmatch(caps, mimeType, view)[1]
+    if mimeType != None:
+        match = mailcap.findmatch(caps, mimeType, view)[1]
+    else:
+        return cdict()
 
     if match != None:
         cdict['Open'] = match[view]
