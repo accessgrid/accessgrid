@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.224 2004-08-23 18:25:40 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.225 2004-08-25 14:50:14 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.224 2004-08-23 18:25:40 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.225 2004-08-25 14:50:14 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -366,11 +366,13 @@ class Venue(AuthorizationMixIn):
                                         "GetEventServiceLocation",
                                         "DetermineSubjectRoles",
                                         "AddNetService", "RemoveNetService",
-                                        "IsAuthorized", "IsValid"]
+                                        "IsAuthorized", "IsValid",
+                                        "AllocateMulticastLocation",
+                                        ]
         # Methods in Venue IW that are not default to everybody:
         #   "Shutdown", "SetEncryptMedia", "RegenerateEncryptionKeys",
         #   "SetDescription", "SetName", "AddStream", "RemoveStream",
-        #   "ImportAuthorizationPolicy", "AllocateMulticastLocation",
+        #   "ImportAuthorizationPolicy", 
         #   "AddSubjectToRole", "RemoveSubjectFromRole", "SetSubjectsInRole",
         #   "FlushRoles", "GetUsersInRole", "GetRoleNames"
 
