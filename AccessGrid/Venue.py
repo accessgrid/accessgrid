@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.228 2004-10-21 20:59:23 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.229 2004-11-30 19:04:56 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.228 2004-10-21 20:59:23 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.229 2004-11-30 19:04:56 lefvert Exp $"
 
 import sys
 import time
@@ -340,6 +340,7 @@ class Venue(AuthorizationMixIn):
 
         # Default actions for Entry Roles.
         self.defaultEntryActionNames = ["Enter", "Exit", "GetStreams",
+                                        "NegotiateCapabilities",
                                         "GetStaticStreams",
                                         "GetUploadDescriptor",
                                         "GetRolesForSubject",
@@ -783,27 +784,23 @@ class Venue(AuthorizationMixIn):
 
         self.clientDisconnectOK[privateId] = 1
 
-    def NegotiateCapabilities(self, vcstate):
+    def NegotiateCapabilities(self, privateId, capabilities):
         """
-        This method takes a client profile and matching privateId, then it
-        finds a set of streams that matches the client profile. Later this
-        method could use network services to find The Best Match of all the
-        network services, the existing streams, and all the client
-        capabilities.
-
+        This method takes node capabilitis and finds a set of streams that
+        matches those capabilities.  This method uses the network services
+        manager to find The Best Match of all the network services, the
+        existing streams, and all the client capabilities.
+        
         **Arguments:**
-
-        *clientProfile* The profile of the client that needs to
-        have capabilities negotiated.
-
-        *privateId* The privateId of the client associated with
-        the client profile passed in.
-
+        
+        *privateId* Private id for the node
+        *capabilities* Node capabilities
         """
         log.debug("negotiate capabilities")
-        clientProfile = vcstate.GetClientProfile()
-        privateId = vcstate.GetPrivateId()
 
+        if not self.clients.has_key(privateId):
+            raise InvalidVenueState
+                
         streamDescriptions = []
 
         #
@@ -813,7 +810,7 @@ class Venue(AuthorizationMixIn):
         # current participants about the new stream
         #
                 
-        for clientCapability in clientProfile.capabilities:
+        for clientCapability in capabilities:
             if clientCapability.role == Capability.PRODUCER:
                 matchesExistingStream = 0
                 
@@ -867,7 +864,7 @@ class Venue(AuthorizationMixIn):
         mismatchedStreams = []
         matchingStreams = []
               
-        for capability in clientProfile.capabilities:
+        for capability in capabilities:
             if capability.role == Capability.CONSUMER:
                 clientConsumerCapTypes.append( capability.type )
 
@@ -914,7 +911,7 @@ class Venue(AuthorizationMixIn):
             log.debug('Resolve mismatch')
             
             matchingStreams = self.networkServicesManager.ResolveMismatch(
-                mismatchedStreams, clientProfile.capabilities)
+                mismatchedStreams, capabilities)
            
             log.debug('Number of new streams %s'%len(matchingStreams))
 
@@ -925,7 +922,7 @@ class Venue(AuthorizationMixIn):
                     
             # Return new streams to the client.
             streamDescriptions.extend(matchingStreams)
-
+     
         return streamDescriptions
     
 
@@ -1265,9 +1262,6 @@ class Venue(AuthorizationMixIn):
         self._UpdateProfileCache(clientProfile)
         usage_log.info("\"Enter\",\"%s\",\"%s\",\"%s\"", clientProfile.GetDistinguishedName(), self.name, self.uniqueId)
 
-        # negotiate to get stream descriptions to return
-        streamDescriptions = self.NegotiateCapabilities(vcstate)
-
         log.debug("Current users:")
         for c in self.clients.values():
             log.debug("   " + str(c))
@@ -1286,6 +1280,9 @@ class Venue(AuthorizationMixIn):
         except:
             log.exception("Enter: Can't get state.")
             raise InvalidVenueState
+
+        # Call NegotiateCapabilities separately 
+        streamDescriptions = []
 
         return ( state, privateId, streamDescriptions)
 
@@ -2868,6 +2865,10 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
             log.exception("VenueI.GetStaticStreams")
             raise
 
+    def NegotiateCapabilities(self, privateId, capabilities):
+        sl = self.impl.NegotiateCapabilities(privateId, capabilities)
+        return sl
+
     def Exit(self, privateId):
         """
         The Exit method is used by a VenueClient to cleanly leave a Virtual
@@ -3358,6 +3359,14 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
     def Exit(self, pid):
         return self.proxy.Exit(pid)
 
+    def NegotiateCapabilities(self, privateId, capabilities):
+        streamDescList = []
+        streamDescStructList = self.proxy.NegotiateCapabilities(privateId, capabilities)
+        for streamDescStruct in streamDescStructList:
+            streamDescList.append( CreateStreamDescription(streamDescStruct) )
+        
+        return streamDescList
+    
     def GetClients(self):
         cl = self.proxy.GetClients()
         rcl = list()
