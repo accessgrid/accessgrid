@@ -107,7 +107,7 @@ class VenueServerTest:
         print " "
         print "------------------ Set allocator =  MulticastAddressAllocator.INTERVAL"
         self.client.SetAddressAllocationMethod(MulticastAddressAllocator.INTERVAL)
-        self.client.GetAddressAllocationMethod()
+        method = self.client.GetAddressAllocationMethod()
         print " "
         if method == MulticastAddressAllocator.RANDOM:
             print "------------------ Get allocator: MulticastAddressAllocator.RANDOM"
