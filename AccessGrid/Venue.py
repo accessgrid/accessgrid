@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.190 2004-04-27 17:20:19 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.191 2004-04-29 19:25:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.190 2004-04-27 17:20:19 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.191 2004-04-29 19:25:20 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -2523,7 +2523,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
             sl = self.impl.GetStreams()
             return sl
         except:
-            log.exception("VenueI.GetStreams.")
+            log.exception("VenueI.GetStreams")
             raise
 
     def GetStaticStreams(self):
@@ -2535,7 +2535,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
             sl = self.impl.GetStaticStreams()
             return sl
         except:
-            log.exception("VenueI.GetStreams.")
+            log.exception("VenueI.GetStaticStreams")
             raise
 
     def Exit(self, privateId):
@@ -2986,10 +2986,18 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
         return self.proxy.RemoveStream(sid)
 
     def GetStreams(self):
-        return self.proxy.GetStreams()
+        streamDescList = []
+        streamDescStructList = self.proxy.GetStreams()
+        for streamDescStruct in streamDescStructList:
+            streamDescList.append( CreateStreamDescription(streamDescStruct) )
+        return streamDescList
 
     def GetStaticStreams(self):
-        return self.proxy.GetStaticStreams()
+        streamDescList = []
+        streamDescStructList = self.proxy.GetStaticStreams()
+        for streamDescStruct in streamDescStructList:
+            streamDescList.append( CreateStreamDescription(streamDescStruct) )
+        return streamDescList
 
     def Shutdown(self):
         return self.proxy.Shutdown()
