@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.33 2004-04-23 16:48:14 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.34 2004-04-23 19:47:55 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.33 2004-04-23 16:48:14 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.34 2004-04-23 19:47:55 lefvert Exp $"
 
 import os
 import sys
@@ -147,7 +147,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
             self.GetBaseDir()
 
         self.configDir = os.path.join(self.installBase, "Config")
-
+      
         # Check dir and make it if needed.
         if self.initIfNeeded:
             if self.configDir is not None and \
@@ -546,11 +546,23 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
         try:
             self.baseDir = os.environ[AGTK_USER]
+
+            # Create directory if it doesn't exist
+            if self.initIfNeeded:
+                if not os.path.exists(self.baseDir):
+                    os.mkdir(self.baseDir)
         except:
             try:
                 base = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
                 self.baseDir = os.path.join(base, "AccessGrid")
+
+                if self.initIfNeeded:
+                    # Create directory if it doesn't exist
+                    if not os.path.exists(self.baseDir):
+                        os.mkdir(self.baseDir)
+                
             except:
+                log.exception("Can not create base directory")
                 # check to make it if needed
                 self.baseDir = ""
                 
