@@ -2,7 +2,7 @@
 Platform Support Design Changes for 2.1.3
 =========================================
  
-:version: $Revision: 1.2 $
+:version: $Revision: 1.3 $
 :author: Ivan R. Judson <judson@mcs.anl.gov>
 :status: Draft
 
@@ -62,19 +62,9 @@ specific or platform tailored code):
 
 Summary of Modifications
 ========================
- os/win32 calls with process manager
-
-4. PersonalNode.py, PersonalNodePipes.py, PersonalNodeWin32.py
-   - move modules without review into new organizational structure
-   - consider replacing all direct os/win32 calls with process manager
-     time permitting
-
-5. CertificateManager.py
-    - Enable this to use the GlobusConfig object, which encapsulates
-      globus specific configuration data.
 
 The modifications for supporting platforms have been extracted after
-carefule review of the existing platform support modules, and after
+careful review of the existing platform support modules, and after
 looking at the toolkit initialization.  It has become clear that some
 organization of the platform modules can make the toolkit
 initialization and configuration significantly easier to understand,
@@ -86,33 +76,16 @@ Module Organization
 
 - AccessGrid
 
-  - Config.py
-
-      - class AGTkConfig
-
-      - class GlobusConfig
-
-  - Platform  os/win32 calls with process manager
-
-4. PersonalNode.py, PersonalNodePipes.py, PersonalNodeWin32.py
-   - move modules without review into new organizational structure
-   - consider replacing all direct os/win32 calls with process manager
-     time permitting
-
-5. CertificateManager.py
-    - Enable this to use the GlobusConfig object, which encapsulates
-      globus specific configuration data.
-
-The modifications for supporting platforms have been extracted after
-carefule review of the existing platform support modules, and after
-looking at the toolkit initialization.  It has become clear that some
-organization of the platform modules can make the toolkit
-initialization and configuration significantly easier to understand,
+  - Platform  
 
     - Config.py
     
       - class Config
     
+      - class AGTkConfig
+
+      - class GlobusConfig
+
       - class UserConfig
 
       - class SystemConfig
@@ -144,102 +117,6 @@ initialization and configuration significantly easier to understand,
 Specifications
 --------------
 
-from AccessGrid/Config.py:
-
-class AGTkConfig:
-    """
-    This class encapsulates a system configuration for the Access Grid
-    Toolkit. This object provides primarily read-only access to configuration
-    data that is created when the toolkit is installed.
-
-    @var version: The version of this installation.
-    @var installDir: The directory this toolkit is installed in.
-    @var appDir: The directory for applications for all users.
-    @var docDir: The directory for documentation for the toolkit.
-    @var pkgCacheDir: The directory of shared application and node service packages for all users of this installation.
-    @var configDir: The directory for installation configuration.
-    @var tempDir: The toolkit wide temporary file directory.
-
-    @type configDir: string
-    @type tempDir: string
-    @type version: string
-    @type installDir: string
-    @type appDir: string
-    @type docDir: string
-    @type pkgCacheDir: string
-    """
-    def __init__(self):
-        raise "This should not be called directly, but through a subclass."
-        
-    def GetVersion(self):
-        raise "This should not be called directly, but through a subclass."
-
-    def GetConfigDir(self):
-        raise "This should not be called directly, but through a subclass."
-
-    def GetTempDir(self):
-        raise "This should not be called directly, but through a subclass."
-
-    def GetInstallDir(self):
-        raise "This should not be called directly, but through a subclass."
-
-    def GetSharedAppDir(self):
-        raise "This should not be called directly, but through a subclass."
-
-    def GetNodeServicesDir(self):
-        raise "This should not be called directly, but through a subclass."
-
-    def GetServicesDir(self):
-        raise "This should not be called directly, but through a subclass."
-
-    def GetDocDir(self):
-        raise "This should not be called directly, but through a subclass."
-
-    def GetPkgCacheDir(self):
-        raise "This should not be called directly, but through a subclass."
-
-class GlobusConfig:
-    """
-    This object encapsulates the information required to correctly configure
-    Globus and pyGlobus for use with the Access Grid Toolkit.
-
-    @var location: the location of the globus installation
-    @var caCertDir: the directory of Certificate Authority Certificates
-    @var hostname: the Hostname for the globus configuration
-    @var proxyFile: THe filename for the globus proxy
-    @var certFile: The filename of the X509 certificate.
-    @var keyFile: The filename of the X509 key.
-    """
-    def __init__(self, initEnvIfNeeded=0):
-        """
-        This is the constructor, the only argument is used to indicate
-        a desire to intialize the existing environment if it is discovered
-        to be uninitialized.
-
-        @param initIfNeeded: a flag indicating if this object should
-        initialize the system if it is not.
-
-        @type initIfNeeded: integer
-        """
-        raise "This should not be called directly, but through a subclass."
-
-    def GetLocation(self):
-        raise "This should not be called directly, but through a subclass."
-    
-    def GetCACertDir(self):
-        raise "This should not be called directly, but through a subclass."
-    
-    def GetHostname(self):
-        raise "This should not be called directly, but through a subclass."
-    
-    def GetProxyFileName(self):
-        raise "This should not be called directly, but through a subclass."
-    
-    def GetCertFileName(self):
-        raise "This should not be called directly, but through a subclass."
-
-    def GetKeyFileName(self):
-        raise "This should not be called directly, but through a subclass."          
 from AccessGrid/Platform/__init__.py:
 
 # Global env var
@@ -291,14 +168,127 @@ else:
 
 from AccessGrid/Platform/Config.py:
 
-class UserConfig(AGTkConfig):
+
+class ConfigBase:
+    """
+    This class encapsulates a system configuration for the Access Grid
+    Toolkit. This object provides primarily read-only access to configuration
+    data that is created when the toolkit is installed.
+
+    @var appDir: The directory for system installed shared applications
+    @var nodeServicesDir: the directory for system installed node services
+    @var servicesDir: the directory for system installed services
+    @var pkgCacheDir: The directory of shared application and node
+    service packages for all users of this installation.
+    @var configDir: The directory for installation configuration.
+
+    @type appDir: string
+    @type nodeServicesDir: string
+    @type servicesDir: string
+    @type configDir: string
+    @type pkgCacheDir: string
+    """
+    def GetPkgCacheDir(self):
+        raise "This should not be called directly, but through a subclass."
+
+    def GetConfigDir(self):
+        raise "This should not be called directly, but through a subclass."
+
+    def GetSharedAppDir(self):
+        raise "This should not be called directly, but through a subclass."
+
+    def GetNodeServicesDir(self):
+        raise "This should not be called directly, but through a subclass."
+
+    def GetServicesDir(self):
+        raise "This should not be called directly, but through a subclass."
+
+class AGTkConfig(ConfigBase):
+    """
+    This class encapsulates a system configuration for the Access Grid
+    Toolkit. This object provides primarily read-only access to configuration
+    data that is created when the toolkit is installed.
+
+    @var version: The version of this installation.
+    @var installDir: The directory this toolkit is installed in.
+    @var docDir: The directory for documentation for the toolkit.
+
+    @type version: string
+    @type installDir: string
+    @type docDir: string
+    """
+    def __init__(self):
+        raise "This should not be called directly, but through a subclass."
+        
+    def GetVersion(self):
+        raise "This should not be called directly, but through a subclass."
+
+    def GetInstallDir(self):
+        raise "This should not be called directly, but through a subclass."
+
+    def GetDocDir(self):
+        raise "This should not be called directly, but through a subclass."
+
+class GlobusConfig:
+    """
+    This object encapsulates the information required to correctly configure
+    Globus and pyGlobus for use with the Access Grid Toolkit.
+
+    @var location: the location of the globus installation
+    @var caCertDir: the directory of Certificate Authority Certificates
+    @var hostname: the Hostname for the globus configuration
+    @var proxyFile: THe filename for the globus proxy
+    @var certFile: The filename of the X509 certificate.
+    @var keyFile: The filename of the X509 key.
+    """
+    def __init__(self, initEnvIfNeeded=0):
+        """
+        This is the constructor, the only argument is used to indicate
+        a desire to intialize the existing environment if it is discovered
+        to be uninitialized.
+
+        @param initIfNeeded: a flag indicating if this object should
+        initialize the system if it is not.
+
+        @type initIfNeeded: integer
+        """
+        raise "This should not be called directly, but through a subclass."
+
+    def GetLocation(self):
+        raise "This should not be called directly, but through a subclass."
+    
+    def GetCACertDir(self):
+        raise "This should not be called directly, but through a subclass."
+    
+    def GetHostname(self):
+        raise "This should not be called directly, but through a subclass."
+    
+    def GetProxyFileName(self):
+        raise "This should not be called directly, but through a subclass."
+    
+    def GetCertFileName(self):
+        raise "This should not be called directly, but through a subclass."
+
+    def GetKeyFileName(self):
+        raise "This should not be called directly, but through a subclass."    
+
+class UserConfig(ConfigBase):
     """
     A user config object encapsulates all of the configuration data for
     a running instance of the Access Grid Toolkit software.
+
+    @var profile: the user profile
+    @var tempDir: a temporary directory for files for this user
     """
     def __init__(self):
         raise "This should not be called directly, but through a subclass."
 
+    def GetProfile(self):
+        raise "This should not be called directly, but through a subclass."
+
+    def GetTempDir(self):
+        raise "This should not be called directly, but through a subclass."
+    
     def SetRTPDefaults(self):
         raise "This should not be called directly, but through a subclass."
 
