@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.48 2003-03-24 20:26:12 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.49 2003-03-24 20:58:41 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -103,6 +103,7 @@ class VenueServer(ServiceBase.ServiceBase):
         shutdown in the event of catastrophic signals.
         """
         # Initialize our state
+        self.administrators = ''
         self.administratorList = []
         self.defaultVenue = ''
         self.hostingEnvironment = hostEnvironment
@@ -261,17 +262,17 @@ class VenueServer(ServiceBase.ServiceBase):
 #             log.exception("Failed to load persistent venues")
 #             raise VenueServerException("Failed to load persistent venues.")
 
-#     def _authorize(self):
-#         """
-#         """
-#         sm = AccessControl.GetSecurityManager()
-#         if sm == None:
-#             return 1
-#         elif sm.GetSubject().GetName() in self.administratorList:
-#             return 1
-#         else:
-#             log.exception("Authorization failed for %s", sm.GetSubject().GetName())
-#             return 0
+    def _authorize(self):
+        """
+        """
+        sm = AccessControl.GetSecurityManager()
+        if sm == None:
+            return 1
+        elif sm.GetSubject().GetName() in self.administratorList:
+            return 1
+        else:
+            log.exception("Authorization failed for %s", sm.GetSubject().GetName())
+            return 0
 
     def InitFromFile(self, config):
         """
