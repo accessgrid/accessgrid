@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.5 2003-01-27 20:59:03 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.6 2003-01-28 04:19:06 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -37,9 +37,13 @@ def SaveConfig(fileName, config):
     """
     cp = ConfigParser.ConfigParser()
     for k in config.keys():
-        (section, option) = split(k, '.')
-        cp.set(section, option, config[k])
-        
+        (section, option) = string.split(k, '.')
+        try:
+            cp.set(section, option, config[k])
+        except:
+            cp.add_section(section)
+            cp.set(section, option, config[k])
+
     cp.write(file(fileName, 'w+'))
 
 def formatExceptionInfo(maxTBlevel=5):
