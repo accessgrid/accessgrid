@@ -147,12 +147,12 @@ Source: bin\ratui.exe; DestDir: {app}; Components: Audio_Service
 
 [Icons]
 Name: {group}\Uninstall the AGTk; Filename: {uninstallexe}
-Name: {group}\Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py; IconFilename: {app}\config\agicons.exe; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
+Name: {group}\Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py --personalNode; IconFilename: {app}\config\agicons.exe; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
 Name: {group}\Node Manager; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: NodeManagement.py; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
 Name: {group}\Setup Video; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: SetupVideo.py; WorkingDir: {app}; Components: Video_Producer; IconIndex: 0
 Name: {group}\Venue Server; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueServer.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
 Name: {group}\Venue Management; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueManagement.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
-Name: {group}\Debug\Venue Client; IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueClient.py; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
+Name: {group}\Debug\Venue Client; IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueClient.py; Parameters: --personalNode --debug; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
 Name: {group}\Debug\Node Manager; IconFilename: {app}\config\agicons.exe; Filename: {app}\NodeManagement.py; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
 Name: {group}\Debug\Setup Video; IconFilename: {app}\config\agicons.exe; Filename: {app}\SetupVideo.py; WorkingDir: {app}; Components: Video_Producer; IconIndex: 0
 Name: {group}\Debug\Venue Server; IconFilename: {app}\config\agicons.exe; Filename: {app}\VenueServer.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
