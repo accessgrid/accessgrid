@@ -5,11 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ServiceBase.py,v 1.8 2003-05-16 04:16:23 judson Exp $
+# RCS-ID:      $Id: ServiceBase.py,v 1.9 2003-09-02 18:42:39 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 import re
+
+from AccessGrid.Toolkit import GetVersion
 
 class ServiceBase:
 
@@ -105,7 +107,7 @@ class ServiceBase:
         self.exportedMethodNames = map( lambda thing:
                                         thing[0].__name__,
                                         exported_methods.values() )
-        
+
     def _UnregisterExports(self):
         """
         This method unregisters the web service methods from the server,
@@ -116,8 +118,14 @@ class ServiceBase:
         for method in self.exportedMethodNames:
             self._service_object.UnregisterFunction(method)
 
+    def GetAGTkVersion(self):
+        "Returns the AGTk version of this service."
+        return GetVersion().AsString()
+    GetAGTkVersion.soap_export_as = "GetAGTkVersion"
+
     #
     # Mappings to other function naming style.
     #
 
     get_handle = GetHandle
+
