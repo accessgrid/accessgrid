@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.50 2004-09-07 19:16:55 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.51 2004-09-08 20:53:29 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -123,6 +123,11 @@ def main():
     # Tell the world where to find the service manager
     log.info("Starting Service Manager URL: %s", url)
     print "Starting Service Manager URL:", url
+    
+    if app.GetOption("ns"):
+        defaultConfig = gNodeService.GetDefaultConfiguration()
+        gNodeService.MigrateNodeConfig(defaultConfig)
+        gNodeService.LoadDefaultConfig()
 
     # Keep the main thread busy so we can catch signals
     running = 1
