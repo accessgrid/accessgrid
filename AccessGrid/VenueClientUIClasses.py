@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.257 2003-09-15 20:52:35 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.258 2003-09-15 21:42:05 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1502,8 +1502,6 @@ class ContentListPanel(wxPanel):
     the user.
     
     '''
-   
-    
     def __init__(self, parent, app):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, 
 			 wxDefaultSize)
@@ -1537,6 +1535,7 @@ class ContentListPanel(wxPanel):
         EVT_LEFT_DCLICK(self.tree, self.OnDoubleClick)
         EVT_TREE_KEY_DOWN(self.tree, id, self.OnKeyDown)
         EVT_TREE_ITEM_EXPANDING(self.tree, id, self.OnExpand) 
+        EVT_TREE_SEL_CHANGED(self.tree, id, self.OnSelect)
        
     def __setImageList(self):
         imageList = wxImageList(18,18)
@@ -1549,7 +1548,7 @@ class ContentListPanel(wxPanel):
         self.nodeId = imageList.Add(icons.getDefaultNodeBitmap())
 
         self.tree.AssignImageList(imageList)
-                   
+                      
     def AddParticipant(self, profile, dataList = []):
         imageId = None
                 
@@ -1657,6 +1656,7 @@ class ContentListPanel(wxPanel):
             self.tree.SetItemData(dataId, wxTreeItemData(profile)) 
             self.dataDict[profile.id] = dataId
             self.tree.SortChildren(self.data)
+            self.tree.Refresh()
             #self.tree.Expand(self.data)
             
         #if personal data
@@ -1767,6 +1767,7 @@ class ContentListPanel(wxPanel):
         self.tree.SetItemData(service, wxTreeItemData(profile)) 
         self.serviceDict[profile.name] = service
         self.tree.SortChildren(self.services)
+        self.tree.Refresh()
         #self.tree.Expand(self.services)
         
     def RemoveService(self, profile):
@@ -1783,7 +1784,8 @@ class ContentListPanel(wxPanel):
         self.tree.SetItemData(application, wxTreeItemData(appDesc))
         self.applicationDict[appDesc.uri] = application
         self.tree.SortChildren(self.applications)
-        self.tree.Expand(self.applications)
+        #self.tree.Expand(self.applications)
+        self.tree.Refresh()
       
     def RemoveApplication(self, appDesc):
         if(self.applicationDict.has_key(appDesc.uri)):
@@ -1810,12 +1812,13 @@ class ContentListPanel(wxPanel):
             index2 = -2
         
         self.root = self.tree.AddRoot("", index2, index2)
+       
         
 	self.participants = self.tree.AppendItem(self.root, "Participants", index, index)
         self.data = self.tree.AppendItem(self.root, "Data", index, index) 
         self.services = self.tree.AppendItem(self.root, "Services", index, index)
         self.applications = self.tree.AppendItem(self.root, "Applications", index, index)
-
+       
         self.tree.SetItemBold(self.participants)
         self.tree.SetItemBold(self.data)
         self.tree.SetItemBold(self.services)
@@ -1832,7 +1835,7 @@ class ContentListPanel(wxPanel):
         #self.tree.Expand(self.data)
         #self.tree.Expand(self.services)
                 
-        if sys.platform == "win32":
+        if isWindows():
             self.tree.Expand(self.root)
         
     def __setProperties(self):
@@ -1863,6 +1866,19 @@ class ContentListPanel(wxPanel):
                     # application
                     self.parent.RemoveApp(event)
 
+    def OnSelect(self, event):
+        #
+        # Due to a bug in wxPython, we need a root item to be able to display
+        # twist buttons correctly.  If the root item is selected, the ui looks
+        # weird so change selection to the participant heading instead.
+        #
+        if isWindows():
+            item = event.GetItem()
+            
+            # Root item
+            if self.tree.GetItemText(item) == "":
+                self.tree.SelectItem(self.participants)
+                        
     def OnExpand(self, event):
         treeId = event.GetItem()
         item = self.tree.GetItemData(treeId).GetData()
