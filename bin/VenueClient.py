@@ -1,40 +1,74 @@
 from AccessGrid.VenueClient import VenueClient
 import AccessGrid.GUID
 import AccessGrid.Types
+import AccessGrid.Utilities
 from AccessGrid.VenueClientUIClasses import *
 import threading
 import AccessGrid.ClientProfile
-    
-def PrintList( listname, thelist ):
-    print " ",listname," ------"
-    for item in thelist:
-        print "  ", item.name
+import os
 
 class VenueClientUI(wxApp, VenueClient):
     """
-    MyVenueClient is a wrapper for the base VenueClient.
-    It prints the venue state when it enters a venue or
-    receives a coherence event.  A real client would probably
-    update its UI instead of printing the venue state as text.
+    VenueClientUI is a wrapper for the base VenueClient.
+    It updates its UI when it enters or exits a venue or
+    receives a coherence event. 
     """
     def OnInit(self):
         VenueClient.__init__(self)        
-        self.frame = VenueClientFrame(NULL, -1,"")
+        self.frame = VenueClientFrame(NULL, -1,"", self)
         self.frame.SetSize(wxSize(300, 400))
         self.SetTopWindow(self.frame)
         return true
 
-    def ConnectToServer(self, file):
+    def ConnectToServer(self, file = None):
         venueServerUri = "https://localhost:8000/VenueServer"
         venueUri = Client.Handle( venueServerUri ).get_proxy().GetDefaultVenue()
-        self.profile = ClientProfile(file)
-        self.SetProfile(self.profile)
-        if venueUri:
-            print 'enter venue'
-            self.EnterVenue(venueUri)
+        myHomePath = os.environ['HOME']
+        accessGridDir = '.AccessGrid'
+        profilePath = myHomePath+'/'+accessGridDir+'/profile'
+
+        if file:
+            profile = ClientProfile(file)
+        else:
+            try:
+                os.listdir(myHomePath+'/'+accessGridDir)
+            except:
+                os.mkdir(myHomePath+'/'+accessGridDir)
+
+            profile = ClientProfile(profilePath)
+                  
+        if profile.IsDefault():  # not your profile
+            profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', profile)
+
+            if (profileDialog.ShowModal() == wxID_OK): # when click ok
+                profile.SetName(profileDialog.nameCtrl.GetValue())
+                profile.SetEmail(profileDialog.emailCtrl.GetValue())
+                profile.SetPhoneNumber(profileDialog.phoneNumberCtrl.GetValue())
+                profile.SetTechSupportInfo(profileDialog.supportCtrl.GetValue())
+                profile.SetLocation(profileDialog.locationCtrl.GetValue())
+                profile.SetHomeVenue(profileDialog.homeVenueCtrl.GetValue())
+                profile.SetProfileType(profileDialog.profileTypeBox.GetValue())
+                profileDialog.Destroy()
+                profile.Save(profilePath)
+                self.__startMainLoop(venueUri, profile)
+            
+            else:  # when click cancel
+                profileDialog.Destroy()
+
+        else:
+            self.__startMainLoop(venueUri, profile)
+
+               
+    def __startMainLoop(self, uri, profile):
+        if uri:
+            self.SetProfile(profile)
+            self.EnterVenue(uri)
+            self.frame.Show(true)
+            self.MainLoop()
+            
         else:
             ErrorDialog(self.frame, 'No default venue on server')
-            
+
     def CoherenceCallback(self, event):
         """
         Note: Overloaded from VenueClient
@@ -42,14 +76,10 @@ class VenueClientUI(wxApp, VenueClient):
         performs its own operations based on coherence events.
         """
         VenueClient.CoherenceCallback(self, event)
-        print '---coherence callback'
-        print event.eventType
         if event.eventType == Event.ENTER :
-            print '__________________________enter'
-            print event.data.publicId
+            print 'somebody enters'
             self.frame.contentListPanel.AddParticipant(event.data)
-            
-            
+                        
         elif event.eventType == Event.EXIT:
             print 'remove data'
             self.frame.contentListPanel.RemoveParticipant(event.data)
@@ -83,6 +113,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
         print 'enter venue'
         VenueClient.EnterVenue( self, URL )
+        
         venueState = self.venueState
         self.frame.SetLabel(venueState.description.name)
         text = self.profile.name + ', welcome to:\n' + self.venueState.description.name\
@@ -93,6 +124,8 @@ class VenueClientUI(wxApp, VenueClient):
 
         users = venueState.users.values()
         for user in users:
+            print '--------------------- user -----------------'
+            print user.name
             self.frame.contentListPanel.AddParticipant(user)
 
         data = venueState.data.values()
@@ -122,6 +155,7 @@ class VenueClientUI(wxApp, VenueClient):
 
     def GoToVenue(self, URL):
         print 'go to other venue'
+        self.ExitVenue()
         self.EnterVenue(URL)
         
 
@@ -131,6 +165,7 @@ class VenueClientUI(wxApp, VenueClient):
         done as the application is about to exit.
         """
         self.ExitVenue()
+
         
 if __name__ == "__main__":
 
@@ -139,22 +174,28 @@ if __name__ == "__main__":
     from AccessGrid.hosting.pyGlobus import Client
     from AccessGrid.ClientProfile import ClientProfile
     from AccessGrid.Types import *
-    
-    profile = sys.argv[1]
-    vc = VenueClientUI()
-   
-    try:
-        vc.ConnectToServer(profile)
+
+    profile = None
+
+    if len(sys.argv) > 1:
+        print 'length = 1'
+        profile = sys.argv[1]
         
-    except:
-        text1 = 'Problems getting default venue from server.  '
-        text2 = 'Is the server running?'
-        ErrorDialog(NULL, text1+text2)
-       
-    else:
-        vc.frame.Show(true)
-        vc.MainLoop()
- 
+    vc = VenueClientUI()
+    print '------------ before save config ------------ '
+    # SaveConfig(testFile, profile)
+    
+    # try:
+    vc.ConnectToServer(profile)
+    
+    
+    # except:
+    #     text1 = 'Problems getting default venue from server.  '
+    #text2 = 'Is the server running?'
+    #     ErrorDialog(NULL, text1+text2)
+    
+    # else:
+   
 
     
   
