@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.20 2004-09-07 18:51:12 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.21 2004-09-07 19:08:13 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.20 2004-09-07 18:51:12 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.21 2004-09-07 19:08:13 turam Exp $"
 
 import os
 import sys
@@ -398,17 +398,17 @@ class SystemConfig:
         raise Exception, "This should not be called directly, but through a subclass."
 
     def _repr_(self):
-        str = "System Configuration:\n"
-        str += "Temp Dir: %s\n" % self.GetTempDir()
-        str += "HTTP Proxy Settings: %s\n" % self.GetProxySettings()
-        str += "F/S Free Space(/): %s\n" % self.GetFileSystemFreeSpace("/")
-        str += "Username: %s\n" % self.GetUsername()
-        str += "Local IP Address: %s\n" % self.GetLocalIPAddress()
-        str += "Local Network Interfaces:\n"
+        tmpstr = "System Configuration:\n"
+        tmpstr += "Temp Dir: %s\n" % self.GetTempDir()
+        tmpstr += "HTTP Proxy Settings: %s\n" % self.GetProxySettings()
+        tmpstr += "F/S Free Space(/): %s\n" % self.GetFileSystemFreeSpace("/")
+        tmpstr += "Username: %s\n" % self.GetUsername()
+        tmpstr += "Local IP Address: %s\n" % self.GetLocalIPAddress()
+        tmpstr += "Local Network Interfaces:\n"
         for i in self.EnumerateInterfaces():
-            str += "\tName: %8s IP: %15s DNS: %s\n" % (i['name'], i['ip'],
+            tmpstr += "\tName: %8s IP: %15s DNS: %s\n" % (i['name'], i['ip'],
                                                        i['dns'])
-        return str
+        return tmpstr
 
     def __str__(self):
         return self._repr_()
