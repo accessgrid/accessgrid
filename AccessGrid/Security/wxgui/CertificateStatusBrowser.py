@@ -2,10 +2,13 @@ import os.path
 import time
 import md5
 import tempfile
+import StringIO
 
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.Security import CertificateRepository
+from AccessGrid.Security.CRSClient import CRSClient
+
 from AccessGrid import Log
 log = Log.GetLogger("CertificateStatus")
 
@@ -78,6 +81,8 @@ class CertRequestWrapper:
             raise Exception("Certificate is not ready for installation")
         
         certText = self.fullStatus
+
+        impCert = None
 
         hash = md5.new(certText).hexdigest()
         temp_path = os.path.join(UserConfig.instance().GetTempDir(), "%s.pem" % (hash))
@@ -171,6 +176,108 @@ class CertRequestWrapper:
             except:
                 pass
 
+
+        if impCert is None:
+            return
+        
+        #
+        # If the import succeeded, check to see if we have the issuing
+        # certificate for this cert If not, try to load it from the
+        # cert server via teh GetCACertificates() method.
+        #
+        
+        path = certMgr.GetCertificatePath(impCert)
+
+        print "Got path: ", path
+        last = path[-1]
+        if last.GetSubject().get_der() == last.GetIssuer().get_der():
+            print "Have full path"
+        else:
+            print "Missing component: ", last.GetIssuer()
+
+            proxyEnabled, proxyHost, proxyPort = self.browser.GetProxyInfo()
+            if proxyEnabled:
+                crs = CRSClient(self.server, proxyHost, proxyPort)
+            else:
+                crs = CRSClient(self.server)
+
+            caCerts = None
+
+            try:
+                caInfo = crs.RetrieveCACertificates()
+
+                if caInfo[0]:
+                    caCerts = caInfo[1]
+                else:
+                    log.debug("Erorr retrieving CA certs: %s", caInfo[1])
+                
+            except:
+                log.exception("Could not retrieve ca certs")
+
+            if caCerts:
+                print "Got ca: ", caCerts
+
+                for caCert, signingPolicy in caCerts:
+                    #
+                    # See if this one is already installed.
+                    #
+
+                    caObj = None
+                    
+                    try:
+
+                        caObj = CertificateRepository.Certificate(None,
+                                                                  certText = caCert)
+
+                    except:
+                        log.exception("Error loading cacert");
+                        continue
+
+                    #
+                    # Predicate that returns true for an unexpired certificate
+                    # having a subject name of this CA cert.
+                    #
+                    pred = lambda c, der = caObj.GetSubject().get_der(): \
+                        c.GetSubject().get_der() == der and not c.IsExpired()
+
+                    #
+                    # Determine the list of certs with that name.
+                    #
+                    matchingCerts = list(certMgr.GetCertificateRepository().FindCertificates(pred))
+
+
+                    #
+                    # If none were found, see about installing.
+                    #
+                    if matchingCerts == []:
+                        #
+                        # prompt to install at some point, but just install now.
+                        #
+                        try:
+                            tmp = tempfile.mktemp()
+                            fh = open(tmp, "w")
+                            fh.write(caCert)
+                            fh.close()
+                            impCa = certMgr.ImportCACertificatePEM(certMgr.GetCertificateRepository(),
+                                                                   tmp)
+                            os.unlink(tmp)
+                            print "Imported cert ", impCa, impCa.GetSubject()
+
+                            if signingPolicy != "":
+                                spPath = impCa.GetFilePath("signing_policy")
+                                print "sp path is ", spPath
+                                if spPath:
+                                    fh = open(spPath, "w")
+                                    fh.write(signingPolicy)
+                                    fh.close()
+
+                        except:
+                            log.exception("Exception while importing CA")
+                            
+
+            else:
+                print "Didn't get, need a dialog here"
+            
     def CheckPrivateKey(self):
         """
         Check to see if the private key for this request exists.
