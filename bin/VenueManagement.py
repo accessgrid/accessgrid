@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.131 2004-05-18 02:41:02 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.132 2004-05-26 15:05:23 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.131 2004-05-18 02:41:02 judson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.132 2004-05-26 15:05:23 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -1889,36 +1889,38 @@ class AddVenueFrame(VenueParamFrame):
 
     def OnOK (self, event):
         wxBeginBusyCursor()
-        if(VenueParamFrame.Validate(self)):
-            if(self.staticAddressingPanel.Validate()):
-                self.Ok()
-                try:
-                    log.debug("AddVenueFrame.OnOk: Add venue.")
-                    self.parent.AddVenue(self.venue)
-                except Exception, e:
-                    if e.string == "NotAuthorized":
-                            text = "You are not a server administrator and are not authorized to add venues to this server.\n"
-                            MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
-                            log.info("AddVenueFrame.OnOK: Not authorized to add venue to server.")
-                    else:
-                        log.exception("AddVenueFrame.OnOk: Could not add venue")
-                        text = "Could not add venue %s" %self.venue.name
-                        ErrorDialog(None, text, "Add Venue Error",
-                                    logFile = VENUE_MANAGEMENT_LOG)
-                except:
+
+        if (VenueParamFrame.Validate(self) and 
+            self.staticAddressingPanel.Validate() and 
+            self.generalPanel.Validate()):
+            self.Ok()
+            try:
+                log.debug("AddVenueFrame.OnOk: Add venue.")
+                self.parent.AddVenue(self.venue)
+            except Exception, e:
+                if e.string == "NotAuthorized":
+                    text = "You are not a server administrator and are not authorized to add venues to this server.\n"
+                    MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+                    log.info("AddVenueFrame.OnOK: Not authorized to add venue to server.")
+                else:
                     log.exception("AddVenueFrame.OnOk: Could not add venue")
                     text = "Could not add venue %s" %self.venue.name
                     ErrorDialog(None, text, "Add Venue Error",
                                 logFile = VENUE_MANAGEMENT_LOG)
-
-                if self.generalPanel.defaultVenue.IsChecked():
-                    try:
-                        # Set this venue as default venue for this server.
-                        self.parent.SetDefaultVenue(self.venue)
-                    except:
-                        log.exception("AddVenueFrame.OnOk: SetDefaultVenue failed")
-                                  
-                self.Hide()
+            except:
+                log.exception("AddVenueFrame.OnOk: Could not add venue")
+                text = "Could not add venue %s" %self.venue.name
+                ErrorDialog(None, text, "Add Venue Error",
+                            logFile = VENUE_MANAGEMENT_LOG)
+                
+            if self.generalPanel.defaultVenue.IsChecked():
+                try:
+                    # Set this venue as default venue for this server.
+                    self.parent.SetDefaultVenue(self.venue)
+                except:
+                    log.exception("AddVenueFrame.OnOk: SetDefaultVenue failed")
+                    
+            self.Hide()
         wxEndBusyCursor()
 
 
