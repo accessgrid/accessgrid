@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.189 2003-08-12 21:39:31 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.190 2003-08-13 21:03:41 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -59,7 +59,7 @@ from AccessGrid.CertificateManager import CertificateManager
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Utilities import StartDetachedProcess
-from AccessGrid.UIUtilities import MessageDialog, InitMimeTypes
+from AccessGrid.UIUtilities import MessageDialog, InitMimeTypes, ProgressDialog
 from AccessGrid.UIUtilities import GetMimeCommands, ErrorDialog
 from AccessGrid.UIUtilities import ErrorDialogWithTraceback
 from AccessGrid.VenueClientUIClasses import SaveFileDialog, UploadFilesDialog
@@ -86,8 +86,9 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
 
     fallbackRecoveryUrl = None
     
-    def __init__(self):
-
+    def __init__(self, startupDialog):
+        self.startupDialog = startupDialog
+        self.startupDialog.UpdateOneStep()
         if not os.path.exists(self.accessGridPath):
             try:
                 os.mkdir(self.accessGridPath)
@@ -97,6 +98,7 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
         self.venueClient.AddEventSubscriber(self)
         wxApp.__init__(self, false)
         self.onExitCalled = false
+        self.startupDialog.UpdateOneStep()
         
     def OnInit(self):
         """
@@ -106,6 +108,8 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
 
         *Integer* 1 if initiation is successful 
         """
+        self.startupDialog.UpdateOneStep()
+         
         self.__processArgs()
         self.__setLogger()
 
@@ -113,10 +117,13 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
         # We verify first because the Toolkit code assumes a valid
         # globus environment.
         #
+        self.startupDialog.UpdateOneStep()
 
         VerifyExecutionEnvironment()
-
+       
         try:
+            self.startupDialog.UpdateOneStep()
+            
             self.app = Toolkit.WXGUIApplication()
 
         except Exception, e:
@@ -142,19 +149,26 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
         #
         # Initiate user interface components
         #
+        self.startupDialog.UpdateOneStep()
+         
         self.frame = VenueClientFrame(NULL, -1,"", self)
         self.frame.SetSize(wxSize(500, 400))
         self.SetTopWindow(self.frame)
+        
 
         #
         # Tell the UI about installed applications
         #
+        self.startupDialog.UpdateOneStep()
+        
         self.frame.SetInstalledApps( self.venueClient.GetInstalledApps() )
         self.frame.EnableAppMenu( false )
-
+       
         #
         # Load user mailcap from AG Config Dir
         #
+        self.startupDialog.UpdateOneStep()
+         
         mailcap = os.path.join(GetUserConfigDir(), "mailcap")
         InitMimeTypes(mailcap)
 
@@ -165,6 +179,7 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
                 log.debug("bin.VenueClient::OnInit: setting node service URI to %s from PersonalNode", svcUrl)
                 self.venueClient.nodeServiceUri = svcUrl
 
+
             self.personalNode = PersonalNode.PersonalNodeManager(setSvcCallback, self.debugMode)
             self.personalNode.Run()
 
@@ -172,9 +187,12 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
         #
         # Initialize globus runtime stuff.
         #
+        self.startupDialog.UpdateOneStep()
 
         self.app.InitGlobusEnvironment()
 
+        self.startupDialog.UpdateOneStep()
+       
         return true
 
     def __openProfileDialog(self):
@@ -1441,5 +1459,12 @@ if __name__ == "__main__":
 
     wxInitAllImageHandlers()
 
-    vc = VenueClientUI()
+
+    #app = wxPySimpleApp()
+    max = 10
+    
+    dlg = ProgressDialog("Start up", "Loading Venue Client. Please be patient.", max)
+    dlg.Show()
+    
+    vc = VenueClientUI(dlg)
     vc.ConnectToVenue()
