@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.5 2004-03-12 20:27:32 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.6 2004-03-18 14:03:02 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.5 2004-03-12 20:27:32 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.6 2004-03-18 14:03:02 turam Exp $"
 
 import os
 import mimetypes
@@ -630,7 +630,7 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
         view = 'view'
         
         if mimeType == None:
-            mimeType = GetMimeType(extension = ext)
+            mimeType = self.GetMimeType(extension = ext)
             
         # We only care about mapping view to Open
         caps = mailcap.getcaps()
