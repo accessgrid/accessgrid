@@ -1,13 +1,13 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.18 2003-09-10 18:50:09 turam Exp $
+; RCS-ID: $Id: agtk.iss,v 1.19 2003-09-11 20:48:06 judson Exp $
 ;
 
 #define SourceDir "C:\Software\AccessGrid\AccessGrid"
 #define OutputDir "C:\Software\AccessGrid"
 #define AppName "Access Grid Toolkit"
 #define AppNameShort "AGTk"
-#define AppVersionLong "2.1.1"
-#define AppVersionShort "2.1.1"
+#define AppVersionLong "2.1.2"
+#define AppVersionShort "2.1.2"
 
 [_ISTool]
 EnableISX=true
@@ -117,6 +117,12 @@ Source: dist\bin\pscp.exe; DestDir: {app}\bin; DestName: pscp.exe
 Source: dist\bin\send_settingchange.exe; DestDir: {app}\bin; DestName: send_settingchange.exe
 Source: packaging\windows\agicons.exe; DestDir: {app}\install
 
+; begin VC system files
+; (Note: Scroll to the right to see the full lines!)
+Source: packaging\windows\msvcr70.dll; DestDir: {win}\system32; Flags: restartreplace uninsneveruninstall external
+; end VC system files
+
+
 [Icons]
 Name: {group}\View README; Filename: {app}\README.txt; Flags: createonlyiffileexists; Comment: Read the ReadMe.
 Name: {group}\Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\VenueClient.py"" --personalNode"; IconFilename: {app}\install\agicons.exe; WorkingDir: {userappdata}\AccessGrid; Comment: Run the venue client software.
@@ -125,7 +131,6 @@ Name: {group}\Venue Client (Debug Mode); IconFilename: {app}\install\agicons.exe
 Name: {group}\Configure\Search for Video Devices (No Output Generated); IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\SetupVideo.py"""; WorkingDir: {userappdata}\AccessGrid; Comment: Search for video devices for the Video Producer service. There is no output for this program.
 Name: {group}\Configure\Reconfigure Globus; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\globus_init.pyw"""; WorkingDir: {userappdata}\AccessGrid; Comment: Set up Globus runtime environment; IconFilename: {app}\install\agicons.exe
 Name: {group}\Configure\Reconfigure Network; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\network_init.pyw"""; WorkingDir: {userappdata}\AccessGrid; Comment: Set up Globus network configuration; IconFilename: {app}\install\agicons.exe
-Name: {group}\Configure\Request a Certificate; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\CertificateRequestTool.pyw"""; WorkingDir: {userappdata}\AccessGrid; IconFilename: {app}\install\agicons.exe
 Name: {group}\Configure\Node Setup Wizard; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\NodeSetupWizard.pyw"""; WorkingDir: {userappdata}\AccessGrid; IconFilename: {app}\install\agicons.exe
 Name: {group}\Request a Certificate; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\CertificateRequestTool.pyw"""; WorkingDir: {userappdata}\AccessGrid; IconFilename: {app}\install\agicons.exe
 Name: {group}\Venue Server\Venue Server; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\VenueServer.py"""; WorkingDir: {userappdata}\AccessGrid; Comment: Run the venue server software.
@@ -143,7 +148,6 @@ Name: {group}\Uninstall the AGTk; Filename: {uninstallexe}; Comment: Uninstall t
 Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Access Grid Venue Client; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\VenueClient.py"" --personalNode"; WorkingDir: {userappdata}\AccessGrid; Tasks: quicklaunchicon
 
 Name: {commondesktop}\Access Grid Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\VenueClient.py"" --personalNode"; IconFilename: {app}\install\agicons.exe; WorkingDir: {userappdata}\AccessGrid; Tasks: desktopicon; Comment: Run the Venue Client!
-
 
 [Registry]
 Root: HKLM; Subkey: SOFTWARE\{#AppName}; ValueType: none; Flags: uninsdeletekey
