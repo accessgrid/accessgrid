@@ -6,15 +6,19 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.124 2004-03-26 22:05:45 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.125 2004-03-30 20:13:34 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.124 2004-03-26 22:05:45 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.125 2004-03-30 20:13:34 eolson Exp $"
 
 # Standard imports
+import sys
+if sys.platform=="darwin":
+    # On osx pyGlobus/globus need to be loaded before various modules such as socket.
+    import pyGlobus.ioc
 import string
 import time
 import re
