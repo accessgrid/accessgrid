@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.59 2004-05-25 19:51:46 eolson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.60 2004-07-26 16:49:12 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.59 2004-05-25 19:51:46 eolson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.60 2004-07-26 16:49:12 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -23,6 +23,7 @@ from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.NetworkLocation import ProviderProfile
 from AccessGrid.Types import Capability
 from AccessGrid.Types import AGResource, AGVideoResource
+from AccessGrid.ServiceCapability import ServiceCapability
 
 from AccessGrid.ClientProfile import ClientProfile
 class ObjectDescription:
@@ -315,6 +316,8 @@ class StreamDescription( ObjectDescription ):
                self.networkLocations.remove(networkLocation)
 
    def AsINIBlock(self):
+       # Make sure xml capabilities are stored properly
+       
        string = ObjectDescription.AsINIBlock(self)
        string += "encryptionFlag : %s\n" % self.encryptionFlag
        if self.encryptionFlag:
@@ -345,13 +348,35 @@ class AGServiceDescription:
         self.servicePackageUri = servicePackageUri
         self.version = version
 
+class AGNetworkServiceDescription:
+    def __init__(self, name, description, url, venues, inCapabilities, outCapabilities, version):
+        self.name = name
+        self.description = description
+        self.url = url
+        self.version = version
+        self.venues = venues
+        
+        self.inCapabilities = inCapabilities
+        self.outCapabilities = outCapabilities
+
+    def ToString(self):
+        s = 'Name: %s, \nDescription %s, \nVersion %s, \nVenueUrl %s' %(self.name, self.description, self.version, self.venues)
+
+        s = s + '\nIn Capabilities'
+        for cap in self.inCapabilities:
+            s = s + cap + '\n'
+        s = s+ '\nOut Capabilities'
+        for cap in self.outCapabilities:
+            s = s + cap + '\n'
+
+        return s
+       
 class AppParticipantDescription:
     def __init__(self, appId, clientProfile, status):
         self.appId = appId
         self.clientProfile = clientProfile
         self.status = status
         
-
 class AppDataDescription:
     def __init__(self, appId, key, value):
         self.appId = appId
@@ -469,7 +494,13 @@ class VenueState:
 #
 #
 def CreateCapability(capabilityStruct):
+    # Old capability
     cap = Capability(capabilityStruct.role,capabilityStruct.type)
+
+    # Add new capability as xml document.
+    if hasattr(capabilityStruct, 'xml') and capabilityStruct.xml:
+        cap.xml = capabilityStruct.xml
+    
     if hasattr(capabilityStruct.parms,"_asdict"):
         parmsdict = capabilityStruct.parms._asdict()
         for k,v in parmsdict.items():
@@ -504,8 +535,10 @@ def CreateClientProfile( clientProfileStruct ):
 
     # convert capabilities from structtypes to objects
     capList = []
+   
     for cap in clientProfileStruct.capabilities:
         capList.append(CreateCapability(cap))
+
     clientProfile.capabilities = capList
 
     return clientProfile
@@ -535,8 +568,10 @@ def CreateDataDescription(dataDescStruct):
     return dd
 
 def CreateStreamDescription( streamDescStruct ):
-    cap = Capability( streamDescStruct.capability.role, 
-                      streamDescStruct.capability.type )
+    #cap = Capability( streamDescStruct.capability.role, 
+    #                  streamDescStruct.capability.type )
+    cap = CreateCapability(streamDescStruct.capability)
+
     streamDescription = StreamDescription( streamDescStruct.name, 
                                            None,
                                            cap,
@@ -657,6 +692,7 @@ def CreateAGServiceDescription(svcDescStruct):
 
     resource = CreateResource(svcDescStruct.resource)
     capabilities = []
+   
     for cap in svcDescStruct.capabilities:
         capabilities.append( CreateCapability(cap))
     svcDesc = AGServiceDescription(svcDescStruct.name, 
@@ -668,6 +704,16 @@ def CreateAGServiceDescription(svcDescStruct):
                                    svcDescStruct.serviceManagerUri,
                                    svcDescStruct.servicePackageUri,
                                    svcDescStruct.version )
+    return svcDesc
+
+def CreateAGNetworkServiceDescription(svcDescStruct):
+    svcDesc = AGNetworkServiceDescription(svcDescStruct.name, 
+                                          svcDescStruct.description, 
+                                          svcDescStruct.url,
+                                          svcDescStruct.venues,
+                                          svcDescStruct.inCapabilities,
+                                          svcDescStruct.outCapabilities,
+                                          svcDescStruct.version)
     return svcDesc
 
 
@@ -687,7 +733,6 @@ def CreateResource(rscStruct):
     return rsc
 
 def CreateNetworkLocation(networkLocationStruct):
-    
     if networkLocationStruct.type == UnicastNetworkLocation.TYPE:
         networkLocation = UnicastNetworkLocation(networkLocationStruct.host,
                                                  networkLocationStruct.port)
@@ -697,6 +742,7 @@ def CreateNetworkLocation(networkLocationStruct):
                                                  networkLocationStruct.ttl)
     else:
         raise Exception, "Unknown network location type %s" % (networkLocationStruct.type,)
+    
     networkLocation.profile = ProviderProfile(networkLocationStruct.profile.name,
                                               networkLocationStruct.profile.location)                                                                                                 
     networkLocation.id = networkLocationStruct.id
