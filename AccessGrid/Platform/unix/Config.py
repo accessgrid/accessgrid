@@ -3,19 +3,20 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.47 2004-08-04 23:12:28 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.48 2004-08-05 22:28:22 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.47 2004-08-04 23:12:28 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.48 2004-08-05 22:28:22 eolson Exp $"
 
 import os
 import mimetypes
 import mailcap
 import socket
 import getpass
+import glob
 import shutil
 import resource
 
@@ -638,42 +639,31 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
         return None
         
     def GetResources(self):
-    
-        deviceList = dict()
-        
-        videodevpath = '/proc/video/dev'
-
-        if os.path.exists('/sys/class/video4linux'):
-            videodevpath = '/sys/class/video4linux'
-
         v4lctlexe = '/usr/bin/v4lctl'
-        
-        if os.path.exists(videodevpath):
-            # Get list of devices
-            cmd = "ls " + videodevpath + "/" + " | grep video"
-            fh = os.popen(cmd,'r')
-            for line in fh.readlines():
-                device = os.path.join('/dev',line.strip())
-                deviceList[device] = ""  # empty portString
-            fh.close()
+        deviceList = dict()
 
-            # Determine ports for devices
-            if os.path.exists(v4lctlexe):
-                portString = ""
-                for d in deviceList.keys():
-                    cmd = "v4lctl list -c %s" % d
-                    fh = os.popen(cmd)
-                    for line in fh.readlines():
-                        if line.startswith('input'):
-                            portString = line.split('|')[-1]
-                            deviceList[d] = portString.strip()
-                            break
-            else:
-                log.info("%s not found; can't get ports", v4lctlexe)
+        # Determine ports for devices
+        if os.path.exists(v4lctlexe):
+            for device in glob.glob("/dev/video[0-9]*"):
+                if os.path.isdir(device):
+                    continue   
+                if not os.access(device, os.R_OK):
+                    log.info("open %s: Permission denied", device)
+                    continue
+                cmd = "v4lctl list -c %s 2> /dev/null" % device
+                fh = os.popen(cmd)
+                for line in fh.readlines():
+                    if line.startswith('input'):
+                        portString = line.split('|')[-1]
+                        deviceList[device] = portString.strip()
+                        break
+                fh.close()
+                if deviceList.has_key(device):
+                    log.info("%s has ports: %s", device, deviceList[device])
+                else:
+                    log.info("%s: not a valid device", device)
         else:
-            log.info("%s does not exist; no video devices detected",
-                     videodevpath)
-        
+            log.info("%s not found; can't get ports", v4lctlexe)
 
         # Force x11 onto the list
         deviceList['x11'] = 'x11'
