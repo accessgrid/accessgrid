@@ -25,22 +25,40 @@ def init_logging(appName):
     appLogger.setLevel(logging.DEBUG)
     appLogger.addHandler(hdlr)
 
-def registerApp():
+def registerApp(fileName):
     import AccessGrid.Toolkit as Toolkit
     app = Toolkit.CmdlineApplication()
     appdb = app.GetAppDatabase()
-    cmd = os.path.join(app.userConfigDir, "applications",
-                       "SharedBrowser", "SharedBrowser.py")
-    exeCmd = sys.executable + " \"" + cmd + "\" %(appUrl)s"
-    print exeCmd
+
+    # Get just the filename
+    fn = os.path.split(fileName)[1]
+
+    # Find the app dir
+    uad = Platform.GetUserAppPath()
+
+    # Get the absolute path for copying the file
+    src = os.path.abspath(fn)
+
+    # Get the destination filename
+    dest = os.path.join(uad, fn)
+
+    exeCmd = sys.executable + " \"" + dest + "\" %(appUrl)s"
+
+    print "SRC: %s DST: %s CMD: %s" % (src, dest, exeCmd)
+    
+    # Copy the file
+    try:
+        shutil.copyfile(src, dest)
+    except IOError:
+        print "Couldn't copy app into place, bailing."
+        sys.exit(1)
+
+    # Call the registration method on the applications database
     appdb.RegisterApplication("Shared Browser",
                               "application/x-ag-shared-browser",
                               "sharedbrowser",
                               {"Open" : exeCmd })
-    appdb.RegisterApplication("Shared Browser",
-                              "text/html",
-                              "html",
-                              {"Open" : exeCmd })
+
     
 class WebBrowser(wxPanel):
     """
