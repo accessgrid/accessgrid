@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.42 2004-08-18 16:01:39 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.43 2004-08-20 18:42:01 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -38,6 +38,7 @@ from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.UIUtilities import ProgressDialog
 
 from AccessGrid.AGService import AGServiceIW
+from AccessGrid.AGServiceManager import AGServiceManager, AGServiceManagerI
 from AccessGrid.AGServiceManager import AGServiceManagerIW
 
 log = Log.GetLogger(Log.NodeSetupWizard)
@@ -516,7 +517,7 @@ class VideoDisplayWindow(TitledPage):
             self.canConnect = true
             
         except:
-            log.info("VideoDisplayWindow.Validate: Service manager is not started")
+            log.exception("VideoDisplayWindow.Validate: Service manager is not started")
             self.canConnect = false
 
         wxEndBusyCursor()
@@ -618,7 +619,7 @@ class AudioWindow(TitledPage):
             self.nodeClient.CheckServiceManager(self.machineCtrl.GetValue(), self.portCtrl.GetValue())
             self.canConnect = true
         except:
-            log.info("AudioWindow.Validate: Service manager is not started")
+            log.exception("AudioWindow.Validate: Service manager is not started")
             self.canConnect = false
 
         wxEndBusyCursor()
@@ -687,12 +688,12 @@ class ConfigWindow(TitledPage):
         self.vCapMachineText = wxStaticText(self, -1, "")
         self.vDispMachineText = wxStaticText(self, -1, "")
         self.audioMachineText = wxStaticText(self, -1, "")
+        self.configName = wxStaticText(self, -1, "Configuration Name: ")
+        self.configNameCtrl = wxTextCtrl(self, -1, "")
         self.CHECK_ID = wxNewId()
         self.checkBox = wxCheckBox(self, self.CHECK_ID, 
                             "Always use this node setup for Access Grid meetings (default configuration)")
         self.checkBox.SetValue(true)
-        self.configName = wxStaticText(self, -1, "Configuration Name: ")
-        self.configNameCtrl = wxTextCtrl(self, -1, "")
         self.Layout()
 
     def SetAudio(self, host, port, flag):
@@ -758,6 +759,7 @@ class ConfigWindow(TitledPage):
             return false
                               
         if self.videoCaptUrl:
+            log.info("Adding video capture service manager: %s", self.videoCaptUrl)
             text = self.videoCaptMachine+":"+self.videoCaptPort
             try:
                 # Add video capture service manager
@@ -765,7 +767,7 @@ class ConfigWindow(TitledPage):
 
             except:
                 # We still want to continue even if a service manager is already present
-                log.info("ConfigWindow.Validate: Could not add service manager for video capture")
+                log.exception("ConfigWindow.Validate: Could not add service manager for video capture")
                 pass
 
             try:
@@ -783,14 +785,18 @@ class ConfigWindow(TitledPage):
                 errors = errors + "The video capture machine could not be added to the configuration. An error occured..\n\n"
                 
         if self.videoDispUrl:
-            text = self.videoDispMachine+":"+self.videoDispPort
-            try:
-                # Add video display service manager
-                self.nodeClient.AddServiceManager(text, self.videoDispUrl)
-            except:
-                # We still want to continue even if a service manager is already present
-                log.info("ConfigWindow.Validate: Could not add service manager for video display")
-                pass
+            if self.videoDispUrl != self.videoCaptUrl:
+                log.info("Adding video display service manager: %s", self.videoDispUrl)
+                try:
+                    # Add video display service manager
+                    text = self.videoDispMachine+":"+self.videoDispPort
+                    self.nodeClient.AddServiceManager(text, self.videoDispUrl)
+                except:
+                    # We still want to continue even if a service manager is already present
+                    log.exception("ConfigWindow.Validate: Could not add service manager for video display")
+                    pass
+            else:
+                log.info("Not adding video display service manager; already added (%s)", self.videoDispUrl)
 
             try:
                 # Add video display service
@@ -806,14 +812,19 @@ class ConfigWindow(TitledPage):
                 errors = errors + "The video display machine could not be added to the configuration. An error occured.\n\n"
                               
         if self.audioUrl:
-            text = self.audioMachine+":"+self.audioPort
-            try:
-                # Add audio service manager
-                self.nodeClient.AddServiceManager(text, self.audioUrl)
-            except:
-                # We still want to continue even if a service manager is already present
-                log.exception("ConfigWindow.Validate: Could not add service manager for audio")
-                pass
+            
+            if self.audioUrl != self.videoDispUrl and self.audioUrl != self.videoCaptUrl:
+                log.info("Adding audio service manager: %s", self.audioUrl)
+                try:
+                    # Add audio service manager
+                    text = self.audioMachine+":"+self.audioPort
+                    self.nodeClient.AddServiceManager(text, self.audioUrl)
+                except:
+                    # We still want to continue even if a service manager is already present
+                    log.exception("ConfigWindow.Validate: Could not add service manager for audio")
+                    pass
+            else:
+                log.info("Not adding audio service manager; already added (%s)", self.audioUrl)
 
             try:
                 # Add audio service
@@ -859,7 +870,8 @@ class ConfigWindow(TitledPage):
             
             
         # Set configuration as default
-        if self.checkBox.GetValue():
+        setAsDefault = self.checkBox.GetValue()
+        if setAsDefault:
              
             try:
                 self.nodeClient.GetNodeService().SetDefaultConfiguration(self.name)
@@ -870,6 +882,12 @@ class ConfigWindow(TitledPage):
     
         if errors != "":
             ErrorDialog(self, errors, "Error", logFile = NODE_SETUP_WIZARD_LOG)
+        else:
+            messageText = "New configuration written to " + self.name
+            if setAsDefault:
+                messageText += "\nand set as default node configuration"
+            MessageDialog(self, messageText,  
+                          style = wxICON_INFORMATION|wxOK)
 
      
         wxEndBusyCursor()
@@ -915,14 +933,15 @@ class ConfigWindow(TitledPage):
         self.sizer.Add((5,5))
         self.sizer.Add(self.audioMachineText, 0, wxLEFT | wxEXPAND, 30)
 
-        self.sizer.Add((20,20))
-        self.sizer.Add(self.checkBox, 0, wxLEFT | wxEXPAND, 5)
-
         self.sizer.Add((5,5))
         box = wxBoxSizer(wxHORIZONTAL)
         box.Add(self.configName, 0, wxCENTER|wxALL, 5)
         box.Add(self.configNameCtrl, 1, wxALL, 5)
         self.sizer.Add(box, 0, wxEXPAND)
+
+        self.sizer.Add((20,20))
+        self.sizer.Add(self.checkBox, 0, wxCENTER, 5)
+
 
 
 class NodeClient:
@@ -946,16 +965,27 @@ class NodeClient:
                 log.exception("NodeClient: init failed. Exiting.")
                 sys.exit(-1)
         
-        self.nodeService = AGNodeService(self.app)
-        
         hostname = SystemConfig.instance().GetHostname()
         port = 11000
         self.server = SecureServer((hostname, port), debug = self.app.GetDebugLevel())
-        
+
+        #
+        # Start a node service
+        #        
+        self.nodeService = AGNodeService(self.app)
         nsi = AGNodeServiceI(self.nodeService)
-        self.server.RegisterObject(nsi, path="/NodeService")
-        url = self.server.FindURLForObject(self.nodeService)
+        url = self.server.RegisterObject(nsi, path="/NodeService")
         self.node = AGNodeServiceIW(url)
+        log.info("Started node service: %s", url)
+        
+        #
+        # Start a service manager
+        #
+        self.serviceManager = AGServiceManager(self.server,self.app)
+        smi = AGServiceManagerI(self.serviceManager)
+        url = self.server.RegisterObject(smi, path="/ServiceManager")
+        self.serviceManagerIW = AGServiceManagerIW(url)
+        log.info("Started service manager: %s", url)
         
         self.server.RunInThread()
         
@@ -1077,7 +1107,7 @@ def main():
         sys.exit(-1)
 
     # Create a progress dialog
-    startupDialog = ProgressDialog("Starting Node Setup Wizard...",                                    "Initializing AccessGrid Toolkit", 5)
+    startupDialog = ProgressDialog("Starting Node Setup Wizard...", "Initializing AccessGrid Toolkit", 5)
     startupDialog.Show()
         
     # Get the log
