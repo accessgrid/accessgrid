@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import sys
 
 from wxPython.wx import *
 from wxPython.iewin import *
@@ -24,7 +25,23 @@ def init_logging(appName):
     appLogger.setLevel(logging.DEBUG)
     appLogger.addHandler(hdlr)
 
-
+def registerApp():
+    import AccessGrid.Toolkit as Toolkit
+    app = Toolkit.CmdlineApplication()
+    appdb = app.GetAppDatabase()
+    cmd = os.path.join(app.userConfigDir, "applications",
+                       "SharedBrowser", "SharedBrowser.py")
+    exeCmd = sys.executable + " \"" + cmd + "\" %(appUrl)s"
+    print exeCmd
+    appdb.RegisterApplication("Shared Browser",
+                              "application/x-ag-shared-browser",
+                              "sharedbrowser",
+                              {"Open" : exeCmd })
+    appdb.RegisterApplication("Shared Browser",
+                              "text/html",
+                              "html",
+                              {"Open" : exeCmd })
+    
 class WebBrowser(wxPanel):
     """
     WebBrowser is a basic ie-based web browser class

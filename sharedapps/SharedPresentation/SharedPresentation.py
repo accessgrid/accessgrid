@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.5 2003-08-21 22:08:46 turam Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.6 2003-08-21 23:29:04 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -36,7 +36,19 @@ from AccessGrid import DataStore
 
 
 
-
+def registerApp():
+    import AccessGrid.Toolkit as Toolkit
+    app = Toolkit.CmdlineApplication()
+    appdb = app.GetAppDatabase()
+    cmd = os.path.join(app.userConfigDir, "applications",
+                       "SharedPresentation", "SharedPresentation.py")
+    exeCmd = sys.executable + " \"" + cmd + "\" -a %(appUrl)s"
+    print exeCmd
+    appdb.RegisterApplication("Shared Presentation",
+                              "application/x-ag-shared-presentation",
+                              "sharedpresentation",
+                              {"Open" : exeCmd })
+    
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Viewer code
