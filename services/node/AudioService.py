@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.28 2004-09-09 05:12:30 judson Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.29 2004-09-09 17:20:21 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,12 @@ class AudioService( AGService ):
                               Capability( Capability.PRODUCER,
                                           Capability.AUDIO ) ]
 
-        self.executable = os.path.join(os.getcwd(),'rat')
+        if sys.platform == Platform.WIN:
+            rat = "rat.exe"
+        else:
+            rat = "rat"
+
+        self.executable = os.path.join(os.getcwd(), rat)
 
         # Turn off firewall for this app
         self.sysConf = SystemConfig.instance()
