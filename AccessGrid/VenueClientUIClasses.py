@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.144 2003-04-20 21:52:11 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.145 2003-04-22 16:30:40 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1104,7 +1104,7 @@ class ContentListPanel(wxPanel):
         self.parent = parent
 	self.app = app
 	self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
-			      wxDefaultSize, style = wxTR_TWIST_BUTTONS | wxTR_HAS_BUTTONS |
+			      wxDefaultSize, style = wxTR_MULTIPLE | wxTR_TWIST_BUTTONS | wxTR_HAS_BUTTONS |
                                wxTR_NO_LINES  | wxTR_HIDE_ROOT)
         self.__setImageList()
 	self.__setTree()
