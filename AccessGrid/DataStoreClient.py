@@ -1,5 +1,9 @@
 
+import sys
+import os
+import tempfile
 import logging
+import getopt
 import fnmatch
 
 from AccessGrid.hosting.pyGlobus import Client
@@ -76,6 +80,9 @@ class DataStoreClient:
 
         return ret
 
+    def GetFileData(self, filename):
+        return self.dataIndex[filename]
+
     def Download(self, filename, localFile):
         """
         Download filename to local file localFile.
@@ -100,7 +107,114 @@ class DataStoreClient:
             rc, errlist = e.args[0]
             for err in errlist:
                 print err
-                                          
+
+
+import cmd
+class DataStoreShell(cmd.Cmd):
+
+    def __init__(self, dsc):
+        self.dsc = dsc
+        cmd.Cmd.__init__(self)
+        self.prompt = "DataStore> "
+
+    def run(self):
+        self.cmdloop()
+
+
+    #
+    # Commands
+    #
+
+    def do_ls(self, arg):
+        self.listFiles(arg)
+        return 0
+
+    def do_dir(self, arg):
+        self.listFiles(arg)
+        return 0
+
+    def do_EOF(self, arg):
+        return 1
+        
+    def do_quit(self, arg):
+        return 1
+
+    def emptyline(self):
+        pass
+
+    def do_more(self, arg):
+        for file in arg.split():
+            self.pageFile(file, "more")
+    
+    def do_less(self, arg):
+        for file in arg.split():
+            self.pageFile(file, "less")
+    
+        
+    #
+    # Impls
+    #
+
+    def pageFile(self, file, pager):
+
+        try:
+            dot = file.rindex(".")
+            ext = file[dot + 1:]
+        except ValueError:
+            ext = ""
+        
+        localFile = tempfile.mktemp(ext)
+
+        try:
+            self.dsc.Download(file, localFile)
+            if sys.platform == 'win32' and pager == "more":
+                os.system("more < %s" % (localFile))
+            else:
+                os.system("%s %s" % (pager, localFile))
+            os.unlink(localFile)
+        except Exception, e:
+            print "Except! ", e
+
+    def listFiles(self, arg):
+
+        verb = 0
+        url = 0
+
+        try:
+            opts, args = getopt.getopt(arg.split(), "lu")
+        except getopt.GetoptError:
+            print "Unknown argument"
+            return
+
+        for opt, optarg in opts:
+            if opt == "-l":
+                verb = 1
+            if opt == "-u":
+                url = 1
+
+        if args == []:
+            args.append("*")
+
+        fnames = {}
+        for pat in args:
+            match = self.dsc.QueryMatchingFiles(pat)
+            for m in match:
+                fnames[m] = 1
+        files = fnames.keys()
+            
+        files.sort()
+        for f in files:
+            if verb and url:
+                data = self.dsc.GetFileData(f)
+                print "%-20s %5s %s" % (f, data['size'], data['uri'])
+            elif verb:
+                data = self.dsc.GetFileData(f)
+                print "%-20s %5s" % (f, data['size'])
+            elif url:
+                data = self.dsc.GetFileData(f)
+                print "%-20s %s" % (f, data['uri'])
+            else:
+                print f
     
 class RemoteFileObj:
     """
@@ -185,6 +299,9 @@ if __name__ == "__main__":
     def testData(vurl):
 
         dsc = GetVenueDataStore(vurl)
+
+        sh = DataStoreShell(dsc)
+        sh.run()
 
         ppt = dsc.QueryMatchingFiles("*.ppt")
         print "Ppt: ", ppt
