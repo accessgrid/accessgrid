@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.5 2003-01-15 17:42:26 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.6 2003-01-15 20:31:22 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -48,8 +48,6 @@ class Venue(ServiceBase.ServiceBase):
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
     """
-
-    
     def __init__(self, server, uniqueId, description, administrator,
                  coherenceService, multicastAddressAllocator, dataStore):
         self.connections = []
@@ -74,12 +72,9 @@ class Venue(ServiceBase.ServiceBase):
         self.producerCapabilities = []
         self.consumerCapabilities = []
 
-
         self.nextPrivateId = 1
 
-
         self.defaultTtl = 127
-
 
         self.venueState = VenueState()
         self.venueState.SetDescription( description )
@@ -145,14 +140,12 @@ class Venue(ServiceBase.ServiceBase):
     RemoveConnection.pass_connection_info = 1
     RemoveConnection.soap_export_as = "RemoveConnection"
 
-
     def GetConnections(self, connectionInfo ):
         """ """
 #FIXME - don't access connections list directly
         return self.venueState.connections.values()
     GetConnections.pass_connection_info = 1
     GetConnections.soap_export_as = "GetConnections"
-
 
     def SetConnections(self, connectionInfo, connectionList ):
         """ """
