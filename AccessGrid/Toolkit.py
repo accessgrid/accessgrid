@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.80 2004-09-03 20:40:08 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.81 2004-09-07 18:58:30 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.80 2004-09-03 20:40:08 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.81 2004-09-07 18:58:30 turam Exp $"
 
 # Standard imports
 import os
@@ -549,7 +549,7 @@ class Service(AppBase):
             return
 
         if len(reqs) > 1:
-            self.len.warn("Multiple requests found, just picking one")
+            self.log.warn("Multiple requests found, just picking one")
             
         request, token, server, created = reqs[0]
 
