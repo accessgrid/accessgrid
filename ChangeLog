@@ -1,3 +1,123 @@
+2003-02-21 15:42  judson
+
+	* AccessGrid/EventClient.py, AccessGrid/EventService.py,
+	AccessGrid/Events.py, AccessGrid/TextClientUI.py,
+	AccessGrid/TextService.py, AccessGrid/Venue.py,
+	AccessGrid/VenueClient.py, bin/VenueClient.py: Fixed broken event
+	and text services that I broek so Ti couldn't do his job.  Added
+	ConnectEvents to make startup cleaner, need to still add
+	DisconnectEvents so we have better terminal condition
+	differentiation.
+
+2003-02-21 15:40  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: Changed hide/show resize
+	problem
+
+2003-02-21 14:00  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: fixed hide show exits for
+	Windows
+
+2003-02-21 13:42  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: can now see bottom of exits
+	list
+
+2003-02-21 13:27  judson
+
+	* AccessGrid/: EventService.py, TextClientUI.py, TextService.py,
+	Venue.py, VenueClient.py, VenueServer.py: Bug fixes to get alpha
+	ready.
+	
+	Made textclient terminate correctly.
+
+2003-02-21 13:06  turam
+
+	* AccessGrid/AGNodeService.py: When loading a node configuration,
+	remove services from service managers specified in the config file
+
+2003-02-21 12:27  turam
+
+	* AccessGrid/services/AudioService.py: Disable "name" switch for
+	now
+
+2003-02-21 12:25  turam
+
+	* AccessGrid/Types.py: Add back in VenueState.uniqueId
+
+2003-02-21 12:05  turam
+
+	* AccessGrid/: AGServiceManager.py, NodeManagementUIClasses.py,
+	Types.py: Some refactoring of service package handling (more
+	needed)
+
+2003-02-21 11:57  olson
+
+	* AccessGrid/VenueServer.py: fix OSError exception
+
+2003-02-21 11:52  judson
+
+	* AccessGrid/: EventService.py, TextService.py, Venue.py: Fixes for
+	exit condition.
+	
+	Commented out heartbeat logging.
+
+2003-02-21 11:47  lefvert
+
+	* bin/VenueManagement.py: Venue server addresses are stored
+	properly
+
+2003-02-21 11:44  olson
+
+	* AccessGrid/VenueServer.py: Fix datastoragelocation setting.
+
+2003-02-21 11:39  olson
+
+	* bin/VenueServer.py: Added try/except-protected support for
+	logging initialization.
+
+2003-02-21 11:38  olson
+
+	* bin/VenueClient.py: Restore commented line.
+
+2003-02-21 11:38  olson
+
+	* AccessGrid/VenueClientUIClasses.py: Fix for zero-length files in
+	progress dialog.
+
+2003-02-21 11:37  olson
+
+	* AccessGrid/: Venue.py, VenueServer.py: Changes for single
+	TransfesrSErver per venue server.
+
+2003-02-21 11:37  olson
+
+	* AccessGrid/DataStore.py: Modifications for a single
+	TransferServer per VenueServer Added thread pool for GSI  transfer
+	server
+
+2003-02-21 11:34  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: tries to fix exit update
+	problem on Windows
+
+2003-02-21 11:23  turam
+
+	* AccessGrid/services/VideoConsumerService.py: Fix setting of ttl
+
+2003-02-21 11:04  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: fixed exits
+
+2003-02-21 10:51  lefvert
+
+	* AccessGrid/tests/VenueServerTest.py: Added static stream check
+
+2003-02-21 10:18  judson
+
+	* ChangeLog: Updated with my changes.
+
 2003-02-21 10:15  judson
 
 	* AccessGrid/hosting/pyGlobus/: AGGSISOAP.py, Client.py: Fixed

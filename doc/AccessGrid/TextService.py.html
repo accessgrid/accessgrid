@@ -47,8 +47,9 @@
         <tr>
         <td>
         
-<b>from</b> AccessGrid.Events <b>import</b> HeartbeatEvent<br>
+<b>from</b> AccessGrid.Events <b>import</b> HeartbeatEvent, ConnectEvent, TextEvent, TextPayload<br>
 <b>from</b> AccessGrid.Utilities <b>import</b> formatExceptionInfo<br>
+<b>from</b> AccessGrid.hosting.AccessControl <b>import</b> CreateSubjectFromGSIContext<br>
 <b>from</b> <a href="http://www.python.org/doc/current/lib/module-SocketServer.html">SocketServer</a> <b>import</b> ThreadingMixIn, StreamRequestHandler<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-pickle.html">pickle</a><br>
 <b>from</b> pyGlobus.io <b>import</b> GSITCPSocketServer, GSIRequestHandler<br>
@@ -104,7 +105,7 @@
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 14 09:21:11 2003 by
+        on Fri Feb 21 09:03:33 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

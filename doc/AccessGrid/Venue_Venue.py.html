@@ -84,6 +84,7 @@ ServiceBase.ServiceBase<br>
 <a href="#AddData">AddData</a><br>
 <a href="#AddNetworkService">AddNetworkService</a><br>
 <a href="#AddService">AddService</a><br>
+<a href="#AddStream">AddStream</a><br>
 <a href="#AllocateMulticastLocation">AllocateMulticastLocation</a><br>
 <a href="#CleanupClients">CleanupClients</a><br>
 <a href="#ClientHeartbeat">ClientHeartbeat</a><br>
@@ -97,21 +98,23 @@ ServiceBase.ServiceBase<br>
 </td>
 <td align="LEFT" valign="TOP">
 <a href="#GetState">GetState</a><br>
+<a href="#GetStaticStreams">GetStaticStreams</a><br>
 <a href="#GetStreams">GetStreams</a><br>
 <a href="#GetUploadDescriptor">GetUploadDescriptor</a><br>
 <a href="#IsValidPrivateId">IsValidPrivateId</a><br>
 <a href="#NegotiateCapabilities">NegotiateCapabilities</a><br>
-<a href="#Ping">Ping</a><br>
 <a href="#RemoveConnection">RemoveConnection</a><br>
 <a href="#RemoveData">RemoveData</a><br>
 <a href="#RemoveNetworkService">RemoveNetworkService</a><br>
 <a href="#RemoveService">RemoveService</a><br>
+<a href="#RemoveStream">RemoveStream</a><br>
+<a href="#RemoveUser">RemoveUser</a><br>
 <a href="#SetConnections">SetConnections</a><br>
 <a href="#SetDataStore">SetDataStore</a><br>
 <a href="#SetDescription">SetDescription</a><br>
-<a href="#SetMulticastAddressAllocator">SetMulticastAddressAllocator</a><br>
 </td>
 <td align="LEFT" valign="TOP">
+<a href="#SetMulticastAddressAllocator">SetMulticastAddressAllocator</a><br>
 <a href="#Shutdown">Shutdown</a><br>
 <a href="#Start">Start</a><br>
 <a href="#UpdateClientProfile">UpdateClientProfile</a><br>
@@ -273,6 +276,34 @@ AddService ( self,  serviceDescription )
 </pre></font>
 
 <p>This method adds a service description to the Venue.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="AddStream"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AddStream&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AddStream ( self,  inStreamDescription )
+
+</pre></font>
+
+<p>Add a stream to the list of streams &quot;in&quot; the venue</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -598,6 +629,34 @@ GetState ( self )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="GetStaticStreams"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetStaticStreams&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetStaticStreams ( self )
+
+</pre></font>
+
+<p>GetStaticStreams returns a list of static stream descriptions to the caller.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="GetStreams"></a>&nbsp;
                 </font>
             </th>
@@ -644,6 +703,8 @@ GetUploadDescriptor ( self )
 
 </pre></font>
 
+<h3>Retrieve the upload descriptor from the Venue's datastore.</h3>
+<p>        If the venue has no data store configured, return None.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -703,34 +764,6 @@ NegotiateCapabilities ( self,  clientProfile )
         matches the client profile. Later this method could use network
         services to find The Best Match of all the network services,
         the existing streams, and all the client capabilities.</p>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Ping"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">Ping&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-Ping ( self )
-
-</pre></font>
-
-<p>I don't know, ask Tom</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -846,6 +879,61 @@ RemoveService ( self,  serviceDescription )
 
 <p>This method removes a service description from the list of services
         in the Virtual Venue.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="RemoveStream"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">RemoveStream&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+RemoveStream ( self,  streamDescription )
+
+</pre></font>
+
+<p>Remove the given stream from the venue</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="RemoveUser"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">RemoveUser&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+RemoveUser ( self,  privateId )
+
+</pre></font>
+
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1017,7 +1105,13 @@ Shutdown ( self )
         <tr>
         <td>
         <font color="#000088"><pre>
-Start ( self )
+Start (
+        self,
+        multicastAllocator,
+        dataTransferServer,
+        eventService,
+        textService,
+        )
 
 </pre></font>
 
@@ -1167,7 +1261,6 @@ __init__ (
         uniqueId,
         description,
         administrator,
-        multicastAllocator,
         dataStorePath,
         )
 
@@ -1261,13 +1354,15 @@ startDataStore ( self )
 </pre></font>
 
 <h3>Start the local datastore server.</h3>
-<p>        We create a DataStore and a HTTPTransportServer for the actual service.
-        The DataStore is given the Venue's dataStorePath as its working directory.
-        We then loop through the data descriptions in the venue, both checking
-        to see that the file still exists for each piece of data, and updating the
-        uri field in the description with the new download URL.</p>
-<p>        Actually, we get to do both steps at once, as GetDownloadDescriptor will
-        return None if the file doesn't exist in the local data store.</p>
+<p>        We create a DataStore and a HTTPTransportServer for the actual
+        service.  The DataStore is given the Venue's dataStorePath as
+        its working directory.  We then loop through the data
+        descriptions in the venue, both checking to see that the file
+        still exists for each piece of data, and updating the uri
+        field in the description with the new download URL.</p>
+<p>        Actually, we get to do both steps at once, as
+        GetDownloadDescriptor will return None if the file doesn't
+        exist in the local data store.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -1362,7 +1457,7 @@ wsUpdateData ( self,  dataDescription )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 14 09:21:11 2003 by
+        on Fri Feb 21 09:03:33 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

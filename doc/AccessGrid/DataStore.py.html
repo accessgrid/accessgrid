@@ -50,13 +50,16 @@
 <b>from</b> AccessGrid.Descriptions <b>import</b> DataDescription<br>
 <b>import</b> AccessGrid.GUID<br>
 <b>from</b> AccessGrid.Utilities <b>import</b> GetHostname<br>
+<b>from</b> AccessGrid.hosting.pyGlobus <b>import</b> Utilities<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-BaseHTTPServer.html">BaseHTTPServer</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-ConfigParser.html">ConfigParser</a><br>
+<b>import</b> <a href="http://www.python.org/doc/current/lib/module-Queue.html">Queue</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-cStringIO.html">cStringIO</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-httplib.html">httplib</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-md5.html">md5</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-os.html">os</a><br>
 <b>import</b> os.path<br>
+<b>from</b> pyGlobus <b>import</b> io<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-re.html">re</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-shutil.html">shutil</a><br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-socket.html">socket</a><br>
@@ -90,9 +93,87 @@
         <tr>
         <td>
         
+<a href="#GSIHTTPDownloadFile">GSIHTTPDownloadFile</a><br>
+<a href="#GSIHTTPUploadFiles">GSIHTTPUploadFiles</a><br>
 <a href="#HTTPDownloadFile">HTTPDownloadFile</a><br>
+<a href="#HTTPFamilyDownloadFile">HTTPFamilyDownloadFile</a><br>
 <a href="#HTTPUploadFiles">HTTPUploadFiles</a><br>
 
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GSIHTTPDownloadFile"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GSIHTTPDownloadFile&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GSIHTTPDownloadFile (
+        download_url,
+        destination,
+        size,
+        checksum,
+        progressCB=None,
+        )
+
+</pre></font>
+
+<h3>Download a file with GSI HTTP.</h3>
+<p>    Define a local connection class so we can poke about at the
+    tcp attributes here.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GSIHTTPUploadFiles"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GSIHTTPUploadFiles&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GSIHTTPUploadFiles (
+        upload_url,
+        file_list,
+        progressCB,
+        )
+
+</pre></font>
+
+<h3>Upload the given list of files to the server using HTTP.</h3>
+<h4>    progressCB is a callback that will be invoked this way:</h4>
+<p>       progressCB(filename, bytes_sent, total_bytes, file_done, transfer_done)</p>
+<p>    filename is the file to which the progress update applies
+    bytes_sent and total_bytes denote the file's progress
+    file_done is set when the given file upload is complete
+    transfer_done is set when the entire transfer is complete</p>
+<p>    If progressCB returns true, the transfer is to be cancelled.</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -123,6 +204,41 @@ HTTPDownloadFile (
         size,
         checksum,
         progressCB=None,
+        )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="HTTPFamilyDownloadFile"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">HTTPFamilyDownloadFile&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+HTTPFamilyDownloadFile (
+        download_url,
+        destination,
+        size,
+        checksum,
+        identity=None,
+        progressCB=None,
+        connectionClass=httplib.HTTPConnection,
         )
 
 </pre></font>
@@ -160,6 +276,9 @@ HTTPDownloadFile (
         <td>
         
 DownloadFailed( "Cancelled by user" )<br>
+DownloadFailed( "bad status from http (server type mismatch?)" )<br>
+DownloadFailed( "server must provide a valid content length" )<br>
+DownloadFailed( resp.status, resp.reason )<br>
 DownloadFailed("Checksum mismatch on download: download was %s, metadata was %s" %( download_digest, checksum ) )<br>
 DownloadFailed("End of file before %d bytes read" %( size ) )<br>
 DownloadFailed("Size mismatch: server says %d, metadata says %d" %( hdr_size, size ) )<br>
@@ -238,15 +357,24 @@ HTTPUploadFiles (
 <tr><td valign="top" align="left"><a href="DataStore_DownloadFailed.py.html">DownloadFailed</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="DataStore_DuplicateFile.py.html">DuplicateFile</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="DataStore_FileNotFound.py.html">FileNotFound</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="DataStore_GSIHTTPIdentityToken.py.html">GSIHTTPIdentityToken</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="DataStore_GSIHTTPTransferServer.py.html">GSIHTTPTransferServer</a></td><td valign="top" align="left">
+<p>A GSIHTTPTransferServer is a Globus-enabled HTTP-based implementation of a TransferServer.</p>
+</td></tr>
+<tr><td valign="top" align="left"><a href="DataStore_HTTPIdentityToken.py.html">HTTPIdentityToken</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="DataStore_HTTPTransferHandler.py.html">HTTPTransferHandler</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="DataStore_HTTPTransferServer.py.html">HTTPTransferServer</a></td><td valign="top" align="left">
-<p>An HTTPTransferServer provides upload and download services via HTTP.</p>
+<p>A HTTPTransferServer is a HTTP-based implementation of a TransferServer.</p>
 </td></tr>
 <tr><td valign="top" align="left"><a href="DataStore_HTTPUploadEngine.py.html">HTTPUploadEngine</a></td><td valign="top" align="left">
 <p>An HTTPUploadEngine bundles up the functionality need to implement</p>
 </td></tr>
+<tr><td valign="top" align="left"><a href="DataStore_IdentityToken.py.html">IdentityToken</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="DataStore_NotAPlainFile.py.html">NotAPlainFile</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="DataStore_NotAuthorized.py.html">NotAuthorized</a></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><a href="DataStore_TransferServer.py.html">TransferServer</a></td><td valign="top" align="left">
+<p>A TransferServer provides file upload and download services.</p>
+</td></tr>
 <tr><td valign="top" align="left"><a href="DataStore_UploadFailed.py.html">UploadFailed</a></td><td valign="top" align="left"></td></tr>
 </table>
 </td></tr>
@@ -262,7 +390,7 @@ HTTPUploadFiles (
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 14 09:21:11 2003 by
+        on Fri Feb 21 09:03:33 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

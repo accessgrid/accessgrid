@@ -85,14 +85,52 @@ Thread<br>
         <tr>
         <td>
         
+
+            <table border="0" cellspacing="2" cellpadding="2" width="100%">
+              <tr>
+            <td align="LEFT" valign="TOP">
+<a href="#AddVenue">AddVenue</a><br>
 <a href="#DefaultCallback">DefaultCallback</a><br>
 <a href="#Distribute">Distribute</a><br>
 <a href="#GetLocation">GetLocation</a><br>
 <a href="#RegisterCallback">RegisterCallback</a><br>
+</td>
+<td align="LEFT" valign="TOP">
 <a href="#RegisterObject">RegisterObject</a><br>
+<a href="#RemoveVenue">RemoveVenue</a><br>
 <a href="#Stop">Stop</a><br>
 <a href="#__init__">__init__</a><br>
 <a href="#run">run</a><br>
+</td>
+</tr>
+            </table>
+            
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="AddVenue"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">AddVenue&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+AddVenue ( self,  venueId )
+
+</pre></font>
 
 
         <tr>
@@ -144,7 +182,11 @@ DefaultCallback ( self,  event )
         <tr>
         <td>
         <font color="#000088"><pre>
-Distribute ( self,  data )
+Distribute (
+        self,
+        venueId,
+        data,
+        )
 
 </pre></font>
 
@@ -202,6 +244,7 @@ GetLocation ( self )
         <font color="#000088"><pre>
 RegisterCallback (
         self,
+        venueId,
         eventType,
         callback,
         )
@@ -231,7 +274,11 @@ RegisterCallback (
         <tr>
         <td>
         <font color="#000088"><pre>
-RegisterObject ( self,  object )
+RegisterObject (
+        self,
+        venueId,
+        object,
+        )
 
 </pre></font>
 
@@ -239,6 +286,33 @@ RegisterObject ( self,  object )
         same object. The object being registered has to define a table named
         callbacks that has event types as keys, and self.methods as values.
         Then these are automatically registered.</p>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="RemoveVenue"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">RemoveVenue&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+RemoveVenue ( self,  venueId )
+
+</pre></font>
+
 
         <tr>
             <th bgcolor="#99ccff"
@@ -339,7 +413,7 @@ run ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 14 09:21:11 2003 by
+        on Fri Feb 21 09:03:33 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

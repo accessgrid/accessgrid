@@ -92,10 +92,11 @@ ServiceBase<br>
 <td align="LEFT" valign="TOP">
 <a href="#RemoveServices">RemoveServices</a><br>
 <a href="#SetAuthorizedUsers">SetAuthorizedUsers</a><br>
+<a href="#StopServices">StopServices</a><br>
 <a href="#__AddServiceDescription">__AddServiceDescription</a><br>
 <a href="#__DiscoverResources">__DiscoverResources</a><br>
 <a href="#__PushAuthorizedUserList">__PushAuthorizedUserList</a><br>
-<a href="#__RetrieveServiceImplementation">__RetrieveServiceImplementation</a><br>
+<a href="#__RetrieveServicePackage">__RetrieveServicePackage</a><br>
 <a href="#__init__">__init__</a><br>
 </td>
 </tr>
@@ -126,8 +127,7 @@ ServiceBase<br>
         <font color="#000088"><pre>
 AddService (
         self,
-        connInfo,
-        serviceImplementation,
+        serviceDescription,
         resourceToAssign,
         )
 
@@ -159,7 +159,6 @@ AddService (
         <tr>
         <td>
         
-faultType( "Authorization failed" )<br>
 faultType("AGServiceManager.AddService failed: " + str( sys.exc_value ) )<br>
 
 </td></tr>
@@ -187,11 +186,7 @@ faultType("AGServiceManager.AddService failed: " + str( sys.exc_value ) )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-AddServiceDescription (
-        self,
-        connInfo,
-        serviceDescription,
-        )
+AddServiceDescription ( self,  serviceDescription )
 
 </pre></font>
 
@@ -221,7 +216,6 @@ AddServiceDescription (
         <tr>
         <td>
         
-faultType( "Authorization failed" )<br>
 faultType("AGServiceManager.AddServiceDescription failed: " + str( sys.exc_value ) )<br>
 
 </td></tr>
@@ -249,7 +243,7 @@ faultType("AGServiceManager.AddServiceDescription failed: " + str( sys.exc_value
         <tr>
         <td>
         <font color="#000088"><pre>
-DiscoverResources ( self,  connInfo )
+DiscoverResources ( self )
 
 </pre></font>
 
@@ -305,39 +299,11 @@ faultType("AGServiceManager.DiscoverResources failed: " + str( sys.exc_value ) )
         <tr>
         <td>
         <font color="#000088"><pre>
-GetResources ( self,  connInfo )
+GetResources ( self )
 
 </pre></font>
 
 <p>Return a list of resident resources</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-faultType( "Authorization failed" )<br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -361,39 +327,11 @@ faultType( "Authorization failed" )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-GetServices ( self,  connInfo )
+GetServices ( self )
 
 </pre></font>
 
 <p>Return list of services</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-faultType( "Authorization failed" )<br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -446,7 +384,6 @@ Ping ( self )
         <font color="#000088"><pre>
 RegisterService (
         self,
-        connInfo,
         token,
         uri,
         )
@@ -481,7 +418,6 @@ RegisterService (
         <tr>
         <td>
         
-faultType( "Authorization failed" )<br>
 faultType("AGServiceManager.RegisterService failed: " + str( sys.exc_value ) )<br>
 
 </td></tr>
@@ -509,11 +445,7 @@ faultType("AGServiceManager.RegisterService failed: " + str( sys.exc_value ) )<b
         <tr>
         <td>
         <font color="#000088"><pre>
-RemoveService (
-        self,
-        connInfo,
-        serviceToRemove,
-        )
+RemoveService ( self,  serviceToRemove )
 
 </pre></font>
 
@@ -542,7 +474,6 @@ RemoveService (
         <tr>
         <td>
         
-faultType( "Authorization failed" )<br>
 faultType("AGServiceManager.RemoveService failed : ", str( exc ) )<br>
 
 </td></tr>
@@ -570,7 +501,7 @@ faultType("AGServiceManager.RemoveService failed : ", str( exc ) )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-RemoveServices ( self,  connInfo )
+RemoveServices ( self )
 
 </pre></font>
 
@@ -599,7 +530,6 @@ RemoveServices ( self,  connInfo )
         <tr>
         <td>
         
-faultType( "Authorization failed" )<br>
 faultType("AGServiceManager.RemoveServices failed : " + str( sys.exc_value ) )<br>
 
 </td></tr>
@@ -627,11 +557,7 @@ faultType("AGServiceManager.RemoveServices failed : " + str( sys.exc_value ) )<b
         <tr>
         <td>
         <font color="#000088"><pre>
-SetAuthorizedUsers (
-        self,
-        connInfo,
-        authorizedUsers,
-        )
+SetAuthorizedUsers ( self,  authorizedUsers )
 
 </pre></font>
 
@@ -666,6 +592,34 @@ faultType("AGServiceManager.SetAuthorizedUsers failed: " + str( sys.exc_value ) 
 
 </td></tr>
 </table>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="StopServices"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">StopServices&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+StopServices ( self )
+
+</pre></font>
+
+<p>Stop all services on service manager</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -787,7 +741,7 @@ __PushAuthorizedUserList ( self )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="__RetrieveServiceImplementation"></a>&nbsp;
+                  <a name="__RetrieveServicePackage"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -795,13 +749,13 @@ __PushAuthorizedUserList ( self )
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">__RetrieveServiceImplementation&nbsp;</font>
+                <font color="#000000">__RetrieveServicePackage&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-__RetrieveServiceImplementation ( self,  serviceImplementation )
+__RetrieveServicePackage ( self,  serviceImplementation )
 
 </pre></font>
 
@@ -846,7 +800,7 @@ __init__ ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 14 09:21:11 2003 by
+        on Fri Feb 21 09:03:33 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

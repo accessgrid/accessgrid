@@ -52,16 +52,16 @@
             <table border="0" cellspacing="2" cellpadding="2" width="100%">
               <tr>
             <td align="LEFT" valign="TOP">
-<a href="#AddPendingFile">AddPendingFile</a><br>
+<a href="#AddPendingUpload">AddPendingUpload</a><br>
 <a href="#CanUploadFile">CanUploadFile</a><br>
 <a href="#CompleteUpload">CompleteUpload</a><br>
 <a href="#DeleteFile">DeleteFile</a><br>
 <a href="#GetDownloadDescriptor">GetDownloadDescriptor</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#GetFilePath">GetFilePath</a><br>
+<a href="#GetDownloadFilename">GetDownloadFilename</a><br>
 <a href="#GetUploadDescriptor">GetUploadDescriptor</a><br>
-<a href="#GetUploadFileHandle">GetUploadFileHandle</a><br>
+<a href="#GetUploadFilename">GetUploadFilename</a><br>
 <a href="#SetTransferEngine">SetTransferEngine</a><br>
 <a href="#__init__">__init__</a><br>
 </td>
@@ -77,7 +77,7 @@
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="AddPendingFile"></a>&nbsp;
+                  <a name="AddPendingUpload"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -85,13 +85,13 @@
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">AddPendingFile&nbsp;</font>
+                <font color="#000000">AddPendingUpload&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-AddPendingFile (
+AddPendingUpload (
         self,
         dn,
         filename,
@@ -127,7 +127,7 @@ AddPendingFile (
 CanUploadFile (
         self,
         dn,
-        filename,
+        file_info,
         )
 
 </pre></font>
@@ -135,7 +135,7 @@ CanUploadFile (
 <p>Used by the transfer engine to determine if a client is able to
         upload a new file.<p>        Arguments:
          - dn is the distinguished name of the client
-         - filename is the file name client is attempting to upload</p>
+         - file_info is a file information dict for hte file the client is trying to upload</p>
 <p>        Current test is just to see if the file exists.
         Need to test to see if the client is currently logged into the venue.</p>
 </p>
@@ -267,7 +267,7 @@ GetDownloadDescriptor ( self,  filename )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="GetFilePath"></a>&nbsp;
+                  <a name="GetDownloadFilename"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -275,16 +275,16 @@ GetDownloadDescriptor ( self,  filename )
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">GetFilePath&nbsp;</font>
+                <font color="#000000">GetDownloadFilename&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-GetFilePath (
+GetDownloadFilename (
         self,
-        dn,
-        filename,
+        id_token,
+        url_path,
         )
 
 </pre></font>
@@ -320,7 +320,6 @@ GetFilePath (
         <td>
         
 <a href="DataStore_FileNotFound.py.html">FileNotFound</a><br>
-<a href="DataStore_NotAuthorized.py.html">NotAuthorized</a><br>
 
 </td></tr>
 </table>
@@ -361,7 +360,7 @@ GetUploadDescriptor ( self )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="GetUploadFileHandle"></a>&nbsp;
+                  <a name="GetUploadFilename"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -369,25 +368,25 @@ GetUploadDescriptor ( self )
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">GetUploadFileHandle&nbsp;</font>
+                <font color="#000000">GetUploadFilename&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-GetUploadFileHandle (
+GetUploadFilename (
         self,
         dn,
-        filename,
+        file_info,
         )
 
 </pre></font>
 
-<p>Return a filehandle appropriate for writing into a
-        new upload of filename.<p>        The client is running with identity &quot;dn&quot;.</p>
+<h3>Return the filename for a file to be uploaded.</h3>
+<p>        file_info is a file information dictionary.</p>
+<p>        The client is running with identity &quot;dn&quot;.</p>
 <p>        This is used by the transfer engine to provide a
         destination for a file upload.</p>
-</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -443,12 +442,14 @@ __init__ (
         self,
         venue,
         pathname,
+        prefix,
         )
 
 </pre></font>
 
 <h3>Create the datastore.</h3>
-<p>        Files will be stored in the directory named by pathname.</p>
+<p>        Files will be stored in the directory named by &lt;pathname&gt;.
+        The URL prefix for this data store is &lt;prefix&gt;.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -490,7 +491,7 @@ Exception("Datastore path %s does not exist" %( pathname ) )<br>
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 14 09:21:11 2003 by
+        on Fri Feb 21 09:03:33 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

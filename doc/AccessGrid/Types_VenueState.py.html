@@ -59,6 +59,7 @@
 <a href="#GetDescription">GetDescription</a><br>
 <a href="#GetEventLocation">GetEventLocation</a><br>
 <a href="#GetTextLocation">GetTextLocation</a><br>
+<a href="#GetUniqueId">GetUniqueId</a><br>
 </td>
 <td align="LEFT" valign="TOP">
 <a href="#GetUsers">GetUsers</a><br>
@@ -69,11 +70,13 @@
 <a href="#RemoveService">RemoveService</a><br>
 <a href="#RemoveUser">RemoveUser</a><br>
 <a href="#SetConnections">SetConnections</a><br>
+<a href="#SetDescription">SetDescription</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#SetDescription">SetDescription</a><br>
 <a href="#SetEventLocation">SetEventLocation</a><br>
 <a href="#SetTextLocation">SetTextLocation</a><br>
+<a href="#SetUniqueId">SetUniqueId</a><br>
+<a href="#UpdateData">UpdateData</a><br>
 <a href="#__init__">__init__</a><br>
 </td>
 </tr>
@@ -292,6 +295,33 @@ GetEventLocation ( self )
         <td>
         <font color="#000088"><pre>
 GetTextLocation ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="GetUniqueId"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">GetUniqueId&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+GetUniqueId ( self )
 
 </pre></font>
 
@@ -601,6 +631,60 @@ SetTextLocation ( self,  textLocation )
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="SetUniqueId"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetUniqueId&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetUniqueId ( self,  uniqueId )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="UpdateData"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">UpdateData&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+UpdateData ( self,  dataDescription )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="__init__"></a>&nbsp;
                 </font>
             </th>
@@ -617,6 +701,7 @@ SetTextLocation ( self,  textLocation )
         <font color="#000088"><pre>
 __init__ (
         self,
+        uniqueId,
         description,
         connections,
         users,
@@ -642,7 +727,7 @@ __init__ (
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 14 09:21:11 2003 by
+        on Fri Feb 21 09:03:33 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

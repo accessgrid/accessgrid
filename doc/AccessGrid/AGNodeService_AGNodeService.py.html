@@ -128,11 +128,7 @@ ServiceBase<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-AddAuthorizedUser (
-        self,
-        connInfo,
-        authorizedUser,
-        )
+AddAuthorizedUser ( self,  authorizedUser )
 
 </pre></font>
 
@@ -161,7 +157,6 @@ AddAuthorizedUser (
         <tr>
         <td>
         
-faultType( "Authorization failed" )<br>
 faultType( "Failed to add user authorization: " + authorizedUser )<br>
 
 </td></tr>
@@ -189,11 +184,7 @@ faultType( "Failed to add user authorization: " + authorizedUser )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-AddServiceManager (
-        self,
-        connInfo,
-        serviceManager,
-        )
+AddServiceManager ( self,  serviceManager )
 
 </pre></font>
 
@@ -222,7 +213,6 @@ AddServiceManager (
         <tr>
         <td>
         
-faultType( "Authorization failed" )<br>
 faultType( "Failed to set Service Manager user authorization: " + serviceManager.uri )<br>
 faultType( "Service Manager is unreachable: " + serviceManager.uri )<br>
 
@@ -251,11 +241,7 @@ faultType( "Service Manager is unreachable: " + serviceManager.uri )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-ConfigureStreams (
-        self,
-        connInfo,
-        streamDescriptions,
-        )
+ConfigureStreams ( self,  streamDescriptions )
 
 </pre></font>
 
@@ -286,7 +272,6 @@ ConfigureStreams (
         <tr>
         <td>
         
-faultType( "Authorization failed" )<br>
 faultType("AGNodeService.ConfigureStreams failed: " + str( sys.exc_value ) )<br>
 
 </td></tr>
@@ -314,39 +299,11 @@ faultType("AGNodeService.ConfigureStreams failed: " + str( sys.exc_value ) )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-GetAvailableServices ( self,  connInfo )
+GetAvailableServices ( self )
 
 </pre></font>
 
 <p>Get list of available services</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-faultType( "Authorization failed" )<br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -370,10 +327,11 @@ faultType( "Authorization failed" )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-GetCapabilities ( self,  connInfo )
+GetCapabilities ( self )
 
 </pre></font>
 
+<p>Get list of capabilities</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -398,7 +356,6 @@ GetCapabilities ( self,  connInfo )
         <tr>
         <td>
         
-faultType( "Authorization failed" )<br>
 faultType("AGNodeService.GetCapabilities failed: " + str( sys.exc_value ) )<br>
 
 </td></tr>
@@ -426,39 +383,11 @@ faultType("AGNodeService.GetCapabilities failed: " + str( sys.exc_value ) )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-GetConfigurations ( self,  connInfo )
+GetConfigurations ( self )
 
 </pre></font>
 
 <p>Get list of available configurations</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-faultType( "Authorization failed" )<br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -482,39 +411,11 @@ faultType( "Authorization failed" )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-GetServiceManagers ( self,  connInfo )
+GetServiceManagers ( self )
 
 </pre></font>
 
 <p>Get list of service managers</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-faultType( "Authorization failed" )<br>
-
-</td></tr>
-</table>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -538,7 +439,7 @@ faultType( "Authorization failed" )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-GetServices ( self,  connInfo )
+GetServices ( self )
 
 </pre></font>
 
@@ -567,7 +468,6 @@ GetServices ( self,  connInfo )
         <tr>
         <td>
         
-faultType( "Authorization failed" )<br>
 faultType("AGNodeService.GetServices failed: " + str( sys.exc_value ) )<br>
 
 </td></tr>
@@ -595,11 +495,7 @@ faultType("AGNodeService.GetServices failed: " + str( sys.exc_value ) )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-LoadConfiguration (
-        self,
-        connInfo,
-        configName,
-        )
+LoadConfiguration ( self,  configName )
 
 </pre></font>
 
@@ -688,11 +584,7 @@ Ping ( self )
         <tr>
         <td>
         <font color="#000088"><pre>
-RemoveAuthorizedUser (
-        self,
-        connInfo,
-        authorizedUser,
-        )
+RemoveAuthorizedUser ( self,  authorizedUser )
 
 </pre></font>
 
@@ -721,7 +613,6 @@ RemoveAuthorizedUser (
         <tr>
         <td>
         
-faultType( "Authorization failed" )<br>
 faultType( "Failed to remove user authorization: " + authorizedUser )<br>
 
 </td></tr>
@@ -749,11 +640,7 @@ faultType( "Failed to remove user authorization: " + authorizedUser )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-RemoveServiceManager (
-        self,
-        connInfo,
-        serviceManagerToRemove,
-        )
+RemoveServiceManager ( self,  serviceManagerToRemove )
 
 </pre></font>
 
@@ -783,7 +670,6 @@ RemoveServiceManager (
         <td>
         
 faultType( "AGNodeService.RemoveServiceManager failed: " + serviceManagerToRemove.uri )<br>
-faultType( "Authorization failed" )<br>
 
 </td></tr>
 </table>
@@ -810,11 +696,7 @@ faultType( "Authorization failed" )<br>
         <tr>
         <td>
         <font color="#000088"><pre>
-StoreConfiguration (
-        self,
-        connInfo,
-        configName,
-        )
+StoreConfiguration ( self,  configName )
 
 </pre></font>
 
@@ -843,7 +725,6 @@ StoreConfiguration (
         <tr>
         <td>
         
-faultType( "Authorization failed" )<br>
 faultType("AGNodeService.StoreConfiguration failed: " + str( sys.exc_value ) )<br>
 
 </td></tr>
@@ -970,7 +851,7 @@ __init__ ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Fri Feb 14 09:21:11 2003 by
+        on Fri Feb 21 09:03:33 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         
