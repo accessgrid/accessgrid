@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.32 2003-08-21 23:42:45 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.33 2003-08-21 23:43:57 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -537,8 +537,8 @@ if isWindows():
     GetMimeCommands = Win32GetMimeCommands
     GetMimeType = Win32GetMimeType
 else:
-    GetMimeCommands = lambda arg1, arg2: None
-    GetMimeType = lambda arg1, arg2: None
+    GetMimeCommands = lambda filename=arg1, ext=arg2: None
+    GetMimeType = lambda extension=arg1: None
 
 #
 # Unix Daemonize, this is not appropriate for Win32
