@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.25 2003-04-28 20:12:26 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.26 2003-05-12 17:35:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -54,6 +54,7 @@ class AGNodeService( ServiceBase ):
         self.defaultConfig = None
         self.configDir = "config"
         self.servicesDir = "services"
+        self.streamDescriptionList = dict()
 
         #
         # Read the configuration file (directory options and such)
@@ -158,6 +159,22 @@ class AGNodeService( ServiceBase ):
     ## SERVICE methods
     ####################
 
+    def AddService( self, servicePackageUri, serviceManagerUri, 
+                    resourceToAssign, serviceConfig ):
+        """
+        Add a service package to the service manager.  
+        """
+
+        # Add the service to the service manager
+        serviceDescription = Client.Handle( serviceManagerUri ).GetProxy().AddService( servicePackageUri,
+                                                                  resourceToAssign,
+                                                                  serviceConfig )
+        
+        # Configure the service with the appropriate stream description
+        self.__SendStreamsToService( serviceDescription.uri )
+
+    AddService.soap_export_as = "AddService"
+
     def GetAvailableServices( self ):
         """Get list of available services """
         return self.servicePackageRepository.GetServiceDescriptions()
@@ -183,29 +200,74 @@ class AGNodeService( ServiceBase ):
         return services
     GetServices.soap_export_as = "GetServices"
 
+    def SetServiceEnabled(self, serviceUri, enabled):
+        """
+        Enable the service, and send it a stream configuration if we have one
+        """
+
+        Client.Handle( serviceUri ).GetProxy().SetEnabled(enabled)
+
+        if enabled:
+            self.__SendStreamsToService( serviceUri )
+
+    SetServiceEnabled.soap_export_as = "SetServiceEnabled"
+
+    def StopServices(self):
+        """
+        Stop all services
+        """
+        for serviceManager in self.serviceManagers:
+            try:
+                Client.Handle(serviceManager.uri).GetProxy().StopServices()
+            except:
+                log.exception("Exception stopping services")
+    StopServices.soap_export_as = "StopServices"
+
+
 
     ####################
     ## CONFIGURATION methods
     ####################
 
-    def ConfigureStreams( self, streamDescriptions ):
+    def SetStreams( self, streamDescriptionList ):
         """
-        Configure streams according to stream descriptions.
+        Set streams according to stream descriptions.
         The stream descriptions are applied to the installed services
         according to matching capabilities
         """
+
+        # Save the stream descriptions
+        self.streamDescriptionList = dict()
+        for streamDescription in streamDescriptionList:
+            self.streamDescriptionList[streamDescription.capability.type] = streamDescription
+
+        # Send the streams to the services
         services = self.GetServices()
         for service in services:
-            serviceCapabilities = []
-            serviceCapabilities = map(lambda cap: cap.type, Client.Handle( service.uri ).get_proxy().GetCapabilities() )
-            for streamDescription in streamDescriptions:
-                try:
-                    if streamDescription.capability.type in serviceCapabilities:
-                        Client.Handle( service.uri ).get_proxy().ConfigureStream( streamDescription )
-                except:
-                    log.exception("Exception in AGNodeService.ConfigureStreams.")
+            self.__SendStreamsToService( service.uri )
                     
-    ConfigureStreams.soap_export_as = "ConfigureStreams"
+    SetStreams.soap_export_as = "SetStreams"
+    
+    def AddStream( self, streamDescription ):
+        self.streamDescriptionList[streamDescription.capability.type] = streamDescription
+
+        # Send the streams to the services
+        services = self.GetServices()
+        for service in services:
+            self.__SendStreamsToService( service.uri )
+
+    AddStream.soap_export_as = "AddStream"
+
+    def RemoveStream( self, streamDescription ):
+
+        # Remove the stream from the list
+        if self.streamDescriptionList.has_key( streamDescription.capability.type ):
+            del self.streamDescriptionList.has_key[streamDescription.capability.type]
+
+        # Stop services using that stream's media type
+        # (er, not yet)
+
+    RemoveStream.soap_export_as = "RemoveStream"
 
 
     def LoadConfiguration( self, configName ):
@@ -527,6 +589,22 @@ class AGNodeService( ServiceBase ):
             # Save the config file
             SaveConfig( configFile, self.config )
         
+
+    def __SendStreamsToService( self, serviceUri ):
+        """
+        Send stream description(s) to service
+        """
+        serviceCapabilities = map(lambda cap: cap.type, 
+            Client.Handle( serviceUri ).get_proxy().GetCapabilities() )
+        for streamDescription in self.streamDescriptionList.values():
+            try:
+                if streamDescription.capability.type in serviceCapabilities:
+                    log.info("Sending stream (type=%s) to service: %s", 
+                                streamDescription.capability.type,
+                                serviceUri )
+                    Client.Handle( serviceUri ).get_proxy().ConfigureStream( streamDescription )
+            except:
+                log.exception("Exception in AGNodeService.ConfigureStreams.")
 
 
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
