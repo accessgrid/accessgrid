@@ -40,8 +40,19 @@ Venue DataStore}
 \declaremodule{}{AccessGrid.DataStoreClient}
 \modulesynopsis{Client access to the Venue Datastore}
 
-\begin{classdesc}{DataStoreClient}{uploadURL, datastoreURL}
+\begin{funcdesc}{GetVenueDataStore}{venueURL}
+Return a \class{DataStoreClient}  instance representing the default
+datastore on the venue with url \var{venueURL}.
+\end{funcdesc}
 
+
+\begin{classdesc}{DataStoreClient}{uploadURL, datastoreURL}
+A \class{DataStoreClient}  instance provides access to the datastore
+represented by \var{uploadURL} and \var{datastoreURL}.
+
+Clients typically will use the module function
+\function{GetVenueDataStore} to return a \class{DataStoreClient}
+instance for the given venue URL.
 
 \end{classdesc}
 
@@ -51,6 +62,8 @@ A \class{DataStoreShell} instance provides a command-line interface to
 the files in a datastore.
 
 \end{classdesc}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %
