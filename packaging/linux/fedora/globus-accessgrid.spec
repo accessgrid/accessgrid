@@ -40,7 +40,7 @@ export GLOBUS_LOCATION=%{buildroot}%{prefix}
 
 ##
 # Globus Data Management Client
-${GPT_LOCATION}/sbin/gpt-build --verbose ${AGBUILDROOT}/gt3.0.2-source-installer/globus-data-management-client-2.4.3-src_bundle.tar.gz %{globus_flavor}
+${GPT_LOCATION}/sbin/gpt-build ${AGBUILDROOT}/gt3.0.2-source-installer/globus-data-management-client-2.4.3-src_bundle.tar.gz %{globus_flavor}
 (cd ${GLOBUS_LOCATION}/setup/globus/ ; ./setup-globus-common ; ./setup-ssl-utils)
 
 ##
