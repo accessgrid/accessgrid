@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.111 2003-08-05 17:01:52 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.112 2003-08-07 19:22:17 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,6 +24,7 @@ from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid.hosting import AccessControl
 
 from AccessGrid import AppService
+from AccessGrid import NetService
 from AccessGrid.Types import Capability
 from AccessGrid.Descriptions import StreamDescription, CreateStreamDescription
 from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
@@ -634,7 +635,7 @@ class Venue(ServiceBase.ServiceBase):
             self.RemoveUser(privateId)
 
         for privateId in self.netServices.keys():
-            (netServiceType,then_sec) = self.netServices[privateId]
+            (netService,then_sec) = self.netServices[privateId]
 
             if abs(now_sec - then_sec) > self.cleanupTime:
                 log.info("Removing netservice %s with expired heartbeat time",
@@ -647,7 +648,9 @@ class Venue(ServiceBase.ServiceBase):
         AddNetService adds a net service to those in the venue
         """
         privateId = str(GUID())
-        self.netServices[privateId] = (clientType, time.time())
+        log.info("AddNetService: type=%s", clientType)
+        netService = NetService.CreateNetService(clientType,self,privateId)
+        self.netServices[privateId] = (netService, time.time())
         return privateId
     AddNetService.soap_export_as = "AddNetService"
 
@@ -656,10 +659,10 @@ class Venue(ServiceBase.ServiceBase):
         RemoveNetService removes a netservice from those in the venue
         """
 
-        # Remove associated transports from streams
-        netServiceType = self.netServices[privateId][0]
-        if netServiceType == "bridge":
-           self.RemoveNetworkLocationsByPrivateId(privateId)     
+        # Stop the net service
+        netService = self.netServices[privateId][0]
+        log.info("RemoveNetService: type=%s privateId=%s", netService.type, privateId)
+        netService.Stop()
         
         # Remove the netservice from the netservice list
         del self.netServices[privateId]
@@ -696,8 +699,8 @@ class Venue(ServiceBase.ServiceBase):
 
             self.heartbeatLock.release()
         elif self.netServices.has_key(privateId):
-            (netServiceType, heartbeatTime) = self.netServices[privateId]
-            self.netServices[privateId] = (netServiceType,now)
+            (netService, heartbeatTime) = self.netServices[privateId]
+            self.netServices[privateId] = (netService,now)
         else:
             log.debug("ClientHeartbeat: Got heartbeat for missing client")
     
@@ -1022,6 +1025,9 @@ class Venue(ServiceBase.ServiceBase):
             self.clients[priv].SetConnection(connObj)
             self.simpleLock.release()
             
+        elif self.netServices.has_key(priv):
+            log.debug("Private id is in netservices list, authorizing")
+            authorized = 1
         else:
             log.debug("Private id is not client list, denying")
             authorized = 0
