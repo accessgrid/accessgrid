@@ -28,7 +28,7 @@ pyGlobus is the python wrapper for Globus.
 %build
 #. /etc/profile.d/gpt.sh
 #. /etc/profile.d/globus.sh
-python2.3 ./setup.py build --with-modules=io,security,util --flavor="gcc32pthr"
+python2.3 ./setup.py build --run-swig --with-modules=io,security,util --flavor="gcc32pthr"
 
 %install
 #. /etc/profile.d/gpt.sh
