@@ -38,7 +38,6 @@ Source:		%{name}-%{version}-%{release}.tar.gz
 BuildRoot:	%{buildroot}
 Requires:	wxPython
 Requires:	globus-accessgrid
-Requires:	alsa-lib >= 1.0
 Requires:	PyXML >= 0.8.3
 %if %{require_optik}
 Requires:	python-optik >= 1.4.1
@@ -87,13 +86,19 @@ mkdir etc/AccessGrid/Logs
 # Create a usr dir, and move dirs thereunder
 mkdir usr
 mv share usr/share
+%ifarch x86_64
+mv lib64 usr/lib64
+mv lib/python%{pyver}/site-packages/* usr/lib64/python%{pyver}/site-packages
+rm -rf lib
+%else
 mv lib usr/lib
+%endif
 mv bin usr/bin
 
 # compile python modules
 . /etc/profile.d/globus.sh
-python -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'/usr/lib/python%{pyver}",10,"/usr/lib/python%{pyver}", 1)'
-python -O -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'/usr/lib/python%{pyver}",10,"/usr/lib/python%{pyver}")'
+python -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}/python%{pyver}",10,"%{_libdir}/python%{pyver}", 1)'
+python -O -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'%{_libdir}/python%{pyver}",10,"%{_libdir}/python%{pyver}")'
 
 
 #
@@ -104,7 +109,7 @@ python -O -c 'from compileall import *; compile_dir("'$RPM_BUILD_ROOT'/usr/lib/p
 #
 %files
 %defattr(-,root,root)
-%{prefix}/lib/python%{pyver}/site-packages/*
+%{_libdir}/python%{pyver}/site-packages/*
 /etc/AccessGrid
 /etc/init.d/agns
 /etc/init.d/agsm
