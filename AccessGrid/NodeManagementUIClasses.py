@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.63 2004-05-12 21:21:01 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.64 2004-05-18 19:33:32 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.63 2004-05-12 21:21:01 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.64 2004-05-18 19:33:32 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -35,8 +35,6 @@ from AccessGrid.AGNodeService import AGNodeServiceIW
 from AccessGrid.AGServiceManager import AGServiceManagerIW
 from AccessGrid.AGService import AGServiceIW
 from AccessGrid.Types import AGResource
-
-from SOAPpy import SOAPException
 
 # imports for Debug menu; can be removed if Debug menu is removed
 from AccessGrid.Descriptions import StreamDescription
@@ -597,9 +595,9 @@ class NodeManagementClientFrame(wxFrame):
 
             try:
                 self.nodeServiceHandle.LoadConfiguration( conf )
-            except SOAPException, e:
+            except:
                 log.exception("NodeManagementClientFrame.LoadConfiguration: Can not load configuration from node service")
-                self.Error(e.string)
+                self.Error("Error loading node configuration %s" % (conf,))
 
             self.UpdateHostList()
             #self.UpdateServiceList()
@@ -639,9 +637,9 @@ class NodeManagementClientFrame(wxFrame):
                 # Store the configuration
                 try:
                     self.nodeServiceHandle.StoreConfiguration( configName )
-                except SOAPException,e:
-                    log.exception("NodeManagementClientFrame.StoreConfiguration: Can not store configuration in node service")
-                    self.Error(e.string)
+                except:
+                    log.exception("Error storing node configuration %s" % (configName,))
+                    self.Error("Error storing node configuration %s" % (configName,))
 
                 # Set the default configuration
                 if isDefault:
@@ -707,14 +705,6 @@ class NodeManagementClientFrame(wxFrame):
             try:
                 serviceManagerDesc = AGServiceManagerDescription( name, uri )
                 self.nodeServiceHandle.AddServiceManager( serviceManagerDesc )
-            except SOAPException, e:
-                log.exception("NodeManagementClientFrame.AddHost: Can not add service manager to node service")
-                #self.Error(e.string)
-                self.Error("NodeManagementClientFrame.AddHost: Can not add service manager to node service")
-                self.ClearUI()
-                self.UpdateHostList()
-                return
-            
             except:
                 log.exception("Exception in AddHost")
                 self.Error("Can not add service manager to node service.")
@@ -791,8 +781,8 @@ class NodeManagementClientFrame(wxFrame):
         try:
             AGServiceManagerIW(uri).IsValid()
         except:
-            log.exception("NodeManagementClientFrame.ServiceManagerSelectedCB: Service manager is valid call failed.")
-            self.Error("Service Manager is unreachable (%s)" % uri)
+            log.exception("Service Manager is unreachable (%s)" % (uri,))
+            self.Error("Service Manager is unreachable (%s)" % (uri,))
             return
 
         self.UpdateServiceList()
@@ -889,10 +879,9 @@ class NodeManagementClientFrame(wxFrame):
                                serviceManager.uri,
                                resourceToAssign,
                                [] )
-            except SOAPException, e:
-                log.exception("NodeManagementClientFrame.AddService: Exception in AddService")
-                #self.Error( "Add Service failed :" + serviceToAdd.name )
-                self.Error(e.string)
+            except:
+                log.exception( "Add Service failed:" + serviceToAdd.name)
+                self.Error( "Add Service failed:" + serviceToAdd.name )
 
             self.UpdateServiceList()
 
@@ -918,9 +907,9 @@ class NodeManagementClientFrame(wxFrame):
             # Update the services list
             self.UpdateServiceList()
 
-        except SOAPException,e:
-            log.exception("NodeManagementClientFrame.EnableService")
-            self.Error(e.string)
+        except:
+            log.exception("Error enabling service")
+            self.Error("Error enabling service")
 
     def EnableServices( self, event ):
         """
@@ -951,9 +940,9 @@ class NodeManagementClientFrame(wxFrame):
 
             # Update the service list
             self.UpdateServiceList()
-        except SOAPException,e:
-            log.exception("NodeManagementClientFrame.DisableService.")
-            self.Error(e.string)
+        except:
+            log.exception("Error disabling service")
+            self.Error("Error disabling service")
 
 
     def DisableServices( self, event ):
@@ -1005,8 +994,8 @@ class NodeManagementClientFrame(wxFrame):
         try:
             AGServiceIW( self.services[index].uri ).IsValid()
         except:
-            log.exception("NodeManagementClientFrame.ConfigureService")
-            self.Error("Service is unreachable")
+            log.exception("Service is unreachable at %s" % (self.services[index].uri,))
+            self.Error("Service is unreachable at %s" % (self.services[index].uri,))
             return
             
         # Get configuration
