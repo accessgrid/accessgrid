@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI2.py,v 1.8 2004-07-26 21:44:30 turam Exp $
+# RCS-ID:      $Id: VenueClientUI2.py,v 1.9 2004-07-26 23:12:03 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI2.py,v 1.8 2004-07-26 21:44:30 turam Exp $"
+__revision__ = "$Id: VenueClientUI2.py,v 1.9 2004-07-26 23:12:03 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2629,29 +2629,28 @@ class ContentListPanel(wxPanel):
        
     def __SetImageList(self):
         wxInitAllImageHandlers()
-        imageList = wxImageList(18,18)
+        imageList = wxImageList(19,19)
 
         bm = icons.getBulletBitmap()
-        bm.SetWidth(18); bm.SetHeight(18)
+        bm.SetWidth(19); bm.SetHeight(19)
         self.bullet = imageList.Add(bm)
         
 
         bm = icons.getDefaultParticipantBitmap()
-        bm.SetWidth(18); bm.SetHeight(18)
+        bm.SetWidth(19); bm.SetHeight(19)
         self.participantId = imageList.Add(bm)
 
         bm = icons.getDefaultDataBitmap()
-        bm.SetWidth(18); bm.SetHeight(18)
+        bm.SetWidth(19); bm.SetHeight(19)
         self.defaultDataId = imageList.Add(bm)
 
         bm = icons.getDefaultServiceBitmap()
-        bm.SetWidth(18); bm.SetHeight(18)
+        bm.SetWidth(19); bm.SetHeight(19)
         self.serviceId = imageList.Add(bm)
         self.applicationId = imageList.Add(bm)
 
         bm = icons.getDefaultNodeBitmap()
-        bm = icons.getBulletBitmap()
-        bm.SetWidth(18); bm.SetHeight(18)
+        bm.SetWidth(19); bm.SetHeight(19)
         self.nodeId = imageList.Add(bm)
 
         self.tree.AssignImageList(imageList)
