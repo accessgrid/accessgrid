@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.24 2003-05-23 21:39:24 olson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.25 2003-05-28 18:24:27 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -249,7 +249,7 @@ class DataStore:
 
         return path
 
-    def CompleteUpload(self, dn, file_info):
+    def CompleteUpload(self, identityToken, file_info):
         """
         The upload is done. Get the data description, update with the
         information from the file_info dict (which contains the information
@@ -261,7 +261,7 @@ class DataStore:
         desc.SetChecksum(file_info['checksum'])
         desc.SetSize(int(file_info['size']))
         desc.SetStatus(DataDescription.STATUS_PRESENT)
-        desc.SetOwner(dn)
+        desc.SetOwner(identityToken.dn)
         desc.SetURI(self.GetDownloadDescriptor(file_info['name']))
         log.debug("Datastore::CompleteUpload: updating with %s %s", desc, desc.__dict__)
         self.callbackClass.UpdateData(desc)
@@ -281,7 +281,7 @@ class DataStore:
         except OSError, e:
             log.exception("DataStore::DeleteFile: raised error ")
 
-    def AddPendingUpload(self, dn, filename):
+    def AddPendingUpload(self, identityToken, filename):
         """
         Create a data description for filename with a state of "pending" and
         add to the venue.
@@ -290,7 +290,7 @@ class DataStore:
 
         desc = DataDescription(filename)
         desc.SetStatus(DataDescription.STATUS_PENDING)
-        desc.SetOwner(dn)
+        desc.SetOwner(identityToken.dn)
         
         self.callbackClass.AddData(desc)
 

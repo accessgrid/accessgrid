@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.166 2003-05-28 13:25:26 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.167 2003-05-28 18:24:26 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1125,7 +1125,8 @@ class VenueClientUI(wxApp, VenueClient):
         """
         log.debug("Upload personal files")
         try:
-            self.dataStore.AddFile(fileList, self.profile.distinguishedName, self.profile.publicId)
+            my_identity = GetDefaultIdentityDN()
+            self.dataStore.AddFile(fileList, my_identity, self.profile.publicId)
 
         except DataStore.DuplicateFile, e:
             title = "Add Personal Data Error"
