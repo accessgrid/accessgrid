@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.11 2004-03-19 04:20:22 judson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.12 2004-04-01 16:29:53 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This program is used to register applications with the users AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.11 2004-03-19 04:20:22 judson Exp $"
+__revision__ = "$Id: agpm.py,v 1.12 2004-04-01 16:29:53 turam Exp $"
 
 import os
 import re
@@ -38,7 +38,7 @@ if sys.version.startswith('2.3'):
 
 from AccessGrid.AppDb import AppDb
 from AccessGrid.Utilities import LoadConfig
-from AccessGrid.Platform.Config import SystemConfig, AGTkConfig
+from AccessGrid.Platform.Config import SystemConfig, AGTkConfig, UserConfig
 
 tempfile.tmpdir = SystemConfig.instance().GetTempDir()
 
@@ -151,7 +151,7 @@ def main():
         dest = tkConf.GetSharedAppDir()
     else:
         appdb = AppDb()
-        dest = None
+        dest = UserConfig.instance().GetSharedAppDir()
 
     if options.listapps:
         apps = appdb.ListApplications()
