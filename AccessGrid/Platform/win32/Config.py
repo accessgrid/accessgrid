@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.3 2004-03-12 20:49:48 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.4 2004-03-17 20:12:14 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.3 2004-03-12 20:49:48 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.4 2004-03-17 20:12:14 olson Exp $"
 
 import os
 import sys
@@ -756,7 +756,7 @@ HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings
         except:
             freeBytes = None
             
-            return freeBytes
+        return freeBytes
 
     def GetUsername(self):
         try:
