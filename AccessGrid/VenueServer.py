@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.10 2003-01-15 23:19:23 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.11 2003-01-16 22:31:58 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -32,15 +32,38 @@ from AccessGrid.Descriptions import VenueDescription
 
 class VenueServer(ServiceBase.ServiceBase):
     """
+    The Virtual Venue Server object is responsible for creating,
+    destroying, and configuring Virtual Venue objects.
 
+    The Virtual Venue Server object is:
+
+    configFile : string
+    
+    config : dictionary of Key/Value pairs that holds configuration parameters.
+    
+    adminstrators : list of strings (each is a DN of a adminsitrative user)
+    
+    dataStorage : string
+    
+    defaultVenue : VenueURL
+    
+    hostingEnvironment : AccessGrid.hosting.pyGlobus.Server
+    
+    multicastAddressAllocator : AccessGrid.MulticastAddressAllocator
+    
+    venues : a list of Venues Objects that are being made available
+    
+    services : a list of service descriptions, these are either network or
+               application services that are available so any venue hosted
+               by this venue server can add these to the services available
+               from within that venue
+    
+    store : persistent data storage for the virtual venues, this enables
+            virtual venues to be persistent across server shutdowns & restarts
+    
+    houseKeeper : Scheduler
     """
-    serverHost = ''
-    serverURL = ''
-    venueBaseURL = ''
-    administrators = []
 
-    configFile = ''
-    config = {}
     configDefaults = {
             "VenueServer.houseKeeperFrequency" : 30,
             "VenueServer.persistenceData" : 'VenueData',
@@ -48,16 +71,13 @@ class VenueServer(ServiceBase.ServiceBase):
             "DataStorage.store" : 'Data/',
             "DataStorage.port" : 8892
             }
-    hostingEnvironment = None
-    defaultVenue = None
-    multicastAddressAllocator = None
-    dataStorage = None
-    houseKeeper = None
-    venues = {}
-    services = []
 
     def __init__(self, hostEnvironment = None, configFile=None):
-        """ """
+        """
+        The constructor creates a new Venue Server object, initializes
+        that object, then registers signal handlers so the venue can cleanly
+        shutdown in the event of catastrophic signals.
+        """
         # Figure out which configuration file to use for the
         # server configuration. If no configuration file was specified
         # look for a configuration file named VenueServer.cfg
@@ -72,24 +92,53 @@ class VenueServer(ServiceBase.ServiceBase):
         self.config = self.LoadConfig(self.configFile,
                                       self.configDefaults)
 
+        # Initialize our state
+        # We need to get the first administrator from somewhere
+        self.administrators = [] 
+        self.dataStorage = None
+        self.defaultVenue = ''
         self.hostingEnvironment = hostEnvironment
         self.multicastAddressAllocator = MulticastAddressAllocator()
-        self.dataStorage = None
-        self.store = shelve.open(
+        self.venues = {}
+        self.services = []
+        
+        # Try to open the persistent store for Venues. If we fail, we
+        # open a temporary store, but it'll be empty.
+        try:
+            self.store = shelve.open(
                 self.config['VenueServer.persistenceData'])
 
-        for vURL in self.store.keys():
-            print "Loading Venue: %s" % vURL
-            self.venues[vURL] = self.store[vURL]
+            # If we've successfully opened the store, we load Venues
+            # from it.
+            for vURL in self.store.keys():
+                print "Loading Venue: %s" % vURL
+                self.venues[vURL] = self.store[vURL]
+        except:
+            print "Corrupt persistence database detected."
+            self.store = shelve.open(self.config['VenueServer.persistenceData']
+                                     + '.new')
 
-        houseKeeper = scheduler.Scheduler()
-        houseKeeper.AddTask(self.Checkpoint,
+        # The houseKeeper is a task that is doing garbage collection and
+        # other general housekeeping tasks for the Venue Server.
+        # The first task we register with the houseKeeper is a periodic
+        # checkpoint, this tries to ensure that the persistent store is
+        # kept up to date.
+        self.houseKeeper = scheduler.Scheduler()
+        self.houseKeeper.AddTask(self.Checkpoint,
                             self.config['VenueServer.houseKeeperFrequency'], 0)
+
+        # We register signal handlers for the VenueServer. In the event of
+        # a signal we just try to shut down cleanly.
         signal.signal(signal.SIGINT, self.SignalHandler)
-        signal.signal(signal.SIGBREAK, self.SignalHandler)
+        # for some reason this signal doesn't work now
+        # signal.signal(signal.SIGBREAK, self.SignalHandler)
         signal.signal(signal.SIGTERM, self.SignalHandler)
 
     def SignalHandler(self, signum, frame):
+        """
+        SignalHandler catches signals and shuts down the VenueServer (and
+        all of it's Venues. Then it stops the hostingEnvironment.
+        """
         print "Got signal: ", signum
         self.Shutdown(None, 0)
 
@@ -111,7 +160,11 @@ class VenueServer(ServiceBase.ServiceBase):
         return config
 
     def AddVenue(self, connectionInfo, venueDescription):
-        """ """
+        """
+        The AddVenue method takes a venue description and creates a new
+        Venue Object, complete with a coherence service, then makes it
+        available from this Venue Server.
+        """
         try:
             # instantiate a local venueDecription from the input,
             # since it probably came from a SOAP client and we don't
@@ -165,7 +218,9 @@ class VenueServer(ServiceBase.ServiceBase):
     AddVenue.soap_export_as = "AddVenue"
 
     def ModifyVenue(self, connectionInfo, URL, venueDescription):
-        """ """
+        """
+        ModifyVenue updates a Venue Description.
+        """
         # This should check
         # 1. That you are allowed to do this
         # 2. That you are setting the right venue description
@@ -176,7 +231,9 @@ class VenueServer(ServiceBase.ServiceBase):
     ModifyVenue.soap_export_as = "ModifyVenue"
 
     def RemoveVenue(self, connectionInfo, URL):
-        """ """
+        """
+        RemoveVenue removes a venue from the VenueServer.
+        """
         venue = self.venues[URL]
         # remove from server
         del self.venues[URL]
@@ -185,42 +242,61 @@ class VenueServer(ServiceBase.ServiceBase):
     RemoveVenue.soap_export_as = "RemoveVenue"
 
     def AddAdministrator(self, connectionInfo, string):
-        """ """
+        """
+        AddAdminstrator adds an administrator to the list of administrators
+        for this VenueServer.
+        """
         self.administrators.append(string)
 
     AddAdministrator.pass_connection_info = 1
     AddAdministrator.soap_export_as = "AddAdministrator"
 
-    def RemoveAdminstrator(self, connectionInfo, string):
-        """ """
+    def RemoveAdministrator(self, connectionInfo, string):
+        """
+        RemoveAdministrator removes an administrator from the list of
+        administrators for this VenueServer.
+        """
         self.administrators.remove(string)
 
-    RemoveAdminstrator.pass_connection_info = 1
-    RemoveAdminstrator.soap_export_as = "RemoveAdminstrator"
+    RemoveAdministrator.pass_connection_info = 1
+    RemoveAdministrator.soap_export_as = "RemoveAdministrator"
 
-    def GetAdminstrators(self, connectionInfo):
-        """ """
+    def GetAdministrators(self, connectionInfo):
+        """
+        GetAdministrators returns a list of adminsitrators for this 
+        VenueServer.
+        """
         return self.administrators
 
-    GetAdminstrators.pass_connection_info = 1
-    GetAdminstrators.soap_export_as = "GetAdminstrators"
+    GetAdministrators.pass_connection_info = 1
+    GetAdministrators.soap_export_as = "GetAdministrators"
 
     def AddService(self, connectionInfo, serviceDescription):
-        """ """
+        """
+        AddService adds a service description to the list of service
+        descriptions that are available to the Virtual Venues hosted by
+        this VenueServer. 
+        """
         self.services[serviceDescription.uri] = serviceDescription
 
     AddService.pass_connection_info = 1
     AddService.soap_export_as = "AddService"
 
     def RemoveService(self, connectionInfo, URL, serviceDescription):
-        """ """
+        """
+        RemoveService removes a service description from the list of 
+        service descriptions that this VenueServer knows about.
+        """
         self.services.remove(serviceDescription)
 
     RemoveService.pass_connection_info = 1
     RemoveService.soap_export_as = "RemoveService"
 
     def ModifyService(self, connectionInfo, URL, serviceDescription):
-        """ """
+        """
+        ModifyService updates a service description that is in the 
+        list of services for this VenueServer.
+        """
         if URL == serviceDescription.uri:
             self.services[URL] = serviceDescription
 
@@ -240,7 +316,10 @@ class VenueServer(ServiceBase.ServiceBase):
     RegisterServer.soap_export_as = "RegisterServer"
 
     def GetVenues(self, connectionInfo):
-        """ """
+        """
+        GetVenues returns a list of Venues Descriptions for the venues hosted by
+        this VenueServer.
+        """
         try:
             venueDescriptionList = map( lambda venue: venue.GetDescription( connectionInfo ), self.venues.values() )
             for venue in venueDescriptionList:
@@ -253,14 +332,20 @@ class VenueServer(ServiceBase.ServiceBase):
     GetVenues.soap_export_as = "GetVenues"
 
     def GetDefaultVenue(self, connectionInfo):
-        """ """
+        """
+        GetDefaultVenue returns the URL to the default Venue on the
+        VenueServer.
+        """
         return self.defaultVenue
 
     GetDefaultVenue.pass_connection_info = 1
     GetDefaultVenue.soap_export_as = "GetDefaultVenue"
 
     def SetDefaultVenue(self, connectionInfo, venueURL):
-        """ """
+        """
+        SetDefaultVenue sets which Venue is the default venue for the
+        VenueServer.
+        """
         self.defaultVenue = venueURL
         self.config["VenueServer.defaultVenue"] = venueURL
         self.cp.set("VenueServer", "defaultVenue", str(venueURL))
@@ -269,21 +354,27 @@ class VenueServer(ServiceBase.ServiceBase):
     SetDefaultVenue.soap_export_as = "SetDefaultVenue"
 
     def SetCoherencePortBase(self, connectionInfo, portBase):
-        """ """
+        """
+        SetCoherencePortBase sets the base port for the coherence service.
+        """
         self.portBase = coherencePortBase
 
     SetCoherencePortBase.pass_connection_info = 1
     SetCoherencePortBase.soap_export_as = "SetCoherencePortBase"
 
     def GetCoherencePortBase(self, connectionInfo):
-        """ """
+        """
+        GetCoherencePortBase returns the base port for the coherence service.
+        """
         return self.coherencePortBase
 
     GetCoherencePortBase.pass_connection_info = 1
     GetCoherencePortBase.soap_export_as = "GetCoherencePortBase"
 
     def Shutdown(self, connectionInfo, secondsFromNow):
-        """ """
+        """
+        Shutdown shuts down the server.
+        """
         for vURL in self.venues.keys():
             self.venues[vURL].Shutdown()
         self.cp.write(file(self.configFile, 'w+'))
@@ -294,7 +385,15 @@ class VenueServer(ServiceBase.ServiceBase):
     Shutdown.soap_export_as = "Shutdown"
 
     def Checkpoint(self):
-        """ """
+        """
+        Checkpoint stores the current state of the running VenueServer to
+        non-volatile storage. In the event of catastrophic failure, the
+        non-volatile storage can be used to restart the VenueServer.
+        
+        The fequency at which Checkpointing is done will bound the amount of
+        state that is lost (the longer the time between checkpoints, the more 
+        that can be lost).
+        """
         self.store.close()
         self.store = shelve.open(self.config['VenueServer.persistenceData'])
         self.cp.write(file(self.configFile, 'w+'))
