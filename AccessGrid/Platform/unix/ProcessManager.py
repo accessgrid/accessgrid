@@ -2,13 +2,13 @@
 # Name:        ProcessManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.1 2004-03-24 21:25:08 eolson Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.2 2004-09-09 14:31:23 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.1 2004-03-24 21:25:08 eolson Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.2 2004-09-09 14:31:23 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import signal
@@ -143,7 +143,6 @@ class ProcessManager:
         return self.processes
     
 if __name__ == "__main__":
-    import time
     mgr = ProcessManager()
 
     try:
