@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.76 2004-08-30 18:10:38 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.77 2004-08-30 18:37:46 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.76 2004-08-30 18:10:38 turam Exp $"
+__revision__ = "$Id: Utilities.py,v 1.77 2004-08-30 18:37:46 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -99,7 +99,7 @@ def SaveConfig(fileName, config, separator="."):
         print "Couldn't open file for writing, database mods lost."
         return
     
-    cp.write("# AGTk %s\n" % (GetVersion()))
+    outFile.write("# AGTk %s\n" % (GetVersion()))
 
     cp.write(outFile)
     outFile.close()
