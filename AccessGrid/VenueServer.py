@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.69 2003-05-13 18:52:32 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.70 2003-05-14 20:24:05 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1028,13 +1028,18 @@ class VenueServer(ServiceBase.ServiceBase):
         try:
             venue = self.venues[id]
         except KeyError:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("RemoveVenue: Venue not found.")
             raise VenueNotFound
 
         # Stop the web service interface
         try:
             self.hostingEnvironment.UnbindService(venue)
         except:
-            log.exception("Couldn't unbind venue.")
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("RemoveVenue: Couldn't unbind venue.")
             raise UnbindVenueError
         
         # Shutdown the venue
@@ -1066,6 +1071,8 @@ class VenueServer(ServiceBase.ServiceBase):
 
         """
         if string in self.administratorList:
+            self.simpleLock.notify()
+            self.simpleLock.release()
             log.exception("AddAdministrator: Adminstrator already present.")
             raise AdministratorAlreadyPresent
         
@@ -1096,6 +1103,9 @@ class VenueServer(ServiceBase.ServiceBase):
             self.config["VenueServer.administrators"] = ":".join(self.administratorList)
             return string
         else:
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("RemoveAdministrator: Administrator not found.")
             raise AdministratorNotFound
         
     def GetAdministrators(self):
@@ -1144,7 +1154,9 @@ class VenueServer(ServiceBase.ServiceBase):
 
             return venueDescList
         except:
-            log.exception("Exception in GetVenues!")
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("GetVenues: GetVenues failed!")
             raise VenueServerException("GetVenues Failed!")
 
     def GetDefaultVenue(self):
@@ -1192,8 +1204,6 @@ class VenueServer(ServiceBase.ServiceBase):
             either RANDOM or INTERVAL (defined in MulticastAddressAllocator)
         """
         return self.multicastAddressAllocator.GetAddressAllocationMethod()
-
-    GetAddressAllocationMethod.soap_export_as = "GetAddressAllocationMethod"
 
     def SetEncryptAllMedia(self, value):
         """
@@ -1249,6 +1259,9 @@ class VenueServer(ServiceBase.ServiceBase):
         self.houseKeeper.StopAllTasks()
 
         if not self._Authorize():
+            self.simpleLock.notify()
+            self.simpleLock.release()
+            log.exception("Shutdown: Not authorized.")
             raise NotAuthorized
 
         log.info("Shutdown -> Checkpointing...")

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.90 2003-05-14 19:27:58 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.91 2003-05-14 20:24:05 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -145,12 +145,6 @@ class Venue(ServiceBase.ServiceBase):
                  dataStoreLocation, id=None):
         """
         Venue constructor.
-
-        **Arguments:**
-
-        **Raises:**
-
-        **Returns:**
         """
         log.debug("------------ STARTING VENUE")
         self.server = server
@@ -456,6 +450,8 @@ class Venue(ServiceBase.ServiceBase):
                 'textLocation' : self.server.textService.GetLocation()
                 }
         except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
             log.exception("Couldn't get venuestate")
             raise InvalidVenueState
         #
@@ -516,7 +512,7 @@ class Venue(ServiceBase.ServiceBase):
             self.simpleLock.notify()
             self.simpleLock.release()
         else:
-            log.exception("ClientHeartBeat: Got heartbeat for missing client")
+            log.exception("ClientHeartbeat: Got heartbeat for missing client")
             raise ClientNotFound
     
     def EventServiceDisconnect(self, privateId):
@@ -687,10 +683,6 @@ class Venue(ServiceBase.ServiceBase):
 
             *privateId* The private Id of the user being removed.
 
-        **Raises:**
-
-        **Returns:**
-
         """
         # Remove user as stream producer
         log.debug("Called RemoveUser on %s", privateId)
@@ -749,8 +741,6 @@ class Venue(ServiceBase.ServiceBase):
 
             *clientProfile* The profile of the client entering the venue.
             
-        **Raises:**
-
         **Returns:**
 
             *(state, privateId, streamDescriptions)* This tuple is
@@ -789,6 +779,8 @@ class Venue(ServiceBase.ServiceBase):
         try:
             state = self.GetState()
         except:
+            self.simpleLock.notify()
+            self.simpleLock.release()
             log.exception("Enter: Can't get state.")
             raise InvalidVenueState
         
@@ -818,6 +810,8 @@ class Venue(ServiceBase.ServiceBase):
         log.debug("AddData with name %s " %name)
              
         if self.data.has_key(name):
+            self.simpleLock.notify()
+            self.simpleLock.release()
             log.exception("AddData: data already present: %s", name)
             raise DataAlreadyPresent
 
@@ -850,6 +844,8 @@ class Venue(ServiceBase.ServiceBase):
         name = dataDescription.name
         
         if not name in self.data:
+            self.simpleLock.notify()
+            self.simpleLock.release()
             log.exception("RemoveData: Data not found.")
             raise DataNotFound
 
@@ -887,6 +883,8 @@ class Venue(ServiceBase.ServiceBase):
         name = dataDescription.name
 
         if not self.data.has_key(name):
+            self.simpleLock.notify()
+            self.simpleLock.release()
             log.exception("UpdateData: data not already present: %s", name)
             raise DataNotFound
 
@@ -951,6 +949,8 @@ class Venue(ServiceBase.ServiceBase):
         name = serviceDescription.name
 
         if self.services.has_key(name):
+            self.simpleLock.notify()
+            self.simpleLock.release()
             log.exception("AddService: service already present: %s", name)
             raise ServiceAlreadyPresent
 
@@ -982,6 +982,8 @@ class Venue(ServiceBase.ServiceBase):
             *serviceDescription* Upon successfully removing the service.
         """
         if not serviceDescription.name in self.services:
+            self.simpleLock.notify()
+            self.simpleLock.release()
             log.exception("Service not found!")
             raise ServiceNotFound
 
@@ -1548,6 +1550,7 @@ class Venue(ServiceBase.ServiceBase):
                                   connectionDescription.uri)
         
         if c == None:
+            log.exception("AddConnection: Bad connection description.")
             raise BadConnectionDescription
         
         self.simpleLock.acquire()
@@ -1592,9 +1595,11 @@ class Venue(ServiceBase.ServiceBase):
                                   connectionDescription.uri)
         
         if c == None:
+            log.exception("RemoveConnection: Bad connection description.")
             raise BadConnectionDescription
         
         if not self.connections.has_key(connectionDescription.uri):
+            log.exception("RemoveConnection: Connection not found.")
             raise ConnectionNotFound
         else:
             self.simpleLock.acquire()
@@ -1658,11 +1663,6 @@ class Venue(ServiceBase.ServiceBase):
         """
         GetDescription returns the description for the virtual venue.
         **Arguments:**
-
-        **Raises:**
-
-        **Returns:**
-
         """
         return self.description
     
@@ -1723,6 +1723,7 @@ class Venue(ServiceBase.ServiceBase):
         streamDescription = CreateStreamDescription( inStreamDescription )
 
         if streamDescription == None:
+            log.exception("AddStream: Bad stream description.")
             raise BadStreamDescription
         
         self.simpleLock.acquire()
@@ -1758,6 +1759,7 @@ class Venue(ServiceBase.ServiceBase):
         streamDescription = CreateStreamDescription( inStreamDescription )
 
         if streamDescription == None:
+            log.exception("RemoveStream: Bad stream description.")
             raise BadStreamDescription
 
         self.simpleLock.acquire()
@@ -1847,6 +1849,7 @@ class Venue(ServiceBase.ServiceBase):
         clientProfile = CreateClientProfile( clientProfileStruct )
 
         if clientProfile == None:
+            log.exception("UpdatelClientProfile: Invalid client profile.")
             raise InvalidClientProfile
         
         log.debug("Called UpdateClientProfile on %s " %clientProfile.name)
@@ -1946,8 +1949,6 @@ class Venue(ServiceBase.ServiceBase):
         app = AppService.AppObject(appImpl)
 
         hostObj = self.server.hostingEnvironment.BindService(app)
-#        hostObj = self.server.hostingEnvironment.create_service_object()
-#        app._bind_to_service(hostObj)
         appHandle = hostObj.GetHandle()
         appImpl.SetHandle(appHandle)
 
