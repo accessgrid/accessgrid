@@ -3,19 +3,35 @@ import os
 
 out = file(sys.argv[1], "w")
 
-# get lspci output
-cmd = "/sbin/lspci -m"
-print cmd
 
-# get list of devices from /proc/video/dev
-cmd = "ls /proc/video/dev | grep video"
-print cmd
+# Initialize the device list
+deviceList = dict()
 
-# get output of v4l-ctl -c <dev>
-deviceList = list()
+if os.path.exists('/proc/video/dev'):
+    # Get list of devices
+    cmd = "ls /proc/video/dev | grep video"
+    fh = os.popen(cmd,'r')
+    for line in fh.readlines():
+        device = os.path.join('/dev',line.strip())
+        deviceList[device] = None
+    fh.close()
 
-for d in deviceList:
-    cmd = "v4lctl list -c /dev/%s" % d
-    print cmd
-    
+    # Determine ports for devices
+    portString = ""
+    for d in deviceList.keys():
+        cmd = "v4lctl list -c %s" % d
+        fh = os.popen(cmd)
+        for line in fh.readlines():
+            if line.startswith('input'):
+                portString = line.split('|')[-1]
+                deviceList[d] = portString.strip()
+                break
+                
+deviceList['x11'] = 'x11'
+
+# Write the devices to the specified file
+for device,portString in deviceList.items():
+    out.write("device: %s\n"% device)
+    out.write("portnames:  %s\n"% portString)
+
 out.close()
