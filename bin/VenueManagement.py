@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.30 2003-02-20 21:15:53 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.31 2003-02-21 17:47:28 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -115,8 +115,8 @@ class VenueManagementClient(wxApp):
 
                 # fill in storage location
                 self.tabs.configurationPanel.detailPanel.storageLocation.SetLabel(self.client.GetStorageLocation())
-                if self.address.addressText.FindString(URL) == wxNOT_FOUND:
-                    self.address.Append(URL)
+#                if self.address.addressText.FindString(URL) == wxNOT_FOUND:
+#                   self.address.Append(URL)
 
         else:
             dlg = wxMessageDialog(self.frame, 
@@ -237,9 +237,8 @@ class VenueManagementTabs(wxNotebook):
 	self.servicesPanel = ServicesPanel(self, application)
 	self.AddPage(self.venuesPanel, "Venues")   
 	self.AddPage(self.configurationPanel, "Configuration")
-	#self.AddPage(self.servicesPanel, "Services")
-
-       
+        self.AddPage(self.servicesPanel, "Services")
+              
 # --------------------- TAB 1 -----------------------------------
 
 class VenuesPanel(wxPanel):
@@ -757,7 +756,7 @@ class ServicesPanel(wxPanel):
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D)
         self.application = application
 	self.__doLayout()
-
+       
     def __doLayout(self):
         self.SetAutoLayout(1)  
 
@@ -1318,39 +1317,40 @@ class ModifyAdministratorFrame(AdministratorParamFrame):
             self.parent.ModifyAdministrator(oldName, self.name.GetValue())
         self.Destroy();
 
-class RemoteServerUrlDialog(wxDialog):
-    def __init__(self, parent, id, title):
-        wxDialog.__init__(self, parent, id, title)
-        self.Centre()
-        self.okButton = wxButton(self, wxID_OK, "Ok")
-        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
-        info = "Please, enter remote server URL address"
-        self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
-        self.addressText = wxStaticText(self, -1, "Address: ", style=wxALIGN_LEFT)
-        self.address = wxTextCtrl(self, -1, "", size = wxSize(300,20))
-        self.__doLayout()
+        '''class RemoteServerUrlDialog(wxDialog):
+        def __init__(self, parent, id, title):
+            wxDialog.__init__(self, parent, id, title)
+            self.Centre()
+            self.okButton = wxButton(self, wxID_OK, "Ok")
+            self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+            info = "Please, enter remote server URL address"
+            self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
+            self.addressText = wxStaticText(self, -1, "Address: ", style=wxALIGN_LEFT)
+            self.address = wxTextCtrl(self, -1, "", size = wxSize(300,20))
+            self.__doLayout()
+            
+            def __doLayout(self):
+                sizer = wxBoxSizer(wxVERTICAL)
+                sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
+                sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
+                
+                sizer2 = wxBoxSizer(wxHORIZONTAL)
+                sizer2.Add(self.addressText, 0)
+                sizer2.Add(self.address, 1, wxEXPAND)
+                
+                sizer1.Add(sizer2, 0, wxEXPAND | wxALL, 20)
+                
+                sizer3 =  wxBoxSizer(wxHORIZONTAL)
+                sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
+                sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
+                
+                sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
+                sizer.Add(sizer3, 0, wxALIGN_CENTER)
+                self.SetSizer(sizer)
+                sizer.Fit(self)
+                self.SetAutoLayout(1)
+'''
 
-    def __doLayout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
-        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
-
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.addressText, 0)
-        sizer2.Add(self.address, 1, wxEXPAND)
-
-        sizer1.Add(sizer2, 0, wxEXPAND | wxALL, 20)
-
-        sizer3 =  wxBoxSizer(wxHORIZONTAL)
-        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
-
-        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer.Add(sizer3, 0, wxALIGN_CENTER)
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.SetAutoLayout(1)
-        
 class DigitValidator(wxPyValidator):
     def __init__(self, flag):
         wxPyValidator.__init__(self)
