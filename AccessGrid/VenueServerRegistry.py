@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/18/12
-# RCS-ID:      $Id: VenueServerRegistry.py,v 1.1 2002-12-18 05:20:46 judson Exp $
+# RCS-ID:      $Id: VenueServerRegistry.py,v 1.2 2002-12-18 11:54:57 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -78,3 +78,15 @@ class VenueServerRegistry(ServiceBase.ServiceBase):
     
     ListServers.pass_connection_info = 1
     ListServers.soap_export_as = "ListServers"
+    
+if __name__ == "__main__":
+    from AccessGrid.hosting.pyGlobus import Server, ServiceBase
+    from AccessGrid.VenueServerRegistry import VenueServerRegistry
+    import ConfigParser
+
+    hostingEnvironment = Server.Server(8800)
+    venueServerRegistryService = hostingEnvironment.create_service(VenueServerRegistry)
+
+    print "Service running at: %s" % venueServerRegistryService.get_handle()
+
+    hostingEnvironment.run()    

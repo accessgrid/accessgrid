@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/17/12
-# RCS-ID:      $Id: TestVenueManagementClient.py,v 1.1 2002-12-17 22:45:46 judson Exp $
+# RCS-ID:      $Id: VenueManagementClient.py,v 1.1 2002-12-18 11:54:57 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
