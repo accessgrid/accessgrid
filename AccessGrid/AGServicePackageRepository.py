@@ -3,7 +3,7 @@
 # Purpose:     
 #
 # Created:     2004/03/30
-# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.3 2004-04-26 19:41:14 lefvert Exp $
+# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.4 2004-04-27 02:41:20 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,13 +24,14 @@ class AGServicePackageRepository:
     packages and avails them to clients (service managers) via http(s)
     """
 
-    def __init__( self, servicesDir, port=0):
+    def __init__( self, servicesDir, port=0, prefix=None):
         self.servicesDir = servicesDir
         self.port = port
         
         self.baseUrl = ''
         self.s = None
         self.running = 0
+        self.prefix = prefix
 
     def Start(self):
         #
@@ -45,8 +46,9 @@ class AGServicePackageRepository:
         # Define base url
         #
         hn = SystemConfig.instance().GetHostname()
-        prefix = "packages"
-        self.baseUrl = 'https://%s:%d/%s/' % ( hn, self.port, prefix )
+        if self.prefix is None:
+            self.prefix = "packages"
+        self.baseUrl = 'https://%s:%d/%s/' % ( hn, self.port, self.prefix )
         
         # Start the transfer server
         self.s = DataStore.GSIHTTPTransferServer(('', self.port)) 
