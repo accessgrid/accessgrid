@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Tools.py,v 1.6 2004-02-27 23:50:51 turam Exp $
+# RCS-ID:      $Id: Tools.py,v 1.7 2004-03-01 20:02:16 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ This module defines methods for making serialization and other things simpler
 when using the SOAPpy module.
 """
 
-__revision__ = "$Id: Tools.py,v 1.6 2004-02-27 23:50:51 turam Exp $"
+__revision__ = "$Id: Tools.py,v 1.7 2004-03-01 20:02:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -45,7 +45,7 @@ class IWrapper:
             raise InvalidURL
 
     def IsValid(self):
-        return self.proxy.IsValid()
+        return self.proxy._IsValid()
     
 def Decorate(obj):
     """
@@ -122,10 +122,10 @@ def Reconstitute(obj):
     else:
         f = obj
 
-    if isinstance(f, structType):
-        print f
-        raise "HELLIFIKNOW"
-
+#     if isinstance(f, structType):
+#         print f
+#         raise "HELLIFIKNOW"
+# 
     return f
 
 def CreateBlank(p):
