@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.20 2003-04-23 09:15:26 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.21 2003-04-24 18:36:47 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -36,7 +36,6 @@ AGTkBasePath = "/etc/AccessGrid"
 
 # Mac OS X Defaults
 # They will go here :-)
-
         
 
 def GPICmdline():
@@ -298,3 +297,97 @@ if sys.platform == WIN:
 
 
         return (global_reg, user_reg)
+
+#
+# Windows register mime type function
+#
+
+def Win32RegisterMimeType(mimeType, extension, fileType, description, cmds):
+    """
+    mimeType - mimetype designator
+    extension - file extension
+               (doesn't have to be 3 letters, does have to start with a .)
+    fileType - file type, doesn't matter, just unique
+    description - free form description of the type
+
+    list of:
+    verb - name of command
+    command - the actual command line
+    commandDesc - a description (menu format) for the command
+
+    ----
+    
+    This function gets the mime type registered with windows via the registry.
+    The following documentation is from wxWindows, src/msw/mimetype.cpp:
+    
+    1. "HKCR\MIME\Database\Content Type" contains subkeys for all known MIME
+    types, each key has a string value "Extension" which gives (dot preceded)
+    extension for the files of this MIME type.
+    
+    2. "HKCR\.ext" contains
+    a) unnamed value containing the "filetype"
+    b) value "Content Type" containing the MIME type
+    
+    3. "HKCR\filetype" contains
+    a) unnamed value containing the description
+    b) subkey "DefaultIcon" with single unnamed value giving the icon index in
+    an icon file
+    c) shell\open\command and shell\open\print subkeys containing the commands
+    to open/print the file (the positional parameters are introduced by %1,
+    %2, ... in these strings, we change them to %s ourselves)
+    """
+
+    # Do 1. from above
+    try:
+        regKey = _winreg.CreateKey(_winreg.HKEY_CLASSES_ROOT,
+                                   "MIME\Database\Content Type\%s" % mimeType)
+        _winreg.SetValueEx(regKey, "Extension", 0, _winreg.REG_SZ, extension)
+        _winreg.CloseKey(regKey)
+    except EnvironmentError, e:
+        log.debug("Couldn't open registry for mime registration!")
+    
+    # Do 2. from above
+    try:
+        regKey = _winreg.CreateKey(_winreg.HKEY_CLASSES_ROOT, extension)
+
+        _winreg.SetValueEx(regKey, "", 0, _winreg.REG_SZ, fileType)
+        _winreg.SetValueEx(regKey, "Content Type", 0, _winreg.REG_SZ, mimeType)
+
+        _winreg.CloseKey(regKey)
+    except EnvironmentError, e:
+        log.debug("Couldn't open registry for mime registration!")
+
+    # Do 3. from above
+    try:
+        regKey = _winreg.CreateKey(_winreg.HKEY_CLASSES_ROOT, fileType)
+        
+        _winreg.SetValueEx(regKey, "", 0, _winreg.REG_SZ, description)
+
+        icoKey = _winreg.CreateKey(regKey, "DefaultIcon")
+        _winreg.SetValueEx(icoKey, "", 0, _winreg.REG_SZ, "")
+        _winreg.CloseKey(icoKey)
+        
+        shellKey = _winreg.CreateKey(regKey, "shell")
+
+        for trio in cmds:
+            (verb, command, commandDesc) = trio
+            verbKey = _winreg.CreateKey(shellKey, verb)
+            _winreg.SetValueEx(verbKey, "", 0, _winreg.REG_SZ, commandDesc)
+            cmdKey = _winreg.CreateKey(verbKey, "command")
+            # Make sure this is quoted
+            lwords = command.split(' ')
+            lwords[0] = "\"%s\"" % lwords[0]
+
+            newcommand = " ".join(lwords)
+#            newcommand = u""
+#            for word in lwords:
+#                newcommand += "\"%s\" " % word
+            _winreg.SetValueEx(cmdKey, "", 0, _winreg.REG_SZ, newcommand)
+            _winreg.CloseKey(cmdKey)
+            _winreg.CloseKey(verbKey)
+            
+        _winreg.CloseKey(shellKey)
+        
+        _winreg.CloseKey(regKey)
+    except EnvironmentError, e:
+        log.debug("Couldn't open registry for mime registration!")

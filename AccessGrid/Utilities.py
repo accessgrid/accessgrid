@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.23 2003-04-23 10:00:15 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.24 2003-04-24 18:36:47 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,8 +18,17 @@ import time
 from random import Random
 import sha
 import urllib
+import mailcap
+
+try:
+    import _winreg
+except:
+    pass
 
 from wxPython.wx import wxTheMimeTypesManager as mtm
+from wxPython.wx import wxFileTypeInfo
+
+from AccessGrid.Platform import Win32RegisterMimeType
 
 def LoadConfig(fileName, config={}):
     """
@@ -226,25 +235,79 @@ except ImportError:
     import socket
     GetHostname = socket.getfqdn()
 
-def RegisterMimeType(mimetype, cmdstring):
-    """
-    This function is used to add a mimetype to the users environment.
-    """
-    pass
-
 def InitMimeTypes(file):
     """
     This function is used to load in our AG specific mimetypes.
     """
-    return mtm.ReadMailcap(file)
+    # This only works for augmenting the mailcap entries on Linux
+    if os.path.isfile(file):
+        success = mtm.ReadMailcap(file, 1)
+
+    # For windows we have cope with the fact that it's the registry
+    # that's dealt with during the "creating new associations" sequence
+    # for now we load the mailcap file and stuff things in the registry
+    if sys.platform == 'win32':
+        fp = open(file)
+        caps = mailcap.readmailcapfile(fp)
+        fp.close()
+
+        ftl = []
+        for k in caps.keys():
+            opencmd = u""
+            printcmd = u""
+            desc = u""
+            ext = None
+            cmds = []
+            stuff = caps[k][0]
+            for k2 in stuff.keys():
+                if k2 == 'view':
+                    cmds.append(('open', stuff[k2].replace('%s', '%1'), ''))
+                elif k2 == 'description':
+                    desc = stuff[k2]
+                elif k2 == 'nametemplate':
+                    ext = "." + stuff[k2].split('.')[1]
+                elif k2 == 'print':
+                    cmds.append((k2, stuff[k2].replace('%s', '%1'), ''))
+
+            fileType = k.split('/')[1]
+            fileType.replace('-', '.')
+            Win32RegisterMimeType(k, ext, fileType, desc, cmds)
+                    
+    return success
     
 def SetMimeTypeAssociation(mimetype, ext=None, desc=None, cmds=None):
     """
     This function registers information with the local machines mime types
     database so it can be retrieved later.
     """
-    pass
+    defaultFile = os.path.join(GetUserConfigDir(), "mailcap")
+    file = open(defaultFile, 'a')
 
+    if cmds.has_key('print'):
+        printcmd = cmds['print']
+    else:
+        printcmd = ""
+    if cmds.has_key('open'):
+        opencmd = cmds['open']
+    else:
+        opencmd = ""
+    
+    line = "%s; " % mimetype
+
+    # if there's not even an open command, bail
+    if opencmd == "":
+        return
+    else:
+        line += "%s; " % opencmd
+    if printcmd != "":
+        line += "%s; " % printcmd
+    if desc != None:
+        line += "description=%s; " % desc
+    if ext != None:
+        line += "nametemplate=%%s%s" % ext
+
+    file.write(line)
+    
 def GetMimeCommands(filename = None, type = None, ext = None):
     """
     This function returns anything in the local mime type database for the

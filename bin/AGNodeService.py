@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.17 2003-04-23 19:37:16 olson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.18 2003-04-24 18:36:47 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,6 +15,9 @@ import signal, time, os
 import logging, logging.handlers
 import getopt
 
+from wxPython.wx import *
+
+from AccessGrid.icons import getAGIconIcon
 from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Descriptions import AGServiceManagerDescription
@@ -103,8 +106,7 @@ nodeService = AGNodeService()
 server = Server( port , auth_callback=AuthCallback )
 
 # Create the Node Service Service
-service = server.CreateServiceObject("NodeService")
-nodeService._bind_to_service( service )
+server.BindService(nodeService, "NodeService")
 
 #
 # If we are starting as a part of a personal node,
@@ -122,11 +124,44 @@ if pnode is not None:
 # Tell the world where to find the service
 log.info("Starting service; URI: %s", nodeService.get_handle())
 
+class NodeServiceApp(wxApp):
+    def OnInit(self):
+        """
+        """
+        self.TBMENU_MANAGE = wxNewId()
+        self.TBMENU_CLOSE = wxNewId()
+        wxInitAllImageHandlers()
+        self.tbicon = wxTaskBarIcon()
+        self.tbicon.SetIcon(getAGIconIcon(), "AG Node Service")
+        EVT_TASKBAR_RIGHT_UP(self.tbicon, self.OnTaskBarMenu)
+        EVT_MENU(self.tbicon, self.TBMENU_MANAGE, self.OnTaskBarActivate)
+        EVT_MENU(self.tbicon, self.TBMENU_CLOSE, self.OnTaskBarClose)
+
+        return True
+    
+    def OnTaskBarClose(self, event):
+        print "Quitting!"
+        global running
+        global server
+        server.stop()
+        running = 0
+    
+    def OnTaskBarMenu(self, event):
+        print "TASK BAR MENU"
+        menu = wxMenu()
+        menu.Append(self.TBMENU_MANAGE, "Manage Node")
+        menu.Append(self.TBMENU_CLOSE, "Close")
+        self.tbicon.PopupMenu(menu)
+        menu.Destroy()
+
 # Register a signal handler so we can shut down cleanly
 signal.signal(signal.SIGINT, SignalHandler)
 
 # Run the service
 server.run_in_thread()
+
+NSApp = NodeServiceApp()
+NSApp.MainLoop()
 
 # Keep the main thread busy so we can catch signals
 running = 1

@@ -201,9 +201,12 @@ class SharedBrowser( wxApp ):
         # 
         # Subscribe to the event channel
         #
-        self.eventClient = EventClient.EventClient(eventServiceLocation, self.channelId)
+        self.eventClient = EventClient.EventClient(self.privateId,
+                                                   eventServiceLocation,
+                                                   self.channelId)
         self.eventClient.start()
-        self.eventClient.Send(Events.ConnectEvent(self.channelId))
+        self.eventClient.Send(Events.ConnectEvent(self.channelId,
+                                                  self.privateId))
 
         #
         # Register browse event callback

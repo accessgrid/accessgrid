@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerWin32.py,v 1.6 2003-04-09 15:44:37 olson Exp $
+# RCS-ID:      $Id: ProcessManagerWin32.py,v 1.7 2003-04-24 18:36:47 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -22,11 +22,11 @@ class ProcessManagerWin32:
     def start_process(self, command, arglist):
         """
         Start a new process.
-        Command is the name of the command to be started. It can either be a full pathname
-        or a command name to be found on the default path.
-        Arglist is a list of the arguments to the command.
-        On windows, these will  all be joined together into a string
-        to be passed to CreateProcess.
+        Command is the name of the command to be
+        started. It can either be a full pathname or a command name to
+        be found on the default path.  Arglist is a list of the
+        arguments to the command.  On windows, these will all be
+        joined together into a string to be passed to CreateProcess.
         """
 
         cmdline = command

@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.128 2003-04-23 20:53:37 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.129 2003-04-24 18:36:47 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,7 +29,7 @@ import AccessGrid.ClientProfile
 from AccessGrid import DataStore
 
 from AccessGrid.Descriptions import DataDescription
-from AccessGrid.Utilities import HaveValidProxy, GetMimeCommands
+from AccessGrid.Utilities import HaveValidProxy, InitMimeTypes, GetMimeCommands
 from AccessGrid.UIUtilities import MyLog, MessageDialog
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 from AccessGrid.GUID import GUID
@@ -42,14 +42,15 @@ from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
 from AccessGrid.Utilities import formatExceptionInfo
 
 from AccessGrid import PersonalNode
+    
+# try:
+#     from AccessGrid import CertificateManager
+#     CertificateManager.CertificateManagerWXGUI
+#     HaveCertificateManager = 1
+# except Exception, e:
+#     HaveCertificateManager = 0
 
-try:
-    from AccessGrid import CertificateManager
-    CertificateManager.CertificateManagerWXGUI
-    HaveCertificateManager = 1
-except Exception, e:
-    HaveCertificateManager = 0
-
+HaveCertificateManager = 0
 
 class VenueClientUI(wxApp, VenueClient):
     """
@@ -105,12 +106,9 @@ class VenueClientUI(wxApp, VenueClient):
         self.frame.SetInstalledApps( self.GetInstalledApps() )
         self.frame.EnableAppMenu( false )
 
-        # Load user mime.types from AG Config Dir
-        mimeFilename = os.path.join(GetUserConfigDir(), "mime.types")
-        wxLogDebug("Reading %s" % mimeFilename)
-        if os.path.isfile(mimeFilename):
-            success = mtm.ReadMailcap(mimeFilename, 1)
-            wxLogDebug("Read Mime Types: %d" % success)
+        # Load user mailcap from AG Config Dir
+        mailcap = os.path.join(GetUserConfigDir(), "mailcap")
+        InitMimeTypes(mailcap)
 
         log.debug("OnInit: ispersonal=%s", self.isPersonalNode)
 
@@ -971,6 +969,26 @@ class VenueClientUI(wxApp, VenueClient):
             wxLogError("Error occured when trying to add service")
             wxLog_GetActiveTarget().Flush()
 
+    def OpenService(self, service):
+        """
+        open the specified service
+        """
+        wxLogDebug("Opening service: %s / %s" % (service.name,
+                                                 service.mimeType))
+        commands = GetMimeCommands(filename=service.uri, type=service.mimeType)
+
+        if commands == None:
+            message = "No client registered for the selected application\n(mime type = %s)" % service.mimeType
+            dlg = MessageDialog(self.frame, message )
+            wxLogDebug(message)
+        else:
+            if commands.has_key('open'):
+                wxLogDebug("executing cmd: %s" % commands['open'])
+                if commands['open'][0:6] == "WX_DDE":
+                    pid = wxExecute(commands['open'])
+                else:
+                    pid = wxShell(commands['open'])
+                
     def RemoveService(self, service):
         """
         This method removes a service from the venue
@@ -1075,18 +1093,19 @@ class VenueClientUI(wxApp, VenueClient):
         Join the specified application
         """
         wxLogDebug("Joining application: %s / %s" % (app.name, app.mimeType))
-        cdict = GetMimeCommands(filename=app.uri, type=app.mimeType)
+        commands = GetMimeCommands(filename=app.uri, type=app.mimeType)
 
-        if cdict == None:
+        if commands == None:
             message = "No client registered for the selected application\n(mime type = %s)" % app.mimeType
             dlg = MessageDialog(self.frame, message )
             wxLogDebug(message)
         else:
-            wxLogDebug("Commands:")
-            for k in cdict.keys():
-                wxLogDebug("Verb: %s Cmd: %s" % (k, cdict[k]))
-                if k == 'open':
-                    wxExecute(cdict[k])
+            if commands.has_key('open'):
+                wxLogDebug("executing cmd: %s" % commands['open'])
+                if commands['open'][0:6] == "WX_DDE":
+                    pid = wxExecute(commands['open'])
+                else:
+                    pid = wxShell(commands['open'])
 
     def RemoveApp(self,app):
         """

@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.155 2003-04-23 20:13:14 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.156 2003-04-24 18:36:47 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -78,6 +78,7 @@ class VenueClientFrame(wxFrame):
     ID_VENUE_DATA_DELETE = wxNewId() 
     ID_VENUE_SERVICE = wxNewId() 
     ID_VENUE_SERVICE_ADD = wxNewId()
+    ID_VENUE_SERVICE_OPEN = wxNewId()
     ID_VENUE_SERVICE_DELETE = wxNewId()
     ID_VENUE_APPLICATION = wxNewId() 
     ID_VENUE_APPLICATION_JOIN = wxNewId()
@@ -200,6 +201,11 @@ class VenueClientFrame(wxFrame):
         self.applicationEntryMenu.Append(self.ID_VENUE_APPLICATION_DELETE, "Delete",
                                     "Delete application")
 
+        # Create menu to pop over an service entry
+        self.serviceEntryMenu = wxMenu()
+	self.serviceEntryMenu.Append(self.ID_VENUE_SERVICE_OPEN,
+                                     "Open",  "Launch service client")
+
 
         self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"&Applications",
                               self.applicationMenu)
@@ -298,6 +304,7 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_VENUE_DATA_SAVE, self.SaveData)
         EVT_MENU(self, self.ID_VENUE_DATA_DELETE, self.RemoveData)
         EVT_MENU(self, self.ID_VENUE_SERVICE_ADD, self.OpenAddServiceDialog)
+        EVT_MENU(self, self.ID_VENUE_SERVICE_OPEN, self.OpenService)
         EVT_MENU(self, self.ID_VENUE_SERVICE_DELETE, self.RemoveService)
         EVT_MENU(self, self.ID_VENUE_CLOSE, self.Exit)
         EVT_MENU(self, self.ID_PROFILE, self.OpenProfileDialog)
@@ -788,6 +795,11 @@ class VenueClientFrame(wxFrame):
         id = self.contentListPanel.tree.GetSelection()
         app =  self.contentListPanel.tree.GetItemData(id).GetData()
         self.app.JoinApp( app )
+    
+    def OpenService(self,event):
+        id = self.contentListPanel.tree.GetSelection()
+        service =  self.contentListPanel.tree.GetItemData(id).GetData()
+        self.app.OpenService( service )
     
     def RemoveApp(self,event):
         id = self.contentListPanel.tree.GetSelection()
@@ -1461,9 +1473,12 @@ class ContentListPanel(wxPanel):
         if text == 'Data' or isinstance(item,DataDescription):
             self.PopupMenu(self.parent.dataMenu, wxPoint(self.x, self.y))
 
-        elif text == 'Services' or isinstance(item,ServiceDescription):
+        elif text == 'Services':
             self.PopupMenu(self.parent.serviceMenu, wxPoint(self.x, self.y))
 
+        elif isinstance(item, ServiceDescription):
+            self.PopupMenu(self.parent.serviceEntryMenu, wxPoint(self.x,
+                                                                 self.y))
         elif text == 'Applications':
             self.PopupMenu(self.parent.applicationMenu,
                            wxPoint(self.x, self.y))

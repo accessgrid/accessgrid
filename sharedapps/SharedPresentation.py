@@ -7,7 +7,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.3 2003-04-19 16:37:45 judson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.4 2003-04-24 18:36:47 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,24 +20,20 @@ from threading import Thread
 from Queue import Queue
 import cmd, string
 
-# Imports we need from the Access Grid Module
-from AccessGrid.hosting.pyGlobus import Client
-from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid.Events import ConnectEvent, Event
-from AccessGrid.EventClient import EventClient
-from AccessGrid.GUID import GUID
-from AccessGrid import Platform
-
 # Win 32 COM interfaces that we use
 try:
     import win32com
     import win32com.client
-    # Use these commands in Python code to auto generate .py support
-    # from win32com.client import gencache
-    # gencache.EnsureModule('{91493440-5A91-11CF-8700-00AA0060263B}', 0, 2, 7)
 except:
     print "No Windows COM support!"
     sys.exit(1)
+
+# Imports we need from the Access Grid Module
+from AccessGrid.hosting.pyGlobus import Client
+from AccessGrid.EventClient import EventClient
+from AccessGrid.Events import ConnectEvent, Event
+from AccessGrid import Platform
+
 #
 # This gets logging started given the log name passed in
 # For more information about the logging module, check out:
@@ -329,9 +325,9 @@ class SharedPresentation:
         # Event Channel look in AccessGrid\EventService.py
         # and AccessGrid\EventClient.py
         self.log.debug("Connecting to data channel.")
-        self.eventClient = EventClient(esl, self.channelId)
+        self.eventClient = EventClient(self.privateId, esl, self.channelId)
         self.eventClient.start()
-        self.eventClient.Send(ConnectEvent(self.channelId))
+        self.eventClient.Send(ConnectEvent(self.channelId, self.privateId))
 
         # Register callbacks with the Data Channel to handle incoming
         # events.
@@ -591,14 +587,14 @@ class SharedPresentation:
 if __name__ == "__main__":
     # Initialization of variables
     venueURL = None
-    applicationURL = None
+    appURL = None
     logName = "SharedPresentation"
 
     # Here we parse command line options
     try:
         opts, args = getopt.getopt(sys.argv[1:], "v:a:l:ih",
-                                   ["venueURL", "applicationURL",
-                                    "information", "logging", "help"])
+                                   ["venueURL=", "applicationURL=",
+                                    "information=", "logging=", "help"])
     except getopt.GetoptError:
         Usage()
         sys.exit(2)
@@ -607,7 +603,7 @@ if __name__ == "__main__":
         if o in ("-v", "--venueURL"):
             venueURL = a
         elif o in ("-a", "--applicationURL"):
-            applicationURL = a
+            appURL = a
         elif o in ("-l", "--logging"):
             logName = a
         elif o in ("-i", "--information"):
@@ -623,7 +619,7 @@ if __name__ == "__main__":
     log = InitLogging(logName)
 
     # If we're not passed some url that we can use, bail showing usage
-    if applicationURL == None and venueURL == None:
+    if appURL == None and venueURL == None:
         Usage()
         sys.exit(0)
 
@@ -631,7 +627,7 @@ if __name__ == "__main__":
     # This is only in the example code. When Applications are integrated
     # with the Venue Client, the application will only be started with
     # some applicatoin URL (it will never know about the Venue URL)
-    if applicationURL == None and venueURL != None:
+    if appURL == None and venueURL != None:
         venueProxy = Client.Handle(venueURL).get_proxy()
         appURL = venueProxy.CreateApplication(SharedPresentation.appName,
                                               SharedPresentation.appDescription,
