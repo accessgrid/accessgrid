@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.289 2003-09-24 18:31:00 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.290 2003-09-24 18:50:24 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.289 2003-09-24 18:31:00 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.290 2003-09-24 18:50:24 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2380,10 +2380,30 @@ class TextClientPanel(wxPanel):
         self.__do_layout()
 
         EVT_CHAR(self.TextOutput, self.ChangeTextWindow)
-        EVT_TEXT_ENTER(self, self.textInputId, self.LocalInput)
+        #EVT_TEXT_ENTER(self.TextInput, self.textInputId, self.LocalInput)
+        EVT_CHAR(self.TextInput, self.TestEnter) 
         EVT_BUTTON(self, self.ID_BUTTON, self.LocalInput)
       
         self.Show(true)
+
+    def TestEnter(self, event):
+        key = event.GetKeyCode()
+        shiftKey = event.ShiftDown()
+        ctrlKey = event.ControlDown()
+
+        # If enter key is pressed, send message to
+        # text output field
+        if key == WXK_RETURN:
+            # If shift or ctrl key is pressed, ignore
+            # the event and switch line in the text input
+            # field.
+            if shiftKey or ctrlKey:
+                event.Skip()
+            else:
+                self.LocalInput(None)
+        else:
+            event.Skip()
+            return
 
     def OnUrl(self, event):
         start = event.GetURLStart()
