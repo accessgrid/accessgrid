@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.98 2003-05-23 22:15:01 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.99 2003-05-23 22:17:59 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
 from AccessGrid import DataStore
 from AccessGrid.scheduler import Scheduler
-from AccessGrid.Events import Event, HeartbeatEvent, DisconnectEvent
+from AccessGrid.Events import Event, HeartbeatEvent, DisconnectEvent, ClientExitingEvent
 from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import GetHostname, ServerLock
 
@@ -201,6 +201,7 @@ class Venue(ServiceBase.ServiceBase):
             self.encryptionKey = None
         self.simpleLock = ServerLock("venue")
         self.heartbeatLock = ServerLock("heartbeat")
+        self.clientDisconnectOK = {}
         
         if id == None:
             self.uniqueId = str(GUID())
@@ -241,6 +242,9 @@ class Venue(ServiceBase.ServiceBase):
         self.server.eventService.RegisterCallback(self.uniqueId,
                                                   DisconnectEvent.DISCONNECT,
                                                   self.EventServiceDisconnect)
+        self.server.eventService.RegisterCallback(self.uniqueId,
+                                                  ClientExitingEvent.CLIENT_EXITING,
+                                                  self.EventServiceClientExits)
 
         #
         # Create the directory to hold the venue's data.
@@ -520,15 +524,31 @@ class Venue(ServiceBase.ServiceBase):
         
         **Arguments:**
 
-            *privateId* The private id of the user dicsconnecting.
+            *privateId* The private id of the user disconnecting.
         """
         log.debug("VenueServer: Got Client disconnect for %s", privateId)
 
         #
         # We don't lock here; RemoveUser handles the locking.
         #
+
+        if privateId in self.clientDisconnectOK and self.clientDisconnectOK[privateId]:
+            log.debug("Got disconnect, but I'm okay")
+            del self.clientDisconnectOK[privateId]
+        else:
+            self.RemoveUser(privateId)
         
-        self.RemoveUser(privateId)
+    def EventServiceClientExits(self, privateId):
+        """
+        This is an Event handler for normal client exits.
+        
+        **Arguments:**
+
+            *privateId* The private id of the user disconnecting.
+        """
+        log.debug("VenueServer: Got Client exiting for %s", privateId)
+
+        self.clientDisconnectOK[privateId] = 1
         
     def Shutdown(self):
         """

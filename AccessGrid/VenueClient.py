@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.67 2003-05-23 21:39:24 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.68 2003-05-23 22:17:59 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ from AccessGrid.EventClient import EventClient
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Types import *
 from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
-from AccessGrid.Events import DisconnectEvent
+from AccessGrid.Events import DisconnectEvent, ClientExitingEvent
 from AccessGrid.scheduler import Scheduler
 from AccessGrid.hosting import AccessControl
 from AccessGrid import Platform
@@ -418,33 +418,57 @@ class VenueClient( ServiceBase):
             log.info(" Stopping heartbeats")
             self.heartbeatTask.stop()
 
+        #
         # Exit the venue
+        #
+        # This causes the venue server to do the following:
+        #
+        # Remove producers for this client.
+        # Remove personal data (causes remove data events?)
+        # Distribute an EXIT event.
+        # Remove client from venue list of clients.
+        #
+        # The distribution of the EXIT event may arrive back at the
+        # client if the event client has not been stopped first.
+        #
+        # Unfortunately there's a bit of a race here, as stopping
+        # the event client causes the server to see an EOF,
+        # which it interprets as a client disconnection, which will
+        # in turn trigger the RemoveUser logic above.
+        #
+        # Ah, a likely solution is to stop the event client with a
+        # special "I'm disconnecting and it's okay" event that
+        # doesn't trigger the RemoveUser logic.
+        # 
+        
+        # Stop the event client
+        log.info(" Stopping event client")
+        try:
+            
+            self.eventClient.Send(ClientExitingEvent(self.venueState.uniqueId,
+                                                     self.privateId))
+            self.eventClient.Stop()
+        except:
+            # An exception is always thrown for some reason when I exit
+            # the event client
+            log.exception("on client exiting")
+            
         try:         
             self.venueProxy.Exit( self.privateId )
         except Exception, e:
             log.exception("AccessGrid.VenueClient::ExitVenue exception")
 
-        # Stop the event client
-        log.info(" Stopping event client")
-        try:
-            self.eventClient.Send(DisconnectEvent(self.venueState.uniqueId,
-                                                  self.privateId))
-            self.eventClient.Stop()
-        except:
-            # An exception is always thrown for some reason when I exit
-            # the event client
-            pass
-            
         # Stop the node services
         if self.nodeServiceUri != None:
             try:
-                Client.Handle(self.nodeServiceUri).IsValid()
+                nodeHandle = Client.Handle(self.nodeServiceUri)
+
+                if nodeHandle.IsValid():
+                    log.info(" Stopping node services")
+                    nodeHandle.GetProxy().StopServices()
+                    nodeHandle.GetProxy().SetStreams([])
             except Client.InvalidHandleException:
-                log.exception("Invalid Node Service URL (%s)"
-                              % self.nodeServiceUri)
-            log.info(" Stopping node services")
-            Client.Handle(self.nodeServiceUri).GetProxy().StopServices()
-            Client.Handle(self.nodeServiceUri).GetProxy().SetStreams([])
+                log.info("don't have a node service")
 
         self.__InitVenueData__()
         self.isInVenue = 0

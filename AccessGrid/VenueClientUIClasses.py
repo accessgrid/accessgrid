@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.201 2003-05-23 21:13:15 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.202 2003-05-23 22:17:59 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1979,9 +1979,11 @@ class TextClientPanel(wxPanel):
         """
 
         log.debug("Venue client closing connection to text service")
-        self.Processor.Stop()
-        self.socket.close()
-        del self.Processor
+
+        if self.Processor is not None:
+            self.Processor.Stop()
+            self.socket.close()
+            del self.Processor
 
     def OutputText(self, textPayload):
         message, profile = textPayload.data
