@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.34 2004-05-27 14:04:28 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.35 2004-05-27 19:41:14 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.34 2004-05-27 14:04:28 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.35 2004-05-27 19:41:14 eolson Exp $"
 
 import os
 import mimetypes
@@ -171,7 +171,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
     def GetLogDir(self):
         if self.logDir == None:
-            ucd = self.GetConfigDir()
+            ucd = self.GetBaseDir()
             self.logDir = os.path.join(ucd, "Logs")
 
         # Check dir and make it if needed.
@@ -184,7 +184,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         # Check the installation
         if self.logDir is not None and \
                not os.path.exists(self.logDir):
-            raise Exception, "AGTkConfig: log dir does not exist."            
+            raise Exception, "AGTkConfig: log dir %s does not exist." % (self.logDir)            
  
         return self.logDir
     
