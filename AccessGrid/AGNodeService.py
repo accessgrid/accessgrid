@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.47 2004-03-10 23:17:07 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.48 2004-03-12 00:29:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.47 2004-03-10 23:17:07 eolson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.48 2004-03-12 00:29:52 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -29,6 +29,8 @@ from AccessGrid.NetUtilities import GetHostname
 from AccessGrid import Platform
 from AccessGrid.Descriptions import AGServiceDescription
 from AccessGrid.Descriptions import AGServiceManagerDescription
+from AccessGrid.AGServiceManager import AGServiceManagerIW
+from AccessGrid.AGService import AGServiceIW
 from AccessGrid.Types import ServiceConfiguration, AGResource
 from AccessGrid.Utilities import LoadConfig
 from AccessGrid.AGParameter import ValueParameter
@@ -120,7 +122,7 @@ class AGNodeService:
 
         # Try to reach the service manager
         try:
-            Client.Handle( serviceManager.uri ).IsValid()
+            AGServiceManagerIW( serviceManager.uri ).IsValid()
         except:
             log.exception("AddServiceManager: Invalid service manager url (%s)"
                           % serviceManager.uri)
@@ -166,7 +168,7 @@ class AGNodeService:
 
         # Add the service to the service manager
         try:
-            serviceDescription = Client.Handle( serviceManagerUri ).GetProxy().AddService( servicePackageUri,
+            serviceDescription = AGServiceManagerIW( serviceManagerUri ).AddService( servicePackageUri,
                                                                   resourceToAssign,
                                                                   serviceConfig )
         except Exception, e:
@@ -175,7 +177,7 @@ class AGNodeService:
         
         # Set the identity for the service
         if self.profile:
-            Client.Handle( serviceDescription.uri ).GetProxy().SetIdentity( self.profile )
+            AGServiceManagerIW( serviceDescription.uri ).SetIdentity( self.profile )
 
         # Configure the service with the appropriate stream description
         try:
@@ -197,7 +199,7 @@ class AGNodeService:
         services = []
         try:
             for serviceManager in self.serviceManagers.values():
-                serviceSubset = Client.Handle( serviceManager.uri ).get_proxy().GetServices().data
+                serviceSubset = AGServiceManagerIW( serviceManager.uri ).GetServices().data
                 for service in serviceSubset:
                     service = AGServiceDescription( service.name, service.description, service.uri,
                                                     service.capabilities, service.resource,
@@ -216,7 +218,7 @@ class AGNodeService:
         """
 
         try:
-            Client.Handle( serviceUri ).GetProxy().SetEnabled(enabled)
+            AGServiceIW( serviceUri ).SetEnabled(enabled)
 
             if enabled:
                 self.__SendStreamsToService( serviceUri )
@@ -248,7 +250,7 @@ class AGNodeService:
 
         for serviceManager in self.serviceManagers.values():
             try:
-                Client.Handle(serviceManager.uri).GetProxy().StopServices()
+                AGServiceManagerIW(serviceManager.uri).StopServices()
             except:
                 log.exception("Exception stopping services")
                 exceptionText += sys.exc_info()[1]
@@ -400,7 +402,7 @@ class AGNodeService:
             # Skip unreachable service managers
             #
             try:
-                Client.Handle( serviceManager.uri ).IsValid()
+                AGServiceManagerIW( serviceManager.uri ).IsValid()
             except:
                 log.info("AddServiceManager: Invalid service manager url (%s)"
                          % serviceManager.uri)
@@ -414,7 +416,7 @@ class AGNodeService:
             # Remove all services from service manager
             #
             try:
-                Client.Handle( serviceManager.uri ).get_proxy().RemoveServices()
+                AGServiceManagerIW( serviceManager.uri ).RemoveServices()
             except:
                 log.exception("Exception removing services from Service Manager")
                 exceptionText += "Couldn't remove services from Service Manager: %s" %(serviceManager.name)
@@ -427,7 +429,7 @@ class AGNodeService:
                     serviceConfig = ServiceConfiguration( service.resource,
                                                           service.executable,
                                                           service.parameters)
-                    Client.Handle( serviceManager.uri ).get_proxy().AddService( self.servicePackageRepository.GetPackageUrl( service.packageName ), 
+                    AGServiceManagerIW( serviceManager.uri ).AddService( self.servicePackageRepository.GetPackageUrl( service.packageName ), 
                                                                                 service.resource,
                                                                                 serviceConfig )
                 except:
@@ -477,7 +479,7 @@ class AGNodeService:
             config.set( serviceManagerSection, "name", serviceManager.name )
             config.set( serviceManagerSection, "url", serviceManager.uri )
 
-            services = Client.Handle( serviceManager.uri ).get_proxy().GetServices()
+            services = AGServiceManagerIW( serviceManager.uri ).GetServices()
             for service in services:
                 # 
                 # Create Resource section
@@ -495,7 +497,7 @@ class AGNodeService:
                 #
                 serviceConfigSection = 'serviceconfig%d' % numServices
                 config.add_section( serviceConfigSection )
-                serviceConfig = Client.Handle( service.uri ).get_proxy().GetConfiguration()
+                serviceConfig = AGServiceIW( service.uri ).GetConfiguration()
                 for parameter in serviceConfig.parameters:
                     config.set( serviceConfigSection, parameter.name, parameter.value )
 
@@ -563,7 +565,7 @@ class AGNodeService:
         try:
             services = self.GetServices()
             for service in services:
-                capabilitySubset = Client.Handle( service.uri ).get_proxy().GetCapabilities().data
+                capabilitySubset = AGServiceIW( service.uri ).GetCapabilities().data
                 capabilities = capabilities + capabilitySubset
 
         except:
@@ -582,7 +584,7 @@ class AGNodeService:
         services = self.GetServices()
         for service in services:
             try:
-                Client.Handle( service.uri ).GetProxy().SetIdentity(profile)
+                AGServiceIW( service.uri ).SetIdentity(profile)
             except:
                 log.exception("Exception setting identity; continuing")
 
@@ -637,14 +639,14 @@ class AGNodeService:
         failedSends = ""
 
         serviceCapabilities = map(lambda cap: cap.type, 
-            Client.Handle( serviceUri ).get_proxy().GetCapabilities() )
+            AGServiceIW( serviceUri ).GetCapabilities() )
         for streamDescription in self.streamDescriptionList.values():
             try:
                 if streamDescription.capability.type in serviceCapabilities:
                     log.info("Sending stream (type=%s) to service: %s", 
                                 streamDescription.capability.type,
                                 serviceUri )
-                    Client.Handle( serviceUri ).get_proxy().ConfigureStream( streamDescription )
+                    AGServiceIW( serviceUri ).ConfigureStream( streamDescription )
             except:
                 log.exception("Exception in AGNodeService.ConfigureStreams.")
                 failedSends += "Error updating %s %s\n" % \
@@ -750,7 +752,7 @@ class AGServicePackageRepository:
 
 
 
-from AccessGrid.hosting.SOAPInterface import SOAPInterface
+from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 
 class AGNodeServiceI(SOAPInterface):
     """
@@ -862,7 +864,7 @@ class AGNodeServiceI(SOAPInterface):
         **Returns:**
         """
 
-        self.impl.SetServiceEnabledByMediaType()
+        self.impl.SetServiceEnabledByMediaType(mediaType, enableFlag)
 
     def StopServices(self):
         """
@@ -984,5 +986,73 @@ class AGNodeServiceI(SOAPInterface):
         **Returns:**
         """
 
-        self.impl.SetIdentity()
+        self.impl.SetIdentity(profile)
+
+
+
+
+class AGNodeServiceIW(SOAPIWrapper):
+    """
+    Interface Wrapper Class for the AGNodeService
+    """
+
+    def __init__(self,url):
+
+        SOAPIWrapper.__init__(self, url)
+
+    def AddServiceManager( self, serviceManager ):
+        self.proxy.AddServiceManager(serviceManager)
+
+    def RemoveServiceManager( self, serviceManagerToRemove ):
+        self.proxy.RemoveServiceManager(serviceManagerToRemove)
+
+    def GetServiceManagers(self):
+        return self.proxy.GetServiceManagers()
+
+    def AddService( self, servicePackageUri, serviceManagerUri, 
+                    resourceToAssign, serviceConfig ):
+        return self.proxy.AddService(servicePackageUri, serviceManagerUri, 
+                    resourceToAssign, serviceConfig )
+
+    def GetAvailableServices(self):
+        return self.proxy.GetAvailableServices()
+
+    def GetServices(self):
+        return self.proxy.GetServices()
+
+    def SetServiceEnabled(self, serviceUri, enabled):
+        self.proxy.SetServiceEnabled(serviceUri, enabled)
+
+    def SetServiceEnabledByMediaType(self, mediaType, enableFlag):
+        self.proxy.SetServiceEnabledByMediaType()
+
+    def StopServices(self):
+        self.proxy.StopServices()
+
+    def SetStreams( self, streamDescriptionList ):
+        self.proxy.SetStreams(streamDescriptionList)
+
+    def AddStream( self, streamDescription ):
+        self.proxy.AddStream(streamDescription)
+
+    def RemoveStream( self, streamDescription ):
+        self.proxy.RemoveStream(streamDescription)
+
+    def LoadConfiguration( self, configName ):
+        self.proxy.LoadConfiguration(configName)
+
+    def StoreConfiguration( self, configName ):
+        self.proxy.StoreConfiguration(configName)
+
+    def SetDefaultConfiguration( self, configName ):
+        self.proxy.SetDefaultConfiguration(configName)
+
+    def GetConfigurations(self):
+        return self.proxy.GetConfigurations()
+
+    def GetCapabilities(self):
+        return self.proxy.GetCapabilities()
+
+    def SetIdentity(self, profile):
+        self.proxy.SetIdentity(profile)
 

@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.42 2004-03-11 22:38:02 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.43 2004-03-12 00:30:19 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.42 2004-03-11 22:38:02 eolson Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.43 2004-03-12 00:30:19 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -367,7 +367,7 @@ class AGServiceManager:
 
 
 
-from AccessGrid.hosting.SOAPInterface import SOAPInterface
+from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 
 class AGServiceManagerI(SOAPInterface):
     """
@@ -419,7 +419,7 @@ class AGServiceManagerI(SOAPInterface):
         **Raises:**
         **Returns:**
         """
-        return self.impl.AddService()
+        return self.impl.AddService(servicePackageUri, resourceToAssign, serviceConfig)
 
     def RemoveService(self, serviceToRemove):
         """
@@ -430,7 +430,7 @@ class AGServiceManagerI(SOAPInterface):
         **Raises:**
         **Returns:**
         """
-        self.impl.RemoveService()
+        self.impl.RemoveService(serviceToRemove)
 
     def RemoveServices(self):
         """
@@ -474,4 +474,43 @@ class AGServiceManagerI(SOAPInterface):
             string representing the install dir of the AG software
         """
         return self.impl.GetInstallDir()
+
+
+
+
+
+class AGServiceManagerIW(SOAPIWrapper):
+    """
+    Interface Wrapper Class for AGServiceManager
+    """
+    
+    def __init__(self,url):
+        SOAPIWrapper.__init__(self,url)
+    
+    def Shutdown(self):
+        self.proxy.Shutdown()
+
+    def GetResources(self):
+        return self.proxy.GetResources()
+
+    def DiscoverResources(self):
+        self.proxy.DiscoverResources()
+
+    def AddService(self, servicePackageUri, resourceToAssign, serviceConfig):
+        return self.proxy.AddService(servicePackageUri, resourceToAssign, serviceConfig)
+
+    def RemoveService(self, serviceToRemove):
+        self.proxy.RemoveService(serviceToRemove)
+
+    def RemoveServices(self):
+        self.proxy.RemoveServices()
+
+    def GetServices(self):
+        return self.proxy.GetServices()
+
+    def StopServices(self):
+        self.proxy.StopServices()
+
+    def GetInstallDir(self):
+        return self.proxy.GetInstallDir()
 
