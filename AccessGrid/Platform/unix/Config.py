@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.45 2004-07-26 17:16:12 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.46 2004-07-30 21:25:09 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.45 2004-07-26 17:16:12 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.46 2004-07-30 21:25:09 eolson Exp $"
 
 import os
 import mimetypes
@@ -654,7 +654,7 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
             fh = os.popen(cmd,'r')
             for line in fh.readlines():
                 device = os.path.join('/dev',line.strip())
-                deviceList[device] = None
+                deviceList[device] = ""  # empty portString
             fh.close()
 
             # Determine ports for devices
