@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.12 2004-03-31 21:08:25 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.13 2004-04-26 15:39:49 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,10 +24,7 @@ class VideoConsumerService( AGService ):
         AGService.__init__( self )
 
         self.capabilities = [ Capability( Capability.CONSUMER, Capability.VIDEO ) ]
-        if not Platform.isWindows():
-            self.executable = "vic"
-        else:
-            self.executable = os.path.join(AGTkConfig.instance().GetInstallDir(), "vic")
+        self.executable = os.path.join('.','vic')
 
         #
         # Set configuration parameters

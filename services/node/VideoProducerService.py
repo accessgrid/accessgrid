@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.23 2004-03-31 21:08:25 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.24 2004-04-26 15:39:49 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -48,11 +48,7 @@ class VideoProducerService( AGService ):
         AGService.__init__( self )
 
         self.capabilities = [ Capability( Capability.PRODUCER, Capability.VIDEO ) ]
-
-        if not Platform.isWindows():
-            self.executable = "vic"
-        else:
-            self.executable = os.path.join(AGTkConfig.instance().GetInstallDir(), "vic")
+        self.executable = os.path.join('.','vic')
 
         #
         # Set configuration parameters

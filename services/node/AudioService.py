@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.14 2004-04-09 20:41:09 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.15 2004-04-26 15:39:49 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,10 +27,7 @@ class AudioService( AGService ):
 
         self.capabilities = [ Capability( Capability.CONSUMER, Capability.AUDIO ),
                               Capability( Capability.PRODUCER, Capability.AUDIO ) ]
-        if not Platform.isWindows():
-            self.executable = "rat"
-        else:
-            self.executable = os.path.join(AGTkConfig.instance().GetInstallDir(), "rat")
+        self.executable = os.path.join('.','rat')
 
         #
         # Set configuration parameters
