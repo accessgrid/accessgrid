@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.103 2003-04-03 18:50:48 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.104 2003-04-03 20:15:15 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,6 +31,15 @@ from AccessGrid.UIUtilities import MyLog
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN 
 from AccessGrid import DataStore
 from AccessGrid.GUID import GUID
+
+try:
+    from AccessGrid import CertificateManager
+    CertificateManager.CertificateManagerWXGUI
+    HaveCertificateManager = 1
+except Exception, e:
+    HaveCertificateManager = 0
+
+    
 
 from AccessGrid.hosting.pyGlobus import Server
 if sys.platform == "win32":
@@ -64,7 +73,13 @@ class VenueClientUI(wxApp, VenueClient):
         self.__setLogger()
         self.__createHomePath()
         self.__createPersonalDataStore()
-       
+
+        if HaveCertificateManager:
+            self.certificateManagerGUI = CertificateManager.CertificateManagerWXGUI()
+            self.certificateManager = CertificateManager.CertificateManager(GetUserConfigDir(),
+                                                                            self.certificateManagerGUI)
+            self.certificateManager.InitEnvironment()
+        
         self.frame = VenueClientFrame(NULL, -1,"", self)
         self.frame.SetSize(wxSize(500, 400))
         self.SetTopWindow(self.frame)
