@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.9 2003-03-19 16:05:28 judson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.10 2003-03-21 18:12:22 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -202,7 +202,7 @@ class DataStore:
         desc = self.venue.GetData(file_info['name'])
         # print "CompleteUpload: got desc ", desc, desc.__dict__
         desc.SetChecksum(file_info['checksum'])
-        desc.SetSize(file_info['size'])
+        desc.SetSize(int(file_info['size']))
         desc.SetStatus(DataDescription.STATUS_PRESENT)
         desc.SetOwner(dn)
         desc.SetURI(self.GetDownloadDescriptor(file_info['name']))
