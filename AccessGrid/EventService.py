@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.6 2003-02-21 21:42:10 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.7 2003-02-27 20:06:38 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
     In the TCP case the EventService is the Server, GSI is our secure version.
     """
     def __init__(self, server_address, RequestHandlerClass=ConnectionHandler):
-        Thread.__init__(self)#            print "Sending heartbeat!"
+        Thread.__init__(self)
 
         self.location = server_address
         self.callbacks = {}
@@ -121,7 +121,7 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         """
         Distribute sends the data to all connections.
         """
-        print "Sending Event %s" % data.eventType
+#        print "Sending Event %s" % data.eventType
         # This should be more generic
         pdata = pickle.dumps(data)
         lenStr = "%s\n" % len(pdata)
@@ -141,11 +141,11 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         """
         return self.location
 
-    def AddVenue(self, venueId):
-        self.connections[venueId] = []
+    def AddChannel(self, channelId):
+        self.connections[channelId] = []
 
-    def RemoveVenue(self, venueId):
-        del self.connections[venueId]
+    def RemoveChannel(self, channelId):
+        del self.connections[channelId]
 
 if __name__ == "__main__":
   import string
