@@ -2,6 +2,7 @@ import sys
 import copy
 import time, thread
 import pprint
+import urlparse
 
 # AG2 imports
 from AccessGrid.hosting.pyGlobus import Client
@@ -278,7 +279,7 @@ class NodeManagementClientFrame(wxFrame):
        statBoxSizer = wxStaticBoxSizer( statBox, wxVERTICAL )
        sz.Add( statBoxPanel, -1, wxEXPAND )
        statBoxPanel.SetSizer( statBoxSizer )
-       self.hostList = wxListCtrl( statBoxPanel, -1 )
+       self.hostList = wxListCtrl( statBoxPanel, -1, style=wxLC_LIST )
        statBoxSizer.Add( self.hostList, -1, wxEXPAND )
 
        EVT_LIST_ITEM_SELECTED( self, self.hostList.GetId(), self.UpdateServiceList )
@@ -336,7 +337,7 @@ class NodeManagementClientFrame(wxFrame):
 
       global vc
       
-      d = wxTextEntryDialog( self, "Enter uri of running Node Server", "Node Attach Dialog" )
+      d = wxTextEntryDialog( self, "Enter uri of running AGNodeService", "Node Attach Dialog" )
       ret = d.ShowModal()
 
       if ret == wxID_OK:
@@ -349,7 +350,7 @@ class NodeManagementClientFrame(wxFrame):
          try:
             vc = Client.Handle( uri ).get_proxy()
          except:
-            self.Error( "Could not attach to Node Server "+hostname+port  )
+            self.Error( "Could not attach to AGNodeService "+hostname+port  )
             return
 
          self.UpdateHostList()
@@ -406,17 +407,17 @@ class NodeManagementClientFrame(wxFrame):
    ############################
    def AddHost( self, event ):
       
-      dlg = wxTextEntryDialog( self, "Enter name and uri of running host (e.g., myhost https://myhost:8200/100 )", \
+      dlg = wxTextEntryDialog( self, "Enter uri of running host (e.g., https://myhost:8200/ServiceManager )", \
                "Add Host Dialog" )
       dlg.Show()
-
       str = dlg.GetValue()
-
       if str != None and len(str)>0:
-         name, uri = string.split( str, ' ')
+         uri = str
+
+         name = urlparse.urlparse(uri)[1]
 
          try:
-            vc.AddServiceManager( AGServiceManagerDescription( name, "dummy agsm description", uri ) )
+            vc.AddServiceManager( AGServiceManagerDescription( name, "agsm description", uri ) )
          except:
             print "Exception in AddHost", sys.exc_type, sys.exc_value
             self.Error( "Add Host failed" )
