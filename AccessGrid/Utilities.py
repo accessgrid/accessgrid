@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.55 2004-02-27 20:17:42 lefvert Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.56 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.55 2004-02-27 20:17:42 lefvert Exp $"
+__revision__ = "$Id: Utilities.py,v 1.56 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -28,8 +28,8 @@ import urlparse
 from threading import Lock, Condition
 import re
 
-import logging
-log = logging.getLogger("AG.Utilities")
+from AccessGrid import Log
+log = Log.GetLogger(Log.Utilities)
 
 from AccessGrid.Version import GetVersion
 from AccessGrid.Platform import GetUserConfigDir

@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.60 2004-03-02 22:43:58 judson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.61 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.60 2004-03-02 22:43:58 judson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.61 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -31,12 +31,12 @@ import ConfigParser
 import cStringIO
 import Queue
 from time import localtime , strftime
-import logging
 import BaseHTTPServer
 
 from pyGlobus.io import GSITCPSocketException
 from pyGlobus import io
 
+from AccessGrid import Log
 import AccessGrid.GUID
 from AccessGrid import Platform
 from AccessGrid.NetUtilities import GetHostname
@@ -47,7 +47,7 @@ from AccessGrid.EventClient import EventClient, EventClientWriteDataException
 from AccessGrid.Events import Event, ConnectEvent, HeartbeatEvent
 from AccessGrid.Security import Utilities
 
-log = logging.getLogger("AG.DataStore")
+log = Log.GetLogger(Log.DataStore)
 
 class NotAPlainFile(Exception):
     pass
@@ -2129,9 +2129,9 @@ class HTTPUploadEngine:
 
 if __name__ == "__main__":
 
-    logger = logging.getLogger("AG")
-    logger.addHandler(logging.StreamHandler())
-    logger.setLevel(logging.debug)
+    hdlr = Log.StreamHandler()
+    hdlr.setLevel(Log.GetHighestLevel())
+    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
     from AccessGrid.Events import Event
     

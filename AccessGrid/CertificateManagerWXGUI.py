@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.34 2004-03-02 22:43:58 judson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.35 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,12 +15,11 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.34 2004-03-02 22:43:58 judson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.35 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
 import string
-import logging
 import os
 import os.path
 import re
@@ -30,6 +29,7 @@ from wxPython.wx import *
 
 from OpenSSL_AG import crypto
 
+from AccessGrid import Log
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.UIUtilities import ErrorDialogWithTraceback
 from AccessGrid.Security import CertificateManager, CertificateRepository
@@ -40,7 +40,7 @@ from AccessGrid.Security.CRSClient import CRSClientInvalidURL
 from AccessGrid.Security.ProxyGen import InvalidPassphraseException
 from AccessGrid.Security.ProxyGen import GridProxyInitError
 
-log = logging.getLogger("AG.CertificateManagerWXGUI")
+log = Log.GetLogger(Log.CertificateManagerWXGUI)
 #
 # Custom event types for the cert browser.
 #

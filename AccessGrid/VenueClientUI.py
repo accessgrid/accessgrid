@@ -5,21 +5,20 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.12 2004-03-08 22:20:02 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.13 2004-03-10 23:17:08 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.12 2004-03-08 22:20:02 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.13 2004-03-10 23:17:08 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
 import os
 import os.path
 import time
-import logging, logging.handlers
 import getopt
 from wxPython.wx import *
 import string
@@ -28,8 +27,9 @@ import traceback
 import re
 
 from time import localtime , strftime
-log = logging.getLogger("AG.VenueClientUI")
-log.setLevel(logging.WARN)
+from AccessGrid import Log
+log = Log.GetLogger(Log.VenueClientUI)
+Log.SetDefaultLevel(Log.VenueClientUI, Log.WARN)
 
 from AccessGrid import icons
 from AccessGrid import Toolkit

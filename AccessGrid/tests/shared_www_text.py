@@ -1,6 +1,6 @@
 import sys
-import logging
 
+from AccessGrid import Log
 import AccessGrid.Types
 from AccessGrid import EventClient
 from AccessGrid import VenueClient
@@ -10,19 +10,15 @@ from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Types import *
 from AccessGrid.hosting.pyGlobus import Client
 
-log = logging.getLogger("watcher")
+log = Log.GetLogger("watcher")
 
 def init_logging(appName):
-    logger = logging.getLogger("AG")
-    logger.setLevel(logging.DEBUG)
-    hdlr = logging.StreamHandler()
-    fmt = logging.Formatter("%(name)-17s %(asctime)s %(levelname)-5s %(message)s")
-    hdlr.setFormatter(fmt)
-    logger.addHandler(hdlr)
+    hdlr = Log.StreamHandler()
+    hdlr.setLevel(log.DEBUG)
+    hdlr.setFormatter(Log.GetFormatter())
 
-    appLogger = logging.getLogger(appName)
-    appLogger.setLevel(logging.DEBUG)
-    appLogger.addHandler(hdlr)
+    appLogger = Log.GetLogger(appName)
+    Log.HandleLoggers(appLogger, Log.GetDefaultLoggers())
     
 def findBrowser(clientObj):
     """

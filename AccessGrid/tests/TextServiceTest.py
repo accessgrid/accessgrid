@@ -5,17 +5,17 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: TextServiceTest.py,v 1.2 2004-02-19 17:59:02 eolson Exp $
+# RCS-ID:      $Id: TextServiceTest.py,v 1.3 2004-03-10 23:17:09 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
 from AccessGrid.hosting.pyGlobus import Client
+from AccessGrid import Log
 from AccessGrid.Utilities import GetHostname
 from AccessGrid.TextServiceAsynch import TextService
 from AccessGrid.TextClient import TextClient
 from AccessGrid.GUID import GUID
-import logging, logging.handlers
 import os, time
 from AccessGrid.Platform import GetUserConfigDir
 import threading
@@ -281,24 +281,20 @@ def SetLogging():
     debugMode = 1
     logFile = None
     
-    log = logging.getLogger("AG")
-    log.setLevel(logging.DEBUG)
-    
     if logFile is None:
         logname = os.path.join(GetUserConfigDir(), "Test.log")
     else:
         logname = logFile
         
-    hdlr = logging.FileHandler(logname)
-    extfmt = logging.Formatter("%(asctime)s %(thread)s %(name)s %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
-    fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-    hdlr.setFormatter(extfmt)
-    log.addHandler(hdlr)
+    hdlr = Log.FileHandler(logname)
+    hdlr.setLevel(Log.DEBUG)
+    hdlr.setFormatter(Log.GetFormatter())
+    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
     
     if debugMode:
-        hdlr = logging.StreamHandler()
-        hdlr.setFormatter(fmt)
-        log.addHandler(hdlr)
+        hdlr = Log.StreamHandler()
+        hdlr.setFormatter(Log.GetLowDetailFormatter())
+        Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
        
 if __name__ == "__main__":
     SetLogging()

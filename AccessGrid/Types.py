@@ -5,21 +5,21 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.42 2004-03-04 15:31:48 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.43 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.42 2004-03-04 15:31:48 judson Exp $"
+__revision__ = "$Id: Types.py,v 1.43 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
 import zipfile
 import sys
 
-import logging
-log = logging.getLogger("AG.Types")
+from AccessGrid import Log
+log = Log.GetLogger(Log.Types)
 
 from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetParameter, CreateParameter
 

@@ -12,12 +12,13 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.27 2004-03-02 22:43:58 judson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.28 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
 from wxPython.wizard import *
 
+from AccessGrid import Log
 from AccessGrid import Toolkit
 from AccessGrid import Platform
 from AccessGrid import NetUtilities, Utilities
@@ -33,8 +34,7 @@ import md5
 import os
 import os.path
 
-import logging, logging.handlers
-log = logging.getLogger("AG.CertificateRequestTool")
+log = Log.GetLogger(Log.CertificateRequestTool)
 
 #
 # Service type names and descriptions
@@ -140,13 +140,14 @@ class CertificateRequestTool(wxWizard):
         """
         Create a log with our standard format and return it
         """
-        log = logging.getLogger("AG.CertificateRequestTool")
-        log.setLevel(logging.DEBUG)
+        log = Log.GetLogger(Log.CertificateRequestTool)
+        Log.SetDefaultLevel(Log.DEBUG)
+
         logFile = os.path.join(Platform.GetUserConfigDir(), "CertificateRequestTool.log")
-        hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
+        hdlr = Log.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
         logFormat = "%(asctime)s %(levelname)-5s %(message)s (%(filename)s)"
-        hdlr.setFormatter(logging.Formatter(logFormat))
-        log.addHandler(hdlr)
+        hdlr.setFormatter(Log.Formatter(logFormat))
+        Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
         
         return log
                          
@@ -1398,9 +1399,10 @@ class CertificateStatusDialog(wxDialog):
 if __name__ == "__main__":
     pp = wxPySimpleApp()
 
-    h = logging.StreamHandler()
-    h.setLevel(logging.DEBUG)
-    logging.root.addHandler(h)
+    from AccessGrid import Log
+    h = Log.StreamHandler()
+    h.setLevel(Log.DEBUG)
+    Log.HandleLoggers(h, Log.GetDefaultLoggers())
 
     from AccessGrid import Toolkit
     app = Toolkit.WXGUIApplication()

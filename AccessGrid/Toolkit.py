@@ -5,23 +5,23 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.15 2004-03-02 22:43:58 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.16 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.15 2004-03-02 22:43:58 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.16 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
-import logging
 import os
 
+from AccessGrid import Log
 from AccessGrid.AppDb import AppDb
 from AccessGrid.Security import CertificateManager
 from AccessGrid.Platform import GetUserConfigDir, GetUserAppPath
 
-log = logging.getLogger("AG.toolkit")
+log = Log.GetLogger(Log.Toolkit)
 
 #
 # Global application instance object.

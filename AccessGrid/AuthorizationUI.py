@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.4 2004-03-09 16:54:04 lefvert Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.5 2004-03-10 23:17:07 eolson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.4 2004-03-09 16:54:04 lefvert Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.5 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -1232,8 +1232,7 @@ def InitLogging(debug = 1, l = None):
         """
 
         logFormat = "%(name)-17s %(asctime)s %(levelname)-5s %(message)s"
-        log = logging.getLogger('AuthorizationUI')
-        log.setLevel(logging.DEBUG)
+        log = Log.GetLogger(Log.AuthorizationUI)
         
         # Log to file
         if l == None:
@@ -1241,15 +1240,16 @@ def InitLogging(debug = 1, l = None):
         else:
             logFile = l
       
-        fileHandler = logging.FileHandler(logFile)
-        fileHandler.setFormatter(logging.Formatter(logFormat))
-        log.addHandler(fileHandler)
+        fileHandler = Log.FileHandler(logFile)
+        fileHandler.setFormatter(Log.Formatter(logFormat))
+        fileHandler.setLevel(Log.DEBUG)
+        Log.HandleLoggers(fileHandler, Log.GetDefaultLoggers())
 
         # If debug mode is on, log to command window too
         if debug:
-            hdlr = logging.StreamHandler()
-            hdlr.setFormatter(logging.Formatter(logFormat))
-            log.addHandler(hdlr)
+            hdlr = Log.StreamHandler()
+            hdlr.setFormatter(Log.Formatter(logFormat))
+            Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
         return log
     

@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.3 2004-03-04 21:23:21 olson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.4 2004-03-10 23:17:08 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,16 +14,16 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.3 2004-03-04 21:23:21 olson Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.4 2004-03-10 23:17:08 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
 import os
 import os.path
 import popen2
-import logging
 
 from pyGlobus import security, io
+from AccessGrid import Log
 
 #
 # Try importing this. We ensure further below that
@@ -38,8 +38,8 @@ except:
 
 from AccessGrid.Platform import isWindows
 
-log = logging.getLogger("AG.Security.ProxyGen")
-log.setLevel(logging.DEBUG)
+log = Log.GetLogger(Log.ProxyGen)
+Log.SetDefaultLevel(Log.ProxyGen, Log.DEBUG)
 
 class ProxyRequestError(Exception):
     """

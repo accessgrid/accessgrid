@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.5 2004-03-05 21:41:23 judson Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.6 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,11 +14,10 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.5 2004-03-05 21:41:23 judson Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.6 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
-import logging
-
+from AccessGrid import Log
 from AccessGrid import GUID
 from AccessGrid import Events
 from AccessGrid.Descriptions import ApplicationDescription
@@ -31,7 +30,7 @@ from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 
-log = logging.getLogger("AG.SharedApplication")
+log = Log.GetLogger(Log.SharedApplication)
 
 class InvalidPrivateToken(Exception):
     """

@@ -1,7 +1,6 @@
 #!/usr/bin/python2
 
 import os
-import logging
 import Queue
 import threading
 import getopt
@@ -9,6 +8,7 @@ import ConfigParser
 
 from pyGlobus.io import IOBaseException
 
+from AccessGrid import Log
 from AccessGrid import GUID
 from AccessGrid import NetService
 from AccessGrid import Platform
@@ -55,7 +55,7 @@ class BridgeFactory:
             self.processManager = ProcessManager()
 
             # Setup the log
-            self.log = logging.getLogger("AG.BridgeServer")
+            self.log = Log.GetLogger(Log.BridgeServer)
 
         def Start(self):
             """
@@ -87,7 +87,7 @@ class BridgeFactory:
     def __init__(self, qbexec):
         self.qbexec = qbexec
         self.bridges = dict()
-        self.log = logging.getLogger("AG.BridgeServer")
+        self.log = Log.GetLogger(Log.BridgeServer)
 
     def CreateBridge(self,id,maddr,mport,mttl,uaddr,uport):
         """
@@ -221,19 +221,17 @@ class BridgeServer:
         """
         Sets the logging mechanism.
         """
-        self.log = logging.getLogger("AG.BridgeServer")
-        self.log.setLevel(logging.DEBUG)
+        self.log = Log.GetLogger(Log.BridgeServer)
 
-        hdlr = logging.FileHandler(logFile)
-        extfmt = logging.Formatter("%(asctime)s %(thread)s %(name)s %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
-        fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-        hdlr.setFormatter(extfmt)
-        self.log.addHandler(hdlr)
+        hdlr = Log.FileHandler(logFile)
+        hdlr.setLevel(Log.DEBUG)
+        hdlr.setFormatter(Log.GetFormatter())
+        Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
         if self.debug:
-            hdlr = logging.StreamHandler()
-            hdlr.setFormatter(fmt)
-            self.log.addHandler(hdlr)
+            hdlr = Log.StreamHandler()
+            hdlr.setFormatter(Log.GetLowDetailFormatter())
+            Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
 
 class Venue:
@@ -264,7 +262,7 @@ class Venue:
         self.running = 1
         self.sendHeartbeats = 1
 
-        self.log = logging.getLogger("AG.BridgeServer")
+        self.log = Log.GetLogger(Log.BridgeServer)
 
         self.ConnectEventClient()
         if self.eventClient.connected:

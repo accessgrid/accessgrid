@@ -6,7 +6,7 @@
 # Author:      Robert Olson
 #
 # Created:     9/10/2003
-# RCS-ID:      $Id: certmgr.py,v 1.4 2003-09-22 14:12:08 judson Exp $
+# RCS-ID:      $Id: certmgr.py,v 1.5 2004-03-10 23:17:09 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This tool is used on the command line to interact with the users certificate
 environment.
 """
-__revision__ = "$Id: certmgr.py,v 1.4 2003-09-22 14:12:08 judson Exp $"
+__revision__ = "$Id: certmgr.py,v 1.5 2004-03-10 23:17:09 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -27,8 +27,8 @@ import cmd
 from AccessGrid import Toolkit
 from OpenSSL_AG import crypto
 
-import logging
-log = logging.getLogger("AG.certmgr")
+from AccessGrid import Log
+log = Log.GetLogger(Log.CertificateManager)
 
 class CertMgrCmdProcessor(cmd.Cmd):
     """

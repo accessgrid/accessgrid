@@ -5,23 +5,23 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.32 2004-03-02 22:43:58 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.33 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.32 2004-03-02 22:43:58 judson Exp $"
+__revision__ = "$Id: TextClient.py,v 1.33 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
-import logging
 import struct
 
 from pyGlobus.io import GSITCPSocket, IOBaseException
 from pyGlobus.util import Buffer
 from pyGlobus import ioc
 
+from AccessGrid import Log
 from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
 from AccessGrid.Events import DisconnectEvent, ClientExitingEvent, TextEvent
 from AccessGrid.Security.Utilities import CreateTCPAttrAlwaysAuth
@@ -33,8 +33,8 @@ class SimpleTextProcessor:
         self.profile = myProfile
         self.textConnection = textConnection
         self.outputCallback = outputCallback
-        self.log = logging.getLogger("AG.TextClient.SimpleTextProcessor")
-        self.log.setLevel(logging.WARN)
+        self.log = Log.GetLogger(Log.SimpleTextProcessor)
+        Log.SetDefaultLevel(Log.SimpleTextProcessor, Log.WARN)
         
     def SetProfile(self, profile):
         """
@@ -118,8 +118,8 @@ class TextConnection:
         """
         self.host, self.port = textServiceLocation
         self.processor = processor
-        self.log = logging.getLogger("AG.TextClient.TextConnection")
-        self.log.setLevel(logging.WARN)
+        self.log = Log.GetLogger(Log.TextConnection)
+        Log.SetDefaultLevel(Log.TextConnection, Log.WARN)
         
         # Initialize connection
         self.bufsize = 4096
@@ -263,8 +263,8 @@ class TextClient:
         self.textConnection = None
         self.profile = profile
         self.textProcessor = SimpleTextProcessor(myProfile=profile)
-        self.log = logging.getLogger("AG.TextClient")
-        self.log.setLevel(logging.WARN)
+        self.log = Log.GetLogger(Log.TextClient)
+        Log.SetDefaultLevel(Log.TextClient, Log.WARN)
         
         if self.textServiceLocation != None:
             self.textConnection = TextConnection(self.textServiceLocation,
@@ -337,9 +337,9 @@ if __name__ == "__main__":
     if not certMgr.HaveValidProxy():
         certMgr.CreateProxy()
 
-    log = logging.getLogger("AG.TextClient")
-    log.addHandler(logging.StreamHandler())
-    log.setLevel(logging.WARN)
+    log = Log.GetLogger(Log.TextClient)
+    Log.SetDefaultLevel(Log.TextClient, Log.WARN)
+    Log.HandleLoggers(Log.StreamHandler(), Log.GetDefaultLoggers())
 
     if len(sys.argv) > 3:
         host = sys.argv[1]

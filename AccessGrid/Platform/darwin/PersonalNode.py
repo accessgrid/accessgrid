@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/05
-# RCS-ID:      $Id: PersonalNode.py,v 1.1 2004-03-05 16:26:24 eolson Exp $
+# RCS-ID:      $Id: PersonalNode.py,v 1.2 2004-03-10 23:17:08 eolson Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ Svc mgr:
 
 """
 
-__revision__ = "$Id: PersonalNode.py,v 1.1 2004-03-05 16:26:24 eolson Exp $"
+__revision__ = "$Id: PersonalNode.py,v 1.2 2004-03-10 23:17:08 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -60,11 +60,10 @@ import errno
 import struct
 import string
 
-import logging
-
+from AccessGrid import Log
 from AccessGrid.Platform import Platform
 
-log = logging.getLogger("AG.PersonalNode")
+log = Log.GetLogger(Log.PersonalNode)
 
 class Pipe:
     """
@@ -547,9 +546,9 @@ def ensureProcessDead(pid):
 
 if __name__ == "__main__":
 
-    top = logging.getLogger("AG")
-    top.setLevel(logging.DEBUG)
-    top.addHandler(logging.StreamHandler())
+    hdlr = Log.StreamHandler()
+    hdlr.setLevel(Log.DEBUG)
+    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
     pid = os.spawnlp(os.P_NOWAIT, "sleep", "sleep", "10")
     print "pid is ", pid

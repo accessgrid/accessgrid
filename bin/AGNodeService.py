@@ -6,21 +6,21 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.36 2004-03-04 23:04:47 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.37 2004-03-10 23:17:09 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.36 2004-03-04 23:04:47 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.37 2004-03-10 23:17:09 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
 import signal, time, os
-import logging, logging.handlers
 import getopt
 
+from AccessGrid import Log
 from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
 from AccessGrid.hosting import Server
 
@@ -139,14 +139,14 @@ else:
     app.InitGlobusEnvironment()
 
 # Start up the logging
-log = logging.getLogger("AG")
-log.setLevel(logging.DEBUG)
-hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
-fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
+log = Log.GetLogger(Log.NodeService)
+hdlr = Log.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
+hdlr.setLevel(Log.DEBUG)
+fmt = Log.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
 hdlr.setFormatter(fmt)
-log.addHandler(hdlr)
+Log.HandleLoggers(hdlr, Log.GetDefaultHandlers())
 if debugMode:
-    log.addHandler(logging.StreamHandler())
+    Log.HandleLoggers(Log.StreamHandler(), Log.GetDefaultHandlers())
 
 
 # Create a Node Service

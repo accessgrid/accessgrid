@@ -7,15 +7,15 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/02/02
-# RCS-ID:      $Id: Win32ServiceManager.py,v 1.4 2004-02-24 21:21:48 judson Exp $
+# RCS-ID:      $Id: Win32ServiceManager.py,v 1.5 2004-03-10 23:17:09 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import win32serviceutil
 import win32service
 import win32event
-import logging, logging.handlers
 
+from AccessGrid import Log
 from AccessGrid.AGServiceManager import AGServiceManager
 from AccessGrid.hosting.Server import SecureServer as Server
 
@@ -26,10 +26,10 @@ class Win32ServiceManager(win32serviceutil.ServiceFramework):
 
     def __init__(self,args):
         # Initialize Logging
-        ntl = logging.handlers.NTEventLogHandler("AG Node Service Manager")
-        self.log = logging.getLogger("AG.ServiceManager")
-        self.log.setLevel(logging.DEBUG)
-        self.log.addHandler(ntl)
+        ntl = Log.handlers.NTEventLogHandler("AG Node Service Manager")
+        ntl.setLevel(Log.DEBUG)
+        self.log = Log.GetLogger(Log.ServiceManager)
+        Log.HandleLoggers(ntl, Log.GetDefaultLoggers())
 
         # Initialize Win32 Service stuff
         win32serviceutil.ServiceFramework.__init__(self, args)

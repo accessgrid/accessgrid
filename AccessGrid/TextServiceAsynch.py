@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.19 2004-03-02 22:43:58 judson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.20 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.19 2004-03-02 22:43:58 judson Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.20 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client, Server
@@ -21,13 +21,13 @@ import sys
 import pickle
 import Queue
 import threading
-import logging
 import struct
 import time
 
 from pyGlobus.io import GSITCPSocketServer, GSIRequestHandler, GSITCPSocket
 from pyGlobus.io import GSITCPSocketException, IOBaseException, Buffer
 
+from AccessGrid import Log
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import HeartbeatEvent, ConnectEvent, TextEvent
 from AccessGrid.Events import DisconnectEvent, MarshalledEvent
@@ -36,7 +36,8 @@ from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
 from AccessGrid.Security.Utilities import CreateTCPAttrAlwaysAuth
 from AccessGrid.GUID import GUID
 
-log = logging.getLogger("AG.TextService")
+log = Log.GetLogger(Log.TextService)
+Log.SetDefaultLevel(Log.TextService, Log.DEBUG)
 
 #
 # Per-event debugging might be useful sometimes, but not usually.
@@ -44,14 +45,16 @@ log = logging.getLogger("AG.TextService")
 # be disabled.
 # 
 
-detailedTextEventLogging = 0
+logTextEvent = log.verbose
 
-if detailedTextEventLogging:
-    logTextEvent = log.debug
-    log.setLevel(logging.DEBUG)
-else:
-    logTextEvent = lambda *sh: 0
-    log.setLevel(logging.WARN)
+#detailedTextEventLogging = 0
+
+#if detailedTextEventLogging:
+    #logTextEvent = log.debug
+    #log.setLevel(logging.DEBUG)
+#else:
+    #logTextEvent = lambda *sh: 0
+    #log.setLevel(logging.WARN)
 
 class ConnectionHandler:
     """
@@ -772,8 +775,10 @@ if __name__ == "__main__":
   if not certMgr.HaveValidProxy():
       certMgr.CreateProxy()
   
-  log.addHandler(logging.StreamHandler())
-  log.setLevel(logging.DEBUG)
+  hdlr = Log.StreamHandler()
+  hdlr.setLevel(Log.DEBUG)
+  Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
+  
 
   port = 6600
   log.debug("TextServiceAsynch: Creating new TextService at %d.", port)

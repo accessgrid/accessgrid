@@ -5,21 +5,21 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.40 2004-03-04 23:18:08 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.41 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.40 2004-03-04 23:18:08 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.41 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
 import os
 import time
-import logging
 
+from AccessGrid import Log
 from AccessGrid.hosting import Client
 from AccessGrid.NetUtilities import GetHostname
 
@@ -31,7 +31,7 @@ from AccessGrid import Utilities
 from AccessGrid.Platform import GetConfigFilePath, GetSystemConfigDir, GetInstallDir
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 
-log = logging.getLogger("AG.ServiceManager")
+log = Log.GetLogger(Log.ServiceManager)
 
 class AGServiceManager:
     """

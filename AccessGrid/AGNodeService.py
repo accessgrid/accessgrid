@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.46 2004-03-04 23:18:08 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.47 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.46 2004-03-04 23:18:08 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.47 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -20,9 +20,9 @@ import sys
 import string
 import thread
 import ConfigParser
-import logging
 import shutil
 
+from AccessGrid import Log
 from AccessGrid.hosting import Client
 from AccessGrid.NetUtilities import GetHostname
 
@@ -33,7 +33,7 @@ from AccessGrid.Types import ServiceConfiguration, AGResource
 from AccessGrid.Utilities import LoadConfig
 from AccessGrid.AGParameter import ValueParameter
 
-log = logging.getLogger("AG.NodeService")
+log = Log.GetLogger(Log.NodeService)
 
 class SetStreamException(Exception): pass
 

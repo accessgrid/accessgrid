@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/02/02
-# RCS-ID:      $Id: Win32VenueService.py,v 1.3 2004-02-24 21:21:48 judson Exp $
+# RCS-ID:      $Id: Win32VenueService.py,v 1.4 2004-03-10 23:17:09 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@ import win32serviceutil
 import win32service
 import win32event
 import sys
-import logging, logging.handlers
+from AccessGrid import Log
 
 if sys.platform != "win32":
     print "This is a win32 service!"
@@ -29,10 +29,10 @@ class Win32NodeService(win32serviceutil.ServiceFramework):
 
     def __init__(self,args):
         # Initialize Logging
-        ntl = logging.handlers.NTEventLogHandler("AG VenueServer")
-        self.log = logging.getLogger("AG.VenueServer")
-        self.log.setLevel(logging.DEBUG)
-        self.log.addHandler(ntl)
+        ntl = Log.handlers.NTEventLogHandler("AG VenueServer")
+        ntl.setLevel(Log.DEBUG)
+        self.log = Log.GetLogger(Log.VenueServer)
+        Log.HandleLoggers(ntl, Log.GetDefaultLoggers())
         
         # Initialize Win32 Service stuff
         win32serviceutil.ServiceFramework.__init__(self, args)

@@ -5,23 +5,22 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.25 2004-02-19 17:59:02 eolson Exp $
+# RCS-ID:      $Id: AGService.py,v 1.26 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.25 2004-02-19 17:59:02 eolson Exp $"
+__revision__ = "$Id: AGService.py,v 1.26 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting.pyGlobus import Client
 import os
 import sys
-import logging
-import logging.handlers
 import Platform
 
+from AccessGrid import Log, Log.handlers
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 
 from AccessGrid.Types import *
@@ -35,13 +34,12 @@ def GetLog():
     """
     Create a log with our standard format and return it
     """
-    log = logging.getLogger("AG.AGService")
-    log.setLevel(logging.DEBUG)
+    log = Log.GetLogger(Log.AGService)
+    Log.SetDefaultLevel(Log.AGService, Log.DEBUG)
     logFile = os.path.join(GetUserConfigDir(), "AGService.log")
-    hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
-    logFormat = "%(asctime)s %(levelname)-5s %(message)s (%(filename)s)"
-    hdlr.setFormatter(logging.Formatter(logFormat))
-    log.addHandler(hdlr)
+    hdlr = Log.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
+    hdlr.setFormatter(Log.GetFormatter())
+    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
     return log
 

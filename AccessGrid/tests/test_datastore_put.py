@@ -1,10 +1,10 @@
 import sys
 import re
-import logging
+from AccessGrid import Log
 
-logger = logging.getLogger("AG")
-logger.addHandler(logging.StreamHandler())
-logger.setLevel(logging.DEBUG)
+hdlr = Log.StreamHandler())
+hdlr.setLevel(Log.DEBUG)
+Log.HandleLoggers(Log.StreamHandler(), Log.GetDefaultLoggers())
 
 sys.path.append(r"c:\home\olson\ag\dev\AccessGrid")
 

@@ -1,11 +1,11 @@
 import os
 import sys
-import logging
 
+from AccessGrid import Log
 from AccessGrid.Version import GetVersion
 
-log = logging.getLogger("AG.Platform")
-log.setLevel(logging.INFO)
+log = Log.GetLogger(Log.Platform)
+Log.SetDefaultLevel(Log.Platform, Log.INFO)
 
 # Windows Defaults
 try:

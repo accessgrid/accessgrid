@@ -6,22 +6,22 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.34 2004-03-02 22:43:58 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.35 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.34 2004-03-02 22:43:58 judson Exp $"
+__revision__ = "$Id: EventClient.py,v 1.35 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from threading import Thread, Lock
 import Queue
 import pickle
-import logging
 import struct
 import types
 
+from AccessGrid import Log
 from pyGlobus.io import GSITCPSocket, TCPIOAttr, AuthData, IOBaseException
 from pyGlobus.util import Buffer
 from pyGlobus import ioc
@@ -30,8 +30,8 @@ from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import HeartbeatEvent, ConnectEvent, DisconnectEvent
 from AccessGrid.Security.Utilities import CreateTCPAttrAlwaysAuth
 
-log = logging.getLogger("AG.VenueClient")
-log.setLevel(logging.WARN)
+log = Log.GetLogger(Log.EventClient)
+Log.SetDefaultLevel(Log.EventClient, Log.WARN)
 
 class EventClientConnectionException(Exception):
     """
@@ -370,9 +370,10 @@ if __name__ == "__main__":
     if not certMgr.HaveValidProxy():
         certMgr.CreateProxy()
 
-    log = logging.getLogger("AG.TextClient")
-    log.addHandler(logging.StreamHandler())
-    log.setLevel(logging.DEBUG)
+    log = Log.GetLogger(Log.TextClient)
+    hdlr = Log.StreamHandler()
+    hdlr.setLevel(Log.DEBUG)
+    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
     
     if len(sys.argv) > 3:
         host = sys.argv[1]

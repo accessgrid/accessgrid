@@ -6,18 +6,17 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.116 2004-03-09 21:51:32 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.117 2004-03-10 23:17:09 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.116 2004-03-09 21:51:32 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.117 2004-03-10 23:17:09 eolson Exp $"
 
 import string
 import time
 import re
-import logging, logging.handlers
 import getopt
 import webbrowser
 
@@ -26,6 +25,7 @@ from wxPython.lib.imagebrowser import *
 
 from pyGlobus.io import GSITCPSocketException
 
+from AccessGrid import Log
 from AccessGrid.hosting import Client
 
 from AccessGrid.VenueServer import VenueServerIW
@@ -45,7 +45,7 @@ from AccessGrid import Toolkit
 from AccessGrid.AuthorizationUI import AuthorizationUIPanel # AddPeopleDialog
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
 
-log = logging.getLogger("AG.VenueManagement")
+log = Log.GetLogger(Log.VenueManagement)
 
 class VenueManagementClient(wxApp):
     """
@@ -125,15 +125,16 @@ class VenueManagementClient(wxApp):
         self.menubar.Append(self.helpMenu, "&Help")
 
     def SetLogger(self, debugMode):
-        log.setLevel(logging.DEBUG)
-        hdlr = logging.FileHandler(os.path.join(GetUserConfigDir(), "VenueManagement.log"))
-        fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s",
-                                "%x %X")
-        if debugMode:
-            hdlr = logging.StreamHandler()
+        hdlr = Log.FileHandler(os.path.join(GetUserConfigDir(), "VenueManagement.log"))
+        hdlr.setFormatter(Log.GetFormatter())
+        hdlr.setLevel(Log.DEBUG)
+        Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
-        hdlr.setFormatter(fmt)
-        log.addHandler(hdlr)
+        if debugMode:
+            hdlr = Log.StreamHandler() 
+            hdlr.setFormatter(Log.GetLowDetailFormatter())
+            hdlr.setLevel(Log.DEBUG)
+            Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
                
     def __setProperties(self):
         self.frame.SetIcon(icons.getAGIconIcon())

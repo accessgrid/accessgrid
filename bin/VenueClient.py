@@ -5,16 +5,16 @@
 #
 # Author:      Thomas D. Uram
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.247 2004-02-27 19:15:51 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.248 2004-03-10 23:17:09 eolson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 
 import getopt
-import logging
 import os
 import sys
 
+from AccessGrid import Log
 from wxPython.wx import wxPySimpleApp
 from AccessGrid.UIUtilities import ProgressDialog
 
@@ -41,26 +41,31 @@ def SetLogger():
     """
     global log
     
-    log = logging.getLogger("AG")
-    log.setLevel(logging.DEBUG)
-
     if logFile is None:
         logname = os.path.join(GetUserConfigDir(), "VenueClient.log")
     else:
         logname = logFile
+
+    log = Log.GetLogger(Log.VenueClient)
         
-    hdlr = logging.FileHandler(logname)
-    extfmt = logging.Formatter("%(asctime)s %(thread)s %(name)s %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
-    fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-    hdlr.setFormatter(extfmt)
-    log.addHandler(hdlr)
+    Log.SetDefaultLevel(Log.VenueClientController, Log.DEBUG)
+    hdlr = Log.FileHandler(logname)
+    hdlr.setFormatter(Log.GetFormatter())
+    hdlr.setLevel(Log.GetHighestLevel())
+    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
     if debugMode:
-        hdlr = logging.StreamHandler()
-        hdlr.setFormatter(fmt)
-        log.addHandler(hdlr)
+        hdlr = Log.StreamHandler()
+        hdlr.setFormatter(Log.GetLowDetailFormatter())
+        Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
+
+    # A log file for warnings and errors
+    warn_logname = os.path.join(GetUserConfigDir(), "VenueClientWarn.log")
+    warn_hdlr = Log.FileHandler(warn_logname)
+    warn_hdlr.setFormatter(Log.GetFormatter())
+    warn_hdlr.setLevel(Log.WARN)
+    Log.HandleLoggers(warn_hdlr, Log.GetDefaultLoggers())
         
-    logging.getLogger("AG.VenueClientController").setLevel(logging.DEBUG)
 
 def Usage():
     print "%s:" % (sys.argv[0])

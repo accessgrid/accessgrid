@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.121 2004-03-05 23:09:19 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.122 2004-03-10 23:17:08 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.121 2004-03-05 23:09:19 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.122 2004-03-10 23:17:08 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -22,10 +22,10 @@ import re
 import os.path
 import string
 from threading import Thread, Lock, Condition
-import logging
 import time
 import ConfigParser
 
+from AccessGrid import Log
 from AccessGrid import Toolkit
 from AccessGrid.hosting import Server
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
@@ -57,7 +57,7 @@ from AccessGrid.Types import Capability
 
 from AccessGrid.Utilities import ServerLock
 
-log = logging.getLogger("AG.VenueServer")
+log = Log.GetLogger(Log.VenueServer)
 
 class VenueServerException(Exception):
     """

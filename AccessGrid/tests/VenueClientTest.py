@@ -5,19 +5,19 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientTest.py,v 1.6 2003-06-03 17:43:41 eolson Exp $
+# RCS-ID:      $Id: VenueClientTest.py,v 1.7 2004-03-10 23:17:09 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 import sys
 import os
 import threading
-import logging
 
 from wxPython.wx import *
 
 from pyGlobus.io import GSITCPSocketException
 
+from AccessGrid import Log
 from AccessGrid import DataStore
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.hosting.pyGlobus import Client
@@ -153,12 +153,11 @@ class VenueClientTest(VenueClient):
         os._exit(1)
         
 if __name__ == "__main__":       
-    log = logging.getLogger("AG.VenueClient")
-    log.setLevel(logging.DEBUG)
-    hdlr = logging.FileHandler("VenueClientTest.log")
-    fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-    hdlr.setFormatter(fmt)
-    log.addHandler(hdlr)
+    log = Log.GetLogger(Log.VenueClient)
+    hdlr = Log.FileHandler("VenueClientTest.log")
+    hdlr.setLevel(Log.DEBUG)
+    hdlr.setFormatter(Log.GetFormatter())
+    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
     venueServerPort = 8000
     if len(sys.argv) > 1:

@@ -6,21 +6,21 @@
 # Author:      Susanne Lefvert, Robert D. Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataService.py,v 1.6 2003-09-22 14:21:53 judson Exp $
+# RCS-ID:      $Id: DataService.py,v 1.7 2004-03-10 23:17:09 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This program is the data storage service.
 """
-__revision__ = "$Id: DataService.py,v 1.6 2003-09-22 14:21:53 judson Exp $"
+__revision__ = "$Id: DataService.py,v 1.7 2004-03-10 23:17:09 eolson Exp $"
 
 import os
 import sys
 import signal
 import getopt
-import logging, logging.handlers
 
+from AccessGrid import Log
 from AccessGrid.DataStore import DataService
 from AccessGrid import Toolkit
 from AccessGrid.Platform import GetUserConfigDir
@@ -74,19 +74,15 @@ def main():
     app.InitGlobusEnvironment()
 
     # Start up the logging
-    log = logging.getLogger("AG")
-    log.setLevel(logging.DEBUG)
-    hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
-    extfmt = logging.Formatter("%(asctime)s %(thread)s %(name)s \
-    %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
-    fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s",
-                            "%x %X")
-    hdlr.setFormatter(extfmt)
-    log.addHandler(hdlr)
+    log = Log.GetLogger(Log.DataService)
+    hdlr = Log.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
+    hdlr.setLevel(Log.DEBUG)
+    hdlr.setFormatter(Log.GetFormatter())
+    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
     if debugMode:
-        hdlr = logging.StreamHandler()
-        hdlr.setFormatter(fmt)
-        log.addHandler(hdlr)
+        hdlr = Log.StreamHandler()
+        hdlr.setFormatter(Log.GetLowDetailFormatter())
+        Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
     # Register a signal handler so we can shut down cleanly
     signal.signal(signal.SIGINT, SignalHandler)

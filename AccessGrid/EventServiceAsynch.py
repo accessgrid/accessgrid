@@ -6,18 +6,17 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.24 2004-03-02 22:43:58 judson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.25 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.24 2004-03-02 22:43:58 judson Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.25 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
 import pickle
-import logging
 import struct
 import Queue
 import threading
@@ -27,7 +26,7 @@ from pyGlobus.io import IOBaseException
 from pyGlobus.util import Buffer
 from pyGlobus import ioc, io
 
-
+from AccessGrid import Log
 from AccessGrid.Security.Utilities import CreateTCPAttrAlwaysAuth
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import ConnectEvent, DisconnectEvent, MarshalledEvent
@@ -36,8 +35,8 @@ from AccessGrid.Events import RemovePersonalDataEvent, UpdatePersonalDataEvent
 from AccessGrid.Events import AddDataEvent, RemoveDataEvent, UpdateDataEvent
 from AccessGrid.GUID import GUID
 
-log = logging.getLogger("AG.EventService")
-
+log = Log.GetLogger(Log.EventService)
+Log.SetDefaultLevel(Log.EventService, Log.DEBUG)
 
 #
 # Per-event debugging might be useful sometimes, but not usually.
@@ -45,13 +44,15 @@ log = logging.getLogger("AG.EventService")
 # be disabled.
 # 
 
-detailedEventLogging = 0
-if detailedEventLogging:
-    logEvent = log.debug
-    log.setLevel(logging.DEBUG)
-else:
-    logEvent = lambda *sh: 0
-    log.setLevel(logging.WARN)
+logEvent = log.verbose
+
+#detailedEventLogging = 0
+#if detailedEventLogging:
+    #logEvent = log.debug
+    #log.setLevel(logging.DEBUG)
+#else:
+    #logEvent = lambda *sh: 0
+    #log.setLevel(logging.WARN)
 
 class ConnectionHandler:
     """
@@ -792,9 +793,10 @@ if __name__ == "__main__":
   if not certMgr.HaveValidProxy():
       certMgr.CreateProxy()
   
-  log.addHandler(logging.StreamHandler())
-  log.setLevel(logging.DEBUG)
-    
+  hdlr = Log.StreamHandler()
+  hdlr.setLevel(Log.DEBUG)
+  level_hdlr = Log.HandleLoggers(hdlr)
+
   port = 6500
   print "Creating new EventService at %d." % port
   eventService = EventService(('', port))

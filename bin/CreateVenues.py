@@ -6,20 +6,20 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CreateVenues.py,v 1.13 2004-02-24 21:21:48 judson Exp $
+# RCS-ID:      $Id: CreateVenues.py,v 1.14 2004-03-10 23:17:09 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This program is used to create venues for the venue server.
 """
-__revision__ = "$Id: CreateVenues.py,v 1.13 2004-02-24 21:21:48 judson Exp $"
+__revision__ = "$Id: CreateVenues.py,v 1.14 2004-03-10 23:17:09 eolson Exp $"
 
 import ConfigParser
 import sys
 import string
-import logging
 
+from AccessGrid import Log
 from AccessGrid.hosting import Client
 from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
 from AccessGrid.Descriptions import Capability, StreamDescription 
@@ -44,9 +44,10 @@ def main():
     venues = {}
 
     # Start up the logging
-    log = logging.getLogger("AG")
-    log.setLevel(logging.INFO)
-    log.addHandler(logging.StreamHandler())
+    log = Log.GetLogger("CreateVenues")
+    hdlr = Log.StreamHandler()
+    hdlr.setLevel(Log.INFO)
+    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
     # We do this in two iterations because we need valid URLs for connections
     for sec in config.sections():

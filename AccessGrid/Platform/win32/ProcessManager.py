@@ -5,20 +5,19 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.1 2004-02-26 16:45:35 judson Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.2 2004-03-10 23:17:08 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.1 2004-02-26 16:45:35 judson Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.2 2004-03-10 23:17:08 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import win32process
+from AccessGrid import Log
 
-import logging
-
-log = logging.getLogger("AG.ProcessManager")
+log = Log.GetLogger(Log.ProcessManager)
 
 class ProcessManager:
     def __init__(self):

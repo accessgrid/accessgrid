@@ -1,5 +1,6 @@
 from wxPython.wx import *
 
+from AccessGrid import Log
 from AccessGrid.Events import Event
 from AccessGrid.Platform import isWindows
 from AccessGrid.Platform import GetUserConfigDir
@@ -7,13 +8,11 @@ from AccessGrid.ClientProfile import ClientProfile
 
 from AccessGrid.SharedAppClient import SharedAppClient
 
-import logging, logging.handlers
-
 import os
 import getopt
 from time import localtime , strftime
 
-log = logging.getLogger("AG.AppMonitor")
+log = Log.GetLogger(Log.AppMonitor)
 
 class AppMonitor:
     '''
@@ -459,24 +458,19 @@ def SetLogging():
     logFile = None
     debugMode = 1
     
-    log = logging.getLogger("AG")
-    log.setLevel(logging.DEBUG)
-        
     if logFile is None:
         logname = os.path.join(GetUserConfigDir(), "NodeSetupWizard.log")
     else:
         logname = logFile
         
-    hdlr = logging.FileHandler(logname)
-    extfmt = logging.Formatter("%(asctime)s %(thread)s %(name)s %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
-    fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-    hdlr.setFormatter(extfmt)
-    log.addHandler(hdlr)
+    hdlr = Log.FileHandler(logname)
+    hdlr.setFormatter(Log.GetFormatter())
+    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
     
     if debugMode:
-        hdlr = logging.StreamHandler()
-        hdlr.setFormatter(fmt)
-        log.addHandler(hdlr)
+        hdlr = Log.StreamHandler()
+        hdlr.setFormatter(Log.GetLowDetailFormatter())
+        Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
 
 class ArgumentManager:

@@ -6,18 +6,17 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.7 2004-03-08 22:20:02 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.8 2004-03-10 23:17:08 eolson Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.7 2004-03-08 22:20:02 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.8 2004-03-10 23:17:08 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 
 # standard imports
 import cPickle
-import logging
 import os
 import re
 import threading
@@ -25,6 +24,7 @@ import time
 
 
 # Access Grid imports
+from AccessGrid import Log
 from AccessGrid import DataStore
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Descriptions import ServiceDescription,DataDescription,ApplicationDescription
@@ -38,7 +38,7 @@ from AccessGrid.Platform import isWindows
 
 from AccessGrid import Toolkit
 
-log = logging.getLogger("AG.VenueClientController")
+log = Log.GetLogger(Log.VenueClientController)
 
 class NotAuthorizedError(Exception):
     pass

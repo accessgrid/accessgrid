@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.157 2004-03-08 23:00:42 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.158 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.157 2004-03-08 23:00:42 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.158 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -24,10 +24,10 @@ import re
 import string
 import socket
 import os.path
-import logging
 
 from threading import Condition, Lock
 
+from AccessGrid import Log
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
@@ -64,7 +64,7 @@ from AccessGrid.NetUtilities import GetHostname
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.ClientProfile import ClientProfileCache
 
-log = logging.getLogger("AG.VenueServer")
+log = Log.GetLogger(Log.VenueServer)
 
 class VenueException(Exception):
     """

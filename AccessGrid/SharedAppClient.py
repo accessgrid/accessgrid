@@ -1,7 +1,6 @@
 import os
 
-import logging
-
+from AccessGrid import Log
 from AccessGrid.EventClient import EventClient
 from AccessGrid.Events import ConnectEvent, Event
 from AccessGrid.ClientProfile import ClientProfile
@@ -62,18 +61,16 @@ class SharedAppClient:
 
         *log* Name of log file. If set to None, <appName>.log is used
         """
-        logFormat = "%(name)-17s %(asctime)s %(levelname)-5s %(message)s"
 
         # Set up a venue client log, too, since it's used by the event client
-        self.log = logging.getLogger("AG.VenueClient")
-        self.log.setLevel(logging.DEBUG)
+        self.log = Log.GetLogger(Log.VenueClient)
         
-        hdlr = logging.StreamHandler()
-        hdlr.setFormatter(logging.Formatter(logFormat))
-        self.log.addHandler(hdlr)
+        hdlr = Log.StreamHandler()
+        hdlr.setFormatter(Log.GetFormatter())
+        Log.HandleLogger(hdlr, Log.GetDefaultLoggers())
         
-        self.log = logging.getLogger(self.__appName)
-        self.log.setLevel(logging.DEBUG)
+        self.log = Log.GetLogger(self.__appName)
+        Log.SetDefaultLevel(self.__appName, Log.DEBUG)
                 
         # Log to file
         if log == None:
@@ -81,15 +78,15 @@ class SharedAppClient:
         else:
             logFile = log
 
-        fileHandler = logging.FileHandler(logFile)
-        fileHandler.setFormatter(logging.Formatter(logFormat))
-        self.log.addHandler(fileHandler)
+        fileHandler = Log.FileHandler(logFile)
+        fileHandler.setFormatter(Log.GetFormatter())
+        Log.HandleLoggers(fileHandler, Log.GetDefaultLoggers())
 
         # If debug mode is on, log to command window too
         if debug:
-            hdlr = logging.StreamHandler()
-            hdlr.setFormatter(logging.Formatter(logFormat))
-            self.log.addHandler(hdlr)
+            hdlr = Log.StreamHandler()
+            hdlr.setFormatter(Log.GetFormatter())
+            Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
         return self.log
        

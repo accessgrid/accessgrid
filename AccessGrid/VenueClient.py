@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.141 2004-03-08 22:20:02 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.142 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.141 2004-03-08 22:20:02 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.142 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -23,10 +23,9 @@ import threading
 import cPickle
 import time
 
-import logging, logging.handlers
-
 from pyGlobus.io import GSITCPSocketException
 
+from AccessGrid import Log
 from AccessGrid import Toolkit
 from AccessGrid import DataStore
 from AccessGrid import Platform
@@ -71,8 +70,8 @@ class NotAuthorizedError(Exception):
 class NetworkLocationNotFound(Exception):
     pass
 
-log = logging.getLogger("AG.VenueClient")
-log.setLevel(logging.DEBUG)
+log = Log.GetLogger(Log.VenueClient)
+Log.SetDefaultLevel(Log.VenueClient, Log.DEBUG)
 
 class VenueClient:
     """

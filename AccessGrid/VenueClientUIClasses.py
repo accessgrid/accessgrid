@@ -5,20 +5,19 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.329 2004-02-25 16:28:29 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.330 2004-03-10 23:17:08 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.329 2004-02-25 16:28:29 turam Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.330 2004-03-10 23:17:08 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
 import os.path
 import time
-import logging, logging.handlers
 import cPickle
 import threading
 import socket
@@ -34,8 +33,9 @@ import re
 import copy
 
 from time import localtime , strftime
-log = logging.getLogger("AG.VenueClientUIClasses")
-log.setLevel(logging.WARN)
+from AccessGrid import Log
+log = Log.GetLogger(Log.VenueClientUIClasses)
+Log.SetDefaultLevel(Log.VenueClientUIClasses, Log.WARN)
 
 from AccessGrid import icons
 from AccessGrid import Toolkit

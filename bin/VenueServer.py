@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.44 2004-03-04 21:21:51 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.45 2004-03-10 23:17:09 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.44 2004-03-04 21:21:51 olson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.45 2004-03-10 23:17:09 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -19,9 +19,9 @@ import sys
 import getopt
 import signal
 import time
-import logging, logging.handlers
 import threading
 
+from AccessGrid import Log
 from AccessGrid.Platform import isWindows
 
 #
@@ -127,19 +127,25 @@ def main():
         sys.exit(0)
 
     # Start up the logging
-    log = logging.getLogger("AG")
-    log.setLevel(logging.DEBUG)
-    hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
-    extfmt = logging.Formatter("%(asctime)s %(thread)s %(name)s \
-    %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
-    fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-    hdlr.setFormatter(extfmt)
-    log.addHandler(hdlr)
+    log = Log.GetLogger(Log.VenueServer)
+    hdlr = Log.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
+    hdlr.setFormatter(Log.GetFormatter())
+    hdlr.setLevel(Log.DEBUG)
+    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
+
+    # Add a warning level file
+    warnLogFile = os.path.join(GetUserConfigDir(), "VenueServerWarn.log")
+    #hdlr = Log.handlers.RotatingFileHandler(warnLogFile, "a", 10000000, 0)
+    warn_hdlr = Log.FileHandler(warnLogFile)
+    warn_hdlr.setFormatter(Log.GetFormatter())
+    warn_hdlr.setLevel(Log.WARN)
+    Log.HandleLoggers(warn_hdlr, Log.GetDefaultLoggers())
+
 
     if debugMode:
-        hdlr = logging.StreamHandler()
-        hdlr.setFormatter(fmt)
-        log.addHandler(hdlr)
+        hdlr = Log.StreamHandler()
+        hdlr.setFormatter(Log.GetLowDetailFormatter())
+        Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
     # Init toolkit with standard environment.
     app = CmdlineApplication()

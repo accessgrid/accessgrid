@@ -7,13 +7,14 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.21 2004-02-26 14:49:14 judson Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.22 2004-03-10 23:17:09 eolson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 
 # Agtk specific imports
 from AccessGrid.hosting.pyGlobus import Client
+from AccessGrid import Log
 from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid.AGParameter import ValueParameter
 from AccessGrid.Descriptions import AGServiceManagerDescription
@@ -22,7 +23,6 @@ from AccessGrid import Toolkit
 from AccessGrid.Platform import isWindows, isOSX, isLinux
 
 import os
-import logging, logging.handlers
 import string
 import getopt
 
@@ -33,7 +33,7 @@ from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.Utilities import NODE_SETUP_WIZARD_LOG
 from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid.Platform import isWindows, isLinux
-log = logging.getLogger("AG.NodeSetupWizard")
+log = Log.getLogger(Log.NodeSetupWizard)
 
 class ServiceUnavailableException(Exception):
     pass
@@ -166,24 +166,22 @@ class NodeSetupWizard(wxWizard):
         # Should be set from command window.
         self.logFile = None
                 
-        log = logging.getLogger("AG")
-        log.setLevel(logging.DEBUG)
+        log = Log.GetLogger(Log.NodeSetupWizard)
         
         if self.logFile is None:
             logname = os.path.join(GetUserConfigDir(), "NodeSetupWizard.log")
         else:
             logname = self.logFile
             
-        hdlr = logging.FileHandler(logname)
-        extfmt = logging.Formatter("%(asctime)s %(thread)s %(name)s %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
-        fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-        hdlr.setFormatter(extfmt)
-        log.addHandler(hdlr)
+        hdlr = Log.FileHandler(logname)
+        hdlr.setLevel(Log.DEBUG)
+        hdlr.setFormatter(Log.GetFormatter())
+        Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
         if self.debugMode:
-            hdlr = logging.StreamHandler()
-            hdlr.setFormatter(fmt)
-            log.addHandler(hdlr)
+            hdlr = Log.StreamHandler()
+            hdlr.setFormatter(Log.GetLowDetailFormatter())
+            Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
        
     def CheckCertificate(self):
         

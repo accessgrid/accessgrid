@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.3 2004-03-10 23:04:46 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.4 2004-03-10 23:17:08 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,18 +34,18 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.3 2004-03-10 23:04:46 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.4 2004-03-10 23:17:08 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
 import os
 import os.path
 import shutil
-import logging
 import getpass
 import sys
 import time
 
+from AccessGrid import Log
 from AccessGrid import Platform
 from AccessGrid import Utilities
 from AccessGrid.Security import CertificateRepository, ProxyGen, CRSClient
@@ -53,7 +53,8 @@ from AccessGrid.Security.Utilities import get_certificate_locations
 
 from OpenSSL_AG import crypto
 
-log = logging.getLogger("AG.CertificateManager")
+log = Log.GetLogger(Log.CertificateManager)
+
 
 class CertificateManagerError(Exception):
     pass
@@ -1426,10 +1427,8 @@ class CertificateManagerUserInterface:
 
 if __name__ == "__main__":
 
-    h = logging.StreamHandler()
-
-    logging.root.setLevel(logging.DEBUG)
-    logging.root.addHandler(h)
+    h = Log.StreamHandler()
+    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
     os.system("rm -r foo")
     os.mkdir("foo")

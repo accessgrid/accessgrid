@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.51 2004-02-26 17:33:11 eolson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.52 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.51 2004-02-26 17:33:11 eolson Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.52 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -23,7 +23,7 @@ from wxPython.lib.dialogs import wxMultipleChoiceDialog
 
 # AG2 imports
 from AccessGrid.hosting import Client
-
+from AccessGrid import Log
 from AccessGrid.Types import Capability, ServiceConfiguration
 from AccessGrid.AGParameter import ValueParameter, RangeParameter
 from AccessGrid.AGParameter import OptionSetParameter, CreateParameter
@@ -39,9 +39,8 @@ from AccessGrid.NetUtilities import GetHostname
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
-import logging, logging.handlers
-log = logging.getLogger("AG.NodeManagementUIClasses")
-log.setLevel(logging.WARN)
+log = Log.GetLogger(Log.NodeManagementUIClasses)
+Log.SetDefaultLevel(Log.NodeManagementUIClasses, Log.WARN)
 
 
 

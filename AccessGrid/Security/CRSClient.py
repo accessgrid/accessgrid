@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CRSClient.py,v 1.3 2004-03-02 19:07:12 judson Exp $
+# RCS-ID:      $Id: CRSClient.py,v 1.4 2004-03-10 23:17:08 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,12 +24,12 @@ proxy = xmlrpclib.ServerProxy(url, transport = transport, verbose=1)
 
 """
 
-__revision__ = "$Id: CRSClient.py,v 1.3 2004-03-02 19:07:12 judson Exp $"
+__revision__ = "$Id: CRSClient.py,v 1.4 2004-03-10 23:17:08 eolson Exp $"
 
 import xmlrpclib
-import logging
+from AccessGrid import Log
 
-log = logging.getLogger("AG.CRSClient")
+log = Log.GetLogger(Log.CRSClient)
 
 class CRSClientInvalidURL(Exception):
     pass

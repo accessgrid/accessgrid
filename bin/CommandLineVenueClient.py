@@ -5,7 +5,7 @@
 # Author:      Eric Olson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: CommandLineVenueClient.py,v 1.8 2004-02-19 17:59:02 eolson Exp $
+# RCS-ID:      $Id: CommandLineVenueClient.py,v 1.9 2004-03-10 23:17:09 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,11 +15,10 @@ import os, time, threading
 import cmd
 from threading import Thread
 
-import logging, logging.handlers
 from  AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Platform import GetUserConfigDir
 
-log = logging.getLogger("AG.VenueClient")
+log = Log.GetLogger(Log.VenueClient)
 
 from AccessGrid.VenueClient import VenueClient
 from AccessGrid.Toolkit import CmdlineApplication, GetApplication
@@ -104,24 +103,22 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
         Sets the logging mechanism.
         """
         self.logFile = None
-        log = logging.getLogger("AG")
-        log.setLevel(logging.DEBUG)
+        log = Log.GetLogger(Log.VenueClient)
 
         if self.logFile is None:
             logname = "VenueClient.log"
         else:
             logname = self.logFile
 
-        hdlr = logging.FileHandler(logname)
-        extfmt = logging.Formatter("%(asctime)s %(thread)s %(name)s %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
-        fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-        hdlr.setFormatter(extfmt)
-        log.addHandler(hdlr)
+        hdlr = Log.FileHandler(logname)
+        hdlr.setLevel(Log.DEBUG)
+        hdlr.setFormatter(Log.GetFormatter())
+        Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
         if self.debugMode:
-            hdlr = logging.StreamHandler()
-            hdlr.setFormatter(fmt)
-            log.addHandler(hdlr)
+            hdlr = Log.StreamHandler()
+            hdlr.setFormatter(Log.GetLowDetailFormatter())
+            Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
     def ClearCaches(self):
         # Cache exits when they are listed so user can type a number to identify them. 

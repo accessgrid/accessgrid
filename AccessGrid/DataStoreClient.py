@@ -5,28 +5,28 @@
 # Author:      Robert D. Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.16 2004-02-26 14:51:07 judson Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.17 2004-03-10 23:17:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.16 2004-02-26 14:51:07 judson Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.17 2004-03-10 23:17:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
 import os
 import tempfile
-import logging
 import getopt
 import fnmatch
 
+from AccessGrid import Log
 from AccessGrid import Platform
 from AccessGrid.hosting import Client
 from AccessGrid import DataStore
 from pyGlobus import ftpClient
 
-log = logging.getLogger("AG.DataStoreClient")
+log = Log.GetLogger(Log.DataStoreClient)
 
 class FileNotFound(Exception):
     pass
@@ -622,11 +622,12 @@ if __name__ == "__main__":
         # dsc.Download(ppt[0], "\\temp\\foo.ppt")
         # dsc.Upload("\\temp\\foo.ppt")
 
-    logging.root.addHandler(logging.StreamHandler())
-    logging.root.setLevel(logging.ERROR)
+    hdlr = Log.StreamHandler()
+    hdlr.setLevel(Log.ERROR)
+    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
     if len(sys.argv) > 1 and sys.argv[1] == "-d":
-        logging.root.setLevel(logging.DEBUG)
+        hdlr.setLevel(Log.DEBUG)
         del sys.argv[1]
         
 
