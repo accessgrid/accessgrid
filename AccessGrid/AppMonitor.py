@@ -37,10 +37,9 @@ class AppMonitor:
         self.appUrl = appUrl
         self.participants = {}
            
-        # Open UI frame
+        # Create UI frame
         self.frame = AppMonitorFrame(parent, -1, "Application Monitor", self)
-        self.frame.Show()
-
+       
         # Get a handle to the application object
         self.appProxy = Client.Handle(self.appUrl).GetProxy()
 
@@ -58,6 +57,8 @@ class AppMonitor:
 
         # Connect to application and get state info
         self.GetApplicationInfo()
+
+        self.frame.Show()
 
     def RegisterCallbacks(self):
         '''
@@ -315,7 +316,7 @@ class AppMonitorFrame(wxFrame):
         self.textCtrl.SetDefaultStyle(wxTextAttr(wxRED))
        
         for key in dataDict.keys():
-            text = key + "=" + dataDict[key] + '\n'
+            text = str(key) + "=" + str(dataDict[key]) + '\n'
             self.textCtrl.AppendText(text)
 
         self.textCtrl.SetDefaultStyle(wxTextAttr(wxBLACK))
