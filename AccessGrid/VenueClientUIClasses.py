@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.280 2003-09-18 19:32:50 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.281 2003-09-19 02:13:45 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.280 2003-09-18 19:32:50 turam Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.281 2003-09-19 02:13:45 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2169,8 +2169,6 @@ class ContentListPanel(wxPanel):
             EVT_MENU(self, id, lambda event, text=text, title=title:
                      MessageDialog(self, text, title,
                                    style = wxOK|wxICON_INFORMATION))
-#            EVT_MENU(self, id, lambda event, item=item:
-#                     self.MakeAssociation(event, item))
 
         # We always have Remove
         id = wxNewId()
@@ -2183,8 +2181,10 @@ class ContentListPanel(wxPanel):
                 if key != 'Open':
                     id = wxNewId()
                     menu.Append(id, string.capwords(key))
-                    EVT_MENU(self, id, lambda event, cmd=key:
-                             self.StartCmd(cmd))
+                    EVT_MENU(self, id, lambda event, cmd=key, itm=item:
+                             self.StartCmd(appdb.GetCommandLine(item.mimeType,
+                                                                cmd),
+                                           item=itm))
 
         menu.AppendSeparator()
 

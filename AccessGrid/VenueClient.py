@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.114 2003-09-18 21:12:15 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.115 2003-09-19 02:13:45 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.114 2003-09-18 21:12:15 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.115 2003-09-19 02:13:45 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -60,6 +60,7 @@ class NotAuthorizedError(Exception):
     pass
 
 log = logging.getLogger("AG.VenueClient")
+log.setLevel(logging.WARN)
 
 class VenueClient( ServiceBase):
     """
