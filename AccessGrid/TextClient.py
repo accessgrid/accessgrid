@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.19 2003-08-28 18:02:46 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.20 2003-09-03 20:07:19 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -142,6 +142,7 @@ class TextConnection:
 
     def Stop(self):
         self.wfile.close()
+        self.socket.close()
         self.log.debug("TextClient.Stop")
 
     def SetProcessor(self, processor):
