@@ -3,18 +3,29 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.249 2004-03-12 05:23:12 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.250 2004-03-12 21:29:11 judson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.249 2004-03-12 05:23:12 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.250 2004-03-12 21:29:11 judson Exp $"
 
 # Standard Imports
-import getopt
 import os
 import sys
+
+if sys.version.startswith('2.2'):
+    try:
+        from optik import OptionParser
+    except:
+        raise Exception, "Missing module optik necessary for the AG Toolkit."
+
+if sys.version.startswith('2.3'):
+    try:
+        from optparse import OptionParse
+    except:
+        raise Exception, "Missing module optparse, check your python installation."
 
 # GUI related imports
 from wxPython.wx import wxPySimpleApp
@@ -82,9 +93,21 @@ def main():
                                    "Initializing AccessGrid Toolkit", 5)
     startupDialog.Show()
 
+    # build options for this application
+    parser = OptionParser()
+    parser.add_option("-p", "--port", type="int", dest="port",
+                      default=8000, metavar="PORT",
+                      help="Set the port the service manager should run on.")
+    parser.add_option("--personalNode", action="store_true", dest="pnode",
+                      default = 0,
+                  help="specify this should run with personal node services.")
+
     # Init the toolkit with the standard environment.
     app = WXGUIApplication()
 
+    # Add our options
+    app.SetOptionParser(parser)
+    
     # Try to initialize
     try:
         args = app.Initialize(sys.argv[1:], "VenueClient")
@@ -93,12 +116,10 @@ def main():
         print " Initialization Error: ", e
         sys.exit(-1)
         
-    # Process the rest of the cmd line args
-    options = ProcessArgs(app, args)
-
     # Get the log
     log = app.GetLog()
-
+    pnode = app.GetOption("pnode")
+    
     startupDialog.UpdateOneStep("Initializing the VenueClient.")
 
     # Create venue client components
@@ -112,7 +133,7 @@ def main():
     vc.AddObserver(vcui)
 
     # Do personal node stuff if that was specified
-    if options.has_key('pnode'):
+    if pnode:
         startupDialog.UpdateOneStep("Starting personal node services.")
         personalNode = PersonalNodeManager(app.GetDebugLevel(),
                                            startupDialog.UpdateOneStep)
@@ -130,7 +151,7 @@ def main():
 
     # When we exit, we have to cleanup personal node stuff,
     # if we started it.
-    if options.has_key('pnode'):
+    if pnode:
         log.debug("Terminating personal node services.")
         personalNode.Stop()
 
