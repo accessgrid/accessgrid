@@ -6,14 +6,14 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.132 2003-09-17 20:05:28 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.133 2003-09-17 23:08:46 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Venue.py,v 1.132 2003-09-17 20:05:28 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.133 2003-09-17 23:08:46 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -106,6 +106,13 @@ class AdministratorAlreadyPresent(Exception):
     pass
 
 class AdministratorNotFound(Exception):
+    """
+    The exception raised when an administrator is not found in the
+    venues list of administrators.
+    """
+    pass
+
+class AdministratorRemovingSelf(Exception):
     """
     The exception raised when an administrator is not found in the
     venues list of administrators.
