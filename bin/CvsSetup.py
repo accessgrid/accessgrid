@@ -40,12 +40,11 @@ LINUX = 'linux2'
 
 def PrintUsage():
     print """
+ CvsSetup.py [-a] <AG source location> [-d] <destination config directory>
 
- cvs-setup.py [-a] <AG source location> [-d] <destination config directory>
-
- -a    (optional) set the location of the AccessGrid source tree.
- -d    (required) set the destination to put config files.
- -v               set verbose mode on
+ -a (--agdir)   (optional) set the location of the AccessGrid source tree.
+ -d (--dst)     (required) set the destination to put config files.
+ -v                        set verbose mode on.
 """
 
 
@@ -87,7 +86,7 @@ if DST_CONFIG_DIR != "":
 if DST_CONFIG_DIR == "" or not os.path.exists( DST_CONFIG_DIR ):
     PrintUsage()
     if DST_CONFIG_DIR == "":
-        print "Error: You did not specify a destination directory."
+        print "Error: You did not specify a destination directory.\n"
     elif not os.path.exists( DST_CONFIG_DIR ):
         print "Error: destination directory does not exist:",DST_CONFIG_DIR
     sys.exit()
