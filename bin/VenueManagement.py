@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.26 2003-02-13 18:14:46 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.27 2003-02-17 21:52:27 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -37,7 +37,8 @@ class VenueManagementClient(wxApp):
 	self.address = VenueServerAddress(self.frame, self)
 	self.tabs = VenueManagementTabs(self.frame, -1, self)
         self.tabs.Enable(false)
-	statusbar = self.frame.CreateStatusBar(1)
+	self.statusbar = self.frame.CreateStatusBar(1)
+       
 	self.frame.SetSize(wxSize(540, 340))   
 	self.SetTopWindow(self.frame)
         self.url = None
@@ -53,61 +54,78 @@ class VenueManagementClient(wxApp):
 	self.frame.SetSizer(box)
 
     def ConnectToServer(self, URL):
-        try:
-            self.client = Client.Handle(URL).get_proxy()
-            venueList = self.client.GetVenues()
-        except GSITCPSocketException:
-            GPI()
+        #try:
+        self.clientHandle = Client.Handle(URL)
+        
+        if(self.clientHandle.IsValid()):
+            self.client = self.clientHandle.get_proxy()
+
+            try:
+                venueList = self.client.GetVenues()
+
+            except GSITCPSocketException:
+                GPI()
 ##            ErrorDialog(self.frame, sys.exc_info()[1][0])
-            self.client = Client.Handle(URL).get_proxy()
-            venueList = self.client.GetVenues()
-        except:
-            print "Can't connect to server!", formatExceptionInfo()
-            ErrorDialog(self.frame, 'The server you are trying to connect to is not running!')
-        else:
-            self.url = URL
-           
-            # fill in venues
-            self.tabs.venuesPanel.venuesListPanel.venuesList.Clear()
-            self.tabs.venuesPanel.venueProfilePanel.ClearAllFields()
-            self.tabs.Enable(true)
-            if len(venueList) != 0 :
-                for venue in venueList:
-                    self.tabs.venuesPanel.venuesListPanel.venuesList.Append(venue.name, venue)
-                currentVenue = self.tabs.venuesPanel.venuesListPanel.venuesList.GetClientData(0)
-                exitsList = Client.Handle(currentVenue.uri).get_proxy().GetConnections()
-                self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(currentVenue, exitsList)
-                self.tabs.venuesPanel.venuesListPanel.venuesList.SetSelection(0)
+                self.client = Client.Handle(URL).get_proxy()
+                venueList = self.client.GetVenues()
+            except:
+                print "Can't connect to server!", formatExceptionInfo()
+                ErrorDialog(self.frame, 'The server you are trying to connect to is not running!')
+            else:
+                self.url = URL
                 
-            else:
-                self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(None)
+                # fill in venues
+                self.tabs.venuesPanel.venuesListPanel.venuesList.Clear()
+                self.tabs.venuesPanel.venueProfilePanel.ClearAllFields()
+                self.tabs.Enable(true)
+                if len(venueList) != 0 :
+                    for venue in venueList:
+                        self.tabs.venuesPanel.venuesListPanel.venuesList.Append(venue.name, venue)
+                    currentVenue = self.tabs.venuesPanel.venuesListPanel.venuesList.GetClientData(0)
+                    exitsList = Client.Handle(currentVenue.uri).get_proxy().GetConnections()
+                    self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(currentVenue, exitsList)
+                    self.tabs.venuesPanel.venuesListPanel.venuesList.SetSelection(0)
+                
+                else:
+                    self.tabs.venuesPanel.venueProfilePanel.ChangeCurrentVenue(None)
                                         
-            # fill in administrators
-            administratorList = self.client.GetAdministrators()
-            self.tabs.configurationPanel.administratorsListPanel.administratorsList.Clear()
-            if len(administratorList) != 0 :
-                for admin in administratorList:
-                    self.tabs.configurationPanel.administratorsListPanel.administratorsList.Append(admin, admin)
-                    self.tabs.configurationPanel.administratorsListPanel.administratorsList.SetSelection(0)
+                # fill in administrators
+                administratorList = self.client.GetAdministrators()
+                self.tabs.configurationPanel.administratorsListPanel.administratorsList.Clear()
+                if len(administratorList) != 0 :
+                    for admin in administratorList:
+                        self.tabs.configurationPanel.administratorsListPanel.administratorsList.Append(admin, admin)
+                        self.tabs.configurationPanel.administratorsListPanel.administratorsList.SetSelection(0)
 
-            # fill in multicast address
-            ip = self.client.GetBaseAddress()
-            mask = str(self.client.GetAddressMask())
-            self.tabs.configurationPanel.detailPanel.ipAddress.SetLabel(ip+'/'+mask)
-            method = self.client.GetAddressAllocationMethod()
+                # fill in multicast address
+                ip = self.client.GetBaseAddress()
+                mask = str(self.client.GetAddressMask())
+                self.tabs.configurationPanel.detailPanel.ipAddress.SetLabel(ip+'/'+mask)
+                method = self.client.GetAddressAllocationMethod()
+                
+                if method == MulticastAddressAllocator.RANDOM:
+                    self.tabs.configurationPanel.detailPanel.ipAddress.Enable(false)
+                    self.tabs.configurationPanel.detailPanel.changeButton.Enable(false)
+                    self.tabs.configurationPanel.detailPanel.randomButton.SetValue(true)
+                else:
+                    self.tabs.configurationPanel.detailPanel.ipAddress.Enable(true)
+                    self.tabs.configurationPanel.detailPanel.changeButton.Enable(true)
+                    self.tabs.configurationPanel.detailPanel.intervalButton.SetValue(true)
+
+
+                # fill in storage location
+                self.tabs.configurationPanel.detailPanel.storageLocation.SetLabel(self.client.GetStorageLocation())
+                if self.address.addressText.FindString(URL) == wxNOT_FOUND:
+                    self.address.Append(URL)
+
+        else:
+            dlg = wxMessageDialog(self.frame, 
+                                  'The venue server URL you specified is not valid',
+                                  "Invalid URL",
+                                  style = wxOK|wxICON_INFORMATION)
             
-            if method == MulticastAddressAllocator.RANDOM:
-                self.tabs.configurationPanel.detailPanel.ipAddress.Enable(false)
-                self.tabs.configurationPanel.detailPanel.changeButton.Enable(false)
-                self.tabs.configurationPanel.detailPanel.randomButton.SetValue(true)
-            else:
-                self.tabs.configurationPanel.detailPanel.ipAddress.Enable(true)
-                self.tabs.configurationPanel.detailPanel.changeButton.Enable(true)
-                self.tabs.configurationPanel.detailPanel.intervalButton.SetValue(true)
-
-
-            # fill in storage location
-            self.tabs.configurationPanel.detailPanel.storageLocation.SetLabel(self.client.GetStorageLocation())
+            dlg.ShowModal()
+            dlg.Destroy()
                         
     def AddVenue(self, venue, exitsList):
         uri = self.client.AddVenue(venue)
@@ -159,15 +177,15 @@ class VenueServerAddress(wxPanel):
          self.__addEvents()
         
      def __addEvents(self):
-         EVT_COMBOBOX(self, 42, self.callAddress)
+        # EVT_COMBOBOX(self, 42, self.callAddress)
          EVT_BUTTON(self, 43, self.callAddress)
 
      def callAddress(self, event):
          URL = self.addressText.GetValue()
          self.application.ConnectToServer(URL)
          if self.addressText.FindString(URL) == wxNOT_FOUND:
-             self.address.Append(URL)
-         
+             self.addressText.Append(URL)
+                 
      def __doLayout(self):
          venueServerAddressBox = wxBoxSizer(wxVERTICAL)  
 	
@@ -242,8 +260,7 @@ class VenueProfilePanel(wxPanel):
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D, name = "venueProfilePanel")  
 	self.venueProfileBox = wxStaticBox(self, -1, "")
         self.description = wxTextCtrl(self, -1,'', style = wxSIMPLE_BORDER | wxNO_3D | wxTE_MULTILINE )
-        self.description.SetBackgroundColour(wxColour(0,0,255))
-	self.line = wxStaticLine(self, -1)
+        self.line = wxStaticLine(self, -1)
         self.urlLabel = wxStaticText(self, -1, 'URL:', size = wxSize(50, 20), \
 				       name = "urlLabel", style = wxALIGN_RIGHT)
 	self.url = wxTextCtrl(self, -1, '', name = 'url', style = wxALIGN_LEFT | wxTE_READONLY)
@@ -537,11 +554,13 @@ class AdministratorsListPanel(wxPanel):
         addAdministratorDialog = AddAdministratorFrame(self, -1, "Add Venue Server Administrator")
 
     def OpenModifyAdministratorDialog(self, event = None):
-        index =  self.administratorsList.GetSelection()
-        name = self.administratorsList.GetString(index)
-        modifyAdministratorDialog = ModifyAdministratorFrame(self, -1, "Modify Venue Server Administrator", name)
-        #self.administratorsList.Delete(index)
-               
+        index = self.administratorsList.GetSelection()
+
+        if index > -1:
+            name = self.administratorsList.GetString(index)
+            modifyAdministratorDialog = ModifyAdministratorFrame(self, -1, \
+                                                                 "Modify Venue Server Administrator", name)
+                     
     def InsertAdministrator(self, data):
         try:
             self.application.AddAdministrator(data)
@@ -554,7 +573,7 @@ class AdministratorsListPanel(wxPanel):
 
     def ModifyAdministrator(self, oldName, newName):
         try:
-            index =  self.administratorsList.GetSelection()
+            index = self.administratorsList.GetSelection()
             self.administratorsList.Delete(index)
             self.application.ModifyAdministrator(oldName, newName)
 
@@ -715,6 +734,7 @@ MASK = 4
 class MulticastDialog(wxDialog):
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title)
+        self.Centre()
         self.SetSize(wxSize(400, 350))
         self.parent = parent
         self.ipAddressLabel = wxStaticText(self, -1, "IP Address: ")
@@ -760,6 +780,7 @@ class MulticastDialog(wxDialog):
 class VenueParamFrame(wxDialog):
     def __init__(self, parent, id, title, application):
         wxDialog.__init__(self, parent, id, title)
+        self.Centre()
         self.venue = None
         self.exitsList = []
         self.SetSize(wxSize(400, 350))
@@ -945,6 +966,7 @@ class AddVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title, venueList, application):
         VenueParamFrame.__init__(self, parent, id, title, app)
 	self.parent = parent
+        self.SetLabel('Add Venue')
         self.LoadLocalVenues()
         if (self.ShowModal() == wxID_OK ):
             self.Ok()
@@ -954,6 +976,7 @@ class AddVenueFrame(VenueParamFrame):
 class ModifyVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title, venueList, application):
         VenueParamFrame.__init__(self, parent, id, title, app)
+        self.SetLabel('Modify Venue')
 	self.parent = parent
         self.list = venueList
         self.__setCurrentVenueInfo()
@@ -977,6 +1000,7 @@ class ModifyVenueFrame(VenueParamFrame):
 class AdministratorParamFrame(wxDialog):
     def __init__(self, *args):
         wxDialog.__init__(self, *args)
+        self.Centre()
 	self.SetSize(wxSize(400, 40))
         self.text = wxStaticText(self, -1, "Please, fill in the distinguished name \nfor the administator you want to add.")
         self.informationBox = wxStaticBox(self, -1, "Information")
@@ -1035,6 +1059,7 @@ class ModifyAdministratorFrame(AdministratorParamFrame):
 class RemoteServerUrlDialog(wxDialog):
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title)
+        self.Centre()
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         info = "Please, enter remote server URL address"
