@@ -54,8 +54,8 @@ if PYVER=="2.2":
     SetupModule("Optik-1.4.1", SOURCE, DEST)
 
 
-print "Building fpconst 0.6.0"
-SetupModule("fpconst-0.6.0", SOURCE, DEST)
+print "Building fpconst 0.7.0"
+SetupModule("fpconst-0.7.0", SOURCE, DEST)
 
 print "Building SOAPpy 0.11.4"
 SetupModule("SOAPpy-0.11.4", SOURCE, DEST)
