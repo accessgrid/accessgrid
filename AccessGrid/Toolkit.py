@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.71 2004-07-21 03:07:16 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.72 2004-07-26 22:07:47 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.71 2004-07-21 03:07:16 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.72 2004-07-26 22:07:47 eolson Exp $"
 
 # Standard imports
 import os
@@ -120,7 +120,7 @@ class AppBase:
 
        self.log.info("Logfile Name: %s", self.name)
        
-       if self.name is not None and not self.name.startswith(os.path.sep) \
+       if self.name is not None and not self.name.startswith(os.sep) \
                                      and not self.name.startswith("."):
            filename = os.path.join(self.userConfig.GetLogDir(), self.name)
        else:
