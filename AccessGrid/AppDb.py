@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.22 2004-05-25 19:51:46 eolson Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.23 2004-09-07 18:15:57 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ used by client software that wants to keep track of what AG specific
 tools are appropriate for specific data types. It also keeps track of
 how to invoke those tools.
 """
-__revision__ = "$Id: AppDb.py,v 1.22 2004-05-25 19:51:46 eolson Exp $"
+__revision__ = "$Id: AppDb.py,v 1.23 2004-09-07 18:15:57 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -493,15 +493,21 @@ class AppDb:
                 except:
                     print "Couldn't make app directory (%s)." % dstPath
 
+            success = 0
             for appFile in fileList:
                 try:
                     srcf = os.path.join(srcPath, appFile)
                     dstf = os.path.join(dstPath, appFile)
                     shutil.copy(srcf, dstf)
+                    success = 1
                                     
                 except:
                     print "Couldn't copy file into place (undoing register)."
                     self.UnregisterApplication(name=name,mimeType=mimeType)
+            
+            if success:
+                print "Registration of application %s complete" % (name,)
+
         else:
             return 0
 
@@ -574,6 +580,21 @@ class AppDb:
         returns 0 on failure, 1 on success
         """
 
+        noSpaceName = '_'.join(name.split(' '))
+        dstPath = os.path.join(UserConfig.instance().GetSharedAppDir(), 
+                               noSpaceName)
+
+        if os.path.exists(dstPath):
+            try:
+                shutil.rmtree(dstPath)
+                print "Unregistration of application %s complete" % (name)
+            except:
+                print "App directory error -- can't remove (%s)." % dstPath
+        else:
+            print "Application %s not found; skipping" % (name)
+            return 0
+
+
         if mimeType == None:
             mimeType = self.GetMimeType(name, extension)
 
@@ -591,15 +612,5 @@ class AppDb:
                 if not result:
                     print "Error removing verb, continuing."
                     
-        noSpaceName = '_'.join(name.split(' '))
-        dstPath = os.path.join(UserConfig.instance().GetSharedAppDir(), 
-                               noSpaceName)
-
-        if os.path.exists(dstPath):
-            try:
-                shutil.rmtree(dstPath)
-            except:
-                print "App directory error -- can't remove (%s)." % dstPath
-
         return 1
 
