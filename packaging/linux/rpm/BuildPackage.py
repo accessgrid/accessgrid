@@ -42,33 +42,32 @@ print "DestDir = ", DestDir
 print "metainfo = ", metainfo
 print "version = ", version
 
-"""
-cmd =  /usr/bin/python2 build_package.py --verbose   \
-    -s /home/turam/build               \
-    -b /home/turam/build/AccessGrid    \
-    -d /home/turam/build/dist          \
-    -p 2.2 -m Snapshot_20040413-174909 \
-    -v 2.2
-"""
-
+TmpDir = os.tmpnam()
+if not os.path.exists(TmpDir):
+    os.mkdir(TmpDir)
+RpmDir = os.path.join(TmpDir,"AccessGrid-%s" % (version,))
+if not os.path.exists(RpmDir):
+    os.mkdir(RpmDir)
 CurDir = os.getcwd()
 
 #
 # Build rpms for infrastructure packages
 #
+print "** Building RPMs for infrastructure packages"
 for pkg in [ "logging-0.4.7", "Optik-1.4.1", "fpconst-0.6.0", "SOAPpy"]:
     os.chdir(SourceDir)
     os.chdir(pkg)
     cmd = "%s setup.py bdist_rpm --binary-only --dist-dir %s" % (sys.executable,
-                                                   DestDir)
+                                                   RpmDir)
     print "cmd = ", cmd
     os.system(cmd)
 
 # Build pyOpenSSL 
 # (must build with our spec file)
+print "** Building pyOpenSSL rpm"
 # - create tar file for the rpmbuild
 os.chdir(SourceDir)
-if os.path.exists('pyOpenSSL'):
+if not os.path.islink('pyOpenSSL'):
     cmd = "ln -s pyOpenSSL pyOpenSSL_AG-0.5.1"
     print "cmd = ", cmd
     os.system(cmd)
@@ -83,17 +82,18 @@ print "cmd = ", cmd
 os.system(cmd)
 
 # - copy the rpm to the dest dir
-cmd = "cp /usr/src/redhat/RPMS/i386/pyOpenSSL_AG-0.5.1-4.i386.rpm %s" % (DestDir,)
+cmd = "cp /usr/src/redhat/RPMS/i386/pyOpenSSL_AG-0.5.1-4.i386.rpm %s" % (RpmDir,)
 print "cmd = ", cmd
 os.system(cmd)
 
 #
 # Build the pyGlobus rpm
 #
+print "** Building pyGlobus RPM"
 # - create tar file for the rpm
 os.chdir(SourceDir)
-if os.path.exists('pyGlobus'):
-    cmd = "ln -s pyGlobus pyGlobus-cvs"
+if not os.path.islink('pyGlobus-cvs'):
+    cmd = 'ln -s pyGlobus pyGlobus-cvs'
     print "cmd = ", cmd
     os.system(cmd)
 cmd = "tar czhf /usr/src/redhat/SOURCES/pyGlobus-cvs.tar.gz pyGlobus-cvs"
@@ -107,16 +107,17 @@ print "cmd = ", cmd
 os.system(cmd)
 
 # - copy it to the dest dir
-cmd = "cp /usr/src/redhat/RPMS/i386/pyGlobus-cvs-11.i386.rpm %s" % (DestDir,)
+cmd = "cp /usr/src/redhat/RPMS/i386/pyGlobus-cvs-11.i386.rpm %s" % (RpmDir,)
 print "cmd = ", cmd
 os.system(cmd)
 
 #
 # Build AccessGrid rpms
 #
+print "** Building AccessGrid RPMs"
 # - build the targz file for the AG rpms
 os.chdir(DestDir)
-tar_dst_filename = "AccessGrid-%s.tar.gz" % (version)
+tar_dst_filename = "AccessGrid-%s.tar.gz" % (version,)
 
 rpm_srcdir = "/usr/src/redhat/SOURCES"
 tar_command = "tar czhf %s ." % ( os.path.join(rpm_srcdir, tar_dst_filename), )
@@ -134,16 +135,17 @@ print "cmd = ", cmd
 os.system(cmd)
 
 # - copy the rpms to the dist dir
-cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-%s-1.i386.rpm %s" % (version,DestDir)
+print "** Copying RPMs to the RPM directory"
+cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-%s-1.i386.rpm %s" % (version,RpmDir)
 print "cmd = ", cmd
 os.system(cmd)
-cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-VenueClient-%s-1.i386.rpm %s" % (version,DestDir)
+cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-VenueClient-%s-1.i386.rpm %s" % (version,RpmDir)
 print "cmd = ", cmd
 os.system(cmd)
-cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-VenueServer-%s-1.i386.rpm %s" % (version,DestDir)
+cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-VenueServer-%s-1.i386.rpm %s" % (version,RpmDir)
 print "cmd = ", cmd
 os.system(cmd)
-cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-BridgeServer-%s-1.i386.rpm %s" % (version,DestDir)
+cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-BridgeServer-%s-1.i386.rpm %s" % (version,RpmDir)
 print "cmd = ", cmd
 os.system(cmd)
 
@@ -151,15 +153,24 @@ os.system(cmd)
 # Copy the install.sh script into the dist dir
 #
 cmd = "cp %s %s" % (os.path.join(BuildDir,"packaging","linux","rpm","install.sh"),
-                    DestDir)
+                    RpmDir)
 print "cmd = ", cmd
 os.system(cmd)
 
 #
 # Create the targz file including the rpms and install script
 #
-targz=os.path.join(SourceDir,"AccessGrid-2.2.tar.gz")
-os.chdir(DestDir)
-cmd = "tar czf %s *.rpm install.sh" % (targz,)
+print "Creating the AccessGrid install bundle"
+targzfile = 'AccessGrid-%s.tar.gz' % version
+targzpath=os.path.join(SourceDir,targzfile)
+os.chdir(TmpDir)
+cmd = "tar czf %s AccessGrid-%s" % (targzpath,version)
+print "cmd = ", cmd
+os.system(cmd)
+
+# Clean up the rpm dir
+print "** Cleaning up the RPM dir"
+os.chdir(CurDir)
+cmd = "rm -rf %s" % (TmpDir,)
 print "cmd = ", cmd
 os.system(cmd)
