@@ -37,7 +37,7 @@ Requires:	wxPythonGTK-py2.2
 Requires:	globus-accessgrid
 Requires:	pyGlobus
 Requires:	logging
-Requires:	pyOpenSSL
+Requires:	pyOpenSSL_AG
 Obsoletes:	AccessGrid-2.0beta
 
 %description
