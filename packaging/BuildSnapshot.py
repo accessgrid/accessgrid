@@ -66,6 +66,9 @@ parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
 parser.add_option("-p", "--pythonversion", dest="pyver",
                   metavar="PYTHONVERSION", default=pyver,
                   help="Which version of python to build the installer for.")
+if sys.platform == 'linux2':
+    parser.add_option("--dist", action="store", dest="dist",default="rpm",
+                       help="Which distribution to build the installer for (linux only).")
 parser.add_option("-r", "--rebuild", action="store_true", dest="rebuild",
                   help="Rebuild an installer from a previously used build dir.")
 options, args = parser.parse_args()
@@ -244,8 +247,6 @@ cmd = '%s %s %s %s' % (sys.executable,
 print "cmd = ", cmd
 os.system(cmd)
 
-
-
 file_list = os.listdir(SourceDir)
 
 if bdir is not None:
@@ -261,6 +262,8 @@ if bdir is not None:
                                                                  options.pyver,
                                                                  metainfo.replace(' ', '-'),
                                                                  version)
+        if sys.platform == 'linux2':
+            cmd += ' --dist %s' % (options.dist,)
         print "cmd = ", cmd
         os.system(cmd)
     else:
@@ -286,5 +289,3 @@ if os.path.exists(testfile):
     hfo.close()
 else:
     print "Test results not found !"
-
-    
