@@ -44,8 +44,7 @@ Download and install the following packages in the following order.
 
 ActiveState Python 2.2 (which includes the Win32 Extensions)
 wxPython-2.4.0
-winglobus
-accessgrid
+AGTk-2.X
 
 RedHat 7.3 Source Install
 =========================
