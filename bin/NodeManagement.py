@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.12 2003-02-27 21:16:48 turam Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.13 2003-02-28 18:00:33 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -26,7 +26,7 @@ class MyApp(wxApp):
             frame.AttachToNode( "https://localhost:11000/NodeService" )
             frame.Update()
         except:
-            print "Exception attaching to default node service ", sys.exc_type, sys.exc_value
+            pass
         frame.Show(true)
         self.SetTopWindow(frame)
         return true
