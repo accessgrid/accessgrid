@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.7 2004-03-22 19:41:39 eolson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.8 2004-03-26 20:04:54 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.7 2004-03-22 19:41:39 eolson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.8 2004-03-26 20:04:54 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -124,7 +124,7 @@ class AuthorizationUIPanel(wxPanel):
             self.allRoles = self.authClient.ListRoles()
 
         except:
-            self.log.exception("AuthorizationUIPanel.ConnectToAuthManager:Failed to list roles.")
+            self.log.exception("AuthorizationUIPanel.ConnectToAuthManager:Failed to list roles. %s"%(authUrl))
         
         # Get Actions
         try:
@@ -137,7 +137,7 @@ class AuthorizationUIPanel(wxPanel):
             self.actionList.InsertItems(actions, 0)
                       
         except:
-            self.log.exception("AuthorizationUIPanel.ConnectToAuthManager: List actions failed.")
+            self.log.exception("AuthorizationUIPanel.ConnectToAuthManager: List actions failed. %s"%(authUrl))
             self.allActions = []
             MessageDialog(None, "Failed to load actions", "Error")
 
@@ -237,6 +237,7 @@ class AuthorizationUIPanel(wxPanel):
         '''
         EVT_RIGHT_DOWN(self.tree, self.OnRightClick)
        
+       
         #EVT_TREE_END_LABEL_EDIT(self.tree, self.tree.GetId(), self.EndRename)
         EVT_TREE_BEGIN_DRAG(self.tree, self.tree.GetId(), self.BeginDrag)
         EVT_TREE_END_DRAG(self.tree, self.tree.GetId(), self.EndDrag)
@@ -244,7 +245,7 @@ class AuthorizationUIPanel(wxPanel):
 
         EVT_CHECKLISTBOX(self.actionList, self.actionList.GetId(), self.CheckAction)
         EVT_LISTBOX(self, self.actionList.GetId(), self.SelectAction)
-        
+             
         EVT_MENU(self, self.ID_PERSON_ADDPERSON, self.AddPerson)
         #EVT_MENU(self, self.ID_PERSON_ADDROLE, self.CreateRole)
         EVT_MENU(self, self.ID_PERSON_DELETE, self.RemovePerson)
@@ -500,32 +501,24 @@ class AuthorizationUIPanel(wxPanel):
         # that are triggered by a user and check method calls done in
         # the program code. To avoid reacting to non-user
         # triggered events; use a flag.
-        
+
         if self.checkFlag and isWindows():
             event.Skip()
             self.checkFlag = 0
             return
-
+       
         index = event.GetInt()
         actionName = self.actionList.GetString(index)
         checked = self.actionList.IsChecked(index)
-        currentAction = None
 
-        for action in self.allActions:
-            if action.name == actionName:
-                currentAction = action
+        # Make select action work as check action for usability reasons.
+        # Thus, ignore check action events.
+        if checked:
+            self.actionList.Check(index, 0)
+        else:
+            self.actionList.Check(index, 1)
 
-        if currentAction:
-            if checked:
-                # Add action
-                self.changed = 1
-                currentAction.AddRole(self.currentRole)
-                
-            else:
-                # Remove action
-                self.changed = 1
-                currentAction.RemoveRole(self.currentRole)
-
+      
     def OnSelect(self, event):
         '''
         Is called when user selects a new item in the tree.
@@ -565,7 +558,7 @@ class AuthorizationUIPanel(wxPanel):
         Is called when a user starts to drag a tree item.
         '''
         self.dragItem = event.GetItem()
-               
+       
         # Need to call Allow to get an EVT_TREE_END_DRAG event
         event.Allow()
 
@@ -875,6 +868,7 @@ class AuthorizationUIPanel(wxPanel):
         else:
             self.PopupMenu(self.treeMenu,
                            wxPoint(self.x, self.y))
+
 
 class CreateActionDialog(wxDialog):
     '''
