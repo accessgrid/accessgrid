@@ -2,7 +2,7 @@
 # Name:        broadcaster.py
 # Purpose:     
 # Created:     2005/05/01
-# RCS-ID:      $Id: broadcaster.py,v 1.3 2005-01-27 21:24:09 lefvert Exp $
+# RCS-ID:      $Id: broadcaster.py,v 1.4 2005-01-31 20:57:04 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -35,8 +35,7 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 from bridge import RTPReceiver
 
-global bridge
-
+bridge = None
 
 class Broadcaster:
     """
@@ -47,10 +46,12 @@ class Broadcaster:
     """
 
     def __init__(self, name, app):
+        global bridge
+        
         self.flag = 1
-
         self.app = app
         self.processManager = ProcessManager()
+        self.log = app.GetLog()
 
         # Initiate multicast address allocator.
         self.multicastAddressAllocator = MulticastAddressAllocator()
@@ -64,8 +65,8 @@ class Broadcaster:
         self.toVideoPort = 8000
         self.toAudioHost = self.multicastAddressAllocator.AllocateAddress()
         self.toAudioPort = 6000
-        self.middleAudioHost = self.toAudioHost
-        self.middleAudioPort = int(self.toAudioPort) + 2
+        self.transcoderHost = self.toAudioHost
+        self.transcoderPort = int(self.toAudioPort) + 2
         
         # Register signal handling for clean shutdown of service.
         signal.signal(signal.SIGINT, self.StopSignalLoop)
@@ -103,27 +104,36 @@ class Broadcaster:
     def StartProcesses(self):
         '''
         Start rat for audio mixing and selector for video selection.
-        '''              
+        '''
+        global bridge
+        
         fromVideoHost = 0
         fromVideoPort = 0
         fromAudioHost = 0
         fromAudioPort = 0
                
-        # Create venue proxy 
+        # Create venue proxy
         venueUrl = self.app.options.venueUrl
-        vProxy = venueProxy = VenueIW(venueUrl) 
+        if venueUrl:
+            vProxy = venueProxy = VenueIW(venueUrl)
+            
 
-        # Get stream information from venue
-        producerStreams = filter(lambda s: s.capability.role == "producer", vProxy.GetStreams())
+            # Get stream information from venue
+            producerStreams = filter(lambda s: s.capability.role == "producer", vProxy.GetStreams())
+            
+            for stream in producerStreams:
+                if stream.capability.type == "video":
+                    fromVideoHost = stream.location.host
+                    fromVideoPort = stream.location.port 
+                if stream.capability.type == "audio":
+                    fromAudioHost = stream.location.host
+                    fromAudioPort = stream.location.port  
 
-        for stream in producerStreams:
-            if stream.capability.type == "video":
-                fromVideoHost = stream.location.host
-                fromVideoPort = stream.location.port 
-            if stream.capability.type == "audio":
-                fromAudioHost = stream.location.host
-                fromAudioPort = stream.location.port  
-
+        else:
+            fromVideoHost = self.app.options.videoHost
+            fromVideoPort = int(self.app.options.videoPort)
+            fromAudioHost = self.app.options.audioHost
+            fromAudioPort = int(self.app.options.audioPort)
 
         if fromVideoHost == 0 or fromVideoPort == 0:
             print "Video stream is not received from venue, you will not receive video"
@@ -147,8 +157,8 @@ class Broadcaster:
         dOptions.append("l16_to_l8_transcoder.py")
         dOptions.append("%s"%(fromAudioHost))
         dOptions.append("%d"%(fromAudioPort))
-        dOptions.append("%s"%(self.middleAudioHost))
-        dOptions.append("%d"%(self.middleAudioPort))
+        dOptions.append("%s"%(self.transcoderHost))
+        dOptions.append("%d"%(self.transcoderPort))
 
         print "********* START down-sampler", downSampExec, dOptions, '\n'
         self.processManager.StartProcess(downSampExec, dOptions)
@@ -160,7 +170,7 @@ class Broadcaster:
         ratExec = os.path.join(os.getcwd(), 'rat')
         roptions = []
         roptions.append("-T")
-        roptions.append("%s/%d/127"%(self.middleAudioHost, self.middleAudioPort))
+        roptions.append("%s/%d/127"%(self.transcoderHost, self.transcoderPort))
         roptions.append("%s/%d/127/pcm"%(self.toAudioHost, int(self.toAudioPort)))
               
         print "********* START transcoder ", ratExec, roptions, '\n'
@@ -185,43 +195,42 @@ class Broadcaster:
         print "----------------------------------------"
 
         # Start the bridge
-        
-        #global bridge
-        #bridge = Bridge("224.2.159.7", 57712,
-        #                    "224.2.166.28", 64270, 9999)
-        #
-        #print "audio", "224.2.159.57712/57712"
-        #print "video", "224.2.166.28/64270"
-        #
-        #bridge.start()
-        # 
-        # try:
-        #     while bridge.is_active():
-        #         time.sleep(2)
-        # except KeyboardInterrupt, k:
-        #     print "Keyboard interrupt, quitting..."
-        #     bridge.stop()
-
+        print "server is here ", socket.gethostbyname(socket.gethostname()), ":", 9999
+        bridge = Bridge(self.toAudioHost, int(self.toAudioPort),
+                        self.toVideoHost, int(self.toVideoPort), 9999)
+         
+        bridge.start()
+         
 
 class BridgeRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
+
         global bridge
+
         # The address of the other end of the client is self.client_address
         # which is a tuple (address, port)
         fname = self.path[1:]
 
-        print "this is f name", fname
+        print "************* this is f name", fname
         
         if os.path.exists(fname):
             try:
+                print "fname does exist....."
+
+                          
                 f = open(fname)
+                print "after open ", fname
                 lines = f.readlines()
+                print 'after read lines'
                 my_ip = bridge.get_host()
                 aport = bridge.get_aport()
                 vport = bridge.get_vport()
+
+                print "add client", self.client_address[0], self.client_address[1]
                 
                 bridge.add_client(self.client_address[0])
-                
+
+                print "after add client"
                 self.send_response(200)
                 self.send_header("Content-type", "application/sdp")
                 self.send_header("Content-Length", str(os.fstat(f.fileno())[6]))
@@ -244,8 +253,10 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
                 print "after for"
 
             except:
+                log.exception("this is an exception")
                 self.send_error(500, "stupid error")
         else:
+            log.exception("this is an exception")
             self.send_error(404, "File %s not found" % fname)
 
     def log_message(self, format, *args):
@@ -259,6 +270,9 @@ class Bridge:
         self.v_port = v_port
         self.http_port = http_port
 
+        print "bridge audio ", audio_addr, "/", a_port
+        print "bridge video", video_addr, "/", v_port
+
         self.http = HTTPServer(('', http_port), BridgeRequestHandler)
         self.http_thread = threading.Thread(target=self.http.serve_forever,
                                             name="HTTP Thread")
@@ -266,17 +280,20 @@ class Bridge:
         self.host = socket.gethostbyname(socket.gethostname())
 
         print "this is http host and port", self.host, "/", http_port
-        
-        self.abridge = RTPReceiver(self.host, a_port)
-        self.abridge.add_client(self.audio_addr, self.a_port, 1)
-        
-        self.vbridge = RTPReceiver(self.host, v_port)
-        self.vbridge.add_client(self.video_addr, self.v_port, 1)
 
+        CHECK_TIMEOUT = 15
+                
+        self.abridge = RTPReceiver(self.host, a_port, CHECK_TIMEOUT)
+        self.vbridge = RTPReceiver(self.host, v_port, CHECK_TIMEOUT)
+       
     def start(self):
         self.http_thread.start()
         self.abridge.start()
         self.vbridge.start()
+
+        self.abridge.add_client(self.audio_addr, self.a_port, 1)
+        self.vbridge.add_client(self.video_addr, self.v_port, 1)
+        print "********************* end of start"
         
     def stop(self):
         self.abridge.stop()
@@ -284,12 +301,15 @@ class Bridge:
         self.http_thread.stop()
 
     def get_host(self):
+        print "get host", self.host
         return self.host
 
     def get_aport(self):
+        print "get a port", self.a_port
         return self.a_port
 
     def get_vport(self):
+        print "get v port", self.v_port
         return self.v_port
 
     def add_client(self, addr):
@@ -305,7 +325,9 @@ class Bridge:
 if __name__ == "__main__":
     # Start broadcaster
 
-    if len(sys.argv) < 2:
+    print len(sys.argv)
+
+    if not (len(sys.argv) == 2 or len(sys.argv) == 5):
         print "\nUsage: Broadcaster.py  --venueUrl <venueUrl>"
         sys.exit(1)
 
@@ -316,18 +338,43 @@ if __name__ == "__main__":
     
     # Initialize AG environment
     app = WXGUIApplication() 
+    log = app.GetLog()
 
 
     app.AddCmdLineOption(Option("-v", "--venueUrl",
                                 dest="venueUrl",
                                 help="Connect to venue located at this url."))
-        
+    app.AddCmdLineOption(Option("--videoHost",
+                                dest="videoHost",
+                                help="Host address for video source"))
+    app.AddCmdLineOption(Option("--videoPort",
+                                dest="videoPort",
+                                help="Port for video source"))
+    app.AddCmdLineOption(Option("--audioHost",
+                                dest="audioHost",
+                                help="Host address for audio source"))
+    app.AddCmdLineOption(Option("--audioPort",
+                                dest="audioPort",
+                                help="Port for audio source"))
+    
     try:
         app.Initialize("Broadcaster")
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
         sys.exit(-1)
+
+
+    if not  app.options.venueUrl:
+        if  (app.options.videoHost and
+             app.options.videoPort and
+             app.options.audioHost and
+             app.options.audioPort):
+            pass
+        else:
+            print "\nUsage: Broadcaster.py  --venueUrl <venueUrl>"
+            sys.exit(1)
+
   
     if not app.certificateManager.HaveValidProxy():
         sys.exit(-1)
