@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.57 2004-03-12 05:23:11 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.58 2004-03-23 22:13:01 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.57 2004-03-12 05:23:11 judson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.58 2004-03-23 22:13:01 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -434,17 +434,20 @@ pyGlobusSetenv = None
 pyGlobusGetenv = None
 pyGlobusUnsetenv = None
 try:
-    import pyGlobus.util
-    pyGlobusSetenv = pyGlobus.util.setenv
-    pyGlobusUnsetenv = pyGlobus.util.unsetenv
-    pyGlobusGetenv = pyGlobus.util.getenv
+    import pyGlobus.utilc
+    pyGlobusSetenv = pyGlobus.utilc.setenv
+    pyGlobusUnsetenv = pyGlobus.utilc.unsetenv
+    pyGlobusGetenv = pyGlobus.utilc.getenv
 except:
     pass
 
 def setenv(name, val):
     os.environ[name] = val
 
+    print "normal setenv %s=%s" %(name, val)
+
     if pyGlobusSetenv:
+        print "pyGlobus setenv %s=%s" %(name, val)
         pyGlobusSetenv(name, val)
 
 def unsetenv(name):
