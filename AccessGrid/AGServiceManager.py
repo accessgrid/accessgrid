@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.14 2003-02-28 17:45:16 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.15 2003-03-14 07:07:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -28,7 +28,8 @@ from AccessGrid.Types import AGServicePackage
 from AccessGrid.AuthorizationManager import AuthorizationManager
 from AccessGrid.DataStore import GSIHTTPDownloadFile
 from AccessGrid import Utilities
-
+from AccessGrid.Platform import GetConfigFilePath, GetSystemConfigDir
+from AccessGrid import GUID
 
 class AGServiceManager( ServiceBase ):
     """
@@ -44,12 +45,19 @@ class AGServiceManager( ServiceBase ):
         self.authManager = AuthorizationManager()
         self.executable = None
 
-        self.nextToken = 9500
+        self.servicesDir = "local_services"
 
         # note: unregisteredServices dict is keyed on token
         self.unregisteredServices = dict()
 
-        self.servicesDir = "local_services"
+        #
+        # Read the configuration file (directory options and such)
+        #
+        configFile = GetConfigFilePath("AGServiceManager.cfg")
+        if configFile:
+            self.__ReadConfigFile( configFile )
+
+        self.__DiscoverResources()
 
     ####################
     ## AUTHORIZATION methods
@@ -80,7 +88,6 @@ class AGServiceManager( ServiceBase ):
         Return a list of resident resources
         """
         self.__DiscoverResources()
-
         return self.resources
     GetResources.soap_export_as = "GetResources"
 
@@ -103,29 +110,24 @@ class AGServiceManager( ServiceBase ):
         """
         Add a service package to the service manager.  
         """
+
+        #
+        # Determine resource to assign to service
+        #
         resource = None
-        try:
-            #
-            # Determine resource to assign to service
-            #
-            if resourceToAssign != None and resourceToAssign != "None":
-                foundResource = 0
-                for resource in self.resources:
-                    if resourceToAssign.resource == resource.resource:
-                        if resource.inUse == 1:
-                            print "** Resource is already in use ! ", resource.resource
-                            # should error out here later; for now, services aren't using the resources anyway
-                        foundResource = 1
-                        break
+        if resourceToAssign != None and resourceToAssign != "None":
+            foundResource = 0
+            for resource in self.resources:
+                if resourceToAssign.resource == resource.resource:
+                    if resource.inUse == 1:
+                        print "** Resource is already in use ! ", resource.resource
+                        # should error out here later; for now, services aren't using the resources anyway
+                    foundResource = 1
+                    break
 
-                if foundResource == 0:
+            if foundResource == 0:
                     print "** Resource does not exist! ", resourceToAssign.resource
-#FIXME - # should error out here later; for now, services aren't using the resources anyway
-
-        except:
-            print "Exception in AddService, checking resource\n-- ", sys.exc_type, sys.exc_value
-            raise faultType("AGServiceManager.AddService failed: " + str( sys.exc_value ))
-
+#FIXME - # should error out here later
 
         try:
             #
@@ -141,15 +143,47 @@ class AGServiceManager( ServiceBase ):
             serviceDescription.servicePackageUri = servicePackageUri
             serviceDescription.resource = resource
 
-            #
-            # Add service
-            #
-            self.__AddServiceDescription( serviceDescription, serviceConfig )
-
         except:
             print "Exception in AddService, retrieving service implementation\n-- ", sys.exc_type, sys.exc_value
             raise faultType("AGServiceManager.AddService failed: " + str( sys.exc_value ) )
 
+        #
+        # Add service
+        #
+        try:
+            options = []
+
+
+            if serviceDescription.executable.endswith(".py"):
+                executable = sys.executable
+                options.append( sys.executable )
+                options.append( '"' + self.servicesDir + os.sep + serviceDescription.executable + '"' )
+            else:
+                executable = self.servicesDir + os.sep + serviceDescription.executable
+                options.append( executable )
+
+            token = str(GUID.GUID())
+            options.append( token )
+            options.append( self.get_handle() )
+
+            print "Running Service; options:", executable, options
+            pid = os.spawnv( os.P_NOWAIT, executable, options )
+
+        except:
+            print "Exception in AddService, starting service ", sys.exc_type, sys.exc_value
+            raise sys.exc_value
+
+        try:
+
+            #
+            # Add the service to the list
+            #
+            serviceDescription.serviceManagerUri = self.get_handle()
+            self.unregisteredServices[token] = ( pid, serviceDescription, serviceConfig )
+
+        except:
+            print "Exception in AddService, other ", sys.exc_type, sys.exc_value
+            raise sys.exc_value
     AddService.soap_export_as = "AddService"
 
     
@@ -322,51 +356,21 @@ class AGServiceManager( ServiceBase ):
         return servicePackageFile
 
 
-    def __AddServiceDescription( self, serviceDescription, serviceConfig ):
-        """
-        Internal : Start the service with given description
-        """
-
-        try:
-            options = []
-
-
-            if serviceDescription.executable.endswith(".py"):
-                executable = sys.executable
-                options.append( sys.executable )
-                options.append( self.servicesDir + os.sep + serviceDescription.executable )
-            else:
-                executable = self.servicesDir + os.sep + serviceDescription.executable
-                options.append( executable )
-
-            token = '%d' %(self.nextToken)
-
-            options.append( '%d' % self.nextToken )
-            options.append( self.get_handle() )
-            self.nextToken = self.nextToken + 1
-
-            print "Running Service; options:", executable, options
-            pid = os.spawnv( os.P_NOWAIT, executable, options )
-
-
-        except:
-            print "Exception in AddService, starting service ", sys.exc_type, sys.exc_value
-            raise sys.exc_value
-
-        try:
-
-            #
-            # Add the service to the list
-            #
-            serviceDescription.serviceManagerUri = self.get_handle()
-            self.unregisteredServices[token] = ( pid, serviceDescription, serviceConfig )
-
-        except:
-            print "Exception in AddService, other ", sys.exc_type, sys.exc_value
-            raise sys.exc_value
-
-
     def __DiscoverResources( self ):
         """Discover local resources (video capture cards, etc.)
         """
-        self.resources = Utilities.GetResourceList()
+        configDir = GetSystemConfigDir()
+        filename = configDir + os.sep + "videoresources"
+        self.resources = Utilities.GetResourceList( filename )
+
+
+    def __ReadConfigFile( self, configFile ):
+        """
+        Read the node service configuration file
+        """
+        servicesDirOption = "Service Manager.servicesDirectory"
+
+        from AccessGrid.Utilities import LoadConfig
+        config = LoadConfig( configFile )
+        if servicesDirOption in config.keys():
+            self.servicesDir = config[servicesDirOption]
