@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.123 2004-03-25 15:08:19 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.124 2004-03-26 22:05:45 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.123 2004-03-25 15:08:19 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.124 2004-03-26 22:05:45 turam Exp $"
 
 # Standard imports
 import string
@@ -957,25 +957,23 @@ class VenueListPanel(wxPanel):
         # called during initialization of the application and default venue
         # is already set in the server.
         #
+        
+        if not init:
+            # If the venue list is empty
+            if self.defaultVenue and venue.uri != self.defaultVenue.uri:
+                # Remove default text from old default venue
+                if self.defaultVenue:
+                    id = self.venuesList.FindString(self.defaultVenue.name +self.DEFAULT_STRING)
+                    self.venuesList.SetString(id, self.defaultVenue.name)
 
-        # If the venue list is empty
-        if not self.defaultVenue:
-            self.application.server.SetDefaultVenue(venue.uri)
-                        
-        elif not init and venue.uri != self.defaultVenue.uri:
-            "remove default text from old default"
-            # Remove default text from old default venue
-            if self.defaultVenue:
-                id = self.venuesList.FindString(self.defaultVenue.name +self.DEFAULT_STRING)
-                self.venuesList.SetString(id, self.defaultVenue.name)
-            
             # Set default venue for this server
             self.application.server.SetDefaultVenue(venue.uri)
-            
+
+        # Set the default venue
         self.defaultVenue = venue
         
+        # Reflect the default venue setting in the UI
         id = self.venuesList.FindString(venue.name)
-        
         if id != wxNOT_FOUND:
             self.venuesList.SetString(id, venue.name+self.DEFAULT_STRING)
                        
