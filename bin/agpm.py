@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.14 2004-05-05 18:31:38 turam Exp $
+# RCS-ID:      $Id: agpm.py,v 1.15 2004-05-06 03:29:25 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.14 2004-05-05 18:31:38 turam Exp $"
+__revision__ = "$Id: agpm.py,v 1.15 2004-05-06 03:29:25 judson Exp $"
 
 import os
 import re
@@ -20,6 +20,7 @@ import sys
 import getopt
 import zipfile
 import tempfile
+import shutil
 from optparse import OptionParser
 
 from AccessGrid.AppDb import AppDb
@@ -34,6 +35,7 @@ def ProcessArgs():
     with the users environment. Using the -u argument applications can
     be unregistered/uninstalled.
     """
+    tkConf = AGTkConfig.instance()
 
     parser = OptionParser(doc)
     parser.add_option("-u", "--unregister", action="store_true",
@@ -47,10 +49,10 @@ def ProcessArgs():
           help="The name of a .app file to install.")
     parser.add_option("-d", "--dir", dest="appdir",
                       help="The name of a directory containing a .app file.")
-    parser.add_option("-z", "--zip", dest="appzip",
+    parser.add_option("-z", "--zip", dest="apppkg",
                       help="The name of a .zip file containing a .app file.")
-    parser.add_option("-p", "--package", dest="apppkg",
-                    help="The name of an app package containing a .app file.")
+    parser.add_option("-p", "--package", dest="appzip",
+                    help="The name of an agpkg file containing a .app file.")
     parser.add_option("-l", "--list-apps", action="store_true",
                       dest="listapps", help="List installed shared apps.")
     parser.add_option("-s", "--system", action="store_true",
@@ -69,28 +71,38 @@ def ProcessArgs():
     
     (options, args) = parser.parse_args()
 
-    return options
+    if options.sys_install or options.post_install:
+        appdb = AppDb(path=tkConf.GetConfigDir())
+        dest = tkConf.GetSharedAppDir()
+    else:
+        appdb = AppDb()
+        dest = UserConfig.instance().GetSharedAppDir()
 
-def UnpackZip(filename):
+    return options, appdb, dest
+
+def UnpackPkg(filename):
     """
     This function takes the name of a zip file and unpacks it returning the
     directory it unpacked the zip into.
     """
     zipArchive = zipfile.ZipFile(filename)
-
     # We have to unpack things some where we can use them
     workingDir = tempfile.mktemp()
     os.mkdir(workingDir)
+    appFile = None
     for filename in zipArchive.namelist():
         parts = filename.split('.')
-        if len(parts) == 2 and (parts[1] == 'app'
-                                or parts[1] == 'shared_app_pkg'):
+        if len(parts) == 2 and parts[1] == 'app':
             appFile = filename
         bytes = zipArchive.read(filename)
         out = file(os.path.join(workingDir, filename), "wb")
         out.write(bytes)
         out.close()
 
+    if appFile == None:
+        raise Exception, "Invalid Shared Application Package."
+
+    
     return (appFile, workingDir)
 
 def ProcessAppFile(appFile):
@@ -117,45 +129,14 @@ def ProcessAppFile(appFile):
                 commands[verb] = cmd
     return appInfo, commands
 
-def main():
-    """
-    This is the main, this function processes command line arguments,
-    then digs the files out of the directory, or archive and installs them.
-    It registers the application with the users AG environment.
-    """
-    workingDir = os.getcwd()
-    appFile = None
-    zipFile = None
-    commands = dict()
-    files = list()
-    origDir = os.getcwd()
+def PrepPackageFromCmdLine(options):
     cleanup = 0
-
-    tkConf = AGTkConfig.instance()
+    workingDir = None
+    appFile = None
+    appInfo = None
+    commands = None
     
-    # We're going to assume there's a .app file in the current directory,
-    # but only after we check for a command line argument that specifies one.
-    # We also have the ability to pass in a zip file that contains a .app
-    # file and the other parts of the shared application.
-
-    options = ProcessArgs()
-
-    if options.post_install:
-        pass
-    
-    if options.sys_install:
-        appdb = AppDb(path=tkConf.GetConfigDir())
-        dest = tkConf.GetSharedAppDir()
-    else:
-        appdb = AppDb()
-        dest = UserConfig.instance().GetSharedAppDir()
-
-    if options.listapps:
-        apps = appdb.ListApplications()
-        import pprint
-        pprint.pprint(apps)
-        sys.exit(0)
-        
+    # specified specific .app file
     if options.appfile:
         if os.path.isabs(options.appfile):
             workingDir = os.path.dirname(options.appfile)
@@ -163,27 +144,64 @@ def main():
         else:
             appFile = options.appfile
 
+    # specified a directory
     if options.appdir:
         workingDir = os.path.abspath(options.appdir)
-
-    if options.appzip:
-        appFile, workingDir = UnpackZip(options.appzip)
-        cleanup = 1
-
-    if options.apppkg:
-        appFile, workingDir = UnpackZip(options.apppkg)
-        cleanup = 1
-
-    # If no appfile is specified, search the current directory for one
-    if appFile == None:
-        files = os.listdir(os.getcwd())
+        files = os.listdir(workingDir)
         for filename in files:
             spList = filename.split('.')
-
             if len(spList) == 2:
                 (name, ext) = spList
                 if ext == "app":
                     appFile = filename
+
+    # specified a .zip or .agpkg file
+    if options.appzip:
+        return PrepPackage(options.appzip)
+
+    if options.apppkg:
+        return PrepPackage(options.apppkg)
+
+    if appFile is not None and workingDir is not None:
+        appFile = os.path.join(workingDir, appFile)
+        appInfo, commands = ProcessAppFile(appFile)
+        
+    return appInfo, commands, workingDir, cleanup
+    
+def PrepPackage(package):
+    cleanup = 0
+    workingDir = None
+    appInfo = None
+    commands = None
+    appFile = None
+
+    try:
+        appFile, workingDir = UnpackPkg(package)
+        appFile = os.path.join(workingDir, appFile)
+        cleanup = 1
+    except Exception, e:
+        print "Error unpacking package: ", e
+        if workingDir is not None:
+            shutil.rmtree(workingDir)
+            
+    if appFile is None:
+        raise Exception, "No valid package specified, exiting."
+    else:
+        appInfo, commands = ProcessAppFile(appFile)
+        
+    return appInfo, commands, workingDir, cleanup
+
+def UnregisterPackage(appdb, appInfo, name):
+        if appInfo != None and name == None:
+            name = appInfo["application.name"]
+        if name != None:
+            appdb.UnregisterApplication(name=name)
+        else:
+            raise Exception, "No application name discovered, exiting without doing unregister."
+
+def RegisterPackage(appdb, dest, appInfo, commands, workingDir=None,
+                    cleanup=0):
+    origDir = os.getcwd()
 
     # Otherwise we go through and do the registration stuff...
     if workingDir != None and workingDir != '':
@@ -191,36 +209,12 @@ def main():
         # This won't work for zipfiles
         os.chdir(workingDir)
 
-    # Process the App File we've gotten
-    appInfo = None
-    if appFile:
-        appInfo, commands = ProcessAppFile(appFile)
-                
-    # If we unregister, we do that then exit
-    if options.unregister:
-        if appInfo != None and options.appname == None:
-            options.appname = appInfo["application.name"]
-        if options.appname != None:
-            appdb.UnregisterApplication(name=options.appname)
-        else:
-            print "No application name discovered, exiting without doing \
-                   unregister."
-        sys.exit(0)
-
-    if options.verbose:
-        print "Name: %s" % options.appname
-        print "Mime Type: %s" % appInfo["application.mimetype"]
-        print "Extension: %s" % appInfo["application.extension"]
-        print "From: %s" % workingDir
-
     # Register the App
-    if options.appname == None:
-        options.appname = appInfo["application.name"]
     files = appInfo["application.files"]
-    if type(files) is StringType:
+    if type(appInfo["application.files"]) is StringType:
         files = re.split(r',\s*|\s+', files)
 
-    appdb.RegisterApplication(options.appname,
+    appdb.RegisterApplication(appInfo["application.name"],
                               appInfo["application.mimetype"],
                               appInfo["application.extension"],
                               commands, files,
@@ -230,10 +224,70 @@ def main():
     # Clean up, remove the temporary directory and files from
     # unpacking the zip file
     if cleanup:
-        import shutil
         os.chdir(origDir)
-        shutil.rmtree(workingDir)
+        if workingDir is not None:
+            shutil.rmtree(workingDir)
 
+def main():
+    """
+    This is the main, this function processes command line arguments,
+    then digs the files out of the directory, or archive and installs them.
+    It registers the application with the users AG environment.
+    """
+    workingDir = os.getcwd()
+    zipFile = None
+    commands = dict()
+    files = list()
+    cleanup = 0
+
+    tkConf = AGTkConfig.instance()
+    
+    # We're going to assume there's a .app file in the current directory,
+    # but only after we check for a command line argument that specifies one.
+    # We also have the ability to pass in a zip file that contains a .app
+    # file and the other parts of the shared application.
+
+    options, appdb, dest = ProcessArgs()
+
+    # We only want to list apps
+    if options.listapps:
+        apps = appdb.ListApplications()
+        import pprint
+        pprint.pprint(apps)
+
+    pkgList = []
+
+    # We are doing a post install setup run
+    if options.post_install:
+        pkgCache = tkConf.GetSharedAppDir()
+        for pkg in os.listdir(pkgCache):
+            fnl = pkg.split('.')
+            if len(fnl) == 2:
+                (name, ext) = fnl
+                if ext == "agpkg":
+                    pkgInfo = PrepPackage(os.path.join(pkgCache, pkg))
+                    pkgList.append(pkgInfo)
+    elif not options.listapps:
+        # At this point we have an appFile and workingDir
+        pkgInfo = PrepPackageFromCmdLine(options)
+        pkgList.append(pkgInfo)
+
+    for pkg in pkgList:
+        appInfo, commands, workingDir, cleanup = pkg
+        
+        if options.verbose:
+            print "Name: %s" % appInfo["application.name"]
+            print "Mime Type: %s" % appInfo["application.mimetype"]
+            print "Extension: %s" % appInfo["application.extension"]
+            print "From: %s" % workingDir
+
+        # If we unregister, we do that then exit
+        if options.unregister:
+            UnregisterPackage(appdb, appInfo, options.appname)
+        else:
+            RegisterPackage(appdb, dest, appInfo, commands,
+                            workingDir, cleanup)
+    
     if options.wait_for_input:
         try:
             raw_input('AGPM: hit return to exit.')
