@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.73 2003-06-26 21:17:36 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.74 2003-06-27 16:21:16 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -687,7 +687,21 @@ class VenueClient( ServiceBase):
                 log.debug("bin.VenueClient.GetPersonalData: This is somebody else's data")
                 uploadDescriptor, dataStoreUrl = Client.Handle(url).get_proxy().GetDataStoreInformation()
                 dataDescriptionList = Client.Handle(dataStoreUrl).get_proxy().GetDataDescriptions()
-                return dataDescriptionList
+
+                dataList = []
+                
+                for data in dataDescriptionList:
+                    dataDesc = DataDescription( data.name )
+                    dataDesc.status = data.status
+                    dataDesc.size = data.size
+                    dataDesc.checksum = data.checksum
+                    dataDesc.owner = data.owner
+                    dataDesc.type = data.type
+                    dataDesc.uri = data.uri
+                    dataList.append( dataDesc )
+                    
+                return dataList
+        
         else:
             log.debug("bin.VenueClient.GetPersonalData: The client has been queried for personal %s" %clientProfile.name)
                         
