@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: SOAPInterface.py,v 1.4 2004-03-02 19:12:17 judson Exp $
+# RCS-ID:      $Id: SOAPInterface.py,v 1.5 2004-03-02 22:27:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ primary methods, the constructor and a default authorization for all
 interfaces.
 """
 
-__revision__ = "$Id: SOAPInterface.py,v 1.4 2004-03-02 19:12:17 judson Exp $"
+__revision__ = "$Id: SOAPInterface.py,v 1.5 2004-03-02 22:27:23 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
@@ -138,7 +138,7 @@ class SOAPIWrapper:
 
         @returns: the result of calling across the network to the service.
         """
-        return self.proxy.IsValid()
+        return self.proxy._IsValid()
     
     def _IsValid(self):
         """
