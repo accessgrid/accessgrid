@@ -74,7 +74,7 @@ class Preferences:
         # config will get saved using the node
         # service.
         self.nodeConfigs = []
-        self.config = UserConfig(initIfNeeded=0)
+        self.config = UserConfig.instance(initIfNeeded=0)
 
         self.LoadPreferences()
 
