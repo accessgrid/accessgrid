@@ -1,13 +1,14 @@
 from wxPython.wx import *
 
-from AccessGrid.hosting.pyGlobus import Client
-from AccessGrid.EventClient import EventClient
-from AccessGrid.Events import ConnectEvent
+#from AccessGrid.hosting.pyGlobus import Client
+#from AccessGrid.EventClient import EventClient
+#from AccessGrid.Events import ConnectEvent
 from AccessGrid.Events import Event
 from AccessGrid.Platform import isWindows
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid.Platform import isWindows
+
+from AccessGrid.SharedAppClient import SharedAppClient
 
 import logging, logging.handlers
 
@@ -35,41 +36,40 @@ class AppMonitor:
         *parent* Parent frame
         *appUrl* The URL to the application service
         '''
-        self.appUrl = appUrl
         self.participants = {}
-           
+
         # Create UI frame
         self.frame = AppMonitorFrame(parent, -1, "Application Monitor", self)
-       
-        # Get a handle to the application object
-        self.appProxy = Client.Handle(self.appUrl).GetProxy()
 
+        # Create application client
+        self.sharedAppClient = SharedAppClient("Application Monitor")
+        self.sharedAppClient.InitLogging()
+              
         # Join the application session
-        self.publicId, self.privateId = self.appProxy.Join()
-        channelId, esl = self.appProxy.GetDataChannel(self.privateId)
-
-        # Start event client
-        self.eventClient = EventClient(self.privateId, esl, channelId)
-        self.eventClient.start()
-        self.eventClient.Send(ConnectEvent(channelId, self.privateId))
-
+        self.sharedAppClient.Join(appUrl)
+      
         # Register callbacks
         self.RegisterCallbacks()
 
+        # Check if server is running software that supports the monitor
+        if not self.CheckServer():
+            return
+        
         # Connect to application and get state info
         self.GetApplicationInfo()
-
-        self.frame.Show()
         
+        if self.frame:
+            self.frame.Show()
+
     def RegisterCallbacks(self):
         '''
         Register methods called when the application service distributes
         an event
         '''
-        self.eventClient.RegisterCallback(Event.APP_PARTICIPANT_JOIN, self.ParticipantJoined)
-        self.eventClient.RegisterCallback(Event.APP_PARTICIPANT_LEAVE, self.ParticipantLeft)
-        self.eventClient.RegisterCallback(Event.APP_SET_DATA, self.SetData)
-        self.eventClient.RegisterCallback(Event.APP_UPDATE_PARTICIPANT, self.UpdateParticipant)
+        self.sharedAppClient.RegisterEventCallback(Event.APP_PARTICIPANT_JOIN, self.ParticipantJoined)
+        self.sharedAppClient.RegisterEventCallback(Event.APP_PARTICIPANT_LEAVE, self.ParticipantLeft)
+        self.sharedAppClient.RegisterEventCallback(Event.APP_SET_DATA, self.SetData)
+        self.sharedAppClient.RegisterEventCallback(Event.APP_UPDATE_PARTICIPANT, self.UpdateParticipant)
 
     #
     # Callbacks. Every UI access have to be made by using wxCallAfter.
@@ -112,16 +112,15 @@ class AppMonitor:
         '''
         Stop event client and leave the application session.
         '''
-        self.eventClient.Stop()
-        self.appProxy.Leave(self.privateId)
-                
+        self.sharedAppClient.Shutdown()
+                       
     def GetApplicationInfo(self):
         '''
         Get state from applicaton service and update UI frame.
         '''
-        appState = self.appProxy.GetState(self.privateId) 
-        participants = self.appProxy.GetParticipants(self.privateId)
-        dataKeys = self.appProxy.GetDataKeys(self.privateId)
+        appState = self.sharedAppClient.GetApplicationState() 
+        participants = self.sharedAppClient.GetParticipants()
+        dataKeys = self.sharedAppClient.GetDataKeys()
 
         # Set participants
         for appParticipantDesc in participants:
@@ -129,14 +128,30 @@ class AppMonitor:
 
         dataDict = {}
         for key in dataKeys:
-            data = self.appProxy.GetData(self.privateId, key)
+            data = self.sharedAppClient.GetData(key)
             dataDict[key] = data
-            self.frame.AddInitData(dataDict)
+
+        self.frame.AddInitData(dataDict)
                       
         # Set application information
         self.frame.SetName(appState.name)
         self.frame.SetDescription(appState.description)
-    
+
+
+    def CheckServer(self):
+        '''
+        Checks to see if server is running latest code that supports the application monitor.
+        '''
+
+        if not self.sharedAppClient.CheckServer("GetState"):
+            self.frame.ShowMessage("The application monitor does not work for servers running old software.")
+            log.info("AppMonitor.GetApplicationInfo: Connecting to server running old software")
+            self.frame.Close(1)
+
+            return 0
+
+        return 1
+            
         
 class AppMonitorFrame(wxFrame):
     '''
@@ -152,32 +167,43 @@ class AppMonitorFrame(wxFrame):
         self.appMonitor = appMonitor
 
         # upper sash window
-        self.topWindow = wxSashLayoutWindow(self, self.ID_WINDOW_TOP, wxDefaultPosition)
+        self.topWindow = wxSashLayoutWindow(self, self.ID_WINDOW_TOP,
+                                            wxDefaultPosition)
         self.topWindow.SetOrientation(wxLAYOUT_HORIZONTAL)
         self.topWindow.SetAlignment(wxLAYOUT_TOP)
         self.topWindow.SetSashVisible(wxSASH_BOTTOM, TRUE)
-
+        self.topWindow.SetExtraBorderSize(2)
+        
         # lower sash window
-        self.bottomWindow = wxSashLayoutWindow(self, self.ID_WINDOW_BOTTOM, wxDefaultPosition)
+        self.bottomWindow = wxSashLayoutWindow(self, self.ID_WINDOW_BOTTOM,
+                                               wxDefaultPosition)
         self.bottomWindow.SetOrientation(wxLAYOUT_HORIZONTAL)
         self.bottomWindow.SetAlignment(wxLAYOUT_BOTTOM)
+        self.bottomWindow.SetExtraBorderSize(2)
                       
         # widgets for upper sash window
-        self.panelTop = wxPanel(self.topWindow, -1, wxDefaultPosition, wxDefaultSize, style = wxRAISED_BORDER)
-        self.nameText = wxStaticText(self.panelTop, -1, "This is the name", style = wxALIGN_CENTER)
+        self.panelTop = wxPanel(self.topWindow, -1, wxDefaultPosition,
+                                wxDefaultSize)
+        self.nameText = wxStaticText(self.panelTop, -1,
+                                     "This is the name",
+                                     style = wxALIGN_CENTER)
         font = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
         self.nameText.SetFont(font)
 
-        self.descriptionText = wxStaticText(self.panelTop, -1, "No description", size = wxSize(10,40))
-        self.descriptionText.SetBackgroundColour(self.panelTop.GetBackgroundColour())
-       
-        self.partListCtrl = wxListCtrl(self.panelTop, -1, style = wxLC_REPORT)
+        self.descriptionText = wxStaticText(self.panelTop, -1,
+                                            "No description",
+                                            size = wxSize(10,40))
+        self.partListCtrl = wxListCtrl(self.panelTop, -1,
+                                       style = wxLC_REPORT)
         self.partListCtrl.InsertColumn(0, "Participants")
         self.partListCtrl.InsertColumn(1, "Status")
 
         # widgets for lower sash window
-        self.panelBottom = wxPanel(self.bottomWindow, -1, wxDefaultPosition, wxDefaultSize, style = wxRAISED_BORDER)
-        self.textCtrl = wxTextCtrl(self.panelBottom, -1, style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH)
+        self.panelBottom = wxPanel(self.bottomWindow, -1,
+                                   wxDefaultPosition, wxDefaultSize)
+        self.textCtrl = wxTextCtrl(self.panelBottom, -1,
+                                   style = wxTE_MULTILINE |
+                                   wxTE_READONLY | wxTE_RICH)
         
         self.idToProfile = {}
         self.profileToId = {}
@@ -225,7 +251,15 @@ class AppMonitorFrame(wxFrame):
         self.appMonitor.ShutDown()
         
         self.Destroy()
-        
+
+    def ShowMessage(self, message):
+        '''
+        Shows a message dialog
+        '''
+        messageDialog = wxMessageDialog(None, message, "Application Monitor", style = wxOK|wxICON_INFORMATION)
+        messageDialog.ShowModal()
+        messageDialog.Destroy()
+                
     def SetName(self, name):
         '''
         Set application name.
@@ -371,7 +405,6 @@ class AppMonitorFrame(wxFrame):
 
         self.textCtrl.SetDefaultStyle(wxTextAttr(wxBLACK))
         
-        
     def __SetRightScroll(self):
         '''
         Scrolls to right position in text output field 
@@ -391,9 +424,6 @@ class AppMonitorFrame(wxFrame):
         EVT_SIZE(self, self.OnSize)
         
         EVT_CLOSE(self, self.OnExit)
-
-        #if isWindows():
-        #    EVT_SIZE(self.panelBottom, self.OnSize)
     
     def __layout(self):
         '''
@@ -413,7 +443,7 @@ class AppMonitorFrame(wxFrame):
         sizer.Add(vs, 1, wxEXPAND|wxALL, 5)
 
         sizer2 = wxBoxSizer(wxVERTICAL)
-        sizer2.Add(self.textCtrl, 1, wxEXPAND | wxALL, 4)
+        sizer2.Add(self.textCtrl, 1, wxEXPAND | wxALL, 8)
                
         self.panelTop.SetSizer(sizer)
         sizer.Fit(self.panelTop)
