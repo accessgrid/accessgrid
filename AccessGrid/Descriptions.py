@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.13 2003-02-18 21:17:48 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.14 2003-02-24 20:56:24 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -205,3 +205,24 @@ def CreateStreamDescription( streamDescriptionStruct ):
                                            streamDescriptionStruct.encryptionKey )
     streamDescription.static = streamDescriptionStruct.static
     return streamDescription
+
+
+
+class AGServiceManagerDescription:
+    def __init__( self, name, uri ):
+        self.name = name
+        self.uri = uri
+
+class AGServiceDescription:
+    def __init__( self, name, description, uri, capabilities,
+                  resource, serviceManagerUri, executable ):
+        self.name = name
+        self.description = description
+
+        self.uri = uri
+
+        self.capabilities = capabilities
+        self.resource = resource
+        self.serviceManagerUri = serviceManagerUri
+        self.executable = executable
+    

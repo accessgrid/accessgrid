@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.13 2003-02-21 22:35:01 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.14 2003-02-24 20:56:22 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -13,13 +13,16 @@ import os
 import sys
 import pickle
 import string
+import thread
 
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
-
-from AccessGrid.Types import AGServiceImplementationRepository, AGServiceDescription, ServiceConfiguration, AGServiceManagerDescription
-from AccessGrid.AuthorizationManager import AuthorizationManager
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
+from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
+
+from AccessGrid.Descriptions import AGServiceDescription, AGServiceManagerDescription
+from AccessGrid.Types import ServiceConfiguration
+from AccessGrid.AuthorizationManager import AuthorizationManager
 from AccessGrid.Platform import GetConfigFilePath
 
 class AGNodeService( ServiceBase ):
@@ -52,7 +55,7 @@ class AGNodeService( ServiceBase ):
             except:
                 print "Failed to load default configuration"
 
-        self.serviceImplRepository = AGServiceImplementationRepository( 0, self.servicesDir )
+        self.servicePackageRepository = AGServicePackageRepository( 0, self.servicesDir )
 
 
     ####################
@@ -131,7 +134,7 @@ class AGNodeService( ServiceBase ):
 
     def GetAvailableServices( self ):
         """Get list of available services """
-        return self.serviceImplRepository.GetServiceImplementations()
+        return self.servicePackageRepository.GetServiceDescriptions()
     GetAvailableServices.soap_export_as = "GetAvailableServices"
 
 
@@ -215,7 +218,6 @@ class AGNodeService( ServiceBase ):
         #
         print "Loading configuration file"
         inp = open( self.configDir + os.sep + configName, "r")
-        print "read"
         while inp:
             try:
                 o = pickle.load(inp)
@@ -269,9 +271,6 @@ class AGNodeService( ServiceBase ):
             try:
                 # - Add the service
 
-                ## need map from service description to service implementation description;
-                ## otherwise, don't know how to add a service from a service description
-
                 s.description = serviceIndex
                 serviceIndex = serviceIndex + 1
 
@@ -324,7 +323,7 @@ class AGNodeService( ServiceBase ):
             print "in StoreConfiguration"
             print "in StoreConfiguration"
             for serviceManager in self.serviceManagers:
-                serviceManager = AGServiceManagerDescription( serviceManager.name, serviceManager.description, serviceManager.uri )
+                serviceManager = AGServiceManagerDescription( serviceManager.name, serviceManager.uri )
                 print "serviceManager ", serviceManager.uri, serviceManager.__class__
                 pickle.dump( serviceManager, out )
                 svcs = Client.Handle( serviceManager.uri ).get_proxy().GetServices().data
@@ -404,6 +403,12 @@ class AGNodeService( ServiceBase ):
     ####################
 
     def __ReadAuthFile( self ):
+        """
+        Read the node service authorization file.  A user whose DN appears in
+        the file is authorized to control the node, including authorizing 
+        other users
+        """
+
         # if config file exists
         nodeAuthFile = "nodeauth.cfg"
         if os.path.exists( nodeAuthFile ):
@@ -423,7 +428,9 @@ class AGNodeService( ServiceBase ):
 
 
     def __PushAuthorizedUserList( self ):
-        """Push the list of authorized users to service managers"""
+        """
+        Push the list of authorized users to service managers
+        """
         try:
             for serviceManager in self.serviceManagers:
                 Client.Handle( serviceManager.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
@@ -431,7 +438,9 @@ class AGNodeService( ServiceBase ):
             print "Exception in AGNodeService.RemoveAuthorizedUser ", sys.exc_type, sys.exc_value
 
     def __ReadConfigFile( self, configFile ):
-
+        """
+        Read the node service configuration file
+        """
         defaultNodeConfigurationOption = "Node Configuration.defaultNodeConfiguration"
         configDirOption = "Node Configuration.configDirectory"
         servicesDirOption = "Node Configuration.servicesDirectory"
@@ -444,4 +453,78 @@ class AGNodeService( ServiceBase ):
             self.configDir = config[configDirOption]
         if servicesDirOption in config.keys():
             self.servicesDir = config[servicesDirOption]
+
+
+
+from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
+from AccessGrid.DataStore import GSIHTTPTransferServer
+from AccessGrid.Types import AGServicePackage, InvalidServicePackage
+
+class AGServicePackageRepository:
+    """
+    AGServicePackageRepository encapsulates knowledge about local service
+    packages and avails them to clients (service managers) via http(s)
+    """
+
+    def __init__( self, port, servicesDir):
+
+        # if port is 0, find a free port
+        if port == 0:
+            port = MulticastAddressAllocator().AllocatePort()
+
+        self.httpd_port = port
+        self.servicesDir = servicesDir
+        self.serviceDescriptions = []
+
+        # 
+        # Define base url
+        #
+        prefix = "packages"
+        self.baseUrl = 'https://%s:%d/%s/' % ( GetHostname(), self.httpd_port, prefix )
+
+        #
+        # Start the transfer server
+        #
+        self.s = GSIHTTPTransferServer(('', self.httpd_port)) 
+        self.s.RegisterPrefix(prefix, self)
+        thread.start_new_thread( self.s.run, () )
+
+    def GetDownloadFilename(self, id_token, url_path):
+        """
+        Implementation of Handler interface for DataStore
+        """
+        print "Download filename : ", self.servicesDir + os.sep + url_path 
+        return self.servicesDir + os.sep + url_path 
+
+
+    def GetServiceDescriptions( self ):
+        """
+        Get list of local service descriptions
+        """
+        self.__ReadServicePackages()
+        return self.serviceDescriptions
+
+
+    def __ReadServicePackages( self ):
+        """
+        Read service packages from local directory and build service descriptions
+        """
+        self.serviceDescriptions = []
+
+        invalidServicePackages = 0
+
+        if os.path.exists(self.servicesDir):
+            files = os.listdir(self.servicesDir)
+            for file in files:
+                if file.endswith(".zip"):
+                    try:
+                        servicePackage = AGServicePackage( self.servicesDir + os.sep + file)
+                        serviceDesc = servicePackage.GetServiceDescription()
+                    except InvalidServicePackage, InvalidServiceDescription:
+                        invalidServicePackages = invalidServicePackages + 1
+                    serviceDesc.uri = self.baseUrl + file
+                    self.serviceDescriptions.append( serviceDesc )
+
+        if invalidServicePackages:
+            raise InvalidServicePackage('%d invalid service package(s) found' % invalidServicePackages )
 

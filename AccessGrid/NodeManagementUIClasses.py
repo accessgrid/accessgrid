@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.12 2003-02-21 18:05:16 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.13 2003-02-24 20:56:24 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,10 +20,10 @@ from wxPython.lib.dialogs import wxMultipleChoiceDialog
 
 # AG2 imports
 from AccessGrid.hosting.pyGlobus import Client
-from AccessGrid.Types import *
-from AccessGrid.AGParameter import *
-from AccessGrid.Descriptions import StreamDescription
-from AccessGrid.NetworkLocation import *
+from AccessGrid.Types import AGResource, Capability, ServiceConfiguration
+from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetParameter
+from AccessGrid.Descriptions import StreamDescription, AGServiceManagerDescription
+from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid import icons
 
 #import gc
@@ -200,6 +200,7 @@ class ServiceConfigurationPanel( wxPanel ):
 
     def SetCallback( self, callback ):
         self.callback = callback
+
 
 class NodeManagementClientFrame(wxFrame):
     _defaultURI =  "https://localhost:11000/NodeService"
@@ -432,7 +433,7 @@ class NodeManagementClientFrame(wxFrame):
             name = urlparse.urlparse(uri)[1]
 
             try:
-                self.vc.AddServiceManager( AGServiceManagerDescription( name, "agsm description", uri ) )
+                self.vc.AddServiceManager( AGServiceManagerDescription( name, uri ) )
             except:
                 print "Exception in AddHost", sys.exc_type, sys.exc_value
                 self.Error( "Add Host failed" )
@@ -695,18 +696,10 @@ class NodeManagementClientFrame(wxFrame):
             index = self.hostList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
             indices.append( index )
 
-        self.services = self.vc.GetServices()
-        print "selfservices = ", self.services.__class__, self.services.data
         if len(self.serviceManagers) > 0 and index >= 0:
             for index in indices:
-                print "index = ", index, " len sermgr = ", len(self.serviceManagers)
-                print "------ ", self.serviceManagers[index]
-                services = Client.Handle( self.serviceManagers[index].uri ).get_proxy().GetServices()
-#FIXME - temporary
-                self.services = services
-                print "services = ", services, services.__dict__
-                for svc in services:
-                    print "   ", svc.uri
+                self.services = Client.Handle( self.serviceManagers[index].uri ).get_proxy().GetServices()
+                for svc in self.services:
                     itemindex = self.serviceList.InsertStringItem( i, svc.name )
                     self.serviceList.SetItemImage( itemindex, 0, 0 )
                     try:

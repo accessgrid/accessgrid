@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.11 2003-02-21 18:05:16 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.12 2003-02-24 20:56:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -23,9 +23,10 @@ from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 
-from AccessGrid.Types import AGServiceDescription, AGServicePackage
+from AccessGrid.Descriptions import AGServiceDescription
+from AccessGrid.Types import AGServicePackage
 from AccessGrid.AuthorizationManager import AuthorizationManager
-
+from AccessGrid.DataStore import GSIHTTPDownloadFile
 from AccessGrid import Utilities
 
 
@@ -164,7 +165,6 @@ class AGServiceManager( ServiceBase ):
                                                        serviceDescription.serviceManagerUri,
                                                        serviceDescription.executable )
 
-
             self.__AddServiceDescription( serviceDescription )
         except:
             print "Exception in AGServiceManager.AddServiceDescription ", sys.exc_type, sys.exc_value
@@ -217,7 +217,7 @@ class AGServiceManager( ServiceBase ):
                                 foundResource = 1
 
                         if foundResource == 0:
-                            print "** Resource used by service not found !! ", service.resource.resource
+                            print "** The resource used by the service can not be found !! ", service.resource.resource
 
                     break
 
@@ -321,21 +321,24 @@ class AGServiceManager( ServiceBase ):
             Client.Handle( service.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
 
 
-    def __RetrieveServicePackage( self, serviceImplementation ):
+    def __RetrieveServicePackage( self, servicePackageUrl ):
         """Internal : Retrieve a service implementation"""
-        filecontent = urllib.urlopen( serviceImplementation ).read()
-        filename = os.path.basename( serviceImplementation )
-        print "Retrieved ",filename
+        print "Retrieving ", servicePackageUrl
 
+        #
+        # Retrieve the service package
+        #
+        filename = os.path.basename( servicePackageUrl )
         servicePackageFile = self.servicesDir + os.sep + filename
-        f = open( servicePackageFile, 'wb')
-        f.write(filecontent)
-        f.close()
+        GSIHTTPDownloadFile(servicePackageUrl, servicePackageFile, None, None)
 
+        #
+        # Extract the executable from the service package
+        #
         servicePackage = AGServicePackage( servicePackageFile )
         servicePackage.ExtractExecutable( self.servicesDir )
 
-        return self.servicesDir + os.sep + filename
+        return servicePackageFile
 
 
     def __AddServiceDescription( self, serviceDescription ):

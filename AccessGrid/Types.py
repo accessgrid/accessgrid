@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.23 2003-02-21 18:25:50 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.24 2003-02-24 20:56:24 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,14 +14,12 @@ import thread
 import zipfile
 import socket
 import time
-import SimpleHTTPServer
-import SocketServer
 import string
 import os
-from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
+import sys
 
-from AccessGrid.AGParameter import *
-        
+from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetParameter, CreateParameter
+
 class VenueState:
     def __init__( self, uniqueId, description, connections, users,
                   nodes, data, services, eventLocation, textLocation ):
@@ -163,51 +161,57 @@ class Capability:
         # capability match
         return 1
 
-class AGServiceManagerDescription:
-    def __init__( self, name=None, description=None, uri=None ):
-        self.name = name
-        self.description = description
-        self.uri = uri
 
-class AGServiceDescription:
-    def __init__( self, name=None, description=None, uri=None, capabilities=None,
-                  resource=None, serviceManagerUri=None, executable=None ):
-        self.name = name
-        self.description = description
-        self.uri = uri
-        self.capabilities = capabilities
-        self.resource = resource
-        self.serviceManagerUri = serviceManagerUri
-        self.executable = executable
-
+class InvalidServicePackage(Exception):
+    pass
+class InvalidServiceDescription(Exception):
+    pass
 
 class AGServicePackage:
+    """
+    Class to represent a service package, a zipfile containing a 
+    service description file (.svc) and an implementation file,
+    either a Python script or an executable
+    """
+
     def __init__( self, file ):
         self.file = file
         self.exeFile = None
         self.descriptionFile = None
 
-        #
-        # examine service package content
-        #
-        zf = zipfile.ZipFile( self.file, "r" )
-        files = zf.namelist()
-        zf.close()
-        for file in files:
-            if file.endswith(".svc"):
-                self.descriptionFile = file
-            else:
-                self.exeFile = file
-                if self.exeFile.endswith(".py"):
-                    self.isPython = 1
+        try:
+            #
+            # examine service package content
+            #
+            zf = zipfile.ZipFile( self.file, "r" )
+            files = zf.namelist()
+            zf.close()
+            for file in files:
+                if file.endswith(".svc"):
+                    self.descriptionFile = file
+                else:
+                    self.exeFile = file
+                    if self.exeFile.endswith(".py"):
+                        self.isPython = 1
+
+            if not self.exeFile:
+                raise InvalidServicePackage("Service package does not contain an executable file")
+            if not self.descriptionFile:
+                raise InvalidServicePackage("Service package does not contain a description file")
+
+        except zipfile.BadZipFile:
+            raise InvalidServicePackage(sys.exc_value)
 
     def GetServiceDescription( self ):
-
+        """
+        Read the package file and return the service description
+        """
         import ConfigParser
         import string
         import StringIO
+        from AccessGrid.Descriptions import AGServiceDescription
 
-
+        serviceDescription = None
 
         try:
             #
@@ -216,10 +220,13 @@ class AGServicePackage:
             zf = zipfile.ZipFile( self.file, "r" )
             descfilecontent = zf.read( self.descriptionFile )
             zf.close()
+        except zipfile.BadZipFile:
+            raise InvalidServicePackage(sys.exc_value)
 
-            # set up string io from description file content
-            sp = StringIO.StringIO(descfilecontent)
+        # set up string io from description file content
+        sp = StringIO.StringIO(descfilecontent)
 
+        try:
             # read config from string io
             c = ConfigParser.ConfigParser()
             c.readfp( sp )
@@ -242,70 +249,32 @@ class AGServicePackage:
                                                      c.get( "ServiceDescription", "executable" ) )
 
         except:
-            print "Exception in GetServiceDescription ", sys.exc_type, sys.exc_value
+            raise InvalidServiceDescription(sys.exc_value)
 
         return serviceDescription
 
     def ExtractExecutable( self, path ):
-        #
-        # extract executable file from zip
-        #
-        zf = zipfile.ZipFile( self.file, "r" )
-        exefilecontent = zf.read( self.exeFile )
-        zf.close()
+        """
+        Extract executable file from service package
+        """
+        try:
+            zf = zipfile.ZipFile( self.file, "r" )
+            exefilecontent = zf.read( self.exeFile )
+            zf.close()
+        except zipfile.BadZipFile:
+            raise InvalidServicePackage(sys.exc_value)
 
         if self.isPython:
-            f = open( path + os.sep + self.exeFile, "w" )
-        else:
             f = open( path + os.sep + self.exeFile, "wb" )
         f.write( exefilecontent )
         f.close()
 
 
-
-
-from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-
-class AGServiceImplementationRepository:
-
-    def __init__( self, port, servicesDir):
-
-        # if port is 0, find a free port
-        if port == 0:
-            port = MulticastAddressAllocator().AllocatePort()
-
-        self.httpd_port = port
-        self.servicesDir = servicesDir
-        self.serviceDescriptions = []
-        thread.start_new_thread( self.__StartWebServer, () )
-
-    def __ReadServicePackages( self ):
-        self.serviceDescriptions = []
-
-        if os.path.exists(self.servicesDir):
-            files = os.listdir(self.servicesDir)
-            for file in files:
-                if file.endswith(".zip"):
-                    servicePackage = AGServicePackage( self.servicesDir + os.sep + file)
-                    serviceDesc = servicePackage.GetServiceDescription()
-                    serviceDesc.uri = 'http://%s:%d/%s/%s' % ( GetHostname(), self.httpd_port, 
-                                                               self.servicesDir, file )
-                    self.serviceDescriptions.append( serviceDesc )
-
-
-    def GetServiceImplementations( self ):
-        """Get list of local service descriptions"""
-        self.__ReadServicePackages()
-        return self.serviceDescriptions
-
-    def __StartWebServer( self ):
-        print "Starting web server on port ", self.httpd_port
-        self.httpd = SocketServer.TCPServer(("",self.httpd_port), SimpleHTTPServer.SimpleHTTPRequestHandler )
-        self.httpd.serve_forever()
-
-
-
 class ServiceConfiguration:
+    """
+    ServiceConfiguration encapsulates the configuration of 
+    AGServices
+    """
     def __init__( self, resource, executable, parameters ):
         self.executable = executable
         self.resource = resource
