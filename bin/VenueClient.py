@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.82 2003-03-25 20:36:00 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.83 2003-03-25 20:58:22 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -117,18 +117,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method calls the notifies the user that somebody wants to follow him or
         her and allows the user to approve the request.
         """
-        text = "Do you want "+clientProfile.name+" to follow you?"
-        title = "Authorize follow"
-        dlg = wxMessageDialog(self.frame, text, title, style = wxOK|wxICON_QUESTION)
-        if(dlg.ShowModal() == wxID_OK):
-            self.SendLeadResponse(clientProfile, True)
-
-        else:
-            self.SendLeadResponse(clientProfile, False)
-
-        dlg.Destroy()
-
-       
+        wxCallAfter(self.frame.AuthorizeLeadDialog)
         
 
     def __openProfileDialog(self):
