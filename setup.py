@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.19 2003-04-04 17:26:01 leggett Exp $
+# RCS-ID:      $Id: setup.py,v 1.20 2003-04-04 17:36:22 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -111,7 +111,8 @@ setup(
                     "TODO",
                     "VERSION"
                     ]
-                   )
+                   ),
+                  ('bin', [])
                   ]
                   
 )
