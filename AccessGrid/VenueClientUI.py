@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.46 2004-05-03 20:03:01 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.47 2004-05-04 05:47:59 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.46 2004-05-03 20:03:01 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.47 2004-05-04 05:47:59 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -4410,16 +4410,19 @@ class ApplicationPropertiesDialog(wxDialog):
 class VenuePropertiesDialog(wxDialog):
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title)
-        self.list = wxListCtrl(self, wxNewId(), size = wxSize(400, 150),style=wxLC_REPORT)
+        self.list = wxListCtrl(self, wxNewId(), size = wxSize(460, 150),style=wxLC_REPORT)
 
-        self.list.InsertColumn(0, "Host")
+        self.list.InsertColumn(0, "Address")
         self.list.InsertColumn(1, "Port")
-        self.list.InsertColumn(2, "Time to Live")
-        self.list.InsertColumn(3, "Type")
+        self.list.InsertColumn(2, "TTL")
+        self.list.InsertColumn(3, "Purpose")
+        self.list.InsertColumn(4, "Type")
 
         self.list.SetColumnWidth(0, 100)
-        self.list.SetColumnWidth(1, 100)
-        self.list.SetColumnWidth(2, 100)
+        self.list.SetColumnWidth(1, 80)
+        self.list.SetColumnWidth(2, 80)
+        self.list.SetColumnWidth(3, 100)
+        self.list.SetColumnWidth(3, 100)
                
         self.__Layout()
 
@@ -4437,10 +4440,11 @@ class VenuePropertiesDialog(wxDialog):
             self.list.SetStringItem(j, 0, str(stream.location.host))
             self.list.SetStringItem(j, 1, str(stream.location.port))
             self.list.SetStringItem(j, 2, str(stream.location.ttl))
+            self.list.SetStringItem(j, 3, str(stream.capability.type))
             if stream.static:
-                self.list.SetStringItem(j, 3, 'static')
+                self.list.SetStringItem(j, 4, 'static')
             else:
-                self.list.SetStringItem(j, 3, 'not static')
+                self.list.SetStringItem(j, 4, 'not static')
                 
             j = j + 1
                 
