@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.84 2004-05-18 19:05:16 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.85 2004-05-18 19:06:47 judson Exp $
 ;
 
 ; Set externally
@@ -147,13 +147,13 @@ Root: HKLM; Subkey: SOFTWARE\{#AppName}; ValueType: none; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersion}; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersion}; ValueType: expandsz; ValueName: VersionInformation; ValueData: {#VersionInformation}; Flags: uninsdeletekey
 Root: HKCR; Subkey: MIME\Database\Content Type\application/x-ag-venueclient; ValueType: string; ValueName: Extension; ValueData: .vv2d
-Root: HKCR; Subkey: .vv2d; ValueType: string; ValueName: ; ValueData: x-ag-venueclient
-Root: HKCR; Subkey: .vv2d; ValueType: string; ValueName: Content Type; ValueData: application/x-ag-venueclient
-Root: HKCR; Subkey: x-ag-venueclient; ValueType: dword; ValueName: EditFlags; ValueData: 00010000
-Root: HKCR; Subkey: x-ag-venueclient; ValueType: dword; ValueName: BrowserFlags; ValueData: 00000008
-Root: HKCR; Subkey: x-ag-venueclient; ValueType: string; ValueName: ; ValueData: Access Grid Virtual Venue Description
-Root: HKCR; Subkey: x-ag-venueclient\shell; ValueType: string; ValueName: ; ValueData: Open
-Root: HKCR; Subkey: x-ag-venueclient\shell\Open\command; ValueType: string; ValueData: """ ""{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe"" ""{app}\bin\GoToVenue.py --file %1"" """
+Root: HKCR; Subkey: .vv2d; ValueType: string; ValueData: x-ag-venueclient; Flags: uninsdeletekey
+Root: HKCR; Subkey: .vv2d; ValueType: string; ValueName: Content Type; ValueData: application/x-ag-venueclient; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag-venueclient; ValueType: dword; ValueName: EditFlags; ValueData: 00010000; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag-venueclient; ValueType: dword; ValueName: BrowserFlags; ValueData: 00000008; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag-venueclient; ValueType: string; ValueData: Access Grid Virtual Venue Description; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag-venueclient\shell; ValueType: string; ValueData: Open; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag-venueclient\shell\Open\command; ValueType: string; ValueData: """ ""{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe"" ""{app}\bin\GoToVenue.py --file %1"" """; Flags: uninsdeletekey
 
 [Tasks]
 Name: desktopicon; Description: Create &Desktop Icons; GroupDescription: Additional icons:
