@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.88 2003-09-05 19:07:11 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.89 2003-09-05 21:17:11 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,12 +23,13 @@ from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid import icons
 from AccessGrid.Platform import GetUserConfigDir
-from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog
+from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog, SimpleWarningDialog
 from AccessGrid.Utilities import VENUE_MANAGEMENT_LOG
 from AccessGrid import Toolkit
 from AccessGrid.hosting.AccessControl import RoleManager
 from AccessGrid.Venue import RegisterDefaultVenueRoles
 from AccessGrid.RoleAuthorization import AddPeopleDialog, RoleClient
+from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 
 import webbrowser
 import logging, logging.handlers
@@ -677,6 +678,17 @@ class VenueListPanel(wxPanel):
 
                 try:
                     self.application.DeleteVenue(venueToDelete)
+
+                except Exception, e:
+                    if isinstance(e, faultType):
+                        if str(e.faultstring) == "NotAuthorized":
+                            text = "You are not a server administrator and are not authorized to delete venues from this server.\n"
+                            SimpleWarningDialog(None, text, "Not Authorized")
+                            log.info("DeleteVenue: Not authorized to delete venue from server.")
+                    else:
+                        log.exception("VenueListPanel.DeleteVenue: Could not delete venue %s" %venueToDelete.name)
+                        text = "The venue could not be deleted" + venueToDelete.name
+                        ErrorDialog(None, text, "Delete Venue Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
 
                 except:
                     log.exception("VenueListPanel.DeleteVenue: Could not delete venue %s" %venueToDelete.name)
@@ -1778,7 +1790,17 @@ class AddVenueFrame(VenueParamFrame):
                 try:
                     log.debug("AddVenueFrame.OnOk: Add venue.")
                     self.parent.AddVenue(self.venue)
-                   
+                except Exception, e:
+                    if isinstance(e, faultType):
+                        if str(e.faultstring) == "NotAuthorized":
+                            text = "You are not a server administrator and are not authorized to add venues to this server.\n"
+                            SimpleWarningDialog(None, text, "Authorization Error")
+                            log.info("AddVenueFrame.OnOK: Not authorized to add venue to server.")
+                    else:
+                        log.exception("AddVenueFrame.OnOk: Could not add venue")
+                        text = "Could not add venue %s" %self.venue.name
+                        ErrorDialog(None, text, "Add Venue Error",
+                                    style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
                 except:
                     log.exception("AddVenueFrame.OnOk: Could not add venue")
                     text = "Could not add venue %s" %self.venue.name
@@ -1830,7 +1852,13 @@ class ModifyVenueFrame(VenueParamFrame):
                     except:
                         # Modify venues should work even if SetVenueRoles fail
                         log.exception("ModifyVenueFrame.OnOk: Can not set roles for venue")
-                   
+
+                except Exception, e:
+                    if isinstance(e, faultType):
+                        if str(e.faultstring) == "NotAuthorized":
+                            text = "You are not authorized to modify this venue.\n"
+                            SimpleWarningDialog(None, text, "Authorization Error")
+                            log.info("ModifyVenueFrame.OnOK: Not authorized to modify venue.")
                 except:
                     log.exception("ModifyVenueFrame.OnOk: Modify venue failed")
                     text = "Could not modify venue %s" %self.venue.name

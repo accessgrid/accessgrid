@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.29 2003-09-04 21:51:36 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.30 2003-09-05 21:17:11 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -33,6 +33,12 @@ from AccessGrid.ClientProfile import ClientProfile
 
 class MessageDialog:
     def __init__(self, frame, text, text2 = "", style = wxOK|wxICON_INFORMATION):
+        messageDialog = wxMessageDialog(frame, text, text2, style)
+        messageDialog.ShowModal()
+        messageDialog.Destroy()
+
+class SimpleWarningDialog:
+    def __init__(self, frame, text, text2 = "", style = wxOK|wxICON_WARNING):
         messageDialog = wxMessageDialog(frame, text, text2, style)
         messageDialog.ShowModal()
         messageDialog.Destroy()
