@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.20 2003-02-03 15:02:56 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.21 2003-02-03 15:05:00 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,6 @@ class Venue(ServiceBase.ServiceBase):
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
     """
-    __version__ = "$Revision"
     def __init__(self, uniqueId, description, administrator,
                  multicastAllocator, dataStore):
         self.connections = dict()
