@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.25 2004-07-30 17:05:05 binns Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.26 2004-08-13 18:29:37 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.25 2004-07-30 17:05:05 binns Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.26 2004-08-13 18:29:37 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -158,7 +158,7 @@ class AuthorizationUIPanel(wxPanel):
         except:
             self.log.exception("AuthorizationUIPanel.ConnectToAuthManager: List actions failed. %s"%(authUrl))
             self.allActions = []
-            MessageDialog(None, "Failed to load actions", "Error")
+            #MessageDialog(None, "Failed to load actions", "Error")
 
         self.__AddCachedSubjects()
         self.__initTree()
@@ -464,6 +464,9 @@ class AuthorizationUIPanel(wxPanel):
                 self.tree.SetItemData(personId, wxTreeItemData(person))
                 role.AddSubject(person)
 
+                if self.tree.GetChildrenCount(roleId)> 0:
+                    self.tree.SortChildren(roleId)
+
             else:
                 MessageDialog(self, "%s is already added to %s"%(person.name, role.name), "Error") 
 
@@ -653,6 +656,9 @@ class AuthorizationUIPanel(wxPanel):
                 itemId = self.tree.AppendItem(parent, item.GetCN(), self.participantId,
                                               self.participantId)
                 self.tree.SetItemData(itemId, wxTreeItemData(item))
+
+                if self.tree.GetChildrenCount(parent)> 0:
+                    self.tree.SortChildren(parent)
                                 
             else:
                 # This message doesn't show up under Windows. Weird.
@@ -787,6 +793,9 @@ class AuthorizationUIPanel(wxPanel):
             subjectId = self.tree.AppendItem(index, subject.GetCN(),
                                              self.participantId, self.participantId)
             self.tree.SetItemData(subjectId, wxTreeItemData(subject))
+
+            if self.tree.GetChildrenCount(index)> 0:
+                    self.tree.SortChildren(index)
 
         addPersonDialog.Destroy()  
 
@@ -967,10 +976,9 @@ class AddPersonDialog(wxDialog):
     def __init__(self, parent, id, title, role):
         wxDialog.__init__(self, parent, id, title,
                           style=wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
-        self.SetSize(wxSize(450, 150))
         self.infoText = wxStaticText(self, -1,
                                      "Enter the distinguished name of the person you want to add to '%s' role" %role.name)
-        self.dnTextCtrl = wxTextCtrl(self,-1, "")
+        self.dnTextCtrl = wxTextCtrl(self,-1, "", size = wxSize(450, 20))
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton =  wxButton(self, wxID_CANCEL, "Cancel")
 
@@ -1010,6 +1018,7 @@ class AddPersonDialog(wxDialog):
         
         self.SetAutoLayout(1)
         self.SetSizer(mainSizer)
+        mainSizer.Fit(self)
         self.Layout()
 
 class CreateRoleDialog(wxDialog):
@@ -1391,7 +1400,8 @@ def InitLogging(debug = 1, l = None):
 
 if __name__ == "__main__":
     import logging
-
+    import sys
+    
     app = Toolkit.WXGUIApplication()
     app.Initialize()
         
