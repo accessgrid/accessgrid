@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.169 2004-05-04 04:51:14 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.170 2004-05-04 04:55:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.169 2004-05-04 04:51:14 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.170 2004-05-04 04:55:43 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -1450,7 +1450,7 @@ class VenueClient:
         if not clientProfile or clientProfile.publicId == self.profile.publicId:
             log.debug('GetPersonalData: I am trying to get my own data')
             self.requests.append(self.profile.publicId)
-            return self.dataStore.GetDataDescriptions()
+            return self.dataStore.GetPersonalData()
         
         
         url = clientProfile.venueClientURL
@@ -1470,9 +1470,9 @@ class VenueClient:
             log.debug("GetPersonalData: This is somebody else's data")
             try:
                 v = VenueClientIW(url)
-                dataDescriptionList = v.GetDataDescriptions()
+                dataDescriptionList = v.GetPersonalData()
             except:
-                log.exception("GetPersonalData: GetDataDescriptions call failed")
+                log.exception("GetPersonalData: call failed")
                 raise GetDataDescriptionsError()
             
             for data in dataDescriptionList:
