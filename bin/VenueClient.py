@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.240 2003-10-30 18:05:46 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.241 2003-11-07 22:44:47 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
@@ -1042,7 +1042,7 @@ class VenueClientUI(VenueClientEventSubscriber):
             #
             # Use wxCallAfter so we get the dialog filled in properly.
             #
-            wxCallAfter(download_thread.start)
+            download_thread.start()
 
             #
             # Fire up dialog as a modal.
@@ -1140,15 +1140,17 @@ class VenueClientUI(VenueClientEventSubscriber):
         except DataStore.DownloadFailed, e:
             log.exception("bin.VenueClient:get_ident_and_download: Got exception on download")
             wxCallAfter(MessageDialog, None, "The file could not be downloaded", "Download Error", style = wxOK  | wxICON_WARNING)
-
+          
+                       
+       
         # Clean up download dialog if there is one.
         if dialog != None:
             # Wait until user closes it.
             while dialog.IsShown():
                 time.sleep(2)
+          
             wxCallAfter(dialog.Destroy)
-
-              
+                                
     def UploadPersonalFiles(self, fileList):
         """
         Upload the given personal files to the venue.
