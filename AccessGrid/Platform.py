@@ -5,17 +5,16 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.58 2004-02-19 18:10:10 eolson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.59 2004-02-24 21:57:06 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 The Platform Module is to isolate OS specific interfaces.
 """
-__revision__ = "$Id: Platform.py,v 1.58 2004-02-19 18:10:10 eolson Exp $"
+__revision__ = "$Id: Platform.py,v 1.59 2004-02-24 21:57:06 judson Exp $"
 __docformat__ = "restructuredtext en"
 
-from AccessGrid.hosting.pyGlobus import Client
 import os
 import sys
 import getpass
