@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.38 2004-08-05 20:55:40 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.39 2004-08-05 20:58:57 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -40,7 +40,7 @@ from AccessGrid.UIUtilities import ProgressDialog
 from AccessGrid.AGService import AGServiceIW
 from AccessGrid.AGServiceManager import AGServiceManagerIW
 
-#log = Log.GetLogger(Log.NodeSetupWizard)
+log = Log.GetLogger(Log.NodeSetupWizard)
 
 class ServiceUnavailableException(Exception):
     pass
