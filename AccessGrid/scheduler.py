@@ -5,17 +5,17 @@
 # Author:      From the Python Cookbook
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: scheduler.py,v 1.7 2004-03-08 22:21:23 turam Exp $
+# RCS-ID:      $Id: scheduler.py,v 1.8 2004-03-09 16:53:06 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: scheduler.py,v 1.7 2004-03-08 22:21:23 turam Exp $"
+__revision__ = "$Id: scheduler.py,v 1.8 2004-03-09 16:53:06 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
-from threading import Thread, Event
+from threading import Thread, Event, currentThread
 
 class Task( Thread ):
     def __init__( self, action, loopdelay, initdelay ):
@@ -53,7 +53,7 @@ class Task( Thread ):
     def stop( self ):
         self._running = 0
         self._quitEvent.set()
-        if self is not threading.currentThread():
+        if self is not currentThread():
             self.join()
         
 class Scheduler:
