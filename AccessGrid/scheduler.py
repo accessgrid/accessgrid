@@ -5,7 +5,7 @@
 # Author:      From the Python Cookbook
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: scheduler.py,v 1.4 2003-05-20 17:15:34 olson Exp $
+# RCS-ID:      $Id: scheduler.py,v 1.5 2003-05-23 21:37:51 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     
 #-----------------------------------------------------------------------------
@@ -48,7 +48,8 @@ class Task( Thread ):
     def stop( self ):
         self._running = 0
         self._quitEvent.set()
-
+        self.join()
+        
 class Scheduler:
     def __init__( self ):
         self._tasks = []
