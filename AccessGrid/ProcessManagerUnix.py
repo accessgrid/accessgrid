@@ -5,12 +5,11 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.9 2003-08-22 20:10:37 judson Exp $
+# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.10 2003-08-28 18:04:26 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 import signal
-import string
 import os
 import time
 import logging
@@ -114,9 +113,6 @@ class ProcessManagerUnix:
 
 
 if __name__ == "__main__":
-
-    import time
-
     mgr = ProcessManagerUnix()
     mgr.start_process("date",[])
 
