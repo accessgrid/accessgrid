@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.41 2004-08-12 21:13:50 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.42 2004-08-18 16:01:39 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1064,10 +1064,6 @@ def main():
     # Init the toolkit with the standard environment.
     app = WXGUIApplication()
 
-    # Create a progress dialog
-    startupDialog = ProgressDialog("Starting Node Setup Wizard...",                                    "Initializing AccessGrid Toolkit", 5)
-    startupDialog.Show()
-       
     # Try to initialize
     try:
         app.Initialize("NodeSetupWizard")
@@ -1075,6 +1071,14 @@ def main():
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
         sys.exit(-1)
+   
+    if not app.certificateManager.HaveValidProxy():
+        app.certificateManager.CreateProxy()
+        sys.exit(-1)
+
+    # Create a progress dialog
+    startupDialog = ProgressDialog("Starting Node Setup Wizard...",                                    "Initializing AccessGrid Toolkit", 5)
+    startupDialog.Show()
         
     # Get the log
     log = app.GetLog()
