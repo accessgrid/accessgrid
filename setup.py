@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.66 2004-05-05 18:10:13 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.67 2004-05-06 03:39:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -91,7 +91,6 @@ linux_data = [('etc/init.d',
                ),
               ('share/gnome/apps/AccessGrid/Configure',
                [
-                r"packaging/linux/gnome/SetupVideo.desktop",
                 r"packaging/linux/gnome/NodeSetupWizard.desktop",
                 r"packaging/linux/gnome/NodeManagement.desktop",
                 ]
@@ -126,8 +125,8 @@ linux_data = [('etc/init.d',
                ),
               ('share/applnk/apps/AccessGrid/Configure',
                [
-                r"packaging/linux/kde/SetupVideo.desktop",
                 r"packaging/linux/kde/NodeSetupWizard.desktop",
+                r"packaging/linux/kde/NodeManagement.desktop",
                 ]
                ),
               ('share/applnk/apps/AccessGrid/Services',
