@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.36 2003-02-17 17:09:40 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.37 2003-02-18 17:36:56 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -106,6 +106,7 @@ class VenueServer(ServiceBase.ServiceBase):
                 self.venues[vURL] = store[vURL]
                 self.venues[vURL].SetMulticastAddressAllocator(self.multicastAddressAllocator)
                 self.venues[vURL].Start()
+                
                 venuePath = "%s/%s" % (self.venuePathPrefix,
                                        self.venues[vURL].uniqueId)
                 # Somehow we have to register this venue as a new service
