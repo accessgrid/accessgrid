@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.98 2004-06-01 19:15:31 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.99 2004-06-01 23:38:26 judson Exp $
 ;
 
 ; Set externally
@@ -154,6 +154,14 @@ Root: HKCR; Subkey: x-ag-venueclient; ValueType: dword; ValueName: BrowserFlags;
 Root: HKCR; Subkey: x-ag-venueclient; ValueType: string; ValueData: Access Grid Virtual Venue Description; Flags: uninsdeletekey
 Root: HKCR; Subkey: x-ag-venueclient\shell; ValueType: string; ValueData: Open; Flags: uninsdeletekey
 Root: HKCR; Subkey: x-ag-venueclient\shell\Open\command; ValueType: string; ValueData: """{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe"" ""{app}\bin\GoToVenue.py"" --file ""%1"""; Flags: uninsdeletekey
+
+Root: HKCR; Subkey: .agpkg; ValueType: string; ValueData: x-ag-pkg; Flags: uninsdeletekey
+Root: HKCR; Subkey: .agpkg; ValueType: string; ValueName: Content Type; ValueData: application/x-ag-pkg; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag-pkg; ValueType: dword; ValueName: EditFlags; ValueData: 00010000; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag-pkg; ValueType: dword; ValueName: BrowserFlags; ValueData: 00000008; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag-pkg; ValueType: string; ValueData: Access Grid Package; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag-pkg\shell; ValueType: string; ValueData: Open; Flags: uninsdeletekey
+Root: HKCR; Subkey: x-ag-pkg\shell\Open\command; ValueType: string; ValueData: """{reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\pythonw.exe"" ""{app}\bin\agpm.py"" --wait-for-input --package ""%1"""; Flags: uninsdeletekey
 
 [Tasks]
 Name: desktopicon; Description: Create &Desktop Icons; GroupDescription: Additional icons:
