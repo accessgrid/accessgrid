@@ -1,6 +1,19 @@
+#-----------------------------------------------------------------------------
+# Name:        Server.py
+# Purpose:     
+#
+# Author:      Robert D. Olson
+#
+# Created:     2003/29/01
+# RCS-ID:      $Id: Server.py,v 1.6 2003-01-30 15:20:39 judson Exp $
+# Copyright:   (c) 2002
+# Licence:     See COPYING.TXT
+#-----------------------------------------------------------------------------
+import socket
+from threading import Thread
+
 import ServiceObject
 import ServiceBase
-import socket
 import pyGlobus.io
 from AGGSISOAP import SOAPProxy, SOAPServer, SOAPConfig
 
@@ -109,7 +122,7 @@ class Server:
         returns immediately.
         """
 
-        server_thread = threading.Thread(target = self.run)
+        server_thread = Thread(target = self.run)
         server_thread.start()
 
     def stop(self):
@@ -187,18 +200,18 @@ class Server:
         """Dispatch an incoming XMLRPC message to the appropriate
         service object."""
 
-        print "Server %s: Dispatch %s via path %s" % (self, method, path)
+#        print "Server %s: Dispatch %s via path %s" % (self, method, path)
         try:
             service = self._path_map[path]
-            print "Got service ", service
+#            print "Got service ", service
             m = service._lookup_method(method)
-            print "Got method ", m
+#            print "Got method ", m
             return m
         except KeyError:
             print "service not found"
             raise NoServiceException
         except Exception, e:
-            print "Other exception ", e
+             "Other exception ", e
 
     def get_connection_info(self, connection):
         return SecureConnectionInfo(connection.get_security_context())
