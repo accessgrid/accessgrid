@@ -19,52 +19,64 @@
 
 RETVAL=0
 prog="AGServiceManager"
+datadir="/var/run/agsm"
 
 start() {
-        # Start daemons.
-        echo -n $"Starting $prog: "
-        daemon AGServiceManager.py
-	RETVAL=$?
-        echo
-        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/agsm
-	return $RETVAL
+    # Start daemons.
+    touch /var/log/agsm.log
+    chown ag.ag /var/log/agsm.log
+    chmod 0640 /var/log/agsm.log
+    if [ ! -d $datadir ]; then
+	mkdir -p $datadir
+	chown -R ag.ag $datadir
+	chmod 0640 $datadir
+    fi
+    echo -n $"Starting $prog: "
+    daemon --user ag AGServiceManager.py
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && touch /var/lock/subsys/agsm
+    return $RETVAL
 }
 
 stop() {
-        # Stop daemons.
-        echo -n $"Shutting down $prog: "
-	killproc AGServiceManager.py
-	RETVAL=$?
-        echo
-        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/agsm
-	return $RETVAL
+    # Stop daemons.
+    echo -n $"Shutting down $prog: "
+    killproc AGServiceManager.py
+    RETVAL=$?
+    echo
+    if [ -d $datadir ]; then
+	rm -rf $datadir
+    fi
+    [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/agsm
+    return $RETVAL
 }
 
 # See how we were called.
 case "$1" in
-  start)
+    start)
 	start
         ;;
-  stop)
+    stop)
 	stop
         ;;
-  status)
+    status)
 	status agsm
 	RETVAL=$?
 	;;
-  restart|reload)
+    restart|reload)
 	stop
 	start
 	RETVAL=$?
 	;;
-  condrestart)
+    condrestart)
 	if [ -f /var/lock/subsys/agsm ]; then
 	    stop
 	    start
 	    RETVAL=$?
 	fi
 	;;
-  *)
+    *)
         echo $"Usage: $0 {start|stop|restart|condrestart|status}"
         exit 1
 esac
