@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.26 2004-05-17 21:23:03 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.27 2004-05-19 02:36:10 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.26 2004-05-17 21:23:03 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.27 2004-05-19 02:36:10 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -1527,7 +1527,7 @@ class CertificateManagerUserInterface:
             # Also hardcoding location of submission URL.
             #
 
-            submitServerURL = "http://www-unix.mcs.anl.gov/~judson/certReqServer.cgi"
+            submitServerURL = "http://www.mcs.anl.gov/fl/research/accessgrid/ca/agdev/server.cgi"
 
             name = reqInfo.GetDN()
             log.debug("Requesting certificate for dn %s", name)

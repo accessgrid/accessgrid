@@ -1,11 +1,8 @@
 #-----------------------------------------------------------------------------
 # Name:        CRSClient.py
 # Purpose:     Certificate Request Service Client code.
-#
-# Author:      Ivan R. Judson
-#
 # Created:     2002/12/12
-# RCS-ID:      $Id: CRSClient.py,v 1.6 2004-04-16 20:30:19 olson Exp $
+# RCS-ID:      $Id: CRSClient.py,v 1.7 2004-05-19 02:36:10 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,12 +16,12 @@ import os
 os.environ['HTTP_PROXY']= 'http://localhost:3128'
 
 transport = UrllibTransport()
-url = "http://www-unix.mcs.anl.gov/~judson/certReqServer.cgi"
+url = "http://www.mcs.anl.gov/fl/research/accessgrid/ca/agdev/server.cgi"
 proxy = xmlrpclib.ServerProxy(url, transport = transport, verbose=1)
 
 """
 
-__revision__ = "$Id: CRSClient.py,v 1.6 2004-04-16 20:30:19 olson Exp $"
+__revision__ = "$Id: CRSClient.py,v 1.7 2004-05-19 02:36:10 judson Exp $"
 
 import xmlrpclib
 from AccessGrid import Log
@@ -179,7 +176,7 @@ if __name__ == "__main__":
     w.close()
     print r.read()
 
-    submitServerURL = "http://www-unix.mcs.anl.gov/~judson/certReqServer.cgi"
+    submitServerURL = "http://www.mcs.anl.gov/fl/research/accessgrid/ca/agdev/server.cgi"
     print "Sending..."
     #certificateClient = CRSClient(submitServerURL)
     certificateClient = CRSClient(submitServerURL, "yips.mcs.anl.gov", 3128)
