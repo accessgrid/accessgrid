@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.92 2003-03-21 17:12:47 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.93 2003-03-21 17:24:20 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1023,6 +1023,7 @@ class ContentListPanel(wxPanel):
         
         
     def ModifyParticipant(self, description):
+        wxLogDebug('Modify participant')
         type =  description.profileType
         oldType = None
         id = description.publicId
@@ -1034,6 +1035,7 @@ class ContentListPanel(wxPanel):
             oldType = 'node'
         
         if(oldType == type):   # just change details
+            wxLogDebug('Change details')
             if type == 'user':
                 treeId = self.participantDict[description.publicId]
                 profile = self.tree.GetItemData(treeId).GetData()
@@ -1047,12 +1049,15 @@ class ContentListPanel(wxPanel):
                 profile = description
 
         elif(oldType != None): # move to new category type
+            
             if type == 'node':
+                wxLogDebug('Change to node')
                 treeId = self.participantDict[description.publicId]
                 self.RemoveParticipant(description)
                 self.AddNode(description)
                 
             else:
+                wxLogDebug('Change to user')
                 treeId = self.nodeDict[description.publicId]
                 self.RemoveNode(description)
                 self.AddParticipant(description)
