@@ -1,0 +1,231 @@
+=====================================
+Display Node Service
+=====================================
+ 
+:version: $Revision: 1.1 $
+:author: Ivan R. Judson <judson@mcs.anl.gov>
+:status: Draft
+:contact: ag-tech@mcs.anl.gov
+
+Abstract
+========
+
+This proposal describes the design of a minimal display service for
+window and linux that will provide a developmental basis for exploring
+layout work. This is partially to enable internal research on layout,
+but also to allow the exploration of how to use nodes without
+necessarily having to log into them. This also provides a set of
+initial requirements and an interface for exotic displays to conform
+to, in order to be trivially represented by the existing service.
+
+Overview
+========
+
+This AGEP describes the data structures and interfaces required to
+build a simple display service. This display service can be used on
+the existing AG reference platforms and can be extended to support
+tiled displays. This is a basis to build display related AG research
+both on tiled displays and on automatic layout and intelligent
+windowing.
+
+Summary of Modifications
+========================
+
+All modifications take the form of new code. This is contained in a
+new node service, the DisplayService.
+
+Module Organization
+-------------------
+
+DisplayService.py
+   
+Deprecated Packages
+-------------------
+
+None
+
+Specifications
+==============
+
+DisplayTypes.py
+
+  class WindowSpec
+
+    id : unique id
+
+    sizeX : integer
+
+    sizeY : integer
+
+    locationX : integer
+
+    locationY : integer
+
+    def GetId(self): => id
+
+    def GetSize(self) => (sizeX, sizeY)
+    
+    def GetSizeX(self): => sizeX 
+    
+    def GetSizeY(self): => sizeY
+
+    def GetLocation(self): => (locationX, locationY)
+    
+    def GetLocationX(self): => locationX 
+    
+    def GetLocationY(self): => locationY
+
+  class Region
+    id  : unique id
+
+    x1 : integer
+
+    y1 : integer
+
+    x2 : integer
+
+    y2 : integer
+
+    def __init__(self, x1, y1, x2, y2, id = None):
+    
+    def GetBoundingBox(self): => (x1, y1, x2, y2)
+    
+    def GetId(self): => id
+    
+  class Layout
+
+    regionList : List of Regions
+
+    wspecList : List of WindowSpecs
+
+    regionMap : list of tuples (Region, WindowSpec)
+
+    def GetRegions(self): => regionList
+
+    def AddRegion(self, region):
+
+    def RemoveRegion(self, region):
+
+    def GetWindows(self): => wspecList
+    
+    def AddWindow(self, wspec):
+    
+    def RemoveWindow(self, wspec):
+
+    def GetLayout(self) => regionMap
+
+    def SetLayout(self, regionMap):
+    
+DisplayService.py
+
+  class DisplayService
+
+    id : string
+
+    location : string [protocol://<host>:<port>/]  
+
+      - examples: 
+
+        - x://host:0
+
+        - windows://host
+
+        - vnc://host:port/
+
+        - rdp://host:port/)
+
+    displayWidth : integer
+
+    displayHeight : integer
+
+    displayDepth : integer
+
+    windowList : list of window Id's
+
+    regionList : list of empty regions
+
+    def GetLocation(self):
+
+    def GetWindows(self):
+
+    def GetRegions(self):
+
+    def GetLocation(self):
+
+    def GetId(self):
+
+    def GetWidth(self):
+
+    def GetHeight(self):
+
+    def GetDepth(self):
+
+  class DisplayServiceI:
+        
+    def GetLocation(self)
+
+    def GetWindows(self):
+
+    def GetRegions(self):
+
+    def GetLocation(self):
+
+    def GetId(self):
+
+    def GetWidth(self):
+
+    def GetHeight(self):
+
+    def GetDepth(self):
+
+Security Issues
+===============
+
+There are no security issues associated with this particular node
+service, it falls under the node management security domain.
+
+Interoperability Issues
+=======================
+
+There are no interoperability issues with this node service, it is new.
+
+Packaging Dependancies
+======================
+
+This package depends upon certain external packages to function. On
+windows the win32 extensions by Mark Hammond provide most of the
+functionality required (enough for now). On linux, using X a separate
+module must be used. The Xlib module, from sourceforge is GPL. We'll
+have to consider whether that's a problem or not.
+
+Related AGEPs
+=============
+
+- AGEP 120: Shared App/Node Service Packaging
+
+Implementation
+==============
+
+To be completed.
+
+References
+==========
+
+None
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
