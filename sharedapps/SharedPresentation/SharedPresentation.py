@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.4 2003-08-20 19:54:20 turam Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.5 2003-08-21 22:08:46 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1217,11 +1217,12 @@ def Usage():
     Standard usage information for users.
     """
     print "%s:" % sys.argv[0]
-    print "    -h|--help : print usage"
-    print "    -d|--debug : print debugging output"
     print "    -a|--applicationURL : <url to application in venue>"
+    print "    -d|--data : <url to data in venue>"
+    print "    -h|--help : print usage"
     print "    -i|--information : <print information about this application>"
     print "    -l|--logging : <log name: defaults to SharedPresentation>"
+    print "    --debug : print debugging output"
 
 
 
