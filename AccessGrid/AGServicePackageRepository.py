@@ -3,7 +3,7 @@
 # Purpose:     
 #
 # Created:     2004/03/30
-# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.2 2004-04-06 00:52:43 turam Exp $
+# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.3 2004-04-26 19:41:14 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -91,7 +91,8 @@ class AGServicePackageRepository:
 
         # Catch non-existent service directory
         if not os.path.exists(self.servicesDir):
-            return
+            log.info("Non-existent service directory")
+            return []
 
         files = os.listdir(self.servicesDir)
         for file in files:
