@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.31 2003-04-29 20:32:08 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.32 2003-05-17 18:02:49 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,6 +18,7 @@ import time
 from random import Random
 import sha
 import urllib
+import urlparse
 
 import logging
 log = logging.getLogger("AG.Utilities")
@@ -289,5 +290,8 @@ def StartDetachedProcess(cmd):
         shcmd = [shell, "-c", cmd]
         os.spawnvp(os.P_NOWAIT, shell, shcmd)
 
+def PathFromURL(URL):
+    """
+    """
+    return urlparse.urlparse(URL)[2]
 
-    
