@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.75 2003-05-23 15:26:14 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.76 2003-05-23 19:48:27 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -43,6 +43,7 @@ from AccessGrid.Descriptions import ConnectionDescription, StreamDescription
 from AccessGrid.Descriptions import DataDescription, VenueDescription
 from AccessGrid.Descriptions import CreateVenueDescription, ServiceDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
+from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.Types import Capability
 
 log = logging.getLogger("AG.VenueServer")
