@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.10 2004-03-04 22:40:33 judson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.11 2004-04-07 23:48:07 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 AG Hosting environment tools.
 """
-__revision__ = "$Id: __init__.py,v 1.10 2004-03-04 22:40:33 judson Exp $"
+__revision__ = "$Id: __init__.py,v 1.11 2004-04-07 23:48:07 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
@@ -22,7 +22,7 @@ import os
 __hostingImpl = "SOAPpy"
 
 # pointers to methods and objects, helpful magic
-Server = lambda x: None
+SecureServer = lambda x: None
 InsecureServer = lambda x: None
 GetSOAPContext = lambda x: None
 Client = lambda x: None
@@ -61,7 +61,7 @@ def SetHostingImpl(choice):
         s = __import__(nis, globals(), locals(), ["SecureServer",
                                                   "InsecureServer",
                                                   "GetSOAPContext"])
-        Server = s.SecureServer
+        SecureServer = s.SecureServer
         InsecureServer = s.InsecureServer
         GetSOAPContext = s.GetSOAPContext
     except ImportError:

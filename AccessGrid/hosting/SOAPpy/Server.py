@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.11 2004-03-26 21:07:47 eolson Exp $
+# RCS-ID:      $Id: Server.py,v 1.12 2004-04-07 23:48:07 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ SOAPpy server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.11 2004-03-26 21:07:47 eolson Exp $"
+__revision__ = "$Id: Server.py,v 1.12 2004-04-07 23:48:07 eolson Exp $"
 
 # External imports
 import urlparse
@@ -24,7 +24,7 @@ from SOAPpy.GSIServer import ThreadingGSISOAPServer, GSIConfig
 from SOAPpy.Server import ThreadingSOAPServer, GetSOAPContext
 from SOAPpy.Config import SOAPConfig
 
-class Server:
+class _Server:
     """
     The server base class provides all the functionality required for
     a SOAP server based upon the SOAPpy module.
@@ -225,7 +225,7 @@ class Server:
                 path = urlparse.urlparse(URL)[2]
         return path
         
-class SecureServer(Server):
+class SecureServer(_Server):
     """
     The SecureServer extends the SOAPpy server base class to use
     GSIHTTP for connections.
@@ -245,9 +245,9 @@ class SecureServer(Server):
             self.config.dumpFaultInfo = 1
 
         s = ThreadingGSISOAPServer(addr, config = self.config)
-        Server.__init__(self, addr, s)
+        _Server.__init__(self, addr, s)
         
-class InsecureServer(Server):
+class InsecureServer(_Server):
     """
     The InsecureServer class derives from the SOAPpy server, but doesn't
     require any authorization information. It uses stock HTTP.
@@ -267,5 +267,13 @@ class InsecureServer(Server):
             self.config.dumpFaultInfo = 1
 
         s = ThreadingSOAPServer(addr, config = self.config)
-        Server.__init__(self, addr, s)
+        _Server.__init__(self, addr, s)
+
+    def GetURLBase(self):
+        """
+        Return the base URL that represents this server.
+
+        @return: the url of the server
+        """
+        return "http://%s:%s" % self._server.server_address
         
