@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.178 2004-04-07 23:50:11 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.179 2004-04-08 15:46:51 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.178 2004-04-07 23:50:11 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.179 2004-04-08 15:46:51 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1101,8 +1101,9 @@ class Venue(AuthorizationMixIn):
         log.debug("Enter: Distribute enter event ")
 
         try:
-            dn = clientProfile.GetDistinguishedName()
-            self.authManager.FindRole("VenueUsers").AddSubject(X509Subject.CreateSubjectFromString(dn))
+            if not Application.instance().GetOption("insecure"):
+                dn = clientProfile.GetDistinguishedName()
+                self.authManager.FindRole("VenueUsers").AddSubject(X509Subject.CreateSubjectFromString(dn))
         except SubjectAlreadyPresent:
             log.info("User already in venue users list: %s", dn)
 
