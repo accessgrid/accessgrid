@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.14 2004-05-03 18:12:51 lefvert Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.15 2004-05-21 21:47:05 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.14 2004-05-03 18:12:51 lefvert Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.15 2004-05-21 21:47:05 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -22,6 +22,7 @@ from AccessGrid import GUID
 from AccessGrid import Events
 from AccessGrid.Events import Event
 from AccessGrid.Descriptions import ApplicationDescription, AppParticipantDescription, AppDataDescription
+from AccessGrid.Descriptions import CreateClientProfile
 
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 
@@ -292,6 +293,7 @@ class SharedApplication(AuthorizationMixIn):
             raise InvalidPrivateToken
 
         comps = self.components.values()
+
         return comps
 
     def GetParticipants(self, private_token):
@@ -486,10 +488,14 @@ class SharedApplicationI(SOAPInterface, AuthorizationIMixIn):
         return self.impl.GetId()
         
     def Join(self, clientProfile=None):
-        return self.impl.Join(clientProfile)
+        if clientProfile is not None:
+            cProfile = CreateClientProfile(clientProfile)
+        else:
+            cProfile = None
+        return self.impl.Join(cProfile)
 
-    def GetComponents(self):
-        return self.impl.GetComponents()
+    def GetComponents(self, private_token):
+        return self.impl.GetComponents(private_token)
 
     def GetParticipants(self, private_token):
         return self.impl.GetParticipants(private_token)
@@ -516,7 +522,11 @@ class SharedApplicationI(SOAPInterface, AuthorizationIMixIn):
         return self.impl.SetParticipantStatus(private_token, status)
 
     def SetParticipantProfile(self, private_token, profile):
-        return self.impl.SetParticipantProfile(private_token, profile)
+        if profile is not None:
+            cProfile = CreateClientProfile(profile)
+        else:
+            cProfile = None
+        return self.impl.SetParticipantProfile(private_token, cProfile)
 
     def GetState(self, private_token):
         return self.impl.GetState(private_token)
@@ -534,8 +544,8 @@ class SharedApplicationIW(SOAPIWrapper, AuthorizationIWMixIn):
     def Join(self, clientProfile=None):
         return self.proxy.Join(clientProfile)
 
-    def GetComponents(self):
-        return self.proxy.GetComponents()
+    def GetComponents(self, private_token):
+        return self.proxy.GetComponents(private_token)
 
     def GetParticipants(self, private_token):
         return self.proxy.GetParticipants(private_token)
