@@ -6,76 +6,99 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceService.py,v 1.2 2002-12-17 22:45:46 judson Exp $
+# RCS-ID:      $Id: CoherenceService.py,v 1.3 2002-12-18 04:37:21 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
+import socket
+import struct
 from threading import Thread
-import SocketServer
 
-class CoherenceService(Thread):
-    __doc__ = """
-    This coherence service provides coherence among a set of listening
-    endpoints by sending events, and perhaps periodic state updates.
-    """
+from NetworkLocation import UnicastNetworkLocation
+
+class ConnectionHandler(Thread):
     server = None
+    connection = None
+    address = ''
+    run = 0
+    
+    def __init__(self, server, connection, address):
+        Thread.__init__(self)
+        self.server = server
+        self.connection = connection
+        self.address = address
+        
+    def Stop(self):
+        self.run = 0
+        
+    def send(self, data):
+        self.connection.send(data)
+        
+    def run(self):
+        self.run = 1
+        while(self.run):
+            try:
+                data = self.connection.recv(1024)
+            except:
+                self.connection.close()
+                self.run = 0
+            if not data: break 
+            self.server.distribute(data)
+            
+class AcceptHandler(Thread):
+    socket = None
+    server = None
+    run = 0
+    
+    def __init__(self, server, socket):
+        Thread.__init__(self)
+        self.server = server
+        self.socket = socket
+    
+    def Stop(self):
+        self.run = 0
+        
+    def run(self):
+        self.run = 1
+        while(self.run == 1):
+            connection, address = self.socket.accept()
+            addressString = "%s:%d" % (address[0], address[1])
+            self.server.connections[addressString] = ConnectionHandler(self.server, 
+                                                                 connection, 
+                                                                 addressString)
+            self.server.connections[addressString].start()    
+
+class CoherenceService:
+    connections = {}
     location = None
-    connections = ()
+    sock = None
+    acceptThread = None
     
     def __init__(self, location):
-        Thread.__init__(self)
-        self.allow_reuse_address = 1
         self.location = location
-        self.server = SocketServer.TCPServer((location.GetHost(), 
-                                              location.GetPort()), 
-                                              CoherenceConnectionHandler)
-    
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind((location.GetHost(), location.GetPort()))
+        sock.listen(1)
+        acceptThread = AcceptHandler(self, sock)
+        acceptThread.start()
+        
     def SetLocation(self, location):
         self.location = location
         
     def GetLocation(self):
         return self.location
-        
-    def run(self):
-        self.server.serve_forever()
-        
-    def handle(self, data):
-        __doc__ = """
-        The handle method is used to emit data to coherence clients. The
-        each connection calls this when they recieve data from the their
-        client. The Virtual Venue calls this to emit coherence data to the 
-        clients.
-        """ 
-        print "Got Data: " + data
-        for c in connections:
-            c.request.send(data)
+         
+    def distribute(self, data):
+        for c in self.connections.keys():
+            if self.connections[c].isAlive():
+                self.connections[c].send(data)
+            else:
+                del self.connections[c]
             
-class CoherenceConnectionhandler(SocketServer.BaseRequestHandler):
-    def handle(self):
-        __doc__ = """
-        The CoherenceConnection handler takes the TCP connection, puts it in
-        the servers list of connections, then it proceeds to listen for data.
-        If there is data it sends the data to all the listening endpoints.
-        """
-        
-        self.server.connections.append(self)
-        
-        while 1:
-            dataRecieved = self.request.recv(1024)
-            print "Got Data: " + dataRecieved
-            if not dataRecieved: break
-            self.server.handle(dataRecieved) 
-                       
 if __name__ == "__main__":
   # just print out a for testing
-  import socket
   import string
-  import NetworkLocation
-  nl = NetworkLocation.UnicastNetworkLocation(string.lower(socket.getfqdn()), 
-                                              6500)
-  print "Creating new CoherenceService."
+  nl = UnicastNetworkLocation(string.lower(socket.getfqdn()), 6500)
+  print "Creating new CoherenceService at %s %d." % (nl.GetHost(), nl.GetPort())
   coherence = CoherenceService(nl)
-  print "Starting the CoherenceService."
-  coherence.start()
-  

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceClient.py,v 1.1.1.1 2002-12-16 22:25:37 judson Exp $
+# RCS-ID:      $Id: CoherenceClient.py,v 1.2 2002-12-18 04:37:21 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,12 +46,11 @@ class CoherenceClient:
     def test_serve(self):
         import time
         while self.run:
-            data = time.asctime()
-            print "Sending Data: " + data
+            data = "%s %s" % (socket.getfqdn(), time.asctime())
             self.sock.send(data)
-            print "Sent data, receiving data"
             data = self.sock.recv(1024)
             self.callback(data)
+            time.sleep(1)
             
 def test(data):
     print "Got Data from Coherence: " + data
