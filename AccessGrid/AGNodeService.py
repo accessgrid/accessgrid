@@ -2,22 +2,22 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.52 2004-03-26 20:40:39 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.53 2004-03-31 22:10:34 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.52 2004-03-26 20:40:39 judson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.53 2004-03-31 22:10:34 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
 import sys
 import string
-import thread
 import ConfigParser
 import shutil
+import urlparse
 
 from AccessGrid.Toolkit import Application
 from AccessGrid.Platform.Config import SystemConfig, UserConfig, AGTkConfig
@@ -25,6 +25,7 @@ from AccessGrid.hosting import Client
 from AccessGrid import Log
 from AccessGrid.Descriptions import AGServiceDescription
 from AccessGrid.Descriptions import AGServiceManagerDescription
+from AccessGrid.AGServiceManager import AGServiceManagerI
 from AccessGrid.AGServiceManager import AGServiceManagerIW
 from AccessGrid.AGService import AGServiceIW
 from AccessGrid.Types import ServiceConfiguration, AGResource
@@ -37,6 +38,8 @@ from AccessGrid.Descriptions import CreateResource
 from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.Descriptions import CreateServiceConfiguration
 from AccessGrid.Descriptions import CreateStreamDescription
+
+from AccessGrid.AGServicePackageRepository import AGServicePackageRepository
 
 from SOAPpy.Types import SOAPException
 
@@ -80,7 +83,8 @@ class AGNodeService:
                 # Copy node configurations from system node config directory
                 # to user node config directory
                 log.info("Copying system node configs to user node config dir")
-                systemNodeConfigDir = os.path.join(AGTkConfig.instance().GetConfigDir(), "nodeConfig")
+                systemNodeConfigDir = os.path.join(AGTkConfig.instance().GetConfigDir(), 
+                                                   "nodeConfig")
                 configFiles = os.listdir(systemNodeConfigDir)
                 for configFile in configFiles:
                     log.info("  node config: %s", configFile)
@@ -103,7 +107,8 @@ class AGNodeService:
         # Start the service package repository
         # (now that the services directory is known)
         #
-        self.servicePackageRepository = AGServicePackageRepository( 0, self.servicesDir )
+        self.servicePackageRepository = AGServicePackageRepository( self.servicesDir )
+        self.servicePackageRepository.Start()
 
     def LoadDefaultConfig(self):
     
@@ -125,7 +130,7 @@ class AGNodeService:
     ####################
     ## SERVICE MANAGER methods
     ####################
-
+    
     def AddServiceManager( self, serviceManager ):
         """Add a service manager"""
 
@@ -162,7 +167,7 @@ class AGNodeService:
     def GetServiceManagers( self ):
         """Get list of service managers """
         return self.serviceManagers.values()
-
+                        
 
     ####################
     ## SERVICE methods
@@ -174,8 +179,10 @@ class AGNodeService:
         Add a service package to the service manager.  
         """
         
+        log.debug("AddService %s", servicePackageUri.name)
+        
         serviceDescription = None
-
+        
         # Add the service to the service manager
         try:
             serviceDescription = AGServiceManagerIW( serviceManagerUri ).AddService( servicePackageUri,
@@ -381,7 +388,9 @@ class AGNodeService:
                     serviceConfigSection = config.get( serviceSection, "serviceConfig" )
                     parameters = []
                     for parameter in config.options( serviceConfigSection ):
-                        parameters.append( ValueParameter( parameter, config.get( serviceConfigSection, parameter ) ) )
+                        parameters.append( ValueParameter( parameter, 
+                                                           config.get( serviceConfigSection,
+                                                                       parameter ) ) )
 
                     #
                     # Add Service to List
@@ -438,9 +447,10 @@ class AGNodeService:
                     serviceConfig = ServiceConfiguration( service.resource,
                                                           service.executable,
                                                           service.parameters)
-                    AGServiceManagerIW( serviceManager.uri ).AddService( self.servicePackageRepository.GetPackageUrl( service.packageName ), 
-                                                                                service.resource,
-                                                                                serviceConfig )
+                    AGServiceManagerIW( serviceManager.uri ).AddService( 
+                        self.servicePackageRepository.GetServiceDescription( service.packageName ), 
+                        service.resource,
+                        serviceConfig )
                 except:
                     log.exception("Exception adding service %s" % (service.packageName))
                     exceptionText += "Couldn't add service %s" % (service.packageName)
@@ -456,7 +466,7 @@ class AGNodeService:
       """
       try:
                 
-        fileName = self.configDir + os.sep + configName
+        fileName = os.path.join(self.configDir, configName)
 
         # Catch inability to write config file
         if((not os.path.exists(self.configDir)) or
@@ -677,102 +687,6 @@ class AGNodeService:
             raise SetStreamException(failedSends)
 
 
-from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
-from AccessGrid.Types import AGServicePackage, InvalidServicePackage
-from AccessGrid import DataStore
-
-class AGServicePackageRepository:
-    """
-    AGServicePackageRepository encapsulates knowledge about local service
-    packages and avails them to clients (service managers) via http(s)
-    """
-
-    def __init__( self, port, servicesDir):
-
-        # if port is 0, find a free port
-        if port == 0:
-            port = NetworkAddressAllocator().AllocatePort()
-
-        self.httpd_port = port
-        self.servicesDir = servicesDir
-     
-        self.serviceDescriptions = []
-
-        # 
-        # Define base url
-        #
-        hn = SystemConfig.instance().GetHostname()
-        prefix = "packages"
-        self.baseUrl = 'https://%s:%d/%s/' % ( hn, self.httpd_port, prefix )
-
-        #
-        # Start the transfer server
-        #
-        self.s = DataStore.GSIHTTPTransferServer(('', self.httpd_port)) 
-        self.s.RegisterPrefix(prefix, self)
-        thread.start_new_thread( self.s.run, () )
-        self.running = 1
-
-    def Stop(self):
-        if self.running:
-            self.running = 0
-            self.s.stop()
-
-    def GetDownloadFilename(self, id_token, url_path):
-        """
-        Return the path to the file specified by the given url path
-        """
-        file = os.path.join(self.servicesDir, url_path)
-
-        # Catch request for non-existent file
-        if not os.access(file,os.R_OK):
-            log.info("Attempt to download non-existent file: %s" % (file) )
-            raise DataStore.FileNotFound(file)
-
-        log.info("Download filename : %s", file)
-        return file
-
-    def GetPackageUrl( self, file ):
-        return self.baseUrl + file
-
-    def GetServiceDescriptions( self ):
-        """
-        Get list of local service descriptions
-        """
-        self.__ReadServicePackages()
-        return self.serviceDescriptions
-
-
-    def __ReadServicePackages( self ):
-        """
-        Read service packages from local directory and build service descriptions
-        """
-        self.serviceDescriptions = []
-
-        invalidServicePackages = 0
-
-        if os.path.exists(self.servicesDir):
-            files = os.listdir(self.servicesDir)
-            for file in files:
-                if file.endswith(".zip"):
-                    try:
-                        servicePackage = AGServicePackage( self.servicesDir + os.sep + file)
-                        serviceDesc = servicePackage.GetServiceDescription()
-                    except InvalidServicePackage:
-                        invalidServicePackages = invalidServicePackages + 1
-                    serviceDesc.servicePackageUri = self.baseUrl + file
-                    self.serviceDescriptions.append( serviceDesc )
-
-        else:
-            log.exception("AGServicePackageRepository.__ReadServicePackages: The service directory does not exist %s"%self.servicesDir)
-
-        if invalidServicePackages:
-            log.exception("AGServicePackageRepository.__ReadServicePackages: %i invalid service package found" %invalidServicePackages)
-            raise InvalidServicePackage('%d invalid service package(s) found' % invalidServicePackages )
-
-
-
-
 
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 
@@ -824,7 +738,7 @@ class AGNodeServiceI(SOAPInterface):
 
         return self.impl.GetServiceManagers()
 
-    def AddService( self, servicePackageUri, serviceManagerUri, 
+    def AddService( self, serviceDescStruct, serviceManagerUri, 
                     resourceStruct, serviceConfigStruct ):
         """
         Interface to add a service
@@ -837,6 +751,11 @@ class AGNodeServiceI(SOAPInterface):
         **Raises:**
         **Returns:**
         """
+        
+        if serviceDescStruct:
+            serviceDescription = CreateAGServiceDescription(serviceDescStruct)
+        else:
+            serviceDescription = None
 
         if resourceStruct:
             resource = CreateResource(resourceStruct)
@@ -847,7 +766,7 @@ class AGNodeServiceI(SOAPInterface):
         else:
             serviceConfig = None
             
-        return self.impl.AddService(servicePackageUri, serviceManagerUri, 
+        return self.impl.AddService(serviceDescription, serviceManagerUri, 
                     resource, serviceConfig )
 
     def GetAvailableServices(self):
@@ -1056,8 +975,10 @@ class AGNodeServiceIW(SOAPIWrapper):
             
     def AddService( self, servicePackageUri, serviceManagerUri, 
                     resourceToAssign, serviceConfig ):
-        return self.proxy.AddService(servicePackageUri, serviceManagerUri, 
+        serviceDescStruct = self.proxy.AddService(servicePackageUri, serviceManagerUri, 
                     resourceToAssign, serviceConfig )
+        serviceDescription = CreateAGServiceDescription(serviceDescStruct)
+        return serviceDescription
 
     def GetAvailableServices(self):
         svcList = list()
