@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.177 2003-05-08 20:23:07 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.178 2003-05-09 20:43:25 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -21,6 +21,7 @@ from wxPython.wx import *
 log = logging.getLogger("AG.VenueClientUIClasses")
 
 from AccessGrid import icons
+from AccessGrid import Toolkit
 from AccessGrid.VenueClient import VenueClient, EnterVenueException
 from AccessGrid import Utilities
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog, GetMimeCommands
@@ -41,12 +42,6 @@ try:
     import win32api
 except:
     pass
-try:
-    from AccessGrid import CertificateManager
-    CertificateManager.CertificateManagerWXGUI
-    HaveCertificateManager = 0
-except Exception, e:
-    HaveCertificateManager = 0
 
 class VenueClientFrame(wxFrame):
     
@@ -223,13 +218,20 @@ class VenueClientFrame(wxFrame):
 
         self.menubar.Append(self.myVenues, "My Ven&ues")
 
-        
+        #
+        # Retrieve the cert mgr GUI from the application.
+        #
 
-        if HaveCertificateManager:
-            # certMenu = wxMenu()
-            # certMenu.Append(self.ID_CERT_TRUSTED, "View &Trusted CA Certificates...")
-            # certMenu.Append(self.ID_CERT_IDENTITY, "View &Identity Certificates...")
-            certMenu = self.app.certificateManagerGUI.GetMenu(self)
+        gui = None
+        try:
+            mgr = Toolkit.GetApplication().GetCertificateManager()
+            gui = mgr.GetUserInterface()
+
+        except:
+            log.exception("Cannot retrieve certificate mgr user interface, continuing")
+
+        if gui is not None:
+            certMenu = gui.GetMenu(self)
             self.menubar.Append(certMenu, "&Certificates")
               
       	self.help = wxMenu()
@@ -2584,7 +2586,7 @@ def VerifyExecutionEnvironment():
         log.debug("VerifyExecutionEnvironment: bind to local hostname of %s succeeds", myhost)
     except socket.error:
         log.critical("VerifyExecutionEnvironment: bind to local hostname of %s fails", myhost)
-
+        log.critical("This may be due to the hostname being set to something different than the name to which the IP address of this computer maps, or to the the hostname not being fully qualified with the full domain.")
         #
         # Test to see if the environment variable GLOBUS_HOSTNAME has a different
         # value than the registry. If that is the case, then teh user
@@ -2632,7 +2634,6 @@ def VerifyExecutionEnvironment():
                               "Application configuration problem", wxOK)
         dlg.ShowModal()
         dlg.Destroy()
-        sys.exit(1)
         
         sys.exit(1)
     
@@ -2674,6 +2675,7 @@ def ShowNetworkInitWin32(msg):
         shortpath = win32api.GetShortPathName(networkInit)
         win32api.WinExec("python %s" % (shortpath))
     else:
+
         dlg = wxMessageDialog(None,
                               "This computer's network configuration is not correct.\n" + 
                               "Correct the problem (by setting the GLOBUS_HOSTNAME environment\n" + 
