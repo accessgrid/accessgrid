@@ -3,14 +3,14 @@
 # spec file. If you see %{variable_name} this is where it's assigned
 #
 %define	name		AccessGrid
-%define version		2.2
+%define version		2.3
 %define release		RELEASE
 %define	prefix		/usr
 %define sysconfdir	/etc/%{name}/Config
 %define sharedir	%{prefix}/share
 %define xdg_config_dirs	/etc/xdg
 %define xdg_data_dirs	%{sharedir}
-%define buildroot	/usr/src/redhat/BUILD/AccessGrid-2.2
+%define buildroot	/usr/src/redhat/BUILD/AccessGrid-2.3
 %define debug_package	%{nil}
 
 #
