@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.9 2003-01-23 17:21:05 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.10 2003-01-24 04:30:08 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -238,25 +238,11 @@ class AGServiceImplementation:
                                                  "local_services/" + c.get( "ServiceDescription", "executable" ) )
         return serviceDescription
 
-
-def FindFreePort( startport ):
-    port = startport
-    while 1:
-        try:
-            s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
-            s.bind(("", port ) )
-            s.close()
-        except socket.error:
-            port = port + 1
-            continue
-
-        break
-    return port
-
+from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 
 class AGServiceImplementationRepository:
 
-    def __init__( self, port=FindFreePort(900) ):
+    def __init__( self, port=MulticastAddressAllocator().AllocatePort()):
         self.httpd_port = port
         self.__ReadServiceImplementations()
         thread.start_new_thread( self.__StartWebServer, () )
