@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.209 2003-05-30 16:46:21 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.210 2003-05-30 21:20:46 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -123,7 +123,7 @@ class VenueClientFrame(wxFrame):
         self.ag_url = "http://www.accessgrid.org/"
         self.flag_url = "http://www.mcs.anl.gov/fl/research/accessgrid"
         self.fl_url = "http://www.mcs.anl.gov/fl/"
-        self.manual_url = "http://www-unix.mcs.anl.gov/~lefvert/PROJECTS/ACCESS_GRID/MANUALS/VENUE_CLIENT/VenueClientManualFrame2-2.htm"
+        self.manual_url = "http://www-unix.mcs.anl.gov/~lefvert/PROJECTS/ACCESS_GRID/MANUALS/VENUE_CLIENT_MANUAL/VenueClientManualHTML.htm"
         self.app = app
         self.parent = parent
         self.myVenuesFile = os.path.join(self.app.accessGridPath, "myVenues.txt" )
