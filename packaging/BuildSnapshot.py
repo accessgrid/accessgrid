@@ -82,7 +82,7 @@ if sys.platform == 'win32':
 
 # Build Name
 #  This is the default name we use for the installer
-BuildTime = time.strftime("%Y%m%d-%H%M%S")
+BuildTime = time.strftime("%Y%m%d_%H%M%S")
 
 # Names for the software
 if options.metainfo is not None:
@@ -205,7 +205,7 @@ cmd = "%s %s --html -o %s -n \"Access Grid Toolkit\" -u \"%s\" AccessGrid" % \
       (sys.executable, ep, os.path.join(DestDir, 'doc','Developer'),
        "http://www.mcs.anl.gov/fl/research/accessgrid")
 
-os.system(cmd)
+#os.system(cmd)
 
 # put the old python path back
 if oldpath is not None:
