@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.5 2003-02-14 20:09:04 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.6 2003-02-18 19:35:44 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -33,12 +33,8 @@ class AudioService( AGService ):
       self.configuration["Speaker Volume"] = RangeParameter( "Speaker Volume", 50, 0, 100 ) 
 
 
-   def Start( self, connInfo ):
+   def Start( self ):
       """Start service"""
-
-      # Check authorization
-      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
       try:
 
          # 
@@ -47,8 +43,8 @@ class AudioService( AGService ):
          print "Start service"
          print "Location : ", self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl
          options = []
-         #options.append( "-name" )
-         #options.append( '"%s"' % ( self.streamDescription.name ) )
+         options.append( "-name" )
+         options.append( self.streamDescription.name )
          options.append( "-t" )
          options.append( '%d' % (self.streamDescription.location.ttl ) )
          if self.streamDescription.encryptionKey != 0:
@@ -63,25 +59,18 @@ class AudioService( AGService ):
          print "value ", sys.exc_value, type(sys.exc_value), sys.exc_value.__class__
          raise faultType("OS Error (could be missing executable)")
    Start.soap_export_as = "Start"
-   Start.pass_connection_info = 1
 
 
-   def ConfigureStream( self, connInfo, streamDescription ):
+   def ConfigureStream( self, streamDescription ):
       """Configure the Service according to the StreamDescription, and stop and start rat"""
-
-      # Check authorization
-      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
-      print "in AudioService.ConfigureStream"
-      AGService.ConfigureStream( self, connInfo, streamDescription )
+      AGService.ConfigureStream( self, streamDescription )
 
       # restart rat, since this is the only way to change the 
       # stream location (for now!)
       if self.started:
-         self.Stop( connInfo )
-         self.Start( connInfo )
+         self.Stop()
+         self.Start()
    ConfigureStream.soap_export_as = "ConfigureStream"
-   ConfigureStream.pass_connection_info = 1
 
 
 

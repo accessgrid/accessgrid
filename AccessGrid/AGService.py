@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.8 2003-02-12 20:57:23 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.9 2003-02-18 19:35:57 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -52,11 +52,10 @@ class AGService( ServiceBase ):
 
 
 
-   def Start( self, connInfo ):
+   def Start( self ):
       """Start the service"""
       raise Exception("AGService.Start is abstract!")
    Start.soap_export_as = "Start"
-   Start.pass_connection_info = 1
 
 
    def _Start( self, options ):
@@ -66,54 +65,24 @@ class AGService( ServiceBase ):
 
       # if started, stop
       if self.started == 1:
-         self._Stop()
-
+         self.Stop()
 
       self.processManager.start_process( self.executable, options )
-
-      """
-      options.insert(0,self.executable)
-      print self
-      print self.__class__, "starting with options = ", options
-      self.childPid = os.spawnv( os.P_NOWAIT, self.executable, options )
-      print "childPid = ", self.childPid
-      """
       self.started = 1
 
 
-   def Stop( self, connInfo ):
+   def Stop( self ):
       """Stop the service"""
-
-      # Check authorization
-      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
       try:
-         self._Stop()
+         self.started = 0
+         self.processManager.terminate_all_processes()
       except:
          print "Exception in AGService.Stop ", sys.exc_type, sys.exc_value
          raise faultType("AGService.Stop failed : ", str( sys.exc_value ) )
    Stop.soap_export_as = "Stop"
-   Stop.pass_connection_info = 1
 
 
-   def _Stop( self ):
-      """Internal : Stop the service"""
-
-      self.started = 0
-
-      self.processManager.terminate_all_processes()
-
-      """
-      if self.childPid != None:
-         if sys.platform == 'win32':
-            win32process.TerminateProcess( self.childPid, 0 )
-         else:
-            os.kill( self.childPid, 9 )
-            os.waitpid( self.childPid, 1 )
-      """
-
-
-   def SetAuthorizedUsers( self, connInfo, authorizedUsers ):
+   def SetAuthorizedUsers( self, authorizedUsers ):
       """
       Set the authorizedUsers list; this is usually pushed from a ServiceManager,
       thus this wholesale Set of the authorized user list
@@ -126,71 +95,40 @@ class AGService( ServiceBase ):
          print "Exception in AGService.SetAuthorizedUsers : ", sys.exc_type, sys.exc_value
          raise faultType("AGService.SetAuthorizedUsers failed : " + str(sys.exc_value) )
    SetAuthorizedUsers.soap_export_as = "SetAuthorizedUsers"
-   SetAuthorizedUsers.pass_connection_info = 1
 
 
-   def GetCapabilities( self, connInfo ):
+   def GetCapabilities( self ):
       """Get capabilities"""
-
-      # Check authorization
-      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
       return self.capabilities
    GetCapabilities.soap_export_as = "GetCapabilities"
-   GetCapabilities.pass_connection_info = 1
 
 
-   def GetResource( self, connInfo ):
+   def GetResource( self ):
       """Get resources"""
-
-      # Check authorization
-      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
       return self.resource
    GetResource.soap_export_as = "GetResource"
-   GetResource.pass_connection_info = 1
 
 
-   def SetResource( self, connInfo, resource ):
+   def SetResource( self, resource ):
       """Set the resource used by this service"""
-      print " * ** * inside SetResource"
-
-      # Check authorization
-      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
       self.resource = resource
    SetResource.soap_export_as = "SetResource"
-   SetResource.pass_connection_info = 1
 
 
-   def GetExecutable( self, connInfo ):
+   def GetExecutable( self ):
       """Get resources"""
-
-      # Check authorization
-      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
       return self.executable
    GetExecutable.soap_export_as = "GetExecutable"
-   GetExecutable.pass_connection_info = 1
 
 
-   def SetExecutable( self, connInfo, executable ):
+   def SetExecutable( self, executable ):
       """Set the resource used by this service"""
-
-      # Check authorization
-      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
       self.executable = executable
    SetExecutable.soap_export_as = "SetExecutable"
-   SetExecutable.pass_connection_info = 1
 
 
-   def SetConfiguration( self, connInfo, configuration ):
+   def SetConfiguration( self, configuration ):
       """Set configuration of service"""
-
-      # Check authorization
-      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
       try:
          self.resource = configuration.resource
          self.executable = configuration.executable
@@ -202,15 +140,10 @@ class AGService( ServiceBase ):
          print "Exception in AGService.SetConfiguration : ", sys.exc_type, sys.exc_value
          raise faultType("AGService.SetConfiguration failed : " + str(sys.exc_value) )
    SetConfiguration.soap_export_as = "SetConfiguration"
-   SetConfiguration.pass_connection_info = 1
 
 
-   def GetConfiguration( self, connInfo ):
+   def GetConfiguration( self ):
       """Return configuration of service"""
-
-      # Check authorization
-      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
       try:
          serviceConfig = ServiceConfiguration( self.resource, self.executable, self.configuration.values() )
       except:
@@ -219,16 +152,11 @@ class AGService( ServiceBase ):
 
       return serviceConfig
    GetConfiguration.soap_export_as = "GetConfiguration"
-   GetConfiguration.pass_connection_info = 1
 
 
-   def ConfigureStream( self, connInfo, streamDescription ):
+   def ConfigureStream( self, streamDescription ):
       """Configure the Service according to the StreamDescription"""
-
-      # Check authorization
-      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
-      print "in AudioService.ConfigureStream"
+      print "in AGService.ConfigureStream"
       try:
          m = map( lambda cap:cap.type, self.capabilities )
          print streamDescription.capability.type
@@ -237,23 +165,15 @@ class AGService( ServiceBase ):
       except:
          print "Exception in ConfigureStream ", sys.exc_type, sys.exc_value
          raise faultType("AGService.ConfigureStream failed : " + str(sys.exc_value) )
-
    ConfigureStream.soap_export_as = "ConfigureStream"
-   ConfigureStream.pass_connection_info = 1
 
 
-   def IsStarted( self, connInfo ):
+   def IsStarted( self ):
       """Return the state of Service"""
-
-      # Check authorization
-      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
       return self.started
    IsStarted.soap_export_as = "IsStarted"
-   IsStarted.pass_connection_info = 1
 
 
    def Ping( self ):
       return 1
    Ping.soap_export_as = "Ping"
-   Ping.pass_connection_info = 0

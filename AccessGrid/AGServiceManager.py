@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.9 2003-02-18 19:11:48 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.10 2003-02-18 19:35:57 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ class AGServiceManager( ServiceBase ):
     ## AUTHORIZATION methods
     ####################
 
-    def SetAuthorizedUsers( self, connInfo, authorizedUsers ):
+    def SetAuthorizedUsers( self, authorizedUsers ):
         """
         Set the authorizedUsers list; this is usually pushed from a NodeService,
         thus this wholesale Set of the authorized user list.  Also, push this
@@ -68,29 +68,23 @@ class AGServiceManager( ServiceBase ):
             print "AGServiceManager.SetAuthorizedUsers : ", sys.exc_type, sys.exc_value
             raise faultType("AGServiceManager.SetAuthorizedUsers failed: " + str( sys.exc_value ))
     SetAuthorizedUsers.soap_export_as = "SetAuthorizedUsers"
-    SetAuthorizedUsers.pass_connection_info = 1
 
 
     ####################
     ## RESOURCE methods
     ####################
 
-    def GetResources( self, connInfo ):
+    def GetResources( self ):
         """
         Return a list of resident resources
         """
-
-        # Check authorization
-        if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
         self.__DiscoverResources()
 
         return self.resources
     GetResources.soap_export_as = "GetResources"
-    GetResources.pass_connection_info = 1
 
 
-    def DiscoverResources( self, connInfo ):
+    def DiscoverResources( self ):
         """Discover local resources (audio cards, etc.)
         """
         try:
@@ -98,22 +92,17 @@ class AGServiceManager( ServiceBase ):
         except:
             raise faultType("AGServiceManager.DiscoverResources failed: " + str( sys.exc_value ))
     DiscoverResources.soap_export_as = "DiscoverResources"
-    DiscoverResources.pass_connection_info = 1
 
 
     ####################
     ## SERVICE methods
     ####################
 
-    def AddService( self, connInfo, serviceImplementation, resourceToAssign ):
+    def AddService( self, serviceImplementation, resourceToAssign ):
         """
         Add a service to the service manager.  The service is an executable
         or python script, which will be started by the ServiceManager
         """
-
-        # Check authorization
-        if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
         try:
             #
             # Determine resource to assign to service
@@ -159,18 +148,13 @@ class AGServiceManager( ServiceBase ):
             raise faultType("AGServiceManager.AddService failed: " + str( sys.exc_value ) )
 
     AddService.soap_export_as = "AddService"
-    AddService.pass_connection_info = 1
 
 
-    def AddServiceDescription( self, connInfo, serviceDescription ):
+    def AddServiceDescription( self, serviceDescription ):
         """
         Add a service to the service manager.  The service is an executable
         or python script, which will be started by the ServiceManager
         """
-
-        # Check authorization
-        if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
         try:
             serviceDescription = AGServiceDescription( serviceDescription.name,
                                                        serviceDescription.description,
@@ -186,16 +170,11 @@ class AGServiceManager( ServiceBase ):
             print "Exception in AGServiceManager.AddServiceDescription ", sys.exc_type, sys.exc_value
             raise faultType("AGServiceManager.AddServiceDescription failed: " + str( sys.exc_value ))
     AddServiceDescription.soap_export_as = "AddServiceDescription"
-    AddServiceDescription.pass_connection_info = 1
 
 
-    def RemoveService( self, connInfo, serviceToRemove ):
+    def RemoveService( self, serviceToRemove ):
         """Remove a service
         """
-
-        # Check authorization
-        if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
         exc = None
         pid = None
 
@@ -258,36 +237,27 @@ class AGServiceManager( ServiceBase ):
             raise faultType("AGServiceManager.RemoveService failed : ", str( exc ) )
 
     RemoveService.soap_export_as = "RemoveService"
-    RemoveService.pass_connection_info = 1
 
 
-    def RemoveServices( self, connInfo ):
+    def RemoveServices( self ):
         """Remove all services
         """
 
-        # Check authorization
-        if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
         try:
             for service in self.services.values():
-                self.RemoveService( connInfo, service )
+                self.RemoveService( service )
         except:
             print "Exception in AGServiceManager.RemoveServices ", sys.exc_type, sys.exc_value
             raise faultType("AGServiceManager.RemoveServices failed : " + str( sys.exc_value ) )
     RemoveServices.soap_export_as = "RemoveServices"
-    RemoveServices.pass_connection_info = 1
 
 
-    def GetServices( self, connInfo ):
+    def GetServices( self ):
         """Return list of services
         """
-
-        # Check authorization
-        if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
         return self.services.values()
     GetServices.soap_export_as = "GetServices"
-    GetServices.pass_connection_info = 1
+
 
     def StopServices( self ):
         """
@@ -300,16 +270,13 @@ class AGServiceManager( ServiceBase ):
     StopServices.soap_export_as = "StopServices"
 
 
-    def RegisterService( self, connInfo, token, uri ):
+    def RegisterService( self, token, uri ):
         """
         Register a service with the service manager.  Why?  When the service manager
         executes a service implementation, it assigns it a token.  When the service
         actually starts, it registers with the service manager by passing this token
         and its uri
         """
-
-        # Check authorization
-        if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
 
         try:
 
@@ -337,13 +304,11 @@ class AGServiceManager( ServiceBase ):
             raise faultType("AGServiceManager.RegisterService failed: " + str( sys.exc_value ))
 
     RegisterService.soap_export_as = "RegisterService"
-    RegisterService.pass_connection_info = 1
 
 
     def Ping( self ):
         return 1
     Ping.soap_export_as = "Ping"
-    Ping.pass_connection_info = 0
 
 
     ####################

@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.5 2003-02-14 20:09:04 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.6 2003-02-18 19:35:45 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ class VideoConsumerService( AGService ):
       pass
 
 
-   def Start( self, connInfo ):
+   def Start( self ):
       __doc__ = """Start service"""
       try:
 
@@ -41,6 +41,8 @@ class VideoConsumerService( AGService ):
          print "Start service"
          print "Location : ", self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl
          options = []
+         options.append( "-C" )
+         options.append( self.streamDescription.name )
          if self.streamDescription.encryptionKey != 0:
             options.append( "-K" )
             options.append( self.streamDescription.encryptionKey )
@@ -50,21 +52,19 @@ class VideoConsumerService( AGService ):
       except:
          print "Exception ", sys.exc_type, sys.exc_value
    Start.soap_export_as = "Start"
-   Start.pass_connection_info = 1
 
 
-   def ConfigureStream( self, connInfo, streamDescription ):
+   def ConfigureStream( self, streamDescription ):
       """Configure the Service according to the StreamDescription, and stop and start app"""
       print "in VideoConsumerService.ConfigureStream"
-      AGService.ConfigureStream( self, connInfo, streamDescription )
+      AGService.ConfigureStream( self, streamDescription )
 
       # restart app, since this is the only way to change the 
       # stream location (for now!)
       if self.started:
-         self.Stop( connInfo )
-         self.Start( connInfo )
+         self.Stop()
+         self.Start()
    ConfigureStream.soap_export_as = "ConfigureStream"
-   ConfigureStream.pass_connection_info = 1
 
 
 def AuthCallback(server, g_handle, remote_user, context):

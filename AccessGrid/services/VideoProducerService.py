@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.4 2003-02-14 20:06:15 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.5 2003-02-18 19:35:45 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -58,7 +58,7 @@ class VideoProducerService( AGService ):
       self.configuration["Stream Name"] = ValueParameter( "Stream Name", "Video" )
 
 
-   def Start( self, connInfo ):
+   def Start( self ):
       __doc__ = """Start service"""
       try:
          
@@ -102,33 +102,26 @@ class VideoProducerService( AGService ):
       except:
          print "Exception in VideoProducerService.Start", sys.exc_type, sys.exc_value
    Start.soap_export_as = "Start"
-   Start.pass_connection_info = 1
 
 
-   def ConfigureStream( self, connInfo, streamDescription ):
+   def ConfigureStream( self, streamDescription ):
       """Configure the Service according to the StreamDescription, and stop and start rat"""
-      AGService.ConfigureStream( self, connInfo, streamDescription )
+      AGService.ConfigureStream( self, streamDescription )
 
       # restart rat, since this is the only way to change the 
       # stream location (for now!)
       if self.started:
-         self.Stop( connInfo )
-         self.Start( connInfo )
+         self.Stop()
+         self.Start()
    ConfigureStream.soap_export_as = "ConfigureStream"
-   ConfigureStream.pass_connection_info = 1
 
-   def SetResource( self, connInfo, resource ):
+   def SetResource( self, resource ):
       """Set the resource used by this service"""
       print " * ** * inside VideoProducerService.SetResource"
-
-      # Check authorization
-      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
-
       self.resource = resource
       self.configuration["Port"] = OptionSetParameter( "Port", self.resource.portTypes[0], self.resource.portTypes )
       
    SetResource.soap_export_as = "SetResource"
-   SetResource.pass_connection_info = 1
 
 
 def AuthCallback(server, g_handle, remote_user, context):
