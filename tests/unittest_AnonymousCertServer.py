@@ -15,9 +15,9 @@ class AnonReqServerTestCase(unittest.TestCase):
         self.url = ANON_SERVER_URL
         self.proxy = xmlrpclib.ServerProxy(self.url)
 
-    def test_01_RequestCACert(self):
+    def test_01_RequestCACerts(self):
 
-        cacert = self.proxy.RetrieveCACertificate()
+        cacert = self.proxy.RetrieveCACertificates()
 
         self.failUnless(operator.isSequenceType(cacert),
                         "RetrieveCACertificate returns a non-sequence")
@@ -25,15 +25,32 @@ class AnonReqServerTestCase(unittest.TestCase):
         self.failUnless(len(cacert) == 2,
                         "RetrieveCACertificate returns a tuple of len != 2")
         
-        self.failUnless(type(cacert[1]) == str,
-                        "cacert[1] is not a string")
+        self.failUnless(type(cacert[1]) != str and operator.isSequenceType(cacert[1]),
+                        "cacert[1] is not a sequence")
         
         self.assert_(cacert[0],
-                     "RetrieveCACertificate returned failure: " + cacert[1])
+                     "RetrieveCACertificate returned failure: " + str(cacert[1]))
+
+        certList = cacert[1]
+
+        #
+        # It should be  a list containing a single pair (cert, policy)
+        #
+        self.assert_(len(certList) == 1, "Retrieved cert list is not of length 1")
+
+        self.assert_(len(certList[0]) == 2, "Retrieved cert list does not contain a single pair")
+
+        cert, policy = certList[0]
+
+        self.assert_(re.search("access_id_CA", policy),
+                     "Policy string does not appear to be valid")
+
+        self.assert_(re.search("BEGIN CERTIFICATE", cert),
+                     "Certificate does not appear to be valid")
 
         tmp = tempfile.mktemp()
         fh = open(tmp, "w")
-        fh.write(cacert[1])
+        fh.write(cert)
         fh.close()
         
         fh = os.popen("openssl x509 -noout -subject -in %s" % (tmp), "r")
@@ -50,24 +67,6 @@ class AnonReqServerTestCase(unittest.TestCase):
         os.unlink(tmp)
 
         # print cacert[1]
-
-    def test_02_RequestSigningPolicy(self):
-
-        policy = self.proxy.RetrieveSigningPolicy()
-
-        self.failUnless(operator.isSequenceType(policy),
-                        "RetrieveSigningPolicy returns a non-sequence")
-        
-        self.failUnless(len(policy) == 2,
-                        "RetrieveSigningPolicy returns a tuple of len != 2")
-        
-        self.failUnless(type(policy[1]) == str,
-                        "policy[1] is not a string")
-        
-        self.assert_(policy[0],
-                     "RetrieveSigningPolicy returned failure: " + policy[1])
-
-        # print policy[1]
 
     def test_03_RequestCertificate(self):
 
