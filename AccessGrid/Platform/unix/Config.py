@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.26 2004-05-07 22:08:21 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.27 2004-05-12 21:05:34 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.26 2004-05-07 22:08:21 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.27 2004-05-12 21:05:34 turam Exp $"
 
 import os
 import mimetypes
@@ -424,9 +424,9 @@ class UserConfig(AccessGrid.Config.UserConfig):
         global AGTK_USER
 
         try:
-            self.configDir = os.environ[AGTK_USER]
+            self.configDir = os.path.join(os.environ[AGTK_USER],'Config')
         except:
-            self.configDir = os.path.join(os.environ["HOME"],".AccessGrid")
+            self.configDir = os.path.join(os.environ["HOME"],'.AccessGrid','Config')
 
         try:
             if not os.path.exists(self.configDir):
