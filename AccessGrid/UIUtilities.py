@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.6 2003-02-28 16:54:36 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.7 2003-03-11 22:12:10 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,12 +17,49 @@ from AccessGrid.Utilities import formatExceptionInfo
 
 class MessageDialog:
     def __init__(self, frame, text, text2 = "", style = wxOK|wxICON_INFORMATION):
-##        (name, args, traceback_string_list) = formatExceptionInfo()
-##        for x in traceback_string_list:
-##            print(x)       
         errorDialog = wxMessageDialog(frame, text, text2, style)
         errorDialog.ShowModal()
         errorDialog.Destroy()
+
+class MyLog(wxPyLog):
+    ERROR = 1
+    WARNING = 2
+    MESSAGE = 3
+    INFO = 5
+    DEBUG = 6
+            
+    def __init__(self, log):
+        wxPyLog.__init__(self)
+        self.log = log
+              
+    def DoLog(self, level, message, timeStamp):
+        if level  == self.ERROR:
+            self.log.exception(message)
+
+        elif level  == self.MESSAGE:
+            self.log.info(message)
+            
+        elif level  == self.DEBUG:
+            self.log.debug(message)
+
+        elif level  == self.INFO:
+            self.log.info(message)
+
+        elif level  == self.WARNING:
+            self.log.info(message)
+
+class ErrorDialog:
+    def __init__(self, frame, text, text2 = "", style = wxOK | wxICON_ERROR):
+       (name, args, traceback_string_list) = formatExceptionInfo()
+       for x in traceback_string_list:
+           print(x)       
+
+       print sys.exc_type
+       print sys.exc_value
+       info = text + "\n\n"+"Type: "+str(sys.exc_type)+"\n"+"Value: "+str(sys.exc_value)
+       errorDialog = wxMessageDialog(frame, info, text2, style)
+       errorDialog.ShowModal()
+       errorDialog.Destroy()
         
 class BugReportDialog:
     def __init__(self, frame, profile):
