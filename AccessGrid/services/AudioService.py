@@ -5,11 +5,13 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.12 2003-04-09 06:07:20 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.13 2003-04-09 20:30:05 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys, os
+import time
+
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
@@ -60,11 +62,21 @@ class AudioService( AGService ):
       self.started = 0
       try:
 
-         # kill rat specially on windows
+         #
+         # See if we have rat-kill.
+         #
+
          if sys.platform == Platform.WIN:
-            installDir = Platform.GetInstallDir()
-            ratKillExe = os.path.join(installDir, "rat-kill.exe")
+            rk = "rat-kill.exe"
+         else:
+            rk = "rat-kill"
+
+         installDir = Platform.GetInstallDir()
+         ratKillExe = os.path.join(installDir, rk)
+
+         if os.access(ratKillExe, os.X_OK):
             self.processManager.start_process(ratKillExe, [])
+            time.sleep(0.2)
          else:
             self.processManager.terminate_all_processes()
 
