@@ -5,10 +5,12 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.151 2003-04-22 21:11:40 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.152 2003-04-22 22:24:27 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+
+# Test
 
 import os
 import os.path
