@@ -247,33 +247,37 @@ class Venue:
 
         self.log = logging.getLogger("AG.BridgeServer")
 
-        self.CreateVenueBridges()
+        self.ConnectEventClient()
 
-    def CreateVenueBridges(self):
+        # Create bridges for the venue
+        self.AddBridges()
 
+
+        threading.Thread(target=self.RunQueueThread).start()
+        threading.Thread(target=self.HeartbeatThread).start()
+
+
+    def ConnectEventClient(self):
+        """ 
+        """
         # Register with the venue
         self.privateId = self.venueProxy.AddNetService(NetService.BridgeNetService.TYPE)
-
-        # Create bridges for the venue streams
-        streamList = self.venueProxy.GetStreams()
-        for stream in streamList:
-            self.AddBridge(stream)
-
-        # Get the event service location and event channel id
-        (eventServiceLocation, self.channelId) = self.venueProxy.GetEventServiceLocation()
-
+        
+        # Get the event service location and event channel is
+        (self.eventServiceLocation, self.channelId) = self.venueProxy.GetEventServiceLocation()
 
         # Set up event client
-        self.eventClient = EventClient(self.privateId, eventServiceLocation, self.channelId)
+        print "Connecting event client "
+        print "   ", self.privateId, self.eventServiceLocation, self.channelId
+        self.eventClient = EventClient(self.privateId, self.eventServiceLocation, self.channelId)
         self.eventClient.start()
         self.eventClient.Send(ConnectEvent(self.channelId, self.privateId))
 
         self.eventClient.RegisterCallback(Event.ADD_STREAM, self.EventReceivedCB)
         self.eventClient.RegisterCallback(Event.REMOVE_STREAM, self.EventReceivedCB)
         
-        threading.Thread(target=self.RunQueueThread).start()
-        threading.Thread(target=self.HeartbeatThread).start()
 
+        
 
     def EventReceivedCB(self, event):
         """
@@ -290,6 +294,19 @@ class Venue:
             self.RemoveBridge(strDesc.id)
 
 
+    def AddBridges(self):
+        # Create bridges for the venue streams
+        streamList = self.venueProxy.GetStreams()
+        for stream in streamList:
+            self.AddBridge(stream)
+
+
+    def RemoveBridges(self):
+        # Remove all known bridges 
+        for id in self.bridges.keys():
+            self.__RemoveBridge(id) 
+
+    
     def AddBridge(self, streamDesc):
         """
         AddBridge puts an ADDBRIDGE event in the queue.
@@ -384,16 +401,19 @@ class Venue:
                 if self.venueProxy._IsValid():
                   self.log.debug("- venue reachable again; re-creating bridges")
                   self.log.debug("  url =  %s", self.venueUrl )
-                  self.CreateVenueBridges()
+                  self.ConnectEventClient()
+                  self.AddBridges()
                 else:
                   self.log.debug("- venue unreachable")
             except EventClientWriteDataException:
                 print "connected ? ", self.eventClient.connected
                 if not self.eventClient.connected:
                   self.log.debug("Connection lost; shutting down venue")
+                  self.RemoveBridges()
                 break
             except:
                 self.log.exception("BridgeServer:Heartbeat: Heartbeat exception is caught.")
+                self.RemoveBridges()
             time.sleep(10)
         self.log.debug("Heartbeat thread exiting")
 
@@ -430,7 +450,7 @@ class Venue:
         self.log.debug("- Wait for bridges to shutdown")
         import time
         while len(self.bridges) > 0:
-            time.sleep(1)
+            time.sleep(.2)
 
         # Send stop message to queue thread
         self.log.debug("- Send stop message to queue processor")
