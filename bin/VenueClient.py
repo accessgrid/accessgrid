@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.175 2003-06-27 22:02:40 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.176 2003-07-03 22:00:22 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -65,6 +65,8 @@ class VenueClientUI(wxApp):
     transferEngine = None
        
     def __init__(self):
+       
+        
         if not os.path.exists(self.accessGridPath):
             try:
                 os.mkdir(self.accessGridPath)
@@ -74,7 +76,7 @@ class VenueClientUI(wxApp):
         self.venueClient = VenueClient()
         self.venueClient.AddEventSubscriber(self)
         wxApp.__init__(self, false)
-
+        
     def OnInit(self):
         """
         This method initiates all gui related classes.
@@ -185,7 +187,8 @@ class VenueClientUI(wxApp):
         *profile* The ClientProfile you want to be associated with in the venue.
         
         """
-        
+
+        log.debug("bin.VenueClient: SetProfile")
         self.venueClient.SetProfile(profile)
         self.frame.venueAddressBar.SetAddress(self.venueClient.profile.homeVenue)
         self.frame.Show(true)
@@ -1149,26 +1152,10 @@ class VenueClientUI(wxApp):
         *data* The DataDescription we want to remove from vnue
         """
         log.debug("Remove data: %s from venue" %data.name)
+
+        
         try:
-            # Call datastore soap object
-            #
-            dataList = []
-            dataList.append(data)
-
-            if data.type == None or data.type == 'None':
-                # Venue data
-                Client.Handle(self.venueClient.dataStoreLocation).GetProxy().RemoveFiles(dataList)
-                
-            elif(data.type == self.venueClient.profile.publicId):
-                # My data
-                self.venueClient.dataStore.RemoveFiles(dataList)
-
-            else:
-                # Somebody else's personal data
-                if ownerProfile != None:
-                    uploadDescriptor, dataStoreUrl = Client.Handle(ownerProfile.venueClientURL).get_proxy().GetDataStoreInformation()
-                    Client.Handle(dataStoreUrl).get_proxy().RemoveFiles(dataList)
-               
+            self.venueClient.RemoveData(data, ownerProfile)
         except:
             log.exception("bin.VenueClient::RemoveData: Error occured when trying to remove data")
             ErrorDialog(None, "The file could not be removed", "Remove Personal Files Error", style = wxOK | wxICON_ERROR)
@@ -1334,6 +1321,6 @@ if __name__ == "__main__":
     from AccessGrid.Types import *
 
     wxInitAllImageHandlers()
-
+    
     vc = VenueClientUI()
     vc.ConnectToVenue()
