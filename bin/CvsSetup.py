@@ -166,11 +166,11 @@ if sys.platform == WIN:
     #shutil.copyfile( win_config_src, win_config_dst )
 
     # Remove the "c:\program files\access grid toolkit" in the defaultWindows file so we don't require a previous installation.
-    executable_path_replace = re.compile('c:\program files\access grid toolkit')
+    executable_path_replace = re.compile('c:\\\\program files\\\\access grid toolkit\\\\')
 
     print "\n    Creating file", win_config_dst, "from", win_config_src
     if verbose:
-        print r"        removing \"c:\program files\access grid toolkit\" from rat and vic paths"
+        print "        removing \"c:\\program files\\access grid toolkit\\\" from rat and vic paths"
 
     file = open(win_config_src) 
     new_file = open(win_config_dst, "w")
