@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.51 2003-03-12 08:50:40 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.52 2003-03-12 08:54:59 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -113,6 +113,11 @@ class Venue(ServiceBase.ServiceBase):
 
         """
         odict = self.__dict__.copy()
+
+        # Transform the URI
+        venuePath = urlparse.urlparse(odict["description"].uri)[2]
+        odict["description"].uri = venuePath
+        
         # We don't save things in this list
         keys = ("users", "clients", "nodes", "multicastAllocator",
                 "producerCapabilities", "consumerCapabilities",
@@ -816,12 +821,16 @@ class Venue(ServiceBase.ServiceBase):
         try:
             # We actually have to remove the real data, not just the
             # data description -- I guess that's later :-)
-            del self.data[ dataDescription.name ]
-            self.dataStore.DeleteFile(dataDescription.name)
-            self.server.eventService.Distribute( self.uniqueId,
-                                          Event( Event.REMOVE_DATA,
-                                                 self.uniqueId,
-                                                 dataDescription ) )
+            if dataDescription.name in self.data:
+                del self.data[ dataDescription.name ]
+                self.dataStore.DeleteFile(dataDescription.name)
+                self.server.eventService.Distribute( self.uniqueId,
+                                                     Event( Event.REMOVE_DATA,
+                                                            self.uniqueId,
+                                                            dataDescription ) )
+            else:
+                log.exception("Data not found!")
+#                raise DataNotFoundException("Data not found.")
         except:
             log.exception("Exception in RemoveData!")
             raise VenueException("Cannot remove data!")
