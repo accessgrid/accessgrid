@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.30 2005-01-04 22:36:42 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.31 2005-01-14 01:47:03 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.30 2005-01-04 22:36:42 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.31 2005-01-14 01:47:03 turam Exp $"
 
 import os
 import sys
@@ -50,7 +50,7 @@ class AGTkConfig:
     """
     theAGTkConfigInstance = None
 
-    def __init__(self, initIfNeeded):
+    def __init__(self, initIfNeeded=0):
         if AGTkConfig.theAGTkConfigInstance is not None:
             raise Exception, "Only one instance of AGTkConfig is allowed."
 
@@ -76,8 +76,9 @@ class AGTkConfig:
         self._Initialize()
         
     def _Initialize(self):
-        self.GetConfigDir()
+        self.GetBaseDir()
         self.GetInstallDir()
+        self.GetConfigDir()
         self.GetDocDir()
         self.GetLogDir()
         self.GetSharedAppDir()
@@ -102,7 +103,7 @@ class AGTkConfig:
         return self._repr_()
     
     def GetVersion(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+        return self.version
 
     def GetInstallDir(self):
         raise Exception, "This should not be called directly, but through a subclass."
@@ -111,22 +112,123 @@ class AGTkConfig:
         raise Exception, "This should not be called directly, but through a subclass."
 
     def GetLogDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+        if self.logDir == None:
+            ucd = self.GetBaseDir()
+            self.logDir = os.path.join(ucd, "Logs")
+
+        # Check dir and make it if needed.
+        if self.initIfNeeded:
+            if self.logDir is not None and \
+                   not os.path.exists(self.logDir):
+                try:
+                    os.mkdir(self.logDir)
+                except:
+                    log.exception("Couldn't make log dir.")
+
+        # Check the installation
+        if self.logDir is not None and \
+               not os.path.exists(self.logDir):
+            raise IOError("AGTkConfig: log dir does not exist %s."%self.logDir)
+ 
+        return self.logDir
 
     def GetConfigDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+        self.configDir = os.path.join(self.GetBaseDir(), "Config")
+
+        # Check dir and make it if needed.
+        if self.initIfNeeded:
+            if self.configDir is not None and \
+                   not os.path.exists(self.configDir):
+                os.mkdir(self.configDir)
+
+        if self.configDir is not None and not os.path.exists(self.configDir):
+            raise IOError("AGTkConfig: config dir %s does not exist." % (self.configDir))
+
+        return self.configDir
 
     def GetSharedAppDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+        if self.appDir == None:
+            ucd = self.GetBaseDir()
+            self.appDir = os.path.join(ucd, "SharedApplications")
+
+        # Check dir and create it if needed.
+        if self.initIfNeeded:
+            if self.appDir is not None and not os.path.exists(self.appDir):
+                try:
+                    os.mkdir(self.appDir)
+                except:
+                    log.exception("Couldn't make app dir.")
+
+        # Check the installation
+        if self.appDir is not None and not os.path.exists(self.appDir):
+            raise IOError("AGTkConfig: app dir does not exist %s." %self.appDir)
+
+        return self.appDir
 
     def GetNodeServicesDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+    
+        if self.nodeServicesDir == None:
+            ucd = self.GetBaseDir()
+            self.nodeServicesDir = os.path.join(ucd, "NodeServices")
+
+        # Check dir and create it if needed.
+        if self.initIfNeeded:
+            if self.nodeServicesDir is not None and \
+                   not os.path.exists(self.nodeServicesDir):
+                try:
+                    os.mkdir(self.nodeServicesDir)
+                except:
+                    log.exception("Couldn't make node services dir.")
+
+        # Check the installation
+        if self.nodeServicesDir is not None and \
+               not os.path.exists(self.nodeServicesDir):
+            raise IOError("AGTkConfig: node service dir does not exist %s."%self.nodeServicesDir)
+
+        return self.nodeServicesDir
 
     def GetNodeConfigDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+    
+        if self.nodeConfigDir == None:
+            ucd = self.GetConfigDir()
+            self.nodeConfigDir = os.path.join(ucd, "nodeConfig")
+
+        # Check dir and create it if needed.
+        if self.initIfNeeded:
+            if self.nodeConfigDir is not None and \
+                   not os.path.exists(self.nodeConfigDir):
+                try:
+                    os.mkdir(self.nodeConfigDir)
+                except:
+                    log.exception("Couldn't make node config dir.")
+
+        if not os.path.exists(self.nodeConfigDir):
+            raise Exception, "AGTkConfig: node config dir does not exist: %s." % self.nodeConfigDir
+
+        return self.nodeConfigDir
 
     def GetServicesDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+    
+        if self.servicesDir == None:
+            ucd = self.GetBaseDir()
+            self.servicesDir = os.path.join(ucd, "Services")
+
+        # Check dir and create it if needed.
+        if self.initIfNeeded:
+            if self.servicesDir is not None and \
+                   not os.path.exists(self.servicesDir):
+                try:
+                    os.mkdir(self.servicesDir)
+                except:
+                    log.exception("Couldn't make services dir.")
+
+        # Check the installation
+        if self.servicesDir is not None and \
+               not os.path.exists(self.servicesDir):
+            raise IOError("AGTkConfig: services dir does not exist %s."%self.servicesDir)
+
+        return self.servicesDir
+
 
 class UserConfig:
     """
@@ -271,35 +373,150 @@ class UserConfig:
         self._CopyDir(oldPath, newPath)
     
     def GetProfile(self):
-        afdsaf
-        raise Exception, "This should not be called directly, but through a subclass."
+        if self.profileFilename == None:
+            self.profileFilename = os.path.join(self.GetConfigDir(), "profile")
+            
+        return self.profileFilename
 
     def GetPreferences(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+        if self.preferencesFilename == None:
+            self.preferencesFilename = os.path.join(self.GetConfigDir(),
+                                                    "preferences")
+
+        return self.preferencesFilename
 
     def GetBaseDir(self):
         raise Exception, "This should not be called directly, but through a subclass."
 
     def GetLogDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+    
+        if self.logDir == None:
+            ucd = self.GetBaseDir()
+            self.logDir = os.path.join(ucd, "Logs")
+
+        # Check dir and make it if needed.
+        if self.initIfNeeded:
+            if self.logDir is not None and \
+                   not os.path.exists(self.logDir):
+                os.mkdir(self.logDir)
+
+
+        # Check the installation
+        if self.logDir is not None and \
+               not os.path.exists(self.logDir):
+            raise Exception, "AGTkConfig: log dir does not exist %s."%self.logDir 
+
+        return self.logDir
 
     def GetTempDir(self):
         raise Exception, "This should not be called directly, but through a subclass."
     
     def GetConfigDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+    
+        if self.configDir == None:
+            ucd = self.GetBaseDir()
+            self.configDir = os.path.join(ucd, "Config")
+
+        # Check dir and make it if needed.
+        if self.initIfNeeded:
+            if self.configDir is not None and \
+                   not os.path.exists(self.configDir):
+                try:
+                    os.mkdir(self.configDir)
+                except:
+                    log.exception("Couldn't create user config dir")
+
+        # Check the installation
+        if self.configDir is not None and \
+               not os.path.exists(self.configDir):
+            raise Exception, "AGTkConfig: config dir does not exist %s."%self.configDir
+
+        return self.configDir
+        
 
     def GetSharedAppDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+        if self.appDir == None:
+            ucd = self.GetBaseDir()
+            self.appDir = os.path.join(ucd, "SharedApplications")
+
+        # Check dir and create it if needed.
+        if self.initIfNeeded:
+            if self.appDir is not None and not os.path.exists(self.appDir):
+                os.mkdir(self.appDir)
+
+        # Check the installation
+        if self.appDir is not None and not os.path.exists(self.appDir):
+            raise Exception, "AGTkConfig: app dir does not exist %s."%self.appDir
+
+        return self.appDir
 
     def GetNodeServicesDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+        if self.nodeServicesDir == None:
+            ucd = self.GetBaseDir()
+            self.nodeServicesDir = os.path.join(ucd, "NodeServices")
 
-    def GetServicesDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+        # Check dir and create it if needed.
+        if self.initIfNeeded:
+            if self.nodeServicesDir is not None and \
+                   not os.path.exists(self.nodeServicesDir):
+                os.mkdir(self.nodeServicesDir)
+
+        # Check the installation
+        if self.nodeServicesDir is not None and \
+               not os.path.exists(self.nodeServicesDir):
+            raise Exception, "AGTkConfig: node service dir does not exist %s."%self.nodeServicesDir
+
+        # check to make it if needed
+        return self.nodeServicesDir
+
 
     def GetLocalServicesDir(self):
-        raise Exception, "This should not be called directly, but through a subclass."
+        if self.localServicesDir == None:
+            ucd = self.GetBaseDir()
+            self.localServicesDir = os.path.join(ucd, "local_services")
+
+        # Check dir and make it if needed.
+        if self.initIfNeeded:
+            if not os.path.exists(self.localServicesDir):
+                os.mkdir(self.localServicesDir)
+
+        if not os.path.exists(self.localServicesDir):
+            raise Exception, "AGTkConfig: local services dir does not exist."
+
+        return self.localServicesDir
+
+    def GetNodeConfigDir(self):
+        if self.nodeConfigDir == None:
+            ucd = self.GetBaseDir()
+            self.nodeConfigDir = os.path.join(ucd, "nodeConfig")
+
+        # Check dir and make it if needed.
+        if self.initIfNeeded:
+            if not os.path.exists(self.nodeConfigDir):
+                os.mkdir(self.nodeConfigDir)
+
+        if not os.path.exists(self.nodeConfigDir):
+            raise Exception, "AGTkConfig: node service dir does not exist."
+
+        return self.nodeConfigDir
+
+    def GetServicesDir(self):
+        if self.servicesDir == None:
+            ucd = self.GetBaseDir()
+            self.servicesDir = os.path.join(ucd, "Services")
+
+        # Check dir and create it if needed.
+        if self.initIfNeeded:
+            if self.servicesDir is not None and \
+                   not os.path.exists(self.servicesDir):
+                os.mkdir(self.servicesDir)
+
+        # Check the installation
+        if self.servicesDir is not None and \
+               not os.path.exists(self.servicesDir):
+            raise Exception, "AGTkConfig: services dir does not exist %s."%self.servicesDir
+
+        return self.servicesDir
 
 class SystemConfig:
     """
@@ -310,8 +527,17 @@ class SystemConfig:
     @ivar tempDir: the system temp directory.
     @type tempDir: string
     """
+
+    theSystemConfigInstance = None
+
     def __init__(self):
-        pass
+        if SystemConfig.theSystemConfigInstance is not None:
+            raise Exception, "Only one instance of SystemConfig is allowed."
+
+        SystemConfig.theSystemConfigInstance = self
+        
+        self.tempDir = None
+        self.hostname = None
 
     def _repr_(self):
         tmpstr = "System Configuration:\n"
@@ -583,8 +809,10 @@ class MimeConfig:
     can leverage legacy configuration and applications for data
     viewing.
     """
+    theMimeConfigInstance = None
+
     def __init__(self):
-        pass
+        MimeConfig.theMimeConfigInstance = self
     
     def GetMimeType(self,extension = None):
         raise Exception, "This should not be called directly, but through a subclass."
