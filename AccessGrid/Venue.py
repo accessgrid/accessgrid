@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.25 2003-02-10 14:47:37 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.26 2003-02-10 21:53:59 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -72,6 +72,8 @@ class Venue(ServiceBase.ServiceBase):
 
     def __setstate__(self, dict):
         self.__dict__ = dict
+        self.dataStore = None
+        self.multicastAddressAllocator = None
         self.Start()
 
     def Start(self):
@@ -87,6 +89,12 @@ class Venue(ServiceBase.ServiceBase):
         self.houseKeeper.AddTask(self.CleanupClients, 45)
         self.houseKeeper.StartAllTasks()
 
+    def SetMulticastAddressAllocator(self, multicastAllocator):
+        self.multicastAllocator = multicastAllocator
+
+    def SetDataStore(self, dataStore):
+        self.dataStore = dataStore
+    
    # Internal Methods
     def GetState(self, connectionInfo):
         """

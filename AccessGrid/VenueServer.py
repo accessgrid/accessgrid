@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.30 2003-02-06 22:01:55 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.31 2003-02-10 21:53:59 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -102,6 +102,8 @@ class VenueServer(ServiceBase.ServiceBase):
             for vURL in store.keys():
                 print "Loading Venue: %s" % vURL
                 self.venues[vURL] = store[vURL]
+                self.venues[vURL].SetMulticastAddressAllocator(self.multicastAddressAllocator)
+                self.venues[vURL].SetDataStore(self.dataStorage)
                 venuePath = "%s/%s" % (self.venuePathPrefix,
                                        self.venues[vURL].uniqueId)
                 # Somehow we have to register this venue as a new service
