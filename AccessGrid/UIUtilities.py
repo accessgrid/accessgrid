@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.9 2003-04-28 18:40:43 judson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.10 2003-05-07 15:53:25 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -81,6 +81,8 @@ class BugReportDialog:
         reportDialog.Destroy()
 
 class AboutDialog(wxPopupTransientWindow):
+    version = "Agtk 2.0 RC1"
+        
     def __init__(self, parent, style):
         wxPopupTransientWindow.__init__(self, parent, style)
         self.panel = wxPanel(self, -1)
@@ -96,14 +98,25 @@ class AboutDialog(wxPopupTransientWindow):
         diffWidth = (winWidth - panelWidth)/2.0
         diffHeight = (winHeight - panelHeight)/2.0
              
-        self.text = wxStaticBitmap(self.panel, -1, bmp, wxPoint(2, 2), \
+        self.image = wxStaticBitmap(self.panel, -1, bmp, wxPoint(2, 2), \
                             wxSize(bmp.GetWidth(), bmp.GetHeight()))
-        self.panel.SetBackgroundColour("WHITE")
+        self.text = wxStaticText(self.panel, -1,
+                                 "Version: %s \nCopyright@2001-2003 by University of Chicago, \nAll rights reserved\nPlease visit www.accessgrid.org for more information" %self.version, wxPoint(80,105))
+        self.panel.SetBackgroundColour('WHITE')
         self.panel.SetSize(panelSize)
         self.panel.SetPosition(wxPoint(1, 1))
         self.SetBackgroundColour('BLACK')
         self.SetSize(wxSize(panelWidth + 2, panelHeight + 2))
         self.SetPosition(winPos + wxPoint(diffWidth, diffHeight))
+        #self.__layout()
+
+    #def __layout(self):
+    #    box = wxBoxSizer(wxVERTICAL)
+    #    box.Add(self.image, wxEXPAND, 0)
+    #    box.Add(self.text, wxEXPAND, 0)
+    #    self.SetSizer(box)
+    #    box.Fit(self)
+    #	self.SetAutoLayout(1)
         
     def ProcessLeftDown(self, evt):
         self.Hide()
