@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.30 2004-07-08 13:12:49 judson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.31 2004-07-08 19:43:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.30 2004-07-08 13:12:49 judson Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.31 2004-07-08 19:43:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -250,8 +250,6 @@ class EventChannel:
         self.authCallback = authCallback
 
     def __del__(self):
-	self.inQEvt.unset()
-	self.outQEvt.unset()
         log.debug("EventServiceAsynch: Delete EventChannel %s", self.id)
 
     def RegisterCallback(self, eventType, callback):
@@ -566,8 +564,8 @@ class EventService:
         for ch in self.channels.keys():
             self.RemoveChannel(ch)
             
-	self.outQEvt.unset()
-	self.inQEvt.unset()
+	self.outQEvt.clear()
+	self.inQEvt.clear()
 
     def EnqueueQuit(self):
         self.outQueue.put(("quit",))
