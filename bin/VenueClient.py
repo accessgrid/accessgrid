@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.40 2003-02-12 20:49:09 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.41 2003-02-13 22:13:17 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT -----------------------------------------------------------------------------
 import threading
@@ -22,7 +22,7 @@ from AccessGrid.Platform import GPI
 from AccessGrid.VenueClient import VenueClient, EnterVenueException
 from AccessGrid.VenueClientUIClasses import WelcomeDialog
 from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
-from AccessGrid.VenueClientUIClasses import UrlDialog
+from AccessGrid.VenueClientUIClasses import UrlDialog, UrlDialogCombo
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.UIUtilities import ErrorDialog
@@ -41,13 +41,30 @@ class VenueClientUI(wxApp, VenueClient):
         """
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
-        VenueClient.__init__(self)        
+        VenueClient.__init__(self)
+        self.__createHomePath()
         self.frame = VenueClientFrame(NULL, -1,"", self)
         self.frame.SetSize(wxSize(300, 400))
         self.SetTopWindow(self.frame)
         self.client = None
         self.gotClient = false
         return true
+
+    def __createHomePath(self):
+        if sys.platform == "win32":
+            myHomePath = os.environ['HOMEDRIVE'] + os.environ['HOMEPATH']
+        elif sys.platform == "linux2":
+            myHomePath = os.environ['HOME']
+
+        self.accessGridPath = os.path.join(myHomePath, '.AccessGrid')
+        self.profileFile = os.path.join(self.accessGridPath, "profile" )
+
+        try:  # does the profile dir exist?
+            os.listdir(self.accessGridPath)
+                      
+        except:
+            os.mkdir(self.accessGridPath)
+
 
     def ConnectToVenue(self):
         """
@@ -59,23 +76,7 @@ class VenueClientUI(wxApp, VenueClient):
         to 'home venue' specified in the user profile, is this fails,  it will ask
         the user for a specific URL to a venue or venue server.
         """
-               
-        # This will set defaults for either of our platforms, hopefully
-        if sys.platform == "win32":
-            myHomePath = os.environ['HOMEDRIVE'] + os.environ['HOMEPATH']
-        elif sys.platform == "linux2":
-            myHomePath = os.environ['HOME']
-
-        accessGridDir = '.AccessGrid'
-        profilePath = os.path.join( myHomePath, accessGridDir )
-        self.profileFile = os.path.join( profilePath, "profile" )
-
-        try:  # does the profile dir exist?
-            os.listdir(profilePath)
-                      
-        except:
-            os.mkdir(profilePath)
-
+        
         self.profile = ClientProfile(self.profileFile)
                   
         if self.profile.IsDefault():  # not your profile
@@ -116,7 +117,7 @@ class VenueClientUI(wxApp, VenueClient):
             validVenue = false
             
             while not validVenue:
-                connectToVenueDialog = UrlDialog(NULL, -1, "Please, enter venue or venue server URL")
+                connectToVenueDialog = UrlDialogCombo(NULL, -1, "Please, enter venue or venue server URL", list = self.frame.myVenuesList)
                 if(connectToVenueDialog.ShowModal() == wxID_OK):
                     if self.GoToNewVenue(connectToVenueDialog.address.GetValue()):
                         self.frame.Show(true)
@@ -250,9 +251,7 @@ class VenueClientUI(wxApp, VenueClient):
             (name, args, tb) = formatExceptionInfo()
 
         VenueClient.ExitVenue(self)
-       # os._exit(1)
-            
-                                     
+        
     def GoToNewVenue(self, uri):
         if self.venueUri != None:
             oldUri = self.venueUri
@@ -305,7 +304,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
         self.ExitVenue()
         os._exit(1)
-                
+                       
     def AddData(self, data):
         """
         This method adds data to the venue
