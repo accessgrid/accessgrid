@@ -4,8 +4,8 @@
 # 
 # Author:      Susanne Lefvert 
 # 
-# Created:     $Date: 2005-01-04 22:17:22 $ 
-# RCS-ID:      $Id: Voyager.py,v 1.3 2005-01-04 22:17:22 turam Exp $ 
+# Created:     $Date: 2005-01-05 22:58:53 $ 
+# RCS-ID:      $Id: Voyager.py,v 1.4 2005-01-05 22:58:53 lefvert Exp $ 
 # Copyright:   (c) 2002 
 # Licence:     See COPYING.TXT 
 #----------------------------------------------------------------------------- 
@@ -57,7 +57,9 @@ class Recording:
 
     def LoadRecording(path):
         config = LoadConfig(path)
-        r = Recording(config["Recording.name"], config["Recording.description"], config["Recording.venueUrl"])
+        r = Recording(config["Recording.name"],
+                      config["Recording.description"],
+                      config["Recording.venueUrl"])
         r.SetStartTime(int(config["Recording.startTime"]))
         r.SetStopTime(int(config["Recording.stopTime"]))
         return r
@@ -113,11 +115,12 @@ class Recording:
  
 class VoyagerModel(Model): 
     """ 
-    The voyager model class includes all logic for the program. There is no user 
-    interface code in this class. The ui and the model is separated using the 
-    observer pattern for easy separation. When state gets updated in the model, 
-    all obervers are notified and updates the view/ui.  The voyager model includes 
-    methods for recording and playback of venue media streams, as well as organization 
+    The voyager model class includes all logic for the program. There
+    is no user interface code in this class. The ui and the model is
+    separated using the observer pattern for easy separation. When
+    state gets updated in the model, all obervers are notified and
+    updates the view/ui.  The voyager model includes methods for recording
+    and playback of venue media streams, as well as organization 
     and persistence of recordings. 
     """ 
          
@@ -146,7 +149,8 @@ class VoyagerModel(Model):
         if not os.path.exists(self.__path): 
             os.mkdir(self.__path) 
  
-        self.__log.debug("VoyagerModel.__init__: Persistence path: %s"%(self.__path)) 
+        self.__log.debug("VoyagerModel.__init__: Persistence path: %s"
+                         %(self.__path)) 
 
         self.__LoadRecordings()
                
@@ -176,16 +180,17 @@ class VoyagerModel(Model):
          
         *recording* recording instance to save (Recording) 
         '''
-        recordingPath = os.path.join(self.__path, str(recording.GetStartTime())) 
+        recordingPath = os.path.join(self.__path,
+                                     str(recording.GetStartTime())) 
         descFile = os.path.join(recordingPath, "Recording")
         recording.Save(descFile)
  
     def PlayInVenue(self, recording, venueUrl): 
         ''' 
         Method for playing a recording in a venue.  This method connects 
-        to a venue at venueUrl and retreives multicast information. After that, 
-        the recording can be transmitted using rtpplay to the retreived venue 
-        addresses. 
+        to a venue at venueUrl and retreives multicast information.
+        After that, the recording can be transmitted using rtpplay to
+        the retreived venue addresses. 
  
         ** Arguments ** 
          
@@ -210,7 +215,8 @@ class VoyagerModel(Model):
                     videoStream = s 
  
         # Use rtpplay to transmit video and audio 
-        recordingPath = os.path.join(self.__path, str(recording.GetStartTime())) 
+        recordingPath = os.path.join(self.__path,
+                                     str(recording.GetStartTime())) 
         
         #Usage:  rtpplay -T -f file host/port 
         rtpplay = "rtpplay" 
@@ -288,7 +294,8 @@ class VoyagerModel(Model):
                     videoStream = s 
  
         # Use rtpdump to record video and audio 
-        recordingPath = os.path.join(self.__path, str(recording.GetStartTime())) 
+        recordingPath = os.path.join(self.__path,
+                                     str(recording.GetStartTime())) 
          
         # Create recording directory if it does not exist. 
         if not os.path.exists(recordingPath): 
@@ -439,7 +446,7 @@ class VoyagerUI(wxApp):
         self.voyagerModel = voyagerModel 
  
         # Create view. The view will use the model interface to 
-        # access state. 
+        # access state.
         self.voyagerView = VoyagerView(self, voyagerModel, self.log) 
         self.voyagerModel.RegisterObserver(self.voyagerView) 
          
@@ -466,16 +473,20 @@ class VoyagerView(wxFrame, Observer):
 
         self.SetIcon(icons.getAGIconIcon()) 
         self.panel = wxPanel(self, -1)
-        self.stopButton = wxButton(self.panel, wxNewId(), "Stop", size = wxSize(50, 40)) 
-        self.playButton = wxButton(self.panel, wxNewId(), "Play", size = wxSize(50, 40)) 
-        self.recordButton = wxButton(self.panel, wxNewId(), "Record", size = wxSize(50, 40)) 
+        self.stopButton = wxButton(self.panel, wxNewId(), "Stop",
+                                   size = wxSize(50, 40)) 
+        self.playButton = wxButton(self.panel, wxNewId(), "Play",
+                                   size = wxSize(50, 40)) 
+        self.recordButton = wxButton(self.panel, wxNewId(), "Record",
+                                     size = wxSize(50, 40)) 
         self.statusField = wxTextCtrl(self.panel, wxNewId(), "Use the buttons to record from a venue or play a recording from the list below.", 
                                       style= wxTE_MULTILINE | wxTE_READONLY | 
                                       wxTE_RICH, size = wxSize(-1, 32)) 
  
         # Recordings are displayed in a list. They are keyed on the start time of the 
         # recording which is also set as item data used for sorting. 
-        self.recordingList = wxListCtrl(self.panel, wxNewId(), size = wxSize(150, 150), 
+        self.recordingList = wxListCtrl(self.panel, wxNewId(),
+                                        size = wxSize(150, 150), 
                                         style=wxLC_REPORT) 
         self.recordingList.InsertColumn(0, "Name") 
         self.recordingList.InsertColumn(1, "Date") 
@@ -486,7 +497,8 @@ class VoyagerView(wxFrame, Observer):
         self.recordButton.SetToolTipString("Record from an AG venue") 
 
         self.recordingMenu = wxMenu()
-        self.recordingMenu.Append(self.RECORDING_MENU_REMOVE, "Remove", "Remove this recording.")
+        self.recordingMenu.Append(self.RECORDING_MENU_REMOVE, "Remove",
+                                  "Remove this recording.")
         #self.recordingMenu.Append(self.RECORDING_MENU_PROPERTIES, "Properties", "View recording details.")
       
         self.__Layout() 
@@ -516,7 +528,8 @@ class VoyagerView(wxFrame, Observer):
         id = self.recordingList.GetFirstSelected()
 
         if id < 0:
-            dlg = wxMessageDialog(self.panel, "Select recording to remove.", "Play", 
+            dlg = wxMessageDialog(self.panel, "Select recording to remove.",
+                                  "Play", 
                                   style = wxICON_INFORMATION) 
             val = dlg.ShowModal() 
             dlg.Destroy() 
@@ -534,14 +547,16 @@ class VoyagerView(wxFrame, Observer):
         
         if (status == self.voyagerModel.RECORDING and
             currentRecording == selectedRecording):
-            dlg = wxMessageDialog(self.panel, "Stop recording %s ?."%(selectedRecording.GetName()), "Remove", 
+            dlg = wxMessageDialog(self.panel, "Stop recording %s ?."
+                                  %(selectedRecording.GetName()), "Remove", 
                                   style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT) 
             val = dlg.ShowModal() 
             dlg.Destroy()
                                   
         elif (status == self.voyagerModel.PLAYING and
               currentRecording == selectedRecording):
-            dlg = wxMessageDialog(self.panel, "Stop playing %s ?."%(selectedRecording.GetName()), "Remove", 
+            dlg = wxMessageDialog(self.panel, "Stop playing %s ?."
+                                  %(selectedRecording.GetName()), "Remove", 
                                   style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT) 
             val = dlg.ShowModal() 
             dlg.Destroy()
@@ -566,7 +581,8 @@ class VoyagerView(wxFrame, Observer):
         selectedItem = self.recordingList.GetFirstSelected()
 
         if selectedItem < 0:
-            dlg = wxMessageDialog(self.panel, "Select recording to play.", "Play", 
+            dlg = wxMessageDialog(self.panel, "Select recording to play.",
+                                  "Play", 
                                   style = wxICON_INFORMATION) 
             val = dlg.ShowModal() 
             dlg.Destroy() 
@@ -588,7 +604,10 @@ class VoyagerView(wxFrame, Observer):
             return 
                      
         # Open a UI where you can enter the venue url 
-        dlg = VenueUrlDialog(self, -1, "Play", "Where do you want to play the %s recording?"%(r.GetName()), "https://localhost:9000/Venues/default") 
+        dlg = VenueUrlDialog(self, -1, "Play",
+                             "Where do you want to play the %s recording?"
+                             %(r.GetName()),
+                             "https://localhost:9000/Venues/default") 
         if dlg.ShowModal() != wxID_OK: 
             return 
  
@@ -619,11 +638,13 @@ class VoyagerView(wxFrame, Observer):
         dlg = None
 
         if status == self.voyagerModel.PLAYING and current:
-            dlg = wxMessageDialog(self.panel, "Stop playing %s?"%(current.GetName()), "Record", 
+            dlg = wxMessageDialog(self.panel, "Stop playing %s?"
+                                  %(current.GetName()), "Record", 
                                   style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT) 
  
         if status == self.voyagerModel.RECORDING and current: 
-            dlg =  wxMessageDialog(self.panel, "Stop recording %s, %s?" %(current.GetName()), "Record", 
+            dlg =  wxMessageDialog(self.panel, "Stop recording %s, %s?"
+                                   %(current.GetName()), "Record", 
                                    style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT) 
  
         if dlg: 
@@ -649,7 +670,8 @@ class VoyagerView(wxFrame, Observer):
          
         # Open a UI where you can enter the venue url 
         dlg = VenueUrlDialog(self, -1, "Record", 
-                           "Which venue do you want to record from?", "https://ivs.mcs.anl.gov:9000/Venues/default") 
+                             "Which venue do you want to record from?",
+                             "https://ivs.mcs.anl.gov:9000/Venues/default") 
         if dlg.ShowModal() != wxID_OK: 
             return 
          
@@ -718,11 +740,14 @@ class VoyagerView(wxFrame, Observer):
             self.recordingList.SetItemData(item, recording.GetStartTime())
             self.recordingList.SetStringItem(j, 0, recording.GetName()) 
  
-            stopTime = "... " +  time.strftime("%B %d, %Y", time.localtime(recording.GetStartTime())) 
+            stopTime = "... " +  time.strftime("%B %d, %Y",
+                                               time.localtime(recording.GetStartTime())) 
  
             if recording.GetStopTime(): 
-                stopTime = time.strftime("%I:%M %p %B %d, %Y", time.localtime(recording.GetStopTime())) 
-            desc = (time.strftime("%I:%M %p", time.localtime(recording.GetStartTime())) +" - "+ stopTime) 
+                stopTime = time.strftime("%I:%M %p %B %d, %Y",
+                                         time.localtime(recording.GetStopTime())) 
+            desc = (time.strftime("%I:%M %p",
+                                  time.localtime(recording.GetStartTime())) +" - "+ stopTime) 
                          
             self.recordingList.SetStringItem(j, 1, desc) 
             j = j + 1 
@@ -731,9 +756,9 @@ class VoyagerView(wxFrame, Observer):
  
     def SortCB(self, item1, item2): 
         ''' 
-        return 0 if the items are equal, negative value if the second item is less 
-        than the second one and positive value if the second one is greater than 
-        the second one 
+        return 0 if the items are equal, negative value if the second
+        item is less than the second one and positive value if the
+        second one is greater than the second one 
         ''' 
         # We want last recording added to be first in the list. 
          
@@ -757,7 +782,8 @@ class VoyagerView(wxFrame, Observer):
         mainSizer.Add(sizer, 0, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 20) 
         mainSizer.Add(self.statusField, 0, wxEXPAND| wxLEFT | wxRIGHT, 30) 
         mainSizer.Add(wxSize(10,10)) 
-        mainSizer.Add(wxStaticLine(self.panel, -1), 0, wxEXPAND | wxLEFT|wxRIGHT, 30) 
+        mainSizer.Add(wxStaticLine(self.panel, -1), 0,
+                      wxEXPAND | wxLEFT|wxRIGHT, 30) 
         mainSizer.Add(wxSize(10,10)) 
                  
         box = wxStaticBox(self.panel, -1, "My Recordings") 
@@ -822,22 +848,22 @@ if __name__ == "__main__":
     init_args = ["--debug"] 
 
     # Initialize AG environment 
+      
     try:
         app.Initialize("Voyager", args = init_args)
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
         sys.exit(-1)
-
    
     if not app.certificateManager.HaveValidProxy():
         sys.exit(-1)
-        
-    wxapp.Destroy()    
 
     # Create model and view 
-    v = VoyagerModel(app.GetLog()) 
-    uiApp = VoyagerUI(v, app.GetLog()) 
-    # Start application main thread 
-    uiApp.MainLoop() 
+    v = VoyagerModel(app.GetLog())
 
+    uiApp = VoyagerUI(v, app.GetLog()) 
+    # Start application main thread
+
+    uiApp.MainLoop()
+   
