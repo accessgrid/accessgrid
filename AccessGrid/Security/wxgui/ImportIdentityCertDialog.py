@@ -3,6 +3,8 @@ import os
 import logging
 log = logging.getLogger("AG.CertificateManagerWXGUI")
 
+log.setLevel(logging.DEBUG)
+
 from wxPython.wx import *
 
 from AccessGrid.Security import CertificateRepository
@@ -324,6 +326,8 @@ needs to know about private keys.
 
         classify = CertificateRepository.ClassifyCertificate(certPath)
 
+        print "Classify %s returns %s" % (certPath, classify)
+
         #
         # If it fails, we're most likely not going to be able
         # to import it. Give the user a chance to attempt to import,
@@ -391,6 +395,15 @@ needs to know about private keys.
                 dlg.ShowModal()
                 dlg.Destroy()
                 return
+        else:
+            #
+            # If we are PEm and we don't need a private key, that means the
+            # private key is in the same file as the cert.
+            #
+
+            if certType == "PEM":
+                pkPath = certPath
+            
 
         #
         # Check to see if we already have this certificate installed.
