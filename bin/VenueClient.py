@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.57 2003-02-28 16:54:55 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.58 2003-02-28 16:57:59 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -451,7 +451,6 @@ class VenueClientUI(wxApp, VenueClient):
         This implementation fires up a separate thread for the actual
         transfer. We want to do this to keep the application live for possible
         long-term transfers and to allow for live updates of a download status.
-
 
         """
         #
