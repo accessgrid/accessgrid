@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.12 2004-04-07 18:02:45 eolson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.13 2004-05-04 15:45:30 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.12 2004-04-07 18:02:45 eolson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.13 2004-05-04 15:45:30 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -27,6 +27,8 @@ from AccessGrid import Toolkit
 from AccessGrid.Platform import IsWindows
 from AccessGrid.ClientProfile import ClientProfileCache
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
+from AccessGrid.Venue import VenueIW
+from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.Security.X509Subject import X509Subject    
 from AccessGrid.Security.Role import Role, DefaultIdentityNotRemovable
 from AccessGrid.Security.Action import Action 
@@ -95,6 +97,7 @@ class AuthorizationUIPanel(wxPanel):
         @type name: string.
         '''
         authUrl = ''
+        self.baseUrl = url
         list =  string.split(url, '/')
         lastString = list[len(list)-1]
         if lastString == 'Authorization':
@@ -155,6 +158,19 @@ class AuthorizationUIPanel(wxPanel):
             dn = p.GetDistinguishedName()
             if dn:
                 cachedDns.append(dn)
+
+        # Get subjects from remote cache
+        try:
+            # Test if self.baseUrl really is a venue url...for now use try except.
+            self.venue = VenueIW(self.baseUrl)
+            
+            for p in self.venue.GetCachedProfiles():
+                profile = CreateClientProfile(p)
+                dn = profile.GetDistinguishedName()
+                if dn:
+                    cachedDns.append(dn)
+        except:
+            self.log.exception("AuthorizationUI.__AddCachedSubjects: Failed to load remote profiles. Only venues have profile caches so this may be the case when connecting to an application. Not critical.")
 
         # Create role for cached subjects
         roleExists = 0
