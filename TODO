@@ -12,7 +12,6 @@ Core Toolkit
      - AGNodeService/AGServiceManager Configuration files
      - Move to GT 2.2
      - Move to the latest pyGlobus
-       - Native Grid Proxy Init
 
      - Move to WSDL/Schemas for language interop
      - Build the Services Toolkit

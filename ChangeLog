@@ -1,3 +1,412 @@
+2003-10-14  judson
+	* bin/VenueClient.py 1.232:
+		Added progress messages.
+		Called new Platform.InitUserEnv() method that creates (if it does not find) a valid default globus configuration. This now means we don't have to run globus_init for non-admin users, it should automatically configure for them.
+
+	* packaging/windows/agtk.iss 1.27:
+		ISXTool file for 2.1.2 final; version set and now not running
+		globus_init at the end of setup (it's not needed now). Also not
+		installing send_settingchange (figured out how to do it in
+		python).
+
+	* AccessGrid/PersonalNodePipes.py 1.4:
+	* AccessGrid/PersonalNodeWin32.py 1.4:
+	* AccessGrid/UIUtilities.py 1.39:
+		Added progress messages.
+
+	* AccessGrid/Platform.py 1.53:
+		Created new InitUserEnv() method that creates (if it does not
+		find) a valid default globus configuration. This now means we
+		don't have to run globus_init for non-admin users, it should
+		automatically configure for them.
+
+	* AccessGrid/CertificateManagerWXGUI.py 1.31:
+		Removed a print statement.
+
+2003-10-13  turam
+	* AccessGrid/AGServiceManager.py 1.36:
+		Remove unused attribute (executable)
+
+	* AccessGrid/AGNodeService.py 1.42:
+		Remove unused attributes
+
+	* services/network/QuickBridge/QuickBridge.c 1.3:
+		Ensure that SIGINT is not blocked.  This is a workaround to enable the
+		bridge server to shut down the QuickBridge without killing it, and
+		should be reversed when the bridge server is able to handle this problem
+		differently (e.g., by changing _its_ signal mask before starting the
+		QuickBridge process).
+
+2003-10-13  eolson
+	* bin/VenueClient.py 1.230:
+		
+		Increase the length of the progress bar so it finishes after personalNode
+		has started.
+
+2003-10-13  judson
+	* services/network/QuickBridge/QuickBridge.sln 1.1:
+	* services/network/QuickBridge/QuickBridge.vcproj 1.1:
+	* services/network/QuickBridge/getopt.c 1.1:
+	* services/network/QuickBridge/getopt.h 1.1:
+		Adding files for windows support of quickbridge, mods are not
+		getting committed yet until they are verified to not break the
+		linux version.
+
+	* bin/VenueClient.py 1.231:
+		Commented out spammy messages so log is informative but concise.
+
+	* AccessGrid/TextServiceAsynch.py 1.16:
+		Added close for wfile.
+
+	* AccessGrid/CertificateManager.py 1.34:
+		doc string line length fixups.
+
+	* services/network/QuickBridge/QuickBridge.c 1.4:
+		#ifdef blocks that allow this to compile on windows.
+
+	* bin/RegisterApp.py 1.13:
+		Removed an extra print statement.
+
+	* AccessGrid/TextServiceAsynch.py 1.15:
+		Fixed redundant remove problems. Added a ConnectionHandler
+		closing variable that gets set to 1 when a disconnect comes in
+		 then we use that to check for sending (so we dont't try to
+		send on a closing socket) and we check it so we don't try to
+		register the read clalback on a closing socket.
+
+	* AccessGrid/TextClient.py 1.26:
+	* AccessGrid/VenueClientUIClasses.py 1.296:
+		Made logging less spammy by default.
+
+	* bin/RegisterApp.py 1.12:
+		Fixed so that unregister works like register (you can specify
+		an app file or zip file now). Eric says he can test that :-)
+
+	* AccessGrid/TextClient.py 1.27:
+		Can't send zero length text. This will eliminate the input rate
+		bug susanne has run into. This resolves bug #705.
+
+	* AccessGrid/CertificateRequestTool.py 1.23:
+		Fixed a typo.
+
+2003-10-10  eolson
+	* doc/ToolkitCoreDesign.doc 1.3:
+		
+		Updated footprint of files on the system.
+		
+		Specifically, mostly files have been moved to or created in the .AccessGrid
+		directory.
+
+	* doc/DatastoreDesign.doc 1.6:
+		
+		Use AGDesign template.
+
+2003-10-10  judson
+	* doc/ToolkitCoreDesign.doc 1.2:
+		Updated, possibly complete for 2.1.2 release.
+
+	* doc/ToolkitConfigurationAndInitialization.doc 1.7:
+		Renamed to ToolkitCoreDesign.doc
+
+	* doc/AG-RPM-Build-HOWTO.doc 1.5:
+	* doc/AG-Windows-Build-HOWTO.doc 1.4:
+	* doc/HowTo.dot 1.1:
+	* doc/HowToOutline.doc 1.1:
+	* doc/Room-BasedNode-HOWTO.doc 1.3:
+		Added HowTo template and outline and updated all the how-to's.
+
+	* AccessGrid/AppDb.py 1.11:
+		Fixed a conditional test so that bug #731 should be fixed.
+
+	* doc/VirtualVenuesDesign.doc 1.11:
+		Added references, possibly done for release.
+
+	* doc/EventService.doc 1.3:
+	* doc/EventServiceImplNotes.doc 1.1:
+		Renamed this to XXXImpNotes for a standard implementation notes
+		naming scheme. When bob commits his template we'll have a
+		standard implementation notes template.
+
+	* doc/EventServiceImplNotes.doc 1.2:
+		Added something version-like.
+
+	* doc/ToolkitCoreDesign.doc 1.1:
+		Updating Toolkit Core Design.
+
+	* doc/ReadMe.txt 1.1:
+		Status and information.
+
+	* doc/EventService.doc 1.2:
+		Applied template. Partially remapped styles.
+
+	* AccessGrid/VenueServer.py 1.107:
+		Broke a line into two for readability.
+
+2003-10-10  turam
+	* doc/NodeManagementDesign.vsd 1.1:
+		Initial commit of node management classes and sequences (outdated at
+		this point)
+
+2003-10-10  olson
+	* doc/ImplNote.dot 1.1:
+	* doc/ImplNote.dot 1.3:
+		template for simple impl notes
+
+	* doc/ImplNote.dot 1.2:
+		binary messup
+
+2003-10-07  turam
+	* bin/BridgeServer.py 1.14:
+		Partial fix to bridge re-registration: if venue is not reachable,
+		wait before trying again
+
+2003-10-07  lefvert
+	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManual.htm 1.1:
+	* doc/VenueManagementManual.doc 1.6:
+		New manual file
+
+	* doc/VenueManagementDesign.doc 1.4:
+		Updated uml diagrams to reflect cvs code
+
+	* doc/VENUE_MANAGEMENT_MANUAL_HTML/contents.htm 1.3:
+	* doc/VENUE_MANAGEMENT_MANUAL_HTML/tableOfContents.htm 1.2:
+		no longer used
+
+	* doc/VENUE_MANAGEMENT_MANUAL_HTML/11.htm 1.1:
+		new table of contents file
+
+	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML.htm 1.2:
+		Removed storage location information.
+		Added certificate request wizard.
+
+2003-10-06  eolson
+	* doc/DatastoreDesign.doc 1.5:
+		
+		Change to reflect current design.  I've saved the text of the removed
+		items in case we want to reuse them.
+		
+		Removed references to ACL lists.  There are not currently being used
+		for files.
+		
+		Removed references to Location Descriptor (includes HTTP-GET or GASS
+		information).  I did not find any code related to this.
+		
+		Added minor descriptive notes to corner cases.
+
+2003-10-06  lefvert
+	* doc/VenueClientDesign.doc 1.11:
+		Added personal node design.
+
+	* doc/VenueClientDesign.doc 1.12:
+		Text had wrong figure numbers. Added some personal data text. 
+		Removed some error reporting tool text.
+
+2003-10-03  judson
+	* doc/VirtualVenuesDesign.doc 1.9:
+	* doc/VoyagerServiceDesign.doc 1.3:
+		Updated with AGDesign.dot (A proposed design template).
+
+	* doc/VoyagerServiceArchitecture.doc 1.3:
+	* doc/VoyagerServiceDesign.doc 1.4:
+		Nothing doing with these, I should make it happen soon. In the
+		mean time let's be clean.
+
+	* doc/NodeManagementDesign.doc 1.3:
+	* doc/NodeSetupWizardDesign.doc 1.2:
+	* doc/VenueClientDesign.doc 1.10:
+	* doc/VenueManagementDesign.doc 1.3:
+		First pass at applying design template.
+
+	* doc/DisplayServiceDesign.doc 1.2:
+		removed null document
+
+	* doc/VirtualVenuesSequences.vsd 1.2:
+		These are all in the design document.
+
+	* doc/AGDesign.dot 1.2:
+	* doc/DesignOutline.doc 1.1:
+	* doc/VirtualVenuesDesign.doc 1.10:
+		Updated design with a couple of more styles. Updated venue design doc with module decomposition.
+		Adding design outline for new designs to be able to start from.
+
+	* doc/AG.dot 1.2:
+		Broken Template, replaced by AGDesign.dot.
+
+	* doc/VenueServerDesign.vsd 1.3:
+	* doc/VirtualVenuesSequences.vsd 1.1:
+		Renamed file to be more clear.
+
+	* doc/AGDesign.dot 1.1:
+		New Design Template -- the AG.dot template is apparenlty ascii
+		so is getting corrupted.
+
+2003-10-03  turam
+	* doc/BridgeServerDesign.doc 1.1:
+		Initial commit of bridge server design; this doc is yet incomplete
+
+2003-10-03  lefvert
+	* doc/VENUE_CLIENT_MANUAL_HTML/1.htm 1.1:
+		Venue client manual table of contents page
+
+	* doc/VENUE_CLIENT_MANUAL_HTML/contents.htm 1.3:
+	* doc/VENUE_CLIENT_MANUAL_HTML/tableOfContents.htm 1.2:
+		This file is no longer used
+
+	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML.htm 1.2:
+		updated venue client manual
+
+	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManual.htm 1.1:
+		Venue client manual contents page
+
+	* doc/VenueClientManual.doc 1.7:
+		Updated venue client manual
+
+2003-10-02  judson
+	* doc/VirtualVenuesDesign.doc 1.8:
+		Updated, all objects/methods in place, sequences culled to only
+		meaningful ones.
+
+2003-10-02  lefvert
+	* doc/DataServiceDesign.doc 1.2:
+		Data service is no longer used
+
+	* doc/CertificateRequestToolDesign.doc 1.2:
+		This document is no longer needed. I think this info will be
+		included in the CertificateManagement.doc instead
+
+	* doc/VenueClientDesign.doc 1.9:
+		Updated data diagrams.
+
+2003-10-02  turam
+	* bin/BridgeServer.py 1.13:
+		Continue looping in heartbeat thread after failed heartbeat send,
+		try to reconnect
+
+2003-10-02  olson
+	* doc/DataStoreClientAPI.pdf 1.1:
+	* doc/DataStoreClientAPI.tex 1.3:
+		Doc mods as discussed today.
+
+2003-10-01  olson
+	* AccessGrid/hosting/pyGlobus/AGGSISOAP.py 1.13:
+		Fix for marshalling floats.
+		
+		cf http://www.python.org/peps/pep-0754.html
+
+	* AccessGrid/hosting/pyGlobus/AGGSISOAP.py 1.14:
+		Another pep754 fix.
+
+2003-10-01  eolson
+	* bin/VenueClient.py 1.228:
+		
+		Fix problem with wxCallAfter hanging in thread when cancelling download.
+		  dialog gets cleaned up in progressCB instead of waiting for the thread
+		  to finish (which caused wxCallAfter to hang).
+
+	* AccessGrid/DataStore.py 1.54:
+		
+		Remove file if we could not download it completely.
+
+	* bin/VenueClient.py 1.229:
+		
+		Clean up dialog in download and upload thread.
+
+2003-10-01  judson
+	* doc/VirtualVenuesDesign.doc 1.7:
+		More updates.
+
+2003-09-30  lefvert
+	* bin/VenueClient.py 1.227:
+		Check if data is already present in venue before uploading. If
+		present, ask if you want to overwrite the data. Bug 553
+
+2003-09-30  turam
+	* packaging/redhat/install.sh 1.11:
+		Add --postun option to rpm install of globus rpm, to avoid
+		removal of /etc/profile.d/globus.sh stuff by %postun script
+
+2003-09-30  eolson
+	* AccessGrid/DataStore.py 1.52:
+		
+		Added CancelPendingUpload and call it when upload is stopped before it
+		finishes.
+
+	* AccessGrid/DataStore.py 1.53:
+		
+		Check if description is valid before checking if description's status is
+		valid.
+
+2003-09-30  judson
+	* doc/VirtualVenuesDesign.doc 1.6:
+		Updates, more coming today.
+
+2003-09-29  lefvert
+	* AccessGrid/VenueClientUIClasses.py 1.295:
+		your message is now on the same row
+
+2003-09-29  turam
+	* packaging/redhat/install.sh 1.10:
+		Null commit as test
+
+	* packaging/redhat/AccessGrid.spec 1.54:
+		Run SetupVideo.py only if the display can be opened
+
+	* AccessGrid/Platform.py 1.52:
+		Write RTP defaults to registry with _and_ without a leading *, since vic
+		reads them with and rat reads them without.  This should be fixed so that
+		both tools read the same registry keys.
+
+	* packaging/redhat/AccessGrid.spec 1.53:
+		Add Obsoletes line to client, for video producer
+
+	* packaging/redhat/AccessGrid.spec 1.55:
+	* packaging/redhat/install.sh 1.9:
+		Update release (9)
+
+	* packaging/redhat/AccessGrid.spec 1.52:
+	* packaging/redhat/install.sh 1.8:
+		Update release to 8
+
+2003-09-29  olson
+	* AccessGrid/VenueClient.py 1.121:
+		add the clock check to the Client.Handle( URL ).IsValid()
+		failure case.
+
+2003-09-29  eolson
+	* bin/VenueClient.py 1.225:
+		
+		Fix cancel button when downloading (upload still broken).
+
+	* bin/VenueClient.py 1.226:
+		
+		Attempt to fix upload cancel button.
+
+	* AccessGrid/DataStore.py 1.51:
+		
+		Check progressCB for return value in case of cancelling.
+		File stops uploading now, but still appears in venue.
+
+2003-09-29  judson
+	* AccessGrid/Venue.py 1.138:
+		pylint fixes.
+
+	* bin/RegisterApp.py 1.11:
+		Fixed typo.
+
+	* AccessGrid/EventClient.py 1.31:
+	* AccessGrid/TextClient.py 1.25:
+		Turned loggging down.
+
+	* AccessGrid/AppDb.py 1.10:
+		Fixed Bug #700.
+
+	* bin/AGNodeService.py 1.33:
+	* bin/AGServiceManager.py 1.26:
+		Turned loggging down to WARN
+
+	* AccessGrid/AppDb.py 1.9:
+		Cleaned up.
+
 2003-09-28  judson
 	* AccessGrid/TextServiceAsynch.py 1.14:
 		Fixed conflict, only do the del if the dict has the key.
@@ -3349,100 +3758,6 @@
 		Needed to specify binary flag in windows when reading and writing.
 
 2003-05-30  lefvert
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image006.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image016.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image022.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image027.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image033.emz 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image058.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image072.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/oledata.mso 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/overview.jpg 1.2:
-		remove some more files
-
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/filelist.xml 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/header.htm 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image001.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image001.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image002.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image002.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image003.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image003.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image004.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image005.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image005.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image006.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image006.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image007.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image008.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image008.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image009.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image009.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image010.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image010.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image011.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image012.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image012.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image013.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image013.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image013.png 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image014.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image015.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image016.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image017.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image017.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image018.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image018.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image019.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image020.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image020.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image021.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image022.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image022.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image023.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image023.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image024.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image025.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image025.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image026.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image026.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image027.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image028.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image028.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image029.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image029.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image030.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image031.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image031.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image032.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image033.emz 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image034.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image035.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image036.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image037.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image038.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image039.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image040.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image055.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image058.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image059.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image061.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image062.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image064.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image065.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image066.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image070.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image071.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image072.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image076.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image077.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image078.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image079.jpg 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image080.gif 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/oledata.mso 1.3:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/overview.jpg 1.3:
-		binary?
-
 	* bin/VenueManagement.py 1.69:
 		changed manual url to point at existing dir in my public html
 
@@ -3450,262 +3765,12 @@
 		added manual link to web page currently in my public_html
 
 	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML.htm 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/Thumbs.db 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/filelist.xml 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/header.htm 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image001.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image001.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image002.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image002.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image003.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image003.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image004.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image005.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image005.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image006.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image006.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image007.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image008.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image008.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image009.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image009.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image010.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image010.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image011.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image011.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image012.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image012.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image013.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image013.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image013.png 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image014.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image015.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image016.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image017.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image017.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image018.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image018.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image019.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image020.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image020.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image021.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image022.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image022.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image023.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image023.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image024.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image025.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image025.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image026.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image026.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image027.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image028.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image028.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image029.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image029.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image030.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image031.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image031.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image032.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image033.emz 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image034.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image035.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image036.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image037.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image038.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image039.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image040.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image055.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image058.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image059.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image061.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image062.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image064.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image065.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image066.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image070.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image071.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image072.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image076.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image077.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image078.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image079.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image080.gif 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image081.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image082.jpg 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/oledata.mso 1.1:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/overview.jpg 1.1:
 	* doc/VENUE_CLIENT_MANUAL_HTML/contents.htm 1.1:
 	* doc/VENUE_CLIENT_MANUAL_HTML/tableOfContents.htm 1.1:
 	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML.htm 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/Thumbs.db 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/filelist.xml 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/header.htm 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image001.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image002.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image003.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image004.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image005.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image006.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image007.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image008.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image009.gif 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image009.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image010.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image011.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image012.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image013.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image014.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image015.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image016.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image017.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image018.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image019.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image020.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image021.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image022.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image023.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image024.jpg 1.1:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image025.jpg 1.1:
 	* doc/VENUE_MANAGEMENT_MANUAL_HTML/contents.htm 1.1:
 	* doc/VENUE_MANAGEMENT_MANUAL_HTML/tableOfContents.htm 1.1:
 		manual files
-
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/filelist.xml 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/header.htm 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image001.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image001.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image002.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image002.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image003.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image003.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image004.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image005.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image005.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image006.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image007.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image008.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image008.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image009.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image009.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image010.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image010.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image011.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image012.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image012.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image013.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image013.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image013.png 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image014.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image015.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image017.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image017.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image018.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image018.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image019.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image020.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image020.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image021.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image022.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image023.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image023.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image024.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image025.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image025.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image026.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image026.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image028.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image028.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image029.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image029.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image030.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image031.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image031.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image032.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image034.gif 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image035.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image036.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image037.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image038.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image039.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image040.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image055.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image059.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image061.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image062.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image064.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image065.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image066.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image070.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image071.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image076.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image077.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image078.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image079.jpg 1.2:
-	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/image080.gif 1.2:
-		remove to check in as binary instead...
-
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/Thumbs.db 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/filelist.xml 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/header.htm 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image001.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image002.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image003.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image004.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image005.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image006.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image007.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image008.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image009.gif 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image009.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image010.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image011.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image012.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image013.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image014.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image015.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image016.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image017.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image018.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image019.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image020.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image021.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image022.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image023.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image024.jpg 1.2:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image025.jpg 1.2:
-		add as binary instead
-
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/Thumbs.db 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/filelist.xml 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/header.htm 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image001.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image002.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image003.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image004.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image005.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image006.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image007.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image008.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image009.gif 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image009.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image010.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image011.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image012.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image013.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image014.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image015.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image016.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image017.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image018.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image019.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image020.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image021.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image022.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image023.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image024.jpg 1.3:
-	* doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/image025.jpg 1.3:
-		binary...
 
 	* bin/VenueManagement.py 1.68:
 		added manual in help menue from web page located in my public
@@ -6712,16 +6777,6 @@
 		with just the icon in it. Commented out some of the
 		unneccessary postinstall scripts.
 
-2003-04-03  eolson
-	* AccessGrid/VenueServer.py 1.57:
-		Changed True to 1 and False to 0 since True and False weren't
-		added to python until fairly recent version 2.2.1 (and 2.2 is
-		on vv2 at the moment).
-
-	* AccessGrid/VenueServer.py 1.55:
-		
-		Get default constructor to work.  Using default server port 8000 and set default authorization to always authorized.  Cleans up its own hosting environment (Server) only if it was created internally.
-
 2003-04-03  lefvert
 	* bin/VenueClient.py 1.99:
 		Added support to remove and add services
@@ -6759,6 +6814,16 @@
 	* AccessGrid/Venue.py 1.68:
 	* AccessGrid/VenueClientUIClasses.py 1.118:
 		Added support for adding and removing services
+
+2003-04-03  eolson
+	* AccessGrid/VenueServer.py 1.57:
+		Changed True to 1 and False to 0 since True and False weren't
+		added to python until fairly recent version 2.2.1 (and 2.2 is
+		on vv2 at the moment).
+
+	* AccessGrid/VenueServer.py 1.55:
+		
+		Get default constructor to work.  Using default server port 8000 and set default authorization to always authorized.  Cleans up its own hosting environment (Server) only if it was created internally.
 
 2003-04-03  olson
 	* tests/unittest_Platform.py 1.1:
