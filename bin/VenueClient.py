@@ -5,7 +5,7 @@ from wxPython.wx import *
 import AccessGrid.Types
 import AccessGrid.Utilities
 from AccessGrid.VenueClientUIClasses import VenueClient
-from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
+from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog, ConnectToVenueDialog
 import AccessGrid.ClientProfile
 from AccessGrid.Descriptions import DataDescription
 
@@ -26,49 +26,80 @@ class VenueClientUI(wxApp, VenueClient):
         self.gotClient = false
         return true
 
-    def ConnectToServer(self, file = None):
-        venueServerUri = "https://localhost:9500/VenueServer"
-        venueUri = Client.Handle( venueServerUri ).get_proxy().GetDefaultVenue()
+ #   def ConnectToServer(self):
+  #      venueServerUri = url
+   #     venueUri = Client.Handle( venueServerUri ).get_proxy().GetDefaultVenue()
+   #     self.ConnectToVenue(venueUri, file)
+        
+    def ConnectToVenue(self):
+        # venueServerUri = "https://localhost:6000/VenueServer"
+        # venueUri = Client.Handle( venueServerUri ).get_proxy().GetDefaultVenue()
         myHomePath = os.environ['HOME']
         accessGridDir = '.AccessGrid'
         self.profilePath = myHomePath+'/'+accessGridDir+'/profile'
 
-        if file:
-            self.profile = ClientProfile(file)
-        else:
-            try:
-                os.listdir(myHomePath+'/'+accessGridDir)
-            except:
-                os.mkdir(myHomePath+'/'+accessGridDir)
-
-            self.profile = ClientProfile(self.profilePath)
+        try:  # do we have a profile file
+            os.listdir(myHomePath+'/'+accessGridDir)
+            
+        except:
+            os.mkdir(myHomePath+'/'+accessGridDir)
+            
+        self.profile = ClientProfile(self.profilePath)
                   
         if self.profile.IsDefault():  # not your profile
-            profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', self.profile)
-
-            if (profileDialog.ShowModal() == wxID_OK): 
-                self.ChangeProfile(profileDialog.GetNewProfile())
-                profileDialog.Destroy()
-                self.__startMainLoop(venueUri, self.profile)
-            
-            else:
-                profileDialog.Destroy()
+            self.__openProfileDialog()
 
         else:
-            self.__startMainLoop(venueUri, profile)
+            self.__startMainLoop(self.profile)
 
+    def __openProfileDialog(self, profile):
+        profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', self.profile)
+
+        if (profileDialog.ShowModal() == wxID_OK): 
+            self.ChangeProfile(profileDialog.GetNewProfile())
+            profileDialog.Destroy()
+            self.__startMainLoop(self.profile)
+            
+        else:
+            profileDialog.Destroy()
                
-    def __startMainLoop(self, uri, profile):
-        if uri:
-            self.gotClient = true
-            self.client = Client.Handle(uri).get_proxy()
-            self.EnterVenue(uri)
+    def __startMainLoop(self, profile):
+        self.gotClient = true
+        self.SetProfile(profile)
+        uri = self.profile.homeVenue
+        try: # is this a server
+            venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
+            
+        except: # no, it is a venue
+            venueUri = uri
+
+        try:
+            self.client = Client.Handle(venueUri).get_proxy()
+            self.EnterVenue(venueUri)
+            
+        except: # the address is incorrect
+            # open a dialog and connect that way
+            connectToVenueDialog = ConnectToVenueDialog(NULL, -1, 'Connect to server')
+            if (connectToVenueDialog.ShowModal() == wxID_OK):
+                uri = connectToVenueDialog.address.GetValue()
+                
+            connectToVenueDialog.Destroy()
+
+            try: # is this a server
+                venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
+
+            except: # no, it is a venue
+                venueUri = uri
+
+            self.client = Client.Handle(venueUri).get_proxy()
+            self.EnterVenue(venueUri)
+            self.frame.Show(true)
+            self.MainLoop()
+
+        else:
             self.frame.Show(true)
             self.MainLoop()
             
-        else:
-            ErrorDialog(self.frame, 'No default venue on server')
-
     def CoherenceCallback(self, event):
         """
         Note: Overloaded from VenueClient
@@ -106,8 +137,8 @@ class VenueClientUI(wxApp, VenueClient):
         elif event.eventType == Event.UPDATE_VENUE_STATE:
             print 'update venue state'
 
-        else:
-            print 'HEARTBEAT!'
+       # else:
+            #print 'HEARTBEAT!'
     
     def EnterVenue(self, URL):
         """
@@ -154,13 +185,30 @@ class VenueClientUI(wxApp, VenueClient):
         """
         VenueClient.ExitVenue( self )
         
-    def GoToNewVenue(self, description):
-        uri =  description.uri
+    #def GoToNewVenue(self, description):
+     #   uri =  description.uri
+      #  self.frame.CleanUp()
+       # self.OnExit()
+        #self.client = Client.Handle(uri).get_proxy()
+        #self.EnterVenue(uri)
+
+    def GoToNewVenue(self, uri):
+        try: # is this a server
+            print '========================this is a server'
+            venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
+
+        except: # no, it is a venue
+            print '=========================this is a venue'
+            venueUri = uri
+            
         self.frame.CleanUp()
         self.OnExit()
-        self.client = Client.Handle(uri).get_proxy()
-        self.EnterVenue(uri)
-                
+        self.client = Client.Handle(venueUri).get_proxy()
+        self.EnterVenue(venueUri)
+
+    def GoToNewServer(self, serverUri):
+        venueUri = Client.Handle( serverUri ).get_proxy().GetDefaultVenue()
+        self.GoToNewVenue(venueUri)
 
     def OnExit(self):
         """
@@ -198,13 +246,8 @@ if __name__ == "__main__":
     from AccessGrid.ClientProfile import ClientProfile
     from AccessGrid.Types import *
 
-    profile = None
-
-    if len(sys.argv) > 1:
-        profile = sys.argv[1]
-        
     vc = VenueClientUI()
-    vc.ConnectToServer(profile)
+    vc.ConnectToVenue()
        
 
     
