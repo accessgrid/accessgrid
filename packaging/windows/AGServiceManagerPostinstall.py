@@ -8,5 +8,5 @@ if sys.platform == 'win32':
     InstallDir, Type = _winreg.QueryValueEx(AG20, "InstallPath")
     AGServiceManagerFD = open(os.path.join(ConfigDir, "AGServiceManager.cfg"), "w")
     AGServiceManagerFD.write("[Service Manager]\n")
-    AGServiceManagerFD.write("servicesDirectory = " + os.path.joing(InstallDir, "local_service\n"))
+    AGServiceManagerFD.write("servicesDirectory = " + os.path.join(InstallDir, "local_services\n"))
     AGServiceManagerFD.close()
