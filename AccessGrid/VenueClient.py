@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.153 2004-03-23 17:56:40 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.154 2004-04-01 19:29:17 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.153 2004-03-23 17:56:40 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.154 2004-04-01 19:29:17 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -588,6 +588,8 @@ class VenueClient:
 
         URL : url to the venue
         """
+        log.debug("EnterVenue; url=%s", URL)
+        
         # Initialize a string of warnings that can be displayed to the user.
         self.warningString = ''
        
@@ -1501,21 +1503,35 @@ class VenueClient:
     def IsVenueAdministrator(self):
         # Determine if we are an administrator so we can add
         # administrator features to UI.
+        
         isVenueAdministrator = 0
-        authUrl = self.venueUri + '/Authorization'
-       
-        authClient = AuthorizationManagerIW(authUrl)
-        role = authClient.FindRole('Administrators')
-                      
-        cm = Toolkit.Application.instance().GetCertificateManager()
-        di = cm.GetDefaultIdentity()
-               
-        for s in role.GetSubjects():
-            if s.GetName() == str(di.GetSubject()):
-                isVenueAdministrator = 1
+        try:
+            authUrl = self.venueUri + '/Authorization'
+
+            authClient = AuthorizationManagerIW(authUrl)
+            role = authClient.FindRole('Administrators')
+
+            cm = Toolkit.Application.instance().GetCertificateManager()
+            di = cm.GetDefaultIdentity()
+            
+            for s in role.GetSubjects():
+                if s.GetName() == str(di.GetSubject()):
+                    isVenueAdministrator = 1
+                    break
+        except Exception, e:
+        
+            log.exception("Error retrieving admin list; possibly old server")
+            try:
+                # Try legacy method (2.1.2 and earlier)
+                log.info("Trying legacy method for getting admin list")
+                roleNameList = self.__venueProxy.DetermineSubjectRoles()
+                if "Venue.Administrators" in roleNameList :        
+                    isVenueAdministrator = 1
+            except Exception, e:
+                log.exception("Error retrieving admin list using legacy method")
                 
         return isVenueAdministrator
-        
+    
 
 # Retrieve a list of urls of (presumably) running venue clients
 def GetVenueClientUrls():
