@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.150 2003-05-19 16:01:51 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.151 2003-05-19 16:06:07 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -625,7 +625,7 @@ class VenueClientUI(wxApp, VenueClient):
             except Exception, e:
                 log.exception("bin.VenueClient::EnterVenue failed")
                 text = "You have not entered the venue, an error occured.  Please, try again.\n\nNote: Read VenueClient.log for more detailed information"
-                MessageDialoge(None, text, "Enter Venue Error",
+                MessageDialog(None, text, "Enter Venue Error",
                               style = wxOK  | wxICON_ERROR)
             else:
                 #
