@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.13 2004-07-10 01:11:01 judson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.14 2004-07-19 14:55:11 binns Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -308,7 +308,7 @@ class SelectCertWindow(TitledPage):
         self.text = wxStaticText(self, -1, "Select Certificate Type: ")
         self.selectionList = ["Identity", "Service", "Anonymous"]
         self.selections = wxComboBox(self, -1, self.selectionList[0], choices = self.selectionList, style = wxCB_READONLY)
-        self.info = wxStaticText(self, -1, "There are two kinds of certificates:")
+        self.info = wxStaticText(self, -1, "There are three kinds of certificates:")
         self.info1 = wxStaticText(self, -1, "Identity Certificate:")
         self.info2 = wxStaticText(self, -1, "To identify an individual.")
         self.info3 = wxStaticText(self, -1, "Service Certificate:")
@@ -319,7 +319,7 @@ class SelectCertWindow(TitledPage):
         # self.info6 = wxStaticText(self, -1, "To identify a machine.")
         self.parent = parent
         self.__setProperties()
-        self.Layout()
+        self.__Layout()
 
     def GetValidity(self):
         return true
@@ -347,11 +347,17 @@ class SelectCertWindow(TitledPage):
         return next
 
     def __setProperties(self):
-        self.info1.SetFont(wxFont(wxDEFAULT, wxDEFAULT, wxNORMAL, wxBOLD))
-        self.info3.SetFont(wxFont(wxDEFAULT, wxDEFAULT, wxNORMAL, wxBOLD))
-        self.info5.SetFont(wxFont(wxDEFAULT, wxDEFAULT, wxNORMAL, wxBOLD))
+        # Fix for OS X where wxDEFAULT isn't sane
+        pointSize = wxDEFAULT
         
-    def Layout(self):
+        if Platform.IsOSX():
+            pointSize=12
+        
+        self.info1.SetFont(wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD))
+        self.info3.SetFont(wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD))
+        self.info5.SetFont(wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD))
+        
+    def __Layout(self):
         '''
         Handles UI layout
         '''
@@ -373,7 +379,7 @@ class SelectCertWindow(TitledPage):
         gridSizer.Add(self.selections, 0, wxEXPAND)
         gridSizer.AddGrowableCol(1)
         self.sizer.Add(gridSizer, 0, wxALL| wxEXPAND, 5)
-
+        self.Layout()
 
 class IdentityCertWindow(TitledPage):
     '''

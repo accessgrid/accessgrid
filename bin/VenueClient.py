@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.262 2004-07-08 02:28:15 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.263 2004-07-19 14:55:11 binns Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.262 2004-07-08 02:28:15 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.263 2004-07-19 14:55:11 binns Exp $"
 
 # Standard Imports
 import os
@@ -28,7 +28,7 @@ from wxPython.wx import wxPySimpleApp
 from AccessGrid.Toolkit import WXGUIApplication
 from AccessGrid import Log
 from AccessGrid.Platform.Config import UserConfig
-from AccessGrid.VenueClientUI import VenueClientUI
+from AccessGrid.VenueClientUI2 import VenueClientUI
 from AccessGrid.VenueClientController import VenueClientController
 from AccessGrid.VenueClient import VenueClient
 from AccessGrid.UIUtilities import ErrorDialog

@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI2.py,v 1.3 2004-07-16 21:02:51 binns Exp $
+# RCS-ID:      $Id: VenueClientUI2.py,v 1.4 2004-07-19 14:55:11 binns Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI2.py,v 1.3 2004-07-16 21:02:51 binns Exp $"
+__revision__ = "$Id: VenueClientUI2.py,v 1.4 2004-07-19 14:55:11 binns Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -509,10 +509,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                                                'default venue')
         self.textInputWindow = wxSashWindow(self, self.ID_WINDOW_BOTTOM2,
                                                   wxDefaultPosition,
-                                                  wxSize(-1, 40))
+                                                  wxSize(-1, 35))
         self.textOutputWindow = wxSashWindow(self, self.ID_WINDOW_BOTTOM,
                                                    wxDefaultPosition,
-                                                   wxSize(-1, 35))
+                                                   wxSize(-1, 100))
         self.textOutput = wxTextCtrl(self.textOutputWindow, wxNewId(), "",
                                      style= wxTE_MULTILINE | wxTE_READONLY |
                                      wxTE_RICH|wxTE_AUTO_URL)
@@ -3792,7 +3792,7 @@ class UrlDialog(wxDialog):
             info = text
         self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
         self.addressText = wxStaticText(self, -1, "Address: ", style=wxALIGN_LEFT)
-        self.address = wxTextCtrl(self, -1, address, size = wxSize(300,20))
+        self.address = wxTextCtrl(self, -1, address, size = wxSize(300,-1))
         self.__Layout()
         
     def __Layout(self):
@@ -3829,7 +3829,7 @@ class ProfileDialog(wxDialog):
         wxDialog.__init__(self, parent, id, title)
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
-        self.nameCtrl = wxTextCtrl(self, -1, "", size = (400,20),
+        self.nameCtrl = wxTextCtrl(self, -1, "", size = (400,-1),
                                    validator = TextValidator("Name"))
         self.emailText = wxStaticText(self, -1, "Email:", style=wxALIGN_LEFT)
         self.emailCtrl = wxTextCtrl(self, -1, "",
@@ -3846,6 +3846,9 @@ class ProfileDialog(wxDialog):
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.profile = None
+        self.profileTypeBox = None
+        self.dnText = None
+        self.dnTextCtrl = None
         #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
         self.__Layout()
         
@@ -3872,11 +3875,11 @@ class ProfileDialog(wxDialog):
         box = wxStaticBox(self, -1, "Profile")
         box.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         sizer2 = wxStaticBoxSizer(box, wxHORIZONTAL)
-        self.gridSizer = wxFlexGridSizer(9, 2, 5, 5)
-        self.gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
-        self.gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
+        self.gridSizer = wxFlexGridSizer(0, 2, 5, 5)
+        self.gridSizer.Add(self.nameText, 0, wxALIGN_LEFT, 0)
+        self.gridSizer.Add(self.nameCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.emailText, 0, wxALIGN_LEFT, 0)
-        self.gridSizer.Add(self.emailCtrl, 2, wxEXPAND, 0)
+        self.gridSizer.Add(self.emailCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.phoneNumberText, 0, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.phoneNumberCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.locationText, 0, wxALIGN_LEFT, 0)
@@ -3884,20 +3887,27 @@ class ProfileDialog(wxDialog):
         self.gridSizer.Add(self.homeVenue, 0, wxALIGN_LEFT, 0)
         self.gridSizer.Add(self.homeVenueCtrl, 0, wxEXPAND, 0)
         self.gridSizer.Add(self.profileTypeText, 0, wxALIGN_LEFT, 0)
-        sizer2.Add(self.gridSizer, 1, wxALL, 10)
+        if self.profileTypeBox:
+            self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
+        if self.dnText:
+            self.gridSizer.Add(self.dnText, 0, wxALIGN_LEFT, 0)
+            self.gridSizer.Add(self.dnTextCtrl, 0, wxEXPAND, 0)
+        sizer2.Add(self.gridSizer, 1, wxALL|wxEXPAND, 1)
 
         self.sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
 
         sizer3 = wxBoxSizer(wxHORIZONTAL)
-        sizer3.Add(self.okButton, 0, wxALL, 10)
-        sizer3.Add(self.cancelButton, 0, wxALL, 10)
+        sizer3.Add(self.okButton, 0, wxEAST, 10)
+        sizer3.Add(self.cancelButton, 0)
 
-        self.sizer1.Add(sizer3, 0, wxALIGN_CENTER)
+        self.sizer1.Add(sizer3, 0, wxALIGN_CENTER|wxSOUTH, 10)
 
         self.SetSizer(self.sizer1)
+        print str(self.GetSize())
         self.sizer1.Fit(self)
         self.SetAutoLayout(1)
-        #self.Layout()
+        self.Layout()
+        print str(self.GetSize())
 
     def GetNewProfile(self):
         if(self.profile != None):
@@ -3920,7 +3930,7 @@ class ProfileDialog(wxDialog):
         self.profile = profile
         self.profileTypeBox = wxComboBox(self, -1, choices =['user', 'node'], 
                                          style = wxCB_DROPDOWN|wxCB_READONLY)
-        self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
+        #self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
         self.__Layout()
         self.nameCtrl.SetValue(self.profile.GetName())
         self.emailCtrl.SetValue(self.profile.GetEmail())
@@ -3944,9 +3954,9 @@ class ProfileDialog(wxDialog):
         self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
         self.dnText = wxStaticText(self, -1, "Distinguished name: ")
         self.dnTextCtrl = wxTextCtrl(self, -1, "")
-        self.gridSizer.Add(self.dnText, 0, wxEXPAND, 0)
-        self.gridSizer.Add(self.dnTextCtrl, 0, wxEXPAND, 0)
-        self.sizer1.Fit(self)
+        #self.gridSizer.Add(self.dnText, 0, wxEXPAND, 0)
+        #self.gridSizer.Add(self.dnTextCtrl, 0, wxEXPAND, 0)
+        #self.sizer1.Fit(self)
         self.__Layout()
         
         self.nameCtrl.SetValue(item.name)
