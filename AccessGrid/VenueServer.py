@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.43 2003-02-27 20:08:17 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.44 2003-03-12 08:48:12 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ import os
 import os.path
 import socket
 import string
-from threading import Thread
+from threading import Thread, RLock
 import shelve
 import signal
 import traceback
@@ -100,7 +100,8 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         # Initialize our state
         # We need to get the first administrator from somewhere
-        self.administrators = [GetDefaultIdentityDN()]
+        self.administrators = ''
+        self.administratorList = []
         self.defaultVenue = ''
         self.hostingEnvironment = hostEnvironment
         self.multicastAddressAllocator = MulticastAddressAllocator()
@@ -111,7 +112,8 @@ class VenueServer(ServiceBase.ServiceBase):
         self.dataStorageLocation = None
         self.eventPort = 0
         self.textPort = 0
-
+        self.lock = RLock()
+        
         # Figure out which configuration file to use for the
         # server configuration. If no configuration file was specified
         # look for a configuration file named VenueServer.cfg
@@ -122,6 +124,13 @@ class VenueServer(ServiceBase.ServiceBase):
         # Read in and process a configuration
         self.InitFromFile(LoadConfig(self.configFile, self.configDefaults))
 
+        # If there are no administrators set then we set it to the
+        # owner of the current running process
+        if len(self.administrators) == 0:
+            self.administratorList.append(GetDefaultIdentityDN())
+        else:
+            self.administratorList = string.split(self.administrators, ":")
+            
         # Start Venue Server wide services
         log.info("HN: %s EP: %d TP: %d DP: %d" % ( self.hostname,
                                                     int(self.eventPort),
@@ -177,15 +186,13 @@ class VenueServer(ServiceBase.ServiceBase):
 
             # Load Venues
             for vURL in store.keys():
-                log.debug("Loading Venue: %s", vURL)
+                log.info("Loading Venue: %s", vURL)
 
                 # Rebuild the venue
                 self.venues[vURL] = store[vURL]
 
                 # Start the venue
-                self.venues[vURL].Start(self.multicastAddressAllocator,
-                                        self.dataTransferServer, self.eventService,
-                                        self.textService)
+		self.venues[vURL].Start(self)
                 
                 # Build the Venue URI
                 venuePath = urlparse.urlparse(vURL)[2]
@@ -209,9 +216,10 @@ class VenueServer(ServiceBase.ServiceBase):
         sm = AccessControl.GetSecurityManager()
         if sm == None:
             return 1
-        elif sm.GetSubject().GetName() in self.administrators:
+        elif sm.GetSubject().GetName() in self.administratorList:
             return 1
         else:
+            log.exception("Authorization failed for %s", sm.GetSubject().GetName())
             return 0
     
     def InitFromFile(self, config):
@@ -257,7 +265,7 @@ class VenueServer(ServiceBase.ServiceBase):
             #
 
             if self.dataStorageLocation is None or not os.path.exists(self.dataStorageLocation):
-                log.debug("Creating venue: Data storage location %s not valid",
+                log.warn("Creating venue: Data storage location %s not valid",
                           self.dataStorageLocation)
                 venueStoragePath = None
             else:
@@ -276,11 +284,9 @@ class VenueServer(ServiceBase.ServiceBase):
             venue = Venue(venueId, venueDescription,
                           GetDefaultIdentityDN(), venueStoragePath)
 
-            venue.Start(self.multicastAddressAllocator,
-                        self.dataTransferServer, self.eventService,
-                        self.textService)
-
-#            venue.SetEncryptMedia(self.encryptAllMedia)
+            venue.Start(self)
+            
+            venue.SetEncryptMedia(int(self.encryptAllMedia))
 
             venuePath = urlparse.urlparse(venueDescription.uri)[2]
             venuePath = venuePath[1:]
@@ -315,9 +321,6 @@ class VenueServer(ServiceBase.ServiceBase):
         if not self._authorize():
             raise VenueServerException("You are not authorized to perform this action.")
 
-        # This should check
-        # 1. That you are allowed to do this
-        # 2. That you are setting the right venue description
         if(venueDescription.uri == URL):
             self.venues[URL].description = venueDescription
 
@@ -337,14 +340,19 @@ class VenueServer(ServiceBase.ServiceBase):
 
     def AddAdministrator(self, string):
         """
-        AddAdminstrator adds an administrator to the list of administrators
+        AddAdministrator adds an administrator to the list of administrators
         for this VenueServer.
         """
         if not self._authorize():
             raise VenueServerException("You are not authorized to perform this action.")
 
-        self.administrators.append(string)
-
+        if string not in self.administratorList:
+            self.administratorList.append(string)
+            self.config["VenueServer.administrators"] = ":".join(self.administratorList)
+            return string
+        else:
+            raise VenueServerException("Administrator already present.")
+        
     AddAdministrator.soap_export_as = "AddAdministrator"
 
     def RemoveAdministrator(self, string):
@@ -355,16 +363,21 @@ class VenueServer(ServiceBase.ServiceBase):
         if not self._authorize():
             raise VenueServerException("You are not authorized to perform this action.")
 
-        self.administrators.remove(string)
-
+        if string in self.administratorList:
+            self.administratorList.remove(string)
+            self.config["VenueServer.administrators"] = ":".join(self.administratorList)
+            return string
+        else:
+            raise VenueServerException("Administrator not found.")
+        
     RemoveAdministrator.soap_export_as = "RemoveAdministrator"
 
     def GetAdministrators(self):
         """
-        GetAdministrators returns a list of adminsitrators for this
+        GetAdministrators returns a list of adminisitrators for this
         VenueServer.
         """
-        return self.administrators
+        return self.administratorList
 
     GetAdministrators.soap_export_as = "GetAdministrators"
 
@@ -504,7 +517,7 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         if not self._authorize():
             raise VenueServerException("You are not authorized to perform this action.")
-        self.encryptAllMedia = value
+        self.encryptAllMedia = int(value)
         return self.encryptAllMedia
 
     SetEncryptAllMedia.soap_export_as = "SetEncryptAllMedia"
@@ -513,7 +526,7 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         Get the server wide default for venue media encryption.
         """
-        return self.encryptAllMedia
+        return int(self.encryptAllMedia)
 
     GetEncryptAllMedia.soap_export_as = "GetEncryptAllMedia"
 
@@ -561,17 +574,33 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         Shutdown shuts down the server.
         """
+        log.info("Starting Shutdown!")
+
+        for v in self.venues.values():
+            v.Shutdown()
+            
+        self.houseKeeper.StopAllTasks()
+
         if not self._authorize():
             raise VenueServerException("You are not authorized to perform this action.")
+
+        log.info("Shutdown -> Checkpointing...")
         self.Checkpoint()
-
+        log.info("                            done")
+        
+        # This blocks anymore checkpoints from happening
+        self.lock.acquire()
+        log.info("Shutting down services...")
+        log.info("                         text")
         self.textService.Stop()
+        log.info("                         event")
         self.eventService.Stop()
-        # Shut down the dataStore
-        # self.dataService.Stop()
+        log.info("                         data")
+        self.dataTransferServer.stop()
+        log.info("                              done.")
 
-        self.hostingEnvironment.stop()
-
+        log.info("Shutdown Complete.")
+        
     Shutdown.soap_export_as = "Shutdown"
 
     def Checkpoint(self):
@@ -586,6 +615,9 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         log.info("Checkpointing")
 
+        # This locks access to the persistence file
+        self.lock.acquire()
+        
         try:
             # Before we backup we copy the previous backup to a safe place
             if os.path.isfile(self.persistenceFilename):
@@ -617,3 +649,4 @@ class VenueServer(ServiceBase.ServiceBase):
 
         SaveConfig(self.configFile, self.config)
 
+        self.lock.release()
