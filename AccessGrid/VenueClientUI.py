@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.60 2004-07-06 21:04:35 judson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.61 2004-07-12 14:17:43 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.60 2004-07-06 21:04:35 judson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.61 2004-07-12 14:17:43 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2661,7 +2661,7 @@ class ContentListPanel(wxPanel):
         cookie = 0
         
         if(self.tree.GetChildrenCount(treeId)>0):
-            id, cookie = self.tree.GetFirstChild(treeId, cookie)
+            id, cookie = self.tree.GetFirstChild(treeId)
             d = self.tree.GetPyData(id)
             if d:
                 dataList.append(d)
