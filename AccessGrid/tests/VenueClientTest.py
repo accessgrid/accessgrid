@@ -5,34 +5,27 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientTest.py,v 1.4 2003-03-21 16:09:06 judson Exp $
+# RCS-ID:      $Id: VenueClientTest.py,v 1.5 2003-03-25 17:57:56 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
-import threading
+import sys
 import os
+import threading
+import logging
 
 from wxPython.wx import *
 
 from pyGlobus.io import GSITCPSocketException
 
-import AccessGrid.Types
-import AccessGrid.ClientProfile
-from AccessGrid.Platform import GPI 
-from AccessGrid.VenueClient import VenueClient, EnterVenueException
-from AccessGrid.VenueClientUIClasses import WelcomeDialog
-from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
-from AccessGrid.VenueClientUIClasses import UrlDialog, UrlDialogCombo
-from AccessGrid.Descriptions import DataDescription, ServiceDescription
-from AccessGrid.Utilities import formatExceptionInfo
-from AccessGrid.UIUtilities import MessageDialog
-
-import sys
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.hosting.pyGlobus import Client
-from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid.Types import *
 
+from AccessGrid.ClientProfile import ClientProfile
+from AccessGrid.Platform import GPI 
+from AccessGrid.VenueClient import VenueClient, EnterVenueException
+from AccessGrid.Descriptions import DataDescription
+from AccessGrid.Utilities import formatExceptionInfo
 
 class VenueClientTest(VenueClient):
     def __init__(self, url):
@@ -61,16 +54,16 @@ class VenueClientTest(VenueClient):
         data = DataDescription('dataName')
         self.client.AddData(data)
 
-        print '\n--------------- ADD SERVICE'
-        service = ServiceDescription('serviceName', 'serviceDescription', 'serviceUri',\
-                                     'serviceIcon', 'serviceStoragetype')
-        self.client.AddService(service)
+#         print '\n--------------- ADD SERVICE'
+#         service = ServiceDescription('serviceName', 'serviceDescription', 'serviceUri',\
+#                                      'serviceIcon', 'serviceStoragetype')
+#         self.client.AddService(service)
 
-        print '\n--------------- REMOVE DATA'    
+#         print '\n--------------- REMOVE DATA'    
 #        self.client.RemoveData(data)
 
-        print '\n--------------- REMOVE SERVICE'  
-        self.client.RemoveService(service)
+#         print '\n--------------- REMOVE SERVICE'  
+#         self.client.RemoveService(service)
 
         nodeUrl = 'http://nodeserviceurl'
         print '\n--------------- SET NODE SERVICE URL', nodeUrl  
@@ -118,8 +111,8 @@ class VenueClientTest(VenueClient):
         VenueClient.EnterVenue( self, URL )
         venueState = self.venueState
         
-        print 'venue name: ', venueState.description.name
-        print 'venue description: ',venueState.description.description
+        print 'venue name: ', venueState.name
+        print 'venue description: ',venueState.description
       
         users = venueState.users.values()
         
@@ -140,10 +133,10 @@ class VenueClientTest(VenueClient):
         for node in nodes:
             print 'node: ', node.name
 
-        print '\n-------------SERVICES'
-        services = venueState.services.values()
-        for service in services:
-            print 'service: ', service.name
+#         print '\n-------------SERVICES'
+#         services = venueState.services.values()
+#         for service in services:
+#             print 'service: ', service.name
 
         print '\n------------- EXITS'
         exits = venueState.connections.values()
@@ -157,6 +150,13 @@ class VenueClientTest(VenueClient):
         os._exit(1)
         
 if __name__ == "__main__":       
+    log = logging.getLogger("AG.VenueClient")
+    log.setLevel(logging.DEBUG)
+    hdlr = logging.FileHandler("VenueClientTest.log")
+    fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
+    hdlr.setFormatter(fmt)
+    log.addHandler(hdlr)
+
     venueServerPort = 8000
     if len(sys.argv) > 1:
         venueServerPort = sys.argv[1]

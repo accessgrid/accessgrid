@@ -5,15 +5,16 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueServerTest.py,v 1.9 2003-03-24 20:18:33 lefvert Exp $
+# RCS-ID:      $Id: VenueServerTest.py,v 1.10 2003-03-25 17:57:56 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 from AccessGrid.hosting.pyGlobus import Client
-from AccessGrid.Descriptions import VenueDescription
+from AccessGrid.Descriptions import ConnectionDescription, StreamDescription
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.hosting.pyGlobus import Client
-from AccessGrid.Descriptions import StreamDescription, Capability, MulticastNetworkLocation
+from AccessGrid.Types import Capability
+from AccessGrid.NetworkLocation import MulticastNetworkLocation
 import sys
 
 class VenueServerTest:
@@ -28,18 +29,17 @@ class VenueServerTest:
      
         print "\n------------------ INSERT VENUE"
         print "name: "+name+"\n"+description
-        venue = VenueDescription(name, description, "", None)
-        uri = self.client.AddVenue(venue)
+        uri = self.client.AddVenue(name, description)
         
         print "\n------------------ All venues in server"
         
         venueList = self.client.GetVenues()
         
         for v in venueList:
-            print "\n name: "+v.name+"\n "+v.description
+            print "\n name: "+v['name']+"\n "+v['description']
             
-        exit1 = VenueDescription("Exit1", "Exit1 description", "", None)
-        exit2 = VenueDescription("Exit2", "Exit2 description", "", None)
+        exit1 = ConnectionDescription("Exit1", "Exit1 description", "")
+        exit2 = ConnectionDescription("Exit2", "Exit2 description", "")
       
         print "\n------------------ Set connections"
         print "name: "+exit1.name+", description: "+ exit1.description
@@ -59,8 +59,9 @@ class VenueServerTest:
         newName = "newName"
         newDescription = "newDescription"
         print "new venue has name: "+newName+" description: "+newDescription
-        venue = VenueDescription(newName, newDescription, "", None)
-        self.client.ModifyVenue(uri, venue)
+        venue = Client.Handle(uri).get_proxy()
+        venue.SetName(newName)
+        venue.SetDescription(newDescription)
      
         print "\n------------------ All venues in server"
         venueList = self.client.GetVenues()
