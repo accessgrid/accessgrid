@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.19 2003-09-11 20:48:06 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.20 2003-09-15 18:43:40 judson Exp $
 ;
 
 #define SourceDir "C:\Software\AccessGrid\AccessGrid"
@@ -100,11 +100,13 @@ Source: bin\VenueServer.py; DestDir: {app}\bin
 Source: bin\VenueClient.py; DestDir: {app}\bin
 Source: bin\AGServiceManager.py; DestDir: {app}\bin
 Source: bin\CertificateRequestTool.py; DestDir: {app}\bin; DestName: CertificateRequestTool.pyw
+Source: bin\certmgr.py; DestDir: {app}\bin; DestName: certmgr.py
 Source: bin\NodeManagement.py; DestDir: {app}\bin; DestName: NodeManagement.pyw
 Source: bin\NodeSetupWizard.py; DestDir: {app}\bin; DestName: NodeSetupWizard.pyw
 Source: bin\SetupVideo.py; DestDir: {app}\bin; DestName: SetupVideo.pyw
-Source: bin\VenueManagement.py; DestDir: {app}\bin
+Source: bin\VenueManagement.py; DestDir: {app}\bin; DestName: VenueManagement.pyw
 Source: bin\AGNodeService.py; DestDir: {app}\bin
+Source: bin\RegisterApp.py; DestDir: {app}\bin
 Source: dist\services\AudioService.zip; DestDir: {commonappdata}\AccessGrid\services; DestName: AudioService.zip
 Source: dist\services\VideoConsumerService.zip; DestDir: {commonappdata}\AccessGrid\services; DestName: VideoConsumerService.zip
 Source: dist\services\VideoProducerService.zip; DestDir: {commonappdata}\AccessGrid\services; DestName: VideoProducerService.zip
@@ -119,7 +121,7 @@ Source: packaging\windows\agicons.exe; DestDir: {app}\install
 
 ; begin VC system files
 ; (Note: Scroll to the right to see the full lines!)
-Source: packaging\windows\msvcr70.dll; DestDir: {win}\system32; Flags: restartreplace uninsneveruninstall external
+Source: packaging\windows\msvcr70.dll; DestDir: {win}\system32; Flags: restartreplace uninsneveruninstall
 ; end VC system files
 
 
@@ -180,11 +182,9 @@ Filename: {app}\bin\send_settingchange.exe; Flags: runminimized waituntilidle; D
 Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Description: Set up Globus runtime environment; Flags: postinstall waituntilidle; Parameters: globus_init.pyw; WorkingDir: {app}\bin
 
 [UninstallDelete]
-Name: {userappdata}\AccessGrid\certmgr.cfg; Type: files
 Name: {app}; Type: filesandordirs
 Name: {app}\bin\*.dat; Type: files
 Name: {app}\bin\*.cfg; Type: files
-Name: {userappdata}\AccessGrid\certRepo; Type: filesandordirs
 
 [Dirs]
 Name: {app}\config
