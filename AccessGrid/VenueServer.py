@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.157 2004-07-27 19:49:07 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.158 2004-07-29 16:02:43 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.157 2004-07-27 19:49:07 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.158 2004-07-29 16:02:43 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -940,6 +940,14 @@ class VenueServer(AuthorizationMixIn):
 
         self.dataStorageLocation = dataStorageLocation
         self.config["VenueServer.dataStorageLocation"] = dataStorageLocation
+
+        # Check for and if necessary create the data store directory
+        if not os.path.exists(self.dataStorageLocation):
+            try:
+                os.mkdir(self.dataStorageLocation)
+            except OSError:
+                log.exception("Could not create VenueServer Data Store.")
+                self.dataStorageLocation = None
 
         # END Critical Section
         self.simpleLock.release()
