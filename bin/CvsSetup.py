@@ -242,3 +242,23 @@ print "       set PYTHONPATH to", os.path.abspath(AG_BASE_DIR)
 print "       set AGTK_LOCATION to", os.path.abspath(DST_CONFIG_DIR)
 print ""
 
+fh = open("env-init.sh", "w")
+fh.write("export AGTK_INSTALL=%s\n" % (os.path.join( os.path.abspath(AG_BASE_DIR), "bin")))
+fh.write("export PYTHONPATH=%s\n" % os.path.abspath(AG_BASE_DIR))
+fh.write("export AGTK_LOCATION=%s\n" % os.path.abspath(DST_CONFIG_DIR))
+fh.close()
+
+fh = open("env-init.csh", "w")
+fh.write("setenv AGTK_INSTALL %s\n" % (os.path.join( os.path.abspath(AG_BASE_DIR), "bin")))
+fh.write("setenv PYTHONPATH %s\n" % os.path.abspath(AG_BASE_DIR))
+fh.write("setenv AGTK_LOCATION %s\n" % os.path.abspath(DST_CONFIG_DIR))
+fh.close()
+
+fh = open("env-init.bat", "w")
+fh.write("set AGTK_INSTALL=%s\n" % (os.path.join( os.path.abspath(AG_BASE_DIR), "bin")))
+fh.write("set PYTHONPATH=%s\n" % os.path.abspath(AG_BASE_DIR))
+fh.write("set AGTK_LOCATION=%s\n" % os.path.abspath(DST_CONFIG_DIR))
+fh.close()
+
+print "Wrote csh config to env-init.csh, bash config to env-init.sh"
+print "Wrote win32 batchfile init to env-init.bat"
