@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.190 2003-08-13 21:03:41 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.191 2003-08-13 21:58:17 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -155,7 +155,6 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
         self.frame.SetSize(wxSize(500, 400))
         self.SetTopWindow(self.frame)
         
-
         #
         # Tell the UI about installed applications
         #
@@ -1459,8 +1458,7 @@ if __name__ == "__main__":
 
     wxInitAllImageHandlers()
 
-
-    #app = wxPySimpleApp()
+    app = wxPySimpleApp()
     max = 10
     
     dlg = ProgressDialog("Start up", "Loading Venue Client. Please be patient.", max)
@@ -1468,3 +1466,4 @@ if __name__ == "__main__":
     
     vc = VenueClientUI(dlg)
     vc.ConnectToVenue()
+    
