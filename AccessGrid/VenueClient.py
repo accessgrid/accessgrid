@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.205 2005-02-07 17:00:37 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.206 2005-03-31 18:14:12 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.205 2005-02-07 17:00:37 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.206 2005-03-31 18:14:12 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -32,7 +32,8 @@ from AccessGrid.Utilities import LoadConfig
 from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.scheduler import Scheduler
-#from AccessGrid.EventClient import EventClient
+from AccessGrid.AsyncoreEventClient import EventClient
+from AccessGrid.AsyncoreEventService import PickledEvent
 #from AccessGrid.TextClient import TextClient
 from AccessGrid.Events import Event, ConnectEvent
 from AccessGrid.Events import DisconnectEvent, ClientExitingEvent
@@ -48,6 +49,7 @@ from AccessGrid.Descriptions import CreateApplicationDescription
 from AccessGrid.Descriptions import CreateStreamDescription
 from AccessGrid.AGNodeService import AGNodeServiceIW
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
+
 
 class EnterVenueException(Exception):
     pass
@@ -158,13 +160,13 @@ class VenueClient:
         self.profileCachePath = os.path.join(self.userConf.GetConfigDir(),
                                              self.profileCachePrefix)
         self.cache = ClientProfileCache(self.profileCachePath)
-                
+
     ##########################################################################
     #
     # Private Methods
 
     def __InitVenueData( self ):
-#        self.eventClient = None
+        self.eventClient = None
 #        self.textClient = None
         self.venueState = None
         self.venueUri = None
@@ -427,7 +429,7 @@ class VenueClient:
     def AddUserEvent(self, event):
         log.debug("AddUserEvent: Got Add User Event")
 
-        profile = event.data
+        profile = event.GetData()
         
         # Pre-2.3 server compatability code
         if not profile.connectionId:
@@ -440,7 +442,7 @@ class VenueClient:
     def RemoveUserEvent(self, event):
         log.debug("RemoveUserEvent: Got Remove User Event")
 
-        profile = event.data
+        profile = event.GetData()
         
         # Pre-2.3 server compatability code
         if not profile.connectionId:
@@ -468,7 +470,7 @@ class VenueClient:
     def ModifyUserEvent(self, event):
         log.debug("ModifyUserEvent: Got Modify User Event")
 
-        profile = event.data
+        profile = event.GetData()
 
         # Pre-2.3 server compatability code
         if not profile.connectionId:
@@ -481,7 +483,7 @@ class VenueClient:
     def AddDataEvent(self, event):
         log.debug("AddDataEvent: Got Add Data Event")
           
-        data = event.data
+        data = event.GetData()
       
         if data.type == "None" or data.type == None:
             # Venue data gets saved in venue state
@@ -498,7 +500,7 @@ class VenueClient:
     def UpdateDataEvent(self, event):
         log.debug("UpdateDataEvent: Got Update Data Event")
 
-        data = event.data
+        data = event.GetData()
                 
         if data.type == "None" or data.type == None:
             # Venue data gets saved in venue state
@@ -514,7 +516,7 @@ class VenueClient:
 
     def RemoveDataEvent(self, event):
         log.debug("RemoveDataEvent: Got Remove Data Event")
-        data = event.data
+        data = event.GetData()
 
         if data.type == "None" or data.type == None:
             # Venue data gets removed from venue state
@@ -531,7 +533,7 @@ class VenueClient:
     def AddServiceEvent(self, event):
         log.debug("AddServiceEvent: Got Add Service Event")
 
-        service = event.data
+        service = event.GetData()
         self.venueState.AddService(service)
         for s in self.observers:
             s.AddService(service)
@@ -539,7 +541,7 @@ class VenueClient:
     def UpdateServiceEvent(self, event):
         log.debug("UpdateServiceEvent: Got Update Service Event")
 
-        service = event.data
+        service = event.GetData()
         self.venueState.UpdateService(service)
         for s in self.observers:
             s.UpdateService(service)
@@ -547,7 +549,7 @@ class VenueClient:
     def RemoveServiceEvent(self, event):
         log.debug("RemoveServiceEvent: Got Remove Service Event")
 
-        service = event.data
+        service = event.GetData()
         self.venueState.RemoveService(service)
         for s in self.observers:
             s.RemoveService(service)
@@ -555,14 +557,14 @@ class VenueClient:
     def AddApplicationEvent(self, event):
         log.debug("AddApplicationEvent: Got Add Application Event")
 
-        app = event.data
+        app = event.GetData()
         self.venueState.AddApplication(app)
         for s in self.observers:
             s.AddApplication(app)
 
     def UpdateApplicationEvent(self, event):
         log.debug("UpdateApplicationEvent: Got Update Application Event")
-        app = event.data
+        app = event.GetData()
         self.venueState.UpdateApplication(app)
         for s in self.observers:
             s.UpdateApplication(app)
@@ -570,7 +572,7 @@ class VenueClient:
     def RemoveApplicationEvent(self, event):
         log.debug("RemoveApplicationEvent: Got Remove Application Event")
 
-        app = event.data
+        app = event.GetData()
         self.venueState.RemoveApplication(app)
         for s in self.observers:
             s.RemoveApplication(app)
@@ -578,7 +580,7 @@ class VenueClient:
     def AddConnectionEvent(self, event):
         log.debug("AddConnectionEvent: Got Add Connection Event")
 
-        connection = event.data
+        connection = event.GetData()
         self.venueState.AddConnection(connection)
         for s in self.observers:
             s.AddConnection(connection)
@@ -586,7 +588,7 @@ class VenueClient:
     def RemoveConnectionEvent(self, event):
         log.debug("RemoveConnectionEvent: Got Remove Connection Event")
 
-        connection = event.data
+        connection = event.GetData()
         self.venueState.RemoveConnection(connection)
         for s in self.observers:
             s.RemoveConnection(connection)
@@ -594,14 +596,14 @@ class VenueClient:
     def SetConnectionsEvent(self, event):
         log.debug("SetConnectionEvent: Got Set Connections Event")
 
-        connectionList = event.data
-        self.venueState.SetConnections(connectionList)
+        connectionList = event.GetData()
+        #self.venueState.SetConnections(connectionList)
         for s in self.observers:
             s.SetConnections(connectionList)
 
     def AddStreamEvent(self, event):
         log.debug("AddStreamEvent: Got Add Stream Event")
-        streamDesc = event.data
+        streamDesc = event.GetData()
 
         # Add the stream to the local stream store
         self.streamDescList.append(streamDesc)
@@ -616,7 +618,7 @@ class VenueClient:
     
     def ModifyStreamEvent(self, event):
         log.debug("ModifyStreamEvent: Got Modify Stream Event")
-        streamDesc = event.data
+        streamDesc = event.GetData()
 
         # Modify the local stream store
         for i in range(len(self.streamDescList)):
@@ -630,7 +632,7 @@ class VenueClient:
     
     def RemoveStreamEvent(self, event):
         log.debug("RemoveStreamEvent: Got Remove Stream Event")
-        streamDesc = event.data
+        streamDesc = event.GetData()
 
         # Remove the stream from the local stream store
         for i in range(len(self.streamDescList)):
@@ -646,7 +648,7 @@ class VenueClient:
             s.RemoveStream(streamDesc)
 
     def OpenAppEvent(self, event):
-        appCmdDesc = event.data
+        appCmdDesc = event.GetData()
         log.debug("OpenAppEvent: Got Start App Event %s %s %s"
                   %(appCmdDesc.appDesc, appCmdDesc.command, appCmdDesc.verb))
        
@@ -712,7 +714,7 @@ class VenueClient:
             if len(self.capabilities) > 0:
                 self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.privateId,
                                                                               self.capabilities)
-            
+
             # Retrieve the connection id from within the private id
             # (when we break compatability, the server will likely pass
             #  back the private id and connection id separately)
@@ -756,28 +758,43 @@ class VenueClient:
                 }
 
             self.Heartbeat()
-            
-#            h, p = self.venueState.eventLocation
-#            self.eventClient = EventClient(self.privateId,
-#                                           self.venueState.eventLocation,
-#                                           self.venueState.uniqueId)
-            
-            
-#            for e in coherenceCallbacks.keys():
-#                self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
-            
-#            self.eventClient.start()
-#            self.eventClient.Send(ConnectEvent(self.venueState.uniqueId,
-#                                               self.privateId))
+
+            evtLocation = self.__venueProxy.GetEventServiceLocation()
+                      
+            # Create event client
+            self.eventClient = EventClient(evtLocation, 
+                                           self.privateId,
+                                           self.venueState.GetUniqueId())
+                                           
+            for e in coherenceCallbacks.keys():
+                self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
+                
+            self.eventClient.Start()
+            self.eventClient.Send("connect", self.privateId)                               
+
+            # Create text client
+            #  textLocation = self.__venueProxy.GetTextServiceLocation()
+            #self.textClient = TextClient(evtLocation, #self.venueState.eventLocation,
+            #                              self.privateId,
+            #                              self.venue.GetUniqueId())
+            #print 'register callback'
+            # for e in coherenceCallbacks.keys():
+            #    self.textClient.RegisterCallback("Event.Text", self.ReceiveText)
+            #
+            #print 'start'
+            #self.eventClient.Start()
+           
+            #            self.eventClient.Send(ConnectEvent(self.venueState.uniqueId,
+            #                                               self.privateId))
 
             # Get personaldatastore information
             self.dataStoreUploadUrl = self.__venueProxy.GetUploadDescriptor()
         
             # Connect the venueclient to the text client
-#            self.textClient = TextClient(self.profile,
-#                                         self.venueState.textLocation)
-#            self.textClient.Connect(self.venueState.uniqueId, self.privateId)
-#            self.textClient.RegisterOutputCallback(self.AddTextEvent)
+            #            self.textClient = TextClient(self.profile,
+            #                                         self.venueState.textLocation)
+            #            self.textClient.Connect(self.venueState.uniqueId, self.privateId)
+            #            self.textClient.RegisterOutputCallback(self.AddTextEvent)
 
             log.debug("Setting isInVenue flag.")
 
@@ -811,6 +828,7 @@ class VenueClient:
         
         try:
             self.profile.capabilities = self.nodeService.GetCapabilities()
+
         except:
             # This is a non fatal error, users should be notified
             # but still enter the venue
@@ -876,35 +894,33 @@ class VenueClient:
         except Exception:
             log.exception("ExitVenue: ExitVenue exception")
 
-#         try:
-#             if self.eventClient:
-#                 log.debug("ExitVenue: Stop event client obj")
-#                 self.eventClient.Stop()
-#                 log.debug("ExitVenue: Remove event client reference")
-#                 self.eventClient = None
-#         except:
-#             log.exception("ExitVenue: Can not stop event client")
-
+        try:
+            if self.eventClient:
+                log.debug("ExitVenue: Stop event client obj")
+                self.eventClient.Stop()
+                log.debug("ExitVenue: Remove event client reference")
+                self.eventClient = None
+        except:
+            log.exception("ExitVenue: Can not stop event client")
+            
         log.info("ExitVenue: Stopping text client")
-#         try:
-#           if self.textClient:
-#             # Stop the text client
-#             log.debug("ExitVenue: Sending client disconnect event.")
-#             self.textClient.Disconnect(self.venueState.uniqueId,
-#                                        self.privateId)
-#             log.debug("ExitVenue: Remove text client reference")
-#             self.textClient = None
-          
-#         except:
-#             log.exception("ExitVenue: On text client exiting")
+        #         try:
+        #           if self.textClient:
+        #             # Stop the text client
+        #             log.debug("ExitVenue: Sending client disconnect event.")
+        #             self.textClient.Disconnect(self.venueState.uniqueId,
+        #                                        self.privateId)
+        #             log.debug("ExitVenue: Remove text client reference")
+        #             self.textClient = None
         
+        #         except:
+        #             log.exception("ExitVenue: On text client exiting")
+
         self.__InitVenueData()
         self.isInVenue = 0
         self.exitingLock.acquire()
         self.exiting = 0
         self.exitingLock.release()
-
-        
         
     def ExitVenue( self ):
         """
@@ -1024,8 +1040,7 @@ class VenueClient:
                                           (self.transport, self.provider.name, self.provider.location))
     
     def SendEvent(self,event):
-        pass
-#        self.eventClient.Send(event)
+        self.eventClient.Send(event)
 
     def Shutdown(self):
 
@@ -1105,6 +1120,7 @@ class VenueClient:
         elif(data.type == self.profile.publicId):
             # My data
             self.dataStore.RemoveFiles(dataList)
+            self.eventClient.Send(Event.REMOVE_DATA, data)
             #self.eventClient.Send(RemoveDataEvent(self.GetEventChannelId(), data))
             
         else:
@@ -1126,6 +1142,7 @@ class VenueClient:
             # My data
             try:
                 self.dataStore.ModifyData(data)
+                self.eventClient.Send(Event.REMOVE_DATA, data)
                 #self.eventClient.Send(UpdateDataEvent(self.GetEventChannelId(), data))
             except:
                 log.exception("Error modifying personal data")
@@ -1185,7 +1202,7 @@ class VenueClient:
     
     def GetDataStoreUploadUrl(self):
         return self.dataStoreUploadUrl
-        
+
     #
     # Personal Data
     #
