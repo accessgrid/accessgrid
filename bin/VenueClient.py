@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.94 2003-04-01 16:43:36 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.95 2003-04-01 19:09:13 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -74,9 +74,11 @@ class VenueClientUI(wxApp, VenueClient):
     def __createPersonalDataStore(self):
         self.dataStore = DataStore.DataStore(self, self.personalDataStorePath,
                                    self.personalDataStorePrefix)
-        transferEngine = GSIHTTPTransferServer(('', self.personalDataStorePort))
-        self.dataStore.SetTransferEngine(transferEngine)
-        transferEngine.RegisterPrefix(self.personalDataStorePrefix, self)
+        self.transferEngine = GSIHTTPTransferServer(('', self.personalDataStorePort))
+        self.transferEngine.run()
+        self.transferEngine.RegisterPrefix(self.personalDataStorePrefix, self)
+        self.dataStore.SetTransferEngine(self.transferEngine)
+              
         wxLogDebug("Creating personal datastore at %s using port %s" %(self.personalDataStorePath,
                                                                           self.personalDataStorePrefix))
         # load personal data
@@ -486,7 +488,9 @@ class VenueClientUI(wxApp, VenueClient):
         if self.venueUri != None:
             self.ExitVenue()
 
+        self.transferEngine.stop()
         os._exit(0)
+       
    
     def SaveFile(self, data_descriptor, local_pathname):
         """
@@ -502,6 +506,7 @@ class VenueClientUI(wxApp, VenueClient):
         and to perhaps allow multiple simultaneous transfers.
 
         """
+        wxCallAfter(wxLogDebug, "---------------------------------")
         wxCallAfter(wxLogDebug, "Save file descriptor: %s, path: %s"%(data_descriptor, local_pathname))
         
         failure_reason = None
@@ -549,6 +554,7 @@ class VenueClientUI(wxApp, VenueClient):
             download_thread = threading.Thread(target = self.get_ident_and_download,
                                                args = dl_args)
 
+            wxCallAfter(wxLogDebug, "AFTER THREAD ---------------------------------")
             # Use wxCallAfter so we get the dialog filled in properly.
             wxCallAfter(download_thread.start)
 
@@ -563,7 +569,6 @@ class VenueClientUI(wxApp, VenueClient):
             #
             # Wait for the thread to finish (if it doesn't it's a bug).
             download_thread.join()
-
             # Clean up.
             dlg.Destroy()
             
@@ -580,10 +585,10 @@ class VenueClientUI(wxApp, VenueClient):
 
 
     def get_ident_and_download(self, url, local_pathname, size, checksum, progressCB):
-        wxLogDebug("Get ident and upload")
+        wxLogDebug("Get ident and download")
         try:
             if url.startswith("https"):
-                wxLogDebug("url starts with https")
+                wxLogDebug("url=%s, local path =%s, size = %s, checksum = %s"%(url, local_pathname, size, checksum))
                 DataStore.GSIHTTPDownloadFile(url, local_pathname, size,
                                               checksum, progressCB)
                 wxLogDebug("finished GSIHTTPDownload")
