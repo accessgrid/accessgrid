@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.145 2004-09-03 02:57:03 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.146 2004-09-03 14:41:12 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.145 2004-09-03 02:57:03 judson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.146 2004-09-03 14:41:12 judson Exp $"
 
 # Standard imports
 import sys
@@ -353,7 +353,9 @@ class VenueManagementClient(wxApp):
                                                
                     except:
                         log.exception("Error adding server")
-                        MessageDialog(self.frame,"Error adding server to server list", "Add Server Error",
+                        MessageDialog(self.frame,
+                                      "Error adding server to server list",
+                                      "Add Server Error",
                                       style=wxOK|wxICON_WARNING)
         
     def EditMyServersCB(self, event):
@@ -370,10 +372,10 @@ class VenueManagementClient(wxApp):
                 self.__loadMyServers()
             
             except:
-                log.exception('Error saving changes to my servers","Edit Servers Error')
-                MessageDialog(self.frame,"Error saving changes to my servers", "Add Server Error",
-                              style=wxOK|wxICON_WARNING)
-        
+                log.exception(
+                    "Error saving changes to my servers","Edit Servers Error")
+                MessageDialog(self.frame, "Error saving changes to my servers",
+                              "Add Server Error", style=wxOK|wxICON_WARNING)
 
         editMyServersDialog.Destroy()
 
@@ -515,8 +517,8 @@ class VenueManagementClient(wxApp):
             text = "You were unable to connect to the venue server at:\n%s." % URL
             lStr = "Can not connect."
             if hasattr(e, "string"):
-                text += "\n%s" % e.string
-                lStr += "(%s)" % e.string
+                text += "\n%s" % e.faultstring
+                lStr += "(%s)" % e.faultstring
 
             log.exception("VenueManagementClient.ConnectToServer: %s:", lStr)
             MessageDialog(None, text, "Unable To Connect",
@@ -911,7 +913,7 @@ class VenueListPanel(wxPanel):
                         self.defaultVenue = None
 
                 except Exception, e:
-                    if "string" in dir(e) and e.string == "NotAuthorized":
+                    if "faultstring" in dir(e) and e.faultstring == "NotAuthorized":
                         text = "You and are not authorized to administrate \
                                 this server.\n"
                         MessageDialog(None, text, "Authorization Error",
@@ -1151,7 +1153,7 @@ class DetailPanel(wxPanel):
             log.debug("DetailPanel.ClickedOnEncrypt: Set encryption")
             self.application.SetEncryption(event.Checked())
         except Exception, e:
-             if e.string == "NotAuthorized":
+             if e.faultstring == "NotAuthorized":
                  self.encryptionButton.SetValue(not event.Checked())
                  text = "You are not an administrator on this server and are not authorized to change the media encryption flag.\n"
                  MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
@@ -1180,7 +1182,7 @@ class DetailPanel(wxPanel):
             self.ipAddress.Enable(true)
             self.changeButton.Enable(true)
             self.intervalButton.SetValue(true)
-            if "string" in dir(e) and e.string == "NotAuthorized":
+            if "faultstring" in dir(e) and e.faultstring == "NotAuthorized":
                 text = "You are not an administrator on this server and are not authorized to set multicast addressing to random.\n"
                 MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
                 log.info("DetailPanel.ClickedOnRandom: Not authorized to set server multicast addressing to random.")
@@ -1212,7 +1214,7 @@ class DetailPanel(wxPanel):
             self.ipAddress.Enable(false)
             self.changeButton.Enable(false)
             self.randomButton.SetValue(true)
-            if e.string == "NotAuthorized":
+            if e.faultstring == "NotAuthorized":
                 text = "You are not an administrator on this server and are not authorized to set multicast addressing to interval.\n"
                 MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
                 log.info("DetailPanel.ClickedOnInterval: Not authorized to set server's multicast address to interval.")
@@ -1244,7 +1246,7 @@ class DetailPanel(wxPanel):
 
         except Exception, e:
             self.ipAddress.SetLabel(oldIpAddress)
-            if e.string == "NotAuthorized":
+            if e.faultstring == "NotAuthorized":
                 text = "You are not an administrator on this server and are not authorized to set the multicast address.\n"
                 MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
                 log.info("DetailPanel.SetAddress: Not authorized to set server's multicast address.")
@@ -2093,7 +2095,7 @@ class AddVenueFrame(VenueParamFrame):
                 log.debug("AddVenueFrame.OnOk: Add venue.")
                 self.parent.AddVenue(self.venue)
             except Exception, e:
-                if e.string == "NotAuthorized":
+                if e.faultstring == "NotAuthorized":
                     text = "You are not a server administrator and are not authorized to add venues to this server.\n"
                     MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
                     log.info("AddVenueFrame.OnOK: Not authorized to add venue to server.")
@@ -2160,7 +2162,7 @@ class ModifyVenueFrame(VenueParamFrame):
                     log.exception("ModifyVenueFrame.OnOk: Modify venue failed")
                     text = "Could not modify venue %s" %self.venue.name
                     if hasattr(e, "string"):
-                        text = text + "\n%s" % e.string
+                        text = text + "\n%s" % e.faultstring
                     ErrorDialog(None, text, "Modify Venue Error",
                                 logFile = VENUE_MANAGEMENT_LOG)
 
