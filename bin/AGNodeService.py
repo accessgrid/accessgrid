@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.11 2003-03-14 18:23:54 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.12 2003-04-07 22:14:32 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -17,6 +17,8 @@ import getopt
 
 from AccessGrid.AGNodeService import AGNodeService
 from AccessGrid.hosting.pyGlobus.Server import Server
+from AccessGrid import PersonalNode
+from AccessGrid.Descriptions import AGServiceManagerDescription
 
 # default arguments
 port = 11000
@@ -42,33 +44,43 @@ def AuthCallback(server, g_handle, remote_user, context):
 def Usage():
     print "%s:" % sys.argv[0]
     print "    -h|--help : print usage"
+    print "    -d|--debug <filename> : debug mode  - log to console as well as logfile"
     print "    -p|--port <int> : <port number to listen on>"
     print "    -l|--logFile <filename> : log file name"
+    print "    --pnode <arg> : initialize as part of a Personal Node configuration"
 
 # Parse command line options
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "p:l:h",
-                               ["port", "logfile", "help"])
+    opts, args = getopt.getopt(sys.argv[1:], "p:l:hd",
+                               ["port=", "logfile=", "debug", "pnode=", "help"])
 except getopt.GetoptError:
     Usage()
     sys.exit(2)
 
+debugMode = 0
+pnode = None
 for o, a in opts:
     if o in ("-p", "--port"):
         port = int(a)
+    elif o in ("-d", "--debug"):
+        debugMode = 1
     elif o in ("-l", "--logfile"):
         logFile = a
+    elif o == "--pnode":
+        pnode = a
     elif o in ("-h", "--help"):
         Usage()
         sys.exit(0)
 
 # Start up the logging
-log = logging.getLogger("AG.NodeService")
+log = logging.getLogger("AG")
 log.setLevel(logging.DEBUG)
 hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
 fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
 hdlr.setFormatter(fmt)
 log.addHandler(hdlr)
+if debugMode:
+    log.addHandler(logging.StreamHandler())
 
 # Create a Node Service
 nodeService = AGNodeService()
@@ -79,6 +91,27 @@ server = Server( port , auth_callback=AuthCallback )
 # Create the Node Service Service
 service = server.CreateServiceObject("NodeService")
 nodeService._bind_to_service( service )
+
+#
+# If we are starting as a part of a personal node,
+# initialize that state.
+#
+
+if pnode is not None:
+
+    def setSvcMgr(url, mgr = nodeService):
+        mgr.AddServiceManager(AGServiceManagerDescription(url, url))
+    
+    def getMyURL(url = nodeService.get_handle()):
+        return url
+
+    def terminate():
+        os._exit(0)
+
+    log.debug("Starting personal node")
+
+    personalNode = PersonalNode.PN_NodeService(setSvcMgr, getMyURL, terminate)
+    personalNode.Run(pnode)
 
 # Tell the world where to find the service
 log.info("Starting service; URI: %s", nodeService.get_handle())
