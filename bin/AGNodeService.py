@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.29 2003-08-22 16:32:56 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.30 2003-08-23 00:00:42 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -142,7 +142,7 @@ if pnode:
     try:
         nodeService.LoadDefaultConfig()
     except:
-        self.log.debug("Failed to load default node configuration")
+        log.debug("Failed to load default node configuration")
 
 # Create a hosting environment
 server = Server( port , auth_callback=AuthCallback )
