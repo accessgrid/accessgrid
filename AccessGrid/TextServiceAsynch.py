@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.3 2003-05-22 20:15:47 olson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.4 2003-07-17 17:35:19 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,22 +14,36 @@
 import socket
 import sys
 import pickle
-from threading import Thread
+import Queue
+import threading
 import logging
 import struct
-
-log = logging.getLogger("AG.TextService")
-log.setLevel(logging.INFO)
 
 from pyGlobus.io import GSITCPSocketServer, GSIRequestHandler, GSITCPSocket
 from pyGlobus.io import GSITCPSocketException, IOBaseException, Buffer
 
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import HeartbeatEvent, ConnectEvent, TextEvent
-from AccessGrid.Events import DisconnectEvent
+from AccessGrid.Events import DisconnectEvent, MarshalledEvent
 from AccessGrid.Events import TextPayload
 from AccessGrid.hosting.AccessControl import CreateSubjectFromGSIContext
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
+from AccessGrid.GUID import GUID
+
+log = logging.getLogger("AG.TextService")
+log.setLevel(logging.DEBUG)
+
+#
+# Per-event debugging might be useful sometimes, but not usually.
+# Leave the calls in the code via logTextEvent, but let them
+# be disabled.
+# 
+
+detailedTextEventLogging = 0
+if detailedTextEventLogging:
+    logTextEvent = log.debug
+else:
+    logTextEvent = lambda *sh: 0
 
 class ConnectionHandler:
     """
@@ -39,25 +53,39 @@ class ConnectionHandler:
     """
 
     def __init__(self, lsocket, eservice):
+        self.id = str(GUID())
         self.lsocket = lsocket
         self.server = eservice
+        self.wfile = None
 
         self.dataBuffer = ''
         self.bufsize = 4096
         self.buffer= Buffer(self.bufsize)
         self.waitingLen = 0
 
+    def __del__(self):
+        log.debug("ConnectionHandler delete")
+
+    def GetId(self):
+        return self.id
+
     def registerAccept(self, attr):
-        log.debug("conn handler registering accept")
+        logTextEvent("conn handler registering accept")
 
         socket, cb = self.lsocket.register_accept(attr, self.acceptCallback, None)
+        self.acceptCallbackHandle = cb
 
-        log.debug("register_accept returns socket=%s cb=%s", socket, cb)
+        logTextEvent("register_accept returns socket=%s cb=%s", socket, cb)
         self.socket = socket
 
     def acceptCallback(self, arg, handle, result):
         try:
-            log.debug("Accept Callback '%s' '%s' '%s'", arg, handle, result)
+            if result[0] != 0:
+                log.debug("acceptCallback returned failure: %s %s", result[1], result[2])
+                return
+
+            logTextEvent("Accept Callback '%s' '%s' '%s'", arg, handle, result)
+            self.lsocket.free_callback(self.acceptCallbackHandle)
             self.server.registerForListen()
 
             #
@@ -75,7 +103,7 @@ class ConnectionHandler:
                                       self.readCallbackWrap, None)
         self.cbHandle = h
 
-    def readCallbackWrap(self, arg, handle, ret, buf, n):
+    def readCallbackWrap(self, arg, handle, result, buf, n):
         """
         Asynch read callback.
 
@@ -84,18 +112,38 @@ class ConnectionHandler:
         """
         
         try:
-            return self.readCallback(arg, handle, ret, buf, n)
-        except Exception, e:
+            self.socket.free_callback(self.cbHandle)
+            return self.readCallback(arg, handle, result, buf, n)
+        except:
             log.exception("readcallback failed")
-                
+            return None
 
-    def readCallback(self, arg, handle, ret, buf, n):
+    def writeMarshalledEvent(self, mEvent):
+        """
+        Write this packet to the network.
+        If the write fails for some reason, return 0.
+        Otherwise, return 1. 
+        """
 
-        log.debug("Got read handle=%s ret=%s  n=%s \n", handle, ret, n)
+        try:
+            mEvent.Write(self.wfile)
+            return 1
+        except:
+            log.exception("writeMarshalledEvent write error!")
+            return 0
+
+    def readCallback(self, arg, handle, result, buf, n):
+
+        logTextEvent("Got read handle=%s ret=%s  n=%s \n", handle, result, n)
+
+        if result[0] != 0:
+            log.debug("readCallback returned failure: %s %s", result[1], result[2])
+            self.handleEOF()
+            return
 
         if n == 0:
             log.debug("TextService got EOF")
-            self.server.RemoveChannelConnection(self.channel, self)
+            self.handleEOF()
             return
 
         dstr = str(buf)
@@ -116,45 +164,457 @@ class ConnectionHandler:
             self.waitingLen = dlen[0]
 
         if len(self.dataBuffer) >= self.waitingLen:
-            log.debug("finally read enough data, wait=%s buflen=%s",
+            logTextEvent("finished reading packet, wait=%s buflen=%s",
                       self.waitingLen, len(self.dataBuffer))
 
             thedata = self.dataBuffer[:self.waitingLen]
             self.dataBuffer = self.dataBuffer[self.waitingLen:]
 
-            self.handleData(thedata)
+            self.handleData(thedata, None)
 
             self.waitingLen = 0
 
         self.registerForRead()
         
     def stop(self):
-        self.wfile.close()
-        self.socket.close()
-
-    def handleData(self, pdata):
-        # Unpickle the data
         try:
-            event = pickle.loads(pdata)
-        except EOFError:
-            log.debug("TextConnection read EOF.")
+            if self.wfile is not None:
+                self.wfile.close()
+            self.socket.close()
+        except IOBaseException:
+            log.info("IOBase exception on event service close (probably ok)")
+
+    def handleData(self, pdata, event):
+        """
+        We have successfully read a data packet.
+
+        """
+        # Unpickle the data
+        if event == None:
+            try:
+                event = pickle.loads(pdata)
+            except EOFError:
+                log.debug("TextConnection: read EOF.")
+                self.handleEOF()
+                return
+
+        logTextEvent("TextConnection: Got Event %s", event)
+
+        #
+        # Drop this event on the event server's queue for processing
+        # out of the asynch event handler.
+        self.server.EnqueueEvent(event, self)
+
+    def handleEOF(self):
+        """
+        We either got an EOF on the connection, or some other
+        fatal error occurred (split these probably!).
+
+        Close the socket,  and enqueue a "close" command.
+        """
+
+        self.stop()
+        self.server.EnqueueEOF(self)
+
+class TextChannel:
+    def __init__(self, server, id, authCallback):
+        self.server = server
+        self.id = id
+
+        #
+        # connections is the set of active connections on this
+        # channel. It is a dictionary keyed on the connection ID.
+        #
+
+        self.connections = {}
+        #
+        # typedHandlers is the set of handlers for specific message types.
+        # it is keyed by the event type string. Each value is the list
+        # of handlers receiving that message type.
+        #
+        
+        self.typedHandlers = {}
+
+        #
+        # channelHandlers is the set of handlers wishing to receive
+        # all events on the channel. It is a simple list.
+        #
+        self.channelHandlers = []
+
+        self.authCallback = authCallback
+
+    def __del__(self):
+        log.debug("Delete EventChannel %s", self.id)
+
+    def RegisterCallback(self, eventType, callback):
+        """
+        Register callback as a handler for events of type eventType.
+        """
+
+        try:
+            cbList = self.typedHandlers[eventType]
+        except KeyError:
+            cbList = []
+            self.typedHandlers[eventType] = cbList
+
+        if callback in cbList:
+            log.info("Callback %s already in handler list for type %s",
+                     callback, eventType)
+        else:
+            cbList.append(callback)
+
+    def RegisterChannelCallback(self, callback):
+        """
+        Register callback as a handler for all events on this channel.
+        """
+
+        if callback in self.channelHandlers:
+            log.info("Callback %s already in channel handler list", callback)
+        else:
+            self.channelHandlers.append(callback)
+
+    def AuthorizeNewConnection(self, event, connObj):
+        """
+        An event has come in on a previously unconnected connection
+        object connObj. See if we want to allow this connection to be
+        attached to this channel.
+        """
+
+        #
+        # We only allow a CONNECT event to attempt authorization.
+        #
+
+        log.debug("Attempting authorization on event %s", event.eventType)
+
+
+        if event.eventType != ConnectEvent.CONNECT:
+            log.debug("Channel refusing authorization, %s is not a connect event",
+                      event.eventType)
+            return 0
+
+        #
+        # Invoke the authorization callback. If we don't have one,
+        # allow the connection.
+        #
+
+        authorized = 0
+        if self.authCallback is not None:
+            try:
+                authorized = self.authCallback(event, connObj)
+                log.debug("Auth callback %s returns %s", self.authCallback,
+                          authorized)
+            except:
+                log.info("Authorization callback failed")
+                authorized = 0
+        else:
+            log.debug("Default authorization (no calblack registered")
+            authorized = 1
+        return authorized
+
+    def HandleEvent(self, event, connObj):
+        """
+        Handle an incoming event from connObj.
+        """
+
+        if event.eventType == DisconnectEvent.DISCONNECT:
+
+            log.debug("EventConnection: Removing client connection to %s",
+                      event.venue)
+            self.RemoveConnection(connObj)
+            self.server.CloseConnection(connObj)
+
+        # Pass this event to the callback registered for this
+        # event.eventType
+        if self.typedHandlers.has_key(event.eventType):
+            for cb in self.typedHandlers[event.eventType]:
+                log.debug("Specific event callback=%s", cb)
+                if cb != None:
+                    logTextEvent("invoke callback %s", str(cb))
+                    try:
+                        cb(event)
+                    except:
+                        log.exception("TextEvent callback failed")
+
+        for cb in self.channelHandlers:
+            log.debug("invoke channel callback %s", cb)
+            try:
+                cb(event)
+            except:
+                log.exception("TexftEvent callback failed")
+
+        logTextEvent("HandleEvent returns")
+
+    def Distribute(self, data):
+        """
+        Distribute the event contained in data to the connections in this channel.
+        """
+
+        connections = self.connections.values()
+
+        #
+        # Quick path out if we don't have anyone to send to.
+        #
+        if len(connections) == 0:
             return
 
-        log.debug("TextConnection: Got Event %s", event)
+        removeList = []
+        me = MarshalledEvent()
+        me.SetEvent(data)
+        for c in connections:
+            success = c.writeMarshalledEvent(me)
+            if not success:
+                removeList.append(c)
+        #
+        # These guys failed. Bag 'em.
+        #
+
+        for r in removeList:
+            log.debug("Removing connection %s due to write error", r.GetId())
+            self.RemoveConnection(r)
+
+    def RemoveConnection(self, connObj):
+        if connObj.GetId() in self.connections:
+            del self.connections[connObj.GetId()]
+        else:
+            log.info("RemoveConnection: connection %s not in connection list.  (okay, could have been removed twice)",
+                      connObj.GetId())
+
+    def AddConnection(self, event, connObj):
+        self.connections[connObj.GetId()] = connObj
+
+    def GetId(self):
+        return self.id
+
+
+class TextService:
+    """
+    The TextService provides a secure event layer. This might be more 
+    scalable as a secure RTP or other UDP solution, but for now we use TCP.
+    In the TCP case the TextService is the Server, GSI is our secure version.
+    """
+    def __init__(self, server_address):
+        log.debug("Text Service Started")
+        
+        self.location = server_address
+
+        #
+        # self.channels is a dictionary keyed on the channel id
+        #
+        # self.connectionMap is a dict keyed on the ConnectionHandler
+        # id (assigned when the connection comes in). The value is
+        # the EventChannel that the connection is registered with, or
+        # None if it is not (yet) registered.
+        #
+        # self.allConnections is a list of all the active connections
+        # that we know about.
+        #
+
+        self.channels = {}
+        self.connectionMap = {}
+        self.allConnections = []
+
+        self.socket = GSITCPSocket()
+        self.socket.allow_reuse_address = 1
+        self.attr = CreateTCPAttrAlwaysAuth()
+
+        #   
+        # Our incoming message queue. We don't handle messages
+        # in the asynch IO threads, in order that they don't block
+        # on the Globus side.
+        #
+        self.queue = Queue.Queue()
+        self.queueThread = threading.Thread(target = self.QueueHandler)
+        self.queueThread.start()
+
+        port = self.socket.create_listener(self.attr, server_address[1])
+        log.debug("Bound to %s (server_address=%s)", port, server_address)
+
+    def findConnectionChannel(self, id):
+        try:
+            return self.connectionMap[id]
+        except KeyError:
+            return None
+
+    def GetChannel(self, id):
+        try:
+            return self.channels[id]
+        except KeyError:
+            return None
+
+    def start(self):
+        """
+        Start. Initialize the asynch io on accept.
+        """
+
+        log.debug("Text service start")
+        self.registerForListen()
+
+    def registerForListen(self):
+        ret = self.socket.register_listen(self.listenCallback, None)
+        self.listenCallbackHandle = ret
+        log.debug("register_listen returns '%s'", ret)
+
+    def listenCallback(self, arg, handle, result):
+        try:
+            if result[0] != 0:
+                log.debug("listenCallback returned failure: %s %s", result[1], result[2])
+                return
+
+            logTextEvent("Listen Callback '%s' '%s' '%s'", arg, handle, result)
+            self.socket.free_callback(self.listenCallbackHandle)
+
+            #
+            # Don't do this! the handle that is passed in here is the
+            # handle that is bound to self.socket. 
+            #
+            # By creating this new wrapper, the listening socket is
+            # prematurely destroyed (when teh new wrapper is destroyed).
+            #
+            # At some point the namespace needs to be cleaned up a bit (remove
+            # referenes to waiting_socket).
+            #self.waiting_socket = GSITCPSocket(handle)
+            #
+
+            self.waiting_socket = self.socket
+
+            conn = ConnectionHandler(self.waiting_socket, self)
+            conn.registerAccept(self.attr)
+            self.connectionMap[conn.GetId()] = None
+            self.allConnections.append(conn)
+
+        except:
+            log.exception("listenCallback failed")
+
+    def CloseConnection(self, connObj):
+
+        cid = connObj.GetId()
+
+        log.debug("Removing connection %s", cid)
+        connObj.stop()
+
+        channel = self.findConnectionChannel(cid)
+        if channel is not None:
+            log.debug("Removing connection %s from channel %s", cid, channel.GetId())
+            channel.RemoveConnection(connObj)
+        try:
+            self.allConnections.remove(connObj)
+        except ValueError:
+            #
+            # We can get this if we lose the race on a shutdown.
+            #
+            pass
+        
+    def Stop(self):
+        """
+        Stop the text service.
+
+        Close our listener socket and all the active connections; this should
+        clear out any lingering state.
+        """
+
+        log.debug("TextService: Stopping")
+        
+        try:    
+            self.socket.close()
+        except:
+            pass
+
+        self.EnqueueQuit()
+
+        for c in self.allConnections:
+            c.stop()
+        self.allConnections = []
+            
+        for ch in self.channels.keys():
+            self.RemoveChannel(ch)
+            
+        self.running = 0
+        self.queueThread.join()
+
+    def EnqueueQuit(self):
+        self.queue.put(("quit",))
+
+    def EnqueueEvent(self, event, conn):
+        logTextEvent("Enqueue event %s for %s...", event.eventType, conn)
+        self.queue.put(("event", event, conn))
+
+    def EnqueueEOF(self, conn):
+        logTextEvent("Enqueue EOF for %s...", conn)
+        self.queue.put(("eof", conn))
+
+    def QueueHandler(self):
+        """
+        Thread main routine for event queue handling.
+        """
+
+        try:
+
+            while 1:
+                logTextEvent("Queue handler waiting for data")
+                cmd = self.queue.get()
+                logTextEvent("Queue handler received %s", cmd)
+                if cmd[0] == "quit":
+                    log.debug("Queue handler exiting")
+                    return
+                elif cmd[0] == "eof":
+                    connObj = cmd[1]
+                    log.debug("EOF on connection %s", connObj.GetId())
+                    self.HandleEOF(connObj)
+                elif cmd[0] == "event":
+
+                    try:
+                        event = cmd[1]
+                        connObj = cmd[2]
+                        self.HandleEvent(event, connObj)
+                    except:
+                        log.exception("HandleEvent threw an exception")
+
+                else:
+                    log.error("QueueHandler received unknown command %s", cmd[0])
+                    continue
+
+        except:
+            log.exception("Body of QueueHandler threw exception")
+
+    def HandleEvent(self, event, connObj ):
+        """
+        Handle an incoming event.
+
+        This is executed in the message handling thread after an event
+        has been received by the async reader.
+
+        Exactly what happens with this event depends on whether
+        the connection object has been connected to a channel or not.
+
+        If it has not, the only events that will be processed are Connect
+        and Disconnect.
+
+        If it has, the event is passed along to the TextChannel for
+        processing.
+
+        """
+        connId = connObj.GetId()
+
+        connChannel = self.findConnectionChannel(connId)
+
+        logTextEvent("Handle event type %s", event.eventType)
+
+        if connChannel is None:
+            self.HandleEventForDisconnectedChannel(event, connObj)
+        else:
+            connChannel.HandleEvent(event, connObj)
 
         if event.eventType == ConnectEvent.CONNECT:
             # Connection Event
-            self.channel = event.venue
-            self.server.connections[self.channel].append(self)
             return
-
+       
         if event.eventType == DisconnectEvent.DISCONNECT:
             # Disconnection Event
             return
 
         # Tag the event with the sender, which is obtained
         # from the security layer to avoid spoofing
-        ctx = self.socket.get_security_context()
+        ctx = self.allConnections[0].socket.get_security_context()
         payload = event.data
         payload.sender = CreateSubjectFromGSIContext(ctx).GetName()
 
@@ -163,108 +623,143 @@ class ConnectionHandler:
         # this is a simple text reflector
         # However we assign the from address in the server, so
         # there is some notion of security :-)
-        self.server.Distribute(event)
+        self.Distribute(connChannel.id, event)
+      
 
-        
-class TextService:
-    """
-    The TextService provides a secure event layer. This might be more 
-    scalable as a secure RTP or other UDP solution, but for now we use TCP.
-    In the TCP case the TextService is the Server, GSI is our secure version.
-    """
-    def __init__(self, server_address):
-        self.log = logging.getLogger("AG.TextService")
-        self.log.debug("Text Service Started")
-        
-        self.location = server_address
-        self.connections = {}
-
-        self.socket = GSITCPSocket()
-        self.socket.allow_reuse_address = 1
-        self.attr = CreateTCPAttrAlwaysAuth()
-
-        port = self.socket.create_listener(self.attr, server_address[1])
-        log.debug("Bound to %s (server_address=%s)", port, server_address)
-
-    def start(self):
+    def HandleEOF(self, connObj):
         """
-        Start. Initialize the asynch io on accept.
+        Handle an EOF on a connection.
+
+        If this connection doesn't yet have a channel assignment,
+        we can just delete it from our list of all channels.
+
+        If it does have a channel assignment, remove from there then delete
+        from all-channels.
         """
 
-        self.registerForListen()
+        connId = connObj.GetId()
 
-    def registerForListen(self):
-        ret = self.socket.register_listen(self.listenCallback, None)
-        log.debug("register_listen returns '%s'", ret)
+        connChannel = self.findConnectionChannel(connId)
 
-    def listenCallback(self, arg, handle, result):
-        try:
-            log.debug("Listen Callback '%s' '%s' '%s'", arg, handle, result)
+        # Calling RemoveConnection is not necessary since it is called 
+        #   from CloseConnection
+        #if connChannel is not None:
+            #connChannel.RemoveConnection(connObj)
 
-            self.waiting_socket = GSITCPSocket(handle)
-
-            conn = ConnectionHandler(self.waiting_socket, self)
-            conn.registerAccept(self.attr)
+        self.CloseConnection(connObj)
 
 
-        except:
-            log.exception("listenCallback failed")
-
-        
-    def Stop(self):
+    def HandleEventForDisconnectedChannel(self, event, connObj):
         """
-        Stop stops this thread, thus shutting down the service.
+        We've received an event for a connection which hasn't
+        yet been connected to a channel.
+
+        Pass the event to the channel to allow it to decide whether
+        to allow the connection or not. If it allows it, add the
+        connection to the channel. If not, close the channel.
         """
-        self.log.debug("TextService: Stopping")
-        
-        for v in self.connections.keys():
-            for c in self.connections[v]:
-                c.stop()
-            
-        self.socket.close()
+
+        channel = self.GetChannel(event.venue)
+        if channel is None:
+            log.info("EventService receives event type %s for nonexistent channel %s",                     event.eventType, event.venue)
+            self.CloseConnection(connObj)
+            return
+
+        allowed = channel.AuthorizeNewConnection(event, connObj)
+
+        if allowed:
+            log.debug("Adding connObj %s to channel %s", connObj.GetId(),
+                      event.venue)
+            channel.AddConnection(event, connObj)
+            self.connectionMap[connObj.GetId()] = channel
+
+        else:
+            log.debug("Rejected adding connObj %s to channel %s", connObj.GetId(),
+                      event.venue)
+            self.CloseConnection(connObj)
+
+    def RegisterCallback(self, channelId, eventType, callback):
+        # Callbacks just take the event data as the argument
+
+        channel = self.GetChannel(channelId)
+        if channel is None:
+            log.error("RegisterCallback on a nonexistent channel %s", channelId)
+            return
+
+        channel.RegisterCallback(eventType, callback)
+
+    def RegisterChannelCallback(self, channelId, callback):
+        """
+        Register a callback for all events on this channel.
+        """
+
+        channel = self.GetChannel(channelId)
+        if channel is None:
+            log.error("RegisterCallback on a nonexistent channel %s", channelId)
+            return
+
+        channel.RegisterChannelCallback(callback)
+
+    def RegisterObject(self, channel, object):
+        """
+        RegisterObject is short hand for registering multiple callbacks on the
+        same object. The object being registered has to define a table named
+        callbacks that has event types as keys, and self.methods as values.
+        Then these are automatically registered.
+        """
+        for c in object.callbacks.keys():
+            self.RegisterCallback(c, channel, object.callbacks[c])
+
+
             
     def GetLocation(self):
         """
         GetLocation returns the (host,port) for this service.
         """
-        self.log.debug("TextService: GetLocation")
+        log.debug("TextService: GetLocation")
 
         return self.location
 
-    def Distribute(self, data):
+    def Distribute(self, channelId, data):
         """
-        Send the data to all the connections in this server.
+        Distribute sends the data to all connections.
         """
-        self.log.debug("TextService: Sending Event %s", data)
-        
-        pdata = pickle.dumps(data)
-        size = struct.pack("i", len(pdata))
-        for c in self.connections[data.venue]:
-            try:
-                c.wfile.write(size)
-                c.wfile.write(pdata)
-            except:
-                self.log.exception("TextService: Client disconnected!")
-#                self.connections[channel].remove(c)
+
+        logTextEvent("EventService: Sending Event %s", data)
+  
+        channel = self.GetChannel(channelId)
+  
+        if channel is None:
+            log.error("Distribute invoked on nonexistent channel %s", channelId)
+            return
+
+        channel.Distribute(data)
         
     def AddChannel(self, channelId):
-        self.log.debug("Text Service: Adding Channel: %s", channelId)
+        log.debug("Text Service: Adding Channel: %s", channelId)
         
         self.connections[channelId] = []
 
-    def RemoveChannelConnection(self, channelId, conn):
-        clist = self.connections[channelId]
-        if conn in clist:
-            log.debug("TextService: Remove channel %s from %s", conn, channelId)
-            clist.remove(conn)
-        else:
-            log.info("RemoveChannelConnection: conn %s not in channel %s",
-                     conn, channelId)
+    def AddChannel(self, channelId, authCallback = None):
+        """
+        This adds a new channel to the Text Service.
+        """
+        log.debug("EventService: AddChannel %s", channelId)
+
+        if self.GetChannel(channelId) is not None:
+            log.info("Channel %s already exists", channelId)
+            return
+
+        channel = TextChannel(self, channelId, authCallback)
+        self.channels[channelId] = channel
 
     def RemoveChannel(self, channelId):
-        self.log.debug("Text Service: Removing Channel: %s", channelId)
+        """
+        This removes a channel from the Text Service.
+        """
+        log.debug("Text Service: Removing Channel: %s", channelId)
         
-        del self.connections[channelId]
+        del self.channels[channelId]
 
 if __name__ == "__main__":
   import string
@@ -275,5 +770,5 @@ if __name__ == "__main__":
   host = string.lower(socket.getfqdn())
   port = 6600
   log.debug("Creating new TextService at %s %d.", host, port)
-  textChannel = TextService((host, port))
-  textChannel.start()
+  textService = TextService((host, port))
+  textService.start()
