@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.16 2004-06-01 21:18:37 lefvert Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.17 2004-06-01 23:07:18 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.16 2004-06-01 21:18:37 lefvert Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.17 2004-06-01 23:07:18 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -714,17 +714,18 @@ class AuthorizationUIPanel(wxPanel):
         if not self.changed:
             # Ignore if user didn't change anything 
             return
-
+            
         domImpl = xml.dom.minidom.getDOMImplementation()
         authDoc = domImpl.createDocument(xml.dom.minidom.EMPTY_NAMESPACE,
                                          "AuthorizationPolicy", None)
         authP = authDoc.documentElement
 
         for r in self.allRoles:
-            authP.appendChild(r.ToXML(authDoc))
+            if r.name is not self.cacheRole:
+                authP.appendChild(r.ToXML(authDoc))
         
         for a in self.allActions:
-            authP.appendChild(a.ToXML(authDoc))
+            authP.appendChild(a.ToXML(authDoc, 1))
 
         rval = authDoc.toxml()
 

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.20 2004-05-27 22:21:31 turam Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.21 2004-06-01 23:07:45 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.20 2004-05-27 22:21:31 turam Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.21 2004-06-01 23:07:45 judson Exp $"
 
 # External Imports
 import os
@@ -130,10 +130,13 @@ class AuthorizationManager:
                 return(r, 0)
 
         # Internal function to create an action
-        def unpackAction(node):
+        def unpackAction(node, roleDict):
             a = MethodAction(node.attributes["name"].value)
             for rn in node.childNodes:
-                (r, dr) = unpackRole(rn)
+                try:
+                    r = roleDict[rn.attributes["name"].value]
+                except KeyError:
+                    log.exception("AuthManager Import: Role Not Found.")
                 a.AddRole(r)
 
             return a
@@ -146,8 +149,11 @@ class AuthorizationManager:
         
         roleElements = domP.getElementsByTagName("Role")
 
+        roleDict = dict()
+        
         for c in roleElements:
             (r, default) = unpackRole(c)
+            roleDict[r.name] = r
             try:
                 self.AddRole(r, default = default)
             except:
@@ -155,7 +161,7 @@ class AuthorizationManager:
                 pass
 
         for c in domP.getElementsByTagName("Action"):
-            a = unpackAction(c)
+            a = unpackAction(c, roleDict)
             try:
                 self.AddAction(a)
             except:
@@ -183,7 +189,7 @@ class AuthorizationManager:
             authP.appendChild(dr)
 
         for a in self.actions:
-            authP.appendChild(a.ToXML(authDoc))
+            authP.appendChild(a.ToXML(authDoc, 1))
 
         rval = authDoc.toxml()
 

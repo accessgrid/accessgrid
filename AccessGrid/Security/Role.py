@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.17 2004-05-25 12:03:36 eolson Exp $
+# RCS-ID:      $Id: Role.py,v 1.18 2004-06-01 23:07:45 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ much more dynamic. We programmatically create, destroy and modify
 roles.
 """
 
-__revision__ = "$Id: Role.py,v 1.17 2004-05-25 12:03:36 eolson Exp $"
+__revision__ = "$Id: Role.py,v 1.18 2004-06-01 23:07:45 judson Exp $"
 
 # external imports
 import xml.dom.minidom
@@ -109,7 +109,7 @@ class Role:
         """
         return self._repr_()
     
-    def ToXML(self, doc):
+    def ToXML(self, doc, ref=0):
         """
         This method creates the XML specific to the Role class.
 
@@ -120,8 +120,9 @@ class Role:
         """
         rx = doc.createElement("Role")
         rx.setAttribute("name", self.name)
-        for s in self.subjects:
-            rx.appendChild(s.ToXML(doc))
+        if not ref:
+            for s in self.subjects:
+                rx.appendChild(s.ToXML(doc))
 
         return rx
         

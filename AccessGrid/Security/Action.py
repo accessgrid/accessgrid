@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: Action.py,v 1.7 2004-05-25 11:20:37 eolson Exp $
+# RCS-ID:      $Id: Action.py,v 1.8 2004-06-01 23:07:45 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ method invocation on services. There's no real limitation to what
 actions can be or what they can be used for however.
 """
 
-__revision__ = "$Id: Action.py,v 1.7 2004-05-25 11:20:37 eolson Exp $"
+__revision__ = "$Id: Action.py,v 1.8 2004-06-01 23:07:45 judson Exp $"
 
 import xml.dom.minidom
 from AccessGrid.Security import Role
@@ -77,7 +77,7 @@ class Action:
         """
         return self._repr_()
     
-    def ToXML(self, doc):
+    def ToXML(self, doc, ref=0):
         """
         The ToXML converts this objects to a DOM subtree of the specified
         DOM Document.
@@ -88,7 +88,7 @@ class Action:
         ax = doc.createElement("Action")
         ax.setAttribute("name", self.name)
         for r in self.roles:
-            ax.appendChild(r.ToXML(doc))
+            ax.appendChild(r.ToXML(doc, ref))
         return ax
     
     def GetName(self):
