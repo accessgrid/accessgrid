@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ServiceObject.py,v 1.6 2003-02-14 22:20:58 olson Exp $
+# RCS-ID:      $Id: ServiceObject.py,v 1.7 2003-03-13 12:18:45 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -72,7 +72,12 @@ class ServiceObject:
         """
         
 	self.server = server
-	self.id = id
+        # This fixes the case where we pass a path from something like
+        # urlparse.urlparse (which is probably an increasingly common case)
+        if id[0] == '/':
+            self.id = id[1:]
+        else:
+            self.id = id
         self.function_map = {}
         self.binding_table = {}
         #        print "Created service ", self
