@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.135 2004-06-02 03:27:11 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.136 2004-07-06 21:03:44 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.135 2004-06-02 03:27:11 judson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.136 2004-07-06 21:03:44 judson Exp $"
 
 # Standard imports
 import sys
@@ -754,10 +754,10 @@ class VenueProfilePanel(wxPanel):
         self.venueProfileBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         venueListProfileSizer = wxStaticBoxSizer(self.venueProfileBox,
                                                  wxVERTICAL)
-        venueListProfileSizer.Add(5, 5)
+        venueListProfileSizer.Add(wxSize(5, 5))
         venueListProfileSizer.Add(self.description, 4,
                                   wxEXPAND|wxLEFT|wxRIGHT, 15)
-        venueListProfileSizer.Add(5, 10)
+        venueListProfileSizer.Add(wxSize(5, 10))
         venueListProfileSizer.Add(self.line, 0, wxEXPAND)
 
         paramGridSizer = wxFlexGridSizer(4, 2, 10, 10)
@@ -1226,7 +1226,7 @@ class DetailPanel(wxPanel):
         multicastBoxSizer.Add(flexSizer, 0, wxEXPAND | wxALL, 5)
         
         serviceSizer.Add(multicastBoxSizer, 0,  wxBOTTOM|wxEXPAND, 10)
-        serviceSizer.Add(5,5)
+        serviceSizer.Add(wxSize(5,5))
 
         encryptionBoxSizer = wxStaticBoxSizer(self.encryptionBox, wxVERTICAL)
         encryptionBoxSizer.Add(self.encryptionButton, 5, wxALL, 10)
@@ -1272,7 +1272,7 @@ class SecurityPanel(wxPanel):
         sizer = wxBoxSizer(wxVERTICAL)
         securityBoxSizer = wxStaticBoxSizer(self.securityBox, wxHORIZONTAL)
         securityBoxSizer.Add(self.securityText, 1 , wxEXPAND|wxALL|wxCENTER, 5)
-        securityBoxSizer.Add(1,40)
+        securityBoxSizer.Add(wxSize(1,40))
         securityBoxSizer.Add(self.securityButton, 0, wxALIGN_RIGHT|wxALL|wxCENTER, 5)
         sizer.Add(securityBoxSizer, 0, wxEXPAND| wxALL, 10)
 
@@ -1377,7 +1377,7 @@ class VenueParamFrame(wxDialog):
         buttonSizer =  wxBoxSizer(wxHORIZONTAL)
         buttonSizer.Add(20, 20, 1)
         buttonSizer.Add(self.okButton, 0)
-        buttonSizer.Add(10, 10)
+        buttonSizer.Add(wxSize(10, 10))
         buttonSizer.Add(self.cancelButton, 0)
         buttonSizer.Add(20, 20, 1)
 
@@ -1632,7 +1632,7 @@ class GeneralPanel(wxPanel):
         buttonSizer.Add(self.goButton, 0, wxEXPAND | wxLEFT, 1)
         exitsSizer.Add(buttonSizer, 1, wxEXPAND)
 
-        exitsSizer.Add(10,10)
+        exitsSizer.Add(wxSize(10,10))
         exitsSizer.Add(self.removeExitButton, 0, wxEXPAND)
         exitsSizer.AddGrowableCol(0)
         exitsSizer.AddGrowableCol(2)
@@ -1687,10 +1687,10 @@ class EncryptionPanel(wxPanel):
         
     def __doLayout(self):
         sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add(10,10)
+        sizer.Add(wxSize(10,10))
         sizer.Add(self.encryptMediaButton, 0, wxEXPAND|wxALL, 5)
         sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(25, 10)
+        sizer2.Add(wxSize(25, 10))
         sizer2.Add(self.keyText , 0, wxEXPAND|wxALL, 5)
         sizer2.Add(self.keyCtrl, 1, wxEXPAND|wxALL, 5)
         sizer.Add(sizer2, 0, wxEXPAND | wxRIGHT, 10)
@@ -1762,7 +1762,7 @@ class StaticAddressingPanel(wxPanel):
 
     def __doLayout(self):
         staticAddressingSizer = wxBoxSizer(wxVERTICAL)
-        staticAddressingSizer.Add(10,10)
+        staticAddressingSizer.Add(wxSize(10,10))
         staticAddressingSizer.Add(self.staticAddressingButton, 0,
                                   wxEXPAND|wxALL, 5)
 
@@ -1787,7 +1787,7 @@ class StaticAddressingPanel(wxPanel):
         panelSizer.Add(videoTitleSizer, 1 ,  wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10)
 
         flexSizer = wxFlexGridSizer(7, 7, 0, 0)
-        flexSizer.Add(10,10)
+        flexSizer.Add(wxSize(10,10))
         flexSizer.Add(self.videoAddressText, 0 , wxEXPAND)
         flexSizer.Add(videoIpSizer, 0 , wxEXPAND)
         flexSizer.Add(self.videoPortText)
@@ -1801,12 +1801,12 @@ class StaticAddressingPanel(wxPanel):
         audioTitleSizer.Add(self.audioTitleText, 0, wxALIGN_CENTER)
         audioTitleSizer.Add(wxStaticLine(self.panel, -1), 1, wxALIGN_CENTER)
 
-        panelSizer.Add(10,10)
+        panelSizer.Add(wxSize(10,10))
 
         panelSizer.Add(audioTitleSizer, 1 , wxEXPAND|wxLEFT|wxRIGHT, 10)
 
         flexSizer2 = wxFlexGridSizer(7, 7, 0, 0)
-        flexSizer2.Add(10,10)
+        flexSizer2.Add(wxSize(10,10))
         flexSizer2.Add(self.audioAddressText, 0 , wxEXPAND|wxALIGN_CENTER)
         flexSizer2.Add(audioIpSizer, 0 , wxEXPAND)
         flexSizer2.Add(self.audioPortText, 0 , wxEXPAND|wxALIGN_CENTER)
@@ -2065,7 +2065,7 @@ class RenameExitDialog(wxDialog):
     def Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
         sizer.Add(self.text, 0, wxALL, 10)
-        sizer.Add(2,2)
+        sizer.Add(wxSize(2,2))
 
         s2 =  wxBoxSizer(wxHORIZONTAL)
         s2.Add(self.nameText, 0, wxCENTER | wxRIGHT, 5)
