@@ -11,7 +11,7 @@ nodeService = AGNodeService()
 # start the service
 port = 11000
 if len(sys.argv) > 1:
-    port = sys.argv[1]
+    port = int(sys.argv[1])
 server = Server( port , auth_callback=AuthCallback )
 service = server.create_service_object("NodeService")
 nodeService._bind_to_service( service )
