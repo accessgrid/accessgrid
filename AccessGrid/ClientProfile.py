@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.20 2003-04-27 21:02:11 turam Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.21 2003-05-09 20:27:54 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -199,7 +199,7 @@ class ClientProfile:
         """ """
         return self.phoneNumber
     
-    def SetVenuClientURL(self, venueClientURL):
+    def SetVenueClientURL(self, venueClientURL):
         """ """
         self.venueClientURL = venueClientURL
         self.profile[ClientProfile.configSection + '.venueclienturl'] = venueClientURL
