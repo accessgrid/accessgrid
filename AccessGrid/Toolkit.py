@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.12 2003-09-11 20:43:41 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.13 2003-09-11 21:09:15 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,6 +24,10 @@ log = logging.getLogger("AG.toolkit")
 #
 # Access this through the GetApplication interface only.
 #
+
+def GetApplication():
+   return Application.instance
+ 
 class Application:
     instance = None
 
