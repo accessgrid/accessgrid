@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: AppService.py,v 1.6 2003-04-19 16:36:22 judson Exp $
+# RCS-ID:      $Id: AppService.py,v 1.7 2003-05-17 18:00:55 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -28,11 +28,11 @@ from AccessGrid.Descriptions import ApplicationDescription
 log = logging.getLogger("AG.AppService")
 
 
-def CreateApplication(name, description, mimeType, eventService ):
+def CreateApplication(name, description, mimeType, eventService, id=None ):
     """
     Factory method for creating application objects
     """
-    return AppObjectImpl(name, description, mimeType, eventService)
+    return AppObjectImpl(name, description, mimeType, eventService, id)
 
 
 class AppObject(ServiceBase.ServiceBase):
@@ -85,7 +85,7 @@ class AppObjectImpl:
     """
     AppObjectImpl is the implementation class for an application
     """
-    def __init__(self, name, description, mimeType, eventService):
+    def __init__(self, name, description, mimeType, eventService, id = None):
         """
         An application object.
 
@@ -121,43 +121,34 @@ class AppObjectImpl:
         self.components = {}
         self.channels = []
         self.app_data = {}
-        self.id = str(GUID.GUID())
+        if id == None:
+            self.id = str(GUID.GUID())
+        else:
+            self.id = id
 
         # Create the data channel
         self.__CreateDataChannel()
 
-    def __getstate__(self):
-        """
-        Retrieve the state of object attributes for pickling.
-
-        We don't pickle any object instances, except for the
-        uniqueId and description.
-
-        """
-        odict = self.__dict__.copy()
-        # We don't save things in this list
-        keys = ("eventService", "components", "handle")
-        for k in odict.keys():
-            if k in keys:
-                del odict[k]
-
-        return odict
-
-    def __setstate__(self, pickledDict):
-        """
-        Set the new state of the object after unpickling.
-        """
-
-        for k, v in pickledDict.items():
-            self.__dict__[k] = v
-
     def AsINIBlock(self):
-        string = "[%s]\n" % self.id
-        dict = self.__getstate__()
-        string += "type : %s\n" % sclass[-1]
-        string += "type : %s\n" % sclass[-1]
-        string += "type : %s\n" % sclass[-1]
-        string += "type : %s\n" % sclass[-1]
+        # Got the basic description
+        string = self.AsApplicationDescription().AsINIBlock()
+
+        # Now to save data (state)
+        for key, value in self.app_data.items():
+            string += "%s : %s\n" % (key, value)
+
+        return string
+    
+    def AsApplicationDescription(self):
+        """
+        Return an application description, used in the rollup of
+        venue state for the return from the Venue.Enter call.
+        """
+        appDesc = ApplicationDescription(self.id, self.name,
+                                         self.description,
+                                         self.handle,
+                                         self.mimeType)
+        return appDesc
 
     def Awaken(self, eventService):
         self.eventService = eventService
@@ -183,14 +174,21 @@ class AppObjectImpl:
            description - an application-defined description of the application
            id - the unique identifier for this application instance
            mimeType - description of data type handled by this application
-           handle - the web service handle for this application object
+           url - the web service endpoint for this application object
            data - the application's data storage, itself a dictionary.
 
         """
 
-        appDesc = ApplicationDescription(self.id, self.name, self.description,
-                                         self.handle, self.mimeType)
-        return appDesc
+        appState = {
+            'name' : self.name,
+            'description' : self.description,
+            'id' : self.id,
+            'mimeType' : self.mimeType,
+            'uri' : self.uri,
+            'data' : self.data
+            }
+            
+        return appState
 
     def GetEventServiceLocation(self):
         return self.eventService.GetLocation()
