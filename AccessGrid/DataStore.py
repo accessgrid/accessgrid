@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.48 2003-09-23 17:55:32 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.49 2003-09-24 22:31:56 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.48 2003-09-23 17:55:32 turam Exp $"
+__revision__ = "$Id: DataStore.py,v 1.49 2003-09-24 22:31:56 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -733,7 +733,11 @@ class DataStore(ServiceBase):
                     self.callbackClass.AddData(desc)
                     self.cbLock.release()
                 else:
-                    raise DuplicateFile("A file named %s already exists in the venue, \nplease rename your file and try again" %name) 
+                    raise DuplicateFile(desc) 
+
+            except DuplicateFile, e:
+                raise e
+        
             except:
                 log.exception("DataStore::AddFile: Error when trying to add local data to datastorage")
                 raise UploadFailed("Error when trying to add local data to datastorage")
@@ -759,9 +763,8 @@ class DataStore(ServiceBase):
         If filename is not present in the datastore, return None.
 
         """
-
         path = os.path.join(self.pathname, filename)
-     
+             
         if not os.path.exists(path):
             return None
 
