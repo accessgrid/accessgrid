@@ -1,3 +1,10 @@
+#!/usr/bin/python2
+#-----------------------------------------------------------------------------
+# Name:        VenueVNCClient.py
+# RCS-ID:      
+# Copyright:   (c) 2004
+# Licence:     See COPYING.txt
+#-----------------------------------------------------------------------------
 import os
 import sys
 import base64

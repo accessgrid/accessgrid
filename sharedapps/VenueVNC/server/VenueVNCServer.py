@@ -1,3 +1,10 @@
+#!/usr/bin/python2
+#-----------------------------------------------------------------------------
+# Name:        VenueVNCServer.py
+# RCS-ID:      
+# Copyright:   (c) 2004
+# Licence:     See COPYING.txt
+#-----------------------------------------------------------------------------
 import sys
 import os
 import time
