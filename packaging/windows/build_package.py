@@ -71,8 +71,6 @@ if options.verbose:
 
 # Add quotes around command.
 
-os.chdir(options.sourcedir)
-
 iscc_cmd = "%s agtk.iss /dAppVersion=\"%s\" /dVersionInformation=\"%s\" \
             /dSourceDir=\"%s\" /dBuildDir=\"%s\" /dPythonSubVersion=\"%s\"" % \
             (inno_compiler, options.version,
