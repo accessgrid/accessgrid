@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.58 2004-03-23 22:13:01 olson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.59 2004-03-25 21:14:50 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.58 2004-03-23 22:13:01 olson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.59 2004-03-25 21:14:50 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -274,9 +274,7 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
 
     args['Bugzilla_login'] = bugzilla_login
     args['Bugzilla_password'] = bugzilla_password
-    args['product'] = "Virtual Venues Client Software"
     args['version'] = str(GetVersion())
-    args['component'] = "Client UI"
     args['rep_platform'] = "Other"
     
     #
@@ -312,6 +310,13 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
     #
 
     userConfigDir = userConfig.GetConfigDir()
+
+    #
+    # Defaults.
+    #
+    args['product'] = "Virtual Venues Client Software"
+    args['component'] = "Client UI"
+    logToSearch = None
     
     if profile:
         # Always set profile email to empty string so we don't write to wrong email address.
@@ -337,23 +342,47 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
     elif logFile == VENUE_MANAGEMENT_LOG:
         args['short_desc'] = "Crash in Venue Management UI"
 
+        args['product'] = "Virtual Venue Server Software"
+        args['component'] = "Management UI"
+        
+        logText = GetLogText(20000, os.path.join(userConfigDir, "VenueManagement.log"))
         commentAndLog = commentAndLog \
-                        +"\n\n--- VenueManagement.log INFORMATION ---\n\n"+GetLogText(20000, os.path.join(userConfigDir, "VenueManagement.log"))
+                        +"\n\n--- VenueManagement.log INFORMATION ---\n\n"+ logText
         
     elif logFile == NODE_SETUP_WIZARD_LOG:
         args['short_desc'] = "Crash in Node Setup Wizard UI"
+
+        args['product'] = "Node Management Software"
+        args['component'] = "NodeSetupWizard"
+
+        logText = GetLogText(20000, os.path.join(userConfigDir, "NodeSetupWizard.log"))
         commentAndLog = commentAndLog \
-                        +"\n\n--- NodeSetupWizard.log INFORMATION ---\n\n"+GetLogText(20000, os.path.join(userConfigDir, "NodeSetupWizard.log"))
+                        +"\n\n--- NodeSetupWizard.log INFORMATION ---\n\n"+ logText
 
     else:
         args['short_desc'] = "Automatic Bug Report"
+        logToSearch = GetLogText(20000, os.path.join(userConfigDir, "VenueClient.log"))
         commentAndLog = commentAndLog \
-                        +"\n\n--- VenueClient.log INFORMATION ---\n\n"+GetLogText(20000, os.path.join(userConfigDir, "VenueClient.log")) \
+                        +"\n\n--- VenueClient.log INFORMATION ---\n\n"+ logToSearch \
                         +"\n\n--- agns.log INFORMATION ---\n\n"+GetLogText(20000, os.path.join(userConfigDir, "agns.log"))\
                         +"\n\n--- agsm.log INFORMATION ---\n\n"+GetLogText(20000, os.path.join(userConfigDir, "agsm.log"))\
                         +"\n\n--- AGService.log INFORMATION ---\n\n"+GetLogText(20000, os.path.join(userConfigDir, "AGService.log"))
 
-    
+    #
+    # If we've got a logToSearch, look at it to find a GSI exception at the end.
+    # If it has one, mark the component as Certificate Management.
+    #
+
+    if logToSearch:
+        loc = logToSearch.rfind("Traceback")
+        if loc >= 0:
+            m = re.search("GSI.*Exception.*", logToSearch[loc:])
+            if m:
+                args['component'] = "Certificate Management"
+
+        logToSearch = None
+    #
+    # Look at the end of the log and guess whether we need to mark this 
     args['comment']= commentAndLog
       
     #
