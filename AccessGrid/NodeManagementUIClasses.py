@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.5 2003-02-10 14:47:37 judson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.6 2003-02-10 22:10:14 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -214,7 +214,7 @@ class NodeManagementClientFrame(wxFrame):
         self.SetStatusText("This is the statusbar")
         """
 
-        self.SetTitle( "Access Grid Node Management - ")
+        self.SetTitle( "Access Grid Node Management")
         self.SetIcon(icons.getAGIconIcon())
 
         self.vc = None
@@ -362,7 +362,7 @@ class NodeManagementClientFrame(wxFrame):
                             + port  )
                 return
 
-            self.SetTitle( "Access Grid Node Management - " + conf )
+            self.SetTitle( "Access Grid Node Management - " )
 
             self.UpdateHostList()
             self.UpdateServiceList()
