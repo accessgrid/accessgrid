@@ -6,14 +6,14 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.130 2003-09-17 13:59:17 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.131 2003-09-17 20:01:58 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Venue.py,v 1.130 2003-09-17 13:59:17 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.131 2003-09-17 20:01:58 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1971,7 +1971,7 @@ class Venue(ServiceBase.ServiceBase):
             location = ""
             
             try:
-                descriptor = self.dataStoreProxy.GetUploadDescriptor(),
+                descriptor = self.dataStoreProxy.GetUploadDescriptor()
                 location = self.dataStoreProxy.GetLocation()
             except:
                 log.exception("Venue.GetDataStoreInformation Could not get data store location")
