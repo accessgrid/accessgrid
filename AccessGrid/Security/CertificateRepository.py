@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.1 2004-03-02 22:42:48 judson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.2 2004-03-10 23:06:15 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.1 2004-03-02 22:42:48 judson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.2 2004-03-10 23:06:15 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -43,6 +43,7 @@ import md5
 import struct
 import bsddb
 import operator
+import cStringIO
 from AccessGrid import Utilities
 
 log = logging.getLogger("AG.CertificateRepository")
@@ -71,6 +72,138 @@ class RepoInvalidCertificate(Exception):
 
 class RepoBadPassphrase(Exception):
     pass
+
+def ClassifyCertificate(path):
+    """
+    Prod at the certificate given to see what it is,
+    and if we need to ask for a private key.
+    
+    A PEM-formatted cert will have a "BEGIN CERTIFICATE"
+    line; if it has a private key included it'll include
+    "BEGIN RSA PRIVATE KEY".
+    
+    If it doesn't have those, we can try opening it up as
+    a pkcs12 cert. If it's a pkcs12, but is encrypted,
+    we'll get
+
+    crypto.Error: [('PKCS12 routines', 'PKCS12_parse', 'mac verify failure')]
+
+    If it's not a pkcs file, we'll get
+
+    crypto.Error: [('asn1 encoding routines', 'd2i_PKCS12', 'expecting an asn1 sequence')]
+    
+    If it's unencrypted, we'll get the actual certificate, and can
+    show the name.
+    
+    We return a tuple (certType, certObj, needPkey). CertType is a string
+    "PEM", "PKCS12". certObj is the certificate itself; it'll be an X509
+    for a PEM certificate, a PKCS12 object for a pkcs12 obj. needPkey is
+    true if a separate keyfile must be loaded.
+    """
+
+    certRE = re.compile("-----BEGIN CERTIFICATE-----")
+    keyRE = re.compile("-----BEGIN RSA PRIVATE KEY-----")
+
+    try:
+        fh = open(path)
+
+        validCert = validKey = 0
+
+        for l in fh:
+            if not validCert and certRE.search(l):
+                validCert = 1
+                if validKey:
+                    break
+            if not validKey and keyRE.search(l):
+                validKey = 1
+                if validCert:
+                    break
+        fh.close()
+
+    except IOError:
+        log.error("Could not open certificate file %s", path)
+        return None
+    
+    if validCert:
+        print "Found valid cert, validKey=", validKey
+        c = crypto.load_certificate(crypto.FILETYPE_PEM,
+                                    open(path).read())
+        return ("PEM", c, not validKey)
+
+    #
+    # Didn't find; try opening as PKCS12.
+    #
+
+    try:
+        pkcs = crypto.load_pkcs12(open(path, "rb").read())
+
+        return ("PKCS12", pkcs, 0)
+    
+    except crypto.Error, e:
+        s = str(e)
+        if s.find("mac verify failure") >= 0:
+            print "cert is encrypted pkcs12"
+            return ("PKCS12", None, 0)
+        if s.find("expecting an asn1 sequence") >= 0:
+            return ("Unknown", None, 1)
+        
+    return None
+
+def ParseSigningPolicy(policyFH):
+    """
+    Parse a signing policy from filehandle policyFH.
+
+    For now, we just return the CA name that it represents so we don't
+    get bogged down in parsing minutiae.
+    """
+
+    for l in policyFH:
+        l = l.strip()
+        if l.startswith("#"):
+            continue
+
+        if l == "":
+            continue;
+
+        key, v1, v2 = l.split(None, 2)
+        print "Parse: ", key, v1, v2
+
+        if key == "access_id_CA":
+            if v1 != "X509":
+                return None
+            ca = v2
+            if ca[0] == "'":
+                ca = eval(ca)
+
+
+            return ca
+    return None
+
+def ConstructSigningPolicy(cert):
+    """
+    Construct a simple signing policy based on the subject name of cert.
+
+    It might not be right, but it might be.
+
+    We make it match on all parts of the cert's subject except for CN.
+    """
+
+    caName = str(cert.GetSubject())
+
+    subjs = filter(lambda a: a[0] != "CN", cert.GetSubject().get_name_components())
+
+    condSubjects = "/".join(map(lambda a: a[0] + "=" + a[1], subjs))
+
+    sp = """
+#
+# Signing policy automatically generated.
+#
+ access_id_CA       X509      '%(caName)s'
+ pos_rights         globus    CA:sign
+ cond_subjects      globus    '"/%(condSubjects)s/*"'
+""" % locals()
+
+    return sp
 
 class CertificateRepository:
 
@@ -235,7 +368,7 @@ class CertificateRepository:
         #
 
         if os.path.isdir(path):
-            raise RepoInvalidCertificate, "Certificate already in repository at %s" % (path)
+            raise RepoInvalidCertificate("Certificate already in repository.", path)
 
         #
         # Load the private key. This will require getting the
@@ -305,6 +438,90 @@ class CertificateRepository:
         #
 
         if pkey is not None:
+            self._ImportPrivateKey(pkey, passphrase)
+
+        self._ImportCertificate(cert, path)
+
+        #
+        # Import done, set the metadata about the cert.
+        #
+
+        cert.SetMetadata("System.importTime", str(time.time()))
+        cert.SetMetadata("System.certImportedFrom", certFile)
+        if keyFile:
+            cert.SetMetadata("System.keyImportedFrom", keyFile)
+            cert.SetMetadata("System.hasKey", "1")
+        else:
+            cert.SetMetadata("System.hasKey", "0")
+
+        return CertificateDescriptor(cert, self)
+            
+    def ImportCertificateX509(self, certobj, pkey = None,
+                              passphraseCB = None):
+        """
+        Import a PEM-formatted certificate from OpenSSL X509
+        data structure cert, optional PKey data structre in pkey.
+
+        """
+
+        #
+        # The certificate wrapper class we use in this module
+        # requires that the certificate be loaded from a file.
+        #
+
+        io = cStringIO.StringIO(crypto.dump_certificate(crypto.FILETYPE_PEM, certobj))
+        cert = Certificate(io)
+
+        path = self._GetCertDirPath(cert)
+        # print "Would put cert in dir ", path
+
+        #
+        # Double check that someone's not trying to import a
+        # globus proxy cert.
+        #
+
+        if cert.IsGlobusProxy():
+            raise RepoInvalidCertificate, "Cannot import a Globus proxy certificate"
+
+        #
+        # If the path already exists, we already have this (uniquely named)
+        # certificate.
+        #
+
+        if os.path.isdir(path):
+            raise RepoInvalidCertificate, "Certificate already in repository at %s" % (path)
+        #
+        # Load the private key. This will require getting the
+        # passphrase for the key. Do that here, so we can pass
+        # that passphrase down to the importPrivateKey call
+        # so it is imported with the same passphrase.
+        #
+        # We try to load the key without a passphrase first.
+        #
+
+        if pkey:
+            #
+            # Doublecheck that the pubkey modulus on the
+            # certificate we're importing matches hte
+            # modulus on this private key. Otherwise,
+            # they're not a matching pair.
+            #
+
+            if pkey.get_modulus() != cert.GetModulus():
+                raise Exception, "Private key does not match certificate"
+            else:
+                print "Modulus match: ", pkey.get_modulus()
+
+        #
+        # Preliminary checks successful. We can go ahead and import.
+        #
+        # Import the private key first, so that if we get an exception
+        # on the passphrase we're not left with intermediate state.
+        # (aie, transactions anyone?)
+        #
+
+        if pkey is not None:
+            passphrase = passphraseCB(0)
             self._ImportPrivateKey(pkey, passphrase)
 
         self._ImportCertificate(cert, path)
@@ -804,6 +1021,9 @@ class CertificateDescriptor:
     def GetIssuer(self):
         return self.cert.GetIssuer()
 
+    def GetShortSubject(self):
+        return self.cert.GetShortSubject()
+
     def GetSubject(self):
         return self.cert.GetSubject()
 
@@ -905,11 +1125,13 @@ class Certificate:
 
         This wraps an underlying OpenSSL X.509 cert object.
 
-        path - pathname of the stored certificate
+        path - pathname of the stored certificate. If path is a file object,
+        use that to load the certificate instead of opening a file.
         keyPath - pathname of the private key for the certificate
         """
 
-        self.path = path
+        if type(path) != file:
+            self.path = path
         self.keyPath = keyPath
         self.repo = repo
 
@@ -920,7 +1142,10 @@ class Certificate:
         self.issuerSerialHash = None
         self.modulusHash = None
 
-        fh = open(self.path, "r")
+        if type(path) != file:
+            fh = open(self.path, "r")
+        else:
+            fh = path
         self.certText = fh.read()
         self.cert = crypto.load_certificate(crypto.FILETYPE_PEM, self.certText)
         fh.close()
@@ -954,6 +1179,13 @@ class Certificate:
 
     def GetSubject(self):
         return self.cert.get_subject()
+
+    def GetShortSubject(self):
+        cn = []
+        for what, val in self.cert.get_subject().get_name_components():
+            if what == "CN":
+               cn.append(val)
+        return ", ".join(cn)
 
     def GetIssuer(self):
         return self.cert.get_issuer()
