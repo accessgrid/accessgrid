@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.233 2003-10-14 13:31:21 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.234 2003-10-14 20:51:42 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -530,7 +530,7 @@ class VenueClientUI(VenueClientEventSubscriber):
         data = event.data
         # Handle venue data (personal data is in VenueClientUIClasses)
         if data.type == "None" or data.type == None:
-            wxCallAfter(self.frame.statusbar.SetStatusText, "file '%s' just got added to venue" %data.name)
+            wxCallAfter(self.frame.statusbar.SetStatusText, "file '%s' just got removed from venue" %data.name)
         else:
             # Personal data is handled in VenueClientUIClasses to find out who the data belongs to
             pass
@@ -548,6 +548,10 @@ class VenueClientUI(VenueClientEventSubscriber):
             self.frame.SetUnicastEnabled(1)
         else:
             self.frame.SetUnicastEnabled(0)
+
+        transport = self.GetTransport()
+        self.frame.SetTransport(transport)
+        
 
 
     def AddApplicationEvent(self, event):
@@ -1474,6 +1478,9 @@ class VenueClientUI(VenueClientEventSubscriber):
 
     def SetProvider(self, provider):
         self.venueClient.SetProvider(provider)
+
+    def GetProvider(self):
+        return self.venueClient.GetProvider()
 
     def UpdateNodeService(self):
         self.venueClient.UpdateNodeService()

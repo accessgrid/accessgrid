@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.296 2003-10-13 16:53:32 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.297 2003-10-14 20:51:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.296 2003-10-13 16:53:32 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.297 2003-10-14 20:51:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -37,7 +37,7 @@ log.setLevel(logging.WARN)
 
 from AccessGrid import icons
 from AccessGrid import Toolkit
-from AccessGrid.VenueClient import VenueClient, EnterVenueException
+from AccessGrid.VenueClient import VenueClient, EnterVenueException, NetworkLocationNotFound
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.Platform import GetMimeCommands, GetMimeType
@@ -1103,7 +1103,10 @@ class VenueClientFrame(wxFrame):
     #
     def UseMulticast(self,event):
         self.app.SetTransport("multicast")
-        self.app.UpdateNodeService()
+        try:
+            self.app.UpdateNodeService()
+        except NetworkLocationNotFound, e:
+            log.exception("EXCEPTION UPDATING NODE SERVICE")
 
     def UseUnicast(self,event):
 
@@ -1116,9 +1119,23 @@ class VenueClientFrame(wxFrame):
         dialog = wxSingleChoiceDialog( self, "Select bridge", 
                                              "Bridge Dialog", 
                                              providerNameLocList )
+
+        currentProvider = self.app.GetProvider()
+        if currentProvider:
+            currentProviderString = currentProvider.name + "/" + currentProvider.location
+            try:
+                index = providerNameLocList.index(currentProviderString)
+                if index >= 0:
+                    dialog.SetSelection(index)
+            except ValueError:
+                pass
+
         ret = dialog.ShowModal()
 
         if ret == wxID_OK:
+
+            oldProvider = self.app.GetProvider()
+            oldTransport = self.app.GetTransport()
 
             # Get the selected provider
             index = dialog.GetSelection()
@@ -1127,7 +1144,20 @@ class VenueClientFrame(wxFrame):
             # Set the transport in the venue client and update the node service
             self.app.SetProvider(selectedProvider)
             self.app.SetTransport("unicast")
-            self.app.UpdateNodeService()
+            try:
+                self.app.UpdateNodeService()
+            except NetworkLocationNotFound:
+
+                # Reset the provider/transport 
+                self.app.SetProvider(oldProvider)
+                self.app.SetTransport(oldTransport)
+
+                # Report the error to the user
+                text="Can't access streams from selected bridge; reverting to previous selection"
+                MessageDialog(None, text, "Use Unicast failed", style=wxOK|wxICON_WARNING)
+
+                # Set the menu checkbox appropriately
+                self.SetTransport(oldTransport)
         else:
             # Set the menu checkbox appropriately
             transport = self.app.GetTransport()
@@ -1761,7 +1791,7 @@ class ContentListPanel(wxPanel):
         #if venue data
         id = None
         ownerId = None
-        
+
         if(self.dataDict.has_key(profile.id)):
             log.debug("ContentListPanel.RemoveData: Remove venue data")
             id = self.dataDict[profile.id]

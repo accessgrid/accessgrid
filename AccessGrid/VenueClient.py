@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.121 2003-09-29 21:47:53 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.122 2003-10-14 20:51:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.121 2003-09-29 21:47:53 olson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.122 2003-10-14 20:51:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -63,6 +63,9 @@ class GetDataDescriptionsError(Exception):
 class NotAuthorizedError(Exception):
     pass
 
+class NetworkLocationNotFound(Exception):
+    pass
+
 log = logging.getLogger("AG.VenueClient")
 log.setLevel(logging.WARN)
 
@@ -84,6 +87,7 @@ class VenueClient( ServiceBase):
         self.homeVenue = None
         self.houseKeeper = Scheduler()
         self.heartbeatTask = None
+        self.provider = None
 
         # For states that matter
         self.state = None
@@ -316,7 +320,7 @@ class VenueClient( ServiceBase):
         data = event.data
 
         if data.type == "None" or data.type == None:
-            # Venue data gets saved in venue state
+            # Venue data gets removed from venue state
             self.venueState.RemoveData(data)
             
         elif data.type not in self.requests:
@@ -402,8 +406,19 @@ class VenueClient( ServiceBase):
         # Modify the stream in the node service
         # (for now, remove and add it)
         if self.nodeServiceUri != None:
-            Client.Handle(self.nodeServiceUri).GetProxy().RemoveStream(data)
-            Client.Handle(self.nodeServiceUri).GetProxy().AddStream(data)
+            try:
+                Client.Handle(self.nodeServiceUri).GetProxy().RemoveStream(data)
+
+                stream = data
+                if stream.__dict__.has_key('networkLocations'):
+                    try:
+                        self.UpdateStream(stream)
+                    except NetworkLocationNotFound, e:
+                        log.debug("Couldn't update stream with transport/provider info")
+    
+                Client.Handle(self.nodeServiceUri).GetProxy().AddStream(data)
+            except:
+                log.exception("Error modifying stream")
 
         # Modify the local stream store
         for i in range(len(self.streamDescList)):
@@ -495,6 +510,7 @@ class VenueClient( ServiceBase):
 
             log.debug("Invoke venue enter")
             (venueState, self.privateId, self.streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
+
 
             #
             # construct a venue state that consists of real objects
@@ -624,6 +640,8 @@ class VenueClient( ServiceBase):
             #
             try:
                 self.UpdateNodeService()
+            except NetworkLocationNotFound, e:
+                self.warningString += '\nError connecting media tools'
             except Exception, e:
                 # This is a non fatal error, users should be notified
                 # but still enter the venue
@@ -940,7 +958,6 @@ class VenueClient( ServiceBase):
         if data.type == None or data.type == 'None':
             # Venue data
             self.venueProxy.RemoveData(data)
-            #Client.Handle(self.venueClient.dataStoreLocation).GetProxy().RemoveFiles(dataList)
             
         elif(data.type == self.profile.publicId):
             # My data
@@ -1224,10 +1241,12 @@ class VenueClient( ServiceBase):
 
     def UpdateNodeService(self):
         """
-        Inform the node of the identity of the person driving it
+        Send venue streams to the node service
         """
 
         log.debug("Method UpdateNodeService called")
+
+        exc = None
 
         try:
             Client.Handle(self.nodeServiceUri).IsValid()
@@ -1244,35 +1263,43 @@ class VenueClient( ServiceBase):
         # Set the streams to use the selected transport
         for stream in self.streamDescList:
             if stream.__dict__.has_key('networkLocations'):
-                found = 0
-                multicastLoc = None
-                for netloc in stream.networkLocations:
-                    # use the stream if it's the right transport and
-                    # if multicast OR the provider matches
-                    if netloc.type == self.transport and (self.transport == 'multicast' or netloc.profile.name == self.provider.name):
-                        log.debug("UpdateNodeService: Setting stream %s to %s",
-                                  stream.id, self.transport)
-                        stream.location = netloc   
-                        found = 1
-                        
-                    # find the multicast network location
-                    if netloc.type == "multicast":
-                        multicastLoc = netloc
-
-                if not found:
-                    log.debug("UpdateNodeService: chosen transport not found for stream")
-                    log.debug("  - transport: %s", self.transport)
-                    log.debug("  - stream: %s %d", stream.location.host, stream.location.port)
-                    log.debug("  - defaulting to multicast")
-                    self.transport = "multicast"
-                    stream.location = multicastLoc
+                try:
+                    self.UpdateStream(stream)
+                except NetworkLocationNotFound, e:
+                    log.debug("Couldn't update stream with transport/provider info")
+                    exc = e
 
         # Send streams to the node service
         Client.Handle( self.nodeServiceUri ).GetProxy().SetStreams( self.streamDescList )
 
+        # Raise exception if occurred
+        if exc:
+            raise exc
+
+    def UpdateStream(self,stream):
+        """
+        Apply selections of transport and netloc provider to the given stream.
+        """
+        found = 0
+        multicastLoc = None
+        for netloc in stream.networkLocations:
+            # use the stream if it's the right transport and
+            # if transport is multicast OR the provider matches
+            if netloc.type == self.transport and (self.transport == 'multicast' or netloc.profile.name == self.provider.name):
+                log.debug("UpdateStream: Setting stream %s to %s",
+                          stream.id, self.transport)
+                stream.location = netloc   
+                found = 1
+                
+        if not found:
+            raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
+                                          (self.transport, self.provider.name, self.provider.location))
     
     def SetProvider(self,provider):
         self.provider = provider
+
+    def GetProvider(self):
+        return self.provider
 
     def SetTransport(self,transport):
 
