@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.9 2003-04-23 09:15:26 judson Exp $
+# RCS-ID:      $Id: Events.py,v 1.10 2003-04-25 03:54:55 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -32,9 +32,9 @@ class Event:
 
     def __repr__(self):
         string = "Event:\n"
-        string += "\tType: %s" % self.eventType
-        string += "\tVenue: %s" % self.venue
-        string += "\tData: %s" % self.data
+        string += "\tType: %s" % (self.eventType, )
+        string += "\tVenue: %s" % (self.venue, )
+        string += "\tData: %s" % (self.data, )
 
         return string
     
