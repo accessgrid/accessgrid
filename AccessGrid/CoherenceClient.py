@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceClient.py,v 1.4 2003-01-13 05:16:28 judson Exp $
+# RCS-ID:      $Id: CoherenceClient.py,v 1.5 2003-01-13 18:24:32 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -36,6 +36,7 @@ class CoherenceClient(Thread):
     def run(self):
         while self.sock != None:
             data = self.sock.recv(1024)
+            print "Received coherence event !"
             self.callback(data)   
 
     def test_serve(self, label):
@@ -51,6 +52,7 @@ def test(data):
     
 if __name__ == "__main__":
     import sys
-    coherenceClient = CoherenceClient('buffalojump.mcs.anl.gov', 6500, test)
+    coherenceClient = CoherenceClient(sys.argv[1], int(sys.argv[2]), test)
     coherenceClient.start()
-    coherenceClient.test_serve(sys.argv[1])
+    if len(sys.argv)>3:
+        coherenceClient.test_serve(sys.argv[1])
