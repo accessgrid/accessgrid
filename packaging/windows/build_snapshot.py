@@ -49,6 +49,9 @@ parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
                   help="A flag that indicates to build verbosely.")
 parser.add_option("--version", dest="version", metavar="VERSION",
                   default="", help="The version of the toolkit.")
+parser.add_option("-p", "--pythonversion", dest="pyver",
+                  metavar="PYTHONVERSION", default="2.2",
+                  help="Which version of python to build the installer for.")
 
 options, args = parser.parse_args()
 
@@ -69,10 +72,11 @@ else:
     metainfo = "Snapshot %s" % BuildTime
 
 # Create the dest dir stamped with the same time stamp
-DestDir = os.path.join(SourceDir, "dist-%s" % BuildTime)
+DestDir = os.path.join(SourceDir, "dist-%s-%s" % (BuildTime, options.pyver))
 
 # The directory we're building from
-BuildDir = os.path.join(SourceDir, "AccessGrid-%s" % BuildTime)
+BuildDir = os.path.join(SourceDir, "AccessGrid-%s-%s" % (BuildTime,
+                                                         options.pyver))
 
 # Grab innosetup from the environment
 try:
@@ -169,7 +173,7 @@ for cmd in [
 #
 
 # Add quotes around command.
-iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" /dSourceDir=%s /dBuildDir=%s" % (inno_compiler, iss_orig, options.version, metainfo.replace(' ', '_'), SourceDir, DestDir)
+iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" /dSourceDir=%s /dBuildDir=%s /dPythonVersion=%s" % (inno_compiler, iss_orig, options.version, metainfo.replace(' ', '_'), SourceDir, DestDir, options.pyver)
 
 if options.verbose:
     print "BUILD: Executing:", iscc_cmd
