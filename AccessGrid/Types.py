@@ -13,6 +13,7 @@ from AGParameter import *
 class Event:
     ENTER = "Enter"
     EXIT = "Exit"
+    MODIFY_USER = "Modify user"
     ADD_DATA = "Add data"
     REMOVE_DATA = "Remove data"
     ADD_SERVICE = "Add service"
@@ -20,11 +21,12 @@ class Event:
     ADD_CONNECTION = "Add connection"
     REMOVE_CONNECTION = "Remove connection"
     UPDATE_VENUE_STATE = "Update venue state"
+    
 
     def __init__( self, eventType, data ):
         self.eventType = eventType
         self.data = data
-
+    
 class VenueState:
     def __init__( self, description, connections, users,
                   nodes, data, services, coherenceLocation ):
