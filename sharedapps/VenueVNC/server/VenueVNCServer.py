@@ -55,6 +55,8 @@ from AccessGrid.ClientProfile import ClientProfile
 
 from SOAPpy import faultType
 from pyGlobus.io import GSITCPSocketException
+if IsLinux():
+    import commands
 
 log = None
 
@@ -168,6 +170,15 @@ class vncServer:
                 log.debug("  pid = %s" % (p,))
 
             elif IsLinux():
+                # Add entry in the xauthority file similar to the way
+                #     vncserver does.
+                cookie = commands.getoutput("/usr/bin/mcookie")
+                hostname = commands.getoutput("uname -n")
+                command = "xauth add %s%s . %s" % (hostname, self.displayID, cookie)
+                os.system(command)
+                command = "xauth add %s/unix%s . %s" %(hostname, self.displayID, cookie)
+                os.system(command)
+
                 self.writePasswordFile()
                 args = [
                         self.displayID,
