@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.5 2003-10-15 22:37:01 turam Exp $
+ * $Id: QuickBridge.c,v 1.6 2004-09-13 17:00:16 eolson Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -48,6 +48,11 @@
 #include <memory.h>
 #include <winsock.h>
 #include <mmsystem.h>
+#endif
+
+// detect OSX
+#if defined(__APPLE__) && defined(__MACH__)
+#include <getopt.h>
 #endif
 
 #define MSGBUFSIZE 8192 
