@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.47 2003-03-13 15:56:20 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.48 2003-03-14 18:42:55 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -183,6 +183,11 @@ class VenueManagementClient(wxApp):
                 text = 'The venue URL you specified is not valid'
                 text2 = 'Invalid URL'
 
+                if(self.serverUrl != None):
+                    self.address.addressText.SetValue(self.serverUrl)
+                else:
+                    self.address.addressText.SetValue('https://localhost:8000/VenueServer')
+              
             dlg = wxMessageDialog(self.frame, text, text2, style = wxOK|wxICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
@@ -555,11 +560,14 @@ class VenueListPanel(wxPanel):
     def OpenAddVenueDialog(self, event):
         addVenueDialog = AddVenueFrame(self, -1, "", \
                                        self.venuesList, self.application)
+        addVenueDialog.Destroy()
 
     def OpenModifyVenueDialog(self, event):
         if(self.venuesList.GetSelection() != -1):
             modifyVenueDialog = ModifyVenueFrame(self, -1, "", \
                                                  self.venuesList, self.application)
+
+            modifyVenueDialog.Destroy()
 
     def DeleteVenue(self, event = None):
         if (self.venuesList.GetSelection() != -1):
@@ -726,7 +734,7 @@ class AdministratorsListPanel(wxPanel):
         index = self.administratorsList.GetSelection()
         if (index != -1):
             adminToDelete = self.administratorsList.GetClientData(index)
-            text =  "Are you sure you want to delete " + adminToDelete
+            text =  "Are you sure you want to delete " + self.application.GetCName(adminToDelete)
             text2 = "Delete administrator"
             message = wxMessageDialog(self, text, text2, style = wxOK|wxCANCEL|wxICON_INFORMATION)
             
@@ -1447,7 +1455,7 @@ class AddVenueFrame(VenueParamFrame):
                     wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
                     wxLog_GetActiveTarget().Flush()
 
-                self.Destroy()
+                self.Hide()
         wxEndBusyCursor()
 
 
@@ -1481,7 +1489,7 @@ class ModifyVenueFrame(VenueParamFrame):
                     wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
                     wxLog_GetActiveTarget().Flush()
 
-                self.Destroy()
+                self.Hide()
 
         wxEndBusyCursor()
 
