@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.71 2004-05-18 16:30:56 judson Exp $
+# RCS-ID:      $Id: setup.py,v 1.72 2004-06-02 03:14:31 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -107,7 +107,6 @@ linux_data = [('etc/init.d',
                 r"packaging/linux/gnome/VenueClientManual.desktop",
                 r"packaging/linux/gnome/VenueManagementManual.desktop",
                 r"packaging/linux/gnome/License.desktop",
-                r"packaging/linux/gnome/DevelopersDocumentation.desktop",
                 ]
                ),
                
@@ -141,7 +140,6 @@ linux_data = [('etc/init.d',
                 r"packaging/linux/kde/VenueClientManual.desktop",
                 r"packaging/linux/kde/VenueManagementManual.desktop",
                 r"packaging/linux/kde/License.desktop",
-                r"packaging/linux/kde/DevelopersDocumentation.desktop",
                 ]
                ),
 
