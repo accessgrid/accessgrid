@@ -43,9 +43,9 @@ if not exist %RATDIR%\rat\Release\ratui.exe goto do_compile
 
 :do_copy
 
-copy %RATDIR%\rat\Release\rat.exe %DESTDIR%
-copy %RATDIR%\rat\Release\ratmedia.exe %DESTDIR%
-copy %RATDIR%\rat\Release\ratui.exe %DESTDIR%
+copy %RATDIR%\rat\Release\rat.exe %DESTDIR%\rat.exe
+copy %RATDIR%\rat\Release\ratmedia.exe %DESTDIR%\ratmedia.exe
+copy %RATDIR%\rat\Release\ratui.exe %DESTDIR%\ratui.exe
 
 
 goto end

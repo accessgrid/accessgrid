@@ -43,7 +43,7 @@ if not exist %VIC_EXE% goto do_compile
 
 :do_copy
 
-copy %VIC_EXE% %DESTDIR%
+copy %VIC_EXE% %DESTDIR%\vic.exe
 
 goto end
 

@@ -16,10 +16,12 @@
 # this snapshot version.
 #
 
+import sys
 import os
 import os.path
 import time
 import re
+import win32api
 
 build_base = r"c:\temp\snap"
 
@@ -33,6 +35,19 @@ build_dir = os.path.join(build_base, build_tag)
 
 rat_dir = r"c:\AccessGridBuild\ag-rat"
 vic_dir = r"c:\AccessGridBuild\ag-vic"
+
+#
+# Location of the Inno compiler
+#
+
+inno_compiler = r"c:\Program Files\My Inno Setup Extensions 3\ISCC.exe"
+
+#
+# Mangle it to remove spaces; this also ensures it is present.
+#
+
+inno_compiler = win32api.GetShortPathName(inno_compiler)
+print "compiler is ", inno_compiler
 
 print "builddir ", build_dir
 os.mkdir(build_dir)
@@ -57,7 +72,7 @@ if 1:
     wr.close()
     rd.close()
 
-    os.system("cvs co AccessGrid")
+    os.system("cvs export -D now AccessGrid")
 
 #
 # Okay, we've got our code checked out. Go to the packaging
@@ -79,6 +94,12 @@ fix_vic_dst = vic_dir.replace('\\', r'\\')
 fix_rat_src = re.escape(r'C:\AccessGridBuild\ag-rat')
 fix_rat_dst = rat_dir.replace('\\', r'\\')
 
+section_re = re.compile(r"\[\s*(\S+)\s*\]")
+prebuild_re = re.compile(r"^Name:\s+([^;]+);\s+Parameters:\s+([^;]+)")
+
+commands = []
+section = ""
+
 for l in fp:
 
     l = re.sub(fix_vic_src, fix_vic_dst, l)
@@ -91,7 +112,39 @@ for l in fp:
     elif l.startswith("#define AppVersionShort"):
         l = '#define AppVersionShort "2.0-%s"\n' % (build_tag)
 
+
+    m = section_re.search(l)
+    if m:
+        section = m.group(1)
+
+    if section == "_ISToolPreCompile":
+        m = prebuild_re.search(l)
+        if m:
+            cmd = m.group(1)
+            args = m.group(2)
+            print "Have cmd='%s' args='%s'" % (cmd, args)
+            commands.append((cmd, args))
     new_fp.write(l)
 
 fp.close()
 new_fp.close()
+
+#
+# We've created the new ISS file now.
+#
+
+#
+# Run the stuff that is precompile section
+#
+
+for cmd, args in commands:
+    rc = os.system(cmd + " " + args)
+    if rc != 0:
+        print "Command failed: %s %s" % (cmd, args)
+        sys.exit(1)
+
+#
+# Now we can compile
+#
+
+os.system(inno_compiler + " " + "build_snap.iss")
