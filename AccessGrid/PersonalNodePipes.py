@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/05
-# RCS-ID:      $Id: PersonalNodePipes.py,v 1.4 2003-10-14 04:27:00 judson Exp $
+# RCS-ID:      $Id: PersonalNodePipes.py,v 1.5 2004-01-20 23:06:49 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ Svc mgr:
 
 """
 
-__revision__ = "$Id: PersonalNodePipes.py,v 1.4 2003-10-14 04:27:00 judson Exp $"
+__revision__ = "$Id: PersonalNodePipes.py,v 1.5 2004-01-20 23:06:49 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -119,7 +119,7 @@ class Pipe:
         #
         urlstr = str(url)
         l = len(urlstr)
-        s = struct.pack("l%ss" % (l,), l, urlstr)
+        s = struct.pack("<l%ss" % (l,), l, urlstr)
         self.writeFP.write(s)
         self.writeFP.flush()
 
@@ -129,14 +129,14 @@ class Pipe:
             raise Exception, "Cannot read from pipe: readFD unavailable"
 
         log.debug("waiting on read on %d", self.readFD)
-        lsiz = struct.calcsize("l")
+        lsiz = struct.calcsize("<l")
         lstr = self.readFP.read(lsiz)
 
         if lstr is None or lstr == "":
             log.debug("first read %d returns none", self.readFD)
             return None
 
-        (n,) = struct.unpack("l", lstr)
+        (n,) = struct.unpack("<l", lstr)
         
         print "Got len '%s'" % (n,)
         str = self.readFP.read(n)

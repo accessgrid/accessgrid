@@ -6,15 +6,16 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.16 2003-10-13 20:04:56 judson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.17 2004-01-20 23:06:49 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.16 2003-10-13 20:04:56 judson Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.17 2004-01-20 23:06:49 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
+from AccessGrid.hosting.pyGlobus import Client, Server
 import socket
 import sys
 import pickle
@@ -164,13 +165,13 @@ class ConnectionHandler:
 
         if self.waitingLen == 0:
 
-            sz = struct.calcsize('i')
+            sz = struct.calcsize('<i')
             
             if len(self.dataBuffer) < sz:
                 return
 
             lenstr = self.dataBuffer[:sz]
-            dlen = struct.unpack('i', lenstr)
+            dlen = struct.unpack('<i', lenstr)
 
             self.dataBuffer = self.dataBuffer[sz:]
 

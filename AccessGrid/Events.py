@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.20 2004-01-05 19:06:38 lefvert Exp $
+# RCS-ID:      $Id: Events.py,v 1.21 2004-01-20 23:06:49 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Events.py,v 1.20 2004-01-05 19:06:38 lefvert Exp $"
+__revision__ = "$Id: Events.py,v 1.21 2004-01-20 23:06:49 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -201,7 +201,7 @@ class MarshalledEvent:
         """
 
         self.pdata = pickle.dumps(event)
-        self.sizeStr = struct.pack("i", len(self.pdata))
+        self.sizeStr = struct.pack("<i", len(self.pdata))
 
     def GetEvent(self):
         """

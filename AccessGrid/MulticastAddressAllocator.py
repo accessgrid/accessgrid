@@ -5,13 +5,13 @@
 # Author:      Robert Olson, Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.16 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.17 2004-01-20 23:06:49 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: MulticastAddressAllocator.py,v 1.16 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: MulticastAddressAllocator.py,v 1.17 2004-01-20 23:06:49 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -49,11 +49,11 @@ class MulticastAddressAllocator:
         
         if self.baseAddress == None:
             # 224.2.128.0
-            self.baseAddress = struct.unpack("L",
+            self.baseAddress = struct.unpack("<L",
                socket.inet_aton(MulticastAddressAllocator.SDR_BASE_ADDRESS))[0]
             self.addressMaskSize = MulticastAddressAllocator.SDR_MASK_SIZE
         else:
-            self.baseAddress = struct.unpack("L",
+            self.baseAddress = struct.unpack("<L",
                                         socket.inet_aton(baseAddress))[0]
 
         
@@ -65,11 +65,11 @@ class MulticastAddressAllocator:
         self.addressAllocationMethod = MulticastAddressAllocator.RANDOM
 
     def SetBaseAddress(self, baseAddress):
-        self.baseAddress = struct.unpack("L", socket.inet_aton(baseAddress))[0]
+        self.baseAddress = struct.unpack("<L", socket.inet_aton(baseAddress))[0]
         return self.baseAddress
                                         
     def GetBaseAddress(self):
-        return socket.inet_ntoa(struct.pack('L', self.baseAddress))
+        return socket.inet_ntoa(struct.pack('<L', self.baseAddress))
 
     # These don't mean what they did before! IRJ-2002-2-22
     def SetAddressMask(self, addressMaskSize = 24):
@@ -117,13 +117,13 @@ class MulticastAddressAllocator:
         randomNumber = self.random.randrange(sys.maxint)
         newAddress = self.baseAddress & self.addressMask
         newAddress = newAddress | (randomNumber & ~self.addressMask)
-        addressString = socket.inet_ntoa(struct.pack("L", newAddress))
+        addressString = socket.inet_ntoa(struct.pack("<L", newAddress))
         
         while addressString in self.allocatedAddresses:
             randomNumber = self.random.randrange(sys.maxint)
             newAddress = self.baseAddress & self.addressMask
             newAddress = newAddress | (randomNumber & ~self.addressMask)
-            addressString = socket.inet_ntoa(struct.pack("L", newAddress))
+            addressString = socket.inet_ntoa(struct.pack("<L", newAddress))
  
         self.allocatedAddresses.append(addressString)
 

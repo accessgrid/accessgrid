@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.28 2003-10-29 20:54:31 lefvert Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.29 2004-01-20 23:06:49 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.28 2003-10-29 20:54:31 lefvert Exp $"
+__revision__ = "$Id: TextClient.py,v 1.29 2004-01-20 23:06:49 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -168,7 +168,7 @@ class TextConnection:
         
         # Pickle the data
         pdata = pickle.dumps(event)
-        size = struct.pack("i", len(pdata))
+        size = struct.pack("<i", len(pdata))
         # Send the size as 4 bytes
         self.wfile.write(size)
         # Send the pickled event data
@@ -218,13 +218,13 @@ class TextConnection:
 
         if self.waitingLen == 0:
 
-            sz = struct.calcsize('i')
+            sz = struct.calcsize('<i')
             
             if len(self.dataBuffer) < sz:
                 return
 
             lenstr = self.dataBuffer[:sz]
-            dlen = struct.unpack('i', lenstr)
+            dlen = struct.unpack('<i', lenstr)
             self.log.debug("TextConnection: Data len %s", dlen)
 
             self.dataBuffer = self.dataBuffer[sz:]
