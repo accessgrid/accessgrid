@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.27 2003-09-16 07:20:17 judson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.28 2003-09-22 15:58:38 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.27 2003-09-16 07:20:17 judson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.28 2003-09-22 15:58:38 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -1262,7 +1262,6 @@ class IdentityCertDialog(wxDialog):
             impCert = self.certMgr.ImportIdentityCertificatePEM(self.certMgr.GetCertificateRepository(),
                                                                  path, kpath, cb)
             log.debug("Imported identity %s", str(impCert.GetSubject()))
-            self.browser.LoadCerts()
 
         except:
             log.exception("Error importing certificate from %s keyfile %s", path, kpath)
@@ -1291,10 +1290,41 @@ class IdentityCertDialog(wxDialog):
             dlg.ShowModal()
             dlg.Destroy()
 
+        #
+        # Check to see if there is a default identity cert. If not, make
+        # this the default.
+        #
+
+        idCerts = self.certMgr.GetDefaultIdentityCerts()
+        log.debug("ID certs: %s", idCerts)
+
+        if len(idCerts) == 0:
+            log.debug("Setting newly imported identity as default")
+            self.certMgr.SetDefaultIdentity(impCert)
+
+        try:
+            #
+            # Invoke InitEnvironment to ensure that
+            # the cert runtime is in the correct state after
+            # loading a new certificate. Ignore proxy errors
+            # here as we don't care at this point
+            # 
+            self.certMgr.InitEnvironment()
+
+        except CertificateManager.NoProxyFound:
+            pass
+        except CertificateManager.ProxyExpired:
+            pass
+        except Exception, e:
+            log.exception("InitEnvironment raised an exception during import")
+        
+            
         dlg = wxMessageDialog(None, "Certificate imported successfully. Subject is\n" +
                               str(impCert.GetSubject()),
                               "Import successful",
                               style = wxOK | wxICON_INFORMATION)
+        self.browser.LoadCerts()
+        
         dlg.ShowModal()
         dlg.Destroy()
 

@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.32 2003-09-19 16:35:59 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.33 2003-09-22 15:58:38 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.32 2003-09-19 16:35:59 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.33 2003-09-22 15:58:38 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -617,8 +617,11 @@ class CertificateManager(object):
         
         defaultIdCerts = self.GetDefaultIdentityCerts()
 
-        if len(defaultIdCerts) != 1:
+        if len(defaultIdCerts) == 0:
             raise NoDefaultIdentity
+        elif len(defaultIdCerts) > 1:
+            log.warn("Found multiple (%s) default identities, using the first",
+                     len(defaultIdCerts))
 
         defaultIdentity = defaultIdCerts[0]
 
