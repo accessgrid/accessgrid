@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.36 2004-07-20 16:30:38 turam Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.37 2004-07-30 20:09:31 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.36 2004-07-20 16:30:38 turam Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.37 2004-07-30 20:09:31 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -638,14 +638,12 @@ class EventService:
 
 	while self.inQEvt.isSet():
 	    try:
-		try:
-		    (channel, data) = self.inQueue.get()
-                    if channel == 'quit':
-                        self.inQEvt.clear()
-                        break
-		except Queue.Empty:
-		    log.info("Didn't get anything to distribute.")
-		    data = None
+                log.debug("SendHandler waiting for event")
+                (channel, data) = self.inQueue.get()
+                log.debug("SendHandler got event")
+                if channel == 'quit':
+                    self.inQEvt.clear()
+                    break
 	
 		if data is not None:
                     log.info("Calling _Distribute, in SendHandler.")
