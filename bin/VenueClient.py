@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.95 2003-04-01 19:09:13 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.96 2003-04-01 19:23:33 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -49,9 +49,9 @@ class VenueClientUI(wxApp, VenueClient):
     venueUri = None
     personalDataStorePrefix = "personalDataStore"
     personalDataStorePort = 9999
-    personalDataStorePath = GetUserConfigDir()
+    #personalDataStorePath = GetUserConfigDir()
     personalDataDict = {}
-    personalDataFile = os.path.join(personalDataStorePath, "myData.txt" )
+    #personalDataFile = os.path.join(personalDataStorePath, "myData.txt" )
 
     def __init__(self):
         wxApp.__init__(self)
@@ -72,6 +72,8 @@ class VenueClientUI(wxApp, VenueClient):
         return true
 
     def __createPersonalDataStore(self):
+        self.personalDataStorePath = os.path.join(self.accessGridPath, "personalDataStore")
+        self.personalDataFile = os.path.join(self.personalDataStorePath, "myData.txt" )
         self.dataStore = DataStore.DataStore(self, self.personalDataStorePath,
                                    self.personalDataStorePrefix)
         self.transferEngine = GSIHTTPTransferServer(('', self.personalDataStorePort))
