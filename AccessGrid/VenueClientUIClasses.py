@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.200 2003-05-23 21:05:54 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.201 2003-05-23 21:13:15 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -834,7 +834,6 @@ class VenueClientFrame(wxFrame):
                  
                           
     def OpenDataProfileDialog(self, event):
-        self.contentList.tree.GetSelection()
         profileDialog = ProfileDialog(NULL, -1, 'Profile')
         profileDialog.SetProfile(self.app.profile)
         profileDialog.ShowModal()
