@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.6 2003-02-26 23:15:01 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.7 2003-02-27 23:02:18 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -121,6 +121,8 @@ class VideoProducerService( AGService ):
       self.resource = resource
       if "portTypes" in self.resource.__dict__.keys():
           self.configuration["Port"] = OptionSetParameter( "Port", self.resource.portTypes[0], 
+                                                           self.resource.portTypes )
+
       
    SetResource.soap_export_as = "SetResource"
 
