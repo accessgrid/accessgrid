@@ -10,6 +10,8 @@ from AccessGrid.hosting.pyGlobus import Client
 
 from AccessGrid import Events
 from AccessGrid import EventClient
+from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.ClientProfile import ClientProfile
 
 
 log = logging.getLogger("SharedBrowser")
@@ -228,6 +230,7 @@ class WebBrowser(wxPanel):
             self.just_received_navigate = 1
             self.docLoading = url
             self.ie.Navigate(url)
+           
 
     def OnLocationSelect(self, event):
         url = self.location.GetStringSelection()
@@ -255,6 +258,7 @@ class SharedBrowser( wxApp ):
         return 1
 
     def OnExit(self):
+        self.appProxy.Leave(self.privateId)
         self.eventClient.Stop()
         os._exit(1)
 
@@ -265,11 +269,15 @@ class SharedBrowser( wxApp ):
         self.appUrl = appUrl
         self.appProxy = Client.Handle(appUrl).GetProxy()
 
+        clientProfileFile = os.path.join(GetUserConfigDir(), 'profile')
+        clientProfile = ClientProfile(clientProfileFile)
+
         #
         # Join the application
         #
-        (self.publicId, self.privateId) = self.appProxy.Join()
+        (self.publicId, self.privateId) = self.appProxy.Join(clientProfile)
 
+       
         #
         # Retrieve the channel id
         #
@@ -304,6 +312,7 @@ class SharedBrowser( wxApp ):
         currentUrl = self.appProxy.GetData(self.privateId, "url")
         if len(currentUrl) > 0:
             self.browser.navigate(currentUrl)
+            self.appProxy.SetParticipantStatus(self.privateId, currentUrl)
 
         self.frame.Show(1)
         self.SetTopWindow(self.frame)
@@ -332,6 +341,9 @@ class SharedBrowser( wxApp ):
         else:
             print "Browse to ", url
             self.browser.navigate(url)
+
+        self.appProxy.SetParticipantStatus(self.privateId, url)
+            
 
         
 if __name__ == "__main__":
