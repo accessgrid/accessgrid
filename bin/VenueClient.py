@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.173 2003-06-27 19:16:25 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.174 2003-06-27 21:41:29 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -32,6 +32,7 @@ import AccessGrid.ClientProfile
 from AccessGrid import DataStore
 from AccessGrid import PersonalNode
 from AccessGrid import Toolkit
+from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
 
 from AccessGrid import Events
 from AccessGrid.Utilities import HaveValidProxy
@@ -56,9 +57,6 @@ class VenueClientUI(wxApp):
     receives a coherence event.
     """
     history = []
-    client = None
-    clientHandle = None
-    venueUri = None
     accessGridPath = GetUserConfigDir()
     profileFile = os.path.join(accessGridPath, "profile" )
   
@@ -571,7 +569,7 @@ class VenueClientUI(wxApp):
             log.debug("EVENT - Add connection: %s" %(connection.name))
             wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, connection)
 
-    def EnterVenue(self, URL, back = false, warningString=""):
+    def EnterVenue(self, URL, back = false, warningString="", enterSuccess=AG_TRUE):
         """
         Note: Overridden from VenueClient
         This method calls the venue client method and then
@@ -595,19 +593,14 @@ class VenueClientUI(wxApp):
             log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
             self.app.certificateManager.CreateProxy()
 
+        # initialize flag in case of failure
+        enterUISuccess = AG_TRUE
+
         try:
             #   
             # Add current uri to the history if the go button is pressed
             #
             self.__setHistory(self.venueClient.venueUri, back)
-            
-            #
-            # if this venue url has a valid web service then enter venue
-            #
-            self.venueClient.venueUri = URL
-      
-            self.clientHandle = Client.Handle(self.venueClient.venueUri)
-            self.client = self.clientHandle.GetProxy()
             
             wxCallAfter(self.frame.statusbar.SetStatusText, "Entered venue %s successfully" %self.venueClient.venueState.name)
 
@@ -673,7 +666,7 @@ class VenueClientUI(wxApp):
             wxCallAfter(self.frame.FillInAddress, None, URL)
             
             # Venue data storage location
-            # self.upload_url = self.client.GetUploadDescriptor()
+            # self.upload_url = self.venueClient.client.GetUploadDescriptor()
             #log.debug("Get upload url %s" %self.dataStoreUploadUrl)
             
             log.debug("Add your personal data descriptions to venue")
@@ -707,6 +700,9 @@ class VenueClientUI(wxApp):
        
         except Exception, e:
             log.exception("bin.VenueClient::EnterVenue failed")
+            enterUISuccess = AG_FALSE
+
+        if not enterSuccess or not enterUISuccess:
             text = "You have not entered the venue located at %s.\nAn error occured.  Please, try again."%URL
             ErrorDialog(None, text, "Enter Venue Error",
                           style = wxOK  | wxICON_ERROR)
@@ -1178,7 +1174,7 @@ class VenueClientUI(wxApp):
         """
         log.debug("Adding service: %s to venue" %service.name)
         try:
-            self.client.AddService(service)
+            self.venueClient.client.AddService(service)
 
         except:
             log.exception("bin.VenueClient::AddService: Error occured when trying to add service")
@@ -1223,7 +1219,7 @@ class VenueClientUI(wxApp):
         """
         log.debug("Remove service: %s from venue" %service.name)
         try:
-            self.client.RemoveService(service)
+            self.venueClient.client.RemoveService(service)
 
         except:
             log.exception("bin.VenueClient::RemoveService: Error occured when trying to remove service")
@@ -1249,7 +1245,7 @@ class VenueClientUI(wxApp):
             log.debug("Update client profile in venue")
 
             try:
-                self.client.UpdateClientProfile(profile)
+                self.venueClient.client.UpdateClientProfile(profile)
 
             except:
                 log.exception("bin.VenueClient::ChangeProfile: Error occured when trying to update profile")
@@ -1270,7 +1266,7 @@ class VenueClientUI(wxApp):
         *app* The ApplicationDescription of the application we want to start
         """
         log.debug("Creating application: %s" % app.name)
-        appDesc = self.client.CreateApplication( app.name, app.description,
+        appDesc = self.venueClient.client.CreateApplication( app.name, app.description,
                                                  app.mimeType )
         self.JoinApp(appDesc)
 
@@ -1315,7 +1311,7 @@ class VenueClientUI(wxApp):
         
         *app* The ApplicationDescription of the application we want to remove from venue
         """
-        self.client.DestroyApplication( app.id )
+        self.venueClient.client.DestroyApplication( app.id )
         log.debug("Destroying application: %s" % app.name)
 
     def RemoveStreamEvent(self):

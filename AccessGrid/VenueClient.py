@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.76 2003-06-27 18:28:01 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.77 2003-06-27 21:41:29 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -88,6 +88,10 @@ class VenueClient( ServiceBase):
         # Manage the currently-exiting state
         self.exiting = 0
         self.exitingLock = threading.Lock()
+
+        self.client = None
+        self.clientHandle = None
+        self.venueUri = None
                           
     def __InitVenueData__( self ):
         self.eventClient = None
@@ -319,208 +323,226 @@ class VenueClient( ServiceBase):
         EnterVenue puts this client into the specified venue.
         """
 
-        # catch unauthorized SOAP calls to EnterVenue
-        securityManager = AccessControl.GetSecurityManager()
-        if securityManager != None:
-            callerDN = securityManager.GetSubject().GetName()
-            if callerDN != None and callerDN != self.leaderProfile.distinguishedName:
-                raise AuthorizationFailedError("Unauthorized leader tried to lead venue client")
-
-        #
-        # Exit the venue you are currently in before entering a new venue
-        #
-        if self.isInVenue:
-            self.ExitVenue()
-
-        #
-        # Get capabilities from your node
-        #
-
-        errorInNode = 0
-        #haveValidNodeService = 0
+        enterSuccess = AG_TRUE
         try:
-            #if self.nodeServiceUri != None:
-            #    try:
-            #        Client.Handle( self.nodeServiceUri ).IsValid()
-            #        haveValidNodeService = 1
-            #    except Client.InvalidHandleException:
-            #        log.exception("Invalid Node Service URI (%s)"
-            #                      % self.nodeServiceUri)
-                
-                #
-                # Retrieve list of node capabilities
-                #
-            #if haveValidNodeService:
-            self.profile.capabilities = Client.Handle( self.nodeServiceUri ).get_proxy().GetCapabilities()
-                
-        except Exception, e:
             #
-            # This is a non fatal error, users should be notified but still enter the venue
+            # if this venue url has a valid web service then enter venue
             #
-            #log.exception("AccessGrid.VenueClient::Get node capabilities failed")
-            errorInNode = 1
-                        
-        #
-        # Enter the venue
-        #
 
-        log.debug("Invoke venue enter")
-        (venueState, self.privateId, streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
-
-       
-                
-        #
-        # construct a venue state that consists of real objects
-        # instead of the structs we get back from the SOAP call
-        # (this code can be removed when SOAP returns real objects)
-        #
-        connectionList = []
-        for conn in venueState.connections:
-            connectionList.append( ConnectionDescription( conn.name, conn.description, conn.uri ) )
-
-        clientList = []
-        for client in venueState.clients:
-            profile = ClientProfile()
-            profile.profileFile = client.profileFile
-            profile.profileType = client.profileType
-            profile.name = client.name
-            profile.email = client.email
-            profile.phoneNumber = client.phoneNumber
-            profile.icon = client.icon
-            profile.publicId = client.publicId
-            profile.location = client.location
-            profile.venueClientURL = client.venueClientURL
-            profile.techSupportInfo = client.techSupportInfo
-            profile.homeVenue = client.homeVenue
-            profile.privateId = client.privateId
-            profile.distinguishedName = client.distinguishedName
-
-            # should also objectify the capabilities, but not doing it 
-            # for now (until it's a problem ;-)
-            profile.capabilities = client.capabilities
-
-            clientList.append( profile )
-
-        dataList = []
-        for data in venueState.data:
-            dataDesc = DataDescription( data.name )
-            dataDesc.status = data.status
-            dataDesc.size = data.size
-            dataDesc.checksum = data.checksum
-            dataDesc.owner = data.owner
-            dataDesc.type = data.type
-            dataDesc.uri = data.uri
-            dataList.append( dataDesc )
-
-        applicationList = []
-        for application in venueState.applications:
-            applicationList.append( ApplicationDescription( application.id, application.name,
-                                                            application.description,
-                                                            application.uri, application.mimeType) )
-
-        serviceList = []
-        for service in venueState.services:
-            serviceList.append( ServiceDescription( service.name, service.description,
-                                                    service.uri, service.mimeType ) )
-        
-        self.venueState = VenueState( venueState.uniqueId,
-                                      venueState.name,
-                                      venueState.description,
-                                      venueState.uri,
-                                      connectionList, 
-                                      clientList,
-                                      dataList,
-                                      venueState.eventLocation,
-                                      venueState.textLocation,
-                                      applicationList,
-                                      serviceList)
-        self.venueUri = URL
-        self.venueId = self.venueState.GetUniqueId()
-        self.venueProxy = Client.Handle( URL ).get_proxy()
-
-        host, port = venueState.eventLocation
-        
-        #
-        # Create the event client
-        #
-        
-        coherenceCallbacks = {
-            Event.ENTER: self.AddUserEvent,
-            Event.EXIT: self.RemoveUserEvent,
-            Event.MODIFY_USER: self.ModifyUserEvent,
-            Event.ADD_DATA: self.AddDataEvent,
-            Event.UPDATE_DATA: self.UpdateDataEvent,
-            Event.REMOVE_DATA: self.RemoveDataEvent,
-            Event.ADD_SERVICE: self.AddServiceEvent,
-            Event.REMOVE_SERVICE: self.RemoveServiceEvent,
-            Event.ADD_APPLICATION: self.AddApplicationEvent,
-            Event.REMOVE_APPLICATION: self.RemoveApplicationEvent,
-            Event.ADD_CONNECTION: self.AddConnectionEvent,
-            Event.REMOVE_CONNECTION: self.RemoveConnectionEvent,
-            Event.SET_CONNECTIONS: self.SetConnectionsEvent,
-            Event.ADD_STREAM: self.AddStreamEvent,
-            Event.REMOVE_STREAM: self.RemoveStreamEvent
-            }
-        
-        h, p = self.venueState.eventLocation
-        
-        self.eventClient = EventClient(self.privateId,
-                                       self.venueState.eventLocation,
-                                       self.venueState.uniqueId)
-
-       
-        for e in coherenceCallbacks.keys():
-            self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
+            self.venueUri = URL
             
-        self.eventClient.start()
-        self.eventClient.Send(ConnectEvent(self.venueState.uniqueId,
-                                           self.privateId))
-                               
-        self.heartbeatTask = self.houseKeeper.AddTask(self.Heartbeat, 5)
-        self.heartbeatTask.start()
+            self.clientHandle = Client.Handle(self.venueUri)
+            self.client = self.clientHandle.GetProxy()
 
-        #
-        # Send eventClient to personal dataStore and get personaldatastore information
-        #
-        self.dataStore.SetEventDistributor(self.eventClient, self.venueState.uniqueId)
-        self.dataStoreUploadUrl,self.dataStoreLocation = Client.Handle( URL ).get_proxy().GetDataStoreInformation()
-        
-        # 
-        # Update the node service with stream descriptions
-        #
-        try:
-            #if haveValidNodeService:
-            if not self.isIdentitySet:
-                """
-                Inform the node of the identity of the person driving it
-                """
-                Client.Handle(self.nodeServiceUri).GetProxy().SetIdentity(self.profile)
-                self.isIdentitySet = 1
+            # catch unauthorized SOAP calls to EnterVenue
+            securityManager = AccessControl.GetSecurityManager()
+            if securityManager != None:
+                callerDN = securityManager.GetSubject().GetName()
+                if callerDN != None and callerDN != self.leaderProfile.distinguishedName:
+                    raise AuthorizationFailedError("Unauthorized leader tried to lead venue client")
+
+            #
+            # Exit the venue you are currently in before entering a new venue
+            #
+            if self.isInVenue:
+                self.ExitVenue()
+
+            #
+            # Get capabilities from your node
+            #
+
+            errorInNode = 0
+            #haveValidNodeService = 0
+            try:
+                #if self.nodeServiceUri != None:
+                #    try:
+                #        Client.Handle( self.nodeServiceUri ).IsValid()
+                #        haveValidNodeService = 1
+                #    except Client.InvalidHandleException:
+                #        log.exception("Invalid Node Service URI (%s)"
+                #                      % self.nodeServiceUri)
                 
-            Client.Handle( self.nodeServiceUri ).GetProxy().SetStreams( streamDescList )
+                    #
+                    # Retrieve list of node capabilities
+                    #
+                #if haveValidNodeService:
+                self.profile.capabilities = Client.Handle( self.nodeServiceUri ).get_proxy().GetCapabilities()
+                
+            except Exception, e:
+                #
+                # This is a non fatal error, users should be notified but still enter the venue
+                #
+                #log.exception("AccessGrid.VenueClient::Get node capabilities failed")
+                errorInNode = 1
+                        
+            #
+            # Enter the venue
+            #
+
+            log.debug("Invoke venue enter")
+            (venueState, self.privateId, streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
+
+       
+                
+            #
+            # construct a venue state that consists of real objects
+            # instead of the structs we get back from the SOAP call
+            # (this code can be removed when SOAP returns real objects)
+            #
+            connectionList = []
+            for conn in venueState.connections:
+                connectionList.append( ConnectionDescription( conn.name, conn.description, conn.uri ) )
+
+            clientList = []
+            for client in venueState.clients:
+                profile = ClientProfile()
+                profile.profileFile = client.profileFile
+                profile.profileType = client.profileType
+                profile.name = client.name
+                profile.email = client.email
+                profile.phoneNumber = client.phoneNumber
+                profile.icon = client.icon
+                profile.publicId = client.publicId
+                profile.location = client.location
+                profile.venueClientURL = client.venueClientURL
+                profile.techSupportInfo = client.techSupportInfo
+                profile.homeVenue = client.homeVenue
+                profile.privateId = client.privateId
+                profile.distinguishedName = client.distinguishedName
+
+                # should also objectify the capabilities, but not doing it 
+                # for now (until it's a problem ;-)
+                profile.capabilities = client.capabilities
+
+                clientList.append( profile )
+
+            dataList = []
+            for data in venueState.data:
+                dataDesc = DataDescription( data.name )
+                dataDesc.status = data.status
+                dataDesc.size = data.size
+                dataDesc.checksum = data.checksum
+                dataDesc.owner = data.owner
+                dataDesc.type = data.type
+                dataDesc.uri = data.uri
+                dataList.append( dataDesc )
+
+            applicationList = []
+            for application in venueState.applications:
+                applicationList.append( ApplicationDescription( application.id, application.name,
+                                                                application.description,
+                                                                application.uri, application.mimeType) )
+
+            serviceList = []
+            for service in venueState.services:
+                serviceList.append( ServiceDescription( service.name, service.description,
+                                                        service.uri, service.mimeType ) )
+        
+            self.venueState = VenueState( venueState.uniqueId,
+                                          venueState.name,
+                                          venueState.description,
+                                          venueState.uri,
+                                          connectionList, 
+                                          clientList,
+                                          dataList,
+                                          venueState.eventLocation,
+                                          venueState.textLocation,
+                                          applicationList,
+                                          serviceList)
+            self.venueUri = URL
+            self.venueId = self.venueState.GetUniqueId()
+            self.venueProxy = Client.Handle( URL ).get_proxy()
+
+            host, port = venueState.eventLocation
+        
+            #
+            # Create the event client
+            #
+        
+            coherenceCallbacks = {
+                Event.ENTER: self.AddUserEvent,
+                Event.EXIT: self.RemoveUserEvent,
+                Event.MODIFY_USER: self.ModifyUserEvent,
+                Event.ADD_DATA: self.AddDataEvent,
+                Event.UPDATE_DATA: self.UpdateDataEvent,
+                Event.REMOVE_DATA: self.RemoveDataEvent,
+                Event.ADD_SERVICE: self.AddServiceEvent,
+                Event.REMOVE_SERVICE: self.RemoveServiceEvent,
+                Event.ADD_APPLICATION: self.AddApplicationEvent,
+                Event.REMOVE_APPLICATION: self.RemoveApplicationEvent,
+                Event.ADD_CONNECTION: self.AddConnectionEvent,
+                Event.REMOVE_CONNECTION: self.RemoveConnectionEvent,
+                Event.SET_CONNECTIONS: self.SetConnectionsEvent,
+                Event.ADD_STREAM: self.AddStreamEvent,
+                Event.REMOVE_STREAM: self.RemoveStreamEvent
+                }
+        
+            h, p = self.venueState.eventLocation
+        
+            self.eventClient = EventClient(self.privateId,
+                                           self.venueState.eventLocation,
+                                           self.venueState.uniqueId)
+
+       
+            for e in coherenceCallbacks.keys():
+                self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
+            
+            self.eventClient.start()
+            self.eventClient.Send(ConnectEvent(self.venueState.uniqueId,
+                                               self.privateId))
+                               
+            self.heartbeatTask = self.houseKeeper.AddTask(self.Heartbeat, 5)
+            self.heartbeatTask.start()
+
+            #
+            # Send eventClient to personal dataStore and get personaldatastore information
+            #
+            self.dataStore.SetEventDistributor(self.eventClient, self.venueState.uniqueId)
+            self.dataStoreUploadUrl,self.dataStoreLocation = Client.Handle( URL ).get_proxy().GetDataStoreInformation()
+        
+            # 
+            # Update the node service with stream descriptions
+            #
+            try:
+                #if haveValidNodeService:
+                if not self.isIdentitySet:
+                    """
+                    Inform the node of the identity of the person driving it
+                    """
+                    Client.Handle(self.nodeServiceUri).GetProxy().SetIdentity(self.profile)
+                    self.isIdentitySet = 1
+                
+                Client.Handle( self.nodeServiceUri ).GetProxy().SetStreams( streamDescList )
+
+            except Exception, e:
+                #
+                # This is a non fatal error, users should be notified but still enter the venue
+                #
+                #log.exception("AccessGrid.VenueClient::Exception configuring node service streams")
+                errorInNode = 1
+                 
+            # Finally, set the flag that we are in a venue
+            self.isInVenue = 1
+
+            #
+            # Return a string of warnings that can be displayed to the user 
+            #
+
+            self.warningString = ''
+
+            if errorInNode:
+                self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences-My Node" from the main menu'
 
         except Exception, e:
-            #
-            # This is a non fatal error, users should be notified but still enter the venue
-            #
-            #log.exception("AccessGrid.VenueClient::Exception configuring node service streams")
-            errorInNode = 1
-                 
-        # Finally, set the flag that we are in a venue
-        self.isInVenue = 1
-
-        #
-        # Return a string of warnings that can be displayed to the user 
-        #
-
-        self.warningString = ''
-
-        if errorInNode:
-            self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences-My Node" from the main menu'
+            log.exception("AccessGrid.VenueClient::EnterVenue failed")
+            # pass a flag to UI if we fail to enter.
+            enterSuccess = AG_FALSE
 
         for s in self.eventSubscribers:
-            s.EnterVenue(URL, back, self.warningString) # back is true if user just hit the back button.
-            
+            # back is true if user just hit the back button.
+            # enterSuccess is true if we entered.
+            s.EnterVenue(URL, back, self.warningString, enterSuccess)
+
         return self.warningString
         
     EnterVenue.soap_export_as = "EnterVenue"
