@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.37 2003-02-10 23:02:21 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.38 2003-02-10 23:08:34 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -312,7 +312,7 @@ class VenueClientUI(wxApp, VenueClient):
             self.client.UpdateClientProfile(profile)
 
     def SetNodeUrl(self, url):
-        self.SetNodeServiceUri('https://localhost:8000/VenueServer')
+        self.SetNodeServiceUri(url)
                      
 if __name__ == "__main__":
 
