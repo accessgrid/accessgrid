@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.22 2004-02-13 22:02:59 lefvert Exp $
+# RCS-ID:      $Id: Events.py,v 1.23 2004-08-03 14:42:40 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Events.py,v 1.22 2004-02-13 22:02:59 lefvert Exp $"
+__revision__ = "$Id: Events.py,v 1.23 2004-08-03 14:42:40 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -52,7 +52,8 @@ class Event:
         string = "Event:\n"
         string += "\tType: %s" % (self.eventType, )
         string += "\tVenue: %s" % (self.venue, )
-        string += "\tData: %s" % (self.data, )
+        # Commenting this out, it gets really spammy -- IRJ 7/29/04
+        #string += "\tData: %s" % (self.data, )
 
         return string
 
