@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.253 2003-09-12 14:45:39 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.254 2003-09-15 15:04:28 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -196,9 +196,9 @@ class VenueClientFrame(wxFrame):
         self.venue.Append(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES,"Administrate Roles...",
                              "Change venue authorization settings.")
      	self.applicationMenu = wxMenu()
-      
+
         self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"&Applications",
-                              self.applicationMenu)
+                              self.BuildAppMenu())
         self.venue.AppendSeparator()
         self.venue.Append(self.ID_VENUE_CLOSE,"&Exit", "Exit venue")
         
@@ -987,6 +987,27 @@ class VenueClientFrame(wxFrame):
             callback = lambda event,theApp=app: self.StartApp(theApp, event)
             EVT_MENU(self, appId, callback)
 
+    def BuildAppMenu(self):
+        """
+        Build the menu of installed applications
+        """
+        app = Toolkit.GetApplication()
+        appdb = app.GetAppDatabase()
+        
+        # Remove existing menu items
+        for item in self.applicationMenu.GetMenuItems():
+            self.applicationMenu.Delete(item)
+
+        # Add applications in the appList to the menu
+        for app in appdb.ListAppsAsAppDescriptions():
+            menuEntryLabel = "Start " + app.name
+            appId = wxNewId()
+            self.applicationMenu.Append(appId,menuEntryLabel,menuEntryLabel)
+            callback = lambda event,theApp=app: self.StartApp(theApp, event)
+            EVT_MENU(self, appId, callback)
+
+        return self.applicationMenu
+    
     def EnableAppMenu(self, flag):
         for entry in self.applicationMenu.GetMenuItems():
             self.applicationMenu.Enable( entry.GetId(), flag )
@@ -1883,10 +1904,33 @@ class ContentListPanel(wxPanel):
                     if commands.has_key('Open'):
                         openCmd = commands['Open']
                     else:
-                        MessageDialog(None,
-                                      "You have nothing configured for this data.",
-                                      "Application not configured.",
-                                      style = wxOK  | wxICON_INFORMATION)
+                        dlg = wxMessageDialog(None,
+                         "There is nothing registered for this kind of data." \
+                         "Would you like to search for a program?",
+                         style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT)
+                        val = dlg.ShowModal()
+                        dlg.Destroy()
+                        
+                        if val == wxID_YES:
+                            # do the find a file thing
+                            wildcard = "Python Source (*.py)|*.py|"\
+                                       "Compiled Python (*.pyc)|*.pyc|"\
+                                       "Executable (*.exe)|*.exe|"\
+                                       "Batch File (*.bat)|*.bat|"\
+                                       "All Files (*.*)|*.*"
+                            
+                            dlg = wxFileDialog(None, "Choose the program", "",
+                                               "", wildcard, wxOPEN)
+                            if dlg.ShowModal() == wxID_OK:
+                                program = dlg.GetPath()
+                            dlg.Destroy()
+                            
+                            # then register the app
+                            
+                            # Then execute it
+                            cmd = program + " %(localFilePath)s"
+                            self.StartCmd(cmd, item)
+                            
                         return None
                 elif isinstance(item, ServiceDescription):
                     list = item.name.split('.')
@@ -1897,10 +1941,32 @@ class ContentListPanel(wxPanel):
                     if commands.has_key('Open'):
                         openCmd = commands['Open']
                     else:
-                        MessageDialog(None,
-                                      "You have nothing configured for this data.",
-                                      "Application not configured.",
-                                      style = wxOK  | wxICON_INFORMATION)
+                        dlg = wxMessageDialog(None,
+                         "There is nothing registered for this kind of data." \
+                         "Would you like to search for a program?",
+                         style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT)
+                        val = dlg.ShowModal()
+
+                        if val == wxID_YES:
+                            # do the find a file thing
+                            wildcard = "Python Source (*.py)|*.py|"\
+                                       "Compiled Python (*.pyc)|*.pyc|"\
+                                       "Executable (*.exe)|*.exe|"\
+                                       "Batch File (*.bat)|*.bat|"\
+                                       "All Files (*.*)|*.*"
+                            
+                            dlg = wxFileDialog(None, "Choose the program", "",
+                                               "", wildcard, wxOPEN)
+                            if dlg.ShowModal() == wxID_OK:
+                                program = dlg.GetPath()
+                            dlg.Destroy()
+                            
+                            # then register the app
+                            
+                            # Then execute it
+                            cmd = program + " %(localFilePath)s"
+                            self.StartCmd(cmd, item)
+                            
                         return None
                 else:
                     appdb = Toolkit.GetApplication().GetAppDatabase()
@@ -1982,12 +2048,7 @@ class ContentListPanel(wxPanel):
             EVT_MENU(self, id, lambda event,
                      cmd=commands['Open'], itm=item: self.StartCmd(cmd, item=itm))
         else:
-            text = "You have nothing configured to open this data."
-            title = "Notification"
-            EVT_MENU(self, id, lambda event, text=text, title=title:
-                     MessageDialog(self, text, title,
-                                   style = wxOK|wxICON_INFORMATION))
-#            EVT_MENU(self, id, lambda event, item=item:
+            EVT_MENU(self, id, lambda itm=item: self.FindUnregistered(itm))
 
         # We always have save for data
         id = wxNewId()
@@ -2056,12 +2117,7 @@ class ContentListPanel(wxPanel):
             EVT_MENU(self, id, lambda event,
                      cmd=commands['Open'], itm=item: self.StartCmd(cmd, item=itm))
         else:
-            text = "You have nothing configured to open this data."
-            title = "Notification"
-            EVT_MENU(self, id, lambda event, text=text, title=title:
-                     MessageDialog(self, text, title,
-                                   style = wxOK|wxICON_INFORMATION))
-#            EVT_MENU(self, id, lambda event, item=item:
+            EVT_MENU(self, id, lambda itm=item: self.FindUnregistered(itm))
 
         # We always have Remove
         id = wxNewId()
@@ -2086,6 +2142,34 @@ class ContentListPanel(wxPanel):
                  self.LookAtProperties(item))
 
         return menu
+
+    def FindUnregistered(self, item):
+        dlg = wxMessageDialog(None,
+                        "There is nothing registered for this kind of data." \
+                        "Would you like to search for a program?",
+                        style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT)
+        val = dlg.ShowModal()
+
+        if val == wxID_YES:
+            # do the find a file thing
+            wildcard = "Python Source (*.py)|*.py|"\
+                       "Compiled Python (*.pyc)|*.pyc|"\
+                       "Executable (*.exe)|*.exe|"\
+                       "Batch File (*.bat)|*.bat|"\
+                       "All Files (*.*)|*.*"
+            
+            dlg = wxFileDialog(None, "Choose the program", "",
+                               "", wildcard, wxOPEN)
+            if dlg.ShowModal() == wxID_OK:
+                program = dlg.GetPath()
+                dlg.Destroy()
+                
+                # then register the app
+                
+                # Then execute it
+                cmd = program + " %(localFilePath)s"
+                self.StartCmd(cmd, item)
+                
     def BuildAppMenu(self, event, item):
         """
         Programmatically build a menu based on the mime based verb
@@ -2164,6 +2248,7 @@ class ContentListPanel(wxPanel):
         """
         localFilePath = None
         mimeType = None
+        name = None
         if namedVars == None:
             namedVars = dict()
 
@@ -2174,7 +2259,7 @@ class ContentListPanel(wxPanel):
             mimeType = appdb.GetMimeType(extension = ext)
             if mimeType == None:
                 mimeType == GetMimeType(extension = ext)
-                
+            
             localFilePath = os.path.join(GetTempDir(), item.name)
             self.app.SaveFileNoProgress(item, localFilePath)
 
@@ -2190,6 +2275,18 @@ class ContentListPanel(wxPanel):
                 elif command.find("%(localFilePath)s") == -1:
                     command += " \"%(localFilePath)s\""
         else:
+            mimeType = item.mimeType
+            # Get the app dir and run
+            appdb = Toolkit.GetApplication().GetAppdatabase()
+            name = appdb.GetNameForMimeType(mimeType)
+            appName = ''.join(name.split(' '))
+            appDir = os.path.join([Platform.GetUserAppPath, appName])
+            try:
+                os.chdir(appDir)
+            except:
+                log.warn("Couldn't Change dir to app directory")
+                return
+        
             if isWindows():
                 if command.find("%1") != -1:
                     command = command.replace("%1", "%(appUrl)s")
@@ -2200,7 +2297,7 @@ class ContentListPanel(wxPanel):
                     command = command.replace("%s", "%(localFilePath)s")
                 elif command.find("%(localFilePath)s") == -1:
                     command += " \"%(localFilePath)s\""
-            mimeType = item.mimeType
+
             
         namedVars['appName'] = item.name
         namedVars['appDesc'] = item.description
@@ -2208,7 +2305,8 @@ class ContentListPanel(wxPanel):
         namedVars['venueDataUrl'] = item.uri
         namedVars['localFilePath'] = localFilePath
         namedVars['appUrl'] = item.uri
-
+        namedVars['venueUrl'] = self.app.venueClient.GetVenue()
+        
         # Gross KLUDGE for open shared
 #         if name == 'OpenShared':
 #             appName = appdb.GetNameForMimeType(mimeType)
@@ -2236,8 +2334,6 @@ class ContentListPanel(wxPanel):
         else:
             realCommand = command % namedVars
             
-        print "CMD: <%s>" % realCommand
-
         aList = realCommand.split(' ')
         self.app.venueClient.processManager.start_process(aList[0], aList[1:])
         
