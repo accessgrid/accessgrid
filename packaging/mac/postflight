@@ -1,0 +1,6 @@
+#!/bin/sh
+echo "#!/bin/sh" > $2/AccessGridToolkit.app/Contents/MacOS/runag.sh
+echo "export AGTK_APP_ROOT=$2/AccessGridToolkit.app" >> $2/AccessGridToolkit.app/Contents/MacOS/runag.sh
+cat $2/AccessGridToolkit.app/Contents/Resources/runag.sh.template >> $2/AccessGridToolkit.app/Contents/MacOS/runag.sh
+chmod a+x $2/AccessGridToolkit.app/Contents/MacOS/runag.sh
+
