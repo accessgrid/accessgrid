@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.17 2004-04-26 18:21:27 olson Exp $
+# RCS-ID:      $Id: Config.py,v 1.18 2004-04-27 02:18:08 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.17 2004-04-26 18:21:27 olson Exp $"
+__revision__ = "$Id: Config.py,v 1.18 2004-04-27 02:18:08 judson Exp $"
 
 import os
 import mimetypes
@@ -40,15 +40,12 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
     @ivar appDir: The directory for system installed shared applications
     @ivar nodeServicesDir: the directory for system installed node services
     @ivar servicesDir: the directory for system installed services
-    @ivar pkgCacheDir: The directory of shared application and node
-    service packages for all users of this installation.
     @ivar configDir: The directory for installation configuration.
 
     @type appDir: string
     @type nodeServicesDir: string
     @type servicesDir: string
     @type configDir: string
-    @type pkgCacheDir: string
     @type version: string
     @type installDir: string
     @type docDir: string
@@ -82,7 +79,6 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         self.installDir = None
         self.configDir = None
         self.logDir = None
-        self.pkgCacheDir = None
         self.servicesDir = None
         self.nodeServicesDir = None
         self.appDir = None
@@ -95,7 +91,6 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         self.GetConfigDir()
         self.GetInstallDir()
         self.GetDocDir()
-        self.GetPkgCacheDir()
         self.GetSharedAppDir()
         self.GetNodeServicesDir()
         self.GetServicesDir()
@@ -173,25 +168,10 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
         return self.docDir
 
-    def GetPkgCacheDir(self):
-        if self.pkgCacheDir == None:
-            ucd = self.GetConfigDir()
-            self.pkgCacheDir = os.path.join(ucd, "PackageCache")
-
-        # check to make it if needed
-        if self.initIfNeeded:
-            if not os.path.exists(self.pkgCacheDir):
-                os.mkdir(self.pkgCacheDir)
-
-        if not os.path.exists(self.pkgCacheDir):
-            raise Exception, "AGTkConfig: package cache dir does not exist."
-
-        return self.pkgCacheDir
-
     def GetLogDir(self):
         if self.logDir == None:
             ucd = self.GetConfigDir()
-            self.pkgCacheDir = os.path.join(ucd, "Logs")
+            self.logDir = os.path.join(ucd, "Logs")
 
         # Check dir and make it if needed.
         if self.initIfNeeded:
@@ -374,8 +354,6 @@ class UserConfig(AccessGrid.Config.UserConfig):
     @ivar appDir: The directory for system installed shared applications
     @ivar nodeServicesDir: the directory for system installed node services
     @ivar servicesDir: the directory for system installed services
-    @ivar pkgCacheDir: The directory of shared application and node
-    service packages for all users of this installation.
     @ivar configDir: The directory for installation configuration.
 
     @type profileFilename: the filename of the client profile
@@ -384,7 +362,6 @@ class UserConfig(AccessGrid.Config.UserConfig):
     @type nodeServicesDir: string
     @type servicesDir: string
     @type configDir: string
-    @type pkgCacheDir: string
     """
     theUserConfigInstance = None
 
@@ -408,7 +385,6 @@ class UserConfig(AccessGrid.Config.UserConfig):
         self.configDir = None
         self.tempDir = None
         self.appDir = None
-        self.pkgCacheDir = None
         self.sharedAppDir = None
         self.nodeServicesDir = None
         self.servicesDir = None
@@ -425,11 +401,6 @@ class UserConfig(AccessGrid.Config.UserConfig):
         self.SetRTPDefaults()
 
         # These are new and so can fail
-        try:
-            self.GetPkgCacheDir()
-        except:
-            print "No Package Cache!"
-            
         try:
             self.GetSharedAppDir()
         except:
@@ -487,21 +458,6 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
         return self.tempDir
     
-    def GetPkgCacheDir(self):
-        if self.pkgCacheDir == None:
-            ucd = self.GetConfigDir()
-            self.pkgCacheDir = os.path.join(ucd, "PackageCache")
-
-        # check to make it if needed
-        if self.initIfNeeded:
-            if not os.path.exists(self.pkgCacheDir):
-                os.mkdir(self.pkgCacheDir)
-
-        if not os.path.exists(self.pkgCacheDir):
-            raise Exception, "AGTkConfig: package cache dir does not exist."
-
-        return self.pkgCacheDir
-
     def GetLogDir(self):
         if self.logDir == None:
             ucd = self.GetConfigDir()
@@ -756,7 +712,6 @@ if __name__ == "__main__":
             print "\tConfigDir: ", tkConf.GetConfigDir()
             print "\tInstallDir: ", tkConf.GetInstallDir()
             print "\tDocDir: ", tkConf.GetDocDir()
-            print "\tPkgCacheDir: ", tkConf.GetPkgCacheDir()
             print "\tSharedAppDir: ", tkConf.GetSharedAppDir()
             print "\tNodeServicesDir: ", tkConf.GetNodeServicesDir()
             print "\tServicesDir: ", tkConf.GetServicesDir()
@@ -820,7 +775,6 @@ if __name__ == "__main__":
             print "\tProfile: ", userConf.GetProfile()
             print "\tConfiguration Base: ", userConf.GetBaseDir()
             print "\tConfiguration Dir: ", userConf.GetConfigDir()
-            print "\tPackage Cache Dir: ", userConf.GetPkgCacheDir()
             print "\tLog Dir: ", userConf.GetLogDir()
             print "\tTemp Dir: ", userConf.GetTempDir()
             print "\tShared App Dir: ", userConf.GetSharedAppDir()

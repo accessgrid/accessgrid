@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.12 2004-04-23 16:48:14 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.13 2004-04-27 02:17:37 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.12 2004-04-23 16:48:14 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.13 2004-04-27 02:17:37 judson Exp $"
 
 import os
 import sys
@@ -40,8 +40,6 @@ class AGTkConfig:
     @ivar nodeServicesDir: the directory for system installed node services
     @type servicesDir: string
     @ivar servicesDir: the directory for system installed services
-    @type pkgCacheDir: string
-    @ivar pkgCacheDir: The directory of shared application and node
     service packages for all users of this installation.
     @type configDir: string
     @ivar configDir: The directory for installation configuration.
@@ -55,7 +53,6 @@ class AGTkConfig:
         str += "InstallDir: %s\n" % self.GetInstallDir()
         str += "DocDir: %s\n" % self.GetDocDir()
         str += "LogDir: %s\n" % self.GetLogDir()
-        str += "PkgCacheDir: %s\n" % self.GetPkgCacheDir()
         str += "ConfigDir: %s\n" % self.GetConfigDir()
         str += "SharedAppDir: %s\n" % self.GetSharedAppDir()
         str += "NodeServicesDir: %s\n" % self.GetNodeServicesDir()
@@ -76,9 +73,6 @@ class AGTkConfig:
         raise "This should not be called directly, but through a subclass."
 
     def GetLogDir(self):
-        raise "This should not be called directly, but through a subclass."
-
-    def GetPkgCacheDir(self):
         raise "This should not be called directly, but through a subclass."
 
     def GetConfigDir(self):
@@ -297,8 +291,6 @@ class UserConfig:
     @ivar appDir: The directory for system installed shared applications
     @ivar nodeServicesDir: the directory for system installed node services
     @ivar servicesDir: the directory for system installed services
-    @ivar pkgCacheDir: The directory of shared application and node
-    service packages for all users of this installation.
     @ivar configDir: The directory for installation configuration.
 
     @type profile: a Client Profile
@@ -307,7 +299,6 @@ class UserConfig:
     @type nodeServicesDir: string
     @type servicesDir: string
     @type configDir: string
-    @type pkgCacheDir: string
     """
     def __init__(self):
         raise "This should not be called directly, but through a subclass."
@@ -318,7 +309,6 @@ class UserConfig:
         str += "Config Dir: %s\n" % self.GetConfigDir()
         str += "Temp Dir: %s\n" % self.GetTempDir()
         str += "Log Dir: %s\n" % self.GetLogDir()
-        str += "Pkg Cache Dir: %s\n" % self.GetPkgCacheDir()
         str += "Shared App Dir: %s\n" % self.GetSharedAppDir()
         str += "Node Services Dir: %s\n" % self.GetNodeServicesDir()
         str += "Services Dir: %s\n" % self.GetServicesDir()
@@ -336,9 +326,6 @@ class UserConfig:
     def GetTempDir(self):
         raise "This should not be called directly, but through a subclass."
     
-    def GetPkgCacheDir(self):
-        raise "This should not be called directly, but through a subclass."
-
     def GetConfigDir(self):
         raise "This should not be called directly, but through a subclass."
 
