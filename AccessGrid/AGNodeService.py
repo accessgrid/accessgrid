@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.29 2003-05-28 22:08:07 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.30 2003-08-01 21:21:38 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -72,15 +72,17 @@ class AGNodeService( ServiceBase ):
         #
         self.servicePackageRepository = AGServicePackageRepository( 0, self.servicesDir )
 
-        #
-        # Load default node configuration (service managers and services)
-        #
+    def LoadDefaultConfig(self):
+    
+        """Load default node configuration (service managers and services)"""
+        
         if self.defaultConfig:
             log.debug("Loading default node config: %s", self.defaultConfig)
             try:
                 self.LoadConfiguration( self.defaultConfig ) 
             except:
                 log.exception("Exception loading default configuration.")
+                raise Exception("Failed to load default configuration %s" %self.defaultConfig)
 
     def Stop(self):
         self.servicePackageRepository.Stop()
@@ -174,6 +176,7 @@ class AGNodeService( ServiceBase ):
         """
         Add a service package to the service manager.  
         """
+        serviceDescription = None
 
         # Add the service to the service manager
         try:
@@ -194,6 +197,8 @@ class AGNodeService( ServiceBase ):
         except SetStreamException:
             log.exception("Unable to update service " + serviceDescription.name)
             raise Exception("Unable to update service " + serviceDescription.name)
+
+        return serviceDescription
 
     AddService.soap_export_as = "AddService"
 
@@ -459,11 +464,13 @@ class AGNodeService( ServiceBase ):
       Store node configuration with specified name
       """
       try:
-
+                
         file = self.configDir + os.sep + configName
 
         # Catch inability to write config file
-        if not os.access(file, os.W_OK):
+        #if not os.access(file, os.W_OK):
+        # See if configuration directory exists
+        if not os.path.exists(self.configDir):
             log.exception("Can't write config file %s" % (file))
             raise Exception("Can't write config file %s" % (file))
 
@@ -540,7 +547,8 @@ class AGNodeService( ServiceBase ):
 
       except:
         log.exception("Exception in AGNodeService.StoreConfiguration.")
-
+        raise Exception("Error while saving configuration")
+    
     StoreConfiguration.soap_export_as = "StoreConfiguration"
 
 
@@ -553,7 +561,7 @@ class AGNodeService( ServiceBase ):
         # Trap error cases
         if configName not in configs:
             raise ValueError("Attempt to set default config to non-existent configuration")
-
+        
         self.defaultConfig = configName
 
         # Write out the node service config file with the new default config name
