@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.30 2003-03-30 02:47:46 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.31 2003-04-17 20:10:55 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,34 +17,33 @@ import sys
 from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetParameter, CreateParameter
 
 class VenueState:
-    def __init__( self, uniqueId, name, description, uri, connections, users,
-                  nodes, data, eventLocation, textLocation, applications ):
+    def __init__( self, uniqueId, name, description, uri, connections, clients,
+                  data, eventLocation, textLocation, applications, services ):
         self.uniqueId = uniqueId
         self.name = name
         self.description = description
         self.uri = uri
         self.eventLocation = eventLocation
         self.textLocation = textLocation
+        self.services = services
 
         self.connections = dict()
-        self.users = dict()
-        self.nodes = dict()
+        self.clients = dict()
         self.data = dict()
         self.clients = dict()
         self.applications = dict()
+        self.services = dict()
         
         for connection in connections:
             self.connections[connection.uri] = connection
-        for user in users:
-            self.users[user.publicId] = user
-            self.clients[user.publicId] = time.localtime()
-        for node in nodes:
-            self.nodes[node.publicId] = node
-            self.clients[node.publicId] = time.localtime()
+        for client in clients:
+            self.clients[client.publicId] = client
         for datum in data:
             self.data[datum.name] = datum
         for app in applications:
             self.applications[app.id] = app
+        for service in services:
+            self.services[service.name] = service
 
     def SetUniqueId(self, uniqueId):
         self.uniqueId = uniqueId
@@ -67,21 +66,16 @@ class VenueState:
         return self.uri
 
     def AddUser( self, userProfile ):
-        self.users[userProfile.publicId] = userProfile
+        self.clients[userProfile.publicId] = userProfile
     def RemoveUser( self, userProfile ):
         print "removing user", userProfile.name, userProfile.publicId
-        print "users = ", self.users.items()
-        del self.users[userProfile.publicId]
+        print "clients = ", self.clients.items()
+        del self.clients[userProfile.publicId]
     def ModifyUser( self, userProfile ):
-        if userProfile.publicId in self.users.keys():
-            self.users[userProfile.publicId] = userProfile
+        if userProfile.publicId in self.clients.keys():
+            self.clients[userProfile.publicId] = userProfile
     def GetUsers( self ):
-        return self.users.values()
-
-    def AddNode( self, nodeProfile ):
-        self.nodes[nodeProfile.publicId] = nodeProfile
-    def RemoveNode( self, nodeProfile ):
-        del self.nodes[nodeProfile.publicId]
+        return self.clients.values()
 
     def AddConnection( self, connectionDescription ):
         self.connections[connectionDescription.uri] = connectionDescription
@@ -97,6 +91,11 @@ class VenueState:
         self.data[dataDescription.name] = dataDescription
     def RemoveData( self, dataDescription ):
         del self.data[dataDescription.name]
+
+    def AddService( self, serviceDescription ):
+        self.services[serviceDescription.name] = serviceDescription
+    def RemoveService( self, serviceDescription ):
+        del self.services[serviceDescription.name]  
 
     def SetEventLocation( self, eventLocation ):
         self.eventLocation = eventLocation
