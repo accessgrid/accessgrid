@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.22 2004-05-27 16:11:03 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.23 2004-07-20 16:33:43 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -75,15 +75,15 @@ class AudioService( AGService ):
 
                 # Rat reads these (without '*')
                 _winreg.SetValueEx(k, "rtpName", 0,
-                                   _winreg.REG_SZ, self.profile.name)
+                                   _winreg.REG_SZ, profile.name)
                 _winreg.SetValueEx(k, "rtpEmail", 0,
-                                   _winreg.REG_SZ, self.profile.email)
+                                   _winreg.REG_SZ, profile.email)
                 _winreg.SetValueEx(k, "rtpPhone", 0,
-                                   _winreg.REG_SZ, self.profile.phoneNumber)
+                                   _winreg.REG_SZ, profile.phoneNumber)
                 _winreg.SetValueEx(k, "rtpLoc", 0,
-                                   _winreg.REG_SZ, self.profile.location)
+                                   _winreg.REG_SZ, profile.location)
                 _winreg.SetValueEx(k, "rtpNote", 0,
-                                   _winreg.REG_SZ, str(self.profile.publicId) )
+                                   _winreg.REG_SZ, str(profile.publicId) )
                 _winreg.CloseKey(k)
             except:
                 self.log.exception("Error writing RTP defaults to registry")
