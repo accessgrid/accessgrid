@@ -80,9 +80,9 @@ verbose = 0
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "n:s:d:t:i:l:r:chv",
-                               ["buildname", "sourcedir", "destdir",
-                                "tempdir", "innopath", "longname",
-                                "shortname", "checkoutcvs", "help",
+                               ["buildname=", "sourcedir=", "destdir=",
+                                "tempdir=", "innopath=", "longname=",
+                                "shortname=", "checkoutcvs", "help",
                                 "verbose"])
 except:
     usage()
