@@ -2,19 +2,20 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.74 2004-05-27 20:58:23 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.75 2004-07-28 22:45:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.74 2004-05-27 20:58:23 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.75 2004-07-28 22:45:25 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
 import os
 import time
+import shutil
 
 from AccessGrid import Log
 from AccessGrid import Utilities
@@ -29,6 +30,8 @@ from AccessGrid.Descriptions import CreateAGServiceDescription, CreateResource
 from AccessGrid.Descriptions import CreateParameter
 from AccessGrid.AGService import AGServiceIW
 from AccessGrid.AGServicePackageRepository import AGServicePackageRepository
+
+from AccessGrid.Utilities import LoadConfig
 
 log = Log.GetLogger(Log.ServiceManager)
 
@@ -54,21 +57,23 @@ class AGServiceManager:
         # note: services dict is keyed on pid
         self.services = dict()
         self.processManager = ProcessManager()
-        userConfig = self.app.GetUserConfig().instance()
-        self.servicesDir = os.path.join(userConfig.GetBaseDir(),
+        userConfig = self.app.GetUserConfig()
+        toolkitConfig = self.app.GetToolkitConfig()
+        self.servicesDir = toolkitConfig.GetNodeServicesDir()
+        self.localServicesDir = os.path.join(userConfig.GetBaseDir(),
                                         "local_services")
 
         # Create directory if not exist
-        if not os.path.exists(self.servicesDir):
-            log.info("Creating user services directory %s", self.servicesDir)
+        if not os.path.exists(self.localServicesDir):
+            log.info("Creating user services directory %s", self.localServicesDir)
             try:
-                os.mkdir(self.servicesDir)
+                os.mkdir(self.localServicesDir)
             except:
                 log.exception("Couldn't create user services directory %s", 
-                              self.servicesDir)
+                              self.localServicesDir)
         else:   
-            log.info("Using services dir: %s", self.servicesDir)
-                
+            log.info("Using services dir: %s", self.localServicesDir)
+
         self.packageRepo = AGServicePackageRepository(self.servicesDir)
 
         self.__DiscoverResources()
@@ -99,6 +104,10 @@ class AGServiceManager:
     ## SERVICE methods
     ####################
 
+    def AddServicePackage( self, serviceFile, resourceToAssign, serviceConfig ):
+        serviceDescription = self.packageRepo.GetServiceDescription(serviceFile)
+        self.AddService(serviceDescription,resourceToAssign,serviceConfig)
+
     def AddService( self, serviceDescription, resourceToAssign, serviceConfig ):
         """
         Add a service package to the service manager.  
@@ -106,7 +115,8 @@ class AGServiceManager:
         log.info("AGServiceManager.AddService")
         log.info("AddService: %s v %f u %s", serviceDescription.name, 
                   serviceDescription.version,
-                  serviceDescription.servicePackageUri)
+                  serviceDescription.servicePackageFile)
+
         if resourceToAssign:
             log.info("resourceToAssign: %s", resourceToAssign.resource)
         else:
@@ -127,8 +137,7 @@ class AGServiceManager:
                     if res.inUse == 1:
                         log.debug("** Resource is already in use! : %s ",
                                   res.resource)
-                    # should error out here later; for now,
-                    # services aren't using the resources anyway
+                    # should error out here later
                     foundResource = 1
                     resource = res
                     break
@@ -138,84 +147,61 @@ class AGServiceManager:
                           resourceToAssign.resource)
                 #raise ResourceNotFoundError(resourceToAssign.resource)
 
-
         #
-        # Retrieve the service package
+        # Extract the service package
         #
         try:
-            servicePackageToInstall = None
-            
-            #
-            # Check for local copy of service package
-            #
-            log.info("Searching for local service package")
-            servicePkgList = self.packageRepo.GetServicePackages()
-            for servicePkg in servicePkgList:
-                serviceDesc = servicePkg.GetServiceDescription()
-                if serviceDesc.name == serviceDescription.name:
-                    servicePackageToInstall = servicePkg
-                    log.info("Found local service %s, v%d", 
-                              serviceDesc.name,
-                              serviceDesc.version)
-                    break     
+            extractPackage = 0
+
+            servicePackagePath = os.path.join( self.packageRepo.GetServicesDir(),
+                                               serviceDescription.servicePackageFile)
+            servicePackageToInstall = AGServicePackage(servicePackagePath)
+
+            # Create dir for package
+            servicePath = self.__GetServicePath(serviceDescription)
+            if not os.path.exists(servicePath):
+                log.info("Creating service path %s", servicePath)
+                os.makedirs(servicePath)
+
+                # Directory did not exist, so extract the package
+                extractPackage = 1
+            else:
+                descFile = servicePackageToInstall.GetDescriptionFilename()
+                descPath = os.path.join(servicePath,descFile)
+                if not os.path.exists(descPath):
+                    # Service file does not exist, so extract package
+                    log.info("Description file does not exist; extract package")
+                    extractPackage = 1
+                else:
+                    c = LoadConfig(descPath)
+                    installedVersion = c["ServiceDescription.version"]
+                    installedVersion = float(installedVersion)
+                    if installedVersion < servicePackageToInstall.GetVersion():
+                        # Version to install is newer, so extract package
+                        log.info("Installing version %f over version %f",
+                            installedVersion,
+                            servicePackageToInstall.GetVersion())
+                        extractPackage = 1
+                    else:
+                        log.info("Retaining version %f", installedVersion)
+                
+
+            log.info("Extracting service package to %s", servicePath)
+
+            # Extract the package
+            if extractPackage:
+                
+                servicePackageToInstall.ExtractPackage(servicePath)
+
+                # Get the (new) service description
+                serviceDescription = servicePackageToInstall.GetServiceDescription()
 
         except:
-            log.exception("Error searching for local service package")
-            raise Exception("Error searching for local service package")
+            log.exception("Service Manager failed to extract service implementation")
+            raise Exception("Service Manager failed to extract service implementation")
 
-        # Get the path to which to extract this service
-        servicePath = self.__GetServicePath(serviceDescription)
-
-        # Create dir for package
-        if not os.path.exists(servicePath):
-  	        log.info("Creating service path %s", servicePath)
-  	        os.makedirs(servicePath)
-
-        try:
-            # Retrieve the service package if there is no local copy, 
-            # or if we're adding a newer copy
-            if(not servicePackageToInstall or 
-               servicePackageToInstall.GetServiceDescription().version < serviceDescription.version):
-                log.info("Service package not found") 
-                log.info("Retrieving service package %s", 
-                          serviceDescription.servicePackageUri)
-                #
-                # Retrieve service implementation
-                #
-                servicePackageToInstall = self.__RetrieveServicePackage( serviceDescription.servicePackageUri )
-                
-                
-                try:
-                    #
-                    # Extract the service package
-                    #
-
-                    log.info("Extracting service package to %s", servicePath)
-
-                    # Create dir for package
-                    if not os.path.exists(servicePath):
-                        log.info("Creating service path %s", servicePath)
-                        os.makedirs(servicePath)
-
-                    # Extract the package
-                    servicePackageToInstall.ExtractPackage(servicePath)
-
-                    # Get the (new) service description
-                    serviceDescription = servicePackageToInstall.GetServiceDescription()
-
-                except:
-                    log.exception("Service Manager failed to extract service implementation")
-                    raise Exception("Service Manager failed to extract service implementation")
-
-            # Set the resource in the service description
-            serviceDescription.resource = resource
-
-        except:
-            log.exception("Service Manager failed to retrieve service implementation for %s", 
-                          serviceDescription.servicePackageUri)
-            raise Exception("Service Manager couldn't retrieve service package")
-
-
+        # Set the resource in the service description
+        serviceDescription.resource = resource
 
         #
         # Start the service process
@@ -400,6 +386,8 @@ class AGServiceManager:
         log.info("AGServiceManager.GetServices")
         return self.services.values()
 
+    def GetAvailableServices( self ):
+        return self.packageRepo.GetServiceDescriptions()
 
     def StopServices( self ):
         """
@@ -424,28 +412,6 @@ class AGServiceManager:
     ## INTERNAL methods
     ####################
 
-    def __RetrieveServicePackage( self, servicePackageUri ):
-        """Internal : Retrieve a service implementation"""
-        log.info("__RetrieveServicePackage: %s", servicePackageUri)
-
-        #
-        # Retrieve the service package
-        #
-        filename = os.path.basename( servicePackageUri )
-        servicePackageFile = os.path.join(self.servicesDir, filename)
-        isNewServicePackage = not os.path.exists(servicePackageFile)
-        if self.app.GetOption("insecure"):
-            HTTPDownloadFile(None, servicePackageUri, servicePackageFile,
-                             None, None)
-        else:
-            GSIHTTPDownloadFile(servicePackageUri, servicePackageFile,
-                                None, None)
-
-        package = AGServicePackage( servicePackageFile )
-        package.serviceDesc.servicePackageUri = servicePackageUri
-        
-        return package
-
     def __DiscoverResources( self ):
         """
         This method retrieves the list of resources from the machine
@@ -464,7 +430,7 @@ class AGServiceManager:
         the given service
         """
         serviceDirName = serviceDescription.name.replace(' ', '_')
-        servicePath = os.path.join(self.servicesDir,serviceDirName)
+        servicePath = os.path.join(self.localServicesDir,serviceDirName)
         return servicePath
         
 
@@ -512,6 +478,9 @@ class AGServiceManagerI(SOAPInterface):
         """
         self.impl.DiscoverResources()
 
+    def AddServicePackage( self, serviceFile, resourceToAssign, serviceConfig ):
+        self.impl.AddServicePackage(serviceFile,resourceToAssign,serviceConfig)
+    
     def AddService(self, serviceDescStruct, resourceStruct, serviceConfigStruct):
         """
         Interface to add a service to the service manager
@@ -574,6 +543,19 @@ class AGServiceManagerI(SOAPInterface):
         """
         return self.impl.GetServices()
 
+    def GetAvailableServices(self):
+        """
+        Interface to get a list of AGServiceDescriptions representing
+        the services available for installation
+
+        **Arguments:**
+        **Raises:**
+        
+        **Returns:**
+            a list of AGServiceDescriptions
+        """
+        return self.impl.GetAvailableServices()
+
     def StopServices(self):
         """
         Interface to stop services on the service manager
@@ -621,6 +603,9 @@ class AGServiceManagerIW(SOAPIWrapper):
     def DiscoverResources(self):
         self.proxy.DiscoverResources()
 
+    def AddServicePackage( self, serviceFile, resourceToAssign, serviceConfig ):
+        self.proxy.AddServicePackage(serviceFile,resourceToAssign,serviceConfig)
+
     def AddService(self, serviceDescription, resource, serviceConfig):
         serviceDescStruct = self.proxy.AddService(serviceDescription, resource, serviceConfig)
         serviceDesc = CreateAGServiceDescription(serviceDescStruct)
@@ -635,6 +620,12 @@ class AGServiceManagerIW(SOAPIWrapper):
     def GetServices(self):
         svcList = list()
         for s in self.proxy.GetServices():
+            svcList.append(CreateAGServiceDescription(s))
+        return svcList
+
+    def GetAvailableServices(self):
+        svcList = list()
+        for s in self.proxy.GetAvailableServices():
             svcList.append(CreateAGServiceDescription(s))
         return svcList
 
