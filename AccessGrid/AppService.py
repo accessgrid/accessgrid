@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: AppService.py,v 1.2 2003-03-19 16:50:31 judson Exp $
+# RCS-ID:      $Id: AppService.py,v 1.3 2003-04-01 16:04:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,13 +13,8 @@
 """
 An AG Application Service.
 
-AppService is the web service interface for the Application Service.
-AppServiceImpl is the actual implementation of the Application Service.
-
 AppObject is the web service interface for the Application object.
 AppObjectImpl is its implementation.
-
-Likewise with DataChannel and DataChannelImpl.
 
 """
 
@@ -31,16 +26,18 @@ from AccessGrid.hosting.pyGlobus import ServiceBase
 
 log = logging.getLogger("AG.AppService")
 
-class AppService(ServiceBase.ServiceBase):
-    def __init__(self, impl):
-        self.impl = impl
-        
-    def CreateApplication(self, description):
-        return self.impl.CreateApplication(description)
 
-    CreateApplication.soap_export_as = "CreateApplication"
+def CreateApplication(name, description, mimeType, eventService ):
+    """
+    Factory method for creating application objects
+    """
+    return AppObjectImpl(name, description, mimeType, eventService)
+
 
 class AppObject(ServiceBase.ServiceBase):
+    """
+    AppObject is the interface class for an application
+    """
     def __init__(self, impl):
         self.impl = impl
         
@@ -48,10 +45,6 @@ class AppObject(ServiceBase.ServiceBase):
         return self.impl.GetId()
     GetId.soap_export_as = "GetId"
         
-    def GetEventServiceLocation(self):
-        return self.impl.GetEventServiceLocation()
-    GetEventServiceLocation.soap_export_as = "GetEventServiceLocation"
-
     def Join(self, profile):
         return self.impl.Join(profile)
     Join.soap_export_as = "Join"
@@ -72,38 +65,13 @@ class AppObject(ServiceBase.ServiceBase):
         return self.impl.GetData(private_token, key)
     GetData.soap_export_as = "GetData"
 
-    def CreateDataChannel(self, private_token):
-        return self.impl.CreateDataChannel(private_token)
-    CreateDataChannel.soap_export_as = "CreateDataChannel"
-
-class DataChannel(ServiceBase.ServiceBase):
-    def __init__(self, impl):
-        self.impl = impl
-
-    def Register(self, eventTypes):
-        return self.impl.Register(eventTypes)
-    Register.soap_export_as = "Register"
-
-    def Send(self, eventType, eventData):
-        return self.impl.Send(eventType, eventData)
-    Send.soap_export_as = "Send"
+    def GetDataChannel(self, private_token):
+        return self.impl.GetDataChannel(private_token)
+    GetDataChannel.soap_export_as = "GetDataChannel"
 
 #
 # End of interfaces. Start the implementation classes.
 # 
-
-
-class AppServiceImpl:
-    def __init__(self, hostingEnvironment, eventService):
-        self.hostingEnvironment = hostingEnvironment
-        self.eventService = eventService
-        
-    def CreateApplication(self, name, description):
-        appImpl = AppObjectImpl(name, description, self.eventService)
-        app = AppObject(appImpl)
-        obj = self.hostingEnvironment.create_service_object()
-        app._bind_to_service(obj)
-        return obj.GetHandle()
 
 class InvalidPrivateToken(Exception):
     """
@@ -113,7 +81,10 @@ class InvalidPrivateToken(Exception):
     pass
 
 class AppObjectImpl:
-    def __init__(self, name, description, eventService):
+    """
+    AppObjectImpl is the implementation class for an application
+    """
+    def __init__(self, name, description, mimeType, eventService):
         """
         An application object.
 
@@ -122,10 +93,10 @@ class AppObjectImpl:
 
             description - Description of the application. Format chosen by the app.
 
-            eventService - Handle to the local event service objec.t
+            eventService - Handle to the local event service object
 
             components - Dictionary of application components. key is the private
-            id of the component. Value is the (public_id, profile) for the component.
+            id of the component. Value is the profile for the component.
 
             channels - List of channels that have been created for this app.
 
@@ -142,12 +113,16 @@ class AppObjectImpl:
             
         self.name = name
         self.description = description
+        self.mimeType = mimeType
         self.eventService = eventService
 
         self.components = {}
         self.channels = []
         self.app_data = {}
         self.id = str(GUID.GUID())
+
+        # Create the data channel
+        self.__CreateDataChannel()
 
     def __getstate__(self):
         """
@@ -174,10 +149,55 @@ class AppObjectImpl:
         for k, v in pickledDict.items():
             self.__dict__[k] = v
 
+    def AsINIBlock(self):
+        string = "[%s]\n" % self.id
+        dict = self.__getstate__()
+        string += "type : %s\n" % sclass[-1]
+        string += "type : %s\n" % sclass[-1]
+        string += "type : %s\n" % sclass[-1]
+        string += "type : %s\n" % sclass[-1]
+
     def Awaken(self, eventService):
         self.eventService = eventService
         self.components = {}
         self.__AwakenChannels()
+        
+    def Shutdown(self):
+        """
+        Shut down the applications before it is destroyed.
+        """
+
+        for channel in self.channels:
+            self.eventService.RemoveChannel(channel)
+
+    def GetState(self):
+        """
+        Return the state of this application, used in the rollup of
+        venue state for the return from the Venue.Enter call.
+
+        The state is a dictionary with the following keys defined:
+
+           name - name of the application
+           description - an application-defined description of the application
+           id - the unique identifier for this application instance
+           mimeType - description of data type handled by this application
+           handle - the web service handle for this application object
+           data - the application's data storage, itself a dictionary.
+
+        """
+        
+        state = {
+            'name': self.name,
+            'description': self.description,
+            'id': self.id,
+            'mimeType': self.mimeType,
+            'handle': self.handle,
+            'data': self.app_data,
+            }
+        return state
+
+    def GetEventServiceLocation(self):
+        return self.eventService.GetLocation()
         
     def SetHandle(self, handle):
         """
@@ -192,21 +212,12 @@ class AppObjectImpl:
     def GetId(self):
         return self.id
 
-    def GetEventServiceLocation(self):
-        return self.eventService.GetLocation()
-        
     def Join(self, profile):
-        public_id = str(GUID.GUID())
         private_id = str(GUID.GUID())
+        self.components[private_id] = profile
 
-        self.components[private_id] = (public_id, profile)
+        return private_id
 
-        return (public_id, private_id)
-
-    def GetComponents(self):
-        comps = self.components.values()
-        return comps
-    
     def Leave(self, private_token):
         if self.components.has_key(private_token):
             del self.components[private_token]
@@ -214,6 +225,23 @@ class AppObjectImpl:
         else:
             raise InvalidPrivateToken
 
+    def GetDataChannel(self, private_token):
+        """
+        Return the channel id and location of the
+        application object's data channel 
+        """
+        if not self.components.has_key(private_token):
+            raise InvalidPrivateToken
+
+        return (self.channels[0], self.eventService.GetLocation())
+
+    def GetComponents(self, private_token):
+        if not self.components.has_key(private_token):
+            raise InvalidPrivateToken
+
+        comps = self.components.values()
+        return comps
+    
     def SetData(self, private_token, key, value):
         if not self.components.has_key(private_token):
             raise InvalidPrivateToken
@@ -229,16 +257,13 @@ class AppObjectImpl:
         else:
             return ""
 
-    def CreateDataChannel(self, private_token):
+    def __CreateDataChannel(self):
         """
         Create a new data channel.
 
         Returns the channel ID and the location of its event service.
         """
         
-        if not self.components.has_key(private_token):
-            raise InvalidPrivateToken
-
         channel_id = str(GUID.GUID())
 
         self.channels.append(channel_id)
@@ -260,43 +285,11 @@ class AppObjectImpl:
 
     def __AwakenChannels(self):
         """
-        Reinitialize  the data channels after a persistent restore.
+        Reinitialize the data channels after a persistent restore.
         """
 
         for channel_id in self.channels:
             self.__InitializeDataChannel(channel_id)
-
-    def Shutdown(self):
-        """
-        Shut down the applications before it is destroyed.
-        """
-
-        for channel in self.channels:
-            self.eventService.RemoveChannel(channel)
-
-    def GetState(self):
-        """
-        Return the state of this application, used in the rollup of
-        venue state for the return from the Venue.Enter call.
-
-        The state is a dictionary with the following keys defined:
-
-           name - name of the application
-           description - an application-defined description of the application
-           id - the unique identifier for this application instance
-           handle - the web service handle for this application object
-           data - the application's data storage, itself a dictionary.
-
-        """
-        
-        state = {
-            'name': self.name,
-            'description': self.description,
-            'id': self.id,
-            'handle': self.handle,
-            'data': self.app_data,
-            }
-        return state
 
 class ChannelHandler:
     def __init__(self, channelId, eventService):
@@ -310,15 +303,4 @@ class ChannelHandler:
                                          Events.Event(eventType, self.channelId, eventData))
         except:
             log.exception("handleEvent threw exception")
-
-class DataChannelImpl:
-    def __init__(self):
-        pass
-
-    def Register(self, eventTypes):
-        pass
-
-    def Send(self, eventType, eventData):
-        pass
-
 

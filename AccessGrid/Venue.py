@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.65 2003-03-31 21:48:22 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.66 2003-04-01 16:04:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -954,7 +954,7 @@ class Venue(ServiceBase.ServiceBase):
 
     GetApplication.soap_export_as = "GetApplication"
 
-    def CreateApplication(self, name, description):
+    def CreateApplication(self, name, description, mimeType ):
         """
         Create a new application object.  Initialize the
         implementation, and create a web service interface for it.
@@ -962,7 +962,7 @@ class Venue(ServiceBase.ServiceBase):
         
         log.debug("Create application name=%s description=%s", name, description)
 
-        appImpl = AppService.AppObjectImpl(name, description,
+        appImpl = AppService.CreateApplication(name, description, mimeType, 
                                            self.server.eventService)
         app = AppService.AppObject(appImpl)
         hostObj = self.server.hostingEnvironment.create_service_object()
