@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.96 2003-09-17 13:59:17 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.97 2003-09-17 19:35:21 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.96 2003-09-17 13:59:17 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.97 2003-09-17 19:35:21 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -819,6 +819,8 @@ class VenueServer(ServiceBase.ServiceBase):
 
             *venue description list* A list of venues descriptions.
         """
+        if not self._IsInRole("VenueServer.Administrators"):
+            raise NotAuthorized
 
         try:
             self.simpleLock.acquire()
@@ -1494,6 +1496,7 @@ class VenueServer(ServiceBase.ServiceBase):
             This returns a list of venue descriptions.
 
         """
+
         try:
             venueDescList = map(lambda venue: venue.AsVenueDescription(),
                                         self.venues.values() )
