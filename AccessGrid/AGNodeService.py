@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.9 2003-02-12 20:08:23 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.10 2003-02-13 20:10:49 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -474,8 +474,8 @@ class AGNodeService( ServiceBase ):
     def __ReadConfigFile( self, configFile ):
 
         defaultNodeConfigurationOption = "NodeConfiguration.defaultNodeConfiguration"
-        configDirOption = "NodeConfiguration.configDir"
-        servicesDirOption = "NodeConfiguration.servicesDir"
+        configDirOption = "NodeConfiguration.configDirectory"
+        servicesDirOption = "NodeConfiguration.servicesDirectory"
 
         from AccessGrid.Utilities import LoadConfig
         config = LoadConfig( configFile )
