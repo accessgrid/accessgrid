@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.67 2004-05-11 19:50:19 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.68 2004-05-12 17:12:47 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.67 2004-05-11 19:50:19 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.68 2004-05-12 17:12:47 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -26,7 +26,7 @@ from AccessGrid.DataStore import GSIHTTPDownloadFile, HTTPDownloadFile
 from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.Descriptions import CreateAGServiceDescription, CreateResource
-from AccessGrid.Descriptions import CreateServiceConfiguration
+from AccessGrid.Descriptions import CreateParameter
 from AccessGrid.AGService import AGServiceIW
 from AccessGrid.AGServicePackageRepository import AGServicePackageRepository
 
@@ -254,6 +254,7 @@ class AGServiceManager:
             if elapsedTries >= maxTries:
                 log.error("Add %s failed; service is unreachable", 
                           serviceDescription.name)
+                raise Exception("Service failed to become reachable")
 
         except:
             log.exception("Error starting service")
@@ -506,15 +507,13 @@ class AGServiceManagerI(SOAPInterface):
         else:   
             serviceDescription = None
 
-        if resourceStruct and resourceStruct != "None":
-            resource = CreateResource(resourceStruct)
-        else:
-            resource = None
+        serviceConfig = []
+        for parmStruct in serviceConfigStruct:
+            serviceConfig.append(CreateParameter(parmStruct))
             
-        if serviceConfigStruct and serviceConfigStruct != "None":
-            serviceConfig = CreateServiceConfiguration(serviceConfigStruct)
-        else:
-            serviceConfig = None
+        # Perform no conversion on the resource (for now)
+        resource = resourceStruct
+            
         return self.impl.AddService(serviceDescription, resource, serviceConfig)
 
     def RemoveService(self, serviceDescStruct):
