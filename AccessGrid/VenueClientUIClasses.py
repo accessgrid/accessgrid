@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.258 2003-09-15 21:42:05 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.259 2003-09-15 21:58:22 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1890,6 +1890,7 @@ class ContentListPanel(wxPanel):
                     for data in dataDescriptionList:
                         self.AddData(data)
             except:
+                log.exception("ContentListPanel.OnExpand: Could not get personal data.")
                 ErrorDialog(None, "%s's data could not be retrieved."%item.name ,
                             style = wxOK  | wxICON_ERROR)
                 
