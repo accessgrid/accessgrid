@@ -11,7 +11,7 @@
 # Author:      Ti Leggett
 # Copyright:   (c) 2002-2003
 # License:     See COPYING.txt
-# RCS-ID:      $Id: MailcapSetup.py,v 1.5 2003-05-29 21:55:50 leggett Exp $
+# RCS-ID:      $Id: MailcapSetup.py,v 1.6 2003-05-29 22:01:21 judson Exp $
 #-----------------------------------------------------------------------------
 
 import os
@@ -68,7 +68,11 @@ class Mailcap:
 
     def process_args(self):
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "hsmed", ["help", "system", "mailcap=", "mime-type=", "executable=", "description=", "nametemplate=", "exec-args=", "uninstall", "update"])
+            opts, args = getopt.getopt(sys.argv[1:], "hsm:e:d:n:",
+                                       ["help", "system", "mailcap=",
+                                        "mime-type=", "executable=",
+                                        "description=", "nametemplate=",
+                                        "exec-args=", "uninstall", "update"])
         except getopt.GetoptError:
             self.usage( )
             sys.exit(2)
