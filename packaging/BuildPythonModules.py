@@ -71,7 +71,10 @@ if sys.platform == 'win32':
     os.environ['GLOBUS_LOCATION']=os.path.join(SOURCE,'WinGlobus')
     flavor = 'win32'
 elif sys.platform == 'linux2' or sys.platform == 'darwin':
-    flavor = 'gcc32dbgpthr'
+    if sys.maxint == 9223372036854775807L:
+        flavor = 'gcc64dbgpthr'
+    else:
+        flavor = 'gcc32dbgpthr'
 else:
     print "Couldn't build pyGlobus; unsupported platform :", sys.platform
     sys.exit(1)
