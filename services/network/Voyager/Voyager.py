@@ -4,8 +4,8 @@
 # 
 # Author:      Susanne Lefvert 
 # 
-# Created:     $Date: 2005-01-05 22:58:53 $ 
-# RCS-ID:      $Id: Voyager.py,v 1.4 2005-01-05 22:58:53 lefvert Exp $ 
+# Created:     $Date: 2005-01-06 23:20:45 $ 
+# RCS-ID:      $Id: Voyager.py,v 1.5 2005-01-06 23:20:45 lefvert Exp $ 
 # Copyright:   (c) 2002 
 # Licence:     See COPYING.TXT 
 #----------------------------------------------------------------------------- 
@@ -21,9 +21,9 @@ from ObserverPattern import Observer, Model
 from AccessGrid.Toolkit import WXGUIApplication 
 from AccessGrid import icons 
 from AccessGrid.Venue import VenueIW 
-from AccessGrid.Platform.Config import UserConfig 
 from AccessGrid.Platform.ProcessManager import ProcessManager 
 from AccessGrid.Utilities import LoadConfig, SaveConfig
+from AccessGrid.Platform import IsWindows, IsLinux
 
 class Recording: 
     ''' 
@@ -142,8 +142,25 @@ class VoyagerModel(Model):
         self.__currentRecording = None 
         self.__recordings = {}
         self.__playbackVenueUrl = None
-        self.__path = os.path.join(UserConfig.instance().GetConfigDir(), 
-                                 "voyager") 
+        homePath = None
+        
+        if IsWindows():
+            from win32com.shell import shell, shellcon
+            homePath = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
+
+        elif IsLinux():
+            homePath = os.environ['HOME']
+             
+        else:
+            log.debug("VoyagerModel.__init__: Voyager only supports windows and linux for now.")
+            sys.exit(-1)
+            
+        if not homePath:
+            log.debug("VoyagerModel.__init__: Home path not found")
+            sys.exit(-1)
+       
+        self.__path = os.path.join(homePath, 
+                                   "Voyager") 
         self.__processManager = ProcessManager() 
  
         if not os.path.exists(self.__path): 
