@@ -5,11 +5,13 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.13 2004-04-26 15:39:49 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.14 2004-05-04 20:03:20 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys, os
+try:    import _winreg
+except: pass
 
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
@@ -32,6 +34,54 @@ class VideoConsumerService( AGService ):
         pass
 
 
+    def __SetRTPDefaults(self, profile):
+        """
+        Set values used by rat for identification
+        """
+        if profile == None:
+            log.exception("Invalid profile (None)")
+            raise Exception, "Can't set RTP Defaults without a valid profile."
+
+        if sys.platform == 'linux2':
+            try:
+                rtpDefaultsFile=os.path.join(os.environ["HOME"], ".RTPdefaults")
+                rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
+                                 %s\n*rtpNote: %s\n"
+                rtpDefaultsFH=open( rtpDefaultsFile,"w")
+                rtpDefaultsFH.write( rtpDefaultsText % ( profile.name,
+                                       profile.email,
+                                       profile.location,
+                                       profile.phoneNumber,
+                                       profile.publicId ) )
+                rtpDefaultsFH.close()
+            except:
+                log.exception("Error writing RTP defaults file: %s", rtpDefaultsFile)
+
+        elif sys.platform == 'win32':
+            try:
+                #
+                # Set RTP defaults according to the profile
+                #
+                k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+                                    r"Software\Mbone Applications\common",
+                                    0,
+                                    _winreg.KEY_SET_VALUE)
+
+                # Vic reads these values (with '*')
+                _winreg.SetValueEx(k, "*rtpName", 0,
+                                   _winreg.REG_SZ, self.profile.name)
+                _winreg.SetValueEx(k, "*rtpEmail", 0,
+                                   _winreg.REG_SZ, self.profile.email)
+                _winreg.SetValueEx(k, "*rtpPhone", 0,
+                                   _winreg.REG_SZ, self.profile.phoneNumber)
+                _winreg.SetValueEx(k, "*rtpLoc", 0,
+                                   _winreg.REG_SZ, self.profile.location)
+                _winreg.SetValueEx(k, "*rtpNote", 0,
+                                   _winreg.REG_SZ, str(self.profile.publicId) )
+                _winreg.CloseKey(k)
+            except:
+                log.exception("Error writing RTP defaults to registry")
+        
     def Start( self ):
         __doc__ = """Start service"""
         try:
@@ -97,7 +147,7 @@ class VideoConsumerService( AGService ):
         """
         Set the identity of the user driving the node
         """
-        UserConfig.instance().SetRtpDefaults( profile )
+        self.__SetRTPDefaults(profile)
     SetIdentity.soap_export_as = "SetIdentity"
 
 

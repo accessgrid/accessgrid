@@ -5,11 +5,13 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.6 2004-05-03 17:38:07 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.7 2004-05-04 20:03:20 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys, os
+try:    import _winreg
+except: pass
 
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
@@ -31,6 +33,7 @@ set defaultPort($device) %s
 option add Vic.device $device startupFile
 option add Vic.transmitOnStartup %s startupFile
 option add Vic.defaultTTL 127 startupFile
+option add Vic.rtpName \"%s\" startupFile
 proc user_hook {} {
     update_note 0 \"%s\"
 }
@@ -84,6 +87,55 @@ class VideoService( AGService ):
         self.configuration.append (self.transmitOnStart )
         self.configuration.append (self.muteSources )
 
+    def __SetRTPDefaults(self, profile):
+        """
+        Set values used by rat for identification
+        """
+        if profile == None:
+            log.exception("Invalid profile (None)")
+            raise Exception, "Can't set RTP Defaults without a valid profile."
+
+        if sys.platform == 'linux2':
+            try:
+                rtpDefaultsFile=os.path.join(os.environ["HOME"], ".RTPdefaults")
+                rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
+                                 %s\n*rtpNote: %s\n"
+                rtpDefaultsFH=open( rtpDefaultsFile,"w")
+                rtpDefaultsFH.write( rtpDefaultsText % ( profile.name,
+                                       profile.email,
+                                       profile.location,
+                                       profile.phoneNumber,
+                                       profile.publicId ) )
+                rtpDefaultsFH.close()
+            except:
+                log.exception("Error writing RTP defaults file: %s", rtpDefaultsFile)
+
+        elif sys.platform == 'win32':
+            try:
+                #
+                # Set RTP defaults according to the profile
+                #
+                k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+                                    r"Software\Mbone Applications\common",
+                                    0,
+                                    _winreg.KEY_SET_VALUE)
+
+                # Vic reads these values (with '*')
+                _winreg.SetValueEx(k, "*rtpName", 0,
+                                   _winreg.REG_SZ, self.profile.name)
+                _winreg.SetValueEx(k, "*rtpEmail", 0,
+                                   _winreg.REG_SZ, self.profile.email)
+                _winreg.SetValueEx(k, "*rtpPhone", 0,
+                                   _winreg.REG_SZ, self.profile.phoneNumber)
+                _winreg.SetValueEx(k, "*rtpLoc", 0,
+                                   _winreg.REG_SZ, self.profile.location)
+                _winreg.SetValueEx(k, "*rtpNote", 0,
+                                   _winreg.REG_SZ, str(self.profile.publicId) )
+                _winreg.CloseKey(k)
+            except:
+                log.exception("Error writing RTP defaults to registry")
+        
+
     def Start( self ):
         """Start service"""
         try:
@@ -127,7 +179,8 @@ class VideoService( AGService ):
                                     vicDevice,
                                     portstr,
                                     OnOff(self.transmitOnStart.value),
-                                    self.streamname.value ) )
+                                    "%s(%s)" % (self.profile.name,self.streamname.value),
+                                    self.profile.email ) )
             f.close()
 
             # Replace double backslashes in the startupfile name with single
@@ -225,7 +278,7 @@ class VideoService( AGService ):
         """
         Set the identity of the user driving the node
         """
-        UserConfig.instance().SetRtpDefaults( profile )
+        self.__SetRTPDefaults(profile)
     SetIdentity.soap_export_as = "SetIdentity"
 
 if __name__ == '__main__':
