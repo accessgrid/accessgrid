@@ -40,10 +40,10 @@ try:
     import _winreg
     import win32api
 
-    HaveWin32Registry = 0
+    HaveWin32Registry = 1
 
 except:
-    HaveWin32Registry = 1
+    HaveWin32Registry = 0
 
 from OpenSSL import crypto
 
