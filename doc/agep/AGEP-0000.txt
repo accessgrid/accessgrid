@@ -1,7 +1,7 @@
 pep: 0
 Title: Index of Access Grid Enhancement Proposals (AGEPs)
-Version: $Revision: 1.4 $
-Last-Modified: $Date: 2004-05-06 05:42:33 $
+Version: $Revision: 1.5 $
+Last-Modified: $Date: 2004-10-04 16:54:36 $
 Author: Ivan R. Judson <judson@mcs.anl.gov>
 Status: Active
 Type: Informational
@@ -67,6 +67,7 @@ Index by Category
  S   121  Display Service                              IRJ
  S   122  Service Certificate Integration              TDU
  I   123  Audio Analysis Service                       RDO
+ I   125  Node Management Improvements                 TDU
    
  Finished AGEPs (done, implemented in CVS)
 
