@@ -5,13 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.15 2003-04-24 16:59:02 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.16 2003-04-29 19:00:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 import sys
 import logging
 import logging.handlers
+import Platform
 
 try:     import win32process
 except:  pass
@@ -97,10 +98,20 @@ class AGService( ServiceBase ):
        except Exception, e:
            self.log.exception("Exception in AGService.Stop")
            raise e
-           # raise faultType("AGService.Stop failed : ", str( sys.exc_value ) )
            
    Stop.soap_export_as = "Stop"
 
+   def ForceStop(self):
+      """
+      Forcefully stop the service
+      """
+      if sys.platform == Platform.WIN:
+         # windows : do nothing special to force stop; it's forced anyway
+         AGService.Stop(self)
+      elif sys.platform == Platform.LINUX:
+         # linux : kill vic, instead of terminating
+         self.started = 0
+         self.processManager.kill_all_processes()
 
    def SetAuthorizedUsers( self, authorizedUsers ):
       """
