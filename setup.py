@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.77 2004-09-16 18:21:47 eolson Exp $
+# RCS-ID:      $Id: setup.py,v 1.78 2004-09-16 18:58:52 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -200,7 +200,7 @@ mac_data =    [
                [r"packaging/mac/AGTk.icns"
                 ]
                ),
-              ('share/doc/AccessGrid',
+              ('doc/AccessGrid',
                ["COPYING.txt",
                 "README",
                 "README-developers",
@@ -210,22 +210,22 @@ mac_data =    [
                 ]
                ),
               ('bin', ['tools/GoToVenue.py']),
-              ('share/doc/AccessGrid/Documentation/VenueClientManual',
+              ('doc/AccessGrid/Documentation/VenueClientManual',
                [r"doc/VenueClientManual/VenueClientManual.htm",
                 r"doc/VenueClientManual/VenueClientManualHTML.htm",
                 r"doc/VenueClientManual/1.htm"
                 ]
                ),
-              ('share/doc/AccessGrid/Documentation/VenueClientManual/VenueClientManual_files',
+              ('doc/AccessGrid/Documentation/VenueClientManual/VenueClientManual_files',
                filter(os.path.isfile, glob.glob("doc/VenueClientManual/VenueClientManual_files/*"))
                ),
-              ('share/doc/AccessGrid/Documentation/VenueManagementManual',
+              ('doc/AccessGrid/Documentation/VenueManagementManual',
                [r"doc/VenueManagementManual/VenueManagementManual.htm",
                 r"doc/VenueManagementManual/VenueManagementManualHTML.htm",
                 r"doc/VenueManagementManual/1.htm"
                 ]
                ),
-              ('share/doc/AccessGrid/Documentation/VenueManagementManual/VenueManagementManual_files',
+              ('doc/AccessGrid/Documentation/VenueManagementManual/VenueManagementManual_files',
                filter(os.path.isfile, glob.glob("doc/VenueManagementManual/VenueManagementManual_files/*"))
                )
               ]
