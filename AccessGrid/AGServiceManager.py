@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.75 2004-07-28 22:45:25 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.76 2004-08-02 21:56:03 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.75 2004-07-28 22:45:25 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.76 2004-08-02 21:56:03 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -478,8 +478,15 @@ class AGServiceManagerI(SOAPInterface):
         """
         self.impl.DiscoverResources()
 
-    def AddServicePackage( self, serviceFile, resourceToAssign, serviceConfig ):
-        self.impl.AddServicePackage(serviceFile,resourceToAssign,serviceConfig)
+    def AddServicePackage( self, serviceFile, resourceStruct, serviceConfigStruct ):
+        serviceConfig = []
+        for parmStruct in serviceConfigStruct:
+            serviceConfig.append(CreateParameter(parmStruct))
+            
+        # Perform no conversion on the resource (for now)
+        resource = resourceStruct
+            
+        self.impl.AddServicePackage(serviceFile,resource,serviceConfig)
     
     def AddService(self, serviceDescStruct, resourceStruct, serviceConfigStruct):
         """
