@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.161 2004-08-05 20:08:01 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.162 2004-08-23 16:32:18 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.161 2004-08-05 20:08:01 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.162 2004-08-23 16:32:18 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -1133,9 +1133,10 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         """
         log.debug("Calling checkpoint")
 
-        self.impl.Checkpoint()
+        val = self.impl.Checkpoint()
 
         log.debug("Checkpoint complete.")
+        return val
         
     def AddVenue(self, venueDescStruct):
         """
