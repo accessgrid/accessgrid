@@ -24,7 +24,8 @@ from wxPython.wx import *
 from AccessGrid.Events import ConnectEvent, Event
 from AccessGrid import Platform
 from AccessGrid import DataStore
-from AccessGrid.Toolkit import CmdlineApplication, UserConfig
+from AccessGrid.Toolkit import CmdlineApplication
+from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.AppDb import AppDb
 from AccessGrid import Toolkit
 
@@ -49,7 +50,7 @@ def registerApp(fileNames):
                               "application/x-ag-shared-presentation",
                               "sharedpresentation",
                               {"Open" : exeCmd },
-                              fn_list, os.getcwd())
+                              fn_list, os.getcwd(), UserConfig.instance().GetSharedAppDir())
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
