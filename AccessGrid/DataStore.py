@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.10 2003-03-21 18:12:22 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.11 2003-03-27 17:33:33 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -993,7 +993,7 @@ n
                     self.finish_request(request, client_address)
                     self.close_request(request)
                 except:
-                    info.exception("Worker %d: Request handling threw exception", workerNum)
+                    log.exception("Worker %d: Request handling threw exception", workerNum)
         log.debug("Worker %d exiting", workerNum)
             
 
