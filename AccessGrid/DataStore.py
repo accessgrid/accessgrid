@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.14 2003-04-01 16:28:49 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.15 2003-04-01 16:54:31 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -95,14 +95,8 @@ class DataStore:
                 log.debug("Add file %s to local datastore" %filename)
                 input = open(filename, 'r')
                 fileString = input.read()
-                
-                if sys.platform == "win32":
-                     list = filename.split("\\")
-                else:
-                    list = filename.split('/')
-                    
-                log.debug("This is the string list of the path %s" %str(list))
-                name = list[len(list)-1]
+
+                path, name = os.path.split(filename)
                 log.debug("this is the file name %s"%name)
                 dir = os.path.join(self.pathname, self.prefix)
                                 
