@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.11 2003-09-16 19:24:29 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.12 2003-09-16 19:26:21 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -791,7 +791,7 @@ class ConfigWindow(TitledPage):
         errors = ""
 
         
-        if self.checkBox.GetValue() and self.configNameCtrl.GetValue()=="":
+        if self.configNameCtrl.GetValue()=="":
             MessageDialog(self, "Please enter a name for this configuration.", "Enter Configuration Name")
             wxEndBusyCursor()
             return false
