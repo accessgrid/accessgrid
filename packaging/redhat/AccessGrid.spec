@@ -187,7 +187,7 @@ python2.2 setup.py build
 python2.2 setup.py install --prefix=%{buildroot}%{prefix} --no-compile
 mv %{buildroot}%{prefix}/etc %{buildroot}
 #mv %{buildroot}%{prefix}/var %{buildroot}
-mkdir -p %{aghome}/local_services
+#mkdir -p %{aghome}/local_services
 
 #
 # Define the files that are to go into the AccessGrid package
@@ -206,7 +206,7 @@ mkdir -p %{aghome}/local_services
 %{prefix}/bin/AGServiceManager.py
 /etc/init.d/agsm
 %defattr(0755,ag,ag)
-%dir %{aghome}/local_services
+#%dir %{aghome}/local_services
 
 #
 # Define the files that are to go into the AccessGrid-VenueClient package
