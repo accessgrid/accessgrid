@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.10 2004-03-24 18:42:48 eolson Exp $
+# RCS-ID:      $Id: Role.py,v 1.11 2004-03-24 19:16:25 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ much more dynamic. We programmatically create, destroy and modify
 roles.
 """
 
-__revision__ = "$Id: Role.py,v 1.10 2004-03-24 18:42:48 eolson Exp $"
+__revision__ = "$Id: Role.py,v 1.11 2004-03-24 19:16:25 eolson Exp $"
 
 # external imports
 import xml.dom.minidom
@@ -240,8 +240,8 @@ class Role:
 
         @return: 0 if not in this Role, 1 if in this Role.
         """
-        if issubclass(subject, Subject):
-            return InvalidSubject
+        if not isinstance(subject, Subject):
+            raise InvalidSubject
 
         if subject in self.subjects:
             return 1
