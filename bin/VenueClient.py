@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.63 2003-03-11 21:21:55 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.64 2003-03-12 16:44:17 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -239,6 +239,7 @@ class VenueClientUI(wxApp, VenueClient):
         wxCallAfter(wxLogDebug, "Add participants")
         for user in users:
             if(user.profileType == 'user'):
+                print user.distinguishedName
                 wxCallAfter(self.frame.contentListPanel.AddParticipant, user)
                 wxCallAfter(wxLogDebug, "   %s" %(user.name))
             else:
@@ -303,7 +304,7 @@ class VenueClientUI(wxApp, VenueClient):
                    
         if(length>0):
             if not back:           # clicked go button
-                if(self.history[last].uri != uri):
+                if(self.history[last] != uri):
                     self.history.append(uri)
             else:
                 del self.history[last] # clicked back button
