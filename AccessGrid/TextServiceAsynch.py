@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.4 2003-07-17 17:35:19 eolson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.5 2003-07-18 16:09:31 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -735,11 +735,6 @@ class TextService:
 
         channel.Distribute(data)
         
-    def AddChannel(self, channelId):
-        log.debug("Text Service: Adding Channel: %s", channelId)
-        
-        self.connections[channelId] = []
-
     def AddChannel(self, channelId, authCallback = None):
         """
         This adds a new channel to the Text Service.
