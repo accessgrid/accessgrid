@@ -42,6 +42,8 @@ class CertRequestWrapper:
         self.certReady = 0
         self.browser = browser
         self.cert = ""
+
+        self.CheckPrivateKey()
         
     def GetCert(self):
         return self.cert
@@ -113,12 +115,39 @@ class CertRequestWrapper:
             os.unlink(tempfile)
         
 
+
+    def CheckPrivateKey(self):
+        """
+        Check to see if the private key for this request exists.
+
+        If it does not, update status and fullStatus, and return 0.
+
+        Otherwise, return 1.
+
+        """
+        
+        certMgr = self.browser.GetCertificateManager()
+        certRepo = certMgr.GetCertificateRepository()
+        
+        hash = self.request.GetModulusHash()
+        pkeyPath = certRepo.GetPrivateKeyPath(hash)
+
+        if not os.path.isfile(pkeyPath):
+            self.status = "Private key not found"
+            self.fullStatus = "Private key not found (%s)" % (pkeyPath)
+            return 0
+
+        return 1
+
     def UpdateStatus(self):
         """
         Update the status of this request by querying the request server.
 
         @return: new status
         """
+
+        if not self.CheckPrivateKey():
+            return self.status
 
         if self.server is None or self.token is None:
             self.status = "Invalid"
