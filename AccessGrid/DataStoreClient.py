@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.21 2004-04-19 17:09:47 eolson Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.22 2004-04-27 17:17:14 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.21 2004-04-19 17:09:47 eolson Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.22 2004-04-27 17:17:14 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -25,7 +25,6 @@ from AccessGrid import Platform
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.hosting import Client
 from AccessGrid import DataStore
-from pyGlobus import ftpClient
 
 log = Log.GetLogger(Log.DataStoreClient)
 
@@ -559,60 +558,8 @@ class RemoteFileObj:
 
         return ret
 
-class FtpDataStoreClient:
-
-    def __init__(self, datastoreURL):
-
-        self.url = datastoreURL
-        self.cwd = "/"
-        self.ftp = ftpClient.EasyFtpClient()
-
-    def _getURL(self, path):
-        url = self.url + path
-        print "get: %s %s %s " % (self.url, path, url)
-        return url
-
-    def listdir(abspath):
-
-        ret = []
-        out = self.ftp.verbose_list(self._getURL(self.cwd))
-
-        if self.cwd == "/":
-            pathbase = "/"
-        else:
-            pathbase = self.cwd + "/"
-
-        for line in out.split("\n"):
-
-            parts = line.split()
-            if len(parts) > 2:
-                directory = parts[0].startswith("d")
-                symlink = parts[0].startswith("l")
-                size = int(parts[4])
-                filename = parts[-1]
-
-                url = self._getURL(pathbase + filename)
-
-                if directory:
-                    obj = RemoteFileObj(filename,
-                                        url,
-                                        size,
-                                        RemoteFileObj.TYPE_DIR)
-                elif not symlink:
-                    obj = RemoteFileObj(filename,
-                                        url,
-                                        size,
-                                        RemoteFileObj.TYPE_FILE)
-                ret.append(obj)
-
-        return ret
 
 if __name__ == "__main__":
-
-    def testFtp():
-        c = FtpDataStoreClient("gsiftp://jglobus.lcrc.anl.gov/")
-        for x in c.listdir():
-            print x
 
     def testData(vurl):
 
