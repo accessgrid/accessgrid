@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.30 2003-02-17 21:33:07 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.31 2003-02-18 18:07:34 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -83,6 +83,7 @@ class VenueClientFrame(wxFrame):
         self.ID_MYVENUE_ADD = NewId()
         self.ID_HELP = NewId()
         self.ID_HELP_ABOUT = NewId()
+        self.ID_PARTICIPANT_PROFILE = NewId()
       
         self.venue = wxMenu()
 	self.dataMenu = wxMenu()
@@ -117,12 +118,16 @@ class VenueClientFrame(wxFrame):
        
         self.__loadMyVenues()
         self.menubar.Append(self.myVenues, "My &Venues")
-        
+              
       	self.help = wxMenu()
 	#self.help.Append(301, "Manual")
 	self.help.Append(self.ID_HELP_ABOUT, "About", "Information about the application")
         self.menubar.Append(self.help, "&Help")
         self.HideMenu()
+
+        self.participantProfileMenu = wxMenu()
+	self.participantProfileMenu.Append(self.ID_PARTICIPANT_PROFILE,"View Profile...",\
+                                           "View participant's profile information")
 
     def HideMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
@@ -153,6 +158,8 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_MYNODE_URL, self.OpenSetNodeUrlDialog)
         EVT_MENU(self, self.ID_MYVENUE_ADD, self.AddToMyVenues)
         EVT_MENU(self, self.ID_VENUE_CLOSE, self.Exit)
+
+        EVT_MENU(self, self.ID_PARTICIPANT_PROFILE, self.OpenParticipantProfile)
         
     def __setToolbar(self):
         """
@@ -189,8 +196,18 @@ class VenueClientFrame(wxFrame):
         url = self.menubar.GetLabel(event.GetId())
         self.venueAddressBar.SetAddress(url)
 
+    def OpenParticipantProfile(self, event):
+        id = self.contentListPanel.tree.GetSelection()
+        participant =  self.contentListPanel.tree.GetItemData(id).GetData()
+        profileView = ProfileDialog(self, -1, "test")
+        profileView.SetDescription(participant)
+
+        if (profileView.ShowModal() == wxID_OK): 
+            "--------ok"
+        profileView.Destroy()
+        
+
     def ConnectToMyVenue(self, event):
-        print '----------- connect to my venue'
         url = self.menubar.GetLabel(event.GetId())
         connectToVenueDialog = UrlDialogCombo(self, -1, 'Connect to server', url, list = self.myVenuesList)
         if (connectToVenueDialog.ShowModal() == wxID_OK):
@@ -271,7 +288,8 @@ class VenueClientFrame(wxFrame):
         dlg.Destroy()
 
     def OpenProfileDialog(self, event):
-        profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', self.app.profile)
+        profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile')
+        profileDialog.SetProfile(self.app.profile)
            
         if (profileDialog.ShowModal() == wxID_OK): 
             self.app.ChangeProfile(profileDialog.GetNewProfile())
@@ -324,7 +342,8 @@ class VenueClientFrame(wxFrame):
                           
     def OpenDataProfileDialog(self, event):
         self.contentList.tree.GetSelection()
-        profileDialog = ProfileDialog(NULL, -1, 'Profile', self.app.profile)
+        profileDialog = ProfileDialog(NULL, -1, 'Profile')
+        profileDialog.SetProfile(self.app.profile)
         profileDialog.ShowModal()
         profileDialog.Destroy()
               
@@ -821,12 +840,16 @@ class ContentListPanel(wxPanel):
         treeId = self.tree.GetSelection()
         item = self.tree.GetItemData(treeId).GetData()
         text = self.tree.GetItemText(treeId)
-        
+
         if text == 'Data' or item != None and self.dataDict.has_key(item.name):
             self.PopupMenu(self.parent.dataMenu, wxPoint(self.x, self.y))
 
         elif text == 'Services' or item != None and self.serviceDict.has_key(item.name):
             self.PopupMenu(self.parent.serviceMenu, wxPoint(self.x, self.y))
+
+        elif item != None and self.participantDict.has_key(item.publicId) or self.nodeDict.has_key(item.publicId):
+           
+            self.PopupMenu(self.parent.participantProfileMenu, wxPoint(self.x, self.y))
         
     def CleanUp(self):
         for index in self.participantDict.values():
@@ -904,7 +927,7 @@ class SaveFileDialog(wxDialog):
         if self.transferDone:
             self.EndModal(wxID_OK)
         else:
-            print "Cancellign transfer!"
+            print "Cancelling transfer!"
             self.EndModal(wxID_CANCEL)
             self.cancelFlag = 1
 
@@ -1073,10 +1096,9 @@ class WelcomeDialog(wxDialog):
 
     
 class ProfileDialog(wxDialog):
-    def __init__(self, parent, id, title, profile):
+    def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title)
         self.Centre()
-        self.profile = profile
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
         self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,20), validator = TextValidator())
         self.emailText = wxStaticText(self, -1, "Email:", style=wxALIGN_LEFT)
@@ -1090,10 +1112,9 @@ class ProfileDialog(wxDialog):
         self.homeVenue = wxStaticText(self, -1, "Home Venue:")
         self.homeVenueCtrl = wxTextCtrl(self, -1, "")
         self.profileTypeText = wxStaticText(self, -1, "Profile Type:", style=wxALIGN_LEFT)
-        self.profileTypeBox = wxComboBox(self, -1, choices =['user', 'node'], style = wxCB_DROPDOWN)
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
-        self.__setProperties()
+        self.profile = None
         self.__doLayout()
 
     def GetNewProfile(self):
@@ -1106,7 +1127,10 @@ class ProfileDialog(wxDialog):
         self.profile.SetProfileType(self.profileTypeBox.GetValue())
         return self.profile
 
-    def __setProperties(self):
+    def SetProfile(self, profile):
+        self.profile = profile
+        self.profileTypeBox = wxComboBox(self, -1, choices =['user', 'node'], style = wxCB_DROPDOWN)
+        self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
         self.SetTitle("Please, fill in your profile information")
         self.nameCtrl.SetValue(self.profile.GetName())
         self.emailCtrl.SetValue(self.profile.GetEmail())
@@ -1118,26 +1142,61 @@ class ProfileDialog(wxDialog):
             self.profileTypeBox.SetSelection(0)
         else:
             self.profileTypeBox.SetSelection(1)
+        self.__setEditable(true)
+
+    def SetDescription(self, item):
+        self.profileTypeBox = wxTextCtrl(self, -1, item.profileType)
+        self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
+        self.SetTitle("Please, fill in your profile information")
+        self.nameCtrl.SetValue(item.name)
+        self.emailCtrl.SetValue(item.email)
+        self.phoneNumberCtrl.SetValue(item.phoneNumber)
+        self.locationCtrl.SetValue(item.location)
+        self.supportCtrl.SetValue(item.techSupportInfo)
+        self.homeVenueCtrl.SetValue(item.homeVenue)
+        self.__setEditable(false)
+        # if(item.profileType == 'user'):
+        #    self.profileTypeBox.SetSelection(0)
+        #else:
+        #    self.profileTypeBox.SetSelection(1)
+
+    def __setEditable(self, editable):
+        if not editable:
+            self.nameCtrl.SetEditable(false)
+            self.emailCtrl.SetEditable(false)
+            self.phoneNumberCtrl.SetEditable(false)
+            self.locationCtrl.SetEditable(false)
+            self.supportCtrl.SetEditable(false)
+            self.homeVenueCtrl.SetEditable(false)
+            self.profileTypeBox.SetEditable(false)
+        else:
+            self.nameCtrl.SetEditable(true)
+            self.emailCtrl.SetEditable(true)
+            self.phoneNumberCtrl.SetEditable(true)
+            self.locationCtrl.SetEditable(true)
+            self.supportCtrl.SetEditable(true)
+            self.homeVenueCtrl.SetEditable(true)
+            self.profileTypeBox.SetEditable(true)
 
     def __doLayout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
         sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, "Profile"), wxHORIZONTAL)
-        gridSizer = wxFlexGridSizer(9, 2, 5, 5)
-        gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
-        gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
-        gridSizer.Add(self.emailText, 0, wxALIGN_LEFT, 0)
-        gridSizer.Add(self.emailCtrl, 2, wxEXPAND, 0)
-        gridSizer.Add(self.phoneNumberText, 0, wxALIGN_LEFT, 0)
-        gridSizer.Add(self.phoneNumberCtrl, 0, wxEXPAND, 0)
-        gridSizer.Add(self.locationText, 0, wxALIGN_LEFT, 0)
-        gridSizer.Add(self.locationCtrl, 0, wxEXPAND, 0)
-        gridSizer.Add(self.supportText, 0, wxALIGN_LEFT, 0)
-        gridSizer.Add(self.supportCtrl, 0, wxEXPAND, 0)
-        gridSizer.Add(self.homeVenue, 0, wxALIGN_LEFT, 0)
-        gridSizer.Add(self.homeVenueCtrl, 0, wxEXPAND, 0)
-        gridSizer.Add(self.profileTypeText, 0, wxALIGN_LEFT, 0)
-        gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
-        sizer2.Add(gridSizer, 1, wxALL, 10)
+        self.gridSizer = wxFlexGridSizer(9, 2, 5, 5)
+        self.gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
+        self.gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
+        self.gridSizer.Add(self.emailText, 0, wxALIGN_LEFT, 0)
+        self.gridSizer.Add(self.emailCtrl, 2, wxEXPAND, 0)
+        self.gridSizer.Add(self.phoneNumberText, 0, wxALIGN_LEFT, 0)
+        self.gridSizer.Add(self.phoneNumberCtrl, 0, wxEXPAND, 0)
+        self.gridSizer.Add(self.locationText, 0, wxALIGN_LEFT, 0)
+        self.gridSizer.Add(self.locationCtrl, 0, wxEXPAND, 0)
+        self.gridSizer.Add(self.supportText, 0, wxALIGN_LEFT, 0)
+        self.gridSizer.Add(self.supportCtrl, 0, wxEXPAND, 0)
+        self.gridSizer.Add(self.homeVenue, 0, wxALIGN_LEFT, 0)
+        self.gridSizer.Add(self.homeVenueCtrl, 0, wxEXPAND, 0)
+        self.gridSizer.Add(self.profileTypeText, 0, wxALIGN_LEFT, 0)
+        #gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
+        sizer2.Add(self.gridSizer, 1, wxALL, 10)
 
         sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
 
@@ -1151,6 +1210,10 @@ class ProfileDialog(wxDialog):
         sizer1.Fit(self)
         self.SetAutoLayout(1)
 
+class ProfileView(ProfileDialog):
+    def __init__(self, parent, id, title, item):
+        ProfileDialog.__init__(self, parent, id, title)
+                
 class TextValidator(wxPyValidator):
     def __init__(self):
         wxPyValidator.__init__(self)
