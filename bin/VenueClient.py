@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.236 2003-10-14 21:37:51 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.237 2003-10-21 20:56:45 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -90,7 +90,6 @@ class VenueClientUI(VenueClientEventSubscriber):
             try:
                 os.mkdir(self.accessGridPath)
             except OSError, e:
-                print "bin.VenueClient::__init__: Could not create base path"
                 MessageDialog(None,
                               "Could not create user config path %s" % (self.accessGridPath),
                               "Cannot initialize client",
@@ -1158,7 +1157,6 @@ class VenueClientUI(VenueClientEventSubscriber):
             index = len(pathParts)-1
             name = pathParts[index]
 
-            newData = 1
             dataDescriptions = self.venueClient.dataStore.GetDataDescriptions()
             for data in dataDescriptions:
                 if data.name == name:
@@ -1168,19 +1166,23 @@ class VenueClientUI(VenueClientEventSubscriber):
                     # Overwrite?
                     if dlg.ShowModal() == wxID_OK:
                         self.venueClient.dataStore.RemoveFiles([data])
-                        newData = 0
+                        
+                        # The data description have to be removed, else the size parameter will
+                        # not match and open will fail for modified data.
+                        self.venueClient.SendEvent(Events.RemoveDataEvent(self.venueClient.GetEventChannelId(), data))
+                        
                     else:
                         return
-                     
+                                         
             try:
                 my_identity = self.app.GetDefaultIdentityDN()
                 self.venueClient.dataStore.UploadLocalFiles([file], my_identity, self.venueClient.profile.publicId)
 
                 # Send an event alerting about new data (only if it is new)
-                if newData: 
-                    dataDescription = self.venueClient.dataStore.GetDescription(name)
-                    self.venueClient.SendEvent(Events.AddDataEvent(self.venueClient.GetEventChannelId(), 
-                                                            dataDescription))
+                #if newData: 
+                dataDescription = self.venueClient.dataStore.GetDescription(name)
+                self.venueClient.SendEvent(Events.AddDataEvent(self.venueClient.GetEventChannelId(), 
+                                                               dataDescription))
             except DataStore.DuplicateFile, e:
                 title = "Duplicated File"
                 info = "This file %s is already added. Rename your file and add it again." %e
