@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.221 2003-07-01 16:43:13 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.222 2003-07-29 16:13:53 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -2883,7 +2883,7 @@ class DataDropTarget(wxFileDropTarget):
         self.SetDataObject(self.do)
     
     def OnDropFiles(self, x, y, files):
-        if self.app.upload_url is None or self.app.upload_url == "":
+        if self.app.venueClient.dataStoreUploadUrl is None or self.app.venueClient.dataStoreUploadUrl == "":
             MessageDialog(NULL,
                           "Cannot add data: Venue does not have an operational\ndata storage server.",
                           "Cannot upload")
