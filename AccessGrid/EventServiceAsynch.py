@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.16 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.17 2003-09-18 16:29:47 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.16 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.17 2003-09-18 16:29:47 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -46,7 +46,7 @@ log.setLevel(logging.DEBUG)
 # be disabled.
 # 
 
-detailedEventLogging = 1
+detailedEventLogging = 0
 if detailedEventLogging:
     logEvent = log.debug
 else:
