@@ -21,6 +21,4 @@ name = localhost:12000
 [serviceconfig1]
 
 [serviceconfig0]
-speaker volume = 50
-microphone gain = 30
 
