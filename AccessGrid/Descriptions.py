@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.18 2003-03-25 21:37:36 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.19 2003-04-01 16:16:29 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ class DataDescription(ObjectDescription):
     STATUS_PRESENT = "present"
     STATUS_PENDING = "pending"
     STATUS_UPLOADING = "uploading"
-
+   
     valid_status = [STATUS_INVALID, STATUS_REFERENCE, STATUS_PRESENT,
                     STATUS_PENDING, STATUS_UPLOADING]
 
@@ -94,6 +94,13 @@ class DataDescription(ObjectDescription):
         self.size = None
         self.checksum = None
         self.owner = None
+        self.type = None # this is venue data
+
+    def SetType(self, type):
+        self.type = type
+
+    def GetType():
+        return self.type
 
     def SetStatus(self, status):
         if status not in self.valid_status:
