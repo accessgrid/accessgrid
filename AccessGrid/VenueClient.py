@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.110 2003-09-16 20:51:16 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.111 2003-09-17 20:01:26 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.110 2003-09-16 20:51:16 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.111 2003-09-17 20:01:26 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -138,6 +138,7 @@ class VenueClient( ServiceBase):
         self.privateId = None
 
     def Heartbeat(self):
+        print "SENDING HEARTBEAT; ec = ", self.eventClient
         if self.eventClient != None:
             isSuccess = 1
             try:
@@ -714,6 +715,7 @@ class VenueClient( ServiceBase):
         # Stop the event client
         log.info(" Stopping event client")
         try:
+          if self.eventClient:
             log.debug("  send client exiting event")
             self.eventClient.Send(ClientExitingEvent(self.venueState.uniqueId,
                                                      self.privateId))
@@ -728,6 +730,7 @@ class VenueClient( ServiceBase):
 
         log.info("Stopping text client")
         try:
+          if self.textClient:
             # Stop the text client
             log.debug("   sending client disconnect event.")
             self.textClient.Disconnect(self.venueState.uniqueId,
@@ -737,7 +740,8 @@ class VenueClient( ServiceBase):
         except:
             log.exception("on text client exiting")
         
-        try:         
+        try:        
+          if self.venueProxy:
             self.venueProxy.Exit( self.privateId )
         except Exception, e:
             log.exception("AccessGrid.VenueClient::ExitVenue exception")
@@ -846,7 +850,7 @@ class VenueClient( ServiceBase):
         else:
             # Somebody else's personal data
             if ownerProfile != None:
-                uploadDescriptor, dataStoreUrl = Client.Handle(ownerProfile.venueClientURL).get_proxy().GetDataStreInformation()
+                uploadDescriptor, dataStoreUrl = Client.Handle(ownerProfile.venueClientURL).get_proxy().GetDataStoreInformation()
                 Client.Handle(dataStoreUrl).get_proxy().RemoveFiles(dataList)
                 
     def GetPersonalData(self, clientProfile):
