@@ -33,6 +33,7 @@ BuildDir = options.builddir
 DestDir = options.destdir
 metainfo = options.metainfo
 version = options.version
+pyver = options.pyver
 
 
 print "In slackware/build_package.py"
@@ -41,6 +42,7 @@ print "BuildDir = ", BuildDir
 print "DestDir = ", DestDir
 print "metainfo = ", metainfo
 print "version = ", version
+print "pyver = ", pyver
 
 TmpDir = os.tmpnam()
 if not os.path.exists(TmpDir):
@@ -74,11 +76,12 @@ print "** Building AccessGrid RPMs"
 os.chdir(DestDir)
 tar_dst_filename = "AccessGrid-%s-%s.tar.gz" % (version,metainfo)
 
-# - set the release number in Slack.build-ag
+# Set the release number in Slack.build-ag
+# Also set the python version
 os.chdir(StartDir)
 spec_in = 'Slack.build-ag.in'
 spec_out = 'Slack.build-ag'
-cmd = 'sed s/RELEASE/%s/ %s > %s' % (metainfo,spec_in,spec_out)
+cmd = 'sed -e s/RELEASE/%s/ -e s/pythonPYVER/python%s/ %s > %s' % (metainfo,pyver,spec_in,spec_out)
 os.system(cmd)
 
 # Copy ALSA devices setup script
@@ -107,7 +110,7 @@ os.system(cmd)
 #
 installsh_in = os.path.join(BuildDir,'packaging','linux','slackware','install.sh')
 installsh_out = os.path.join(RpmDir,'install.sh')
-cmd = 'sed s/AG_VER=VER/AG_VER=\\"%s-i486-%s\\"/ %s > %s' % (version,metainfo,installsh_in,installsh_out)
+cmd = 'sed -e s/AG_VER=VER/AG_VER=\\"%s-i486-%s\\"/ -e s/pythonPYVER/python%s/ %s > %s' % (version,metainfo,pyver,installsh_in,installsh_out)
 print "cmd = ", cmd
 os.system(cmd)
 os.chmod(installsh_out,0755)
