@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.12 2004-03-16 03:25:23 judson Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.13 2004-03-18 14:03:54 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ used by client software that wants to keep track of what AG specific
 tools are appropriate for specific data types. It also keeps track of
 how to invoke those tools.
 """
-__revision__ = "$Id: AppDb.py,v 1.12 2004-03-16 03:25:23 judson Exp $"
+__revision__ = "$Id: AppDb.py,v 1.13 2004-03-18 14:03:54 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -24,6 +24,7 @@ import shutil
 
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.Utilities import LoadConfig, SaveConfig
+from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.Descriptions import ApplicationDescription
 from AccessGrid.GUID import GUID
 
@@ -315,6 +316,21 @@ class AppDb:
 
         return cmds
 
+    def GetCommands(self, mimeType):
+        """
+        returns a dict of [commandname:command] for this mimetype
+        """
+        cmds = dict()
+
+        for key in self.AppDb.keys():
+            (section, option) = key.split(self.defaultSeparator)
+            if section == mimeType:
+                nName = self._GetNiceVerb(option)
+                if nName != None:
+                    cmds[nName] = self.GetCommandLine(mimeType,nName)
+
+        return cmds
+
     def GetCommandLine(self, mimeType, cmdName, vars=None):
         """
         returns a string containing the commandline used to execute the viewer,
@@ -493,7 +509,8 @@ class AppDb:
                     print "Error removing verb, continuing."
                     
         noSpaceName = '_'.join(name.split(' '))
-        dstPath = os.path.join(GetUserAppPath(), noSpaceName)
+        dstPath = os.path.join(UserConfig.instance().GetSharedAppDir(), 
+                               noSpaceName)
 
         if os.path.exists(dstPath):
             try:
