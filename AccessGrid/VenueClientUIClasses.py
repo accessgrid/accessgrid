@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.274 2003-09-17 20:44:01 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.275 2003-09-17 20:50:35 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.274 2003-09-17 20:44:01 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.275 2003-09-17 20:50:35 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2235,7 +2235,8 @@ class ContentListPanel(wxPanel):
 
         # If item is data, download the filename specified in it.
         if isinstance(item, DataDescription):
-            localFilePath = os.path.join(GetTempDir(), item.name)
+            localFilePath = os.path.join(GetTempDir(),
+                                         item.name.replace(" ", "_"))
             self.app.SaveFileNoProgress(item, localFilePath)
 
             # Fix odd commands
@@ -2276,7 +2277,7 @@ class ContentListPanel(wxPanel):
                 elif command.find("%(appUrl)s") == -1:
                     command += " \"%(appUrl)s\""
 
-        namedVars['appName'] = item.name
+        namedVars['appName'] = item.name.replace(" ", "_")
         namedVars['appDesc'] = item.description
         # This is NOT on every description type, so we're not using it yet
         # namedVars['appMimeType'] = item.mimeType
