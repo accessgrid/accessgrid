@@ -2,7 +2,7 @@
 Authorization Refactoring for 213
 =================================
  
-:version: $Revision: 1.2 $
+:version: $Revision: 1.3 $
 :author: Ivan R. Judson <judson@mcs.anl.gov>, Thomas D. Uram <turam@mcs.anl.gov>, Eric Olson <eolson@mcs.anl.gov>
 :status: Draft
 
@@ -266,12 +266,11 @@ Specifications
           - GetPolicy(self)
           - AddRole(self, name)
           - RemoveRole(self, name)
-          - ListRoles(self)
+          - ListRoles(self, action = None)
           - AddAction(self, action)
           - RemoveAction(self, name)
           - ListActions(self)
-          - ListSubjectsInRole(self, role)
-          - ListRolesInAction(self, action)
+          - ListSubjects(self, role = None)
           - AddSubjectsToRole(self, role, subjectList)
           - AddRoleToAction(self, action, role)
           - AddRolesToAction(self, action, roleList)
@@ -291,7 +290,7 @@ Specifications
           - AddAction(self, name)
           - RemoveAction(self, name)
           - ListActions(self)
-          - ListSubjectsInRole(self, role)
+          - ListSubjects(self, role = None)
           - ListRolesInAction(self, action)
           - AddSubjectToRole(self, subj, role)
           - AddSubjectsToRole(self, subjList, role)
