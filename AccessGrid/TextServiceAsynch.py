@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.28 2004-07-08 18:39:35 turam Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.29 2004-07-15 18:06:08 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.28 2004-07-08 18:39:35 turam Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.29 2004-07-15 18:06:08 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -136,7 +136,7 @@ class ConnectionHandler:
 	if self.wfile is not None:
 	    try:
                 ret = tcp_get_remote_address(self.wfile.sock._handle)
-                if ret == 0:
+                if ret[0] == 0:
                     log.debug("Writing text event to %s", ret[1])
                     mEvent.Write(self.wfile)
                     return 1
