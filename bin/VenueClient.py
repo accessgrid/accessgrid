@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.186 2003-08-12 18:40:48 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.187 2003-08-12 19:24:59 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -383,12 +383,23 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
         """
         """
         log.debug("Trying to reconnect")
-        if self.venueClient.venueUri != self.fallbackRecoveryUrl:
-            self.venueClient.EnterVenue(self.fallbackRecoveryUrl)
-            self.fallbackRecoveryUri = None
-        else:
-            self.fallbackRecoveryTimer.cancel()
-            self.fallbackRecoveryTimer = None
+        attempts = 3
+        connected = 0
+        while attempts > 0:
+            try:
+                self.venueClient.EnterVenue(self.venueClient.Uri)
+                attempts = 0
+                connected = 1
+            except:
+                attempts = attempts - 1
+
+        if connected == 0 and attempts == 0:
+            if self.venueClient.venueUri != self.fallbackRecoveryUrl:
+                self.venueClient.EnterVenue(self.fallbackRecoveryUrl)
+                self.fallbackRecoveryUri = None
+            else:
+                self.fallbackRecoveryTimer.cancel()
+                self.fallbackRecoveryTimer = None
 
     def HandleServerConnectionFailure(self):
         log.debug("bin::VenueClient::HandleServerConnectionFailure: call exit venue")
@@ -789,19 +800,19 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
             ErrorDialog(None, text, "Enter Venue Error",
                           style = wxOK  | wxICON_ERROR)
              
-    def ExitVenue(self):
-        """
-        Note: Overridden from VenueClient
-        This method calls the venue client method and then
-        performs its own operations when the client exits a venue.
-        """
-        log.debug("exit venue")
+#     def ExitVenue(self):
+#         """
+#         Note: Overridden from VenueClient
+#         This method calls the venue client method and then
+#         performs its own operations when the client exits a venue.
+#         """
+#         log.debug("exit venue")
 
-        #
-        # Shut down the text client
-        #
+#         #
+#         # Shut down the text client
+#         #
 
-        wxCallAfter(self.frame.CloseTextConnection)
+#         wxCallAfter(self.frame.CloseTextConnection)
 
     def __setHistory(self, uri, back):
         """
