@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.54 2004-03-16 07:01:16 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.55 2004-03-31 22:15:28 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.54 2004-03-16 07:01:16 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.55 2004-03-31 22:15:28 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -627,11 +627,21 @@ class NodeManagementClientFrame(wxFrame):
             ret = d.GetValue()
             if ret:
                 (configName,isDefault) = ret
-
+                
                 # Handle error cases
                 if len( configName ) == 0:
-                    self.Error( "Invalid config name specified" )
+                    self.Error( "Invalid config name specified (%s)", configName )
                     return
+
+                # Confirm overwrite
+                if configName in configs:
+                    text ="Overwrite %s?" % (configName,)
+                    dlg = wxMessageDialog(self, text, "Confirm",
+                                          style = wxICON_INFORMATION | wxOK | wxCANCEL)
+                    ret = dlg.ShowModal()
+                    dlg.Destroy()
+                    if ret != wxID_OK:
+                        return
 
                 # Store the configuration
                 try:
@@ -859,8 +869,7 @@ class NodeManagementClientFrame(wxFrame):
                             applicableResources.append( resource )
 
                 if len(applicableResources) > 0:
-                    choices = ["None"]
-                    choices = choices + map( lambda res: res.resource, applicableResources )
+                    choices = map( lambda res: res.resource, applicableResources )
                     dlg = wxSingleChoiceDialog( self, "Select resource for service", "Add Service: Select Resource",
                            choices )
 
@@ -885,7 +894,7 @@ class NodeManagementClientFrame(wxFrame):
                 #
                 if serviceToAdd == None:
                     raise Exception("Can't add NULL service")
-                self.nodeServiceHandle.AddService( serviceToAdd.servicePackageUri,
+                self.nodeServiceHandle.AddService( serviceToAdd,
                                serviceManager.uri,
                                resourceToAssign,
                                None )
