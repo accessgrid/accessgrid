@@ -31,6 +31,8 @@ services = ["AudioService", "VideoConsumerService", "VideoProducerService", "Vid
 if not os.path.isdir(inputDir):
     print "The following directory does not exist: ", inputDir
 
+sdir = os.getcwd()
+
 os.chdir(inputDir)
 
 for service in services:
@@ -61,3 +63,4 @@ for service in services:
 
     zf.close()
 
+os.chdir(sdir)
