@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.18 2003-04-23 19:37:16 olson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.19 2003-04-24 19:35:13 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -26,12 +26,8 @@ logFile = "./agsm.log"
 
 def Shutdown():
     global running
-    global server
-    server.stop()
-
-    log.debug("Removing services in Shutdown")
-    serviceManager.RemoveServices()
-    # shut down the node service, saving config or whatever
+    # shut down the service manager, saving config or whatever
+    serviceManager.Shutdown()
     running = 0
 
 # Signal handler to shut down cleanly
@@ -88,11 +84,11 @@ log.addHandler(hdlr)
 if debugMode:
     log.addHandler(logging.StreamHandler())
     
-# Create the Service Manager
-serviceManager = AGServiceManager()
-
 # Create the hosting environment
 server = Server( port, auth_callback=AuthCallback )
+
+# Create the Service Manager
+serviceManager = AGServiceManager(server)
 
 # Create the Service Manager Service
 service = server.CreateServiceObject("ServiceManager")
