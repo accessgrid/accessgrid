@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.8 2004-03-19 22:17:14 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.9 2004-03-19 22:44:56 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.8 2004-03-19 22:17:14 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.9 2004-03-19 22:44:56 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -884,6 +884,7 @@ class CertificateManager(object):
         # Check to see if the proxy file exists.
         #
         if not os.path.isfile(userProxy):
+            log.debug("_VerifyGlobusProxy: file %s not found", userProxy)
             raise NoProxyFound
         
         #
@@ -894,7 +895,8 @@ class CertificateManager(object):
         try:
             proxyCert = CertificateRepository.Certificate(userProxy)
 
-        except crypto.Error:
+        except crypto.Error, e:
+            log.debug("_VerifyGlobusProxy: error %s loading proxy from", e, userProxy)
             raise NoProxyFound
 
         #
@@ -903,6 +905,7 @@ class CertificateManager(object):
         #
 
         if not proxyCert.IsGlobusProxy():
+            log.debug("_VerifyGlobusProxy: IsGlobusProyx failed for %s", userProxy)
             raise NoProxyFound
 
         #
@@ -917,6 +920,8 @@ class CertificateManager(object):
         proxyIssuer = proxyCert.GetIssuer()
         idSubject = self.defaultIdentity.GetSubject()
         if proxyIssuer.get_der() != idSubject.get_der():
+            log.debug("_VerifyGlobusProxy: issuer %s doesn't match subject %s for %s",
+                      str(proxyIssuer), str(idSubject), userProxy)
             raise NoProxyFound
 
         #
@@ -924,6 +929,7 @@ class CertificateManager(object):
         #
 
         if proxyCert.IsExpired():
+            log.debug("_VerifyGlobusProxy: proxy %s expired", userProxy)
             raise ProxyExpired
 
         #
