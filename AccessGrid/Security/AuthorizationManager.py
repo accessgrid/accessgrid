@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.25 2004-08-24 18:22:35 binns Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.26 2004-08-25 16:33:14 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.25 2004-08-24 18:22:35 binns Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.26 2004-08-25 16:33:14 turam Exp $"
 
 # External Imports
 import os
@@ -381,7 +381,10 @@ class AuthorizationManager:
         @return: nothing
         """
         for r in roleList:
-            self.AddRole(r)
+            try:
+                self.AddRole(r)
+            except RoleAlreadyPresent:
+                log.info("Tried to add role that already exists %s", r)
         
     def GetRoles(self, action=None):
         """
