@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.37 2004-03-30 16:52:29 turam Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.38 2004-04-07 12:59:43 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.37 2004-03-30 16:52:29 turam Exp $"
+__revision__ = "$Id: EventClient.py,v 1.38 2004-04-07 12:59:43 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from threading import Thread, Lock
@@ -31,7 +31,7 @@ from AccessGrid.Events import HeartbeatEvent, ConnectEvent, DisconnectEvent
 from AccessGrid.Security.Utilities import CreateTCPAttrAlwaysAuth
 
 log = Log.GetLogger(Log.EventClient)
-Log.SetDefaultLevel(Log.EventClient, Log.WARN)
+Log.SetDefaultLevel(Log.EventClient, Log.DEBUG)
 
 class EventClientConnectionException(Exception):
     """
@@ -95,11 +95,9 @@ class EventClient:
         
         self.queue = Queue.Queue()
 
-        self.qThread = Thread(target = self.queueThreadMain,
-                              name = "EventClient.queueThreadMain")
+        self.qThread = Thread(target = self.QueueThreadMain,
+                              name = "EventClient.QueueThreadMain")
         self.qThread.start()
-
-        self.lock = Lock()
 
         attr = CreateTCPAttrAlwaysAuth()
         self.sock = GSITCPSocket()
@@ -115,7 +113,7 @@ class EventClient:
             self.Stop()
         
 
-    def queueThreadMain(self):
+    def QueueThreadMain(self):
         """
         Event processing thread.
 
@@ -150,7 +148,7 @@ class EventClient:
                     callback(event)
                 except:
                     log.exception("callback invocation failed")
-
+                    
     def start(self):
         """
         Register for asynch io.
@@ -289,17 +287,17 @@ class EventClient:
         try:
             pdata = pickle.dumps(data)
             size = struct.pack("<i", len(pdata))
-            self.lock.acquire()
             self.sock.write(size, 4)
             self.sock.write(pdata, len(pdata))
-            self.lock.release()
         except:
-            self.running = 0
-            self.connected = 0
-            try:
-                self.sock.close()
-            except IOBaseException:
-                pass
+# tdu - Don't disconnect the event client just because a
+#       send failed
+#             self.running = 0
+#             self.connected = 0
+#             try:
+#                 self.sock.close()
+#             except IOBaseException:
+#                 pass
             log.exception("EventClient.Send Error: socket write failed.")
             raise EventClientWriteDataException
         
