@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.67 2004-05-12 18:38:21 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.68 2004-05-27 19:33:55 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.67 2004-05-12 18:38:21 lefvert Exp $"
+__revision__ = "$Id: DataStore.py,v 1.68 2004-05-27 19:33:55 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2182,7 +2182,10 @@ if __name__ == "__main__":
    
     d4 = DataDescription("file1")
     d4.description = "test"
-    dContainer.UpdateData(d4)
+    try:
+        dContainer.UpdateData(d4)
+    except Exception,e:
+        print "exception ", e
     dDict = dContainer.GetDataDescriptions()
     flag = 1
     for x in dDict:
@@ -2232,8 +2235,8 @@ if __name__ == "__main__":
             log.debug("AddData: %s", desc)
 
     v = TestCallbackClass()
-    ds = DataStore(v, "./temp", "snap", 1)
     s = GSIHTTPTransferServer(('', 9011))
+    ds = DataStore(v, "./temp", "snap", s)
 
     class Handler:
         def GetDownloadFilename(self, id_token, url_path):
@@ -2254,7 +2257,6 @@ if __name__ == "__main__":
         def CompleteUpload(self, id_token, file_info):
             log.debug("CompleteUpload %s %s", id_token, file_info)
 
-    ds.SetTransferEngine(s)
 
     prefix = "test"
     s.RegisterPrefix(prefix, Handler())
