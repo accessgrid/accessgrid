@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.132 2004-02-26 17:33:11 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.133 2004-02-27 19:15:07 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,10 +13,9 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.132 2004-02-26 17:33:11 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.133 2004-02-27 19:15:07 judson Exp $"
 __docformat__ = "restructuredtext en"
 
-from AccessGrid.hosting import Client
 import sys
 import string
 import threading
@@ -27,30 +26,28 @@ import logging, logging.handlers
 
 from pyGlobus.io import GSITCPSocketException
 
-from AccessGrid.hosting import Server
-from AccessGrid.hosting.ServiceBase import ServiceBase
-
-from AccessGrid.EventClient import EventClient
-from AccessGrid.TextClient import TextClient
-from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache
-from AccessGrid.Types import *
-from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
-from AccessGrid.Events import DisconnectEvent, ClientExitingEvent, RemoveDataEvent, UpdateDataEvent
-from AccessGrid.scheduler import Scheduler
-from AccessGrid.hosting import AccessControl
+from AccessGrid import Toolkit
+from AccessGrid import DataStore
 from AccessGrid import Platform
-from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
-from AccessGrid.Descriptions import DataDescription, ConnectionDescription
+from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.Platform import ProcessManager
+from AccessGrid.Venue import VenueIW
+from AccessGrid.hosting import Server, SOAPInterface, IWrapper
+from AccessGrid.hosting import Decorate, Reconstitute
 from AccessGrid.Utilities import LoadConfig
 from AccessGrid.NetUtilities import GetSNTPTime
-from AccessGrid import DataStore
-from AccessGrid.Platform import GetUserConfigDir
-from AccessGrid.ProcessManager import ProcessManager
-from AccessGrid import Toolkit
 from AccessGrid.VenueClientObserver import VenueClientObserver
-from AccessGrid.Descriptions import CreateDataDescription, CreateServiceDescription
+from AccessGrid.scheduler import Scheduler
+from AccessGrid.EventClient import EventClient
+from AccessGrid.TextClient import TextClient
+from AccessGrid.Types import *
+from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
+from AccessGrid.Events import DisconnectEvent, ClientExitingEvent
+from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent
+from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache
+from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
+from AccessGrid.Descriptions import DataDescription, ConnectionDescription
 from AccessGrid.Descriptions import CreateApplicationDescription
-from AccessGrid.Venue import VenueIW
 
 class EnterVenueException(Exception):
     pass
@@ -71,11 +68,9 @@ class NetworkLocationNotFound(Exception):
     pass
 
 log = logging.getLogger("AG.VenueClient")
-log.setLevel(logging.WARN)
+log.setLevel(logging.DEBUG)
 
-
-
-class VenueClient(ServiceBase):
+class VenueClient:
     """
     This is the client side object that maintains a stateful
     relationship with a Virtual Venue. This object provides the
@@ -96,6 +91,7 @@ class VenueClient(ServiceBase):
         
         
         self.nodeServiceUri = self.defaultNodeServiceUri
+        self.nodeService = None
         self.homeVenue = None
         self.houseKeeper = Scheduler()
         self.heartbeatTask = None
@@ -150,7 +146,7 @@ class VenueClient(ServiceBase):
                                              self.profileCachePrefix)
         self.cache = ClientProfileCache(self.profileCachePath)
 
-        self.processManager = ProcessManager()
+        self.processManager = ProcessManager.ProcessManager()
         
     ###########################################################################################
     #
@@ -187,8 +183,6 @@ class VenueClient(ServiceBase):
             self.dataStore = DataStore.DataStore(self, self.personalDataStorePath, 
                                                  self.personalDataStorePrefix,
                                                  self.transferEngine)
-                   
-
             #
             # load personal data from file
             #
@@ -254,23 +248,18 @@ class VenueClient(ServiceBase):
 
 
     def __CreateVenueClientWebService(self):
+        from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
+        port = NetworkAddressAllocator().AllocatePort()
 
-        # Authorization callback for the server
-        def AuthCallback(server, g_handle, remote_user, context):
-            return 1
+        self.server = Server(('', port))
+        #vci = VenueClientI(self)
+        #self.server.RegisterObject(vci, path='/VenueClient')
+        self.server.RunInThread()
         
-        from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-        port = MulticastAddressAllocator().AllocatePort()
-
-        self.server = Server.Server(port, auth_callback=AuthCallback)
-        self.service = self.server.CreateServiceObject("VenueClient")
-        self._bind_to_service( self.service )
-        self.server.run_in_thread()
-        
-        if(self.profile != None):
-            self.profile.venueClientURL = self.service.get_handle()
-            log.debug("__CreateVenueClientWebService: venue client serving : %s"
-                      % self.profile.venueClientURL)
+        #if(self.profile != None):
+        #    self.profile.venueClientURL = self.server.GetURLForObject(self)
+        #    log.debug("__CreateVenueClientWebService: venue client serving: %s"
+         #             % self.profile.venueClientURL)
 
     def __Heartbeat(self):
         if self.eventClient != None:
@@ -460,8 +449,11 @@ class VenueClient(ServiceBase):
         # Add the stream to the local stream store
         self.streamDescList.append(data)
 
-        if self.nodeServiceUri != None:
-            Client.Handle(self.nodeServiceUri).GetProxy().AddStream(data)
+        if self.nodeService == None and self.nodeServiceUri != None:
+            self.nodeService = NodeServiceIW(self.nodeServiceUri)
+           
+        self.nodeService.AddStream(data)
+        
         for s in self.observers:
             s.AddStream(event)
     
@@ -488,8 +480,10 @@ class VenueClient(ServiceBase):
             if self.streamDescList[i].id == data.id:
                 del self.streamDescList[i]
 
-        if self.nodeServiceUri != None:
-            Client.Handle(self.nodeServiceUri).GetProxy().RemoveStream(data)
+        if self.nodeService == None and self.nodeServiceUri != None:
+            self.nodeService = NodeServiceIW(self.nodeServiceUri)
+           
+        self.nodeService.RemoveStream(data)
 
         for s in self.observers:
             s.RemoveStream(event)
@@ -504,12 +498,11 @@ class VenueClient(ServiceBase):
             
     # end Event Handlers
     #
-    ###########################################################################################
+    ##########################################################################
 
-    ###########################################################################################
+    ##########################################################################
     #
     # Basic Implementation
-    
         
     def AddObserver(self, observer):
         if not observer:
@@ -524,10 +517,12 @@ class VenueClient(ServiceBase):
     # Enter/Exit
     #
                     
-    # Back argument is true if going to a previous venue (used in UI).
     def EnterVenue(self, URL, back=0):
         """
         EnterVenue puts this client into the specified venue.
+
+        URL : url to the venue
+        back : 0|1 - used by the UI to go to the previous venue.
         """
         # Initialize a string of warnings that can be displayed to the user.
         self.warningString = ''
@@ -540,42 +535,16 @@ class VenueClient(ServiceBase):
 
         enterSuccess = 1
         try:
-            # if this venue url has a valid web service then enter venue
-
-            # catch unauthorized SOAP calls to EnterVenue
-            securityManager = AccessControl.GetSecurityManager()
-            if securityManager != None:
-                callerDN = securityManager.GetSubject().GetName()
-                if callerDN != None and callerDN != self.leaderProfile.distinguishedName:
-                    raise AuthorizationFailedError("Unauthorized leader tried to lead venue client")
-
-            try:
-                Client.Handle( URL ).IsValid()
-            except GSITCPSocketException, e:
-                if e.args[0] == 'an authentication operation failed':
-                    self.__CheckForInvalidClock()
-
-                else:
-                    log.exception("EnterVenue: failed")
-
-                raise EnterVenueException("No reachable venue at given venue URL")
-            
-            except:
-                log.exception("EnterVenue: No reachable venue at given venue URL")
-                raise EnterVenueException("No reachable venue at given venue URL")
-
-
             # Exit the venue you are currently in before entering a new venue
             if self.isInVenue:
                 self.ExitVenue()
 
             # Get capabilities from your node
             errorInNode = 0
-            #haveValidNodeService = 0
 
             try:
-                self.profile.capabilities = Client.Handle( self.nodeServiceUri ).GetProxy().GetCapabilities()
-                
+                if self.nodeService != None:
+                    self.profile.capabilities = self.nodeService.GetCapabilities()
             except Exception, e:
                 # This is a non fatal error, users should be notified
                 # but still enter the venue
@@ -589,7 +558,8 @@ class VenueClient(ServiceBase):
             self.venueProxy = VenueIW(URL)
 
             log.debug("EnterVenue: Invoke venue enter")
-            (venueState, self.privateId, self.streamDescList ) = self.venueProxy.Enter( self.profile )
+            print type(self.profile)
+            (self.venueState, self.privateId, self.streamDescList ) = self.venueProxy.Enter( self.profile )
 
 
             #
@@ -597,71 +567,74 @@ class VenueClient(ServiceBase):
             # instead of the structs we get back from the SOAP call
             # (this code can be removed when SOAP returns real objects)
             #
-            connectionList = []
-            for conn in venueState.connections:
-                connectionList.append( ConnectionDescription( conn.name, conn.description, conn.uri ) )
+#             connectionList = []
+#             for conn in venueState.connections:
+#                 connectionList.append( ConnectionDescription( conn.name, conn.description, conn.uri ) )
 
-            clientList = []
-            for client in venueState.clients:
-                profile = ClientProfile()
-                profile.profileFile = client.profileFile
-                profile.profileType = client.profileType
-                profile.name = client.name
-                profile.email = client.email
-                profile.phoneNumber = client.phoneNumber
-                profile.icon = client.icon
-                profile.publicId = client.publicId
-                profile.location = client.location
-                profile.venueClientURL = client.venueClientURL
-                profile.techSupportInfo = client.techSupportInfo
-                profile.homeVenue = client.homeVenue
-                profile.privateId = client.privateId
-                profile.distinguishedName = client.distinguishedName
+#             clientList = []
+#             for client in venueState.clients:
+#                 profile = ClientProfile()
+#                 profile.profileFile = client.profileFile
+#                 profile.profileType = client.profileType
+#                 profile.name = client.name
+#                 profile.email = client.email
+#                 profile.phoneNumber = client.phoneNumber
+#                 profile.icon = client.icon
+#                 profile.publicId = client.publicId
+#                 profile.location = client.location
+#                 profile.venueClientURL = client.venueClientURL
+#                 profile.techSupportInfo = client.techSupportInfo
+#                 profile.homeVenue = client.homeVenue
+#                 profile.privateId = client.privateId
+#                 profile.distinguishedName = client.distinguishedName
 
-                # should also objectify the capabilities, but not doing it 
-                # for now (until it's a problem ;-)
-                profile.capabilities = client.capabilities
+#                 # should also objectify the capabilities, but not doing it 
+#                 # for now (until it's a problem ;-)
+#                 profile.capabilities = client.capabilities
 
-                clientList.append( profile )
+#                 clientList.append( profile )
 
-            dataList = []
-            for data in venueState.data:
-                dataDesc = CreateDataDescription(data)
-                dataList.append( dataDesc )
+#             dataList = []
+#             for data in venueState.data:
+#                 dataDesc = CreateDataDescription(data)
+#                 dataList.append( dataDesc )
                 
-            applicationList = []
-            for application in venueState.applications:
-                appDesc = CreateApplicationDescription(application)
-                applicationList.append(appDesc)
+#             applicationList = []
+#             for application in venueState.applications:
+#                 appDesc = CreateApplicationDescription(application)
+#                 applicationList.append(appDesc)
 
-            serviceList = []
-            for service in venueState.services:
-                serviceDesc = CreateServiceDescription(service)
-                serviceList.append(serviceDesc)
+#             serviceList = []
+#             for service in venueState.services:
+#                 serviceDesc = CreateServiceDescription(service)
+#                 serviceList.append(serviceDesc)
 
-            # I hate retrofitted code.
-            if hasattr(venueState, 'backupServer'):
-                bs = venueState.backupServer
-            else:
-                bs = None
+#             # I hate retrofitted code.
+#             if hasattr(venueState, 'backupServer'):
+#                 bs = venueState.backupServer
+#             else:
+#                 bs = None
                 
-            self.venueState = VenueState( venueState.uniqueId,
-                                          venueState.name,
-                                          venueState.description,
-                                          venueState.uri,
-                                          connectionList, 
-                                          clientList,
-                                          dataList,
-                                          venueState.eventLocation,
-                                          venueState.textLocation,
-                                          applicationList,
-                                          serviceList,
-                                          bs)
+#             self.venueState = VenueState( venueState.uniqueId,
+#                                           venueState.name,
+#                                           venueState.description,
+#                                           venueState.uri,
+#                                           connectionList, 
+#                                           clientList,
+#                                           dataList,
+#                                           venueState.eventLocation,
+#                                           venueState.textLocation,
+#                                           applicationList,
+#                                           serviceList,
+#                                           bs)
+
+            print self.venueState
+            print dir(self.venueState)
+            
             self.venueUri = URL
             self.venueId = self.venueState.GetUniqueId()
-
             host, port = venueState.eventLocation
-        
+
             #
             # Create the event client
             #
@@ -729,6 +702,7 @@ class VenueClient(ServiceBase):
                 log.warn("EnterVenue: Error updating node service")
                 errorInNode = 1
 
+            log.debug("Updating profile cache.")
             # Cache profiles from venue.
             for client in self.venueState.clients.values():
                 self.UpdateProfileCache(client)
@@ -757,16 +731,14 @@ class VenueClient(ServiceBase):
                 # pass a flag to UI if we fail to enter.
                 enterSuccess = 0
                 # put error in warningString, in redesign will be raised to UI as exception.
-                if isinstance(e, faultType):
-                    self.warningString = str(e.faultstring)
+                self.warningString = str(e.faultstring)
                 
         except Exception, e:
             log.exception("EnterVenue: failed")
             # pass a flag to UI if we fail to enter.
             enterSuccess = 0
             # put error in warningString, in redesign will be raised to UI as exception.
-            if isinstance(e, faultType):
-                self.warningString = str(e.faultstring)
+            self.warningString = str(e.faultstring)
 
         for s in self.observers:
             # back is true if user just hit the back button.
@@ -782,15 +754,14 @@ class VenueClient(ServiceBase):
 
         return self.warningString
         
-    EnterVenue.soap_export_as = "EnterVenue"
-
     def LeadFollowers(self):
         #
         # Update venue clients being led with stream descriptions
         #
         for profile in self.followerProfiles.values():
             try:
-                Client.Handle( profile.venueClientURL ).GetProxy().EnterVenue(self.venueUri, 0)
+                v = VenueClientIW(profile.venueClientURL)
+                v.EnterVenue(self.venueUri, 0)
             except:
                 raise Exception("LeadFollowers::Exception while leading follower")
 
@@ -883,17 +854,15 @@ class VenueClient(ServiceBase):
             log.exception("ExitVenue: ExitVenue exception")
 
         # Stop the node services
-        if self.nodeServiceUri != None:
+        if self.nodeService == None and self.nodeServiceUri != None:
             try:
-                nodeHandle = Client.Handle(self.nodeServiceUri)
-
-                #if nodeHandle.IsValid():
-                log.info("ExitVenue: Stopping node services")
-                nodeHandle.GetProxy().StopServices()
-                nodeHandle.GetProxy().SetStreams([])
-
+                self.nodeService = NodeServiceIW(self.nodeServiceUri)
             except Exception, e:
                 log.info("ExitVenue: Don't have a node service")
+
+            log.info("ExitVenue: Stopping node services")
+            self.nodeService.StopServices()
+            self.nodeService.SetStreams([])
 
         #
         # Save personal data
@@ -925,8 +894,10 @@ class VenueClient(ServiceBase):
 
         # request permission to follow the leader
         # (response will come in via the LeadResponse method)
-        log.debug('Follow: Requesting permission to follow this leader: %s' %leaderProfile.name)
-        Client.Handle( leaderProfile.venueClientURL ).GetProxy().RequestLead( self.profile )
+        log.debug('Follow: Requesting permission to follow this leader: %s',
+                  leaderProfile.name)
+        v = VenueClientIW(leaderProfile.venueClientURL)
+        v.RequestLead( self.profile )
 
     def UnFollow( self, leaderProfile ):
         """
@@ -934,7 +905,8 @@ class VenueClient(ServiceBase):
         """
 
         log.debug('UnFollow: Trying to unfollow: %s' %leaderProfile.name)
-        Client.Handle( leaderProfile.venueClientURL ).GetProxy().UnLead( self.profile )
+        v = VenueClientIW(leaderProfile.venueClientURL)
+        v.UnLead( self.profile )
         self.leaderProfile = None
 
     def RequestLead( self, followerProfile):
@@ -949,9 +921,9 @@ class VenueClient(ServiceBase):
         self.pendingFollowers[followerProfile.publicId] = followerProfile
 
         # Authorize the lead request (asynchronously)
-        threading.Thread(target = self.AuthorizeLead, args = (followerProfile,) ).start()
+        threading.Thread(target = self.AuthorizeLead,
+                         args = (followerProfile,) ).start()
 
-    RequestLead.soap_export_as = "RequestLead"
 
     def AuthorizeLead(self, clientProfile):
         """
@@ -982,10 +954,13 @@ class VenueClient(ServiceBase):
             self.followerProfiles[clientProfile.publicId] = clientProfile
 
             # send the response
-            Client.Handle( clientProfile.venueClientURL ).GetProxy().LeadResponse(self.profile, 1)
+            v = VenueClientIW(clientProfile.venueClientURL)
+            v.LeadResponse(self.profile, 1)
         else:
-            Client.Handle( clientProfile.venueClientURL ).GetProxy().LeadResponse(self.profile, 0)
-            log.debug("SendLeadResponse: Rejecting lead request for %s" %clientProfile.name)
+            v = VenueClientIW(clientProfile.venueClientURL)
+            v.LeadResponse(self.profile, 0)
+            log.debug("SendLeadResponse: Rejecting lead request for %s",
+                      clientProfile.name)
 
     def LeadResponse(self, leaderProfile, isAuthorized):
         """
@@ -1012,8 +987,6 @@ class VenueClient(ServiceBase):
         for s in self.observers:
             s.LeadResponse(leaderProfile, isAuthorized)
 
-    LeadResponse.soap_export_as = "LeadResponse"
-
     def UnLead(self, clientProfile):
         """
         UnLead tells this venue client to stop dragging the specified client.
@@ -1028,10 +1001,9 @@ class VenueClient(ServiceBase):
         if(self.pendingFollowers.has_key(clientProfile.publicId)):
             del self.pendingFollowers[clientProfile.publicId]
 
-        threading.Thread(target = self.NotifyUnLead, args = (clientProfile,)).start()
+        threading.Thread(target = self.NotifyUnLead,
+                         args = (clientProfile,)).start()
             
-    UnLead.soap_export_as = "UnLead"
-
     def NotifyUnLead(self, clientProfile):
         """
         Notify requests to stop leading this client.  
@@ -1039,7 +1011,6 @@ class VenueClient(ServiceBase):
         Subclasses should override this method to perform their specific 
         notification
         """
-              
         pass
 
     #
@@ -1056,7 +1027,8 @@ class VenueClient(ServiceBase):
         for followerProfile in followerProfileList:
             log.debug("Lead: Requesting permission to lead this client: %s", followerProfile.name )
             self.pendingFollowers[followerProfile.publicId] = followerProfile
-            Client.Handle( followerProfile.venueClientURL ).GetProxy().RequestFollow( self.profile )
+            v = VenueClientIW(followerProfile.venueClientURL)
+            v.RequestFollow( self.profile )
 
 
     def RequestFollow( self, leaderProfile):
@@ -1069,9 +1041,8 @@ class VenueClient(ServiceBase):
         self.pendingLeader = leaderProfile
 
         # Authorize the follow request (asynchronously)
-        threading.Thread(target = self.AuthorizeFollow, args = (leaderProfile,) ).start()
-
-    RequestFollow.soap_export_as = "RequestFollow"
+        threading.Thread(target = self.AuthorizeFollow,
+                         args = (leaderProfile,) ).start()
 
     def AuthorizeFollow(self, leaderProfile):
         """
@@ -1100,7 +1071,8 @@ class VenueClient(ServiceBase):
             self.leaderProfile = leaderProfile
 
             # send the response
-            Client.Handle( self.leaderProfile.venueClientURL ).GetProxy().FollowResponse(self.profile,1)
+            v = VenueClientIW(self.leaderProfile.venueClientURL)
+            v.FollowResponse(self.profile,1)
         else:
             log.debug("SendFollowResponse: Rejecting follow request for: %s", leaderProfile.name)
 
@@ -1128,8 +1100,6 @@ class VenueClient(ServiceBase):
             log.debug("FollowResponse: Follower has rejected request to follow you: %s", followerProfile.name)
         self.pendingLeader = None
 
-    FollowResponse.soap_export_as = "FollowResponse"
-    
     #
     # NodeService-related calls
     #
@@ -1140,11 +1110,15 @@ class VenueClient(ServiceBase):
         """
 
         log.debug("UpdateNodeService: Method UpdateNodeService called")
+        if self.nodeService == None:
+            log.info("UpdateNodeService: Node Service unreachable; skipping")
+            log.info("UpdateNodeService: url = %s", self.nodeServiceUri)
+            return
 
         exc = None
 
         try:
-            Client.Handle(self.nodeServiceUri).IsValid()
+            self.nodeService.IsValid()
         except:
             log.info("UpdateNodeService: Node Service unreachable; skipping")
             log.info("UpdateNodeService: url = %s", self.nodeServiceUri)
@@ -1152,7 +1126,7 @@ class VenueClient(ServiceBase):
 
         # Set the identity of the user running the node
         if not self.isIdentitySet:
-            Client.Handle(self.nodeServiceUri).GetProxy().SetIdentity(self.profile)
+            self.nodeService.SetIdentity(self.profile)
             self.isIdentitySet = 1
 
         # Set the streams to use the selected transport
@@ -1165,7 +1139,7 @@ class VenueClient(ServiceBase):
                     exc = e
 
         # Send streams to the node service
-        Client.Handle( self.nodeServiceUri ).GetProxy().SetStreams( self.streamDescList )
+        self.nodeService.SetStreams( self.streamDescList )
 
         # Raise exception if occurred
         if exc:
@@ -1236,11 +1210,9 @@ class VenueClient(ServiceBase):
         try:
             self.venueProxy.AddService(serviceDescription)
         except Exception,e:
-            if isinstance(e,faultType) and e.faultstring == "ServiceAlreadyPresent":
+            if e.faultstring == "ServiceAlreadyPresent":
                 raise ServiceAlreadyPresent
             raise
-                
-
 
     def UpdateService(self,serviceDescription):
         self.venueProxy.UpdateService(serviceDescription)
@@ -1360,8 +1332,6 @@ class VenueClient(ServiceBase):
         else:
             return self.dataStore.GetUploadDescriptor(), self.dataStore.GetLocation()
         
-    GetDataStoreInformation.soap_export_as = "GetDataStoreInformation"
-
     def GetDataDescriptions(self):
         '''
         Retreive data in the DataStore as a list of DataDescriptions.
@@ -1372,8 +1342,6 @@ class VenueClient(ServiceBase):
         dataDescriptionList = self.dataStore.GetDataDescriptions()
         
         return dataDescriptionList
-
-    GetDataDescriptions.soap_export_as = "GetDataDescriptions"
 
     def GetPersonalData(self, clientProfile):
         '''
@@ -1403,7 +1371,8 @@ class VenueClient(ServiceBase):
             else:
                 log.debug("GetPersonalData: This is somebody else's data")
                 try:
-                    dataDescriptionList = Client.Handle(url).GetProxy().GetDataDescriptions()
+                    v = VenueClientIW(url)
+                    dataDescriptionList = v.GetDataDescriptions()
                 except:
                     log.exception("GetPersonalData: GetDataDescriptions call failed")
                     raise GetDataDescriptionsError()
@@ -1446,10 +1415,10 @@ class VenueClient(ServiceBase):
         return self.nodeServiceUri
 
     def SetVideoEnabled(self,enableFlag):
-        Client.Handle(self.nodeServiceUri).GetProxy().SetServiceEnabledByMediaType("video",enableFlag)
+        self.nodeService.SetServiceEnabledByMediaType("video",enableFlag)
         
     def SetAudioEnabled(self,enableFlag):
-        Client.Handle(self.nodeServiceUri).GetProxy().SetServiceEnabledByMediaType("audio",enableFlag)
+        self.nodeService.SetServiceEnabledByMediaType("audio",enableFlag)
 
     #
     # User Info
@@ -1543,3 +1512,81 @@ class VenueClient(ServiceBase):
         appdb = app.GetAppDatabase()
         appDescList = appdb.ListAppsAsAppDescriptions()
         return appDescList
+
+class VenueClientI(SOAPInterface):
+    def __init__(self, impl):
+        SOAPInterface.__init__(self, impl)
+        
+    def _authorize(self, *args, **kw):
+        return 1
+    
+    def EnterVenue(self, url):
+        return self.impl.EnterVenue(url)
+
+    def RequestLead(self, followerProfile):
+        p = Reconstitute(followerProfile)
+        self.impl.RequestLead(p)
+        
+    def LeadResponse(self, leaderProfile, isAuthorized):
+        p = Reconstitute(leaderProfile)
+        self.impl.LeadResponse(p, isAuthorized)
+
+    def Unlead(self, clientProfile):
+        p = Reconstitute(clientProfile)
+        self.impl.Unlead(p)
+
+    def RequestFollow(self, leaderProfile):
+        p = Reconstitute(leaderProfile)
+        self.impl.RequestFollow(p)
+        
+    def FollowResponse(self, followerProfile, isAuthorized):
+        p = Reconstitute(followerProfile)
+        self.impl.FollowResponse(p, isAuthorized)
+
+    def GetDataStoreInformation(self):
+        r = self.impl.GetDataStoreInformation()
+        retval = Decorate(r)
+        return(retval)
+
+    def GetDataDescriptions(self):
+        dl = self.impl.GetDataDescriptions()
+        retval = Decorate(dl)
+        return retval
+
+class VenueClientIW(IWrapper):
+    def __init__(self, url=None):
+        IWrapper.__init__(self, url)
+
+    def EnterVenue(self, url):
+        return self.proxy.EnterVenue(url)
+
+    def RequestLead(self, followerProfile):
+        p = Decorate(followerProfile)
+        self.proxy.RequestLead(p)
+
+    def LeadResponse(self, leaderProfile, isAuthorized):
+        p = Decorate(leaderProfile)
+        self.proxy.LeadResponse(p, isAuthorized)
+
+    def Unlead(self, clientProfile):
+        p = Decorate(clientProfile)
+        self.proxy.Unlead(p)
+
+    def RequestFollow(self, leaderProfile):
+        p = Decorate(leaderProfile)
+        self.proxy.RequestFollow(p)
+        
+    def FollowResponse(self, followerProfile, isAuthorized):
+        p = Decorate(followerProfile)
+        self.proxy.FollowResponse(p, isAuthorized)
+
+    def GetDataStoreInformation(self):
+        r = self.proxy.GetDataStoreInformation()
+        retval = Reconstitute(r)
+        reutrn(retval)
+
+    def GetDataDescriptions(self):
+        dl = self.proxy.GetDataDescriptions()
+        retval = Reconstitute(dl)
+        return retval
+

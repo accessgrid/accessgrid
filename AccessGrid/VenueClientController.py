@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.3 2004-02-25 15:47:54 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.4 2004-02-27 19:15:07 judson Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
@@ -31,7 +31,7 @@ from AccessGrid.Platform import GetMimeCommands
 from AccessGrid.Platform import GetSharedDocDir, GetTempDir
 from AccessGrid.Platform import isWindows
 
-from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
+#from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 
 from AccessGrid import Toolkit
 
@@ -44,14 +44,14 @@ class NotAuthorizedError(Exception):
 class VenueClientController:
 
     def __init__(self):
-    
         self.history = []
+        self.myVenuesDict = dict()
         self.myVenuesFile = os.path.join(GetUserConfigDir(), "myVenues.txt" )
         
-        self.__LoadMyVenues()
+        #self.__LoadMyVenues()
 
 
-    ###########################################################################################
+    ##########################################################################
     #
     # Private Methods
 
@@ -112,9 +112,9 @@ class VenueClientController:
         
     # end Private Methods
     #
-    ###########################################################################################
+    ##########################################################################
 
-    ###########################################################################################
+    ##########################################################################
     #
     # Controller Implementation
 
@@ -138,9 +138,9 @@ class VenueClientController:
 
     # end Controller Implementation
     #
-    ###########################################################################################
+    ##########################################################################
 
-    ###########################################################################################
+    ##########################################################################
     #
     # Menu Callbacks
 
@@ -386,9 +386,9 @@ class VenueClientController:
 
     # Menu Callbacks
     #
-    ###########################################################################################
+    ##########################################################################
 
-    ###########################################################################################
+    ##########################################################################
     #
     # Core UI Callbacks
     
@@ -743,9 +743,9 @@ class VenueClientController:
 
     # end Core UI Callbacks
     #
-    ###########################################################################################
+    ##########################################################################
 
-    ###########################################################################################
+    ##########################################################################
     #
     # General Implementation
 
@@ -1339,4 +1339,4 @@ class VenueClientController:
 
     # end General Implementation
     #
-    ###########################################################################################
+    ##########################################################################

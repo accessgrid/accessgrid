@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.147 2004-02-26 04:56:22 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.148 2004-02-27 19:11:36 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.147 2004-02-26 04:56:22 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.148 2004-02-27 19:11:36 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -41,7 +41,7 @@ from AccessGrid.Security import X509Subject, Role
 from AccessGrid import AppService
 from AccessGrid import DataStore
 from AccessGrid import NetService
-from AccessGrid.Types import Capability
+from AccessGrid.Types import Capability, VenueState
 from AccessGrid.Descriptions import StreamDescription, CreateStreamDescription
 from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
@@ -513,22 +513,13 @@ class Venue(AuthorizationMixIn):
         except:
             log.exception("Venue::AsVenueState: Failed to get profiles.")
             clientlist = []
-            
-        venueState = {
-        'uniqueId' : self.uniqueId,
-        'name' : self.name,
-        'description' : self.description,
-        'uri' : self.uri,
-        'connections' : self.connections,
-        'applications': applist,
-        'clients' : clientlist,
-        'services' : self.services.values(),
-        'data' : dList,
-        'eventLocation' : self.server.eventService.GetLocation(),
-        'textLocation' : self.server.textService.GetLocation(),
-        'backupServer' : self.server.backupServer
-        }
 
+        venueState = VenueState(self.uniqueId, self.name, self.description,
+                                self.uri, self.connections, clientlist,
+                                dList, self.server.eventService.GetLocation(),
+                                self.server.textService.GetLocation(),
+                                applist, self.services.values(),
+                                self.server.backupServer)
         return venueState
 
     def StartApplications(self):
@@ -981,7 +972,9 @@ class Venue(AuthorizationMixIn):
             log.debug("Enter: Client already in venue: %s", privateId)
         # raise ClientAlreadyPresent
 
-
+        print "IN ENTER"
+        print clientProfile
+        print "----"
         #
         # Send this before we set up client state, so that
         # we don't end up getting our own enter event enqueued.
@@ -994,8 +987,8 @@ class Venue(AuthorizationMixIn):
         #
 
         vcstate = self.clients[privateId] = VenueClientState(self,
-        privateId,
-        clientProfile)
+                                                             privateId,
+                                                             clientProfile)
 
         vcstate.UpdateAccessTime()
 
@@ -1014,6 +1007,11 @@ class Venue(AuthorizationMixIn):
             log.exception("Enter: Can't get state.")
             raise InvalidVenueState
 
+        print "About to return from Enter:"
+        print state
+        print privateId
+        print streamDescriptions
+        print "====="
         return ( state, privateId, streamDescriptions )
 
     def AddNetService(self, clientType, privateId):
@@ -1800,7 +1798,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         venue negotiating the client capabilities.
 
         """        
-        log.debug("wsEnter: Called.")
+        log.debug("Interface Enter: Called.")
 
         # Rebuild the profile
         clientProfile = Reconstitute(clientProfileStruct)
@@ -1820,12 +1818,16 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
 
         # Call Enter
         try:
-            returnValue = self.impl.Enter(clientProfile)
+            r = self.impl.Enter(clientProfile)
         except:
             log.exception("VenueI.Enter: exception")
             raise
 
-        return returnValue
+        retval = Decorate(r)
+        print retval
+        print "End Interface Enter."
+        
+        return retval
 
     def AddNetService(self, clientType, privateId=str(GUID())):
         """
@@ -2239,7 +2241,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         clientProfile = Reconstitute(clientProfileStruct)
 
         try:
-            self.impl.UpdateClientProvile(clientProfile)
+            self.impl.UpdateClientProfile(clientProfile)
         except:
             log.exception("VenueI.UpdateClientProfile.")
             raise
@@ -2633,8 +2635,27 @@ class VenueIW(IWrapper, AuthorizationIWMixIn):
         return self.proxy.Shutdown()
 
     def Enter(self, profile):
+        delattr(profile, "profile")
         p = Decorate(profile)
-        return self.proxy.Enter(p)
+
+        (r1, r2, r3) = self.proxy.Enter(p)
+
+        print "Returns: "
+        r1v = Reconstitute(r1)
+        print "1"
+        print r1v
+
+        print "2"
+        print r2
+
+        r3v = Reconstitute(r3)
+        print "3"
+        print r3v
+        
+        retval = (r1v, r2, r3v)
+
+        print "IW Done"
+        return retval
 
     def Exit(self, id):
         return self.proxy.Exit(id)

@@ -5,7 +5,7 @@
 #
 # Author:      Thomas D. Uram
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.246 2004-02-24 17:21:45 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.247 2004-02-27 19:15:51 judson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -23,9 +23,9 @@ from AccessGrid import Toolkit
 from AccessGrid.VenueClientUI import VenueClientUI
 from AccessGrid.VenueClientController import VenueClientController
 from AccessGrid.VenueClient import VenueClient
-from AccessGrid.PersonalNode import PersonalNodeManager
+from AccessGrid.Platform import PersonalNode
 from AccessGrid.Platform import InitUserEnv, GetUserConfigDir
-from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
+#from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid.UIUtilities import ErrorDialog
 
 
@@ -65,6 +65,7 @@ def SetLogger():
 def Usage():
     print "%s:" % (sys.argv[0])
     print "  -h|--help:      print usage"
+    print "  -u|--url:       venue url to connect to"
     print "  -d|--debug:     show debugging messages"
     print "  --personalNode: manage services as a personal node"
 
@@ -81,8 +82,9 @@ def ProcessArgs():
     global debugMode
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hdl:",
-                                   ["personalNode", "debug", "help", "logfile="])
+        opts, args = getopt.getopt(sys.argv[1:], "hdl:u:",
+                                   ["personalNode", "debug", "help",
+                                    "logfile=","url="])
 
     except getopt.GetoptError:
         Usage()
@@ -93,13 +95,18 @@ def ProcessArgs():
         if opt in ('-h', '--help'):
             Usage()
             sys.exit(0)
-           
         elif opt == '--personalNode':
             isPersonalNode = 1
         elif opt in ('--debug', '-d'):
             debugMode = 1
         elif opt in ('--logfile', '-l'):
             logFile = arg
+        elif opt in ('--url', '-u'):
+            venueUrl = arg
+            print "This is not working yet."
+        else:
+            Usage()
+            sys.exit(0)
 
 
 # Process command-line arguments
@@ -124,7 +131,7 @@ startupDialog.UpdateOneStep("Verifying environment.")
 
 InitUserEnv()
 
-VerifyExecutionEnvironment()
+#VerifyExecutionEnvironment()
 
 try:
     startupDialog.UpdateOneStep("Starting ui.")
@@ -167,7 +174,6 @@ vcc.SetGui(vcui)
 vcc.SetVenueClient(vc)
 vc.AddObserver(vcui)
 
-
 # Figure out if there are any credentials we can use
 # since if there are not, we can't successfully startup a
 # personal node.
@@ -190,9 +196,9 @@ if isPersonalNode:
             log.debug("bin.VenueClient::OnInit: setting node service \
                        URI to %s from PersonalNode", svcUrl)
             vc.SetNodeUrl(svcUrl)
-        personalNode = PersonalNodeManager( setSvcCallback,
-                                            debugMode,
-                                            startupDialog.UpdateOneStep)
+        personalNode = PersonalNode.PersonalNodeManager( setSvcCallback,
+                                                         debugMode,
+                                                   startupDialog.UpdateOneStep)
         personalNode.Run()
 
 
