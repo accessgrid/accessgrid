@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.29 2003-04-29 19:43:31 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.30 2003-05-12 20:13:53 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ class ObjectDescription:
         description : string
         uri : uri (string)
     """
-    def __init__(self, name, description = "", uri = ""):
+    def __init__(self, name, description = None, uri = None):
         self.id = str(GUID())
         self.name = name
         self.description = description
@@ -34,10 +34,12 @@ class ObjectDescription:
         return "%s: %s" % (classname, str(self.__dict__))
 
     def AsINIBlock(self):
-        string = "[%s]\n" % self.id
+        string = "\n[%s]\n" % self.id
         string += "name : %s\n" % self.name
-        string += "description : %s\n" % self.description
-        string += "uri : %s\n" % self.uri
+        if self.description != None:
+            string += "description : %s\n" % self.description
+        if self.uri != None:
+            string += "uri : %s\n" % self.uri
 
         return string
 
@@ -277,8 +279,9 @@ class StreamDescription( ObjectDescription ):
    def AsINIBlock(self):
        string = ObjectDescription.AsINIBlock(self)
        string += "encryptionFlag : %s\n" % self.encryptionFlag
-       string += "encryptionKey : %s\n" % self.encryptionKey
-       string += "static : %d\n" % self.static
+       if self.encryptionFlag:
+           string += "encryptionKey : %s\n" % self.encryptionKey
+#       string += "static : %d\n" % self.static
        string += "location : %s\n" % self.location
        string += "capability : %s\n" % self.capability
 
