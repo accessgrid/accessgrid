@@ -108,7 +108,12 @@ class VenueServerAddress(wxPanel):
 			 wxDefaultSize, wxNO_BORDER)
          self.application = application
 	 self.addressLabel =  wxStaticText(self, -1,'Venue Server Address:')
-	 self.addressText = wxTextCtrl(self, 42, style=wxPROCESS_ENTER)
+         self.defaultServer = 'https://localhost:8000/VenueServer'
+         self.serverList = ['https://localhost:8000/VenueServer']
+	 #self.addressText = wxTextCtrl(self, 42, self.defaultServer,style=wxPROCESS_ENTER)
+         self.addressText = wxComboBox(self, 42, self.defaultServer,\
+                        choices = self.serverList, style = wxCB_DROPDOWN|wxTE_PROCESS_ENTER)
+
          self.goButton = wxButton(self, 43, "Go", wxDefaultPosition, wxSize(20, 10))
 	 self.line = wxStaticLine(self, -1)
 	 self.__doLayout()
@@ -119,7 +124,7 @@ class VenueServerAddress(wxPanel):
           EVT_BUTTON(self, 43, self.evtText)  
 
      def evtText(self, event):
-         self.application.ConnectToServer(self.addressText.GetLineText(0))
+         self.application.ConnectToServer(self.addressText.GetValue())
          
      def __doLayout(self):
          venueServerAddressBox = wxBoxSizer(wxVERTICAL)  
