@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.22 2003-09-16 22:15:35 lefvert Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.23 2003-10-13 14:55:30 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -263,7 +263,7 @@ class IntroWindow(TitledPage):
     def __init__(self, parent, title):
        
         TitledPage.__init__(self, parent, title)
-        self.info = wxStaticText(self, -1, "This wizard will help you request a certificare.\n\nCertificates are used to identify everyone connected to the AccessGrid. \nIt is your electronic identity card verifying that you are who you say you are. \n\nClick 'Next' to continue.")
+        self.info = wxStaticText(self, -1, "This wizard will help you request a certificate.\n\nCertificates are used to identify everyone connected to the AccessGrid. \nIt is your electronic identity card verifying that you are who you say you are. \n\nClick 'Next' to continue.")
         self.Layout()
   
     def Layout(self):
