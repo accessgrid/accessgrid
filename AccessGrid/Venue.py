@@ -3,7 +3,7 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.235 2005-01-04 17:16:04 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.236 2005-01-06 23:35:57 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.235 2005-01-04 17:16:04 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.236 2005-01-06 23:35:57 eolson Exp $"
 
 import sys
 import time
@@ -35,7 +35,7 @@ from AccessGrid.Security.Subject import SubjectAlreadyPresent
 
 from AccessGrid import DataStore
 from AccessGrid import NetService
-from AccessGrid.Types import Capability
+from AccessGrid.Descriptions import Capability
 from AccessGrid.SharedApplication import SharedApplication, SharedApplicationI
 from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.Descriptions import CreateStreamDescription
