@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.36 2004-08-05 16:51:59 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.37 2004-08-05 20:20:19 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -22,6 +22,7 @@ from AccessGrid.Toolkit import WXGUIApplication
 from AccessGrid import Log
 from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.Config import SystemConfig
+from AccessGrid import icons
 
 from AccessGrid.Platform import IsWindows
 
@@ -106,8 +107,8 @@ class NodeSetupWizard(wxWizard):
         '''
         self.debugMode = debugMode
         self.log = log
-
         self.step = 1
+        self.SetIcon(icons.getAGIconIcon())
         self.SetPageSize(wxSize(510, 310))
         self.nodeClient = NodeClient(app)
         
