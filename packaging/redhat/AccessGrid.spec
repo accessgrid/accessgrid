@@ -235,6 +235,7 @@ mkdir -p %{buildroot}/tmp/local_services
 %{prefix}/bin/VenueClient.py
 %{prefix}/bin/NodeManagement.py
 %{prefix}/bin/NodeSetupWizard.py
+%{prefix}/bin/CertificateRequestTool.py
 %{sharedir}/doc/AccessGrid
 /etc/init.d/agns
 %defattr(0644,root,root)
@@ -306,7 +307,7 @@ mkdir -p %{buildroot}/tmp/local_services
 #
 
 %files BridgeServer
-%defattr(0664,ag,ag)
+%defattr(0775,ag,ag)
 %{prefix}/bin/BridgeServer.py
 %{prefix}/bin/QuickBridge
 
