@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.8 2004-03-16 03:09:51 judson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.9 2004-03-16 03:23:44 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This program is used to register applications with the users AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.8 2004-03-16 03:09:51 judson Exp $"
+__revision__ = "$Id: agpm.py,v 1.9 2004-03-16 03:23:44 judson Exp $"
 
 import os
 import re
@@ -69,7 +69,11 @@ def ProcessArgs():
                     help="The name of an app package containing a .app file.")
     parser.add_option("-l", "--list-apps", action="store_true",
                       dest="listapps", help="List installed shared apps.")
-    
+    parser.add_option("-s", "--system", action="store_true",
+                      dest="sys_install", default=0,
+                      help="Install the package for all users. \
+                      (This requires administrative access)")
+
     (options, args) = parser.parse_args()
 
     return options
