@@ -24,9 +24,9 @@ export PYOPENSSL_VER="0.5.1-3"
 export GPT="gpt"
 export GPT_VER="1.0-2"
 export GLOBUS="globus-accessgrid"
-export GLOBUS_VER="2.0-1"
+export GLOBUS_VER="2.0-2"
 export PYGLOBUS="pyGlobus"
-export PYGLOBUS_VER="cvs-9"
+export PYGLOBUS_VER="cvs-10"
 
 export AGRAT="AccessGrid-rat"
 export AGRAT_VER="4.2.22-2"
@@ -38,7 +38,7 @@ AccessGrid
 AccessGrid-VenueClient
 AccessGrid-VenueServer
 AccessGrid-BridgeServer"
-export AG_VER="2.1.2-8"
+export AG_VER="2.1.2-9"
 
 
 #################################################################
