@@ -3,13 +3,13 @@
 # Purpose:     
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.50 2004-05-07 16:57:30 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.51 2004-05-12 21:02:27 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.50 2004-05-07 16:57:30 turam Exp $"
+__revision__ = "$Id: Types.py,v 1.51 2004-05-12 21:02:27 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -18,8 +18,6 @@ import sys
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.Types)
-
-from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetParameter, CreateParameter
 
 class AGResource:
     def __init__( self, type=None, resource="", role="" ):
@@ -236,12 +234,3 @@ class AGServicePackage:
     def GetName(self):
         return self.serviceDesc.name
 
-class ServiceConfiguration:
-    """
-    ServiceConfiguration encapsulates the configuration of 
-    AGServices
-    """
-    def __init__( self, resource=AGResource(), executable="", parameters=dict() ):
-        self.resource = resource
-        self.executable = executable
-        self.parameters = map( lambda parm: CreateParameter( parm ), parameters )
