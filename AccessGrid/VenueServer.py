@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.176 2004-12-10 14:25:20 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.177 2004-12-15 17:52:22 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.176 2004-12-10 14:25:20 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.177 2004-12-15 17:52:22 judson Exp $"
 
 # Standard stuff
 import sys
@@ -1040,6 +1040,8 @@ class VenueServer(AuthorizationMixIn):
 
         self.services[serviceDescription.GetPrivateId()] = serviceDescription
 
+        # Send service registered event
+
         return serviceDescription.GetPrivateId()
     
     def UnregisterService(self, serviceDescription):
@@ -1053,7 +1055,8 @@ class VenueServer(AuthorizationMixIn):
             i_sd = self.services[privId]
             if serviceDescription == i_sd:
                 del self.services[privId]
-                # Send remove event
+
+                # Send service unregistered event
         else:
             return -1
 
