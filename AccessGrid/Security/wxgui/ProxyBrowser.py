@@ -6,6 +6,8 @@ from AccessGrid.Security.Utilities import GetCNFromX509Subject
 from CertificateBrowserBase import CertificateBrowserBase
 from CertificateViewer import CertificateViewer
 
+import time
+import os
 
 class ProxyBrowser(CertificateBrowserBase):
     def __init__(self, parent, id, certMgr):
@@ -30,6 +32,10 @@ class ProxyBrowser(CertificateBrowserBase):
         EVT_BUTTON(self, b.GetId(), self.OnViewCertificate)
         sizer.Add(b, 0, wxEXPAND)
 
+        b = wxButton(self, -1, "Refresh")
+        EVT_BUTTON(self, b.GetId(), lambda event, self = self: self.Load())
+        sizer.Add(b, 0, wxEXPAND)
+
     def OnCreate(self, event):
         pass
 
@@ -37,7 +43,33 @@ class ProxyBrowser(CertificateBrowserBase):
         pass
 
     def OnDestroy(self, event):
-        pass
+
+        cert = self.GetSelectedCertificate()
+        if cert is None:
+            return
+
+        dlg = wxMessageDialog(self,
+                              "Really delete proxy for identity " +
+                              cert.GetShortSubject() + "?",
+                              "Really delete?",
+                              style = wxYES_NO | wxNO_DEFAULT)
+
+        ret = dlg.ShowModal()
+        dlg.Destroy()
+
+        if ret == wxID_NO:
+            return
+
+        #
+        # Deleting a proxy is just a matter of deleting the file.
+        #
+
+        try:
+            os.unlink(self.certMgr.GetProxyPath())
+        except:
+            log.exception("exception removing proxy certificate");
+
+        self.Load()
 
     def OnCertActivated(self, event, cert):
         if cert is None:
@@ -57,6 +89,7 @@ class ProxyBrowser(CertificateBrowserBase):
     #
     # Overrides from superclass.
     #
+
 
     def _LoadCerts(self):
         proxies = []
@@ -87,7 +120,33 @@ class ProxyBrowser(CertificateBrowserBase):
         else:
             issuer = GetCNFromX509Subject(validIssuers[0].GetIssuer())
 
-        valid = self.certMgr.CheckValidity(cert)
+        if cert.IsExpired():
+            validity = "Expired"
+
+        elif not self.certMgr.VerifyCertificatePath(cert):
+            validity = "Missing CA"
+
+        else:
+            #
+            # Otherwise, return the remaining lifetime.
+            #
+
+            left = cert.GetNotValidAfter() - int(time.time())
+
+            valid = ""
+            if left > 86400:
+                days = int(left / 86400)
+                valid += "%dd " % (days)
+
+                left = left % 86400
+
+            hour = int(left / 3600)
+            left = left % 3600
+
+            min = int(left / 60)
+            sec = left % 60
+
+            valid += "%02d:%02d:%02d left" % (hour, min, sec)
 
         return cert, [name, issuer, valid]
 
@@ -95,5 +154,5 @@ class ProxyBrowser(CertificateBrowserBase):
         return ["Proxy for", "Issuer", "Validity"]
 
     def _getListColumnWidths(self):
-        return [wxLIST_AUTOSIZE, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE]
+        return [wxLIST_AUTOSIZE, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE_USEHEADER ]
 
