@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.223 2004-08-20 22:30:52 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.224 2004-08-23 18:25:40 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.223 2004-08-20 22:30:52 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.224 2004-08-23 18:25:40 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -329,15 +329,16 @@ class Venue(AuthorizationMixIn):
         else:
             self.uniqueId = str(GUID())
 
+        # Initialize Authorization Stuff
         AuthorizationMixIn.__init__(self)
-        allowedEntryRole = Role.Role("AllowedEntry")
-        self.AddRequiredRole(allowedEntryRole)
-        venueUsersRole = Role.Role("VenueUsers")
-        self.AddRequiredRole(venueUsersRole)
-        admin = Role.Role("Administrators")
-        admin.SetRequireDefault(1)
-        self.AddRequiredRole(admin)
+        self.AddRequiredRole(Role.Role("AllowedEntry"))
+        self.AddRequiredRole(Role.Role("VenueUsers"))
+        self.AddRequiredRole(Role.Administrators)
         self.AddRequiredRole(Role.Everybody)
+
+        rl = self.GetRequiredRoles()
+        self.authManager.AddRoles(rl)
+
         # Default actions for Entry Roles.
         self.defaultEntryActionNames = ["Enter", "Exit", "GetStreams",
                                         "GetStaticStreams",
@@ -376,10 +377,6 @@ class Venue(AuthorizationMixIn):
         # Default actions for VenueUsers Roles.
         self.defaultVenueUserActionNames = []
 
-        admin.AddSubject(self.servicePtr.GetDefaultSubject())
-        
-        # Set parent auth mgr to server so administrators cascades?
-
         log.debug("------------ STARTING VENUE")
         self.server = server
         self.name = name
@@ -408,10 +405,8 @@ class Venue(AuthorizationMixIn):
         self.netServices = dict()
         self.networkServicesManager = NetworkServicesManager()
         
-        #
         # Dictionary keyed on client private id; value
         # true if a remove is in process on this client.
-        #
         self.clientsBeingRemoved = {}
         self.clientsBeingRemovedLock = ServerLock("clientRemove")
 
@@ -441,10 +436,7 @@ class Venue(AuthorizationMixIn):
                                              self.EventServiceClientExits)
 
 
-        #
         # Create the directory to hold the venue's data.
-        #
-
         log.debug("data store location: %s" % dataStoreLocation)
 
         if dataStoreLocation is None or not os.path.exists(dataStoreLocation):
@@ -498,30 +490,18 @@ class Venue(AuthorizationMixIn):
 
     def _AddDefaultRolesToActions(self):
         # Initialize actions with the roles they contain by default.
-
+        log.info("Building auth policy.")
+        
         # Add default entry roles to entry actions.
-        allowedEntryRole = self.authManager.FindRole("AllowedEntry")
-        everybodyRole = Role.Everybody
         for actionName in self.defaultEntryActionNames:
-            action = self.authManager.FindAction(actionName)
-            if action != None:
-                if not action.HasRole(allowedEntryRole):
-                    action.AddRole(allowedEntryRole)
-                if not action.HasRole(everybodyRole):
-                    action.AddRole(everybodyRole)
-            else:
-                raise Exception, "DefaultActionNotFound " + actionName
+            self.authManager.AddRoleToAction(actionName, "AllowedEntry")
+            self.authManager.AddRoleToAction(actionName,
+                                             Role.Everybody.GetName())
 
         # Add default entry roles to venueusers actions.
         # Currently no actions include VenueUsers
-        venueUsersRole = self.authManager.FindRole("VenueUsers")
         for actionName in self.defaultVenueUserActionNames:
-            action = self.authManager.FindAction(actionName)
-            if action != None:
-                if not action.HasRole(venueUsersRole):
-                    action.AddRole(venueUsersRole)
-            else:
-                raise Exception, "DefaultActionNotFound " + actionName
+            self.authManager.AddRoleToAction(actionName, "VenueUsers")
 
     def AsINIBlock(self):
         """
@@ -579,7 +559,7 @@ class Venue(AuthorizationMixIn):
         policy = re.sub("\r\n", "<CRLF>", policy)
         policy = re.sub("\r", "<CR>", policy)
         policy = re.sub("\n", "<LF>", policy)
-        string += 'authorizationPolicy : %s' %policy
+        string += 'authorizationPolicy : %s\n' % policy
 
         #
         ##  END OF VENUE SECTION
@@ -2282,8 +2262,6 @@ class Venue(AuthorizationMixIn):
         roleNameList = map( lambda r: r.GetName(), roleList )
         return roleNameList
         
-
-
 class VenueI(SOAPInterface, AuthorizationIMixIn):
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
@@ -2301,8 +2279,8 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
 
         subject, action = self._GetContext()
         
-        log.info("Authorizing action: %s for subject %s", action.name,
-                 subject.name)
+        log.info("Authorizing action: %s for subject %s", action.GetName(),
+                 subject.GetName())
 
         authManager = self.impl.authManager
         
@@ -2344,7 +2322,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
             clientProfile.distinguishedName = ""
         else:
             subject = self._GetCaller()
-            clientProfile.distinguishedName = subject.name
+            clientProfile.distinguishedName = subject.GetName()
 
         # Call Enter
         try:
@@ -2395,8 +2373,6 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         except:
             log.exception("VenueI.RemoveNetworkService: exception")
             raise
-
-        
 
     def AddNetworkService(self, clientType, privateId=None):
         """
@@ -2910,7 +2886,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
             clientProfile.distinguishedName = ""
         else:
             subject = self._GetCaller()
-            clientProfile.distinguishedName = subject.name
+            clientProfile.distinguishedName = subject.GetName()
         
         try:
             self.impl.UpdateClientProfile(clientProfile)
