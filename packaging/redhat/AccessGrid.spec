@@ -81,75 +81,6 @@ The Access Grid Toolkit provides the necessary components for users to participa
 
 This module provides the components needed to create an Access Grid Venue and an Access Grid Venue Server.
 
-#
-# The following defines the AccessGrid-VideoProducer rpm
-# Requires: AccessGrid
-# Requires: AccessGrid-vic
-# Obsoletes: AccessGrid-VideoProducer-2.0alpha
-#
-%package VideoProducer
-Summary:	The Access Grid Toolkit Video Producer Service
-Version:	%{version}
-Release:	%{release}
-Group:		Utilities/System
-Requires:	AccessGrid = %{version}-%{release}
-Requires:	AccessGrid-vic
-Obsoletes:	AccessGrid-VideoProducer-2.0beta AccessGrid-VideoProducer-2.1
-
-%description VideoProducer
-The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
-
-This module provides the components needed to run the Video Producer service. This service is responsible for capturing and transmitting an Access Grid Node's video.
-
-#
-# The following defines the AccessGrid-VideoConsumer rpm
-# Requires: AccessGrid
-# Obsoletes: AccessGrid-VideoConsumer-2.0alpha
-#
-%package VideoConsumer
-Summary:	The Access Grid Toolkit Video Consumer Service
-Version:	%{version}
-Release:	%{release}
-Group:		Utilities/System
-Requires:	AccessGrid = %{version}-%{release}
-Obsoletes:	AccessGrid-VideoConsumer-2.0beta AccessGrid-VideoConsumer-2.1
-
-%description VideoConsumer
-The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
-
-This module provides the components needed to run the Video Consumer service. This service is responsible for receiving remote Access Grid Nodes' video.
-
-#
-# The following defines the AccessGrid-AudioService rpm
-# Requires: AccessGrid
-# Requires: AccessGrid-rat
-# Obsoletes: AccessGrid-AudioService-2.0alpha
-#
-%package AudioService
-Summary:	The Access Grid Toolkit Audio Service
-Version:	%{version}
-Release:	%{release}
-Group:		Utilities/System
-Requires:	AccessGrid = %{version}-%{release}
-Requires:	AccessGrid-rat
-Obsoletes:	AccessGrid-AudioService-2.0beta AccessGrid-AudioService-2.1
-
-%description AudioService
-The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
-
-This module provides the components needed to run the Audio service. This service is responsible for capturing and transmitting your Access Grid Node's audio as well as receiving remote Access Grid Nodes' audio.
-
-#
-# The following defines the AccessGrid-BridgeServer rpm
-# Requires: AccessGrid
-#
-%package BridgeServer
-Summary:	The Access Grid Toolkit Bridge Server
-Version:	%{version}
-Release:	%{release}
-Group:		Utilities/System
-Requires:	AccessGrid = %{version}-%{release}
-
 %description BridgeServer
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
 
@@ -265,38 +196,9 @@ mv %{buildroot}%{prefix}/etc %{buildroot}
 %{kdedir}/%{name}/VenueManagement.desktop
 
 #
-# Define the files that are to go into the AccessGrid-VideoProducer package
-# - Install SetupVideo.py with executable permissions
-# - Install the local service file and make them owned by user ag
-#
-
-#%files VideoProducer
-#%defattr(0755,root,root)
-#%{prefix}/bin/SetupVideo.py
-#%defattr(0664,ag,ag)
-#%{aghome}/local_services/VideoProducerService.*
-
-#
-# Define the files that are to go into the AccessGrid-VideoConsumer package
-# - Install the local service file and make them owned by user ag
-#
-
-#%files VideoConsumer
-#%defattr(0664,ag,ag)
-#%{aghome}/local_services/VideoConsumerService.*
-
-#
-# Define the files that are to go into the AccessGrid-AudioService package
-# - Install the local service file and make them owned by user ag
-#
-
-#%files AudioService
-#%defattr(0664,ag,ag)
-#%{aghome}/local_services/AudioService.*
-
-#
-# Define the files that are to go into the AccessGrid-AudioService package
-# - Install the local service file and make them owned by user ag
+# Define the files that are to go into the AccessGrid-BridgeServer package
+# - Install the python BridgeServer implementation
+# - Install the QuickBridge executable
 #
 
 %files BridgeServer
