@@ -6,69 +6,72 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceService.py,v 1.4 2003-01-06 20:50:22 judson Exp $
+# RCS-ID:      $Id: CoherenceService.py,v 1.5 2003-01-13 05:16:28 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import socket
+import select
+import sys
+import time
 import struct
 from threading import Thread
 
 from NetworkLocation import UnicastNetworkLocation
 
 class ConnectionHandler(Thread):
-    server = None
-    connection = None
-    address = ''
-    run = 0
-    
     def __init__(self, server, connection, address):
         Thread.__init__(self)
         self.server = server
         self.connection = connection
         self.address = address
+        self.running = 0
         
-    def Stop(self):
-        self.run = 0
-        
+    def stop(self):
+        self.running = 0
+
     def send(self, data):
         self.connection.send(data)
         
     def run(self):
-        self.run = 1
-        while(self.run):
+        self.running = 1
+        while(self.running == 1):
             try:
                 data = self.connection.recv(1024)
             except:
                 self.connection.close()
-                self.run = 0
+                self.running = 0
             if not data: break 
             self.server.distribute(data)
-            
+        self.connection.close()
+        sys.stderr.write("Connection Handler Exiting\n")
+        
 class AcceptHandler(Thread):
-    socket = None
-    server = None
-    run = 0
-    
     def __init__(self, server, socket):
         Thread.__init__(self)
         self.server = server
         self.socket = socket
-    
-    def Stop(self):
-        self.run = 0
+        self.running = 0
+
+    def stop(self):
+        self.running = 0
         
     def run(self):
-        self.run = 1
-        while(self.run == 1):
-            connection, address = self.socket.accept()
-            addressString = "%s:%d" % (address[0], address[1])
-            self.server.connections[addressString] = ConnectionHandler(self.server, 
-                                                                 connection, 
-                                                                 addressString)
-            self.server.connections[addressString].start()    
-
+        self.running = 1
+        while(self.running == 1):
+            sys.stderr.write("AH Running\n")
+            rr,rw,re = select.select([self.socket], [], [], 30)
+            if(len(rr) != 0 and self.running):
+                print rr
+                connection, address = rr[0].accept()
+                addressString = "%s:%d" % (address[0], address[1])
+                self.server.connections[addressString] = ConnectionHandler(self.server, 
+                                                                           connection, 
+                                                                           addressString)
+                self.server.connections[addressString].start()
+        sys.stderr.write("Accept Handler Exiting\n")
+        
 class CoherenceService(Thread):
     connections = {}
     location = None
@@ -78,13 +81,28 @@ class CoherenceService(Thread):
     def __init__(self, location):
         Thread.__init__(self)
         self.location = location
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.bind((self.location.GetHost(), self.location.GetPort()))
     
     def run(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((self.location.GetHost(), self.location.GetPort()))
-        sock.listen(1)
-        acceptThread = AcceptHandler(self, sock)
-        acceptThread.start()
+        self.running = 1
+        self.sock.listen(1)
+        self.acceptThread = AcceptHandler(self, self.sock)
+        self.acceptThread.start()
+        while(self.running == 1):
+            print "Still running"
+            time.sleep(1)
+            
+    def stop(self):
+        """ """
+        print "Stopping acceptor"
+        self.acceptThread.stop()
+        print "Shutting down active connections"
+        for c in self.connections.keys():
+            self.connections[c].stop()
+        print "Closing listening socket"
+        self.sock.close()
+        self.running = 0
         
     def SetLocation(self, location):
         self.location = location
@@ -106,3 +124,6 @@ if __name__ == "__main__":
   print "Creating new CoherenceService at %s %d." % (nl.GetHost(), nl.GetPort())
   coherence = CoherenceService(nl)
   coherence.start()
+
+  time.sleep(30)
+  coherence.stop()

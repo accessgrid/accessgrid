@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceClient.py,v 1.3 2003-01-06 20:50:22 judson Exp $
+# RCS-ID:      $Id: CoherenceClient.py,v 1.4 2003-01-13 05:16:28 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -51,6 +51,6 @@ def test(data):
     
 if __name__ == "__main__":
     import sys
-    coherenceClient = CoherenceClient('buffalojump.mcs.anl.gov', 9000, test)
+    coherenceClient = CoherenceClient('buffalojump.mcs.anl.gov', 6500, test)
     coherenceClient.start()
     coherenceClient.test_serve(sys.argv[1])
