@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.50 2004-03-30 18:56:05 eolson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.51 2004-03-31 22:14:14 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.50 2004-03-30 18:56:05 eolson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.51 2004-03-31 22:14:14 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -330,7 +330,7 @@ class AGServiceManagerDescription:
 class AGServiceDescription:
     def __init__( self, name, description, uri, capabilities,
                   resource, executable, serviceManagerUri,
-                  servicePackageUri ):
+                  servicePackageUri, version ):
         self.name = name
         self.description = description
 
@@ -341,6 +341,7 @@ class AGServiceDescription:
         self.executable = executable
         self.serviceManagerUri = serviceManagerUri
         self.servicePackageUri = servicePackageUri
+        self.version = version
     
 class VenueState:
     def __init__( self, uniqueId, name, description, uri, connections,
@@ -629,7 +630,8 @@ def CreateAGServiceDescription(svcDescStruct):
                                    svcDescStruct.resource, 
                                    svcDescStruct.executable, 
                                    svcDescStruct.serviceManagerUri,
-                                   svcDescStruct.servicePackageUri )
+                                   svcDescStruct.servicePackageUri,
+                                   svcDescStruct.version )
     return svcDesc
 
 
