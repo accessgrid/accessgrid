@@ -56,11 +56,11 @@ if options.verbose:
 # Create source tarballs
 #
 print "\n\n---- Create source tarballs\n"
-os.chdir(DestDir)
+os.chdir(SourceDir)
 
 # - Create dependency source tarballs
 pyglobusTar = '%s-%s.tar.gz' % (PYGLOBUS,PYGLOBUS_VER)
-cmd = 'tar czf %s -C %s pyGlobus' % (pyglobusTar,SourceDir)
+cmd = 'tar czf %s pyGlobus-%s' % (pyglobusTar,PYGLOBUS_VER)
 if options.verbose:
     print "creating", pyglobusTar
     print 'cmd = ', cmd
@@ -70,7 +70,7 @@ if ret != 0:
     sys.exit(1)
 
 pyopensslTar = '%s-%s.tar.gz' % (PYOPENSSL,PYOPENSSL_VER)
-cmd = 'tar czf %s -C %s pyOpenSSL' % (pyopensslTar,SourceDir)
+cmd = 'tar czf %s pyOpenSSL' % (pyopensslTar,)
 if options.verbose:
     print "creating", pyopensslTar
     print 'cmd = ', cmd
@@ -80,7 +80,7 @@ if ret != 0:
     sys.exit(1)
 
 agmediaTar = '%s-%s.tar.gz' % (AGMEDIA,AGMEDIA_VER)
-cmd = 'tar czf %s -C %s ag-media' % (agmediaTar,SourceDir)
+cmd = 'tar czf %s ag-media' % (agmediaTar,)
 if options.verbose:
     print "creating", agmediaTar
     print 'cmd = ', cmd
@@ -96,7 +96,7 @@ if os.path.exists(ag):
     os.remove(ag)
 os.symlink(options.builddir,ag)
 agTar = '%s.tar.gz' % (ag,)
-cmd = 'tar czhf %s/%s %s' % (DestDir,agTar,ag)
+cmd = 'tar czhf %s/%s %s' % (SourceDir,agTar,ag)
 if options.verbose:
     print "creating", agTar
     print 'cmd = ', cmd
@@ -152,7 +152,7 @@ f = os.popen('find . -name "*.ebuild"')
 ebuilds = map( lambda x: x.strip(), f.readlines() )
 f.close()
 for ebuild in ebuilds:
-    cmd = 'DISTDIR=%s ebuild %s digest' % (DestDir,ebuild,)
+    cmd = 'DISTDIR=%s ebuild %s digest' % (SourceDir,ebuild,)
     if options.verbose:
         print "cmd = ", cmd
     ret = os.system(cmd)
