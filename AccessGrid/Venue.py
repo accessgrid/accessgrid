@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.142 2003-10-21 19:52:05 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.143 2004-02-18 17:39:16 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.142 2003-10-21 19:52:05 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.143 2004-02-18 17:39:16 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -41,6 +41,7 @@ from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
 from AccessGrid.Descriptions import CreateDataDescription, DataDescription
 from AccessGrid.Descriptions import BadDataDescription, BadServiceDescription
+from AccessGrid.Descriptions import BadApplicationDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
 from AccessGrid.DataStore import DataService
@@ -57,7 +58,7 @@ from AccessGrid.hosting.pyGlobus import Client
 # do when we have WSDL; at that time, these imports and the corresponding calls
 # should be removed
 from AccessGrid.ClientProfile import CreateClientProfile
-from AccessGrid.Descriptions import CreateServiceDescription
+from AccessGrid.Descriptions import CreateServiceDescription, CreateApplicationDescription
 
 log = logging.getLogger("AG.VenueServer")
 
@@ -300,7 +301,6 @@ class Venue(ServiceBase.ServiceBase):
         """
         Venue constructor.
         """
-
         log.debug("------------ STARTING VENUE")
         self.server = server
         self.name = name
@@ -1163,14 +1163,13 @@ class Venue(ServiceBase.ServiceBase):
         *serviceDescription* Upon successfully adding the service.
         """
 
-        name = serviceDescription.name
-
-        if self.services.has_key(name):
+        if self.services.has_key(serviceDescription.id):
             self.simpleLock.release()
-            log.exception("AddService: service already present: %s", name)
+            log.exception("AddService: service already present: %s",
+                          serviceDescription.name)
             raise ServiceAlreadyPresent
 
-        self.services[serviceDescription.name] = serviceDescription
+        self.services[serviceDescription.id] = serviceDescription
 
         log.debug("Distribute ADD_SERVICE event %s", serviceDescription)
 
@@ -1180,6 +1179,40 @@ class Venue(ServiceBase.ServiceBase):
         serviceDescription ) )
 
         return serviceDescription
+
+    def UpdateService(self, serviceDescription):
+        """
+        The UpdateService method enables VenuesClients to modify
+        a service description.
+
+        **Arguments:**
+
+        *serviceDescription* A real service description.
+
+        **Raises:**
+
+        *ServiceNotFound* Raised when service is not found.
+
+        **Returns:**
+
+        *serviceDescription* Upon successfully adding the service.
+        """
+        if not self.services.has_key(serviceDescription.id):
+            self.simpleLock.release()
+            log.exception("Service not found!")
+            raise ServiceNotFound
+
+        self.services[serviceDescription.id] = serviceDescription
+
+        log.debug("Distribute UPDATE_SERVICE event %s", serviceDescription)
+
+        self.server.eventService.Distribute( self.uniqueId,
+        Event( Event.UPDATE_SERVICE,
+        self.uniqueId,
+        serviceDescription ) )
+
+        return serviceDescription
+        
 
     def RemoveService(self, serviceDescription):
         """
@@ -1197,12 +1230,12 @@ class Venue(ServiceBase.ServiceBase):
 
         *serviceDescription* Upon successfully removing the service.
         """
-        if not serviceDescription.name in self.services:
+        if not serviceDescription.id in self.services:
             self.simpleLock.release()
             log.exception("Service not found!")
             raise ServiceNotFound
 
-        del self.services[serviceDescription.name ]
+        del self.services[serviceDescription.id]
 
         log.debug("Distribute REMOVE_SERVICE event %s", serviceDescription)
 
@@ -1261,6 +1294,49 @@ class Venue(ServiceBase.ServiceBase):
 
     wsAddService.soap_export_as = "AddService"
 
+    def wsUpdateService(self, servDescStruct ):
+        """
+        Interface to remove a service from the venue.
+        
+        **Arguments:**
+
+        *servDescStruct* an anonymous struct that contains a
+        service description.
+
+        **Raises:**
+
+        *BadServiceDescription* This is raised if the anonymous
+        struct can't be converted to a real service description.
+
+        **Returns:**
+
+        *serviceDescription* A service description is returned on success.
+
+        """
+        log.debug("wsUpdateService")
+
+        try:
+            serviceDescription = CreateServiceDescription(servDescStruct)
+        except:
+            log.exception("wsUpdateService: Bad service description.")
+            raise BadServiceDescription
+
+        try:
+            self.simpleLock.acquire()
+            
+            returnValue = self.UpdateService(serviceDescription)
+            
+            self.simpleLock.release()
+            
+            return returnValue
+        
+        except:
+            self.simpleLock.release()
+            log.exception("wsRemoveService: exception")
+            raise
+
+    wsUpdateService.soap_export_as = "UpdateService"
+
     def wsRemoveService(self, servDescStruct ):
         """
         Interface to remove a service from the venue.
@@ -1284,7 +1360,7 @@ class Venue(ServiceBase.ServiceBase):
 
         # if not self._Authorize():
         #     raise NotAuthorized
-
+       
         try:
             serviceDescription = CreateServiceDescription(servDescStruct)
         except:
@@ -1938,6 +2014,79 @@ class Venue(ServiceBase.ServiceBase):
         dataDescription ) )
 
 
+    def wsModifyData(self, dataDescriptionStruct):
+        """
+        Interface for modifying data.
+
+        **Arguments:**
+
+        *dataDescriptionStruct* Data description of the data we want to modify.
+
+        **Raises:**
+
+        *BadDataDescription* This is raised if the data
+        description struct cannot be converted to a real data
+        description.
+
+        **Returns:**
+
+        *dataDescription* A data description is returned on success.
+        """
+        log.debug("wsModifyData")
+        
+        try:
+            dataDescription = CreateDataDescription(dataDescriptionStruct)
+        except:
+            log.exception("wsModifyData: Bad Data Description.")
+            raise BadDataDescription
+
+        try:
+            self.simpleLock.acquire()
+
+            returnValue = self.ModifyData(dataDescription)
+
+            self.simpleLock.release()
+
+            return returnValue
+        
+        except:
+            self.simpleLock.release()
+            log.exception("wsModifyData: exception")
+            raise
+
+    wsModifyData.soap_export_as = "ModifyData"
+
+    def ModifyData(self, dataDescription):
+        """
+        ModifyData modifies data in the Virtual Venue.
+        **Arguments:**
+
+        *dataDescription* A real data description.
+
+        **Raises:**
+
+        *DataNotFound* Raised when the data is not found in the Venue.
+
+        **Returns:**
+
+        *dataDescription* Upon successfully modifying the data.
+        """
+
+        name = dataDescription.name
+
+        # This is venue resident so modify the file
+        if(dataDescription.type is None or dataDescription.type == "None"):
+            self.dataStore.ModifyData(dataDescription)
+            self.server.eventService.Distribute( self.uniqueId,
+                                                 Event( Event.UPDATE_DATA,
+                                                        self.uniqueId,
+                                                        dataDescription ) )
+            
+        else:
+            log.info("Venue.ModifyData tried to modify non venue data. That should not happen")
+            
+        return dataDescription
+
     def wsRemoveData(self, dataDescriptionStruct ):
         """
         Interface for removing data.
@@ -2177,6 +2326,43 @@ class Venue(ServiceBase.ServiceBase):
         return appDesc
 
     CreateApplication.soap_export_as = "CreateApplication"
+
+    def UpdateApplication(self, appDescStruct):
+        """
+        Update application.
+
+        **Arguments:**
+
+        *applicationDesc* Object describing the application.
+
+        **Raises:**
+
+        *ApplicationNotFound* Raised when an application is not
+        found for the application id specified.
+        """
+             
+        if not self.applications.has_key(appDescStruct.id):
+            raise ApplicationNotFound
+
+        try:
+            applicationDesc = CreateApplicationDescription(appDescStruct)
+        except:
+            log.exception("wsUpdateApplication: Bad application description.")
+            raise BadApplicationDescription
+
+        self.applications[applicationDesc.id] = applicationDesc
+        
+        self.server.eventService.Distribute( self.uniqueId,
+                                             Event( Event.UPDATE_APPLICATION,
+                                                    self.uniqueId,
+                                                    applicationDesc ) )
+
+        log.debug("Update Application: id=%s handle=%s",
+                  applicationDesc.id, applicationDesc.uri)
+
+        return applicationDesc
+
+    UpdateApplication.soap_export_as = "UpdateApplication"
 
     def DestroyApplication(self, appId):
         """
