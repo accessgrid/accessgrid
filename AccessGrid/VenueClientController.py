@@ -2,14 +2,13 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.36 2004-09-03 13:45:05 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.37 2004-10-21 20:58:17 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.36 2004-09-03 13:45:05 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.37 2004-10-21 20:58:17 lefvert Exp $"
 __docformat__ = "restructuredtext en"
-
 # standard imports
 import cPickle
 import os
@@ -24,6 +23,7 @@ from AccessGrid import DataStore
 from AccessGrid.AppDb import AppDb
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Descriptions import ServiceDescription, DataDescription
+from AccessGrid.Descriptions import ApplicationDescription, AGNetworkServiceDescription
 from AccessGrid.Descriptions import ApplicationDescription, ApplicationCmdDescription
 from AccessGrid.NetworkLocation import ProviderProfile
 from AccessGrid.Platform.Config import UserConfig, MimeConfig, AGTkConfig
@@ -1102,10 +1102,11 @@ class VenueClientController:
                     command = command+" %(appUrl)s"
             else:
                 command = "\"%(appUrl)s\""
-            
+                   
         else:
             # Get the app dir and go there
-            if isinstance(objDesc, ApplicationDescription):
+            if (isinstance(objDesc, ApplicationDescription) or
+                isinstance(objDesc, AGNetworkServiceDescription)):
                 name = self.__venueClientApp.GetNameForMimeType(objDesc.mimeType)
                 if name != None:
                     appName = '_'.join(name.split(' '))
@@ -1166,7 +1167,7 @@ class VenueClientController:
         # environment variable
         prog = re.compile("\%[a-zA-Z0-9\_]*\%")
         result = prog.match(command)
-
+                
         if result != None:
             subStr = result.group()
 
@@ -1194,7 +1195,7 @@ class VenueClientController:
             aList = realCommand.split(' ')
             cmd = aList[0]
             argList = aList[1:]
-        
+
         processManager.StartProcess(cmd,argList)
         
     def StopApplications(self):
@@ -1327,7 +1328,7 @@ class VenueClientApp:
             commandList = self.mimeConfig.GetMimeCommands(
                 mimeType = objDesc.mimeType,
                 ext = ext)
-
+    
         elif isinstance(objDesc,DataDescription):
             # Data and Service commands are retrieved from the mime db
             list = objDesc.name.split('.')
@@ -1335,6 +1336,11 @@ class VenueClientApp:
             if len(list) == 2:
                 ext = list[1]
             commandList = self.mimeConfig.GetMimeCommands(ext = ext)
+
+        elif isinstance(objDesc, AGNetworkServiceDescription):
+            commandList = dict()
+            commandList.update(self.userAppDatabase.GetCommands(objDesc.mimeType))
+            commandList.update(self.systemAppDatabase.GetCommands(objDesc.mimeType))
 
         elif isinstance(objDesc,ApplicationDescription):
             # Application commands are retrieved from the app db

@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.66 2004-09-10 03:58:53 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.67 2004-10-21 20:58:17 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.66 2004-09-10 03:58:53 judson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.67 2004-10-21 20:58:17 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -355,26 +355,32 @@ class AGServiceDescription:
         self.servicePackageFile = servicePackageFile
         self.version = version
 
-class AGNetworkServiceDescription:
-    def __init__(self, name, description, url, venues, inCapabilities, outCapabilities, version):
+class AGNetworkServiceDescription(ObjectDescription):
+    def __init__(self, name, description, uri, mimeType, extension,
+                 inCapabilities, outCapabilities, version, visible):
+        ObjectDescription.__init__(self, name)
         self.name = name
         self.description = description
-        self.url = url
+        self.uri = uri
+        self.mimeType = mimeType
+        self.extension = extension
         self.version = version
-        self.venues = venues
+        self.visible = visible
         
         self.inCapabilities = inCapabilities
         self.outCapabilities = outCapabilities
-
+    
     def ToString(self):
-        s = 'Name: %s, \nDescription %s, \nVersion %s, \nVenueUrl %s' %(self.name, self.description, self.version, self.venues)
+        s = 'Name: %s, \nDescription %s, \nVersion %s, \nMimetype %s, \nExtension %s' %(self.name, self.description, self.version, self.mimeType, self.extension)
 
         s = s + '\nIn Capabilities'
         for cap in self.inCapabilities:
             s = s + cap + '\n'
-        s = s+ '\nOut Capabilities'
-        for cap in self.outCapabilities:
-            s = s + cap + '\n'
+
+        if self.outCapabilities:
+            s = s+ '\nOut Capabilities'
+            for cap in self.outCapabilities:
+                s = s + cap + '\n'
 
         return s
        
@@ -723,11 +729,13 @@ def CreateAGServiceDescription(svcDescStruct):
 def CreateAGNetworkServiceDescription(svcDescStruct):
     svcDesc = AGNetworkServiceDescription(svcDescStruct.name, 
                                           svcDescStruct.description, 
-                                          svcDescStruct.url,
-                                          svcDescStruct.venues,
+                                          svcDescStruct.uri,
+                                          svcDescStruct.mimeType,
+                                          svcDescStruct.extension,
                                           svcDescStruct.inCapabilities,
                                           svcDescStruct.outCapabilities,
-                                          svcDescStruct.version)
+                                          svcDescStruct.version,
+                                          svcDescStruct.visible)
     return svcDesc
 
 
@@ -752,11 +760,11 @@ def CreateNetworkLocation(networkLocationStruct):
                                                  networkLocationStruct.port)
     elif networkLocationStruct.type == MulticastNetworkLocation.TYPE:
         networkLocation = MulticastNetworkLocation(networkLocationStruct.host,
-                                                 networkLocationStruct.port,
-                                                 networkLocationStruct.ttl)
+                                                   networkLocationStruct.port,
+                                                   networkLocationStruct.ttl)
     else:
         raise Exception, "Unknown network location type %s" % (networkLocationStruct.type,)
-    
+
     networkLocation.profile = ProviderProfile(networkLocationStruct.profile.name,
                                               networkLocationStruct.profile.location)                                                                                                 
     networkLocation.id = networkLocationStruct.id
