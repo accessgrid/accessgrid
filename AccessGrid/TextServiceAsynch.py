@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.22 2004-04-05 13:42:51 judson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.23 2004-04-05 19:03:42 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.22 2004-04-05 13:42:51 judson Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.23 2004-04-05 19:03:42 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client, Server
@@ -95,7 +95,8 @@ class ConnectionHandler:
     def acceptCallback(self, arg, handle, result):
         try:
             if result[0] != 0:
-                log.debug("TextServiceAsynch: acceptCallback returned failure: %s %s", result[1], result[2])
+                log.debug("TextServiceAsynch: acceptCallback returned failure: %d %s", result[1], result[2])
+                self.server.registerForListen()
                 return
 
             logTextEvent("Accept Callback '%s' '%s' '%s'", arg, handle, result)
@@ -158,7 +159,7 @@ class ConnectionHandler:
         logTextEvent("Got read handle=%s ret=%s  n=%s \n", handle, result, n)
 
         if result[0] != 0:
-            log.debug("TextServiceAsynch: readCallback returned failure: %s %s", result[1], result[2])
+            log.debug("TextServiceAsynch: readCallback returned failure: %d %s", result[1], result[2])
             self.handleEOF()
             return
 
@@ -476,7 +477,8 @@ class TextService:
     def listenCallback(self, arg, handle, result):
         try:
             if result[0] != 0:
-                log.debug("TextServiceAsynch: listenCallback returned failure: %s %s", result[1], result[2])
+                log.debug("TextServiceAsynch: listenCallback returned failure: %d %s", result[1], result[2])
+                self.registerForListen()
                 return
 
             logTextEvent("Listen Callback '%s' '%s' '%s'", arg, handle, result)
@@ -743,6 +745,8 @@ class TextService:
             return
 
         channel.Distribute(data)
+
+        logTextEvent("TextServiceAsynch: Sent Event")
         
     def AddChannel(self, channelId, authCallback = None):
         """
