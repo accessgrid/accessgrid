@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.12 2004-03-24 19:42:53 eolson Exp $
+# RCS-ID:      $Id: Role.py,v 1.13 2004-04-06 18:39:34 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ much more dynamic. We programmatically create, destroy and modify
 roles.
 """
 
-__revision__ = "$Id: Role.py,v 1.12 2004-03-24 19:42:53 eolson Exp $"
+__revision__ = "$Id: Role.py,v 1.13 2004-04-06 18:39:34 eolson Exp $"
 
 # external imports
 import xml.dom.minidom
@@ -37,6 +37,12 @@ class RoleNotFound(Exception):
 class RoleAlreadyPresent(Exception):
     """
     This exception is raised when the role is already known by the software.
+    """
+    pass
+
+class InvalidRole(Exception):
+    """
+    An invalid role was operated upon, specified, or retrieved.
     """
     pass
 
@@ -245,6 +251,8 @@ class Role:
 
         if subject in self.subjects:
             return 1
+        elif self.name == "Everybody" or self.name == "Nobody":
+            return 1
         else:
             return 0
 
@@ -260,6 +268,23 @@ class AllowRole(Role):
     TYPE = "Allow"
     pass
 
+    def ToXML(self, doc):
+        """
+        This method creates the XML specific to the Role class.
+
+        @param doc: a DOM document to create the Role XML from.
+        @type doc: xml.dom.minidom document
+
+        @return: a dom document node.
+        """
+        rx = doc.createElement("AllowRole")
+        rx.setAttribute("name", self.name)
+        rx.setAttribute("TYPE", self.TYPE)
+        for s in self.subjects:
+            rx.appendChild(s.ToXML(doc))
+
+        return rx
+
 class DenyRole(Role):
     """
     The DenyRole class is used to create denial roles.
@@ -272,9 +297,28 @@ class DenyRole(Role):
     TYPE = "Deny"
     pass
 
+    def ToXML(self, doc):
+        """
+        This method creates the XML specific to the Role class.
+
+        @param doc: a DOM document to create the Role XML from.
+        @type doc: xml.dom.minidom document
+
+        @return: a dom document node.
+        """
+        rx = doc.createElement("DenyRole")
+        rx.setAttribute("name", self.name)
+        rx.setAttribute("TYPE", self.TYPE)
+        for s in self.subjects:
+            rx.appendChild(s.ToXML(doc))
+
+        return rx
+
 # Some default roles
-Everybody = AllowRole("EVERYBODY")
-Nobody = DenyRole("NOBODY")
+Everybody = AllowRole("Everybody")
+Everybody.SetRequireDefault(1)
+Nobody = DenyRole("Nobody")
+Nobody.SetRequireDefault(1)
 Administrators = AllowRole("Administrators")
 
 if __name__ == "__main__":
