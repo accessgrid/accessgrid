@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.35 2003-08-12 18:40:48 judson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.36 2003-08-14 21:44:11 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -672,10 +672,12 @@ class NodeManagementClientFrame(wxFrame):
                 print "Exception in AddHost", sys.exc_type, sys.exc_value
                 self.Error(e.faultstring)
                 self.ClearUI()
+                self.UpdateHostList()
                 return
             except:
                 self.Error("Error adding service manager")
                 self.ClearUI()
+                self.UpdateHostList()
                 return
 
             # Update the service manager list
