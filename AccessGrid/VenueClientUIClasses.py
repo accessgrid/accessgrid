@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.294 2003-09-28 23:15:02 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.295 2003-09-29 15:58:00 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.294 2003-09-28 23:15:02 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.295 2003-09-29 15:58:00 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2360,7 +2360,7 @@ class TextClientPanel(wxPanel):
         self.TextOutput = wxTextCtrl(self, self.textOutputId, "",
                                      style= wxTE_MULTILINE|wxTE_READONLY|wxTE_AUTO_URL|wxTE_RICH)
         EVT_TEXT_URL(self, self.TextOutput.GetId(), self.OnUrl)
-        self.label = wxStaticText(self, -1, "Your \nmessage:")
+        self.label = wxStaticText(self, -1, "Your message:")
         self.display = wxButton(self, self.ID_BUTTON, "Display", style = wxBU_EXACTFIT)
         self.textInputId = wxNewId()
         self.TextInput = wxTextCtrl(self, self.textInputId, "", size = wxSize(1000, 40),
