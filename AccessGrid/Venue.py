@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.174 2004-04-02 19:07:02 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.175 2004-04-06 18:54:35 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.174 2004-04-02 19:07:02 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.175 2004-04-06 18:54:35 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -29,6 +29,7 @@ from threading import Condition, Lock
 
 from AccessGrid import Log
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
+from AccessGrid.Toolkit import Application
 
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerI
@@ -313,12 +314,29 @@ class Venue(AuthorizationMixIn):
             self.uniqueId = str(GUID())
 
         AuthorizationMixIn.__init__(self)
-        self.AddRequiredRole(Role.Role("AllowedEntry"))
-        self.AddRequiredRole(Role.Role("DisallowedEntry"))
-        self.AddRequiredRole(Role.Role("VenueUsers"))
-        admin = Role.Role("Administrators")
+        allowedEntryRole = Role.AllowRole("AllowedEntry")
+        allowedEntryRole.SetRequireDefault(1)
+        self.AddRequiredRole(allowedEntryRole)
+        disallowedEntryRole = Role.DenyRole("DisallowedEntry")
+        disallowedEntryRole.SetRequireDefault(1)
+        self.AddRequiredRole(disallowedEntryRole)
+        venueUsersRole = Role.AllowRole("VenueUsers")
+        venueUsersRole.SetRequireDefault(1)
+        self.AddRequiredRole(venueUsersRole)
+        admin = Role.AllowRole("Administrators")
         admin.SetRequireDefault(1)
         self.AddRequiredRole(admin)
+        self.AddRequiredRole(Role.Everybody)
+        self.AddRequiredRole(Role.Nobody)
+        # Default actions for Entry Roles.
+        self.defaultEntryActionNames = ["Enter", "Exit", "GetStreams", "GetUploadDescriptor", "FindRole"]
+        # Default actions for VenueUsers Roles.
+        self.defaultVenueUserActionNames = []
+
+        certMgr = Application.instance().GetCertificateManager()
+        di = certMgr.GetDefaultIdentity().GetSubject()
+        ds = X509Subject.CreateSubjectFromString(str(di))
+        admin.AddSubject(ds)
         
         # Set parent auth mgr to server so administrators cascades?
 
@@ -434,6 +452,36 @@ class Venue(AuthorizationMixIn):
         retStr = "Venue: name=%s id=%s url=%s" % (self.name, id(self),
                                                   self.uri)
         return retStr
+
+    def _AddDefaultRolesToActions(self):
+        # Initialize actions with the roles they contain by default.
+
+        # Add default entry roles to entry actions.
+        allowedEntryRole = self.authManager.FindRole("AllowedEntry")
+        disallowedEntryRole = self.authManager.FindRole("DisallowedEntry")
+        everybodyRole = Role.Everybody
+        for actionName in self.defaultEntryActionNames:
+            action = self.authManager.FindAction(actionName)
+            if action != None:
+                if not action.HasRole(allowedEntryRole):
+                    action.AddRole(allowedEntryRole)
+                if not action.HasRole(disallowedEntryRole):
+                    action.AddRole(disallowedEntryRole)
+                if not action.HasRole(everybodyRole):
+                    action.AddRole(everybodyRole)
+            else:
+                raise "DefaultActionNotFound " + actionName
+
+        # Add default entry roles to venueusers actions.
+        # Currently no actions include VenueUsers
+        venueUsersRole = self.authManager.FindRole("VenueUsers")
+        for actionName in self.defaultVenueUserActionNames:
+            action = self.authManager.FindAction(actionName)
+            if action != None:
+                if not action.HasRole(venueUsersRole):
+                    action.AddRole(venueUsersRole)
+            else:
+                raise "DefaultActionNotFound " + actionName
 
     def AsINIBlock(self):
         """
@@ -1964,6 +2012,20 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
     """
     def __init__(self, impl):
         SOAPInterface.__init__(self, impl)
+
+    def _authorize(self, *args, **kw):
+        """
+        The authorization callback. We should be able to implement this
+        just once and remove a bunch of the older code.
+        """
+        subject, action = self._GetContext()
+        
+        log.info("Authorizing action: %s for subject %s", action.name,
+                 subject.name)
+
+        authManager = self.impl.authManager
+        
+        return authManager.IsAuthorized(subject, action)
 
     def Enter(self, clientProfileStruct):
         """

@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.155 2004-04-01 23:37:16 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.156 2004-04-06 18:54:35 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.155 2004-04-01 23:37:16 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.156 2004-04-06 18:54:35 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -1519,15 +1519,11 @@ class VenueClient:
             authUrl = self.venueUri + '/Authorization'
 
             authClient = AuthorizationManagerIW(authUrl)
-            role = authClient.FindRole('Administrators')
-
             cm = Toolkit.Application.instance().GetCertificateManager()
-            di = cm.GetDefaultIdentity()
-            
-            for s in role.GetSubjects():
-                if s.GetName() == str(di.GetSubject()):
-                    isVenueAdministrator = 1
-                    break
+            roles = authClient.GetRolesForSubject(cm.GetDefaultIdentity())
+            if 'Administrators' in roles:
+                isVenueAdministrator = 1
+
         except Exception, e:
         
             log.exception("Error retrieving admin list; possibly old server")

@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.134 2004-03-30 16:51:50 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.135 2004-04-06 18:54:35 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.134 2004-03-30 16:51:50 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.135 2004-04-06 18:54:35 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -153,14 +153,14 @@ class VenueServer(AuthorizationMixIn):
 
         # Initialize Auth stuff
         AuthorizationMixIn.__init__(self)
-        self.AddRequiredRole(Role.Role("Administrators"))
+        self.AddRequiredRole(Role.AllowRole("Administrators"))
         rl = self.GetRequiredRoles()
         self.authManager.AddRoles(rl)
 
         # Get the silly default subject this really should be fixed
         certMgr = Application.instance().GetCertificateManager()
         di = certMgr.GetDefaultIdentity().GetSubject()
-        ds = X509Subject.CreateSubjectFromString(di)
+        ds = X509Subject.CreateSubjectFromString(str(di))
         admins = self.authManager.FindRole("Administrators")
         admins.AddSubject(ds)
         admins.SetRequireDefault(1)
@@ -200,6 +200,8 @@ class VenueServer(AuthorizationMixIn):
         if self.configFile == None:
             classpath = string.split(str(self.__class__), '.')
             self.configFile = classpath[-1]+'.cfg'
+
+        adminRole = self.authManager.FindRole('Administrators')
 
         # Read in and process a configuration
         self.InitFromFile(LoadConfig(self.configFile, self.configDefaults))
@@ -287,7 +289,15 @@ class VenueServer(AuthorizationMixIn):
         except ActionAlreadyPresent:
             # Do not add action if it is already present.
             pass
-            
+
+        # Default to giving administrators access to all actions.
+        adminRole = self.authManager.FindRole('Administrators')
+        if adminRole == None:
+            raise "AdminRoleNotFound"
+        allActions = self.authManager.GetActions()
+        for action in allActions:
+            if not action.HasRole(adminRole):
+                action.AddRole(adminRole)
             
         # Then we create the VenueServer service
         self.hostingEnvironment.RegisterObject(vsi, path='/VenueServer')
@@ -664,6 +674,13 @@ class VenueServer(AuthorizationMixIn):
         # Get method actions
         venue.authManager.AddActions(vi._GetMethodActions())
         venue.authManager.AddRoles(venue.GetRequiredRoles())
+        venue._AddDefaultRolesToActions()
+
+        # Default to giving administrators access to all venue actions.
+        venueAdminRole = venue.authManager.FindRole("Administrators")
+        venueActions = venue.authManager.GetActions()
+        for action in venueActions:
+            action.AddRole(venueAdminRole)
         
         # We have to register this venue as a new service.
         if(self.hostingEnvironment != None):
@@ -678,6 +695,8 @@ class VenueServer(AuthorizationMixIn):
         # If this is the first venue, set it as the default venue
         if len(self.venues) == 1 and self.defaultVenue == '':
             self.SetDefaultVenue(oid)
+
+        a = venue.authManager.GetActions()
         
         # return the URL to the new venue
         return venue.uri
@@ -976,11 +995,9 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         log.info("Authorizing action: %s for subject %s", action.name,
                  subject.name)
 
-        # Need to do this: (once authorization stuff is finished)
         authManager = self.impl.authManager
         
-        # return authManager.IsAuthorized(subject, action)
-        return 1
+        return authManager.IsAuthorized(subject, action)
 
     def Shutdown(self, secondsFromNow):
         """

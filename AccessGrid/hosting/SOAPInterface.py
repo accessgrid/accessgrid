@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: SOAPInterface.py,v 1.8 2004-03-22 16:38:09 olson Exp $
+# RCS-ID:      $Id: SOAPInterface.py,v 1.9 2004-04-06 18:54:35 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ primary methods, the constructor and a default authorization for all
 interfaces.
 """
 
-__revision__ = "$Id: SOAPInterface.py,v 1.8 2004-03-22 16:38:09 olson Exp $"
+__revision__ = "$Id: SOAPInterface.py,v 1.9 2004-04-06 18:54:35 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # External imports
@@ -63,9 +63,9 @@ class SOAPInterface:
         to default to disallow calls. Derived interfaces can tailor this to
         suit their needs.
 
-        @return: 1, things are authorized by default right now.
+        @return: 0, things are not authorized by default.
         """
-        return 1
+        return 0
 
     def _GetContext(self):
         """
