@@ -6,20 +6,23 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.33 2003-02-27 15:55:26 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.34 2003-02-27 20:13:20 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
 
-from AccessGrid.Platform import GPI 
 from AccessGrid.hosting.pyGlobus import Client
-from AccessGrid.Descriptions import VenueDescription, StreamDescription, Capability, MulticastNetworkLocation
+
+from AccessGrid.Descriptions import VenueDescription, StreamDescription
+from AccessGrid.Descriptions import Capability
+from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.Utilities import formatExceptionInfo, HaveValidProxy 
-from AccessGrid.UIUtilities import *
 from AccessGrid import icons
+from AccessGrid.Platform import GPI 
+from AccessGrid.UIUtilities import *
 
 import string
 
@@ -145,14 +148,16 @@ class VenueManagementClient(wxApp):
             client.RemoveStream(stream)
         
     def EnableStaticVideo(self, venueUri, videoAddress, videoPort, videoTtl):
-        location = MulticastNetworkLocation(videoAddress, videoPort, videoTtl)
+        location = MulticastNetworkLocation(videoAddress, int(videoPort),
+                                            int(videoTtl))
         capability = Capability( Capability.PRODUCER, Capability.VIDEO)
         videoStreamDescription = StreamDescription( "", "", location, capability)  
         videoStreamDescription.static = 1
         Client.Handle(venueUri).get_proxy().AddStream(videoStreamDescription)
         
     def EnableStaticAudio(self, venueUri, audioAddress, audioPort, audioTtl):
-        location = MulticastNetworkLocation(audioAddress, audioPort, audioTtl)
+        location = MulticastNetworkLocation(audioAddress, int(audioPort),
+                                            int(audioTtl))
         capability = Capability( Capability.PRODUCER, Capability.AUDIO)
         audioStreamDescription = StreamDescription( "", "", location, capability)  
         audioStreamDescription.static = 1
