@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.21 2004-03-12 20:54:58 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.22 2004-03-15 20:06:17 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.21 2004-03-12 20:54:58 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.22 2004-03-15 20:06:17 judson Exp $"
 
 # Standard imports
 import os
@@ -65,7 +65,17 @@ class Application:
        # Create the singleton instance
        Application.theAppInstance = self
 
-       self.parser = None
+       self.parser = OptionParser()
+       self.parser.add_option("-d", "--debug", action="store_true",
+                              dest="debug", default=0,
+                              help="Set the debug level of this program.")
+       self.parser.add_option("-l", "--logfile", dest="logfilename",
+                              metavar="LOGFILE", default=None,
+                              help="Specify a log file to output logging to.")
+       self.parser.add_option("-c", "--configfile", dest="configfilename",
+                              metavar="CONFIGFILE", default=None,
+                         help="Specify a configuration file for the program.")
+       
        self.certMgrUI = None
        self.log = None
        self.debugLevel = 0
@@ -163,27 +173,13 @@ class Application:
        Process toolkit wide standard arguments. Then return the modified
        argv so the app can choose to parse more if it requires that.
        """
-       if self.parser == None:
-           self.parser = OptionParser()
-           
-       self.parser.add_option("-d", "--debug", action="store_true", dest="debug",
-                              default=0,
-                              help="Set the debug level of this program.")
-       self.parser.add_option("-l", "--logfile", dest="logfilename",
-                              metavar="LOGFILE", default=None,
-                              help="Specify a log file to output logging to.")
-       self.parser.add_option("-c", "--configfile", dest="configfilename",
-                              metavar="CONFIGFILE", default=None,
-                              help="Specify a configuration file for the program.")
-
-
        (self.options, args) = self.parser.parse_args()
 
        return args
 
-    def SetOptionParser(self, parser):
-        self.parser = parser
-    
+    def AddCmdLineOption(self, option):
+        self.parser.add_option(option)
+        
     def GetOption(self, arg):
 
         if hasattr(self.options, arg):
