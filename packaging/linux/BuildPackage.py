@@ -45,7 +45,7 @@ d,agsourcedir = os.path.split(BuildDir)
 distDirs = [agsourcedir,
             "ag-media",
             "SOAPpy-0.11.4",
-            "fpconst-0.6.0",
+            "fpconst-0.7.0",
             "openssl-0.9.7d",
             "pyGlobus",
             "pyOpenSSL",
