@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.16 2004-04-09 18:44:37 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.17 2004-04-09 19:53:37 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.16 2004-04-09 18:44:37 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.17 2004-04-09 19:53:37 judson Exp $"
 
 import os
 import sys
@@ -292,12 +292,18 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         GlobusConfig.theGlobusConfigInstance = self
 
         self.initIfNeeded = initIfNeeded
-        self.location = None
-        self.proxyFileName = None
-        self.caCertDir = None
-        self.certFileName = None
-        self.keyFileName = None
         self.hostname = None
+
+        # First, get the paths to stuff we need
+        uappdata = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
+        agtkdata = AGTkConfig.instance().GetConfigDir()
+
+        self.location = AGTkConfig.instance().GetInstallDir()
+        self.proxyFileName = os.path.join(UserConfig.instance().GetTempDir(),
+                                          "proxy")
+        self.caCertDir = os.path.join(agtkdata, "config", "CAcertificates")
+        self.certFileName = os.path.join(uappdata, "globus", "usercert.pem")
+        self.keyFileName = os.path.join(uappdata, "globus", "userkey.pem")
 
         self._Initialize()
         
@@ -340,23 +346,10 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         are in place for the various parts.
         """
 
-        self.system = SystemConfig.instance()
-        
         # Zero, get keys we need
         gsikey = self._GetGlobusKey()
         
-        # First, get the paths to stuff we need
-        uappdata = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
-        agtkdata = AGTkConfig.instance().GetConfigDir()
-        gloc = AGTkConfig.instance().GetInstallDir()
-        
-        # second, create the values
-        self.keyFileName = os.path.join(uappdata, "globus", "userkey.pem")
-        self.certFileName = os.path.join(uappdata, "globus", "usercert.pem")
-        self.proxyFileName = os.path.join(win32api.GetTempPath(), "proxy")
-        self.caCertDir = os.path.join(agtkdata, "config", "CAcertificates")
-        
-        # Third try to setup GLOBUS_LOCATION, if it's not already set
+        # next try to setup GLOBUS_LOCATION, if it's not already set
         try:
             key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment")
             (self.location, type) = _winreg.QueryValueEx(key,
@@ -366,7 +359,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             if self.initIfNeeded:
                 log.info("GLOBUS_LOCATION not set, setting...")
                 # Set Globus Location
-                self.SetLocation(loc)
+                self.SetLocation(self.location)
 
         # Check GLOBUS_HOSTNAME
         self.SetHostname()
@@ -395,7 +388,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         except WindowsError:
             if self.initIfNeeded:
                 log.info("Globus proxy registry entry not initialized.")
-                self.SetCACertDir(cacertdir)
+                self.SetCACertDir(self.caCertDir)
 
         try:
             _winreg.CloseKey(gsikey)
@@ -419,19 +412,26 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         """
         try:
             key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment")
-            (self.hostname, type) = _winreg.QueryValueEx(key,
+            (ghn, type) = _winreg.QueryValueEx(key,
                                                          "GLOBUS_HOSTNAME")
             _winreg.CloseKey(key)
         except WindowsError:
             log.info("GLOBUS_HOSTNAME not set, setting...")
-
-        if self.hostname is not None and hn == self.hostname:
+            ghn = None
+            
+        if ghn is not None and hn == ghn:
             log.debug("Using GLOBUS_HOSTNAME=%s as set in the environment",
                       self.hostname)
             return
-
         elif hn is not None:
-            self.hostname = hn
+            try:
+                key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment")
+                _winreg.SetValueEx(key, "GLOBUS_HOSTNAME", 0,
+                                   _winreg.REG_EXPAND_SZ, hn)
+                _winreg.CloseKey(key)
+                self.hostname = hn
+            except WindowsError:
+                log.exception("GLOBUS_HOSTNAME not set")
         else:
             hostname = socket.getfqdn()
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -464,9 +464,6 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             log.exception("Couldn't setup GLOBUS_LOCATION.")
             return 0
 
-        # This propogates the change to all running apps
-        self.system.SendSettingChange()
-        
     def GetHostname(self):
         if self.hostname is None:
             self.SetHostname()
@@ -474,8 +471,16 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         return self.hostname
 
     def RemoveHostname(self):
-        pass
-    
+        try:
+            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment", 0,
+                                  _winreg.KEY_ALL_ACCESS)
+            _winreg.DeleteValue(key, "GLOBUS_HOSTNAME")
+            _winreg.CloseKey(key)
+        except WindowsError:
+            log.exception("Couldn't remove GLOBUS_HOSTNAME.")
+            return 0
+        self.hostname = None
+        
     def GetLocation(self):
         if self.location is not None and not os.path.exists(self.location):
             raise Exception, "GlobusConfig: Globus directory does not exist."
@@ -495,11 +500,16 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             log.exception("Couldn't setup GLOBUS_LOCATION.")
             return 0
 
-        # This propogates the change to all running apps
-        self.system.SendSettingChange()
-
     def RemoveLocation(self):
-        pass
+        try:
+            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment", 0,
+                                  _winreg.KEY_ALL_ACCESS)
+            _winreg.DeleteValue(key, "GLOBUS_LOCATION")
+            _winreg.CloseKey(key)
+        except WindowsError:
+            log.exception("Couldn't remove GLOBUS_LOCATION.")
+            return 0
+        self.location = None
 
     def GetCACertDir(self):
         if self.caCertDir is not None and not os.path.exists(self.caCertDir):
@@ -521,9 +531,6 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         except:
             log.exception("Couldn't set the x509_cert_dir registry value.")
             self.caCertDir = None
-
-        # This propogates the change to all running apps
-        self.system.SendSettingChange()
             
     def RemoveCACertDir(self):
         gkey = self._GetGlobusKey()
@@ -532,7 +539,8 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             _winreg.CloseKey(gkey)
         except WindowsError:
             log.exception("Couldn't delete x509_cert_dir from registry.")
-            
+        self.caCertDir = None
+        
     def GetProxyFileName(self):
         if self.proxyFileName is not None and \
                not os.path.exists(self.proxyFileName):
@@ -551,9 +559,6 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             log.exception("Couldn't set the x509_user_proxy registry value.")
             self.proxyFileName = None
 
-        # This propogates the change to all running apps
-        self.system.SendSettingChange()
-
     def RemoveProxyFileName(self):
         gkey = self._GetGlobusKey()
         try:
@@ -561,7 +566,9 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             _winreg.CloseKey(gkey)
         except WindowsError:
             log.exception("Couldn't delete x509_user_proxy from registry.")
-            
+
+        self.proxyFileName = None
+        
     def GetCertFileName(self):
         if self.certFileName is not None and \
                not os.path.exists(self.certFileName):
@@ -580,9 +587,6 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             log.exception("Couldn't set the x509_user_cert registry value.")
             self.certFileName = None
 
-        # This propogates the change to all running apps
-        self.system.SendSettingChange()
-            
     def RemoveCertFileName(self):
         gkey = self._GetGlobusKey()
         try:
@@ -590,7 +594,9 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             _winreg.CloseKey(gkey)
         except WindowsError:
             log.exception("Couldn't delete x509_user_cert from registry.")
-            
+
+        self.certFileName = None
+
     def GetKeyFileName(self):
         if self.keyFileName is not None and \
                not os.path.exists(self.keyFileName):
@@ -609,9 +615,6 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             log.exception("Couldn't set the x509_user_key registry value.")
             self.keyFileName = None
 
-        # This propogates the change to all running apps
-        self.system.SendSettingChange()
-            
     def RemoveKeyFileName(self):
         gkey = self._GetGlobusKey()
         try:
@@ -619,7 +622,9 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             _winreg.CloseKey(gkey)
         except WindowsError:
             log.exception("Couldn't delete x509_user_key from registry.")
-            
+
+        self.keyFileName = None
+        
 class UserConfig(AccessGrid.Config.UserConfig):
     """
     A user config object encapsulates all of the configuration data for
@@ -1423,7 +1428,7 @@ if __name__ == "__main__":
         try:
             print "\tSystem Hostname: ", sysConf.GetHostname()
             print "\tSystem Temp Dir: ", sysConf.GetTempDir()
-            freespace = sysConf.GetFileSystemFreeSpace(os.path.join("."))
+            freespace = sysConf.FileSystemFreeSpace(os.path.join("."))
             print "\tSystem File System Free Space (on /): ", freespace
             print "\tSystem Current Username: ", sysConf.GetUsername()
             iflist = sysConf.EnumerateInterfaces()
@@ -1432,7 +1437,7 @@ if __name__ == "__main__":
                 print "\t\tName: %8s IP: %15s DNS: %s" % (interface['name'],
                                                         interface['ip'],
                                                         interface['dns'])
-            print "\tSystem Default Route: ", sysConf.GetDefaultRouteIP()
+            print "\tSystem Local IP: ", sysConf.GetLocalIPAddress()
         except Exception, e:
             print "Error trying to retrieve the System Configuration:\n", e
     else:
