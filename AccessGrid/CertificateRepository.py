@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.11 2003-08-20 20:05:33 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.12 2003-09-09 18:42:54 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -146,6 +146,10 @@ class CertificateRepository:
                 
             except bsddb.error:
                 log.exception("exception opening hash %s", self.dbPath)
+                try:
+                    self.db.close()
+                except:
+                    pass
                 #
                 # Try to figure out what's going on. Stat the db and its directory and log
                 # the information.
@@ -174,6 +178,16 @@ class CertificateRepository:
                 # Rename it, log an error, and raise an exception.#
                 #
 
+
+                #
+                # Close an opened db, otherwise the rename will fail due
+                # to the open file.
+                #
+                try:
+                    self.db.close()
+                except:
+                    pass
+                
                 newname = "%s.corrupt.%s" % (self.dir, int(time.time()))
                 try:
                     os.rename(self.dir, newname)
