@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: PersonalNodeLinuxExt.py,v 1.1 2003-05-05 18:27:57 olson Exp $
+# RCS-ID:      $Id: PersonalNodeLinuxExt.py,v 1.2 2003-08-20 13:05:07 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ class MessageQueue:
         
         try:
             self.mq = pyipc.MessageQueue(key, 0600 | pyipc.IPC_CREAT | pyipc.IPC_EXCL)
-        except EnvironmentError e:
+        except EnvironmentError, e:
 
             #
             # Handle the various failure modes we might hit.
