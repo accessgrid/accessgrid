@@ -6,10 +6,13 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.5 2004-03-01 20:14:21 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.6 2004-03-02 19:16:28 judson Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
+
+__revision__ = "$Id: VenueClientController.py,v 1.6 2004-03-02 19:16:28 judson Exp $"
+__docformat__ = "restructuredtext en"
 
 
 # standard imports
