@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.9 2003-02-28 20:20:29 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.10 2003-03-21 22:11:37 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -76,13 +76,9 @@ if __name__ == '__main__':
    import thread
 
    agService = AudioService()
-   server = Server( 0, auth_callback=AuthCallback )
-   service = server.create_service_object()
+   server = Server( int(sys.argv[1]), auth_callback=AuthCallback )
+   service = server.create_service_object("Service")
    agService._bind_to_service( service )
-
-   # Register with the service manager
-   thread.start_new_thread( Client.Handle( sys.argv[2] ).get_proxy().RegisterService, 
-                            ( sys.argv[1], agService.get_handle() ) )
 
    print "Starting server at", agService.get_handle()
    server.run()
