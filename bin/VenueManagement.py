@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.18 2003-02-06 14:44:55 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.19 2003-02-06 19:39:34 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -40,6 +40,7 @@ class VenueManagementClient(wxApp):
 	statusbar = self.frame.CreateStatusBar(1)
 	self.frame.SetSize(wxSize(540, 340))   
 	self.SetTopWindow(self.frame)
+        self.url = None
         return true
    
     def __doLayout(self):
@@ -57,11 +58,13 @@ class VenueManagementClient(wxApp):
 
         except GSITCPSocketException:
             ErrorDialog(self.frame, sys.exc_info()[1][0])
+
         except:
             print "Can't connect to server!", formatExceptionInfo()
             ErrorDialog(self.frame, 'The server you are trying to connect to is not running!')
                  
         else:
+            self.url = URL
             # fill in venues
             self.tabs.venuesPanel.venuesListPanel.venuesList.Clear()
             self.tabs.venuesPanel.venueProfilePanel.ClearAllFields()
@@ -118,6 +121,7 @@ class VenueManagementClient(wxApp):
         Client.Handle(venue.uri).get_proxy().SetConnections(exitsList) 
                 
     def DeleteVenue(self, venue):
+        print 'trying to delete venue'
         self.client.RemoveVenue(venue.uri)
             
     def AddAdministrator(self, dnName):
@@ -358,13 +362,15 @@ class VenueListPanel(wxPanel):
             self.parent.venueProfilePanel.ChangeCurrentVenue(data, exits)
 
     def OpenAddVenueDialog(self, event):
-        addVenueDialog = AddVenueFrame(self, -1, "", venueList = self.venuesList)
-        addVenueDialog.InsertData(self.venuesList)
+        addVenueDialog = AddVenueFrame(self, -1, "", \
+                                       self.venuesList, self.application)
+        addVenueDialog.InsertLocalData(self.venuesList)
 
     def OpenModifyVenueDialog(self, event):
 	if(self.venuesList.GetSelection() != -1):    
-		modifyVenueDialog = ModifyVenueFrame(self, -1, "", venueList = self.venuesList)
-	#	modifyVenueDialog.InsertData(self.venuesList)
+            modifyVenueDialog = ModifyVenueFrame(self, -1, "", \
+                                                 self.venuesList, self.application)
+            #	modifyVenueDialog.InsertData(self.venuesList)
 	
     def DeleteVenue(self, event):
         if (self.venuesList.GetSelection() != -1):
@@ -375,8 +381,9 @@ class VenueListPanel(wxPanel):
                 self.application.DeleteVenue(venueToDelete)
                 
             except:
-                # print sys.exc_type
-                # print sys.exc_value
+                print sys.exc_type
+                print sys.exc_value
+                # ErrorDialog(self, sys.exc_info()[1][0])
                 ErrorDialog(self, 'Delete vanue failed in server!')
                 
             else:
@@ -732,10 +739,10 @@ class MulticastDialog(wxDialog):
         self.SetAutoLayout(1)  
 
 class VenueParamFrame(wxDialog):
-    def __init__(self, *args):
-        wxDialog.__init__(self, *args)
+    def __init__(self, parent, id, title, application):
+        wxDialog.__init__(self, parent, id, title)
 	self.SetSize(wxSize(400, 350))
-
+        self.application = application
   
 	self.informationBox = wxStaticBox(self, -1, "Information")
 	self.exitsBox = wxStaticBox(self, -1, "Exits")
@@ -750,13 +757,15 @@ class VenueParamFrame(wxDialog):
 	#self.icon = wxStaticBitmap(self, -1, self.bitmap, \
 	#			   size = wxSize(self.bitmap.GetWidth(), self.bitmap.GetHeight()))
 	#self.browseButton = wxButton(self, 160, "browse")
-        self.venuesLabel = wxStaticText(self, -1, "Venues on this server:")
-        self.venues = wxListBox(self, -1, size = wxSize(150, 100))
+        self.venuesLabel = wxStaticText(self, -1, "Venues on server:")
+        self.venues = wxListBox(self, -1, size = wxSize(200, 100))
         self.transferVenueLabel = wxStaticText(self, -1, "Add Exit")
         self.transferVenueButton = wxButton(self, 170, ">>", size = wxSize(30, 20))
-        self.removeExitButton = wxButton(self, 180, "Remove Exit")
+        self.thisServerButton = wxButton(self, 190, "This server")
+        self.remoteServerButton = wxButton(self, 200, "Remote server")
+        self.removeExitButton = wxButton(self, 180, "     Remove Exit     ")
 	self.exitsLabel = wxStaticText(self, -1, "Exits for your venue:")
-        self.exits = wxListBox(self, -1, size = wxSize(150, 100))
+        self.exits = wxListBox(self, -1, size = wxSize(200, 100))
 	self.okButton = wxButton(self, wxID_OK, "Ok")
 	self.cancelButton =  wxButton(self, wxID_CANCEL, "Cancel")
 	self.doLayout() 
@@ -766,10 +775,39 @@ class VenueParamFrame(wxDialog):
     def __addEvents(self):
      	EVT_BUTTON(self, 160, self.BrowseForImage)
         EVT_BUTTON(self, 170, self.TransferVenue)
-        EVT_BUTTON(self, 180, self.RemoveExit) 
-    
+        EVT_BUTTON(self, 180, self.RemoveExit)
+        EVT_BUTTON(self, 190, self.LoadLocalVenues) 
+        EVT_BUTTON(self, 200, self.OpenRemoteVenues) 
+
+    def OpenRemoteVenues(self, event):
+        # get remote url
+        print 'open remote server'
+        remoteServerUrlDialog = RemoteServerUrlDialog(self, -1, 'Connect to server')
+        if (remoteServerUrlDialog.ShowModal() == wxID_OK):
+            URL = remoteServerUrlDialog.address.GetValue()
+                     
+        remoteServerUrlDialog.Destroy()
+        #        URL = 'https://localhost:9000/VenueServer' #get from dialog
+        print URL
+        self.LoadVenues(URL)
+
+    def LoadLocalVenues(self, event):
+        URL = self.application.url
+        self.LoadVenues(URL)
+         
+    def LoadVenues(self, URL):
+        print 'load local: ', self.application.url
+        # get local url
+        # self.InsertData(venueList)
+        self.client = Client.Handle(URL).get_proxy()
+        venueList = self.client.GetVenues()
+        self.venues.Clear()
+        for venue in venueList:
+            print venue.name
+            self.venues.Append(venue.name, venue)
+           
+        
     def BrowseForImage(self, event):
-#        initial_dir = '/home/lefvert/PROJECTS/P2_AG/VENUE_MANAGEMENT/IMAGES' 
         initial_dir = '/'
 	imageDialog = ImageDialog(self, initial_dir)   
 	imageDialog.Show()
@@ -814,7 +852,11 @@ class VenueParamFrame(wxDialog):
         transferbuttonSizer.Add(self.transferVenueButton, 0, wxEXPAND|wxTOP, 2)
         exitsSizer.Add(transferbuttonSizer, 0, wxALL|wxALIGN_CENTER, 5)
 	exitsSizer.Add(self.exits, 0, wxEXPAND)
-        exitsSizer.Add(10,10)
+
+        buttonSizer = wxBoxSizer(wxHORIZONTAL)
+        buttonSizer.Add(self.thisServerButton, 1, wxEXPAND | wxRIGHT, 2)
+        buttonSizer.Add(self.remoteServerButton, 1, wxEXPAND |wxLEFT, 2)
+        exitsSizer.Add(buttonSizer, 1, wxEXPAND)
         exitsSizer.Add(10,10)
         exitsSizer.Add(self.removeExitButton, 0, wxEXPAND)
         exitsSizer.AddGrowableCol(0)
@@ -838,7 +880,7 @@ class VenueParamFrame(wxDialog):
 	self.SetAutoLayout(1)  
 
   
-    def InsertData(self, venues, exits = None):
+    def InsertLocalData(self, venues, exits = None):
         index = 0
         while index < venues.Number():
             if(venues.GetString(index) != self.title.GetValue()):
@@ -868,7 +910,8 @@ class VenueParamFrame(wxDialog):
 
     def RemoveExit(self, event):
         index = self.exits.GetSelection()
-        self.exits.Delete(index)
+        if(index > -1):
+            self.exits.Delete(index)
 
     def RightValues(self):
         titleTest =  self.__isStringBlank(self.title.GetValue())
@@ -898,10 +941,10 @@ class VenueParamFrame(wxDialog):
 
  
 class AddVenueFrame(VenueParamFrame):
-    def __init__(self, parent, id, title, venueList = list):
-        VenueParamFrame.__init__(self, parent, id, title)
+    def __init__(self, parent, id, title, venueList, application):
+        VenueParamFrame.__init__(self, parent, id, title, app)
 	self.parent = parent
-        self.InsertData(venueList)
+        self.InsertLocalData(venueList)
         if (self.ShowModal() == wxID_OK ):
             self.Ok()
         self.Destroy()
@@ -919,13 +962,18 @@ class AddVenueFrame(VenueParamFrame):
                          self.description.GetValue(), "", None)
 
             self.parent.InsertVenue(data, exitsList)
+
+        else:
+            if (self.ShowModal() == wxID_OK ):
+                self.Ok()
+            self.Destroy()
           
             
 class ModifyVenueFrame(VenueParamFrame):
-    def __init__(self, parent, id, title, venueList = list):
-        VenueParamFrame.__init__(self, parent, id, title)
+    def __init__(self, parent, id, title, venueList, application):
+        VenueParamFrame.__init__(self, parent, id, title, app)
 	self.parent = parent
-        self.InsertData(venueList)
+        self.InsertLocalData(venueList)
         if (self.ShowModal() == wxID_OK ):
             self.Ok()
         self.Destroy()
@@ -942,15 +990,20 @@ class ModifyVenueFrame(VenueParamFrame):
             data = VenueDescription(self.title.GetValue(), \
                          self.description.GetValue(), "", None)
             self.parent.ModifyCurrentVenue(data, exitsList)
+
+        else:
+            if (self.ShowModal() == wxID_OK ):
+                self.Ok()
+            self.Destroy()
            
-    def InsertData(self, venuesList):
+    def InsertLocalData(self, venuesList):
         item = venuesList.GetSelection()
         data = venuesList.GetClientData(item)
         self.title.AppendText(data.name)
         self.description.AppendText(data.description)
         #self.icon.SetBitmap(data.icon)
         exitsList = Client.Handle(data.uri).get_proxy().GetConnections()
-        VenueParamFrame.InsertData(self, venuesList, exitsList)
+        VenueParamFrame.InsertLocalData(self, venuesList, exitsList)
                            
         #        bitmap =  wxBitmap("IMAGES/icon.gif", wxBITMAP_TYPE_GIF)
         #	self.icon.SetBitmap(bitmap)
@@ -996,7 +1049,7 @@ class AdministratorParamFrame(wxDialog):
 	self.SetSizer(topSizer)
 	topSizer.Fit(self)
 	self.SetAutoLayout(1)  
-
+        
     
 class AddAdministratorFrame(AdministratorParamFrame):
     def __init__(self, parent, id, title):
@@ -1017,8 +1070,38 @@ class ModifyAdministratorFrame(AdministratorParamFrame):
             self.parent.ModifyAdministrator(oldName, self.name.GetValue())      
         self.Destroy();
 
+class RemoteServerUrlDialog(wxDialog):
+    def __init__(self, parent, id, title):
+        wxDialog.__init__(self, parent, id, title)
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        info = "Please, enter remote server URL address"
+        self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
+        self.addressText = wxStaticText(self, -1, "Address: ", style=wxALIGN_LEFT)
+        self.address = wxTextCtrl(self, -1, "", size = wxSize(300,20))
+        self.__doLayout()
 
+    def __doLayout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
+        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
 
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.addressText, 0)
+        sizer2.Add(self.address, 1, wxEXPAND)
+
+        sizer1.Add(sizer2, 0, wxEXPAND | wxALL, 20)
+
+        sizer3 =  wxBoxSizer(wxHORIZONTAL)
+        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
+
+        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer.Add(sizer3, 0, wxALIGN_CENTER)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+        
 class DigitValidator(wxPyValidator):
     def __init__(self, flag):
         wxPyValidator.__init__(self)
