@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.13 2004-12-16 21:35:17 leggett Exp $
+ * $Id: QuickBridge.c,v 1.14 2004-12-16 21:43:32 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -600,6 +600,7 @@ void process_session( Session *head, fd_set *readfds, u_long myip )
 	      //printf("\nready to receive data on s->ucfd[%d]!\n",i);
 	      sourceaddrlen = sizeof( sourceaddr );
 	      memset( (char *)&sourceaddr,0, sourceaddrlen );
+	      debug( 9, "Before recvfrom( )\n" );
 	      nr = recvfrom( s->ucfd[i], recvbuf, MSGBUFSIZE, 0,
 			     (struct sockaddr *)&sourceaddr, &sourceaddrlen );
 	      debug( 2, "\nreading from ucfd[%d], got data from %s:%d\n", i, inet_ntoa( sourceaddr.sin_addr ), ntohs( sourceaddr.sin_port ) );
@@ -762,7 +763,7 @@ void insert_fixed( Session *s, u_long addr )
   if ( s->numunicastmem < max_unicast_mem )
     {
       s->ucmemarray[s->numunicastmem].addr.s_addr = addr;
-      s->ucmemarray[s->numunicastmem].active = 0;
+      s->ucmemarray[s->numunicastmem].active = 1;
       s->ucmemarray[s->numunicastmem].fixed = 1;
       printf( "inserting a fixed unicast peer %s\n", inet_ntoa( s->ucmemarray[s->numunicastmem].addr ) );
       s->numunicastmem++;
