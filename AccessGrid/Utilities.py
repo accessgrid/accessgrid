@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.52 2004-01-28 21:02:40 lefvert Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.53 2004-02-23 16:56:12 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.52 2004-01-28 21:02:40 lefvert Exp $"
+__revision__ = "$Id: Utilities.py,v 1.53 2004-02-23 16:56:12 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -415,6 +415,41 @@ class ServerLock:
             line = c[1]
             log.debug("Releasing server lock %s  %s:%s", self.name, file, line)
         self.lock.release()
+
+#
+# We define our own setenv/unsetenv to prod both the pyGlobus
+# environment and the standard python environment.
+#
+
+pyGlobusSetenv = None
+pyGlobusGetenv = None
+pyGlobusUnsetenv = None
+try:
+    import pyGlobus.util
+    pyGlobusSetenv = pyGlobus.util.setenv
+    pyGlobusUnsetenv = pyGlobus.util.unsetenv
+    pyGlobusGetenv = pyGlobus.util.getenv
+except:
+    pass
+
+def setenv(name, val):
+    os.environ[name] = val
+
+    if pyGlobusSetenv:
+        pyGlobusSetenv(name, val)
+
+def unsetenv(name):
+    if name in os.environ:
+        del os.environ[name]
+    if pyGlobusUnsetenv:
+        pyGlobusUnsetenv(name)
+
+def getenv(name):
+    if pyGlobusGetenv:
+        return pyGlobusGetenv(name)
+    else:
+        return os.getenv(name)
+
 
 #
 # File tree removal stuff, from ASPN recipe.
