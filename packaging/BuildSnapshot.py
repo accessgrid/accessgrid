@@ -30,9 +30,7 @@ if sys.platform == 'win32':
 elif sys.platform == 'linux2':
     bdir = 'linux'
 elif sys.platform == 'darwin':
-    print "Sorry; darwin not supported yet ;-)"
-    bdir = 'darwin'
-    sys.exit(1)
+    bdir = 'mac'
 else:
     print "Unsupported platform: %s; exiting" % (sys.platform,)
     bdir = None
@@ -176,7 +174,7 @@ else:
 # setup a new python path
 if sys.platform == 'win32':
     npath = os.path.join(DestDir, "Lib", "site-packages")
-elif sys.platform == 'linux2':
+elif sys.platform == 'linux2' or sys.platform == 'darwin':
     npath = os.path.join(DestDir, "lib", "python%s"%(options.pyver,), "site-packages")
 if not oldpath:
     nppath = os.pathsep.join([npath, oldpath])
@@ -186,8 +184,9 @@ os.environ['PYTHONPATH'] = nppath
 
 # Build stuff that needs to be built for modules to work
 
-cmd = "%s %s" % (sys.executable, "BuildOpenSSL.py")
-os.system(cmd)
+if sys.platform != 'darwin':
+    cmd = "%s %s" % (sys.executable, "BuildOpenSSL.py")
+    os.system(cmd)
 
 # Build the other python modules
 cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
@@ -207,7 +206,7 @@ os.chdir(BuildDir)
 if sys.platform == 'win32':
     ep = os.path.join(os.path.dirname(sys.executable), "Scripts",
                       "epydoc.py")
-elif sys.platform == 'linux2':
+elif sys.platform == 'linux2' or sys.platform == 'darwin':
     ep = find_executable("epydoc")
 
 cmd = "%s %s --html -o %s -n \"Access Grid Toolkit\" -u \"%s\" AccessGrid" % \
@@ -225,7 +224,7 @@ if oldpath is not None:
 
 
 # Build the QuickBridge executable
-if sys.platform == 'linux2':
+if sys.platform == 'linux2' or sys.platform == 'darwin':
     print "Building QuickBridge"
     os.chdir(os.path.join(BuildDir,'services','network','QuickBridge'))
     cmd = "gcc -O -o QuickBridge QuickBridge.c"
