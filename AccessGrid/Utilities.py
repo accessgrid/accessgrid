@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.39 2003-08-21 23:27:11 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.40 2003-08-22 04:49:24 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -38,7 +38,6 @@ def LoadConfig(fileName, config=dict(), separator="."):
     cp.read(fileName)
     for sec in cp.sections():
         for opt in cp.options(sec):
-            print "K: %s V: %s" %(sec + separator + opt, cp.get(sec, opt, 1))
             rconfig[sec + separator + opt] = string.strip(cp.get(sec, opt, 1))
     return rconfig
 

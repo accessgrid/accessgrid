@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.99 2003-08-21 23:27:11 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.100 2003-08-22 04:49:24 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -64,13 +64,14 @@ class VenueClient( ServiceBase):
     programmatic interface to the Access Grid for a Venues User
     Interface.  The VenueClient can only be in one venue at a    time.
     """    
-
+    defaultNodeServiceUri = "https://localhost:11000/NodeService"
+    
     def __init__(self, profile=None):
         """
         This client class is used on shared and personal nodes.
         """
         self.profile = profile
-        self.nodeServiceUri = "https://localhost:11000/NodeService"
+        self.nodeServiceUri = self.defaultNodeServiceUri
         self.homeVenue = None
         self.houseKeeper = Scheduler()
         self.heartbeatTask = None
@@ -589,10 +590,9 @@ class VenueClient( ServiceBase):
             try:
                 self.UpdateNodeService()
             except Exception, e:
-                #
-                # This is a non fatal error, users should be notified but still enter the venue
-                #
-                log.exception("AccessGrid.VenueClient::Exception configuring node service streams")
+                # This is a non fatal error, users should be notified
+                # but still enter the venue
+                log.warn("AccessGrid.VenueClient: Error updating node service")
                 errorInNode = 1
 
             # Cache profiles from venue.

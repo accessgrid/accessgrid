@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.235 2003-08-22 04:24:47 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.236 2003-08-22 04:49:24 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1802,7 +1802,9 @@ class ContentListPanel(wxPanel):
         self.x = event.GetX()
         self.y = event.GetY()
         treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
-       
+        ext = None
+        name = None
+        
         if(treeId.IsOk() and flag & wxTREE_HITTEST_ONITEMLABEL):
             item = self.tree.GetItemData(treeId).GetData()
             text = self.tree.GetItemText(treeId)
@@ -1817,8 +1819,16 @@ class ContentListPanel(wxPanel):
 
             else:
                 openCmd = None
-                if isinstance(item, DataDescription) or isinstance(item, ServiceDescription):
-                    ext = item.name.split('.')[-1]
+                if isinstance(item, DataDescription):
+                    list = item.name.split('.')
+                    if len(list) == 2:
+                        (name, ext) = list
+                    commands = GetMimeCommands(ext = ext)
+                    openCmd = commands['Open']
+                elif isinstance(item, ServiceDescription):
+                    list = item.name.split('.')
+                    if len(list) == 2:
+                        (name, ext) = list
                     commands = GetMimeCommands(mimeType = item.mimeType,
                                                ext = ext)
                     openCmd = commands['Open']
@@ -2093,7 +2103,7 @@ class ContentListPanel(wxPanel):
             appdb = Toolkit.GetApplication().GetAppDatabase()
             mimeType = appdb.GetMimeType(extension = ext)
             if mimeType == None:
-                mimeType == Platform.GetMimeType(extension = ext)
+                mimeType == GetMimeType(extension = ext)
                 
             localFilePath = os.path.join(GetTempDir(), item.name)
             self.app.SaveFileNoProgress(item, localFilePath)

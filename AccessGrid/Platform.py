@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.35 2003-08-22 04:24:06 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.36 2003-08-22 04:49:24 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -210,7 +210,7 @@ def GetSharedDocDir():
         try:
             AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
             sharedDocDir, type = _winreg.QueryValueEx(AG20,"InstallPath")
-            sharedDocDir = os.path.join(sharedDocDir, "Documentation")
+            sharedDocDir = os.path.join(sharedDocDir, "doc")
         except WindowsError:
             log.exception("Cannot open InstallPath directory reg key")
             sharedDocDir = ""
