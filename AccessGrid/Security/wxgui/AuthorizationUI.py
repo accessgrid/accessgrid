@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.4 2004-03-17 19:50:48 lefvert Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.5 2004-03-18 21:37:38 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.4 2004-03-17 19:50:48 lefvert Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.5 2004-03-18 21:37:38 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -31,6 +31,7 @@ from AccessGrid.Security.X509Subject import X509Subject
 from AccessGrid.Security.Role import Role, DefaultIdentityNotRemovable
 from AccessGrid.Security.Action import Action 
 from AccessGrid import icons
+from AccessGrid.Security.Utilities import GetCNFromX509Subject
 
 class AuthorizationUIPanel(wxPanel):
     '''
@@ -38,6 +39,19 @@ class AuthorizationUIPanel(wxPanel):
     a role from the tree, available actions for the role are displayed. Actions to
     modify roles are available, such as Create/Remove Role and Add/Remove Person to role.
     '''
+    ID_ROLE_ADDPERSON = wxNewId()
+    ID_ROLE_ADDROLE = wxNewId()
+    ID_ROLE_REMOVEROLE = wxNewId()
+    ID_PERSON_ADDPERSON = wxNewId()
+    ID_PERSON_DELETE = wxNewId()
+    #ID_PERSON_RENAME = wxNewId()
+    ID_PERSON_COPY = wxNewId()
+    ID_PERSON_PASTE = wxNewId()
+    ID_PERSON_PROPERTIES = wxNewId()
+
+    ID_WINDOW_LEFT = wxNewId() 
+    ID_WINDOW_RIGHT = wxNewId()
+     
     def __init__(self, parent, id, log):
         wxPanel.__init__(self, parent, id, wxDefaultPosition)
         self.log = log
@@ -55,8 +69,14 @@ class AuthorizationUIPanel(wxPanel):
         self.changed = 0
         
         # Create ui componentes
-        self.rolePanel = wxPanel(self,  wxNewId())
-        self.actionPanel = wxPanel(self,  wxNewId())
+        self.leftSashWindow = wxSashLayoutWindow(self, self.ID_WINDOW_LEFT,
+                                                 size = wxSize(400,10))
+        self.rightSashWindow = wxSashLayoutWindow(self, self.ID_WINDOW_RIGHT,
+                                                  size = wxSize(400,10))
+        self.rolePanel = wxPanel(self.leftSashWindow ,  wxNewId(),
+                                 style = wxSUNKEN_BORDER)
+        self.actionPanel = wxPanel(self.rightSashWindow,  wxNewId(),
+                                   style = wxSUNKEN_BORDER)
         self.tree = wxTreeCtrl(self.rolePanel, wxNewId(), wxDefaultPosition, 
                                wxDefaultSize, style = wxTR_HAS_BUTTONS |
                                wxTR_LINES_AT_ROOT | wxTR_HIDE_ROOT)
@@ -196,7 +216,7 @@ class AuthorizationUIPanel(wxPanel):
 
             # For each role, add people.
             for person in role.subjects:
-                personId = self.tree.AppendItem(roleId, person.name,  self.participantId ,  self.participantId)
+                personId = self.tree.AppendItem(roleId, person.GetCN(),  self.participantId ,  self.participantId)
                 self.tree.SetItemData(personId, wxTreeItemData(person))
 
             # Sort the tree
@@ -226,18 +246,45 @@ class AuthorizationUIPanel(wxPanel):
         EVT_TREE_SEL_CHANGED(self.tree, self.tree.GetId(), self.OnSelect)
 
         EVT_CHECKLISTBOX(self.actionList, self.actionList.GetId(), self.CheckAction)
-
+        EVT_LISTBOX(self, self.actionList.GetId(), self.SelectAction)
+        
         EVT_MENU(self, self.ID_PERSON_ADDPERSON, self.AddPerson)
-        EVT_MENU(self, self.ID_PERSON_ADDROLE, self.CreateRole)
+        #EVT_MENU(self, self.ID_PERSON_ADDROLE, self.CreateRole)
         EVT_MENU(self, self.ID_PERSON_DELETE, self.RemovePerson)
         #EVT_MENU(self, self.ID_PERSON_RENAME, self.Rename)
         EVT_MENU(self, self.ID_PERSON_COPY, self.Copy)
         EVT_MENU(self, self.ID_PERSON_PASTE, self.Paste)
+        EVT_MENU(self, self.ID_PERSON_PROPERTIES, self.OpenPersonProperties)
 
         EVT_MENU(self, self.ID_ROLE_ADDPERSON, self.AddPerson)
         EVT_MENU(self, self.ID_ROLE_ADDROLE, self.CreateRole)
         EVT_MENU(self, self.ID_ROLE_REMOVEROLE, self.RemoveRole)
+        
+        EVT_SASH_DRAGGED_RANGE(self, self.ID_WINDOW_LEFT,
+                               self.ID_WINDOW_RIGHT, self.__OnSashDrag)
+        EVT_SIZE(self, self.__OnSize)
 
+    def __OnSashDrag(self, event):
+        '''
+        Called when a user drags the sash window.
+        '''
+        if event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE:
+            return
+
+        eID = event.GetId()
+        
+        if eID == self.ID_WINDOW_RIGHT:
+            width = event.GetDragRect().width
+            self.rightSashWindow.SetDefaultSize(wxSize(width, 1000))
+            
+        wxLayoutAlgorithm().LayoutWindow(self, self.leftSashWindow)
+                
+    def __OnSize(self, event = None):
+        '''
+        Called when a user resizes the window.
+        '''
+        wxLayoutAlgorithm().LayoutWindow(self, self.leftSashWindow)
+        
     def __participantInRole(self, roleId, person):
         '''
         Check to see if a person is added to a role.
@@ -292,16 +339,10 @@ class AuthorizationUIPanel(wxPanel):
         '''
         Initiate menus that are shown when user right-clicks a tree item
         '''
-        self.ID_ROLE_ADDPERSON = wxNewId()
-        self.ID_ROLE_ADDROLE = wxNewId()
-        self.ID_ROLE_REMOVEROLE = wxNewId()
-      
-        self.ID_PERSON_ADDPERSON = wxNewId()
-        self.ID_PERSON_ADDROLE = wxNewId()
-        #self.ID_PERSON_RENAME = wxNewId()
-        self.ID_PERSON_COPY = wxNewId()
-        self.ID_PERSON_PASTE = wxNewId()
-        self.ID_PERSON_DELETE = wxNewId()
+        # Menu when user clicks the tree.
+        self.treeMenu = wxMenu()
+        self.treeMenu.Append(self.ID_ROLE_ADDROLE,"Create Role",
+                             "Create a new role")
 
         # Menu when user clicks on a role item
         self.roleMenu = wxMenu()
@@ -312,6 +353,10 @@ class AuthorizationUIPanel(wxPanel):
                              "Create a new role")
         self.roleMenu.Append(self.ID_ROLE_REMOVEROLE,"Remove Role",
                              "Remove selected role")
+        self.roleMenu.AppendSeparator()
+        self.roleMenu.Append(self.ID_PERSON_PASTE,"Paste",
+                             "Paste")
+        
         #self.roleMenu.Append(self.ID_ROLE_ADDPERSON,"Create Role",
         #                     "Create new role")
      
@@ -319,6 +364,8 @@ class AuthorizationUIPanel(wxPanel):
         self.personMenu = wxMenu()
         self.personMenu.Append(self.ID_PERSON_ADDPERSON,"Add Person",
                                    "New participant")
+        self.personMenu.Append(self.ID_PERSON_DELETE,"Remove Person",
+                                   "Remove this role from venue")
         self.personMenu.AppendSeparator()
         #self.personMenu.Append(self.ID_PERSON_RENAME,"Rename",
         #                           "Rename this participant")
@@ -328,43 +375,46 @@ class AuthorizationUIPanel(wxPanel):
         self.personMenu.Append(self.ID_PERSON_PASTE,"Paste",
                                    "Paste")
         self.personMenu.AppendSeparator()
-        self.personMenu.Append(self.ID_PERSON_DELETE,"Remove",
-                                   "Remove this role from venue")
+        self.personMenu.Append(self.ID_PERSON_PROPERTIES,"Properties",
+                               "View distinguished name")
        
     def __layout(self):
         '''
         Handles UI layout,
         '''
         # Role Panel
+        mainSizer = wxBoxSizer(wxHORIZONTAL)
         staticBox = wxStaticBox(self.rolePanel, -1, "Roles")
         staticBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         sizer  = wxStaticBoxSizer(staticBox,
                                   wxVERTICAL)
         sizer.Add(self.tree, 1, wxEXPAND|wxALL, 10)
-        self.rolePanel.SetSizer(sizer)
+        mainSizer.Add(sizer, 1, wxEXPAND|wxALL, 10) 
+        self.rolePanel.SetSizer(mainSizer)
 
         # Action Panel
+        mainSizer = wxBoxSizer(wxHORIZONTAL)
         self.staticBox = wxStaticBox(self.actionPanel, -1, "Actions")
         self.staticBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         sizer  = wxStaticBoxSizer(self.staticBox,
                                   wxVERTICAL)
         sizer.Add(self.actionList, 1, wxEXPAND|wxALL, 10)
-        self.actionPanel.SetSizer(sizer)
+        mainSizer.Add(sizer, 1, wxEXPAND|wxALL, 10) 
+        self.actionPanel.SetSizer(mainSizer)
 
-        # The frame
-        mainSizer =  wxBoxSizer(wxVERTICAL)
+        # Sash windows
+        self.leftSashWindow.SetDefaultSize(wxSize(400, 60))
+        self.leftSashWindow.SetOrientation(wxLAYOUT_VERTICAL)
+        self.leftSashWindow.SetAlignment(wxLAYOUT_LEFT)
         
-        sizer = wxBoxSizer(wxHORIZONTAL)
+        self.rightSashWindow.SetDefaultSize(wxSize(400, 60))
+        self.rightSashWindow.SetOrientation(wxLAYOUT_VERTICAL)
+        self.rightSashWindow.SetAlignment(wxLAYOUT_RIGHT)
+        self.rightSashWindow.SetSashVisible(wxSASH_LEFT, TRUE)
+
+        wxLayoutAlgorithm().LayoutWindow(self.leftSashWindow,
+                                         self.rightSashWindow)
         
-        sizer.Add(self.rolePanel, 5, wxEXPAND| wxALL, 10)
-        sizer.Add(self.actionPanel, 3, wxEXPAND | wxALL, 10)
-
-        mainSizer.Add(sizer, 1, wxEXPAND)
-              
-        self.SetAutoLayout(1)
-        self.SetSizer(mainSizer)
-        self.Layout()
-
     def Copy(self, event):
         '''
         Is called when user selects to copy a tree item.
@@ -397,7 +447,7 @@ class AuthorizationUIPanel(wxPanel):
 
             if not self.__participantInRole(roleId, person):
                 self.changed = 1
-                personId = self.tree.AppendItem(roleId, person.name,
+                personId = self.tree.AppendItem(roleId, person.GetCN(),
                                                 self.participantId,
                                                 self.participantId)
                 self.tree.SetItemData(personId, wxTreeItemData(person))
@@ -405,8 +455,52 @@ class AuthorizationUIPanel(wxPanel):
 
             else:
                 MessageDialog(self, "%s is already added to %s"%(person.name, role.name), "Error") 
-            
-                
+
+    def OpenPersonProperties(self, event):
+        '''
+        Show profile dialog for a subject.
+        '''
+        selectedItem = self.tree.GetSelection()
+        if not selectedItem.IsOk():
+            return
+
+        person = self.tree.GetItemData(selectedItem).GetData()
+        
+        dialog = PersonPropertiesDialog(self, -1, "Properties for %s"%person.GetCN(), person)
+        dialog.ShowModal()
+        dialog.Destroy()
+        
+    def SelectAction(self, event):
+        '''
+        Called when a user selects a checklistbox item and
+        makes the list behave as if the user checked a the list
+        box of that item.
+        '''
+        index = event.GetInt()
+        actionName = self.actionList.GetString(index)
+        checked = self.actionList.IsChecked(index)
+
+        # Get current action object
+        currentAction = None
+
+        for action in self.allActions:
+            if action.name == actionName:
+                currentAction = action
+
+        # Check correct action and add/remove current role to the action.
+        if checked:
+            self.actionList.Check(index, 0)
+            self.changed = 1
+            if currentAction:
+                # Remove action
+                currentAction.RemoveRole(self.currentRole)
+        else:
+            self.actionList.Check(index, 1)
+            self.changed = 1
+            if currentAction:
+                # Add action
+                currentAction.AddRole(self.currentRole)
+                    
     def CheckAction(self, event):
         '''
         Is called when user checks an action.
@@ -483,7 +577,8 @@ class AuthorizationUIPanel(wxPanel):
                
         # Need to call Allow to get an EVT_TREE_END_DRAG event
         event.Allow()
-            
+
+   
     def EndDrag(self, event):
         '''
         Is called when a user stops dragging a tree item.
@@ -523,7 +618,7 @@ class AuthorizationUIPanel(wxPanel):
                 try:
                     oldRole.RemoveSubject(item)
                 except DefaultIdentityNotRemovable:
-                    message = wxMessageDialog(self, "You can not remove yourself from role %s."%(role.name), "Error",  style = wxOK|wxICON_INFORMATION)
+                    message = wxMessageDialog(self, 'You can not remove yourself from role %s.'%(role.name), 'Error',  style = wxOK|wxICON_INFORMATION)
                     # Do not use modal; it hangs the dialog.
                     message.Show()
                     return
@@ -540,10 +635,10 @@ class AuthorizationUIPanel(wxPanel):
                                 
             else:
                 # This message doesn't show up under Windows. Weird.
-                message = wxMessageDialog(self, "%s is already added to %s"%(item.name, role.name), "Error",  style = wxOK|wxICON_INFORMATION)
+                message = wxMessageDialog(self, '%s is already added to %s'%(item.name, role.name), 'Error',  style = wxOK|wxICON_INFORMATION)
                 # Do not use modal; it hangs the dialog.
                 message.Show()
-                                           
+    
     def CreateRole(self, event):
         '''
         Create new role
@@ -667,7 +762,7 @@ class AuthorizationUIPanel(wxPanel):
                         
             # Insert subject in tree
             index = self.roleToTreeIdDict[activeRole]
-            subjectId = self.tree.AppendItem(index, subject.name,
+            subjectId = self.tree.AppendItem(index, subject.GetCN(),
                                              self.participantId, self.participantId)
             self.tree.SetItemData(subjectId, wxTreeItemData(subject))
 
@@ -785,7 +880,11 @@ class AuthorizationUIPanel(wxPanel):
             else:
                 self.PopupMenu(self.roleMenu,
                                wxPoint(self.x, self.y))
-      
+
+        else:
+            self.PopupMenu(self.treeMenu,
+                           wxPoint(self.x, self.y))
+
 class CreateActionDialog(wxDialog):
     '''
     Dialog for adding actions to roles.
@@ -896,7 +995,7 @@ class CreateRoleDialog(wxDialog):
     '''
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title,
-                          style=wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+                          style=wxOK|wxRESIZE_BORDER)
         self.SetSize(wxSize(300, 150))
         self.infoText = wxStaticText(self, -1,
                                      "Enter the name of the new role.")
@@ -941,7 +1040,36 @@ class CreateRoleDialog(wxDialog):
         self.SetAutoLayout(1)
         self.SetSizer(mainSizer)
         self.Layout()
-            
+
+class PersonPropertiesDialog(wxDialog):
+    '''
+    Dialog showing a persons properties.
+    '''
+    def __init__(self, parent, id, title, person):
+        wxDialog.__init__(self, parent, id, title,
+                          style=wxRESIZE_BORDER,
+                          size = wxSize(650,90))
+        self.dnText = wxStaticText(self, -1, 'Distinguished Name: ')
+        self.dnCtrl = wxTextCtrl(self, -1, person.name)
+
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        
+        self.__layout()
+        
+    def __layout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        s2 = wxBoxSizer(wxHORIZONTAL)
+        s2.Add(self.dnText, 0, wxEXPAND)
+        s2.Add(self.dnCtrl, 1, wxEXPAND)
+        sizer.Add(s2, 0, wxEXPAND|wxALL, 10)
+
+        sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND|wxLEFT|wxRIGHT, 5)
+        sizer.Add(self.okButton, 0, wxCENTER|wxALL, 10)
+
+        self.SetAutoLayout(1)
+        self.SetSizer(sizer)
+        self.Layout()
+                
 class AddPeopleDialog(wxDialog):
     '''
     Dialog for adding people to roles
@@ -1191,8 +1319,8 @@ class AuthorizationUIDialog(wxDialog):
         Handle UI layout.
         '''
         mainSizer = wxBoxSizer(wxVERTICAL)
-        mainSizer.Add(self.panel, 1, wxEXPAND)
-        
+        mainSizer.Add(self.panel, 1, wxEXPAND|wxBOTTOM, 5)
+
         buttonSizer = wxBoxSizer(wxHORIZONTAL)
         buttonSizer.Add(self.okButton, 0, wxALL, 5)
         buttonSizer.Add(self.cancelButton, 0, wxALL, 5)
