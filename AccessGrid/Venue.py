@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.121 2003-08-15 14:48:20 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.122 2003-08-20 21:37:58 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -626,6 +626,7 @@ class Venue(ServiceBase.ServiceBase):
         cleanup stale client connections.
         """
         users_to_remove = []
+        netservices_to_remove = []
         now_sec = time.time()
 
         self.heartbeatLock.acquire()
@@ -636,21 +637,26 @@ class Venue(ServiceBase.ServiceBase):
             if vclient.GetTimeSinceLastHeartbeat(now_sec) > self.cleanupTime:
                 users_to_remove.append(privateId)
 
+        for privateId in self.netServices.keys():
+            (netService,then_sec) = self.netServices[privateId]
+
+            if abs(now_sec - then_sec) > self.cleanupTime:
+                netservices_to_remove.append(privateId)
+
         self.heartbeatLock.release()
 
+        # Actually remove user
         for privateId in users_to_remove:
             log.debug("Removing user %s with expired heartbeat time",
                       self.clients[privateId].GetClientProfile().GetName())
 
             self.RemoveUser(privateId)
 
-        for privateId in self.netServices.keys():
-            (netService,then_sec) = self.netServices[privateId]
-
-            if abs(now_sec - then_sec) > self.cleanupTime:
-                log.info("Removing netservice %s with expired heartbeat time",
-                         privateId)
-                self.RemoveNetService(privateId)
+        # Actually remove net services
+        for privateId in netservices_to_remove:
+            log.info("Removing netservice %s with expired heartbeat time",
+                     privateId)
+            self.RemoveNetService(privateId)
 
 
     def AddNetService(self, clientType):
@@ -673,6 +679,11 @@ class Venue(ServiceBase.ServiceBase):
         netService = self.netServices[privateId][0]
         log.info("RemoveNetService: type=%s privateId=%s", netService.type, privateId)
         netService.Stop()
+
+        # Close the connection to the net service
+        if netService.connObj is not None:
+            self.venue.server.eventService.CloseConnection(netService.connObj)
+        netService.connObj = None
         
         # Remove the netservice from the netservice list
         del self.netServices[privateId]
@@ -1037,6 +1048,7 @@ class Venue(ServiceBase.ServiceBase):
             
         elif self.netServices.has_key(priv):
             log.debug("Private id is in netservices list, authorizing")
+            self.netServices[priv].SetConnection(connObj)
             authorized = 1
         else:
             log.debug("Private id is not client list, denying")
