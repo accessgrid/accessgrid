@@ -109,6 +109,7 @@ TextService = "TextService"
 
 Toolkit = "Toolkit"
 Types = "Types"
+UIUtilities = "UIUtilities"
 Utilities = "Utilities"
 VenueManagement = "VenueManagement"
 

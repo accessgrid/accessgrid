@@ -5,14 +5,17 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.57 2004-05-05 22:04:13 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.58 2004-05-27 21:38:55 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.57 2004-05-05 22:04:13 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.58 2004-05-27 21:38:55 eolson Exp $"
 __docformat__ = "restructuredtext en"
+
+from AccessGrid import Log
+log = Log.GetLogger(Log.UIUtilities)
 
 from AccessGrid.Platform import IsWindows
 import string
@@ -864,11 +867,11 @@ class EditURLBaseDialog(wxDialog):
         self.SetAutoLayout(1)
 
     def OnDelete(self, event):
-        print "Deleting ",self.currentItem
+        log.debug( "Deleting %s",self.currentItem)
         if(self.dictCopy.has_key(self.currentItem)):
             del self.dictCopy[self.currentItem]
             self.__PopulateList()
-            print " dict copy = ", self.dictCopy
+            log.debug( " dict copy = %s", self.dictCopy)
         else:
             text = "Please, select the %s you want to delete"%self.type
             title = "Notification"
@@ -898,7 +901,7 @@ class EditURLBaseDialog(wxDialog):
     def OnItemSelected(self, event):
         self.currentIndex = event.m_itemIndex
         self.currentItem = self.myUrlsList.GetItemText(event.m_itemIndex)
-        print "Selected ", self.currentItem
+        log.debug ("Selected %s", self.currentItem)
               
     def OnRightDown(self, event):
         self.x = event.GetX() + self.myUrlsList.GetPosition().x
@@ -919,7 +922,7 @@ class RenameDialog(wxDialog):
                                  style=wxALIGN_LEFT)
         self.nameText = wxStaticText(self, -1, "New Name: ",
                                      style=wxALIGN_LEFT)
-        print 'before creating my urls ', self.type
+        log.debug( 'before creating my urls %s', self.type)
         v = MyUrlsEditValidator(type = self.type)
         self.name = wxTextCtrl(self, -1, "", size = wxSize(300,20),
                                validator = v)
