@@ -24,7 +24,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.2 2003-09-18 17:08:11 turam Exp $
+ * $Id: QuickBridge.c,v 1.3 2003-10-13 20:17:23 turam Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -873,8 +873,16 @@ main (argc, argv)
   timerval.it_value.tv_usec = 0; 
 
   signal(SIGALRM,SIG_IGN);
-#if 1
-  signal(SIGINT,signal_handler); /* tdu */
+#if 1 /* tdu */
+  {
+  /* ensure that SIGINT is not blocked */
+  sigset_t inset;
+  sigaddset(&inset,SIGINT);
+  sigprocmask(SIG_UNBLOCK, &inset,NULL);
+
+  /* set signal handler for SIGINT */
+  signal(SIGINT,signal_handler);
+  }
 #endif
 
   timerstatus = setitimer(ITIMER_REAL, &timerval, (struct itimerval *)0);
