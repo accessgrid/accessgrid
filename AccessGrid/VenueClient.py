@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.134 2004-02-27 21:52:46 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.135 2004-03-01 20:31:35 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,9 +13,10 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.134 2004-02-27 21:52:46 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.135 2004-03-01 20:31:35 turam Exp $"
 __docformat__ = "restructuredtext en"
 
+from AccessGrid.hosting import Client
 import sys
 import string
 import threading
@@ -47,7 +48,9 @@ from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent
 from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
 from AccessGrid.Descriptions import DataDescription, ConnectionDescription
+from AccessGrid.Descriptions import CreateDataDescription, CreateServiceDescription
 from AccessGrid.Descriptions import CreateApplicationDescription
+from AccessGrid.Venue import VenueIW
 
 class EnterVenueException(Exception):
     pass
@@ -101,7 +104,7 @@ class VenueClient:
         self.state = None
 
         # takes time
-        self.__CreateVenueClientWebService()
+        #self.__CreateVenueClientWebService()
         self.__InitVenueData__()
         self.isInVenue = 0
         self.isIdentitySet = 0
@@ -183,6 +186,8 @@ class VenueClient:
             self.dataStore = DataStore.DataStore(self, self.personalDataStorePath, 
                                                  self.personalDataStorePrefix,
                                                  self.transferEngine)
+                   
+
             #
             # load personal data from file
             #
@@ -517,6 +522,7 @@ class VenueClient:
     # Enter/Exit
     #
                     
+    # Back argument is true if going to a previous venue (used in UI).
     def EnterVenue(self, URL, back=0):
         """
         EnterVenue puts this client into the specified venue.
@@ -535,16 +541,42 @@ class VenueClient:
 
         enterSuccess = 1
         try:
+            # if this venue url has a valid web service then enter venue
+
+            # catch unauthorized SOAP calls to EnterVenue
+#             securityManager = AccessControl.GetSecurityManager()
+#             if securityManager != None:
+#                 callerDN = securityManager.GetSubject().GetName()
+#                 if callerDN != None and callerDN != self.leaderProfile.distinguishedName:
+#                     raise AuthorizationFailedError("Unauthorized leader tried to lead venue client")
+
+            try:
+                VenueIW( URL ).IsValid()
+            except GSITCPSocketException, e:
+                if e.args[0] == 'an authentication operation failed':
+                    self.__CheckForInvalidClock()
+
+                else:
+                    log.exception("EnterVenue: failed")
+
+                raise EnterVenueException("No reachable venue at given venue URL")
+            
+            except:
+                log.exception("EnterVenue: No reachable venue at given venue URL")
+                raise EnterVenueException("No reachable venue at given venue URL")
+
+
             # Exit the venue you are currently in before entering a new venue
             if self.isInVenue:
                 self.ExitVenue()
 
             # Get capabilities from your node
             errorInNode = 0
+            #haveValidNodeService = 0
 
             try:
-                if self.nodeService != None:
-                    self.profile.capabilities = self.nodeService.GetCapabilities()
+                self.profile.capabilities = Client.Handle( self.nodeServiceUri ).GetProxy().GetCapabilities()
+                
             except Exception, e:
                 # This is a non fatal error, users should be notified
                 # but still enter the venue
@@ -558,12 +590,79 @@ class VenueClient:
             self.venueProxy = VenueIW(URL)
 
             log.debug("EnterVenue: Invoke venue enter")
-            (self.venueState, self.privateId, self.streamDescList ) = self.venueProxy.Enter( self.profile )
+            (venueState, self.privateId, self.streamDescList ) = self.venueProxy.Enter( self.profile )
 
+
+            #
+            # construct a venue state that consists of real objects
+            # instead of the structs we get back from the SOAP call
+            # (this code can be removed when SOAP returns real objects)
+            #
+            connectionList = []
+            for conn in venueState.connections:
+                connectionList.append( ConnectionDescription( conn.name, conn.description, conn.uri ) )
+
+            clientList = []
+            for client in venueState.clients:
+                profile = ClientProfile()
+                profile.profileFile = client.profileFile
+                profile.profileType = client.profileType
+                profile.name = client.name
+                profile.email = client.email
+                profile.phoneNumber = client.phoneNumber
+                profile.icon = client.icon
+                profile.publicId = client.publicId
+                profile.location = client.location
+                profile.venueClientURL = client.venueClientURL
+                profile.techSupportInfo = client.techSupportInfo
+                profile.homeVenue = client.homeVenue
+                profile.privateId = client.privateId
+                profile.distinguishedName = client.distinguishedName
+
+                # should also objectify the capabilities, but not doing it 
+                # for now (until it's a problem ;-)
+                profile.capabilities = client.capabilities
+
+                clientList.append( profile )
+
+            dataList = []
+            for data in venueState.data:
+                dataDesc = CreateDataDescription(data)
+                dataList.append( dataDesc )
+                
+            applicationList = []
+            for application in venueState.applications:
+                appDesc = CreateApplicationDescription(application)
+                applicationList.append(appDesc)
+
+            serviceList = []
+            for service in venueState.services:
+                serviceDesc = CreateServiceDescription(service)
+                serviceList.append(serviceDesc)
+
+            # I hate retrofitted code.
+            if hasattr(venueState, 'backupServer'):
+                bs = venueState.backupServer
+            else:
+                bs = None
+                
+            self.venueState = VenueState( venueState.uniqueId,
+                                          venueState.name,
+                                          venueState.description,
+                                          venueState.uri,
+                                          connectionList, 
+                                          clientList,
+                                          dataList,
+                                          venueState.eventLocation,
+                                          venueState.textLocation,
+                                          applicationList,
+                                          serviceList,
+                                          bs)
             self.venueUri = URL
             self.venueId = self.venueState.GetUniqueId()
-            host, port = self.venueState.eventLocation
 
+            host, port = venueState.eventLocation
+        
             #
             # Create the event client
             #
@@ -631,11 +730,9 @@ class VenueClient:
                 log.warn("EnterVenue: Error updating node service")
                 errorInNode = 1
 
-            log.debug("Updating profile cache.")
             # Cache profiles from venue.
             for client in self.venueState.clients.values():
-                pass
-                #self.UpdateProfileCache(client)
+                self.UpdateProfileCache(client)
                 
             # Finally, set the flag that we are in a venue
             self.isInVenue = 1
@@ -668,7 +765,7 @@ class VenueClient:
             # pass a flag to UI if we fail to enter.
             enterSuccess = 0
             # put error in warningString, in redesign will be raised to UI as exception.
-            self.warningString = str(e.faultstring)
+            #self.warningString = str(e.faultstring)
 
         for s in self.observers:
             # back is true if user just hit the back button.
@@ -1107,8 +1204,8 @@ class VenueClient:
         if self.transferEngine:
             self.transferEngine.stop()
 
-        if self.server:
-            self.server.Stop()
+#         if self.server:
+#             self.server.Stop()
 
         if self.dataStore:
             self.dataStore.Shutdown()
