@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.2 2004-02-26 16:45:35 judson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.3 2004-02-26 16:48:27 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 Platform sub modules.
 """
-__revision__ = "$Id: __init__.py,v 1.2 2004-02-26 16:45:35 judson Exp $"
+__revision__ = "$Id: __init__.py,v 1.3 2004-02-26 16:48:27 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # mechanisms to support multiple hosting environments and to set defaults
@@ -57,6 +57,7 @@ if isWindows():
     from AccessGrid.Platform.win32 import ProcessManager
 elif isLinux():
     from AccessGrid.Platform.linux2.Platform import *
+    from AccessGrid.Platform.linux2 import Platform
     from AccessGrid.Platform.linux2 import PersonalNode
     from AccessGrid.Platform.linux2 import NetUtilities
     from AccessGrid.Platform.linux2 import ProcessManager
