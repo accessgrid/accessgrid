@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.72 2003-08-11 19:44:50 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.73 2003-08-11 23:09:46 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,6 +27,7 @@ from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid import Toolkit
 from AccessGrid.hosting.AccessControl import RoleManager
 from AccessGrid.Venue import RegisterDefaultVenueRoles
+from AccessGrid.RoleAuthorization import AddPeopleDialog
 
 import webbrowser
 import logging, logging.handlers
@@ -1173,6 +1174,7 @@ class VenueParamFrame(wxDialog):
     ID_TRANSFER = wxNewId()
     ID_REMOVE_EXIT = wxNewId()
     ID_LOAD = wxNewId()
+    ID_MODIFY_ROLES = wxNewId()
 
     def __init__(self, parent, id, title, application):
         wxDialog.__init__(self, parent, id, title)
@@ -1208,6 +1210,9 @@ class VenueParamFrame(wxDialog):
         # This is the exits this venue has
         self.exits = wxListBox(self, -1, size = wxSize(250, 100),
                                style = wxLB_SORT)
+        self.modifyRolesButton = wxButton(self, self.ID_MODIFY_ROLES, "Modify Roles",
+                                 size = wxSize(90, 10))
+        self.rolesText = wxStaticText(self, -1, "Manage access to venue including which users are allowed to Enter and which users allowed to Administrate.")
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton =  wxButton(self, wxID_CANCEL, "Cancel")
 
@@ -1266,6 +1271,16 @@ class VenueParamFrame(wxDialog):
 
         bottomParamSizer.Add(exitsSizer, 0, wxEXPAND | wxALL, 10)
 
+        rolesSizer = wxStaticBoxSizer(wxStaticBox(self, -1, "Roles and Authorization"),
+                                 wxHORIZONTAL)
+
+        #rolesSizer.Add(self.modifyRolesButton, 2, wxEXPAND | wxRIGHT , 14)
+        #rolesSizer.Add(self.rolesText, 2, wxEXPAND|wxLEFT , 14)
+        roleFrameSizer = wxFlexGridSizer(1, 2, 5, 5)
+        roleFrameSizer.Add(self.modifyRolesButton, 0, wxEXPAND|wxRIGHT, 14)
+        roleFrameSizer.Add(self.rolesText, 2, wxEXPAND|wxLEFT , 14)
+        rolesSizer.Add(roleFrameSizer, 2, wxALL, 6)
+
         buttonSizer =  wxBoxSizer(wxHORIZONTAL)
         buttonSizer.Add(20, 20, 1)
         buttonSizer.Add(self.okButton, 0)
@@ -1275,6 +1290,8 @@ class VenueParamFrame(wxDialog):
 
 
         boxSizer.Add(bottomParamSizer, 0,
+                     wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT, 10)
+        boxSizer.Add(rolesSizer, 0,
                      wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT, 10)
         boxSizer.Add(buttonSizer, 5, wxEXPAND | wxBOTTOM, 5)
 
@@ -1287,6 +1304,7 @@ class VenueParamFrame(wxDialog):
         EVT_BUTTON(self, self.ID_TRANSFER, self.AddExit)
         EVT_BUTTON(self, self.ID_REMOVE_EXIT, self.RemoveExit)
         EVT_BUTTON(self, self.ID_LOAD, self.LoadRemoteVenues)
+        EVT_BUTTON(self, self.ID_MODIFY_ROLES, self.OpenRoleAuthorizationDialog)
 
     def LoadRemoteVenues(self, event = None):
         URL = self.address.GetValue()
@@ -1304,6 +1322,11 @@ class VenueParamFrame(wxDialog):
                                            venue.uri)
                 self.venues.Append(cd.name, cd)
         """
+
+    def OpenRoleAuthorizationDialog(self, event = None):
+        roleAuthorization = AddPeopleDialog(self, -1, "Modify Roles", self.venue.uri)
+        roleAuthorization.ShowModal()
+        roleAuthorization.Destroy()
 
     def __loadVenues(self, URL):
         validVenue = false
