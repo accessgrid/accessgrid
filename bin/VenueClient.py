@@ -123,10 +123,12 @@ class VenueClientUI(wxApp, VenueClient):
             self.frame.contentListPanel.AddParticipant(event.data)
 
         elif event.eventType == Event.EXIT:
+            print '----------- I get EXIT event'
             if(event.data.publicId != self.profile.publicId):
                 self.frame.contentListPanel.RemoveParticipant(event.data)
                                  
         elif event.eventType == Event.ADD_DATA:
+            print '------ add data: ', event.data.name
             self.frame.contentListPanel.AddData(event.data)
 
         elif event.eventType == Event.REMOVE_DATA:
@@ -218,7 +220,10 @@ class VenueClientUI(wxApp, VenueClient):
             self.frame.contentListPanel.AddService(service)
 
         exits = venueState.connections.values()
+        print '--------getting exits'
         for exit in exits:
+            print '--------got an exit!'
+            print exit.name
             self.frame.venueListPanel.list.AddVenueDoor(exit)
                
     def ExitVenue(self ):
@@ -227,19 +232,31 @@ class VenueClientUI(wxApp, VenueClient):
         This method calls the venue client method and then
         performs its own operations when the client exits a venue.
         """
+        print '----------- I send exit venue event'
         VenueClient.ExitVenue( self )
                                      
     def GoToNewVenue(self, uri):
+        oldUri = self.venueUri
         try: # is this a server
             venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
 
         except: # no, it is a venue
             venueUri = uri
-            
-        self.frame.CleanUp()
-        self.OnExit()
-        self.client = Client.Handle(venueUri).get_proxy()
-        self.EnterVenue(venueUri)
+
+        try:  # temporary solution until exceptions work as should
+            print '---------------- try'
+            self.client = Client.Handle(venueUri).get_proxy()
+            self.frame.CleanUp()
+            self.OnExit()
+            self.EnterVenue(venueUri)
+                    
+        except:
+            print "Exception in VenueClient::GoToNewVenue : ", sys.exc_type, sys.exc_value   
+            text = "Could not establish connection to venue."
+            noConnectionDialog = wxMessageDialog(NULL, text ,'', wxOK | wxICON_INFORMATION)
+            noConnectionDialog.ShowModal()
+            noConnectionDialog.Destroy()
+            self.EnterVenue(oldUri)
 
     def OnExit(self):
         """
