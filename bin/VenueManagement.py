@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.107 2003-09-19 19:26:25 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.108 2003-09-19 20:59:36 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.107 2003-09-19 19:26:25 eolson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.108 2003-09-19 20:59:36 eolson Exp $"
 
 import webbrowser
 import string
@@ -283,15 +283,14 @@ class VenueManagementClient(wxApp):
                         log.info("VenueManagementClient.ConnectToServer: Not authorized to administrate the server.")
                 else:
                     log.exception("VenueManagementClient.ConnectToServer: Can not connect")
-                    text = "You have not connected to the venue server located at\n%s.  Error occurred." % URL
-                    ErrorDialog(None, text, "Venue Server Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                    text = "You were unable to connect to a venue server located at\n%s." % URL
+                    MessageDialog(None, text, "Unable To Connect", style=wxOK|wxICON_INFORMATION)
 
             except:
                 wxEndBusyCursor() 
                 log.exception("VenueManagementClient.ConnectToServer: Can not connect")
-                text = "You have not connected to the venue server located at\n%s.  Error occurred." % URL
-                ErrorDialog(None, text, "Venue Server Error",
-                            style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+                text = "You were unable to connect to a venue server located at\n%s." % URL
+                MessageDialog(None, text, "Unable To Connect", style=wxOK|wxICON_INFORMATION)
                 
     def GetCName(self, distinguishedName):
         index = distinguishedName.find("CN=")
