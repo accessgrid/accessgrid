@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.141 2003-10-20 19:55:17 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.142 2003-10-21 19:52:05 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.141 2003-10-20 19:55:17 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.142 2003-10-21 19:52:05 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -665,11 +665,16 @@ class Venue(ServiceBase.ServiceBase):
             self.RemoveNetService(privateId)
 
 
-    def AddNetService(self, clientType):
+    def AddNetService(self, clientType, privateId=str(GUID())):
         """
         AddNetService adds a net service to those in the venue
         """
-        privateId = str(GUID())
+        
+        # Remove the net service if it's already registered
+        if self.netServices.has_key(privateId):
+            log.info("AddNetService: id %s already registered; removing old state", privateId)
+            self.RemoveNetService(privateId)
+        
         log.info("AddNetService: type=%s", clientType)
         netService = NetService.CreateNetService(clientType,self,privateId)
         self.netServices[privateId] = (netService, time.time())
@@ -2304,6 +2309,7 @@ class Venue(ServiceBase.ServiceBase):
         netServicePrivateIds = self.netServices.keys()
         if privateId in netServicePrivateIds:
             netServicePrivateIds.remove(privateId)
+            
         
         # Remove network locations tagged with specified private id
         streamList = self.streamList.GetStreams()
