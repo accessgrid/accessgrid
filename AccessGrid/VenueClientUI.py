@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.36 2004-04-23 17:29:22 eolson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.37 2004-04-23 18:16:40 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.36 2004-04-23 17:29:22 eolson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.37 2004-04-23 18:16:40 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2975,7 +2975,7 @@ class ContentListPanel(wxPanel):
                           
                 if dataDescriptionList:
                     for data in dataDescriptionList:
-                        self.AddDataCB(data)
+                        self.AddData(data)
             except:
                 log.exception("ContentListPanel.OnExpand: Could not get personal data.")
                 MessageDialog(None, "%s's data could not be retrieved."%item.name)

@@ -3,12 +3,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.18 2004-04-08 20:52:10 eolson Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.19 2004-04-23 18:16:40 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.18 2004-04-08 20:52:10 eolson Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.19 2004-04-23 18:16:40 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -32,7 +32,7 @@ from AccessGrid.Platform.Config import UserConfig, MimeConfig, AGTkConfig
 from AccessGrid.Platform import IsWindows, Config
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.VenueClient import NetworkLocationNotFound
-
+from AccessGrid import Events
 
 log = Log.GetLogger(Log.VenueClientController)
 
@@ -1017,7 +1017,7 @@ class VenueClientController:
             index = len(pathParts)-1
             name = pathParts[index]
 
-            dataDescriptions = self.__venueClient.GetDataDescriptions()
+            dataDescriptions = self.__venueClient.GetPersonalData()
             for data in dataDescriptions:
                 if data.name == name:
                     title = "Duplicated File"
