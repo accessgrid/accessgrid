@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.12 2003-05-23 22:17:59 olson Exp $
+# RCS-ID:      $Id: Events.py,v 1.13 2003-06-26 20:48:59 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -39,12 +39,40 @@ class Event:
         string += "\tData: %s" % (self.data, )
 
         return string
-    
+
 class ConnectEvent(Event):
     CONNECT = "Connect"
 
     def __init__(self, venueId, privateId):
         Event.__init__(self, ConnectEvent.CONNECT, venueId, privateId)
+
+class AddPersonalDataEvent(Event):
+    '''
+    Event for adding personal data
+    '''
+    ADD_PERSONAL_DATA = "Add data"
+    
+    def __init__(self, venueId, d):
+        Event.__init__(self, AddPersonalDataEvent.ADD_PERSONAL_DATA , venueId, d)
+
+class RemovePersonalDataEvent(Event):
+    '''
+    Event for removing personal data
+    '''
+    REMOVE_PERSONAL_DATA = "Remove data"
+    
+    def __init__(self, venueId, d):
+        Event.__init__(self, RemovePersonalDataEvent.REMOVE_PERSONAL_DATA , venueId, d)
+  
+class UpdatePersonalDataEvent(Event):
+    '''
+    Event for updating personal data
+    '''
+
+    UPDATE_PERSONAL_DATA = "Remove data"
+    
+    def __init__(self, venueId, d):
+        Event.__init__(self, UpdatePersonalDataEvent.UPDATE_PERSONAL_DATA , venueId, d)
 
 class DisconnectEvent(Event):
     DISCONNECT = "Disconnect"
