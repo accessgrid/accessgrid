@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.29 2004-12-08 16:48:06 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.30 2005-01-04 22:36:42 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.29 2004-12-08 16:48:06 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.30 2005-01-04 22:36:42 turam Exp $"
 
 import os
 import sys
@@ -168,10 +168,12 @@ class UserConfig:
         self.sharedAppDir = None
         self.nodeServicesDir = None
         self.nodeConfigDir = None
+        self.localServicesDir = None
         self.servicesDir = None
         self.profileFilename = None
         self.preferencesFilename = None
         self.logDir = None
+        self.preferencesFilename = None
 
         self._Initialize()
         
@@ -294,6 +296,9 @@ class UserConfig:
         raise Exception, "This should not be called directly, but through a subclass."
 
     def GetServicesDir(self):
+        raise Exception, "This should not be called directly, but through a subclass."
+
+    def GetLocalServicesDir(self):
         raise Exception, "This should not be called directly, but through a subclass."
 
 class SystemConfig:
