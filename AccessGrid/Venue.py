@@ -3,10 +3,10 @@
 # Purpose:     The Virtual Venue is the object that provides the collaboration
 #               scopes in the Access Grid.
 #
-# Author:      Ivan R. Judson
+# Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.9 2003-01-17 17:54:28 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.10 2003-01-21 19:37:02 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,6 +15,7 @@ from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid.Types import Capability, Event
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid import NetworkLocation
+from AccessGrid.GUID import GUID
 
 class Venue(ServiceBase.ServiceBase):
     """
@@ -41,12 +42,8 @@ class Venue(ServiceBase.ServiceBase):
         self.multicastAddressAllocator = multicastAddressAllocator
         self.dataStore = dataStore
 
-        self.producerCapabilities = []
-        self.consumerCapabilities = []
-
-        self.nextPrivateId = 1
-
         self.defaultTtl = 127
+
 
     # Management methods
     def AddNetworkService(self, connectionInfo, networkServiceDescription):
@@ -199,6 +196,7 @@ class Venue(ServiceBase.ServiceBase):
             
             if userInVenue == False:
                 privateId = self.GetNextPrivateId()
+                print "Assigning private id: ", privateId
                 self.users[privateId] = clientProfile
                 state['users'] = self.users.values()
 
@@ -430,9 +428,7 @@ class Venue(ServiceBase.ServiceBase):
        
     def GetNextPrivateId( self ):
         """This method creates the next Private Id."""
-        privateId = self.nextPrivateId
-        self.nextPrivateId = self.nextPrivateId + 1
-        return privateId
+        return GUID()
 
     def IsValidPrivateId( self, privateId ):
         """This method verifies the private Id is valid."""
