@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.49 2003-02-27 20:08:17 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.50 2003-03-06 08:18:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -604,6 +604,7 @@ class Venue(ServiceBase.ServiceBase):
             else:
                 privateId = self.GetNextPrivateId()
                 log.debug("Assigning private id: %s", privateId)
+                clientProfile.distinguishedName = AccessControl.GetSecurityManager().GetSubject().GetName()
                 self.users[privateId] = clientProfile
                 state['users'] = self.users.values()
 
@@ -881,22 +882,20 @@ class StreamDescriptionList:
         """
         Remove a stream from the list
         """
-        streamListItem = self.FindStreamByDescription(stream)
-        if streamListItem != None:
+        if self.FindStreamByDescription(stream):
             self.streams.remove(streamListItem)
 
     def AddStreamProducer( self, producingUser, inStream ):
         """
         Add a stream to the list, with the given producer
         """
-        try:
-            (stream, producerList) = self.FindStreamByDescription(inStream)
+        streamListItem = self.FindStreamByDescription(inStream)
+        if streamListItem != None:
+            (streamDesc, producerList) = streamListItem
             producerList.append( producingUser )
-            log.debug( "* * * Added stream producer %s", producingUser )
-        except ValueError:
-            log.exception( "* * * Added new stream with producer %s",
-                           producingUser)
+        else:
             self.streams.append( (inStream, [ producingUser ] ) )
+            log.debug( "* * * Added stream producer %s", producingUser )
 
     def RemoveStreamProducer( self, producingUser, inStream ):
         """
@@ -904,14 +903,13 @@ class StreamDescriptionList:
         producer is removed, the stream will be removed from the list
         if it is non-static.
         """
-        try:
-            self.__RemoveProducer( producingUser, inStream )
-            (streamDesc, producerList) = self.FindStreamByDescription(inStream)
+        self.__RemoveProducer( producingUser, inStream )
+        streamListItem = self.FindStreamByDescription(inStream)
+        if streamListItem != None:
+            (streamDesc, producerList) = streamListItem
             if len(producerList) == 0:
                 self.streams.remove((streamDesc, producerList))
-                
-        except ValueError:
-            pass
+            
 
     def RemoveProducer( self, producingUser ):
         """
@@ -926,9 +924,13 @@ class StreamDescriptionList:
         """
         Internal : Remove producer from stream with given index
         """
-        (stream, producerList) = self.FindStreamByDescription(inStream)
-        if producingUser in producerList:
-            producerList.remove( producingUser )
+        streamListItem = self.FindStreamByDescription(inStream)
+        if streamListItem != None:
+            (stream, producerList) = streamListItem
+            if producingUser in producerList:
+                producerList.remove( producingUser )
+
+
 
     def CleanupStreams( self ):
         """
