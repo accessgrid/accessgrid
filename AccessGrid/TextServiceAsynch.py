@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.8 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.9 2003-09-18 17:32:31 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.8 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.9 2003-09-18 17:32:31 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import socket
@@ -35,7 +35,6 @@ from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 from AccessGrid.GUID import GUID
 
 log = logging.getLogger("AG.TextService")
-log.setLevel(logging.DEBUG)
 
 #
 # Per-event debugging might be useful sometimes, but not usually.
@@ -44,10 +43,13 @@ log.setLevel(logging.DEBUG)
 # 
 
 detailedTextEventLogging = 0
+
 if detailedTextEventLogging:
     logTextEvent = log.debug
+    log.setLevel(logging.DEBUG)
 else:
     logTextEvent = lambda *sh: 0
+    log.setLevel(logging.WARN)
 
 class ConnectionHandler:
     """
