@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.189 2004-04-21 22:28:07 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.190 2004-04-27 17:20:19 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.189 2004-04-21 22:28:07 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.190 2004-04-27 17:20:19 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -942,12 +942,12 @@ class Venue(AuthorizationMixIn):
 
             # - remove the subject only if it occurs singly
             if foundSubj == 1:
-                print "Removing single instance of user"
+                log.debug("Removing single instance of user")
                 role = self.authManager.FindRole("VenueUsers")
                 if subject in role.GetSubjects():
                     role.RemoveSubject(subject)
             else:
-                print "Multiple instances, not removing", foundSubj
+                log.debug("Multiple instances, not removing %s", foundSubj)
                     
 
             vclient = self.clients[privateId]
