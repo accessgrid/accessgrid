@@ -195,8 +195,8 @@ if sys.platform == 'win32':
 elif sys.platform == 'linux2':
     ep = find_executable("epydoc")
 
-cmd = "%s %s --html -o %s -n 'Access Grid Toolkit' -u %s AccessGrid" % \
-      (sys.executable, ep, os.path.join('doc','Developer'),
+cmd = "%s %s --html -o %s -n \"Access Grid Toolkit\" -u \"%s\" AccessGrid" % \
+      (sys.executable, ep, os.path.join(DestDir, 'doc','Developer'),
        "http://www.mcs.anl.gov/fl/research/accessgrid")
 
 os.system(cmd)
