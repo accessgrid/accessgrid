@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.49 2004-04-21 21:34:14 olson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.50 2004-04-23 14:03:36 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.49 2004-04-21 21:34:14 olson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.50 2004-04-23 14:03:36 judson Exp $"
 
 # Standard imports
 import os
@@ -64,7 +64,8 @@ class AppBase:
        self.parser.add_option("-i", "--insecure", action="store_true",
                               dest="insecure", default=0,
                               help="Use insecure communications.")
-       
+
+       self.options = None
        self.certMgrUI = None
        self.userConfig = None
        self.agtkConfig = None
@@ -84,7 +85,7 @@ class AppBase:
        self.log = Log.GetLogger(Log.Toolkit)
        levelHandler = Log.HandleLoggers(self.mlh, Log.GetDefaultLoggers())
        self.log.info("Initializing AG Toolkit version %s", GetVersion())
-       # self.log.info("System Configuration: \n%s", self.systemConfig)
+       self.log.info("System Configuration: \n%s", self.systemConfig)
 
     # This method implements the initialization strategy outlined
     # in AGEP-0112
@@ -163,7 +164,6 @@ class AppBase:
         self.parser.add_option(option)
         
     def GetOption(self, arg):
-
         if hasattr(self.options, arg):
             return getattr(self.options, arg)
         else:
