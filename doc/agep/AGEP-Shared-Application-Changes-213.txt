@@ -2,7 +2,7 @@
 Shared Application Changes for 2.1.3 
 ====================================
 
-: version $Revision: 1.3 $
+: version $Revision: 1.4 $
 : author: Susanne Lefvert <lefvert@mcs.anl.gov>
 : status: Draft
 
@@ -22,9 +22,12 @@ Overview
 
 
 Design
--------
+--------
 
     In order to display participant and application information, this have to be stored somewhere accessible for the monitor.  The monitor also needs to get updated whenever the application state is changed.  With the AppService.py class already containing application state and methods to retrieve the state, minor additions to the AppService would allow us to use this interface for monitoring purposes. 
+
+Specifications
+---------------
 
 Methods:
 ''''''''
@@ -130,6 +133,9 @@ Design
 
     Information about shared applications are summarized in the **<application name>.app** file. It would be appropriate to extend that file to include installer location that would get loaded into the description of the application.  The ApplicationDescription class currently has an unused **description** parameter that is shown in the **Properties** dialog of an application and could be used for this purpose.  By adding a description field in the .app file, the developer can decide which information to include, for example installation URL, author, and so forth.  This solution would also require minor UI changes to the properties dialog so that random length descriptions always are visible.
 
+    Additionally, in order to save the application description, the application database class would get extended with methods for handling description storage.
+
+
     **Example -  SharedPresentation.app file:**
 
     ::
@@ -146,6 +152,7 @@ Design
         Open = %(python)s SharedPresentation.py -v %(venueUrl)s -a %(appUrl)s
 
 
+    
 Implementation
 --------------
     **Additions to AppDb.py**
@@ -208,6 +215,32 @@ Design
 -------
     By allowing participants to re-name a shared application before adding it to the **Application** heading, the separation of applications would be more obvious.  This is a simple UI fix that would let a participant input the application name and change the name parameter in the ApplicationDescription that is created and distributed.
 
+Implementation
+--------------
+    
+	**In VenueClientUIClasses**
+	::
+	
+	    def StartApp(self, app, event=None):
+           	dlg = AddAppDialog(self, "Add Application", app)
+		
+              	    if dlg.ShowModal() == wxID_OK:
+                	name = dlg.GetName()
+			dlg.Destroy()
+                
+            	    else:
+			# User canceled, application will not be added
+			dlg.Destroy()
+			return	
+		
+		appName = app.name + ' - ' + name
+         
+        	appDesc = self.app.venueClient.client.CreateApplication( appName,
+                                                                 	app.description,
+                                                                 	app.mimeType )	
+
+
+	**Note:** CreateApp might be a more appropriate name for this method since the application is not actually started.
 
 References
 ===========
