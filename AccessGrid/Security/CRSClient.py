@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CRSClient.py,v 1.5 2004-04-15 21:59:19 olson Exp $
+# RCS-ID:      $Id: CRSClient.py,v 1.6 2004-04-16 20:30:19 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ proxy = xmlrpclib.ServerProxy(url, transport = transport, verbose=1)
 
 """
 
-__revision__ = "$Id: CRSClient.py,v 1.5 2004-04-15 21:59:19 olson Exp $"
+__revision__ = "$Id: CRSClient.py,v 1.6 2004-04-16 20:30:19 olson Exp $"
 
 import xmlrpclib
 from AccessGrid import Log
@@ -130,15 +130,13 @@ class CRSClient:
         comprising the certifiation path for the certs issued by this server.
         """
 
-        log.debug("retrieve certificate for token %s", token)
-
         try:
-            rval = self.proxy.RetrieveCACertificates(token)
+            rval = self.proxy.RetrieveCACertificates()
         except IOError, e:
-            log.exception("IOError on Proxy.RetrieveCertificate")
+            log.exception("IOError on Proxy.RetrieveCACertificates")
             raise CRSClientConnectionFailed
         except StandardError, v:
-            log.exception("error on proxy.RetrieveCertificate(%s)", token)
+            log.exception("error on proxy.RetrieveCACertificates(%s)", token)
             raise v
 
         log.debug("retrieved certificate list %s", rval)
