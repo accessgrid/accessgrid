@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.9 2003-02-14 20:51:38 olson Exp $
+# RCS-ID:      $Id: Server.py,v 1.10 2003-04-01 23:25:19 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -93,13 +93,9 @@ class Server:
     def Stop(self):
         self._running = 0
 
-    def CreateService(self, service_class, 
-                       pathId = None,
-                       *args):
+    def CreateService(self, service_class, pathId = None, *args):
 	"""
         Instantiate a new service.
-
-
 	"""
 
         service_obj = self.create_service_object(pathId = pathId)
@@ -117,6 +113,20 @@ class Server:
 
 	return appobj
 
+    def BindService(self, objInst, pathId = None):
+        """
+        This is shorthand, we do this everywhere. I thought this would
+        clean up the code and make it easier to read.
+        """
+        service_obj = self.CreateServiceObject(pathId = pathId)
+        
+        if not issubclass(objInst.__class__, ServiceBase.ServiceBase):
+            raise NotAServiceClassException
+
+        objInst._bind_to_service(service_obj)
+
+        return objInst
+    
     def CreateServiceObject(self, pathId = None):
 	"""
         Instantiate a new service object.
@@ -124,8 +134,6 @@ class Server:
 	This amounts to allocating a new service ID, and creating the
 	service object with that ID. We also register that object in
 	the dispatch table.
-
-
 	"""
 
         if pathId is None:
