@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.52 2003-03-25 16:23:09 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.53 2003-03-26 20:59:52 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ from wxPython.lib.imagebrowser import *
 
 from AccessGrid.hosting.pyGlobus import Client
 
-from AccessGrid.Descriptions import StreamDescription
+from AccessGrid.Descriptions import StreamDescription, ConnectionDescription
 from AccessGrid.Descriptions import Capability
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
@@ -223,12 +223,13 @@ class VenueManagementClient(wxApp):
         s = ""
 
         # because I have <AccessGrid.hosting.pyGlobus.AGGSISOAP.structType
-        for e in exitsList:  
-            s = s + e['name']
+        # for e in exitsList:  
+        #    s = s + e['name']
 
-        wxLogDebug("Adding venue %s with exits %s"%(str(venue),s))
+        wxLogDebug("Adding venue %s with exits %s"%(str(venue),str(exitsList)))
         self.SetCurrentVenue(venue)
-        self.currentVenueClient.SetConnections(exitsList)
+        
+        self.currentVenueClient.SetConnections(self.ConvertVenuesToConnections(exitsList))
 
         self.venueList.append(venue)
         return venueUri
@@ -276,7 +277,7 @@ class VenueManagementClient(wxApp):
         self.server.ModifyVenue(venue['uri'], venue)
         wxLogDebug("Set connections: %s" % str(exitsList))
         self.SetCurrentVenue(venue)
-        self.currentVenueClient.SetConnections(exitsList)
+        self.currentVenueClient.SetConnections(self.ConvertVenuesToConnections(exitsList))
                                
     def DeleteVenue(self, venue):
         wxLogDebug("Delete venue: %s" %str(venue['uri']))
@@ -284,6 +285,16 @@ class VenueManagementClient(wxApp):
         index = self.venueList.index(venue)
         if(index>-1):
             del self.venueList[index]
+
+    def ConvertVenuesToConnections(self, list):
+        wxLogDebug("Convert venue to connections %s" %str(list))
+        
+        connectionsList = []
+        for venue in list:
+            c = ConnectionDescription(venue['name'], venue['description'], venue['uri'])
+            connectionsList.append(c)
+
+        return connectionsList
 
     def AddAdministrator(self, dnName):
         wxLogDebug("Add administrator: %s" %dnName)
@@ -627,6 +638,9 @@ class VenueListPanel(wxPanel):
     def SetEncryption(self, value, key):
         item = self.venuesList.GetSelection()
         venue =  self.venuesList.GetClientData(item)
+        if(key == ""):
+            key = None
+        wxLogDebug("Set encryption value:%s key:%s"%(value,key))
         self.application.SetVenueEncryption(venue, value, key)
 
     def ModifyCurrentVenue(self, data, exitsList):
