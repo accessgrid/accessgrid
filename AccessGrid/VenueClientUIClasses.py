@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.36 2003-02-21 17:34:01 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.37 2003-02-21 17:38:30 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1075,7 +1075,10 @@ class UploadFilesDialog(wxDialog):
             self.SetMessage("Uploading %s" % (filename))
             self.currentFile = filename
 
-        value = int(100 * int(bytes_sent) / int(bytes_total))
+        if bytes_total == 0:
+            value = 100
+        else:
+            value = int(100 * int(bytes_sent) / int(bytes_total))
         self.progress.SetValue(value)
 
 class MainUrlDialog(wxDialog):
