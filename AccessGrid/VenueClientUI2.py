@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI2.py,v 1.7 2004-07-26 17:13:07 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI2.py,v 1.8 2004-07-26 21:44:30 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI2.py,v 1.7 2004-07-26 17:13:07 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI2.py,v 1.8 2004-07-26 21:44:30 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2659,7 +2659,6 @@ class ContentListPanel(wxPanel):
     def __GetPersonalDataFromItem(self, treeId):
         # Get data for this id
         dataList = []
-        cookie = 0
         
         if(self.tree.GetChildrenCount(treeId)>0):
             id, cookie = self.tree.GetFirstChild(treeId)
@@ -2737,7 +2736,7 @@ class ContentListPanel(wxPanel):
         participant = self.tree.AppendItem(self.participants, profile.name, 
                                            imageId, imageId)
         self.tree.SetItemData(participant, wxTreeItemData(profile)) 
-        self.participantDict[profile.publicId] = participant
+        self.participantDict[profile.connectionId] = participant
         self.tree.SortChildren(self.participants)
         self.tree.Expand(self.participants)
 
@@ -2763,9 +2762,9 @@ class ContentListPanel(wxPanel):
     def RemoveParticipant(self, profile):
         log.debug("ContentListPanel.RemoveParticipant: Remove participant")
         if profile!=None :
-            if(self.participantDict.has_key(profile.publicId)):
+            if(self.participantDict.has_key(profile.connectionId)):
                 log.debug("ContentListPanel.RemoveParticipant: Found participant in tree")
-                id = self.participantDict[profile.publicId]
+                id = self.participantDict[profile.connectionId]
 
                 log.debug("ContentListPanel.RemoveParticipant: Remove participants data")
                 self.RemoveParticipantData(id)
@@ -2775,7 +2774,7 @@ class ContentListPanel(wxPanel):
                     self.tree.Delete(id)
 
                 log.debug("ContentListPanel.RemoveParticipant: Delete participant from dictionary")
-                del self.participantDict[profile.publicId]
+                del self.participantDict[profile.connectionId]
                           
     def RemoveParticipantData(self, treeId):
         #
@@ -2784,21 +2783,19 @@ class ContentListPanel(wxPanel):
         dataList = self.__GetPersonalDataFromItem(treeId)
                 
         for data in dataList:
-            data.name
-
             dataTreeId = self.personalDataDict[data.id]
             del self.personalDataDict[data.id]
             self.tree.Delete(dataTreeId)
                           
-    def ModifyParticipant(self, description):
+    def ModifyParticipant(self, profile):
         log.debug('ContentListPanel.ModifyParticipant: Modify participant')
         personalData = None
-        if self.participantDict.has_key(description.publicId):
-            id = self.participantDict[description.publicId]
+        if self.participantDict.has_key(profile.connectionId):
+            id = self.participantDict[profile.connectionId]
             personalData = self.__GetPersonalDataFromItem(id)
        
-        self.RemoveParticipant(description)
-        self.AddParticipant(description, personalData)
+        self.RemoveParticipant(profile)
+        self.AddParticipant(profile, personalData)
 
     def AddData(self, dataDescription):
         log.debug("ContentListPanel.AddData: profile.type = %s" %dataDescription.type)
@@ -2818,36 +2815,42 @@ class ContentListPanel(wxPanel):
         else:
             log.debug("ContentListPanel.AddData: This is personal data")
             id = dataDescription.type
-                        
-            if(self.participantDict.has_key(id)):
-                log.debug("ContentListPanel.AddData: Data belongs to a participant")
-                participantId = self.participantDict[id]
-              
-                if participantId:
-                    ownerProfile = self.tree.GetItemData(participantId).GetData()
-                    
-                    #
-                    # Test if personal data is already added
-                    #
-                                        
-                    if not self.personalDataDict.has_key(dataDescription.id):
-                        # Remove the temporary text "No personal data available"
-                        if self.temporaryDataDict.has_key(id):
-                            tempText = self.temporaryDataDict[id]
-                            if tempText:
-                                self.tree.Delete(tempText)
-                                del self.temporaryDataDict[id]
-                                                                        
-                        dataId = self.tree.AppendItem(participantId, dataDescription.name, \
-                                                      self.defaultDataId, self.defaultDataId)
-                        self.tree.SetItemData(dataId, wxTreeItemData(dataDescription))
-                        self.personalDataDict[dataDescription.id] = dataId
-                        self.tree.SortChildren(participantId)
-                        self.tree.SelectItem(participantId)
 
-                    else:
-                        log.info("ContentListPanel.AddData: Personal data dict already has this data.")
-                                            
+            participantId = None
+
+            # As of 2.3, the participant dict is indexed by connection id rather than
+            # public id.  Personal data is, however, stamped with the public id
+            # in all releases.  Search for the owner of the data by public id.
+            clientList = self.parent.venueClient.GetVenueState().GetUsers()
+
+            for client in clientList:
+                if client.publicId == dataDescription.type:
+                    participantId = self.participantDict[client.connectionId]
+                        
+            if participantId:
+                
+                #
+                # Test if personal data is already added
+                #
+                                    
+                if not self.personalDataDict.has_key(dataDescription.id):
+                    # Remove the temporary text "No personal data available"
+                    if self.temporaryDataDict.has_key(id):
+                        tempText = self.temporaryDataDict[id]
+                        if tempText:
+                            self.tree.Delete(tempText)
+                            del self.temporaryDataDict[id]
+                                                                    
+                    dataId = self.tree.AppendItem(participantId, dataDescription.name, \
+                                                  self.defaultDataId, self.defaultDataId)
+                    self.tree.SetItemData(dataId, wxTreeItemData(dataDescription))
+                    self.personalDataDict[dataDescription.id] = dataId
+                    self.tree.SortChildren(participantId)
+                    self.tree.SelectItem(participantId)
+
+                else:
+                    log.info("ContentListPanel.AddData: Personal data dict already has this data.")
+                                        
             else:
                 log.info("ContentListPanel.AddData: Owner of data does not exist")
 
@@ -3057,7 +3060,7 @@ class ContentListPanel(wxPanel):
                 pass
 
             elif isinstance(item,ClientProfile):
-                if item.publicId == self.parent.GetProfile().publicId:
+                if item.connectionId == self.parent.GetProfile().connectionId:
                     self.parent.EditProfileCB()
                 else:
                     self.parent.ViewProfileCB()
@@ -3123,9 +3126,9 @@ class ContentListPanel(wxPanel):
                 parent = self.tree.GetItemParent(treeId)
                 
             elif isinstance(item,ClientProfile):
-                log.debug("ContentListPanel.OnRightClick: Is this me? public is = %s, my id = %s "
-                          % (item.publicId, self.parent.GetProfile().publicId))
-                if(item.publicId == self.parent.GetProfile().publicId):
+                log.debug("ContentListPanel.OnRightClick: Is this me? connectionId is = %s, my id = %s "
+                          % (item.connectionId, self.parent.GetProfile().connectionId))
+                if(item.connectionId == self.parent.GetProfile().connectionId):
                     log.debug("ContentListPanel.OnRightClick: This is me")
                     self.PopupMenu(self.parent.meMenu, wxPoint(self.x, self.y))
          
