@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.115 2003-08-08 22:19:43 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.116 2003-08-11 19:46:54 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1764,7 +1764,11 @@ class Venue(ServiceBase.ServiceBase):
         if not self._IsInRole("Venue.Administrators"):
             raise NotAuthorized
 
-        log.debug("%s - Adding Stream: ", self.uniqueId)
+        log.debug("%s - Venue.AddStream: %s %d %d", self.uniqueId,
+                                                    inStreamDescription.location.host,
+                                                    inStreamDescription.location.port,
+                                                    inStreamDescription.location.ttl )
+        
 
         streamDescription = CreateStreamDescription( inStreamDescription )
 
@@ -1806,6 +1810,11 @@ class Venue(ServiceBase.ServiceBase):
         """
         if not self._IsInRole("Venue.Administrators"):
             raise NotAuthorized
+
+        log.debug("%s - Venue.RemoveStream: %s %d %d", self.uniqueId,
+                                                  inStreamDescription.location.host,
+                                                  inStreamDescription.location.port,
+                                                  inStreamDescription.location.ttl )
         
         streamDescription = CreateStreamDescription( inStreamDescription )
 
