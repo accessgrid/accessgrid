@@ -7,7 +7,6 @@ from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.hosting import Client
 from AccessGrid.SharedApplication import SharedApplicationIW
-import SOAPpy.Types
 
 class SharedAppClient:
     '''
@@ -23,7 +22,7 @@ class SharedAppClient:
 
         **Arguments**
         
-        *appName* The name of the application. Log file is by default named <appName>.log.
+        *appName* The name of the application. 
          '''
         self.__publicId = None
         self.__privateId = None
@@ -31,53 +30,45 @@ class SharedAppClient:
         self.__appProxy = None
         self.__appUrl = None
         self.__appName = appName
-
+                
         self.__dataCache = {}
         self.__callbackTable = []
 
+        self.eventClient = None
         
     def InitLogging(self, debug = 0, log = None):
         """
-        This method sets up logging that prints debug and error messages.
-        If you want to see more logging information use the appName 'AG',
-        then you'll see logging information from the Access Grid Module.
-
-        For more information about the logging module, check out:
-        http://www.red-dove.com/python_logging.html
-
+        Returns the log file.
+        
         **Arguments**
         
-        *debug* If debug is set to 1, log messages will be printed to file
-        and command window
+        *debug* Not relevant. Note: Use WXGUIApplication.Initialize() in
+        application main method instead.
 
-        *log* Name of log file. If set to None, <appName>.log is used
+        *log* Not relevant. Note: Use WXGUIApplication.Initialize() in
+        application main method instead.
         """
 
-        # Set up a venue client log, too, since it's used by the event client
-        self.log = Log.GetLogger(Log.VenueClient)
-        
-        #hdlr = Log.StreamHandler()
-        #hdlr.setFormatter(Log.GetFormatter())
-        #Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
-        
+        # We don't really need this method if all shared apps uses
+        # WXGUIApplication() in main call. Keep this around for now to
+        # maintain interoperability with old shared apps.
+
+        # For this to work, you have to use WXGUIApplication in your
+        # application's main call.
+
         self.log = Log.GetLogger(self.__appName)
-        Log.SetDefaultLevel(self.__appName, Log.DEBUG)
+       
+        #Log.SetDefaultLevel(self.__appName, Log.DEBUG)
                 
         # Log to file
-        if log == None:
-            logFile = self.__appName + ".log"
-        else:
-            logFile = log
-
-        fileHandler = Log.FileHandler(logFile)
-        fileHandler.setFormatter(Log.GetFormatter())
-        Log.HandleLoggers(fileHandler, Log.GetDefaultLoggers())
-
-        # If debug mode is on, log to command window too
-        #if debug:
-        #    hdlr = Log.StreamHandler()
-        #    hdlr.setFormatter(Log.GetFormatter())
-        #    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
+        #if log == None:
+        #    logFile = self.__appName + ".log"
+        #else:
+        #    logFile = log
+        
+        #fileHandler = Log.FileHandler(logFile)
+        #fileHandler.setFormatter(Log.GetFormatter())
+        #Log.HandleLoggers(fileHandler, Log.GetDefaultLoggers())
 
         return self.log
 
@@ -134,12 +125,14 @@ class SharedAppClient:
         Exit from application service and shut down event client.
         '''
         try:
-            self.eventClient.Stop()
+            if self.eventClient:
+                self.eventClient.Stop()
         except:
             self.log.exception("SharedAppClient.Shutdown: Could not stop event client")
 
         try:
-            self.__appProxy.Leave(self.__privateId)
+            if self.__appProxy:
+                self.__appProxy.Leave(self.__privateId)
         except:
             self.log.exception("SharedAppClient.Shutdown: Could not leave application service.")
                         
