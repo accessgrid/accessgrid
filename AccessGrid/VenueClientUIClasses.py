@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.104 2003-03-25 21:17:20 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.105 2003-03-25 21:22:12 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -382,7 +382,7 @@ class VenueClientFrame(wxFrame):
     def AuthorizeLeadDialog(self, clientProfile):
         text = "Do you want "+clientProfile.name+" to follow you?"
         title = "Authorize follow"
-        dlg = wxMessageDialog(self.frame, text, title, style = wxOK| wxCANCEL|wxICON_QUESTION)
+        dlg = wxMessageDialog(self, text, title, style = wxOK| wxCANCEL|wxICON_QUESTION)
         if(dlg.ShowModal() == wxID_OK):
             self.application.SendLeadResponse(clientProfile, True)
 
