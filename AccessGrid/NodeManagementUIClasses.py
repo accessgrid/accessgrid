@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.58 2004-04-27 17:18:52 judson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.59 2004-04-30 20:33:07 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.58 2004-04-27 17:18:52 judson Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.59 2004-04-30 20:33:07 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -288,13 +288,6 @@ class ServiceConfigurationPanel( wxPanel ):
         pComp.SetEditable( false )
 
         self.panelSizer.Add( pt)
-        self.panelSizer.Add( pComp, 0, wxEXPAND )
-        self.guiComponents.append( pComp )
-
-        pt = wxStaticText( self, -1, "Executable", style=wxALIGN_LEFT )
-        pComp = wxTextCtrl( self, -1, serviceConfig.executable )
-
-        self.panelSizer.Add( pt )
         self.panelSizer.Add( pComp, 0, wxEXPAND )
         self.guiComponents.append( pComp )
 
