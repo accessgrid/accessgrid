@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.27 2003-10-13 20:42:31 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.28 2003-10-29 20:54:31 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.27 2003-10-13 20:42:31 judson Exp $"
+__revision__ = "$Id: TextClient.py,v 1.28 2003-10-29 20:54:31 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -62,17 +62,21 @@ class SimpleTextProcessor:
         message, profile = textPayload.data
         
         textMessage = ''
-
+        name = None
+        
         if profile.name == self.profile.name:
-            textMessage = "You say, \"%s\"\n" % message
+            name = 'You say, '
+            textMessage = message
         elif textPayload.sender != None:
-            textMessage = "%s says, \"%s\"\n" % (profile.name, message)
+            name = profile.name + " says, "
+            textMessage =  message
         else:
-            textMessage = "Someone says, \"%s\"\n" % message
+            name = "Someone says, "
+            textMessage = message
             self.log.info("Received text without a sender, ERROR!")
             
         if self.outputCallback != None:
-            self.outputCallback(textMessage)
+            self.outputCallback(name, textMessage)
         else:
             self.log("TextClientSimpleTextProcessor.Output: No callback registered.")
 
