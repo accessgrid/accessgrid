@@ -5,13 +5,13 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.39 2004-02-18 17:37:24 lefvert Exp $
+# RCS-ID:      $Id: Types.py,v 1.40 2004-02-20 20:11:23 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.39 2004-02-18 17:37:24 lefvert Exp $"
+__revision__ = "$Id: Types.py,v 1.40 2004-02-20 20:11:23 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -47,11 +47,11 @@ class VenueState:
         for client in clients:
             self.clients[client.publicId] = client
         for datum in data:
-            self.data[datum.name] = datum
+            self.data[datum.id] = datum
         for app in applications:
-            self.applications[app.id] = app
+            self.applications[app.uri] = app
         for service in services:
-            self.services[service.name] = service
+            self.services[service.id] = service
 
     def SetUniqueId(self, uniqueId):
         self.uniqueId = uniqueId
@@ -104,13 +104,13 @@ class VenueState:
         del self.data[dataDescription.id]
 
     def AddService( self, serviceDescription ):
-        self.services[serviceDescription.name] = serviceDescription
+        self.services[serviceDescription.id] = serviceDescription
 
     def UpdateService(self, serviceDescription):
-        self.services[serviceDescription.name] = serviceDescription
+        self.services[serviceDescription.id] = serviceDescription
         
     def RemoveService( self, serviceDescription ):
-        del self.services[serviceDescription.name]  
+        del self.services[serviceDescription.id]  
 
     def AddApplication( self, applicationDescription ):
         self.applications[applicationDescription.uri] = applicationDescription
