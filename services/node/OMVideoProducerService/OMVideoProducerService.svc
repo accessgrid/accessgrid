@@ -1,0 +1,11 @@
+[ServiceDescription]
+name = OMVideoProducerService
+description = OpenMash Vic-based video service to send video to multicast address
+capabilities = Capability1
+executable = OMVideoProducerService.py
+platform = neutral
+version = 2.5
+
+[Capability1]
+role = producer
+type = video

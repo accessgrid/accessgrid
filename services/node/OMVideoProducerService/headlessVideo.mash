@@ -1,0 +1,4500 @@
+# headlessVideo.mash
+#
+# usage:
+# smash headlessVideo.mash 224.2.3.4/9822 device 1 channel S-Video defaultTTL 16 key DES/somethingsecret
+
+Import enable
+Class Log
+Log proc name s {
+	Log set name_ $s
+}
+Log proc warn s {
+	Log instvar name_
+	if [info exists name_] {
+		set name $name_
+	} else {
+		global argv0
+		if [info exists argv0] {
+			set name [file tail $argv0]
+		} else {
+			set name mash
+		}
+	}
+	puts stderr "$name_: $s"
+}
+Log proc fatal s {
+	Log warn $s
+	exit 1
+}
+Class Application
+Application public init name {
+	$self next
+	$self instvar name_ class_
+	set name_ $name
+	$self add_option appname $name
+	Log set name_ $name
+	set class_ [string toupper [string index $name_ 0]][string \
+		range $name_ 1 end]
+	#catch "tk appname $name"
+	Application set instance_ $self
+}
+Application proc instance {} {
+	return [Application set instance_]
+}
+Application proc name {} {
+	return [[Application instance] set name_]
+}
+Application proc class {} {
+	return [[Application instance] set class_]
+}
+global font
+set font(helvetica10) {
+	normal--*-100-75-75-*-*-*-*
+	normal--10-*-*-*-*-*-*-*
+	normal--11-*-*-*-*-*-*-*
+	normal--*-100-*-*-*-*-*-*
+	normal--*-*-*-*-*-*-*-*
+}
+set font(helvetica12) {
+	normal--*-120-75-75-*-*-*-*
+	normal--12-*-*-*-*-*-*-*
+	normal--14-*-*-*-*-*-*-*
+	normal--*-120-*-*-*-*-*-*
+	normal--*-*-*-*-*-*-*-*
+}
+set font(helvetica14) {
+	normal--*-140-75-75-*-*-*-*
+	normal--14-*-*-*-*-*-*-*
+	normal--*-140-*-*-*-*-*-*
+	normal--*-*-*-*-*-*-*-*
+}
+set font(times14) {
+	normal--*-140-75-75-*-*-*-*
+	normal--14-*-*-*-*-*-*-*
+	normal--*-140-*-*-*-*-*-*
+	normal--*-*-*-*-*-*-*-*
+}
+Application instproc search_font { foundry style weight points slant } {
+	global font tcl_version tcl_platform
+ 	if {$tcl_version >= 8} {
+ 		if {$slant == "r"} {
+ 			set slant ""
+ 		} elseif {$slant == "o"} {
+ 			set slant "italic"
+ 		}
+		if {$weight == "medium"} {
+			set weight ""
+		}
+ 		return "$style -$points $weight $slant"
+ 	}
+	foreach f $font($style$points) {
+		set fname -$foundry-$style-$weight-$slant-$f
+		if [havefont $fname] {
+			return $fname
+		}
+	}
+	$self instvar name_
+	puts stderr "$name_: can't find $weight $fname font (using fixed)"
+	if ![havefont fixed] {
+		puts stderr "$name_: can't find fixed font"
+		exit 1
+	}
+	return fixed
+}
+Application public init_local {} {
+	$self instvar name_
+	set f ~/.$name_.tcl
+	if [file exists $f] {
+		uplevel #0 "source $f"
+	}
+	set script [$self resource startupScript]
+	if { $script != "" } {
+		uplevel #0 "source $script"
+	}
+}
+Application instproc user_hook {} {
+}
+Object instproc options {} {
+	$self instvar options_
+	if ![info exists options_] {
+		Object instvar options_
+		if ![info exists options_] {
+			set options_ [new Configuration]
+			global tcl_platform
+			if {"$tcl_platform(platform)"=="windows"} {
+				$options_ add_default \
+					background SystemButtonFace
+				$options_ add_default \
+					infoHighlightColor SystemHighlightText
+			}
+		}
+	}
+	$options_ add_default appname mash
+	return $options_
+}
+Object instproc optionsFrom o {
+	$self set options_ $o
+}
+Class instproc configuration a {
+ 	$self instvar options_
+	if ![info exists options_] {
+		set options_ [new Configuration]
+	}
+	foreach { option value } $a {
+		$options_ add_default $option $value
+	}
+}
+Object instproc get_option r {
+	set v [[$self options] get_option $r]
+	if { $v != "" } {
+		return $v
+	}
+	set cl [$self info class]
+	foreach cl "$cl [$cl info heritage]" {
+		$cl instvar options_
+		if [info exists options_] {
+			set v [$options_ get_option $r]
+			if { $v != "" } {
+				return $v
+			}
+		}
+	}
+	return ""
+}
+Object instproc resource r {
+	return [$self get_option $r]
+}
+Object instproc add_option { r v } {
+	return [[$self options] add_option $r $v]
+}
+Object instproc add_default { r v } {
+	return [[$self options] add_default $r $v]
+}
+Object instproc yesno r {
+	set v [$self get_option $r]
+	if [string match \[0-9\]* $v] {
+		return $v
+	}
+	if [string match \[tT\]* $v] {
+		return 1
+	}
+	return 0
+}
+Object instproc debug s {
+	if [$self yesno debug] {
+		Log warn $s
+	}
+}
+Object instproc warn s {
+	Log warn $s
+}
+Object instproc fatal s {
+	Log fatal $s
+}
+Class Configuration
+Configuration public get_option r {
+	$self instvar table_ default_
+	if [info exists table_($r)] {
+		return $table_($r)
+	}
+	if [info exists default_($r)] {
+		return $default_($r)
+	}
+	return ""
+}
+Configuration public add_option { r v } {
+	$self instvar table_
+	set table_($r) $v
+}
+Configuration public add_default { r v } {
+	$self set default_($r) $v
+}
+Configuration public register_option  { flag option args } {
+	$self instvar arg_option_ usage_ arg_option_default_
+	set arg_option_($flag) $option
+	if { [lindex $args 0] == "-default" } {
+		set arg_option_default_($flag) [lindex $args 1]
+		set args [lrange $args 2 end]
+	}
+	set usage_($flag) $args
+}
+Configuration public register_boolean_option  { flag option args } {
+	$self instvar arg_bool_ arg_bool_val_
+	set arg_bool_($flag) $option
+	if { $args == "" } {
+		set args 1
+	}
+	set arg_bool_val_($flag) $args
+}
+Configuration public register_list_option {flag option args} {
+	$self instvar arg_list_option_
+	set arg_list_option_($flag) $option
+	set usage_($flag) $args
+}
+Configuration private is_arg argv {
+	if { $argv != "" } {
+		return [string match -* [lindex $argv 0]]
+	}
+	return 0
+}
+Configuration instproc parse_args argv {
+	$self instvar arg_resource_ bool_resource_
+	$self instvar arg_option_ arg_bool_ arg_bool_val_ arg_list_option_ \
+			arg_option_default_
+	if { [info exists arg_resource_] || [info exists bool_resource_] } {
+		puts stderr "your application class needs to be fixed"
+		exit 1
+	}
+	while 1 {
+		if ![$self is_arg $argv] {
+			break
+		}
+		set arg [lindex $argv 0]
+		set argv [lrange $argv 1 end]
+		set val [lindex $argv 0]
+		if { $arg == "-help" } {
+			$self usage
+			exit
+		}
+		if { $arg == "-X" } {
+			set L [split $val =]
+			if { [llength $L] != 2 } {
+				puts stderr "malformed -X argument"
+				exit 1
+			}
+			$self add_option [lindex $L 0] [lindex $L 1]
+			set argv [lrange $argv 1 end]
+			continue
+		}
+		set fatal_msg ""
+		if [info exists arg_option_($arg)] {
+			if { [llength $argv] > 0 && \
+					[string index $val 0]!="-" } {
+				$self add_option $arg_option_($arg) $val
+				set argv [lrange $argv 1 end]
+				continue
+			}
+			set fatal_msg "must be followed by an argument"
+		}
+		if [info exists arg_bool_($arg)] {
+			$self add_option $arg_bool_($arg) $arg_bool_val_($arg)
+			continue
+		}
+		if [info exists arg_list_option_($arg)] {
+			if { [llength $argv] > 0 || \
+					[string index $val 0]!="-" } {
+				set o $arg_list_option_($arg)
+				set l [$self get_option $o]
+				lappend l $val
+				$self add_option $o $l
+				set argv [lrange $argv 1 end]
+				continue
+			}
+			set fatal_msg "must be followed by an argument"
+		}
+		$self usage
+		$self fatal "unknown/invalid command option: $arg ($fatal_msg)"
+	}
+	return $argv
+}
+Configuration public usage {} {
+	set display_args_on_single_line 0
+	if { $display_args_on_single_line } {
+		puts "usage: [Application name] [join [$self arg_info]]"
+	} else {
+		puts "usage: [Application name]"
+		foreach arg [$self arg_info] {
+			puts $arg
+		}
+	}
+}
+Configuration private arg_info {} {
+	$self instvar arg_option_ arg_bool_ usage_
+	foreach arg [array names arg_option_] {
+		set r $arg_option_($arg)
+		set d [$self get_option $r]
+		if { $d != "" || $usage_($arg) != "required"} {
+			lappend opt "\[$arg $r ($d)\]"
+		} else {
+			lappend req "$arg $r"
+		}
+	}
+	foreach arg [array names arg_bool_] {
+		set r $arg_bool_($arg)
+		set d [$self get_option $r]
+		if { $d != "" } {
+		        lappend opt "\[$arg ($d)\]"
+		} else {
+			lappend opt "\[$arg\]"
+		}
+	}
+	if [info exists opt] {
+		if [info exists req] {
+			return [concat $opt $req]
+		} else {
+			return $opt
+		}
+	} else {
+		if [info exists req] {
+			return $req
+		} else {
+			return ""
+		}
+	}
+}
+Configuration public load_preferences suffixList {
+    global env
+    if {![info exists env(HOME)]} {
+        new ErrorWindow {Your HOME environment variable must be set.}
+        exit 1
+    }
+	set mash [file join $env(HOME) .mash]
+	if {[file isdirectory $mash]} {
+		$self load_file $mash/prefs
+		foreach suffix $suffixList {
+			$self load_file $mash/prefs-$suffix
+		}
+	}
+}
+Configuration private load_file fname {
+	if ![file readable $fname] {
+		return
+	}
+	set f [open $fname r]
+	set count 0
+	while 1 {
+		incr count
+		if [eof $f] {
+			close $f
+			return
+		}
+		set line [string trim [gets $f]]
+		if { $line == {} || [string index $line 0]=="#" } {
+			continue
+		}
+		set colon [string first ":" $line]
+		if { $colon==-1 } {
+			puts stderr "Invalid line $count in $fname:\
+					Must be of the form \"key: value\""
+			continue
+		}
+		set option [string trim [string range $line 0 [expr $colon-1]]]
+		set value [string trim [string range $line \
+				[expr $colon+1] end]]
+		$self add_option $option $value
+	}
+}
+Configuration public open_preferences { suffix {mode w} } {
+    global env
+    if {![info exists env(HOME)]} {
+        new ErrorWindow {Your HOME environment variable must be set.}
+        exit 1
+    }
+	set mash [file join $env(HOME) .mash]
+	if {![file exists $mash]} {
+		file mkdir $mash
+	}
+	set f [open $mash/prefs-$suffix $mode 0644]
+	return $f
+}
+Configuration public write_preference { file key value } {
+	puts $file "$key: $value"
+}
+Configuration public close_preferences { file } {
+	close $file
+}
+proc version {} {
+	global mash
+	return $mash(version)
+}
+proc local_fqdn {} {
+	set host ""
+	catch {set host [lookup_host_name [localaddr]]}
+	if { [string first . $host] < 0 } {
+		return ""
+	}
+	return $host
+}
+proc email_heuristic {} {
+	set user [user_heuristic]
+	set addr [local_fqdn]
+	if { $addr == "" } {
+		return ""
+	}
+	return $user@$addr
+}
+proc user_heuristic {} {
+	global env
+	if [info exists env(USER)] {
+		set user $env(USER)
+	} elseif [info exists env(LOGNAME)] {
+		set user $env(LOGNAME)
+	} else {
+		catch {set env(USER) [getusername]}
+		if [info exists env(USER)] {
+			return $env(USER)
+		}
+		return "UNKNOWN"
+	}
+}
+proc format_fps f {
+	set fps $f
+	if { $fps < .1 } {
+		set fps "0 f/s"
+	} elseif { $fps < 10 } {
+		set fps [format "%.1f f/s" $fps]
+	} else {
+		set fps [format "%2.0f f/s" $fps]
+	}
+	return $fps
+}
+proc format_bps b {
+	set bps $b
+	if { $bps < 1 } {
+		set bps "0 bps"
+	} elseif { $bps < 1000 } {
+		set bps [format "%3.0f bps" $bps]
+	} elseif { $bps < 1000000 } {
+		set bps [format "%3.1f kb/s" [expr $bps / 1000.]]
+	} else {
+		set bps [format "%.2f Mb/s" [expr $bps / 1000000.]]
+	}
+	return $bps
+}
+proc gettime {sec} {
+    clock format $sec
+}
+proc sdr_gettimeofday {} {
+    clock seconds
+}
+proc gettimenow {} {
+    gettime [clock seconds]
+}
+proc getreadabletime {} {
+    return [clock format [clock seconds] -format {%H:%M, %d/%m/%y}]
+}
+proc unix_to_ntp {unixtime} {
+    set oddoffset 2208988800
+    if {$unixtime==0} {return 0}
+    return [format %u [expr $unixtime + $oddoffset]]
+}
+proc ntp_to_unix {ntptime} {
+    set oddoffset 2208988800
+    if {($ntptime==0)||($ntptime==1)} {return $ntptime}
+    if {[catch {expr $ntptime - $oddoffset}] !=0} {
+	    return 0
+    }
+    return [format %u [expr $ntptime - $oddoffset]]
+}
+proc duration_readable {secs {option terse}} {
+	set ret ""
+	set r [expr round($secs)]
+	set h [expr $r / 3600]
+	set r [expr $r % 3600]
+	set m [expr $r / 60]
+	set s [expr $r % 60]
+	if {$option == "verbose"} then {
+		if {$h} {
+			set ret "$ret $h\h"
+		}
+		if {$m} {
+			set ret "$ret $m\m"
+		}
+		if {$s} {
+			set ret "$ret and $s\s"
+		}
+	} else {
+		set ret "$h:$m:$s"
+	}
+		return $ret
+}
+proc in_multicast addr {
+	return [expr ([lindex [split $addr .] 0] & 0xf0) == 0xe0]
+}
+proc invalid_addr a {
+    set l [split $a .]
+    if {[llength $l] != 4} { return 1 }
+    foreach i $l {
+	if {![is_number $i] || $i<0 || $i>255} { return 1 }
+    }
+    return 0
+}
+proc is_number n {
+    if [catch {expr $n}] {
+	return 0
+    }
+	return 1
+}
+proc parray {a {pattern *}} {
+    upvar 1 $a array
+    if ![array exists array] {
+        error "\"$a\" isn't an array"
+    }
+    set maxl 0
+    foreach name [lsort [array names array $pattern]] {
+        if {[string length $name] > $maxl} {
+            set maxl [string length $name]
+        }
+    }
+    set maxl [expr {$maxl + [string length $a] + 2}]
+    foreach name [lsort [array names array $pattern]] {
+        set nameString [format %s(%s) $a $name]
+        puts stdout [format "%-*s = %s" $maxl $nameString $array($name)]
+    }
+}
+Class AddressBlock -configuration {
+	defaultTTL 1
+	maxbw -1
+}
+Class AddressBlock/RTP -superclass AddressBlock
+Class AddressBlock/Simple -superclass AddressBlock
+AddressBlock instproc init spec {
+	$self next
+	$self set nchan_ 0
+	foreach s [split $spec ,] {
+		set err [$self parse $s]
+		if { $err != "" } {
+			$self fatal $err
+		}
+	}
+}
+AddressBlock instproc data-port p {
+	return [expr $p &~ 1]
+}
+AddressBlock instproc fmt {} {
+	$self instvar fmt_
+	if [info exists fmt_] { return $fmt_ } else { return "" }
+}
+AddressBlock instproc ctrl-port p {
+	return [expr [$self data-port $p] + 1]
+}
+AddressBlock instproc addr {{k 0}} {
+	return [$self set addr_($k)]
+}
+AddressBlock instproc sport {{k 0}} {
+	return [$self set sport_($k)]
+}
+AddressBlock instproc rport {{k 0}} {
+	return [$self set rport_($k)]
+}
+AddressBlock instproc ttl {{k 0}} {
+	$self instvar ttl_
+	if [info exists ttl_($k)] { return $ttl_($k) } else { return {} }
+}
+AddressBlock instproc nchan {} {
+	return [$self set nchan_]
+}
+AddressBlock instproc parse s {
+	set dst [split $s /]
+	set n [llength $dst]
+	if { $n < 2 } {
+		return "must specify both address and port in the form addr/port ($s)"
+	}
+	set addr [lindex $dst 0]
+	set ports [split [lindex $dst 1] :]
+	set sport [lindex $ports 0]
+	if { [llength $ports] == 1 } {
+		set rport $sport
+	} else {
+		set rport [lindex $ports 1]
+	}
+	set firstchar [string index $addr 0]
+	if [string match \[a-zA-Z\] $firstchar] {
+		set s [gethostbyname $addr]
+		if { $s == "" } {
+			return "cannot lookup host name: $addr"
+		}
+		set addr $s
+	}
+	foreach port "$sport $rport" {
+		if { ![string match \[0-9\]* $port] || $port >= 65536 } {
+			$self fatal "illegal port '$port'"
+		}
+	}
+	set ttl [$self get_option defaultTTL]
+	set cnt 1
+	if { $n >= 3 } {
+		set fmt [lindex $dst 2]
+		if { $n==3 && [regexp {^[0-9]+$} $fmt] } {
+			set ttl $fmt
+			set fmt {}
+		}
+		if { $n >= 4 } {
+			set ttl [lindex $dst 3]
+			if { $n > 4 } {
+				set cnt [lindex $dst 4]
+				if { ![string match \[0-9\]* $cnt] ||
+				     $cnt >= 20 } {
+					return "$dst: bad layered addr count"
+					exit 1
+				}
+				if { $n > 5 } {
+					return "$dst: malformed address"
+				}
+			}
+		}
+	}
+	if { $ttl < 0 || $ttl > 255 } {
+		return "$dst: invalid ttl ($ttl)"
+	}
+	set oct [split $addr .]
+	set base [lindex $oct 0].[lindex $oct 1].[lindex $oct 2]
+	set off [lindex $oct 3]
+	$self instvar addr_ sport_ rport_ ttl_ nchan_
+	set i 0
+	while { $i < $cnt } {
+		set sp [$self data-port $sport]
+		set rp [$self data-port $rport]
+		set addr_($nchan_) $base.$off
+		set sport_($nchan_) $sp
+		set rport_($nchan_) $rp
+		set ttl_($nchan_) $ttl
+		if [in_multicast $addr] {
+			incr off
+		}
+		incr sport 2
+		incr rport 2
+		incr i
+		incr nchan_
+	}
+	if { [info exists fmt] && $fmt != "" } {
+		$self set fmt_ $fmt
+	}
+	if [info exists confid] {
+		$self add_option confid $confid
+	}
+	if [info exists ttl] {
+		$self add_option defaultTTL $ttl
+	}
+	$self bandwidth_heuristic
+}
+AddressBlock instproc bandwidth_heuristic {} {
+	$self instvar nchan_ addr_ ttl_ maxbw_
+	set i 0
+	while { $i < $nchan_ } {
+		set maxbw [$self get_option maxbw]
+		if { $maxbw <= 0 } {
+			set ttl $ttl_($i)
+			if { $ttl <= 16 || ![in_multicast $addr_($i)] } {
+				set maxbw 10000000
+			} elseif { $ttl <= 64 } {
+				set maxbw 4000000
+			} elseif  { $ttl <= 128 } {
+				set maxbw 1000000
+			} elseif { $ttl <= 192 } {
+				set maxbw 128000
+			} else {
+				set maxbw 56000
+			}
+		}
+		set maxbw_($i) $maxbw
+		incr i
+	}
+}
+AddressBlock/Simple instproc data-port p {
+	return $p
+}
+AddressBlock/RTP instproc data-port p {
+	return [expr $p &~ 1]
+}
+Session/Scuba set sessionbw_ 0
+Session/Scuba instproc init {} {
+	$self next
+	$self set share_ 0.05
+	$self set sessionbw_ 0
+}
+Session/Scuba instproc sessionbw { b } {
+	$self instvar sessionbw_
+	set sessionbw_ $b
+	$self set_allocation
+}
+Session/Scuba instproc unregister { src } {
+	$self clean_scoretab $src
+}
+Session/Scuba instproc register { src } {}
+Session/Scuba instproc activate { src } {}
+Session/Scuba instproc deactivate { src } {}
+Session/Scuba instproc notify { src } {}
+Session/Scuba instproc trigger_media { src } {}
+Session/Scuba instproc trigger_format { src } {}
+Session/Scuba instproc trigger_sdes { src } {}
+Session/Scuba instproc trigger_idle { src } {}
+Session/Scuba instproc recv_scuba_entry { sender srcid val } {
+	$self instvar scoretab_
+	set scoretab_($sender:$srcid) [expr $val/1e6]
+}
+Session/Scuba instproc clean_scoretab { src } {
+	$self instvar scoretab_
+	set idxs [array names scoretab_ $src:*]
+	foreach i $idxs {
+		unset scoretab_($i)
+	}
+}
+Session/Scuba instproc delete_reporter { s } {
+	$self clean_scoretab $s
+	$self set_allocation
+}
+Class Observer
+Observer instproc init { args } {
+	eval [list $self] next $args
+}
+Observer instproc update { method args } {
+	if [$self has_method $method] {
+		eval [list $self] [list $method] $args
+	}
+}
+Class Observable
+Observable instproc init { args } {
+	eval [list $self] next $args
+	$self set observers_ { }
+}
+Observable instproc attach_observer { observer } {
+	$self instvar observers_
+	lappend observers_ $observer
+}
+Observable instproc detach_observer { observer } {
+	$self instvar observers_
+	set idx [lsearch $observers_ $observer]
+	if { $idx != -1 } {
+		set observers_ [lreplace $observers_ $idx $idx]
+	}
+}
+Observable instproc notify_observers { method args } {
+	$self instvar observers_
+	if [info exists observers_] {
+		foreach observer $observers_ {
+			eval [list $observer] update [list $method] $args
+		}
+	}
+}
+set rlm_param(alpha) 4
+set rlm_param(alpha) 2
+set rlm_param(beta) 0.75
+set rlm_param(init-tj) 1.5
+set rlm_param(init-tj) 10
+set rlm_param(init-tj) 5
+set rlm_param(init-td) 5
+set rlm_param(init-td-var) 2
+set rlm_param(max) 600
+set rlm_param(max) 60
+set rlm_param(g1) 0.25
+set rlm_param(g2) 0.25
+Class MMG
+MMG instproc init { levels } {
+	$self next
+	$self instvar debug_ env_ maxlevel_
+	set debug_ 0
+	set env_ [lindex [split [$self info class] /] 1]
+	set maxlevel_ $levels
+	global rlm_debug_flag
+	if [info exists rlm_debug_flag] {
+		set debug_ $rlm_debug_flag
+	}
+	$self instvar TD TDVAR state_ subscription_
+	global rlm_param
+	set TD $rlm_param(init-td)
+	set TDVAR $rlm_param(init-td-var)
+	set state_ /S
+	$self instvar layer_ layers_
+	set i 1
+	while { $i <= $maxlevel_ } {
+		set layer_($i) [$self create-layer [expr $i - 1]]
+		lappend layers_ $layer_($i)
+		incr i
+	}
+	set subscription_ 0
+	$self add-layer
+	set state_ /S
+	$self set_TJ_timer
+}
+MMG instproc set-state s {
+	$self instvar state_
+	set old $state_
+	set state_ $s
+	$self debug "FSM: $old -> $s"
+}
+MMG instproc drop-layer {} {
+	$self dumpLevel
+	$self instvar subscription_ layer_
+	set n $subscription_
+	if { $n > 0 } {
+		$self debug "DRP-LAYER $n"
+		$layer_($n) leave-group
+		incr n -1
+		set subscription_ $n
+	}
+	$self dumpLevel
+}
+MMG instproc add-layer {} {
+	$self dumpLevel
+	$self instvar maxlevel_ subscription_ layer_
+	set n $subscription_
+	if { $n < $maxlevel_ } {
+		$self debug "ADD-LAYER"
+		incr n
+		set subscription_ $n
+		$layer_($n) join-group
+	}
+	$self dumpLevel
+}
+MMG instproc current_layer_getting_packets {} {
+	$self instvar subscription_ layer_ TD
+	set n $subscription_
+	if { $n == 0 } {
+		return 0
+	}
+	set l $layer_($subscription_)
+	$self debug "npkts [$l npkts]"
+	if [$l getting-pkts] {
+		return 1
+	}
+	set delta [expr [$self now] - [$l last-add]]
+	if { $delta > $TD } {
+		set TD [expr 1.2 * $delta]
+	}
+	return 0
+}
+MMG instproc mmg_loss {} {
+	$self instvar layers_
+	set loss 0
+	foreach l $layers_ {
+		incr loss [$l nlost]
+	}
+	return $loss
+}
+MMG instproc mmg_pkts {} {
+	$self instvar layers_
+	set npkts 0
+	foreach l $layers_ {
+		incr npkts [$l npkts]
+	}
+	return $npkts
+}
+MMG instproc check-equilibrium {} {
+	global rlm_param
+	$self instvar subscription_ maxlevel_ layer_
+	set n [expr $subscription_ + 1]
+	if { $n >= $maxlevel_ || [$layer_($n) timer] >= $rlm_param(max) } {
+		set eq 1
+	} else {
+		set eq 0
+	}
+	$self debug "EQ $eq"
+}
+MMG instproc backoff-one { n alpha } {
+	$self debug "BACKOFF $n by $alpha"
+	$self instvar layer_
+	$layer_($n) backoff $alpha
+}
+MMG instproc backoff n {
+	$self debug "BACKOFF $n"
+	global rlm_param
+	$self instvar maxlevel_ layer_
+	set alpha $rlm_param(alpha)
+	set L $layer_($n)
+	$L backoff $alpha
+	incr n
+	while { $n <= $maxlevel_ } {
+		$layer_($n) peg-backoff $L
+		incr n
+	}
+	$self check-equilibrium
+}
+MMG instproc highest_level_pending {} {
+	$self instvar maxlevel_
+	set m ""
+	set n 0
+	incr n
+	while { $n <= $maxlevel_ } {
+		if [$self level_pending $n] {
+			set m $n
+		}
+		incr n
+	}
+	return $m
+}
+MMG instproc rlm_update_D  D {
+	global rlm_param
+	$self instvar TD TDVAR
+	set v [expr abs($D - $TD)]
+	set TD [expr $TD * (1 - $rlm_param(g1)) \
+				+ $rlm_param(g1) * $D]
+	set TDVAR [expr $TDVAR * (1 - $rlm_param(g2)) \
+		       + $rlm_param(g2) * $v]
+}
+MMG instproc exceed_loss_thresh {} {
+	$self instvar h_npkts h_nlost
+	set npkts [expr [$self mmg_pkts] - $h_npkts]
+	if { $npkts >= 10 } {
+		set nloss [expr [$self mmg_loss] - $h_nlost]
+		set loss [expr double($nloss) / ($nloss + $npkts)]
+		$self debug "H-THRESH $nloss $npkts $loss"
+		if { $loss > 0.25 } {
+			return 1
+		}
+	}
+	return 0
+}
+MMG instproc enter_M {} {
+	$self set-state /M
+	$self set_TD_timer_wait
+	$self instvar h_npkts h_nlost
+	set h_npkts [$self mmg_pkts]
+	set h_nlost [$self mmg_loss]
+}
+MMG instproc enter_D {} {
+	$self set-state /D
+	$self set_TD_timer_conservative
+}
+MMG instproc enter_H {} {
+	$self set_TD_timer_conservative
+	$self set-state /H
+}
+MMG instproc log-loss {} {
+	$self debug "LOSS [$self mmg_loss]"
+	$self instvar state_ subscription_ pending_ts_
+	if { $state_ == "/M" } {
+		if [$self exceed_loss_thresh] {
+			$self cancel_timer TD
+			$self drop-layer
+			$self check-equilibrium
+			$self enter_D
+		}
+		return
+	}
+	if { $state_ == "/S" } {
+		$self cancel_timer TD
+		set n [$self highest_level_pending]
+		if { $n != "" } {
+			$self backoff $n
+			if { $n == $subscription_ } {
+				set ts $pending_ts_($subscription_)
+				$self rlm_update_D [expr [$self now] - $ts]
+				$self drop-layer
+				$self check-equilibrium
+				$self enter_D
+				return
+			}
+			if { $n == [expr $subscription_ + 1] } {
+				$self cancel_timer TJ
+				$self set_TJ_timer
+			}
+		}
+		if [$self our_level_recently_added] {
+			$self enter_M
+			return
+		}
+		$self enter_H
+		return
+	}
+	if { $state_ == "/H" || $state_ == "/D" } {
+		return
+	}
+	puts stderr "rlm state machine botched"
+	exit -1
+}
+MMG instproc relax_TJ {} {
+	$self instvar subscription_ layer_
+	if { $subscription_ > 0 } {
+		$layer_($subscription_) relax
+		$self check-equilibrium
+	}
+}
+MMG instproc trigger_TD {} {
+	$self instvar state_
+	if { $state_ == "/H" } {
+		$self enter_M
+		return
+	}
+	if { $state_ == "/D" || $state_ == "/M" } {
+		$self set-state /S
+		$self set_TD_timer_conservative
+		return
+	}
+	if { $state_ == "/S" } {
+		$self relax_TJ
+		$self set_TD_timer_conservative
+		return
+	}
+	puts stderr "trigger_TD: rlm state machine botched $state)"
+	exit -1
+}
+MMG instproc set_TJ_timer {} {
+	global rlm_param
+	$self instvar subscription_ layer_
+	set n [expr $subscription_ + 1]
+	if ![info exists layer_($n)] {
+		return
+	}
+	set I [$layer_($n) timer]
+	set d [expr $I / 2.0 + [trunc_exponential $I]]
+	$self debug "TJ $d"
+	$self set_timer TJ $d
+}
+MMG instproc set_TD_timer_conservative {} {
+	$self instvar TD TDVAR
+	set delay [expr $TD + 1.5 * $TDVAR]
+	$self set_timer TD $delay
+}
+MMG instproc set_TD_timer_wait {} {
+	$self instvar TD TDVAR
+	$self instvar subscription_
+	set k [expr $subscription_ / 2. + 1.5]
+	$self set_timer TD [expr $TD + $k * $TDVAR]
+}
+MMG instproc is-recent { ts } {
+	$self instvar TD TDVAR
+	set ts [expr $ts + ($TD + 2 * $TDVAR)]
+	if { $ts > [$self now] } {
+		return 1
+	}
+	return 0
+}
+MMG instproc level_pending n {
+	$self instvar pending_ts_
+	if { [info exists pending_ts_($n)] && \
+		 [$self is-recent $pending_ts_($n)] } {
+		return 1
+	}
+	return 0
+}
+MMG instproc level_recently_joined n {
+	$self instvar join_ts_
+	if { [info exists join_ts_($n)] && \
+		 [$self is-recent $join_ts_($n)] } {
+		return 1
+	}
+	return 0
+}
+MMG instproc pending_inferior_jexps {} {
+	set n 0
+	$self instvar subscription_
+	while { $n <= $subscription_ } {
+		if [$self level_recently_joined $n] {
+			return 1
+		}
+		incr n
+	}
+	$self debug "NO-PEND-INF"
+	return 0
+}
+MMG instproc trigger_TJ {} {
+	$self debug "trigger-TJ"
+	$self instvar state_ ctrl_ subscription_
+	if { ($state_ == "/S" && ![$self pending_inferior_jexps] && \
+		  [$self current_layer_getting_packets])  } {
+		$self add-layer
+		$self check-equilibrium
+		set msg "add $subscription_"
+		$ctrl_ send $msg
+		$self local-join
+	}
+	$self set_TJ_timer
+}
+MMG instproc our_level_recently_added {} {
+	$self instvar subscription_ layer_
+	return [$self is-recent [$layer_($subscription_) last-add]]
+}
+MMG instproc recv-ctrl msg {
+	$self instvar join_ts_ pending_ts_ subscription_
+	$self debug "X-JOIN $msg"
+	set what [lindex $msg 0]
+	if { $what != "add" } {
+		return
+	}
+	set level [lindex $msg 1]
+	set join_ts_($level) [$self now]
+	if { $level > $subscription_ } {
+		set pending_ts_($level) [$self now]
+	}
+}
+MMG instproc local-join {} {
+	$self instvar subscription_ pending_ts_ join_ts_
+	set join_ts_($subscription_) [$self now]
+	set pending_ts_($subscription_) [$self now]
+}
+MMG instproc debug { msg } {
+	$self instvar debug_ subscription_ state_
+	if {$debug_} {
+		puts stderr "[gettimeofday] layer $subscription_ $state_ $msg"
+	}
+}
+MMG instproc dumpLevel {} {
+}
+Class Layer
+Layer instproc init { mmg } {
+	$self next
+	$self instvar mmg_ TJ npkts_
+	global rlm_param
+	set mmg_ $mmg
+	set TJ $rlm_param(init-tj)
+	set npkts_ 0
+}
+Layer instproc relax {} {
+	global rlm_param
+	$self instvar TJ
+	set TJ [expr $TJ * $rlm_param(beta)]
+	if { $TJ <= $rlm_param(init-tj) } {
+		set TJ $rlm_param(init-tj)
+	}
+}
+Layer instproc backoff alpha {
+	global rlm_param
+	$self instvar TJ
+	set TJ [expr $TJ * $alpha]
+	if { $TJ >= $rlm_param(max) } {
+		set TJ $rlm_param(max)
+	}
+}
+Layer instproc peg-backoff L {
+	$self instvar TJ
+	set t [$L set TJ]
+	if { $t >= $TJ } {
+		set TJ $t
+	}
+}
+Layer instproc timer {} {
+	$self instvar TJ
+	return $TJ
+}
+Layer instproc last-add {} {
+	$self instvar add_time_
+	return $add_time_
+}
+Layer instproc join-group {} {
+	$self instvar npkts_ add_time_ mmg_
+	set npkts_ [$self npkts]
+	set add_time_ [$mmg_ now]
+}
+Layer instproc leave-group {} {
+}
+Layer instproc getting-pkts {} {
+	$self instvar npkts_
+	return [expr [$self npkts] != $npkts_]
+}
+set rlm_debug_flag 1
+Class Layer/mash -superclass Layer
+Layer/mash instproc init {mmg net n} {
+	$self next $mmg
+	$self instvar net_ l_ n_
+	set net_ $net
+	set n_ $n
+	set l_ [$net_ set net_($n)]
+}
+Layer/mash instproc join-group {} {
+	$self instvar mmg_ net_
+	set level [expr [$mmg_ set subscription_] - 1]
+	$net_ set-subscription-level $level
+	$self next
+}
+Layer/mash instproc leave-group {} {
+	$self instvar mmg_ net_
+	set level [expr [$mmg_ set subscription_] - 1]
+	$net_ set-subscription-level $level
+	$self next
+}
+Layer/mash instproc nlost {} {
+	$self instvar l_
+	return [$l_ nlost]
+}
+Layer/mash instproc npkts {} {
+	$self instvar l_ n_
+	return [$l_ npkts $n_]
+}
+Class MMG/mash -superclass MMG
+MMG/mash instproc init {net caddr} {
+	$self instvar net_
+	set net_ $net
+	$self next [$net set nchan_]
+	proc ctrl$self {args} { puts "ctrl: $args" }
+	$self set ctrl_ ctrl$self
+}
+MMG/mash instproc create-layer {layerNo} {
+	$self instvar net_
+	return [new Layer/mash $self $net_ $layerNo]
+}
+MMG/mash instproc now {} {
+	return [gettimeofday]
+}
+MMG/mash instproc set_timer {which delay} {
+	$self instvar timers_
+	if [info exists timers_($which)] {
+		puts "timer botched ($which)"
+		exit 1
+	}
+	set delay [expr int($delay * 1000)]
+	set timers_($which) [after $delay "$self trigger_timer $which"]
+}
+MMG/mash instproc trigger_timer {which} {
+	$self instvar timers_
+	unset timers_($which)
+	$self trigger_$which
+}
+MMG/mash instproc cancel_timer {which} {
+	$self instvar ns_ timers_
+	if [info exists timers_($which)] {
+		after cancel $timers_($which)
+		unset timers_($which)
+	}
+}
+MMG/mash instproc debug { msg } {
+	$self instvar debug_
+	if {!$debug_} { return }
+	$self instvar subscription_ state_
+	set time [format %.05f [$self now]]
+	puts stderr "$time layer $subscription_ $state_ $msg"
+}
+proc uniform01 {} {
+    return [expr double(([random] % 10000000) + 1) / 1e7]
+}
+proc uniform { a b } {
+	return [expr ($b - $a) * [uniform01] + $a]
+}
+proc exponential mean {
+	return [expr - $mean * log([uniform01])]
+}
+proc trunc_exponential lambda {
+	while 1 {
+		set u [exponential $lambda]
+		if { $u < [expr 4 * $lambda] } {
+			return $u
+		}
+	}
+}
+Class Network/IP -superclass Network
+Network/IP instproc init args {
+	puts stderr "Network/IP called... change to Network"
+	eval $self next $args
+}
+Network instproc port args {
+	eval $self sport $args
+}
+proc in_multicast addr {
+	return [expr ([lindex [split $addr .] 0] & 0xf0) == 0xe0]
+}
+Class NetworkLayer
+Class NetworkManager
+NetworkManager instproc graphics-init n {
+	if {$n == 1 || [winfo exists .l]} { return }
+	$self instvar nchan_
+	set nchan_ $n
+	#toplevel .l
+	set k 0
+	while { $k < $nchan_ } {
+		radiobutton .l.b$k -command "$self set-subscription-level $k" \
+				-text "Level $k" \
+				-variable nLayers -value $k
+		pack .l.b$k
+		incr k
+	}
+	wm withdraw .l
+	bind . <l> {
+		if [winfo ismapped .l] {
+			wm withdraw .l
+		} else {
+			wm deiconify .l
+		}
+	}
+}
+NetworkManager instproc set-subscription-level n {
+	$self instvar agent_ nchan_ session_ net_
+	$agent_ set_maxchannel $n
+	$session_ set loopbackLayer_ [expr $n + 1]
+	set i 0
+	while { $i <= $n } {
+		$net_($i) enable
+		incr i
+	}
+	while { $i < $nchan_ } {
+		$net_($i) disable
+		incr i
+	}
+	global nLayers
+	set nLayers $n
+}
+NetworkLayer instproc init { session addr sport rport ttl channel } {
+	$self next
+	$self instvar session_ addr_ port_ ttl_ dn_ cn_ channel_ active_
+	set addr_ $addr
+	set port_ $rport
+	set sport_ $sport
+	set rport_ $rport
+	set session_ $session
+	set ttl_ $ttl
+	set channel_ $channel
+	set dn_ [new Network]
+	set result [$dn_ open $addr_ $sport_ $rport_ $ttl_]
+	if {$result == {0}} {
+		new ErrorWindow {Cannot open network connection.}
+		exit 1
+	}
+	set cn_ [new Network]
+	set result [$cn_ open $addr_ [expr $sport_ + 1] [expr $rport_ + 1] $ttl_]
+	if {$result == {0}} {
+		new ErrorWindow {Cannot open network connection.}
+		exit 1
+	}
+	$cn_ loopback 1
+	$session_ data-net $dn_ $channel_
+	$session_ ctrl-net $cn_ $channel_
+	set active_ 0
+	$dn_ drop-membership
+	$cn_ drop-membership
+	$session_ data-net "" $channel_
+	$session_ ctrl-net "" $channel_
+	$self set tloss_ 0
+}
+NetworkLayer instproc destroy {} {
+	$self instvar dn_ cn_
+	if [info exists dn_] {
+		delete $dn_
+	}
+	if [info exists cn_] {
+		delete $cn_
+	}
+	$self next
+}
+NetworkLayer instproc data-net {} {
+	return [$self set dn_]
+}
+NetworkLayer instproc ctrl-net {} {
+	return [$self set cn_]
+}
+NetworkLayer instproc enable-send {} {
+	$self instvar dn_ cn_ session_ channel_
+	$session_ data-net $dn_ $channel_
+	$session_ ctrl-net $cn_ $channel_
+}
+NetworkLayer instproc disable-send {} {
+	$self instvar dn_ cn_ session_ channel_
+	$session_ data-net "" $channel_
+	$session_ ctrl-net "" $channel_
+}
+NetworkLayer instproc enable {} {
+	$self instvar active_ dn_ cn_ session_ channel_
+	if !$active_ {
+		set active_ 1
+		$dn_ add-membership
+		$cn_ add-membership
+		$session_ data-net $dn_ $channel_
+		$session_ ctrl-net $cn_ $channel_
+	}
+}
+NetworkLayer instproc disable {} {
+	$self instvar dn_ cn_ active_ session_ channel_
+	if $active_ {
+		set active_ 0
+		$dn_ drop-membership
+		$cn_ drop-membership
+		$session_ data-net "" $channel_
+		$session_ ctrl-net "" $channel_
+	}
+}
+NetworkLayer instproc notify-loss {src} {
+	$self instvar loss_ tloss_
+	if ![info exists loss_($src)] {
+		set loss_($src) 0
+	}
+	set nloss [$src missing]
+	incr tloss_ [expr $nloss - $loss_($src)]
+	set loss_($src) $nloss
+}
+NetworkLayer instproc nlost {} {
+	$self instvar tloss_
+	return $tloss_
+}
+NetworkLayer instproc npkts {n} {
+	$self instvar agent_
+	set npkts 0
+	foreach s [$agent_ set sources_] {
+		set l [lindex [$s set layers_] $n]
+		incr npkts [$l set np_]
+	}
+	return $npkts
+}
+NetworkLayer instproc crypt { dc cc } {
+	$self instvar dn_ cn_
+	$dn_ crypt $dc
+	$cn_ crypt $cc
+}
+NetworkManager instproc init { ab session agent } {
+	$self next
+	$self instvar session_ agent_ encrypt_ key_ fmt_
+	set session_ $session
+	set agent_ $agent
+	set encrypt_ 0
+	set key_ ""
+	set fmt_ ""
+	$self allocate $ab $session
+}
+NetworkManager instproc allocate { ab session } {
+	$self instvar nchan_ net_ mmg_
+	if [info exists nchan_] {
+		set oldnchan $nchan_
+	} else {
+		set oldnchan 0
+	}
+	set nchan_ 0
+	while { $nchan_ < [$ab nchan] } {
+		set addr [$ab addr $nchan_]
+		set sport [$ab sport $nchan_]
+		set rport [$ab rport $nchan_]
+		set ttl [$ab ttl $nchan_]
+		if [info exists net_($nchan_)] {
+			delete $net_($nchan_)
+		}
+		set net_($nchan_) [new NetworkLayer $session $addr \
+				$sport $rport $ttl $nchan_]
+		$self instvar agent_
+		$net_($nchan_) set agent_ $agent_
+		incr nchan_
+	}
+	set n $nchan_
+	while {$n < $oldnchan} {
+		if [info exists net_($n)] {
+			delete $net_($n)
+		}
+		incr n
+	}
+	if [info exists mmg_] {
+		delete $mmg_
+	}
+	$self set-subscription-level 0
+	if {$nchan_ == 1} { return }
+	if [$self yesno useLayersWindow] {
+		$self graphics-init $nchan_
+	}
+	if [$self get_option useRLM] {
+		set caddr ""
+		set mmg_ [new MMG/mash $self $caddr]
+	}
+}
+NetworkManager instproc nchan {} {
+	return [$self set nchan_]
+}
+NetworkManager instproc reset ab {
+	$self instvar session_
+	$self allocate $ab $session_
+}
+NetworkManager instproc data-net args {
+	if { $args == "" } {
+		set k 0
+	} else {
+		set k $args
+	}
+	$self instvar net_
+	return [$net_($k) data-net]
+}
+NetworkManager instproc ctrl-net args {
+	if { $args == "" } {
+		set k 0
+	} else {
+		set k $args
+	}
+	$self instvar net_
+	return [$net_($k) ctrl-net]
+}
+NetworkManager public loopback enable {
+	$self instvar nchan_ net_
+	set i 0
+	while { $i < $nchan_ } {
+		set net $net_($i)
+		set dn [$net data-net]
+		set cn [$net ctrl-net]
+		$dn loopback $enable
+		$cn loopback $enable
+		incr i
+	}
+}
+NetworkManager instproc install-key key {
+	return [$self set_key $key]
+}
+NetworkManager instproc crypt_all { dc cc } {
+	$self instvar net_
+	foreach n [array names net_] {
+		$net_($n) crypt $dc $cc
+	}
+}
+NetworkManager instproc destroy {} {
+	$self instvar net_
+	foreach chan [array names net_] {
+		delete $net_($chan)
+	}
+	$self next
+}
+NetworkManager instproc usingRLM {} {
+	$self instvar mmg_
+	return [info exists mmg_]
+}
+NetworkManager instproc notify-loss {src layer} {
+	$self instvar net_
+	$net_($layer) notify-loss $src
+}
+NetworkManager instproc crypt_format { key } {
+	set k [string first / $key]
+	if { $k < 0 } {
+		set fmt DES
+	} else {
+		set fmt [string range $key 0 [expr $k - 1]]
+		set key [string range $key [expr $k + 1] end]
+	}
+	return "$fmt $key"
+}
+NetworkManager instproc set_key key {
+	if { $key == "" } {
+		$self crypt_clear
+		return ""
+	}
+	$self instvar encrypt_
+	set L [$self crypt_format $key]
+	set fmt [lindex $L 0]
+	set key [lindex $L 1]
+	$self instvar key_
+	set key_ $key
+	$self instvar dc_ cc_ fmt_
+	if { $fmt_ != $fmt } {
+		if [info exists dc_] {
+			delete $dc_
+			unset dc_
+		}
+		if [info exists cc_] {
+			delete $cc_
+			unset cc_
+		}
+		set fmt_ $fmt
+	}
+	if ![info exists dc_] {
+		set clist [Crypt/Data info subclass]
+		if { [lsearch -exact $clist Crypt/Data/$fmt] < 0 } {
+			return "no $fmt encryption support"
+		}
+		set dc_ [new Crypt/Data/$fmt]
+		set cc_ [new Crypt/Control/$fmt]
+	}
+	if [$dc_ key $key] {
+		$cc_ key $key
+		$self crypt_all $dc_ $cc_
+		set encrypt_ 1
+		return ""
+	} else {
+		$self crypt_clear
+		return "your key is cryptographically weak"
+	}
+}
+NetworkManager instproc crypt_clear {} {
+	$self instvar encrypt_ key_
+	$self crypt_all "" ""
+	set key_ ""
+	set encrypt_ 0
+}
+Class NetworkManager/Scuba
+NetworkManager/Scuba instproc init { ab session agent } {
+	$self next
+	$self reset $ab
+}
+NetworkManager/Scuba instproc reset ab {
+	set addr [$ab addr 0]
+	set sport [$ab sport 0]
+	incr sport -1
+	set rport [$ab rport 0]
+	incr rport -1
+	set ttl [$ab ttl 0]
+	$self instvar scubaNet_
+	if ![info exists scubaNet_] {
+		set scubaNet_ [new Network]
+	} else {
+		$scubaNet_ close
+	}
+	$scubaNet_ open $addr $sport $rport $ttl
+}
+NetworkManager/Scuba instproc destroy {} {
+	$self instvar scubaNet_
+	if [info exists scubaNet_] {
+		delete $scubaNet_
+	}
+}
+Class Session/Scuba/Vic -superclass { Session/Scuba Observer }
+Session/Scuba/Vic instproc init { rtpsess sm ab vpipe } {
+	$self next
+	$self set rtpsess_ $rtpsess
+	$self source-manager $sm
+	$self set vpipe_ $vpipe
+	if { $ab != "" && [$ab nchan] > 0 } {
+		$self reset $ab
+	}
+}
+Session/Scuba/Vic instproc reset ab {
+	$self instvar nm_ rtpsess_
+	if [info exists nm_] {
+		delete $nm_
+	}
+	set nm_ [new NetworkManager/Scuba $ab $rtpsess_ $self]
+	$self scuba-net [$nm_ set scubaNet_]
+	$self start-control
+}
+Session/Scuba/Vic instproc set_allocation {} {
+	$self instvar scoretab_ share_ rtpsess_ sessionbw_
+	set sm [$self source-manager]
+	if { [$sm info vars local_] == "" } {
+		return
+	}
+	set localsrc [$sm set local_]
+	set total 0
+	set tot($localsrc) 0
+	set al [$sm active_list]
+	set zerosrcs 0
+	foreach src $al {
+		set srcid [$src srcid]
+		set voters [array names scoretab_ *:$srcid]
+		set subtotal 0
+		foreach v $voters {
+			set subtotal [expr $subtotal+$scoretab_($v)]
+		}
+		set tot($src) $subtotal
+		if { $subtotal == 0 } {
+			incr zerosrcs
+		}
+		set total [expr $total+$subtotal]
+	}
+	if { $total > 0 } {
+		set avg [expr $tot($localsrc)/$total]
+	} else {
+		set avg 0
+	}
+	if { $avg > 0 } {
+		set share_ [expr 0.95*$avg]
+	} else {
+		if { $zerosrcs == 0 } {
+			set zerosrcs 1
+		}
+		set share_ [expr 0.05/$zerosrcs]
+	}
+	$self set_bps [expr $share_*$sessionbw_]
+}
+Session/Scuba/Vic instproc set_bps { bps } {
+	set videoagent [$self source-manager]
+	set b [expr int($bps)]
+	$self instvar vpipe_
+	$vpipe_ set_bps $b
+	$videoagent local_bandwidth $b
+	global bps_slider
+	if [info exists bps_slider] {
+		$bps_slider set $b
+	}
+}
+Session/Scuba/Vic instproc build_report {} {
+	$self instvar focus_set_
+	if ![info exists focus_set_] {
+		return 0
+	}
+	set sm [$self source-manager]
+	if { [$sm info vars local_] == "" } {
+		return 0
+	}
+	set localsrc [$sm set local_]
+	set t 0
+	set srcs [array names focus_set_]
+	foreach s $srcs {
+		if { $s != $localsrc && $focus_set_($s) > 0 } {
+			incr t
+		}
+	}
+	$self clean_scoretab $localsrc
+	if { $t != 0 } {
+		set score [expr int(1e6/$t)]
+		foreach s $srcs {
+			if { $focus_set_($s) > 0 && $s != $localsrc } {
+				set srcid [$s srcid]
+				$self add-scuba-entry $srcid $score
+				$self recv_scuba_entry $localsrc \
+						$srcid $score
+			}
+		}
+	}
+	$self set_allocation
+	return $t
+}
+Session/Scuba/Vic instproc activate { src } {
+	$self set focus_set_($src) 0
+	$self next $src
+}
+Session/Scuba/Vic instproc deactivate { src } {
+	$self unset focus_set_($src)
+	$self next $src
+}
+Session/Scuba/Vic instproc scuba_focus { src } {
+	$self instvar focus_set_
+	incr focus_set_($src)
+}
+Session/Scuba/Vic instproc scuba_unfocus { src } {
+    $self instvar focus_set_
+    if {[array names focus_set_ $src] == $src} {
+        incr focus_set_($src) -1
+    }
+}
+Source/RTP set reportLoss_ 0
+Session/RTP set nb_ 0
+Session/RTP set nf_ 0
+Session/RTP set np_ 0
+Session/RTP set loopback_ 1
+Source/RTP set badsesslen_ 0
+Source/RTP set badsessver_ 0
+Source/RTP set badsessopt_ 0
+Source/RTP set badsdes_ 0
+Source/RTP set badbye_ 0
+SourceLayer/RTP set nchan_ 1
+Session/RTP set badversion_ 0
+Session/RTP set badoptions_ 0
+Session/RTP set badfmt_ 0
+Session/RTP set badext_ 0
+Session/RTP set nrunt_ 0
+Session/RTP set loopbackLayer_ 1000
+Source/RTP public layer-stat which {
+	$self instvar layers_
+	set s 0
+	foreach l $layers_ {
+		set s [expr $s + [$l set $which]]
+	}
+	return $s
+}
+Source/RTP public ns {} {
+	$self instvar layers_
+	set s 0
+	foreach l $layers_ {
+		set s [expr $s + [$l set cs_] - [$l set fs_]]
+	}
+	return $s
+}
+Source/RTP public missing {} {
+	$self instvar layers_
+	set s 0
+	foreach l $layers_ {
+		set nm [expr [$l set cs_] - [$l set fs_] - [$l set np_]]
+		if { $nm > 0 } {
+			set s [expr $s + $nm]
+		}
+	}
+	return $s
+}
+Source/RTP instproc is_mixer {} {
+	return [expr [$self srcid] != [$self ssrc]]
+}
+SourceLayer/RTP set nrunt_ 0
+SourceLayer/RTP set ndup_ 0
+SourceLayer/RTP set fs_ 0
+SourceLayer/RTP set cs_ 0
+SourceLayer/RTP set np_ 0
+SourceLayer/RTP set nf_ 0
+SourceLayer/RTP set nb_ 0
+SourceLayer/RTP set nm_ 0
+SourceLayer/RTP set ntp_ts_sec_ 0
+SourceLayer/RTP set ntp_ts_fsec_ 0
+SourceLayer/RTP set mts_ 0
+SourceLayer/RTP set ref_ntp_sec_ 0
+SourceLayer/RTP set ref_ntp_fsec_ 0
+SourceLayer/RTP set ref_mts_ 0
+Source/RTP public init { sm srcid ssrc addr } {
+	$self next $srcid $ssrc $addr
+	$self set sm_ $sm
+	$self instvar layers_
+	set k 0
+	set report 0
+	if { [$sm info vars network_] != "" } {
+		set net [$sm set network_]
+		set n [$net set nchan_]
+		set report [$net usingRLM]
+	} else {
+		set n [SourceLayer/RTP set nchan_]
+	}
+	while { $k < $n } {
+		set l [new SourceLayer/RTP]
+		lappend layers_ $l
+		$self layer $k $l
+		incr k
+	}
+	$self set reportLoss_ $report
+}
+Source/RTP public destroy {} {
+	$self instvar sm_
+	foreach layer [$self set layers_] {
+		$layer destroy
+	}
+	if {[$self data-handler] != ""} {
+		$self deactivate
+	}
+	$self unregister
+	$sm_ delete $self;
+	$self next
+}
+Source/RTP public getid {} {
+	set name [$self sdes name]
+	if { $name == "" } {
+		set name [$self sdes cname]
+		if { $name == "" } {
+			set name [$self addr]
+		}
+	}
+	return $name
+}
+Source/RTP public format_name {} {
+	$self instvar sm_
+	return [$sm_ rtp_type [$self format]]
+}
+Class MediaAgent -superclass {SourceManager Observable}
+foreach method "unregister activate deactivate \
+		trigger_media \
+		trigger_format \
+		trigger_sdes \
+		trigger_idle \
+		trigger_sr \
+		notify" {
+	Source/RTP public $method {args} \
+		"\$self instvar sm_ ; eval \$sm_ $method \$self \$args"
+	MediaAgent public $method src "\$self notify_observers $method \$src"
+}
+MediaAgent public init {} {
+	$self next
+	$self set sources_ ""
+}
+MediaAgent public destroy {} {
+	$self instvar sources_
+	foreach src $sources_ {
+		$src destroy;
+	}
+	$self next
+}
+MediaAgent public active_list {} {
+	$self instvar active_
+	if ![info exists active_] {
+		return ""
+	}
+	return [array names active_]
+}
+MediaAgent public activate src {
+	$self instvar active_
+	set active_($src) 1
+	$self notify_observers activate $src
+}
+MediaAgent public deactivate src {
+	$self instvar active_
+	unset active_($src)
+	$self notify_observers deactivate $src
+}
+MediaAgent public unregister src {
+	$self notify_observers unregister $src
+	$self instvar sources_
+	set k [lsearch -exact $sources_ $src]
+	set sources_ [lreplace $sources_ $k $k]
+}
+MediaAgent public attach o {
+	$self attach_observer $o
+	$self instvar sources_ active_
+	foreach s $sources_ {
+		$o update register $s
+		if [info exists active_($s)] {
+			$o update activate $s
+			$s enable_trigger
+		}
+	}
+}
+MediaAgent public detach o {
+	$self detach_observer $o
+	$self instvar sources_ active_
+	foreach s $sources_ {
+		if [info exists active_($s)] {
+			$o update deactivate $s
+		}
+		$o update unregister $s
+	}
+}
+MediaAgent public create-source { srcid ssrc addr srcsess } {
+	set s [new Source/RTP $self $srcid $ssrc $addr]
+	$s set session_ $srcsess
+	$self instvar sources_
+	lappend sources_ $s
+	return $s
+}
+Class RTPAgent -superclass MediaAgent -configuration {
+	mtu 1024
+	loopback 0
+	siteDropTime "300"
+}
+RTPAgent public init {ab {callback {}} } {
+	$self next
+	$self instvar session_ mtu_ callback_
+	if { $callback!={} } { set callback_ $callback }
+	set session_ [$self create_session]
+	$session_ sm $self
+	$session_ buffer-pool [new BufferPool]
+	if { $ab != "" } {
+		$self reset $ab
+	}
+	set mtu_ [$self get_option mtu]
+	global V
+	set V(sm) $self
+}
+RTPAgent public destroy {} {
+	$self instvar session_ network_
+	$session_ exit;
+	delete $session_
+	delete $network_
+	$self next
+}
+RTPAgent public reset_spec spec {
+	set ab [new AddressBlock $spec]
+	$self reset $ab
+	delete $ab
+}
+RTPAgent public reset ab {
+	$self instvar network_ session_ sources_
+	if {([catch {$ab info class}]) || ([$ab info class] != "AddressBlock")} {
+		$self reset_spec $ab
+		return
+	}
+	if [info exists network_] {
+		set old_network $network_
+	}
+	set old_sources $sources_
+	$session_ exit
+	set network_ [new NetworkManager $ab $session_ $self]
+	$self app_loopback 1
+	$self net_loopback [$self get_option loopback]
+	set key [$self get_option sessionKey]
+	if { $key != "" } {
+		$network_ install-key $key
+	}
+	$self mk_local_source
+	$session_ max-bandwidth [expr [$ab set maxbw_(0)]/1000.]
+	$self instvar callback_
+	if [info exists callback_] {
+	    eval $callback_ [list $ab]
+	} else {
+	    catch {
+			set a [Application instance]
+			if [catch {$a reset $ab rtp $self}] {
+				$a reset $ab
+			}
+		}
+	}
+	foreach src $old_sources {
+		$src destroy;
+	}
+	if [info exists old_network] {
+		delete $old_network
+	}
+}
+RTPAgent private notify {src layer} {
+	$self instvar network_
+	if ![$network_ usingRLM] { return }
+	$network_ notify-loss $src $layer
+}
+RTPAgent public stats {} {
+	set s [$self set session_]
+	return " \
+		Bad-RTP-version [$s set badversion_] \
+		Bad-RTPv1-options [$s set badoptions_] \
+		Bad-Payload-Format [$s set badfmt_] \
+		Bad-RTP-Extension [$s set badext_] \
+		Runts [$s set nrunt_]"
+}
+RTPAgent private mk_local_source {} {
+	$self instvar network_ session_ local_
+	set net [$network_ data-net 0]
+	set a [$net addr]
+	set srcid [$session_ random-srcid $a]
+	set src [$self create-local $srcid [$net interface]]
+	set local_ $src
+	$self notify_observers register $local_
+	set cname [$self get_option cname]
+	if { $cname == "" } {
+		set interface [$net interface]
+		if { $interface == "0.0.0.0" } {
+			set interface [$session_ local-addr-heuristic]
+		}
+		set cname [user_heuristic]@$interface
+	}
+	$src sdes name [$self get_option rtpName]
+	$src sdes email [$self get_option rtpEmail]
+	$src sdes loc [$self get_option rtpLoc]
+	$src sdes cname $cname
+	set tool [Application name]\-[version]
+	global tcl_platform
+	if {[info exists tcl_platform(os)] && $tcl_platform(os) != "" && \
+			$tcl_platform(os) != "unix"} {
+		set p $tcl_platform(os)
+		if {$tcl_platform(osVersion) != ""} {
+			set p $p-$tcl_platform(osVersion)
+		}
+		if {$tcl_platform(machine) != ""} {
+			set p $p-$tcl_platform(machine)
+		}
+		set tool "$tool/$p"
+	}
+	$src sdes tool $tool
+	return $src
+}
+RTPAgent public have_network {} {
+	$self instvar network_
+	return [info exists network_]
+}
+RTPAgent public have_localsrc {} {
+	$self instvar local_
+	return [info exists local_]
+}
+RTPAgent public install-key key {
+	$self instvar network_
+	if [info exists network_] {
+		$network_ install-key $key
+	}
+}
+RTPAgent public network {} {
+	$self instvar network_
+	if ![info exists network_] {
+		return none
+	}
+	return [$network_ data-net 0]
+}
+RTPAgent public session-addr {} {
+	$self instvar network_
+	if ![info exists network_] {
+		return none
+	}
+	return [[$self network] addr]
+}
+RTPAgent public session-port {} {
+	$self instvar network_
+	if ![info exists network_] {
+		return none
+	}
+	return [[$self network] port]
+}
+RTPAgent public session-rport {} {
+	$self instvar network_
+	if ![info exists network_] {
+		return none
+	}
+	return [[$self network] rport]
+}
+RTPAgent public session-sport {} {
+	$self instvar network_
+	if ![info exists network_] {
+		return none
+	}
+	return [[$self network] sport]
+}
+RTPAgent public get_local_srcid {} {
+	$self instvar network_
+	if ![info exists network_] {
+		return none
+	}
+	$self instvar local_
+	return [$local_ srcid]
+}
+RTPAgent public get_transmitter {} {
+	return [$self set session_]
+}
+RTPAgent public session-ttl {} {
+	$self instvar network_
+	if ![info exists network_] {
+		return none
+	}
+	return [[$self network] ttl]
+}
+RTPAgent public local-name {} {
+	$self instvar network_
+	if ![info exists network_] {
+		return none
+	}
+	$self instvar local_
+	return [$local_ sdes name]
+}
+RTPAgent public set_local_sdes { which value } {
+	$self instvar local_
+	$local_ sdes $which $value
+}
+RTPAgent public crypt_clear {} {
+	if [info exists network_] {
+		$network_ crypt_clear
+	}
+}
+RTPAgent public shutdown {} {
+	$self instvar session_
+	$session_ exit
+}
+RTPAgent public set_maxchannel n {}
+RTPAgent public set-bandwidth bps {
+	[$self set session_] data-bandwidth $bps
+}
+RTPAgent public net_loopback enable {
+	$self instvar network_
+	$network_ loopback $enable
+}
+RTPAgent public app_loopback enable {
+	$self instvar session_
+	$session_ set loopback_ $enable
+}
+RTPAgent public set-bandwidth bps {
+	[$self set session_] data-bandwidth $bps
+}
+RTPAgent public set_rtp_name name {
+	$self instvar local_
+    $local_ sdes name $name
+}
+RTPAgent public set_rtp_cname cname {
+	$self instvar local_
+    $local_ sdes cname $cname
+}
+Class RTP
+Class RTP/Video -superclass RTP
+Class RTP/Audio -superclass RTP
+RTP private init {} {
+	eval $self next
+	$self instvar rtp_ptoa_
+	set rtp_ptoa_(-1) ""
+}
+RTP/Audio set default_ptoa_(0) pcm
+RTP/Audio set default_ptoa_(1) celp
+RTP/Audio set default_ptoa_(2) g721
+RTP/Audio set default_ptoa_(3) gsm
+RTP/Audio set default_ptoa_(5) dvi
+RTP/Audio set default_ptoa_(6) dvi
+RTP/Audio set default_ptoa_(7) lpc
+RTP/Audio set default_ptoa_(8) pcma
+RTP/Audio set default_ptoa_(9) g722
+RTP/Audio set default_ptoa_(10) lin16
+RTP/Audio set default_ptoa_(11) lin16
+RTP/Audio set default_ptoa_(14) mpa
+RTP/Audio set default_ptoa_(15) g728
+RTP/Video set default_ptoa_(21) pvh
+RTP/Video set default_ptoa_(25) cellb
+RTP/Video set default_ptoa_(26) jpeg
+RTP/Video set default_ptoa_(27) cuseeme
+RTP/Video set default_ptoa_(28) nv
+RTP/Video set default_ptoa_(29) picw
+RTP/Video set default_ptoa_(30) cpv
+RTP/Video set default_ptoa_(31) h261
+RTP/Video set default_ptoa_(32) mpeg
+RTP/Video set default_ptoa_(33) mpegs
+RTP/Video set default_ptoa_(42) h263+
+RTP/Video set default_ptoa_(34) h263
+RTP/Audio set default_ptoa_(126) mp3
+RTP/Video set default_ptoa_(127) h261v1
+RTP/Video set default_ptoa_(50) sc
+RTP/Audio public init args {
+	$self next
+	$class instvar default_ptoa_
+	$self instvar rtp_ptoa_ rtp_atop_
+	foreach p [array names default_ptoa_] {
+		$self add_mapping $p $default_ptoa_($p)
+	}
+	foreach mapping [$self get_option rtpMap] {
+		set l [split $mapping :]
+		set pt [lindex $l 0]
+		set fmt [lindex $l 1]
+		$self add_mapping $pt $fmt
+	}
+}
+RTP/Video public init args {
+	$self next
+	$class instvar default_ptoa_
+	$self instvar rtp_ptoa_ rtp_atop_
+        set rtp_ptoa_(-1) ""
+	foreach p [array names default_ptoa_] {
+		set rtp_ptoa_($p) $default_ptoa_($p)
+		set rtp_atop_($default_ptoa_($p)) $p
+	}
+	foreach mapping [$self get_option rtpMap] {
+		set l [split $mapping :]
+		set pt [lindex $l 0]
+		set fmt [lindex $l 1]
+		$self add_mapping $pt $fmt
+	}
+	$self instvar classmap_
+	set classmap_(pvh) PVH
+	set classmap_(h261) H261
+	set classmap_(h261v1) H261v1
+	set classmap_(nv) NV
+	set classmap_(cellb) CellB
+	set classmap_(jpeg) JPEG
+        set classmap_(h263+) H263+
+        set classmap_(h263) H263
+	set classmap_(sc) SC
+}
+RTP/Video public classmap type {
+	$self instvar classmap_
+	if [info exists classmap_($type)] {
+		return $classmap_($type)
+	}
+	return "Null"
+}
+RTP public add_mapping {pt fmt} {
+	$self instvar rtp_ptoa_ rtp_atop_
+	set rtp_ptoa_($pt) $fmt
+	set rtp_atop_($fmt) $pt
+}
+RTP public rtp_type pt {
+	$self instvar rtp_ptoa_
+	if [info exists rtp_ptoa_($pt)] {
+		return $rtp_ptoa_($pt)
+	} elseif { $pt < 0 }  {
+		return ""
+	} else {
+		return fmt-$pt
+	}
+}
+RTP public rtp_fmt_number fmt {
+	$self instvar rtp_atop_
+	if [info exists rtp_atop_($fmt)] {
+		return $rtp_atop_($fmt)
+	} else {
+		return -1
+	}
+}
+RTP public rtp_format src {
+	$self instvar rtp_ptoa_
+	return [$self rtp_type [$src format]]
+}
+RTP instproc cname_redundant { name cname } {
+	set ni [string first @ $name]
+	if { $ni < 0 } {
+		return 0
+	}
+	set ci [string first @ $cname]
+	if { $ci < 0 } {
+		return 0
+	}
+	if { [string compare \
+		[string range $name 0 $ni] \
+		[string range $cname 0 $ci]] == 0 } {
+		return 1
+	}
+	return 0
+}
+RTP public rtp_representation src {
+	set fmt [$self rtp_format $src]
+	set name [$src sdes name]
+	set cname [$src sdes cname]
+	set addr [$src addr]
+	if { $name == "" } {
+		if { $cname == "" } {
+			set srcname $addr
+			set srcinfo $addr/$fmt
+		} else {
+			set srcname $cname
+			set srcinfo $addr/$fmt
+		}
+	} elseif [$self cname_redundant $name $cname] {
+		set srcname $name
+		set srcinfo $addr/$fmt
+	} else {
+		set srcname $name
+		set srcinfo $cname/$fmt
+	}
+	return "{$srcname} {$srcinfo}"
+}
+Class Timer
+Class Timer/Periodic -superclass Timer
+Class Timer/Adaptive -superclass Timer
+Class Timer/Adaptive/ConstBW -superclass Timer/Adaptive
+Timer public init {} {
+	$self next
+	$self randomize 0
+	$self set randwt_ 1.0
+}
+Timer public destroy {} {
+	$self cancel
+	$self next
+}
+Timer public randomize { {yesno 1} {randwt {}} } {
+	if { $randwt!={} } {
+		$self set randwt_ $randwt
+	}
+	if {$yesno=="yes"} {set yesno 1} elseif {$yesno=="no"} {set yesno 0}
+	$self set randomize_ $yesno
+}
+Timer private sched { t } {
+	$self msched $t
+}
+Timer public msched { t } {
+	$self instvar id_ randomize_ randwt_
+	if [info exists id_] {
+		puts stderr "warning: $self ([$self info class]):\
+				overlapping timers"
+	}
+	if $randomize_ {
+		set r [expr [random]/double(0x7fffffff)-0.5]
+		set t [expr $t+$t*$r*$randwt_]
+	}
+	set t [expr int($t+0.5)]
+	set id_ [after $t "$self do_timeout"]
+}
+Timer private do_timeout {} {
+	$self instvar id_
+	if ![info exists id_] {
+		puts stderr "warning: $self ($class) no timer id_"
+	} else {
+		unset id_
+	}
+	$self timeout
+}
+Timer public is_sched { } {
+	$self instvar id_
+	return [info exists id_]
+}
+Timer public cancel {} {
+	$self instvar id_
+	if [info exists id_] {
+		after cancel $id_
+		unset id_
+	}
+}
+Timer/Periodic public init { {period 5000} } {
+	$self next
+	$self set period_ $period
+}
+Timer/Periodic public start { {period {}} } {
+	$self instvar period_
+	if { $period!={} } { set period_ $period }
+	if [$self is_sched] { $self cancel }
+	$self msched $period_
+}
+Timer/Periodic instproc do_timeout {} {
+	$self instvar period_
+	$self next
+	if { [info commands $self]=="" } return
+	$self msched $period_
+}
+Timer/Adaptive public init { {interval 5000} } {
+	$self next
+	$self set interval_ $interval
+}
+Timer/Adaptive public start {} {
+	$self instvar interval_
+	if [$self is_sched] { $self cancel }
+	set interval_ [$self adapt $interval_]
+	$self msched [expr int($interval_+0.5)]
+}
+Timer/Adaptive public do_timeout {} {
+	$self next
+	if { [info commands $self]=="" } return
+	$self instvar interval_
+	set interval_ [$self adapt $interval_]
+	$self msched [expr int($interval_+0.5)]
+}
+Timer/Adaptive private adapt {interval} {
+	return $interval
+}
+Timer/Adaptive/ConstBW public init { bw {thresh {}} {size_gain {}} } {
+	$self instvar size_gain_ avgsize_ nsrcs_ bw_ thresh_ interval_
+	if { $size_gain!={} } {
+		set size_gain_ $size_gain
+	} else {
+		set size_gain_ 0.125
+	}
+	set avgsize_ 28
+	set nsrcs_ 0
+	set bw_ $bw
+	if { $thresh=={} } {
+		set thresh_ 500
+	} else {
+		set thresh_ $thresh
+	}
+	$self next $thresh_
+}
+Timer/Adaptive/ConstBW public threshold { {thresh {}} } {
+    $self instvar thresh_
+    if {$thresh=={}} {
+	return $thresh_
+    } else {
+	set thresh_ $thresh
+    }
+}
+Timer/Adaptive/ConstBW public bandwidth { {bw {}} } {
+    $self instvar bw_
+    if {$bw=={}} {
+	return $bw_
+    } else {
+	set bw_ $bw
+    }
+}
+Timer/Adaptive/ConstBW public sample_size { size } {
+	$self instvar avgsize_ size_gain_
+	set avgsize_ [expr $avgsize_ + $size_gain_ * ($size + 28 - $avgsize_)]
+}
+Timer/Adaptive/ConstBW public update_nsrcs { nsrcs } {
+	$self set nsrcs_ $nsrcs
+}
+Timer/Adaptive/ConstBW public nsrcs { nsrcs } {
+	return [$self set nsrcs_]
+}
+Timer/Adaptive/ConstBW public incr_nsrcs { {incr 1} } {
+        $self instvar nsrcs_
+        incr nsrcs_ $incr
+}
+Timer/Adaptive/ConstBW private adapt {interval} {
+	$self instvar avgsize_ bw_ nsrcs_ thresh_
+	set t [expr 1000 * ($nsrcs_ * $avgsize_ * 8) / $bw_]
+	if { $t < $thresh_ } {
+		return $thresh_
+	} else {
+		return $t
+	}
+}
+AnnounceListenManager public init { spec {mtu 1500} } {
+	$self next $mtu
+	$self instvar data_ snet_ rnet_
+	set data_ ""
+	set snet_ ""
+	set rnet_ ""
+	if [regexp {^[0-9]*$} $spec] {
+		set rnet_ [new Network]
+		$rnet_ open $spec
+	} else {
+		set ab [new AddressBlock/Simple $spec]
+		set addr  [$ab addr]
+		set sport [$ab sport]
+		set rport [$ab rport]
+		set ttl   [$ab ttl]
+		delete $ab
+		set snet_ [new Network]
+		if [in_multicast $addr] {
+			$snet_ open $addr $sport $rport $ttl
+			set rnet_ $snet_
+		} else {
+			if { $rport != 0 } {
+				set rnet_ [new Network]
+				$rnet_ open $rport
+			}
+			$snet_ open $addr $sport 0 1
+		}
+	}
+	if { $snet_ != "" } {
+		$snet_ loopback 1
+		$self send_network $snet_
+	}
+	if { $rnet_ != "" } {
+		$self recv_network $rnet_
+	}
+}
+AnnounceListenManager public destroy {} {
+	$self instvar snet_ rnet_ timers_
+	if { $rnet_==$snet_ } {
+		delete $snet_
+	} else {
+		if { $snet_ != "" } {
+			delete $snet_
+		}
+		if { $rnet_ != "" } {
+			delete $rnet_
+		}
+	}
+	if [info exists timers_] {
+		foreach t [array names timers_] {
+			delete $timers_($t)
+		}
+	}
+	$self next
+}
+AnnounceListenManager public timer {args} {
+	$self instvar timers_
+	if {[llength $args]==1} {
+		set d __default_timer__
+		set t [lindex $args 0]
+		if {$t!={}} { $t proc timeout { } "$self send_announcement" }
+	} else {
+		set d [lindex $args 0]
+		set t [lindex $args 1]
+		if {$t!={}} { $t proc timeout { } \
+				[list $self send_announcement $d] }
+	}
+	if [info exists timers_($d)] {
+		set sched [$timers_($d) is_sched]
+		delete $timers_($d)
+	} else {
+		set sched 0
+	}
+	if {$t!={}} {
+		set timers_($d) $t
+		if $sched {
+			$t start
+		}
+	} else {
+		catch {unset timers_($d)}
+	}
+	return $t
+}
+AnnounceListenManager public get_timer {args} {
+	$self instvar timers_
+	if {[llength $args]==0} {
+		set d __default_timer__
+	} else {
+		set d [lindex $args 0]
+	}
+	if [info exists timers_($d)] { return $timers_($d) } else { return "" }
+}
+AnnounceListenManager public start {args} {
+	if { [llength $args]==0 } {
+		set t [$self get_timer]
+	} else {
+		set d [lindex $args 0]
+		set t [$self get_timer $d]
+	}
+	if { $t=={} } {
+		set t [new Timer/Periodic]
+		$t randomize 1
+		if [info exists d] { $self timer $d $t } else { $self timer $t}
+	}
+	if [info exists d] {$self send_announcement $d} \
+			else {$self send_announcement}
+	$t start
+}
+AnnounceListenManager public stop {args} {
+	$self instvar timers_
+	if {[llength $args]==0} {
+		foreach d [array names timers_] {
+			$timers_($d) cancel
+		}
+	} else {
+		set d [lindex $args 0]
+		$timers_($d) cancel
+	}
+}
+AnnounceListenManager public recv_announcement { addr port data len } {
+	puts "ALM::recv_announcement $addr/$port \[$len\]: $data"
+}
+AnnounceListenManager public send_announcement {args} {
+	$self instvar data_
+	if {[llength $args]==0} {
+		if { $data_!={} } { $self announce $data_ }
+	} else {
+		$self announce [lindex $args 0]
+	}
+}
+AnnounceListenManager public set_announcement { data } {
+	$self set data_ $data
+}
+AnnounceListenManager public get_announcement { } {
+	return [$self set data_]
+}
+AnnounceListenManager public ttl {num} {
+	$self instvar snet_
+	$snet_ ttl $num
+}
+Class AnnounceListenManager/AS -superclass AnnounceListenManager
+AnnounceListenManager/AS instproc init { netspec bw atype } {
+	random 0
+	$self next $netspec 1024
+	$self instvar atype_
+	set atype_ $atype
+	$self instvar agentbytype_
+	set agentbytype_(srv) ""
+	set agentbytype_(client) ""
+	set agentbytype_(hm) ""
+	set t [new Timer/Adaptive/ConstBW $bw 3000]
+	$t randomize
+        $self timer $t
+	set o [$self options]
+	$o add_default startupWait 60
+	$self instvar aliveid_
+	set aliveid_ [after [expr [$self get_option startupWait]*1000] "$self check_alive 1"]
+}
+AnnounceListenManager/AS proc version {} {
+	return 2.0
+}
+AnnounceListenManager/AS public send_announcement {} {
+	$self instvar atype_
+	set o "ASCP v[$class version]"
+	set n $atype_
+	set o $o\n$n
+	set n [$self agent_instance]
+	set o $o\n$n
+	set n [$self service_name]
+	set o $o\n$n
+	set n [$self service_location]
+	set o $o\n$n
+	set n [$self service_instance]
+	set o $o\n$n
+	set n [$self ssg_port]
+	set o $o\n$n
+	set n [$self agent_data]
+	set o $o\n$n
+	$self announce $o
+	$self check_alive 0
+}
+AnnounceListenManager/AS instproc announce_death {} {
+	$self instvar id1_ id2_ atype_
+	set o "ASCP v[AnnounceListenManager/AS version]"
+	set n $atype_
+	set o $o\n$n
+	set n [$self agent_instance]
+	set o $o\n$n
+	set n bye
+	set o $o\n$n
+	set n -
+	set o $o\n$n
+	set n -
+	set o $o\n$n
+	set n -
+	set o $o\n$n
+	$self announce $o
+}
+AnnounceListenManager/AS public agent_instance {} {
+	return "[pid]@[lookup_host_name [localaddr]]"
+}
+AnnounceListenManager/AS public agent_data {} {
+	return ""
+}
+AnnounceListenManager/AS public ssg_port {} {
+	return "-"
+}
+AnnounceListenManager/AS instproc service_location {} {
+	return "-"
+}
+AnnounceListenManager/AS instproc destroy {} {
+	$self instvar aliveid_
+	after cancel $aliveid_
+	$self next
+}
+AnnounceListenManager/AS instproc recv_announcement { addr port data size } {
+	$self instvar lastann_ sdp_ agentbytype_ agenttab_ atype_
+        set t [$self get_timer]
+	$t sample_size $size
+	set o [split $data \n]
+	if { [lindex $o 0] != "ASCP v[$class version]" } {
+		set msg "$self ($class): received non-ASCP v[$class version] announcement from $addr."
+		if { $atype_ == "hm" } {
+			$self instvar agent_
+			$agent_ log $msg
+		} else {
+			puts stderr $msg
+		}
+ 		return
+	}
+	set atype [lindex $o 1]
+	set aspec [lindex $o 2]
+	set srv_name [lindex $o 3]
+	set srv_loc [lindex $o 4]
+	set srv_inst [lindex $o 5]
+	set ssg_port [lindex $o 6]
+	set ad [join [lrange $o 7 end] \n]
+	if { $srv_name == "DEATH" } {
+		set msg "Received death packet from $aspec at $addr - exiting."
+		if { $srv_loc == $atype_ } {
+			if { $atype_ == "hm" } {
+				$self instvar agent_
+				$agent_ log $msg
+			} else {
+				puts stderr $msg
+			}
+			$self announce_death
+			exit 0
+		}
+		$self recv_msg $atype $aspec $addr DEATH $srv_loc \
+			$srv_inst $ssg_port "$ad"
+		return
+	}
+	if { $srv_name == "bye" } {
+		$self delete_agent $aspec
+		return
+	}
+	if ![info exists agenttab_($aspec)] {
+		$self instvar avgdelta_
+		$self register $atype $aspec $addr $srv_name $srv_inst "$ad"
+	        $t incr_nsrcs
+		set timeout [$self get_option startupWait]
+		set avgdelta_($aspec) [expr $timeout / 8]
+		lappend agentbytype_($atype) $aspec
+	} else {
+		set now [gettimeofday]
+		set delta [expr $now - $lastann_($aspec,abs)]
+		$self instvar avgdelta_
+		set avgdelta_($aspec) \
+				[expr 0.875*$avgdelta_($aspec)+0.125*$delta]
+	}
+	set agenttab_($aspec) "$addr {$ad} $atype $srv_name $srv_inst"
+	set lastann_($aspec,abs) [gettimeofday]
+	set lastann_($aspec,ascii) [gettimeofday ascii]
+	$self recv_msg $atype $aspec $addr $srv_name $srv_loc $srv_inst \
+			$ssg_port "$ad"
+}
+AnnounceListenManager/AS instproc advance_timers { delta } {
+	$self instvar lastann_ agenttab_ avgdelta_
+	set aspecs [array names agenttab_]
+	foreach aspec $aspecs {
+		set lastann_($aspec,abs) [expr $lastann_($aspec,abs)+$delta]
+	}
+}
+AnnounceListenManager/AS instproc check_alive { timer } {
+	$self instvar lastann_ agenttab_ avgdelta_
+	set now [gettimeofday]
+	set aspecs [array names agenttab_]
+	foreach aspec $aspecs {
+		set lastann $lastann_($aspec,abs)
+		set avgdelta $avgdelta_($aspec)
+		set delta [expr $now - $lastann]
+		if { $delta > 8 * $avgdelta } {
+			$self delete_agent $aspec
+		}
+	}
+	$self instvar aliveid_
+	if { $timer } {
+		set t [expr [$self get_option startupWait]*1000]
+		set aliveid_ [after $t "$self check_alive 1"]
+	}
+}
+AnnounceListenManager/AS instproc delete_agent { aspec } {
+ 	$self instvar agentbytype_ agenttab_ lastann_ avgdelta_
+	if ![info exists agenttab_($aspec)] {
+		return
+	}
+	set a $agenttab_($aspec)
+	set addr [lindex $a 0]
+	set ad [lindex $a 1]
+	set atype [lindex $a 2]
+	set srv_name [lindex $a 3]
+	set srv_inst [lindex $a 4]
+	unset agenttab_($aspec)
+	unset lastann_($aspec,abs)
+	unset lastann_($aspec,ascii)
+	unset avgdelta_($aspec)
+	set t $agentbytype_($atype)
+	set i [lsearch -exact $t $aspec]
+	set agentbytype_($atype) [lreplace $t $i $i]
+	[$self get_timer] incr_nsrcs -1
+	$self unregister $atype $aspec $addr $srv_name $srv_inst "$ad"
+}
+AnnounceListenManager/AS instproc agenttab aspec {
+	$self instvar agenttab_
+	if [info exists agenttab_($aspec)] {
+		return $agenttab_($aspec)
+	}
+	return ""
+}
+Class AnnounceListenManager/AS/Client -superclass AnnounceListenManager/AS
+AnnounceListenManager/AS/Client public init { spec bw srv_loc } {
+	$self next $spec $bw client
+	$self instvar srv_inst_ srv_loc_
+	set srv_loc_ $srv_loc
+}
+AnnounceListenManager/AS/Client public service_location { } {
+	$self instvar srv_loc_
+	return $srv_loc_
+}
+AnnounceListenManager/AS/Client private recv_msg { atype aspec addr srv_name \
+	        srv_loc srv_inst ssg_port msg } {
+}
+Class SDPParser
+Class SDPMedia
+Class SDPTime
+Class SDPMessage
+SDPParser instproc init { {ordered_syntax 1} } {
+	$self next
+	$self instvar nextsym_ ordered_syntax_ parse_error_
+	set nextsym_(start) "v"
+	set nextsym_(v) "o"
+	set nextsym_(o) "s"
+	set nextsym_(s) "i u e p c b t"
+	set nextsym_(i) "u e p c b t"
+	set nextsym_(u) "e p c b t"
+	set nextsym_(e) "e p c b t"
+	set nextsym_(p) "e p c b t"
+	set nextsym_(c) "b t "
+	set nextsym_(b) "t"
+	set nextsym_(t) "t r z k a m"
+	set nextsym_(r) "t z k a m"
+	set nextsym_(z) "k a m"
+	set nextsym_(k) "a m"
+	set nextsym_(a) "a m"
+	set nextsym_(m) "m i:m c:m b:m k:m a:m v"
+	set nextsym_(i:m) "m c:m b:m k:m a:m v"
+	set nextsym_(c:m) "m b:m k:m a:m v"
+	set nextsym_(b:m) "m k:m a:m v"
+	set nextsym_(k:m) "m a:m v"
+	set nextsym_(a:m) "m a:m v"
+	set ordered_syntax_ $ordered_syntax
+	set parse_error_ ""
+}
+SDPParser instproc check_syntax { last cur media } {
+	$self instvar nextsym_
+	if ![info exists nextsym_($last)] {
+		return ""
+	}
+	foreach s $nextsym_($last) {
+		set t [split $s :]
+		if { [lindex $t 0] == $cur } {
+			return $s
+		}
+	}
+	return ""
+}
+SDPParser instproc parse { announcement } {
+	$self instvar parse_error_ ordered_syntax_
+	set media ""
+	set allmsgs ""
+	set lasttag "start"
+	set lines [split $announcement "\n"]
+	set parse_error_ ""
+	set lnum 0
+	foreach line $lines {
+		incr lnum
+		set line [string trimright $line]
+		if { $line=={} } continue
+		set sline [split $line =]
+		set tag [lindex $sline 0]
+		set value [join [lrange $sline 1 end]]
+		set ret [$self check_syntax $lasttag $tag $media]
+		if { $ret == "" && $ordered_syntax_==1 } {
+			set parse_error_ "$class: syntax error between\
+					$lasttag and $tag in line $lnum."
+			foreach m $allmsgs {
+				delete $m
+			}
+			return ""
+		}
+		set lasttag $ret
+		switch $tag {
+		v {
+			set media ""
+			set msg [new SDPMessage]
+			lappend allmsgs $msg
+			$msg set version_ $value
+		}
+		o {
+			if {![info exists msg]} {
+				set media ""
+				set msg [new SDPMessage]
+				lappend allmsgs $msg
+				$msg set version_ 0
+				set tmp [$msg set msgtext_]
+				lappend tmp "v=0"
+				$msg set msgtext_ $tmp
+			}
+			$msg set creator_ [lindex $value 0]
+			$msg set createtime_ [lindex $value 1]
+			$msg set modtime_  [lindex $value 2]
+			$msg set nettype_ [lindex $value 3]
+			$msg set addrtype_ [lindex $value 3]
+			$msg set createaddr_ [lindex $value 5]
+		}
+		s {
+			$msg set session_name_ $value
+		}
+		i {
+			if { $media != "" } {
+				$media set session_info_ $value
+			} else {
+				$msg set session_info_ $value
+			}
+		}
+		p {
+			set tmp ""
+			catch { set tmp [$msg set phonelist_] }
+			lappend tmp $value
+			$msg set phonelist_ $tmp
+		}
+		e {
+			set tmp ""
+			catch { set tmp [$msg set emaillist_] }
+			lappend tmp $value
+			$msg set emaillist_ $tmp
+		}
+		u {
+			$msg set uri_ $value
+		}
+		c {
+			if { $media != "" } {
+				$media set nettype_ [lindex $value 0]
+				$media set addrtype_ [lindex $value 1]
+				$media set caddr_ [lindex $value 2]
+			} else {
+				$msg set nettype_ [lindex $value 0]
+				$msg set addrtype_ [lindex $value 1]
+				$msg set caddr_ [lindex $value 2]
+			}
+		}
+		b {
+			set bwspec [split $value :]
+			if { $media != "" } {
+				$media set bwmod_ [lindex $bwspec 0]
+				$media set bwval_ [lindex $bwspec 1]
+			} else {
+				$msg set bwmod_ [lindex $bwspec 0]
+				$msg set bwval_ [lindex $bwspec 1]
+			}
+		}
+		t {
+			set tdes [new SDPTime]
+			$tdes set fields_(t) $value
+			$tdes set starttime_ [lindex $value 0]
+			$tdes set endtime_ [lindex $value 1]
+			set tmp [$msg set alltimedes_]
+			lappend tmp $tdes
+			$msg set alltimedes_ $tmp
+		}
+		r {
+			$tdes set fields_(r) $value
+			$tdes set repeat_interval_ [lindex $value 0]
+			$tdes set active_duration_ [lindex $value 1]
+			$tdes set offlist_ [lrange $value 2 end]
+		}
+		z {
+			set nval [llength $value]
+			if [expr 2 * ($nval / 2) != $nval] {
+				foreach m $allmsgs {
+					delete $m
+				}
+				return ""
+			}
+			$self instvar zoneinfo_
+			for { set n 0 } { $n < $nval } { incr n } {
+				set adjtime [lindex $value $n]
+				incr n
+				set offset [lindex $value $n]
+				lappend zoneinfo_ "$adjtime $offset"
+			}
+		}
+		k {
+			set tmp [split $value :]
+			if { $media != "" } {
+				$media set crypt_method_ [lindex $tmp 0]
+				$media set crypt_key_ [lindex $tmp 1]
+			} else {
+				$msg set crypt_method_ [lindex $tmp 0]
+				$msg set crypt_key_ [lindex $tmp 1]
+			}
+		}
+		a {
+			set attribute [split $value ":"]
+			set attname [lindex $attribute 0]
+			set attval [join [lrange $attribute 1 end] ":"]
+			if { $media != "" } {
+				set target $media
+			} else {
+				set target $msg
+			}
+			if [catch {$target set attributes_($attname)}] {
+				$target set attributes_($attname) {}
+			}
+			$target set attributes_($attname) \
+			    [concat [$target set attributes_($attname)] \
+				 [list $attval]]
+		}
+		m {
+			set media [new SDPMedia $msg]
+			set mt [lindex $value 0]
+			$media set mediatype_ $mt
+			$media set port_  [lindex $value 1]
+			$media set proto_ [lindex $value 2]
+			$media set fmt_ [lrange $value 3 end]
+			set tmp ""
+			catch { set tmp [$msg set media_array_($mt)] }
+			lappend tmp $media
+			$msg set media_array_($mt) $media
+			set tmp [$msg set allmedia_]
+			lappend tmp $media
+			$msg set allmedia_ $tmp
+		}
+		default {
+			set parse_error_ "$class: error unknown modifier $tag."
+			foreach m $allmsgs {
+				delete $m
+			}
+			return ""
+		}
+		}
+		set tmp [$msg set msgtext_]
+		lappend tmp $line
+		$msg set msgtext_ $tmp
+		if { $media != "" && [regexp {[icbka]} $tag] } {
+			$media set fields_($tag) $value
+		} else {
+			$msg set fields_($tag) $value
+		}
+	}
+	foreach msg $allmsgs {
+		set tmp [$msg set msgtext_]
+		set tmp [join $tmp \n]
+		append tmp \n
+		$msg set msgtext_ $tmp
+	}
+	return $allmsgs
+}
+SDPParser instproc parse_error { } {
+	return [$self set parse_error_]
+}
+SDPMessage instproc init {} {
+	$self next
+	$self instvar allmedia_ alltimedes_ msgtext_
+	set allmedia_ ""
+	set alltimedes_ ""
+	set msgtext_ ""
+}
+SDPMessage instproc destroy {} {
+	$self instvar allmedia_ alltimedes_
+	foreach m $allmedia_ {
+		delete $m
+	}
+	foreach t $alltimedes_ {
+		delete $t
+	}
+	$self next
+}
+SDPMessage instproc media { media_type } {
+	$self instvar media_array_
+	if [info exists media_array_($media_type)] {
+		return $media_array_($media_type)
+	} else {
+		return ""
+	}
+}
+SDPMessage instproc have_field { field } {
+	$self instvar fields_
+	return [info exists fields_($field)]
+}
+SDPMessage instproc field_value { field } {
+	$self instvar fields_
+	if [info exists fields_($field)] {
+		return $fields_($field)
+	} else {
+		return ""
+	}
+}
+SDPMessage instproc attributes {} {
+	$self instvar attributes_
+	if [info exists attributes_] {
+		return [array names attributes_]
+	} else {
+		return ""
+	}
+}
+SDPMessage instproc have_attr { name } {
+	$self instvar attributes_
+	return [info exists attributes_($name)]
+}
+SDPMessage instproc attr_value { name } {
+    $self instvar attributes_
+    if [info exists attributes_($name)] {
+	    return $attributes_($name)
+    } else {
+	    return ""
+    }
+}
+SDPMessage instproc obj2str {} {
+	$self instvar attributes_ alltimedes_ allmedia_
+	set o "v=[$self field_value v]"
+	foreach f { o s i u } {
+		if [$self have_field $f] {
+			set n "$f=[$self field_value $f]"
+			set o $o\n$n
+		}
+	}
+	$self instvar phonelist_ emaillist_
+	if [info exists phonelist_] {
+		foreach e $phonelist_ {
+			set n "p=$e"
+			set o $o\n$n
+		}
+	}
+	if [info exists emaillist_] {
+		foreach e $emaillist_ {
+			set n "e=$e"
+			set o $o\n$n
+		}
+	}
+	foreach f { c b } {
+		if [$self have_field $f] {
+			set n "$f=[$self field_value $f]"
+			set o $o\n$n
+		}
+	}
+	foreach t $alltimedes_ {
+		set n [$t obj2str]
+		set o $o\n$n
+	}
+	foreach f { z k } {
+		if [$self have_field $f] {
+			set n "$f=[$self field_value $f]"
+			set o $o\n$n
+		}
+	}
+	foreach a [$self attributes] {
+		if { $attributes_($a) == "" } {
+			set n "a=$a"
+		} else {
+			set n "a=$a:$attributes_($a)"
+		}
+		set o $o\n$n
+	}
+	foreach m $allmedia_ {
+		set n [$m obj2str]
+		set o $o\n$n
+	}
+	return $o
+}
+SDPMessage public unique_key {} {
+    if ![$self have_field o] {
+	$self warn "in SDPMessage::unique_key without o= field"
+	return ""
+    }
+    set l [split [$self field_value o]]
+    set l [lreplace $l 2 2]
+    set key [join $l :]
+    return $key
+}
+SDPMessage instproc htmlify_media { } {
+    set html {}
+    foreach media [$self set allmedia_] {
+	append html [$media create_dynamic_html \
+		[DynamicHTMLifier set html_(media)]]
+    }
+    return $html
+}
+SDPMessage instproc htmlify_times { {single_line 0} } {
+    set html {}
+    if $single_line { set t time1 } else { set t time }
+    foreach time [$self set alltimedes_] {
+	set repeat [string tolower [$time readable_repeat]]
+	if { [$time set starttime_] != 0 } {
+	    append html [$time create_dynamic_html \
+			    [DynamicHTMLifier set html_(${t}_$repeat)]]
+	} else {
+	    append html "Unbounded session"
+	}
+    }
+    return $html
+}
+SDPMessage instproc htmlify_url { } {
+    $self instvar uri_
+    if [info exists uri_] {
+	return "<a href=\"$uri_\">$uri_</a>"
+    } else {
+	return ""
+    }
+}
+SDPMessage instproc htmlify_list { varname } {
+    set list {}
+    foreach elt [$self get $varname] {
+	if { $list!={} } {
+	    append list ", $elt"
+	} else {
+	    append list $elt
+	}
+    }
+    return $list
+}
+SDPMessage instproc get { varname } {
+    $self instvar $varname
+    if [info exists $varname] {
+	return [set $varname]
+    } else {
+	return ""
+    }
+}
+SDPMedia instproc htmlify_mediatype { } {
+    return "[$self set mediatype_]"
+}
+SDPMedia instproc get { varname } {
+    $self instvar $varname
+    if [info exists $varname] {
+	return [set $varname]
+    } elseif { $varname == "spec_" } {
+	    set caddr [split [$self get caddr_] /]
+	    set port [$self get port_]
+	    set spec [lindex $caddr 0]/$port
+	    set ttl [lindex $caddr 1]
+	    if { $ttl != {} } { append spec /$ttl }
+	    return $spec
+    } else {
+	return ""
+    }
+}
+SDPMedia instproc init {{msg ""}} {
+	$self next
+	if {$msg == ""} { return }
+	$self instvar attributes_ fields_
+	set alist [$msg attributes]
+	foreach a $alist {
+		set attributes_($a) [$msg set attributes_($a)]
+	}
+	set vlist [$msg info vars]
+	foreach f { session_info_ nettype_ addrtype_ caddr_ bwmod_ bwval_
+		crypt_method_ crypt_key_ } {
+		if { [lsearch -exact $vlist $f] >= 0 } {
+			$self set $f [$msg set $f]
+		}
+	}
+	foreach f { i c b k a } {
+		if [$msg have_field $f] {
+			set fields_($f) [$msg field_value $f]
+		}
+	}
+}
+SDPMedia instproc have_field { field } {
+	$self instvar fields_
+	return [info exists fields_($field)]
+}
+SDPMedia instproc field_value { field } {
+	$self instvar fields_
+	if [info exists fields_($field)] {
+		return $fields_($field)
+	} else {
+		return ""
+	}
+}
+SDPMedia instproc have_attr { name } {
+	$self instvar attributes_
+	return [info exists attributes_($name)]
+}
+SDPMedia instproc attr_value { name } {
+    $self instvar attributes_
+    if [info exists attributes_($name)] {
+	    return $attributes_($name)
+    } else {
+	    return ""
+    }
+}
+SDPMedia instproc attributes {} {
+	$self instvar attributes_
+	if [info exists attributes_] {
+		return [array names attributes_]
+	} else {
+		return ""
+	}
+}
+SDPMedia instproc obj2str {} {
+	$self instvar attributes_
+	set o "m=[$self field_value m]"
+	foreach f { i c b k } {
+		if [$self have_field $f] {
+			set n "$f=[$self field_value $f]"
+			set o $o\n$n
+		}
+	}
+	foreach a [array names attributes_] {
+		if { $attributes_($a) == "" } {
+			set n "a=$a"
+		} else {
+			set n "a=$a:$attributes_($a)"
+		}
+		set o $o\n$n
+	}
+	return $o
+}
+SDPTime instproc have_field { field } {
+	$self instvar fields_
+	return [info exists fields_($field)]
+}
+SDPTime instproc field_value { field } {
+	$self instvar fields_
+	if [info exists fields_($field)] {
+		return $fields_($field)
+	} else {
+		return ""
+	}
+}
+SDPTime instproc obj2str {} {
+	set o "t=[$self field_value t]"
+	if [$self have_field r] {
+		set n "r=[$self field_value r]"
+		set o $o\n$n
+	}
+	return $o
+}
+SDPTime public get { varname } {
+    $self instvar $varname
+    if [info exists $varname] {
+	return [set $varname]
+    } else {
+	return ""
+    }
+}
+SDPTime public sec_until_current { time_type } {
+    set sdp_time [ntp_to_unix [$self get $time_type]]
+    set current [clock seconds]
+    return [expr $sdp_time - $current]
+}
+SDPTime public current_in_interval { start end } {
+    set current [unix_to_ntp [clock seconds]]
+    if { [expr $start == 0 && $end == 0] } {
+	return 1
+    } elseif { $start == 0 } {
+	return [expr $end > $current]
+    } elseif { $end == 0 } {
+	return [expr $start <= $current]
+    } else {
+	return [expr $start <= $current && $end > $current]
+    }
+}
+SDPTime public readable_time { time_type } {
+    set sec [ntp_to_unix [$self get $time_type]]
+    if { $sec == 0 } {
+	return *unbounded*
+    } else {
+	return [clock format $sec -format {%H:%M}]
+    }
+}
+SDPTime public readable_duration { } {
+    set duration [$self get active_duration_]
+    set hours [expr $duration / 3600]
+    if { $hours < 24 } {
+	return "$hours hour(s)"
+    }
+    set days [expr $hours / 24]
+    if { $days < 7 } {
+	return "$days day(s)"
+    }
+    set weeks [expr $days / 7]
+    return "$weeks week(s)"
+}
+SDPTime public readable_date { time_type {numonly 0} } {
+    set sec [ntp_to_unix [$self get $time_type]]
+    if { $sec == 0 } {
+	return *unbounded*
+    } elseif $numonly {
+	return [clock format $sec -format {%m/%d/%y}]
+    } else {
+	return [clock format $sec -format {%B %d, %Y}]
+    }
+}
+SDPTime public readable_day { time_type } {
+    set sec [ntp_to_unix [$self get $time_type]]
+    if { $sec == 0 } {
+	return *unbounded*
+    } else {
+	return [clock format $sec -format {%a}]
+    }
+}
+SDPTime public readable_day_full { time_type } {
+    set sec [ntp_to_unix [$self get $time_type]]
+    if { $sec == 0 } {
+	return *unbounded*
+    } else {
+	return [clock format $sec -format {%A}]
+    }
+}
+SDPTime public readable_zone { time_type } {
+    set sec [ntp_to_unix [$self get $time_type]]
+    return [clock format $sec -format {%Z}]
+}
+SDPTime public readable_repeat { } {
+    set interval [$self get repeat_interval_]
+    if { $interval == 86400 } {
+	return Daily
+    } elseif { $interval == 604800 } {
+	return Weekly
+    } else {
+	return None
+    }
+}
+Class MeGa
+MeGa instproc init args {
+	eval $self next $args
+	$self set sdp_ [new SDPParser]
+}
+MeGa instproc destroy {} {
+	$self instvar sdp_
+	delete $sdp_
+	$self next
+}
+MeGa proc ctrlchan { media spec } {
+	set tmp [split $spec /]
+	set addr [lindex $tmp 0]
+	if ![in_multicast $addr] {
+		return $spec
+	}
+	set port [lindex $tmp 1]
+	switch $media {
+	video {
+		incr port 2
+	}
+	audio {
+		incr port 4
+	}
+	mb {
+		incr port 6
+	}
+	sdp {
+		incr port 8
+	}
+	hm {
+		incr port 10
+	}
+	}
+	set ttl [lindex $tmp 2]
+	return $addr/$port/$ttl
+}
+Class AnnounceListenManager/AS/Client/MeGa \
+		-superclass { AnnounceListenManager/AS/Client MeGa }
+Class AnnounceListenManager/AS/Client/MeGa/Audio \
+	-superclass { AnnounceListenManager/AS/Client/MeGa RTP/Audio }
+Class AnnounceListenManager/AS/Client/MeGa/Video \
+	-superclass { AnnounceListenManager/AS/Client/MeGa RTP/Video }
+AnnounceListenManager/AS/Client/MeGa instproc init { agent spec bw toolname media sname sspec rportspec ofmt srv_loc } {
+	set spec [MeGa ctrlchan $media $spec]
+	$self next $spec $bw $srv_loc
+	$self instvar agent_ toolname_ sname_ sspec_ media_ rportspec_ ofmt_
+	set toolname_ $toolname
+	set media_ $media
+	set sname_ $sname
+	set sspec_ $sspec
+	set rportspec_ $rportspec
+	set ofmt_ $ofmt
+	set agent_ $agent
+	$self instvar srv_inst_
+	[$self get_timer] threshold 15000
+	set srv_inst_ [$self service_instance]
+}
+AnnounceListenManager/AS/Client/MeGa instproc reset_spec {sspec} {
+    $self instvar sspec_ srv_inst_ index_
+    set sspec_ $sspec
+    set rand [random]
+    set index_ $rand
+    set srv_inst_ [$self service_instance]
+}
+AnnounceListenManager/AS/Client/MeGa instproc recv_msg { atype aspec addr srv_name srv_loc srv_inst ssg_port msg } {
+	if { $atype != "srv" } {
+		return
+	}
+	$self instvar agent_ srv_inst_
+	if { $srv_inst_ != $srv_inst } {
+		return
+	}
+	$self instvar sdp_
+	set msg [$sdp_ parse $msg]
+	if { $msg == "" } {
+		return
+	}
+	if [$agent_ have_network] {
+		set addr [$agent_ session-addr]
+		set sport [$agent_ session-sport]
+		set rport [$agent_ session-rport]
+		set ttl [$agent_ session-ttl]
+		set curspec $addr/$sport:$rport/$ttl
+	} else {
+		set curspec ""
+		set ttl -1
+	}
+	set media [$msg set allmedia_]
+	$self instvar media_ rportspec_
+	foreach mrec [$msg set allmedia_] {
+		if [$mrec have_attr global] {
+			continue
+		}
+		set tmp [split [$mrec set caddr_] /]
+		set laddr [lindex $tmp 0]
+		set lttl [lindex $tmp 1]
+		set pspec [split [$mrec set port_] :]
+		set sport [lindex $pspec 0]
+		set rport [lindex $pspec 1]
+		set myrport [lindex [split $rportspec_ :] 0]
+		if { ([in_multicast $laddr] && $myrport == 0) || \
+		     ($laddr == [localaddr] && $sport == $myrport) } {
+	     		if { ![in_multicast $laddr] } {
+				set laddr [$msg set createaddr_]
+			}
+	     		set newspec $laddr/$rport:$sport/$lttl
+			if { $newspec != $curspec } {
+				set fmt [$mrec set fmt_]
+				set fmt [$self format_name $fmt]
+				if { $fmt == "" } {
+					set fmt null
+				}
+				$agent_ reset_spec \
+						$laddr/$rport:$sport/$fmt/$lttl
+				$self send_announcement
+			}
+			delete $msg
+	     		return
+		}
+	}
+	delete $msg
+}
+AnnounceListenManager/AS/Client/MeGa private format_name { fmt } {
+	return ""
+}
+AnnounceListenManager/AS/Client/MeGa/Audio private format_name { fmt } {
+	return [$self rtp_type $fmt]
+}
+AnnounceListenManager/AS/Client/MeGa/Video private format_name { fmt } {
+	return [$self rtp_type $fmt]
+}
+AnnounceListenManager/AS/Client/MeGa instproc register { atype aspec addr srv_name srv_inst msg } {
+}
+AnnounceListenManager/AS/Client/MeGa instproc unregister { atype aspec addr srv_name srv_inst msg } {
+}
+AnnounceListenManager/AS/Client/MeGa public agent_data {} {
+	$self instvar id1_ id2_ agent_ media_ agent_ sname_ sspec_ \
+		toolname_ rportspec_ ofmt_
+	set o "v=0"
+	set n "o=client [pid] 0 IN IP4 [localaddr]"
+	set o $o\n$n
+	set n "s=$sname_"
+	set o $o\n$n
+	set n "c=IN IP4 $sspec_"
+	set o $o\n$n
+	if { $media_ == "video" } {
+		set n "b=AS:[$agent_ set sessionbw_]"
+		puts "!!SESSIONBW $n"
+		set o $o\n$n
+		set n "t=0 0"
+		set o $o\n$n
+		if { [$self get_option localScubaScope] != "" } {
+			set n "a=localscuba"
+			set o $o\n$n
+		}
+	} else  {
+		set n "t=0 0"
+		set o $o\n$n
+	}
+	set n "a=tool:$toolname_"
+	set o $o\n$n
+	set fmt [$self format_num $ofmt_]
+	set rportspec [split $rportspec_ :]
+	set rport [lindex $rportspec 0]
+	set n "m=$media_ $rport RTP/AVP $fmt"
+	set o $o\n$n
+	if [$agent_ have_network] {
+		set addr [$agent_ session-addr]
+		set sport [$agent_ session-sport]
+		set rport [$agent_ session-rport]
+		set ttl [$agent_ session-ttl]
+		set n "c=IN IP4 $addr/$sport:$rport/$ttl"
+	} else {
+		set n "c=IN IP4 none"
+	}
+	set o $o\n$n
+	return $o
+}
+AnnounceListenManager/AS/Client/MeGa private format_num { fmt } {
+	return -1
+}
+AnnounceListenManager/AS/Client/MeGa/Video private format_num { fmt } {
+	return [$self rtp_fmt_number $fmt]
+}
+AnnounceListenManager/AS/Client/MeGa/Audio private format_num { fmt } {
+	return [$self rtp_fmt_number $fmt]
+}
+AnnounceListenManager/AS/Client/MeGa instproc service_name {} {
+	return MeGa
+}
+AnnounceListenManager/AS/Client/MeGa instproc service_instance {} {
+	$self instvar sname_ rportspec_ media_ index_
+	set o $sname_:$media_
+	set rportspec [split $rportspec_ :]
+	set rport [lindex $rportspec 0]
+	if { $rport != 0 } {
+		set o $o:[localaddr]/$rport
+	    if {[info exists index_]} {
+		set o $o:$index_
+	    }
+	}
+	return $o
+}
+AnnounceListenManager/AS/Client/MeGa instproc agent_instance {} {
+    $self instvar index_
+    if {[info exists index_]} {
+	return "[pid]@[lookup_host_name [localaddr]]:$index_"
+    } else {
+	return "[pid]@[lookup_host_name [localaddr]]"
+    }
+}
+AnnounceListenManager/AS/Client/MeGa instproc ssg_port {} {
+	$self instvar rportspec_
+	set rportspec [split $rportspec_ :]
+	set rport [lindex $rportspec 0]
+	if { $rport != 0 } {
+		return [lindex $rportspec 1]
+	} else {
+		return "-"
+	}
+}
+Module/VideoDecoder/PVH set maxChannel_ 0
+Class VideoAgent -superclass { RTPAgent RTP/Video } -configuration {
+	megaVideoFormat h261
+	megaRecvVideoPort 0
+	megaVideoCtrl 224.4.5.24/50000/31
+	megaVideoCtrlBW 20000
+	videoServiceLocation urn:vgw
+}
+VideoAgent public init  { app spec {callback {}}} {
+	$self set myhandler_ $app
+	if { $spec != "" } {
+		set ab [new AddressBlock $spec]
+		set fmt [$ab fmt]
+		if { $fmt != {} } { $self add_option videoFormat $fmt }
+	} else {
+		set ab ""
+	}
+	$self next $ab $callback
+	if { $ab != "" } {
+		delete $ab
+	}
+	$self site-drop-time [$self get_option siteDropTime]
+	$self instvar decoders_
+	set decoders_ ""
+	set localbw [$app get_option videoSessionBW]
+	if { $localbw == "" } {
+		set localbw [$app get_option maxVideoSessionBW]
+	}
+	$self sessionbw $localbw
+	$self start_mega
+}
+VideoAgent public destroy { } {
+	$self instvar al_
+	if [info exists al_] { delete $al_ }
+	$self next
+}
+VideoAgent public start_mega { } {
+	$self instvar al_ myhandler_
+	if [info exists al_] { delete $al_ }
+	if { [$myhandler_ get_option megaVideoSession] != "" } {
+		set sname [$myhandler_ get_option megaVideoSession]
+		set sspec [$self get_option videoSessionSpec]
+		set rportspec [$self get_option megaRecvVideoPort]
+		set ofmt [$self get_option megaVideoFormat]
+		set localbw [$myhandler_ get_option videoSessionBW]
+		if { $localbw == "" } {
+			set localbw [$myhandler_ get_option maxVideoSessionBW]
+		}
+		set bw [expr 0.02*$localbw]
+		set megaspec [$self get_option megaVideoCtrl]
+		set loc [$self get_option videoServiceLocation]
+		set ab [new AddressBlock $sspec]
+		set sspec [$ab addr]/[$ab sport]:[$ab rport]/[$ab ttl]
+		delete $ab
+		set al_ [new AnnounceListenManager/AS/Client/MeGa/Video \
+				$self $megaspec $bw [Application name] video \
+				$sname $sspec $rportspec $ofmt $loc]
+	        $al_ start
+	}
+}
+VideoAgent public video_handler {} { return [$self set myhandler_] }
+VideoAgent public reset_mega {} {
+	$self instvar al_
+	if ![info exists al_] {
+		$self start_mega
+	} else {
+		$al_ reset_spec [$self get_option videoSessionSpec]
+	}
+}
+VideoAgent public create_session {} {
+	return [new Session/RTP/Video]
+}
+VideoAgent public activate src {
+	$self instvar decoders_
+	set d [$self create_decoder $src]
+	lappend decoders_ $d
+	$src data-handler $d
+	$self next $src
+}
+VideoAgent public deactivate src {
+	$self instvar decoders_
+	set d [$src data-handler]
+	set k [lsearch -exact $decoders_ $d]
+	set decoders_ [lreplace $decoders_ $k $k]
+	$self next $src
+	delete $d
+}
+VideoAgent public reactivate src {
+	$self instvar decoders_
+	set d [$src data-handler]
+	if {$d!=""} {
+		delete $d
+	}
+	set k [lsearch -exact $decoders_ $d]
+	set decoders_ [lreplace $decoders_ $k $k]
+	set decoder [$self create_decoder $src]
+	lappend decoders_ $decoder
+	$src data-handler $decoder
+	return $decoder
+}
+VideoAgent public sessionbw b {
+	$self set sessionbw_ $b
+	$self notify_observers sessionbw $b
+}
+VideoAgent public local_bandwidth b {
+	[$self set session_] data-bandwidth $b
+}
+Module/VideoDecoder public parameters_changed {} {
+	$self instvar agent_ src_
+	$agent_ notify_observers decoder_changed $src_
+}
+VideoAgent public set_maxchannel n {
+	$self instvar decoders_ channels_
+	if [info exists decoders_] {
+		foreach d $decoders_ {
+			$d set maxChannel_ $n
+		}
+	}
+	set channels_ $n
+}
+VideoAgent public create_decoder src {
+	set c [$self classmap [$src format_name]]
+	set decoder [new Module/VideoDecoder/$c]
+	if { $decoder == "" } {
+		set decoder [new Module/VideoDecoder/Null]
+	}
+	$decoder set agent_ $self
+	$decoder set src_ $src
+	$self instvar channels_
+	$decoder set maxChannel_ $channels_
+	return $decoder
+}
+Module/VideoEncoder/Pixel/PVH set pt_ 0
+Module/VideoEncoder set nb_ 0
+Module/Framer/JPEG set nb_ 0
+Object Device
+Device proc register_class c {
+	$c proc nickname {} {
+		return [$self set nickname_]
+	}
+	$c proc attributes {} {
+		return [$self set attributes_]
+	}
+	foreach method "get_attribute supports" {
+		$c proc $method args "eval Device $method $c \$args"
+	}
+}
+Device proc get_attribute { cl attr } {
+	$cl instvar attributes_
+	set k [lsearch -exact $attributes_ $attr]
+	if { $k >= 0 } {
+		incr k
+		return [lindex $attributes_ $k]
+	}
+	return ""
+}
+Device proc supports { cl key item } {
+	set itemList [$self get_attribute $cl $key]
+	if { $item == "*" } {
+		if { $itemList == "" } {
+			return 0
+		} else {
+			return 1
+		}
+	} else {
+		return [inList $item $itemList]
+	}
+}
+if [TclObject is-class VideoCapture] {
+	foreach c [VideoCapture info subclass] {
+		Device register_class $c
+	}
+}
+proc inList { item L } {
+	return [expr [lsearch -exact $L $item] >= 0]
+}
+Class VideoTap
+VideoTap public init {} {
+	$self next
+	$self instvar device_ running_ fps_ bps_ decimate_
+	set device_ ""
+	set running_ 0
+	set fps_ 8
+	set bps_ 128000
+	set decimate_ 2
+}
+VideoTap public target { target encoder } {
+	$self instvar grabber_
+	$grabber_ encoder $encoder
+	$grabber_ target $target
+}
+VideoTap public running {} {
+	return [$self set running_]
+}
+VideoTap public input_devices {} {
+	if ![TclObject is-class VideoCapture] {
+		return ""
+	}
+	return [VideoCapture info subclass]
+}
+VideoTap public release {} {
+	$self instvar grabber_
+	if [info exists grabber_] {
+		$self close
+	}
+	$self instvar norm_
+	if [info exists norm_] {
+		unset norm_
+	}
+}
+VideoTap public close {} {
+	$self instvar grabber_ capwin_
+	$self stop
+	if [info exists grabber_] {
+		delete $grabber_
+		unset grabber_
+	}
+	if [info exists capwin_] {
+		delete $capwin_
+		destroy [winfo toplevel capwin_]
+		unset capwin_
+	}
+}
+VideoTap public stop {} {
+	$self instvar running_ grabber_ capwin_
+	if $running_ {
+		$grabber_ send 0
+		set running_ 0
+		if [info exists capwin_] {
+			wm withdraw [winfo toplevel $capwin_]
+		}
+	}
+}
+VideoTap public start {} {
+	$self instvar running_ grabber_ capwin_
+	if !$running_ {
+		if ![info exists grabber_] {
+			return "VideoTap::start: device is not openned"
+		}
+		if [info exists capwin_] {
+			wm deiconify [winfo toplevel $capwin_]
+			update idletasks
+		}
+		$grabber_ send 1
+		set running_ 1
+	}
+	return ""
+}
+VideoTap public fillrate v {
+	$self instvar grabber_
+	if [info exists grabber_] {
+		$grabber_ fillrate $v
+	}
+}
+VideoTap public open { device videoType } {
+	$self instvar grabber_ device_ capwin_ fps_ bps_ decimate_ port_
+	if [info exists grabber_] {
+		$self close
+	}
+	set device_ $device
+	set grabber_ [new $device_ $videoType]
+	if { $grabber_ == "" && $videoType == "411" } {
+		set grabber_ [new $device_ cif]
+	}
+	if { $grabber_ == "" } {
+		$self fatal "couldn't set up [$device nickname] grabber for $videoType"
+	}
+	set error [$grabber_ status]
+	if { $error < 0 } {
+		$self close
+		if { $error == -2 } {
+			return "Can't use jvideo with $format_ format"
+		}
+		return "can't open [$device_ nickname] capture device"
+	}
+#	if {[$grabber_ need-capwin] && ![info exists capwin_] } {
+#		toplevel .capture -class Vic
+#		wm title .capture "Video Capture Window"
+#		$grabber_ create-capwin .capture.video
+#		set capwin_ .capture.video
+#		pack .capture.video
+#		bind .capture <Visibility> "raise .capture"
+#	}
+	$grabber_ fps $fps_
+	$grabber_ bps $bps_
+	$grabber_ decimate $decimate_
+	if [info exists port_] {
+		$grabber_ port $port_
+	}
+	$self instvar norm_
+	if [info exists norm_] {
+		$grabber_ norm $norm_
+	}
+	return ""
+}
+VideoTap instproc grabber args {
+	$self instvar grabber_
+	if [info exists grabber_] {
+		eval $grabber_ $args
+	}
+}
+VideoTap instproc set_bps v {
+	$self instvar grabber_ bps_
+	set bps_ $v
+	if [info exists grabber_] {
+		$grabber_ bps $v
+	}
+}
+VideoTap instproc set_fps v {
+	$self instvar grabber_ fps_
+	set fps_ $v
+	if [info exists grabber_] {
+		$grabber_ fps $v
+	}
+}
+VideoTap instproc set_decimate v {
+	$self instvar grabber_ decimate_
+	set decimate_ $v
+	if [info exists grabber_] {
+		$grabber_ decimate $v
+	}
+}
+VideoTap instproc set_port p {
+	$self instvar grabber_ port_
+	set port_ $p
+	if [info exists grabber_] {
+		$grabber_ port $p
+	}
+}
+VideoTap instproc set_norm n {
+	$self instvar grabber_ norm_
+	set norm_ $n
+	if [info exists grabber_] {
+		$grabber_ norm $n
+	}
+}
+Class VideoPipeline -superclass RTP/Video -configuration {
+	mtu 1024
+}
+VideoPipeline public init session {
+	$self next
+	$self instvar format_ tap_ session_ quality_ initialized_
+	set tap_ [new VideoTap]
+	set session_ $session
+	set format_ ""
+	set quality_ 10
+	set initialized_ 0
+}
+VideoPipeline public destroy {} {
+	$self instvar tap_ bufferPool_
+	$self release_device
+	if [info exists bufferPool_] {
+		$bufferPool_ destroy
+	}
+	$tap_ destroy
+	$self next
+}
+VideoPipeline public set_decimate { v } {
+	return [[$self set tap_] set_decimate $v]
+}
+VideoPipeline public running {} {
+	return [[$self set tap_] running]
+}
+VideoPipeline public input_devices {} {
+	return [[$self set tap_] input_devices]
+}
+VideoPipeline public set_bps {{args {}}} {
+	$self instvar tap_
+	if {[llength $args] == 0} {
+		return [$tap_ set bps_]
+	}
+	return [eval $tap_ set_bps $args]
+}
+VideoPipeline public set_fps args {
+	return [eval [$self set tap_] set_fps $args]
+}
+VideoPipeline public start args {
+	$self instvar initialized_ device_ format_
+	if {!$initialized_} {
+		if { 0 } {
+			set err [$self hwopen $device_ $format_]
+		} else {
+			set err [$self open $device_ $format_]
+		}
+		if {$err == ""} {
+			set initialized_ 1
+		} else {
+			return $err
+		}
+	}
+	return [eval [$self set tap_] start $args]
+}
+VideoPipeline public stop args {
+	return [eval [$self set tap_] stop $args]
+}
+VideoPipeline public set_port args {
+	return [eval [$self set tap_] set_port $args]
+}
+VideoPipeline public set_norm args {
+	return [eval [$self set tap_] set_norm $args]
+}
+VideoPipeline public fillrate args {
+	return [eval [$self set tap_] fillrate $args]
+}
+VideoPipeline public hardware args {
+	return [eval [$self set tap_] grabber $args]
+}
+VideoPipeline public available_formats device {
+	set sizes [$device get_attribute size]
+	set formats [$device get_attribute format]
+	set fmtList ""
+	if [inList 422 $formats] {
+		set fmtList "$fmtList nv nvdct cellb jpeg"
+	}
+	if [inList 411 $formats] {
+		set fmtList "$fmtList pvh"
+	}
+	if [inList cif $sizes] {
+		set fmtList "$fmtList h261 h263+ h263"
+	}
+	if [inList jpeg $formats] {
+		set fmtList "$fmtList jpeg"
+		if [$self yesno [$self get_option useJPEGforH261]] {
+			set fmtList "$fmtList h261"
+		}
+	}
+	return $fmtList
+}
+VideoPipeline public release_device {} {
+	$self instvar tap_ initialized_
+	if $initialized_ {
+		$self close
+	}
+}
+VideoPipeline public close {} {
+	$self instvar encoder_ tap_ initialized_
+	$tap_ release
+	set initialized_ 0
+	if [info exists encoder_] {
+		delete $encoder_
+		unset encoder_
+	}
+}
+VideoPipeline public select { device format } {
+	$self instvar tap_ device_ format_ initialized_
+	set running [$tap_ running]
+	set err ""
+	if $initialized_ {
+		if {($device_!=$device)||($format_!=$format)} {
+			$self close
+			set err [$self open $device $format]
+		}
+	}
+	set device_ $device
+	set format_ $format
+	if $running {
+		if {$err != ""} {return $err}
+		$self start
+	}
+}
+VideoPipeline private create_encoder fmt {
+	set pt [$self rtp_fmt_number $fmt]
+	if { $fmt == "nvdct" } {
+		set encoder [new Module/VideoEncoder/Pixel/NV]
+		$encoder use-dct 1
+	} else {
+		set fmt [$self classmap $fmt]
+		set encoder [new Module/VideoEncoder/Pixel/$fmt]
+	}
+	if { $encoder == "" } {
+		$self fatal "cannot allocate $fmt encoder"
+	}
+	if {$pt >= 0} {
+		$encoder set pt_ $pt
+	}
+	return $encoder
+}
+VideoPipeline public open { device format } {
+	set useJPEGforH261 [$self yesno [$self get_option useJPEGforH261]]
+	$self instvar tap_ encoder_ format_ bufferPool_ session_ quality_
+	$tap_ release
+	set format_ $format
+	set DF [$device get_attribute format]
+	set DS [$device get_attribute size]
+	if [inList $format_ $DF] {
+		set encoder_ [$self create_encoder $format_]
+		set grabtarget $encoder_
+		set grabq ""
+	} elseif { $format_ == "h261" && [inList jpeg $DF] && \
+			$useJPEGforH261 } {
+		set transcoder [new transcoder/jpeg/dct]
+		set encoder_ [new Module/VideoEncoder/DCT/H261]
+		$transcoder target $encoder_
+		set grabtarget $transcoder
+		set grabq "70"
+	} elseif { [inList $format_ [$self available_formats $device] ] } {
+		set encoder_ [$self create_encoder $format_]
+		set grabtarget $encoder_
+		set grabq ""
+	}
+	$encoder_ mtu [$self get_option mtu]
+	if ![info exists bufferPool_] {
+		set bufferPool_ [new BufferPool/RTP]
+	}
+	$bufferPool_ srcid [$session_ get_local_srcid]
+	$encoder_ buffer-pool $bufferPool_
+	$encoder_ target [$session_ get_transmitter]
+	set ff [$grabtarget frame-format]
+	set err [$tap_ open $device $ff]
+	if { $err != "" } {
+		return $err
+	}
+	$tap_ target $grabtarget $encoder_
+	$self set_quality $quality_
+	return ""
+}
+VideoPipeline public set_quality q {
+    $self instvar format_ quality_
+    set quality_ $q
+    if { [catch "$self setq_$format_ $q" val] == 0 } {
+        return $val
+    }
+    return -1
+}
+VideoPipeline public switch_session session {
+	$self instvar tap_ encoder_ bufferPool_ session_ running_
+	if [$tap_ set running_] {
+		set restart 1
+		$self stop
+	} else {
+		set restart 0
+	}
+	set session_ $session
+	if ![info exists bufferPool_] {
+		set bufferPool_ [new BufferPool/RTP]
+	}
+	$bufferPool_ srcid [$session_ get_local_srcid]
+	$encoder_ target [$session_ get_transmitter]
+	if {$restart == 1} {
+		$self start
+	}
+}
+VideoPipeline private setq_jpeg value {
+	incr value
+	if { $value > 95 } {
+		set value 95
+	} elseif { $value < 5 } {
+		set value 5
+	}
+	$self instvar encoder_
+	if [info exists encoder_] {
+		$encoder_ q $value
+	}
+	return $value
+}
+VideoPipeline private setq_h261 value {
+	set value [expr int((1 - $value / 100.) * 29) + 1]
+	$self instvar encoder_
+	if [info exists encoder_] {
+		$encoder_ q $value
+	}
+	return $value
+}
+VideoPipeline private setq_h263+ value {
+	set value [expr int((1 - $value / 100.) * 29) + 1]
+	$self instvar encoder_
+	if [info exists encoder_] {
+		$encoder_ q $value
+	}
+	return $value
+}
+VideoPipeline private setq_h263 value {
+	set value [expr int((1 - $value / 100.) * 29) + 1]
+	$self instvar encoder_
+	if [info exists encoder_] {
+		$encoder_ q $value
+	}
+	return $value
+}
+VideoPipeline private setq_nv value {
+	set value [expr (100 - $value) / 10]
+	$self instvar encoder_
+	if [info exists encoder_] {
+		$encoder_ q $value
+	}
+	return $value
+}
+set pvh_shmap { 0 1 2 1 }
+set pvh_shs {
+	{ lum-dct 0 5-1--11- }
+	{ lum-dct 1 ---5111- }
+	{ lum-dct 2 --51-11- }
+	{ lum-sbc 0 ----4--2 }
+	{ lum-sbc 1 ----4--2 }
+	{ lum-sbc 2 ----4--2 }
+	{ chm     0 -5---1-- }
+	{ chm     1 ---5-1-- }
+	{ chm     2 --5--1-- }
+}
+VideoPipeline private setq_pvh value {
+	$self instvar encoder_
+	if ![info exists encoder_] {
+		return -1
+	}
+	global pvh_shmap pvh_shs
+	set n [llength $pvh_shmap]
+	set i 0
+	while { $i < $n } {
+		$encoder_ shmap $i [lindex $pvh_shmap $i]
+		incr i
+	}
+	set i 0
+	foreach tuple $pvh_shs {
+		set compID [lindex $tuple 0]
+		set shID [lindex $tuple 1]
+		set pattern [lindex $tuple 2]
+		$encoder_ comp $compID $shID $pattern
+	}
+	return -1
+}
+VideoPipeline private send_full_intra_frame { } {
+	$self instvar tap_
+	$tap_ send_full_intra_frame
+}
+VideoTap private send_full_intra_frame { } {
+	$self instvar grabber_
+	$grabber_ send_full_intra_frame
+}
+Class VideoHandler
+VideoHandler public init { spec {callback {}} } {
+	$self instvar agent_ vpipe_ localbw_
+	set agent_ [new VideoAgent $self $spec $callback]
+	set vpipe_ [new VideoPipeline $agent_]
+	set localbw_ [$self get_option videoSessionBW]
+	if { $localbw_ == "" } {
+		set localbw_ [$self get_option maxVideoSessionBW]
+	}
+	$agent_ sessionbw $localbw_
+	if { [$self get_option useScuba] != "" } {
+		$self init_scuba $spec
+	}
+}
+VideoHandler public agent {} {
+	return [$self set agent_]
+}
+VideoHandler public vpipe {} {
+	return [$self set vpipe_]
+}
+VideoHandler private init_scuba { spec } {
+	$self instvar scuba_sess_ localbw_
+	$self instvar vpipe_ agent_
+	set rtpsess [$agent_ set session_]
+	$rtpsess rtcp-thumbnail 1
+	if { $spec != "" } {
+		set ab [new AddressBlock $spec]
+	} else {
+		set ab ""
+	}
+	set scuba_sess_ [new Session/Scuba/Vic $rtpsess $agent_ $ab $vpipe_]
+	if { $ab != "" } {
+		delete $ab
+	}
+	$scuba_sess_ sessionbw $localbw_
+	$agent_ attach $scuba_sess_
+}
+VideoHandler instproc reset { ab } {
+	$self instvar scuba_sess_
+	if { [$self get_option useScuba] != "" } {
+		$scuba_sess_ reset $ab
+	}
+}
+Module/AudioEncoder set nb_ 0
+if [TclObject is-class Audio] {
+	Audio set duplex_ 1
+}
+AudioController set echo_thresh_ 0
+AudioController set echo_suppress_time_ 0
+AudioController set idle_drop_time_ 0
+set nids 0
+proc uniqueID { } {
+	global nids
+	incr nids
+	return $nids
+}
+proc isCIF fmt {
+	if { $fmt == "h261" } {
+		return 1
+	}
+	return 0
+}
+proc cname_redundant { name cname } {
+	set ni [string first @ $name]
+	if { $ni < 0 } {
+		return 0
+	}
+	set ci [string first @ $cname]
+	if { $ci < 0 } {
+		return 0
+	}
+	if { [string compare \
+		[string range $name 0 $ni] \
+		[string range $cname 0 $ci]] == 0 } {
+		return 1
+	}
+	return 0
+}
+set current_icon_mark "FIXME"
+proc mk.key w {
+	puts stderr "Use the new KeyEditor class"
+	exit 1
+}
+UDPChannel public init { {spec ""} {mtu 1024} } {
+	$self next $mtu
+	$self instvar net_
+	set net_ [new Network]
+	$net_ loopback 1
+	if {$spec == ""} {
+		$net_ open 0
+	} elseif [regexp {^[0-9]*$} $spec] {
+		$net_ open $spec
+	} else {
+		set spec [split $spec /]
+		set len [llength $spec]
+		if { $len<2 || $len>3 } {
+			$self fatal "invalid spec \"$spec\"."
+		}
+		set addr [lindex $spec 0]
+		set ports [split [lindex $spec 1] :]
+		set ttl 15
+		if {$len == 3} {
+			set ttl [lindex $spec 2]
+		}
+		if {[llength $ports] == 1} {
+			set port [lindex $ports 0]
+			$net_ open $addr $port $ttl
+		} else {
+			set sport [lindex $ports 0]
+			set rport [lindex $ports 1]
+			$net_ open $addr $sport $rport $ttl
+		}
+	}
+	$self network $net_
+}
+UDPChannel public destroy {} {
+	$self instvar net_
+	delete $net_
+	$self next
+}
+UDPChannel public ttl {t} {
+	$self instvar net_
+	$net_ ttl $t
+}
+Class UDPChannel/CamCl -superclass UDPChannel
+UDPChannel/CamCl public init {addrSpec parent {mtu 1500}} {
+    eval [list $self] next $addrSpec $mtu
+    $self instvar parent_
+    set parent_ $parent
+    $self send "update_state"
+}
+UDPChannel/CamCl private recv {addr port data size} {
+    $self instvar parent_
+    $parent_ receive_update $data
+}
+Class SimpleVideoApp -superclass Application
+
+SimpleVideoApp instproc init {HOST TTL KEY} {
+        $self next sv;
+        $self add_default defaultTTL $TTL;
+        $self instvar agent_ vpipe_;
+        set agent_ [new VideoAgent $self $HOST];
+        set vpipe_ [new VideoPipeline $agent_];
+	if {$KEY != "none"} {
+		$agent_ install-key $KEY;
+	}
+}
+
+SimpleVideoApp instproc run {DEVICE CODEC} {
+        $self instvar agent_ vpipe_;
+    set device $DEVICE
+	$vpipe_ select $device $CODEC;
+	$vpipe_ start;
+}
+
+SimpleVideoApp instproc enhance {CHANNEL FORMAT BPS FPS QUALITY BW_LOCAL BW_SESSION PORT NAME CNAME} {
+	$self instvar agent_ vpipe_;
+
+	$vpipe_ set_port $CHANNEL;
+	#$vpipe_ set_norm $FORMAT;
+	$vpipe_ set_quality $QUALITY;
+	$vpipe_ set_fps $FPS;
+	$vpipe_ set_bps $BPS;
+	$agent_ sessionbw $BW_SESSION;
+	$agent_ local_bandwidth $BW_LOCAL;
+    $vpipe_ set_port $PORT;
+    if {$NAME != "none"} {
+        $agent_ set_rtp_name $NAME
+    }
+    if {$CNAME != "none"} {
+        $agent_ set_rtp_cname $CNAME
+    }
+}
+
+if ($argc==0) {
+	error "Usage smash headless-videostream.mash <host/port> <options>";
+	exit;
+}
+
+# set hostPort 224.2.3.4/9288
+set hostPort [lindex $argv end]
+
+# DEFAULT PARAMETERS
+# These can be changed by passing arguments
+set deviceNum 0;
+set channelNum S-Video;
+set ttl 16;
+set codec h261;
+set format ntsc;
+set fps 20;
+set bw_session 100;
+set key none;
+# set rtpName none;
+set bps 3000000;
+set quality 10;
+set bw_local 1000;
+set device_list [VideoCapture info subclass];
+set device [lindex $device_list $deviceNum];
+Device register_class $device
+set port_list [$device get_attribute port]
+set port 0;
+set name none;
+set cname none;
+
+set curarg 0;
+while {$curarg<$argc} {
+	set param [lindex $argv $curarg];
+	set conf [lindex $argv [expr $curarg + 1]];
+	if { $param == "-D" } {
+		set device $conf;
+	}
+	if { $param == "-p" } {
+		set port $conf;
+	}
+	if { $param == "-I" } {
+		set channelNum $conf;
+	}
+	if { $param == "-t" } {
+		set ttl $conf;
+	}
+	if { $param == "-F" } {
+		set fps $conf;
+	}
+	if { $param == "-sbw" } {
+		set bw_session $conf;
+	}
+	if { $param == "-B" } {
+		set bps $conf;
+	}
+	if { $param == "-q" } {
+		set quality $conf;
+	}
+	if { $param == "-f" } {
+		set codec $conf;
+	}
+	if { $param == "-omft" } { 
+		set format $conf;
+	}
+	if { $param == "-K" } {
+		set key $conf;
+	}
+	if { $param == "-name" } {
+		set name $conf;
+	}
+	if { $param == "-cname" } {
+		set cname $conf;
+	}
+    
+	set curarg [expr $curarg + 2];
+}  
+
+set app [new SimpleVideoApp $hostPort $ttl $key]
+set vp [$app set vpipe_]
+
+if { $port == 0 } {
+    set port_list [$device get_attribute port]
+    set port [lindex $port_list 0]
+}
+
+$app run $device $codec
+$app enhance $channelNum $format $bps $fps $quality $bw_local $bw_session $port $name $cname
+vwait forever
