@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.184 2003-08-08 21:37:39 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.185 2003-08-11 04:14:39 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -522,6 +522,17 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
         wxCallAfter(self.frame.statusbar.SetStatusText, "File '%s' just got removed from the venue" %data.name)
         log.debug("EVENT - Remove data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.RemoveData, data)
+
+    def ModifyStreamEvent(self, event):
+        """
+        This method is called when a venue stream is modified.
+        """
+        transportList = self.venueClient.GetTransportList()
+        if 'unicast' in transportList:
+            self.frame.SetUnicastEnabled(1)
+        else:
+            self.frame.SetUnicastEnabled(0)
+
 
     def AddApplicationEvent(self, event):
         """
@@ -1354,18 +1365,6 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
                 else:
                     StartDetachedProcess(commands['open'])
 
-    def SetTransport(self, transport):
-        self.venueClient.SetTransport(transport)
-
-
-    def SetVideoEnabled(self, enableFlag):
-        if self.venueClient.nodeServiceUri:
-            Client.Handle(self.venueClient.nodeServiceUri).GetProxy().SetServiceEnabledByMediaType("video",enableFlag)
-
-    def SetAudioEnabled(self, enableFlag):
-        if self.venueClient.nodeServiceUri:
-            Client.Handle(self.venueClient.nodeServiceUri).GetProxy().SetServiceEnabledByMediaType("audio",enableFlag)
-
     def RemoveApp(self,app):
         """
         Delete the specified application from the venue
@@ -1379,6 +1378,28 @@ class VenueClientUI(wxApp, VenueClientEventSubscriber):
 
     def RemoveStreamEvent(self):
         pass
+
+    def SetTransport(self, transport):
+        self.venueClient.SetTransport(transport)
+
+    def GetTransport(self):
+        return self.venueClient.GetTransport()
+
+    def SetProvider(self, provider):
+        self.venueClient.SetProvider(provider)
+
+    def UpdateNodeService(self):
+        self.venueClient.UpdateNodeService()
+
+    def SetVideoEnabled(self, enableFlag):
+        if self.venueClient.nodeServiceUri:
+            Client.Handle(self.venueClient.nodeServiceUri).GetProxy().SetServiceEnabledByMediaType("video",enableFlag)
+
+    def SetAudioEnabled(self, enableFlag):
+        if self.venueClient.nodeServiceUri:
+            Client.Handle(self.venueClient.nodeServiceUri).GetProxy().SetServiceEnabledByMediaType("audio",enableFlag)
+
+
 
 if __name__ == "__main__":
 
