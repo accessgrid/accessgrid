@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.63 2004-04-29 14:21:10 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.64 2004-04-29 16:46:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.63 2004-04-29 14:21:10 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.64 2004-04-29 16:46:20 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -202,7 +202,7 @@ class AGNodeService:
         
         # Set the identity for the service
         if self.profile:
-            AGServiceManagerIW( serviceDescription.uri ).SetIdentity(
+            AGServiceIW( serviceDescription.uri ).SetIdentity(
                 self.profile )
 
         # Configure the service with the appropriate stream description
@@ -228,14 +228,7 @@ class AGNodeService:
                 serviceSubset = AGServiceManagerIW(
                     serviceManager.uri ).GetServices()
                 for service in serviceSubset:
-                    service = AGServiceDescription( service.name,
-                                                    service.description,
-                                                    service.uri,
-                                                    service.capabilities,
-                                                    service.resource,
-                                                    service.executable,
-                                                    service.serviceManagerUri,
-                                                    service.servicePackageUri )
+                    service = CreateAGServiceDescription( service )
                     services.append( service )
         except:
             log.exception("Exception in AGNodeService.GetServices.")
@@ -1027,7 +1020,7 @@ class AGNodeServiceIW(SOAPIWrapper):
         self.proxy.SetServiceEnabled(serviceUri, enabled)
 
     def SetServiceEnabledByMediaType(self, mediaType, enableFlag):
-        self.proxy.SetServiceEnabledByMediaType()
+        self.proxy.SetServiceEnabledByMediaType(mediaType,enableFlag)
 
     def StopServices(self):
         self.proxy.StopServices()
