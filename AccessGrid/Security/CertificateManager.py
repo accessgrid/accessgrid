@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.1 2004-03-02 22:42:48 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.2 2004-03-04 21:24:33 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.1 2004-03-02 22:42:48 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.2 2004-03-04 21:24:33 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -46,13 +46,12 @@ import getpass
 import sys
 import time
 
-import pyGlobus.sslutilsc
-
 from OpenSSL_AG import crypto
 
 from AccessGrid import Platform
 from AccessGrid import Utilities
 from AccessGrid.Security import CertificateRepository, ProxyGen, CRSClient
+from AccessGrid.Security.Utilities import get_certificate_locations
 
 log = logging.getLogger("AG.CertificateManager")
 
@@ -304,7 +303,7 @@ class CertificateManager(object):
 
         try:
             
-            certLocations = pyGlobus.sslutilsc.get_certificate_locations()
+            certLocations = get_certificate_locations()
 
             if certLocations is None:
                 self.GetUserInterface().ReportError("We were not able to determine some Globus configuration\n" +
@@ -815,10 +814,10 @@ class CertificateManager(object):
         # 
         
         try:
-            certLocations = pyGlobus.sslutilsc.get_certificate_locations()
+            certLocations = get_certificate_locations()
 
             if certLocations is None:
-                log.error("pyGlobus.sslutilsc.get_certificate_locations() returns None")
+                log.error("get_certificate_locations() returns None")
                 if not self.issuedGlobusWarning:
                     self.GetUserInterface().ReportError("We were not able to determine some Globus configuration\n" +
                                                         "information required for creating a proxy. We will work\n" +
@@ -832,7 +831,7 @@ class CertificateManager(object):
             # Report an error to the user and work around it.
             # 
 
-            log.exception("pyGlobus.sslutilsc.get_certificate_locations() not found")
+            log.exception("get_certificate_locations() not found")
 
             if not self.issuedGlobusWarning:
                 if Platform.isWindows():
