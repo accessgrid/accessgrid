@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.8 2003-08-15 16:39:33 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.9 2003-08-19 15:17:18 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -65,7 +65,7 @@ class RepoInvalidCertificate(Exception):
     """
     pass
 
-class RepoBadPassphrase:
+class RepoBadPassphrase(Exception):
     pass
 
 class CertificateRepository:
@@ -92,7 +92,7 @@ class CertificateRepository:
         "emailaddress"
         ]
     
-    def __init__(self, dir, create = 0):
+    def __init__(self, repoDir, create = 0):
         """
         Create the repository.
 
@@ -100,7 +100,7 @@ class CertificateRepository:
 
         """
 
-        self.dir = dir
+        self.dir = repoDir
         self.dbPath = os.path.join(self.dir, "metadata.db")
 
         if create:
@@ -116,6 +116,7 @@ class CertificateRepository:
             #
 
             self.db = bsddb.hashopen(self.dbPath, 'n')
+            self.db.sync()
         else:
             #
             # Just check for directory existence now; we can/should
@@ -141,9 +142,30 @@ class CertificateRepository:
 
             try:
                 self.db = bsddb.hashopen(self.dbPath, 'w')
+                self.db.sync()
+                
             except bsddb.error:
                 log.exception("exception opening hash %s", self.dbPath)
+                #
+                # Try to figure out what's going on. Stat the db and its directory and log
+                # the information.
+                
+                try:
+                    xx = os.stat(self.dbPath)
+                    pred = lambda x: x.startswith("st_")
+                    log.error("Stats on %s:", self.dbPath)
+                    for k in filter(pred, dir(xx)):
+                        log.error("%s: %s", k, getattr(xx, k))
+                        
+                    xx = os.stat(self.dir)
+                    log.error("Stats on %s:", self.dir)
+                    for k in filter(pred, dir(xx)):
+                        log.error("%s: %s", k, getattr(xx, k))
+                except:
+                    log.exception("error trying to read stats")
+                        
                 invalidRepo = 1
+                
 
             if invalidRepo:
                 #
@@ -153,9 +175,14 @@ class CertificateRepository:
                 #
 
                 newname = "%s.corrupt.%s" % (self.dir, int(time.time()))
-                os.rename(self.dir, newname)
-                log.error("Detected corrupted repository, renaming to %s", newname)
-                raise RepoDoesNotExist
+                try:
+                    os.rename(self.dir, newname)
+                    log.error("Detected corrupted repository, renaming to %s", newname)
+                    raise RepoDoesNotExist
+                except OSError:
+                    log.exception("Error in attempt to move aside corrupted repository")
+                    
+                    raise Exception("Cannot open repository, and cannot initialize new repository")
 
     def ImportCertificatePEM(self, certFile, keyFile = None,
                              passphraseCB = None):
@@ -407,14 +434,16 @@ class CertificateRepository:
                                cert.GetIssuerSerialHash()])
         pkeyMetaPrefix = "|".join(["privatekey",
                                    cert.GetModulusHash()])
-        for key in self.db.keys():
-            if key.startswith(metaPrefix):
-                del self.db[key]
+        try:
+            for key in self.db.keys():
+                if key.startswith(metaPrefix):
+                    del self.db[key]
+                    print "Delete ", key
+                if key.startswith(pkeyMetaPrefix):
+                    del self.db[key]
                 print "Delete ", key
-            if key.startswith(pkeyMetaPrefix):
-                del self.db[key]
-                print "Delete ", key
-        self.db.sync()
+        finally:
+            self.db.sync()
 
         #
         # Remove any private keys.
@@ -538,6 +567,29 @@ class CertificateRepository:
                 desc = CertificateDescriptor(Certificate(certFile, repo = self), self)
                 yield desc
 
+    def _GetCertificateRequests(self):
+        """
+        This is a generator function that will walk through all of the
+        certificates we have.
+        """
+
+        reqDir = os.path.join(self.dir, "requests")
+        files = os.listdir(reqDir)
+
+        reqRE = re.compile("^.*\.pem$")
+        files = filter(reqRE.search, files)
+        for file in files:
+            path = os.path.join(reqDir, file)
+            if os.path.isfile(path):
+
+                try:
+                    req = crypto.load_certificate_request(crypto.FILETYPE_PEM, open(path).read())
+                    desc = CertificateRequestDescriptor(req, self)
+                    yield desc
+
+                except:
+                    log.exception("Error loading certificate request %s", path)
+
     def GetAllCertificates(self):
         return self._GetCertificates()
 
@@ -564,6 +616,29 @@ class CertificateRepository:
     def FindCertificatesWithMetadata(self, mdkey, mdvalue):
         return list(self.FindCertificates(lambda c: c.GetMetadata(mdkey) == mdvalue))
 
+    def GetAllCertificateRequests(self):
+        return self._GetCertificateRequests()
+
+    def FindCertificateRequests(self, pred):
+        """
+        Return a list of certificate requests for which pred(req) returns true.
+        """
+
+        #
+        # This is also a generator. That way, we can short-circuit the
+        # search if we only want some.
+        #
+
+        for cert in self._GetCertificateRequests():
+            if pred(cert):
+                yield cert
+
+    def FindCertificateRequestsWithSubject(self, subj):
+        return list(self.FindCertificateRequests(lambda c: str(c.GetSubject()) == subj))
+    
+    def FindCertificateRequestsWithMetadata(self, mdkey, mdvalue):
+        return list(self.FindCertificateRequests(lambda c: c.GetMetadata(mdkey)  == mdvalue))
+    
     def SetPrivatekeyMetadata(self, modulus, key, value):
         hashkey = "|".join(["privatekey",
                             modulus,
@@ -577,15 +652,17 @@ class CertificateRepository:
         return self.GetMetadata(hashkey)
 
     def SetMetadata(self, key, value):
-        self.db[key] = value
-        self.db.sync()
+        try:
+            self.db[key] = value
+        finally:
+            self.db.sync()
     
     def GetMetadata(self, key):
         if self.db.has_key(key):
             return self.db[key]
         else:
             return None
-    
+
 class CertificateDescriptor:
     def __init__(self, cert, repo):
         self.cert = cert
