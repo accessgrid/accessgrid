@@ -51,8 +51,8 @@
 <b>import</b> AccessGrid.ClientProfile<br>
 <b>from</b> AccessGrid.Descriptions <b>import</b> DataDescription, ServiceDescription<br>
 <b>from</b> AccessGrid.NodeManagementUIClasses <b>import</b> NodeManagementClientFrame<br>
-<b>from</b> AccessGrid.TextClientUI <b>import</b> TextClientUI<br>
-<b>from</b> AccessGrid.UIUtilities <b>import</b> AboutDialog, ErrorDialog<br>
+<b>from</b> AccessGrid.TextClientUI <b>import</b> TextClientUI, TextClientUIStandAlone<br>
+<b>from</b> AccessGrid.UIUtilities <b>import</b> AboutDialog, MessageDialog<br>
 <b>from</b> AccessGrid.Utilities <b>import</b> formatExceptionInfo<br>
 <b>from</b> AccessGrid.VenueClient <b>import</b> VenueClient, EnterVenueException<br>
 <b>import</b> <a href="http://www.python.org/doc/current/lib/module-os.html">os</a><br>
@@ -89,6 +89,7 @@
 <tr><td valign="top" align="left"><a href="VenueClientUIClasses_ContentListPanel.py.html">ContentListPanel</a></td><td valign="top" align="left">
 <p>ContentListPanel.</p>
 </td></tr>
+<tr><td valign="top" align="left"><a href="VenueClientUIClasses_DataDropTarget.py.html">DataDropTarget</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="VenueClientUIClasses_ExitPanel.py.html">ExitPanel</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="VenueClientUIClasses_FileDropTarget.py.html">FileDropTarget</a></td><td valign="top" align="left"></td></tr>
 <tr><td valign="top" align="left"><a href="VenueClientUIClasses_MainUrlDialog.py.html">MainUrlDialog</a></td><td valign="top" align="left"></td></tr>
@@ -123,7 +124,7 @@
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Thu Feb 27 07:37:21 2003 by
+        on Fri Feb 28 08:28:18 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

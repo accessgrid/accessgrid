@@ -81,16 +81,15 @@ ServiceBase<br>
               <tr>
             <td align="LEFT" valign="TOP">
 <a href="#AddService">AddService</a><br>
-<a href="#AddServiceDescription">AddServiceDescription</a><br>
 <a href="#DiscoverResources">DiscoverResources</a><br>
 <a href="#GetResources">GetResources</a><br>
 <a href="#GetServices">GetServices</a><br>
 <a href="#Ping">Ping</a><br>
 <a href="#RegisterService">RegisterService</a><br>
 <a href="#RemoveService">RemoveService</a><br>
+<a href="#RemoveServices">RemoveServices</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#RemoveServices">RemoveServices</a><br>
 <a href="#SetAuthorizedUsers">SetAuthorizedUsers</a><br>
 <a href="#StopServices">StopServices</a><br>
 <a href="#__AddServiceDescription">__AddServiceDescription</a><br>
@@ -127,14 +126,14 @@ ServiceBase<br>
         <font color="#000088"><pre>
 AddService (
         self,
-        serviceDescription,
+        servicePackageUri,
         resourceToAssign,
+        serviceConfig,
         )
 
 </pre></font>
 
-<p>Add a service to the service manager.  The service is an executable
-        or python script, which will be started by the ServiceManager</p>
+<p>Add a service package to the service manager.</p>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 
         <tr>
@@ -160,63 +159,6 @@ AddService (
         <td>
         
 faultType("AGServiceManager.AddService failed: " + str( sys.exc_value ) )<br>
-
-</td></tr>
-</table>
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="AddServiceDescription"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">AddServiceDescription&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-AddServiceDescription ( self,  serviceDescription )
-
-</pre></font>
-
-<p>Add a service to the service manager.  The service is an executable
-        or python script, which will be started by the ServiceManager</p>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="Exceptions">Exceptions</a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        
-faultType("AGServiceManager.AddServiceDescription failed: " + str( sys.exc_value ) )<br>
 
 </td></tr>
 </table>
@@ -643,7 +585,11 @@ StopServices ( self )
         <tr>
         <td>
         <font color="#000088"><pre>
-__AddServiceDescription ( self,  serviceDescription )
+__AddServiceDescription (
+        self,
+        serviceDescription,
+        serviceConfig,
+        )
 
 </pre></font>
 
@@ -800,7 +746,7 @@ __init__ ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Thu Feb 27 07:37:21 2003 by
+        on Fri Feb 28 08:28:18 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

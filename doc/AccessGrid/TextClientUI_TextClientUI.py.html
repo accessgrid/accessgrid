@@ -47,7 +47,7 @@
         <tr>
         <td>
         
-wxFrame<br>
+wxPanel<br>
 
 </td></tr>
 </table>
@@ -75,71 +75,16 @@ wxFrame<br>
         <tr>
         <td>
         
-<a href="#FileClose">FileClose</a><br>
-<a href="#HelpAbout">HelpAbout</a><br>
 <a href="#LocalInput">LocalInput</a><br>
 <a href="#OnCloseWindow">OnCloseWindow</a><br>
-<a href="#SetLocalEcho">SetLocalEcho</a><br>
+<a href="#OnSashDrag">OnSashDrag</a><br>
+<a href="#OnSize">OnSize</a><br>
+<a href="#SetLocation">SetLocation</a><br>
 <a href="#Stop">Stop</a><br>
-<a href="#__do_layout">__do_layout</a><br>
 <a href="#__init__">__init__</a><br>
+<a href="#__setEvents">__setEvents</a><br>
 <a href="#__set_properties">__set_properties</a><br>
 
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="FileClose"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">FileClose&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-FileClose ( self,  event )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="HelpAbout"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">HelpAbout&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-HelpAbout ( self,  event )
-
-</pre></font>
-
-<p>About dialog!</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -204,7 +149,7 @@ OnCloseWindow ( self )
                 width="20%"
                 >
                 <font color="#000000">
-                  <a name="SetLocalEcho"></a>&nbsp;
+                  <a name="OnSashDrag"></a>&nbsp;
                 </font>
             </th>
             <th bgcolor="#99ccff"
@@ -212,13 +157,71 @@ OnCloseWindow ( self )
                 align="left"
                 width="80%"
                 >
-                <font color="#000000">SetLocalEcho&nbsp;</font>
+                <font color="#000000">OnSashDrag&nbsp;</font>
             </th>
         </tr>
         <tr>
         <td>
         <font color="#000088"><pre>
-SetLocalEcho ( self,  event )
+OnSashDrag ( self,  event )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="OnSize"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">OnSize&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+OnSize ( self,  event )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetLocation"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetLocation&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetLocation (
+        self,
+        location,
+        venueId,
+        )
 
 </pre></font>
 
@@ -246,33 +249,6 @@ SetLocalEcho ( self,  event )
         <td>
         <font color="#000088"><pre>
 Stop ( self )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="__do_layout"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">__do_layout&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-__do_layout ( self )
 
 </pre></font>
 
@@ -316,6 +292,33 @@ __init__ (
                 width="20%"
                 >
                 <font color="#000000">
+                  <a name="__setEvents"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">__setEvents&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+__setEvents ( self )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
                   <a name="__set_properties"></a>&nbsp;
                 </font>
             </th>
@@ -347,7 +350,7 @@ __set_properties ( self )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Thu Feb 27 07:37:21 2003 by
+        on Fri Feb 28 08:28:18 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         

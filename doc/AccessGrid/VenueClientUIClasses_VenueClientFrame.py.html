@@ -101,7 +101,6 @@ wxFrame<br>
 <a href="#OpenAddServiceDialog">OpenAddServiceDialog</a><br>
 </td>
 <td align="LEFT" valign="TOP">
-<a href="#OpenChat">OpenChat</a><br>
 <a href="#OpenConnectToVenueDialog">OpenConnectToVenueDialog</a><br>
 <a href="#OpenDataProfileDialog">OpenDataProfileDialog</a><br>
 <a href="#OpenNodeMgmtApp">OpenNodeMgmtApp</a><br>
@@ -113,6 +112,7 @@ wxFrame<br>
 <a href="#RemoveData">RemoveData</a><br>
 <a href="#RemoveService">RemoveService</a><br>
 <a href="#SaveData">SaveData</a><br>
+<a href="#SetTextLocation">SetTextLocation</a><br>
 </td>
 <td align="LEFT" valign="TOP">
 <a href="#ShowMenu">ShowMenu</a><br>
@@ -185,6 +185,11 @@ CleanUp ( self )
 
 </pre></font>
 
+<p>try:
+    if(self.textClient != None):
+        self.textClient.Close()
+except:
+    (name, args, tb) = formatExceptionInfo()</p>
 
         <tr>
             <th bgcolor="#99ccff"
@@ -263,7 +268,11 @@ Exit ( self,  event )
         <tr>
         <td>
         <font color="#000088"><pre>
-FillInAddress ( self,  event )
+FillInAddress (
+        self,
+        event=None,
+        venueUrl=None,
+        )
 
 </pre></font>
 
@@ -453,33 +462,6 @@ OpenAddDataDialog ( self,  event=None )
         <td>
         <font color="#000088"><pre>
 OpenAddServiceDialog ( self,  event )
-
-</pre></font>
-
-
-        <tr>
-            <th bgcolor="#99ccff"
-                rowspan="2"
-                valign="top"
-                align="left"
-                width="20%"
-                >
-                <font color="#000000">
-                  <a name="OpenChat"></a>&nbsp;
-                </font>
-            </th>
-            <th bgcolor="#99ccff"
-                valign="top"
-                align="left"
-                width="80%"
-                >
-                <font color="#000000">OpenChat&nbsp;</font>
-            </th>
-        </tr>
-        <tr>
-        <td>
-        <font color="#000088"><pre>
-OpenChat ( self,  event=None )
 
 </pre></font>
 
@@ -777,6 +759,33 @@ RemoveService ( self,  event )
         <td>
         <font color="#000088"><pre>
 SaveData ( self,  event )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="SetTextLocation"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">SetTextLocation&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+SetTextLocation ( self,  event=None )
 
 </pre></font>
 
@@ -1125,7 +1134,7 @@ __showNoSelectionDialog ( self,  text )
         <p><i><a href="../index.html">Table of Contents</a></i></p>
 
         <font size="-2"><i>This document was automatically generated
-        on Thu Feb 27 07:37:21 2003 by
+        on Fri Feb 28 08:28:18 2003 by
         <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
         2.0</i></font>
         
