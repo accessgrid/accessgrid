@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.6 2004-04-12 17:51:24 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.7 2004-04-12 20:49:09 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.6 2004-04-12 17:51:24 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.7 2004-04-12 20:49:09 judson Exp $"
 
 import os
 import mimetypes
@@ -290,6 +290,11 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             if self.initIfNeeded:
                 self.SetHostname()
                 
+        if os.environ.has_key('X509_RUN_AS_SERVER'):
+            self.serverFlag = os.environ['X509_RUN_AS_SERVER']
+        else:
+            self.serverFlag = None
+
         if os.environ.has_key('X509_CERT_DIR'):
             self.caCertDir = os.environ['X509_CERT_DIR']
         else:
@@ -370,6 +375,21 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         if os.environ.has_key['GLOBUS_LOCATION']:
             del os.environ['GLOBUS_LOCATION']
             self.location = None
+            
+    def GetServerFlag(self):
+        if self.serverFlag is None:
+            raise Exception, "GlobusConfig: Globus directory does not exist."
+        
+        return self.serverFlag
+
+    def SetServerFlag(self, value):
+        os.environ['X509_RUN_AS_SERVER'] = value
+        self.serverFlag = value
+
+    def RemoveServerFlag(self):
+        if os.environ.has_key['X509_RUN_AS_SERVER']:
+            del os.environ['X509_RUN_AS_SERVER']
+            self.serverFlag = None
             
     def GetCACertDir(self):
         if self.caCertDir is not None and not os.path.exists(self.caCertDir):

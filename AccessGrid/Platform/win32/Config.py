@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.19 2004-04-12 19:48:44 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.20 2004-04-12 20:49:09 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.19 2004-04-12 19:48:44 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.20 2004-04-12 20:49:09 judson Exp $"
 
 import os
 import sys
@@ -375,9 +375,11 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
 
         # Check GLOBUS_HOSTNAME
         self.SetHostname()
-        
-        # After globus location comes the all important x509_*
 
+        # Check server flag
+        self.GetServerFlag()
+            
+        # After globus location comes the all important x509_*
         try:
             (self.keyFileName, type) = _winreg.QueryValueEx(gsikey,
                                                              "x509_user_key")
@@ -523,6 +525,43 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             return 0
         self.location = None
 
+    def GetServerFlag(self):
+        if self.serverFlag is None:
+            try:
+                key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment",
+                                      0, _winreg.KEY_ALL_ACCESS)
+                (self.serverFlag, type) = _winreg.QueryValueEx(key,
+                                                         "X509_RUN_AS_SERVER")
+                _winreg.CloseKey(key)
+            except WindowsError:
+                log.exception("Couldn't get X509_RUN_AS_SERVER.")
+
+        return self.serverFlag
+
+    def SetServerFlag(self, value):
+        try:
+            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment", 0,
+                                  _winreg.KEY_ALL_ACCESS)
+            _winreg.SetValueEx(key, "X509_RUN_AS_SERVER", 0,
+                               _winreg.REG_EXPAND_SZ, value)
+            _winreg.CloseKey(key)
+            self.serverFlag = value
+            return 1
+        except WindowsError:
+            log.exception("Couldn't setup X509_RUN_AS_SERVER.")
+            return 0
+
+    def RemoveServerFlag(self):
+        try:
+            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment", 0,
+                                  _winreg.KEY_ALL_ACCESS)
+            _winreg.DeleteValue(key, "X509_RUN_AS_SERVER")
+            _winreg.CloseKey(key)
+        except WindowsError:
+            log.exception("Couldn't remove X509_RUN_AS_SERVER.")
+            return 0
+        self.serverFlag = None
+
     def GetCACertDir(self):
         if self.caCertDir is not None and not os.path.exists(self.caCertDir):
             raise Exception, "GlobusConfig: CA Certificate dir does not exist."
@@ -579,6 +618,9 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         except WindowsError:
             log.exception("Couldn't delete x509_user_proxy from registry.")
 
+        if os.environ.has_key('X509_USER_PROXY'):
+            del os.environ['X509_USER_PROXY']
+            
         self.proxyFileName = None
         
     def GetCertFileName(self):
