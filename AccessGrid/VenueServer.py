@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.106 2003-09-26 15:42:30 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.107 2003-10-10 17:08:30 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.106 2003-09-26 15:42:30 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.107 2003-10-10 17:08:30 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -251,7 +251,8 @@ class VenueServer(ServiceBase.ServiceBase):
         # Then we create the VenueServer service
         self.service = self.hostingEnvironment.BindService(self, 'VenueServer')
         self.BindRoleManager()
-        self.RegisterDefaultSubjects() # Register primary user as administrator
+        # Register primary user as administrator
+        self.RegisterDefaultSubjects() 
         # Prepare to save admin list in SaveConfig
         admin_role = self.GetRoleManager().GetRole("VenueServer.Administrators")
         self.config["VenueServer.administrators"] = ":".join(admin_role.GetSubjectListAsStrings())
