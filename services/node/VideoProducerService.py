@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.3 2003-04-29 19:02:15 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.4 2003-04-29 22:16:36 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -73,8 +73,7 @@ class VideoProducerService( AGService ):
          #
          # Write vic startup file
          #
-         startupfile = os.path.join(Platform.GetTempDir(), 
-                         'VideoProducerService_%d.vic' % ( os.getpid() ) )
+         startupfile = 'VideoProducerService_%d.vic' % ( os.getpid(), )
          f = open(startupfile,"w")
          f.write( vicstartup % (self.configuration["bandwidth"].value, 
                                     self.configuration["framerate"].value, 
