@@ -29,11 +29,7 @@ export PYOPENSSL_VER="0.5.1-4"
 export SOAPPY="SOAPpy"
 export SOAPPY_VER="0.11.3_cvs_2004_04_01-1"
 
-export AG="
-AccessGrid 
-AccessGrid-VenueClient
-AccessGrid-VenueServer
-AccessGrid-BridgeServer"
+export AG="AccessGrid"
 export AG_VER="2.2-1"
  
 
@@ -98,9 +94,7 @@ Install $PYOPENSSL $PYOPENSSL_VER i386
 echo "***********************************************"
 echo "Installing Access Grid packages "
 echo "***********************************************"
-for package in $AG ; do
-    Install $package $AG_VER i386
-done
+Install $AG $AG_VER i386
 
 echo ""
 echo "Installation finished."
