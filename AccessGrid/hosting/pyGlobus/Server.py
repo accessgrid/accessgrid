@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.16 2003-05-28 18:21:16 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.17 2003-05-28 18:26:54 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ class Server:
         """
         This is simply an accessor that returns the value of the running flag.
         """
-        return self._running
+        return self._running.isSet()
     
     def Run(self):
         """
