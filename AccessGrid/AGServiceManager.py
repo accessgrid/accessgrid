@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.79 2004-08-12 14:53:03 lefvert Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.80 2004-09-07 19:17:18 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.79 2004-08-12 14:53:03 lefvert Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.80 2004-09-07 19:17:18 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -401,14 +401,6 @@ class AGServiceManager:
             AGServiceIW( service.uri ).Stop()
 
 
-
-    def GetInstallDir(self):
-        """
-        Returns the install directory path where services are expected to be found.
-        """
-        log.info("AGServiceManager.GetInstallDir")
-
-        return GetInstallDir()
     
         
     ####################
@@ -576,20 +568,6 @@ class AGServiceManagerI(SOAPInterface):
         """
         self.impl.StopServices()
 
-    def GetInstallDir(self):
-        """
-        Interface to get the install dir
-
-        **Arguments:**
-        **Raises:**
-        
-        **Returns:**
-            string representing the install dir of the AG software
-        """
-        return self.impl.GetInstallDir()
-
-
-
 
 
 class AGServiceManagerIW(SOAPIWrapper):
@@ -641,7 +619,4 @@ class AGServiceManagerIW(SOAPIWrapper):
 
     def StopServices(self):
         self.proxy.StopServices()
-
-    def GetInstallDir(self):
-        return self.proxy.GetInstallDir()
 
