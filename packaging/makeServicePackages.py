@@ -9,11 +9,19 @@ implementation files, and zips them into the specified output
 directory.
 """
 
+def usage():
+    print "Usage : ", sys.argv[0], " <serviceDir> <optionalOutputDir> "
+
 if len(sys.argv) < 2:
-    print "Usage : ", sys.argv[0], " <serviceDir>"
+    usage()
 
 inputDir = sys.argv[1]
 outputDir = sys.argv[1]
+
+if len(sys.argv) == 3:
+    outputDir = sys.argv[2]
+elif len(sys.argv) > 3:
+    usage()
 
 services = ["AudioService", "VideoConsumerService", "VideoProducerService"]
 if not os.path.isdir(inputDir):
@@ -33,8 +41,9 @@ for service in services:
     
     # if associated file found, zip em up together in the outputDir
     serviceZipFile = service + ".zip"
-    print "Writing Package File:", serviceZipFile
-    zf = zipfile.ZipFile( serviceZipFile, "w" )
+    long_serviceZipFile = os.path.join(outputDir, serviceZipFile)
+    print "Writing Package File:", long_serviceZipFile
+    zf = zipfile.ZipFile( long_serviceZipFile, "w" )
     zf.write( servDesc )
     # check for various implementations
     if os.path.isfile(servImplPy):
