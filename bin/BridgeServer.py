@@ -8,7 +8,9 @@ import getopt
 
 from pyGlobus.io import IOBaseException
 
+from AccessGrid import GUID
 from AccessGrid import NetService
+from AccessGrid import Platform
 from AccessGrid import Toolkit
 from AccessGrid import Utilities
 from AccessGrid.hosting.pyGlobus import Client
@@ -141,15 +143,18 @@ class BridgeFactory:
 
 
 class BridgeServer:
-    def __init__(self, providerProfile, bridgeFactory, debug=0):
+    def __init__(self, providerProfile, bridgeFactory, privateId, debug=0):
         self.providerProfile = providerProfile
         self.bridgeFactory = bridgeFactory
+        self.privateId = privateId
         self.debug = debug
 
         self.venues = dict()
         self.running = 1
 
         self.__setLogger()
+        
+        self.log.debug("BridgeServer id = %s", privateId)
 
     def AddVenue(self, venueUrl):
         """
@@ -157,7 +162,7 @@ class BridgeServer:
         by the BridgeServer
         """
         self.log.debug("Method BridgeServer.AddVenue called")
-        venue = Venue(venueUrl, self.providerProfile, self.bridgeFactory)
+        venue = Venue(venueUrl, self.providerProfile, self.bridgeFactory, self.privateId)
         self.venues[venueUrl] = venue
 
     def RemoveVenue(self, venueUrl):
@@ -236,14 +241,16 @@ class Venue:
     EVT_REMOVEBRIDGE="RemoveBridge"
     EVT_QUIT="Quit"
 
-    def __init__(self, venueUrl, providerProfile, bridgeFactory ):
+    def __init__(self, venueUrl, providerProfile, bridgeFactory, id ):
 
         # Init data
         self.venueUrl = venueUrl
         self.providerProfile = providerProfile
         self.bridgeFactory = bridgeFactory
+        self.privateId = id
 
         self.venueProxy = Client.Handle(venueUrl).GetProxy()
+        
 
         try:
             self.venueProxy._IsValid()
@@ -271,9 +278,9 @@ class Venue:
         """ 
         """
         # Register with the venue
-        self.privateId = self.venueProxy.AddNetService(NetService.BridgeNetService.TYPE)
+        self.venueProxy.AddNetService(NetService.BridgeNetService.TYPE, self.privateId)
         
-        # Get the event service location and event channel is
+        # Get the event service location and event channel id
         (self.eventServiceLocation, self.channelId) = self.venueProxy.GetEventServiceLocation()
 
         # Set up event client
@@ -497,6 +504,19 @@ class Venue:
 
 
 
+def GetConfigVal(config,varName):
+    """
+    SetConfigVal sets the given variable to the value in
+    the configuration dict, if it exists, and if the var
+    was not already set
+    """
+    configKey = "BridgeServer."+varName
+    if config.has_key(configKey):
+        return config[configKey]
+    return None
+
+
+
 
 def main():
    
@@ -506,20 +526,12 @@ def main():
     import time
 
     bridgeServer = None
-    global logFile
 
 
     def usage():
         print """
-Usage: BridgeServer.py <<--venueServer venueServerUrl>|
-                        <--venueServerFile venueServerFile>|
-                        <--venue venueUrl>>
-                        <--venueFile venueUrlFile>|
-                       <--qbexec quickbridgeExecutable>
-                       <--name name>
-                       <--location location>
-                       [-h|--help]
-                       [-d|--debug]
+Usage: BridgeServer.py [-c configFile] [-h|--help] [-d|--debug]
+
 """
 
 
@@ -542,23 +554,19 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|
     location=None
     configFile=None
     qbexec=None
-
+    id=None
+    
+    
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hdlc:",
+        opts, args = getopt.getopt(sys.argv[1:], "hdc:",
                                    [
-                                   "venueServer=", 
-                                   "venueServerFile=",
-                                   "venue=",
-                                   "venueFile=",
-                                   "qbexec=",
-                                   "name=",
-                                   "location="
+                                   "help",
+                                   "debug"
                                    ])
 
     except getopt.GetoptError:
         usage()
         sys.exit(2)
-
 
     for opt, arg in opts:
         if opt in ('-h', '--help'):
@@ -566,77 +574,46 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|
             sys.exit(0)
         elif opt == '-c':
             configFile = arg
-        elif opt == '--venueServer':
-            venueServerUrl = arg
-        elif opt == '--venueServerFile':
-            venueServerFile = arg
-        elif opt == '--venue':
-            venueUrl = arg
-        elif opt == '--venueFile':
-            venueFile = arg
-        elif opt == '--qbexec':
-            qbexec = arg
-        elif opt in ('--debug', '-d'):
+        elif opt in ('-d', '--debug'):
             debugMode = 1
-        elif opt in ('--logfile', '-l'):
-            logFile = arg
-        elif opt == "--name": 
-            name = arg
-        elif opt == "--location":
-            location = arg
 
 
-    # Read config file, if given
-    if configFile:
 
-        def GetConfigVal(config,varName):
-            """
-            SetConfigVal sets the given variable to the value in
-            the configuration dict, if it exists, and if the var
-            was not already set
-            """
-            configKey = "BridgeServer."+varName
-            if config.has_key(configKey):
-                return config[configKey]
-            return None
+    # If no config file specified, use default config file
+    if not configFile:
+        configFile = os.path.join(Platform.GetUserConfigDir(),"BridgeServer.cfg")
+        
+    # Load the config file
+    config = Utilities.LoadConfig(configFile)
+    venueServerUrl = GetConfigVal(config,"venueServer")
+    venueServerFile = GetConfigVal(config,"venueServerFile")
+    venueUrl = GetConfigVal(config,"venue")
+    venueFile = GetConfigVal(config,"venueFile")
+    qbexec = GetConfigVal(config,"qbexec")
+    name = GetConfigVal(config,"name")
+    location = GetConfigVal(config,"location")
+    id = GetConfigVal(config,"id")
 
-        config = Utilities.LoadConfig(configFile)
-        if not venueServerUrl: 
-            venueServerUrl = GetConfigVal(config,"venueServerUrl")
-        if not venueServerFile: 
-            venueServerFile = GetConfigVal(config,"venueServerFile")
-        if not venueUrl:
-            venueUrl = GetConfigVal(config,"venueUrl")
-        if not venueFile:
-            venueFile = GetConfigVal(config,"venueFile")
-        if not qbexec: 
-            qbexec = GetConfigVal(config,"qbexec")
-        if not name: 
-            name = GetConfigVal(config,"name")
-        if not location: 
-            location = GetConfigVal(config,"location")
-        if not logFile: 
-            logFile = GetConfigVal(config,"logFile")
 
     # catch bad arguments
     if (venueServerUrl!=None) + (venueServerFile!=None) + (venueUrl!=None) + (venueFile!=None) ==0:
-        print "* Error : One of venueServer|venueServerFile|venue|venueFile args must be specified"
+        print "* Error : One of venueServer|venueServerFile|venue|venueFile args must be specified in config file"
         usage()
         sys.exit(1)
     if (venueServerUrl!=None) + (venueServerFile!=None) + (venueUrl!=None) + (venueFile!=None) > 1:
-        print "* Error : Only one of venueServer|venueServerFile|venue|venueFile args can be specified"
+        print "* Error : Only one of venueServer|venueServerFile|venue|venueFile args can be specified in config file"
         usage()
         sys.exit(1)
     if not name:
-        print "* Error : name option must be specified"
+        print "* Error : name option must be specified in config file"
         usage()
         sys.exit(1)
     if not location:
-        print "* Error : location option must be specified"
+        print "* Error : location option must be specified in config file"
         usage()
         sys.exit(1)
     if not qbexec:
-        print "* Error : Quickbridge executable must be specified"
+        print "* Error : Quickbridge executable must be specified in config file"
         usage()
         sys.exit(1)
     else:
@@ -644,6 +621,11 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|
             print "* Error : Quickbridge executable does not exist"
             print "          (%s)" % (qbexec,)
             sys.exit(1)
+    if not id:
+        # Allocate an id if none has been specified
+        id = config["BridgeServer.id"] = str(GUID.GUID())
+        Utilities.SaveConfig(configFile,config)    
+
 
     # Init toolkit with standard environment.
     app = Toolkit.CmdlineApplication()
@@ -679,8 +661,8 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|
         f.close()
     elif venueUrl:
         venueList = [ venueUrl ]
-
-
+        
+        
     # Register a signal handler so we can shut down cleanly
     signal.signal(signal.SIGINT, SignalHandler)
 
@@ -689,7 +671,7 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|
 
     # Create the bridge server
     bridgeFactory = BridgeFactory(qbexec)
-    bridgeServer = BridgeServer(providerProfile,bridgeFactory,debugMode)
+    bridgeServer = BridgeServer(providerProfile,bridgeFactory,id,debugMode)
 
     # Bridge those venues !
     for venueUrl in venueList:
