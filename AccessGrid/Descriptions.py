@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.48 2004-03-15 23:36:15 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.49 2004-03-25 23:26:59 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.48 2004-03-15 23:36:15 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.49 2004-03-25 23:26:59 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -20,6 +20,7 @@ import types
 from AccessGrid.GUID import GUID
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.NetworkLocation import UnicastNetworkLocation
+from AccessGrid.NetworkLocation import ProviderProfile
 from AccessGrid.Types import Capability
 from AccessGrid.Types import AGResource, ServiceConfiguration
 
@@ -653,3 +654,20 @@ def CreateServiceConfiguration(serviceConfigStruct):
                                          parameters)
     
     return serviceConfig
+
+def CreateNetworkLocation(networkLocationStruct):
+    
+    if networkLocationStruct.type == UnicastNetworkLocation.TYPE:
+        networkLocation = UnicastNetworkLocation(networkLocationStruct.host,
+                                                 networkLocationStruct.port)
+    elif networkLocationStruct.type == MulticastNetworkLocation.TYPE:
+        networkLocation = MulticastNetworkLocation(networkLocationStruct.host,
+                                                 networkLocationStruct.port,
+                                                 networkLocationStruct.ttl)
+    else:
+        raise Exception, "Unknown network location type %s" % (networkLocationStruct.type,)
+    networkLocation.profile = ProviderProfile(networkLocationStruct.profile.name,
+                                              networkLocationStruct.profile.location)                                                                                                 
+    networkLocation.id = networkLocationStruct.id
+    networkLocation.privateId = networkLocationStruct.privateId
+    return networkLocation
