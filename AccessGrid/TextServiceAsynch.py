@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.15 2003-10-13 19:22:21 judson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.16 2003-10-13 20:04:56 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.15 2003-10-13 19:22:21 judson Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.16 2003-10-13 20:04:56 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import socket
@@ -189,8 +189,9 @@ class ConnectionHandler:
 
     def stop(self):
         try:
+            if self.wfile is not None:
+                self.wfile.close()
             self.socket.close()
-            log.info("After socket close: %s", str(self.socket))
         except:
             log.info("TextServiceAsynch: IOBase exception on event service close (probably ok)")
 
@@ -220,12 +221,8 @@ class ConnectionHandler:
 
         Close the socket,  and enqueue a "close" command.
         """
-
-        log.info("handleEOF: before stop")
         self.stop()
-        log.info("handleEOF: after stop, before enqueueEOF")
         self.server.EnqueueEOF(self)
-        log.info("handleEOF: after enqueueEOF")
 
 class TextChannel:
     def __init__(self, server, id, authCallback):
