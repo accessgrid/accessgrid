@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.14 2003-09-17 17:13:47 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.15 2003-09-19 18:43:40 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -29,7 +29,7 @@ from wxPython.wizard import *
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.Utilities import NODE_SETUP_WIZARD_LOG
 from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
-
+from AccessGrid.Platform import isWindows, isLinux
 log = logging.getLogger("AG.NodeSetupWizard")
 
 class ServiceUnavailableException(Exception):
@@ -188,7 +188,6 @@ class NodeSetupWizard(wxWizard):
           
         except Exception, e:
             #log.exception("NodeSetupWizard: WXGUIApplication creation failed")
-            print "Couldn't create application"
             text = "Could not start the Node Setup Wizard. \nIs your certificate configured correctly?"
             MessageDialog(None, text, "Node Setup Wizard failed")
             return 0
@@ -197,7 +196,6 @@ class NodeSetupWizard(wxWizard):
             self.app.InitGlobusEnvironment()
             
         except Exception, e:
-            print "Couldn't initialize globus environment"
             text = "Could not start the Node Setup Wizard. \nIs your certificate configured correctly?"
             #log.exception("NodeSetupWizard: App initialization failed")
             MessageDialog(None, text, "Node Setup Wizard failed")
@@ -219,7 +217,7 @@ class NodeSetupWizard(wxWizard):
         page = event.GetPage()
         forward = 1
         backward = 0
-        
+              
         # Show users configuration in last page
         if isinstance(page.GetNext(), ConfigWindow):
             p = self.page2
@@ -238,7 +236,8 @@ class NodeSetupWizard(wxWizard):
             if not page.Validate():
                 # Ignore event
                 event.Veto()
-                    
+
+                        
 class WelcomeWindow(TitledPage):
     '''
     First page of wizard contains introduction text.
@@ -451,7 +450,14 @@ class VideoCaptureWindow2(TitledPage):
        
         # No cameras are installed
         if nrOfCameras == 0:
-            self.gridSizer.Add(wxStaticText(self.scrolledWindow, -1, "Could not find any cameras."))
+            text = "No cameras found."
+            
+            if isWindows():
+                text = text + "\n\nNote: Select 'Search for Video Devices' found under 'Access Grid Toolkit - Configure' in the start menu and try this wizard again."
+            if isLinux():
+                text = text + "\n\nNote: Run 'SetupVideo.py' and try this wizard again."
+                
+            self.gridSizer.Add(wxStaticText(self.scrolledWindow, -1, text))
             
         i = 0
         # Add camera widgets
@@ -792,10 +798,8 @@ class ConfigWindow(TitledPage):
         service manager, appropriate services are added. Then save the configuration
         possibly as default.
         """
-
         wxBeginBusyCursor()
         errors = ""
-
         
         if self.configNameCtrl.GetValue()=="":
             MessageDialog(self, "Please enter a name for this configuration.", "Enter Configuration Name")
@@ -884,6 +888,7 @@ class ConfigWindow(TitledPage):
                 log.exception("NodeSetupWindow:ConfigWindow:Validate: Could not set default configuration.")
                 errors = errors + "The configuration could not be set as default. Error occured.\n\n"
 
+    
         if errors != "":
             ErrorDialog(self, errors, "Error", logFile = NODE_SETUP_WIZARD_LOG)
      
@@ -1044,5 +1049,7 @@ class NodeClient:
 if __name__ == "__main__":
     pp = wxPySimpleApp()
     n = NodeSetupWizard(None)
+   
     if n:
         n.Destroy()
+   
