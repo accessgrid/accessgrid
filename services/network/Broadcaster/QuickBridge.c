@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.11 2004-12-16 21:24:26 leggett Exp $
+ * $Id: QuickBridge.c,v 1.12 2004-12-16 21:27:25 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -1256,6 +1256,7 @@ int main( int argc, char *argv[] )
 		    {
 		      debug( 4, "Closing msgsock (%d) in parent.\n", msgsock );
 		      close( msgsock );
+		      FD_CLR( msgsock, &web_masterfds );
 		    }
 		}
 	    }
