@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGenProgrammatic.py,v 1.2 2004-02-24 21:33:08 judson Exp $
+# RCS-ID:      $Id: ProxyGenProgrammatic.py,v 1.3 2004-02-24 21:57:24 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,14 +15,14 @@ Globus proxy generation using the programmatic method. We can currently (circa A
 
 """
 
-__revision__ = "$Id: ProxyGenProgrammatic.py,v 1.2 2004-02-24 21:33:08 judson Exp $"
+__revision__ = "$Id: ProxyGenProgrammatic.py,v 1.3 2004-02-24 21:57:24 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import logging
 
 log = logging.getLogger("AG.hosting.pyGlobus.ProxyGenProgrammatic")
 
-from AccessGrid.hosting.pyGlobus import ProxyGenExceptions
+from AccessGrid.Security.pyGlobus import ProxyGenExceptions
 from pyGlobus import security, sslutilsc
 
 
