@@ -89,47 +89,30 @@ class CertRequestWrapper:
 
         try:
             try:
-
-                #
                 # Check to see if there's a lingering copy of the file from before.
-                #
-
                 if os.path.isfile(temp_path):
-                    log.debug("Cert import temporary file %s already exists, deleting", tempfile)
+                    log.debug("Cert import temporary file %s already exists, deleting",
+                              temp_path)
 
                     try:
                         os.unlink(temp_path)
 
                     except:
                         log.exception("Unlink of tempfile %s failed", temp_path)
-
-                        #
                         # Hmm, weird. Make up a new filename instead.
-                        #
-
                         new_path = tempfile.mktemp(".pem")
 
-                        #
                         # Use just the name part on the user's temp dir.
-                        #
-
                         new_head, new_tail = os.path.split(new_path)
+                        temp_path = os.path.join(
+                            UserConfig.instance().GetTempDir(), new_tail)
 
-                        temp_path = os.path.join(UserConfig.instance().GetTempDir(),
-                                                 new_tail)
-
-                #
                 # back to our normal life.
-                #
-                                      
                 fh = open(temp_path, "wb")
                 fh.write(certText)
                 fh.close()
 
-                #
                 # Be more paranoid. Ensure the file was created.
-                #
-
                 try:
                     fileInfo = os.stat(temp_path)
                 except OSError:
@@ -233,33 +216,30 @@ class CertRequestWrapper:
                         log.exception("Error loading cacert");
                         continue
 
-                    #
                     # Predicate that returns true for an unexpired certificate
                     # having a subject name of this CA cert.
-                    #
                     pred = lambda c, der = caObj.GetSubject().get_der(): \
                         c.GetSubject().get_der() == der and not c.IsExpired()
 
-                    #
                     # Determine the list of certs with that name.
-                    #
                     matchingCerts = list(certMgr.GetCertificateRepository().FindCertificates(pred))
 
 
-                    #
                     # If none were found, see about installing.
-                    #
                     if matchingCerts == []:
-                        #
-                        # prompt to install at some point, but just install now.
-                        #
+                        # prompt to install at some point,
+                        # but just install now.
                         try:
-                            tmp = tempfile.mktemp()
+                            # Use just the name part on the user's temp dir.
+                            junk, new_tail = os.path.split(tempfile.mktemp())
+                            tmp = os.path.join(
+                                UserConfig.instance().GetTempDir(), new_tail)
+
                             fh = open(tmp, "w")
                             fh.write(caCert)
                             fh.close()
-                            impCa = certMgr.ImportCACertificatePEM(certMgr.GetCertificateRepository(),
-                                                                   tmp)
+                            impCa = certMgr.ImportCACertificatePEM(
+                                certMgr.GetCertificateRepository(), tmp)
                             os.unlink(tmp)
                             print "Imported cert ", impCa, impCa.GetSubject()
 
