@@ -11,15 +11,18 @@
 # License:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-# Use this if you want to run from source, without having to perform a full
-# installation.
+# Use this if you want to run from source without having to perform a full
+# installation.  See the "README-developers" file if you would like instructions 
+# on how to use this setup utility.
 #
 # This allows us to run from cvs without depending on installed configuration
 # files.  It creates the necessary configuration files in a directory you
 # specify.
 #
-# You'll need to set your environment's PYTHONPATH, AGTK_LOCATION, and
-#   possibly AGTK_INSTALL_DIR to the paths are specified in the output.
+# After running this, you'll need to run the appropriate script to correctly 
+# set your environment's PYTHONPATH, AGTK_LOCATION, and AGTK_INSTALL_DIR.
+# This program will generate the scripts and ask you to execute the one
+# that matches your system/shell.
 #
 
 
