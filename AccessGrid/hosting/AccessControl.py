@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: AccessControl.py,v 1.22 2003-09-17 17:27:52 eolson Exp $
+# RCS-ID:      $Id: AccessControl.py,v 1.23 2003-09-25 22:03:25 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ Access Control mechanisms for the AG system.
 
 """
 
-__revision__ = "$Id: AccessControl.py,v 1.22 2003-09-17 17:27:52 eolson Exp $"
+__revision__ = "$Id: AccessControl.py,v 1.23 2003-09-25 22:03:25 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 #
@@ -357,7 +357,10 @@ class SecurityManager:
     def GetSubject(self):
         return self.subject
 
-    def ValidateSubjectInList(self, userList):
+    def ValidateCurrentSubjectInList(self, userList):
+        return self.ValidateSubjectInList(self.subject, userList)
+
+    def ValidateSubjectInList(self, subject, userList):
         """
         Determine if the current subject is in userList
         """
@@ -376,9 +379,14 @@ class SecurityManager:
         # Check if all users are members of this role. 
         if "ALL_USERS" in userList:
             return 1
-        
+       
+        # If the passed in subject is not a Subject()
+        #   make it is a one so we can use it's IsUser function.
+        if type(subject) != type(self.subject):
+            subject = Subject(subject, AUTH_X509)
+
         for user in userList:
-            if self.subject.IsUser(user):
+            if subject.IsUser(user):
                 return 1
 
         return 0
@@ -433,7 +441,7 @@ class SecurityManager:
             erm = role_manager.GetExternalRoleManager(separated_name[1])
             erm_role_name = role_name[len("Role."):] # same as new lstrip, strip "Role." from front.
             erm_role = erm.GetRole(erm_role_name)
-            if self.ValidateSubjectInList(erm_role.GetSubjectList()):
+            if self.ValidateSubjectInList(user, erm_role.GetSubjectList()):
                 log.debug("User %s authorized for role %s", user, erm_role.name)
                 #print "User",user,"authorized for role",  erm_role.name
                 return 1
@@ -461,7 +469,7 @@ class SecurityManager:
 
         if self.ValidateRole([role], role_manager):
         
-            if self.ValidateSubjectInList(role_manager.GetRole(role_name).GetSubjectList()):
+            if self.ValidateSubjectInList(user, role_manager.GetRole(role_name).GetSubjectList()):
                 log.debug("User %s authorized for role %s", user, role.name)
                 #print "User",user,"authorized for role",  role.name
                 return 1
