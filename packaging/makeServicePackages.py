@@ -23,6 +23,8 @@ if len(sys.argv) == 3:
 elif len(sys.argv) > 3:
     usage()
 
+absOutputDir = os.path.abspath(outputDir)
+
 services = ["AudioService", "VideoConsumerService", "VideoProducerService"]
 if not os.path.isdir(inputDir):
     print "The following directory does not exist: ", inputDir
@@ -41,7 +43,7 @@ for service in services:
     
     # if associated file found, zip em up together in the outputDir
     serviceZipFile = service + ".zip"
-    long_serviceZipFile = os.path.join(outputDir, serviceZipFile)
+    long_serviceZipFile = os.path.join(absOutputDir, serviceZipFile)
     print "Writing Package File:", long_serviceZipFile
     zf = zipfile.ZipFile( long_serviceZipFile, "w" )
     zf.write( servDesc )
