@@ -36,9 +36,21 @@ int len_ssrclist = 0;
 /* ------------------------------------------------------------------------ */
 /* Access Methods */
 
-static struct participant*
-GetParticipants(){
-  return ssrclist;
+//struct participant*
+int GetParticipants(struct participant* participantList){
+  int i = 0;
+  for(i; i < len_ssrclist; i ++){
+    struct participant p;
+    p.name = ssrclist[i].name;
+    p.ssrc = ssrclist[i].ssrc;
+    // printf("one item %s   ", ssrclist[i].name);
+    //printf("one item %ul\n", ssrclist[i].ssrc);
+    participantList[i] = p;
+    
+  }
+  
+  //printf("this is what we return %d\n ", len_ssrclist);
+  return len_ssrclist;
 }
 
 void
@@ -79,7 +91,7 @@ static void rtp_event_handler(struct rtp *session, rtp_event *e)
       int j = 0;
       
       // Check if participant is added to list.
-      printf("check if participant %ul is added to list \n", p->ssrc);
+      //printf("check if participant %ul is added to list \n", p->ssrc);
       for(i; i<len_ssrclist; i++){
 	if(ssrclist[i].ssrc == (unsigned long)p->ssrc){
 	  j = 1;
@@ -88,17 +100,14 @@ static void rtp_event_handler(struct rtp *session, rtp_event *e)
       
       // If not; add participant to list.
       if(j == 0){
-	printf("================add participant %ul\n");
-	struct participant part;
-	part.name = "default c name";
-	part.ssrc = (uint32_t) p->ssrc;
-       	ssrclist[len_ssrclist] = part;
-	len_ssrclist ++;
+	ssrclist[len_ssrclist].name = "DEFAULT NAME";
+	ssrclist[len_ssrclist].ssrc = (unsigned long) p->ssrc;
+     	len_ssrclist ++;
       }
       
       // Check if we are allowed to forward participant.
       if (p->ssrc == (uint32_t)allowed_ssrc) {
-	printf("we can send participant %ul\n", p->ssrc);
+	//printf("we can send participant %ul\n", p->ssrc);
 	rtp_send_data(data->session, p->ts, p->pt, p->m, p->cc, p->csrc, 
 		      p->data, p->data_len, p->extn, p->extn_len, 
 		      p->extn_type);
@@ -128,7 +137,7 @@ static void rtp_event_handler(struct rtp *session, rtp_event *e)
 // how to send more than one param to pthread create.
 //void start(char* fromAddr, int fport, char* toAddr, int tport)
 
-void* start(void* test)
+void* start(void* address)
 //int main(int argc, const char *argv[]) 
 {
   struct rtp	       *from_session = NULL;
@@ -138,15 +147,17 @@ void* start(void* test)
   char *from_addr, *to_addr;
   int   from_port, to_port;
 
+  struct address* addr;
+  addr = (struct address*) address;
+
+ 
+
   data.selected = 0;
-
-  //if (argc != 5) {
-  //  printf("Usage: rtpforward address port address port\n");
-  //  exit(-1);
-  //}
-
-  from_addr = "224.2.177.155"; from_port = 55524;
-  to_addr = "224.2.177.155"; to_port = 8888;
+  
+  printf("from address %s, from port %d, to address %s, to port%d ", addr->fromAddr, addr->fport, addr->toAddr, addr->tport);
+  
+  from_addr = addr->fromAddr ; from_port = addr->fport;
+  to_addr = addr->toAddr; to_port = addr->tport;
   
   // from_addr = fromAdd; from_port = fport;
   //to_addr = toAddr; to_port = tport;
