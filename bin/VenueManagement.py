@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.39 2003-03-11 15:53:19 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.40 2003-03-11 18:04:44 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ from AccessGrid import icons
 from AccessGrid.Platform import GPI 
 from AccessGrid.UIUtilities import *
 
-import logging
+import logging, logging.handlers
 import string
 import time
 
@@ -44,22 +44,30 @@ class VenueManagementClient(wxApp):
    
      
     def OnInit(self):
-        self.log = open("VenueManagement.log", 'a')
-        #wxLog_SetActiveTarget(MyLog(self.log))
-        wxLog_SetActiveTarget(wxLogGui())
-        wxLog_SetActiveTarget(wxLogChain(MyLog(self.log)))
-        
-        wxLogInfo(" ")
-        wxLogInfo("----- START: %s -------------"% time.strftime("%a, %d %b %Y %H:%M:%S"))
-
         self.frame = wxFrame(NULL, -1, "Venue Management" )
        	self.address = VenueServerAddress(self.frame, self)
 	self.tabs = VenueManagementTabs(self.frame, -1, self)
         self.statusbar = self.frame.CreateStatusBar(1)
         self.__doLayout()
         self.__setProperties()
+        self.__setLogger()
         return true
 
+    def __setLogger(self):
+        logger = logging.getLogger("AG.VenueManagement")
+        logger.setLevel(logging.DEBUG)
+        logname = "VenueManagement.log"
+        hdlr = logging.handlers.RotatingFileHandler(logname, "a", 10000000, 0)
+        fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
+        hdlr.setFormatter(fmt)
+        logger.addHandler(hdlr)
+        log = logging.getLogger("AG.VenueManagement")
+
+        wxLog_SetActiveTarget(wxLogGui())  
+        wxLog_SetActiveTarget(wxLogChain(MyLog(log)))
+        wxLogInfo(" ")
+        wxLogDebug("----- START -------------")
+    
     def __setProperties(self):
         self.frame.SetIcon(icons.getAGIconIcon())
         self.frame.SetSize(wxSize(540, 405))
@@ -1695,48 +1703,28 @@ class MyLog(wxPyLog):
     DEBUG = 6
     INFO = 5
     WARNING = 2
-    
-    
-    def __init__(self, log, logTime=0):
+        
+    def __init__(self, log):
         wxPyLog.__init__(self)
         self.log = log
-        self.logTime = logTime
-       
+              
     def DoLog(self, level, message, timeStamp):
         thisTime =  time.strftime("%X", time.localtime(timeStamp))
                            
         if level  == self.ERROR:
-            #box = wxMessageDialog(NULL, "UNEXPECTED ERROR\n"+message, "An error occured", wxICON_ERROR | wxOK )
-            #box.ShowModal()
-            #box.Destroy()
-            (name, args, traceback_string_list) = formatExceptionInfo()
-            traceback = ""
-            for x in traceback_string_list:
-                traceback = traceback+"\n" + x 
-            message =  '[ERROR] '+message + '\n' +traceback
+            self.log.exception(message)
 
         elif level  == self.MESSAGE:
-            message = '[MESSAGE] '+ message
+            self.log.info(message)
             
         elif level  == self.DEBUG:
-            message = '[DEBUG] '+ message
+            self.log.debug(message)
 
         elif level  == self.INFO:
-            message = '[INFO] '+ message
+            self.log.info(message)
 
         elif level  == self.WARNING:
-            message = '[WARNING] '+ message
-
-        message = thisTime +' '+ message
-        self.DoLogString(message, timeStamp)
-
-
-    def DoLogString(self, message, timeStamp):
-        if self.logTime:
-            message = time.strftime("%X", time.localtime(timeStamp)) + \
-                      ": " + message
-
-        self.log.write(message + '\n')
+            self.log.info(message)
      
 if __name__ == "__main__":
     wxInitAllImageHandlers()
