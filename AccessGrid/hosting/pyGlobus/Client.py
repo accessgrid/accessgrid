@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Client.py,v 1.6 2003-02-14 20:51:38 olson Exp $
+# RCS-ID:      $Id: Client.py,v 1.7 2003-02-14 22:21:32 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -39,21 +39,56 @@ class Handle:
     def GetProxy(self):
 
         if self.proxy is None:
-            #
-            # See if we're https or http - route
-            # https to the GSI one for now.
-            #
-
-            type, uri = urllib.splittype(self.url)
-
-            if type == "https":
-                self.proxy = create_proxy(self.url,
-                                          self.namespace,
-                                          self.authCallback)
-            else:
-                self.proxy = SOAPProxy(self.url, self.namespace)
-
+            self.proxy = self.CreateProxy()
         return self.proxy
+
+    def CreateProxy(self):
+        #
+        # See if we're https or http - route
+        # https to the GSI one for now.
+        #
+
+        type, uri = urllib.splittype(self.url)
+
+        if type == "https":
+            proxy = create_proxy(self.url,
+                                      self.namespace,
+                                      self.authCallback)
+        else:
+            proxy = SOAPProxy(self.url, self.namespace)
+
+        return proxy
+
+    def IsValid(self):
+        """
+        Determine if this handle points to a valid web service.
+
+        We do this by simply attempting to invoke the _IsValid method on
+        a new proxy.
+        """
+
+        proxy = self.CreateProxy()
+        try:
+            ret = proxy._IsValid()
+            return ret
+        except Exception, e:
+            # print "Attempt at calling isvalid fails: ", e
+            return 0
+
+    def Implements(self, method):
+        """
+        Determine if this handle points to a valid web service and if that
+        web service implements the method named "method".
+        """
+
+        proxy = self.CreateProxy()
+        try:
+            ret = proxy._Implements(str(method))
+            return ret
+        except Exception, e:
+            # print "Attempt at calling Implements fails: ", e
+            return 0
+        
 
     def __repr__(self):
         return self.url

@@ -91,7 +91,7 @@ import time
 try: from M2Crypto import SSL
 except: pass
 
-ident = '$Id: AGGSISOAP.py,v 1.8 2003-02-14 20:50:34 olson Exp $'
+ident = '$Id: AGGSISOAP.py,v 1.9 2003-02-14 22:21:32 olson Exp $'
 
 __version__ = "0.9.7"
 
@@ -3604,6 +3604,9 @@ class SOAPProxy:
         # borrowed from xmlrpc/soaplib -- www.pythonware.com
         # Altered (improved?) to let you inline namespaces on a per call
         # basis ala SOAP::LITE -- www.soaplite.com
+        #
+        # For the AG mods, we allow _Invalid and _Implements to go through.
+        #
 
         def __init__(self, call, name, ns = None, sa = None, hd = None,
             ma = None, config = Config):
@@ -3619,6 +3622,8 @@ class SOAPProxy:
             if self.__name[0] == "_":
                 if self.__name in ["__repr__","__str__"]:
                     self.__action = 1
+                elif self.__name in ["_IsValid", "_Implements"]:
+                    self.__action = 3
                 else:
                     self.__action = 2
             else:
