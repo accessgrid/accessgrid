@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.169 2004-03-26 17:01:19 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.170 2004-03-26 20:42:05 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.169 2004-03-26 17:01:19 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.170 2004-03-26 20:42:05 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1335,6 +1335,9 @@ class Venue(AuthorizationMixIn):
         """
         return self.encryptionKey
 
+    def RegenerateEncryptionKeys(self):
+        self.key = AllocateEncryptionKey()
+        
     def SetDescription(self, description):
         """
         SetDescription allows an administrator to set the venues description
@@ -2271,6 +2274,19 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         
         return returnValue
 
+    def RegenerateEncryptionKeys(self):
+        """
+        RegenerateKeys allows one to regenerate the encryption keys on
+        the venue. THis should only be done with extreme care, as the
+        regeneration of encryption keys will interrupt existing
+        collaborations by restarting simple media tools.
+        """
+        try:
+            self.impl.RegenerateEncryptionKeys()
+        except:
+            log.exception("Failed to regenerate encryption keys.", e)
+            raise
+        
     def SetDescription(self, description):
         """
         SetDescription allows an administrator to set the venues description
@@ -2807,6 +2823,9 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
     def GetEncryptMedia(self):
         return self.proxy.GetEncryptMedia()
 
+    def RegenerateEncryptionKeys(self):
+        return self.proxy.RegenerateEncryptionKeys()
+    
     def SetDescription(self, description):
         return self.proxy.SetDescription(description)
 
