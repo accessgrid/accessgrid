@@ -6,31 +6,62 @@ import struct
 from common.RTPSensor import RTPSensor
 from common import common
 
+from SelectorGUI import SelectorGUI
+from wxPython.wx import * 
 
 class L16_to_L8(RTPSensor):
     '''
     Class for down-sampling L16-16kHz to L16-8kHz audio. 
     '''
-    def __init__(self, from_address, from_port, to_address, to_port):
+    
+    def __init__(self, from_address, from_port, to_address, to_port, selector = 0):
         RTPSensor.__init__(self, from_address, from_port)
         self.handlerDict[0] = self.do_RTP
+        self.handlerDict[3] = self.do_SDES
         self.buffers = {} 
         self.sources = {}
+        self.sdes = {}
+        self.selector = selector
         self.timeStamps = {}
         self.to_address = to_address
         self.to_port = to_port
-                                
+        self.allowedSource = None
+
+    # Access methods
+    def GetSources(self):
+        return self.sdes
+
+    def SetAllowedSource(self, ssrc):
+        self.allowedSource = ssrc
+
+    def do_SDES(self, session, event):
+        sdestype, sdes = common.make_sdes_item(event.data)
+        ssrc = event.ssrc
+      
+        if self.sdes.has_key(ssrc):
+            if sdestype == 2:
+                self.sdes[ssrc] = sdes
+        else:
+            if ((sdestype == 1) or (sdestype == 2)):
+                self.sdes[ssrc] = sdes
+                    
     def do_RTP(self, session, event):
         '''
         Method called when an rtp data packet arrives.
         '''
         packet = common.make_rtp_packet(event.data)
         data = common.rtp_packet_getdata(packet)
-
+        
         # require l16-16k mono as input
         if packet.pt != 112:
             common.free_rtp_packet(packet)
             return
+         
+        # only forward selected source
+        if self.selector:
+            if not packet.ssrc == self.allowedSource:
+                common.free_rtp_packet(packet)
+                return
 
         # down sample the data
         args = []
@@ -81,7 +112,7 @@ class L16_to_L8(RTPSensor):
                                           name, len(name))
                 destination.send_ctrl(0, None)
                 self.sources[packet.ssrc] = destination
-
+               
 
             # Each source keeps track of its own timestamp.
             if self.timeStamps.has_key(packet.ssrc):
@@ -104,16 +135,15 @@ class L16_to_L8(RTPSensor):
         except Exception, e:
             print "Exception sending data, ", e
 
+        # Send control packet
+        destination.send_ctrl(self.timeStamps[packet.ssrc], None)
+        destination.update()
+        
         common.free_rtp_packet(event.data)
 
         # Clear the buffer
         self.buffers[packet.ssrc] = None
-      
-        # Send control packets for each source
-        for destination in self.sources.values():
-            destination.send_ctrl(self.timeStamps[packet.ssrc], None)
-            destination.update()
-                   
+                           
     def StartSignalLoop(self):
         '''
         Start loop that can get interrupted from signals and
@@ -132,15 +162,26 @@ class L16_to_L8(RTPSensor):
                                                          
 if __name__ == "__main__":
     import sys
-        
+    
     from_addr = sys.argv[1]
     from_port = int(sys.argv[2])
     to_addr = sys.argv[3]
     to_port = int(sys.argv[4])
 
-    tcoder = L16_to_L8(from_addr, from_port, to_addr, to_port)
+    selector = 1
+    
+    tcoder = L16_to_L8(from_addr, from_port, to_addr, to_port, selector)
     tcoder.Start()
 
-    tcoder.StartSignalLoop()
-      
+    if selector:
+        wxapp = wxPySimpleApp()
+        ui = SelectorGUI("Audio Selector", tcoder)
+        wxapp.SetTopWindow(ui)
+        wxapp.MainLoop()
+       
+
+    else:
+        tcoder.StartSignalLoop()
+
+
     tcoder.Stop()
