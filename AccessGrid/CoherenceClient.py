@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceClient.py,v 1.6 2003-01-15 22:03:40 turam Exp $
+# RCS-ID:      $Id: CoherenceClient.py,v 1.7 2003-01-16 20:20:33 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -37,14 +37,10 @@ class CoherenceClient(Thread):
         
     def run(self):
         while self.sock != None:
+#FIXME - bad: assumed message length limit
             pickledData = self.sock.recv(10000)
-            print "pickled data ", pickledData
-            event = pickle.loads( pickledData )
-            callback = self.callbacks[event.eventType]
-            callback( event.data )
-
-    def add_callback( self, eventType, callback ):
-        self.callbacks[eventType] = callback
+            data = pickle.loads( pickledData )
+            self.callback( data )
 
     def test_serve(self, label):
         import time
