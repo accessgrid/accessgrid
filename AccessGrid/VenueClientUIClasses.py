@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.277 2003-09-17 21:01:37 eolson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.278 2003-09-18 15:48:28 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.277 2003-09-17 21:01:37 eolson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.278 2003-09-18 15:48:28 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1518,7 +1518,10 @@ class ContentListPanel(wxPanel):
         if isWindows():
             self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
                                    wxDefaultSize, style = wxTR_HAS_BUTTONS |
-                                   wxTR_NO_LINES)
+                                   wxTR_LINES_AT_ROOT | wxTR_HIDE_ROOT)
+            #self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
+            #                       wxDefaultSize, style = wxTR_HAS_BUTTONS |
+            #                       wxTR_NO_LINES)
             
             
         elif isLinux() or isOSX():
@@ -1814,7 +1817,7 @@ class ContentListPanel(wxPanel):
         if sys.platform == "win32":
             index2 = -2
         
-        self.root = self.tree.AddRoot("", index2, index2)
+        self.root = self.tree.AddRoot("")#, index2, index2)
        
         
 	self.participants = self.tree.AppendItem(self.root, "Participants", index, index)
@@ -1838,8 +1841,8 @@ class ContentListPanel(wxPanel):
         #self.tree.Expand(self.data)
         #self.tree.Expand(self.services)
                 
-        if isWindows():
-            self.tree.Expand(self.root)
+        #if isWindows():
+        #    self.tree.Expand(self.root)
         
     def __setProperties(self):
         pass
