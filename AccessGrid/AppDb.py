@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.2 2003-08-22 19:16:20 judson Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.3 2003-08-27 20:32:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,9 +13,9 @@
 import os
 import sys
 
-from Utilities import LoadConfig, SaveConfig
-from Platform import GetUserConfigDir
-from Descriptions import ApplicationDescription
+from AccessGrid.Utilities import LoadConfig, SaveConfig
+from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.Descriptions import ApplicationDescription
 
 """
 Type management for access grid toolkit:
