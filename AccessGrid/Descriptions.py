@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.3 2003-01-06 21:29:28 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.4 2003-01-07 20:50:35 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -88,7 +88,7 @@ class VenueDescription(ObjectDescription):
     extendedDescription = ""
     
     def __init__(self, name, description, icon, extendeddescription):
-        ObjectDescription.ObjectDescription.__init__(self, name, description, "", icon)
+        ObjectDescription.__init__(self, name, description, "", icon)
         self.extendedDescription = extendeddescription
         
     def SetExtendedDescription(self, extendeddescription):
