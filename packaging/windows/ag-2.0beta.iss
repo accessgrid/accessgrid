@@ -1,3 +1,7 @@
+;
+; RCS-ID: $Id: ag-2.0beta.iss,v 1.15 2003-04-08 15:47:51 olson Exp $
+;
+
 #define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
 #define OutputDir "C:\AccessGridBuild\AccessGrid-Build"
 #define AppName "Access Grid Toolkit"
