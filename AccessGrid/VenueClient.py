@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.190 2004-09-07 20:33:04 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.191 2004-09-07 21:55:29 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.190 2004-09-07 20:33:04 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.191 2004-09-07 21:55:29 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -1441,14 +1441,12 @@ class VenueClient:
 
 # Retrieve a list of urls of (presumably) running venue clients
 def GetVenueClientUrls():
-
     urlList = dict()
     tdir = UserConfig.instance().GetTempDir()
     fileList = os.listdir(tdir)
     for filepath in fileList:
         if filepath.startswith("venueClientUrl"):
-            fn = os.path.join(UserConfig.instance().GetTempDir(),
-                                  filepath)
+            fn = os.path.join(tdir, filepath)
             ctime = os.path.getctime(fn)
             f = open(fn,"r")
             venueClientUrl = f.read()
@@ -1462,8 +1460,10 @@ def GetVenueClientUrls():
     keys.sort()
     
     nlist = map(urlList.get, keys)
-                                     
-    return nlist.reverse()
+
+    nlist.reverse()
+
+    return nlist[0:4]
                                     
 
 class VenueClientI(SOAPInterface):
