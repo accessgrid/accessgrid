@@ -2,11 +2,9 @@ import logging
 
 from wxPython.wx import *
 
-from ProxyBrowser import ProxyBrowser
-from IdentityBrowser import IdentityBrowser
-from CABrowser import CABrowser
-
-import CertificateManagerWXGUI
+from AccessGrid.Security.wxgui.ProxyBrowser import ProxyBrowser
+from AccessGrid.Security.wxgui.IdentityBrowser import IdentityBrowser
+from AccessGrid.Security.wxgui.CABrowser import CABrowser
 
 class CertificateManagerDialog(wxDialog):
     def __init__(self, parent, id, title, certMgr):
