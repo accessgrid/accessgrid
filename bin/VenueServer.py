@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.15 2003-03-27 21:38:54 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.16 2003-04-01 23:26:03 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -83,8 +83,7 @@ hostingEnvironment = Server.Server(port, auth_callback=AuthCallback)
 venueServer = VenueServer(hostingEnvironment, configFile)
 
 # Then we create the VenueServer service
-serviceObject = hostingEnvironment.CreateServiceObject('VenueServer')
-venueServer._bind_to_service(serviceObject)
+hostingEnvironment.BindService(venueServer, 'VenueServer')
 
 # Some simple output to advertise the location of the service
 print "Service running at: %s" % venueServer.GetHandle()
@@ -95,6 +94,7 @@ signal.signal(signal.SIGINT, SignalHandler)
 signal.signal(signal.SIGTERM, SignalHandler)
 
 log.debug("Starting Hosting Environment.")
+
 # We start the execution
 hostingEnvironment.RunInThread()
 
