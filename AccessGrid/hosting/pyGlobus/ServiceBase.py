@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ServiceBase.py,v 1.7 2003-04-28 18:05:43 judson Exp $
+# RCS-ID:      $Id: ServiceBase.py,v 1.8 2003-05-16 04:16:23 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ class ServiceBase:
         """
         Removes the binding of this object to the underlying web service.
         """
-        self._UnregisterExports(self._service_object)
+        self._UnregisterExports()
         self._service_object = None
         
     def GetHandle(self):
@@ -106,7 +106,7 @@ class ServiceBase:
                                         thing[0].__name__,
                                         exported_methods.values() )
         
-    def _UnregisterExports(self, service_obj):
+    def _UnregisterExports(self):
         """
         This method unregisters the web service methods from the server,
         this makes them unavailable to outside callers and allows python
