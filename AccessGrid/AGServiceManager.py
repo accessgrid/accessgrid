@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.51 2004-04-19 21:26:12 lefvert Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.52 2004-04-26 15:38:51 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.51 2004-04-19 21:26:12 lefvert Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.52 2004-04-26 15:38:51 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -183,6 +183,7 @@ class AGServiceManager:
             options.append( port )
             log.debug("Running Service; options: %s %s", executable, str(options))
             
+            os.chdir(self.servicesDir)
             pid = self.processManager.StartProcess( executable, options )
 
             #
