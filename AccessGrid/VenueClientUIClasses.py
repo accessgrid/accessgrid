@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.284 2003-09-19 22:12:48 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.285 2003-09-23 22:35:50 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.284 2003-09-19 22:12:48 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.285 2003-09-23 22:35:50 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -133,7 +133,7 @@ class VenueClientFrame(wxFrame):
         self.textClientPanel = None
         self.textClientStandAlone = None
         self.myVenuesDict = {}
-        self.myVenuesMenuIds = []
+        self.myVenuesMenuIds = {}
         self.personToFollow = None
         self.manual_url = os.path.join(GetSharedDocDir(), "VenueClientManual",
                                        "VenueClientManualHTML.htm")
@@ -696,10 +696,10 @@ class VenueClientFrame(wxFrame):
             self.__showNoSelectionDialog("Please, select the participant yow want to view information about") 
          
     def __loadMyVenues(self, venueURL = None):
-        for id in self.myVenuesMenuIds:
+        for id in self.myVenuesMenuIds.values():
             self.myVenues.Delete(id)
-
-        self.myVenuesMenuIds = []
+        
+        self.myVenuesMenuIds = {}
             
         try:
             myVenuesFile = open(self.myVenuesFile, 'r')
@@ -711,7 +711,7 @@ class VenueClientFrame(wxFrame):
                         
             for name in self.myVenuesDict.keys():
                 id = wxNewId()
-                self.myVenuesMenuIds.append(id)
+                self.myVenuesMenuIds[name] = id
                 url = self.myVenuesDict[name]
                 text = "Go to: " + url
                 self.myVenues.Append(id, name, text)
@@ -752,7 +752,7 @@ class VenueClientFrame(wxFrame):
     def AddToMyVenues(self, event):
         id = wxNewId()
         url = self.app.venueClient.venueUri
-                      
+                              
         if url is not None:
             if(url not in self.myVenuesDict.values()):
                 dialog = AddMyVenueDialog(self, -1, "Add current venue",
@@ -761,11 +761,29 @@ class VenueClientFrame(wxFrame):
                 if (dialog.ShowModal() == wxID_OK):
                     name = dialog.address.GetValue()
                     text = "Go to: " + url
+
+                    if self.myVenuesDict.has_key(name):
+                        info = "A venue with the same name is already added, do you want to overwrite it?"
+                        dlg = wxMessageDialog(self, info ,"Duplicated Venue", style = wxOK|wxCANCEL|wxICON_INFORMATION)
+
+                        if (dlg.ShowModal() == wxID_OK):
+                            if self.myVenuesDict.has_key(name):
+                                # Remove the venue from my venues menu list
+                                menuId = self.myVenuesMenuIds[name]
+                                self.myVenues.Remove(menuId)
+                                
+                                # Remove it from the dictionary
+                                del self.myVenuesMenuIds[name]
+
+                            del self.myVenuesDict[name]
+                        else:
+                            # Do not add this venue
+                            return
+
                     self.myVenues.Append(id, name, text)
-                    self.myVenuesMenuIds.append(id)
+                    self.myVenuesMenuIds[name] = id
                     self.myVenuesDict[name] = url
                     EVT_MENU(self, id, self.GoToMenuAddress)
-            
                     self.SaveMyVenuesToFile()
 
                 dialog.Destroy()
@@ -1998,7 +2016,6 @@ class ContentListPanel(wxPanel):
         # useLocal = 0
         
         # Path where temporary file will exist if opened/used.
-        print 'data menu'
         a_file = os.path.join(GetTempDir(), item.name)
         ext = item.name.split('.')[-1]
         
@@ -2634,6 +2651,9 @@ class EditMyVenuesDialog(wxDialog):
             text = "Please, select the venue you want to rename"
             title = "Notification"
             MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
+
+    def DoesVenueExist(self, name):
+        return self.dictCopy.has_key(name)
                         
     def Rename(self, name):
         if(self.dictCopy.has_key(self.currentItem)):
@@ -2690,14 +2710,19 @@ class RenameDialog(wxDialog):
         wxDialog.__init__(self, parent, id, title)
         self.text = wxStaticText(self, -1, "Please, fill in the new name of your venue", style=wxALIGN_LEFT)
         self.nameText = wxStaticText(self, -1, "New Name: ", style=wxALIGN_LEFT)
-        self.name = wxTextCtrl(self, -1, "", size = wxSize(300,20))
+        self.name = wxTextCtrl(self, -1, "", size = wxSize(300,20), validator = MyVenuesEditValidator())
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.Centre()
         self.Layout()
+        self.parent = parent
+        
         if(self.ShowModal() == wxID_OK):
             parent.Rename(self.name.GetValue())
-        self.Destroy()      
+        self.Destroy()
+
+    def DoesVenueExist(self, name):
+        return self.parent.DoesVenueExist(name)
         
     def Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
@@ -2938,7 +2963,33 @@ class ProfileDialog(wxDialog):
         self.SetSizer(self.sizer1)
         self.sizer1.Fit(self)
         self.SetAutoLayout(1)
-       
+
+class MyVenuesEditValidator(wxPyValidator):
+    def __init__(self):
+        wxPyValidator.__init__(self)
+            
+    def Clone(self):
+        return MyVenuesEditValidator()
+
+    def Validate(self, win):
+        tc = self.GetWindow()
+        val = tc.GetValue()
+        venueExists = win.DoesVenueExist(val)
+
+        if venueExists:
+            info = "A venue with the same name is already added, please select a different name." 
+            dlg = wxMessageDialog(None, info, "Duplicated Venue", style = wxOK | wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return false
+
+        return true
+    
+    def TransferToWindow(self):
+        return true # Prevent wxDialog from complaining.
+
+    def TransferFromWindow(self):
+        return true # Prevent wxDialog from complaining.
                 
 class TextValidator(wxPyValidator):
     def __init__(self):
