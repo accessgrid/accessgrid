@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.11 2004-05-04 21:27:18 lefvert Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.12 2004-05-26 17:35:21 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -553,10 +553,11 @@ class ValidatorHelp(wxPyValidator):
 
         if domain == "":
             return false
-        
+
+        hostlow = host.lower()
         # Check if some part of the domain matches the host name
         for part in domainPartsList:
-           if host.find(part) != -1:
+           if hostlow.find(part.lower()) != -1:
                return true
 
         return false
