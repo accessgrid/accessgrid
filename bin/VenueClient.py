@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.195 2003-08-14 19:22:01 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.196 2003-08-14 19:59:48 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1434,7 +1434,7 @@ if __name__ == "__main__":
 
     app = wxPySimpleApp()
 
-    dlg = ProgressDialog("Startup", "Loading Venue Client. Please be patient.", 10, None)
+    dlg = ProgressDialog("Startup", "Loading Venue Client. Please be patient.", 10)
     dlg.Show()
     
     vc = VenueClientUI(dlg)
