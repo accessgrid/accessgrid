@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.230 2003-08-14 17:27:35 eolson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.231 2003-08-15 15:03:27 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1586,7 +1586,7 @@ class ContentListPanel(wxPanel):
             
     def AddData(self, profile):
         log.debug("profile.type = %s" %profile.type)
-                
+
         #if venue data
         if(profile.type == 'None' or profile.type == None):
             log.debug("This is venue data")
@@ -1610,7 +1610,6 @@ class ContentListPanel(wxPanel):
                 if participantId:
                     log.debug("participantId ok")
                     ownerProfile = self.tree.GetItemData(participantId).GetData()
-
                     #
                     # Test if personal data is already added
                     #
@@ -1813,6 +1812,7 @@ class ContentListPanel(wxPanel):
                 if dataDescriptionList:
                     for data in dataDescriptionList:
                         self.AddData(data)
+                       
             except:
                 ErrorDialog(None, "%s's data could not be retrieved."%item.name ,
                             style = wxOK  | wxICON_ERROR)
@@ -2049,13 +2049,13 @@ class ContentListPanel(wxPanel):
             self.tree.Delete(index)
 
         for index in self.applicationDict.values():
-            self.tree.Delete(index)       
+            self.tree.Delete(index)
 
         self.participantDict.clear()
         self.dataDict.clear()
         self.serviceDict.clear()
         self.applicationDict.clear()
-                            
+        self.personalDataDict.clear()
  
 class TextClientPanel(wxPanel):
     aboutText = """PyText 1.0 -- a simple text client in wxPython and pyGlobus.
