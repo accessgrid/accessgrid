@@ -44,7 +44,7 @@ StartDir = os.getcwd()
 d,agsourcedir = os.path.split(BuildDir)
 distDirs = [agsourcedir,
             "ag-media",
-            "SOAPpy-0.11.4",
+            "SOAPpy-0.11.5",
             "fpconst-0.7.0",
             "openssl-0.9.7d",
             "pyGlobus",
