@@ -48,7 +48,7 @@ parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
                   default=0,
                   help="A flag that indicates to build verbosely.")
 parser.add_option("--version", dest="version", metavar="VERSION",
-                  default=None, help="The version of the toolkit.")
+                  default="", help="The version of the toolkit.")
 
 options, args = parser.parse_args()
 
@@ -57,15 +57,6 @@ options, args = parser.parse_args()
 #
 oldpath = os.environ['PATH']
 os.environ['PATH'] = os.path.join(SourceDir, "WinGlobus", "bin")+";"+oldpath
-
-#
-# The version being packaged
-#  We set this to X.Y since it should be specified for every execution
-#
-if options.version is not None:
-    AGTkVersion = options.version
-else:
-    AGTkVersion = "X.Y"
 
 # Build Name
 #  This is the default name we use for the installer
@@ -178,7 +169,7 @@ for cmd in [
 #
 
 # Add quotes around command.
-iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" /dSourceDir=%s /dBuildDir=%s" % (inno_compiler, iss_orig, AGTkVersion, metainfo.replace(' ', '_'), SourceDir, DestDir)
+iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" /dSourceDir=%s /dBuildDir=%s" % (inno_compiler, iss_orig, options.version, metainfo.replace(' ', '_'), SourceDir, DestDir)
 
 if options.verbose:
     print "BUILD: Executing:", iscc_cmd
