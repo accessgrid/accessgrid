@@ -5,7 +5,7 @@
 # Author:      Robert Olson, Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.6 2003-01-21 18:37:00 judson Exp $
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.7 2003-01-24 04:28:41 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,7 +29,7 @@ class MulticastAddressAllocator:
     INTERVAL = "interval"
 
     def __init__(self, baseAddress = None, addressMask = None,
-                 portBase = 49152, portMask = 0x3fff):
+                 portBase = 49152):
         """
         We initialize this class with the information needed to allocate
         addresses. A base address and address mask imply we're allocating
@@ -53,7 +53,6 @@ class MulticastAddressAllocator:
             self.addressMask = socket.htonl(~((1 << (32 - addressMask)) - 1))
 
         self.portBase = portBase
-        self.portMask = portMask
         self.random = Random(time.clock())
 
         self.addressAllocationMethod = MulticastAddressAllocator.INTERVAL
@@ -81,11 +80,22 @@ class MulticastAddressAllocator:
         We allocate only even numbered ports since that is the requirement
         for rtp encapsulated streams.
         """
-        randomNumber = self.random.randrange(self.portBase, 65535, 2)
-        port = (randomNumber & self.portMask) + self.portBase
+        inUse = 0
+        port = self.random.randrange(self.portBase, 65535, 2)
+        # Check to see if port is used
+        while port in self.allocatedPorts and inUse:
+            port = self.random.randrange(self.portBase, 65535, 2)
+            try:
+                s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
+                s.bind(("", port ) )
+                s.close()
+                inUse = 0
+            except socket.error:
+                inUse = 1
+                continue
         self.allocatedPorts.append(port)
         return port
-
+        
     def RecyclePort(self, port):
         self.allocatedPorts.remove(port)
 
@@ -93,8 +103,14 @@ class MulticastAddressAllocator:
         randomNumber = self.random.randrange(sys.maxint)
         newAddress = self.baseAddress & self.addressMask
         newAddress = newAddress | (randomNumber & ~self.addressMask)
-
         addressString = socket.inet_ntoa(struct.pack("L", newAddress))
+        
+        while addressString in self.allocatedAddresses:
+            randomNumber = self.random.randrange(sys.maxint)
+            newAddress = self.baseAddress & self.addressMask
+            newAddress = newAddress | (randomNumber & ~self.addressMask)
+            addressString = socket.inet_ntoa(struct.pack("L", newAddress))
+ 
         self.allocatedAddresses.append(addressString)
 
         return addressString
