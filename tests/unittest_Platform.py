@@ -11,7 +11,7 @@
 #-----------------------------------------------------------------------------
 
 import unittest
-import os
+import os, sys
 import os.path
 import tempfile
 from AccessGrid import Platform
@@ -23,16 +23,24 @@ class DefaultPaths(unittest.TestCase):
             del os.environ[Platform.AGTK_LOCATION]
         if os.environ.has_key(Platform.AGTK_USER):
             del os.environ[Platform.AGTK_USER]
+
+    def testIsOSX(self):
+        Platform.isOSX()
     
     def testSystem(self):
         configDir = Platform.GetSystemConfigDir()
         print "System config dir: ", configDir
-        assert configDir != "" and configDir is not None, 'empty config dir'
+        assert configDir != "" and configDir is not None, 'empty system config dir'
     
     def testUser(self):
         configDir = Platform.GetUserConfigDir()
         print "User config dir: ", configDir
-        assert configDir != "" and configDir is not None, 'empty config dir'
+        assert configDir != "" and configDir is not None, 'empty user config dir'
+
+    def testUserAppPath(self):
+        appDir = Platform.GetUserAppPath()
+        print "User app dir: ", appDir
+        assert appDir != "" and appDir is not None, 'empty user app path'
 
     def testConfigFile(self):
         #
@@ -46,6 +54,11 @@ class DefaultPaths(unittest.TestCase):
         instDir = Platform.GetInstallDir()
         print "Install dir: ", instDir
         assert instDir != "" and instDir is not None, 'empty install dir'
+
+    def testSharedDocDir(self):
+        docDir = Platform.GetSharedDocDir()
+        print "shared doc dir: ", docDir
+        assert docDir != "" and docDir is not None, 'empty shared doc dir'
 
     def testTempDir(self):
         tempDir = Platform.GetTempDir()
@@ -69,6 +82,18 @@ class DefaultPaths(unittest.TestCase):
         free = Platform.GetFilesystemFreeSpace("/")
         print "Free space: ", free
 
+    def testGetMimeCommands(self):
+        if sys.platform == Platform.WIN:
+            commands = Platform.Win32GetMimeCommands(mimeType=None, ext="txt")
+        else:
+            commands = Platform.LinuxGetMimeCommands(mimeType=None, ext="txt")
+
+    def testGetMimeType(self):
+        if sys.platform == Platform.WIN:
+            commands = Platform.Win32GetMimeType("txt")
+        else:
+            commands = Platform.LinuxGetMimeType("txt")
+
 class EnvPaths(unittest.TestCase):
 
     def setUp(self):
@@ -88,13 +113,13 @@ class EnvPaths(unittest.TestCase):
     
     def testSystem(self):
         configDir = Platform.GetSystemConfigDir()
-        print "System config dir: ", configDir
+        print "System config dir (using temp name): ", configDir
         assert configDir != "" and configDir is not None, 'empty config dir'
         assert configDir == self.sysdir
     
     def testUser(self):
         configDir = Platform.GetUserConfigDir()
-        print "User config dir: ", configDir
+        print "User config dir (using temp name): ", configDir
         assert configDir != "" and configDir is not None, 'empty config dir'
         assert configDir == self.userdir
 
@@ -103,18 +128,14 @@ class EnvPaths(unittest.TestCase):
         # Test for a config directory that's probably not there
         #
         configDir = Platform.GetConfigFilePath("foo")
-        print "Got foo dir ", configDir
+        print "Got foo dir (using temp name): ", configDir
         assert configDir == self.foodir
-
-class GPI(unittest.TestCase):
-    def testGPI(self):
-        Platform.GPI()
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
 
     suites = []
-    for testClass in [DefaultPaths, Environ, GPI]:
+    for testClass in [DefaultPaths, Environ]:
         suites.append(unittest.makeSuite(testClass))
 
     return unittest.TestSuite(suites)
