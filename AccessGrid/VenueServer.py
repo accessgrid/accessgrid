@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.153 2004-07-22 15:36:31 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.154 2004-07-23 20:58:10 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.153 2004-07-22 15:36:31 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.154 2004-07-23 20:58:10 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -287,8 +287,10 @@ class VenueServer(AuthorizationMixIn):
         # other general housekeeping tasks for the Venue Server.
         self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.Checkpoint,
-                                 int(self.houseKeeperFrequency), 0)
-        self.houseKeeper.AddTask(self.CleanupVenueClients, 10)
+                                 int(self.houseKeeperFrequency), 
+                                 0,
+                                 1)
+        self.houseKeeper.AddTask(self.CleanupVenueClients, 10, 0, 1)
 
         if self.performanceReportFile is not None and \
                int(self.performanceReportFrequency) > 0:
