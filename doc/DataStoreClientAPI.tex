@@ -34,25 +34,27 @@ easy access for the clients of a venue to access the data therein.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{\module{AccessGrid.DataStoreClient} --- Client API to the
-Venue DataStore}
+\section{\module{AccessGrid.VenueDataStoreClient} --- Client API to a
+venue-based data store}
 
-\declaremodule{}{AccessGrid.DataStoreClient}
-\modulesynopsis{Client access to the Venue Datastore}
+This module defines the interface to a Venue datastore, as available
+beginning with AGTk version 2.0. 
 
 \begin{funcdesc}{GetVenueDataStore}{venueURL}
 Return a \class{DataStoreClient}  instance representing the default
 datastore on the venue with url \var{venueURL}.
 \end{funcdesc}
 
+\section{\module{AccessGrid.DataStoreClient} --- Client API to the
+Venue DataStore}
+
+\declaremodule{}{AccessGrid.DataStoreClient}
+\modulesynopsis{Client access to the Venue Datastore}
+
 
 \begin{classdesc}{DataStoreClient}{uploadURL, datastoreURL}
 A \class{DataStoreClient}  instance provides access to the datastore
 represented by \var{uploadURL} and \var{datastoreURL}.
-
-Clients typically will use the module function
-\function{GetVenueDataStore} to return a \class{DataStoreClient}
-instance for the given venue URL.
 
 \end{classdesc}
 
@@ -67,7 +69,7 @@ the files in a datastore.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% CertificateRepository methods.
+% DataStoreClient methods.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -107,6 +109,10 @@ interest in this dictionary include
 
 \begin{methoddesc}{Download}{filename, localFile}
 Download \var{filename} to the local file \var{localFile}.
+
+Raises a \var{FileNotFound} exception if \var{filename} does not exist
+in the repository.
+
 \end{methoddesc}
 
 \begin{methoddesc}{Upload}{localFile}
