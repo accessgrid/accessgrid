@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.31 2003-02-18 18:07:34 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.32 2003-02-18 18:50:28 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -202,8 +202,7 @@ class VenueClientFrame(wxFrame):
         profileView = ProfileDialog(self, -1, "test")
         profileView.SetDescription(participant)
 
-        if (profileView.ShowModal() == wxID_OK): 
-            "--------ok"
+        profileView.ShowModal()
         profileView.Destroy()
         
 
@@ -1131,6 +1130,7 @@ class ProfileDialog(wxDialog):
         self.profile = profile
         self.profileTypeBox = wxComboBox(self, -1, choices =['user', 'node'], style = wxCB_DROPDOWN)
         self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
+        self.Layout()
         self.SetTitle("Please, fill in your profile information")
         self.nameCtrl.SetValue(self.profile.GetName())
         self.emailCtrl.SetValue(self.profile.GetEmail())
@@ -1147,6 +1147,7 @@ class ProfileDialog(wxDialog):
     def SetDescription(self, item):
         self.profileTypeBox = wxTextCtrl(self, -1, item.profileType)
         self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
+        self.Layout()
         self.SetTitle("Please, fill in your profile information")
         self.nameCtrl.SetValue(item.name)
         self.emailCtrl.SetValue(item.email)
