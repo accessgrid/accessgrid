@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.69 2004-05-27 20:45:33 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.70 2004-07-16 20:46:18 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.69 2004-05-27 20:45:33 eolson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.70 2004-07-16 20:46:18 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -40,7 +40,6 @@ from AccessGrid import Log
 import AccessGrid.GUID
 from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.Descriptions import DataDescription, CreateDataDescription
-from AccessGrid.EventServiceAsynch import EventService
 from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent,  AddDataEvent
 from AccessGrid.EventClient import EventClient, EventClientWriteDataException
 from AccessGrid.Events import Event, ConnectEvent, HeartbeatEvent
