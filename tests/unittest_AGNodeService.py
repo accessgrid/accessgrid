@@ -124,7 +124,7 @@ class AGNodeServiceTestCase(unittest.TestCase):
 
     def testAddRemoveServiceManager(self):
         # Create the Service Manager
-        serviceManager = AGServiceManager()
+        serviceManager = AGServiceManager(Server(0))
         service_man = server.CreateServiceObject("ServiceManager")
         serviceManager._bind_to_service(service_man)
 
@@ -133,6 +133,8 @@ class AGNodeServiceTestCase(unittest.TestCase):
         assert serviceManagerDesc in nodeService.GetServiceManagers()
         nodeService.RemoveServiceManager(serviceManagerDesc) 
         assert serviceManagerDesc not in nodeService.GetServiceManagers()
+
+
 
     # Service Methods
 

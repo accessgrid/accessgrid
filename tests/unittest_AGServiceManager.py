@@ -24,7 +24,8 @@ class AGServiceManagerBasicTestCase(unittest.TestCase):
         """Test initialization"""
         # For testing we'll change to a local test config path.
         os.environ[AGTK_LOCATION] = "testInstall"
-        self.serviceManager = AGServiceManager()
+        self.serviceManager = AGServiceManager(Server(0))
+        self.serviceManager.Shutdown()
         del self.serviceManager
 
 class AGServiceManagerBasicCase(unittest.TestCase):
@@ -33,7 +34,7 @@ class AGServiceManagerBasicCase(unittest.TestCase):
         """Test initialization"""
         # For testing we'll change to a local test config path.
         os.environ[AGTK_LOCATION] = "testInstall"
-        self.serviceManager = AGServiceManager()
+        self.serviceManager = AGServiceManager(Server(0))
 
     def testValidInitialization(self):
         assert None != self.serviceManager.authManager
@@ -42,6 +43,7 @@ class AGServiceManagerBasicCase(unittest.TestCase):
   # def testOtherTestsHere
 
     def tearDown(self):
+        self.serviceManager.Shutdown()
         del self.serviceManager
 
 
