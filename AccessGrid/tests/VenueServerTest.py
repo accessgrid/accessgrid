@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueServerTest.py,v 1.7 2003-02-21 16:51:02 lefvert Exp $
+# RCS-ID:      $Id: VenueServerTest.py,v 1.8 2003-02-28 17:49:50 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -197,8 +197,7 @@ class VenueServerTest:
             print "\n name: "+v.name+"\n "+v.description
             
 if __name__ == "__main__":       
-    venueServerPort = 8000
+    venueServerUrl = "https://localhost:8000/VenueServer"
     if len(sys.argv) > 1:
-        venueServerPort = sys.argv[1]
-    venueServerUri = 'https://localhost:%s/VenueServer' % ( venueServerPort )
-    VenueServerTest(venueServerUri)
+        venueServerUrl = sys.argv[1]
+    VenueServerTest(venueServerUrl)
