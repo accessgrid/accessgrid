@@ -1,0 +1,11 @@
+
+
+export AGTK_LOCATION=$AGTK_APP_ROOT/Contents/Resources
+export PYTHONPATH=$AGTK_LOCATION:$AGTK_APP_ROOT/Contents/Resources/lib/python2.3/site-packages
+export GLOBUS_LOCATION=$AGTK_APP_ROOT/Contents/Resources/globus
+source "$GLOBUS_LOCATION/etc/globus-user-env.sh"
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$AGTK_APP_ROOT/Contents/Resources/lib
+export DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH
+
+pythonw "$AGTK_LOCATION/bin/AGLauncher.py" "$AGTK_LOCATION"
+
