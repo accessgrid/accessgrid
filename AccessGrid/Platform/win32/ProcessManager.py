@@ -2,15 +2,16 @@
 # Name:        ProcessManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.4 2004-03-12 21:54:28 judson Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.5 2004-03-15 19:49:47 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.4 2004-03-12 21:54:28 judson Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.5 2004-03-15 19:49:47 turam Exp $"
 __docformat__ = "restructuredtext en"
 
+import copy
 import win32process
 from AccessGrid import Log
 
@@ -98,7 +99,8 @@ class ProcessManager:
         """
         Cleanly shutdown all processes this manager has created.
         """
-        for phandle in self.processes:
+        processList = copy.copy(self.processes)
+        for phandle in processList:
             try:
                 self.TerminateProcess(phandle)
             except Exception, e:
@@ -124,6 +126,10 @@ class ProcessManager:
         @warning: this is not a clean shutdown, but a forced shutdown
         that may result in system cruft.
         """
+        # Placeholder to remind implementor 
+        # to operate on a copy of the list
+        # to avoid skipping procs
+        #processList = copy.copy(self.processes)
         self.TerminateAllProcesses()
 
     def KillProcess(self, pid):
