@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.10 2004-04-06 18:35:14 eolson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.11 2004-04-06 20:44:37 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.10 2004-04-06 18:35:14 eolson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.11 2004-04-06 20:44:37 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -28,7 +28,7 @@ from AccessGrid.Platform import IsWindows
 from AccessGrid.ClientProfile import ClientProfileCache
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
 from AccessGrid.Security.X509Subject import X509Subject    
-from AccessGrid.Security.Role import Role, DefaultIdentityNotRemovable
+from AccessGrid.Security.Role import Role, AllowRole, DenyRole, DefaultIdentityNotRemovable
 from AccessGrid.Security.Action import Action 
 from AccessGrid import icons
 from AccessGrid.Security.Utilities import GetCNFromX509Subject
