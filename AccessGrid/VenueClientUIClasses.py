@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.178 2003-05-09 20:43:25 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.179 2003-05-12 15:16:00 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1287,7 +1287,7 @@ class ContentListPanel(wxPanel):
 
     def __setImageList(self):
 	#imageList = wxImageList(32,19)
-        imageList = wxImageList(18,15)
+        imageList = wxImageList(19,18)
 
         #self.line = imageList.Add(icons.getHeadingLineBitmap())
         self.line = imageList.Add(icons.getFolderBitmap())
@@ -1661,51 +1661,57 @@ class ContentListPanel(wxPanel):
     def OnRightClick(self, event):
         self.x = event.GetX()
         self.y = event.GetY()
-        treeId = self.tree.GetSelection()
-        item = self.tree.GetItemData(treeId).GetData()
-        text = self.tree.GetItemText(treeId)
 
-        if text == 'Data':
-            self.PopupMenu(self.parent.dataHeadingMenu, wxPoint(self.x, self.y))
+        treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
+        #treeId = self.tree.GetSelection()
 
-        elif text == 'Services':
-            self.PopupMenu(self.parent.serviceHeadingMenu, wxPoint(self.x, self.y))
-
-        #elif text == 'Applications':
-        #    self.PopupMenu(self.parent.applicationEntryMenu,
-        #                   wxPoint(self.x, self.y))
-        #elif text == 'Participants' or text == 'Nodes' or item == None:
-        elif text == 'Participants' or item == None:
-            pass
-
-        elif isinstance(item, ServiceDescription):
-            self.PopupMenu(self.parent.serviceEntryMenu, wxPoint(self.x,self.y))
-
-        elif isinstance(item,ApplicationDescription):
-            self.PopupMenu(self.parent.applicationEntryMenu, wxPoint(self.x, self.y))
+        if(treeId.IsOk()):
+            self.tree.SelectItem(treeId)
+            item = self.tree.GetItemData(treeId).GetData()
+            text = self.tree.GetItemText(treeId)
+                        
+            if text == 'Data':
+                self.PopupMenu(self.parent.dataHeadingMenu, wxPoint(self.x, self.y))
+                
+            elif text == 'Services':
+                self.PopupMenu(self.parent.serviceHeadingMenu, wxPoint(self.x, self.y))
+                
+            #elif text == 'Applications':
+            #    self.PopupMenu(self.parent.applicationEntryMenu,
+            #                   wxPoint(self.x, self.y))
+            #elif text == 'Participants' or text == 'Nodes' or item == None:
+            elif text == 'Participants' or item == None:
+                pass
             
-        elif isinstance(item, DataDescription):
-            parent = self.tree.GetItemParent(treeId)
+            elif isinstance(item, ServiceDescription):
+                self.PopupMenu(self.parent.serviceEntryMenu, wxPoint(self.x,self.y))
+
+            elif isinstance(item,ApplicationDescription):
+                self.PopupMenu(self.parent.applicationEntryMenu, wxPoint(self.x, self.y))
             
-            if(self.tree.GetItemText(parent) == 'Data'):
-                self.PopupMenu(self.parent.dataEntryMenu, wxPoint(self.x, self.y))
-            else:
-                self.PopupMenu(self.parent.personalDataEntryMenu, wxPoint(self.x, self.y))
+            elif isinstance(item, DataDescription):
+                parent = self.tree.GetItemParent(treeId)
+                
+                if(self.tree.GetItemText(parent) == 'Data'):
+                    self.PopupMenu(self.parent.dataEntryMenu, wxPoint(self.x, self.y))
+                else:
+                    self.PopupMenu(self.parent.personalDataEntryMenu, wxPoint(self.x, self.y))
                
-        elif isinstance(item,ClientProfile):
-            wxLogDebug("Is this me? public is = %s, my id = %s "%(item.publicId, self.app.profile.publicId))
-            if(item.publicId == self.app.profile.publicId):
-                wxLogDebug("This is me")
-                self.PopupMenu(self.parent.meMenu, wxPoint(self.x, self.y))
+            elif isinstance(item,ClientProfile):
+                wxLogDebug("Is this me? public is = %s, my id = %s "%(item.publicId, self.app.profile.publicId))
+                if(item.publicId == self.app.profile.publicId):
+                    wxLogDebug("This is me")
+                    self.PopupMenu(self.parent.meMenu, wxPoint(self.x, self.y))
 
-            #elif(item.profileType == 'node'):
-            #    wxLogDebug("This is a node")
-            #    self.PopupMenu(self.parent.nodeMenu, wxPoint(self.x, self.y))
+                #elif(item.profileType == 'node'):
+                #    wxLogDebug("This is a node")
+                #    self.PopupMenu(self.parent.nodeMenu, wxPoint(self.x, self.y))
 
-            elif(item.profileType == 'user'):
-                wxLogDebug("This is a user")
-                self.PopupMenu(self.parent.participantMenu,
-                               wxPoint(self.x, self.y))
+                #elif(item.profileType == 'user'):
+                else:
+                    wxLogDebug("This is a user")
+                    self.PopupMenu(self.parent.participantMenu,
+                                   wxPoint(self.x, self.y))
 
             
     def CleanUp(self):
