@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.180 2004-07-13 13:27:29 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.181 2004-07-14 20:38:24 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.180 2004-07-13 13:27:29 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.181 2004-07-14 20:38:24 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -92,6 +92,7 @@ class VenueClient:
         This client class is used on shared and personal nodes.
         """
         self.userConf = UserConfig.instance()
+        
         if profile:
             self.profile = profile
         else:
@@ -131,7 +132,7 @@ class VenueClient:
         self.followerProfiles = dict()
         self.urlToFollow = None
         self.observers = []
-               
+
         # attributes for personal data store
         self.personalDataStorePrefix = "personalDataStore"
         self.personalDataStorePort = 0
@@ -686,7 +687,7 @@ class VenueClient:
             (venueState, self.privateId, self.streamDescList ) = self.__venueProxy.Enter( self.profile )
 
             self.venueState = CreateVenueState(venueState)
-            
+
             self.venueUri = URL
             self.venueId = self.venueState.GetUniqueId()
 
@@ -1270,7 +1271,11 @@ class VenueClient:
         self.__StopWebService()
         
         if self.server:
-            self.server.Stop()
+            try:
+                self.server.Stop()
+            # FIXME THIS IS SO WRONG XXXX
+            except:
+                pass
              
         if self.dataStore:
             self.dataStore.Shutdown()
