@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.100 2003-04-03 15:56:38 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.101 2003-04-03 16:05:30 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ class VenueClientUI(wxApp, VenueClient):
     #personalDataFile = os.path.join(personalDataStorePath, "myData.txt" )
 
     def __init__(self):
-        wxApp.__init__(self)
+        wxApp.__init__(self, false)
         VenueClient.__init__(self)
 
     def OnInit(self):
@@ -75,11 +75,12 @@ class VenueClientUI(wxApp, VenueClient):
         self.personalDataStorePath = os.path.join(self.accessGridPath, self.personalDataStorePrefix)
         self.personalDataFile = os.path.join(self.personalDataStorePath, "myData.txt" )
 
-        try:
-            os.mkdir(self.personalDataStorePath)
-        except OSError, e:
-            log.exception("Could not create venueStoragePath.")
-            self.personalDataStorePath = None
+        if not os.path.exists(self.personalDataStorePath):
+            try:
+                os.mkdir(self.personalDataStorePath)
+            except OSError, e:
+                wxLogError("Could not create venueStoragePath.")
+                self.personalDataStorePath = None
                 
         self.dataStore = DataStore.DataStore(self, self.personalDataStorePath,
                                    self.personalDataStorePrefix)
