@@ -23,7 +23,7 @@ parser.add_option("--verbose", action="store_true", dest="verbose",
                   default=0,
                   help="A flag that indicates to build verbosely.")
 parser.add_option("-p", "--pythonversion", dest="pyver",
-                  metavar="PYTHONVERSION", default="2.2",
+                  metavar="PYTHONVERSION", default="2.3",
                   help="Which version of python to build the installer for.")
 
 options, args = parser.parse_args()
@@ -48,13 +48,17 @@ if not os.path.exists(TmpDir):
 RpmDir = os.path.join(TmpDir,"AccessGrid-%s" % (version,))
 if not os.path.exists(RpmDir):
     os.mkdir(RpmDir)
-CurDir = os.getcwd()
+StartDir = os.getcwd()
 
 #
 # Build rpms for infrastructure packages
 #
 print "** Building RPMs for infrastructure packages"
-for pkg in [ "logging-0.4.7", "Optik-1.4.1", "fpconst-0.6.0", "SOAPpy"]:
+packageList = [ "fpconst-0.6.0", "SOAPpy"]
+if options.pyver == '2.2':
+    packageList.append('Optik-1.4.1')
+    packageList.append('logging-0.4.7')
+for pkg in packageList:
     os.chdir(SourceDir)
     os.chdir(pkg)
     cmd = "%s setup.py bdist_rpm --binary-only --dist-dir %s" % (sys.executable,
@@ -101,7 +105,7 @@ print "cmd = ", cmd
 os.system(cmd)
 
 # - build the rpm
-os.chdir(CurDir)
+os.chdir(StartDir)
 cmd = "rpmbuild -ba pyGlobus.spec"
 print "cmd = ", cmd
 os.system(cmd)
@@ -109,6 +113,15 @@ os.system(cmd)
 # - copy it to the dest dir
 cmd = "cp /usr/src/redhat/RPMS/i386/pyGlobus-cvs-11.i386.rpm %s" % (RpmDir,)
 print "cmd = ", cmd
+os.system(cmd)
+
+#
+# Copy necessary stuff into the dist dir
+#
+os.mkdir(os.path.join(DestDir,'etc','AccessGrid','Config'))
+# - CA certs dir
+cmd = "cp -r %s %s" % (os.path.join(BuildDir,'packaging','config','CAcertificates'),
+                       os.path.join(DestDir,'etc','AccessGrid','Config','CAcertificates'))
 os.system(cmd)
 
 #
@@ -128,8 +141,7 @@ if rc != 0:
     sys.exit(1)
     
 # - build the rpms
-os.chdir(BuildDir)
-os.chdir(os.path.join("packaging","linux","rpm"))
+os.chdir(StartDir)
 cmd = "rpmbuild -ba AccessGrid.spec" 
 print "cmd = ", cmd
 os.system(cmd)
@@ -137,15 +149,6 @@ os.system(cmd)
 # - copy the rpms to the dist dir
 print "** Copying RPMs to the RPM directory"
 cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-%s-1.i386.rpm %s" % (version,RpmDir)
-print "cmd = ", cmd
-os.system(cmd)
-cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-VenueClient-%s-1.i386.rpm %s" % (version,RpmDir)
-print "cmd = ", cmd
-os.system(cmd)
-cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-VenueServer-%s-1.i386.rpm %s" % (version,RpmDir)
-print "cmd = ", cmd
-os.system(cmd)
-cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-BridgeServer-%s-1.i386.rpm %s" % (version,RpmDir)
 print "cmd = ", cmd
 os.system(cmd)
 
@@ -170,7 +173,7 @@ os.system(cmd)
 
 # Clean up the rpm dir
 print "** Cleaning up the RPM dir"
-os.chdir(CurDir)
+os.chdir(StartDir)
 cmd = "rm -rf %s" % (TmpDir,)
 print "cmd = ", cmd
 os.system(cmd)
