@@ -5,12 +5,12 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: ImportExportUtils.py,v 1.3 2004-03-19 22:47:19 olson Exp $
+# RCS-ID:      $Id: ImportExportUtils.py,v 1.4 2004-03-25 19:45:47 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
-__revision__ = "$Id: ImportExportUtils.py,v 1.3 2004-03-19 22:47:19 olson Exp $"
+__revision__ = "$Id: ImportExportUtils.py,v 1.4 2004-03-25 19:45:47 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -696,8 +696,8 @@ def ImportPKCS12IdentityCertificate(certMgr, pkcsFile):
             return None
 
     if mustDecrypt:
-        pwcb = certMgr.GetUserInterface().GetPassphraseCallback("Import password",
-                                                                "Please enter the import password for this PKCS#12 file.")
+        pwcb = certMgr.GetUserInterface().GetPassphraseCallback("Import passphrase",
+                                                                "Please enter the import passphrase for this PKCS#12 file.")
 
         while 1:
 
@@ -715,8 +715,8 @@ def ImportPKCS12IdentityCertificate(certMgr, pkcsFile):
                 #
                 if str(e).find("mac verify failure") >= 0:
                     dlg = wxMessageDialog(None,
-                                          "Password incorrect.\nTry again?",
-                                          "Password incorrect",
+                                          "Passphrase incorrect.\nTry again?",
+                                          "Passphrase incorrect",
                                           style = wxYES_NO | wxYES_DEFAULT)
                     ret = dlg.ShowModal()
                     dlg.Destroy()
