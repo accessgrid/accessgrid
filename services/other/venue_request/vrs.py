@@ -25,7 +25,7 @@ TopLevelDomains = {
     'org' : 'Not for profit Organizations',
     'pro' : 'Credentialed Professionals',
     'gov' : 'Government Institutions',
-    'edu' : 'Educations Institutions',
+    'edu' : 'Educational Institutions',
     'mil' : 'Military Organizations',
     'int' : 'International Treaty Organizations',
     }
@@ -33,11 +33,8 @@ TopLevelDomains = {
 CountryDomains = {
     }
 
-domDict = { 'kids': dict(), 'url': None, 'venueurl': None }
-serverUrl = "https://wormtongue.mcs.anl.gov/VenueServer"
-serverUrl = "https://localhost/VenueServer"
+serverUrl = "https://watts.mcs.anl.gov:9000/VenueServer"
 datafile = "vrs-data.pickled"
-vDict = dict()
 
 app = Service()
 
@@ -46,7 +43,9 @@ try:
 except:
     print "Couldn't initialize app, exiting."
     sys.exit(-1)
-    
+
+log = app.GetLog()
+
 venueServerClient = VenueServerIW(serverUrl)
 defVenueUrl = venueServerClient.GetDefaultVenue()
 defVenueClient = VenueIW(defVenueUrl)
@@ -55,7 +54,7 @@ print "Default Venue: %s" % defVenueUrl
 
 def InitTopLevel():
     global venueServerClient, defVenueClient, TopLevelDomains
-    global datafile, initializedTop
+    global datafile, initializedTop, log
 
     vDict = dict()
 
@@ -94,81 +93,114 @@ def InitTopLevel():
 
     initializedTop = 1
 
-    pickle.dump(vDict, file(datafile, "ab+"))
+    pickle.dump(vDict, file(datafile, "wb+"))
 
     return vDict
 
-def RequestVenue(name, desc, email, url):
-    global datafile, venueServerClient, TopLevelDomains, vDict
+def RequestVenueExt(request, test=0):
+    global datafile, venueServerClient, TopLevelDomains, vDict, log
 
-    print "Got request for:"
-    print "name: %s" % name
-    print "description: %s" % desc
-    print "email: %s" % email
-    print "url: %s" % url
+    log.debug("Got request for:")
+    log.debug("name: %s", request['name'])
+    log.debug("description: %s", request['description'])
+    log.debug("email: %s", request['email'])
+    log.debug("url: %s", request['www'])
+
+    hp = urlparse.urlparse(request['www'])[1].split(':')
+
+    log.debug("HP: %s", hp)
     
-    hp = urlparse.urlparse(url)[1].split(':')
     domain = hp[0].split('.')
+
+    log.debug("Domain: %s", domain)
+    
     domain.reverse()
+
     backDomain = ".".join(domain)
 
-    print "Domain: %s" % backDomain
+    log.debug("Domain: %s", backDomain)
 
     if vDict.has_key(backDomain):
-        return (0, "Domain already registered with url: %s" vDict[backDomain])
-
+        log.debug("Venue found for domain.")
+        return (1, vDict[backDomain]['venueurl'])
+                
     tld = domain[0]
 
-    if tld in TopLevelDomains.keys():
+    log.debug("TLD: %s", tld)
+
+    if tld in vDict.keys():
         tldUrl = vDict[tld]
     else:
+        log.debug("Didn't find top level domain, url using geo.")
         tldUrl = vDict['geo']
+
+    log.debug("TLD Venue URL: %s", tldUrl)
 
     tldVenue = VenueIW(tldUrl)
 
-    print "Got Top Level as: %s for url: %s" % (tldVenue.GetName(), url)
+    log.debug("Got Top Level as: %s for url: %s" , tldVenue.GetName(),
+              request['www'])
+
+    if test:
+        log.debug("Test call")
+        return (1, "Didn't do anything though! (%s -> %s)" % (request['www'],
+                                                         tldVenue.GetName()))
+    else:
+        log.debug("Continuing on...")
     
-    description = "An institutional venue for %s. For more information please see %s. The description submitted by the requestor is: \n%s" % (name, url, desc)
+    vDesc = VenueDescription(request['name'], request['description'])
+    log.debug("Created venue description.")
     
-    vDesc = VenueDescription(name, description)
-    venueUri = ''
     venueUri = venueServerClient.AddVenue(vDesc)
+
+    log.debug("Added venue, new url: %s", venueUri)
+    
     newVenue = VenueIW(venueUri)
+
+    log.debug("Created IW to new venue.")
     
     vDict[backDomain] = {
-        'name' : name,
-        'description' : desc,
-        'email' : email,
-        'url' : url,
-        'venueurl' : venueUri
-        }
+        'name' : request['name'],
+        'description' : request['description'],
+        'email' : request['email'],
+        'url' : request['www'],
+        'venueurl' : venueUri,
+        'request' : request
+       }
 
     # Add connections between the two
     pCd = ConnectionDescription(tldVenue.GetName(),
                                 tldVenue.GetDescription(), tldUrl)
     newVenue.AddConnection(pCd)
     
-    cCd = ConnectionDescription(name, desc, venueUri)
+    cCd = ConnectionDescription(request['name'], request['description'], venueUri)
     tldVenue.AddConnection(cCd)
-    
-    pickle.dump(vDict, file(datafile, "ab+"))
+
+    pickle.dump(vDict, file(datafile, "wb+"))
     
     return (1, venueUri)
 
-port = 6100
-server = SimpleXMLRPCServer.SimpleXMLRPCServer(('localhost', port))
-server.allow_reuse_address = 1
-server.register_function(RequestVenue)
+def Echo(value):
+    global log
+    log.debug("Echoing: %s", value)
+    return value
 
-print "Loading data"
+port = 9003
+server = SimpleXMLRPCServer.SimpleXMLRPCServer(('', port), logRequests=1)
+server.allow_reuse_address = 1
+server.register_function(RequestVenueExt)
+server.register_function(Echo)
+
+log.debug("Loading data")
 if os.path.exists(datafile):
     try:
+        log.debug("Loading from file.")
         vDict = pickle.load(file(datafile, "ab+"))
     except:
-        print "Couldn't load pickled data, initializing from memory."
+        log.debug("Couldn't load pickled data, initializing from memory.")
         vDict = InitTopLevel()
 else:
-    print "No data file, initializing from memory."
+    log.debug("No data file, initializing from memory.")
     vDict = InitTopLevel()
 
 server.serve_forever()
