@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.230 2003-10-13 16:28:34 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.231 2003-10-13 17:06:39 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -711,7 +711,7 @@ class VenueClientUI(VenueClientEventSubscriber):
 
             # clean up ui from current venue before entering a new venue
             if self.venueClient.venueUri != None:
-                log.debug("clean up frame")
+                # log.debug("clean up frame")
                 wxCallAfter(self.frame.CleanUp)
 
             # Get current state of the venue
@@ -720,62 +720,62 @@ class VenueClientUI(VenueClientEventSubscriber):
                             venueState.name, venueState.description) 
 
             # Load clients
-            log.debug("Add participants")
+            # log.debug("Add participants")
             wxCallAfter(self.frame.statusbar.SetStatusText,
                             "Load participants")
             for client in venueState.clients.values():
                 wxCallAfter(self.frame.contentListPanel.AddParticipant,
                             client)
-                log.debug("   %s" %(client.name))
+                # log.debug("   %s" %(client.name))
 
             # Load data
-            log.debug("Add data")
+            # log.debug("Add data")
             wxCallAfter(self.frame.statusbar.SetStatusText, "Load data")
             for data in venueState.data.values():
                 wxCallAfter(self.frame.contentListPanel.AddData, data)
-                log.debug("   %s" %(data.name))
+                # log.debug("   %s" %(data.name))
 
             # Load services
-            log.debug("Add service")
+            # log.debug("Add service")
             wxCallAfter(self.frame.statusbar.SetStatusText,
                         "Load services")
             for service in venueState.services.values():
                 wxCallAfter(self.frame.contentListPanel.AddService,
                             service)
-                log.debug("   %s" %(service.name))
+                # log.debug("   %s" %(service.name))
 
             # Load applications
-            log.debug("Add application")
+            # log.debug("Add application")
             wxCallAfter(self.frame.statusbar.SetStatusText,
                         "Load applications")
             for app in venueState.applications.values():
                 wxCallAfter(self.frame.contentListPanel.AddApplication,
                             app)
-                log.debug("   %s" %(app.name))
+                # log.debug("   %s" %(app.name))
 
             #  Load exits
-            log.debug("Add exits")
+            # log.debug("Add exits")
             wxCallAfter(self.frame.statusbar.SetStatusText, "Load exits")
             for exit in venueState.connections.values():
                 wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor,
                             exit)
-                log.debug("   %s" %(exit.name))
+                # log.debug("   %s" %(exit.name))
 
             #
             # Tell the text client which location it should listen to
             #
-            log.debug("Set text location and address bar")
+            # log.debug("Set text location and address bar")
             self.venueClient.textClient.RegisterOutputCallback(self.frame.textClientPanel.OutputText)
-            wxCallAfter(self.frame.textClientPanel.OutputText, "-- Entered venue %s\n" %self.venueClient.venueState.name)
-#            wxCallAfter(self.frame.SetTextLocation)
-
+            wxCallAfter(self.frame.textClientPanel.OutputText,
+                        "-- Entered venue %s\n" % self.venueClient.venueState.name)
             wxCallAfter(self.frame.FillInAddress, None, URL)
             
             # Venue data storage location
             # self.upload_url = self.venueClient.client.GetUploadDescriptor()
             #log.debug("Get upload url %s" %self.dataStoreUploadUrl)
 
-            # Determine if we are an administrator so we can add administrator features to UI.
+            # Determine if we are an administrator so we can add
+            # administrator features to UI.
             try:
                 if "Venue.Administrators" in self.venueClient.venueProxy.DetermineSubjectRoles():
                     self.isVenueAdministrator = 1
@@ -788,7 +788,7 @@ class VenueClientUI(VenueClientEventSubscriber):
                 else:
                     log.exception(e)
             
-            log.debug("Add your personal data descriptions to venue")
+            # log.debug("Add your personal data descriptions to venue")
             wxCallAfter(self.frame.statusbar.SetStatusText, "Add your personal data to venue")
             warningString = warningString 
 
@@ -813,7 +813,7 @@ class VenueClientUI(VenueClientEventSubscriber):
             
             # Call EnterVenue on users that are following you.
             # This should be done last for UI update reasons.
-            log.debug("Lead followers")
+            # log.debug("Lead followers")
             self.venueClient.LeadFollowers()
             
             log.debug("Entered venue")
