@@ -37,8 +37,11 @@ WIN = 'win32'
 LINUX = 'linux2'
 
 parser = OptionParser()
-parser.add_option("-a", "--agdir", dest="srcdir", metavar="SRCDIR",
+parser.add_option("-a", "--agdir", dest="agsrcdir", metavar="SRCDIR",
                   default="..",
+                  help="Location of the AGTk Sources")
+parser.add_option("-s", "--srcdir", dest="srcdir", metavar="SRCDIR",
+                  default="../..",
                   help="Location of the AGTk Sources")
 parser.add_option("-v", "--verbose", dest="verbose", action="store_true",
                   default=0, help="Run with verbose output.")
@@ -47,14 +50,15 @@ options, args = parser.parse_args()
 
 # Make sure we can find AG source.
 
-file_to_find = os.path.join(options.srcdir, "AccessGrid", "Version.py")
+file_to_find = os.path.join(options.agsrcdir, "AccessGrid", "Version.py")
 if not (os.path.exists( file_to_find )):
     PrintUsage()
     print "Cannot find AccessGrid source location.", file_to_find, " not found." 
     sys.exit()
 
 # Get absolute paths for when we need to pass them to python.exe later.
-ABS_AG_BASE_DIR = os.path.abspath(options.srcdir)
+ABS_AG_BASE_DIR = os.path.abspath(options.agsrcdir)
+ABS_SRC_DIR = os.path.abspath(options.srcdir)
 
 # Overview: 
 # Create Toolkit configuration with AGTkConfig
@@ -70,7 +74,7 @@ print ""
 # Set AGTK_LOCATION so we can use the toolkit's initialization functions.
 os.environ["AGTK_LOCATION"] = ABS_AG_BASE_DIR
 # Add to PYTHONPATH
-sys.path.insert(0, os.path.abspath(options.srcdir))
+sys.path.insert(0, os.path.abspath(options.agsrcdir))
 
 # New config using AGTkConfig
 from AccessGrid.Platform.Config import AGTkConfig
@@ -78,18 +82,18 @@ from AccessGrid.Platform.Config import AGTkConfig
 agtkConfig = AGTkConfig.instance(initIfNeeded=1)
 
 # create services
-# python packaging/makeServicePackages.py AccessGrid/services
+# python packaging/makeServicePackages.py /path/to/AccessGrid  /path/to/source (ag-media should be found under here)
 
-mk_service_exec = sys.executable + " " + os.path.join( options.srcdir, "packaging", "makeServicePackages.py" )
-service_input_dir = "\"" + os.path.join( ABS_AG_BASE_DIR, "services", "node") + "\""
+mk_service_exec = sys.executable + " " + os.path.join( options.agsrcdir, "packaging", "makeServicePackages.py" )
+service_input_dir = "\"" + ABS_AG_BASE_DIR + "\""
 service_output_dir = AGTkConfig.instance().GetNodeServicesDir()
-mk_command = mk_service_exec + " " + service_input_dir + " " + service_output_dir
+mk_command = "%s %s %s %s" % (mk_service_exec, ABS_SRC_DIR, service_input_dir, service_output_dir)
 if options.verbose:
     print "   ",mk_command
 os.system(mk_command)
 
 # Make local service directory for caching services.
-localServicePath = os.path.join( AGTkConfig.instance().GetConfigDir(), "LocalServices")
+localServicePath = os.path.join( AGTkConfig.instance().GetConfigDir(), "local_services")
 if not os.path.exists(localServicePath):
     os.mkdir(localServicePath)
 
@@ -108,7 +112,7 @@ for filename in os.listdir(os.path.join(ABS_AG_BASE_DIR, "packaging", "config", 
 
 # Copy default configuration files
 if sys.platform == WIN:
-    win_config_src = os.path.join( options.srcdir, "packaging", "config", "defaultWindows")
+    win_config_src = os.path.join( options.agsrcdir, "packaging", "config", "defaultWindows")
     win_config_dst = os.path.join( nodeConfigPath, "defaultWindows")
     #if options.verbose:
         #print "    copying file ", win_config_src, "to ", win_config_dst
@@ -135,7 +139,7 @@ if sys.platform == WIN:
 
 # copy defaultLinux file if we are using linux
 if sys.platform == LINUX:
-    unix_config_src = os.path.join( options.srcdir, "packaging", "config", "defaultLinux")
+    unix_config_src = os.path.join( options.agsrcdir, "packaging", "config", "defaultLinux")
     unix_config_dst = os.path.join( nodeConfigPath, "defaultLinux")
     if options.verbose:
         print "    copying file ", unix_config_src, "to ", unix_config_dst
@@ -160,16 +164,6 @@ def BackupFile(filename, backup_filename):
         shutil.copyfile(filename, backup_filename)
 
 
-# Create empty "videoresources" file
-config_file = os.path.join(AGTkConfig.instance().GetConfigDir(), "videoresources")
-bak_file = os.path.join(AGTkConfig.instance().GetConfigDir(), "videoresources.bak")
-
-BackupFile(config_file, bak_file)
-
-vsfile = open(config_file, 'w', )
-vsfile.write("\n\n")
-vsfile.close()
-
 
 # Create AGNodeService.cfg
 config_file = os.path.join(AGTkConfig.instance().GetConfigDir(),
@@ -190,12 +184,8 @@ elif sys.platform == LINUX:
     nsfile.write("defaultNodeConfiguration = defaultLinux\n\n")
 nsfile.close()
 
-# Create AGServiceManager.cfg
-config_file = os.path.join(AGTkConfig.instance().GetConfigDir(), "AGServiceManager.cfg")
-bak_file = os.path.join(AGTkConfig.instance().GetConfigDir(), "AGServiceManager.cfg.bak")
-
-agtk_location = os.path.join(os.path.abspath(options.srcdir))
-python_path = os.path.abspath(options.srcdir)
+agtk_location = os.path.join(os.path.abspath(options.agsrcdir))
+python_path = os.path.abspath(options.agsrcdir)
 
 BackupFile(config_file, bak_file)
 
@@ -207,9 +197,6 @@ smfile.close()
 # Tell users how to use the new configuration files.
 print "\n    --------------------------------------------------------------"
 print ""
-print "    If you want to setup video resources for this configuration,"
-print "       set the environment as instructed below, "
-print "       and run: \"python SetupVideo.py\" \n"
 print "    To use this configuration:\n"
 print "       Make sure media-related programs (vic, rat, etc.) are in your path."
 from AccessGrid.Platform import isOSX, isLinux, isWindows
