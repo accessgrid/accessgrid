@@ -331,7 +331,7 @@ class AGServiceManager( ServiceBase ):
 
    def __PushAuthorizedUserList( self ):
       """Push the list of authorized users to service managers"""
-      for service in self.services:
+      for service in self.services.values():
          Client.Handle( service.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
 
 
