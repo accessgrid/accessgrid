@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Tools.py,v 1.2 2004-02-24 21:30:51 judson Exp $
+# RCS-ID:      $Id: Tools.py,v 1.3 2004-02-26 05:01:47 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ This module defines methods for making serialization and other things simpler
 when using the SOAPpy module.
 """
 
-__revision__ = "$Id: Tools.py,v 1.2 2004-02-24 21:30:51 judson Exp $"
+__revision__ = "$Id: Tools.py,v 1.3 2004-02-26 05:01:47 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -53,7 +53,13 @@ def Decorate(object):
     object with an attribute ag_class with the class this is. This makes it
     possible to rebuild these classes on the other side of a SOAP call.
     """
-    if type(object) == types.TupleType or type(object) == types.ListType:
+    if type(object) == types.TupleType:
+        listRep = []
+        for i in range(0, len(object)):
+            listRep.append( Decorate(object[i]) )
+        object = tuple(listRep)
+        return object
+    elif type(object) == types.ListType:
         for i in range(0, len(object)):
             object[i] = Decorate(object[i])
         return object
