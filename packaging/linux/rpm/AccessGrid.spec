@@ -32,10 +32,6 @@ BuildRoot:	%{buildroot}
 Requires:	wxGTK
 Requires:	wxPythonGTK-py2.2
 Requires:	globus-accessgrid
-Requires:	pyGlobus
-Requires:	pyOpenSSL_AG
-Requires:	fpconst
-Requires:	SOAPpy
 Obsoletes:	AccessGrid-2.0alpha
 Obsoletes:	AccessGrid-2.0beta
 
@@ -88,7 +84,7 @@ mv bin usr/bin
 %files
 %defattr(-,root,root)
 %{prefix}/lib
-/etc
+/etc/AccessGrid
 %{sharedir}/%{name}/ag.ico
 %defattr(0755,root,root)
 %{prefix}/bin/AGServiceManager.py
