@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.41 2003-02-21 22:00:55 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.42 2003-02-24 18:33:26 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -29,7 +29,7 @@ class VenueClientFrame(wxFrame):
     
     '''VenueClientFrame. 
 
-    The VenueClientFrame is the main frame of the application, creating statusbar, toolbar,
+    The VenueClientFrame is the main frame of the application, creating statusbar, dock,
     venueListPanel, and contentListPanel.  The contentListPanel represents current venue and
     has information about all participants in the venue, it also shows what data and services 
     are available in the venue, as well as nodes connected to the venue.  It represents a room
@@ -45,16 +45,18 @@ class VenueClientFrame(wxFrame):
         self.parent = parent
 	self.menubar = wxMenuBar()
 	self.statusbar = self.CreateStatusBar(1)
-	self.toolbar = wxToolBar(self, 600, wxDefaultPosition,wxDefaultSize, wxTB_TEXT| \
-		  wxTB_HORIZONTAL| wxTB_FLAT)
-       	self.venueListPanel = VenueListPanel(self, app) 
+	self.dock = wxToolBar(self, 600, pos = wxDefaultPosition, \
+                              size = (300, 30), style = wxTB_TEXT| wxTB_HORIZONTAL| wxTB_FLAT)
+        self.venueListPanel = VenueListPanel(self, app) 
 	self.contentListPanel = ContentListPanel(self, app)
         self.myVenuesList = []
         self.myVenuesFile = os.path.join(self.app.accessGridPath, "myVenues.txt" )
+        fileDropTarget = FileDropTarget(self.dock)
+        self.dock.SetDropTarget(fileDropTarget)
         self.__setStatusbar()
 	self.__setMenubar()
         self.venueAddressBar = VenueAddressBar(self, app,self.myVenuesList, 'default venue')
-	self.__setToolbar()
+	self.__setDock()
 	self.__setProperties()
         self.__doLayout()
         self.__setEvents()
@@ -65,7 +67,6 @@ class VenueClientFrame(wxFrame):
     def __setMenubar(self):
         self.SetMenuBar(self.menubar)
 
-       # self.ID_VENUE = NewId() 
         self.ID_VENUE_DATA = NewId() 
         self.ID_VENUE_DATA_ADD = NewId() 
         self.ID_VENUE_DATA_SAVE = NewId() 
@@ -77,7 +78,6 @@ class VenueClientFrame(wxFrame):
         self.ID_VENUE_CLOSE = NewId()
         self.ID_PROFILE = NewId()
         self.ID_PROFILE_EDIT = NewId()
-        #self.ID_MYNODE = NewId()
         self.ID_MYNODE_MANAGE = NewId()
         self.ID_MYNODE_URL = NewId()
         self.ID_MYVENUE_ADD = NewId()
@@ -97,17 +97,13 @@ class VenueClientFrame(wxFrame):
 	self.dataMenu.Append(self.ID_VENUE_DATA_ADD,"Add...", "Add data to the venue")
 	self.dataMenu.Append(self.ID_VENUE_DATA_SAVE,"Save...", "Save data to local disk")
 	self.dataMenu.Append(self.ID_VENUE_DATA_DELETE,"Delete", "Remove data")
-        #self.dataMenu.Append(223,"Profile")
-	self.venue.AppendMenu(self.ID_VENUE_DATA,"&Data", self.dataMenu)
+        self.venue.AppendMenu(self.ID_VENUE_DATA,"&Data", self.dataMenu)
 	self.serviceMenu = wxMenu()
 	self.serviceMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...", "Add service to the venue")
         self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete", "Delete service")
-        #self.serviceMenu.Append(233,"Profile")
-	self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",self.serviceMenu)
+        self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",self.serviceMenu)
 
 	self.menubar.Append(self.venue, "&Venue")
-        #self.venue.AppendSeparator()
-        #self.venue.Append(self.ID_VENUE_VIRTUAL,"Open virtual venue...",  "Go to new venue")
         self.venue.AppendSeparator()
         self.venue.Append(self.ID_VENUE_CLOSE, 'Close', "Exit venue")
 	
@@ -117,8 +113,6 @@ class VenueClientFrame(wxFrame):
         self.myNode = wxMenu()
         self.myNode.Append(self.ID_MYNODE_MANAGE, "&Manage...", "Configure your node")
         self.myNode.Append(self.ID_MYNODE_URL, "&Set URL...", "Specify URL address to node service")
-        #self.myNode = wxMenu()
-        # self.myNode.Append(500, "Add")
         self.menubar.Append(self.myNode, "My &Node")
         self.myVenues = wxMenu()
         self.myVenues.Append(self.ID_MYVENUE_ADD, "&Add...", "Configure your node")
@@ -127,8 +121,7 @@ class VenueClientFrame(wxFrame):
         self.menubar.Append(self.myVenues, "My &Venues")
               
       	self.help = wxMenu()
-	#self.help.Append(301, "Manual")
-	self.help.Append(self.ID_HELP_ABOUT, "About", "Information about the application")
+        self.help.Append(self.ID_HELP_ABOUT, "About", "Information about the application")
         self.menubar.Append(self.help, "&Help")
         self.HideMenu()
 
@@ -182,8 +175,6 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_VENUE_DATA_SAVE, self.SaveData)
         EVT_MENU(self, self.ID_VENUE_DATA_DELETE, self.RemoveData)
         EVT_MENU(self, self.ID_VENUE_SERVICE_ADD, self.OpenAddServiceDialog)
-        #EVT_MENU(self, 223, self.OpenDataProfileDialog)
-        #EVT_MENU(self, 233, self.OpenServiceProfileDialog)
         EVT_MENU(self, self.ID_VENUE_SERVICE_DELETE, self.RemoveService)
         EVT_MENU(self, self.ID_PROFILE, self.OpenProfileDialog)
         EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialog)
@@ -199,11 +190,13 @@ class VenueClientFrame(wxFrame):
 
         EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.Follow)
         
-    def __setToolbar(self):
+    def __setDock(self):
+        
+
         """
-	self.toolbar.AddSimpleTool(20, icons.getWordBitmap(), \
+	self.dock.AddSimpleTool(20, icons.getWordBitmap(), \
                                    "ImportantPaper.doc", "ImportantPaper.doc",)
-	self.toolbar.AddSimpleTool(21, icons.getPowerPointBitmap(), \
+	self.dock.AddSimpleTool(21, icons.getPowerPointBitmap(), \
                                    "Presentation.ppt", "Presentation.ppt",)
         """
         pass
@@ -224,7 +217,7 @@ class VenueClientFrame(wxFrame):
 	self.venueContentSizer.Add(self.venueListPanel, 0 , wxEXPAND)
 	self.venueContentSizer.Add(self.contentListPanel, 2, wxEXPAND)
 	self.venueClientSizer.Add(self.venueContentSizer, 1, wxEXPAND)
-	self.venueClientSizer.Add(self.toolbar)
+	self.venueClientSizer.Add(self.dock)
         
 	self.SetSizer(self.venueClientSizer)
         self.venueClientSizer.Fit(self)
@@ -328,9 +321,8 @@ class VenueClientFrame(wxFrame):
             # upload!
 
             self.app.UploadFiles(files)
-
-                
-            # data = DataDescription(dlg.GetFilename(), dlg.GetPath(), 'uri', 'icon', 'storagetype')
+                          
+            # data = DataDescription(dlg.GetFilename())
             # self.app.AddData(data)
 
         dlg.Destroy()
@@ -432,11 +424,16 @@ class VenueClientFrame(wxFrame):
 
     def RemoveData(self, event):
         id = self.contentListPanel.tree.GetSelection()
-        data =  self.contentListPanel.tree.GetItemData(id).GetData()
-        
-        if(data != None):
-            self.app.RemoveData(data)
+        data = self.contentListPanel.tree.GetItemData(id).GetData()
 
+        if(data != None):
+            text ="Are you sure you want to delete "+ data.name
+            areYouSureDialog = wxMessageDialog(self, text, \
+                                               '', wxOK |  wxCANCEL |wxICON_INFORMATION)
+            if(areYouSureDialog.ShowModal() == wxID_OK):
+                self.app.RemoveData(data)
+            areYouSureDialog.Destroy()
+                
         else:
             self.__showNoSelectionDialog("Please, select the data you want to delete")
 
@@ -596,19 +593,7 @@ class VenueList(wxScrolledWindow):
     '''   
     def __init__(self, parent, app):
         self.app = app
-        wxScrolledWindow.__init__(self, parent, -1, style = wxRAISED_BORDER)
-        
-        #self.list = wxListCtrl(self, -1, style = wxLC_ICON)
-        #self.list.Show(true)
-        #self.list.SetBackgroundColour(parent.GetBackgroundColour())
-        #self.imageList = wxImageList(16, 16)
-        #self.doorOpenId = self.imageList.Add(icons.getDoorOpenBitmap())
-        #self.doorCloseId = self.imageList.Add(icons.getDoorCloseBitmap())
-        #self.list.SetImageList(self.imageList, wxIMAGE_LIST_NORMAL)
-        #exit = wxListItem()
-        #exit.SetText('test')
-        #self.list.InsertItem(exit)
-        # self.list.SetStringItem(0,0,'test', door)
+        wxScrolledWindow.__init__(self, parent, -1, style = wxRAISED_BORDER | wxSB_HORIZONTAL| wxSB_VERTICAL)
         self.doorsAndLabelsList = []
         self.exitsDict = {}
         self.__doLayout()
@@ -616,14 +601,11 @@ class VenueList(wxScrolledWindow):
 
     def __doLayout(self):
         self.box = wxBoxSizer(wxVERTICAL)
-        # box.Add(self.list, 1, wxEXPAND)
-
+        
         self.column = wxFlexGridSizer(cols=1, vgap=5, hgap=0)
         self.column.AddGrowableCol(1)
 	       
         self.column.Add(40, 5)   
-        #self.EnableScrolling(true, false)
-        #self.SetScrollRate(0, 20)
         self.box.SetVirtualSizeHints(self)
         self.SetScrollRate(1, 1)
         
@@ -638,10 +620,6 @@ class VenueList(wxScrolledWindow):
         self.app.GoToNewVenue(description.uri)
         		            
     def AddVenueDoor(self, profile):
-        #id = wxNewId()
-        #exit = wxListItem()
-        #self.list.InsertImageStringItem(0,"LABEL",self.doorOpenId)
-
         bitmap = icons.getDoorClosedBitmap()
         bitmapSelect = icons.getDoorOpenBitmap()
 
@@ -661,14 +639,13 @@ class VenueList(wxScrolledWindow):
         self.column.Add(panel, -1, wxEXPAND)
         self.doorsAndLabelsList.append(panel)
         
-	self.SetSize(wxDefaultSize)
+	#self.SetSize(wxDefaultSize)
 	self.Layout()
-        panel.SetAutoLayout(1)
+        #panel.SetAutoLayout(1)
 	self.box.SetVirtualSizeHints(self)
         self.exitsDict[id] = profile
         EVT_BUTTON(self, id, self.GoToNewVenue)
-        #self.EnableScrolling(true, true)
-        
+            
     def RemoveVenueDoor(self):
         print 'remove venue door'
 
@@ -677,17 +654,18 @@ class VenueList(wxScrolledWindow):
             self.column.Remove(item)
             item.Destroy()
 
+        #self.box.Layout(self)
+        self.column.Layout()
+        self.Layout()
+        
         self.exitsDict.clear()
         del self.doorsAndLabelsList[0:]
               
     def HideDoors(self):
-        #self.EnableScrolling(false, false)
         for item in self.doorsAndLabelsList:
             item.Hide()
-            #       self.column.Hide(item)
-
+            
     def ShowDoors(self):
-        #self.EnableScrolling(true, false)
         for item in self.doorsAndLabelsList:
             item.Show()
                    
@@ -1357,6 +1335,34 @@ class AddServiceDialog(wxDialog):
         self.SetSizer(sizer1)
         sizer1.Fit(self)
         self.SetAutoLayout(1)
+
+ 
+class FileDropTarget(wxFileDropTarget):
+    def __init__(self, dock):
+        wxFileDropTarget.__init__(self)
+        self.dock = dock
+        self.do = wxFileDataObject()
+        self.SetDataObject(self.do)
+        
+    def OnDropFiles(self, x, y, filenames):
+        print 'on drop files'
+        for file in filenames:
+            fileNameList = file.split('/')
+            fileName = fileNameList[len(fileNameList)-1]
+            self.dock.AddSimpleTool(20, icons.getDefaultDataBitmap(), fileName)
+        return true
+
+    def OnData(self, x, y, d):
+        print 'on data'
+        self.GetData()
+        files = self.do.GetFilenames()
+        for file in files:
+            fileNameList = file.split('/')
+            fileName = fileNameList[len(fileNameList)-1]
+            self.dock.AddSimpleTool(20, icons.getDefaultDataBitmap(), fileName)
+            print file.GetFormat()
+        return d
+        
 
 
 '''VenueClient. 
