@@ -2,7 +2,7 @@
 Toolkit Initialization Factoring for 2.1.3
 ==========================================
  
-:version: $Revision: 1.1 $
+:version: $Revision: 1.2 $
 :author: Ivan R. Judson <judson@mcs.anl.gov>
 :status: Draft
 
@@ -24,28 +24,85 @@ of interfaces.
 
 The basic activities that are done during initialization are:
 
-- Command Line Parsing
-- Logging/Debugging Setup
-- Toolkit Environment Verification
-- Security Environment Verification
+1. Command Line Parsing
+2. Logging/Debugging Setup
+3. Security Environment Verification
+
   - Globus Initialization
-- Configuration Processing      
+
+4. Toolkit Environment Verification
+  
+  - Bring Linux Initialization up to par with Windows
+
+5. Configuration Processing      
+
   - Looking for system wide configs and either referencing or copying them
+
+The types of things that can be built using the AGTk (and thus it's
+initialization functionality) includes:
+
+==========================    ===========   =======================
+Class                         Type          Run As         
+==========================    ===========   =======================
+Venue Clients                 Application   User Id
+Shared Application Clients    Application   User Id
+--------------------------    -----------   -----------------------
+Node Services                 Service       Service Id / User Id
+Service Managers              Service       Service Id / User Id
+Services                      Service       Service Id / User Id
+--------------------------    -----------   -----------------------
+Venue Server                  Service       Service Id / User Id
+--------------------------    -----------   -----------------------
+Network Services              Service       Service Id / User Id
+Application Services          Service       Service Id / User Id
+==========================    ===========   =======================
 
 Summary of Modifications
 ========================
 
-FILL IN SUMMARY OF MODIFICATIONS
+1. Create a Toolkit.CommandLine class with a Parse(self, argc, argv) method.
+2. Create a Toolkit.Service class for services to use to initialize
+3. Modify the Toolkit.Application class to be used only for applications to initialize
+4. Unify the logging initialization
+5. Unify the logging level and debug level
+6. Bring the Linux initialization up to par with the windows initialization
+
+   - LinuxInitUserEnv
+   - LinuxRegisterMimeType
+
+7. Define the search paths for installed packages and installed applications
+8. Create a set of interfaces for Toolkit wide configurations, like:
+
+   - Turning debugging on and off
+   - Setting the log level
+
+Proposed Standard Command Line Arguments
+----------------------------------------
+
+1. -h|--help -- Help and/or usage
+2. -d|--debug <level> -- Set the debug level
+3. -l|--log <location> -- Tell the program where the log should go, the default is <program|service>.log.
+4. -v|--verbose <level> -- Specify the program to run and print out information the level may be specified.
+5. -c|--config <configuration> -- Specify a configuration for this program to use.
+6. -p|--profile <profile file> -- Specify the profile to use
+7. --x509cert <certificate.pem> -- Specify the certificate to use
+8. --x509key <keyfile.pem> -- Specify the key to use
 
 Module Organization
 -------------------
 
-FILL IN MODULE ORGANIZATION
+- Toolkit.py
+
+  - CommandLine
+  - Application
+  - Service
+
+- Platform
+  
+  - Linux.py
    
 Deprecated Packages
 -------------------
-
-FILL IN DEPRECATED PACKAGES
 
 Specifications
 ==============
@@ -55,17 +112,21 @@ FILL IN SPECIFICATIONS
 Security Issues
 ===============
 
-FILL IN SECURITY ISSUES
+This work should make the toolkit more secure, by enforcing all
+software built using the AGTk conforms to the security environment
+created by the AGTk.
 
 Interoperability Issues
 =======================
 
-FILL IN INTEROPERABILITY ISSUES
+This internal refactoring should not affect interoperability.
 
 Related AGEPs
 =============
 
-FILL IN RELATED AGEPS
+- Platform Refactoring 213
+- Authorization Refactoring 213
+- Core Refactoring 213
 
 Implementation
 ==============
@@ -75,7 +136,7 @@ FILL IN IMPLEMENTATION
 References
 ==========
 
-FILL IN REFERENCES
+None
 
 Copyright
 =========
