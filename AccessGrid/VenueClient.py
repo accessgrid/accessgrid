@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.117 2003-09-22 21:36:48 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.118 2003-09-24 21:37:30 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.117 2003-09-22 21:36:48 olson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.118 2003-09-24 21:37:30 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -209,9 +209,7 @@ class VenueClient( ServiceBase):
                 
         if self.personalDataStorePath:
             self.dataStore = DataStore.DataStore(self.personalDataStorePath, self.personalDataStorePrefix)
-
-
-           
+                   
             self.transferEngine = DataStore.GSIHTTPTransferServer(('',
                                                                    self.personalDataStorePort))
             self.transferEngine.run()
@@ -327,7 +325,7 @@ class VenueClient( ServiceBase):
             return
 
         for s in self.eventSubscribers:
-               s.RemoveDataEvent(event)
+            s.RemoveDataEvent(event)
                 
     def AddServiceEvent(self, event):
         log.debug("Got Add Service Event")
@@ -889,7 +887,7 @@ class VenueClient( ServiceBase):
         and the url to the DataStore SOAP service.
         
         """
-        
+               
         if self.dataStore is None:
             return ""
         else:
@@ -979,6 +977,7 @@ class VenueClient( ServiceBase):
                     dataDesc.owner = data.owner
                     dataDesc.type = data.type
                     dataDesc.uri = data.uri
+                    dataDesc.id = data.id
                     dataList.append( dataDesc )
                     
                 return dataList
