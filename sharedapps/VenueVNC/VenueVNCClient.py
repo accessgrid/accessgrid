@@ -29,12 +29,12 @@ log = Log.GetLogger("VenueVNCClient")
 class vncSharedAppClient:
     """
     """
-    def __init__( self, venueUrl ):
+    def __init__( self, appUrl ):
 
-        self.venueUrl = venueUrl
+        self.appUrl = appUrl
 
-        self.venueProxy = Client.SecureHandle(self.venueUrl).GetProxy()
-        print( "Application URL: %s" %(self.venueUrl) )
+        self.venueProxy = Client.SecureHandle(self.appUrl).GetProxy()
+        print( "Application URL: %s" %(self.appUrl) )
         #print( "Application URL Valid? " + self.venueProxy.isValid( ) )
         # Join the application
         #  ** NEW METHOD **
@@ -92,7 +92,7 @@ class vncSharedAppClient:
             os.system(execString);
         else:
             execString='chmod +x ./vncviewer; ./vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)
-            #print "About the execute: %s"%(execString)
+            print "About the execute: %s"%(execString)
             os.system(execString);
 
         os.unlink(self.passwdFilename);
@@ -105,6 +105,6 @@ if __name__ == "__main__":
         print "Usage: %s <appObjectUrl>" % sys.argv[0]
         sys.exit(1)
 
-    venueUrl = sys.argv[1]
+    appUrl = sys.argv[1]
 
-    sb = vncSharedAppClient( venueUrl )
+    sb = vncSharedAppClient( appUrl )
