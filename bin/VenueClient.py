@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.200 2003-08-19 14:22:42 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.201 2003-08-19 17:35:38 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -653,6 +653,14 @@ class VenueClientUI(VenueClientEventSubscriber):
             log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
             self.app.certificateManager.CreateProxy()
 
+        try:
+            #   
+            # Add current uri to the history if the go button is pressed
+            #
+            self.__setHistory(self.venueClient.venueUri, back)
+        except:
+            log.exception("Error setting history.")
+
     def EnterVenue(self, URL, back = false, warningString="",
                    enterSuccess=AG_TRUE):
         """
@@ -694,10 +702,6 @@ class VenueClientUI(VenueClientEventSubscriber):
         enterUISuccess = AG_TRUE
 
         try:
-            #   
-            # Add current uri to the history if the go button is pressed
-            #
-            self.__setHistory(self.venueClient.venueUri, back)
             
             wxCallAfter(self.frame.statusbar.SetStatusText, "Entered venue %s successfully" %self.venueClient.venueState.name)
 
