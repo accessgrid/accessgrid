@@ -5,8 +5,8 @@
 #
 # Author:      Robert Olson
 #
-# Created:     2003
-# RCS-ID:      $Id: certmgr.py,v 1.2 2003-09-11 14:43:54 olson Exp $
+# Created:     9/10/2003
+# RCS-ID:      $Id: certmgr.py,v 1.3 2003-09-11 14:44:18 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
