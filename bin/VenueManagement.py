@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.54 2003-04-01 23:26:27 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.55 2003-04-03 20:56:44 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -644,6 +644,8 @@ class VenueListPanel(wxPanel):
                         self.parent.venueProfilePanel.ChangeCurrentVenue()
 
     def AddVenue(self, venue):
+        # ICKY ICKY ICKY
+        venue.connections = venue.connections.values()
         newUri = self.application.server.AddVenue(venue)
         venue.uri = newUri
         
@@ -657,12 +659,12 @@ class VenueListPanel(wxPanel):
             self.venuesList.Select(self.venuesList.Number()-1)
             self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
 
-    def ModifyVenue(self, venueuri, venue):
+    def ModifyVenue(self, venue):
         if venueuri != None and venue != None:
             # ICKY HACK
             venue.connections = venue.connections.values()
-            self.application.server.ModifyVenue(venueuri, venue)
-            item = self.venuesList.FindString()
+            self.application.server.ModifyVenue(venue.uri, venue)
+            item = self.venuesList.FindString(venue)
             self.venuesList.SetClientData(item, venue)
             self.venuesList.SetString(item, venue)
             self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
@@ -1664,7 +1666,7 @@ class ModifyVenueFrame(VenueParamFrame):
                 self.Ok()
                 try:
                     wxLogInfo("Modify venue")
-                    self.parent.ModifyVenue(self.venue.uri, self.venue)
+                    self.parent.ModifyVenue(self.venue)
                     # from super class
                     self.SetStaticAddressing() 
                     # from super class
