@@ -4,14 +4,14 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.43 2004-03-02 22:42:04 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.44 2004-03-04 21:21:51 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.43 2004-03-02 22:42:04 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.44 2004-03-04 21:21:51 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -126,12 +126,6 @@ def main():
         Usage()
         sys.exit(0)
 
-    # Init toolkit with standard environment.
-    app = CmdlineApplication()
-
-    app.Initialize()
-    app.InitGlobusEnvironment()
-
     # Start up the logging
     log = logging.getLogger("AG")
     log.setLevel(logging.DEBUG)
@@ -146,6 +140,12 @@ def main():
         hdlr = logging.StreamHandler()
         hdlr.setFormatter(fmt)
         log.addHandler(hdlr)
+
+    # Init toolkit with standard environment.
+    app = CmdlineApplication()
+
+    app.Initialize()
+    app.InitGlobusEnvironment()
 
     me = app.GetDefaultIdentityDN()
     hostname = GetHostname()
