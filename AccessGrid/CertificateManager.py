@@ -810,7 +810,7 @@ class CertificateManager:
             if hasattr(os, 'getuid'):
                 uid = os.getuid()
                 self.proxyCertPath = os.path.join(Platform.GetTempDir(),
-                                                  "x509up_u%s" + uid)
+                                                  "x509up_u%s" % (uid,))
             else:
                 user = Platform.GetUsername()
                 self.proxyCertPath = os.path.join(Platform.GetTempDir(), "x509_up_" + user)
