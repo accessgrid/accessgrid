@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.77 2003-03-21 17:55:44 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.78 2003-03-21 17:59:26 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -389,10 +389,10 @@ class VenueClientUI(wxApp, VenueClient):
             try:
                 self.client = self.clientHandle.get_proxy()
                 self.gotClient = true
-                #if self.oldUri != None:
-                #    wxLogDebug("clean up frame and exit")
-                #    wxCallAfter(self.frame.CleanUp)
-                #    self.ExitVenue()
+                if self.oldUri != None:
+                    wxLogDebug("clean up frame and exit")
+                    wxCallAfter(self.frame.CleanUp)
+                    self.ExitVenue()
 
                 wxLogDebug("--enter venue %s" %venueUri)
                 wxLogDebug(str(Client.Handle(venueUri).IsValid()))
