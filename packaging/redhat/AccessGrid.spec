@@ -3,8 +3,8 @@
 # spec file. If you see %{variable_name} this is where it's assigned
 #
 %define	name		AccessGrid
-%define	version		2.0RC
-%define	release		2
+%define version		2.0
+%define release		1
 %define	prefix		/usr
 %define sysconfdir	/etc/%{name}
 %define sharedir	%{prefix}/share
@@ -186,7 +186,6 @@ mkdir -p %{buildroot}/tmp/local_services
 #
 
 %files
-%doc %{sharedir}/doc/
 %defattr(-,root,root)
 %{prefix}/lib
 %{sharedir}/%{name}/ag.ico
@@ -217,8 +216,7 @@ mkdir -p %{buildroot}/tmp/local_services
 %{prefix}/bin/AGNodeService.py
 %{prefix}/bin/VenueClient.py
 %{prefix}/bin/NodeManagement.py
-%docdir /doc/VENUE_CLIENT_MANUAL_HTML
-/doc/VENUE_CLIENT_MANUAL_HTML
+%{sharedir}/doc/AccessGrid
 /etc/init.d/agns
 %defattr(0644,root,root)
 %config %{sysconfdir}/AGNodeService.cfg
