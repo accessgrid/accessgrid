@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.18 2004-04-27 02:18:08 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.19 2004-04-28 16:11:56 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.18 2004-04-27 02:18:08 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.19 2004-04-28 16:11:56 turam Exp $"
 
 import os
 import mimetypes
@@ -286,7 +286,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
 
         self.proxyFileName = os.path.join(UserConfig.instance().GetTempDir(),
                                           "x509up_u%s" %(os.getuid()))
-        self.distCACertDir = os.path.join(agtkdata, "CACertificates")
+        self.distCACertDir = os.path.join(agtkdata, "CAcertificates")
 
         self._Initialize()
         
@@ -446,6 +446,13 @@ class UserConfig(AccessGrid.Config.UserConfig):
             self.configDir = os.environ[AGTK_USER]
         except:
             self.configDir = os.path.join(os.environ["HOME"],".AccessGrid")
+
+        try:
+            if not os.path.exists(self.configDir):
+                os.mkdir(self.configDir)
+        except:
+            log.exception("Can not create config directory %s", self.configDir)
+            raise
 
         return self.configDir
 
