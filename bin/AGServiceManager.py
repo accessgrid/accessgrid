@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.44 2004-05-06 17:55:01 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.45 2004-06-01 20:15:48 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -117,7 +117,10 @@ def main():
     # Keep the main thread busy so we can catch signals
     running = 1
     while running:
-        time.sleep(1)
+        try:
+            time.sleep(1)
+        except IOError, e:
+            log.info("Sleep interrupted, exiting.")
 
     # Exit cleanly
     server.Stop()

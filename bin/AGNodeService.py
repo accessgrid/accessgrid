@@ -3,14 +3,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.56 2004-05-06 17:54:40 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.57 2004-06-01 20:15:47 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.56 2004-05-06 17:54:40 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.57 2004-06-01 20:15:47 judson Exp $"
 
 # The standard imports
 import sys
@@ -115,7 +115,10 @@ def main():
     global running
     running = 1
     while running:
-        time.sleep(1)
+        try:
+            time.sleep(1)
+        except IOError, e:
+            log.info("Sleep interrupted, exiting.")
 
     # Exit cleanly
     nodeService.Stop()
