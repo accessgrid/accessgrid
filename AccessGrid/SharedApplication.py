@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.11 2004-04-16 22:27:40 eolson Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.12 2004-04-29 21:47:08 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,14 +14,14 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.11 2004-04-16 22:27:40 eolson Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.12 2004-04-29 21:47:08 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
 from AccessGrid import GUID
 from AccessGrid import Events
 from AccessGrid.Events import Event
-from AccessGrid.Descriptions import ApplicationDescription, AppParticipantDescription
+from AccessGrid.Descriptions import ApplicationDescription, AppParticipantDescription, AppDataDescription
 
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 
@@ -92,7 +92,7 @@ class SharedApplication(AuthorizationMixIn):
         self.description = description
         self.mimeType = mimeType
         self.eventService = eventService
-
+        self.uri = None
         self.components = {}
         self.channels = []
         self.app_data = {}
@@ -141,7 +141,7 @@ class SharedApplication(AuthorizationMixIn):
         for channel in self.channels:
             self.eventService.RemoveChannel(channel)
 
-    def GetState(self):
+    def GetState(self, private_token):
         """
         Return the state of this application, used in the rollup of
         venue state for the return from the Venue.Enter call.
@@ -157,6 +157,9 @@ class SharedApplication(AuthorizationMixIn):
 
         """
 
+        if not self.components.has_key(private_token):
+            raise InvalidPrivateToken
+        
         appState = {
             'name' : self.name,
             'description' : self.description,
@@ -248,12 +251,37 @@ class SharedApplication(AuthorizationMixIn):
 
         comps = self.components.values()
         return comps
+
+    def GetParticipants(self, private_token):
+        '''
+        Returns a list of AppParticipantDescriptions that have client profile set.
+        '''
+        if not self.components.has_key(private_token):
+            raise InvalidPrivateToken
+
+        participants = []
+        for c in self.components.values():
+            if c.clientProfile != None:
+                participants.append(c)
+
+        return participants
     
     def SetData(self, private_token, key, value):
         if not self.components.has_key(private_token):
             raise InvalidPrivateToken
 
+        
+
         self.app_data[key] = value
+
+        participant = self.components[private_token]
+
+        data = AppDataDescription(participant.appId, key, value)
+        
+        # Distribute event
+        for channelId in self.channels:
+            evt = Event(Event.APP_SET_DATA, channelId, data)
+            self.eventService.Distribute(channelId, evt)
 
     def GetData(self, private_token, key):
         if not self.components.has_key(private_token):
@@ -263,6 +291,20 @@ class SharedApplication(AuthorizationMixIn):
             return self.app_data[key]
         else:
             return ""
+
+    def GetDataKeys(self, private_token):
+        '''
+        Access method for retreiving all keys for application data.
+
+        **Returns**
+
+        *[key]* List of all keys for application data
+        
+        '''
+        if not self.components.has_key(private_token):
+            raise InvalidPrivateToken
+
+        return self.app_data.keys()
 
     def SetParticipantProfile(self, private_token, profile):
         '''
@@ -309,6 +351,7 @@ class SharedApplication(AuthorizationMixIn):
         for channelId in self.channels:
             evt = Event(Event.APP_UPDATE_PARTICIPANT, channelId, participant)
             self.eventService.Distribute(channelId, evt)
+
 
     def __CreateDataChannel(self):
         """
@@ -395,6 +438,9 @@ class SharedApplicationI(SOAPInterface, AuthorizationIMixIn):
     def GetComponents(self):
         return self.impl.GetComponents()
 
+    def GetParticipants(self, private_token):
+        return self.impl.GetParticipants(private_token)
+
     def Leave(self, private_token):
         return self.impl.Leave(private_token)
 
@@ -403,6 +449,9 @@ class SharedApplicationI(SOAPInterface, AuthorizationIMixIn):
 
     def GetData(self, private_token, key):
         return self.impl.GetData(private_token, key)
+
+    def GetDataKeys(self, private_token):
+        return self.impl.GetDataKeys(private_token)
 
     def GetDataChannel(self, private_token):
         return self.impl.GetDataChannel(private_token)
@@ -415,6 +464,10 @@ class SharedApplicationI(SOAPInterface, AuthorizationIMixIn):
 
     def SetParticipantProfile(self, private_token, profile):
         return self.impl.SetParticipantProfile(private_token, profile)
+
+    def GetState(self, private_token):
+        return self.impl.GetState(private_token)
+
 
 class SharedApplicationIW(SOAPIWrapper, AuthorizationIWMixIn):
     """
@@ -431,6 +484,9 @@ class SharedApplicationIW(SOAPIWrapper, AuthorizationIWMixIn):
     def GetComponents(self):
         return self.proxy.GetComponents()
 
+    def GetParticipants(self, private_token):
+        return self.proxy.GetParticipants(private_token)
+
     def Leave(self, private_token):
         return self.proxy.Leave(private_token)
 
@@ -439,6 +495,9 @@ class SharedApplicationIW(SOAPIWrapper, AuthorizationIWMixIn):
 
     def GetData(self, private_token, key):
         return self.proxy.GetData(private_token, key)
+
+    def GetDataKeys(self, private_token):
+        return self.proxy.GetDataKeys(private_token)
 
     def GetDataChannel(self, private_token):
         return self.proxy.GetDataChannel(private_token)
@@ -452,4 +511,8 @@ class SharedApplicationIW(SOAPIWrapper, AuthorizationIWMixIn):
     def SetParticipantProfile(self, private_token, profile):
         return self.proxy.SetParticipantProfile(private_token, profile)
 
+    def GetState(self, private_token):
+        return self.proxy.GetState(private_token)
 
+    def GetParticipants(self, private_token):
+        return self.proxy.GetParticipants(private_token)
