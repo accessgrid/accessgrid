@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.80 2004-12-10 14:25:20 judson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.81 2005-02-23 19:32:39 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.80 2004-12-10 14:25:20 judson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.81 2005-02-23 19:32:39 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -132,9 +132,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_USE_MULTICAST = wxNewId()
     ID_USE_UNICAST = wxNewId()
     ID_MYNODE_MANAGE = wxNewId()
-    ID_ENABLE_VIDEO = wxNewId()
-    ID_ENABLE_AUDIO = wxNewId()
-    ID_MYNODE_URL = wxNewId()
     ID_PREFERENCES = wxNewId()
     ID_MYVENUE_ADD = wxNewId()
     ID_MYVENUE_EDIT = wxNewId()
@@ -150,6 +147,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_HELP_BUG_REPORT = wxNewId()
     ID_HELP_BUGZILLA = wxNewId()
     
+    ID_ENABLE_VIDEO = wxNewId()
+    ID_ENABLE_AUDIO = wxNewId()
+    ID_ENABLE_MULTICAST = wxNewId()
+
     ID_PARTICIPANT_PROFILE = wxNewId()
     ID_ME_PROFILE = wxNewId()
     ID_ME_DATA = wxNewId()
@@ -207,7 +208,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # Make sure data can be dragged from tree to the desktop.
         #self.SetDropTarget(DesktopDropTarget(self))
 
-       
+        
     ############################################################################
     # Section Index
     # - Private Methods
@@ -256,7 +257,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
         *profile* The ClientProfile you want to be associated with in the venue.
         """
-
+        
         self.venueAddressBar.SetAddress(self.venueClient.GetPreferences().GetProfile().homeVenue)
         self.Show(true)
         
@@ -277,12 +278,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.applicationMenu = self.BuildAppMenu("")
         self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"Start &Application Session",
                               self.applicationMenu)
-
+        
         self.venue.AppendSeparator()
         self.venue.Append(self.ID_VENUE_SAVE_TEXT,"Save Text...",
-                             "Save text from chat to file.")
+                          "Save text from chat to file.")
         self.venue.Append(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES,"Administrate Roles...",
-                             "Change venue authorization settings.")
+                          "Change venue authorization settings.")
         self.venue.AppendSeparator()
         self.venue.Append(self.ID_VENUE_PROPERTIES,"Properties...",
                           "View information about the venue.")
@@ -298,19 +299,33 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # Retrieve the cert mgr GUI from the application.
         #
 
-#        self.cmui = None
-#        try:
-#            mgr = app.GetCertificateManager()
-#        except:
-#            log.exception("VenueClientFrame.__SetMenubar: Cannot retrieve \
-#                           certificate mgr user interface, continuing")
 
-#        self.cmui = CertificateManagerWXGUI()
-#        self.cmui.SetCertificateManager(mgr)
-#        certMenu = self.cmui.GetMenu(self)
-#        for item in certMenu.GetMenuItems():
-#            self.preferences.AppendItem(item)
+        #        self.cmui = None
+        #        try:
+        #            mgr = app.GetCertificateManager()
+        #        except:
+        #            log.exception("VenueClientFrame.__SetMenubar: Cannot retrieve \
+        #                           certificate mgr user interface, continuing")
+        
+        #        self.cmui = CertificateManagerWXGUI()
+        #        self.cmui.SetCertificateManager(mgr)
+        #        certMenu = self.cmui.GetMenu(self)
+        #        for item in certMenu.GetMenuItems():
+        #            self.preferences.AppendItem(item)
+        
 
+        # Add node-related entries
+        self.preferences.AppendRadioItem(self.ID_USE_MULTICAST, "Use Multicast",
+                                         "Use multicast to connect media")
+        self.preferences.AppendRadioItem(self.ID_USE_UNICAST, "Use Unicast",
+                                         "Use unicast to connect media")
+        self.preferences.AppendSeparator()
+        self.preferences.AppendCheckItem(self.ID_ENABLE_VIDEO, "Enable Video",
+                                         "Enable/disable video for your node")
+        self.preferences.Check(self.ID_ENABLE_VIDEO,true)
+        self.preferences.AppendCheckItem(self.ID_ENABLE_AUDIO, "Enable Audio",
+                                         "Enable/disable audio for your node")
+        self.preferences.Check(self.ID_ENABLE_AUDIO,true)
         self.preferences.Append(self.ID_MYNODE_MANAGE, "&Manage My Node...",
                                 "Configure your node")
         self.preferences.AppendSeparator()
@@ -387,6 +402,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # Do not enable menus until connected
         self.__HideMenu()
 
+        # Don't allow a choice of unicast until in a venue (then we might not
+        # have it anyhow)
+        self.preferences.Enable(self.ID_USE_UNICAST, false)
+
     def __SetEvents(self):
     
         # Venue Menu
@@ -399,7 +418,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         EVT_MENU(self, self.ID_VENUE_CLOSE, self.ExitCB)
         
         # Preferences Menu
-        EVT_MENU(self, self.ID_MYNODE_URL, self.SetNodeUrlCB)
+        EVT_MENU(self, self.ID_USE_MULTICAST, self.UseMulticastCB)
+        EVT_MENU(self, self.ID_USE_UNICAST, self.UseUnicastCB)
+        EVT_MENU(self, self.ID_ENABLE_VIDEO, self.EnableVideoCB)
+        EVT_MENU(self, self.ID_ENABLE_AUDIO, self.EnableAudioCB)
+
         EVT_MENU(self, self.ID_MYNODE_MANAGE, self.ManageNodeCB)
         EVT_MENU(self, self.ID_PREFERENCES, self.PreferencesCB)
         
@@ -488,7 +511,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.contentListPanel = ContentListPanel(self)
         dataDropTarget = DataDropTarget(self)
         self.contentListPanel.SetDropTarget(dataDropTarget)
-        
+
         self.__SetStatusbar()
         self.__SetMenubar(app)
         self.__SetProperties()
@@ -835,12 +858,16 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                 self.Error("Modified profile could not be saved", "Edit Profile Error")
         profileDialog.Destroy()
         
-    """
-    ManageCertificates menu is provided by CertMgmt module
-    """
+    def SetUnicastEnabled(self, flag):
+        self.preferences.Enable(self.ID_USE_UNICAST, flag)
+        
+    def SetTransport(self, transport):
+        if transport == "multicast":
+            self.preferences.Check(self.ID_USE_MULTICAST, true)
+        elif transport == "unicast":  
+            self.preferences.Check(self.ID_USE_UNICAST, true)
 
-
-    def UseMulticastCB(self,event = None):
+    def UseMulticastCB(self,event):
         try:
             self.controller.UseMulticastCB()
         except NetworkLocationNotFound:
@@ -848,17 +875,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         except:
             self.Error("Error using multicast","Use Multicast")
 
-    def UseUnicastCB(self,event = None):
+    def UseUnicastCB(self,event):
 
         # Get a list of providers
         providerList = self.venueClient.GetNetworkLocationProviders()
         providerNameLocList = map( lambda provider: provider.name + "/" + provider.location,
                                    providerList )
 
-        if len(providerNameLocList) < 1:
-            self.Notify("No unicast bridge available in this venue.", "Use Unicast")
-            return
-        
         # Present the list to the user
         dialog = wxSingleChoiceDialog( self, "Select bridge", 
                                              "Bridge Dialog", 
@@ -888,6 +911,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             except:
                 self.Error("Error switching to selected bridge; reverting to previous selection", "Use Unicast Error")
                 
+        else:
+            # Set the menu checkbox appropriately
+            transport = self.venueClient.GetTransport()
+            self.SetTransport(transport)
+                
     def EnableVideoCB(self,event):
         enableFlag = self.preferences.IsChecked(self.ID_ENABLE_VIDEO)
         try:
@@ -903,7 +931,20 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         except:
             #self.gui.Error("Error enabling/disabling audio", "Error enabling/disabling audio")
             pass
-    
+
+    def __UpdateTransports(self):
+        """
+        This method is called when a venue stream is modified.
+        """
+        transportList = self.venueClient.GetTransportList()
+        if 'unicast' in transportList:
+            self.SetUnicastEnabled(1)
+        else:
+            self.SetUnicastEnabled(0)
+
+        transport = self.venueClient.GetTransport()
+        self.SetTransport(transport)
+               
     def SetNodeUrlCB(self, event = None):
         nodeUrl = None
         setNodeUrlDialog = UrlDialog(self, -1, "Set node service URL", \
@@ -920,8 +961,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         setNodeUrlDialog.Destroy()
         
     def ManageNodeCB(self, event):
-        if not self.app.certificateManager.HaveValidProxy():
-                self.app.certificateManager.CreateProxy()
+        #if not self.app.certificateManager.HaveValidProxy():
+        #        self.app.certificateManager.CreateProxy()
         
         if self.nodeManagementFrame:
             self.nodeManagementFrame.Raise()
@@ -1896,14 +1937,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             wxCallAfter(self.venueListPanel.AddVenueDoor, connection)
 
     def AddStream(self,streamDesc):
-        pass
-               
+        wxCallAfter(self.__UpdateTransports)
+                       
     def RemoveStream(self,streamDesc):
-        pass
-               
+        wxCallAfter(self.__UpdateTransports)
+
     def ModifyStream(self,streamDesc):
-        pass
-               
+        wxCallAfter(self.__UpdateTransports)
+                   
     def AddText(self,name,text):
         """
         This method is called when text is received from the text service.
@@ -2037,7 +2078,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             wxCallAfter(self.__EnableAppMenu, true)
 
             # Enable/disable the unicast menu entry appropriately
-            #wxCallAfter(self.__UpdateTransports)
+            wxCallAfter(self.__UpdateTransports)
             
             # Update the UI
             wxCallAfter(self.AddVenueToHistory, URL)
