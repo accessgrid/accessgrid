@@ -3,14 +3,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.48 2004-03-18 21:42:38 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.49 2004-03-26 03:34:55 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.48 2004-03-18 21:42:38 eolson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.49 2004-03-26 03:34:55 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
@@ -40,7 +40,6 @@ if sys.version.startswith('2.3'):
 from AccessGrid.Toolkit import CmdlineApplication
 from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
 from AccessGrid import Log
-from AccessGrid.Platform import PersonalNode
 from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.hosting import Server
 
@@ -80,10 +79,6 @@ def main():
                         help="Set the port the service manager should run on.")
     app.AddCmdLineOption(portOption)
     
-    pnodeOption = Option("--pnode", dest="pnode", metavar="PNODE_TOKEN",
-                         help="Personal node rendezvous token.")
-    app.AddCmdLineOption(pnodeOption)    
-
     # Initialize the app
     try:
         args = app.Initialize("NodeService")
@@ -99,18 +94,6 @@ def main():
     # Create a Node Service
     nodeService = AGNodeService()
 
-    if pnode is not None:
-        log.debug("Starting personal node")
-        personalNode = PersonalNode.PN_NodeService(nodeService.Stop())
-        serviceManagerURL =  personalNode.RunPhase1(pnode)
-        log.debug("Got service mgr %s", serviceManagerURL)
-
-    # Load default configuration if --personal node option is set
-    try:
-        nodeService.LoadDefaultConfig()
-    except:
-        log.debug("Failed to load default node configuration")
-
     # Create a hosting environment
     hostname = SystemConfig.instance().GetHostname()
     server = Server((hostname, port), debug = app.GetDebugLevel())
@@ -119,13 +102,6 @@ def main():
     nsi = AGNodeServiceI(nodeService)
     server.RegisterObject(nsi, path="/NodeService")
     url = server.FindURLForObject(nodeService)
-
-    # If we are starting as a part of a personal node,
-    # initialize that state.
-    if pnode is not None:
-        log.debug("Starting personal node, phase 2")
-        personalNode.RunPhase2(nodeService.GetHandle())
-        log.debug("Personal node done")
 
     # Tell the world where to find the service
     log.info("Starting service; URI: %s", url)

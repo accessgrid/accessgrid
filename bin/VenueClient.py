@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.257 2004-03-19 05:01:53 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.258 2004-03-26 03:34:55 judson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.257 2004-03-19 05:01:53 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.258 2004-03-26 03:34:55 judson Exp $"
 
 # Standard Imports
 import os
@@ -37,7 +37,6 @@ from wxPython.wx import wxPySimpleApp
 # Our imports
 from AccessGrid.Toolkit import WXGUIApplication
 from AccessGrid import Log
-from AccessGrid.Platform.PersonalNode import PersonalNodeManager
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.VenueClientUI import VenueClientUI
 from AccessGrid.VenueClientController import VenueClientController
@@ -65,9 +64,9 @@ def main():
                         help="Set the port the venueclient control interface\
                         should listen on.")
     app.AddCmdLineOption(portOption)
-    pnodeOption = Option("--pnode", action="store_true", dest="pnode",
+    pnodeOption = Option("--personalNode", action="store_true", dest="pnode",
                          default=0,
-                         help="Personal node rendezvous token.")
+                         help="Run NodeService and ServiceManager with the client.")
     app.AddCmdLineOption(pnodeOption)
     urlOption = Option("--url", type="string", dest="url",
                        default="", metavar="URL",

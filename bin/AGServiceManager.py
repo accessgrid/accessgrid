@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.38 2004-03-18 21:42:38 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.39 2004-03-26 03:34:55 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -32,10 +32,9 @@ if sys.version.startswith('2.3'):
 # Our imports
 from AccessGrid.hosting import Server
 from AccessGrid.Toolkit import CmdlineApplication
-from AccessGrid.Platform import PersonalNode, isLinux
+from AccessGrid.Platform import isLinux
 from AccessGrid.Platform.Config import UserConfig, AGTkConfig, SystemConfig
 from AccessGrid.AGServiceManager import AGServiceManager, AGServiceManagerI
-from AccessGrid.Platform import PersonalNode
 from AccessGrid import Toolkit
 
 # default arguments
@@ -70,9 +69,6 @@ def main():
                         default=12000, metavar="PORT",
                         help="Set the port the service manager should run on.")
     app.AddCmdLineOption(portOption)
-    pnodeOption = Option("--pnode", dest="pnode", metavar="PNODE_TOKEN",
-                         help="Personal node rendezvous token.")
-    app.AddCmdLineOption(pnodeOption)
     
     # Initialize the application
     try:
@@ -97,13 +93,6 @@ def main():
     smi = AGServiceManagerI(serviceManager)
     server.RegisterObject(smi,path="/ServiceManager")
     url = server.FindURLForObject(serviceManager)
-
-    # If we are starting as a part of a personal node,
-    # initialize that state.
-
-    if pnode is not None:
-        personalNode = PersonalNode.PN_ServiceManager(url, serviceManager.Shutdown)
-        personalNode.Run(pnode)
 
     # Register the signal handler so we can shut down cleanly
     signal.signal(signal.SIGINT, SignalHandler)
