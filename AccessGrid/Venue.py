@@ -6,18 +6,17 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.3 2003-01-13 18:28:57 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.4 2003-01-14 18:46:06 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys
 from AccessGrid.hosting.pyGlobus import ServiceBase
-from AccessGrid.Types import Capability, Event
+from AccessGrid.Types import Capability, Event, VenueState
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid import NetworkLocation
 
 
-#FIXME - Revise event emission to use constant event types rather than magic strings
 
 def list_append_unique( list, inputItem, key ):
     itemExists = False
@@ -85,6 +84,10 @@ class Venue(ServiceBase.ServiceBase):
 
         self.defaultTtl = 127
 
+
+        self.venueState = VenueState()
+        self.venueState.SetDescription( description )
+
     # Management methods
     def AddNetworkService(self, connectionInfo, networkServiceDescription):
         """ """
@@ -128,7 +131,7 @@ class Venue(ServiceBase.ServiceBase):
     def AddConnection(self, connectionInfo, connectionDescription):
         """ """
         try:
-            list_append_unique( self.connections, connectionDescription, "uri" )
+            self.venueState.AddConnection( connectionDescription )
             self.coherenceService.distribute( Event( Event.ADD_CONNECTION, connectionDescription ) )
         except:
             print "Connection already exists ", connectionDescription.uri
@@ -138,25 +141,47 @@ class Venue(ServiceBase.ServiceBase):
     def RemoveConnection(self, connectionInfo, connectionDescription):
         """ """
         try:
-            list_remove( self.connections, connectionDescription, "uri" )
+            self.venueState.RemoveConnection( connectionDescription )
             self.coherenceService.distribute( Event( Event.REMOVE_CONNECTION, connectionDescription ) )
         except:
             print "Exception in RemoveConnection", sys.exc_type, sys.exc_value
             print "Connection does not exist ", connectionDescription.uri
     RemoveConnection.pass_connection_info = 1
     RemoveConnection.soap_export_as = "RemoveConnection"
+
+
+    def GetConnections(self, connectionInfo ):
+        """ """
+#FIXME - don't access connections list directly
+        return self.venueState.connections.values()
+    GetConnections.pass_connection_info = 1
+    GetConnections.soap_export_as = "GetConnections"
+
+
+    def SetConnections(self, connectionInfo, connectionList ):
+        """ """
+        try:
+            self.venueState.SetConnections( connectionList )
+#FIXME - consider whether to push new venue state to all clients
+            self.coherenceService.distribute( Event( Event.UPDATE_VENUE_STATE, self.venueState ) )
+        except:
+            print "Exception in SetConnections", sys.exc_type, sys.exc_value
+            print "Connection does not exist ", connectionDescription.uri
+    SetConnections.pass_connection_info = 1
+    SetConnections.soap_export_as = "SetConnections"
+
+
         
 
     def SetDescription(self, connectionInfo, description):
         """ """
-        self.description = description
+        self.venueState.SetDescription( description )
     SetDescription.pass_connection_info = 1
     SetDescription.soap_export_as = "SetDescription"
 
     def GetDescription(self, connectionInfo):
         """ """
-
-        return self.description
+        return self.venueState.GetDescription()
     GetDescription.pass_connection_info = 1
     GetDescription.soap_export_as = "GetDescription"
 
@@ -170,6 +195,7 @@ class Venue(ServiceBase.ServiceBase):
     def Enter(self, connectionInfo, clientProfile):
         """ """
         privateId = None
+        """
         state = {
             'description' : self.description,
             'connections' : self.connections,
@@ -179,6 +205,7 @@ class Venue(ServiceBase.ServiceBase):
             'services' : self.services,
             'coherenceLocation' : self.coherenceService.GetLocation()
             }
+        """
 
         streamDescriptions = None
 
@@ -195,16 +222,16 @@ class Venue(ServiceBase.ServiceBase):
                 user = self.users[key]
                 if user.publicId == clientProfile.publicId:
                     print "* * User already in venue"
+#FIXME - temporarily ignore that user is already in venue, for testing
                     #userInVenue = True
                     privateId = key
-#FIXME - temporary - should prolly not return streamDescriptions when user is already in venue - for now only for testing
-                    streamDescriptions = self.NegotiateCapabilities( clientProfile )
                     break
             
             if userInVenue == False:
                 privateId = self.GetNextPrivateId()
                 self.users[privateId] = clientProfile
-                state['users'] = self.users.values()
+                #state['users'] = self.users.values()
+                self.venueState.AddUser( clientProfile )
 
                 # negotiate to get stream descriptions to return
                 streamDescriptions = self.NegotiateCapabilities( clientProfile )
@@ -214,7 +241,7 @@ class Venue(ServiceBase.ServiceBase):
         except:
            print "Exception in Enter ", sys.exc_type, sys.exc_value
         
-        return ( state, privateId, streamDescriptions )
+        return ( self.venueState, privateId, streamDescriptions )
 
     Enter.pass_connection_info = 1
     Enter.soap_export_as = "Enter"
@@ -240,6 +267,7 @@ class Venue(ServiceBase.ServiceBase):
 
     def GetState(self, connectionInfo):
         """ """
+        """
         try:
            print "Called GetState on ", self.uniqueId
 
@@ -254,8 +282,8 @@ class Venue(ServiceBase.ServiceBase):
                }
         except:
            print "Exception in GetState ", sys.exc_type, sys.exc_value
-
-        return state
+        """
+        return self.venueState
     
     GetState.pass_connection_info = 1
     GetState.soap_export_as = "GetState"
@@ -273,18 +301,16 @@ class Venue(ServiceBase.ServiceBase):
     UpdateClientProfile.pass_connection_info = 1
     UpdateClientProfile.soap_export_as = "UpdateClientProfile"
 
-    def AddData(self, connectionInfo, dataDescription, privateId ):
+    def AddData(self, connectionInfo, dataDescription ):
         """ """
 
 #FIXME - data is not keyed on name
         try:
-            list_append_unique( self.data, dataDescription, "name" )
+            self.venueState.AddData( dataDescription )
             self.coherenceService.distribute( Event( Event.ADD_DATA, dataDescription ) )
         except:
             print "Exception in AddData ", sys.exc_type, sys.exc_value
             print "Data already exists ", dataDescription.name
-
-
     AddData.pass_connection_info = 1
     AddData.soap_export_as = "AddData"
 
@@ -300,7 +326,7 @@ class Venue(ServiceBase.ServiceBase):
         """ """
 #FIXME - data is not keyed on name
         try:
-            list_remove( self.data, dataDescription, "name" )
+            self.venueState.RemoveData( dataDescription )
             self.coherenceService.distribute( Event( Event.REMOVE_DATA, dataDescription ) )
         except:
             print "Exception in RemoveData", sys.exc_type, sys.exc_value
@@ -314,7 +340,7 @@ class Venue(ServiceBase.ServiceBase):
         """
         print "Adding service ", serviceDescription.name, serviceDescription.uri
         try:
-            list_append_unique( self.services, serviceDescription, "uri" )
+            self.venueState.AddService( serviceDescription )
             self.coherenceService.distribute( Event( Event.ADD_SERVICE, serviceDescription ) )
         except:
             print "Exception in AddService ", sys.exc_type, sys.exc_value
@@ -326,7 +352,7 @@ class Venue(ServiceBase.ServiceBase):
         """ """
         
         try:
-            list_remove( self.services, serviceDescription, "uri" )
+            self.venueState.RemoveService( serviceDescription )
             self.coherenceService.distribute( Event( Event.REMOVE_SERVICE, serviceDescription ) )
         except:
             print "Exception in RemoveService", sys.exc_type, sys.exc_value
