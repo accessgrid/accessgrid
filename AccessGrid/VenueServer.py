@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.13 2003-01-20 19:40:52 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.14 2003-01-21 15:20:49 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -89,6 +89,7 @@ class VenueServer(ServiceBase.ServiceBase):
         self.multicastAddressAllocator = MulticastAddressAllocator()
         self.venues = {}
         self.services = []
+        self.coherencePort = self.config['CoherenceService.coherencePortBase']
         
         # Try to open the persistent store for Venues. If we fail, we
         # open a temporary store, but it'll be empty.
@@ -162,9 +163,12 @@ class VenueServer(ServiceBase.ServiceBase):
                                                  venueDescription.extendedDescription )
 
             # Get the next port for the coherenceService for the new venue
-            coherencePort = self.config['CoherenceService.coherencePortBase'] + len(self.venues.keys())
+#            coherencePort = self.config['CoherenceService.coherencePortBase'] + len(self.venues.keys())
+            self.coherencePort = self.coherencePort + 1
 
+            print "Next coherence port is: %d" % self.coherencePort
             # Build the new coherenceService
+#            coherenceService = CoherenceService.CoherenceService(NetworkLocation.UnicastNetworkLocation(socket.getfqdn(), self.coherencePort))
             coherenceService = CoherenceService.CoherenceService( NetworkLocation.UnicastNetworkLocation(socket.getfqdn(), coherencePort))
 
             venueID = GUID.GUID()
