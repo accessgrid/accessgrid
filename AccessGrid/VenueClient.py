@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.89 2003-08-08 21:36:44 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.90 2003-08-11 04:22:18 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -331,6 +331,10 @@ class VenueClient( ServiceBase):
     def AddStreamEvent(self, event):
         log.debug("Got Add Stream Event")
         data = event.data
+
+        # Add the stream to the local stream store
+        self.streamDescList.append(data)
+
         if self.nodeServiceUri != None:
             Client.Handle(self.nodeServiceUri).GetProxy().AddStream(data)
         for s in self.eventSubscribers:
@@ -339,16 +343,35 @@ class VenueClient( ServiceBase):
     def ModifyStreamEvent(self, event):
         log.debug("Got Modify Stream Event")
         data = event.data
+
+        # Modify the stream in the node service
+        # (for now, remove and add it)
         if self.nodeServiceUri != None:
+            Client.Handle(self.nodeServiceUri).GetProxy().RemoveStream(data)
             Client.Handle(self.nodeServiceUri).GetProxy().AddStream(data)
+
+        # Modify the local stream store
+        for i in range(len(self.streamDescList)):
+            if self.streamDescList[i].id == data.id:
+                self.streamDescList[i] = data
+
+        # Update event subscribers (the UI)
         for s in self.eventSubscribers:
             s.ModifyStreamEvent(event)
+        
     
     def RemoveStreamEvent(self, event):
         log.debug("Got Remove Stream Event")
         data = event.data
+
+        # Remove the stream from the local stream store
+        for i in range(len(self.streamDescList)):
+            if self.streamDescList[i].id == data.id:
+                del self.streamDescList[i]
+
         if self.nodeServiceUri != None:
             Client.Handle(self.nodeServiceUri).GetProxy().RemoveStream(data)
+
         for s in self.eventSubscribers:
             s.RemoveStreamEvent(event)
         
@@ -515,6 +538,7 @@ class VenueClient( ServiceBase):
                 Event.REMOVE_CONNECTION: self.RemoveConnectionEvent,
                 Event.SET_CONNECTIONS: self.SetConnectionsEvent,
                 Event.ADD_STREAM: self.AddStreamEvent,
+                Event.MODIFY_STREAM: self.ModifyStreamEvent,
                 Event.REMOVE_STREAM: self.RemoveStreamEvent
                 }
         
@@ -1110,6 +1134,8 @@ class VenueClient( ServiceBase):
         Inform the node of the identity of the person driving it
         """
 
+        log.debug("Method UpdateNodeService called")
+
         # Set the identity of the user running the node
         if not self.isIdentitySet:
             Client.Handle(self.nodeServiceUri).GetProxy().SetIdentity(self.profile)
@@ -1117,30 +1143,37 @@ class VenueClient( ServiceBase):
 
         # Set the streams to use the selected transport
         for stream in self.streamDescList:
-            if stream.location.type != self.transport:
-                if stream.__dict__.has_key('networkLocations'):
-                    for netloc in stream.networkLocations:
-                        if netloc.type == self.transport:
-                            log.debug("UpdateNodeService: Setting stream %s to %s",
-                                      stream.id, self.transport)
-                            stream.location = netloc
+            if stream.__dict__.has_key('networkLocations'):
+                for netloc in stream.networkLocations:
+                    # use the stream if it's the right transport and
+                    # if multicast OR the provider matches
+                    if netloc.type == self.transport and (self.transport == 'multicast' or netloc.profile.name == self.provider.name):
+                        log.debug("UpdateNodeService: Setting stream %s to %s",
+                                  stream.id, self.transport)
+                        stream.location = netloc
 
         # Send streams to the node service
         Client.Handle( self.nodeServiceUri ).GetProxy().SetStreams( self.streamDescList )
 
     
+    def SetProvider(self,provider):
+        self.provider = provider
+
     def SetTransport(self,transport):
 
-        # Update the transport if it has changed
-        if self.transport != transport:
-            self.transport = transport
-
-            # Update the node service to use the new transport
-            if self.streamDescList:
-                self.UpdateNodeService()
+        # Update the transport
+        self.transport = transport
 
     def GetTransport(self):
         return self.transport
+
+    def GetTransportList(self):
+        transportDict = dict()
+        for stream in self.streamDescList:
+            if stream.__dict__.has_key('networkLocations'):
+                for netloc in stream.networkLocations:
+                    transportDict[netloc.type] = 1
+        return transportDict.keys()
             
 
     def SetNodeUrl(self, url):
@@ -1168,3 +1201,24 @@ class VenueClient( ServiceBase):
         if self.dataStore:
             self.dataStore.Shutdown()
 
+    def GetNetworkLocationProviders(self):
+        """
+        GetNetworkLocationProviders returns a list of entities providing
+        network locations to the current venue.
+
+        Note:  To do this, it looks for providers in the first stream.
+               For now, this assumption is safe.
+        """
+
+        transport = 'unicast'
+
+        providerList = []
+        if self.streamDescList and self.streamDescList[0].__dict__.has_key('networkLocations'):
+            networkLocations = self.streamDescList[0].networkLocations
+            for netLoc in networkLocations:
+                if netLoc.type == transport:
+                    providerList.append(netLoc.profile)
+
+        return providerList
+                    
+            
