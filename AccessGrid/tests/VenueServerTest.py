@@ -48,7 +48,7 @@ class VenueServerTest:
         print "------------------ Modify The Venue"
         newName = "newName"
         newDescription = "newDescription"
-        print "new venue has name: "+newName+" description: "newDescription
+        print "new venue has name: "+newName+" description: "+newDescription
         venue = VenueDescription(newName, newDescription, "", None)
         self.client.ModifyVenue(uri, venue)
         print " "
@@ -118,7 +118,7 @@ class VenueServerTest:
         print " "
         print "------------------ SetStorageLocation: "+path
         self.client.SetStorageLocation()
-        store = self.client.GetStorageLocation()
+        store = self.client.GetStorageLocation(path)
         print " "
         print "------------------ GetStorageLocation: "+store
 
