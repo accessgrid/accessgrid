@@ -1,0 +1,11 @@
+[ServiceDescription]
+name = MacVideoProducerService
+description = Video service to send video to multicast address
+capabilities = Capability1
+executable = MacVideoProducerService.py
+platform = OSX
+version = 1.0
+
+[Capability1]
+role = producer
+type = video
