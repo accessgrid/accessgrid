@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.1 2003-05-09 20:40:20 olson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.2 2003-05-20 20:06:01 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -36,14 +36,16 @@ class Application:
 
         Application.instance = self
 
-    def Initialize(self):
-        """
-        The meat of the code.
-        """
-
         self.userConfigDir = Platform.GetUserConfigDir()
         log.debug("userConfigDir: %s", self.userConfigDir)
-        
+
+    def Initialize(self):
+        """
+
+        """
+
+        pass
+
     def Finalize(self):
         pass
 
@@ -60,13 +62,13 @@ class CmdlineApplication(Application):
     def __init__(self):
         Application.__init__(self)
         
-    def Initialize(self):
-        Application.Initialize(self)
-
         userInterface = CertificateManager.CertificateManagerUserInterface()
         self.certificateManager = \
             CertificateManager.CertificateManager(self.userConfigDir,
                                                   userInterface)
+    def Initialize(self):
+        Application.Initialize(self)
+
 
         self.certificateManager.InitEnvironment()
 
@@ -85,15 +87,15 @@ class ServiceApplicationWithIdentity(Application):
         self.cert = cert
         self.key = key
         
-    def Initialize(self):
-        Application.Initialize(self)
-
         userInterface = CertificateManager.CertificateManagerUserInterface()
         self.certificateManager = \
             CertificateManager.CertificateManager(self.userConfigDir,
                                                   userInterface,
                                                   identityCert = self.cert,
                                                   identityKey = self.key)
+    def Initialize(self):
+        Application.Initialize(self)
+
 
         self.certificateManager.InitEnvironment()
 
@@ -109,15 +111,14 @@ class ServiceApplicationInheritIdentity(Application):
 
     def __init__(self):
         Application.__init__(self)
-
-    def Initialize(self):
-        Application.Initialize(self)
-
         userInterface = CertificateManager.CertificateManagerUserInterface()
         self.certificateManager = \
             CertificateManager.CertificateManager(self.userConfigDir,
                                                   userInterface,
                                                   inheritIdentity = 1)
+
+    def Initialize(self):
+        Application.Initialize(self)
 
         self.certificateManager.InitEnvironment()
 
@@ -127,14 +128,14 @@ class WXGUIApplication(Application):
     def __init__(self):
         Application.__init__(self)
 
-
-    def Initialize(self):
-        Application.Initialize(self)
-
         from CertificateManagerWXGUI import CertificateManagerWXGUI
         self.gui = CertificateManagerWXGUI()
         self.certificateManager = CertificateManager.CertificateManager(self.userConfigDir,
                                                                         self.gui)
+
+
+    def Initialize(self):
+        Application.Initialize(self)
 
         self.certificateManager.InitEnvironment()
 
