@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.192 2003-05-20 19:10:21 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.193 2003-05-21 21:41:35 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -542,6 +542,8 @@ class VenueClientFrame(wxFrame):
             self.app.UploadPersonalFiles(files)
                                      
         dlg.Destroy()
+
+    
 
     def OpenDataProfile(self, event):
         id = self.contentListPanel.tree.GetSelection()
@@ -1190,6 +1192,7 @@ class ExitPanel(wxPanel):
 			 size = wxSize(400,200), style = wxRAISED_BORDER)
         self.id = id
         self.parent = parent
+        self.profile = profile
         self.SetBackgroundColour(wxColour(190,190,190))
         self.bitmap = icons.getDefaultDoorClosedBitmap()
         self.bitmapSelect = icons.getDefaultDoorOpenedBitmap()
@@ -1206,36 +1209,57 @@ class ExitPanel(wxPanel):
         EVT_LEFT_DOWN(self.button, self.onClick) 
         EVT_LEFT_DOWN(self.label, self.onClick)
         EVT_LEFT_DOWN(self, self.onClick)
+        EVT_RIGHT_DOWN(self.button, self.onRightClick) 
+        EVT_RIGHT_DOWN(self.label, self.onRightClick)
+        EVT_RIGHT_DOWN(self, self.onRightClick)
+        
         EVT_ENTER_WINDOW(self, self.onMouseEnter)
         EVT_LEAVE_WINDOW(self, self.onMouseLeave)
             
     def onMouseEnter(self, event):
+        '''
+        Sets a new door image when mouse enters the panel
+        '''
         self.button.SetBitmap(self.bitmapSelect)
         
     def onMouseLeave(self, event):
+        '''
+        Sets a new door image when mouse leaves the panel
+        '''
         self.button.SetBitmap(self.bitmap)
                
     def onClick(self, event):
+        '''
+        Move client to a new venue
+        '''
         self.parent.GoToNewVenue(event)
-        
+
+    def onRightClick(self, event):
+        '''
+        Opens a profile dialog for this exit
+        '''
+        doorView = ExitProfileDialog(self, -1, "Venue Properties", self.profile)
+        doorView.ShowModal()
+        doorView.Destroy()
+            
     def GetName(self):
         return self.label.GetLabel()
 
     def GetButtonId(self):
         return self.id
 
-    def AdjustText(self):
-        t = ''
-        self.label.SetValue(t)
+    #def AdjustText(self):
+    #    t = ''
+    #    self.label.SetValue(t)
 
-        line1 = self.label.GetLineText(0)
-        text = line1
+    #    line1 = self.label.GetLineText(0)
+    #    text = line1
 
-        if(t != line1):
-            line2 = self.label.GetLineText(1)
-            text  = text+line2
+    #    if(t != line1):
+    #        line2 = self.label.GetLineText(1)
+    #        text  = text+line2
 
-        self.label.SetValue(text)
+    #    self.label.SetValue(text)
                 
     def Layout(self):
         b = wxBoxSizer(wxHORIZONTAL)
@@ -2124,8 +2148,6 @@ class EditMyVenuesDialog(wxDialog):
         EVT_LIST_ITEM_SELECTED(self.myVenuesList, self.ID_LIST, self.OnItemSelected)
         EVT_MENU(self.menu, self.ID_RENAME, self.OnRename)
         EVT_MENU(self.menu, self.ID_DELETE, self.OnDelete)
-        EVT_LIST_BEGIN_LABEL_EDIT(self.myVenuesList,self.ID_LIST, self.OnBeginEdit) 
-        EVT_LIST_END_LABEL_EDIT(self.myVenuesList,self.ID_LIST, self.OnEndEdit)
                
     def __populateList(self):
         i = 0
@@ -2519,6 +2541,52 @@ class ServiceDialog(wxDialog):
         sizer3.Add(self.okButton, 0, wxALL, 10)
         sizer3.Add(self.cancelButton, 0, wxALL, 10)
 
+        sizer1.Add(sizer3, 0, wxALIGN_CENTER)
+
+        self.SetSizer(sizer1)
+        sizer1.Fit(self)
+        self.SetAutoLayout(1)
+
+class ExitProfileDialog(wxDialog):
+    '''
+    This dialog is opened when a user right clicks an exit
+    '''
+    def __init__(self, parent, id, title, profile):
+        wxDialog.__init__(self, parent, id, title)
+        self.Centre()
+        self.title = title
+        self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
+        self.nameCtrl = wxTextCtrl(self, -1, profile.GetName(), size = (500,20))
+        self.descriptionText = wxStaticText(self, -1, "Description:", style=wxALIGN_LEFT | wxTE_MULTILINE )
+        self.descriptionCtrl = wxTextCtrl(self, -1, profile.GetDescription(), size = (500,20))
+        self.urlText = wxStaticText(self, -1, "URL:", style=wxALIGN_LEFT)
+        self.urlCtrl = wxTextCtrl(self, -1, profile.GetURI(),  size = (500,20))
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.__setProperties()
+        self.Layout()
+                              
+    def __setProperties(self):
+        self.nameCtrl.SetEditable(false)
+        self.descriptionCtrl.SetEditable(false)
+        self.urlCtrl.SetEditable(false)
+                                               
+    def Layout(self):
+        sizer1 = wxBoxSizer(wxVERTICAL)
+        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, "Properties"), wxHORIZONTAL)
+        gridSizer = wxFlexGridSizer(9, 2, 5, 5)
+        gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
+        gridSizer.Add(self.descriptionText, 0, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.descriptionCtrl, 2, wxEXPAND, 0)
+        gridSizer.Add(self.urlText, 0, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.urlCtrl, 0, wxEXPAND, 0)
+        sizer2.Add(gridSizer, 1, wxALL, 10)
+
+        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
+
+        sizer3 = wxBoxSizer(wxHORIZONTAL)
+        sizer3.Add(self.okButton, 0, wxALL, 10)
+       
         sizer1.Add(sizer3, 0, wxALIGN_CENTER)
 
         self.SetSizer(sizer1)
