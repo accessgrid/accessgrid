@@ -117,7 +117,7 @@ class CertRequestWrapper:
                 # back to our normal life.
                 #
                                       
-                fh = open(temp_path, "w")
+                fh = open(temp_path, "wb")
                 fh.write(certText)
                 fh.close()
 
@@ -137,7 +137,7 @@ class CertRequestWrapper:
 
                 if fileInfo.st_size != len(certText):
                     log.error("File %s write did not work: fileSize=%s certSize=%s",
-                              temp_file, fileInfo.st_size, len(certText))
+                              temp_path, fileInfo.st_size, len(certText))
                 
                 certMgr = self.browser.GetCertificateManager()
                 impCert = certMgr.ImportRequestedCertificate(temp_path)
