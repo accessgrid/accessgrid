@@ -6,14 +6,15 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: RegisterApp.py,v 1.9 2003-09-24 20:39:44 eolson Exp $
+# RCS-ID:      $Id: RegisterApp.py,v 1.10 2003-09-28 23:13:24 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
-This program is used to register applications with the users AGTk installation.
+This program is used to register applications with the users AGTk
+installation.
 """
-__revision__ = "$Id: RegisterApp.py,v 1.9 2003-09-24 20:39:44 eolson Exp $"
+__revision__ = "$Id: RegisterApp.py,v 1.10 2003-09-28 23:13:24 judson Exp $"
 
 import os
 import re
@@ -28,7 +29,7 @@ from AccessGrid.Platform import GetTempDir
 
 def Usage():
     """
-    'splains how to use this program.
+    This 'splains how to use this program. You can get help with -h.
     """
     
     print "%s:" % sys.argv[0]
@@ -103,6 +104,9 @@ def main():
     origDir = os.getcwd()
     appName = None
     verbose = 0
+    unregister = 0
+    app = CmdlineApplication()
+    appdb = app.GetAppDatabase()
     
     # We're going to assume there's a .app file in the current directory,
     # but only after we check for a command line argument that specifies one.
@@ -137,7 +141,7 @@ def main():
         elif opt in ("-z", "--zip"):
             zipFile = arg
         elif opt in ("-u", "--unregister"):
-            print "Unregistering applications does not work yet."
+            unregister = 1
         elif opt in ("-n", "--name"):
             appName = arg
         elif opt in ("-v", "--verbose"):
@@ -146,6 +150,12 @@ def main():
             Usage()
             sys.exit(0)
 
+    # If we unregister, we do that then exit
+    if unregister:
+        appdb.UnregisterApplication(name=appName)
+        sys.exit(0)
+
+    # Otherwise we go through and do the registration stuff
     if zipFile != None:
         # Unpack the zip archive
         # We get back the appfile and directory
@@ -161,17 +171,17 @@ def main():
         files = os.listdir(os.getcwd())
         for filename in files:
             spList = filename.split('.')
-            if len(spList) > 1:
+            if len(spList) == 2:
+                print "< ", spList, " >"
                 (name, ext) = spList
                 if ext == "app":
                     appFile = filename
 
     # Process the App File we've gotten
-    appInfo, commands = ProcessAppFile(appFile)
+    if appFile:
+        appInfo, commands = ProcessAppFile(appFile)
                 
     # Register the App
-    app = CmdlineApplication()
-    appdb = app.GetAppDatabase()
     if appName == None:
         appName = appInfo["application.name"]
     files = appInfo["application.files"]
@@ -183,7 +193,7 @@ def main():
         print "Mime Type: %s" % appInfo["application.mimetype"]
         print "Extension: %s" % appInfo["application.extension"]
         print "From: %s" % workingDir
-        
+
     appdb.RegisterApplication(appName,
                               appInfo["application.mimetype"],
                               appInfo["application.extension"],
