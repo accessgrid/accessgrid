@@ -24,7 +24,10 @@ I5\xa5\xe9w\xcf1h\xac\x10\xb1\xbbv\xc8\x80\x81k\xc5T\xde\r"e\x8d\x86\xccM\
 \xe0\xe9\xea\xe7\xb2\xce)\xa1\t\x00\xff\x9cOT' )
 
 def getDefaultParticipantBitmap():
-    return BitmapFromImage(getDefaultParticipantImage())
+    bm = BitmapFromImage(getDefaultParticipantImage())
+    bm.SetWidth(18)
+    bm.SetHeight(18)
+    return bm
 
 def getDefaultParticipantImage():
     stream = cStringIO.StringIO(getDefaultParticipantData())
@@ -61,7 +64,10 @@ def getBulletData():
 \xf9B\x01k\x00\x00\x00\x00IEND\xaeB`\x82\x06\x15\x89\xa1' )
 
 def getBulletBitmap():
-    return BitmapFromImage(getBulletImage())
+    bm = BitmapFromImage(getBulletImage())
+    bm.SetWidth(18)
+    bm.SetHeight(18)
+    return bm
 
 def getBulletImage():
     stream = cStringIO.StringIO(getBulletData())
