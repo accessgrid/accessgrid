@@ -47,6 +47,8 @@ class IdentityBrowser(CertificateBrowserBase):
         sizer.Add(b, 0, wxEXPAND)
         self.certOnlyButtons.append(b)
 
+        sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND | wxALL , 3)
+
         b = wxButton(self, -1, "Refresh")
         EVT_BUTTON(self, b.GetId(), lambda event, self = self: self.Load())
         sizer.Add(b, 0, wxEXPAND)
@@ -174,6 +176,15 @@ class IdentityBrowser(CertificateBrowserBase):
         return self.certMgr.GetIdentityCerts()
 
     def _FormatCert(self, cert):
+
+        if cert.IsServiceCert():
+            type = "Service"
+        elif cert.IsHostCert():
+            type = "Host"
+        else:
+            type = "Identity"
+
+
         subj = GetCNFromX509Subject(cert.GetSubject())
         issuer = GetCNFromX509Subject(cert.GetIssuer())
 
@@ -197,7 +208,7 @@ class IdentityBrowser(CertificateBrowserBase):
 
         valid = self.certMgr.CheckValidity(cert)
 
-        return cert, [subj, issuer, isDefault, valid, proxyValid]
+        return cert, [type, subj, issuer, isDefault, valid, proxyValid]
 
     def _TestGlobusProxy(self, defaultCert):
 
@@ -249,8 +260,8 @@ class IdentityBrowser(CertificateBrowserBase):
         return out
 
     def _getListColumns(self):
-        return ["Name", "Issuer", "Default", "Validity", "Proxy status"]
+        return ["Certificate Type", "Subject Name", "Issuer", "Default", "Validity", "Proxy status"]
 
     def _getListColumnWidths(self):
-        return [wxLIST_AUTOSIZE, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE_USEHEADER, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE_USEHEADER]
+        return [wxLIST_AUTOSIZE_USEHEADER, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE_USEHEADER, wxLIST_AUTOSIZE, wxLIST_AUTOSIZE_USEHEADER]
 
