@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.28 2003-02-06 20:45:47 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.29 2003-02-06 23:22:56 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -36,6 +36,9 @@ class VenueClientUI(wxApp, VenueClient):
     receives a coherence event. 
     """
     def OnInit(self):
+        """
+        This method initiates all gui related classes.
+        """
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
         VenueClient.__init__(self)        
@@ -47,6 +50,15 @@ class VenueClientUI(wxApp, VenueClient):
         return true
 
     def ConnectToVenue(self):
+        """
+        This method is called during program startup. If this is the first time
+        a user starts the client, a dialog is opened where the user can fill in
+        his or her information.  The information is saved in a configuration file
+        in /home/.AccessGrid/profile,  next time the program starts this profile
+        information will be loaded automatically.  ConnectToVenue tries to connect
+        to 'home venue' specified in the user profile, is this fails,  it will ask
+        the user for a specific URL to a venue or venue server.
+        """
         myHomePath = os.environ['HOME']
         # venueServerUri = "https://localhost:6000/VenueServer"
         # venueUri = Client.Handle( venueServerUri ).get_proxy().GetDefaultVenue()
@@ -74,6 +86,10 @@ class VenueClientUI(wxApp, VenueClient):
             self.__startMainLoop(self.profile)
 
     def __openProfileDialog(self):
+        """
+        This method opens a profile dialog where the user can fill in
+        his or her information.  
+        """
         profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', self.profile)
 
         if (profileDialog.ShowModal() == wxID_OK): 
@@ -85,35 +101,67 @@ class VenueClientUI(wxApp, VenueClient):
             profileDialog.Destroy()
                
     def __startMainLoop(self, profile):
+        """
+        This method is called during client startup.  It sets the participant profile,
+        enters the venue, and finally starts the wxPython main gui loop.
+        """
         self.gotClient = true
         self.SetProfile(profile)
-
         self.GoToNewVenue(self.profile.homeVenue)
-
         self.frame.Show(true)
         self.MainLoop()
 
     def ModifyUserEvent(self, data):
+        """
+        Note: Overloaded from VenueClient
+        This method is called every time a venue participant changes its profile.
+        Appropriate gui updates are made in client.
+        """
         self.frame.contentListPanel.ModifyParticipant(data)
         pass
 
     def AddDataEvent(self, data):
+        """
+        Note: Overloaded from VenueClient
+        This method is called every time new data is added to the venue.
+        Appropriate gui updates are made in client.
+        """
         self.frame.contentListPanel.AddData(data)
         pass
 
     def RemoveDataEvent(self, data):
+        """
+        Note: Overloaded from VenueClient
+        This method is called every time data is removed from the venue.
+        Appropriate gui updates are made in client.
+        """
         self.frame.contentListPanel.RemoveData(data)
         pass
 
     def AddServiceEvent(self, data):
+        """
+        Note: Overloaded from VenueClient
+        This method is called every time a service is added to the venue.
+        Appropriate gui updates are made in client.
+        """
         self.frame.contentListPanel.AddService(data)
         pass
 
     def RemoveServiceEvent(self, data):
+        """
+        Note: Overloaded from VenueClient
+        This method is called every time a service is removed from the venue.
+        Appropriate gui updates are made in client.
+        """
         self.frame.contentListPanel.RemoveService(data)
         pass
 
     def AddConnectionEvent(self, data):
+        """
+        Note: Overloaded from VenueClient
+        This method is called every time a new exit is added to the venue.
+        Appropriate gui updates are made in client.
+        """
         self.frame.venueListPanel.list.AddVenueDoor(data)
         pass
 
@@ -124,7 +172,6 @@ class VenueClientUI(wxApp, VenueClient):
         performs its own operations when the client enters a venue.
         """
         VenueClient.EnterVenue( self, URL )
-       
         venueState = self.venueState
         self.frame.SetLabel(venueState.description.name)
         name = self.profile.name
@@ -169,14 +216,13 @@ class VenueClientUI(wxApp, VenueClient):
         This method calls the venue client method and then
         performs its own operations when the client exits a venue.
         """
-        print '----------- I send exit venue event'
         try:
             self.textClient.Close()
         except:
             (name, args, tb) = formatExceptionInfo()
-#            print "Hm: %s %s" % (name, args)
-            
+
         VenueClient.ExitVenue( self )
+        
                                      
     def GoToNewVenue(self, uri):
         if self.venueUri != None:
@@ -186,16 +232,15 @@ class VenueClientUI(wxApp, VenueClient):
             
         try: # is this a server
             venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
-            print "URI: %s" % venueUri
+            
         except: # no, it is a venue
             venueUri = uri
 
         try:  # temporary solution until exceptions work as should
             self.client = Client.Handle(venueUri).get_proxy()
             if oldUri != None:
-                print "Cleaning up Old Venue! <%s>" % oldUri
                 self.frame.CleanUp()
-                self.OnExit()
+                self.ExitVenue()
             self.EnterVenue(venueUri)
         except GSITCPSocketException:
             ErrorDialog(self.frame, sys.exc_info()[1][0])
@@ -210,20 +255,36 @@ class VenueClientUI(wxApp, VenueClient):
         done as the application is about to exit.
         """
         self.ExitVenue()
+        os._exit(0)
                 
     def AddData(self, data):
+        """
+        This method adds data to the venue
+        """
         self.client.AddData(data)
 
     def AddService(self, service):
+        """
+        This method adds a service to the venue
+        """
         self.client.AddService(service)
         
     def RemoveData(self, data):
+        """
+        This method removes a data from the venue
+        """
         self.client.RemoveData(data)
-
+       
     def RemoveService(self, service):
+        """
+        This method removes a service from the venue
+        """
         self.client.RemoveService(service)
         
     def ChangeProfile(self, profile):
+        """
+        This method changes this participants profile
+        """
         self.profile = profile
         self.profile.Save(self.profilePath)
         self.SetProfile(self.profile)
@@ -239,6 +300,7 @@ if __name__ == "__main__":
     from AccessGrid.hosting.pyGlobus import Client
     from AccessGrid.ClientProfile import ClientProfile
     from AccessGrid.Types import *
+
     wxInitAllImageHandlers()
 
     vc = VenueClientUI()
