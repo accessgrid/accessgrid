@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.12 2003-02-21 19:06:52 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.13 2003-02-21 22:35:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -47,7 +47,10 @@ class AGNodeService( ServiceBase ):
 
         if self.defaultConfig:
             print "loading default config = ", self.defaultConfig
-            self.LoadConfiguration( self.defaultConfig ) 
+            try:
+                self.LoadConfiguration( self.defaultConfig ) 
+            except:
+                print "Failed to load default configuration"
 
         self.serviceImplRepository = AGServiceImplementationRepository( 0, self.servicesDir )
 
@@ -236,13 +239,17 @@ class AGNodeService( ServiceBase ):
         # Test service manager presence
         #
         print "Test service manager presence"
+        serviceManagerList = []
         for serviceManager in self.serviceManagers:
             try:
                 Client.Handle( serviceManager.uri ).get_proxy().Ping(  )
+                serviceManagerList.append( serviceManager )
             except:
                 print "* * Couldn't contact host ; uri=", serviceManager.uri
                 hadServiceManagerException = 1
-#FIXME - # need to handle unreachable service managers ####del self.hosts[ h.id ]
+
+        # Update service manager list to contain only reachable service managers
+        self.serviceManagers = serviceManagerList
 
 
         #
@@ -280,7 +287,10 @@ class AGNodeService( ServiceBase ):
 
         for s in services:
 
-            smservices = Client.Handle( s.serviceManagerUri ).get_proxy().GetServices()
+            try:
+                smservices = Client.Handle( s.serviceManagerUri ).get_proxy().GetServices()
+            except:
+                continue
 
             for sms in smservices:
                 if sms.description == s.description:
