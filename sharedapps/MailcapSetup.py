@@ -8,7 +8,7 @@
 # Author:      Ti Leggett
 # Copyright:   (c) 2002-2003
 # License:     See COPYING.txt
-# RCS-ID:      $Id: MailcapSetup.py,v 1.9 2003-07-11 21:12:33 eolson Exp $
+# RCS-ID:      $Id: MailcapSetup.py,v 1.10 2003-07-22 18:36:10 eolson Exp $
 #-----------------------------------------------------------------------------
 
 import os
@@ -18,13 +18,14 @@ import AccessGrid.Platform
 import getopt
 import time
 import pprint
+from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
 
 if sys.platform == 'win32':
     import win32api
 
 class Mailcap:
     def __init__(self):
-        self.system = False
+        self.system = AG_FALSE
         self.mailcap = os.path.join(AccessGrid.Platform.GetUserConfigDir( ), "mailcap")
         self.mimetype = ""
         self.executable = ""
@@ -32,19 +33,19 @@ class Mailcap:
         self.nametemplate = ""
         self.file = ""
         self.execargs = ""
-        self.uninstall = False
-        self.update = False
+        self.uninstall = AG_FALSE
+        self.update = AG_FALSE
         self.mimetypes = dict( )
         
 
     def is_root(self):
         if sys.platform == AccessGrid.Platform.WIN:
-            return True
+            return AG_TRUE
         else:
             if os.getuid( ) == 0:
-                return True
+                return AG_TRUE
             else:
-                return False
+                return AG_FALSE
 
 
     def usage(self):
@@ -82,7 +83,7 @@ class Mailcap:
                 sys.exit(0)
             elif opt in ('-s', '--system'):
                 if self.is_root( ):
-                    self.system = True
+                    self.system = AG_TRUE
                     self.mailcap = os.path.join(AccessGrid.Platform.GetSystemConfigDir( ), "mailcap")
                 elif sys.platform == AccessGrid.Platform.WIN:
                     print "You must have adminstrative rights to edit the system mailcap file"
@@ -112,9 +113,9 @@ class Mailcap:
                 passed_args = 1
                 self.execargs = arg
             elif opt == '--uninstall':
-                self.uninstall = True
+                self.uninstall = AG_TRUE
             elif opt == '--update':
-                self.update = True
+                self.update = AG_TRUE
 
         if not self.mimetype:
             print "You must provide a mimetype."
@@ -137,14 +138,14 @@ class Mailcap:
 
     def mailcap_exists(self):
         if os.path.isfile(self.mailcap):
-            return True
+            return AG_TRUE
         else:
-            return False
+            return AG_FALSE
 
 
     def load_mimetypes(self):
         if not self.mailcap_exists( ):
-            return True
+            return AG_TRUE
         mailcapfd = open(self.mailcap)
         mimeline = mailcapfd.readline( ).strip( )
         while mimeline:
@@ -152,45 +153,45 @@ class Mailcap:
             self.mimetypes[mimelist[0]] = mimelist[1:]
             mimeline = mailcapfd.readline( ).strip( )
         mailcapfd.close( )
-        return True
+        return AG_TRUE
 
 
     def mimetype_exists(self):
         if self.mimetype in self.mimetypes.keys( ):
-            return True
+            return AG_TRUE
         else:
-            return False
+            return AG_FALSE
 
 
     def get_mimetype(self):
         if not self.mimetype_exists( ):
-            return False
+            return AG_FALSE
         if not self.executable:
             self.executable = self.mimetypes[self.mimetype][0]
         if not self.description:
             self.description = self.mimetypes[self.mimetype][1]
         if not self.nametemplate:
             self.nametemplate = self.mimetypes[self.mimetype][2]
-        return True
+        return AG_TRUE
 
 
     def add_mimetype(self):
         if not self.executable:
             print "You must specify an executable"
-            return False
+            return AG_FALSE
         if not self.description:
             print "You must specify a description"
-            return False
+            return AG_FALSE
         if not self.nametemplate:
             print "You must specify a name template"
-            return False
+            return AG_FALSE
         if not self.description.startswith("description="):
             self.description = "description=" + self.description
         if not self.nametemplate.startswith("nametemplate="):
             self.nametemplate = "nametemplate=" + self.nametemplate
         self.executable = "\"%s %s\"" % (self.executable, self.execargs)
         self.mimetypes[self.mimetype] = [self.executable, self.description, self.nametemplate]
-        return True
+        return AG_TRUE
 
 
     def del_mimetype(self):
@@ -207,14 +208,14 @@ class Mailcap:
         mailcapfd = open(self.mailcap, "w")
         if not mailcapfd:
             print "Could not %s for writing." %(self.mailcap)
-            return False
+            return AG_FALSE
         for mimetype in self.mimetypes.keys( ):
             mailcapfd.write( mimetype + "; " +
                              self.mimetypes[mimetype][0] + "; " +
                              self.mimetypes[mimetype][1] + "; " +
                              self.mimetypes[mimetype][2] + "\n" )
         mailcapfd.close( )
-        return True
+        return AG_TRUE
 
 
     def run(self):
