@@ -1,6 +1,8 @@
 from wxPython.wx import *
 from wxPython.lib.buttons import *
-
+import importantPaper
+import pptdoc
+import defaultPerson
 
 '''VenueClient. 
 
@@ -256,12 +258,16 @@ class ContentListPanel(wxPanel):
 	
     def __setImageList(self):
 	wxInitAllImageHandlers()
-	imageList = wxImageList(16,16)    
-        icon = wxBitmap('IMAGES/icon.gif', wxBITMAP_TYPE_GIF)
+	imageList = wxImageList(16,16)  
+	service = wxBitmap('IMAGES/service.bmp', wxBITMAP_TYPE_BMP)
 	smileyOn = wxBitmap('IMAGES/smileyOn.jpg', wxBITMAP_TYPE_JPEG)
 	smileySelect = wxBitmap('IMAGES/smileySelect.jpg', wxBITMAP_TYPE_JPEG)
 
-	self.iconId =  imageList.Add(icon)
+	newImageList = wxImageList(16,16)  
+	self.defaultPersonId = imageList.Add(defaultPerson.getBitmap())
+	self.pptDocId = imageList.Add(pptdoc.getBitmap())
+	self.importantPaperId = imageList.Add(importantPaper.getBitmap())
+	self.serviceId = imageList.Add(service)
 	self.smileyOnId =  imageList.Add(smileyOn)
 	self.smileySelectId =  imageList.Add(smileySelect)
 	self.tree.AssignImageList(imageList)
@@ -277,11 +283,11 @@ class ContentListPanel(wxPanel):
 	data = self.tree.AppendItem(self.root, "Data")
 	self.tree.SetItemBold(data)
 		
-	data1 = self.tree.AppendItem(data, "ImportantPaper.doc")
-	data2 = self.tree.AppendItem(data, "CoolPresentation.ppt")
+	data1 = self.tree.AppendItem(data, "ImportantPaper.doc", self.importantPaperId, self.importantPaperId)
+	data2 = self.tree.AppendItem(data, "CoolPresentation.ppt",self.pptDocId, self.pptDocId)
 	services = self.tree.AppendItem(self.root, "Services")
 	self.tree.SetItemBold(services)
-	service1 = self.tree.AppendItem(services, "VIC")
+	service1 = self.tree.AppendItem(services, "VIC", self.serviceId, self.serviceId)
 	nodes = self.tree.AppendItem(self.root, "Nodes")
 	self.tree.SetItemBold(nodes)
 	node1 = self.tree.AppendItem(nodes, "Library Node")
