@@ -3,19 +3,20 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.38 2004-06-02 01:52:22 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.39 2004-06-02 03:27:01 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.38 2004-06-02 01:52:22 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.39 2004-06-02 03:27:01 eolson Exp $"
 
 import os
 import mimetypes
 import mailcap
 import socket
 import getpass
+import shutil
 
 from pyGlobus import security
 
@@ -703,6 +704,51 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
             raise Exception, "Only one instance of MimeConfig is allowed."
 
         MimeConfig.theMimeConfigInstance = self
+
+    def UnregisterMimeType(self, mimeType):
+
+        # --- Remove, General LINUX/UNIX local user mimetype/mailcap --- #
+
+        mimeFile = os.path.join(os.environ['HOME'], ".mime.types")
+        bakMimeFile = os.path.join(os.environ['HOME'], ".mime.types.bak")
+        tmpMimeFile = os.path.join(os.environ['HOME'], ".mime.types.tmp")
+        mailcapFile = os.path.join(os.environ['HOME'], ".mailcap")
+        bakMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.bak")
+        tmpMailcapFile = os.path.join(os.environ['HOME'], ".mailcap.tmp")
+
+        # Backup old files
+        shutil.copyfile(mimeFile, bakMimeFile)
+        shutil.copyfile(mailcapFile, bakMailcapFile)
+
+        # MimeType file: read line by line and remove the mimeType
+        fr = open(mimeFile, "r")
+        fw = open(tmpMimeFile, "w")
+        line = fr.readline()
+        while len(line) > 0:
+            if not line.startswith(mimeType):
+                fw.write(line)
+            line = fr.readline()
+        fr.close()
+        fw.close()
+
+        # Mailcap file: read line by line and remove mimeType
+        fr = open(mailcapFile, "r")
+        fw = open(tmpMailcapFile, "w")
+        line = fr.readline()
+        while len(line) > 0:
+            if not line.startswith(mimeType):
+                fw.write(line)
+            line = fr.readline()
+        fr.close()
+        fw.close()
+
+        # Now copy tmp files into place
+        shutil.copyfile(tmpMimeFile, mimeFile)
+        shutil.copyfile(tmpMailcapFile, mailcapFile)
+        # Remove tmp files
+        os.remove(tmpMimeFile)
+        os.remove(tmpMailcapFile)
+        
     
     def RegisterMimeType(self, mimeType, extension, fileType, description,
                          cmds):
@@ -732,6 +778,25 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
             # remove the "." from the front
             short_extension = extension[1:]
         homedir = os.environ['HOME']
+
+        # --- General LINUX/UNIX local user mimetype/mailcap --- #
+        
+        # First unregister
+        self.UnregisterMimeType(mimeType)
+
+        # Write to Mime/Mailcap Files
+        mimeFile = os.path.join(os.environ['HOME'], ".mime.types")
+        mailcapFile = os.path.join(os.environ['HOME'], ".mailcap")
+       
+        mimeA = open(mimeFile, "a")   # Append 
+        mimeA.write(mimeType + " " + short_extension + "\n")
+        mimeA.close()
+
+        mailcapA = open(mailcapFile, "a")   # Append 
+        generalMimeCommand = cmd[1].replace("%f", "%s") # has %s instead of %f
+        mailcapA.write(mimeType + ";" + generalMimeCommand + "\n")
+        mailcapA.close()
+
 
         # --- .DESKTOP FILES BASE INFORMATION --- (KDE)
 
