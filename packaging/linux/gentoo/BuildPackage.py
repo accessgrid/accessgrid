@@ -192,7 +192,13 @@ if ret != 0:
 #
 # - Remove temp directory
 #os.removedirs(TmpDir)
-
+cmd = 'rm -rf %s' % (TmpDir,)
+if options.verbose:
+    print 'cmd = ', cmd
+ret = os.system(cmd)
+if ret != 0:
+    print "error in build (%s); exiting" % (ret)
+    sys.exit(1)
 
 # 
 # Output build results
