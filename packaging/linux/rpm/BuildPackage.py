@@ -116,15 +116,6 @@ print "cmd = ", cmd
 os.system(cmd)
 
 #
-# Copy necessary stuff into the dist dir
-#
-os.mkdir(os.path.join(DestDir,'etc','AccessGrid','Config'))
-# - CA certs dir
-cmd = "cp -r %s %s" % (os.path.join(BuildDir,'packaging','config','CAcertificates'),
-                       os.path.join(DestDir,'etc','AccessGrid','Config','CAcertificates'))
-os.system(cmd)
-
-#
 # Build AccessGrid rpms
 #
 print "** Building AccessGrid RPMs"
