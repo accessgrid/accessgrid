@@ -17,7 +17,7 @@ class AGNetworkService:
     '''
     Class to use when creating a network service.
     '''
-    def __init__(self, name, description, version):
+    def __init__(self, name, description, version, mimeType, extension):
         '''
         Initiate the class.
 
@@ -30,6 +30,9 @@ class AGNetworkService:
         self.name = name
         self.description = description
         self.version = version
+        self.mimeType = mimeType
+        self.extension = extension
+        self.visible = 1
                 
         # Defined in Start.
         self.venueProxies = {}
@@ -50,7 +53,7 @@ class AGNetworkService:
         self.inCapabilities = []
         self.outCapabilities = []
                     
-    def Start(self, service):
+    def Start(self, soapInterface):
         '''
         Performs necessary AG initialization operations for authorization,
         logging, command line options, and so forth.  Starts a SOAP service
@@ -58,7 +61,7 @@ class AGNetworkService:
         service from the command line.
         '''
         # Create the service interface.
-        soapInterface = AGNetworkServiceI(service)
+        # soapInterface = AGNetworkServiceI(service)
         
         self.app.Initialize(self.name)
         self.log = self.app.GetLog()
@@ -90,8 +93,7 @@ class AGNetworkService:
         Disconnects from venue and shuts down the SOAP server.
         '''
         if len(self.venueProxies) > 0:
-            nsd = AGNetworkServiceDescription(self.name, self.description, self.url, self.venueProxies.keys(),
-                                              self.inCapabilities, self.outCapabilities, self.version)
+            nsd = self.CreateDescription()
             for url in self.venueProxies.keys():
                 try:
                     self.venueProxies[url].UnRegisterNetworkService(nsd)
@@ -140,9 +142,8 @@ class AGNetworkService:
         # Create a NetworkServiceDescription and register with the venue. 
         for url in urls:
             self.venueProxies[url] = VenueIW(url)
-            nsd = AGNetworkServiceDescription(self.name, self.description, self.url, self.venueProxies.keys(),
-                                              self.inCapabilities, self.outCapabilities, self.version)
-            
+            nsd = self.CreateDescription()
+
             try:
                 self.venueProxies[url].RegisterNetworkService(nsd)
                 self.log.debug("AGNetworkService.Register: Register with venue %s" %(url))
@@ -200,6 +201,13 @@ class AGNetworkService:
         except:
             self.log.exception('AGNetworkService.UnRegisterFromVenueServer: Failed to unregister venues.')
 
+
+    def CreateDescription(self):
+        nsd = AGNetworkServiceDescription(self.name, self.description, self.url, self.mimeType,
+                                          self.extension, self.inCapabilities, self.outCapabilities,
+                                          self.version, self.visible)
+        return nsd
+
 class AGNetworkServiceI(SOAPInterface):
     def __init__(self, impl):
         SOAPInterface.__init__(self, impl)
@@ -220,6 +228,7 @@ class AGNetworkServiceI(SOAPInterface):
             streams.append(CreateStreamDescription(stream))
             
         return self.impl.StopTransform(streams)
+
         
 if __name__ == "__main__":
     # Test for AGNetworkService and venue soap interface.
