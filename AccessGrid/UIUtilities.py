@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.34 2003-09-16 22:10:39 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.35 2003-09-24 14:03:36 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.34 2003-09-16 22:10:39 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.35 2003-09-24 14:03:36 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -77,6 +77,15 @@ class BugReportCommentDialog(wxDialog):
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.commentBox = wxTextCtrl(self, -1, "", size = wxSize(300,100), style = wxTE_MULTILINE, validator = TextValidator())
         self.line = wxStaticLine(self, -1)
+        
+        # I have to add this due to a wxPython bug. A wxTextCtrl that has wxTE_MULTILINE
+        # flag set ignores focus of next child. If I don't have tmp, the email text ctrl
+        # will never get focus when you use the TAB key.
+        # --
+        temp = wxTextCtrl(self, -1, "")
+        temp.Hide()
+        # --
+        
         self.commentText =  wxStaticText(self, -1, "Comment:")
         self.emailText = wxStaticText(self, -1, "E-mail:")
         self.emailBox =  wxTextCtrl(self, -1, "")
