@@ -11,7 +11,7 @@
 # Author:      Ti Leggett
 # Copyright:   (c) 2002-2003
 # License:     See COPYING.txt
-# RCS-ID:      $Id: MailcapSetup.py,v 1.4 2003-05-29 18:40:58 leggett Exp $
+# RCS-ID:      $Id: MailcapSetup.py,v 1.5 2003-05-29 21:55:50 leggett Exp $
 #-----------------------------------------------------------------------------
 
 import os
@@ -34,6 +34,7 @@ class Mailcap:
         self.description = ""
         self.nametemplate = ""
         self.file = ""
+        self.execargs = ""
         self.uninstall = False
         self.update = False
         self.mimetypes = dict( )
@@ -58,15 +59,16 @@ class Mailcap:
         print "    -d|--description <description>: specify the description"
         print "    -n|--nametemplate <name>:       specify the name template"
         print "    --mailcap <file>:               edit the specified mailcap"
+        print "    --exec-args <arguments>:        arguments to pass to the executable"
         print "    --uninstall:                    uninstall the specified mime type"
-        print "       Must be used with either --mime-type" 
+        print "       Must be used with --mime-type" 
         print "    --update:                       update the specfied mime type"
-        print "       Must be used with either --mime-type"
+        print "       Must be used with --mime-type"
 
 
     def process_args(self):
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "hsmed", ["help", "system", "mailcap=", "mime-type=", "executable=", "description=", "nametemplate=", "uninstall", "update"])
+            opts, args = getopt.getopt(sys.argv[1:], "hsmed", ["help", "system", "mailcap=", "mime-type=", "executable=", "description=", "nametemplate=", "exec-args=", "uninstall", "update"])
         except getopt.GetoptError:
             self.usage( )
             sys.exit(2)
@@ -104,6 +106,8 @@ class Mailcap:
                 self.nametemplate = "%s." + self.nametemplate
             elif opt == '--mailcap':
                 self.mailcap = arg
+            elif opt == '--exec-args':
+                self.execargs = arg
             elif opt == '--uninstall':
                 self.uninstall = True
             elif opt == '--update':
@@ -124,6 +128,9 @@ class Mailcap:
             print ""
             self.usage( )
             sys.exit(2)
+
+        if not self.execargs:
+            self.execargs = "%s"
 
     def mailcap_exists(self):
         if os.path.isfile(self.mailcap):
@@ -178,6 +185,7 @@ class Mailcap:
             self.description = "description=" + self.description
         if not self.nametemplate.startswith("nametemplate="):
             self.nametemplate = "nametemplate=" + self.nametemplate
+        self.executable = self.executable + " " + self.execargs
         self.mimetypes[self.mimetype] = [self.executable, self.description, self.nametemplate]
         return True
 
