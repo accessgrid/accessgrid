@@ -622,6 +622,9 @@ class CertificateDescriptor:
     def GetNotValidAfter(self):
         return self.cert.GetNotValidAfter()
 
+    def IsExpired(self):
+        return self.cert.IsExpired()
+
 class CertificateRequestDescriptor:
     def __init__(self, req, repo):
         self.req = req

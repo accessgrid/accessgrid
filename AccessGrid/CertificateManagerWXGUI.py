@@ -1106,8 +1106,17 @@ class IdentityCertDialog(wxDialog):
         #
 
         if not self.certMgr.VerifyCertificatePath(impCert):
-            log.debug("can't verify issuer")
-        
+            log.warn("can't verify issuer")
+            dlg = wxMessageDialog(None, "Cannot verify the certificate path for \n" +
+                                  str(impCert.GetSubject()) + "\n"
+                                  "This certificate may not be usable until the \n" +
+                                  "appropriate CA certificates are imported. At the least,\n" +
+                                  "the certificate for this CA must be imported:\n" +
+                                  str(impCert.GetIssuer()) + "\n" +
+                                  "It might be found in a file %s.0." % (impCert.GetIssuer().get_hash()),
+                                  "Cannot verify certificate path")
+            dlg.ShowModal()
+            dlg.Destroy()
 
     def OnCertExport(self, event):
         print "Got export "

@@ -401,13 +401,42 @@ class CertificateManager(object):
         Verify that we have CA certificates for the issuing chain of this cert.
         """
 
+        good = 0
         repo = self.GetCertificateRepository()
         c = cert
+        checked = {}
         while 1:
-            issuers = repo.FindCertificatesWithIssuer(str(c.GetIssuer()))
-            log.debug("Issuers of %s are %s", c.GetSubject(), issuers)
-            break
+            subj = str(c.GetSubject())
+            print "Check ", subj
+            if c.GetSubject().get_der() == c.GetIssuer().get_der():
+                print "Reached root"
+                good = 1
+                break
 
+            #
+            # If we come back to a place we've been before, we're in a cycle
+            # and won't get anywhere. Bail.
+            #
+
+            if subj in checked:
+                return 0
+            checked[subj] = 1
+            
+            issuers = repo.FindCertificatesWithSubject(str(c.GetIssuer()))
+
+            issuers = filter(lambda x: not x.IsExpired(), issuers)
+            
+            log.debug("Issuers of %s are %s", subj,
+                      map(lambda x: x.GetSubject(), issuers))
+            if len(issuers) == 0:
+                break
+            
+            if len(issuers) > 1:
+                log.error("Multiple non-expired issuers! choosing one")
+
+            c = issuers[0]
+
+        return good
 
     def GetUserInterface(self):
         return self.userInterface
