@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.164 2003-05-02 15:12:48 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.165 2003-05-05 20:17:46 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -123,7 +123,7 @@ class VenueClientFrame(wxFrame):
         self.venueAddressBar = VenueAddressBar(self, self.ID_WINDOW_TOP, app, \
                                                self.myVenuesDict, 'default venue')
         self.TextWindow = wxSashLayoutWindow(self, self.ID_WINDOW_BOTTOM, wxDefaultPosition,
-                                             wxSize(200, 35), wxNO_BORDER|wxSW_3D)
+                                             wxSize(200, 35))
         self.textClientPanel = TextClientPanel(self.TextWindow, -1)
         self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT, app)
         self.contentListPanel = ContentListPanel(self, app)
@@ -418,7 +418,6 @@ class VenueClientFrame(wxFrame):
         else:
             try:
                 self.app.Follow(personToFollow)
-
             except:
                 wxLogError("VenueClientUIClasses: Can not follow %s" %personToFollow.name)
                 wxLog_GetActiveTarget().Flush()
@@ -430,8 +429,7 @@ class VenueClientFrame(wxFrame):
 
     def FillInAddress(self, event = None, url = None):
         fixedUrlList = []
-       
-            
+                   
         if(url == None):
             name = self.menubar.GetLabel(event.GetId())
             fixedUrlList = map(self.__fillTempHelp, self.myVenuesDict[name])
@@ -896,7 +894,7 @@ class VenueAddressBar(wxSashLayoutWindow):
     
     def __init__(self, parent, id, application, venuesList, defaultVenue):
         wxSashLayoutWindow.__init__(self, parent, id, wxDefaultPosition, \
-                                    wxDefaultSize, wxRAISED_BORDER|wxSW_3D)
+                                    wxDefaultSize)
         
         self.application = application
         self.panel = wxPanel(self, -1)
@@ -1059,7 +1057,7 @@ class VenueList(wxScrolledWindow):
     '''   
     def __init__(self, parent, grandParent, app):
         self.app = app
-        wxScrolledWindow.__init__(self, parent, -1, style = wxRAISED_BORDER )
+        wxScrolledWindow.__init__(self, parent, -1)
         #\ |wxSB_HORIZONTAL| wxSB_VERTICAL)
         self.grandParent = grandParent
         self.doorsAndLabelsList = []
@@ -1130,7 +1128,7 @@ class VenueList(wxScrolledWindow):
 class ExitPanel(wxPanel):
     def __init__(self, parent, id, profile):
         wxPanel.__init__(self, parent, id, wxDefaultPosition, \
-			 size = wxSize(400,200), style = wxDOUBLE_BORDER)
+			 size = wxSize(400,200), style = wxRAISED_BORDER)
         self.id = id
         self.parent = parent
         self.SetBackgroundColour(wxColour(190,190,190))
@@ -1208,7 +1206,7 @@ class ContentListPanel(wxPanel):
     
     def __init__(self, parent, app):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, 
-			 wxDefaultSize, wxNO_BORDER|wxSW_3D)
+			 wxDefaultSize)
      	id = wxNewId()
        
         self.parent = parent
@@ -1365,25 +1363,47 @@ class ContentListPanel(wxPanel):
                 self.tree.SetItemData(dataId, wxTreeItemData(profile))
                 self.personalDataDict[profile.name] = dataId
                 self.tree.SortChildren(participantId)
+                
+                # I select the participant to ensure the twist button is
+                # visible when first data item is added. I have to do
+                # this due to a bug in wxPython.
 
+                id = self.tree.GetSelection()
+                #if(self.tree.GetChildrenCount(participantId) == 0):
+                if(self.tree.GetSelection() == participantId):
+                    self.tree.Unselect()
+                #else:
+                self.tree.SelectItem(participantId)
+                self.tree.SelectItem(id)
+                
+               
             elif (self.nodeDict.has_key(id)):
                 wxLogDebug("Data belongs to a node")
                 nodeId = self.nodeDict[id]
                 dataId = self.tree.AppendItem(nodeId, profile.name, \
-                                     self.defaultDataId, self.defaultDataId)
+                                              self.defaultDataId, self.defaultDataId)
                 self.tree.SetItemData(dataId, wxTreeItemData(profile))
                 self.personalDataDict[profile.name] = dataId
                 self.tree.SortChildren(nodeId)
-
+                
+                # I select the node to ensure the twist button is visible
+                # when first data item is added. I have to do this due to
+                # a bug in wxPython.
+                id = self.tree.GetSelection()
+                if(self.tree.GetSelection() == nodeId):
+                    self.tree.Unselect()
+                
+                self.tree.SelectItem(nodeId)
+                self.tree.SelectItem(id)
+                
             elif (self.nodeDict.has_key(id)):
                 wxLogInfo("Owner of data does not exist")
-            
+        
        
     def UpdateData(self, profile):
         id = None
         
         #if venue data
-
         if(self.dataDict.has_key(profile.name)):
             wxLogDebug("VenueManagementUIClasses::DataDict has data")
             id = self.dataDict[profile.name]
@@ -1894,7 +1914,7 @@ class EditMyVenuesDialog(wxDialog):
         self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
         self.myVenuesList= wxListCtrl(self, self.ID_LIST, 
                                        size = wxSize(self.listWidth, self.listHeight), 
-                                       style=wxLC_REPORT|wxSUNKEN_BORDER)
+                                       style=wxLC_REPORT)
         self.myVenuesList.InsertColumn(0, "Name")
         self.myVenuesList.SetColumnWidth(0, self.listWidth * 1.0/3.0)
         self.myVenuesList.InsertColumn(1, "Url ")
