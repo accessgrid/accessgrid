@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.125 2004-03-30 20:13:34 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.126 2004-04-07 23:53:06 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.125 2004-03-30 20:13:34 eolson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.126 2004-04-07 23:53:06 eolson Exp $"
 
 # Standard imports
 import sys
@@ -110,7 +110,7 @@ class VenueManagementClient(wxApp):
         self.EnableMenu(0)
 
         self.app = Toolkit.WXGUIApplication()
-        self.app.Initialize()
+        self.app.Initialize("VenueManagement")
 
         return true
 
@@ -885,7 +885,7 @@ class VenueListPanel(wxPanel):
                         self.defaultVenue = None
 
                 except Exception, e:
-                    if e.string == "NotAuthorized":
+                    if "string" in dir(e) and e.string == "NotAuthorized":
                         text = "You and are not authorized to administrate \
                                 this server.\n"
                         MessageDialog(None, text, "Authorization Error",
@@ -1133,7 +1133,7 @@ class DetailPanel(wxPanel):
             self.ipAddress.Enable(true)
             self.changeButton.Enable(true)
             self.intervalButton.SetValue(true)
-            if e.string == "NotAuthorized":
+            if "string" in dir(e) and e.string == "NotAuthorized":
                 text = "You are not an administrator on this server and are not authorized to set multicast addressing to random.\n"
                 MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
                 log.info("DetailPanel.ClickedOnRandom: Not authorized to set server multicast addressing to random.")
@@ -2185,51 +2185,11 @@ class IpAddressConverter:
         self.ipString = str(ip1)+'.'+str(ip2)+'.'+str(ip3)+'.'+str(ip4)
         return self.ipString
 
-class ArgumentManager:
-    def __init__(self):
-        self.debugMode = 0
-
-    def GetDebugMode(self):
-        return self.debugMode
-        
-    def Usage(self):
-        """
-        How to use the program.
-        """
-        print "%s:" % (sys.argv[0])
-        print "  -h|--help: print usage"
-        print "  -d|--debug: print debug output"
-        
-    def ProcessArgs(self):
-        """
-        Handle any arguments we're interested in.
-        """
-        try:
-            opts, args = getopt.getopt(sys.argv[1:], "hdl:",
-                                       ["debug", "help"])
-
-        except getopt.GetoptError:
-            self.Usage()
-            sys.exit(2)
-            
-        for opt, arg in opts:
-            if opt in ('-h', '--help'):
-                self.Usage()
-                sys.exit(0)
-            
-            elif opt in ('--debug', '-d'):
-                self.debugMode = 1
-               
-
-
 if __name__ == "__main__":
     wxInitAllImageHandlers()
-    argManager = ArgumentManager()
-    argManager.ProcessArgs()
-    debugMode = argManager.GetDebugMode()
-    del argManager
 
     app = VenueManagementClient()
+    debugMode = Toolkit.Application.instance().GetOption("debug")
     app.SetLogger(debugMode)
     app.MainLoop()
 
