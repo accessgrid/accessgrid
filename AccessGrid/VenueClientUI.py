@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.19 2004-03-16 23:31:01 eolson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.20 2004-03-18 14:17:05 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.19 2004-03-16 23:31:01 eolson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.20 2004-03-18 14:17:05 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -46,6 +46,7 @@ from AccessGrid.AppMonitor import AppMonitor
 from AccessGrid.Venue import ServiceAlreadyPresent
 from AccessGrid.VenueClient import NetworkLocationNotFound, NotAuthorizedError
 from AccessGrid.VenueClient import DisconnectError
+from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 
 try:
     import win32api
@@ -178,7 +179,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.isVenueAdministrator = false
 
         wxFrame.__init__(self, NULL, -1, "")
-        self.__BuildUI(NULL,-1,"")
+        self.__BuildUI()
         self.SetSize(wxSize(400, 500))
         
         # Tell the UI about installed applications
@@ -192,7 +193,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             log.debug("the profile is the default profile - open profile dialog")
             self.__OpenProfileDialog()
         else:
-            self.__OpenVenueClient(profile)
+            self.__OpenVenueClient()
             
         self.nodeManagementFrame = None
 
@@ -241,13 +242,13 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             profileDialog.Destroy()
 
             # Start the main wxPython thread
-            self.__OpenVenueClient(profile)
+            self.__OpenVenueClient()
 
         else:
             profileDialog.Destroy()
             os._exit(0)
 
-    def __OpenVenueClient(self, profile):
+    def __OpenVenueClient(self):
         """
         This method is called during client startup.  It displays the
         venue client GUI.
@@ -273,7 +274,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.venue.Append(self.ID_VENUE_SERVICE_ADD,"Add Service...",
                                 "Add a service to the venue.")
 
-        self.applicationMenu = self.BuildAppMenu(None, "")
+        self.applicationMenu = self.BuildAppMenu("")
         self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"Start &Application Session",
                               self.applicationMenu)
 
@@ -465,11 +466,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         EVT_SIZE(self, self.__OnSize)
 
     def __SetProperties(self):
-        font = wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana")
         self.SetTitle("Venue Client")
         self.SetIcon(icons.getAGIconIcon())
         self.statusbar.SetStatusWidths([-1])
-        currentHeight = self.venueListPanel.GetSize().GetHeight()
+        self.venueListPanel.GetSize().GetHeight()
         self.venueListPanel.SetSize(wxSize(180, 300))
         
     def __FillTempHelp(self, x):
@@ -477,26 +477,26 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             x = '/'
         return x
 
-    def __LoadMyVenues(self, venueURL = None):
+    def __LoadMyVenues(self):
     
         # Delete existing menu items
-        for id in self.myVenuesMenuIds.values():
-            self.myVenues.Delete(id)
+        for ID in self.myVenuesMenuIds.values():
+            self.myVenues.Delete(ID)
         
         self.myVenuesMenuIds = {}
         self.myVenuesDict = self.controller.GetMyVenues()
                    
         # Create menu items
         for name in self.myVenuesDict.keys():
-            id = wxNewId()
-            self.myVenuesMenuIds[name] = id
+            ID = wxNewId()
+            self.myVenuesMenuIds[name] = ID
             url = self.myVenuesDict[name]
             text = "Go to: " + url
-            self.myVenues.Append(id, name, text)
-            EVT_MENU(self, id, self.GoToMenuAddressCB)
+            self.myVenues.Append(ID, name, text)
+            EVT_MENU(self, ID, self.GoToMenuAddressCB)
                         
 
-    def __BuildUI(self,parent,id,title):
+    def __BuildUI(self):
         
         self.Centre()
         self.menubar = wxMenuBar()
@@ -726,8 +726,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         if fileList:
             filesToAdd = []
             dataDescriptions = self.venueClient.GetVenueDataDescriptions()
-            for file in fileList:
-                pathParts = os.path.split(file)
+            for filepath in fileList:
+                pathParts = os.path.split(filepath)
                 name = pathParts[-1]
 
                 if dataDescriptions:
@@ -739,22 +739,22 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                             if self.Prompt(info,title):
                                 try:
                                     self.controller.RemoveDataCB(data)
-                                    filesToAdd.append(file)
+                                    filesToAdd.append(filepath)
                                 except:
                                     log.exception("Error overwriting file %s", data)
                                     self.Error("Can't overwrite file","Replace Data Error")
                             break
                         else:
                             # file doesn't exist; add it           
-                            filesToAdd.append(file)
+                            filesToAdd.append(filepath)
                 else:
-                    filesToAdd.append(file)
+                    # No data exists, so no conflicts; add the file
+                    filesToAdd.append(filepath)
 
             #
             # Upload the files
             #
             try:
-                print "files to Add = ", filesToAdd
                 self.controller.AddDataCB(filesToAdd)
             except:
                 log.exception("Error adding data")
@@ -855,9 +855,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         try:
             self.controller.UseMulticastCB()
         except NetworkLocationNotFound:
-            self.Error("Multicast streams not found")
+            self.Error("Multicast streams not found","Use Multicast")
         except:
-            self.Error("Error using multicast")
+            self.Error("Error using multicast","Use Multicast")
 
     def UseUnicastCB(self,event):
 
@@ -1032,7 +1032,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                     #
                     # Venue name not in list
                     #
-                    addvenue = 1
+                    addVenue = 1
                     
                 if addVenue:
                     try:
@@ -1143,7 +1143,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             profileView.ShowModal()
             profileView.Destroy()
         else:
-            self.Notify("Please, select the participant you want to view information about") 
+            self.Notify("Please, select the participant you want to view information about", "View Profile") 
 
     def AddPersonalDataCB(self, event=None):
         dlg = wxFileDialog(self, "Choose file(s):", style = wxOPEN | wxMULTIPLE)
@@ -1183,8 +1183,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def UnFollowCB(self, event):
         try:
             self.controller.UnFollowCB()
+            self.meMenu.Remove(self.ID_ME_UNFOLLOW)
         except:
-            self.Notify("Error occurred trying to stop following") 
+            self.Error("Error occurred trying to stop following","UnFollow Error") 
 
     #
     # Data Actions
@@ -1265,7 +1266,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                         except:
                             self.Error("The service could not be removed", "Remove Service Error")
         else:
-           self.Notify("Please, select the service you want to delete")       
+           self.Notify("Please, select the service you want to delete", "Delete Service")       
 
     def UpdateServiceCB(self,serviceDesc):
         try:
@@ -1278,21 +1279,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     # Application Actions
     #
     
-    def OpenApplicationCB(self, event):
-        app = self.GetSelectedItem()
-        if app:
-            self.controller.OpenApplicationCB(app)
-        else:
-            self.Notify("Please, select the data you want to open","Open Application")
-    
     def RemoveApplicationCB(self,event):
         appList = self.GetSelectedItems()
         if appList:
             self.controller.RemoveApplicationCB(appList)
         else:
-            self.Notify( "Please, select the application you want to delete")
+            self.Notify( "Please, select the application you want to delete", "Delete Application")
 
-    def StartApplicationCB(self, app, event=None):
+    def StartApplicationCB(self, app):
     
         dlg = AddAppDialog(self, -1, "Start Application Session", app)
         if dlg.ShowModal() == wxID_OK:
@@ -1313,7 +1307,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         try:
             AppMonitor(self, application.uri)
         except:
-            self.Error("Error opening application monitor")
+            self.Error("Error opening application monitor","Monitor App Error")
     
         
     def UpdateApplicationCB(self,appDesc):
@@ -1540,6 +1534,34 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         wxCallAfter(self.AuthorizeLeadDialog, clientProfile)
 
 
+    def AuthorizeLeadDialog(self, clientProfile):
+        idPending = None
+        idLeading = None
+
+        if(self.venueClient.pendingLeader!=None):
+            idPending = self.venueClient.pendingLeader.publicId
+          
+
+        if(self.app.venueClient.leaderProfile!=None):
+            idLeading = self.venueClient.leaderProfile.publicId
+          
+          
+        if(clientProfile.publicId != idPending and clientProfile.publicId != idLeading):
+            text = "Do you want "+clientProfile.name+" to follow you?"
+            title = "Authorize follow"
+            dlg = wxMessageDialog(self, text, title, style = wxYES_NO| wxYES_DEFAULT|wxICON_QUESTION)
+            if(dlg.ShowModal() == wxID_YES):
+                self.venueClient.SendLeadResponse(clientProfile, true)
+
+            else:
+                self.venueClient.SendLeadResponse(clientProfile, false)
+
+            dlg.Destroy()
+
+        else:
+            self.venueClient.SendLeadResponse(clientProfile, false)
+
+
     #
     # Other
     #
@@ -1564,8 +1586,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         print "calling controller back"
         self.controller.GoBackCB()
         
-    def StartCmd(self, command, item=None, namedVars=None, verb=None):
-        self.controller.StartCmd(command,item,namedVars,verb)
+    def StartCmd(self, objDesc, verb=None,cmd=None):
+        self.controller.StartCmd(objDesc,verb,cmd)
             
     def AddVenueToHistory(self,venueUrl):
         self.venueAddressBar.AddChoice(venueUrl)
@@ -1581,8 +1603,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             needNewWindow = 1
         self.browser.open(url, needNewWindow)
         
-    def GetMimeCommandNames(self, mimeType):
-        return self.controller.GetMimeCommandNames(mimeType)
+    def GetCommands(self, objDesc):
+        return self.controller.GetCommands(objDesc)
         
     def GetProfile(self):
         return self.venueClient.GetProfile()
@@ -1601,12 +1623,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                           "Lost Connection")
 
     def AddToMyVenues(self,name,url):
-        id = wxNewId()
+        ID = wxNewId()
         text = "Go to: " + url
-        self.myVenues.Append(id, name, text)
-        self.myVenuesMenuIds[name] = id
+        self.myVenues.Append(ID, name, text)
+        self.myVenuesMenuIds[name] = ID
         self.myVenuesDict[name] = url
-        EVT_MENU(self, id, self.GoToMenuAddressCB)
+        EVT_MENU(self, ID, self.GoToMenuAddressCB)
     
     def RemoveFromMyVenues(self,venueName):
         # Remove the venue from my venues menu list
@@ -1661,7 +1683,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.venueAddressBar.AddChoice(fixedUrl)
 
 
-    def BuildAppMenu(self, event, prefix):
+    def BuildAppMenu(self, prefix):
         """
         Build the menu of installed applications
         """
@@ -2050,10 +2072,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             #  Load exits
             # log.debug("Add exits")
             wxCallAfter(self.statusbar.SetStatusText, "Load exits")
-            for exit in venueState.connections.values():
+            for conn in venueState.connections.values():
                 wxCallAfter(self.venueListPanel.AddVenueDoor,
-                            exit)
-                # log.debug("   %s" %(exit.name))
+                            conn)
+                # log.debug("   %s" %(conn.name))
 
             #
             # Reflect venue entry in the client
@@ -2062,17 +2084,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                         "-- Entered venue %s" % self.venueClient.GetVenueName())
             wxCallAfter(self.SetVenueUrl, URL)
             
-            # Venue data storage location
-            # self.upload_url = self.venueClient.GetDataStoreUploadUrl()
-            #log.debug("Get upload url %s" %self.dataStoreUploadUrl)
-
             # Get the user's administrative status
             #self.isVenueAdministrator = self.venueClient.IsVenueAdministrator()
             self.isVenueAdministrator = 0
             
             # log.debug("Add your personal data descriptions to venue")
             wxCallAfter(self.statusbar.SetStatusText, "Add your personal data to venue")
-            warningString = warningString 
 
             # Enable menus
             wxCallAfter(self.__ShowMenu)
@@ -2953,32 +2970,20 @@ class ContentListPanel(wxPanel):
                     self.parent.ViewProfileCB()
 
             else:
-                openCmd = None
-                if isinstance(item, DataDescription):
-                    list = item.name.split('.')
-                    if len(list) == 2:
-                        (name, ext) = list
-                    commands = mimeConfig.GetMimeCommands(ext = ext)
-                    if commands.has_key('Open'):
-                        openCmd = commands['Open']
-                elif isinstance(item, ServiceDescription):
-                    list = item.name.split('.')
-                    if len(list) == 2:
-                        (name, ext) = list
-                    commands = mimeConfig.GetMimeCommands(mimeType = item.mimeType,
-                                               ext = ext)
-                    if commands.has_key('Open'):
-                        openCmd = commands['Open']
+                commands = self.parent.GetCommands(item)
+                if commands.has_key('Open'):
+                    # Open the given item
+                    self.parent.StartCmd(item,verb='Open')
                 else:
-                    appdb = Toolkit.GetApplication().GetAppDatabase()
-                    openCmd = appdb.GetCommandLine(item.mimeType, 'Open')
-
-                if openCmd == None and \
-                       not isinstance(item, ApplicationDescription):
-                    self.FindUnregistered(item)
-                else:
-                    self.parent.StartCmd(openCmd, item, verb='Open')
-                    
+                    # Handle items with no 'Open' action
+                    if(isinstance(item,DataDescription) or 
+                       isinstance(item,ServiceDescription)):
+                        self.FindUnregistered(item)
+                    else:
+                        # Notify user of no application client
+                        self.Notify("You have no client for this Shared Application.", 
+                                    "Notification")
+                
     def OnRightClick(self, event):
         self.x = event.GetX()
         self.y = event.GetY()
@@ -3005,7 +3010,7 @@ class ContentListPanel(wxPanel):
                 self.PopupMenu(self.parent.serviceHeadingMenu,
                                wxPoint(self.x, self.y))
             elif text == self.APPLICATIONS_HEADING:
-                self.PopupMenu(self.parent.BuildAppMenu(None, "Add "),
+                self.PopupMenu(self.parent.BuildAppMenu("Add "),
                                wxPoint(self.x, self.y))
             elif text == self.PARTICIPANTS_HEADING or item == None:
                 # We don't have anything to do with this heading
@@ -3016,7 +3021,7 @@ class ContentListPanel(wxPanel):
                 self.PopupMenu(menu, wxPoint(self.x,self.y))
 
             elif isinstance(item, ApplicationDescription):
-                menu = self.BuildAppMenu(event, item)
+                menu = self.BuildAppMenu(item)
                 self.PopupMenu(menu, wxPoint(self.x, self.y))
 
             elif isinstance(item, DataDescription):
@@ -3041,56 +3046,56 @@ class ContentListPanel(wxPanel):
         Programmatically build a menu based on the mime based verb
         list passed in.
         """
-        # This is to flag between using the system OpenShared command
-        # and the AG defined one (in case of collision we use the system)
-        # useLocal = 0
-        mimeConfig = Config.MimeConfig.instance()
-        
+
         # Path where temporary file will exist if opened/used.
         ext = item.name.split('.')[-1]
 
         log.debug("looking for mime commands for extension: %s", ext)
         
-        commands = mimeConfig.GetMimeCommands(ext = ext)
+        # Get commands for this data type
+        commands = self.parent.GetCommands(item)
 
         log.debug("Commands: %d %s", len(commands), str(commands))
+        
+        #
+        # Build the menu
+        # 
         menu = wxMenu()
 
-        # We always have open
+        # - Open
         id = wxNewId()
         menu.Append(id, "Open", "Open this data.")
-
         if commands != None and commands.has_key('Open'):
             EVT_MENU(self, id, lambda event,
                      cmd=commands['Open'], itm=item: 
-                     self.parent.StartCmd(cmd, item=itm, verb='Open'))
+                     self.parent.StartCmd(itm, verb='Open'))
         else:
             EVT_MENU(self, id, lambda event,
                      itm=item: self.FindUnregistered(itm))
 
-        # We always have save for data
+        # - Save
         id = wxNewId()
         menu.Append(id, "Save", "Save this item locally.")
         EVT_MENU(self, id, lambda event: self.parent.SaveDataCB(event))
         
-        # We always have Remove
+        # - Delete
         id = wxNewId()
         menu.Append(id, "Delete", "Delete this data from the venue.")
         EVT_MENU(self, id, lambda event: self.parent.RemoveDataCB(event))
 
-        # Do the rest
+        # - type-specific commands
         if commands != None:
             for key in commands.keys():
                 if key != 'Open':
                     id = wxNewId()
                     menu.Append(id, string.capwords(key))
                     EVT_MENU(self, id, lambda event,
-                             cmd=commands[key], itm=item: 
-                             self.parent.StartCmd(cmd, item=itm, verb=key))
+                             verb=key, itm=item: 
+                             self.parent.StartCmd(itm, verb=verb))
 
         menu.AppendSeparator()
 
-        # We always have properties
+        # - Properties
         id = wxNewId()
         menu.Append(id, "Properties", "View the details of this data.")
         EVT_MENU(self, id, lambda event, item=item:
@@ -3104,47 +3109,48 @@ class ContentListPanel(wxPanel):
         passed in.
         """
        
-        mimeConfig = Config.MimeConfig.instance()
-
         # Path where temporary file will exist if opened/used.
         ext = item.name.split('.')[-1]
         
-        commands = mimeConfig.GetMimeCommands(mimeType = item.mimeType,
-                                              ext = ext)
+        # Get commands for the service type
+        commands = self.parent.GetCommands(item)
 
+        #
+        # Build the menu
+        #
         menu = wxMenu()
 
+        # - Open
         id = wxNewId()
-        menu.Append(id, "Open", "Open this data.")
-
+        menu.Append(id, "Open", "Open this service.")
         if commands != None and commands.has_key('Open'):
             EVT_MENU(self, id, lambda event,
                      cmd=commands['Open'], itm=item: 
-                     self.parent.StartCmd(cmd, item=itm, verb='Open'))
+                     self.parent.StartCmd(itm, verb='Open'))
         else:
             EVT_MENU(self, id, lambda event,
                      itm=item: self.FindUnregistered(itm))
 
-        # We always have Remove
+        # - Delete
         id = wxNewId()
-        menu.Append(id, "Delete", "Delete this data from the venue.")
+        menu.Append(id, "Delete", "Delete this service from the venue.")
         EVT_MENU(self, id, lambda event: self.parent.RemoveServiceCB(event))
             
-        # Do the rest
+        # - type-specific commands
         if commands != None:
             for key in commands.keys():
                 if key != 'Open':
                     id = wxNewId()
                     menu.Append(id, string.capwords(key))
                     EVT_MENU(self, id, lambda event,
-                             cmd=commands[key], itm=item: 
-                             self.parent.StartCmd(cmd, item=itm, verb=key))
+                             verb=key, itm=item: 
+                             self.parent.StartCmd(itm, verb=verb))
 
         menu.AppendSeparator()
 
-        # We always have properties
+        # - Properties
         id = wxNewId()
-        menu.Append(id, "Properties", "View the details of this data.")
+        menu.Append(id, "Properties", "View the details of this service.")
         EVT_MENU(self, id, lambda event, item=item:
                  self.LookAtProperties(item))
 
@@ -3172,35 +3178,36 @@ class ContentListPanel(wxPanel):
                 program = dlg.GetPath()
                 dlg.Destroy()
                 
-                # then register the app
-                
                 # Then execute it
                 if isWindows():
                     cmd = program + " %1"
                 else:
                     cmd = program + " %s"
                     
-                self.parent.StartCmd(cmd, item, verb='Open')
+                self.parent.StartCmd(item, cmd=cmd)
                 
-    def BuildAppMenu(self, event, item):
+    def BuildAppMenu(self, item):
         """
         Programmatically build a menu based on the mime based verb
         list passed in.
         """
 
-        commands = self.parent.GetMimeCommandNames(item.mimeType)
+        # Get the commands for this app type
+        commands = self.parent.GetCommands(item)
 
         log.info("Got commands: (%s) %s" % (item.mimeType, str(commands)))
         
+        #
+        # Build the  menu
+        #
         menu = wxMenu()
+        
+        # - Open
         id = wxNewId()
         menu.Append(id, "Open", "Open application and join the session.")
-        # We always have open
-            
         if commands != None and 'Open' in commands:
             EVT_MENU(self, id, lambda event, cmd='Open':
-                     self.parent.StartCmd(self.parent.controller.GetMimeCommandLine(item.mimeType,'Open'),
-                                   item=item, verb='Open'))
+                     self.parent.StartCmd(item,verb='Open'))
       
         else:
             text = "You have nothing configured to open this application."
@@ -3209,16 +3216,15 @@ class ContentListPanel(wxPanel):
                      MessageDialog(self, text, title,
                                    style = wxOK|wxICON_INFORMATION))
 
-        # We always have Remove
+        # - Delete
         id = wxNewId()
-        menu.Append(id, "Delete", "Delete this service.")
+        menu.Append(id, "Delete", "Delete this application.")
         EVT_MENU(self, id, lambda event: self.parent.RemoveApplicationCB(event))
 
         menu.AppendSeparator()
             
-        # Do the rest
+        # - type-specific commands
         othercmds = 0
-        
         if commands != None:
             for key in commands:
                 if key != 'Open':
@@ -3226,13 +3232,11 @@ class ContentListPanel(wxPanel):
                     id = wxNewId()
                     menu.Append(id, string.capwords(key))
                     EVT_MENU(self, id, lambda event, cmd=key, itm=item:
-                             self.parent.StartCmd(appdb.GetCommandLine(item.mimeType,
-                                                                cmd),
-                                           item=itm, verb=cmd))
+                             self.parent.StartCmd(item,cmd=cmd))
         if othercmds:
             menu.AppendSeparator()
 
-        # Add Application Monitor
+        # - Application Monitor
         id = wxNewId()
         menu.Append(id, "Open Monitor...", 
                     "View data and participants present in this application session.")
@@ -3240,7 +3244,7 @@ class ContentListPanel(wxPanel):
 
         # Add properties
         id = wxNewId()
-        menu.Append(id, "Properties", "View the details of this service.")
+        menu.Append(id, "Properties", "View the details of this application.")
         EVT_MENU(self, id, lambda event, item=item:
                  self.LookAtProperties(item))
 

@@ -3,12 +3,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.9 2004-03-12 05:23:11 judson Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.10 2004-03-18 14:17:05 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.9 2004-03-12 05:23:11 judson Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.10 2004-03-18 14:17:05 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -24,11 +24,14 @@ import time
 from AccessGrid import Toolkit
 from AccessGrid import Log
 from AccessGrid import DataStore
+from AccessGrid.AppDb import AppDb
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Descriptions import ServiceDescription, DataDescription
 from AccessGrid.Descriptions import ApplicationDescription
 from AccessGrid.Platform.Config import UserConfig, MimeConfig
-from AccessGrid.Platform import isWindows
+from AccessGrid.Platform import isWindows, Config
+from AccessGrid.Platform.ProcessManager import ProcessManager
+from AccessGrid.VenueClient import NetworkLocationNotFound
 
 
 log = Log.GetLogger(Log.VenueClientController)
@@ -40,15 +43,16 @@ class NotAuthorizedError(Exception):
 class VenueClientController:
 
     def __init__(self):
+    
+        self.history = []
+        self.userConf = UserConfig.instance()
+        
+        # Initiate venue client app
         self.__venueClientApp = VenueClientApp()
 
-        self.history = []
-        self.myVenuesDict = dict()
-        self.userConf = UserConfig.instance()
-        self.myVenuesFile = os.path.join(self.userConf.GetConfigDir(),
-                                         "myVenues.txt" )
+        # Create Process Manager
+        self.processManager = ProcessManager()
         
-        #self.__LoadMyVenues()
 
 
     ##########################################################################
@@ -94,24 +98,6 @@ class VenueClientController:
             self.history.append(uri)
             
             
-    def __LoadMyVenues(self):
-        """
-        This method 
-
-        **Arguments:**
-        
-        """
-        try:
-            myVenuesFileH = open(self.myVenuesFile, 'r')
-        except:
-            myVenuesFileH = None
-            log.exception("Failed to load MyVenues file")
-        else:
-            self.myVenuesDict = cPickle.load(myVenuesFileH)
-
-        if myVenuesFileH:
-            myVenuesFileH.close()
-        
     # end Private Methods
     #
     ##########################################################################
@@ -208,11 +194,11 @@ class VenueClientController:
 
         try:
             # Set new role configuration
-            RoleClient(venueUri).SetVenueRoles(rolesDict)
+            RoleClient(self.__venueClient.GetVenue()).SetVenueRoles(rolesDict)
 
         except Exception, e:
-            if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
-                raise NotAuthorizedError
+#             if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+#                 raise NotAuthorizedError
             raise
 
     def ExitCB(self):
@@ -271,7 +257,7 @@ class VenueClientController:
         try:
             self.__venueClient.SetTransport("multicast")
             self.__venueClient.UpdateNodeService()
-        except NetworkLocationNotFound, e:
+        except NetworkLocationNotFound:
             log.exception("Multicast streams not found")
             raise
 
@@ -284,7 +270,7 @@ class VenueClientController:
         """
         
         if not provider or not isinstance(provider,ProviderProfile):
-            ValueError
+            raise ValueError
 
         oldProvider = self.__venueClient.GetProvider()
         oldTransport = self.__venueClient.GetTransport()
@@ -417,7 +403,7 @@ class VenueClientController:
         if not uri:
             raise Exception("Invalid venue url retrieved from history list; %s", uri)
             
-        self.__venueClient.EnterVenue(venueUrl)
+        self.__venueClient.EnterVenue(uri)
     
     def EnterVenueCB(self,venueUrl):
         """
@@ -495,7 +481,6 @@ class VenueClientController:
             try:
               
                 self.__venueClient.UnFollow(self.__venueClient.leaderProfile)
-                self.meMenu.Remove(self.ID_ME_UNFOLLOW)
             except:
                
                 log.exception("VenueClientFrame.Unfollow: Can not stop following %s" %self.__venueClient.leaderProfile.name)
@@ -525,9 +510,10 @@ class VenueClientController:
             raise ValueError
        
         name = data.name
-        commands = GetMimeCommands(ext = name.split('.')[-1])
+        commands = self.mimeConfig.GetMimeCommands(ext = name.split('.')[-1])
         if commands == None:
-            self.gui.Notify("No client registered for the selected data","Open Data")
+            message = "No client registered for the selected data"
+            self.gui.Notify(message,"Open Data")
             log.debug("VenueClientFrame.OpenData: %s"%message)
         else:
             if commands.has_key('Open'):
@@ -636,40 +622,6 @@ class VenueClientController:
     # Application Actions
     #
     
-    def OpenApplicationCB(self, appDesc):
-        """
-        This method opens the specified application
-
-        **Arguments:**
-        
-        *appDesc* ApplicationDescription of the app to open
-        
-        """
-        if not appDesc or not isinstance(appDesc, ApplicationDescription):
-            raise ValueError
-        
-        self.RunApp(appDesc)
-
-    def RemoveApplicationCB(self,appList):
-        """
-        This method removes applications in the specified list from the venue
-
-        **Arguments:**
-        
-        *appList* List of ApplicationDescriptions to remove from venue
-        
-        """
-        
-        if not appList or not isinstance(appList,list):
-            raise ValueError
-            
-        for app in appList:
-            if(app != None and isinstance(app, ApplicationDescription)):
-                text ="Are you sure you want to delete "+ app.name + "?"
-                if self.gui.Prompt(text, "Confirmation"):
-                    self.__venueClient.DestroyApplication( app.id )
-            
-
     def StartApplicationCB(self, name, appDesc):
         """
         Start the specified application.  This method creates the application
@@ -698,30 +650,26 @@ class VenueClientController:
             log.exception("Error starting application")
             raise
               
-    def RunApplicationCB(self, appDesc, cmd='Open'):
+    def RemoveApplicationCB(self,appList):
         """
-        This method runs the specified application
+        This method removes applications in the specified list from the venue
 
         **Arguments:**
         
-        *appDesc* ApplicationDescription of app to run
-        *cmd* Command to execute on the app
+        *appList* List of ApplicationDescriptions to remove from venue
         
         """
-        pass
         
-#         if not appDesc or not isinstance(appDesc,ApplicationDescription):
-#             raise ValueError("Invalid appDesc argument")
+        if not appList or not isinstance(appList,list):
+            raise ValueError
             
-#         if not cmd:
-#             raise ValueError("Invalid cmd argument")
-        
-#         appdb = Toolkit.GetApplication().GetAppDatabase()
-        
-#        cmdline = appdb.GetCommandLine(appDesc.mimeType, cmd)
+        for app in appList:
+            if(app != None and isinstance(app, ApplicationDescription)):
+                text ="Are you sure you want to delete "+ app.name + "?"
+                if self.gui.Prompt(text, "Confirmation"):
+                    self.__venueClient.DestroyApplication( app.id )
+            
 
-#        self.__venueClientApp.StartCmd(cmdline, appDesc, verb=cmd)
-        
     def UpdateApplicationCB(self,appDesc):
         """
         This method updates the application description for the specified application
@@ -738,61 +686,6 @@ class VenueClientController:
         self.__venueClient.UpdateApplication(appDesc)
         
     #
-    # Application Integration code
-    #
-    def JoinApp(self,appDesc):
-        """
-        Join the specified application
-
-        **Arguments:**
-        
-        *appDesc* The ApplicationDescription of the application we want to join
-        """
-        log.debug("Joining application: %s / %s" % (appDesc.name, appDesc.mimeType))
-        commands = None
-        #appdb = Toolkit.GetApplication().GetAppDatabase()
-        #commands = appdb.GetCommandNames(appDesc.mimeType)
-
-        if commands == None:
-            message = "No client registered for the selected application\n(mime type = %s)" % appDesc.mimeType
-            self.gui.Prompt(message,message )
-            log.debug(message)
-        else:
-            if 'Open' in commands:
-                #cmdLine = appdb.GetCommandLine(appDesc.mimeType, 'Open')
-                log.debug("executing cmd: %s" % cmdLine)
-                pid = wxExecute(cmdLine)
-                
-    def GetMimeCommandNames(self,mimeType):
-        """
-        This method returns mime command names for the given mime type
-
-        **Arguments:**
-        
-        *mimeType* A mime type
-        
-        """
-        commands = None
-        #appdb = Toolkit.GetApplication().GetAppDatabase()
-        #commands = appdb.GetCommandNames(mimeType = mimeType)
-        return commands
-        
-    def GetMimeCommandLine(self,mimeType,command):
-        """
-        This method returns the command line associated with the
-        given mime type and command
-
-        **Arguments:**
-        
-        *mimeType* Mime type for which to retrieve the command line
-        *command* Related command
-        
-        """
-        commandLine = ""
-        #appdb = Toolkit.GetApplication().GetAppDatabase()
-        #commandLine = appdb.GetCommandLine(mimeType,command)        
-        return commandLine
-    #
     # Text Actions
     #
                 
@@ -806,6 +699,77 @@ class VenueClientController:
     ##########################################################################
     #
     # General Implementation
+
+
+    #
+    # Profile
+    #
+
+    def ChangeProfile(self, profile):
+        """
+        This method changes this participants profile and saves the information to file.
+
+        **Arguments:**
+        
+        *profile* The ClientProfile including the new profile information
+        """
+        
+        # Save the profile locally
+        self.__venueClient.SaveProfile()
+
+        # Update client profile in venue
+        if self.__venueClient.GetVenue() != None:
+            log.debug("Update client profile in venue")
+
+            try:
+                self.__venueClient.UpdateClientProfile(profile)
+            except:
+                log.exception("bin.VenueClient::ChangeProfile: Error occured when trying to update profile")
+                # User does not need to know about this. The profile info got saved locally anyhow.                
+                #self.gui.Error("Your profile could not be changed", "Change Profile Error")
+        else:
+            log.debug("Can not update client profile in venue - not connected")
+
+    #
+    # Lead/Follow
+    #
+
+    def AuthorizeLeadDialog(self, clientProfile):
+        """
+        This method is used to prompt the user to authorize a
+        request to lead another user
+
+        **Arguments:**
+        
+        *clientProfile* Profile of the user requesting to be led
+        
+        """
+        idPending = None
+        idLeading = None
+
+        if(self.__venueClient.pendingLeader!=None):
+            idPending = self.__venueClient.pendingLeader.publicId
+          
+
+        if(self.__venueClient.leaderProfile!=None):
+            idLeading = self.__venueClient.leaderProfile.publicId
+          
+          
+        if(clientProfile.publicId != idPending and clientProfile.publicId != idLeading):
+            text = "Do you want "+clientProfile.name+" to follow you?"
+            title = "Authorize follow"
+            response = self.gui.Prompt(text, title)
+            self.__venueClient.SendLeadResponse(clientProfile, response)
+
+        else:
+            self.__venueClient.SendLeadResponse(clientProfile, 0)
+
+
+
+
+    # 
+    # Venue Data Access
+    #
 
     def UploadVenueFiles(self, fileList):
         """
@@ -897,67 +861,6 @@ class VenueClientController:
         if error_msg is not None:
             log.exception("bin.VenueClient::get_ident_and_upload: Upload data error")
             self.gui.Notify(error_msg, "Upload Files Error")
-
-
-
-    def ChangeProfile(self, profile):
-        """
-        This method changes this participants profile and saves the information to file.
-
-        **Arguments:**
-        
-        *profile* The ClientProfile including the new profile information
-        """
-        
-        # Save the profile locally
-        self.__venueClient.SaveProfile()
-
-        # Update client profile in venue
-        if self.__venueClient.GetVenue() != None:
-            log.debug("Update client profile in venue")
-
-            try:
-                self.__venueClient.UpdateClientProfile(profile)
-            except:
-                log.exception("bin.VenueClient::ChangeProfile: Error occured when trying to update profile")
-                # User does not need to know about this. The profile info got saved locally anyhow.                
-                #self.gui.Error("Your profile could not be changed", "Change Profile Error")
-        else:
-            log.debug("Can not update client profile in venue - not connected")
-
-
-    def AuthorizeLeadDialog(self, clientProfile):
-        """
-        This method is used to prompt the user to authorize a
-        request to lead another user
-
-        **Arguments:**
-        
-        *clientProfile* Profile of the user requesting to be led
-        
-        """
-        idPending = None
-        idLeading = None
-
-        if(self.__venueClient.pendingLeader!=None):
-            idPending = self.__venueClient.pendingLeader.publicId
-          
-
-        if(self.__venueClient.leaderProfile!=None):
-            idLeading = self.__venueClient.leaderProfile.publicId
-          
-          
-        if(clientProfile.publicId != idPending and clientProfile.publicId != idLeading):
-            text = "Do you want "+clientProfile.name+" to follow you?"
-            title = "Authorize follow"
-            response = self.gui.Prompt(text, title)
-            self.__venueClient.SendLeadResponse(clientProfile, response)
-
-            dlg.Destroy()
-
-        else:
-            self.__venueClient.SendLeadResponse(clientProfile, 0)
-
 
     def SaveVenueData(self, dataDescription, localPathname):
         """
@@ -1137,7 +1040,7 @@ class VenueClientController:
                 my_identity = self.__venueClient.GetDefaultIdentityDN()
                 DataStore.HTTPDownloadFile(my_identity, url, local_pathname, size,
                                            checksum, progressCB)
-        except DataStore.DownloadFailed, e:
+        except DataStore.DownloadFailed:
             log.exception("bin.VenueClient:get_ident_and_download: Got exception on download")
             self.gui.Notify("The file could not be downloaded", "Download Error")
                        
@@ -1153,10 +1056,10 @@ class VenueClientController:
         """
         log.debug("Upload personal files")
 
-        for file in fileList:
+        for filepath in fileList:
 
             # Check if data is already added
-            pathParts = os.path.split(file)
+            pathParts = os.path.split(filepath)
             index = len(pathParts)-1
             name = pathParts[index]
 
@@ -1167,18 +1070,13 @@ class VenueClientController:
                     info = "A file named %s is already added, do you want to overwrite?" % name
                     # Overwrite?
                     if self.gui.Prompt( info, title ):
-                        self.__venueClient.dataStore.RemoveFiles([data])
-                        
-                        # The data description have to be removed, else the size parameter will
-                        # not match and open will fail for modified data.
-                        self.__venueClient.SendEvent(Events.RemoveDataEvent(self.__venueClient.GetEventChannelId(), data))
-                        
+                        self.__venueClient.RemoveData([data])
                     else:
                         return
                                          
             try:
                 my_identity = self.__venueClient.GetDefaultIdentityDN()
-                self.__venueClient.dataStore.UploadLocalFiles([file], my_identity, self.__venueClient.GetProfile().publicId)
+                self.__venueClient.dataStore.UploadLocalFiles([filepath], my_identity, self.__venueClient.GetProfile().publicId)
 
                 # Send an event alerting about new data (only if it is new)
                 #if newData: 
@@ -1231,42 +1129,46 @@ class VenueClientController:
             self.gui.Error(error_msg, "Upload Files Error")
            
 
-    def GetInstalledApps(self):
-        return self.__venueClientApp.GetInstalledApps()
+    #
+    # (Mime) Command Processing
+    #
+    
+    def GetCommands(self,objDesc):
+        return self.__venueClientApp.GetCommands(objDesc)
         
-    def GetMyVenues(self):
-        return self.__venueClientApp.GetMyVenues()
         
-#     def __SetHistory(self,venueuri, backflag):
-#         self.__venueClientApp.SetHistory(venueuri,backflag)
-#         
-    def StartCmd(self, command, item=None, namedVars=None, verb=None):
+    def StartCmd(self, objDesc, verb=None,cmd=None):
         """
         This method builds up the command line given a command-line
         specification, and executes it
 
         **Arguments:**
         
-        *command*
-        *item*
-        *namedVars*
+        *objDesc*
         *verb*
-        
-        
         """
+        
+        if objDesc == None:
+            raise ValueError("objDesc must not be None")
+
+        if verb == None and cmd == None:
+            raise ValueError("Neither verb nor cmd specified")
+
+        # Use either the incoming verb or command
+        if verb:
+            commandList = self.GetCommands(objDesc)
+            command = commandList[verb]
+        elif cmd:
+            command = cmd
+
         localFilePath = None
         name = None
-        if namedVars == None:
-            namedVars = dict()
 
-        if item == None:
-            return
-
-        # If item is data, download the filename specified in it.
-        if isinstance(item, DataDescription):
-            localFilePath = os.path.join(GetTempDir(),
-                                         item.name.replace(" ", "_"))
-            self.SaveFileNoProgress(item, localFilePath)
+        # If objDesc is data, download the filename specified in it.
+        if isinstance(objDesc, DataDescription):
+            localFilePath = os.path.join(UserConfig.instance().GetTempDir(),
+                                         objDesc.name.replace(" ", "_"))
+            self.SaveFileNoProgress(objDesc, localFilePath)
 
             # Fix odd commands
             if isWindows():
@@ -1281,21 +1183,44 @@ class VenueClientController:
                     command = command.replace("%s", "")
 
             command = command.replace("\"\"", "")
+            command = command.strip()
             
             if len(command) > 1:
                 if command.find("%") == -1:
-                    command = "\""+command+" \"%(localFilePath)s\"\""
+                    #command = "\""+command+" \"%(localFilePath)s\"\""
+                    command = command+" %(localFilePath)s"
             else:
                 command = "\"%(localFilePath)s\""
             
+        elif isinstance(objDesc, ServiceDescription):
+            # Fix odd commands
+            if isWindows():
+                if command.find("%1") != -1:
+                    command = command.replace("%1", "")
+                if command.find("%L") != -1:
+                    command = command.replace("%L", "")
+                if command.find("%*") != -1:
+                    command = command.replace("%*", "")
+            else:
+                if command.find("%s") != -1:
+                    command = command.replace("%s", "")
+
+            command = command.strip()
+            
+            if len(command) > 1:
+                if command.find("%") == -1:
+                    #command = "\""+command+"\" \"%(appUrl)s\""
+                    command = command+" %(appUrl)s"
+            else:
+                command = "\"%(appUrl)s\""
+            
         else:
-            # Get the app dir and run
-            if isinstance(item, ApplicationDescription):
-                appdb = Toolkit.GetApplication().GetAppDatabase()
-                name = appdb.GetNameForMimeType(item.mimeType)
+            # Get the app dir and go there
+            if isinstance(objDesc, ApplicationDescription):
+                name = self.__venueClientApp.GetNameForMimeType(objDesc.mimeType)
                 if name != None:
                     appName = '_'.join(name.split(' '))
-                    appDir = os.path.join(self.userConf.GetAppDir(), appName)
+                    appDir = os.path.join(self.userConf.GetSharedAppDir(), appName)
                     try:
                         os.chdir(appDir)
                     except:
@@ -1312,20 +1237,26 @@ class VenueClientController:
                     command = command.replace("%s", "")
 
             command = command.replace("\"\"", "")
+            command = command.strip()
             
             if len(command) > 1:
                 if command.find("%") == -1:
-                    command = "\""+command+"\" \"%(appUrl)s\""
+                    #command = "\""+command+"\" \"%(appUrl)s\""
+                    command = command+" %(appUrl)s"
             else:
                 command = "\""+command+"\""
-                
+
+        #
+        # Build up named vars
+        #
+        namedVars = dict()
         if verb != None:
             namedVars['appCmd'] = verb
-        namedVars['appName'] = item.name.replace(" ", "_")
-        namedVars['appDesc'] = item.description
+        namedVars['appName'] = objDesc.name.replace(" ", "_")
+        namedVars['appDesc'] = objDesc.description
         # This is NOT on every description type, so we're not using it yet
-        # namedVars['appMimeType'] = item.mimeType
-        namedVars['appUrl'] = item.uri
+        # namedVars['appMimeType'] = objDesc.mimeType
+        namedVars['appUrl'] = objDesc.uri
         namedVars['localFilePath'] = localFilePath
         namedVars['venueUrl'] = self.__venueClient.GetVenue()
         
@@ -1356,8 +1287,18 @@ class VenueClientController:
             realCommand = "%s %s %s" % (shell, "/c", realCommand)
             
         aList = realCommand.split(' ')
-        print "CMD: ", realCommand
-        self.__venueClient.StartProcess(aList[0], aList[1:])
+        log.info("StartCmd starting command: %s", realCommand)
+        self.processManager.StartProcess(aList[0], aList[1:])
+
+    #
+    # Other
+    #
+
+    def GetInstalledApps(self):
+        return self.__venueClientApp.GetInstalledApps()
+        
+    def GetMyVenues(self):
+        return self.__venueClientApp.GetMyVenues()
         
 
     # end General Implementation
@@ -1383,7 +1324,13 @@ class VenueClientApp:
         
         # Venue History
         self.history = []
+        
+        # Application Database
+        self.appDatabase = AppDb()
 
+        # Mime Config
+        self.mimeConfig = Config.MimeConfig.instance()
+        
     #
     # MyVenues Methods
     #
@@ -1395,23 +1342,6 @@ class VenueClientApp:
         myVenuesFileH = open(self.myVenuesFile, 'w')
         cPickle.dump(self.myVenuesDict, myVenuesFileH)
         myVenuesFileH.close()
-        
-    def AddToMyVenues(self,name,url):
-        self.myVenuesDict[name] = url
-        self.__SaveMyVenuesToFile()
-    
-    def SetMyVenues(self,myVenuesDict):
-        """
-        This method sets the user's saved venues list
-        """
-        self.myVenuesDict = myVenuesDict
-        self.__SaveMyVenuesToFile()
-
-    def GetMyVenues(self):
-        """
-        This method returns the user's saved venues list
-        """
-        return self.myVenuesDict
         
     def __LoadMyVenues(self):
         """
@@ -1431,17 +1361,61 @@ class VenueClientApp:
         if myVenuesFileH:
             myVenuesFileH.close()
         
+    def AddToMyVenues(self,name,url):
+        self.myVenuesDict[name] = url
+        self.__SaveMyVenuesToFile()
+    
+    def SetMyVenues(self,myVenuesDict):
+        """
+        This method sets the user's saved venues list
+        """
+        self.myVenuesDict = myVenuesDict
+        self.__SaveMyVenuesToFile()
+
+    def GetMyVenues(self):
+        """
+        This method returns the user's saved venues list
+        """
+        return self.myVenuesDict
+        
     #
     # Applications Methods
     # 
     
     def GetInstalledApps(self):
-        #app = Toolkit.Application.instance()
-        #appdb = app.GetAppDatabase()
-        #appDescList = appdb.ListAppsAsAppDescriptions()
-        appDescList = []
+        appDescList = self.appDatabase.ListAppsAsAppDescriptions()
         return appDescList
+        
+        
+    #
+    # (Application/Mime) Command Methods
+    #
+    def GetCommands(self,objDesc):
+        commandList = None
+        if isinstance(objDesc,ServiceDescription):
+            # Data and Service commands are retrieved from the mime db
+            list = objDesc.name.split('.')
+            ext = ""
+            if len(list) == 2:
+                ext = list[1]
+            commandList = self.mimeConfig.GetMimeCommands(
+                                        mimeType = objDesc.mimeType,
+                                        ext = ext)
+        elif isinstance(objDesc,DataDescription):
+            # Data and Service commands are retrieved from the mime db
+            list = objDesc.name.split('.')
+            if len(list) == 2:
+                ext = list[1]
+            commandList = self.mimeConfig.GetMimeCommands(ext = ext)
+        elif isinstance(objDesc,ApplicationDescription):
+            # Application commands are retrieved from the app db
+            commandList = self.appDatabase.GetCommands(objDesc.mimeType)
+            
+        return commandList
 
+    def GetNameForMimeType(self,mimeType):
+        name = self.appDatabase.GetNameForMimeType(mimeType)
+        return name
     
     #
     # Venue History methods
