@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.61 2004-05-09 03:02:50 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.62 2004-05-12 17:16:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.61 2004-05-09 03:02:50 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.62 2004-05-12 17:16:09 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -27,9 +27,9 @@ from AccessGrid.Platform import IsWindows
 from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.hosting import Client
 from AccessGrid.UIUtilities import AboutDialog
-from AccessGrid.Types import Capability, ServiceConfiguration
+from AccessGrid.Types import Capability
 from AccessGrid.AGParameter import ValueParameter, RangeParameter
-from AccessGrid.AGParameter import OptionSetParameter, CreateParameter
+from AccessGrid.AGParameter import OptionSetParameter
 from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid.AGNodeService import AGNodeServiceIW
 from AccessGrid.AGServiceManager import AGServiceManagerIW
@@ -63,7 +63,7 @@ ID_HOST_ADD = 300
 ID_HOST_REMOVE = 301
 
 ID_SERVICE_ADD_SERVICE = 400
-ID_SERVICE_GET_CONFIG = 402
+ID_SERVICE_CONFIGURE = 402
 ID_SERVICE_REMOVE = 403
 ID_SERVICE_ENABLE = 404
 ID_SERVICE_ENABLE_ONE = 405
@@ -93,7 +93,7 @@ def BuildServiceMenu( ):
     svcmenu.Append(ID_SERVICE_ENABLE_ONE, "Enable", "Enable the selected Service")
     svcmenu.Append(ID_SERVICE_DISABLE_ONE, "Disable", "Disable the selected Service")
     svcmenu.AppendSeparator()
-    svcmenu.Append(ID_SERVICE_GET_CONFIG, "Configure...", "Configure the selected Service")
+    svcmenu.Append(ID_SERVICE_CONFIGURE, "Configure...", "Configure the selected Service")
     return svcmenu
 
 
@@ -262,39 +262,56 @@ class ServiceConfigurationPanel( wxPanel ):
         self.panel = self
         self.callback = None
         self.CentreOnParent()
+        
+        self.config = None
+        self.resource = None
+
+    def SetResource(self,resourceIn):
+        self.resource = resourceIn
+        if not resourceIn or resourceIn == "None":
+            resource = "None"
+        else:
+            resource = resourceIn
+            
+            
+    def GetResource(self):
+        return 
+
 
     def SetConfiguration( self, serviceConfig ):
         self.config = serviceConfig
+        
+        
+    def Layout(self):
         self.guiComponents = []
 
-        rows = len(serviceConfig.parameters)
-
+        rows = len(self.config)
         self.boxSizer = wxBoxSizer(wxHORIZONTAL)
-
         self.panelSizer = wxFlexGridSizer( rows, 2, 5, 5 ) #rows, cols, hgap, vgap
         self.panelSizer.AddGrowableCol(1)
         
-        pt = wxStaticText( self, -1, "Resource", style=wxALIGN_LEFT)
-        if serviceConfig.resource == "None":
-            resource = "None"
-        else:
-            resource = serviceConfig.resource.resource
-        pComp = wxTextCtrl( self, -1, resource, size = wxSize(300, 20))
-        pComp.SetEditable( false )
+        #
+        # Build resource entry
+        #
+        if self.resource:
+            pt = wxStaticText( self, -1, "Resource", style=wxALIGN_LEFT)
+            pComp = wxTextCtrl( self, -1, self.resource, size = wxSize(300, 20))
+            pComp.SetEditable( false )
+            self.panelSizer.Add( pt)
+            self.panelSizer.Add( pComp, 0, wxEXPAND )
 
-        self.panelSizer.Add( pt)
-        self.panelSizer.Add( pComp, 0, wxEXPAND )
-        self.guiComponents.append( pComp )
-
-        for parameter in serviceConfig.parameters:
+        #
+        # Build entries for config parms
+        #
+        for parameter in self.config:
             pt = wxStaticText( self, -1, parameter.name, style=wxALIGN_LEFT )
             self.panelSizer.Add(pt, -1, wxEXPAND)
             
             pComp = None
-            if parameter.TYPE == RangeParameter.TYPE:
+            if parameter.type == RangeParameter.TYPE:
                 pComp = wxSlider( self, -1, parameter.value, parameter.low, parameter.high, style = wxSL_LABELS )
                 
-            elif parameter.TYPE == OptionSetParameter.TYPE:
+            elif parameter.type == OptionSetParameter.TYPE:
                 pComp = wxComboBox( self, -1, "", style=wxCB_READONLY )
                 for option in parameter.options:
                     pComp.Append( option )
@@ -313,21 +330,16 @@ class ServiceConfigurationPanel( wxPanel ):
         self.boxSizer.Add(self.panelSizer, 1, wxALL | wxEXPAND, 10)
         self.panel.SetSizer( self.boxSizer )
         self.panel.SetAutoLayout( true )
-        #self.panel.Layout()
-        #self.panel.Fit()
 
     def GetConfiguration( self ):
 
         # build modified configuration from ui
-
-        self.config.executable = self.guiComponents[1].GetValue()
-
-        for i in range( 2, len(self.guiComponents) ):
-            parmindex = i-2
+        
+        for i in range( 0, len(self.guiComponents) ):
             if isinstance( self.guiComponents[i], wxRadioBox ):
-                self.config.parameters[parmindex].value = self.guiComponents[i].GetStringSelection()
+                self.config[i].value = self.guiComponents[i].GetStringSelection()
             else:
-                self.config.parameters[parmindex].value = self.guiComponents[i].GetValue()
+                self.config[i].value = self.guiComponents[i].GetValue()
 
         return self.config
 
@@ -340,7 +352,7 @@ class ServiceConfigurationPanel( wxPanel ):
 class ServiceConfigurationDialog(wxDialog):
     """
     """
-    def __init__(self, parent, id, title, serviceConfig ):
+    def __init__(self, parent, id, title, resource, serviceConfig ):
 
         wxDialog.__init__(self, parent, id, title, style =
                           wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
@@ -353,6 +365,7 @@ class ServiceConfigurationDialog(wxDialog):
         self.SetAutoLayout(1)
 
         self.serviceConfigPanel = ServiceConfigurationPanel( self, -1 )
+        self.serviceConfigPanel.SetResource( resource )
         self.serviceConfigPanel.SetConfiguration( serviceConfig )
         self.serviceConfigPanel.SetSize( wxSize(200,200) )
         self.serviceConfigPanel.SetAutoLayout(true)
@@ -467,7 +480,7 @@ class NodeManagementClientFrame(wxFrame):
 
         # Handle events in the services list
         EVT_LIST_ITEM_RIGHT_CLICK(self, self.serviceList.GetId(), self.PopupServiceMenu)
-        EVT_LIST_ITEM_ACTIVATED(self, self.serviceList.GetId(), self.GetServiceConfiguration )
+        EVT_LIST_ITEM_ACTIVATED(self, self.serviceList.GetId(), self.ConfigureService )
        
         # Associate menu items with callbacks
         EVT_MENU(self, ID_FILE_ATTACH            ,  self.Attach )
@@ -478,7 +491,7 @@ class NodeManagementClientFrame(wxFrame):
         EVT_MENU(self, ID_HOST_ADD               ,  self.AddHost )
         EVT_MENU(self, ID_HOST_REMOVE            ,  self.RemoveHost )
         EVT_MENU(self, ID_SERVICE_ADD_SERVICE    ,  self.AddService )
-        EVT_MENU(self, ID_SERVICE_GET_CONFIG     ,  self.GetServiceConfiguration )
+        EVT_MENU(self, ID_SERVICE_CONFIGURE      ,  self.ConfigureService )
         EVT_MENU(self, ID_SERVICE_REMOVE         ,  self.RemoveService )
         EVT_MENU(self, ID_SERVICE_ENABLE         ,  self.EnableServices )
         EVT_MENU(self, ID_SERVICE_ENABLE_ONE     ,  self.EnableService )
@@ -844,8 +857,6 @@ class NodeManagementClientFrame(wxFrame):
                     for cap in serviceToAdd.capabilities:
                         if resource.role == cap.role and resource.type == cap.type:
                             applicableResources.append( resource )
-                            print "app res = ", resource.resource
-                            print "cap role = ", cap.role
 
                 if len(applicableResources) > 0:
                     log.info("%d resources found; prompt", len(applicableResources))
@@ -974,7 +985,7 @@ class NodeManagementClientFrame(wxFrame):
         # Update the service list
         self.UpdateServiceList()
 
-    def GetServiceConfiguration( self, event=None ):
+    def ConfigureService( self, event=None ):
         """
         Configure the selected service
         """
@@ -994,30 +1005,27 @@ class NodeManagementClientFrame(wxFrame):
         try:
             AGServiceIW( self.services[index].uri ).IsValid()
         except:
-            log.exception("NodeManagementClientFrame.GetServiceConfiguration.")
+            log.exception("NodeManagementClientFrame.ConfigureService")
             self.Error("Service is unreachable")
             return
             
         # Get configuration
         config = AGServiceIW( self.services[index].uri ).GetConfiguration()
+        resource = AGServiceIW( self.services[index].uri ).GetResource()
 
-        if len(config.parameters) == 0 and not config.resource.resource:
+        if not config:
             self.Error("Service has no configurable options")
         else:
             # Display the service configuration panel
-            parameters = map( lambda parm: CreateParameter( parm ), config.parameters )
-            self.config = ServiceConfiguration( config.resource, config.executable, parameters )
-            self.LayoutConfiguration()
-
-    def LayoutConfiguration( self ):
-        """
-        Display the service configuration dialog
-        """
-        dlg = ServiceConfigurationDialog(self,-1,"Service Config Dialog",self.config)
-        ret = dlg.ShowModal()
-        if ret == wxID_OK:
-            config = dlg.GetConfiguration()
-            self.SetConfiguration( config )
+            dlg = ServiceConfigurationDialog(self,-1,"Service Config Dialog",
+                                             resource.resource, 
+                                             config)
+            ret = dlg.ShowModal()
+            if ret == wxID_OK:
+            
+                # Get config from the dialog and set it in the service
+                config = dlg.GetConfiguration()
+                self.SetConfiguration( config )
 
 
     def SetConfiguration( self, serviceConfig ):
@@ -1056,8 +1064,10 @@ class NodeManagementClientFrame(wxFrame):
                     svccfg = AGServiceIW(svc.uri).GetConfiguration()
                     itemindex = self.serviceList.InsertStringItem( i, svc.name )
                     self.serviceList.SetItemImage( itemindex, 0, 0 )
-                    if svccfg.resource and svccfg.resource != "None" and svccfg.resource != None:
-                        self.serviceList.SetStringItem( i,1, svccfg.resource.resource )
+                    
+                    resource = AGServiceIW(svc.uri).GetResource()
+                    if resource.resource:
+                        self.serviceList.SetStringItem( i,1, resource.resource )
                     else:
                         self.serviceList.SetStringItem( i,1, "" )
                     try:
@@ -1133,7 +1143,7 @@ if __name__ == "__main__":
     # Service config dialog test
     resource = AGResource()
     resource.resource = "resource"
-    config = ServiceConfiguration(resource, 'executable', [] )
+    config = []
 
     dlg = ServiceConfigurationDialog(None, -1, "Service Config Dialog", config)
     ret = dlg.ShowModal()
