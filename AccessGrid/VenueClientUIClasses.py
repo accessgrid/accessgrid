@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.154 2003-04-23 10:00:15 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.155 2003-04-23 20:13:14 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -315,6 +315,8 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_NODE_FOLLOW, self.Follow)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_JOIN, self.JoinApp)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_DELETE, self.RemoveApp)
+
+        EVT_CLOSE(self, self.Exit)
 
     def __setProperties(self):
         font = wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana")
