@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.15 2003-02-21 22:15:44 lefvert Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.16 2003-02-21 22:17:48 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ class ClientProfile:
         'ClientProfile.location' : 'Nowhere, Fast',
         'ClientProfile.venueclienturl' : '',
         'ClientProfile.techsupportinfo' : '',
-        'ClientProfile.home' : 'http://vv2.mcs.anl.gov:9000/Venues/default'
+        'ClientProfile.home' : 'https://vv2.mcs.anl.gov:9000/Venues/default'
         }
 
     USER = "user"
