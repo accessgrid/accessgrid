@@ -24,7 +24,9 @@ elif len(sys.argv) > 3:
     usage()
 
 absOutputDir = os.path.abspath(outputDir)
-
+if not os.path.exists(absOutputDir):
+    os.makedirs(absOutputDir)
+    
 services = ["AudioService", "VideoConsumerService", "VideoProducerService"]
 if not os.path.isdir(inputDir):
     print "The following directory does not exist: ", inputDir
