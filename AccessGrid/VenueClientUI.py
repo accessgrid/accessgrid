@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.44 2004-04-28 16:30:38 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.45 2004-04-29 17:25:04 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.44 2004-04-28 16:30:38 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.45 2004-04-29 17:25:04 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -83,6 +83,7 @@ class UrlDialog(wxDialog):
 class ProfileDialog(wxDialog):
 class TextValidator(wxPyValidator):
 class ServicePropertiesDialog(wxDialog):
+class ApplicationPropertiesDialog(wxDialog):
 class ExitPropertiesDialog(wxDialog):
 class DataPropertiesDialog(wxDialog):
 class DataDropTarget(wxFileDropTarget):
@@ -612,6 +613,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.menubar.Enable(self.ID_VENUE_APPLICATION, true)
         
         # Only show administrate button when you can administrate a venue.
+              
         if self.isVenueAdministrator:
             self.menubar.Enable(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES, true)
         
@@ -1314,7 +1316,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def RemoveApplicationCB(self,event):
         appList = self.GetSelectedItems()
         if appList:
-            self.controller.RemoveApplicationCB(appList)
+            try:
+                self.controller.RemoveApplicationCB(appList)
+            except:
+                self.Error("Error removing application","Remove Application Error")
+                
         else:
             self.Notify( "Please, select the application you want to delete", "Delete Application")
 
@@ -1502,6 +1508,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         wxCallAfter(self.__Warn,text,title)
 
     def Error(self,text,title):
+        log.exception("Error")
         ErrorDialog(None, text, title)
 
 
@@ -3332,7 +3339,7 @@ class ContentListPanel(wxPanel):
                                            
             serviceView.Destroy()
         elif isinstance(desc, ApplicationDescription):
-            serviceView = ServicePropertiesDialog(self, -1, "Application Properties")
+            serviceView = ApplicationPropertiesDialog(self, -1, "Application Properties")
             serviceView.SetDescription(desc)
             # Get new description
             if(serviceView.ShowModal() == wxID_OK):
@@ -4145,6 +4152,7 @@ class DataPropertiesDialog(wxDialog):
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.__SetProperties()
+        self.__SetEditable(true)
         self.Layout()
         
         self.description = None
@@ -4211,7 +4219,7 @@ class DataPropertiesDialog(wxDialog):
             self.lastModCtrl.SetValue("Not available.")
             log.info("DataDialog.SetDescription: last modified param does not exist. Probably old data description. Ignore!")
         self.SetTitle("Data Properties")
-        self.__SetEditable(false)
+        self.__SetEditable(true)
         self.cancelButton.Destroy()
         
     def GetDescription(self):
@@ -4309,6 +4317,93 @@ class ServicePropertiesDialog(wxDialog):
         self.__SetEditable(false)
         self.cancelButton.Destroy()
 
+
+############################################################################
+
+class ApplicationPropertiesDialog(wxDialog):
+    def __init__(self, parent, id, title):
+        wxDialog.__init__(self, parent, id, title)
+        self.Centre()
+        self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
+        self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,20))
+        self.uriText = wxStaticText(self, -1, "Location URL:",
+                                    style=wxALIGN_LEFT | wxTE_MULTILINE )
+        self.uriCtrl = wxTextCtrl(self, -1, "")
+        self.typeText = wxStaticText(self, -1, "Mime Type:")
+        self.typeCtrl = wxTextCtrl(self, -1, "")
+        self.descriptionText = wxStaticText(self, -1, "Description:",
+                                            style=wxALIGN_LEFT)
+        self.descriptionCtrl = wxTextCtrl(self, -1, "", style = wxTE_MULTILINE,
+                                          size = wxSize(200, 50))
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.Layout()
+        
+        self.description = None
+
+    
+    def __SetEditable(self, editable):
+        if not editable:
+            self.uriCtrl.SetEditable(false)
+            self.typeCtrl.SetEditable(false)
+            
+            # Always editable
+            self.nameCtrl.SetEditable(true)
+            self.descriptionCtrl.SetEditable(true)
+        else:
+            self.nameCtrl.SetEditable(true)
+            self.uriCtrl.SetEditable(true)
+            self.typeCtrl.SetEditable(true)
+            self.descriptionCtrl.SetEditable(true)
+                  
+    def Layout(self):
+        sizer1 = wxBoxSizer(wxVERTICAL)
+        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, "Profile"), wxHORIZONTAL)
+        gridSizer = wxFlexGridSizer(9, 2, 5, 5)
+        gridSizer.Add(self.nameText, 1, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.nameCtrl, 2, wxEXPAND, 0)
+        gridSizer.Add(self.uriText, 0, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.uriCtrl, 2, wxEXPAND, 0)
+        gridSizer.Add(self.typeText, 0, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.typeCtrl, 0, wxEXPAND, 0)
+        gridSizer.Add(self.descriptionText, 0, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.descriptionCtrl, 0, wxEXPAND, 0)
+        sizer2.Add(gridSizer, 1, wxALL, 10)
+
+        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
+
+        sizer3 = wxBoxSizer(wxHORIZONTAL)
+        sizer3.Add(self.okButton, 0, wxALL, 10)
+        sizer3.Add(self.cancelButton, 0, wxALL, 10)
+
+        sizer1.Add(sizer3, 0, wxALIGN_CENTER)
+
+        self.SetSizer(sizer1)
+        sizer1.Fit(self)
+        self.SetAutoLayout(1)
+
+    def GetDescription(self):
+        if not self.description:
+            self.description = ApplicationDescription(GUID(), "", "", "",
+                                             "")
+        self.description.SetName(self.nameCtrl.GetValue())
+        self.description.SetDescription(self.descriptionCtrl.GetValue())
+        self.description.SetURI(self.uriCtrl.GetValue())
+        self.description.SetMimeType(self.typeCtrl.GetValue())
+        return self.description
+
+    def SetDescription(self, appDescription):
+        '''
+        This method is called if you only want to view the dialog.
+        '''
+        self.description = copy.copy(appDescription)
+        
+        self.nameCtrl.SetValue(appDescription.name)
+        self.uriCtrl.SetValue(appDescription.uri)
+        self.typeCtrl.SetValue(appDescription.mimeType)
+        self.descriptionCtrl.SetValue(appDescription.description)
+        self.__SetEditable(false)
+        self.cancelButton.Destroy()
          
 ################################################################################
 
