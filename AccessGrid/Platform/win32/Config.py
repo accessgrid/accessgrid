@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.46 2004-08-13 19:06:13 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.47 2004-09-08 16:53:56 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.46 2004-08-13 19:06:13 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.47 2004-09-08 16:53:56 judson Exp $"
 
 import os
 import sys
@@ -1042,7 +1042,56 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
                                                                   n)
         
         return perfData
+
+    def AppFirewallConfig(self, path, enableFlag):
+        """
+        This method pokes the windows registry to enable or disable an
+        application in the firewall config.
+        """
+        if enableFlag:
+            enStr = "Enabled"
+        else:
+            enStr = "Disabled"
+
+        try:
+            # Get the name of the firewall applications key in the registry
+            key = "SYSTEM\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy\\StandardProfile\\AuthorizedApplications\\List"
+            fwKey = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key, 0,
+                                    _winreg.KEY_ALL_ACCESS)
+
+            # Get the number of applications currently configured
+            (nSubKeys, nValues, lastModified) = _winreg.QueryInfoKey(fwKey)
+
             
+            # Find the application among the key's values
+            for i in range(0, nValues):
+                (vName, vData, vType) = _winreg.EnumValue(fwKey, i)
+                if path == vName:
+                    # Set the flag to the value passed in
+                    (p, e, d) = vData[len(vName)+1:-1].split(":")
+                    print "%s %s %s" % (p, e, d)
+                    vData = ":".join([vName, p, enStr, d])
+                    break
+                else:
+                    vName = None
+                    vData = None
+
+            if vName == None:
+                vName = path
+
+            if vData == None:
+                vData = "%s:*:%s:AccessGrid Software(%s)" % (path,
+                                                             enStr,
+                                                             path)
+                
+            # Put the value back in the registry
+            _winreg.SetValueEx(fwKey, vName, 0,_winreg.REG_SZ, vData)
+
+        except Exception:
+            log.exception("Exception configuring firewall for application: %s",
+                          path)
+            raise
+    
 class MimeConfig(AccessGrid.Config.MimeConfig):
     """
     The MimeConfig object encapsulates in single object the management
