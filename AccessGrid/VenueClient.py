@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.58 2003-05-12 14:58:29 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.59 2003-05-12 17:22:07 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -61,6 +61,7 @@ class VenueClient( ServiceBase):
         self.heartbeatTask = None
         self.CreateVenueClientWebService()
         self.__InitVenueData__()
+        self.isInVenue = 0
 
         # attributes for follow/lead
         self.pendingLeader = None
@@ -74,7 +75,6 @@ class VenueClient( ServiceBase):
         self.venueUri = None
         self.venueProxy = None
         self.privateId = None
-        self.streamDescList = []
 
     def Heartbeat(self):
         if self.eventClient != None:
@@ -170,6 +170,16 @@ class VenueClient( ServiceBase):
         log.debug("Got Set Connections Event")
 
         self.venueState.SetConnections(data)
+
+    def AddStreamEvent(self,data):
+        log.debug("Got Add Stream Event")
+        if self.nodeServiceUri != None:
+            Client.Handle(self.nodeServiceUri).GetProxy().AddStream(data)
+    
+    def RemoveStreamEvent(self,data):
+        log.debug("Got Remove Stream Event")
+        if self.nodeServiceUri != None:
+            Client.Handle(self.nodeServiceUri).GetProxy().RemoveStream(data)
         
     def EnterVenue(self, URL):
         """
@@ -191,7 +201,7 @@ class VenueClient( ServiceBase):
         # Enter the venue and configure the client
         #
                    
-        if self.venueUri != None:
+        if self.isInVenue:
             self.ExitVenue()
 
         #
@@ -203,8 +213,9 @@ class VenueClient( ServiceBase):
         #
         # Enter the venue
         #
-        (venueState, self.privateId, self.streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
+        (venueState, self.privateId, streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
         
+
         #
         # construct a venue state that consists of real objects
         # instead of the structs we get back from the SOAP call
@@ -293,6 +304,8 @@ class VenueClient( ServiceBase):
             Event.ADD_CONNECTION: self.AddConnectionEvent,
             Event.REMOVE_CONNECTION: self.RemoveConnectionEvent,
             Event.SET_CONNECTIONS: self.SetConnectionsEvent,
+            Event.ADD_STREAM: self.AddStreamEvent,
+            Event.REMOVE_STREAM: self.RemoveStreamEvent
             }
 
         h, p = self.venueState.eventLocation
@@ -314,7 +327,7 @@ class VenueClient( ServiceBase):
         #
         try:
             if haveValidNodeService:
-                Client.Handle( self.nodeServiceUri ).get_proxy().ConfigureStreams( self.streamDescList )
+                Client.Handle( self.nodeServiceUri ).get_proxy().SetStreams( streamDescList )
         except:
             log.exception("AccessGrid.VenueClient::Exception configuring node service streams")
 
@@ -327,9 +340,8 @@ class VenueClient( ServiceBase):
         #    except:
         #        log.exception("AccessGrid.VenueClient::Exception while leading follower")
             
-        # Finally, set the venue uri now that we have successfully
-        # entered the venue
-        self.venueUri = URL
+        # Finally, set the flag that we are in a venue
+        self.isInVenue = 1
 
     EnterVenue.soap_export_as = "EnterVenue"
 
@@ -347,8 +359,21 @@ class VenueClient( ServiceBase):
         """
         ExitVenue removes this client from the specified venue.
         """
+        log.info("VenueClient.ExitVenue")
+
+        # Exit the venue
+        try:         
+            self.venueProxy.Exit( self.privateId )
+        except Exception:
+            log.exception("AccessGrid.VenueClient::ExitVenue exception")
+
+        # Stop sending heartbeats
         if self.heartbeatTask != None:
+            log.info(" Stopping heartbeats")
             self.heartbeatTask.stop()
+
+        # Stop the event client
+        log.info(" Stopping event client")
         self.eventClient.Send(DisconnectEvent(self.venueState.uniqueId,
                                               self.privateId))
         try:
@@ -358,9 +383,17 @@ class VenueClient( ServiceBase):
             # the event client
             pass
             
-                    
-        self.venueProxy.Exit( self.privateId )
+        # Stop the node services
+        try:
+            if self.nodeServiceUri != None and Client.Handle(self.nodeServiceUri).IsValid():
+                log.info(" Stopping node services")
+                Client.Handle(self.nodeServiceUri).GetProxy().StopServices()
+                Client.Handle(self.nodeServiceUri).GetProxy().SetStreams([])
+        except:
+            log.exception("Exception stopping node services")
+
         self.__InitVenueData__()
+        self.isInVenue = 0
 
     def GetVenue( self ):
         """
