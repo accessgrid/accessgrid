@@ -9,7 +9,7 @@ Compression=zip/9
 MinVersion=0,5.00.2195
 AppCopyright=Copyright © 2003 University of Chicago. All Rights Reserved.
 AppName=Access Grid Toolkit
-AppVerName=AG-Toolkit-2.0
+AppVerName=Access Grid Toolkit 2.0alpha
 LicenseFile=C:\AccessGridBuild\AG2-Build\doc\COPYING.txt
 AdminPrivilegesRequired=true
 ChangesAssociations=true
@@ -21,8 +21,8 @@ UserInfoPage=false
 WindowVisible=false
 AppPublisher=Futures Laboratory / ANL
 AppPublisherURL=http://www.mcs.anl.gov/fl
-AppSupportURL=http://www.accessgrid.org
-AppUpdatesURL=http://www.accessgrid.org
+AppSupportURL=http://www.mcs.anl.gov/fl/research/accessgrid
+AppUpdatesURL=http://www.mcs.anl.gov/fl/research/accessgrid
 AppVersion=2.0alpha
 AppID=Access Grid Toolkit 2.0alpha
 
@@ -31,17 +31,17 @@ UninstallDisplayIcon={app}\VenueClient.py
 UninstallDisplayName=Access Grid Toolkit
 DisableStartupPrompt=false
 WindowResizable=false
-AlwaysShowComponentsList=false
-ShowComponentSizes=false
-FlatComponentsList=false
+AlwaysShowComponentsList=true
+ShowComponentSizes=true
+FlatComponentsList=true
 AllowNoIcons=false
 DirExistsWarning=auto
 DisableFinishedPage=false
 DisableReadyMemo=true
 UsePreviousUserInfo=false
 WindowStartMaximized=false
-WizardImageFile=C:\Program Files\Inno Setup 3\WizModernImage.bmp
-WizardSmallImageFile=C:\Program Files\Inno Setup 3\WizModernSmallImage.bmp
+WizardImageFile=compiler:wizmodernimage.bmp
+WizardSmallImageFile=compiler:wizmodernsmallimage.bmp
 UninstallFilesDir={app}\uninst
 InfoBeforeFile=C:\AccessGridBuild\AG2-Build\doc\INSTALL
 
@@ -53,7 +53,7 @@ Name: Audio_Service; Description: Component that allows you to receive and produ
 Name: Venue_Server; Description: Component that allows you to start your own venue server; Types: full
 
 [Files]
-Source: Lib\site-packages\AccessGrid\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.2\PythonPath,win32com|C:\Python22\Lib\site-packages}\AccessGrid; Flags: recursesubdirs
+Source: Lib\site-packages\AccessGrid\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.2\PythonPath\win32com,|C:\Python22\Lib\site-packages}\AccessGrid; Flags: recursesubdirs
 Source: share\AccessGrid\services\*.zip; DestDir: {app}\services; Components: Venue_Client
 Source: share\AccessGrid\local_services\AudioService.py; DestDir: {app}\local_services; Components: Audio_Service
 Source: share\AccessGrid\local_services\AudioService.svc; DestDir: {app}\local_services; Components: Audio_Service
@@ -70,6 +70,7 @@ Source: Scripts\VenueManagement.py; DestDir: {app}; Components: Venue_Server
 Source: Scripts\VenueServer.py; DestDir: {app}; Components: Venue_Server
 Source: Scripts\VenuesServerRegistry.py; DestDir: {app}; Components: Venue_Server
 Source: doc\*.*; DestDir: {app}\Documentation
+Source: ..\AccessGrid\packaging\windows\Postinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
 
 [Icons]
 Name: {group}\Venue Client; Filename: {app}\VenueClient.py; WorkingDir: {app}; IconFilename: {app}\VenueClient.py; Components: Venue_Client
@@ -93,12 +94,17 @@ Name: quicklaunchicon; Description: Create a &Quick Launch Icon; GroupDescriptio
 
 [Messages]
 DirExists=The directory:%n%n%1%n%nalready exists and appears to have an AccessGrid Toolkit installation in it.%n%nIt is recommended that you uninstall any existing AccessGrid Toolkit software before proceeding.  Do you wish to proceed anyway?
-WelcomeLabel2=This will install the [name] version 2.0alpha on your computer.%n%nIt is strongly recommended that you uninstall any previous version of the [name] before continuing.  It is also strongly recommended that you close all other applications you have running before continuing with this installation.  These steps will help prevent any conflicts during the installation process.
+WelcomeLabel2=This will install the [name/ver] on your computer.%n%nIt is strongly recommended that you uninstall any previous version of the [name] before continuing.%n%nIt is also strongly recommended that you close all other applications you have running before continuing with this installation.%n%nThese steps will help prevent any conflicts during the installation process.
 
 [Run]
-;Filename: {app}\SetupVideo.py; WorkingDir: {app}; Description: Setup what video devices will produce video streams; Components: Video_Producer
+Filename: {app}\config\Postinstall.py; Flags: shellexec
+Filename: {app}\SetupVideo.py; WorkingDir: {app}; Description: Setup what video devices will produce video streams; Components: Video_Producer; Flags: postinstall unchecked
 
 [UninstallDelete]
+Name: {reg:HKLM\Software\Python\PythonCore\2.2\PythonPath\win32com,|C:\Python22\Lib\site-packages}\AccessGrid; Type: filesandordirs
 
 [Dirs]
 Name: {app}\config; Components: Venue_Client
+
+[_ISToolPreCompile]
+Name: C:\AccessGridBuild\Prebuild.cmd; Parameters: 
