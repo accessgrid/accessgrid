@@ -5,13 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.246 2003-09-05 18:02:50 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.247 2003-09-09 21:59:32 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 
 import os
 import os.path
+import time
 import logging, logging.handlers
 import cPickle
 import threading
@@ -22,6 +23,7 @@ import string
 import webbrowser
 import traceback
 import cPickle
+import pyGlobus.utilc
 import re
 
 log = logging.getLogger("AG.VenueClientUIClasses")
@@ -1625,6 +1627,7 @@ class ContentListPanel(wxPanel):
               
                 if participantId:
                     ownerProfile = self.tree.GetItemData(participantId).GetData()
+
                     #
                     # Test if personal data is already added
                     #
@@ -1827,7 +1830,6 @@ class ContentListPanel(wxPanel):
                 if dataDescriptionList:
                     for data in dataDescriptionList:
                         self.AddData(data)
-                       
             except:
                 ErrorDialog(None, "%s's data could not be retrieved."%item.name ,
                             style = wxOK  | wxICON_ERROR)
@@ -2236,7 +2238,7 @@ class ContentListPanel(wxPanel):
         self.dataDict.clear()
         self.serviceDict.clear()
         self.applicationDict.clear()
-        self.personalDataDict.clear()
+                            
  
 class TextClientPanel(wxPanel):
     aboutText = """PyText 1.0 -- a simple text client in wxPython and pyGlobus.
@@ -3192,18 +3194,15 @@ def VerifyExecutionEnvironment():
         dlg.Destroy()
         sys.exit(1)
 
+
     #
     # Test for valid local hostname.
     #
         
-    myhost = Utilities.GetHostname()
-    log.debug("VerifyExecutionEnvironment: My hostname is %s", myhost)
+    myhost = GetLocalHostname()
+    log.debug("My hostname is %s", myhost)
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        s.bind((myhost, 0))
-        log.debug("VerifyExecutionEnvironment: bind to local hostname of %s succeeds", myhost)
-    except socket.error:
+    if not LocalHostnameValid(myhost):
         log.critical("VerifyExecutionEnvironment: bind to local hostname of %s fails", myhost)
         log.critical("VerifyExecutionEnvironment: This may be due to the hostname being set to something different than the name to which the IP address of this computer maps, or to the the hostname not being fully qualified with the full domain.")
         #
@@ -3236,7 +3235,10 @@ def VerifyExecutionEnvironment():
                       "is not set in the process environment.\n" + msgbase
 
         ShowNetworkInit(msg)
-        sys.exit(1)
+
+        myhost = Utilities.GetHostname()
+        log.debug("New notion of globus hostname: %s", myhost)
+
 
     #
     # Test for ability to find the service manager and node service programs.
@@ -3257,6 +3259,46 @@ def VerifyExecutionEnvironment():
         sys.exit(1)
     
     
+def GetLocalHostname():
+    """
+    Determine our local hostname.
+
+    This code mimics the code that globus_libc_hostname uses to retrieve
+    the hostname, but *does not call that function*. We need to ensure
+    that that function is not called, because the value that it computes
+    for the hostname is cached in a local static data structure. We need
+    to be able to change the Globus notion of the local hostname in the
+    event that it is incorrect.
+    """
+
+    if 'GLOBUS_HOSTNAME' in os.environ:
+        return os.environ['GLOBUS_HOSTNAME']
+
+    name = socket.getfqdn()
+
+    if '.' in name:
+        return name
+
+    ip = socket.gethostbyname(name)
+    addr = socket.gethostbyaddr(ip)
+
+    return addr[0]
+    
+def LocalHostnameValid(myhost):
+    """
+    Test to see if the locally-defined hostname is usable for incoming connections.
+    """
+    
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.bind((myhost, 0))
+        log.debug("VerifyExecutionEnvironment: bind to local hostname of %s succeeds", myhost)
+        s.close()
+        return 1
+
+    except socket.error:
+
+        return 0
 
 def ShowNetworkInit(msg = None):
     if sys.platform == "win32":
@@ -3268,40 +3310,141 @@ def ShowNetworkInitNonWin32(msg):
         dlg = wxMessageDialog(None,
                               "This computer's network configuration is not correct.\n" +
                               "Correct the problem (by setting the GLOBUS_HOSTNAME environment" +
-                              "variable) and restart the app. Appliation will exit.",
+                              "variable) and restart the app. Application will exit.",
                               "Globus network problem", wxOK)
         dlg.ShowModal()
         dlg.Destroy()
+        sys.exit(1)
 
 def ShowNetworkInitWin32(msg):
     if msg is  None:
         msg = ""
     else:
         msg = "\n" + msg
-        
-    networkInit = os.path.join(os.environ['GLOBUS_LOCATION'], "config", "network_init.py")
-    if (os.access(networkInit, os.R_OK)):
+
+    cmds = ['network_init.py', 'network_init.pyw']
+    locs = [os.path.join(os.environ['GLOBUS_LOCATION'], "config"),
+            GetInstallDir(),
+            r"\Program Files\Access Grid Toolkit\bin"]
+
+    #
+    # Find the darn file.
+    #
+
+    networkInit = None
+
+    for loc in locs:
+        for cmd in cmds:
+            path = os.path.join(loc, cmd)
+            if os.access(path, os.R_OK):
+                networkInit = path
+                break
+    if networkInit is not None:
         dlg = wxMessageDialog(None,
                               "This computer's network configuration is not correct.\n" \
-                              "We will invoke the network configuration tool, and the \n" \
-                              "Venues client will then exit. Complete the configuration and\n" \
-                              "restart the Venues client." +  msg,
+                              "We will invoke the network configuration tool in an attempt\n" \
+                              "to remedy the problem. " +  msg,
                               "Globus network problem", wxOK)
         dlg.ShowModal()
         dlg.Destroy()
 
         import win32api
         shortpath = win32api.GetShortPathName(networkInit)
-        win32api.WinExec("python %s" % (shortpath))
-    else:
+        # win32api.WinExec("python %s" % (shortpath))
 
+        #
+        # Fire up the network tool. However, first grab the system and user
+        # globus hostname values in order to pick up any changes that the
+        # network tool made.
+        #
+
+        from Platform import FindRegistryEnvironmentVariable
+        (global_reg_before, user_reg_before) = FindRegistryEnvironmentVariable("GLOBUS_HOSTNAME")
+        
+        os.system("python %s" % (shortpath))
+        time.sleep(1)
+
+        #
+        # Pick up the new values. If one has changed (the tool tries to change
+        # the global one first, then the local if user is not an administrator)
+        # set the globus hostname environment variable to the new value and
+        # retry the LocalHostnameValid test.
+        #
+
+        (global_reg_after, user_reg_after) = FindRegistryEnvironmentVariable("GLOBUS_HOSTNAME")
+
+        new_name = None
+        changed = 0
+        if global_reg_after != global_reg_before:
+            changed = 1
+            new_name = global_reg_after
+            log.debug("Found new name %s from global registry setting", new_name)
+        elif user_reg_after != user_reg_before:
+            new_name = user_reg_after
+            changed = 1
+            log.debug("Found new name %s from else registry setting", new_name)
+        else:
+            log.debug("No change in registry setting")
+
+        #
+        # Set for this process. The value might have been deleted.
+        #
+
+        if changed:
+            if new_name is None:
+                try:
+                    del os.environ['GLOBUS_HOSTNAME']
+                    if hasattr(pyGlobus.utilc, "unsetenv"):
+                        pyGlobus.utilc.unsetenv("GLOBUS_HOSTNAME")
+                except KeyError:
+                    pass
+
+            else:
+                os.environ['GLOBUS_HOSTNAME'] = new_name
+                if hasattr(pyGlobus.utilc, "setenv"):
+                    pyGlobus.utilc.setenv("GLOBUS_HOSTNAME", new_name)
+
+        #
+        # Retry test.
+        #
+        
+        myhost = GetLocalHostname()
+        validNow = LocalHostnameValid(myhost)
+
+        log.debug("Result of test: myhost=%s validNow=%s", myhost, validNow)
+
+        if validNow:
+            return
+
+        #
+        # We failed again, sigh. Try localhost.
+        #
+
+        os.environ['GLOBUS_HOSTNAME'] = 'localhost'
+        if hasattr(pyGlobus.utilc, "setenv"):
+            pyGlobus.utilc.setenv("GLOBUS_HOSTNAME", 'localhost')
+
+        myhost = GetLocalHostname()
+        validNow = LocalHostnameValid(myhost)
+
+        log.debug("Result of test: myhost=%s validNow=%s", myhost, validNow)
+
+        if validNow:
+            log.debug("Worked with localhost")
+        else:
+            log.debug("didn't work with localhost, hmmm")
+
+    else:
+        log.debug("networkInit.py not found; searched in cmds=%s locs=%s",
+                  cmds, locs)
         dlg = wxMessageDialog(None,
                               "This computer's network configuration is not correct.\n" + 
                               "Correct the problem (by setting the GLOBUS_HOSTNAME environment\n" + 
-                              "variable) and restart the app. Appliation will exit." + msg,
+                              "variable) and restart the app. Application will exit." + msg,
                               "Globus network problem", wxOK)
         dlg.ShowModal()
         dlg.Destroy()
+        os._exit(1)
 
 
 if __name__ == "__main__":
