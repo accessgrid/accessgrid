@@ -5,13 +5,29 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.2 2003-01-17 16:41:31 judson Exp $
+# RCS-ID:      $Id: setup.py,v 1.3 2003-01-18 01:07:05 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 from distutils.core import setup
 
-setup(name = 'AccessGrid',
-      version = '2.0',
-      scripts = [],
+"""
+    Setup script for the Access Grid Toolkit. The module is described by the set
+    up below.
+"""
+
+setup(
+# Distribution Meta-Data
+    name = 'AGTk',
+    fullname = 'AccessGrid Toolkit',
+    version = '2.0',
+    description="The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.",
+    author_email="ag-info@mcs.anl.gov",
+    url="http://www.accessgrid.org",
+
+# Package list -- There's only one
+    packages = ['AccessGrid'],
+
+# Script list -- these are command line tools and programs    
+    scripts = ['bin/VenueServer.py', 'bin/VenueClient.py', 'bin/VenueManagement.py']
 )
