@@ -25,7 +25,9 @@ parser.add_option("--verbose", action="store_true", dest="verbose",
 parser.add_option("-p", "--pythonversion", dest="pyver",
                   metavar="PYTHONVERSION", default="2.2",
                   help="Which version of python to build the installer for.")
-
+parser.add_option("--dist", dest="dist",
+                  metavar="DISTRIBUTION", default="rpm",
+                  help="Which distribution to build")
 options, args = parser.parse_args()
 
 SourceDir = options.sourcedir
@@ -69,7 +71,7 @@ os.system(cmd)
 # (rpm for now)
 #
 pkg_script = "BuildPackage.py"
-DistDir = os.path.join(StartDir,"rpm")
+DistDir = os.path.join(StartDir,options.dist)
 if os.path.exists(DistDir):
     os.chdir(DistDir)
     cmd = "%s %s --verbose -s %s -b %s -d %s -p %s -m %s -v %s" % (sys.executable,
@@ -83,6 +85,6 @@ if os.path.exists(DistDir):
     print "cmd = ", cmd
     os.system(cmd)
 else:
-    print "No directory (%s) found." % DistDir
+    print "Error building distribution %s; directory not found." % (options.dist,)
 
 
