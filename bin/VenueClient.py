@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.114 2003-04-11 20:48:10 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.115 2003-04-11 21:38:12 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -43,7 +43,10 @@ if sys.platform == "win32":
 try:
     from AccessGrid import CertificateManager
     CertificateManager.CertificateManagerWXGUI
-    HaveCertificateManager = 0
+    if sys.platform == "win32":
+        HaveCertificateManager = 1
+    else:
+        HaveCertificateManager = 0
 except Exception, e:
     HaveCertificateManager = 0
 
