@@ -431,8 +431,8 @@ class CertificateStatusBrowser(CertificateBrowserBase):
         sizer.Add(self.httpProxyPanel, 0, wxEXPAND)
 
     def OnRequestNewCertificate(self, event):
-
         self.certMgr.GetUserInterface().RunCertificateRequestTool(self)
+        self.Load()
 
     def OnInstallCert(self, event):
         req = self.GetSelectedCertificate()
@@ -467,11 +467,11 @@ class CertificateStatusBrowser(CertificateBrowserBase):
         log.debug("Removing request %s", req.GetRequest().GetSubject())
         self.certMgr.GetCertificateRepository().RemoveCertificateRequest(req.GetRequest())
 
-        #
         # Turn off update so the load goes quickly.
-        #
         self.updateStatus = 0
 
+        self.Load()
+        
         self.certMgr.GetCertificateRepository().NotifyObservers()
 
     def OnViewRequest(self, event):
