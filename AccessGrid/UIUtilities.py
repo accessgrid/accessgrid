@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.19 2003-06-18 14:52:57 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.20 2003-08-07 20:59:08 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -195,7 +195,9 @@ def InitMimeTypes(file):
                 elif k2 == 'description':
                     desc = stuff[k2]
                 elif k2 == 'nametemplate':
-                    ext = "." + stuff[k2].split('.')[1]
+                    parts = stuff[k2].split('.')
+                    if len(parts) > 1:
+                        ext = "." + parts[1]
                 elif k2 == 'print':
                     cmds.append((k2, stuff[k2].replace('%s', '%1'), ''))
 
