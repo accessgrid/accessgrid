@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.58 2003-04-07 21:46:17 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.59 2003-04-10 05:02:16 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -246,7 +246,7 @@ class VenueManagementClient(wxApp):
                                             int(videoTtl))
         capability = Capability( Capability.PRODUCER, Capability.VIDEO)
         videoStreamDescription = StreamDescription( "", "", location,
-                                                    capability, 1)
+                                                    capability, None, 1)
         self.SetCurrentVenue(venue)
         wxLogDebug("Enable static video: %s addr: %s, port: %s, ttl %s" 
                      % (str(venue.uri), str(videoAddress),
@@ -258,7 +258,7 @@ class VenueManagementClient(wxApp):
                                             int(audioTtl))
         capability = Capability( Capability.PRODUCER, Capability.AUDIO)
         audioStreamDescription = StreamDescription( "", "", location,
-                                                    capability, 1)
+                                                    capability, None, 1)
         wxLogDebug("Enable static audio: %s addr: %s, port: %s, ttl %s"
                    % (str(venue.uri), str(audioAddress), str(audioPort),
                       str(audioTtl)))
