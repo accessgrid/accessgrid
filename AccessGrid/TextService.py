@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextService.py,v 1.16 2003-04-23 09:15:26 judson Exp $
+# RCS-ID:      $Id: TextService.py,v 1.17 2003-04-26 06:43:09 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -55,15 +55,17 @@ class ConnectionHandler(StreamRequestHandler):
             
             try:
                 data = self.rfile.read(4)
-                sizeTuple = struct.unpack("i", data)
-                size = sizeTuple[0]
-                log.debug("TextConnection: Read %d", size)
             except IOBaseException:
-                size = 0
+                data = None
                 self.running = 0
                 log.debug("TextConnection: Connection Lost.")
                 continue
-            
+
+            if data != None and len(data) == 4:
+                sizeTuple = struct.unpack("i", data)
+                size = sizeTuple[0]
+                log.debug("TextConnection: Read %d", size)
+
             # Get the pickled event data
             try:
                 pdata = self.rfile.read(size)

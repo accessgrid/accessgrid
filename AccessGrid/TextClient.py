@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.7 2003-04-19 05:49:42 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.8 2003-04-26 06:43:09 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -93,16 +93,31 @@ class SimpleTextProcessor:
         while self.running:
             try:
                 data = self.rfile.read(4)
+                self.log.debug("TextClient: Read data(%s)", data)
+            except IOBaseException:
+                data = None
+                self.running = 0
+                self.log.exception("TextClient: Read data failed.")
+
+            if data != None and len(data) == 4:
                 sizeTuple = struct.unpack('i', data)
                 size = sizeTuple[0]
-                self.log.debug("Read %d", size)
-            except IOBaseException:
-                size = 0
+                self.log.debug("Unpacked %d", size)
+            else:
+                continue
+            
+            try:
+                pdata = self.rfile.read(size)
+                self.log.debug("TextClient: Read data.")
+            except:
                 self.running = 0
-                self.log.exception("Error reading text service!")
-                
-            pdata = self.rfile.read(size)
+                self.log.debug("TextClient: Read data failed.")
+                continue
+
+            # Unpickle the data
             event = pickle.loads(pdata)
+
+            # Handle the data
             self.Output(event.data)
             
         self.socket.close()

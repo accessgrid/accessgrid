@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.16 2003-04-23 09:15:26 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.17 2003-04-26 06:43:09 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -56,16 +56,24 @@ class ConnectionHandler(StreamRequestHandler):
                 # This is hardwired to 4 byte size for now
                 data = self.rfile.read(4)
                 log.debug("EventConnection: DataSizevenu: %d", len(data))
-                sizeTuple = struct.unpack('i', data)
-                size = sizeTuple[0]
-                log.debug("EventConnection: Read %d", size)
             except IOBaseException:
-                log.debug("EventConnection: Connection lost.")
-                size = 0
+                data = None
                 self.running = 0
+                log.debug("EventConnection: Connection lost.")
                 # this is an icky hack :-\
                 event = DisconnectEvent(self.channel, self.privateId)
 
+            if data != None and len(data) == 4:
+                sizeTuple = struct.unpack('i', data)
+                size = sizeTuple[0]
+                log.debug("EventConnection: Read %d", size)
+            else:
+                size = 0
+                self.running = 0
+                log.debug("EventConnection: Connection lost.")
+                # this is an icky hack :-\
+                event = DisconnectEvent(self.channel, self.privateId)
+                
             if size != 0:
                 # Get the pickled event data
                 try:

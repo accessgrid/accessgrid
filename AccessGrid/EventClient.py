@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.13 2003-04-23 09:15:26 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.14 2003-04-26 06:43:09 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -75,15 +75,21 @@ class EventClient(Thread):
                 data = self.rfile.read(4)
                 log.debug("EventClient: DataSize: %d", len(data))
             except IOBaseException:
-                log.debug("EventClient: Connectoin Lost.")
+                data = None
                 self.running = 0
+                log.debug("EventClient: Connection Lost.")
                 continue
 
-            if len(data) > 0:
+            if data != None and len(data) == 4:
                 sizeTupe = struct.unpack('i', data)
                 size = sizeTupe[0]
                 log.debug("EventClient: Read size: %d", size)
-
+            else:
+                size = 0
+                self.running = 0
+                log.debug("EventClient: Connection Lost.")
+                continue
+            
             # Read the data
             try:
                 pdata = self.rfile.read(size)
@@ -123,8 +129,9 @@ class EventClient(Thread):
             self.sock.write(size, 4)
             self.sock.write(pdata, len(pdata))
         except:
+            self.running = 0
             log.exception("EventClient.Send Error.")
-
+            
     def Stop(self):
         self.running = 0
 
