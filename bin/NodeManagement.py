@@ -3,7 +3,7 @@
 # Name:        NodeManagement.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.22 2004-03-15 20:07:02 judson Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.23 2004-03-16 07:48:03 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -28,7 +28,7 @@ class MyApp(wxApp):
         try:
             frame.AttachToNode(defNSUrl)
             # Avoid UI errors if fail to attach to node.
-            if frame.nodeServiceHandle().IsValid():
+            if frame.nodeServiceHandle.IsValid():
                 frame.UpdateUI()
         except:
             if log is not None:
