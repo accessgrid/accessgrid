@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.6 2004-03-12 15:43:30 olson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.7 2004-03-12 22:22:07 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.6 2004-03-12 15:43:30 olson Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.7 2004-03-12 22:22:07 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -161,6 +161,17 @@ def CreateGlobusProxyGPI(passphrase, certFile, keyFile, certDir, outFile,
         # to leave it open.
         #
 
+        #
+        # Convert from list-of-numbers to a string.
+        #
+        # Replace this when pyOpenSSL fixed to understand lists.
+        #
+
+        if type(passphrase[0]) == int:
+            passphrase = "".join(map(lambda a: chr(a), passphrase))
+        else:
+            passphrase = "".join(passphrase)
+
         wr.write(passphrase + "\n")
 
         if not Platform.isWindows:
@@ -245,6 +256,17 @@ def CreateGlobusProxyProgrammatic(passphrase, certFile, keyFile, certDir,
     bits - keysize of generated proxy certificate
     hours - lifetime (in hours) of generated proxy certificate
     """
+
+    #
+    # Convert from list-of-numbers to a string.
+    #
+    # Replace this when pyOpenSSL fixed to understand lists.
+    #
+
+    if type(passphrase[0]) == int:
+        passphrase = "".join(map(lambda a: chr(a), passphrase))
+    else:
+        passphrase = "".join(passphrase)
 
     try:
         security.grid_proxy_init(verbose = 1,
@@ -374,104 +396,52 @@ def CreateGlobusProxyProgrammatic_GT24(passphrase, certFile, keyFile, certDir,
     """
 
     try:
+
+        def cb(msg):
+            print "gpi debug: ", msg
+            
         security.grid_proxy_init(verbose = 1,
+                                 verify = 1,
                                  certDir = certDir,
                                  certFile = certFile,
                                  keyFile = keyFile,
                                  outFile = outFile,
                                  bits = bits,
-                                 hours = hours,
-                                 passphraseString = passphrase)
+                                 lifetime = hours * 60,
+                                 passphrase = passphrase,
+                                 debugCB = cb)
 
-    except sslutilsc.SSLException, e:
-        #
-        # The lower-level globus code may fail, raising an SSLException.
-        # The arguments of the exception contain tuples
-        # (errcode, libname, func name, reason, additional data, filename,
-        # line number) corresponding to the errors in the OpenSSL error
-        # queue.
-        #
-        # We translate common errors seen here to higher-level exceptions
-        # where possible. If not possible, an exception is raised with the
-        # error list included.
-        #
+    except security.GSIException, e:
+        str = e[0]
 
-        for arg in e.args:
-            print "arg: ", arg[2], arg[3], arg[4].strip()
+        if str.find("Can't read credential's private key") >= 0:
+            raise InvalidPassphraseException(str)
+        else:
+            raise GridProxyInitError(str)
 
-        for arg in e.args:
-            reason = arg[3]
-            data = arg[4].strip()
-            
-            if reason == "bad password read" or reason == "wrong pass phrase":
-                raise ProxyGenExceptions.InvalidPassphraseException(reason)
+    except Exception, e:
+        print "Raised exception ", e
+        raise
 
-            elif reason == "problems creating proxy file":
-                raise ProxyGenExceptions.GridProxyInitError(reason, data)
+def IsGlobusProxy_Generic(certObj):
+    name = certObj.GetSubject().get_name_components()
+    lastComp = name[-1]
+    return lastComp[0] == "CN" and lastComp[1] == "proxy"
 
-            elif reason == "user private key cannot be accessed":
-                raise ProxyGenExceptions.GridProxyInitError(reason, data)
+def IsGlobusProxy_GT24(certObj):
 
-            elif reason == "user certificate not found":
-                raise ProxyGenExceptions.GridProxyInitError(reason, data)
+    attrs = security.grid_proxy_info2(0, certObj.GetPath())
 
-            elif reason == "user key and certificate don't match":
-                raise ProxyGenExceptions.GridProxyInitError(reason, data)
+    return attrs['type'] is not None
 
-            elif reason == "cannot find CA certificate for local credential":
-                data = findCertInArgs(e.args)
-                raise ProxyGenExceptions.GridProxyInitError(reason, data)
+if haveOldGlobus:
 
-            elif reason == "remote certificate has expired":
-                data = findCertInArgs(e.args)
-                raise ProxyGenExceptions.GridProxyInitError(reason, data)
+    if Platform.isWindows():
+        CreateGlobusProxy = CreateGlobusProxyProgrammatic
+    else:
+        CreateGlobusProxy = CreateGlobusProxyGPI
+    IsGlobusProxy = IsGlobusProxy_Generic
 
-            elif reason == "could not find CA policy file":
-                data = findCertInArgs(e.args)
-                raise ProxyGenExceptions.GridProxyInitError(reason, data)
-                
-        #
-        # We didn't find a reason we knew about in the error queue.
-        # Raise a GridProxyInitUnknownSSLError with the error queue.
-        #
-
-        #
-        # Scan the arguments to see if there's an error from the sslutils.c
-        # module. Also find (and otherwise ignore) a "certificate:" message.
-        #
-
-        data = ""
-        reason = ""
-        cert = ""
-        for arg in e.args:
-            print "Try ", arg[2]
-            if arg[3] == "certificate:":
-                cert = arg[4].strip()
-            elif arg[2] in SslutilsFunctions:
-                #
-                # Looks like we found what we're looking for. Raise
-                # a gpi error.
-                #
-
-                print "Found it"
-                reason = arg[3]
-                data = arg[4]
-
-        if reason != "":
-            if cert != "" and data != "":
-                arg = cert + "\n" + data
-            else:
-                arg = cert + data
-            raise ProxyGenExceptions.GridProxyInitError(reason, arg) 
-                
-        log.exception("grid_proxy_init raised an unknown exception")
-
-        cert = findCertInArgs(e.args)
-        raise ProxyGenExceptions.GridProxyInitUnknownSSLError(e.args, cert)
-    
-
-if Platform.isWindows() and haveOldGlobus:
-    CreateGlobusProxy = CreateGlobusProxyProgrammatic
 else:
-    CreateGlobusProxy = CreateGlobusProxyGPI
-    
+    CreateGlobusProxy = CreateGlobusProxyProgrammatic_GT24
+    IsGlobusProxy = IsGlobusProxy_GT24
