@@ -5,17 +5,17 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.20 2004-02-19 18:30:29 eolson Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.21 2004-03-16 07:14:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys, os
 
-from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
-from AccessGrid import Platform
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
+from AccessGrid import Platform
+from AccessGrid.Platform.Config import AGTkConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
 vicstartup="""option add Vic.disable_autoplace true startupFile
@@ -31,6 +31,7 @@ set defaultPort($device) %s
 option add Vic.device $device startupFile
 option add Vic.transmitOnStartup true startupFile
 option add Vic.defaultTTL 127 startupFile
+option add Vic.rtpName \"%s\" startupFile
 proc user_hook {} {
     update_note 0 \"%s\"
 }
@@ -43,15 +44,15 @@ class VideoProducerService( AGService ):
    encodings = [ "h261" ]
    standards = [ "NTSC", "PAL" ]
 
-   def __init__( self, server ):
-      AGService.__init__( self, server )
+   def __init__( self ):
+      AGService.__init__( self )
 
       self.capabilities = [ Capability( Capability.PRODUCER, Capability.VIDEO ) ]
 
       if not Platform.isWindows():
           self.executable = "vic"
       else:
-          self.executable = os.path.join(Platform.GetInstallDir(), "vic")
+          self.executable = os.path.join(AGTkConfig.instance().GetInstallDir(), "vic")
 
       #
       # Set configuration parameters
@@ -63,7 +64,7 @@ class VideoProducerService( AGService ):
       self.encoding = OptionSetParameter( "encoding", "h261", VideoProducerService.encodings )
       self.standard = OptionSetParameter( "standard", "NTSC", VideoProducerService.standards )
       self.bandwidth = RangeParameter( "bandwidth", 800, 0, 3072 ) 
-      self.framerate = RangeParameter( "framerate", 25, 1, 30 ) 
+      self.framerate = RangeParameter( "framerate", 24, 1, 30 ) 
       self.quality = RangeParameter( "quality", 75, 1, 100 )
       self.configuration.append( self.streamname )
       self.configuration.append( self.port )
@@ -80,6 +81,8 @@ class VideoProducerService( AGService ):
          #
          # Resolve assigned resource to a device understood by vic
          #
+         print "self.resource = ", type(self.resource), self.resource
+         print "res = ", self.resource.resource
          if self.resource == "None":
             vicDevice = "None"
          else:
@@ -105,6 +108,7 @@ class VideoProducerService( AGService ):
                                  self.standard.value,
                                  vicDevice,                 
                                  portstr,
+                                 self.streamname.value,
                                  self.streamname.value ) )
          f.close()
 
@@ -206,38 +210,10 @@ class VideoProducerService( AGService ):
       Platform.SetRtpDefaults( profile )
    SetIdentity.soap_export_as = "SetIdentity"
 
-def AuthCallback(server, g_handle, remote_user, context):
-    return 1
-
-# Signal handler to shut down cleanly
-def SignalHandler(signum, frame):
-    """
-    SignalHandler catches signals and shuts down the service.
-    Then it stops the hostingEnvironment.
-    """
-    global agService
-    agService.Shutdown()
-
 if __name__ == '__main__':
-   from AccessGrid.hosting.pyGlobus import Client
-   import thread
-   import signal
-   import time
 
-   server = Server( int(sys.argv[1]), auth_callback=AuthCallback )
+   from AccessGrid.AGService import AGServiceI, RunService
    
-   agService = VideoProducerService(server)
-
-   service = server.create_service_object("Service")
-   agService._bind_to_service( service )
-
-   # Register the signal handler so we can shut down cleanly
-   signal.signal(signal.SIGINT, SignalHandler)
-
-   print "Starting server at", agService.get_handle()
-   server.RunInThread()
-
-   # Keep the main thread busy so we can catch signals
-   while server.IsRunning():
-      time.sleep(1)
-
+   service = VideoProducerService()
+   serviceI = AGServiceI(service)
+   RunService(service,serviceI,int(sys.argv[1]))

@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.10 2004-02-19 18:25:57 eolson Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.11 2004-03-16 07:14:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,24 +13,24 @@ import sys, os
 import time
 import string
 
-from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter
 from AccessGrid import Platform
+from AccessGrid.Platform.Config import AGTkConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
 class AudioService( AGService ):
 
-   def __init__( self, server ):
-      AGService.__init__( self, server )
+   def __init__( self ):
+      AGService.__init__( self )
 
       self.capabilities = [ Capability( Capability.CONSUMER, Capability.AUDIO ), 
                             Capability( Capability.PRODUCER, Capability.AUDIO ) ]
       if not Platform.isWindows():
           self.executable = "rat"
       else:
-          self.executable = os.path.join(Platform.GetInstallDir(), "rat")
+          self.executable = os.path.join(AGTkConfig.instance().GetInstallDir(), "rat")
 
       #
       # Set configuration parameters
@@ -156,14 +156,14 @@ class AudioService( AGService ):
          else:
             rk = "rat-kill"
 
-         installDir = Platform.GetInstallDir()
+         installDir = AGTkConfig.instance().GetInstallDir()
          ratKillExe = os.path.join(installDir, rk)
 
          if os.access(ratKillExe, os.X_OK):
-            self.processManager.start_process(ratKillExe, [])
+            self.processManager.StartProcess(ratKillExe, [])
             time.sleep(0.2)
 
-         self.processManager.terminate_all_processes()
+         self.processManager.TerminateAllProcesses()
 
       except:
          self.log.exception("Exception in AGService.Stop ")
@@ -199,38 +199,11 @@ class AudioService( AGService ):
 
 
 
-def AuthCallback(server, g_handle, remote_user, context):
-    return 1
-
-# Signal handler to shut down cleanly
-def SignalHandler(signum, frame):
-    """
-    SignalHandler catches signals and shuts down the service.
-    Then it stops the hostingEnvironment.
-    """
-    global agService
-    agService.Shutdown()
-
 
 if __name__ == '__main__':
-   from AccessGrid.hosting.pyGlobus import Client
-   import thread
-   import signal
-   import time
 
-   server = Server( int(sys.argv[1]), auth_callback=AuthCallback )
-
-   agService = AudioService(server)
-
-   service = server.create_service_object("Service")
-   agService._bind_to_service( service )
-
-   # Register the signal handler so we can shut down cleanly
-   signal.signal(signal.SIGINT, SignalHandler)
-
-   print "Starting server at", agService.get_handle()
-   server.RunInThread()
-
-   # Keep the main thread busy so we can catch signals
-   while server.IsRunning():
-      time.sleep(1)
+   from AccessGrid.AGService import AGServiceI, RunService
+   
+   service = AudioService()
+   serviceI = AGServiceI(service)
+   RunService(service,serviceI,int(sys.argv[1]))

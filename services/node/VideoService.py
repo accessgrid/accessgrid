@@ -5,17 +5,17 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.1 2003-12-17 16:09:40 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.2 2004-03-16 07:14:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys, os
 
-from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
-from AccessGrid import Platform
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
+from AccessGrid import Platform
+from AccessGrid.Platform.Config import AGTkConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
 vicstartup="""option add Vic.disable_autoplace %s startupFile
@@ -51,13 +51,17 @@ class VideoService( AGService ):
    standardOptions = [ "NTSC", "PAL" ]
    onOffOptions = [ "On", "Off" ]
 
-   def __init__( self, server ):
-      AGService.__init__( self, server )
+   def __init__( self ):
+      AGService.__init__( self )
 
       self.capabilities = [ Capability( Capability.PRODUCER, Capability.VIDEO ),
                             Capability( Capability.CONSUMER, Capability.VIDEO ) ]
 
-      self.executable = os.path.join(Platform.GetInstallDir(), "vic")
+      if not Platform.isWindows():
+        self.executable = "vic"
+      else:
+        self.executable = os.path.join(AGTkConfig.instance().GetInstallDir(), "vic")
+         
 
       #
       # Set configuration parameters
@@ -69,7 +73,7 @@ class VideoService( AGService ):
       self.encoding = OptionSetParameter( "encoding", "h261", VideoService.encodingOptions )
       self.standard = OptionSetParameter( "standard", "NTSC", VideoService.standardOptions )
       self.bandwidth = RangeParameter( "bandwidth", 800, 0, 3072 ) 
-      self.framerate = RangeParameter( "framerate", 25, 1, 30 ) 
+      self.framerate = RangeParameter( "framerate", 24, 1, 30 ) 
       self.quality = RangeParameter( "quality", 75, 1, 100 )
       self.transmitOnStart = OptionSetParameter( "transmitonstartup", "On", VideoService.onOffOptions )
       self.muteSources = OptionSetParameter( "mutesources", "Off", VideoService.onOffOptions )
@@ -228,38 +232,11 @@ class VideoService( AGService ):
       Platform.SetRtpDefaults( profile )
    SetIdentity.soap_export_as = "SetIdentity"
 
-def AuthCallback(server, g_handle, remote_user, context):
-    return 1
-
-# Signal handler to shut down cleanly
-def SignalHandler(signum, frame):
-    """
-    SignalHandler catches signals and shuts down the service.
-    Then it stops the hostingEnvironment.
-    """
-    global agService
-    agService.Shutdown()
-
 if __name__ == '__main__':
-   from AccessGrid.hosting.pyGlobus import Client
-   import thread
-   import signal
-   import time
 
-   server = Server( int(sys.argv[1]), auth_callback=AuthCallback )
+   from AccessGrid.AGService import AGServiceI, RunService
    
-   agService = VideoService(server)
-
-   service = server.create_service_object("Service")
-   agService._bind_to_service( service )
-
-   # Register the signal handler so we can shut down cleanly
-   signal.signal(signal.SIGINT, SignalHandler)
-
-   print "Starting server at", agService.get_handle()
-   server.RunInThread()
-
-   # Keep the main thread busy so we can catch signals
-   while server.IsRunning():
-      time.sleep(1)
+   service = VideoService()
+   serviceI = AGServiceI(service)
+   RunService(service,serviceI,int(sys.argv[1]))
 

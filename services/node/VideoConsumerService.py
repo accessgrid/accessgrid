@@ -5,29 +5,29 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.9 2004-02-19 18:30:29 eolson Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.10 2004-03-16 07:14:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys, os
 
-from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter
-from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid import Platform
+from AccessGrid.Platform.Config import AGTkConfig
+from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
 class VideoConsumerService( AGService ):
 
-   def __init__( self, server ):
-      AGService.__init__( self, server )
+   def __init__( self ):
+      AGService.__init__( self )
 
       self.capabilities = [ Capability( Capability.CONSUMER, Capability.VIDEO ) ]
       if not Platform.isWindows():
           self.executable = "vic"
       else:
-          self.executable = os.path.join(Platform.GetInstallDir(), "vic")
+          self.executable = os.path.join(AGTkConfig.instance().GetInstallDir(), "vic")
 
       #
       # Set configuration parameters
@@ -119,25 +119,9 @@ def SignalHandler(signum, frame):
 
 
 if __name__ == '__main__':
-   from AccessGrid.hosting.pyGlobus import Client
-   import thread
-   import signal
-   import time
 
-   server = Server( int(sys.argv[1]), auth_callback=AuthCallback )
+   from AccessGrid.AGService import AGServiceI, RunService
    
-   agService = VideoConsumerService(server)
-
-   service = server.create_service_object("Service")
-   agService._bind_to_service( service )
-
-   # Register the signal handler so we can shut down cleanly
-   signal.signal(signal.SIGINT, SignalHandler)
-
-   print "Starting server at", agService.get_handle()
-   server.RunInThread()
-
-   # Keep the main thread busy so we can catch signals
-   while server.IsRunning():
-      time.sleep(1)
-
+   service = VideoConsumerService()
+   serviceI = AGServiceI(service)
+   RunService(service,serviceI,int(sys.argv[1]))
