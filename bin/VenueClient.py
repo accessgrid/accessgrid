@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.204 2003-08-22 15:13:06 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.205 2003-09-10 15:23:49 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -660,8 +660,8 @@ class VenueClientUI(VenueClientEventSubscriber):
                 text = "You are not authorized to enter the venue located at %s.\n." % URL
                 MessageDialog(None, text, "Notification")
             else:
-                print "warningString:", warningString, "|"
-                text = "You have not entered the venue located at %s.\nAn error occured.  Please, try again." % URL
+                log.debug("warningString: %s" %warningString)
+                text = "You have not entered the venue located at %s.\nAn error occurred.  Please, try again." % URL
                 ErrorDialog(None, text, "Enter Venue Error",
                           style = wxOK  | wxICON_ERROR)
             return
