@@ -1,6 +1,5 @@
 import os
 import sys
-import logging
 import base64
 
 from AccessGrid.hosting import Client
@@ -13,22 +12,12 @@ from AccessGrid.Platform import isWindows
 from AccessGrid import DataStore
 from AccessGrid import Platform
 from AccessGrid.GUID import GUID
+from AccessGrid.Toolkit import CmdlineApplication
 
 from AccessGrid.ClientProfile import ClientProfile
 
-
-log = logging.getLogger("vncSharedAppClient")
-def init_logging(appName):
-    logger = logging.getLogger("AG")
-    logger.setLevel(logging.DEBUG)
-    hdlr = logging.StreamHandler()
-    fmt = logging.Formatter("%(name)-17s %(asctime)s %(levelname)-5s %(message)s")
-    hdlr.setFormatter(fmt)
-    logger.addHandler(hdlr)
-
-    appLogger = logging.getLogger(appName)
-    appLogger.setLevel(logging.DEBUG)
-    appLogger.addHandler(hdlr)
+from AccessGrid import Log
+log = Log.GetLogger("VenueVNCClient")
 
 class vncSharedAppClient:
     """
@@ -80,8 +69,6 @@ class vncSharedAppClient:
 
 
         # Change to the location of the application before running, since helper executables are located here.
-        location = UserConfig.instance().GetSharedAppDir()
-        os.chdir(os.path.join(location, "VenueVNC")) 
         print "Running from directory", os.getcwd()
 
         if isWindows():
@@ -104,7 +91,8 @@ class vncSharedAppClient:
         os.unlink(self.passwdFilename);
 
 if __name__ == "__main__":
-    init_logging("watcher")
+    app = CmdlineApplication.instance()
+    app.Initialize("VenueVNCClient")
 
     if len(sys.argv) < 2:
         print "Usage: %s <appObjectUrl>" % sys.argv[0]
