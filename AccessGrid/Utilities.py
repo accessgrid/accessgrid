@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.59 2004-03-25 21:14:50 olson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.60 2004-03-25 22:01:56 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.59 2004-03-25 21:14:50 olson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.60 2004-03-25 22:01:56 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -32,6 +32,8 @@ from AccessGrid import Log
 log = Log.GetLogger(Log.Utilities)
 
 from AccessGrid.Version import GetVersion
+from AccessGrid import Platform
+from AccessGrid.Platform.Config import UserConfig
 
 # Global variables for sending log files
 VENUE_CLIENT_LOG = 0
@@ -285,10 +287,15 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
     # cf http://www.lemburg.com/files/python/platform.py
     #
     
-    if sys.platform.startswith("linux"):
+    if Platform.isLinux():
         args['op_sys'] = "Linux"
-    elif sys.platform == "win32":
+        args['rep_platform'] = "All"  # Need a better check for this.
+    elif Platform.isWindows():
         args['op_sys'] = "Windows NT"
+        args['rep_platform'] = "PC"
+    elif Platform.isOSX():
+        args['op_sys'] = "MacOS X"
+        args['rep_platform'] = "Macintosh"
     else:
         args['op_sys'] = "other"
         
@@ -590,5 +597,5 @@ def split_quoted (s):
 # split_quoted ()
 
 if __name__ == "__main__":
-    SubmitBug("This is just a test for the Bug Reporting Tool")
+    SubmitBug("This is just a test for the Bug Reporting Tool", profile=None, email="", userConfig=UserConfig.instance(), logFile=NO_LOG)
 
