@@ -5,7 +5,7 @@
 # Author:      Robert Olson, Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.11 2003-03-30 02:48:11 turam Exp $
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.12 2003-04-08 19:24:55 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -57,7 +57,8 @@ class MulticastAddressAllocator:
         
         self.addressMask = socket.htonl(~((1<<(32-self.addressMaskSize))-1))
 
-        self.random = Random(time.clock())
+        # self.random = Random(time.clock())
+        self.random = Random()
 
         self.addressAllocationMethod = MulticastAddressAllocator.RANDOM
 
@@ -89,18 +90,21 @@ class MulticastAddressAllocator:
         for rtp encapsulated streams.
         """
         inUse = 0
-        port = self.random.randrange(self.portBase, 65535, 2)
+
         # Check to see if port is used
-        while port in self.allocatedPorts and inUse:
+        while 1:
             port = self.random.randrange(self.portBase, 65535, 2)
+            if port in self.allocatedPorts:
+                continue
+            
             try:
                 s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
                 s.bind(("", port ) )
                 s.close()
-                inUse = 0
+                break
             except socket.error:
-                inUse = 1
                 continue
+            
         self.allocatedPorts.append(port)
         return port
         
