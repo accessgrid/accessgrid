@@ -67,6 +67,7 @@ class LauncherFrame(wxFrame):
             self.debugButton=wxToggleButton(self,self.BUTTON_DEBUG_ID,"Debug");
             EVT_TOGGLEBUTTON(self,self.BUTTON_DEBUG_ID,self.OnToggle);
         self.debugButton.SetValue(false)
+	self.debugButton.Disable()
         
         if not agtk_location:
             agtk_location=".."
@@ -203,7 +204,8 @@ class LauncherFrame(wxFrame):
     
     def RunPythonDebug(self,cmd,args):
         if IsOSX():
-            command="/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal";
+	    pass;
+            #command="/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal";
         elif IsWindows():
             command="start";
         else:
