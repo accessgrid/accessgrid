@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.4 2003-03-27 20:24:56 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.5 2003-03-27 21:44:40 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -33,13 +33,7 @@ class SimpleTextProcessor:
         self.wfile = self.socket.makefile('wb', 0)
         self.rfile = self.socket.makefile('rb', -1)
 
-        logname = "TextClient.log"
-        hdlr = logging.handlers.RotatingFileHandler(logname, "a", 10000000, 0)
-        fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-        hdlr.setFormatter(fmt)
-        
         self.log = logging.getLogger("AG.TextClient")
-        self.log.addHandler(hdlr)
         self.log.setLevel(logging.DEBUG)
         self.log.info("--------- START TextClient")
 
