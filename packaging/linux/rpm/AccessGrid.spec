@@ -30,13 +30,13 @@ URL:		http://www.accessgrid.org
 Vendor:		Argonne National Laboratory
 Source:		%{name}-%{version}.tar.gz
 BuildRoot:	%{buildroot}
-Requires:	/usr/bin/python2.3
 Requires:	wxGTK
-Requires:	wxPythonGTK-py2.2
+Requires:	wxPythonGTK-py2.3
 Requires:	globus-accessgrid
 Requires:	pyGlobus
-Requires:	logging
 Requires:	pyOpenSSL_AG
+Requires:	fpconst
+Requires:	SOAPpy
 Obsoletes:	AccessGrid-2.0alpha
 Obsoletes:	AccessGrid-2.0beta
 
@@ -64,7 +64,6 @@ This module provides the core components to start participating in the Access Gr
 
 %install
 # Move node services and shared apps into etc 
-mkdir etc/AccessGrid/Config
 mv NodeServices etc/AccessGrid/Config
 mv SharedApplications etc/AccessGrid/Config
 mkdir etc/AccessGrid/Config/Services
