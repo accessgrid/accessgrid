@@ -2,23 +2,25 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.80 2004-09-07 19:17:18 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.81 2004-10-25 17:41:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.80 2004-09-07 19:17:18 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.81 2004-10-25 17:41:01 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
 import os
 import time
 import shutil
+import threading
 
 from AccessGrid import Log
 from AccessGrid import Utilities
+from AccessGrid.GUID import GUID
 from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
@@ -79,6 +81,11 @@ class AGServiceManager:
         self.__DiscoverResources()
         
         self.url = None
+        
+        self.registeringServices = dict()
+        self.registerFlag = threading.Event()
+        
+        self.allocator = NetworkAddressAllocator()
 
     def Shutdown(self):
         log.info("AGServiceManager.Shutdown")
@@ -225,9 +232,25 @@ class AGServiceManager:
                 # non-python files are executed directly
                 executable = exeFile
 
-            # Designate port for service
-            port = NetworkAddressAllocator().AllocatePort()
+            # Set options for service
+            # - port
+            port = self.allocator.AllocatePort()
+            options.append( '--port' )
             options.append( port )
+            
+            # - url of service manager to register with
+            options.append( '--serviceManager' )
+            options.append( self.url )
+            
+            # - a token that the service will pass when registering
+            token = str(GUID())
+            options.append( '--token' )
+            options.append( token )
+            
+            # - if service manager is insecure, services will be too
+            if self.app.GetOption('insecure'):
+                options.append( '--insecure' )
+                
             log.info("Running Service; options: %s %s", executable, str(options))
             
             # 
@@ -239,30 +262,20 @@ class AGServiceManager:
             # Execute the service process 
             pid = self.processManager.StartProcess( executable, options )
 
-            # Wait for service to boot and become reachable,
-            # timing out reasonably
-            hostname = self.app.GetHostname()
-            serviceUrl = 'https://%s:%s/Service' % ( hostname, port )
-
-            log.debug("Waiting for service to start: %s %s", serviceDescription.name, 
-                      serviceUrl)
-
-            elapsedTries = 0
-            maxTries = 10
-            while elapsedTries < maxTries:
-                try:
-                    AGServiceIW(serviceUrl).IsValid()
-                    log.info("Service %s successfully started", serviceDescription.name)
-                    break
-                except:
-                    time.sleep(1)
-                    elapsedTries += 1
-
-            # Detect unreachable service
-            if elapsedTries >= maxTries:
-                log.error("Add %s failed; service is unreachable", 
-                          serviceDescription.name)
+            # Wait for service to register with me
+            self.registeringServices[token] = None
+            self.registerFlag.clear()
+            self.registerFlag.wait(10)
+            
+            if self.registerFlag.isSet():
+                serviceUrl = self.registeringServices[token]
+                log.info("Service registered: %s %s", serviceUrl, token)
+            else:
+                log.info("Service failed to register: %s", token)
                 raise Exception("Service failed to become reachable")
+    
+            # Remove service from registration list
+            del self.registeringServices[token]
 
         except:
             log.exception("Error starting service")
@@ -312,8 +325,6 @@ class AGServiceManager:
 
         return serviceDescription
 
-
-    
     def RemoveService( self, serviceToRemove ):
         """Remove a service
         """
@@ -400,8 +411,10 @@ class AGServiceManager:
         for service in self.services.values():
             AGServiceIW( service.uri ).Stop()
 
-
-    
+    def RegisterService(self,token,url):
+        if token in self.registeringServices.keys():
+            self.registeringServices[token] = url
+        self.registerFlag.set()
         
     ####################
     ## INTERNAL methods
@@ -508,6 +521,9 @@ class AGServiceManagerI(SOAPInterface):
         resource = resourceStruct
             
         return self.impl.AddService(serviceDescription, resource, serviceConfig)
+        
+    def RegisterService(self,token,url):
+        self.impl.RegisterService(token,url)
 
     def RemoveService(self, serviceDescStruct):
         """
@@ -598,6 +614,9 @@ class AGServiceManagerIW(SOAPIWrapper):
         serviceDescStruct = self.proxy.AddService(serviceDescription, resource, serviceConfig)
         serviceDesc = CreateAGServiceDescription(serviceDescStruct)
         return serviceDesc
+        
+    def RegisterService(self,token,url):
+        self.proxy.RegisterService(token,url)
 
     def RemoveService(self, serviceToRemove):
         self.proxy.RemoveService(serviceToRemove)
