@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: icons.py,v 1.24 2003-05-09 15:38:16 lefvert Exp $
+# RCS-ID:      $Id: icons.py,v 1.25 2003-05-12 15:20:59 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -10478,5 +10478,77 @@ catalog['DefaultService'].getData = getDefaultServiceData
 catalog['DefaultService'].getImage = getDefaultServiceImage
 catalog['DefaultService'].getBitmap = getDefaultServiceBitmap
 catalog['DefaultService'].getIcon = getDefaultServiceIcon
+
+
+#----------------------------------------------------------------------
+def getBulletData():
+    return zlib.decompress(
+'x\xda\xeb\x0c\xf0s\xe7\xe5\x92\xe2b``\xe0\xf5\xf4p\t\x02\xd1 \xcc\xc1\x06$\
+\x8b^?\xa9\x01R,\xc5N\x9e!\x1c@P\xc3\x91\xd2\x01\xe4\x9f\xf7tq\x0c\xa9\x98\
+\x93," \x90\xa0 j\xa0X\xec\xf5\xb9\xeb\xff\xe6\xbaT\xf7\x83K+\x8f\xfe\xbfhjx\
+(\'\xe9\xef\xa9>\xc5N\x9e\xba\xe2\xff).\x1b9\xd3ni\xcb\x06\xb6\x85\xef\x8fK\
+\xc8\xc8\xf8\xfbw\x12\xe3M77FF\xc6\x1d\xba\xeb\xeb\xf6&$\x18\\J\x15\xd8\xfdI\
+\xca\x95\x19\x08\x9cMW[\xdc1\x13K\x11>zC\xe5\xc3N\x01\xbe\x19\x1f<\xb7\xfd\
+\xab;9!k\x05\xf3\xf3\xc3s:\x82\x85w\xb1\xf1\xcc\xe6\xd2*\x0e\x10Q\xce\x9eQ\
+\xfb\x8f\x0b\xa4\xbeKj\x8aB{\xa5\x94d\xc8\xe6.\xe3\x05\xd2<\xfc\x1d\xf7\xef\
+\xd8K\xc6?7\xfd?\xff\x82\x1d\xab\xab\xf0\xa6$66\xb6\xb6w\x9e{{t^0\xf1\xdc\
+\x110\xdb6\xa5\xe1\xa1M\xcd\x02\x93\xf5?\xea\xbf/\x89\xab\xe8b`\x08,\x0c\x99\
+\xd1\x92\xdd\x18\x0e\xf4\x1a\x83\xa7\xab\x9f\xcb:\xa7\x84&\x00b\xf9h0' )
+
+def getBulletBitmap():
+    return wxBitmapFromImage(getBulletImage())
+
+def getBulletImage():
+    stream = cStringIO.StringIO(getBulletData())
+    return wxImageFromStream(stream)
+
+def getBulletIcon():
+    icon = wxEmptyIcon()
+    icon.CopyFromBitmap(getBulletBitmap())
+    return icon
+
+index.append('Bullet')
+catalog['Bullet'] = ImageClass()
+catalog['Bullet'].getData = getBulletData
+catalog['Bullet'].getImage = getBulletImage
+catalog['Bullet'].getBitmap = getBulletBitmap
+catalog['Bullet'].getIcon = getBulletIcon
+
+
+#----------------------------------------------------------------------
+def getBulletData():
+    return zlib.decompress(
+'x\xda\x018\x01\xc7\xfe\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x0e\
+\x00\x00\x00\x0e\x08\x06\x00\x00\x00\x1fH-\xd1\x00\x00\x00\x04sBIT\x08\x08\
+\x08\x08|\x08d\x88\x00\x00\x00\xefIDATx\x9c\x9dR\xd1\x8d\x830\x0c}T\x1d\xc0\
+\xcc\xd0\r\xa0#\x94\r\xce\xdd\x80\xd0\r\xd2\x11\xca\x06=\xd8\xa0\x19\x81\xac\
+\xc0m@V\x80\r|\x1f)\x01\n:\x9d\xb0d)\x8a\xdf\xf3{\xb6\x1c\x11\x11\xf6\xc4a\
+\x17\xeb\x93\xe8\x9c\x93\xd3\xb5\x97a\xb8\x87<]{\xd9"F\xa3U\xe7\\\x00\xc4\
+\xd4AUg\xd47\x0e@"\x1bm*f\xf7\xf8Ok\x9f\xca\x93\xd5\xd6+\x8dj>.S\xb9b\x18c\
+\x02\xf9\x18\nm\tU\xe9\x00\xaco\xdf\xef\x97o\xa2u\x0fk-VD\x0f\x1eg\xba\xcc~\
+\t\xa9*P\x96%\x98\xdb\xb5\xd5T\xe9\x19\xd8\x02\x18\x00\x00\xf9\xb3@\x92\x00I\
+\xde\xc1\x18\xb3&v\xafx\xb15\xdf\xacx\x8f\xa1\xf0S\xd7`\x9e\xb6\x0c"Zd\xaaD\
+\x80/\xd1Z\x0b\xf0\x90$\xcf\x05\x800\xb3\xccq\xd1\xd6\xc9eY&\x00\x825fF\xd34\
+\x0bG\x9b\xc4\xff\xc4\xee[\xfd\x05=\xd7[dg\x02\'S\x00\x00\x00\x00IEND\xaeB`\
+\x82\x9a\xa9{\xab' )
+
+def getBulletBitmap():
+    return wxBitmapFromImage(getBulletImage())
+
+def getBulletImage():
+    stream = cStringIO.StringIO(getBulletData())
+    return wxImageFromStream(stream)
+
+def getBulletIcon():
+    icon = wxEmptyIcon()
+    icon.CopyFromBitmap(getBulletBitmap())
+    return icon
+
+index.append('Bullet')
+catalog['Bullet'] = ImageClass()
+catalog['Bullet'].getData = getBulletData
+catalog['Bullet'].getImage = getBulletImage
+catalog['Bullet'].getBitmap = getBulletBitmap
+catalog['Bullet'].getIcon = getBulletIcon
 
 
