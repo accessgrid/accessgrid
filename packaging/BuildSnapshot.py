@@ -230,11 +230,12 @@ os.chdir(os.path.join(BuildDir,'packaging'))
 
 # Build service packages
 # makeServicePackages.py AGDIR\services\node DEST\services
-cmd = '%s %s %s %s %s' % (sys.executable,
+cmd = '%s %s --sourcedir %s --agsourcedir %s --outputdir %s --servicefile %s' % (sys.executable,
                        'makeServicePackages.py',
                        SourceDir,
                        BuildDir,
-                       os.path.join(DestDir,"NodeServices"))
+                       os.path.join(DestDir,"NodeServices"),
+                       'servicesToShip')
 print "cmd = ", cmd
 os.system(cmd)
 
