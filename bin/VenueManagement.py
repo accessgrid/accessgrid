@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.118 2004-03-12 05:23:13 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.119 2004-03-15 19:44:20 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.118 2004-03-12 05:23:13 judson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.119 2004-03-15 19:44:20 lefvert Exp $"
 
 import string
 import time
@@ -43,7 +43,7 @@ from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid import icons
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog
 from AccessGrid.Utilities import VENUE_MANAGEMENT_LOG
-from AccessGrid.AuthorizationUI import AuthorizationUIPanel # AddPeopleDialog
+from AccessGrid.AuthorizationUI import AuthorizationUIPanel, AuthorizationUIDialog
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
 
 log = Log.GetLogger(Log.VenueManagement)
@@ -223,10 +223,6 @@ class VenueManagementClient(wxApp):
             else:
                 log.debug("VenueManagementClient.ConnectToServer: No venues in server")
                 vp.venueProfilePanel.ChangeCurrentVenue(None)
-
-
-            # Connect to authorization manager.
-            self.tabs.securityPanel.ConnectToAuthManager(URL)
             
             # fill in multicast address
             ip = self.server.GetBaseAddress()
@@ -397,10 +393,8 @@ class VenueManagementTabs(wxNotebook):
         self.parent = parent
         self.venuesPanel = VenuesPanel(self, application)
         self.configurationPanel = ConfigurationPanel(self, application)
-        self.securityPanel = AuthorizationUIPanel(self, -1, log)
         self.AddPage(self.venuesPanel, "Venues")
         self.AddPage(self.configurationPanel, "Configuration")
-        self.AddPage(self.securityPanel, "Security")
         self.Enable(false)
         
 
@@ -807,23 +801,17 @@ class ConfigurationPanel(wxPanel):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, 
                          wxDefaultSize, wxNO_BORDER|wxSW_3D)
         self.application = application
-        #self.administratorsListPanel = AdministratorsListPanel(self,
-        #                                                       application)
+        
         self.detailPanel = DetailPanel(self, application)
         self.__doLayout()
 
     def __doLayout(self):
         configurationPanelSizer = wxBoxSizer(wxHORIZONTAL)
-        #configurationPanelSizer.Add(self.administratorsListPanel, 0,
-        #                            wxEXPAND|wxALL, 10)
         configurationPanelSizer.Add(self.detailPanel, 2, wxEXPAND|wxALL, 10)
-
+        
         self.SetSizer(configurationPanelSizer)
         configurationPanelSizer.Fit(self)
         self.SetAutoLayout(1)
-
-
-
 
 class DetailPanel(wxPanel):
     ID_CHANGE = wxNewId()
@@ -831,6 +819,7 @@ class DetailPanel(wxPanel):
     ID_RANDOM = wxNewId()
     ID_INTERVAL = wxNewId()
     ID_ENCRYPT = wxNewId()
+    ID_SECURITY = wxNewId()
 
     def __init__(self, parent, application):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
@@ -842,15 +831,22 @@ class DetailPanel(wxPanel):
         self.encryptionBox = wxStaticBox(self, -1, "Encryption",
                                          size = wxSize(500, 50),
                                          name = 'encryptionBox')
+        
         self.randomButton = wxRadioButton(self, self.ID_RANDOM,
                                           "Standard Range")
         self.intervalButton = wxRadioButton(self, self.ID_INTERVAL,
                                             "Custom Range: ")
         self.ipAddress = wxStaticText(self, -1, "224.2.128.0/17",
-                                      style = wxALIGN_LEFT, size = wxSize(150, 20))
+                                      style = wxALIGN_LEFT,
+                                      size = wxSize(150, 20))
         self.changeButton = wxButton(self, self.ID_CHANGE, "Change")
         self.encryptionButton = wxCheckBox(self, self.ID_ENCRYPT,
                                            " Encrypt media ")
+        self.securityBox = wxStaticBox(self, -1, "Security",
+                                         size = wxSize(500, 50),
+                                         name = 'securityBox')
+        self.securityText = wxStaticText(self, -1, "Manage access to venue server including which users are allowed to administrate.")
+        self.securityButton = wxButton(self, self.ID_SECURITY, "Manage Security")
         self.ipString = "224.2.128.0"
         self.maskString = "17"
         self.__doLayout()
@@ -864,6 +860,20 @@ class DetailPanel(wxPanel):
         EVT_RADIOBUTTON(self, self.ID_INTERVAL, self.ClickedOnInterval)
         EVT_CHECKBOX(self, self.ID_ENCRYPT, self.ClickedOnEncrypt)
 
+        EVT_BUTTON(self, self.ID_SECURITY, self.OpenSecurityDialog)
+
+    def OpenSecurityDialog(self, event):
+        f = AuthorizationUIDialog(self, -1, "Security", log)
+        wxBeginBusyCursor()
+        f.ConnectToAuthManager(self.application.serverUrl)
+        wxEndBusyCursor()
+        
+        if f.ShowModal() == wxID_OK:
+            wxBeginBusyCursor()
+            f.Apply()
+            wxEndBusyCursor()
+        f.Destroy()
+                       
     def ClickedOnEncrypt(self, event):
         try:
             log.debug("DetailPanel.ClickedOnEncrypt: Set encryption")
@@ -983,9 +993,9 @@ class DetailPanel(wxPanel):
 
         multicastBoxSizer.Add(self.randomButton, 0, wxALL, 5)
         flexSizer = wxBoxSizer(wxHORIZONTAL)
-        flexSizer.Add(self.intervalButton, 0, wxCENTER)
-        flexSizer.Add(self.ipAddress, 0, wxCENTER)
-        flexSizer.Add(self.changeButton, 0, wxCENTER)
+        flexSizer.Add(self.intervalButton)
+        flexSizer.Add(self.ipAddress, 1, wxALIGN_CENTER)
+        flexSizer.Add(self.changeButton, 0, wxALIGN_RIGHT)
         multicastBoxSizer.Add(flexSizer, 0, wxEXPAND | wxALL, 5)
         
         serviceSizer.Add(multicastBoxSizer, 0,  wxBOTTOM|wxEXPAND, 10)
@@ -996,6 +1006,12 @@ class DetailPanel(wxPanel):
 
         serviceSizer.Add(encryptionBoxSizer, 0, wxEXPAND| wxBOTTOM, 10)
 
+        securityBoxSizer = wxStaticBoxSizer(self.securityBox, wxHORIZONTAL)
+        
+        securityBoxSizer.Add(self.securityText, 1 , wxEXPAND|wxALL, 5)
+        securityBoxSizer.Add(self.securityButton, 0, wxALIGN_RIGHT|wxALL, 5)
+        serviceSizer.Add(securityBoxSizer, 0, wxEXPAND| wxBOTTOM, 10)
+        
         self.SetSizer(serviceSizer)
         serviceSizer.Fit(self)
         self.SetAutoLayout(1)
@@ -1061,8 +1077,7 @@ class MulticastDialog(wxDialog):
 
 
 class VenueParamFrame(wxDialog):
-    # ID_MODIFY_ROLES = wxNewId()
-    
+       
     def __init__(self, parent, id, title, application):
         wxDialog.__init__(self, parent, id, title, style = wxRESIZE_BORDER)
         self.Centre()
@@ -1076,21 +1091,20 @@ class VenueParamFrame(wxDialog):
         
         self.SetSize(wxSize(400, 350))
         self.application = application
-        #self.rolesDict = None
-
+   
         self.generalPanel = GeneralPanel(self.noteBook, -1, application)
         self.staticAddressingPanel = StaticAddressingPanel(self.noteBook, -1)
         self.encryptionPanel = EncryptionPanel(self.noteBook, -1)
-        
+        self.authorizationPanel = AuthorizationUIPanel(self.noteBook, -1, log)
+               
         self.noteBook.AddPage(self.generalPanel, "General")
         self.noteBook.AddPage(self.encryptionPanel, "Encryption")
         self.noteBook.AddPage(self.staticAddressingPanel, "Addressing")
-
+      
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton =  wxButton(self, wxID_CANCEL, "Cancel")
-
+             
 	self.__doLayout() 
-	#self.__addEvents()
 
     def __doLayout(self):
         boxSizer = wxBoxSizer(wxVERTICAL)
@@ -1108,34 +1122,6 @@ class VenueParamFrame(wxDialog):
         self.SetSizer(boxSizer)
         boxSizer.Fit(self)
         self.SetAutoLayout(1)
-
-    #def __addEvents(self):
-    #    EVT_BUTTON(self, self.ID_MODIFY_ROLES, self.OpenRoleAuthorizationDialog)
-
-    #def OpenRoleAuthorizationDialog(self, event = None):
-    #    self.rolesDict = None
-    #    try:
-    #        am = self.application.server.GetAuthorizationManager()
-    #    except Exception, e:
-    #        print "Couldn't make authorization interface: ", e
-    #    
-    #    try:
-    #        addPeopleDialog = AddPeopleDialog(self, -1, "Modify Roles", am)
-    #        if addPeopleDialog.ShowModal() == wxID_OK:
-    #            # Get new role configuration
-    #            self.rolesDict = addPeopleDialog.GetInfo()
-    #            print "Got info ", self.rolesDict
-    #        addPeopleDialog.Destroy()
-    #    except Exception, e:
-    #        print "Couldn't do authorization: ", e
-    #        if e.string == "NotAuthorized":
-    #                text = "You are not authorized to modify roles for this venue.\n"
-    #                MessageDialog(None, text, "Not Authorized", style=wxOK|wxICON_WARNING)
-    #                log.info("OpenModifyVenueRolesDialog: Not authorized to administrate roles in this venue %s." % self.venue.uri)
-    #        else:
-    #            log.exception("OpenModifyVenueRolesDialog: Error administrating roles in this venue %s." % self.venue.uri)
-    #            text = "Error administrating roles in this venue " + self.venue.uri + "."
-    #            ErrorDialog(None, text, "Venue Role Administration Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
                     
     def SetEncryption(self):
         toggled = self.encryptionPanel.encryptMediaButton.GetValue()
@@ -1228,12 +1214,7 @@ class GeneralPanel(wxPanel):
         # This is the exits this venue has
         self.exits = wxListBox(self, -1, size = wxSize(250, 100),
                                style = wxLB_SORT)
-        #if isinstance(self.parent, ModifyVenueFrame):
-        #    self.modifyRolesButton = wxButton(self, self.ID_MODIFY_ROLES,
-        #                                      "Modify Roles",
-        #                                      style = wxBU_EXACTFIT )
-        #    self.rolesText = wxStaticText(self, -1, "Manage access to venue including which users are allowed to Enter and which users allowed to Administrate.")
-        
+                
         self.__doLayout()
         self.__setEvents()
 
@@ -1353,26 +1334,9 @@ class GeneralPanel(wxPanel):
         exitsSizer.AddGrowableCol(2)
 
         bottomParamSizer.Add(exitsSizer, 0, wxEXPAND | wxALL, 10)
-
-        # For now, only use the modify roles button for the ModifyVenueFrame
-        #   since the current modify roles dialog needs a venue to interact with.
-                
-        #if isinstance(self.parent, ModifyVenueFrame):
-        #    rolesSizer = wxStaticBoxSizer(wxStaticBox(self, -1, "Roles and Authorization"),
-        #                             wxHORIZONTAL)
-        #
-        #    roleFrameSizer = wxFlexGridSizer(1, 2, 10, 10)
-        #    roleFrameSizer.Add(self.modifyRolesButton, 0, wxEXPAND)
-        #    roleFrameSizer.Add(self.rolesText, 0, wxEXPAND)
-        #    rolesSizer.Add(roleFrameSizer, 0, wxALL, 5)
-
         boxSizer.Add(bottomParamSizer, 0,
                      wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT, 10)
 
-        #if isinstance(self, ModifyVenueFrame):
-        #    boxSizer.Add(rolesSizer, 0,
-        #                 wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT, 10)
-        
         self.SetSizer(boxSizer)
         boxSizer.Fit(self)
         self.SetAutoLayout(1)
@@ -1602,6 +1566,9 @@ class AddVenueFrame(VenueParamFrame):
         self.generalPanel.LoadLocalVenues()
         self.encryptionPanel.ClickEncryptionButton(None,
                                                    self.application.encrypt)
+
+        
+        
         EVT_BUTTON (self.okButton, wxID_OK, self.OnOK)
         self.ShowModal()
 
@@ -1647,8 +1614,15 @@ class ModifyVenueFrame(VenueParamFrame):
         self.parent = parent
         self.SetSize(wxSize(600, 470))
         self.SetLabel('Modify Venue')
+        
         self.__loadCurrentVenueInfo(venueList)
         self.generalPanel.LoadLocalVenues()
+
+        # Connect to authorization manager.
+        self.noteBook.AddPage(self.authorizationPanel, "Security")
+
+        self.authorizationPanel.ConnectToAuthManager(self.venue.uri)
+        
         wxEndBusyCursor()
 
         EVT_BUTTON (self.okButton, wxID_OK, self.OnOK)
@@ -1667,14 +1641,6 @@ class ModifyVenueFrame(VenueParamFrame):
                     log.debug("ModifyVenueFrame.OnOk: Modify venue")
                     self.parent.ModifyVenue(self.venue)
 
-                    # Set roles
-                    #try:
-                    #    if self.rolesDict:
-                    #        RoleClient(venueUri).SetVenueRoles(self.rolesDict)
-                    #        self.rolesDict = None
-                    #except:
-                    #    # Modify venues should work even if SetVenueRoles fail
-                    #    log.exception("ModifyVenueFrame.OnOk: Can not set roles for venue")
                 except Exception, e:
                     log.exception("ModifyVenueFrame.OnOk: Modify venue failed")
                     text = "Could not modify venue %s" %self.venue.name
@@ -1690,6 +1656,9 @@ class ModifyVenueFrame(VenueParamFrame):
                     except:
                         # Modify venues should work even if SetVenueRoles fail
                         log.exception("ModifyVenueFrame.OnOk: SetDefaultVenue failed")
+
+                # Send security info to authorization manager,
+                self.authorizationPanel.Apply(event)
                                        
                 self.Hide()
 
