@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.7 2003-02-27 20:06:38 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.8 2003-02-28 16:28:18 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -48,7 +48,7 @@ class ConnectionHandler(StreamRequestHandler):
                 # Pass this event to the callback registered for this
                 # event.eventType
                 if event.eventType == ConnectEvent.CONNECT:
-                    print "Adding connection to venue %s" % event.venue
+#                    print "Adding connection to venue %s" % event.venue
                     self.server.connections[event.venue].append(self)
                     continue
                 
@@ -59,7 +59,7 @@ class ConnectionHandler(StreamRequestHandler):
                 else:
                     print "Got event, but don't have a callback for %s, %s events." % (event.venue, event.eventType)
             except:
-                print "ConnectionHandler.handle Client disconnected!"
+#                print "ConnectionHandler.handle Client disconnected!"
                 self.running = 0
                 # Find the connection and remove it
                 for v in self.server.connections.keys():

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextService.py,v 1.10 2003-02-27 20:32:01 judson Exp $
+# RCS-ID:      $Id: TextService.py,v 1.11 2003-02-28 16:28:18 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -64,7 +64,7 @@ class ConnectionHandler(GSIRequestHandler):
                 # For now we send all messages to everyone
                 self.server.Distribute(event)
             except:
-                print "ConnectionHandler.handle: Client disconnected!"
+#                print "ConnectionHandler.handle: Client disconnected!"
                 self.running = 0
                 # Find the connection and remove it
                 for v in self.server.connections.keys():
@@ -112,7 +112,7 @@ class TextService(ThreadingGSITCPSocketServer, Thread):
         """
         Send the data to all the connections in this server.
         """
-        print "Sending Event (%s) %s" % (data.venue, data.data.recipient)
+#        print "Sending Event (%s) %s" % (data.venue, data.data.recipient)
         pdata = pickle.dumps(data)
         lenStr = "%s\n" % len(pdata)
         for c in self.connections[data.venue]:
@@ -120,7 +120,7 @@ class TextService(ThreadingGSITCPSocketServer, Thread):
                 c.wfile.write(lenStr)
                 c.wfile.write(pdata)           
             except:
-                print "EventService.Distribute: Client disconnected!"
+#                print "EventService.Distribute: Client disconnected!"
                 self.connections[data.venue].remove(c)
         
     def AddChannel(self, channelId):
@@ -133,6 +133,6 @@ if __name__ == "__main__":
   import string
   host = string.lower(socket.getfqdn())
   port = 6600
-  print "Creating new TextService at %s %d." % (host, port)
+#  print "Creating new TextService at %s %d." % (host, port)
   textChannel = TextService((host, port))
   textChannel.start()
