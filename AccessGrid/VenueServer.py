@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.82 2003-08-07 21:03:09 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.83 2003-08-08 21:36:44 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -111,7 +111,7 @@ class VenueServer(ServiceBase.ServiceBase):
             "VenueServer.venuePathPrefix" : 'Venues',
             "VenueServer.dataStorageLocation" : 'Data',
             "VenueServer.dataSize" : '10M',
-            "VenueServer.backupServer" : None
+            "VenueServer.backupServer" : ''
             }
 
     defaultVenueDesc = VenueDescription("Venue Server Lobby", """ This is the lobby of the Venue Server, it has been created because there are no venues yet. Please configure your Venue Server! For more information see http://www.accessgrid.org/ and http://www.mcs.anl.gov/fl/research/accessgrid.""")

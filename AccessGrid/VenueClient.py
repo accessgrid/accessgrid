@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.88 2003-08-07 21:01:14 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.89 2003-08-08 21:36:44 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,6 +22,7 @@ from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.EventClient import EventClient
+from AccessGrid.TextClient import TextClient
 from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache
 from AccessGrid.Types import *
 from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
@@ -69,6 +70,10 @@ class VenueClient( ServiceBase):
         self.homeVenue = None
         self.houseKeeper = Scheduler()
         self.heartbeatTask = None
+
+        # For states that matter
+        self.state = None
+        
         # takes time
         self.CreateVenueClientWebService()
         self.__InitVenueData__()
@@ -112,6 +117,7 @@ class VenueClient( ServiceBase):
                           
     def __InitVenueData__( self ):
         self.eventClient = None
+        self.textClient = None
         self.venueState = None
         self.venueUri = None
         self.venueProxy = None
@@ -530,12 +536,21 @@ class VenueClient( ServiceBase):
             self.heartbeatTask.start()
 
             #
-            # Send eventClient to personal dataStore and get personaldatastore information
+            # Send eventClient to personal dataStore and get
+            # personaldatastore information
             #
-            self.dataStore.SetEventDistributor(self.eventClient, self.venueState.uniqueId)
+            self.dataStore.SetEventDistributor(self.eventClient,
+                                               self.venueState.uniqueId)
             self.dataStoreUploadUrl = self.venueProxy.GetUploadDescriptor()
             #self.dataStoreUploadUrl,self.dataStoreLocation = Client.Handle( URL ).get_proxy().GetDataStoreInformation()
         
+            #
+            # Connect the venueclient to the text stuff, hook into UI later
+            #
+            self.textClient = TextClient(self.profile,
+                                         self.venueState.textLocation)
+            self.textClient.Connect(self.venueState.uniqueId, self.privateId)
+            
             # 
             # Update the node service with stream descriptions
             #
@@ -648,7 +663,20 @@ class VenueClient( ServiceBase):
             # An exception is always thrown for some reason when I exit
             # the event client
             log.exception("on client exiting")
-            
+
+        log.info("Stopping text client")
+        try:
+            # Stop the text client
+            log.debug("   sending client disconnect event.")
+            self.textClient.Disconnect(self.venueState.uniqueId,
+                                       self.privateId)
+            log.debug("   stop text client")
+            self.textClient.Stop()
+            log.debug("   remove reference")
+            self.textClient = None
+        except:
+            log.exception("on text client exiting")
+        
         try:         
             self.venueProxy.Exit( self.privateId )
         except Exception, e:

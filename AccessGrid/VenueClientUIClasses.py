@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.223 2003-08-04 22:07:53 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.224 2003-08-08 21:36:44 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -37,11 +37,8 @@ from AccessGrid.Descriptions import ApplicationDescription
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.Platform import GetTempDir, GetInstallDir, GetSharedDocDir
-from AccessGrid.TextClient import SimpleTextProcessor
-from AccessGrid.TextClient import TextClientConnectException
-from pyGlobus.io import GSITCPSocket
-from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth, GetHostname
-from AccessGrid.Events import ConnectEvent, TextEvent, DisconnectEvent
+from AccessGrid.TextClient import TextClient
+
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 
 try:
@@ -541,7 +538,8 @@ class VenueClientFrame(wxFrame):
     def SetTextLocation(self, event = None):
         textLoc = tuple(self.app.venueClient.venueState.GetTextLocation())
         id = self.app.venueClient.venueState.uniqueId
-        self.textClientPanel.SetLocation(self.app.venueClient.privateId, textLoc, id)
+        self.textClientPanel.SetLocation(self.app.venueClient.privateId,
+                                         textLoc, id)
       
     def AuthorizeLeadDialog(self, clientProfile):
         idPending = None
@@ -2019,7 +2017,7 @@ class TextClientPanel(wxPanel):
     Processor = None
     ID_BUTTON = wxNewId()
     textMessage = ''
-    
+
     def __init__(self, parent, id, application):
         wxPanel.__init__(self, parent, id)
         self.textOutputId = wxNewId()
@@ -2050,73 +2048,22 @@ class TextClientPanel(wxPanel):
         if(44 < key < 255):
             self.TextInput.AppendText(chr(key)) 
                                     
-    def SetLocation(self, privateId, location, venueId):
-        if self.Processor != None:
-            self.Processor.Input(DisconnectEvent(self.venueId, privateId))
-            self.Processor.Stop()
-            self.socket.close()
-            
-        self.host = location[0]
-        self.port = location[1]
-        self.venueId = venueId
-        self.attr = CreateTCPAttrAlwaysAuth()
-        self.socket = GSITCPSocket()
-        try:
-            self.socket.connect(self.host, self.port, self.attr)
-        except:
-            log.exception("Couldn't connect to text service! %s:%d", self.host,
-                          self.port)
-            raise TextClientConnectException
-
-        log.debug("\n\thost:%s\n\tport:%d\n\tvenueId:%s\n\tattr:%s"
-                   % (self.host, self.port, self.venueId, str(self.attr)))
-        log.debug("\n\tsocket:%s" % str(self.socket))
-        
-        self.Processor = SimpleTextProcessor(self.socket, self.venueId,
-                                             self.OutputText)
-        self.Processor.Input(ConnectEvent(self.venueId, privateId))
+    def ClearTextWidgets(self):
+        """
+        """
         self.TextOutput.Clear()
         self.TextInput.Clear()
 
-    def CloseTextConnection(self):
-        """
-        Close the connection to the text service.
-        """
-
-        log.debug("Venue client closing connection to text service")
-
-        if self.Processor is not None:
-            self.Processor.Stop()
-            self.socket.close()
-            del self.Processor
-
-    def OutputText(self, textPayload):
-        message, profile = textPayload.data
-
-        self.textMessage = ''
-
-        #
-        # Do not base on dn name because if you have 2 clients
-        # running with same certificates, both clients will show
-        # you say and not the correct name.
-        #
-        #if textPayload.sender == GetDefaultIdentityDN():
-        if profile.name == self.app.venueClient.profile.name:
-            self.textMessage =  "You say, \"%s\"\n" % (message)
-        elif(textPayload.sender != None):
-            self.textMessage = "%s says, \"%s\"\n" % (profile.name, message)
-        else:
-            self.textMessage = "Someone says, \"%s\"\n" % (profile.name, message)
-            log.info("Received text without a sender, SOMETHING IS WRONG")
-            
-        wxCallAfter( self.TextOutput.AppendText, self.textMessage)
+    def OutputText(self, message):
+        wxCallAfter( self.TextOutput.AppendText, message)
 
     def __set_properties(self):
         self.SetSize((375, 225))
         
     def __do_layout(self):
         TextSizer = wxBoxSizer(wxVERTICAL)
-        TextSizer.Add(self.TextOutput, 2, wxEXPAND|wxALIGN_CENTER_HORIZONTAL, 0)
+        TextSizer.Add(self.TextOutput, 2,
+                      wxEXPAND|wxALIGN_CENTER_HORIZONTAL, 0)
         box = wxBoxSizer(wxHORIZONTAL)
         box.Add(self.label, 0, wxALIGN_CENTER |wxLEFT|wxRIGHT, 5)
         box.Add(self.TextInput, 1, wxALIGN_CENTER )
@@ -2129,36 +2076,22 @@ class TextClientPanel(wxPanel):
         
     def LocalInput(self, event):
         """ User input """
-        if(self.venueId != None):
-            log.debug("VenueClientUIClasses.py: User writes: %s"
-                       % self.TextInput.GetValue())
+        log.debug("VenueClientUIClasses.py: User writes: %s"
+                  % self.TextInput.GetValue())
 
-            # Both text message and profile is sent in the data parameter of TextPayload
-            # to use the profile information for text output.
-            textEvent = TextEvent(self.venueId, None, 0,
-                                  (self.TextInput.GetValue(), self.app.venueClient.profile))
-            try:
-                self.Processor.Input(textEvent)
-                self.TextInput.Clear()
-            except:
-                text = "Could not send text message successfully"
-                title = "Notification"
-                log.exception(text)
-                MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
-                              
-        else:
-            text = "Please, go to a venue before using the chat"
+        text = self.TextInput.GetValue()
+        try:
+            self.app.venueClient.textClient.Input(text)
+            self.TextInput.Clear()
+        except:
+            text = "Could not send text message successfully"
             title = "Notification"
             log.exception(text)
             MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
-            
-           
-    def Stop(self):
-        log.debug("VenueClientUIClasses.py: Stop processor")
-        self.Processor.Stop()
         
     def OnCloseWindow(self):
         log.debug("VenueClientUIClasses.py: Destroy text client")
+        self.textClient.Stop()
         self.Destroy()
           
 class SaveFileDialog(wxDialog):
