@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.225 2004-08-25 14:50:14 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.226 2004-08-25 16:32:38 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.225 2004-08-25 14:50:14 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.226 2004-08-25 16:32:38 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -368,6 +368,7 @@ class Venue(AuthorizationMixIn):
                                         "AddNetService", "RemoveNetService",
                                         "IsAuthorized", "IsValid",
                                         "AllocateMulticastLocation",
+                                        "RecycleMulticastLocation",
                                         ]
         # Methods in Venue IW that are not default to everybody:
         #   "Shutdown", "SetEncryptMedia", "RegenerateEncryptionKeys",
@@ -936,11 +937,29 @@ class Venue(AuthorizationMixIn):
         """
         defaultTtl = 127
         location = MulticastNetworkLocation(
-        self.server.multicastAddressAllocator.AllocateAddress(),
-        self.server.multicastAddressAllocator.AllocatePort(),
-        defaultTtl )
+                        self.server.multicastAddressAllocator.AllocateAddress(),
+                        self.server.multicastAddressAllocator.AllocatePort(),
+                        defaultTtl )
 
         return location
+
+    def RecycleMulticastLocation(self, location):
+        """
+        This method creates a new Multicast Network Location.
+
+        **Returns:**
+
+        *location* A new multicast network location object.
+        """
+        try:
+            self.server.multicastAddressAllocator.RecycleAddress(location.host)
+        except:
+            log.exception("Failed to recycle multicast address %s", location.host)
+        
+        try:
+            self.server.multicastAddressAllocator.RecyclePort(location.port)
+        except:
+            log.exception("Failed to recycle port %d", location.port) 
 
     def GetNextPrivateId( self ):
         """
@@ -3202,6 +3221,9 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
             log.exception("AllocateMulticastLocation: exception")
             raise
 
+    def RecycleMulticastLocation(self, location):
+        return self.impl.RecycleMulticastLocation(location)
+
 
 # Legacy calls
     def AddSubjectToRole(self, subject, role_string):
@@ -3414,7 +3436,12 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
         return self.proxy.GetEventServiceLocation()
     
     def AllocateMulticastLocation(self):
-        return self.proxy.AllocateMulticastLocation()
+        locationStruct = self.proxy.AllocateMulticastLocation()
+        location = CreateNetworkLocation(locationStruct)
+        return location
+
+    def RecycleMulticastLocation(self,location):
+        return self.proxy.RecycleMulticastLocation(location)
 
     def GetCachedProfiles(self):
         return self.proxy.GetCachedProfiles()
