@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.25 2003-02-03 14:34:13 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.26 2003-02-04 20:08:39 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -59,6 +59,9 @@ class VenueServer(ServiceBase.ServiceBase):
             "VenueServer.dataStorePath" : 'Data'
             }
 
+    defaultVenueDescription = VenueDescription("Venue Server Lobby", 
+            """This is the lobby of the Venue Server, it has been created because there are no venues yet. Please configure your Venue Server! For more information see http://www.accessgrid.org/ and http://www.mcs.anl.gov/fl/research/accessgrid.""", "", None)
+        
     def __init__(self, hostEnvironment = None, configFile=None):
         """
         The constructor creates a new Venue Server object, initializes
@@ -89,8 +92,6 @@ class VenueServer(ServiceBase.ServiceBase):
         # Read in and process a configuration
         self.InitFromFile(LoadConfig(self.configFile, self.configDefaults))
         
-        # Instantiate a new config parser
-        self.config = LoadConfig(self.configFile, self.configDefaults)
         # Try to open the persistent store for Venues. If we fail, we
         # open a temporary store, but it'll be empty.
         try:
@@ -112,12 +113,13 @@ class VenueServer(ServiceBase.ServiceBase):
             store.close()
         except:
             print "Corrupt persistence database detected.", formatExceptionInfo()
+            
         
         #
         # Reinitialize the default venue
         #
-        defaultVenue = self.hostingEnvironment.create_service_object(pathId = 'Venues/default')
-        self.venues[self.defaultVenue]._bind_to_service(defaultVenue)
+        if len(self.defaultVenue) == 0:
+            self.defaultVenue = self.AddVenue(None, self.defaultVenueDescription)
 
         # The houseKeeper is a task that is doing garbage collection and
         # other general housekeeping tasks for the Venue Server.
@@ -158,9 +160,14 @@ class VenueServer(ServiceBase.ServiceBase):
 
             # Create a new Venue object pass it the server's Multicast Address 
             # Allocator, and the server's Data Storage object
+            if connectionInfo == None:
+                administrator = ""
+            else:
+                administrator = connectionInfo.get_remote_name()
+                    
             venue = Venue(venueID, venueDescription,
-                          connectionInfo.get_remote_name(),
-                          self.multicastAddressAllocator, self.dataStorage)
+                          administrator, self.multicastAddressAllocator, 
+                          self.dataStorage)
 
             venue.Start()
             
