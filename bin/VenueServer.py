@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.23 2003-05-14 19:34:17 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.24 2003-05-20 19:52:09 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -41,7 +41,7 @@ def SignalHandler(signum, frame):
     global running
     global venueServer
     print "Got Signal!!!!"
-    venueServer.Shutdown(0)
+    venueServer.Shutdown()
     running = 0
 
 # Authorization callback for the server
