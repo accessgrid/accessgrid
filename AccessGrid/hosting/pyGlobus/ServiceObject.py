@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ServiceObject.py,v 1.8 2003-03-13 23:19:46 turam Exp $
+# RCS-ID:      $Id: ServiceObject.py,v 1.9 2003-04-28 17:58:29 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -13,17 +13,20 @@
 from AccessGrid.hosting import AccessControl
 
 class NoServiceMethodException(Exception):
-    """No such method.
+    """
+    No such method.
 
     An incoming SOAP request will raise this exception when a
     the request specifies a service id that is not registered with
-    this server."""
+    this server.
+    """
     
     pass
 
 
 class ServiceObject:
-    """An SOAP service.
+    """
+    A SOAP service.
 
     A ServiceObject instance provides the communications endpoint for an
     SOAP service object. 
@@ -59,7 +62,6 @@ class ServiceObject:
             # Handle the incoming method, invoked with 2 arguments.
 
     service.register_function(handler_func, "handle_method")
-
     """
 
     def __init__(self, server, id):
@@ -95,8 +97,8 @@ class ServiceObject:
     def SetRoleManager(self, roleManager):
         """
         Set roleManager as the role manager for this service object.
-        This will be queried by the security manager to determine the roles assigned
-        to a user.
+        This will be queried by the security manager to determine the
+        roles assigned to a user.
         """
 
         self.role_manager = roleManager
@@ -121,7 +123,8 @@ class ServiceObject:
         return handle
 
     def RegisterFunctions(self, function_dict, pass_connection_info = 0):
-        """Register these functions as SOAP handler methods.
+        """
+        Register these functions as SOAP handler methods.
 
         The function_dict is a dictionary where the key is the SOAP
         method name and the value is the handler to be bound to that
@@ -131,6 +134,14 @@ class ServiceObject:
         for name in function_dict.keys():
             func = function_dict[name]
             self.register_function(func, name, pass_connection_info)
+
+    def UnregisterFunctions(self, function_list):
+        """
+        Unregister these functions as SOAP handler methods.
+        """
+        
+        for name in function_list:
+            self.UnregisterFunction(name)
 
     def RegisterFunction(self, function, name = None,
                           pass_connection_info = 0):
@@ -148,12 +159,23 @@ class ServiceObject:
         if name is None:
             name = function.__name__
 
-        #        print "Service %s registers function %s as %s" % (self, function, name)
+        # print "Service %s registers function %s as %s" % (self, function, name)
 
-	wrapper = AccessControl.InvocationWrapper(function, pass_connection_info, self)
+	wrapper = AccessControl.InvocationWrapper(function,
+                                                  pass_connection_info, self)
         self.function_map[name] = (wrapper, 1)
 
         # self.function_map[name] = (function, pass_connection_info)
+
+    def UnregisterFunction(self, name):
+        """
+        Unregister a function so it gets no more SOAP requests.
+        """
+
+        print "Service %s unregisters %s" % (self, name)
+
+        if self.function_map.has_key(name):
+            del self.function_map[name]
 
     def _lookup_method(self, method):
         """
@@ -165,17 +187,17 @@ class ServiceObject:
         to get connection-level information passed to it.
         """
 
-#        print "Lookup method ", method
+        # print "Lookup method ", method
 
         func = None
         try:
             func, pass_connection_info = self.function_map[method]
-#            print "Found func ", func
+            # print "Found func ", func
 
         except KeyError:
             pass
 
-        #        print "Service %s mapped %s to %s" % (self, method, func)
+        # print "Service %s mapped %s to %s" % (self, method, func)
 
         if func is None:
             raise NoServiceMethodException()
