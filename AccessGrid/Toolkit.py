@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.25 2004-03-18 14:08:24 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.26 2004-03-22 16:21:52 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.25 2004-03-18 14:08:24 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.26 2004-03-22 16:21:52 judson Exp $"
 
 # Standard imports
 import os
@@ -32,6 +32,7 @@ from AccessGrid import Log
 from AccessGrid.Security import CertificateManager
 from AccessGrid.Platform.Config import AGTkConfig, GlobusConfig
 from AccessGrid.Platform.Config import SystemConfig, UserConfig
+from AccessGrid.ServiceProfile import ServiceProfile
 
 class AppBase:
     """
@@ -340,12 +341,6 @@ class Service(AppBase):
        Service.theServiceInstance = self
 
        # Add cert, key, and profile options
-       certOption = Option("--cert", dest="cert", metavar="CERTFILE",
-                           help="Specify a certificate file.")
-       self.AddCmdLineOption(certOption)
-       keyOption = Option("--key", dest="key", metavar="KEYFILE",
-                           help="Specify a key file.")
-       self.AddCmdLineOption(keyOption)
        profileOption = Option("--profile", dest="profile", metavar="PROFILE",
                            help="Specify a service profile.")
        self.AddCmdLineOption(profileOption)
@@ -361,7 +356,7 @@ class Service(AppBase):
 
        # Deal with the profile if it was passed instead of cert/key pair
        if self.options.profile is not None:
-           self.profile = Profile(self.options.profile)
+           self.profile = ServicProfile(self.options.profile)
        
        # 6. Initialize Certificate Management
        # This has to be done by sub-classes
@@ -369,8 +364,7 @@ class Service(AppBase):
        self.certMgrUI = CertificateManager.CertificateManagerUserInterface()
        self.certificateManager = \
             CertificateManager.CertificateManager(configDir, self.certMgrUI,
-                                            identityCert = self.options.cert,
-                                            identityKey = self.options.key)
+                                            profile = self.profile)
 
        self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
 
