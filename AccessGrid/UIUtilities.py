@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.17 2003-06-05 18:13:15 eolson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.18 2003-06-17 21:40:14 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -25,6 +25,7 @@ from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
 from AccessGrid import icons
 
+from AccessGrid.Utilities import SubmitBug
 from AccessGrid.Utilities import formatExceptionInfo
 
 
@@ -33,19 +34,51 @@ class MessageDialog:
         errorDialog = wxMessageDialog(frame, text, text2, style)
         errorDialog.ShowModal()
         errorDialog.Destroy()
-
+      
 class ErrorDialog:
-    def __init__(self, frame, text, text2 = "", style = wxOK | wxICON_ERROR):
-       (name, args, traceback_string_list) = formatExceptionInfo()
-       for x in traceback_string_list:
-           print(x)       
+    def __init__(self, frame, text, text2 = "", style =  wxICON_ERROR |wxYES_NO | wxNO_DEFAULT):
+        info = text + "\n\nDo you wish to send an automated error report?"
+        errorDialog = wxMessageDialog(frame, info, text2, wxICON_ERROR |wxYES_NO | wxNO_DEFAULT)
+        
+        if(errorDialog.ShowModal() == wxID_YES):
+            # The user wants to send an error report
+            bugReportCommentDialog = BugReportCommentDialog(frame)
 
-       print sys.exc_type
-       print sys.exc_value
-       info = text + "\n\n"+"Type: "+str(sys.exc_type)+"\n"+"Value: "+str(sys.exc_value)
-       errorDialog = wxMessageDialog(frame, info, text2, style)
-       errorDialog.ShowModal()
-       errorDialog.Destroy()
+            if(bugReportCommentDialog.ShowModal() == wxID_OK):
+                # Submit the error report to Bugzilla
+              
+                SubmitBug(bugReportCommentDialog.GetComment())
+                bugFeedbackDialog = wxMessageDialog(frame, "Your error report has been sent, thank you.",
+                                                    "Error Reported", style = wxOK|wxICON_INFORMATION)
+                bugFeedbackDialog.ShowModal()
+                bugFeedbackDialog.Destroy()       
+
+            bugReportCommentDialog.Destroy()
+            errorDialog.Destroy()
+
+class BugReportCommentDialog(wxDialog):
+    def __init__(self, parent):
+        wxDialog.__init__(self, parent, -1, "Comment for Bug Report", style =  wxOK)
+        self.text = wxStaticText(self, -1, "Please, enter a description of the problem you are experiencing.", style=wxALIGN_LEFT)
+        self.button = wxButton(self, wxID_OK, "Ok")
+        self.commentBox = wxTextCtrl(self, -1, "", size = wxSize(300,100), style = wxTE_MULTILINE)
+        self.line = wxStaticLine(self, -1)
+        self.Centre()
+        self.Layout()
+        
+    def GetComment(self):
+        return self.commentBox.GetValue()
+
+    def Layout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer.Add(self.text, 0, wxALL, 10)
+        sizer.Add(self.commentBox, 0, wxALL | wxEXPAND, 10)
+        sizer.Add(self.line, 0, wxALL | wxEXPAND, 10)
+        sizer.Add(self.button, 0, wxALL | wxALIGN_CENTER, 10)
+            
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
         
 class ErrorDialogWithTraceback:
     def __init__(self, frame, text, text2 = "", style = wxOK | wxICON_ERROR):
@@ -64,11 +97,11 @@ class ErrorDialogWithTraceback:
        errorDialog.ShowModal()
        errorDialog.Destroy()
         
-class BugReportDialog:
-    def __init__(self, frame, profile):
-        reportDialog = wxMessageDialog(frame, 'BUG REPORT', '', wxOK)
-        reportDialog.ShowModal()
-        reportDialog.Destroy()
+#class BugReportDialog:
+#    def __init__(self, frame, profile):
+#        reportDialog = wxMessageDialog(frame, 'BUG REPORT', '', wxOK)
+#        reportDialog.ShowModal()
+#        reportDialog.Destroy()
 
 class AboutDialog(wxPopupTransientWindow):
     version = "Agtk 2.0"
