@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.101 2003-09-18 22:40:04 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.102 2003-09-23 15:44:40 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.101 2003-09-18 22:40:04 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.102 2003-09-23 15:44:40 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -442,7 +442,7 @@ class VenueServer(ServiceBase.ServiceBase):
                 # Handle data lists found in venue persistence
                 # (data was persisted with venues in 2.0, so this is 
                 # for backward compatibility)
-                if len(dataList) != 0:
+                if dataStoreUrl and len(dataList) != 0:
                     log.info("dataList found in venue persistence")
 
                     # Get the list of files in the venue
