@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.25 2003-05-22 20:17:56 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.26 2003-05-23 21:20:17 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,7 +31,6 @@ logFile = "VenueServer.log"
 identityCert = None
 identityKey = None
 
-
 # Signal Handler for clean shutdown
 def SignalHandler(signum, frame):
     """
@@ -46,7 +45,7 @@ def SignalHandler(signum, frame):
 
 # Authorization callback for the server
 def AuthCallback(server, g_handle, remote_user, context):
-    log.debug("Server gets identity ", remote_user)
+    log.debug("Server gets identity %s", remote_user)
     return 1
 
 def Usage():
@@ -58,121 +57,128 @@ def Usage():
     print "    --cert <filename>: identity certificate"
     print "    --key <filename>: identity certificate's private key"
 
-# Parse command line options
-try:
-    opts, args = getopt.getopt(sys.argv[1:], "p:l:c:hd",
-                               ["port=", "logfile=", "configfile=",
-                                "help", "debug", "key=", "cert="])
-except getopt.GetoptError:
-    Usage()
-    sys.exit(2)
+def main():
+    global running, port, configFile, logFile, identityKey, identityCert
+    global venueServer
 
-debugMode = 0
-
-for o, a in opts:
-    if o in ("-p", "--port"):
-        port = int(a)
-    elif o in ("-d", "--debug"):
-        debugMode = 1
-    elif o in ("-l", "--logfile"):
-        logFile = a
-    elif o in ("-c", "--configFile"):
-        configFile = a
-    elif o == "--key":
-        identityKey = a
-    elif o == "--cert":
-        identityCert = a
-    elif o in ("-h", "--help"):
+    # Parse command line options
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "p:l:c:hd",
+                                   ["port=", "logfile=", "configfile=",
+                                    "help", "debug", "key=", "cert="])
+    except getopt.GetoptError:
         Usage()
-        sys.exit(0)
+        sys.exit(2)
 
-# Start up the logging
-log = logging.getLogger("AG")
-log.setLevel(logging.DEBUG)
-hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
-extfmt = logging.Formatter("%(asctime)s %(name)s %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
-fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-hdlr.setFormatter(extfmt)
-log.addHandler(hdlr)
+    debugMode = 0
 
-if debugMode:
-    hdlr = logging.StreamHandler()
-    hdlr.setFormatter(fmt)
+    for o, a in opts:
+        if o in ("-p", "--port"):
+            port = int(a)
+        elif o in ("-d", "--debug"):
+            debugMode = 1
+        elif o in ("-l", "--logfile"):
+            logFile = a
+        elif o in ("-c", "--configFile"):
+            configFile = a
+        elif o == "--key":
+            identityKey = a
+        elif o == "--cert":
+            identityCert = a
+        elif o in ("-h", "--help"):
+            Usage()
+            sys.exit(0)
+
+    # Start up the logging
+    log = logging.getLogger("AG")
+    log.setLevel(logging.DEBUG)
+    hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
+    extfmt = logging.Formatter("%(asctime)s %(thread)s %(name)s %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
+    fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
+    hdlr.setFormatter(extfmt)
     log.addHandler(hdlr)
 
-if identityCert is not None or identityKey is not None:
+    if debugMode:
+        hdlr = logging.StreamHandler()
+        hdlr.setFormatter(fmt)
+        log.addHandler(hdlr)
+
+    if identityCert is not None or identityKey is not None:
+        #
+        # Sanity check on identity cert stuff
+        #
+
+        if identityCert is None or identityKey is None:
+            log.critical("Both a certificate and key must be provided")
+            print "Both a certificate and key must be provided"
+            sys.exit(0)
+
+        #
+        # Init toolkit with explicit identity.
+        #
+
+        app = Toolkit.ServiceApplicationWithIdentity(identityCert, identityKey)
+
+    else:
+        #
+        # Init toolkit with standard environment.
+        #
+
+        app = Toolkit.CmdlineApplication()
+
+    app.Initialize()
+
+    # Real first thing we do is get a sane environment
+    # if not HaveValidProxy():
+    #     GPI()
+
     #
-    # Sanity check on identity cert stuff
+    # Verify: Try to get our identity
     #
 
-    if identityCert is None or identityKey is None:
-        log.critical("Both a certificate and key must be provided")
-        print "Both a certificate and key must be provided"
-        sys.exit(0)
-        
-    #
-    # Init toolkit with explicit identity.
-    #
+    from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
+    try:
+        me = GetDefaultIdentityDN()
+        log.debug("VenueServer running as %s", me)
+    except:
+        log.exception("Could not get identity: execution environment is not correct")
+        sys.exit(1)
 
-    app = Toolkit.ServiceApplicationWithIdentity(identityCert, identityKey)
+    # Second thing we do is create a hosting environment
+    hostingEnvironment = Server.Server(port, auth_callback=AuthCallback)
 
-else:
-    #
-    # Init toolkit with standard environment.
-    #
+    # Then we create a VenueServer, giving it the hosting environment
+    venueServer = VenueServer(hostingEnvironment, configFile)
 
-    app = Toolkit.CmdlineApplication()
+    # We register signal handlers for the VenueServer. In the event of
+    # a signal we just try to shut down cleanly.n
+    signal.signal(signal.SIGINT, SignalHandler)
+    signal.signal(signal.SIGTERM, SignalHandler)
 
-app.Initialize()
+    log.debug("Starting Hosting Environment.")
 
-# Real first thing we do is get a sane environment
-# if not HaveValidProxy():
-#     GPI()
+    # We start the execution
+    hostingEnvironment.RunInThread()
 
-#
-# Verify: Try to get our identity
-#
+    # We run in a stupid loop so there is still a main thread
+    # We might be able to simply join the hostingEnvironmentThread, but
+    # we have to be able to catch signals.
+    running = 1
+    while running:
+        time.sleep(1)
 
-from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
-try:
-    me = GetDefaultIdentityDN()
-    log.debug("VenueServer running as %s", me)
-except:
-    log.exception("Could not get identity: execution environment is not correct")
-    sys.exit(1)
+    log.debug("After main loop!")
 
-# Second thing we do is create a hosting environment
-hostingEnvironment = Server.Server(port, auth_callback=AuthCallback)
+    # Stop the hosting environment
+    hostingEnvironment.Stop()
 
-# Then we create a VenueServer, giving it the hosting environment
-venueServer = VenueServer(hostingEnvironment, configFile)
+    log.debug("Stopped Hosting Environment, exiting.")
 
-# We register signal handlers for the VenueServer. In the event of
-# a signal we just try to shut down cleanly.n
-signal.signal(signal.SIGINT, SignalHandler)
-signal.signal(signal.SIGTERM, SignalHandler)
+    for t in threading.enumerate():
+        print "Thread ", t
 
-log.debug("Starting Hosting Environment.")
+    # Exit cleanly
 
-# We start the execution
-hostingEnvironment.RunInThread()
 
-# We run in a stupid loop so there is still a main thread
-# We might be able to simply join the hostingEnvironmentThread, but
-# we have to be able to catch signals.
-running = 1
-while running:
-    time.sleep(1)
-
-log.debug("After main loop!")
-
-# Stop the hosting environment
-hostingEnvironment.Stop()
-  
-log.debug("Stopped Hosting Environment, exiting.")
-
-for t in threading.enumerate():
-    print "Thread ", t
-    
-# Exit cleanly
-
+if __name__ == "__main__":
+    main()
