@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=Node Manager
-Comment=Manage your Access Grid Node
-TryExec=NodeManagement.py
-Exec=NodeManagement.py
-Icon=gnome-chat.png
-Terminal=0
-Type=Application
