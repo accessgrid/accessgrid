@@ -2,7 +2,7 @@
 # Name:        AudioService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.30 2004-09-09 17:33:24 judson Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.31 2004-09-29 21:16:54 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -45,10 +45,12 @@ class AudioService( AGService ):
         self.talk = OptionSetParameter( "talk", "Off", ["On", "Off"] )
         self.inputGain = RangeParameter( "inputgain", 50, 0, 100 )
         self.outputGain = RangeParameter( "outputgain", 50, 0, 100 )
+        self.silenceSuppression = OptionSetParameter( "silence_suppression", "Off", ["Off","Automatic","Manual"] )
 
         self.configuration.append(self.talk)
         self.configuration.append(self.inputGain)
         self.configuration.append(self.outputGain)
+        self.configuration.append(self.silenceSuppression)
 
     def __SetRTPDefaults(self, profile):
         """
@@ -114,6 +116,8 @@ class AudioService( AGService ):
                                    self.inputGain.value )
                 _winreg.SetValueEx(key, "audioOutputGain", 0,
                                    _winreg.REG_DWORD, self.outputGain.value )
+                _winreg.SetValueEx(key, "audioSilence", 0,
+                                   _winreg.REG_SZ, self.silenceSuppression.value )
 
                 _winreg.CloseKey(key)
             except:
@@ -144,6 +148,7 @@ class AudioService( AGService ):
             ratDefaults["*audioInputMute"] = str(mute)
             ratDefaults["*audioInputGain"] = str(self.inputGain.value )
             ratDefaults["*audioOutputGain"] = str(self.outputGain.value )
+            ratDefaults["*audioSilence"] = str(self.silenceSuppression.value )
 
             # Write file with these settings
             f = open(ratDefaultsFile, "w")
