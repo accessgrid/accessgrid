@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $id$ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.5 2003-08-12 21:30:03 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
