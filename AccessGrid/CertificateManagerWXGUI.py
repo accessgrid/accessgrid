@@ -182,12 +182,19 @@ class RepositoryBrowser(wxPanel):
         vboxMidR = wxBoxSizer(wxVERTICAL)
 
         #
+        # We want the various fields to have the same
+        # background as the panel
+        #
+
+        bgcolor = self.GetBackgroundColour()
+
+        #
         # Build the top row.
         #
 
         self.sizer.Add(hboxTop, 1, wxEXPAND)
         self.certList = wxListBox(self, -1, style = wxLB_SINGLE)
-
+        
         certs = self.repo.GetCertificates()
         print certs
         for cert in certs:
@@ -228,6 +235,7 @@ class RepositoryBrowser(wxPanel):
 
         self.nameText = wxTextCtrl(self, -1, style = wxTE_MULTILINE | wxTE_READONLY)
         vboxMidL.Add(self.nameText, 1, wxEXPAND)
+        self.nameText.SetBackgroundColour(bgcolor)
 
         hboxMid.Add(vboxMidR, 1, wxEXPAND)
         t = wxStaticText(self, -1, "Issuer")
@@ -235,6 +243,7 @@ class RepositoryBrowser(wxPanel):
 
         self.issuerText = wxTextCtrl(self, -1, style = wxTE_MULTILINE | wxTE_READONLY)
         vboxMidR.Add(self.issuerText, 1, wxEXPAND)
+        self.issuerText.SetBackgroundColour(bgcolor)
 
         #
         # Bottom row
@@ -242,6 +251,7 @@ class RepositoryBrowser(wxPanel):
 
         self.certText = wxTextCtrl(self, -1, style = wxTE_MULTILINE | wxTE_READONLY)
         self.sizer.Add(self.certText, 1, wxEXPAND)
+        self.certText.SetBackgroundColour(bgcolor)
 
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
@@ -265,15 +275,15 @@ class RepositoryBrowser(wxPanel):
         comps = name.get_name_components()
         comps.reverse()
         for id, val in comps:
-            fmt += val + "\n"
+            fmt += "%s = %s\n" % (id, val)
         return fmt
 
-    def __formatCertForGUI(self, cert):
+    def __formatCertForGUI(self, certObj):
         fmt = ''
         #
         # get the lowlevel cert object
         #
-        cert = cert.cert
+        cert = certObj.cert
         fmt += "Certificate version: %s\n" % (cert.get_version())
         fmt += "Serial number: %s\n" % (cert.get_serial_number())
 
@@ -286,6 +296,9 @@ class RepositoryBrowser(wxPanel):
         (type, fp) = cert.get_fingerprint()
         fmt += "%s Fingerprint: %s\n"  % (type,
                                           string.join(map(lambda a: "%02X" % (a), fp), ":"))
+        fmt += "Certificate location: %s\n" % (certObj.GetPath(),)
+        fmt += "Private key location: %s\n" % (certObj.GetKeyPath(),)
+        
         return fmt
 
 
