@@ -36,7 +36,7 @@ Developers wishing to contribute to the Access Grid Project or the
 Access Grid Toolkit should get familiar with the source code and the
 tools (pyGlobus, GT2.X), and then decide what part of the AGTk to work
 on. Information on where to contribute to the development can be found
-at http://www.mcs.anl.gov/fl/research/accessgrid/developers/areas.htm.
+at http://www.mcs.anl.gov/fl/research/accessgrid/software/developers/areas.html.
 
 . For Service Providers
 
@@ -50,7 +50,7 @@ Downloading the latest snapshot of the toolkit from
 http://www.mcs.anl.gov/fl/research/accessgrid/software/releases/index.html
 
 CVS Access is available, information can be found at
-http://www.mcs.anl.gov/fl/research/accessgrid/developers/cvs/index.html
+http://www.mcs.anl.gov/fl/research/accessgrid/software/cvs/index.html
 
 INSTALLATION
 
@@ -65,7 +65,7 @@ DOCUMENTATION
 
 In addition to the included documentation, more documentation can be
 found on the Futures Laboratory Access Grid Toolkit web pages
-(http://www.mcs.anl.gov/fl/research/accessgrid/developers/docs/index.html).
+(http://www.mcs.anl.gov/fl/research/accessgrid/documentation/index.html).
 
 MAILING LISTS
 
