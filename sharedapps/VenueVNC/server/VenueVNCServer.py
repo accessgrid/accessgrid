@@ -3,14 +3,17 @@ import os
 import time
 import signal
 import base64
-from AccessGrid.hosting.pyGlobus import Client
 
+if sys.platform=="darwin":
+    # On osx pyGlobus/globus need to be loaded before various modules such as socket.
+    import pyGlobus.ioc
+
+from AccessGrid.hosting import Client
 from AccessGrid import Events
 from AccessGrid import EventClient
 from AccessGrid import Toolkit
-from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
+from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid import DataStore
-from AccessGrid.Platform import GetTempDir
 from AccessGrid.GUID import GUID
 from AccessGrid.DataStoreClient import GetVenueDataStore
 
@@ -32,7 +35,8 @@ class vncServer:
 
         # Initialize the contact string, construct it from the hostname and the
         # display ID
-        self.contactString="%s%s"%(GetHostname(),displayID);
+        hostname=SystemConfig.instance().GetHostname()
+        self.contactString="%s%s"%(hostname,displayID);
         self.displayID=displayID;
 
         # Initialize internal representation of the desired geometry
@@ -46,9 +50,9 @@ class vncServer:
 
         # Initialize other random bits, mostly path/file names
         self.guid=str(GUID());
-        self.passwdFilename=os.path.join(GetTempDir(),"passwd-%s.vnc"%(self.guid));
-        self.logFilename=os.path.join(GetTempDir(),"Xvnc-%s.log"%(self.guid));
-        self.lockFilename=os.path.join(GetTempDir(),"Xvnc-%s.lock"%(self.guid));
+        self.passwdFilename=os.path.join(UserConfig.instance().GetTempDir(),"passwd-%s.vnc"%(self.guid));
+        self.logFilename=os.path.join(UserConfig.instance().GetTempDir(),"Xvnc-%s.log"%(self.guid));
+        self.lockFilename=os.path.join(UserConfig.instance().GetTempDir(),"Xvnc-%s.lock"%(self.guid));
         #self.passwdFilename="passwd-%s.vnc"%(self.guid);
         #self.logFilename="Xvnc-%s.log"%(self.guid);
         #self.lockFilename="Xvnc-%s.lock"%(self.guid);
@@ -166,7 +170,7 @@ class VNCServerAppObject:
         self.running = 0
         print venueUrl
         # Attach to venue server
-        self.venueProxy=Client.Handle(venueUrl).get_proxy();
+        self.venueProxy=Client.SecureHandle(venueUrl).GetProxy();
         # Create VNC server
         self.vncServer=vncServer(displayID,geometry,depth);
         self.vncServer.start();
@@ -177,7 +181,7 @@ class VNCServerAppObject:
                                                       "application/x-ag-venuevnc");
 
         # Attach to it
-        self.appProxy=Client.Handle(self.appDescription.uri).get_proxy();
+        self.appProxy=Client.SecureHandle(self.appDescription.uri).GetProxy();
 
         print "App URL = %s"%(self.appDescription.uri);
 

@@ -3,13 +3,14 @@ import sys
 import logging
 import base64
 
-from AccessGrid.hosting.pyGlobus import Client
+from AccessGrid.hosting import Client
 
 from AccessGrid import Events
 from AccessGrid import EventClient
 from AccessGrid import Toolkit
+from AccessGrid.Platform.Config import UserConfig
+from AccessGrid.Platform import isWindows
 from AccessGrid import DataStore
-from AccessGrid.Platform import GetTempDir,WIN
 from AccessGrid import Platform
 from AccessGrid.GUID import GUID
 
@@ -36,7 +37,7 @@ class vncSharedAppClient:
 
         self.venueUrl = venueUrl
 
-        self.venueProxy = Client.Handle(self.venueUrl).GetProxy()
+        self.venueProxy = Client.SecureHandle(self.venueUrl).GetProxy()
         print( "Application URL: %s" %(self.venueUrl) )
         #print( "Application URL Valid? " + self.venueProxy.isValid( ) )
         # Join the application
@@ -71,7 +72,7 @@ class vncSharedAppClient:
         encoded_pwd = self.venueProxy.GetData(self.privateId, "VNC_Pwd")
 
         print "VNC Server at %s (%s, %s-bits):"%(self.vncContact,self.vncGeometry,self.vncDepth);
-        self.passwdFilename=os.path.join(GetTempDir(), ("passwd-" + str(GUID()) + ".vnc"))
+        self.passwdFilename=os.path.join(UserConfig.instance().GetTempDir(), ("passwd-" + str(GUID()) + ".vnc"))
         # Write password to file so it can be passed to vnc.
         pwd_file = file(self.passwdFilename, 'wb')
         pwd_file.write(base64.decodestring(encoded_pwd))
@@ -79,11 +80,11 @@ class vncSharedAppClient:
 
 
         # Change to the location of the application before running, since helper executables are located here.
-        location = Platform.GetUserAppPath()
+        location = UserConfig.instance().GetSharedAppDir()
         os.chdir(os.path.join(location, "VenueVNC")) 
         print "Running from directory", os.getcwd()
 
-        if sys.platform == WIN:
+        if isWindows():
             width=eval(self.vncGeometry.split('x')[0]);
             if width >= 5120:
                 execString='vncviewer -shared -scale 1/4 -passwd %s %s'%(self.passwdFilename,self.vncContact)
