@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.43 2004-04-07 02:36:11 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.44 2004-04-07 02:40:29 judson Exp $
 ;
 
 ; Set externally
@@ -53,7 +53,7 @@ UserInfoPage=false
 WindowVisible=false
 
 UninstallDisplayName={#AppNameShort} {#AppVersion}
-DisableStartupPrompt=false
+DisableStartupPrompt=true
 WindowResizable=false
 AlwaysShowComponentsList=false
 ShowComponentSizes=true
@@ -72,16 +72,17 @@ ShowTasksTreeLines=true
 PrivilegesRequired=admin
 UninstallDisplayIcon={app}\install\agicons.exe
 DisableReadyPage=true
-UsePreviousSetupType=false
+UsePreviousSetupType=true
 UsePreviousTasks=false
 UsePreviousGroup=true
 
+ShowLanguageDialog=yes
 [Files]
 ; The Python Modules
 Source: Lib\site-packages\*.*; DestDir: GetPythonDir({#PythonVersion})\Lib\site-packages; Flags: recursesubdirs overwritereadonly restartreplace
 
 ; Documentation
-;Source: doc\Developer\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
+Source: doc\Developer\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
 Source: doc\VenueClientManual\*.*; DestDir: {app}\doc\VenueClientManual; Flags: recursesubdirs
 Source: doc\VenueManagementManual\*.*; DestDir: {app}\doc\VenueManagementManual; Flags: recursesubdirs
 
@@ -205,8 +206,6 @@ var
   PythonPath : String;
 
 function GetPythonDir(version: String): Boolean;
-var
-  mbret: Integer;
 
 begin
   if not RegQueryStringValue(HKLM, 'Software\Python\PythonCore\2.2\InstallPath', '', PythonPath) then
@@ -214,5 +213,6 @@ begin
 		PythonPath := 'C:\Python22';
     end;
 end;
+
 
 
