@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.26 2003-08-12 18:40:48 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.27 2003-08-19 19:19:08 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -21,11 +21,12 @@ from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Descriptions import AGServiceManagerDescription
 
 from AccessGrid import PersonalNode
+from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid import Toolkit
 
 # default arguments
 port = 11000
-logFile = "./agns.log"
+logFile = os.path.join(GetUserConfigDir(), "agns.log")
 identityCert = None
 identityKey = None
 

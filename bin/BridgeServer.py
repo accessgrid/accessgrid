@@ -17,9 +17,10 @@ from AccessGrid.EventClient import EventClient, EventClientWriteDataException
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.NetworkLocation import UnicastNetworkLocation, ProviderProfile
 from AccessGrid.ProcessManagerUnix import ProcessManagerUnix as ProcessManager
+from AccessGrid.Platform import GetUserConfigDir
 
 
-logFile = 'BridgeServer.log'
+logFile = os.path.join(GetUserConfigDir(), 'BridgeServer.log')
 
 
 class BridgeFactory:

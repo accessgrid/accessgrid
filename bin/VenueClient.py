@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.201 2003-08-19 17:35:38 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.202 2003-08-19 19:19:08 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -268,7 +268,7 @@ class VenueClientUI(VenueClientEventSubscriber):
         log.setLevel(logging.DEBUG)
 
         if self.logFile is None:
-            logname = "VenueClient.log"
+            logname = os.path.join(GetUserConfigDir(), "VenueClient.log")
         else:
             logname = self.logFile
             

@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.32 2003-08-12 21:39:31 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.33 2003-08-19 19:19:08 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ if sys.platform == "win32":
 
 from AccessGrid.hosting.pyGlobus import Server, ServiceBase
 from AccessGrid.VenueServer import VenueServer
-from AccessGrid.Platform import GPI
+from AccessGrid.Platform import GPI, GetUserConfigDir
 from AccessGrid import Toolkit
 
 # defaults
@@ -79,7 +79,7 @@ def main():
     # defaults
     port = 8000
     configFile = None
-    logFile = "VenueServer.log"
+    logFile = os.path.join(GetUserConfigDir(), "VenueServer.log")
     identityCert = None
     identityKey = None
 

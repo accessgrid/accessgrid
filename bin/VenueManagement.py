@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.79 2003-08-15 13:01:54 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.80 2003-08-19 19:19:08 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ from AccessGrid.CertificateManager import CertificateManager
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid import icons
-from AccessGrid.Platform import GPI
+from AccessGrid.Platform import GPI, GetUserConfigDir
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid import Toolkit
 from AccessGrid.hosting.AccessControl import RoleManager
@@ -105,7 +105,7 @@ class VenueManagementClient(wxApp):
 
     def __setLogger(self):
         log.setLevel(logging.DEBUG)
-        hdlr = logging.FileHandler("VenueManagement.log")
+        hdlr = logging.FileHandler(os.path.join(GetUserConfigDir(), "VenueManagement.log"))
         fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s",
                                 "%x %X")
         hdlr.setFormatter(fmt)

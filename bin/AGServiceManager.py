@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.22 2003-05-30 19:32:49 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.23 2003-08-19 19:19:08 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ from AccessGrid import Toolkit
 
 # default arguments
 port = 12000
-logFile = "./agsm.log"
+logFile = os.path.join(Platform.GetUserConfigDir(), "agsm.log")
 identityCert = None
 identityKey = None
 
