@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        AGServiceManager.py
 # Purpose:     
@@ -5,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.5 2003-02-10 14:49:02 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.6 2003-02-10 15:22:15 leggett Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------

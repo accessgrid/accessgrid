@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        VenueManagement.py
 # Purpose:     This is the user interface for Virtual Venues Server Management
@@ -5,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.22 2003-02-10 14:49:02 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.23 2003-02-10 15:22:16 leggett Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------

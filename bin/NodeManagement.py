@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #-----------------------------------------------------------------------------
 # Name:        NodeManagement.py
 # Purpose:     
@@ -5,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.9 2003-02-10 14:49:02 judson Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.10 2003-02-10 15:22:15 leggett Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
