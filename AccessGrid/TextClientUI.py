@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClientUI.py,v 1.11 2003-03-12 20:11:03 lefvert Exp $
+# RCS-ID:      $Id: TextClientUI.py,v 1.12 2003-03-12 21:38:08 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -101,6 +101,9 @@ class SimpleTextProcessor:
 class TextClientUIStandAlone(wxFrame):
     aboutText = """PyText 1.0 -- a simple text client in wxPython and pyGlobus.
     This has been developed as part of the Access Grid project."""
+    bufferSize = 128
+    venueId = None
+    location = None
     localEchoId = wxNewId()
     fileCloseId = wxNewId()
     helpAboutId = wxNewId()
@@ -149,55 +152,31 @@ class TextClientUIStandAlone(wxFrame):
 
 
 class TextClientUI(wxPanel):
+    aboutText = """PyText 1.0 -- a simple text client in wxPython and pyGlobus.
+        This has been developed as part of the Access Grid project."""
     bufferSize = 128
     venueId = None
     location = None
-    processor = None
-    textInputId = wxNewId()
-    ID_WINDOW_INPUT = wxNewId()
+    Processor = None
     
     def __init__(self, *args, **kwds):
         wxPanel.__init__(self, *args, **kwds)
+        self.TextOutput = wxTextCtrl(self, wxNewId(), "", style=wxTE_MULTILINE|wxTE_READONLY|wxHSCROLL)
+        self.TextOutput.SetToolTipString("Text chat for this venue")
+        self.textInputId = wxNewId()
+        self.TextInput = wxTextCtrl(self, self.textInputId, "", style=wxTE_PROCESS_ENTER|wxHSCROLL)
+        self.TextInput.SetToolTipString("Write your message here")
 
-        self.textOutput = wxTextCtrl(self, wxNewId(), "",\
-                                     size = wxSize(1000, 20), \
-                                     style=wxTE_MULTILINE|wxTE_READONLY|wxHSCROLL)
-        self.sash = wxSashLayoutWindow(self, self.ID_WINDOW_INPUT, wxDefaultPosition,
-                                 wxSize(200, 25), wxNO_BORDER|wxSW_3D)
-        self.sash.SetDefaultSize(wxSize(1000, 25))
-        self.sash.SetOrientation(wxLAYOUT_HORIZONTAL)
-        self.sash.SetAlignment(wxLAYOUT_BOTTOM)
-        self.sash.SetSashVisible(wxSASH_TOP, TRUE)
-        self.sash.SetMinimumSizeY(20)
-        self.textInput = wxTextCtrl(self.sash, self.textInputId, "", \
-                                    size = wxSize(10,50), \
-                                    style= wxHSCROLL|wxTE_MULTILINE) #wxTE_PROCESS_ENTER|wxHSCROLL|wxTE_MULTILINE)
         self.__set_properties()
-        self.__setEvents()
+        self.__do_layout()
 
-    def OnSashDrag(self, event):
-        if event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE:
-            return
-
-        eID = event.GetId()
-
-        if eID == self.ID_WINDOW_INPUT:
-            height = event.GetDragRect().height
-            self.sash.SetDefaultSize(wxSize(1000, height))
-            
-        wxLayoutAlgorithm().LayoutWindow(self, self.textOutput)
-        
-    def OnSize(self, event):
-        wxLayoutAlgorithm().LayoutWindow(self, self.textOutput)
-        
-    def __setEvents(self):
         EVT_TEXT_ENTER(self, self.textInputId, self.LocalInput)
-        EVT_SASH_DRAGGED(self, self.ID_WINDOW_INPUT ,self.OnSashDrag)
-        EVT_SIZE(self, self.OnSize)
+
+        self.Show(true)
 
     def SetLocation(self, location, venueId):
-        if self.processor != None:
-            self.processor.Stop()
+        if self.Processor != None:
+            self.Processor.Stop()
                   
         self.host = location[0]
         self.port = location[1]
@@ -205,26 +184,31 @@ class TextClientUI(wxPanel):
         self.attr = CreateTCPAttrAlwaysAuth()
         self.socket = GSITCPSocket()
         self.socket.connect(self.host, self.port, self.attr)
-        self.processor = SimpleTextProcessor(self.socket, self.venueId,
-                                             self.textOutput)
-        self.processor.Input(ConnectEvent(self.venueId))
-        self.textOutput.Clear()
-        self.textInput.Clear() 
+
+        self.Processor = SimpleTextProcessor(self.socket, self.venueId,
+                                             self.TextOutput)
+        
+        self.Processor.Input(ConnectEvent(self.venueId))
+        self.TextOutput.Clear()
+        self.TextInput.Clear() 
 
     def __set_properties(self):
-        font = wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana")
-        self.textInput.SetToolTipString("Write your message here")
-        self.textOutput.SetToolTipString("Text chat for this venue")
-        self.textInput.SetFont(font)
-        self.textOutput.SetFont(font)
-        self.Show(true)
+        self.SetSize((375, 225))
+        
+    def __do_layout(self):
+        TextSizer = wxBoxSizer(wxVERTICAL)
+        TextSizer.Add(self.TextOutput, 2, wxEXPAND|wxALIGN_CENTER_HORIZONTAL, 0)
+        TextSizer.Add(self.TextInput, 0, wxEXPAND|wxALIGN_BOTTOM, 0)
+        self.SetAutoLayout(1)
+        self.SetSizer(TextSizer)
+        self.Layout()
         
     def LocalInput(self, event):
         """ User input """
         if(self.venueId != None):
             textEvent = TextEvent(self.venueId, None, 0, event.GetString())
-            self.processor.Input(textEvent)
-            self.textInput.Clear()
+            self.Processor.Input(textEvent)
+            self.TextInput.Clear()
         else:
             text = "Please, go to a venue before using the chat"
             dlg = wxMessageDialog(self, text , 'Not connected to venue', wxOK | wxICON_INFORMATION)
@@ -232,7 +216,7 @@ class TextClientUI(wxPanel):
             dlg.Destroy()
 
     def Stop(self):
-        self.processor.Stop()
+        self.Processor.Stop()
         
     def OnCloseWindow(self):
         self.Destroy()
@@ -240,7 +224,8 @@ class TextClientUI(wxPanel):
 if __name__ == "__main__":
     pyText = wxPySimpleApp()
     wxInitAllImageHandlers()
-    TextFrame = TextClientUIStandAlone(None, -1, "")
+    TextFrame = TextClientUI(None, -1, "", host = sys.argv[1],
+                                           port = int(sys.argv[2]))
     pyText.SetTopWindow(TextFrame)
     TextFrame.Show(1)
     pyText.MainLoop()
