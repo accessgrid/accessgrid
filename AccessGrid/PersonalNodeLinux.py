@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: PersonalNodeLinux.py,v 1.1 2003-04-23 19:26:23 olson Exp $
+# RCS-ID:      $Id: PersonalNodeLinux.py,v 1.2 2003-04-23 20:30:04 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -36,6 +36,10 @@ from AccessGrid import Platform
 log = logging.getLogger("AG.PersonalNodeLinux")
 
 class MessageQueue:
+    """
+    Simple wrapper around pyipc.MessageQueue.
+    """
+    
     def __init__(self, name, key, create = 0):
         self.name = name
         self.key = key
@@ -230,6 +234,7 @@ class PersonalNodeManager:
             eobj = MessageQueue(obj, key, create = 1)
             setattr(self, obj, eobj)
 
+        os.unlink(tfile)
 
         self.nodeServiceArg = "%s:%s:%s" % (self.node_svc_init.getKey(),
                                             self.svc_mgr_node_svc_synch.getKey(),
