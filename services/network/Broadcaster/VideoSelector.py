@@ -1,0 +1,152 @@
+import array
+import time
+import sys
+import struct
+
+from common.RTPSensor import RTPSensor
+from common import common
+
+from SelectorGUI import SelectorGUI
+from wxPython.wx import * 
+
+class VideoSelector(RTPSensor):
+    '''
+    Class for down-sampling L16-16kHz to L16-8kHz audio. 
+    '''
+    
+    def __init__(self, from_address, from_port, to_address, to_port, selector = 0):
+        RTPSensor.__init__(self, from_address, from_port)
+        self.handlerDict[0] = self.do_RTP
+        self.handlerDict[3] = self.do_SDES
+        self.buffers = {} 
+        self.sources = {}
+        self.sdes = {}
+        self.selector = selector
+        self.to_address = to_address
+        self.to_port = to_port
+        self.allowedSource = None
+
+    # Access methods
+    def GetSources(self):
+        return self.sdes
+
+    def SetAllowedSource(self, ssrc):
+        self.allowedSource = ssrc
+
+    def do_SDES(self, session, event):
+        sdestype, sdes = common.make_sdes_item(event.data)
+        ssrc = event.ssrc
+      
+        if self.sdes.has_key(ssrc):
+            if sdestype == 2:
+                self.sdes[ssrc] = sdes
+        else:
+            if ((sdestype == 1) or (sdestype == 2)):
+                self.sdes[ssrc] = sdes
+                    
+    def do_RTP(self, session, event):
+        '''
+        Method called when an rtp data packet arrives.
+        '''
+        packet = common.make_rtp_packet(event.data)
+        data = common.rtp_packet_getdata(packet)
+        
+        # require H261 as input
+        if packet.pt != 31:
+            common.free_rtp_packet(packet)
+            return
+                 
+        # only forward selected source
+        if self.selector:
+            if not packet.ssrc == self.allowedSource:
+                common.free_rtp_packet(packet)
+                return
+
+        pt = 31
+
+        destination = None
+
+        try:
+            # Create a new source for each stream to send
+            # to the multicast address. Each new source is
+            # keeping track of its own timestamp.
+            
+            if self.sources.has_key(packet.ssrc):
+                destination = self.sources[packet.ssrc]
+
+            else:
+                destination = common.Rtp(self.to_address, self.to_port,
+                                         self.to_port, 127,
+                                         64000.0, None)
+                dest_ssrc = destination.my_ssrc()
+                tool = "audiotest.py"
+                name = "RTP Messer"
+                destination.set_sdes(dest_ssrc, common.RTCP_SDES_TOOL,
+                                          tool, len(tool))
+                destination.set_sdes(dest_ssrc, common.RTCP_SDES_NAME,
+                                          name, len(name))
+
+                
+                #destination.send_ctrl(0, None)
+                self.sources[packet.ssrc] = destination
+               
+            # Send data
+            ts = 0
+            destination.send_data(ts, packet.pt, packet.m,
+                                  packet.cc, packet.csrc,
+                                  data, len(data),
+                                  packet.extn, packet.extn_len,
+                                  packet.extn_type)
+
+            # Increment timestamp
+                       
+        except Exception, e:
+            print "Exception sending data, ", e
+
+        # Send control packet
+        destination.send_ctrl(0, None)
+        destination.update()
+        
+        common.free_rtp_packet(event.data)
+                           
+    def StartSignalLoop(self):
+        '''
+        Start loop that can get interrupted from signals and
+        shut down service properly.
+        '''
+        
+        self.flag = 1
+        while self.flag:
+            try:
+                time.sleep(0.5)
+            except:
+                self.flag = 0
+                self.log.debug("l16_to_18_transcoder.StartSignalLoop: Signal loop interrupted, exiting.")
+                self.Stop()
+
+                                                         
+if __name__ == "__main__":
+    import sys
+    
+    from_addr = sys.argv[1]
+    from_port = int(sys.argv[2])
+    to_addr = sys.argv[3]
+    to_port = int(sys.argv[4])
+
+    selector = 1
+    
+    tcoder = VideoSelector(from_addr, from_port, to_addr, to_port, selector)
+    tcoder.Start()
+
+    if selector:
+        wxapp = wxPySimpleApp()
+        ui = SelectorGUI("Video Selector", tcoder)
+        wxapp.SetTopWindow(ui)
+        wxapp.MainLoop()
+       
+
+    else:
+        tcoder.StartSignalLoop()
+
+
+    tcoder.Stop()
