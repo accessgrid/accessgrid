@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.9 2003-03-14 16:47:21 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.10 2003-03-14 16:49:25 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ from AccessGrid.hosting.pyGlobus.Server import Server
 
 # default arguments
 port = 11000
-logFile = "/var/log/agns.log"
+logFile = "./agns.log"
 
 # Signal handler to catch signals and shutdown
 def SignalHandler(signum, frame):
