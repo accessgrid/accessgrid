@@ -1,18 +1,14 @@
 #-----------------------------------------------------------------------------
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
-#
-# Author:      Everyone
-#
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.149 2004-07-12 15:33:11 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.150 2004-07-15 18:36:53 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-
-__revision__ = "$Id: VenueServer.py,v 1.149 2004-07-12 15:33:11 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.150 2004-07-15 18:36:53 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -123,12 +119,12 @@ class VenueServer(AuthorizationMixIn):
             "VenueServer.serverPrefix" : 'VenueServer',
             "VenueServer.venuePathPrefix" : 'Venues',
             "VenueServer.dataStorageLocation" : 'Data',
-            "VenueServer.dataSize" : '10M',
-            "VenueServer.backupServer" : '',
             "VenueServer.addressAllocationMethod" : MulticastAddressAllocator.RANDOM,
             "VenueServer.baseAddress" : MulticastAddressAllocator.SDR_BASE_ADDRESS,
             "VenueServer.addressMask" : MulticastAddressAllocator.SDR_MASK_SIZE,
-            "VenueServer.authorizationPolicy" : ''
+            "VenueServer.authorizationPolicy" : '',
+            "VenueServer.performanceReportFile" : None,
+            "VenueServer.performanceReportFrequency" : 0
             }
 
     defaultVenueDesc = VenueDescription("Venue Server Lobby", """This is the lobby of the Venue Server, it has been created because there are no venues yet. Please configure your Venue Server! For more information see http://www.accessgrid.org/ and http://www.mcs.anl.gov/fl/research/accessgrid.""")
@@ -288,11 +284,34 @@ class VenueServer(AuthorizationMixIn):
         self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.Checkpoint,
                                  int(self.houseKeeperFrequency), 0)
-	self.houseKeeper.AddTask(self.Report, 60)
         self.houseKeeper.AddTask(self.CleanupVenueClients, 10)
+
+        if self.performanceReportFile is not None and \
+               int(self.performanceReportFrequency) > 0:
+            try:
+                keys = SystemConfig.instance().PerformanceSnapshot().keys()
+                fields = dict()                
+                for k in keys:
+                    fields[k] = k
+                    
+                self.perfFile = csv.DictWriter(file(self.performanceReportFile,
+                                                    'aU+'), fields,
+                                               extrasaction='ignore')
+
+                if not os.stat(self.performanceReportFile).st_size:
+                    self.perfFile.writerow(fields)
+
+                self.houseKeeper.AddTask(self.Report,
+                                         int(self.performanceReportFrequency))
+            except Exception, e:
+                log.exception("Error starting reporting thread.")
+                self.perfFile = None
+        else:
+            log.warn("Performance data configuration incorrect.")
+            
         self.houseKeeper.StartAllTasks()
 
-        # End of Services starting
+        # End of Services startiong
 
         # Create the interface
         vsi = VenueServerI(self)
@@ -532,9 +551,9 @@ class VenueServer(AuthorizationMixIn):
 
     def Report(self):
         data = SystemConfig.instance().PerformanceSnapshot()
-        log.info("Performace Report:")
-        for k in data.keys():
-            log.info("%s : %s", k, data[k])
+        if self.perfFile is not None:
+            log.info("Saving Performance Data.")
+            self.perfFile.writerow(data)
 
     def Shutdown(self):
         """
@@ -542,6 +561,10 @@ class VenueServer(AuthorizationMixIn):
         """
         log.info("Starting Shutdown!")
 
+        # Shut file
+        if self.perfFile is not None:
+            self.perfFile.close()
+            
         # BEGIN Critical Section
         self.simpleLock.acquire()
         
