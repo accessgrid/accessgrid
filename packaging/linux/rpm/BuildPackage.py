@@ -50,46 +50,6 @@ if not os.path.exists(RpmDir):
     os.mkdir(RpmDir)
 StartDir = os.getcwd()
 
-#
-# Build rpms for infrastructure packages
-#
-print "** Building RPMs for infrastructure packages"
-packageList = [ "fpconst-0.6.0", "SOAPpy"]
-if options.pyver == '2.2':
-    packageList.append('Optik-1.4.1')
-    packageList.append('logging-0.4.7')
-for pkg in packageList:
-    os.chdir(SourceDir)
-    os.chdir(pkg)
-    cmd = "%s setup.py bdist_rpm --binary-only --dist-dir %s" % (sys.executable,
-                                                   RpmDir)
-    print "cmd = ", cmd
-    os.system(cmd)
-
-# Build pyOpenSSL 
-# (must build with our spec file)
-print "** Building pyOpenSSL rpm"
-# - create tar file for the rpmbuild
-os.chdir(SourceDir)
-if not os.path.islink('pyOpenSSL_AG-0.5.1'):
-    cmd = "ln -s pyOpenSSL pyOpenSSL_AG-0.5.1"
-    print "cmd = ", cmd
-    os.system(cmd)
-cmd = "tar czhf /usr/src/redhat/SOURCES/pyOpenSSL_AG-0.5.1.tar.gz pyOpenSSL_AG-0.5.1"
-print "cmd = ", cmd
-os.system(cmd)
-
-# - build the rpm
-os.chdir("pyOpenSSL")
-cmd = "rpmbuild -bb pyOpenSSL.spec"
-print "cmd = ", cmd
-os.system(cmd)
-
-# - copy the rpm to the dest dir
-cmd = "cp /usr/src/redhat/RPMS/i386/pyOpenSSL_AG-0.5.1-4.i386.rpm %s" % (RpmDir,)
-print "cmd = ", cmd
-os.system(cmd)
-
 # 	 
 # Build globus rpm      
 #   
@@ -100,31 +60,6 @@ os.system(cmd)
 cmd = "cp /usr/src/redhat/RPMS/i386/globus-accessgrid-2.4-1.i386.rpm %s" % (RpmDir,)   
 print "cmd = ", cmd     
 os.system(cmd)      
-
-#
-# Build the pyGlobus rpm
-#
-print "** Building pyGlobus RPM"
-# - create tar file for the rpm
-os.chdir(SourceDir)
-if not os.path.islink('pyGlobus-cvs'):
-    cmd = 'ln -s pyGlobus pyGlobus-cvs'
-    print "cmd = ", cmd
-    os.system(cmd)
-cmd = "tar czhf /usr/src/redhat/SOURCES/pyGlobus-cvs.tar.gz pyGlobus-cvs"
-print "cmd = ", cmd
-os.system(cmd)
-
-# - build the rpm
-os.chdir(StartDir)
-cmd = "rpmbuild -ba pyGlobus.spec"
-print "cmd = ", cmd
-os.system(cmd)
-
-# - copy it to the dest dir
-cmd = "cp /usr/src/redhat/RPMS/i386/pyGlobus-cvs-11.i386.rpm %s" % (RpmDir,)
-print "cmd = ", cmd
-os.system(cmd)
 
 #
 # Build AccessGrid rpms
