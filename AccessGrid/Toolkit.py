@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.39 2004-04-12 19:47:13 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.40 2004-04-12 21:02:47 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.39 2004-04-12 19:47:13 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.40 2004-04-12 21:02:47 eolson Exp $"
 
 # Standard imports
 import os
@@ -212,12 +212,12 @@ class AppBase:
         """
         
         pathToFile = os.path.join(self.userConfig.GetConfigDir(), configFile)
-        log.debug("Looking for: %s", pathToFile)
+        self.log.debug("Looking for: %s", pathToFile)
         if os.path.exists( pathToFile ):
             return pathToFile
         
-        pathToFile = os.path.join(self.agtk.GetConfigDir(), configFile)
-        log.debug("Looking for: %s", pathToFile)
+        pathToFile = os.path.join(self.agtkConfig.GetConfigDir(), configFile)
+        self.log.debug("Looking for: %s", pathToFile)
         if os.path.exists( pathToFile ):
             return pathToFile
         
@@ -470,8 +470,8 @@ class Service(AppBase):
         #    Identity we bail, there's nothing useful to do.
 
         if self.GetDefaultSubject() is None:
-            log.error("Toolkit initialized with no default identity.")
-            log.error("Exiting because there's no default identity.")
+            self.log.error("Toolkit initialized with no default identity.")
+            self.log.error("Exiting because there's no default identity.")
             sys.exit(-1)
 
         return argvResult
