@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.11 2003-09-19 16:35:35 judson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.12 2003-09-24 03:27:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.11 2003-09-19 16:35:35 judson Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.12 2003-09-24 03:27:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import socket
@@ -22,6 +22,7 @@ import Queue
 import threading
 import logging
 import struct
+import time
 
 from pyGlobus.io import GSITCPSocketServer, GSIRequestHandler, GSITCPSocket
 from pyGlobus.io import GSITCPSocketException, IOBaseException, Buffer
@@ -42,7 +43,7 @@ log = logging.getLogger("AG.TextService")
 # be disabled.
 # 
 
-detailedTextEventLogging = 1
+detailedTextEventLogging = 0
 
 if detailedTextEventLogging:
     logTextEvent = log.debug
@@ -105,9 +106,8 @@ class ConnectionHandler:
             log.exception("acceptCallback failed")
 
     def registerForRead(self):
-        h = self.socket.register_read(self.buffer, self.bufsize, 1,
-                                      self.readCallbackWrap, None)
-        self.cbHandle = h
+        self.cbHandle = self.socket.register_read(self.buffer, self.bufsize, 1,
+                                                  self.readCallbackWrap, None)
 
     def readCallbackWrap(self, arg, handle, result, buf, n):
         """
@@ -153,8 +153,7 @@ class ConnectionHandler:
             self.handleEOF()
             return
 
-        dstr = str(buf)
-        self.dataBuffer += dstr
+        self.dataBuffer += str(buf)
 
         if self.waitingLen == 0:
 
@@ -185,9 +184,6 @@ class ConnectionHandler:
         
     def stop(self):
         try:
-            # if self.wfile is not None:
-                # Can't close the wfile because it's a pointer to the socket
-                # self.wfile.close()
             self.socket.close()
             log.info("After socket close: %s", str(self.socket))
         except:
@@ -196,7 +192,6 @@ class ConnectionHandler:
     def handleData(self, pdata, event):
         """
         We have successfully read a data packet.
-
         """
         # Unpickle the data
         if event == None:
@@ -375,6 +370,7 @@ class TextChannel:
             success = c.writeMarshalledEvent(me)
             if not success:
                 removeList.append(c)
+        
         #
         # These guys failed. Bag 'em.
         #
@@ -389,7 +385,7 @@ class TextChannel:
         else:
             log.info("TextServiceAsynch: RemoveConnection: connection %s not in connection list.  (okay, could have been removed twice)",
                       connObj.GetId())
-
+        
     def AddConnection(self, event, connObj):
         self.connections[connObj.GetId()] = connObj
 
@@ -510,11 +506,9 @@ class TextService:
         try:
             self.allConnections.remove(connObj)
         except ValueError:
-            #
             # We can get this if we lose the race on a shutdown.
-            #
             pass
-        
+
     def Stop(self):
         """
         Stop the text service.
@@ -535,10 +529,11 @@ class TextService:
 
         for c in self.allConnections:
             c.stop()
-        self.allConnections = []
-            
+            self.allConnections.remove(c)
+
         for ch in self.channels.keys():
             self.RemoveChannel(ch)
+            del self.channels[ch]
             
         self.running = 0
         self.queueThread.join()
@@ -573,7 +568,6 @@ class TextService:
                     log.debug("TextServiceAsynch: EOF on connection %s", connObj.GetId())
                     self.HandleEOF(connObj)
                 elif cmd[0] == "event":
-
                     try:
                         event = cmd[1]
                         connObj = cmd[2]
@@ -626,7 +620,6 @@ class TextService:
 
         # Tag the event with the sender, which is obtained
         # from the security layer to avoid spoofing
-#        ctx = self.allConnections[0].socket.get_security_context()
         ctx = connObj.socket.get_security_context()
         payload = event.data
         payload.sender = CreateSubjectFromGSIContext(ctx).GetName()
@@ -637,7 +630,6 @@ class TextService:
         # However we assign the from address in the server, so
         # there is some notion of security :-)
         self.Distribute(connChannel.id, event)
-      
 
     def HandleEOF(self, connObj):
         """
@@ -651,11 +643,8 @@ class TextService:
         """
 
         connId = connObj.GetId()
-
         connChannel = self.findConnectionChannel(connId)
-
         self.CloseConnection(connObj)
-
 
     def HandleEventForDisconnectedChannel(self, event, connObj):
         """
@@ -779,10 +768,9 @@ if __name__ == "__main__":
   log.addHandler(logging.StreamHandler())
   log.setLevel(logging.DEBUG)
 
-  host = string.lower(socket.getfqdn())
   port = 6600
-  log.debug("TextServiceAsynch: Creating new TextService at %s %d.",
-            host, port)
-  textService = TextService((host, port))
+  log.debug("TextServiceAsynch: Creating new TextService at %d.", port)
+  textService = TextService(('', port))
   textService.AddChannel("Test")
   textService.start()
+

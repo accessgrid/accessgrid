@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.20 2003-09-19 16:37:37 judson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.21 2003-09-24 03:27:30 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.20 2003-09-19 16:37:37 judson Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.21 2003-09-24 03:27:30 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -782,7 +782,16 @@ class EventService:
 
 if __name__ == "__main__":
   import string
+  from AccessGrid import Toolkit
 
+  app = Toolkit.CmdlineApplication()
+  app.Initialize()
+  app.InitGlobusEnvironment()
+
+  certMgr = app.GetCertificateManager()
+  if not certMgr.HaveValidProxy():
+      certMgr.CreateProxy()
+  
   log.addHandler(logging.StreamHandler())
   log.setLevel(logging.DEBUG)
     

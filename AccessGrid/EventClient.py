@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.28 2003-09-19 03:52:03 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.29 2003-09-24 03:27:30 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.28 2003-09-19 03:52:03 judson Exp $"
+__revision__ = "$Id: EventClient.py,v 1.29 2003-09-24 03:27:30 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from threading import Thread, Lock
@@ -109,10 +109,7 @@ class EventClient:
             log.exception("Couldn't connect to event service.")
             raise EventClientConnectionException
         
-        # self.rfile = self.sock.makefile('rb', -1)
-
     def __del__(self):
-        log.debug("EventClient destructor")
         if self.running:
             self.Stop()
         
@@ -122,8 +119,8 @@ class EventClient:
         Event processing thread.
 
         This thread blocks on a read from the client-local event queue
-        (self.queue). Commands on the form are tuples where tuple[0] is the
-        name of the command.
+        (self.queue). Commands on the form are tuples where tuple[0]
+        is the name of the command.
 
         Commands we process are
 
@@ -134,12 +131,12 @@ class EventClient:
         """
 
         while 1:
-            log.debug("Queue waiting for data")
+#            log.debug("Queue waiting for data")
             dat = self.queue.get()
-            log.debug("Queue got data %s", dat)
+#            log.debug("Queue got data %s", dat)
 
             if dat[0] == "quit":
-                log.debug("Queue exiting")
+#                log.debug("Queue exiting")
                 return
             elif dat[0] == "call":
                 try:
@@ -306,14 +303,6 @@ class EventClient:
             raise EventClientWriteDataException
         
     def Stop(self):
-#         try:
-#             self.Send(DisconnectEvent(self.channel, self.privateId))
-#         except:
-#             #
-#             # This may well fail, if the server side has already disconnected us.
-#             #
-#             pass
-        
         self.running = 0
 
         log.debug("Cancel pending callbacks")
@@ -360,34 +349,48 @@ class EventClient:
         
 if __name__ == "__main__":
     import sys, os, time
-    # command line arguments are:
-    # 1) host for event service
-    # 2) port for event service
-    # 3) channel for event service
+    from AccessGrid import Toolkit
+    from AccessGrid import ClientProfile
+    from AccessGrid.GUID import GUID
+
+    host = ''
+    port = 6500
+    channel = "Test"
+    count = 10
+    last_one = 0
+    
+    app = Toolkit.CmdlineApplication()
+    app.Initialize()
+    app.InitGlobusEnvironment()
+
+    certMgr = app.GetCertificateManager()
+    if not certMgr.HaveValidProxy():
+        certMgr.CreateProxy()
+
+    log = logging.getLogger("AG.TextClient")
     log.addHandler(logging.StreamHandler())
     log.setLevel(logging.DEBUG)
     
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 3:
         host = sys.argv[1]
         port = int(sys.argv[2])
         channel = sys.argv[3]
-    else:
-        host = ''
-        port = 6500
-        channel = 'Test'
-        
-    eventClient = EventClient('privId', (host, port), channel)
+        count = int(sys.argv[4])
+    elif len(sys.argv) > 2:
+        channel = sys.argv[1]
+        count = int(sys.argv[2])
+    elif len(sys.argv) == 2:
+        count = int(sys.argv[1])
 
+    privId = str(GUID())
+    eventClient = EventClient(privId, (host, port), channel)
     eventClient.Start()
     
-    eventClient.Send(ConnectEvent(channel, 'privId'))
+    eventClient.Send(ConnectEvent(channel, privId))
         
-    for i in range(1,5):
-        eventClient.Send(HeartbeatEvent(channel, "foo"))
-        time.sleep(1)
+    for i in range(1,count):
+        print "sending heartbeat %d" % i
+        eventClient.Send(HeartbeatEvent(channel, "%s -- %d" % (privId, i)))
+#        time.sleep(1)
 
-    time.sleep(1)
-    
-#    eventClient.Stop()
-
-    os._exit(0)
+    eventClient.Stop()

@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.23 2003-09-19 16:35:35 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.24 2003-09-24 03:27:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.23 2003-09-19 16:35:35 judson Exp $"
+__revision__ = "$Id: TextClient.py,v 1.24 2003-09-24 03:27:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -293,14 +293,13 @@ class TextClient:
     def Input(self, text):
         """
         """
-        self.textProcessor.Input(TextEvent(self.venueId, None,
-                                           0, (text, self.profile)))
+        event = TextEvent(self.venueId, None, 0, (text, self.profile))
+        self.textProcessor.Input(event)
         
     def Stop(self):
         self.log.debug("TextClient.Stop")
         self.textProcessor.Input(DisconnectEvent(self.venueId, self.privateId))
         self.textConnection.Stop()
-
 
 if __name__ == "__main__":
     import sys
@@ -324,16 +323,21 @@ if __name__ == "__main__":
     log.addHandler(logging.StreamHandler())
     log.setLevel(logging.DEBUG)
 
-    if len(sys.argv) > 2:
+    if len(sys.argv) > 3:
         host = sys.argv[1]
         port = int(sys.argv[2])
         channel = sys.argv[3]
         count = int(sys.argv[4])
-    else:
+    elif len(sys.argv) > 2:
         host = ''
         port = 6600
         channel = sys.argv[1]
         count = int(sys.argv[2])
+    elif len(sys.argv) == 2:
+        host = ''
+        port = 6600
+        channel = "Test"
+        count = int(sys.argv[1])
         
     log.debug("TextClient: Creating connection to service at: %s %d.",
               host, port)
@@ -350,11 +354,20 @@ if __name__ == "__main__":
 
     privId = str(GUID())
     textClient.Connect(channel, privId)
+    pubId = profile.GetPublicId()
     for i in range(1, count):
-        textClient.Input("%s -- %d" % (profile.GetPublicId(), i))
+        textClient.Input("%s -- %d" % (pubId, i))
 
     while last_one < count - 1:
         print "Last one: %d" % last_one
         time.sleep(1)
         
     textClient.Disconnect(channel, privId)
+
+    from AccessGrid.tests.detectors import get_refcounts
+
+    refcounts = get_refcounts()
+    (count, top) = refcounts[0]
+    if top.__name__ == "TextConnection":
+        print "%10d %s" % (count, top.__name__)
+    
