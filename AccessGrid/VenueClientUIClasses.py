@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.122 2003-04-03 20:20:33 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.123 2003-04-03 21:26:09 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -26,7 +26,7 @@ from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import MyLog 
-
+from AccessGrid.Platform import GetTempDir
 from AccessGrid.TextClient import SimpleTextProcessor
 from pyGlobus.io import GSITCPSocket
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
@@ -653,7 +653,8 @@ class VenueClientFrame(wxFrame):
 
 
     def OpenAddServiceDialog(self, event):
-        addServiceDialog = AddServiceDialog(self, -1, 'Please, fill in service details')
+        addServiceDialog = AddServiceDialog(self, -1,
+                                            'Please, fill in service details')
         if (addServiceDialog.ShowModal() == wxID_OK):
             self.app.AddService(addServiceDialog.GetNewProfile())
 
@@ -739,12 +740,9 @@ class VenueClientFrame(wxFrame):
         id = self.contentListPanel.tree.GetSelection()
         data = self.contentListPanel.tree.GetItemData(id).GetData()
         name = data.name
-        (base, ext) = name.split('.')
+        ext = name.split('.')[-1]
         if data != None:
-            if sys.platform == 'win32':
-                tmppath = os.environ['TEMP']
-
-            tfilepath = os.path.join(tmppath, name)
+            tfilepath = os.path.join(GetTempDir(), name)
             
             self.app.SaveFile(data, tfilepath)
             fileType = wxTheMimeTypesManager.GetFileTypeFromExtension(ext)
