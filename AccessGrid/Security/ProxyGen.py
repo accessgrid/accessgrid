@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.17 2004-05-18 15:23:14 olson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.18 2004-05-18 15:25:12 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.17 2004-05-18 15:23:14 olson Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.18 2004-05-18 15:25:12 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -292,8 +292,8 @@ def CreateGlobusProxyProgrammatic(passphrase, certFile, keyFile, certDir,
         # error list included.
         #
 
-        for arg in e.args:
-            print "arg: ", arg[2], arg[3], arg[4].strip()
+        #for arg in e.args:
+        #   print "arg: ", arg[2], arg[3], arg[4].strip()
 
         for arg in e.args:
             reason = arg[3]
@@ -340,7 +340,6 @@ def CreateGlobusProxyProgrammatic(passphrase, certFile, keyFile, certDir,
         reason = ""
         cert = ""
         for arg in e.args:
-            print "Try ", arg[2]
             if arg[3] == "certificate:":
                 cert = arg[4].strip()
             elif arg[2] in SslutilsFunctions:
@@ -349,7 +348,6 @@ def CreateGlobusProxyProgrammatic(passphrase, certFile, keyFile, certDir,
                 # a gpi error.
                 #
 
-                print "Found it"
                 reason = arg[3]
                 data = arg[4]
 
@@ -456,9 +454,8 @@ def CreateGlobusProxyProgrammatic_GT24(passphrase, certFile, keyFile, certDir,
     try:
 
         def cb(msg):
-            print "gpi debug: ", msg
+            log.debug("GPI debug message: %s", msg)
             
-        print "call gpi"
         security.grid_proxy_init(verbose = 1,
                                  verify = 1,
                                  certDir = certDir,
@@ -470,12 +467,9 @@ def CreateGlobusProxyProgrammatic_GT24(passphrase, certFile, keyFile, certDir,
                                  passphrase = passphrase,
                                  debugCB = cb,
                                  proxyType = gssc.GLOBUS_GSI_CERT_UTILS_TYPE_GSI_2_PROXY)
-        print "gpi returns"
 
     except security.GSIException, e:
 
-        print "Got exception ", e
-        
         #
         # We failed. Rifle through the exception data to determine why the failure
         # happened.
@@ -484,6 +478,8 @@ def CreateGlobusProxyProgrammatic_GT24(passphrase, certFile, keyFile, certDir,
         # to match the string of the exception with the high-level error that
         # caused it.
         #
+
+        log.exception("Hit security exception")
 
         error_types = [
             ("Error reading user credential: Can't read credential's private key from PEM.*bad decrypt",
@@ -517,14 +513,12 @@ def CreateGlobusProxyProgrammatic_GT24(passphrase, certFile, keyFile, certDir,
             m = re.search(etype[0], err_str, re.DOTALL)
 
             if m:
-                print "Error matched! ", etype[1], m.groups()
                 raise etype[2](etype[1] % m.groups())
 
-        print "Did not match error"
         raise GridProxyInitError
 
     except Exception, e:
-        print "Raised exception ", e
+        log.debug("grid_proxy_init raised unknown exception")
         raise
 
 def IsGlobusProxy_Generic(certObj):
