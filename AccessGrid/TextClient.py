@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.22 2003-09-19 03:52:03 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.23 2003-09-19 16:35:35 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.22 2003-09-19 03:52:03 judson Exp $"
+__revision__ = "$Id: TextClient.py,v 1.23 2003-09-19 16:35:35 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -305,9 +305,12 @@ class TextClient:
 if __name__ == "__main__":
     import sys
     import string
-    import socket
+    import socket, time
     from AccessGrid import Toolkit
     from AccessGrid import ClientProfile
+    from AccessGrid.GUID import GUID
+    
+    last_one = 0
     
     app = Toolkit.CmdlineApplication()
     app.Initialize()
@@ -321,19 +324,37 @@ if __name__ == "__main__":
     log.addHandler(logging.StreamHandler())
     log.setLevel(logging.DEBUG)
 
-    host = string.lower(socket.getfqdn())
-    port = 6600
+    if len(sys.argv) > 2:
+        host = sys.argv[1]
+        port = int(sys.argv[2])
+        channel = sys.argv[3]
+        count = int(sys.argv[4])
+    else:
+        host = ''
+        port = 6600
+        channel = sys.argv[1]
+        count = int(sys.argv[2])
+        
     log.debug("TextClient: Creating connection to service at: %s %d.",
               host, port)
 
     def out(string):
-        print "GOT STRING: <%s>" % string
-        
-    textClient = TextClient(ClientProfile.ClientProfile(), (host, port))
+        global last_one
+        parts = string.split(" ")
+        last_one = int(parts[-1][:-2])
+        print "GOT STRING: %d <%s>" % (last_one, string)
+
+    profile = ClientProfile.ClientProfile()
+    textClient = TextClient(profile, (host, port))
     textClient.RegisterOutputCallback(out)
-    
-    textClient.Connect("Test", "123")
-    for i in range(1, int(sys.argv[1])):
-        textClient.Input("Hello World")
+
+    privId = str(GUID())
+    textClient.Connect(channel, privId)
+    for i in range(1, count):
+        textClient.Input("%s -- %d" % (profile.GetPublicId(), i))
+
+    while last_one < count - 1:
+        print "Last one: %d" % last_one
+        time.sleep(1)
         
-    textClient.Disconnect("Test", "123")
+    textClient.Disconnect(channel, privId)

@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.10 2003-09-19 03:52:03 judson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.11 2003-09-19 16:35:35 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.10 2003-09-19 03:52:03 judson Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.11 2003-09-19 16:35:35 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import socket
@@ -42,7 +42,7 @@ log = logging.getLogger("AG.TextService")
 # be disabled.
 # 
 
-detailedTextEventLogging = 0
+detailedTextEventLogging = 1
 
 if detailedTextEventLogging:
     logTextEvent = log.debug
@@ -626,7 +626,8 @@ class TextService:
 
         # Tag the event with the sender, which is obtained
         # from the security layer to avoid spoofing
-        ctx = self.allConnections[0].socket.get_security_context()
+#        ctx = self.allConnections[0].socket.get_security_context()
+        ctx = connObj.socket.get_security_context()
         payload = event.data
         payload.sender = CreateSubjectFromGSIContext(ctx).GetName()
 
@@ -653,12 +654,7 @@ class TextService:
 
         connChannel = self.findConnectionChannel(connId)
 
-        # Calling RemoveConnection is not necessary since it is called 
-        #   from CloseConnection
-        #if connChannel is not None:
-            #connChannel.RemoveConnection(connObj)
-
-#        self.CloseConnection(connObj)
+        self.CloseConnection(connObj)
 
 
     def HandleEventForDisconnectedChannel(self, event, connObj):
