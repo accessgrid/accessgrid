@@ -102,10 +102,6 @@ pyGlobus = "pyGlobus"
 ServiceManager = "ServiceManager"
 SharedApplication = "SharedApplication"
 
-# For redirecting stdout and stderr on mswindows when using pythonw.
-Stdout = "Stdout"
-Stderr = "Stderr"
-
 TextClient = "TextClient"
 SimpleTextProcessor = "SimpleTextProcessor"
 TextConnection = "TextConnection"
@@ -430,91 +426,13 @@ class LevelHandler(logging.handlers.BufferingHandler):
             if handler.level > level: # closer to zero means more detail
                 handler.setLevel(level)
 
-
-
 # 0. Initialize logging, storing in log data memory
 defLogHandler = StreamHandler()
 defLogHandler.setFormatter(GetFormatter())
-if sys.platform == "win32" and "pythonw" in sys.executable.lower() : 
-    # Never flush to stdout/stderrr when on mswindows and using pythonw.
-    #    There is no valid console to print errors to so we're replacing stdout
-    #    and stderr below with logging.  Allowing the temporary memory handler to
-    #    print serious errors here would just cause them to be logged again -- a
-    #    loop that would prevent pythonw from exiting cleanly or creating log files.
-    never = CRITICAL + 1
-    mlh = handlers.MemoryHandler(16384, flushLevel=never, target=defLogHandler)
-else:
-    mlh = handlers.MemoryHandler(16384, flushLevel=ERROR, target=defLogHandler)
+# This is set to 4096 to get around pythonw limitations!!!
+# http://mail.python.org/pipermail/python-list/2004-June/227268.html
+mlh = handlers.MemoryHandler(4096, flushLevel=ERROR, target=defLogHandler)
 mlh.setFormatter(GetFormatter())
 memLevels = HandleLoggers(mlh, GetDefaultLoggers())
 memLevels.SetLevel(DEBUG)
-
-# On mswin, pythonw has an invalid stderr and stdout that will cause an
-#   IOError after too many print statments, so we redirect it.
-
-try:
-    if sys.platform == "win32" and "pythonw" in sys.executable.lower() : 
-        # Classes to prevent print statements from causing ioerrors on
-        #   mswindows with pythonw.
-        class LogStdout:
-            def __init__(self):
-                self.log = GetLogger(Stdout)
-                self.buffer = ""
-
-            def write(self, strng):
-
-                sp = strng.split("\n")
-                 
-                # Go through the list of lines.
-                #   Prepend the leftover buffer to the first line.
-                #   The last "line" is saved for next time, but it will be 
-                #   empty if the original line ended in with a newline.
-                
-                if len(sp) > 1: # len > 1 means there is a newline
-                    self.log.info(self.buffer + sp[0])
-                    for line in sp[1:-1]:
-                        self.log.info(line)
-                    # Keep the last string (often empty) for next newline 
-                    self.buffer = sp[-1:]
-                elif len(sp) == 1:  # no newline, so append to saved buffer
-                    self.buffer += sp[0]
-
-            # Redirect other methods to the original stdout instead of 
-            #   overriding them.
-            def __getattr__(self, name):
-                return sys.__stdout__.getattr__(name)
-
-        class LogStderr:
-            def __init__(self):
-                self.log = GetLogger(Stderr)
-                self.buffer = ""
-
-            def write(self, strng):
-
-                sp = strng.split("\n")
-                 
-                # Go through the list of lines.
-                #   Prepend the leftover buffer to the first line.
-                #   The last "line" is saved for next time, but it will be 
-                #   empty if the original line ended in with a newline.
-                
-                if len(sp) > 1: # len > 1 means there is a newline
-                    self.log.error(self.buffer + sp[0])
-                    for line in sp[1:-1]:
-                        self.log.error(line)
-                    # Keep the last string (often empty) for next newline 
-                    self.buffer = sp[-1:]
-                elif len(sp) == 1:  # no newline, so append to saved buffer
-                    self.buffer += sp[0]
-
-            # Redirect other methods to the original stderr instead of 
-            #   overriding them.
-            def __getattr__(self, name):
-                return sys.__stderr__.getattr__(name)
-
-        sys.stderr = LogStderr()
-        sys.stdout = LogStdout()
-        GetLogger(Logging).info("Successfully redirecting stderr and stdout for pythonw on mswindows.")
-except:
-    GetLogger(Logging).exception("Error redirecting stderr and stdout on mswindows.")
 
