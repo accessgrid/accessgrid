@@ -63,7 +63,6 @@ ABS_SRC_DIR = os.path.abspath(options.srcdir)
 # Overview: 
 # Create Toolkit configuration with AGTkConfig
 # python packaging/makeServicePackages.py 
-# create empty file videoresources
 # cp packaging/config/defaultWindows AGTkConfig.instance().GetConfigDir()
 # cp packaging/config/defaultLinux AGTkConfig.instance().GetConfigDir()
 # cp packaging/config/CACertificates AGTkConfig.instance().GetConfigDir()/CACertificates
@@ -81,7 +80,19 @@ from AccessGrid.Platform.Config import AGTkConfig
 # Create directory structure
 agtkConfig = AGTkConfig.instance(initIfNeeded=1)
 
-# create services
+# Make shared app packages
+#
+# python2 makeAppPackages.py inputdir sharedappconfigdir
+cmd = "%s %s %s %s" % (sys.executable,
+                       os.path.join( options.agsrcdir, "packaging", "makeAppPackages.py" ),
+                       os.path.join(ABS_AG_BASE_DIR,'sharedapps'),
+                       AGTkConfig.instance().GetSharedAppDir())
+if options.verbose:
+    print "   ",cmd
+os.system(cmd)
+
+
+# Make service packages
 # python packaging/makeServicePackages.py /path/to/AccessGrid  /path/to/source (ag-media should be found under here)
 
 mk_service_exec = sys.executable + " " + os.path.join( options.agsrcdir, "packaging", "makeServicePackages.py" )
