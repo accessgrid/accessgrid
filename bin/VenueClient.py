@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.153 2003-05-20 15:03:06 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.154 2003-05-20 19:18:59 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -598,8 +598,8 @@ class VenueClientUI(wxApp, VenueClient):
         # If the url parameter is a server address, get default venue
         # else assume the url is a venue address.
         #
-        
-        self.venueUri = URL
+
+            self.venueUri = URL
         self.clientHandle = Client.Handle(self.venueUri)
 
         #
@@ -902,7 +902,8 @@ class VenueClientUI(wxApp, VenueClient):
         and to perhaps allow multiple simultaneous transfers.
 
         """
-        log.debug("Save file descriptor: %s, path: %s"%(data_descriptor, local_pathname))
+        log.debug("Save file descriptor: %s, path: %s"
+                  % (data_descriptor, local_pathname))
 
         failure_reason = None
         try:
@@ -919,18 +920,24 @@ class VenueClientUI(wxApp, VenueClient):
             log.debug("data descriptor is %s" %data_descriptor.__class__)
 
             if data_descriptor.status != DataDescription.STATUS_PRESENT:
-                MessageDialog(none, "File %s is not downloadable - it has status %s"
-                % (data_descriptor.name, data_descriptor.status), "Notification")
+                MessageDialog(none,
+                              "File %s is not downloadable - it has status %s"
+                              % (data_descriptor.name,
+                                 data_descriptor.status), "Notification")
                 return
             #
             # Create the dialog for the download.
             #
             dlg = SaveFileDialog(self.frame, -1, "Saving file",
-            "Saving file to %s ...     " % (local_pathname),
-            "Saving file to %s ... done" % (local_pathname),
-            size)
+                                 "Saving file to %s ...     "
+                                 % (local_pathname),
+                                 "Saving file to %s ... done"
+                                 % (local_pathname),
+                                 size)
+            
+            log.debug("Downloading: size=%s checksum=%s url=%s"
+                      % (size, checksum, url))
 
-            log.debug("Downloading: size=%s checksum=%s url=%s" % (size, checksum, url))
             dlg.Show(1)
 
             #
@@ -943,7 +950,7 @@ class VenueClientUI(wxApp, VenueClient):
             #
             # Create the thread to run the download.
             #
-            # Some more plumbing with the locla function to get the identity
+            # Some more plumbing with the local function to get the identity
             # retrieval in the thread, as it can take a bit the first time.
             #
             # We use get_ident_and_download as the body of the thread.
@@ -951,9 +958,9 @@ class VenueClientUI(wxApp, VenueClient):
             # Arguments to pass to get_ident_and_download
             #
             dl_args = (url, local_pathname, size, checksum, progressCB)
-
+                
             download_thread = threading.Thread(target = self.get_ident_and_download,
-            args = dl_args)
+                                               args = dl_args)
 
             #
             # Use wxCallAfter so we get the dialog filled in properly.
@@ -984,8 +991,67 @@ class VenueClientUI(wxApp, VenueClient):
             failure_reason = "Download error: %s" % (e[0])
         except EnvironmentError, e:
             failure_reason = "Exception: %s" % (str(e))
-        except:
-            failure_reason = "The files could not be saved"
+
+        if failure_reason is not None:
+            MessageDialog(None, failure_reason, "Download error",
+            style = wxOK  | wxICON_ERROR)
+
+    def SaveFileNoProgress(self, data_descriptor, local_pathname):
+        """
+        Save a file from the datastore into a local file.
+
+        We assume that the caller has assured the user that if the
+        user has picked a file that already exists, that it will be
+        overwritten.
+
+        This implementation fires up a separate thread for the actual
+        transfer. We want to do this to keep the application live for possible
+        long-term transfers, to allow for live updates of a download status,
+        and to perhaps allow multiple simultaneous transfers.
+
+        """
+        log.debug("Save file descriptor: %s, path: %s"%(data_descriptor, local_pathname))
+
+        failure_reason = None
+        try:
+            #
+            # Retrieve details from the descriptor
+            #
+            size = data_descriptor.size
+            checksum = data_descriptor.checksum
+            url = data_descriptor.uri
+
+            #
+            # Make sure this data item is valid
+            #
+            log.debug("data descriptor is %s" %data_descriptor.__class__)
+
+            if data_descriptor.status != DataDescription.STATUS_PRESENT:
+                MessageDialog(none,
+                              "File %s is not downloadable - it has status %s"
+                              % (data_descriptor.name,
+                                 data_descriptor.status), "Notification")
+                return
+            #
+            # Create the thread to run the download.
+            #
+            # Some more plumbing with the local function to get the identity
+            # retrieval in the thread, as it can take a bit the first time.
+            #
+            # We use get_ident_and_download as the body of the thread.
+
+            # Arguments to pass to get_ident_and_download
+            #
+            dl_args = (url, local_pathname, size, checksum,
+                       lambda done, dialog: None)
+            download_thread = threading.Thread(target = self.get_ident_and_download,
+                                               args = dl_args)
+            download_thread.start()
+            download_thread.join()
+        except DataStore.DownloadFailed, e:
+            failure_reason = "Download error: %s" % (e[0])
+        except EnvironmentError, e:
+            failure_reason = "Exception: %s" % (str(e))
 
         if failure_reason is not None:
             MessageDialog(None, failure_reason, "Download error",
