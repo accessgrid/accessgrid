@@ -3,7 +3,7 @@
 # Purpose:     
 #
 # Created:     2004/03/30
-# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.1 2004-03-31 22:08:44 turam Exp $
+# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.2 2004-04-06 00:52:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,6 +14,9 @@ from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
 from AccessGrid.Types import AGServicePackage, InvalidServicePackage
 from AccessGrid import DataStore
 from AccessGrid.Platform.Config import SystemConfig
+from AccessGrid import Log
+
+log = Log.GetLogger("ServicePackageRepo")
 
 class AGServicePackageRepository:
     """
@@ -64,7 +67,7 @@ class AGServicePackageRepository:
 
         # Catch request for non-existent file
         if not os.access(file,os.R_OK):
-            #log.info("Attempt to download non-existent file: %s" % (file) )
+            log.info("Attempt to download non-existent file: %s" % (file) )
             raise DataStore.FileNotFound(file)
         return file
 
@@ -72,7 +75,7 @@ class AGServicePackageRepository:
         return self.baseUrl + file
         
     def GetServiceDescription(self, file):
-        servicePackage = AGServicePackage( self.servicesDir + os.sep + file)
+        servicePackage = AGServicePackage( os.path.join(self.servicesDir,file) )
         serviceDesc = servicePackage.GetServiceDescription()
         serviceDesc.servicePackageUri = self.GetPackageUrl(file)
         return serviceDesc
@@ -89,20 +92,21 @@ class AGServicePackageRepository:
         # Catch non-existent service directory
         if not os.path.exists(self.servicesDir):
             return
-            
+
         files = os.listdir(self.servicesDir)
         for file in files:
             if file.endswith('.zip'):
                 try:
                     serviceDesc = self.GetServiceDescription(file)
                     serviceDescriptions.append( serviceDesc )
-                except InvalidServicePackage:
+                except:
                     invalidServicePackages += 1
-
+                    
         if invalidServicePackages:
-            raise InvalidServicePackage('%d invalid service package(s) found' % invalidServicePackages )
-            
+            log.info("%d invalid service packages skipped", invalidServicePackages)
+
         return serviceDescriptions
+            
 
 
 if __name__ == "__main__":
