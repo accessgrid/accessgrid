@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.36 2003-02-10 21:44:27 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.37 2003-02-10 23:02:21 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ import AccessGrid.ClientProfile
 from AccessGrid.VenueClient import VenueClient, EnterVenueException
 from AccessGrid.VenueClientUIClasses import WelcomeDialog
 from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
-from AccessGrid.VenueClientUIClasses import ConnectToVenueDialog
+from AccessGrid.VenueClientUIClasses import UrlDialog
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Events import Event
 from AccessGrid.Utilities import formatExceptionInfo
@@ -93,7 +93,6 @@ class VenueClientUI(wxApp, VenueClient):
         if (profileDialog.ShowModal() == wxID_OK):
             self.profile = profileDialog.GetNewProfile()
             self.ChangeProfile(self.profile)
-          
             profileDialog.Destroy()
             self.__startMainLoop(self.profile)
             
@@ -117,8 +116,7 @@ class VenueClientUI(wxApp, VenueClient):
             validVenue = false
             
             while not validVenue:
-                connectToVenueDialog = ConnectToVenueDialog(NULL, -1,
-                                                            "Please, enter venue or venue server URL")
+                connectToVenueDialog = UrlDialog(NULL, -1, "Please, enter venue or venue server URL")
                 if(connectToVenueDialog.ShowModal() == wxID_OK):
                     if self.GoToNewVenue(connectToVenueDialog.address.GetValue()):
                         self.frame.Show(true)
@@ -127,9 +125,7 @@ class VenueClientUI(wxApp, VenueClient):
                   
                 else:
                     break
-                #  self.frame.Show(true)
-                #  self.MainLoop()
-
+              
     def ModifyUserEvent(self, data):
         """
         Note: Overloaded from VenueClient
@@ -315,7 +311,9 @@ class VenueClientUI(wxApp, VenueClient):
         if self.gotClient:
             self.client.UpdateClientProfile(profile)
 
-              
+    def SetNodeUrl(self, url):
+        self.SetNodeServiceUri('https://localhost:8000/VenueServer')
+                     
 if __name__ == "__main__":
 
     import sys

@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.21 2003-02-10 21:57:26 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.22 2003-02-10 23:01:38 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -71,6 +71,7 @@ class VenueClientFrame(wxFrame):
         self.ID_PROFILE_EDIT = NewId()
         self.ID_MYNODE = NewId()
         self.ID_MYNODE_MANAGE = NewId()
+        self.ID_MYNODE_URL = NewId()
         self.ID_HELP = NewId()
         self.ID_HELP_ABOUT = NewId()
       
@@ -96,6 +97,7 @@ class VenueClientFrame(wxFrame):
         self.menubar.Append(self.edit, "&Edit")
         self.myNode = wxMenu()
         self.myNode.Append(self.ID_MYNODE_MANAGE, "&Manage...", "Configure your node")
+        self.myNode.Append(self.ID_MYNODE_URL, "&Set URL...", "Specify URL address to node service")
         #self.myNode = wxMenu()
         # self.myNode.Append(500, "Add")
         self.menubar.Append(self.myNode, "&My Node")
@@ -116,6 +118,7 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialog)
         EVT_MENU(self, self.ID_VENUE_VIRTUAL, self.OpenConnectToVenueDialog)
         EVT_MENU(self, self.ID_MYNODE_MANAGE, self.OpenNodeMgmtApp)
+        EVT_MENU(self, self.ID_MYNODE_URL, self.OpenSetNodeUrlDialog)
         EVT_MENU(self, self.ID_VENUE_CLOSE, self.OnExit)
         
     def __setToolbar(self):
@@ -152,11 +155,16 @@ class VenueClientFrame(wxFrame):
         self.Destroy()
                      	      
     def UpdateLayout(self):
-        #self.venueClientSizer.Fit(self)
-	#self.SetAutoLayout(1)  
         self.__doLayout()
-        #self.Layout()
 
+    def OpenSetNodeUrlDialog(self, event = None):
+        setNodeUrlDialog = UrlDialog(self, -1, "Please, specify node service URL")
+
+        if setNodeUrlDialog.ShowModal() == wxID_OK:
+            self.app.SetNodeUrl(setNodeUrlDialog.address.GetValue())
+
+        setNodeUrlDialog.Destroy()
+                
     def OpenAddDataDialog(self, event = None):
         dlg = wxFileDialog(self, "Choose a file:")
 
@@ -182,7 +190,7 @@ class VenueClientFrame(wxFrame):
         addServiceDialog.Destroy()
 
     def OpenConnectToVenueDialog(self, event):
-        connectToVenueDialog = ConnectToVenueDialog(self, -1, 'Connect to server')
+        connectToVenueDialog = UrlDialog(self, -1, 'Connect to server')
         if (connectToVenueDialog.ShowModal() == wxID_OK):
             venueUri = connectToVenueDialog.address.GetValue()
             self.app.GoToNewVenue(venueUri)
@@ -680,7 +688,7 @@ class ConnectToServerDialog(wxDialog):
         sizer.Fit(self)
         self.SetAutoLayout(1)
 
-class ConnectToVenueDialog(wxDialog):
+class UrlDialog(wxDialog):
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title)
         self.okButton = wxButton(self, wxID_OK, "Ok")
