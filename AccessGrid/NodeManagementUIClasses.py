@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.15 2003-02-24 22:48:01 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.16 2003-02-27 21:16:34 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -25,9 +25,9 @@ from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetPara
 from AccessGrid.Descriptions import StreamDescription, AGServiceManagerDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid import icons
+from AccessGrid import Platform
+from AccessGrid.Utilities import HaveValidProxy, formatExceptionInfo
 
-#import gc
-#gc.set_debug( gc.DEBUG_LEAK )
 
 ###
 ### MENU DEFS
@@ -62,6 +62,11 @@ ID_VENUE_TESTROOM = 503
 ID_DUM = 600
 
 ID_HELP_ABOUT = 701
+
+
+def CheckCredentials():
+    if not HaveValidProxy():
+        Platform.GPI()
 
 
 class TestTransientPopup(wxPopupTransientWindow):
@@ -359,8 +364,7 @@ class NodeManagementClientFrame(wxFrame):
             try:
                 self.AttachToNode( uri )
             except:
-                self.Error( "Could not attach to AGNodeService " + hostname
-                            + port  )
+                self.Error( "Could not attach to AGNodeService at " + uri  )
                 return
 
 
@@ -368,13 +372,13 @@ class NodeManagementClientFrame(wxFrame):
             self.UpdateServiceList()
 
     def AttachToNode( self, nodeServiceUri ):
+
+        CheckCredentials()
+
         vcProxy = Client.Handle( nodeServiceUri ).get_proxy()
-        try:
-            vcProxy.Ping()
-            self.vc = vcProxy
-            self.SetTitle( "Access Grid Node Management - Connected" )
-        except:
-            pass
+        vcProxy.Ping()
+        self.vc = vcProxy
+        self.SetTitle( "Access Grid Node Management - Connected" )
 
     def LoadConfiguration( self, event ):
 
@@ -506,7 +510,6 @@ class NodeManagementClientFrame(wxFrame):
             serviceToAdd = None
             serviceName = dlg.GetStringSelection()
             for service in availServices:
-                print "availService : ", service.name, service.uri
                 if serviceName == service.name:
                     serviceUri = service.uri
                     serviceToAdd = service
@@ -516,9 +519,6 @@ class NodeManagementClientFrame(wxFrame):
             resourceToAssign = AGResource()
             resources = Client.Handle( serviceManager.uri ).get_proxy().GetResources()
             if len(resources) > 0:
-                for resource in resources:
-                    print "resource ", resource.type, resource.resource, resource.inUse
-
 
                 choices = ["None"]
                 choices = choices + map( lambda res: res.resource, resources )
@@ -535,14 +535,13 @@ class NodeManagementClientFrame(wxFrame):
                 for resource in resources:
                     if selectedResource == resource.resource:
                         resourceToAssign = resource
-                        print "assigning resource ", resourceToAssign.resource
                         break
 
 
             try:
-                print "Adding service ", serviceToAdd.name, serviceToAdd.uri
                 if serviceToAdd == None:
                     raise Exception()
+                print "Adding service ", serviceToAdd.name, serviceToAdd.uri
                 Client.Handle( serviceManager.uri ).get_proxy().AddService( serviceToAdd, resourceToAssign )
             except:
                 print "Exception in AddService : ", sys.exc_type, sys.exc_value
@@ -563,8 +562,6 @@ class NodeManagementClientFrame(wxFrame):
                 index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
                 print "** Starting service ", index
                 ret = Client.Handle( self.services[index].uri ).get_proxy().Start()
-                print "return value = ", ret, ret.__class__
-                print "** Called Start ! !! ! "
 
             self.UpdateServiceList()
 
@@ -609,7 +606,6 @@ class NodeManagementClientFrame(wxFrame):
         index = -1
         for i in range( self.serviceList.GetSelectedItemCount() ):
             index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-            print "smuri  = ", self.services[index].name, self.services[index].uri, self.services[index].serviceManagerUri, index, len(self.services)
             Client.Handle( self.services[index].serviceManagerUri ).get_proxy().RemoveService( self.services[index] )
 
         self.UpdateServiceList()
@@ -621,9 +617,6 @@ class NodeManagementClientFrame(wxFrame):
             return
 
         index = self.serviceList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
-        print "index = ", index
-        print "len = ", len(self.services)
-
         config = Client.Handle( self.services[index].uri ).get_proxy().GetConfiguration()
 
         if config == None or len(config) == 0 or config=="None":
@@ -664,15 +657,6 @@ class NodeManagementClientFrame(wxFrame):
 
         serviceConfig = self.serviceConfigPanel.GetConfiguration()
         index = self.serviceList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
-
-        for s in self.services:
-            print "smuri  = ", s.name, s.uri, s.serviceManagerUri
-
-
-        print " ---SetConfiguration ", serviceConfig.__class__
-
-        for parm in serviceConfig.parameters:
-            print "    ---SetConfiguration--parameter", parm.name, parm.value, parm.__class__
 
         # send the modified configuration to the service
         Client.Handle( self.services[index].uri ).get_proxy().SetConfiguration( serviceConfig )
