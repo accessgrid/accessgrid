@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.17 2003-11-07 19:17:41 eolson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.18 2003-11-08 00:08:40 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -187,6 +187,12 @@ class PowerPointViewer:
         This method returns the index of the current slide
         """
         return self.win.View.CurrentShowPosition
+
+    def GetStepNum(self):
+        """
+        This method returns the step of the current slide
+        """
+        return self.win.View.Slide.PrintSteps
 
 
 
@@ -478,7 +484,10 @@ class SharedPresentationFrame(wxFrame):
         old_value = self.slidesCombo.GetValue()
         # Fill slides combo box with venue's files.
         try:
-            filenames = self.queryVenueFilesCallback("*.ppt")
+            if sys.platform == Platform.WIN:
+                filenames = self.queryVenueFilesCallback("*.ppt")
+            else:
+                filenames = self.queryVenueFilesCallback(["*.ppt", "*.sxi"])
             self.slidesCombo.Clear()
             for file in filenames:
                 self.slidesCombo.Append(file)
@@ -1018,7 +1027,7 @@ class SharedPresentation:
         else:
             self.log.debug("No presentation loaded!")
 
-        self.controller.SetSlideNum(slideNum)
+        wxCallAfter(self.controller.SetSlideNum, slideNum)
                    
     def LoadPresentation(self, data):
         """
@@ -1045,11 +1054,11 @@ class SharedPresentation:
             # Remove datastore prefix on local url in UI since master checks
             #  if file is in venue and sends full datastore url if it is.
             short_filename = self.stripDatastorePrefix(slidesUrl)
-            self.controller.SetSlides(short_filename)
+            wxCallAfter(self.controller.SetSlides, short_filename)
             #self.controller.SetSlides(slidesUrl)
         else:
-            self.controller.SetSlides(slidesUrl)
-        self.controller.SetSlideNum(1)
+            wxCallAfter(self.controller.SetSlides, slidesUrl)
+        wxCallAfter(self.controller.SetSlideNum, 1)
         self.slideNum = 1
         self.stepNum = 0
 
@@ -1079,9 +1088,9 @@ class SharedPresentation:
 
         # Update the controller accordingly
         if self.masterId == self.publicId:
-            self.controller.SetMaster(true)
+            wxCallAfter(self.controller.SetMaster, true)
         else:
-            self.controller.SetMaster(false)
+            wxCallAfter(self.controller.SetMaster, false)
 
     def ClosePresentation(self,data=None):
         """
@@ -1134,7 +1143,7 @@ class SharedPresentation:
         if self.viewer != None:
 
             # Careful not to slip off the end of the presentation, cause that mean an exception
-            if self.slideNum == self.viewer.GetLastSlide() and self.stepNum >= self.viewer.win.View.Slide.PrintSteps-1:
+            if self.slideNum == self.viewer.GetLastSlide() and self.stepNum >= self.viewer.GetStepNum()-1:
                 return
 
             if self.slideNum <= self.viewer.GetLastSlide():
@@ -1147,7 +1156,7 @@ class SharedPresentation:
                 if slideNum != self.slideNum:
 
                     # Set the slide number in the controller
-                    self.controller.SetSlideNum(slideNum)
+                    wxCallAfter(self.controller.SetSlideNum, slideNum)
 
                     # Store the slide number in the app object
                     self.appProxy.SetData(self.privateId, SharedPresKey.SLIDENUM, slideNum)
@@ -1184,10 +1193,10 @@ class SharedPresentation:
                 slideNum = self.viewer.GetSlideNum()
                 if slideNum != self.slideNum:
                     # Set the slide number in the controller
-                    self.controller.SetSlideNum(slideNum)
+                    wxCallAfter(self.controller.SetSlideNum, slideNum)
 
                     self.slideNum = slideNum
-                    self.stepNum = self.viewer.win.View.Slide.PrintSteps - 1
+                    self.stepNum = self.viewer.GetStepNum() - 1
 
                     # Store the slide number in the app object
                     self.appProxy.SetData(self.privateId, SharedPresKey.SLIDENUM, slideNum)
@@ -1236,7 +1245,7 @@ class SharedPresentation:
         else:
             self.log.debug("No presentation loaded!")
 
-        self.controller.SetSlideNum(slideNum)
+        wxCallAfter(self.controller.SetSlideNum, slideNum)
 
     def LocalLoad(self, slidesUrl):
         """
@@ -1256,15 +1265,16 @@ class SharedPresentation:
             self.viewer.LoadPresentation(tmpFile)
             # Remove datastore prefix on local url in UI since master checks
             #  if file is in venue and sends full datastore url if it is.
-            self.controller.SetSlides(self.stripDatastorePrefix(slidesUrl))
+            short_url = self.stripDatastorePrefix(slidesUrl)
+            wxCallAfter(self.controller.SetSlides, short_url)
             #self.controller.SetSlides(slidesUrl)
         else:
             self.viewer.LoadPresentation(slidesUrl)
-            self.controller.SetSlides(slidesUrl)
+            wxCallAfter(self.controller.SetSlides, slidesUrl)
 
         self.slideNum = 1
         self.stepNum = 0
-        self.controller.SetSlideNum(self.slideNum)
+        wxCallAfter(self.controller.SetSlideNum, self.slideNum)
 
         self.appProxy.SetData(self.privateId, SharedPresKey.SLIDEURL, slidesUrl)
         self.appProxy.SetData(self.privateId, SharedPresKey.SLIDENUM, self.slideNum)
@@ -1295,10 +1305,11 @@ class SharedPresentation:
             if self.presentation[:6] == "https:":
                 # Remove datastore prefix on local url in UI since master checks
                 #  if file is in venue and sends full datastore url if it is.
-                self.controller.SetSlides(self.stripDatastorePrefix(self.presentation))
+                short_presentation = self.stripDatastorePrefix(self.presentation)
+                wxCallAfter( self.controller.SetSlides, short_presentation)
                 #self.controller.SetSlides(self.presentation)
             else:
-                self.controller.SetSlides(self.presentation)
+                wxCallAfter( self.controller.SetSlides, self.presentation)
 
             # Retrieve the current slide
             self.slideNum = self.appProxy.GetData(self.privateId,
@@ -1348,10 +1359,10 @@ class SharedPresentation:
             self.slideNum = 1
         else:
             self.log.debug("Got slide num: %d", self.slideNum)
-            self.controller.SetSlideNum('%s' % self.slideNum)
+            wxCallAfter(self.controller.SetSlideNum, '%s' % self.slideNum)
 
         # Set the master in the UI
-        self.controller.SetMaster(false)
+        wxCallAfter(self.controller.SetMaster, false)
 
     def LocalUpload(self, filenames):
         dsc = GetVenueDataStore(self.venueUrl)
@@ -1360,7 +1371,12 @@ class SharedPresentation:
 
     def QueryVenueFiles(self, file_query="*"):
         dsc = GetVenueDataStore(self.venueUrl)
-        filenames = dsc.QueryMatchingFiles(file_query)
+        if type(file_query) == type(""):
+            filenames = dsc.QueryMatchingFiles(file_query)
+        elif type(file_query) == type([]):
+            filenames = dsc.QueryMatchingFilesMultiple(file_query)
+        else:
+            raise "InvalidQueryType"
         return filenames
 
 
