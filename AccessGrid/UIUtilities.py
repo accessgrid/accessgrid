@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.48 2004-03-12 22:20:08 olson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.49 2004-03-18 14:09:04 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.48 2004-03-12 22:20:08 olson Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.49 2004-03-18 14:09:04 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import isWindows, isLinux, isOSX
@@ -45,7 +45,7 @@ class ErrorDialog:
                  style =  wxICON_ERROR |wxYES_NO | wxNO_DEFAULT, logFile = VENUE_CLIENT_LOG):
         
         info = text + "\n\nDo you wish to send an automated error report?"
-        errorDialog = wxMessageDialog(frame, info, text2, wxICON_ERROR |wxYES_NO | wxNO_DEFAULT)
+        errorDialog = wxMessageDialog(frame, info, text2, style)
 
         if(errorDialog.ShowModal() == wxID_YES):
             # The user wants to send an error report
