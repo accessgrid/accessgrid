@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.320 2004-02-13 22:07:45 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.321 2004-02-13 22:24:09 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.320 2004-02-13 22:07:45 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.321 2004-02-13 22:24:09 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2337,8 +2337,11 @@ class ContentListPanel(wxPanel):
               
                 # If name or description is different, change the service in venue
                 if newDesc.name != desc.name or newDesc.description != desc.description:
-                    self.app.venueClient.client.UpdateService(newDesc)
-                     
+                    try:
+                        self.app.venueClient.client.UpdateService(newDesc)
+                    except:
+                        MessageDialog(None, "Update service failed.", "Notification", style = wxOK|wxICON_INFORMATION)
+                                           
             serviceView.Destroy()
 
         elif isinstance(desc, ApplicationDescription):
@@ -2351,8 +2354,11 @@ class ContentListPanel(wxPanel):
               
                 # If name or description is different, change the application in venue
                 if newDesc.name != desc.name or newDesc.description != desc.description:
-                    self.app.venueClient.client.UpdateApplication(newDesc)
-                     
+                    try:
+                        self.app.venueClient.client.UpdateApplication(newDesc)
+                    except:
+                        MessageDialog(None, "Update application failed.", "Notification", style = wxOK|wxICON_INFORMATION)
+                                            
             serviceView.Destroy()
                 
     def StartCmd(self, command, item=None, namedVars=None, verb=None):
@@ -3316,10 +3322,12 @@ class ServiceDialog(wxDialog):
 
     def __setEditable(self, editable):
         if not editable:
-            #self.nameCtrl.SetEditable(false)
             self.uriCtrl.SetEditable(false)
             self.typeCtrl.SetEditable(false)
-            #self.descriptionCtrl.SetEditable(false)
+
+            # Always editable
+            self.nameCtrl.SetEditable(true)
+            self.descriptionCtrl.SetEditable(true)
           
         else:
             self.nameCtrl.SetEditable(true)
