@@ -2,7 +2,7 @@ import sys
 import re
 from AccessGrid import Log
 
-hdlr = Log.StreamHandler())
+hdlr = Log.StreamHandler()
 hdlr.setLevel(Log.DEBUG)
 Log.HandleLoggers(Log.StreamHandler(), Log.GetDefaultLoggers())
 
