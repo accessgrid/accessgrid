@@ -33,7 +33,7 @@ TopLevelDomains = {
 CountryDomains = {
     }
 
-serverUrl = "https://watts.mcs.anl.gov:9000/VenueServer"
+serverUrl = "https://ivs.mcs.anl.gov:9000/VenueServer"
 datafile = "vrs-data.pickled"
 
 app = Service()
@@ -106,7 +106,10 @@ def RequestVenueExt(request, test=0):
     log.debug("email: %s", request['email'])
     log.debug("url: %s", request['www'])
 
-    hp = urlparse.urlparse(request['www'])[1].split(':')
+    url = request['www']
+    if not url.startswith('http'):
+        url = 'http://'+url
+    hp = urlparse.urlparse(url)[1].split(':')
 
     log.debug("HP: %s", hp)
     
@@ -158,7 +161,9 @@ def RequestVenueExt(request, test=0):
     newVenue = VenueIW(venueUri)
 
     log.debug("Created IW to new venue.")
-    
+   
+    description = request['description']
+    description = description.replace('\n',' ')
     vDict[backDomain] = {
         'name' : request['name'],
         'description' : request['description'],
