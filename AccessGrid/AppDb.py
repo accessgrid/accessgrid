@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.8 2003-09-28 23:15:02 judson Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.9 2003-09-29 13:11:33 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ used by client software that wants to keep track of what AG specific
 tools are appropriate for specific data types. It also keeps track of
 how to invoke those tools.
 """
-__revision__ = "$Id: AppDb.py,v 1.8 2003-09-28 23:15:02 judson Exp $"
+__revision__ = "$Id: AppDb.py,v 1.9 2003-09-29 13:11:33 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -398,8 +398,10 @@ class AppDb:
 
             for appFile in fileList:
                 try:
-                    shutil.copyfile(os.path.join(srcPath, appFile),
-                                    os.path.join(dstPath, appFile))
+                    srcf = os.path.join(srcPath, appFile)
+                    dstf = os.path.join(dstPath, appFile)
+                    shutil.copyfile(srcf, dstf)
+                                    
                 except:
                     print "Couldn't copy file into place (undoing register)."
                     self.UnregisterApplication(name=name,mimeType=mimeType)
