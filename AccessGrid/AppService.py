@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: AppService.py,v 1.8 2003-05-28 13:25:45 olson Exp $
+# RCS-ID:      $Id: AppService.py,v 1.9 2003-08-12 06:00:03 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -278,10 +278,10 @@ class AppObjectImpl:
 
         handler = ChannelHandler(channel_id, self.eventService)
 
+        self.eventService.AddChannel(channel_id)
+
         self.eventService.RegisterChannelCallback(channel_id,
                                                   handler.handleEvent)
-
-        self.eventService.AddChannel(channel_id)
 
     def __AwakenChannels(self):
         """
