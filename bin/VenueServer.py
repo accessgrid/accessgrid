@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.24 2003-05-20 19:52:09 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.25 2003-05-22 20:17:56 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -90,8 +90,9 @@ for o, a in opts:
 log = logging.getLogger("AG")
 log.setLevel(logging.DEBUG)
 hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
+extfmt = logging.Formatter("%(asctime)s %(name)s %(filename)s:%(lineno)s %(levelname)-5s %(message)s", "%x %X")
 fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-hdlr.setFormatter(fmt)
+hdlr.setFormatter(extfmt)
 log.addHandler(hdlr)
 
 if debugMode:
