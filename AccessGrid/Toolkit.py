@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.44 2004-04-13 03:53:27 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.45 2004-04-13 18:45:20 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.44 2004-04-13 03:53:27 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.45 2004-04-13 18:45:20 judson Exp $"
 
 # Standard imports
 import os
@@ -69,7 +69,23 @@ class AppBase:
        self.userConfig = None
        self.agtkConfig = None
        self.globusConfig = None
+       self.systemConfig = SystemConfig.instance()
+       self.log = None
+       self.defLogHandler = Log.StreamHandler()
+       self.defLogHandler.setFormatter(Log.GetFormatter())
        
+       # 0. Initialize logging, storing in log data memory
+       self.mlh = Log.handlers.MemoryHandler(8192, flushLevel=Log.ERROR,
+                                        target=self.defLogHandler)
+
+       self.mlh.setFormatter(Log.GetFormatter())
+       
+       # This initializes logging
+       self.log = Log.GetLogger(Log.Toolkit)
+       levelHandler = Log.HandleLoggers(self.mlh, Log.GetDefaultLoggers())
+       self.log.info("Initializing AG Toolkit version %s", GetVersion())
+       # self.log.info("System Configuration: \n%s", self.systemConfig)
+
     # This method implements the initialization strategy outlined
     # in AGEP-0112
     def Initialize(self, name=None):
@@ -79,20 +95,6 @@ class AppBase:
        """
        self.name = name
 
-       self.defLogHandler = Log.StreamHandler()
-       self.defLogHandler.setFormatter(Log.GetFormatter())
-       
-       # 0. Initialize logging, storing in log data memory
-       mlh = Log.handlers.MemoryHandler(8192, flushLevel=Log.ERROR,
-                                        target=self.defLogHandler)
-
-       mlh.setFormatter(Log.GetFormatter())
-       
-       # This initializes logging
-       self.log = Log.GetLogger(Log.Toolkit)
-       levelHandler = Log.HandleLoggers(mlh, Log.GetDefaultLoggers())
-       self.log.info("Initializing AG Toolkit version %s", GetVersion())
-       
        # 1. Process Command Line Arguments
        argvResult = self.ProcessArgs()
 
@@ -129,8 +131,9 @@ class AppBase:
        fh.setFormatter(Log.GetFormatter())
        levelHandler = Log.HandleLoggers(fh, Log.GetDefaultLoggers())
 
-       mlh.setTarget(fh)
-       mlh.close()
+       self.mlh.setTarget(fh)
+       self.mlh.close()
+       del self.mlh
        
        return argvResult
 
@@ -202,14 +205,23 @@ class AppBase:
         return self.certificateManager.GetGlobusConfig()
 
     def GetCertMgrUI(self):
-       return self.certMgrUI
-   
+        return self.certMgrUI
+
+    def GetHostname(self):
+        if self.GetOption("insecure") is not None:
+            return self.globusConfig.Hostname()
+        else:
+            return self.systemConfig.Hostname()
+        
     def FindConfigFile(self, configFile):
         """
         Locate given file in configuration directories:
         first check user dir, then system dir;
         return None if not found
         """
+        if self.userConfig is None:
+            self.userConfig = UserConfig.instance()
+            
         pathToFile = os.path.join(self.userConfig.GetConfigDir(), configFile)
         self.log.debug("Looking for: %s", pathToFile)
         if os.path.exists( pathToFile ):
