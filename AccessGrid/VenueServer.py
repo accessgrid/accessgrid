@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.167 2004-09-07 19:05:30 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.168 2004-09-07 20:37:04 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.167 2004-09-07 19:05:30 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.168 2004-09-07 20:37:04 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -1563,7 +1563,7 @@ class VenueServerIW(SOAPIWrapper, AuthorizationIWMixIn):
 
     def ModifyVenue(self, url, venueDescription):
         if url == None:
-            raise InvalidURL
+            raise InvalidVenueURL
 
         if venueDescription == None:
             raise InvalidVenueDescription
@@ -1589,7 +1589,7 @@ class VenueServerIW(SOAPIWrapper, AuthorizationIWMixIn):
         return self.proxy.SetDefaultVenue(url)
 
     def SetStorageLocation(self, location):
-        return self.proxy.SetStorageLocation(url)
+        return self.proxy.SetStorageLocation(location)
 
     def GetStorageLocation(self):
         return self.proxy.GetStorageLocation()
