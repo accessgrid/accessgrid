@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.18 2004-04-19 21:28:05 lefvert Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.19 2004-05-12 18:54:50 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.18 2004-04-19 21:28:05 lefvert Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.19 2004-05-12 18:54:50 lefvert Exp $"
 
 # External Imports
 import os
@@ -365,8 +365,19 @@ class AuthorizationManager:
         if action == None:
             rolelist = self.roles
         else:
+
+            # ---------------------------------------------------
+            # This allows old clients that uses IsValid() to connect
+            # to new server.
+            
+            if action.GetName() == "_IsValid":
+                action.SetName("IsValid")
+                
+            # ---------------------------------------------------
+
             foundAction = self.FindAction(action.GetName())
 
+            
             if not foundAction:
                 raise ActionNotFound(action.GetName())
                 

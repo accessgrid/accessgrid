@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.197 2004-05-12 18:38:21 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.198 2004-05-12 18:54:50 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.197 2004-05-12 18:38:21 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.198 2004-05-12 18:54:50 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -3160,6 +3160,14 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
 
     def GetCachedProfiles(self):
         return self.proxy.GetCachedProfiles()
+    
+    # -----------------------------------------------------
+    # This allows old clients to connect to new servers.
+    #
+    def IsValid(self):
+        return 1
+    
+    # -----------------------------------------------------
 
 
 class StreamDescriptionList:
