@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.179 2005-01-06 23:35:57 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.180 2005-03-31 17:54:33 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.179 2005-01-06 23:35:57 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.180 2005-03-31 17:54:33 lefvert Exp $"
 
 # Standard stuff
 import sys
@@ -52,9 +52,12 @@ from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.Descriptions import Capability
 
+from AccessGrid.AsyncoreEventService import EventService
+
 from AccessGrid.Utilities import ServerLock
 
 log = Log.GetLogger(Log.VenueServer)
+
 
 class VenueServerException(Exception):
     """
@@ -180,7 +183,6 @@ class VenueServer(AuthorizationMixIn):
         self.multicastAddressAllocator = MulticastAddressAllocator()
         self.hostname = Service.instance().GetHostname()
         self.venues = {}
-        self.services = []
         self.configFile = configFile
         self.simpleLock = ServerLock("VenueServer")
         
@@ -234,6 +236,14 @@ class VenueServer(AuthorizationMixIn):
                                                       int(self.dataPort)) )
         self.dataTransferServer.run()
 
+        
+        # Add the event service
+        self.eventService = EventService("Event Service",
+                                         "asyncore based service for distributing events",
+                                         str(GUID()), "AsyncoreEvent", ('zuz.mcs.anl.gov', 8002))
+        self.RegisterService(self.eventService.GetDescription())
+        self.eventService.start()
+                
         # End of server wide services initialization
 
         # Try to open the persistent store for Venues. If we fail, we
@@ -346,6 +356,9 @@ class VenueServer(AuthorizationMixIn):
                                   path='/VenueServer/Authorization')
 
         
+
+       
+        
         
         # Some simple output to advertise the location of the service
         print("Server: %s \nData Port: %d" % ( venueServerUri,
@@ -390,6 +403,8 @@ class VenueServer(AuthorizationMixIn):
             *filename* The filename for the persistent store. It is
             currently a INI formatted file.
         """
+        return
+    
         cp = ConfigParser.ConfigParser()
         cp.read(filename)
 
@@ -538,6 +553,9 @@ class VenueServer(AuthorizationMixIn):
                         v.AddService(ServiceDescription(name, description, uri,
                                                         mimeType))
 
+    def GetEventServiceLocation(self):
+        return self.eventService.GetLocation()
+
     def MakeVenueURL(self, uniqueId):
         """
         Helper method to make a venue URI from a uniqueId.
@@ -673,6 +691,7 @@ class VenueServer(AuthorizationMixIn):
         # Create a new Venue object pass it the server
         # Usually the venueDesc will not have Role information 
         #   and defaults will be used.
+
         venue = Venue(self, venueDesc.name, venueDesc.description,
                       self.dataStorageLocation, venueDesc.id )
 
@@ -744,6 +763,11 @@ class VenueServer(AuthorizationMixIn):
             self.SetDefaultVenue(oid)
 
         venue.authManager.GetActions()
+
+        # create an event channel for this venue.
+        # channel id is the same as venue id.
+        self.eventService.CreateChannel(venue.GetId())
+        self.UpdateService(self.eventService.GetDescription())
         
         # return the URL to the new venue
         return venue.uri
@@ -1034,16 +1058,16 @@ class VenueServer(AuthorizationMixIn):
         
         @Param serviceDescription: A service description.
         """
-        serviceDescription.SetConnectionId(str(GUID()))
-        serviceDescription.SetPrivateId(str(GUID()))
-        
         log.debug("Register service %s", serviceDescription)
-
-        self.services[serviceDescription.GetPrivateId()] = serviceDescription
+        
+        self.services[serviceDescription.GetId()] = serviceDescription
 
         # Send service registered event
 
-        return serviceDescription.GetPrivateId()
+        return serviceDescription.GetId()
+
+    def UpdateService(self, serviceDescription):
+        self.services[serviceDescription.GetId()] = serviceDescription
     
     def UnregisterService(self, serviceDescription):
         """
@@ -1051,7 +1075,7 @@ class VenueServer(AuthorizationMixIn):
         
         @Param serviceDescription: A network service description.
         """
-        privId = serviceDescription.GetPrivateId()
+        privId = serviceDescription.GetId()
         if self.services.has_key(privId):
             i_sd = self.services[privId]
             if serviceDescription == i_sd:
@@ -1078,10 +1102,10 @@ class VenueServer(AuthorizationMixIn):
              self.eventSubscriptions[privId].remove(event)
        else:
           return -1
-
-    def DistributeEvent(self, event, channel, connid = None):
-        log.debug("Distributing Event: %s on Channel: %s for Conn: %s", event,
-                  channel, connid)
+                            
+    def GetServices(self):
+        return self.services.values()
+        
     
 class VenueServerI(SOAPInterface, AuthorizationIMixIn):
     """
@@ -1549,7 +1573,7 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
     def Unsubscribe(self, privId, event):
        evt = CreateEvent(event)
        return self.impl.Unsubscribe(privId, evt)
-
+        
 class VenueServerIW(SOAPIWrapper, AuthorizationIWMixIn):
     """
     """
@@ -1637,4 +1661,4 @@ class VenueServerIW(SOAPIWrapper, AuthorizationIWMixIn):
     def Unsubscribe(self, privId, event):
        evt = CreateEvent(event)
        return self.proxy.Unsubscribe(privId, evt)
-    
+
