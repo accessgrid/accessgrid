@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.62 2004-05-12 17:16:09 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.63 2004-05-12 21:21:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.62 2004-05-12 17:16:09 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.63 2004-05-12 21:21:01 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -888,7 +888,7 @@ class NodeManagementClientFrame(wxFrame):
                 self.nodeServiceHandle.AddService( serviceToAdd,
                                serviceManager.uri,
                                resourceToAssign,
-                               None )
+                               [] )
             except SOAPException, e:
                 log.exception("NodeManagementClientFrame.AddService: Exception in AddService")
                 #self.Error( "Add Service failed :" + serviceToAdd.name )
