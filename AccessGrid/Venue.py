@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.35 2003-02-17 17:22:16 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.36 2003-02-18 17:36:22 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -164,15 +164,16 @@ class Venue(ServiceBase.ServiceBase):
         """
         Start the local datastore server.
 
-        We create a DataStore and a HTTPTransportServer for the actual service.
-        The DataStore is given the Venue's dataStorePath as its working directory.
-        We then loop through the data descriptions in the venue, both checking
-        to see that the file still exists for each piece of data, and updating the
-        uri field in the description with the new download URL.
+        We create a DataStore and a HTTPTransportServer for the actual
+        service.  The DataStore is given the Venue's dataStorePath as
+        its working directory.  We then loop through the data
+        descriptions in the venue, both checking to see that the file
+        still exists for each piece of data, and updating the uri
+        field in the description with the new download URL.
 
-        Actually, we get to do both steps at once, as GetDownloadDescriptor will
-        return None if the file doesn't exist in the local data store.
-
+        Actually, we get to do both steps at once, as
+        GetDownloadDescriptor will return None if the file doesn't
+        exist in the local data store.
         """
 
         if self.dataStorePath is None or not os.path.isdir(self.dataStorePath):
@@ -266,7 +267,11 @@ class Venue(ServiceBase.ServiceBase):
         Virtual Venue. Currently there are a few threads in the Event
         Service.
         """
-        self.eventService.Stop()
+        if self.eventService != None:
+            self.eventService.Stop()
+
+        if self.textService != None:
+            self.textService.Stop()
 
     def NegotiateCapabilities(self, clientProfile):
         """
@@ -662,12 +667,5 @@ class Venue(ServiceBase.ServiceBase):
             print "Service does not exist ", serviceDescription.name
 
     RemoveService.soap_export_as = "RemoveService"
-
-    def Ping( self ):
-        """ I don't know, ask Tom """
-        print "Ping!"
-        return 1
-
-    Ping.soap_export_as = "Ping"
 
  
