@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.43 2003-08-22 20:10:13 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.44 2003-08-28 18:03:48 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -16,9 +16,6 @@ import getpass
 import mimetypes, mailcap
 
 import logging
-
-# Version independence, via new interface
-#from Toolkit import Version
 
 log = logging.getLogger("AG.Platform")
 
@@ -32,7 +29,6 @@ AGTK_INSTALL = 'AGTK_INSTALL'
 WIN = 'win32'
 
 # This gets updated with a call to get the version
-# AGTkRegBaseKey = "SOFTWARE\\Access Grid Toolkit\\%s" % Version.AsString()
 AGTkRegBaseKey = "SOFTWARE\\Access Grid Toolkit\\2.1.1"
 
 def isWindows():
@@ -608,7 +604,6 @@ def SetRtpDefaultsUnix( profile ):
     """
     Set registry values used by vic and rat for identification
     """
-    import os
     #
     # Write the rtp defaults file
     #
