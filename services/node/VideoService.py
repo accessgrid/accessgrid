@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.5 2004-04-26 15:39:49 turam Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.6 2004-05-03 17:38:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -101,7 +101,7 @@ class VideoService( AGService ):
             #
             # Write vic startup file
             #
-            startupfile = os.path.join(Platform.GetTempDir(),
+            startupfile = os.path.join(UserConfig.instance().GetTempDir(),
                'VideoService_%d.vic' % ( os.getpid() ) )
 
             f = open(startupfile,"w")
