@@ -285,8 +285,6 @@ class Venue:
         self.eventClient.RegisterCallback(Event.REMOVE_STREAM, self.EventReceivedCB)
         
 
-        
-
     def EventReceivedCB(self, event):
         """
         EventReceivedCB is a callback for the event client.
@@ -406,20 +404,27 @@ class Venue:
                 self.eventClient.Send(HeartbeatEvent(self.channelId, self.privateId))
               else:
                 self.log.debug("Trying to reach venue")
-                if self.venueProxy._IsValid():
+                try:
+                  self.venueProxy._IsValid()
                   self.log.debug("- venue reachable again; re-creating bridges")
                   self.log.debug("  url =  %s", self.venueUrl )
                   self.ConnectEventClient()
-                  self.AddBridges()
-                else:
+                  if self.eventClient.connected:
+                    # event client reconnected; re-bridge venue
+                    self.AddBridges()
+                except:  # pyGlobus.io.GSITCPSocketException
                   self.log.debug("- venue unreachable")
             except EventClientWriteDataException:
                 if not self.eventClient.connected:
                   self.log.debug("Connection lost; shutting down venue")
                   self.RemoveBridges()
+                else:
+                  # couldn't send, but i'm still connected, so just
+                  # continue trying to send
+                  pass
             except:
-                self.log.exception("BridgeServer:Heartbeat: Heartbeat exception is caught.")
-                self.RemoveBridges()
+                self.log.exception("*** Unexpected exception; no action taken ****")
+
 
             # sleep in short intervals
             for i in range(10):
