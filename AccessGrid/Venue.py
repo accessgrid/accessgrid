@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.165 2004-03-22 19:45:07 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.166 2004-03-22 19:48:44 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.165 2004-03-22 19:45:07 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.166 2004-03-22 19:48:44 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -36,6 +36,7 @@ from AccessGrid.Security.AuthorizationManager import AuthorizationIMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationIWMixIn
 from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 from AccessGrid.Security import X509Subject, Role
+from AccessGrid.Security.Subject import SubjectAlreadyPresent
 
 from AccessGrid import DataStore
 from AccessGrid import NetService
@@ -1021,7 +1022,11 @@ class Venue(AuthorizationMixIn):
             log.debug("   " + str(c))
         log.debug("Enter: Distribute enter event ")
 
-        self.authManager.FindRole("VenueUsers").AddSubject(X509Subject.CreateSubjectFromString(clientProfile.GetDistinguishedName()))
+        try:
+            dn = clientProfile.GetDistinguishedName()
+            self.authManager.FindRole("VenueUsers").AddSubject(X509Subject.CreateSubjectFromString(dn))
+        except SubjectAlreadyPresent:
+            log.info("User already in venue users list: %s", dn)
 
         try:
             state = self.AsVenueState()
