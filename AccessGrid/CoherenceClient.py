@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceClient.py,v 1.11 2003-01-23 14:24:46 judson Exp $
+# RCS-ID:      $Id: CoherenceClient.py,v 1.12 2003-01-24 04:27:40 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -111,13 +111,13 @@ class CoherenceClient(Thread):
             # Then send the pickled data
             self.wfile.write(pdata)
          
-    def __TestCallback(self, data):
+    def __TestCallback(self, event):
         """
         The __TestCallback method is used to test the CoherenceService, it
         simply prints out Coherence Events received over the CoherenceService.
         This is kept private since it really isn't for general use.
         """
-        print "Got Data from Coherence: " + data
+        print "Got Event: ", event.eventType, "Data: " + event.data
     
 class Heartbeat(Thread):
     """
@@ -153,5 +153,8 @@ class Heartbeat(Thread):
         
 if __name__ == "__main__":
     import sys
+    # command line arguments are: 
+    # 1) host to connect to (we'll use the default port)
+    # 2) a unique identifier for this coherenceclient
     coherenceClient = CoherenceClient(host = sys.argv[1], id = sys.argv[2])
     coherenceClient.start()
