@@ -1,0 +1,68 @@
+
+Access Grid Venue VNC
+
+
+--- Installation ---
+
+Linux Client (not as root)
+  Install
+    tar xvfz VenueVNC-x.x-x.tar.gz
+    cd VenueVNC-x.x
+    agpm.py -f VenueVNCClient.app
+  Uninstall
+    agpm.py --unregister -f VenueVNCClient.app
+    
+Installing Linux Server (as root)
+  rpm -i VenueVNC.xxx.rpm
+
+
+Windows Client:
+  Install:
+    Double-click on windows VenueVNC installer exe file.
+  UnInstall:
+    Choose the uninstall option from Start->AccessGrid Toolkit 2->Shared Apps->Uninstall VenueVNC
+
+There is no Windows VenueVNC server at this time.
+
+
+--- Using Venue VNC ---
+
+* The Server
+
+  To start the server:  (only on linux)
+    cd /usr/share/AccessGrid/applications/VenueVNC
+    python VenueVNCServer.py <VenueURL> <Display ID> [Geometry [Depth]]
+  Example:
+    cd /usr/share/AccessGrid/applications/VenueVNC
+    python2 VenueVNCServer.py https://localhost:8000/Venues/default :1
+
+  A VNC shared Application will start in the venue you specified.  Read the Client instructions below to connect.
+
+  Pressing "Control-C" will stop the VNC server and remove it's entry in the venue.  Note: if the proxy expires for the venue server or vnc server, the VNC application will not be able to remove it's entry from the venue's shared applications list (but it can just be deleted with the VenueClient).
+
+------------------
+
+* The Client
+
+  If the VenueClient was running during the VenueVNC Client installation, you will need to restart the VenueClient. 
+  After starting the VenueClient and going to the venue that a VenueVNC server has been started in, expand the "Applications" tree in the VenueClient's main window.  There should be a "VNC" entry that appears when a vnc server was started in this venue.  Right-click on it and select "Open" to join the vnc session.
+
+------------------
+
+Security
+  If you wish to generate a new password on the VNC server, simply restarting the VNC server will do so.  You might wish to do this when you change/remove some people's access to a VenueVNC session.  This is because a VNC password is downloaded temporarily onto a user's machine when they connect.
+
+------------------
+
+Notes on distributions:
+  The Client is not distributed as an rpm because Access Grid users can have different shared applications installed.  Therefore, it is currently installed in a user directory with user permissions.
+  The Server is distributed as an rpm for the root user to install, but it can also be easily run from  a source distribution that includes the server components.
+  On the Windows install, a couple of installer issues force us to leave the VenueVNCClient.app file on the machine while uninstalling.  If you want to, you can remove it after waiting a few seconds after the uninstall.  It's located in \Documents and Settings\<user>\Application Data\AccessGrid Apps\VenueVNC.
+
+--- Troubleshooting ---
+
+If you're having problems starting VenueVNCServer.py, and you see the following error:
+  twm:  another window manager is already running on screen 0?
+  twm:  unable to find any unmanaged screens
+Check to make sure an Xvnc process from one of your previous attempts isn't still running.  If so, kill the Xvnc process and try again.
+

@@ -1,0 +1,10 @@
+
+1.0.2
+  New .app file for registering with version 2.1.2 and higher.
+    Use like this: RegisterApp.py -f VenueVNCClient.app
+    (note when it copies vncviewer on linux, the executable
+     flag needs to be set manually in ~/.AccessGrid/ShareApplications...)
+  Changed keys with spaces in them.  The spaces prevent
+    VenueServer from starting when loading persistent data.
+    *** vnc users will need at least 1.0.2.
+
