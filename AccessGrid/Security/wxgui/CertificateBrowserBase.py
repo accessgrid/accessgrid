@@ -56,11 +56,23 @@ class CertificateBrowserBase(wxPanel):
         certs = self._LoadCerts()
 
         #
+        # If we didn't get any certs, set the listctrl
+        # to autosize from teh headers so we can see what would have been there.
+        #
+
+        if len(certs) == 0:
+            sizes = self._getListColumnWidths()
+            for col in range(0, len(sizes)):
+                self.list.SetColumnWidth(col, wxLIST_AUTOSIZE_USEHEADER)
+            return
+
+        #
         # Format each cert. Format means to retrieve the
         # list of column values for this certificate, as well
         # as an object that will be bound to the data for the
         # row.
         #
+
 
 
         row = 0
