@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.8 2004-04-12 20:50:06 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.9 2004-04-12 22:24:09 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.8 2004-04-12 20:50:06 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.9 2004-04-12 22:24:09 eolson Exp $"
 
 import os
 import mimetypes
@@ -358,7 +358,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         return self.hostname
 
     def RemoveHostname(self):
-        if os.environ.has_key['GLOBUS_HOSTNAME']:
+        if os.environ.has_key('GLOBUS_HOSTNAME'):
             del os.environ['GLOBUS_HOSTNAME']
             self.hostname = None
             
@@ -373,7 +373,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         self.location = loc
 
     def RemoveLocation(self):
-        if os.environ.has_key['GLOBUS_LOCATION']:
+        if os.environ.has_key('GLOBUS_LOCATION'):
             del os.environ['GLOBUS_LOCATION']
             self.location = None
             
@@ -388,7 +388,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         self.serverFlag = value
 
     def RemoveServerFlag(self):
-        if os.environ.has_key['X509_RUN_AS_SERVER']:
+        if os.environ.has_key('X509_RUN_AS_SERVER'):
             del os.environ['X509_RUN_AS_SERVER']
             self.serverFlag = None
             
@@ -403,7 +403,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         self.caCertDir = certdir
 
     def RemoveCACertDir(self):
-        if os.environ.has_key['X509_CERT_DIR']:
+        if os.environ.has_key('X509_CERT_DIR'):
             del os.environ['X509_CERT_DIR']
             self.caCertDir = None
             
@@ -418,7 +418,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         self.proxyFileName = proxyfn
 
     def RemoveProxyFileName(self):
-        if os.environ.has_key['X509_USER_PROXY']:
+        if os.environ.has_key('X509_USER_PROXY'):
             del os.environ['X509_USER_PROXY']
             self.proxyFileName = None
             
@@ -434,7 +434,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         self.certFileName = certfn
 
     def RemoveCertFileName(self):
-        if os.environ.has_key['X509_USER_CERT']:
+        if os.environ.has_key('X509_USER_CERT'):
             del os.environ['X509_USER_CERT']
             self.certFileName = None
             
@@ -450,7 +450,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         self.keyFileName = keyfn
 
     def RemoveKeyFileName(self):
-        if os.environ.has_key['X509_USER_KEY']:
+        if os.environ.has_key('X509_USER_KEY'):
             del os.environ['X509_USER_KEY']
             self.keyFileName = None
             
