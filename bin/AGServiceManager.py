@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.34 2004-03-15 20:07:02 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.35 2004-03-15 20:49:32 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -112,6 +112,7 @@ def main():
     log.info("Starting Service Manager URI: %s", url)
 
     # Keep the main thread busy so we can catch signals
+    global running
     running = 1
     while running:
         time.sleep(1)
