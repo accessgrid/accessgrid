@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.54 2004-04-07 14:28:17 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.55 2004-04-07 16:31:02 judson Exp $
 ;
 
 ; Set externally
@@ -46,7 +46,7 @@ Compression=zip/9
 MinVersion=0,5.0.2195
 LicenseFile=COPYING.txt
 DisableDirPage=false
-DefaultGroupName={#AppName} 2
+DefaultGroupName={#AppName}
 DefaultDirName={pf}\{#AppName}
 UsePreviousAppDir=false
 UserInfoPage=false
@@ -75,8 +75,8 @@ DisableReadyPage=true
 UsePreviousSetupType=true
 UsePreviousTasks=false
 UsePreviousGroup=true
-
 ShowLanguageDialog=yes
+
 [Files]
 ; The Python Modules
 Source: Lib\site-packages\*.*; DestDir: {code:GetPythonPath}\Lib\site-packages; Flags: recursesubdirs overwritereadonly restartreplace
@@ -109,12 +109,10 @@ Source: NodeServices\*.zip; DestDir: {app}\NodeServices
 ; Shared Application packages
 Source: SharedApplications\*.shared_app_pkg; DestDir: {app}\SharedApplications
 
-; icons file (? I forget what for)
+; System wide files, windows wierdness no doubt
 Source: install\agicons.exe; DestDir: {app}\install
-
-; begin VC system files
-Source: ..\AccessGrid\packaging\windows\msvcr70.dll; DestDir: {win}\system32; Flags: restartreplace uninsneveruninstall onlyifdoesntexist
-; end VC system files
+Source: install\msvcr70.dll; DestDir: {win}\system32; Flags: restartreplace uninsneveruninstall onlyifdoesntexist
+; end system files
 
 [Icons]
 Name: {group}\View README; Filename: {app}\README.txt; Flags: createonlyiffileexists; Comment: Read the ReadMe.
