@@ -6,11 +6,10 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.238 2003-10-21 21:04:41 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.239 2003-10-29 20:55:28 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
-#-----------------------------------------------------------------------------
-
+#---------------------------------------------------------------------------
 import threading
 import os
 import logging, logging.handlers
@@ -456,7 +455,7 @@ class VenueClientUI(VenueClientEventSubscriber):
                                             'Click "Go" to connect to the venue, which address is displayed in the address bar') 
         self.venueClient.ExitVenue()
         MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", "Lost Connection")
-
+        
     def RemoveUserEvent(self, event):
         """
         Note: Overridden from VenueClient
@@ -789,8 +788,8 @@ class VenueClientUI(VenueClientEventSubscriber):
             #
             # log.debug("Set text location and address bar")
             self.venueClient.textClient.RegisterOutputCallback(self.frame.textClientPanel.OutputText)
-            wxCallAfter(self.frame.textClientPanel.OutputText,
-                        "-- Entered venue %s\n" % self.venueClient.venueState.name)
+            wxCallAfter(self.frame.textClientPanel.OutputText, None,
+                        "-- Entered venue %s" % self.venueClient.venueState.name)
             wxCallAfter(self.frame.FillInAddress, None, URL)
             
             # Venue data storage location
