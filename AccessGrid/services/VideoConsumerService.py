@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.6 2003-02-18 19:35:45 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.7 2003-02-21 17:23:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,7 +46,10 @@ class VideoConsumerService( AGService ):
          if self.streamDescription.encryptionKey != 0:
             options.append( "-K" )
             options.append( self.streamDescription.encryptionKey )
-         options.append( '%s/%d/%d' % ( self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl ) )
+         options.append( "-t" )
+         options.append( '%d' % ( self.streamDescription.location.ttl ) )
+         options.append( '%s/%d' % ( self.streamDescription.location.host, 
+                                     self.streamDescription.location.port ) )
          self._Start( options )
          print "pid = ", self.childPid
       except:
