@@ -5,16 +5,17 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.2 2004-02-24 18:36:21 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.3 2004-02-25 15:46:41 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.2 2004-02-24 18:36:21 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.3 2004-02-25 15:46:41 turam Exp $"
 __docformat__ = "restructuredtext en"
 
+import copy
 import os
 import os.path
 import time
@@ -46,6 +47,8 @@ from AccessGrid.Utilities import SubmitBug
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.AppMonitor import AppMonitor
+from AccessGrid.VenueClient import NetworkLocationNotFound, NotAuthorizedError
+from AccessGrid.Venue import ServiceAlreadyPresent
 
 try:
     import win32api
@@ -697,7 +700,15 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def AddServiceCB(self, event):
         serviceDescription = self.OpenAddServiceDialog()
         if serviceDescription:
-            self.controller.AddServiceCB(serviceDescription)
+            try:
+                self.controller.AddServiceCB(serviceDescription)
+            except ServiceAlreadyPresent:
+                self.Error("A service by that name already exists", "Add Service Error")
+            except:
+                log.exception("bin.VenueClient::AddService: Error occured when trying to add service")
+                self.Error("The service could not be added", "Add Service Error")
+
+
 
     def SaveTextCB(self, event):
         """
@@ -708,7 +719,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         filePath = self.SelectFile("Choose a file:", wildcard = wildcard)
         text = self.GetText()
         if filePath:
-            self.controller.SaveTextCB(filePath,text)
+            try:
+                self.controller.SaveTextCB(filePath,text)
+            except:
+                log.exception("VenueClientFrame.SaveText: Can not save text.")
+                self.Error("Text could not be saved.", "Save Text")
+
         
     def ModifyVenueRolesCB(self,event):
         rolesDict = self.ModifyVenueRoles()
@@ -767,8 +783,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             # Get the selected provider
             index = dialog.GetSelection()
             selectedProvider = providerList[index]
-            self.controller.UseUnicastCB(selectedProvider)
-
+            try:
+                self.controller.UseUnicastCB(selectedProvider)
+            except NetworkLocationNotFound:
+                # Report the error to the user
+                text="Can't access streams from selected bridge; reverting to previous selection"
+                self.Warn(None, text, "Use Unicast failed")
         else:
             # Set the menu checkbox appropriately
             transport = self.venueClient.GetTransport()
@@ -945,7 +965,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
     def OpenDataCB(self, event):
         data = self.GetSelectedItem()
-        self.controller.OpenDataCB(data)
+        if data:
+            self.controller.OpenDataCB(data)
+        else:
+            self.Notify("Please, select the data you want to open", "Open Data")
               
     def SaveDataCB(self, event):
         log.debug("VenueClientFrame.SaveData: Save data")
@@ -960,8 +983,24 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
     def RemoveDataCB(self, event):
         itemList = self.GetSelectedItems()
-        self.controller.RemoveDataCB(itemList)
-
+        if itemList:
+            try:
+                self.controller.RemoveDataCB(itemList)
+            except NotAuthorizedError:
+                log.info("bin.VenueClient::RemoveData: Not authorized to  remove data")
+                self.Notify("You are not authorized to remove the file", "Remove Personal Files")        
+            except:
+                log.exception("bin.VenueClient::RemoveData: Error occured when trying to remove data")
+                self.Error("The file could not be removed", "Remove Files Error")
+        else:
+            self.Error("Please, select the data you want to delete", "No file selected")
+        
+    def ModifyDataCB(self,dataDesc):
+        try:
+            self.controller.ModifyDataCB(dataDesc)
+        except:
+            log.exception("bin.VenueClient::ModifyData: Error occured when trying to modify data")
+            self.Error("The file could not be modified", "Modify Files Error")
 
     #
     # Service Actions
@@ -973,12 +1012,24 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     
     def OpenServiceCB(self,event):
         service = self.GetSelectedItem()
-        self.controller.OpenServiceCB(service)
+        if service:
+            self.controller.OpenServiceCB(service)
+        else:
+            self.Notify("Please, select the service you want to open","Open Service")       
     
     def RemoveServiceCB(self, event):
         itemList = self.GetSelectedItems()
-        self.controller.RemoveServiceCB(itemList)
-        
+        if itemList:
+            try:
+                self.controller.RemoveServiceCB(itemList)
+            except:
+                log.exception("bin.VenueClient::RemoveService: Error occured when trying to remove service")
+                self.Error("The service could not be removed", "Remove Service Error")
+        else:
+           self.Notify("Please, select the service you want to delete")       
+
+    def UpdateServiceCB(self,serviceDesc):
+        self.controller.UpdateServiceCB(serviceDesc)
         
             
     #
@@ -987,11 +1038,17 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     
     def OpenApplicationCB(self, event):
         app = self.GetSelectedItem()
-        self.controller.OpenApplicationCB(app)
+        if app:
+            self.controller.OpenApplicationCB(app)
+        else:
+            self.gui.Notify("Please, select the data you want to open","Open Application")
     
     def RemoveApplicationCB(self,event):
         appList = self.GetSelectedItems()
-        self.controller.RemoveApplicationCB(appList)
+        if appList:
+            self.controller.RemoveApplicationCB(appList)
+        else:
+            self.Notify( "Please, select the application you want to delete")
 
     def StartApplicationCB(self, app, event=None):
         name, appDescription = self.OpenAddAppDialog(app)
@@ -1006,6 +1063,9 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         Open monitor for the application.
         """
         self.OpenAppMonitor(application)
+        
+    def UpdateApplicationCB(self,appDesc):
+        self.controller.UpdateApplicationCB(appDesc)
         
         
     #
@@ -1178,7 +1238,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         if (addServiceDialog.ShowModal() == wxID_OK):
 
             try:
-                serviceDescription = addServiceDialog.GetValue()
+                serviceDescription = addServiceDialog.GetDescription()
                 log.debug("Adding service: %s to venue" %serviceDescription.name)
             except:
                 log.exception("bin.VenueClient::AddService: Error occured when trying to add service")
@@ -1433,6 +1493,16 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.onExitCalled = true
             log.info("--------- END VenueClient")
             
+            # Call close on all open child windows so they can do necessary cleanup.
+            # If close is called instead of destroy, an EVT_CLOSE event is distributed
+            # for child windows and cleanup code can be put in the callback for that event.
+            children = self.GetChildren()
+            for c in children:
+                try:
+                    c.Close(1)
+                except:
+                    pass
+                    
             self.controller.ExitCB()
 
         else:
@@ -2521,6 +2591,7 @@ class ContentListPanel(wxPanel):
             
         if(id != None):
             self.tree.SetItemData(id, wxTreeItemData(dataDescription))
+            self.tree.SetItemText(id, dataDescription.name)
         else:
             log.info("ContentListPanel.UpdateData: Id is none - that is not good")
                           
@@ -2568,15 +2639,20 @@ class ContentListPanel(wxPanel):
 
  
         self.tree.SetItemData(service, wxTreeItemData(serviceDescription)) 
-        self.serviceDict[serviceDescription.name] = service
+        self.serviceDict[serviceDescription.id] = service
         self.tree.SortChildren(self.services)
         self.tree.Refresh()
         #self.tree.Expand(self.services)
         
+    def UpdateService(self, serviceDescription):
+        if(self.serviceDict.has_key(serviceDescription.id)):
+            self.RemoveService(serviceDescription)
+            self.AddService(serviceDescription)
+                                           
     def RemoveService(self, serviceDescription):
-        if(self.serviceDict.has_key(serviceDescription.name)):
-            id = self.serviceDict[serviceDescription.name]
-            del self.serviceDict[serviceDescription.name]
+        if(self.serviceDict.has_key(serviceDescription.id)):
+            id = self.serviceDict[serviceDescription.id]
+            del self.serviceDict[serviceDescription.id]
             if(id != None):
                 self.tree.Delete(id)
 
@@ -2590,6 +2666,11 @@ class ContentListPanel(wxPanel):
         #self.tree.Expand(self.applications)
         self.tree.Refresh()
       
+    def UpdateApplication(self, appDesc):
+        if(self.applicationDict.has_key(appDesc.uri)):
+            self.RemoveApplication(appDesc)
+            self.AddApplication(appDesc)
+                   
     def RemoveApplication(self, appDesc):
         if(self.applicationDict.has_key(appDesc.uri)):
             id = self.applicationDict[appDesc.uri]
@@ -2966,17 +3047,49 @@ class ContentListPanel(wxPanel):
         if isinstance(desc, DataDescription):
             dataView = DataPropertiesDialog(self, -1, "Data Properties")
             dataView.SetDescription(desc)
-            dataView.ShowModal()
+            if dataView.ShowModal() == wxID_OK:
+                # Get new description
+                newDesc = dataView.GetDescription()
+                               
+                # If name is different, change data in venue
+                if newDesc.name != desc.name:
+                    try:
+                        self.parent.ModifyDataCB(newDesc)
+                    except:
+                        log.exception("VenueClientUIClasses: Modify data failed")
+                        MessageDialog(None, "Update data failed.", "Notification", style = wxOK|wxICON_INFORMATION) 
+            
             dataView.Destroy()
         elif isinstance(desc, ServiceDescription):
             serviceView = ServicePropertiesDialog(self, -1, "Service Properties")
             serviceView.SetDescription(desc)
-            serviceView.ShowModal()
+            if(serviceView.ShowModal() == wxID_OK):
+                # Get new description
+                newDesc = serviceView.GetDescription()
+              
+                # If name or description is different, change the service in venue
+                if newDesc.name != desc.name or newDesc.description != desc.description:
+                    try:
+                        self.parent.UpdateServiceCB(newDesc)
+                    except:
+                        log.exception("VenueClientUI: Update service failed")
+                        MessageDialog(None, "Update service failed.", "Notification", style = wxOK|wxICON_INFORMATION)
+                                           
             serviceView.Destroy()
         elif isinstance(desc, ApplicationDescription):
             serviceView = ServicePropertiesDialog(self, -1, "Application Properties")
             serviceView.SetDescription(desc)
-            serviceView.ShowModal()
+            # Get new description
+            if(serviceView.ShowModal() == wxID_OK):
+                newDesc = serviceView.GetDescription()
+              
+                # If name or description is different, change the application in venue
+                if newDesc.name != desc.name or newDesc.description != desc.description:
+                    try:
+                        self.parent.UpdateApplicationCB(newDesc)
+                    except:
+                        MessageDialog(None, "Update application failed.", "Notification", style = wxOK|wxICON_INFORMATION)
+                                            
             serviceView.Destroy()
                 
     def CleanUp(self):
@@ -3980,10 +4093,14 @@ class DataPropertiesDialog(wxDialog):
         self.ownerCtrl = wxTextCtrl(self, -1, "")
         self.sizeText = wxStaticText(self, -1, "Size:")
         self.sizeCtrl = wxTextCtrl(self, -1, "")
+        self.lastModText = wxStaticText(self, -1, "Last modified:")
+        self.lastModCtrl = wxTextCtrl(self, -1, "")
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.__SetProperties()
         self.Layout()
+        
+        self.description = None
         
     def __SetProperties(self):
         self.SetTitle("Please, fill in data information")
@@ -3991,14 +4108,18 @@ class DataPropertiesDialog(wxDialog):
 
     def __SetEditable(self, editable):
         if not editable:
+            # Name is always editable
             self.nameCtrl.SetEditable(false)
+            
             self.ownerCtrl.SetEditable(false)
             self.sizeCtrl.SetEditable(false)
+            self.lastModCtrl.SetEditable(false)
                      
         else:
             self.nameCtrl.SetEditable(true)
             self.ownerCtrl.SetEditable(true)
             self.sizeCtrl.SetEditable(true)
+            self.lastModCtrl.SetEditable(true)
                                        
     def Layout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
@@ -4010,6 +4131,8 @@ class DataPropertiesDialog(wxDialog):
         gridSizer.Add(self.ownerCtrl, 2, wxEXPAND, 0)
         gridSizer.Add(self.sizeText, 0, wxALIGN_LEFT, 0)
         gridSizer.Add(self.sizeCtrl, 0, wxEXPAND, 0)
+        gridSizer.Add(self.lastModText, 0, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.lastModCtrl, 0, wxEXPAND, 0)
         sizer2.Add(gridSizer, 1, wxALL, 10)
 
         sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
@@ -4028,12 +4151,28 @@ class DataPropertiesDialog(wxDialog):
         '''
         This method is called if you only want to view the dialog.
         '''
+        self.description = copy.copy(dataDescription)
         self.nameCtrl.SetValue(dataDescription.name)
         self.ownerCtrl.SetValue(str(dataDescription.owner))
         self.sizeCtrl.SetValue(str(dataDescription.size))
+        try:
+            if not dataDescription.lastModified:
+                self.lastModCtrl.SetValue("Not available.")
+            else:    
+                self.lastModCtrl.SetValue(str(dataDescription.lastModified))
+        except:
+            self.lastModCtrl.SetValue("Not available.")
+            log.info("DataDialog.SetDescription: last modified param does not exist. Probably old data description. Ignore!")
         self.SetTitle("Data Properties")
         self.__SetEditable(false)
         self.cancelButton.Destroy()
+        
+    def GetDescription(self):
+        if self.description:
+            self.description.name = self.nameCtrl.GetValue()
+
+        return self.description
+          
           
 
 ###########################################################################################
@@ -4053,14 +4192,18 @@ class ServicePropertiesDialog(wxDialog):
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.Layout()
+        
+        self.description = None
+
     
     def __SetEditable(self, editable):
         if not editable:
-            self.nameCtrl.SetEditable(false)
             self.uriCtrl.SetEditable(false)
             self.typeCtrl.SetEditable(false)
-            self.descriptionCtrl.SetEditable(false)
-          
+            
+            # Always editable
+            self.nameCtrl.SetEditable(true)
+            self.descriptionCtrl.SetEditable(true)
         else:
             self.nameCtrl.SetEditable(true)
             self.uriCtrl.SetEditable(true)
@@ -4093,7 +4236,7 @@ class ServicePropertiesDialog(wxDialog):
         sizer1.Fit(self)
         self.SetAutoLayout(1)
 
-    def GetValue(self):
+    def GetDescription(self):
         service = ServiceDescription("service", "service", "uri",
                                      "storagetype")
         service.SetName(self.nameCtrl.GetValue())
@@ -4106,6 +4249,9 @@ class ServicePropertiesDialog(wxDialog):
         '''
         This method is called if you only want to view the dialog.
         '''
+        
+        self.description = copy.copy(serviceDescription)
+        
         self.nameCtrl.SetValue(serviceDescription.name)
         self.uriCtrl.SetValue(serviceDescription.uri)
         self.typeCtrl.SetValue(serviceDescription.mimeType)
