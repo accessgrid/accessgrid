@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.16 2003-01-21 20:44:16 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.17 2003-01-22 20:31:20 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,6 +20,7 @@ import shelve
 import signal
 
 # AG Stuff
+from Utilities import formatExceptionInfo
 from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid import Venue
 import CoherenceService
@@ -82,7 +83,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
         # Initialize our state
         # We need to get the first administrator from somewhere
-        self.administrators = [] 
+        self.administrators = []
         self.dataStorage = None
         self.defaultVenue = ''
         self.hostingEnvironment = hostEnvironment
@@ -91,7 +92,7 @@ class VenueServer(ServiceBase.ServiceBase):
         self.services = []
         self.dataStorageLocation = None
         self.coherencePort = self.config['CoherenceService.coherencePortBase']
-        
+
         # Try to open the persistent store for Venues. If we fail, we
         # open a temporary store, but it'll be empty.
         try:
@@ -138,16 +139,23 @@ class VenueServer(ServiceBase.ServiceBase):
         This is from the python cookbook credit: Dirk Holtwick.
         """
         config = config.copy()
-        self.cp = ConfigParser.ConfigParser()
-        self.cp.read(file)
-        for sec in self.cp.sections():
+        cp = ConfigParser.ConfigParser()
+        cp.read(file)
+        for sec in cp.sections():
             name = string.lower(sec)
-            for opt in self.cp.options(sec):
+            for opt in cp.options(sec):
                 config[name + "."
                        + string.lower(opt)] = string.strip(
-                        self.cp.get(sec, opt))
+                        cp.get(sec, opt))
         return config
 
+    def SaveConfig(self, file):
+        """
+        This method saves the current configuration out to the specified file.
+        """
+        cp = ConfigParser.ConfigParser()
+        cp.write(file(self.configFile, 'w+'))
+        
     def AddVenue(self, connectionInfo, venueDescription):
         """
         The AddVenue method takes a venue description and creates a new
@@ -162,10 +170,6 @@ class VenueServer(ServiceBase.ServiceBase):
                                                  venueDescription.description,
                                                  venueDescription.icon,
                                                  venueDescription.extendedDescription )
-
-            # Get the next port for the coherenceService for the new venue
-#            coherencePort = self.config['CoherenceService.coherencePortBase'] + len(self.venues.keys())
-            self.coherencePort = self.coherencePort + 1
 
             print "Next coherence port is: %d" % self.coherencePort
             # Build the new coherenceService
@@ -199,8 +203,11 @@ class VenueServer(ServiceBase.ServiceBase):
 
             # Add the venue to the list of venues
             self.venues[venueURL] = venue
+
+            # increment the coherence Port for the next venue
+            self.coherencePort = self.coherencePort + 1
         except:
-            print "Exception in AddVenue ", sys.exc_type, sys.exc_value
+            print "Exception in AddVenue ", formatExceptionInfo()
 
         # return the URL to the new venue
         return venueURL
@@ -217,7 +224,7 @@ class VenueServer(ServiceBase.ServiceBase):
         # 2. That you are setting the right venue description
         if(venueDescription.uri == URL):
             self.venues[URL].description = venueDescription
-                
+
     ModifyVenue.pass_connection_info = 1
     ModifyVenue.soap_export_as = "ModifyVenue"
 
@@ -254,7 +261,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
     def GetAdministrators(self, connectionInfo):
         """
-        GetAdministrators returns a list of adminsitrators for this 
+        GetAdministrators returns a list of adminsitrators for this
         VenueServer.
         """
         return self.administrators
@@ -266,7 +273,7 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         AddService adds a service description to the list of service
         descriptions that are available to the Virtual Venues hosted by
-        this VenueServer. 
+        this VenueServer.
         """
         self.services[serviceDescription.uri] = serviceDescription
 
@@ -275,7 +282,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
     def RemoveService(self, connectionInfo, URL, serviceDescription):
         """
-        RemoveService removes a service description from the list of 
+        RemoveService removes a service description from the list of
         service descriptions that this VenueServer knows about.
         """
         self.services.remove(serviceDescription)
@@ -285,7 +292,7 @@ class VenueServer(ServiceBase.ServiceBase):
 
     def ModifyService(self, connectionInfo, URL, serviceDescription):
         """
-        ModifyService updates a service description that is in the 
+        ModifyService updates a service description that is in the
         list of services for this VenueServer.
         """
         if URL == serviceDescription.uri:
@@ -340,7 +347,6 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         self.defaultVenue = venueURL
         self.config["VenueServer.defaultVenue"] = venueURL
-        self.cp.set("VenueServer", "defaultVenue", str(venueURL))
 
     SetDefaultVenue.pass_connection_info = 1
     SetDefaultVenue.soap_export_as = "SetDefaultVenue"
@@ -364,7 +370,7 @@ class VenueServer(ServiceBase.ServiceBase):
     GetCoherencePortBase.soap_export_as = "GetCoherencePortBase"
 
 
-    def SetStorageLocation( self, connectionInfo, dataStorageLocation ):
+    def SetStorageLocation( self, dataStorageLocation ):
         """
         Set the path for data storage
         """
@@ -373,7 +379,7 @@ class VenueServer(ServiceBase.ServiceBase):
     SetStorageLocation.soap_export_as = "SetStorageLocation"
 
 
-    def GetStorageLocation( self, connectionInfo ):
+    def GetStorageLocation( self ):
         """
         Get the path for data storage
         """
@@ -461,9 +467,9 @@ class VenueServer(ServiceBase.ServiceBase):
         Checkpoint stores the current state of the running VenueServer to
         non-volatile storage. In the event of catastrophic failure, the
         non-volatile storage can be used to restart the VenueServer.
-        
+
         The fequency at which Checkpointing is done will bound the amount of
-        state that is lost (the longer the time between checkpoints, the more 
+        state that is lost (the longer the time between checkpoints, the more
         that can be lost).
         """
         try:
@@ -477,8 +483,8 @@ class VenueServer(ServiceBase.ServiceBase):
         except:
             print "Corrupt persistence database detected.", sys.exc_type, sys.exc_value
 
-        self.cp.write(file(self.configFile, 'w+'))
-
+        self.SaveConfig(file(self.configFile, 'w+'))
+        
     Checkpoint.soap_export_as = "Checkpoint"
 
 if __name__ == "__main__":
