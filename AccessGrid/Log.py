@@ -90,6 +90,7 @@ NodeManagementUIClasses = "NodeManagementUIClasses"
 NodeSetupWizard = "NodeSetupWizard"
 NodeService = "NodeService"
 Security = "Security"
+Platform = "Platform"
 ProxyGen = "ProxyGen"  # Security
 pyGlobus = "pyGlobus"
 
