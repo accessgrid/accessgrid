@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.45 2003-03-26 16:11:21 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.46 2003-03-26 17:03:26 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -292,15 +292,23 @@ class VenueClient( ServiceBase):
 
         # request permission to follow the leader
         # (response will come in via the LeadResponse method)
-        log.debug('Requesting permission to follow this leader: %s' %leaderProfile.name)
+        log.debug('AccessGrid.VenueClient::Requesting permission to follow this leader: %s' %leaderProfile.name)
         Client.Handle( leaderProfile.venueClientURL ).get_proxy().Lead( self.profile )
+
+    def UnFollow( self, leaderProfile ):
+        """
+        Follow tells this venue client to follow the specified client
+        """
+
+        log.debug('AccessGrid.VenueClient::Trying to unlead: %s' %leaderProfile.name)
+        Client.Handle( leaderProfile.venueClientURL ).get_proxy().UnLead( self.profile )
 
     def Lead( self, clientProfile):
         """
         Lead tells this venue client to drag the specified client with it.
         """
 
-        log.debug("Received request to lead %s %s" %clientProfile.name, clientProfile.venueClientURL)
+        log.debug("AccessGrid.VenueClient::Received request to lead %s %s" %(clientProfile.name, clientProfile.venueClientURL))
 
         # Add profile to list of followers awaiting authorization
         self.pendingFollowers[clientProfile.publicId] = clientProfile
@@ -331,13 +339,13 @@ class VenueClient( ServiceBase):
 
         if response:
             # add profile to list of followers
-            log.debug("Authorizing lead request for %s" %clientProfile.name)
+            log.debug("AccessGrid.VenueClient::Authorizing lead request for %s" %clientProfile.name)
             self.followerProfiles[clientProfile.publicId] = clientProfile
 
             # send the response
             Client.Handle( clientProfile.venueClientURL ).get_proxy().LeadResponse(self.profile, 1)
         else:
-            log.debug("Rejecting lead request for %s" %clientProfile.name)
+            log.debug("AccessGrid.VenueClient::Rejecting lead request for %s" %clientProfile.name)
 
     def LeadResponse(self, leaderProfile, isAuthorized):
         """
@@ -346,10 +354,10 @@ class VenueClient( ServiceBase):
         this method to give the user visual feedback to the Lead request.
         """
         if leaderProfile.publicId == self.pendingLeader.publicId and isAuthorized:
-            log.debug("Leader has agreed to lead you: %s, %s" %(self.pendingLeader.name, self.pendingLeader.distinguishedName))
+            log.debug("AccessGrid.VenueClient::Leader has agreed to lead you: %s, %s" %(self.pendingLeader.name, self.pendingLeader.distinguishedName))
             self.leaderProfile = self.pendingLeader
         else:
-            log.debug("Leader has rejected request to lead you: %s", leaderProfile.name)
+            log.debug("AccessGrid.VenueClient::Leader has rejected request to lead you: %s", leaderProfile.name)
         self.pendingLeader = None
 
     LeadResponse.soap_export_as = "LeadResponse"
@@ -359,7 +367,7 @@ class VenueClient( ServiceBase):
         UnLead tells this venue client to stop dragging the specified client.
         """
 
-        log.debug( "AccessGrid.VenueClient::Received request to unlead %s %s"
+        log.debug( "AccessGrid.VenueClient::AccessGrid.VenueClient::Received request to unlead %s %s"
                    %(clientProfile.name, clientProfile.venueClientURL))
 
         if(self.followerProfiles.has_key(clientProfile.publicId)):
