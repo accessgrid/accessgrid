@@ -90,7 +90,11 @@ def usage():
     
     -v|--verbose
        The option to be very very spammy when run.
-       """ % (sys.argv[0], SourceDir, metainformation)
+
+    --version
+       The version of the toolkit.
+       The default is: %s
+       """ % (sys.argv[0], SourceDir, metainformation, AGTkVersion)
 
 # Innosoft config file names
 iss_orig = "agtk.iss"
