@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.37 2003-08-22 05:06:00 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.38 2003-08-22 14:12:17 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 import os
 import sys
 import getpass
-import mimetypes
+import mimetypes, mailcap
 
 import logging
 
