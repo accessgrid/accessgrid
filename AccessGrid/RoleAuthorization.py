@@ -15,7 +15,6 @@ from wxPython.wizard import *
 
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid import Toolkit
-from AccessGrid.Utilities import HaveValidProxy
 from AccessGrid.ClientProfile import ClientProfileCache
 
        
