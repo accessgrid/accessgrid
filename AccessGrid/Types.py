@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.28 2003-03-24 20:26:12 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.29 2003-03-25 17:34:16 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -44,7 +44,7 @@ class VenueState:
             self.clients[user.publicId] = time.localtime()
         for node in nodes:
             self.nodes[node.publicId] = node
-            self.clients[nodes.publicId] = time.localtime()
+            self.clients[node.publicId] = time.localtime()
         for datum in data:
             self.data[datum.name] = datum
         for app in applications:

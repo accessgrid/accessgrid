@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.38 2003-03-25 17:01:47 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.39 2003-03-25 17:34:16 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,6 +29,8 @@ from AccessGrid.scheduler import Scheduler
 class EnterVenueException(Exception):
     pass
         
+log = logging.getLogger("AG.VenueClient")
+
 class VenueClient( ServiceBase):
     """
     This is the client side object that maintains a stateful
@@ -223,7 +225,7 @@ class VenueClient( ServiceBase):
             self.venueUri = URL
 
         except:
-            print "Exception in EnterVenue : ", sys.exc_type, sys.exc_value
+	    log.exception("Enter Failed!")
             raise EnterVenueException("Enter Failed!")
     
     EnterVenue.soap_export_as = "EnterVenue"
