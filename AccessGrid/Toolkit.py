@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.60 2004-05-17 17:53:12 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.61 2004-05-20 22:56:44 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.60 2004-05-17 17:53:12 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.61 2004-05-20 22:56:44 eolson Exp $"
 
 # Standard imports
 import os
@@ -410,6 +410,15 @@ class WXGUIApplication(Application):
         else:
             agpmCmd = agpmFile + " --wait-for-input --package %f"
         MimeConfig.instance().RegisterMimeType("application/x-ag-pkg", ".agpkg", "agpkg file", "Access Grid Package", [ ("agpm.py", agpmCmd, "open") ] )
+
+        # Register .vv2d
+        vcFile = os.path.join(AGTkConfig.instance().GetBinDir(), "GoToVenue.py")
+        if IsWindows():
+            vcCmd = sys.executable + " \"" + vcFile + "\" --file \"%1\""
+        else:
+            vcCmd = vcFile + " --file %f"
+        MimeConfig.instance().RegisterMimeType("application/x-ag-venueclient", ".vv2d", "AG Virtual Venues File", "Access Grid Virtual Venue Description", [ ("GoToVenue.py", vcCmd, "Open") ] )
+
 
 class Service(AppBase):
     """
