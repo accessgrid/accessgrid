@@ -1,9 +1,9 @@
 ;
-; RCS-ID: $Id: SharedBrowser.iss,v 1.1 2003-05-20 15:43:37 leggett Exp $
+; RCS-ID: $Id: SharedBrowser.iss,v 1.2 2003-05-28 18:01:57 leggett Exp $
 ;
 
 #define SourceDir "C:\AccessGridBuild\AccessGrid\sharedapps\SharedBrowser"
-#define OutputDir "C:\AccessGridBuild\AccessGrid-Build"
+#define OutputDir "C:\AccessGridBuild\Builds"
 #define AppName "Access Grid Shared Browser"
 #define AppVersionLong "1.0-1"
 #define AppVersionShort "1.0-1"
@@ -19,7 +19,7 @@
 
 [_ISTool]
 EnableISX=true
-LogFile=C:\AccessGridBuild\AccessGrid-Build\{#AppShortName}-installer.log
+LogFile=C:\AccessGridBuild\Builds\{#AppShortName}-installer.log
 LogFileAppend=false
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
