@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: SetupVideo.py,v 1.3 2003-02-10 15:22:16 leggett Exp $
+# RCS-ID:      $Id: SetupVideo.py,v 1.4 2003-02-13 15:31:22 leggett Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
