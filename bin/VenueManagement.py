@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.130 2004-05-03 20:32:19 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.131 2004-05-18 02:41:02 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.130 2004-05-03 20:32:19 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.131 2004-05-18 02:41:02 judson Exp $"
 
 # Standard imports
 import sys
@@ -97,7 +97,7 @@ class VenueManagementClient(wxApp):
         self.menubar = wxMenuBar()
         self.myServersDict = {}
         self.myServersMenuIds = {}
-        #self.homeServer = 'https://localhost:8000/VenueServer'
+        #self.homeServer = 'https://localhost/VenueServer'
         self.userConf = UserConfig.instance()
         self.myServersFile = os.path.join(self.userConf.GetConfigDir(), "myServers.txt" )
         
@@ -587,8 +587,8 @@ class VenueServerAddress(wxPanel):
                         wxDefaultSize, wxNO_BORDER)
         self.application = application
         self.addressLabel =  wxStaticText(self, -1,'Venue Server Address:')
-        self.defaultServer = 'https://localhost:8000/VenueServer'
-        self.serverList = ['https://localhost:8000/VenueServer']
+        self.defaultServer = 'https://localhost/VenueServer'
+        self.serverList = ['https://localhost/VenueServer']
         self.addressText = wxComboBox(self, self.ID_ADDRESS,
                                       self.defaultServer,
                                       choices = self.serverList,
@@ -1342,7 +1342,8 @@ class MulticastDialog(wxDialog):
 class VenueParamFrame(wxDialog):
        
     def __init__(self, parent, id, title, application):
-        wxDialog.__init__(self, parent, id, title, style = wxRESIZE_BORDER | wxDEFAULT_DIALOG_STYLE)
+        wxDialog.__init__(self, parent, id, title,
+                          style = wxRESIZE_BORDER | wxDEFAULT_DIALOG_STYLE)
         self.Centre()
         self.noteBook = wxNotebook(self, -1)
 
@@ -1356,7 +1357,7 @@ class VenueParamFrame(wxDialog):
    
         self.generalPanel = GeneralPanel(self.noteBook, -1, application)
         self.staticAddressingPanel = StaticAddressingPanel(self.noteBook, -1)
-        self.encryptionPanel = EncryptionPanel(self.noteBook, -1)
+        self.encryptionPanel = EncryptionPanel(self.noteBook, -1, application)
         self.authorizationPanel = AuthorizationUIPanel(self.noteBook, -1, log)
         
         self.noteBook.AddPage(self.generalPanel, "General")
@@ -1640,16 +1641,21 @@ class GeneralPanel(wxPanel):
 
 class EncryptionPanel(wxPanel):
     ID_BUTTON = wxNewId()
-
-    def __init__(self, parent, id):
+    ID_GENKEYBUTTON = wxNewId()
+    
+    def __init__(self, parent, id, application):
         wxPanel.__init__(self, parent, id)
+        self.application = application
         self.encryptMediaButton = wxCheckBox(self, self.ID_BUTTON,
                                              " Encrypt media ")
         self.keyText = wxStaticText(self, -1, "Optional key: ",
                                     size = wxSize(100,20))
         self.keyCtrl = wxTextCtrl(self, -1, "", size = wxSize(200,20))
+        self.genKeyButton = wxButton(self, self.ID_GENKEYBUTTON,
+                                     "Generate New Key", size= wxSize(100, 20))
         self.keyText.Enable(false)
         self.keyCtrl.Enable(false)
+        self.genKeyButton.Enable(false)
         self.__doLayout()
         self.__setEvents()
 
@@ -1662,10 +1668,17 @@ class EncryptionPanel(wxPanel):
         message = "Set encrypt media, value is: "+str(id)
         self.keyText.Enable(id)
         self.keyCtrl.Enable(id)
+        self.genKeyButton.Enable(id)
+
+    def ClickGenKeyButton(self, event = None, value = None):
+        self.keyCtrl.Clear()
+        newKey = self.application.currentVenueClient.RegenerateEncryptionKeys()
+        self.keyCtrl.SetValue(newKey)
 
     def __setEvents(self):
         EVT_CHECKBOX(self, self.ID_BUTTON, self.ClickEncryptionButton)
-
+        EVT_BUTTON(self, self.ID_GENKEYBUTTON, self.ClickGenKeyButton)
+        
     def __doLayout(self):
         sizer = wxBoxSizer(wxVERTICAL)
         sizer.Add(10,10)
@@ -1675,6 +1688,9 @@ class EncryptionPanel(wxPanel):
         sizer2.Add(self.keyText , 0, wxEXPAND|wxALL, 5)
         sizer2.Add(self.keyCtrl, 1, wxEXPAND|wxALL, 5)
         sizer.Add(sizer2, 0, wxEXPAND | wxRIGHT, 10)
+        sizer3 = wxBoxSizer(wxHORIZONTAL)
+        sizer3.Add(self.genKeyButton, 1, wxALL, 5)
+        sizer.Add(sizer3, 1, wxRIGHT, 10)
 
         self.SetSizer(sizer)
         sizer.Fit(self)
