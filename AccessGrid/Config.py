@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.8 2004-04-13 18:44:03 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.9 2004-04-13 20:15:17 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.8 2004-04-13 18:44:03 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.9 2004-04-13 20:15:17 judson Exp $"
 
 import sys
 import struct
@@ -45,7 +45,7 @@ class AGTkConfig:
         pass
 
     def _repr_(self):
-        str = "AGTk Config\n"
+        str = "Access Grid Toolkit Configuration:\n"
         str += "Version: %s\n" % self.GetVersion()
         str += "InstallDir: %s\n" % self.GetInstallDir()
         str += "DocDir: %s\n" % self.GetDocDir()
@@ -136,10 +136,9 @@ class GlobusConfig:
         str += "Key Filename: %s\n" % self.GetKeyFileName()
 
         return str
-    #
+
     # We define our own setenv/unsetenv to prod both the pyGlobus
     # environment and the standard python environment.
-    #
     def Setenv(self, name, val):
         global pyGlobusSetenv
 
@@ -300,7 +299,7 @@ class UserConfig:
     def GetSharedAppDir(self):
         raise "This should not be called directly, but through a subclass."
 
-    def GetNodeServiceDir(self):
+    def GetNodeServicesDir(self):
         raise "This should not be called directly, but through a subclass."
 
     def GetServicesDir(self):
