@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.33 2003-08-12 15:14:18 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.34 2003-08-22 16:31:21 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -349,6 +349,10 @@ class AGNodeService( ServiceBase ):
         #
         # Read config file
         #
+        configFile = self.configDir + os.sep + configName
+
+        if not os.path.exists(configFile):
+            raise Exception("Configuration file does not exist")
 
         try:
             config = ConfigParser.ConfigParser()
