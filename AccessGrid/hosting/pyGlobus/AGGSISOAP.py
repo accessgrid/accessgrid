@@ -91,7 +91,7 @@ from types import *
 try: from M2Crypto import SSL
 except: pass
 
-ident = '$Id: AGGSISOAP.py,v 1.1 2002-12-16 22:51:13 judson Exp $'
+ident = '$Id: AGGSISOAP.py,v 1.2 2002-12-16 23:50:03 olson Exp $'
 
 __version__ = "0.9.7"
 

@@ -9,30 +9,32 @@ class ServiceBase:
     def get_handle(self):
         return self._service_object.get_handle()
 
-    def bind_to_registry(self, classad, registry_url, frequency):
-        return self._service_object.bind_to_registry(classad, registry_url, frequency)
-
-    def bind_to_local_registry(self, class_ad, registry_obj, registry_url):
-        return self._service_object.bind_to_local_registry(class_ad, registry_obj, registry_url)
-    
-    def unbind_from_registry(self, registry_url):
-        return self._service_object.unbind_from_registry(registry_url)
-
     def _register_exports(self, service_obj):
 
         #
         # Walk our list of attributes looking for
-        # methods with docstrings
+        # methods with docstrings.
+        #
+        # Also look for method attributes containing that
+        # information.
         #
 
         # print "Register exports for ", self
 
-        export_regexp = re.compile("^\s+xmlrpc_export_as:\s*(\S+)\s*$", re.MULTILINE)
+        export_regexp = re.compile("^\s+soap_export_as:\s*(\S+)\s*$", re.MULTILINE)
         cinfo_regexp =  re.compile("^\s+pass_connection_info:\s*(\S+)\s*$", re.MULTILINE)
 
+        exported_methods = {}
+        
         for name, value in self.__class__.__dict__.items():
             if callable(value):
+                method = getattr(self, name)
                 dstr = value.__doc__
+
+                #
+                # Parse the docstring to find exports or pass_cinfo
+                # information
+                #
                 if dstr is not None:
                     pass_cinfo = 0
                     cmatches = cinfo_regexp.findall(dstr)
@@ -47,8 +49,21 @@ class ServiceBase:
                                 pass_cinfo = 0
                     matches = export_regexp.findall(dstr)
                     for export in matches:
-                        method = getattr(self, name)
                         # print "Export %s as %s %s" % (value, export, method)
 
-                        service_obj.register_function(method, export, pass_cinfo)
+                        exported_methods[name] = (method, export, pass_cinfo)
+
+                #
+                # Inspect the method attributes.
+                #
+
+                if hasattr(method, 'soap_export_as'):
+                    export_name = method.soap_export_as
+                    pass_cinfo = 0
+                    if hasattr(method, 'pass_connection_info'):
+                        pass_cinfo = method.pass_connection_info
+                    exported_methods[name] = (method, export_name, pass_cinfo)
+
+            for method, export_name, pass_cinfo in exported_methods.values():
+                service_obj.register_function(method, export_name, pass_cinfo)
         
