@@ -5,13 +5,13 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.38 2004-02-13 22:02:07 lefvert Exp $
+# RCS-ID:      $Id: Types.py,v 1.39 2004-02-18 17:37:24 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.38 2004-02-13 22:02:07 lefvert Exp $"
+__revision__ = "$Id: Types.py,v 1.39 2004-02-18 17:37:24 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -95,11 +95,13 @@ class VenueState:
             self.connections[connection.uri] = connection
 
     def AddData( self, dataDescription ):
-        self.data[dataDescription.name] = dataDescription
+        self.data[dataDescription.id] = dataDescription
+        
     def UpdateData( self, dataDescription ):
-        self.data[dataDescription.name] = dataDescription
+        self.data[dataDescription.id] = dataDescription
+        
     def RemoveData( self, dataDescription ):
-        del self.data[dataDescription.name]
+        del self.data[dataDescription.id]
 
     def AddService( self, serviceDescription ):
         self.services[serviceDescription.name] = serviceDescription
