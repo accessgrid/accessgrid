@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.172 2003-05-07 19:27:40 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.173 2003-05-07 19:31:20 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1263,9 +1263,14 @@ class ContentListPanel(wxPanel):
        
         self.parent = parent
 	self.app = app
-	self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
-			      wxDefaultSize, style = wxTR_TWIST_BUTTONS | wxTR_HAS_BUTTONS |
-                               wxTR_NO_LINES)
+        if sys.platform == "win32":
+            self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
+                                   wxDefaultSize, style = wxTR_TWIST_BUTTONS | wxTR_HAS_BUTTONS |
+                                   wxTR_NO_LINES)
+        elif sys.platform == "linux2":
+            self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
+                                   wxDefaultSize, style = wxTR_TWIST_BUTTONS | wxTR_HAS_BUTTONS |
+                                   wxTR_NO_LINES | wxTR_HIDE_ROOT)
         self.__setImageList()
 	self.__setTree()
 	self.__setProperties()
@@ -1549,10 +1554,12 @@ class ContentListPanel(wxPanel):
 
         if sys.platform == "win32":
             index = self.line
+            index2 = -2
         elif sys.platform == "linux2":
             index = -1
+            index2 = -1
         
-        self.root = self.tree.AddRoot("", -2, -2)
+        self.root = self.tree.AddRoot("", index2, index2)
                           
 	self.participants = self.tree.AppendItem(self.root, "Participants", index, index)
         # self.nodes = self.tree.AppendItem(self.root, "Nodes", index, index)
