@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.225 2003-08-08 23:23:44 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.226 2003-08-11 04:17:33 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1014,9 +1014,35 @@ class VenueClientFrame(wxFrame):
     #
     def UseMulticast(self,event):
         self.app.SetTransport("multicast")
+        self.app.UpdateNodeService()
 
     def UseUnicast(self,event):
-        self.app.SetTransport("unicast")
+
+	    # Get a list of providers
+        providerList = self.app.venueClient.GetNetworkLocationProviders()
+        providerNameLocList = map( lambda provider: provider.name + "/" + provider.location,
+                                   providerList )
+
+        # Present the list to the user
+        dialog = wxSingleChoiceDialog( self, "Select bridge", 
+                                             "Bridge Dialog", 
+                                             providerNameLocList )
+        ret = dialog.ShowModal()
+
+        if ret == wxID_OK:
+
+            # Get the selected provider
+            index = dialog.GetSelection()
+            selectedProvider = providerList[index]
+
+            # Set the transport in the venue client and update the node service
+            self.app.SetProvider(selectedProvider)
+            self.app.SetTransport("unicast")
+            self.app.UpdateNodeService()
+        else:
+            # Set the menu checkbox appropriately
+            transport = self.app.GetTransport()
+            self.SetTransport(transport)
 
     def SetUnicastEnabled(self, flag):
         self.preferences.Enable(self.ID_USE_UNICAST, flag)
