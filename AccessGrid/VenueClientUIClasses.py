@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.250 2003-09-11 22:02:27 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.251 2003-09-11 22:05:28 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -243,7 +243,7 @@ class VenueClientFrame(wxFrame):
                                 "Configure your node")
         self.menubar.Append(self.preferences, "&Preferences")
         self.myVenues = wxMenu()
-        self.myVenues.Append(self.ID_MYVENUE_SETDEFAULT, "Set as default venue",
+        self.myVenues.Append(self.ID_MYVENUE_SETDEFAULT, "Set as home venue",
                              "Set current venue as default")
         self.myVenues.AppendSeparator()
         
