@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.34 2004-03-12 05:23:11 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.35 2004-03-16 17:10:48 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.34 2004-03-12 05:23:11 judson Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.35 2004-03-16 17:10:48 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -314,8 +314,8 @@ class ClientProfileCache:
         if len(cachePath):
             self.cachePath = cachePath
         else:
-            userConfig = UserConfig().instance()
-            self.cachePath = os.path.join(userConfig.GetUserConfigDir(),
+            userConfig = UserConfig.instance()
+            self.cachePath = os.path.join(userConfig.GetConfigDir(),
                                           "profileCache")
         if not os.path.exists( self.cachePath ):
             os.mkdir (self.cachePath)
