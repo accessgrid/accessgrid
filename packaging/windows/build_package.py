@@ -70,7 +70,7 @@ iscc_cmd = "%s agtk.iss /dAppVersion=\"%s\" /dVersionInformation=\"%s\" \
             /dSourceDir=\"%s\" /dBuildDir=\"%s\" /dPythonSubVersion=\"%s\"" % \
             (inno_compiler, options.version,
              options.metainfo.replace(' ', '_'), 
-             options.sourcedir, options.destdir, options.pyver)
+             options.sourcedir, options.destdir, options.pyver.split('.')[1])
 
 if options.verbose:
     print "BUILD: Executing:", iscc_cmd
