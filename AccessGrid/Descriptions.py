@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.58 2004-05-14 17:00:00 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.59 2004-05-25 19:51:46 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.58 2004-05-14 17:00:00 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.59 2004-05-25 19:51:46 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -256,9 +256,10 @@ class ApplicationDescription(ObjectDescription):
     the Object Description that adds a mimeType which should be a
     standard mime-type.
     """
-    def __init__(self, oid, name, description, uri, mimetype):   
+    def __init__(self, oid, name, description, uri, mimetype, startable=1):   
         ObjectDescription.__init__(self, name, description, uri, oid = oid)
         self.mimeType = mimetype   
+        self.startable = startable
     
     def SetMimeType(self, mimetype):   
         self.mimeType = mimetype   
@@ -269,6 +270,7 @@ class ApplicationDescription(ObjectDescription):
     def AsINIBlock(self):
         string = ObjectDescription.AsINIBlock(self)
         string += "mimeType : %s\n" % self.mimeType
+        string += "startable : %s\n" % self.startable
         
         return string
 
@@ -566,11 +568,16 @@ def CreateServiceDescription(serviceDescStruct):
     return serviceDescription
 
 def CreateApplicationDescription(appDescStruct):
+    # To be compatible with pre 2.2 code.
+    if not hasattr(appDescStruct, 'startable'):
+        appDescStruct.startable = 1
+
     appDescription = ApplicationDescription( appDescStruct.id,
                                              appDescStruct.name,    
                                              appDescStruct.description,
                                              appDescStruct.uri,
-                                             appDescStruct.mimeType )
+                                             appDescStruct.mimeType,
+                                             appDescStruct.startable )
 
     appDescription.SetId(appDescStruct.id)
 

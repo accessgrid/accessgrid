@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.17 2004-05-18 21:08:51 turam Exp $
+# RCS-ID:      $Id: agpm.py,v 1.18 2004-05-25 19:51:46 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.17 2004-05-18 21:08:51 turam Exp $"
+__revision__ = "$Id: agpm.py,v 1.18 2004-05-25 19:51:46 eolson Exp $"
 
 import os
 import re
@@ -215,12 +215,17 @@ def RegisterPackage(appdb, dest, appInfo, commands, workingDir=None,
     if type(appInfo["application.files"]) is StringType:
         files = re.split(r',\s*|\s+', files)
 
+    # Applications are "startable" (i.e. from the VenueClient) by default.
+    if "application.startable" not in appInfo.keys():
+        appInfo["application.startable"] = "1"
+
     appdb.RegisterApplication(appInfo["application.name"],
                               appInfo["application.mimetype"],
                               appInfo["application.extension"],
                               commands, files,
                               workingDir,
-                              dstPath=dest)
+                              dstPath=dest,
+                              startable=appInfo["application.startable"])
 
     # Clean up, remove the temporary directory and files from
     # unpacking the zip file

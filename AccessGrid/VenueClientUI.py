@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.58 2004-05-17 21:33:24 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.59 2004-05-25 19:51:46 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.58 2004-05-17 21:33:24 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.59 2004-05-25 19:51:46 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1743,7 +1743,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
         # Add applications in the appList to the menu
         for app in appDescList:
-            if app != None and app.name != None:
+            if app != None and app.name != None and int(app.startable) == 1:
                 menuEntryLabel = prefix + app.name
                 appId = wxNewId()
                 menu.Append(appId,menuEntryLabel,menuEntryLabel)

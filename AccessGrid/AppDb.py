@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.21 2004-05-11 20:16:08 turam Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.22 2004-05-25 19:51:46 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ used by client software that wants to keep track of what AG specific
 tools are appropriate for specific data types. It also keeps track of
 how to invoke those tools.
 """
-__revision__ = "$Id: AppDb.py,v 1.21 2004-05-11 20:16:08 turam Exp $"
+__revision__ = "$Id: AppDb.py,v 1.22 2004-05-25 19:51:46 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -264,7 +264,7 @@ class AppDb:
 
         return ext
 
-    def AddMimeType(self, name, extension, mimeType):
+    def AddMimeType(self, name, extension, mimeType, startable="1"):
         """
         returns a tuple of (int, string). Success is (1, mimeType),
         failure is (0, reason)
@@ -281,11 +281,13 @@ class AppDb:
         nameStr = self.defaultSeparator.join(["name", namekey])
         extStr = self.defaultSeparator.join(["extension", extension])
         mimeStr = self.defaultSeparator.join([mimeType, "None"])
+        startableStr = self.defaultSeparator.join(["startable", mimeType])
 
         self.AppDb[privName] = name
         self.AppDb[nameStr] = mimeType
         self.AppDb[extStr] = mimeType
         self.AppDb[mimeStr] = None
+        self.AppDb[startableStr] = startable
 
         self._Flush()
 
@@ -466,13 +468,13 @@ class AppDb:
         return (1, cmdName)
 
     def RegisterApplication(self, name, mimeType, extension, commandDict,
-                            fileList, srcPath, dstPath):
+                            fileList, srcPath, dstPath, startable="1"):
         """
         Encapsulate all the actions required to register a new application.
         returns 0 on failure, 1 on success
         """
 
-        (ret, retStr) = self.AddMimeType(name, extension, mimeType)
+        (ret, retStr) = self.AddMimeType(name, extension, mimeType, startable)
 
         if ret:
             for cmdName in commandDict.keys():
@@ -557,7 +559,12 @@ class AppDb:
             if section == 'name':
                 name = self._GetNiceName(option)
                 mimetype = self.AppDb[key]
-                apps.append(ApplicationDescription(None, name, None, None, mimetype))
+                startableStr = self.defaultSeparator.join(["startable", mimetype])
+                if startableStr in self.AppDb.keys():
+                    startable = self.AppDb[startableStr]
+                else:
+                    startable = 1
+                apps.append(ApplicationDescription(None, name, None, None, mimetype, startable))
 
         return apps
 
@@ -595,3 +602,4 @@ class AppDb:
                 print "App directory error -- can't remove (%s)." % dstPath
 
         return 1
+
