@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.76 2004-09-03 18:15:13 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.77 2004-10-21 20:53:48 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.76 2004-09-03 18:15:13 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.77 2004-10-21 20:53:48 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -40,7 +40,7 @@ from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid.UIUtilities import ErrorDialog, BugReportCommentDialog
 from AccessGrid.ClientProfile import *
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
-from AccessGrid.Descriptions import ApplicationDescription
+from AccessGrid.Descriptions import ApplicationDescription, AGNetworkServiceDescription
 from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIDialog
 from AccessGrid.Utilities import SubmitBug
 from AccessGrid.VenueClientObserver import VenueClientObserver
@@ -3025,6 +3025,10 @@ class ContentListPanel(wxPanel):
                 # We don't have anything to do with this heading
                 pass
             
+            elif isinstance(item, AGNetworkServiceDescription):
+                menu = self.BuildNetworkServiceMenu(event, item)
+                self.PopupMenu(menu, wxPoint(self.x, self.y))
+            
             elif isinstance(item, ServiceDescription):
                 menu = self.BuildServiceMenu(event, item)
                 self.PopupMenu(menu, wxPoint(self.x,self.y))
@@ -3107,6 +3111,57 @@ class ContentListPanel(wxPanel):
         # - Properties
         id = wxNewId()
         menu.Append(id, "Properties", "View the details of this data.")
+        EVT_MENU(self, id, lambda event, item=item:
+                 self.LookAtProperties(item))
+
+        return menu
+
+    def BuildNetworkServiceMenu(self, event, item):
+        """
+        Programmatically build a menu based on the mime type of the item
+        passed in.
+        """
+       
+        # Path where temporary file will exist if opened/used.
+        ext = item.name.split('.')[-1]
+        
+        # Get commands for the service type
+
+        commands = self.parent.GetCommands(item)
+
+        #
+        # Build the menu
+        #
+        menu = wxMenu()
+
+        # - Open
+        id = wxNewId()
+               
+        menu.Append(id, "Open", "Open this service.")
+       
+        if commands != None and commands.has_key('Open'):
+            EVT_MENU(self, id, lambda event,
+                     cmd=commands['Open'], itm=item: 
+                     self.parent.StartCmd(itm, verb='Open'))
+        else:
+            EVT_MENU(self, id, lambda event,
+                     itm=item: self.FindUnregistered(itm))
+                   
+        # - type-specific commands
+        if commands != None:
+            for key in commands.keys():
+                if key != 'Open':
+                    id = wxNewId()
+                    menu.Append(id, string.capwords(key))
+                    EVT_MENU(self, id, lambda event,
+                             verb=key, itm=item: 
+                             self.parent.StartCmd(itm, verb=verb))
+
+        menu.AppendSeparator()
+
+        # - Properties
+        id = wxNewId()
+        menu.Append(id, "Properties", "View the details of this service.")
         EVT_MENU(self, id, lambda event, item=item:
                  self.LookAtProperties(item))
 
@@ -3301,6 +3356,13 @@ class ContentListPanel(wxPanel):
                                       style = wxOK|wxICON_INFORMATION) 
             
             dataView.Destroy()
+
+        elif isinstance(desc, AGNetworkServiceDescription):
+            serviceView = ServicePropertiesDialog(self, -1, "Service Properties")
+            serviceView.SetDescription(desc)
+            serviceView.ShowModal()
+            serviceView.Destroy()
+            
         elif isinstance(desc, ServiceDescription):
             serviceView = ServicePropertiesDialog(self, -1, "Service Properties")
             serviceView.SetDescription(desc)
