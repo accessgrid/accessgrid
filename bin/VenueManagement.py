@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.114 2004-03-04 15:33:22 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.115 2004-03-09 16:52:44 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.114 2004-03-04 15:33:22 judson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.115 2004-03-09 16:52:44 lefvert Exp $"
 
 import string
 import time
@@ -42,7 +42,8 @@ from AccessGrid.Platform import GetUserConfigDir, GetSharedDocDir
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog
 from AccessGrid.Utilities import VENUE_MANAGEMENT_LOG
 from AccessGrid import Toolkit
-from AccessGrid.AuthorizationUI import AddPeopleDialog
+from AccessGrid.AuthorizationUI import AuthorizationUIPanel # AddPeopleDialog
+from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
 
 log = logging.getLogger("AG.VenueManagement")
 
@@ -71,7 +72,7 @@ class VenueManagementClient(wxApp):
         self.currentVenueClient = None
         self.currentVenue = None
         self.encrypt = false
-        self.administrators = {}
+        #self.administrators = {}
         self.venueList = []
         self.help_open = 0
           
@@ -137,7 +138,7 @@ class VenueManagementClient(wxApp):
                
     def __setProperties(self):
         self.frame.SetIcon(icons.getAGIconIcon())
-        self.frame.SetSize(wxSize(540, 405))
+        self.frame.SetSize(wxSize(700, 400))
         self.SetTopWindow(self.frame)
         self.frame.Show()
 
@@ -205,7 +206,7 @@ class VenueManagementClient(wxApp):
             defaultVenueUrl = self.server.GetDefaultVenue()
             
             # Fill in venues
-            self.tabs.Enable(true)
+            
             if len(self.venueList) != 0 :
                 for venue in self.venueList.values():
                     log.debug("VenueManagementClient.ConnectToServer: Add venue %s" % venue.name)
@@ -221,7 +222,13 @@ class VenueManagementClient(wxApp):
             else:
                 log.debug("VenueManagementClient.ConnectToServer: No venues in server")
                 vp.venueProfilePanel.ChangeCurrentVenue(None)
-                
+
+
+            # Connect to authorization manager.
+            self.tabs.securityPanel.ConnectToAuthManager(URL)
+            
+
+            
                 # fill in administrators
 #                 administratorList = self.server.GetAdministrators()
 #                 s = ""
@@ -266,6 +273,9 @@ class VenueManagementClient(wxApp):
             log.debug("VenueManagementClient.ConnectToServer: Set server encryption key: %s" % key)
             dp.encryptionButton.SetValue(key)
             self.encrypt = key
+
+            self.tabs.Enable(true)
+            
             wxEndBusyCursor()
             
         except Exception, e:
@@ -403,9 +413,12 @@ class VenueManagementTabs(wxNotebook):
         self.parent = parent
         self.venuesPanel = VenuesPanel(self, application)
         self.configurationPanel = ConfigurationPanel(self, application)
+        self.securityPanel = AuthorizationUIPanel(self, -1, log)
         self.AddPage(self.venuesPanel, "Venues")
         self.AddPage(self.configurationPanel, "Configuration")
+        self.AddPage(self.securityPanel, "Security")
         self.Enable(false)
+        
 
 # --------------------- TAB 1 -----------------------------------
 
@@ -811,15 +824,15 @@ class ConfigurationPanel(wxPanel):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, 
                          wxDefaultSize, wxNO_BORDER|wxSW_3D)
         self.application = application
-        self.administratorsListPanel = AdministratorsListPanel(self,
-                                                               application)
+        #self.administratorsListPanel = AdministratorsListPanel(self,
+        #                                                       application)
         self.detailPanel = DetailPanel(self, application)
         self.__doLayout()
 
     def __doLayout(self):
         configurationPanelSizer = wxBoxSizer(wxHORIZONTAL)
-        configurationPanelSizer.Add(self.administratorsListPanel, 0,
-                                    wxEXPAND|wxALL, 10)
+        #configurationPanelSizer.Add(self.administratorsListPanel, 0,
+        #                            wxEXPAND|wxALL, 10)
         configurationPanelSizer.Add(self.detailPanel, 2, wxEXPAND|wxALL, 10)
 
         self.SetSizer(configurationPanelSizer)
@@ -827,200 +840,6 @@ class ConfigurationPanel(wxPanel):
         self.SetAutoLayout(1)
 
 
-"""
-AdministratorsListPanel.
-
-Contains the list of administratos that are authorized to manipulate
-venues and administrators.  This panel also has buttons to execute
-modifications of the list (add, delete, and modify an administrator).
-"""
-
-class AdministratorsListPanel(wxPanel):
-    ID_ADD = wxNewId()
-    ID_MODIFY = wxNewId()
-    ID_DELETE = wxNewId()
-    ID_LISTBOX = wxNewId()
-
-    def __init__(self, parent, application):
-        wxPanel.__init__(self, parent, -1, wxDefaultPosition,
-                         wxDefaultSize, wxNO_BORDER|wxSW_3D)
-        self.application = application
-        self.administratorsListBox = wxStaticBox(self, -1, "Administrators",
-                                                 name = 'venueListBox')
-        self.administratorsList = wxListBox(self, self.ID_LISTBOX,
-                                            name = 'venueList',
-                                            style = wxLB_SORT)
-        self.addButton = wxButton(self, self.ID_ADD, 'Add', 
-                                  size = wxSize(50, 20), name = 'addButton')
-        self.deleteButton = wxButton(self, self.ID_DELETE, 'Delete',
-                                     size = wxSize(50, 20),
-                                     name = 'deleteButton')
-        self.modifyButton = wxButton(self, self.ID_MODIFY, 'Modify',
-                                     size = wxSize(50, 20),
-                                     name = 'modifyButton')
-        self.__addEvents()
-        self.__doLayout()
-
-    def __addEvents(self):
-        EVT_BUTTON(self, self.ID_ADD, self.OpenAddAdministratorDialog)
-        EVT_BUTTON(self, self.ID_DELETE, self.DeleteAdministrator)
-        EVT_BUTTON(self, self.ID_MODIFY, self.OpenModifyAdministratorDialog)
-        EVT_LISTBOX_DCLICK(self, self.ID_LISTBOX, self.OnDoubleClick)
-        EVT_KEY_UP(self.administratorsList, self.OnKey)
-
-    def OnKey(self, event):
-        key = event.GetKeyCode()
-        if key == WXK_DELETE:
-            self.DeleteAdministrator()
-
-    def OnDoubleClick(self, event):
-        self.OpenModifyAdministratorDialog()
-
-    def DeleteAdministrator(self, event = None):
-        index = self.administratorsList.GetSelection()
-        if (index != -1):
-            adminToDelete = self.administratorsList.GetClientData(index)
-            text =  "Are you sure you want to delete " + self.application.GetCName(adminToDelete) + "?"
-            text2 = "Delete administrator"
-            message = wxMessageDialog(self, text, text2,
-                                      style = wxOK|wxCANCEL|wxICON_INFORMATION)
-
-            if(message.ShowModal()==wxID_OK):
-
-                try:
-                    self.application.DeleteAdministrator(adminToDelete)
-                except Exception, e:
-                    if e.string == "NotAuthorized":
-                        text = "You are not a server administrator and are \
-                                not authorized to delete administrators.\n"
-                        MessageDialog(None, text, "Authorization Error",
-                                      wxOK|wxICON_WARNING)
-                        log.info("AdministratorsListPanel.DeleteAdministrator:\
-                                  Not authorized to delete administrators \
-                                  from server.")
-                    elif e.string == "AdministratorRemovingSelf":
-                        text = "You are not allowed to remove yourself from \
-                                the administrator list.\n"
-                        MessageDialog(None, text, "Remove Self Error",
-                                      wxOK|wxICON_WARNING)
-                        log.info("AdministratorsListPanel.DeleteAdministrator:\
-                                  Cannot remove self from server administrator\
-                                  list.")
-                    else:
-                        log.exception("AdministratorsListPanel.\
-                                       DeleteAdministrator: Could not \
-                                       delete administrator")
-                        text = "The administrator %s could not be \
-                                deleted" % adminToDelete
-                        ErrorDialog(None, text, "Delete Administrator Error",
-                                    style = wxOK  | wxICON_ERROR,
-                                    logFile = VENUE_MANAGEMENT_LOG)
-
-                except:
-                    log.exception("AdministratorsListPanel.\
-                                   DeleteAdministrator: Could not delete \
-                                   administrator")
-                    text = "The administrator %s could not be \
-                            deleted" % adminToDelete
-                    ErrorDialog(None, text, "Delete Administrator Error",
-                                style = wxOK  | wxICON_ERROR,
-                                logFile = VENUE_MANAGEMENT_LOG)
-                  
-                else:
-                    self.administratorsList.Delete(index)
-                    if self.administratorsList.Number > 1 :
-                        self.administratorsList.SetSelection(0)
-
-    def OpenAddAdministratorDialog(self, title):
-        addAdministratorDialog = AddAdministratorFrame(self, -1,
-                                             "Add Venue Server Administrator")
-
-    def OpenModifyAdministratorDialog(self, event = None):
-        index = self.administratorsList.GetSelection()
-
-        if index > -1:
-            name = self.administratorsList.GetClientData(index)
-            modifyAdministratorDialog = ModifyAdministratorFrame(self, -1,
-                                         "Modify Venue Server Administrator",
-                                                                 name)
-
-    def InsertAdministrator(self, data):
-        try:
-            self.application.AddAdministrator(data)
-        except Exception, e:
-            if e.string == "NotAuthorized":
-                text = "You are not a server administrator and are not authorized to add an administrator.\n"
-                MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
-                log.info("AdministratorsListPanel.InsertAdministrator: Not \
-                          authorized to add administrator to server.")
-            else:
-                log.exception("AdministratorsListPanel.InsertAdministrator: \
-                               Can not insert administrator")
-                text = "The administrator %s could not be added" % data
-                ErrorDialog(None, text, "Add Administrator Error",
-                            style = wxOK  | wxICON_ERROR,
-                            logFile = VENUE_MANAGEMENT_LOG)
-        except:
-            log.exception("AdministratorsListPanel.InsertAdministrator: \
-                           Can not insert administrator")
-            text = "The administrator %s could not be added" %data
-            ErrorDialog(None, text, "Add Administrator Error",
-                        style = wxOK  | wxICON_ERROR,
-                        logFile = VENUE_MANAGEMENT_LOG)
-           
-        else:
-            self.administratorsList.Append(self.application.GetCName(data),
-                                           data)
-            self.administratorsList.Select(self.administratorsList.Number()-1)
-
-    def ModifyAdministrator(self, oldName, newName):
-        try:
-            log.debug("AdministratorsListPanel.Modify administrator")
-            index = self.administratorsList.GetSelection()
-            self.application.ModifyAdministrator(oldName, newName)
-
-        except Exception, e:
-            if e.string == "NotAuthorized":
-                text = "You are not a server administrator and are not authorized to modify an administrator.\n"
-                MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
-                log.info("AdministratorsListPanel.ModifyAdministrator: Not authorized to modify administrator to server.")
-            elif e.string == "AdministratorRemovingSelf":
-                text = "When modifying an administrator, you are not allowed to remove yourself the list.\n"
-                MessageDialog(None, text, "Remove Self Error", wxOK|wxICON_WARNING)
-                log.info("AdministratorsListPanel.ModifyAdministrator: When modifying a server administrator, user is not allowed to remove self list.")
-            else:
-                log.exception("AdministratorsListPanel.Modify administrator: Could not modify administrator")
-                text = "The administrator %s could not be modified" %oldName
-                ErrorDialog(None, text, "Modify Administrator Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
-
-        except:
-            log.exception("AdministratorsListPanel.Modify administrator: Could not modify administrator")
-            text = "The administrator %s could not be modified" %oldName
-            ErrorDialog(None, text, "Modify Administrator Error",
-                        style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
-         
-        else:
-            self.administratorsList.Delete(index)
-            self.administratorsList.Append(self.application.GetCName(newName),
-                                           newName)
-            self.administratorsList.Select(self.administratorsList.Number()-1)
-
-    def __doLayout(self):
-        administratorsListSizer = wxStaticBoxSizer(self.administratorsListBox, wxVERTICAL)
-        administratorsListSizer.Add(self.administratorsList, 8,
-                                    wxEXPAND|wxALL, 5)
-        buttonSizer = wxBoxSizer(wxHORIZONTAL)
-        administratorsListSizer.Add(buttonSizer, 0)
-        buttonSizer.Add(self.addButton, 1,
-                        wxLEFT| wxBOTTOM | wxALIGN_CENTER, 5)
-        buttonSizer.Add(self.modifyButton, 1,
-                        wxLEFT | wxBOTTOM |wxALIGN_CENTER, 5)
-        buttonSizer.Add(self.deleteButton, 1, wxLEFT | wxBOTTOM |wxRIGHT
-                        | wxALIGN_CENTER, 5)
-
-        self.SetSizer(administratorsListSizer)
-        administratorsListSizer.Fit(self)
-        self.SetAutoLayout(1)
 
 
 class DetailPanel(wxPanel):
@@ -1045,7 +864,7 @@ class DetailPanel(wxPanel):
         self.intervalButton = wxRadioButton(self, self.ID_INTERVAL,
                                             "Custom Range: ")
         self.ipAddress = wxStaticText(self, -1, "224.2.128.0/17",
-                                      style = wxALIGN_LEFT)
+                                      style = wxALIGN_LEFT, size = wxSize(150, 20))
         self.changeButton = wxButton(self, self.ID_CHANGE, "Change")
         self.encryptionButton = wxCheckBox(self, self.ID_ENCRYPT,
                                            " Encrypt media ")
@@ -1180,12 +999,16 @@ class DetailPanel(wxPanel):
         multicastBoxSizer = wxStaticBoxSizer(self.multicastBox, wxVERTICAL)
 
         multicastBoxSizer.Add(self.randomButton, 0, wxALL, 5)
-        flexSizer = wxFlexGridSizer(0, 3, 1, 1)
-        flexSizer.Add(self.intervalButton, 0)
-        flexSizer.Add(self.ipAddress, 0,
-                      wxCENTER|wxEXPAND|wxALIGN_CENTER|wxTOP)
+        flexSizer = wxBoxSizer(wxHORIZONTAL)
+        flexSizer.Add(self.intervalButton, 0, wxCENTER)
+        flexSizer.Add(self.ipAddress, 0, wxCENTER)
+        flexSizer.Add(self.changeButton, 0, wxCENTER)
+        #flexSizer = wxFlexGridSizer(0, 3, 1, 1)
+        #flexSizer.Add(self.intervalButton, 0)
+        #flexSizer.Add(self.ipAddress, 0,
+        #              wxCENTER|wxEXPAND|wxALIGN_CENTER|wxTOP)
         multicastBoxSizer.Add(flexSizer, 0, wxEXPAND | wxALL, 5)
-        multicastBoxSizer.Add(self.changeButton, 0, wxBOTTOM|wxALIGN_CENTER, 5)
+        #multicastBoxSizer.Add(self.changeButton, 0, wxBOTTOM|wxALIGN_CENTER, 5)
 
         serviceSizer.Add(multicastBoxSizer, 0,  wxBOTTOM|wxEXPAND, 10)
         serviceSizer.Add(5,5)
@@ -1198,6 +1021,7 @@ class DetailPanel(wxPanel):
         self.SetSizer(serviceSizer)
         serviceSizer.Fit(self)
         self.SetAutoLayout(1)
+
 
 #--------------------- DIALOGS -----------------------------------
 IP = 1
