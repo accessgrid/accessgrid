@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.51 2004-05-10 15:24:23 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.52 2004-05-10 17:01:10 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.51 2004-05-10 15:24:23 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.52 2004-05-10 17:01:10 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -77,8 +77,6 @@ class ExitPanel(wxPanel):
 Dialogs
 -------
 
-class SaveFileDialog(wxDialog):
-class UploadFilesDialog(wxDialog):
 class UrlDialog(wxDialog):
 class ProfileDialog(wxDialog):
 class TextValidator(wxPyValidator):
@@ -1424,9 +1422,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         # Method name should change...
         #
         text = "Uploading file %s"%filename
-                        
+
+        wxCallAfter(self.statusbar.SetMax, total)
         wxCallAfter(self.statusbar.SetProgress,
-                    text,sent,total,file_done,xfer_done)
+                    text,sent, file_done, xfer_done)
+
         
     def UploadFilesDialogCancelled(self):
         # Method name should change...
@@ -1441,20 +1441,21 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         #
         # Create the dialog for the download.
         #
-        self.saveFileDialog = SaveFileDialog(self, -1, "Saving file",
-                                             "Saving file to %s ...     "
-                                             % (filename),
-                                             "Saving file to %s ... done"
-                                             % (filename),
-                                             size)
-        self.saveFileDialog.Show(1)
         
-    def UpdateSaveFileDialog(self, sent, xfer_done):
-        wxCallAfter(self.saveFileDialog.SetProgress,sent,xfer_done)
+        self.statusbar.Reset()
+        self.statusbar.SetMax(size)
+        self.statusbar.SetMessage("Saving file to %s ...     "% (filename))
+        
+        
+    def UpdateSaveFileDialog(self, filename, sent, xfer_done):
+        text = "Saving file to %s ...     "% (filename)
+        file_done = 'not used'
+        
+        wxCallAfter(self.statusbar.SetProgress,
+                    text,sent, file_done, xfer_done)
         
     def SaveFileDialogCancelled(self):
-        return self.saveFileDialog.IsCancelled()      
-        
+        return self.statusbar.IsCancelled()      
 
         
     #
@@ -3647,6 +3648,9 @@ class StatusBar(wxStatusBar):
 
         self.fields = 1
         self.SetFieldsCount(self.fields)
+
+    def SetMax(self, value):
+        self.max = value
         
     def Reset(self):
         self.__cancelFlag = 0
@@ -3674,8 +3678,9 @@ class StatusBar(wxStatusBar):
         if self.__cancelFlag:
             self.__hideProgressUI()
         return self.__cancelFlag
-   
-    def SetProgress(self, text, value, max, NOT_USED, doneFlag):
+    
+    def SetProgress(self, text, value, NOT_USED, doneFlag):
+              
         if self.hidden:
             self.__showProgressUI()
         
@@ -3691,10 +3696,10 @@ class StatusBar(wxStatusBar):
         self.SetMessage(text)
 
         # Scale value to range 1-100
-        if max == 0:
+        if self.max == 0:
             value = 100
         else:
-            value = int(100 * int(value) / int(max))
+            value = int(100 * int(value) / int(self.max))
         self.progress.SetValue(value)
 
     def OnCancel(self, event):
@@ -3755,178 +3760,6 @@ class StatusBar(wxStatusBar):
 #
 # Dialogs
 
-class SaveFileDialog(wxDialog):
-    def __init__(self, parent, id, title, message, doneMessage, fileSize):
-        wxDialog.__init__(self, parent, id, title)
-
-        self.doneMessage = doneMessage
-
-        try:
-            self.fileSize = int(fileSize)
-        except TypeError:
-            log.debug("SaveFileDialog.__init__:Received invalid file size: '%s'" % (fileSize))
-            fileSize = 1
-            
-        log.debug("SaveFileDialog.__init__: created, size=%d " %fileSize)
-        
-        self.button = wxButton(self, wxNewId(), "Cancel")
-        self.text = wxStaticText(self, -1, message)
-
-        self.cancelFlag = 0
-
-        self.progress = wxGauge(self, wxNewId(), 100,
-                                style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH,
-                                size = wxSize(300, 20))
-
-        
-
-        EVT_BUTTON(self, self.button.GetId(), self.OnButton)
-
-        self.transferDone = 0
-        #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
-        self.Layout()
-
-
-    def OnButton(self, event):
-        """
-        Button press handler.
-
-        If we're still transferring, this is a cancel. Return wxID_CANCEL and
-        do an endModal.
-
-        If we're done transferring, this is an OK , so return wxID_OK.
-        """
-        
-        if self.transferDone:
-            self.Close()
-            pass
-        else:
-            log.debug("UploadFilesDialog.OnButton: Cancelling transfer!")
-            self.Close()
-            self.cancelFlag = 1
-
-
-    def SetMessage(self, value):
-        self.text.SetLabel(value)
-
-    def IsCancelled(self):
-        return self.cancelFlag
-
-    def SetProgress(self, value, doneFlag):
-        #
-        # for some reason, the range acts goofy with the actual file
-        # sizes. Rescale to 0-100.
-        #
-
-        if self.fileSize == 0:
-            value = 100
-        else:
-            value = int(100 * int(value) / self.fileSize)
-        self.progress.SetValue(value)
-        if doneFlag:
-            self.transferDone = 1
-            self.button.SetLabel("OK")
-            self.SetMessage(self.doneMessage)
-        
-        return self.cancelFlag
-
-    
-    def Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add(self.text, 1, wxEXPAND| wxALL, 10)
-        sizer.Add(self.progress, 0, wxEXPAND| wxALL, 10)
-        sizer.Add(self.button, 0, wxCENTER| wxBOTTOM, 10)
-        
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.SetAutoLayout(1)
-        
- 
-################################################################################
-
-class UploadFilesDialog(wxDialog):
-    def __init__(self, parent, id, title):
-        wxDialog.__init__(self, parent, id, title,
-                          size = wxSize(350, 130))
-
-        self.Centre()
-        self.button = wxButton(self, wxNewId(), "Cancel")
-        self.text = wxStaticText(self, -1, "", size = wxSize(300, 20))
-
-        self.cancelFlag = 0
-
-        self.progress = wxGauge(self, wxNewId(), 100,  size = wxSize(300, 20),
-                                style = wxGA_HORIZONTAL | wxGA_PROGRESSBAR | wxGA_SMOOTH)
-
-        EVT_BUTTON(self, self.button.GetId(), self.OnButton)
-
-        self.transferDone = 0
-        self.currentFile = None
-        #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
-        self.Layout()
-       
-    def Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add(5,5)
-        sizer.Add(self.text, 0, wxEXPAND|wxALL, 5)
-        sizer.Add(self.progress, 0, wxEXPAND|wxALL, 5)
-        sizer.Add(self.button, 0, wxCENTER|wxALL, 5)
-
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.SetAutoLayout(1)
-      
-    def OnButton(self, event):
-        """
-        Button press handler.
-
-        If we're still transferring, this is a cancel. Return wxID_CANCEL and
-        do an endModal.
-
-        If we're done transferring, this is an OK , so return wxID_OK.
-        """
-        
-        if self.transferDone:
-            self.Close()
-            pass
-        else:
-            log.debug("UploadFilesDialog.OnButton: Cancelling transfer!")
-            self.Close()
-            self.cancelFlag = 1
-
-    def SetMessage(self, value):
-        self.text.SetLabel(value)
-
-    def IsCancelled(self):
-        return self.cancelFlag
-
-    def SetProgress(self, filename, bytes_sent, bytes_total, file_done, transfer_done):
-        #
-        # for some reason, the range acts goofy with the actual file
-        # sizes. Rescale to 0-100.
-        #
-
-        if transfer_done:
-            self.transferDone = transfer_done
-            self.progress.SetValue(100)
-            self.button.SetLabel("OK")
-            self.SetMessage("Transfer complete")
-            return 
-
-        if self.currentFile != filename:
-            self.SetMessage("Uploading %s" % (filename))
-            self.currentFile = filename
-
-        if bytes_total == 0:
-            value = 100
-        else:
-            value = int(100 * int(bytes_sent) / int(bytes_total))
-        self.progress.SetValue(value)
-
- 
-
- 
-#############################################################################
 
 class UrlDialog(wxDialog):
     def __init__(self, parent, id, title, address = "", text = None):
