@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.129 2003-04-08 14:30:35 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.130 2003-04-08 14:44:44 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -90,8 +90,6 @@ class VenueClientFrame(wxFrame):
     ID_ME_PROFILE = wxNewId()
     ID_ME_DATA = wxNewId()
     ID_ME_UNFOLLOW = wxNewId()
-
-    #https://vv2.mcs.anl.gov:8880/Venues/000000f42704a7fa008c00dd000b00371fc
 
     textClientPanel = None
     textClientStandAlone = None
@@ -821,11 +819,21 @@ class VenueAddressBar(wxSashLayoutWindow):
         wxEndBusyCursor()
       
     def callAddress(self, event):
-        venueUri = self.address.GetValue()
+        url = self.address.GetValue()
+        venueUri = self.__fixSpaces(url)
         self.AddChoice(venueUri)
         wxBeginBusyCursor()
         self.application.GoToNewVenue(venueUri)
         wxEndBusyCursor()
+
+    def __fixSpaces(self, url):
+        index = 0
+        for c in url:
+            if c != ' ':
+                break
+            index = index + 1
+
+        return url[index:]
                                       
     def Layout(self):
         venueServerAddressBox = wxBoxSizer(wxVERTICAL)  
