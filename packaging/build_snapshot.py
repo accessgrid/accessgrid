@@ -148,7 +148,7 @@ else:
 
 if bdir is not None:
     pkg_script = "build_package.py"
-    NextDir = os.path.join(RunDir, options.bdir)
+    NextDir = os.path.join(RunDir, bdir)
     if os.path.exists(NextDir):
         os.chdir(NextDir)
         os.system("%s %s -s %s -b %s -d %s -p %s -m %s -v %s" % (sys.executable,
