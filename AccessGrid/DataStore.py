@@ -6,7 +6,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.43 2003-09-03 20:40:13 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.44 2003-09-12 04:02:40 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -612,6 +612,26 @@ class DataStore(ServiceBase):
 
     GetDataDescriptions.soap_export_as = "GetDataDescriptions"
 
+    def GetFiles(self):
+        """
+        Retrieve list of files in the data store
+
+        Note: files are represented as a tuple (name,size)
+        """
+
+        fileList = []
+
+        # Get files in data store path
+        files = os.listdir(self.path)
+        for file in files:
+            stat = os.stat(os.path.join(self.path,file))
+            fileList.append( (file,stat.st_size) )
+
+        return fileList
+
+    GetFiles.soap_export_as = "GetFiles"
+
+
     def RemoveFiles(self, dataDescriptionList):
         filesWithError = ""
 
@@ -893,6 +913,18 @@ class DataStore(ServiceBase):
         self.cbLock.release()
         
         return desc
+
+
+    def SetDescription(self, filename, description):
+        """
+        Given a data description and a filename,
+        set the data description if the file exists
+        """
+        path = os.path.join(self.pathname, filename)
+        if os.path.exists(path):
+            description.uri = self.GetDownloadDescriptor(filename)
+            self.callbackClass.AddData(description)
+    SetDescription.soap_export_as = "SetDescription"
 
 
 
