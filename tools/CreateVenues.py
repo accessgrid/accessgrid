@@ -6,14 +6,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CreateVenues.py,v 1.1 2004-03-22 22:18:36 judson Exp $
+# RCS-ID:      $Id: CreateVenues.py,v 1.2 2004-05-27 21:31:27 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This program is used to create venues for the venue server.
 """
-__revision__ = "$Id: CreateVenues.py,v 1.1 2004-03-22 22:18:36 judson Exp $"
+__revision__ = "$Id: CreateVenues.py,v 1.2 2004-05-27 21:31:27 eolson Exp $"
 
 import ConfigParser
 import sys
@@ -24,11 +24,15 @@ from AccessGrid.hosting import Client
 from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
 from AccessGrid.Descriptions import Capability, StreamDescription 
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
+from AccessGrid.Toolkit import CmdlineApplication
 
 def main():
     """
     This is the function that does all the real work.
     """
+    app = CmdlineApplication.instance()
+    app.Initialize("CreateVenues")
+
     venueServerUri = "https://localhost:8000/VenueServer"
 
     if len(sys.argv) > 2:
@@ -36,7 +40,7 @@ def main():
 
     configFile = sys.argv[1]
 
-    venueServer = Client.Handle(venueServerUri).GetProxy()
+    venueServer = Client.SecureHandle(venueServerUri).GetProxy()
     venueServer.SetEncryptAllMedia(0)
 
     config = ConfigParser.ConfigParser()
@@ -97,7 +101,7 @@ def main():
                 uri = toVenue.uri
                 conn = ConnectionDescription(toVenue.name, toVenue.description,
                                            toVenue.uri)
-                venues[sec].connections[uri] = conn
+                venues[sec].connections.append(conn)
             else:
                 print "Error making connection to venue: ", vexit
 
@@ -107,8 +111,8 @@ def main():
 	
         # venue = Client.Handle(venues[sec].uri).GetProxy()
         print "URL: %s" % venues[sec].uri
-        venue = Client.Handle(venues[sec].uri).GetProxy()
-        venue.SetConnections(venues[sec].connections.values())
+        venue = Client.SecureHandle(venues[sec].uri).GetProxy()
+        venue.SetConnections(venues[sec].connections)
 
 if __name__ == "__main__":
     # to profile this:
