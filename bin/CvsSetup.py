@@ -139,7 +139,7 @@ if not os.path.exists(dir):
 # python packaging/makeServicePackages.py AccessGrid/services
 
 mk_service_exec = sys.executable + " " + os.path.join( AG_BASE_DIR, "packaging", "makeServicePackages.py" )
-service_input_dir = os.path.join( ABS_AG_BASE_DIR, "AccessGrid", "services")
+service_input_dir = os.path.join( ABS_AG_BASE_DIR, "services", "node")
 service_output_dir = os.path.join( ABS_DST_CONFIG_DIR, "services")
 mk_command = mk_service_exec + " " + service_input_dir + " " + service_output_dir
 #mk_command = mk_service_exec + " " + service_input_dir
