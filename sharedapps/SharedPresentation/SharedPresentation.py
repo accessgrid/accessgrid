@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.14 2003-11-06 17:17:26 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.15 2003-11-06 20:43:13 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -40,27 +40,6 @@ from AccessGrid import DataStore
 class ViewerSoftwareNotInstalled(Exception):
     pass
 
-
-# This function registers the application with the users environment
-# There is no longer support for shared application installations
-# that might be reintroduced later.
-
-def registerApp(fileName):
-    import AccessGrid.Toolkit as Toolkit
-    app = Toolkit.CmdlineApplication()
-    appdb = app.GetAppDatabase()
-
-    fn = os.path.basename(fileName)
-
-    exeCmd = sys.executable + " " + fn + " -a %(appUrl)s"
-
-    # Call the registration method on the applications database
-    appdb.RegisterApplication("Shared Presentation",
-                              "application/x-ag-shared-presentation",
-                              "sharedpresentation",
-                              {"Open" : exeCmd },
-                              [fn], os.getcwd())
-    
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Viewer code
@@ -1449,10 +1428,10 @@ if __name__ == "__main__":
 
     # Here we parse command line options
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "d:v:a:l:ihr",
+        opts, args = getopt.getopt(sys.argv[1:], "d:v:a:l:ih",
                                    ["venueURL=", "applicationURL=",
                                     "information=", "logging=", 
-                                    "data=", "debug", "help", "register"])
+                                    "data=", "debug", "help"])
     except getopt.GetoptError:
         Usage()
         sys.exit(2)
@@ -1473,9 +1452,6 @@ if __name__ == "__main__":
             venueDataUrl = a
         elif o in ("--debug",):
             debug = 1
-        elif o in ("-r", "--register"):
-            registerApp(sys.argv[0])
-            sys.exit(0)
         elif o in ("-h", "--help"):
             Usage()
             sys.exit(0)
