@@ -4,8 +4,8 @@
 # 
 # Author:      Susanne Lefvert 
 # 
-# Created:     $Date: 2004-12-22 21:46:06 $ 
-# RCS-ID:      $Id: Voyager.py,v 1.2 2004-12-22 21:46:06 lefvert Exp $ 
+# Created:     $Date: 2005-01-04 22:17:22 $ 
+# RCS-ID:      $Id: Voyager.py,v 1.3 2005-01-04 22:17:22 turam Exp $ 
 # Copyright:   (c) 2002 
 # Licence:     See COPYING.TXT 
 #----------------------------------------------------------------------------- 
@@ -594,17 +594,19 @@ class VoyagerView(wxFrame, Observer):
  
  
         wxBeginBusyCursor() 
+        
+        venueUrl = dlg.GetVenueUrl()
  
         try: 
             # Start to play the recording in venue entered by user. 
-            self.voyagerModel.PlayInVenue(r, dlg.GetVenueUrl()) 
+            self.voyagerModel.PlayInVenue(r, venueUrl) 
         except: 
             dlg = wxMessageDialog(self.panel, 
                                   "Error when playing", 
                                   "Play", style = wxICON_ERROR) 
             dlg.ShowModal() 
             self.log.exception("VoyagerView.PlayCB: Failed to play recording %s in venue %s" 
-                               %(r.GetName(), r.GetVenueUrl())) 
+                               %(r.GetName(), venueUrl)) 
              
         wxEndBusyCursor() 
          
