@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.35 2003-02-21 17:04:40 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.36 2003-02-21 17:34:01 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -647,14 +647,14 @@ class VenueList(wxScrolledWindow):
         b.Add(label, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
         panel.SetSizer(b)
         b.Fit(panel)
-        #panel.SetAutoLayout(1)
-        
+              
         self.column.Add(panel, -1, wxEXPAND)
         self.doorsAndLabelsList.append(panel)
         
 	self.SetSize(wxDefaultSize)
 	self.Layout()
-	#self.box.SetVirtualSizeHints(self)
+        panel.SetAutoLayout(1)
+	self.box.SetVirtualSizeHints(self)
         self.exitsDict[id] = profile
         EVT_BUTTON(self, id, self.GoToNewVenue)
         #self.EnableScrolling(true, true)
