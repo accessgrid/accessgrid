@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.54 2004-04-23 15:17:54 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.55 2004-04-23 17:15:42 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.54 2004-04-23 15:17:54 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.55 2004-04-23 17:15:42 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import IsWindows
@@ -33,6 +33,7 @@ from AccessGrid import icons
 from AccessGrid.Utilities import SubmitBug, VENUE_CLIENT_LOG
 from AccessGrid.Version import GetVersion
 from AccessGrid.Platform.Config import UserConfig, AGTkConfig
+from AccessGrid.Platform import Config
 
 class MessageDialog:
     def __init__(self, frame, text, text2 = "", style = wxOK|wxICON_INFORMATION):
@@ -43,7 +44,6 @@ class MessageDialog:
 class ErrorDialog:
     def __init__(self, frame, text, text2 = "",
                  style =  wxICON_ERROR |wxYES_NO | wxNO_DEFAULT, logFile = VENUE_CLIENT_LOG):
-        
         info = text + "\n\nDo you wish to send an automated error report?"
         errorDialog = wxMessageDialog(frame, info, text2, style)
 
@@ -56,7 +56,7 @@ class ErrorDialog:
                 comment = bugReportCommentDialog.GetComment()
                 email = bugReportCommentDialog.GetEmail()
 
-                SubmitBug(comment,  email, logFile)
+                SubmitBug(comment,  email, logFile, Config.UserConfig.instance())
                 bugFeedbackDialog = wxMessageDialog(frame, "Your error report has been sent, thank you.",
                                                     "Error Reported", style = wxOK|wxICON_INFORMATION)
                 bugFeedbackDialog.ShowModal()
