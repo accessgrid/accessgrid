@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.8 2003-01-21 18:27:33 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.9 2003-01-23 14:33:03 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -61,8 +61,9 @@ class VenueClient( ServiceBase ):
            Event.ADD_SERVICE: self.venueState.AddService ,
            Event.REMOVE_SERVICE: self.venueState.RemoveService ,
            Event.ADD_CONNECTION: self.venueState.AddConnection ,
-           Event.REMOVE_CONNECTION: self.venueState.RemoveConnection }
-
+           Event.REMOVE_CONNECTION: self.venueState.RemoveConnection,
+           Event.HEARTBEAT: self.venueState.UpdateClient
+           }
         callback = coherenceCallbacks[event.eventType]
         callback( event.data )
 
@@ -99,7 +100,8 @@ class VenueClient( ServiceBase ):
             #
             self.coherenceClient = CoherenceClient( self.venueState.coherenceLocation.host,
                                                     self.venueState.coherenceLocation.port,
-                                                    self.CoherenceCallback )
+                                                    self.CoherenceCallback,
+                                                    self.profile.publicId )
             self.coherenceClient.start()
 
 
