@@ -19,14 +19,9 @@ import shutil
 import win32api
 import _winreg
 import logging
+from optparse import OptionParser
 
 from win32com.shell import shell, shellcon
-
-#
-# The version being packaged
-#  We set this to X.Y since it should be specified for every execution
-#
-AGTkVersion = "X.Y"
 
 # Source Directory
 #  We assume the following software is in this directory:
@@ -34,20 +29,56 @@ AGTkVersion = "X.Y"
 SourceDir = os.environ['AGBUILDROOT']
 
 #
+# Parse command line options
+#
+
+parser = OptionParser()
+parser.add_option("-s", "--sourcedir", dest="sourcedir", metavar="SOURCEDIR",
+                  default=None,
+                  help="The directory the AG source code is in.")
+parser.add_option("-m", "--meta", dest="metainfo", metavar="METAINFO",
+                  default=None,
+                  help="Meta information string about this release.")
+parser.add_option("-c", "--checkoutcvs", action="store_true", dest="cvs",
+                  default=1,
+                  help="A flag that indicates the snapshot should be built from anexported cvs checkout.")
+parser.add_option("-i", "--innopath", dest="innopath", metavar="INNOPATH",
+                  default="", help="The path to the isxtool.")
+parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
+                  default=0,
+                  help="A flag that indicates to build verbosely.")
+parser.add_option("--version", dest="version", metavar="VERSION",
+                  default=None, help="The version of the toolkit.")
+
+options, args = parser.parse_args()
+
+#
 # The openssl in winglobus is critical put it in our path
 #
 oldpath = os.environ['PATH']
 os.environ['PATH'] = os.path.join(SourceDir, "WinGlobus", "bin")+";"+oldpath
 
+#
+# The version being packaged
+#  We set this to X.Y since it should be specified for every execution
+#
+if options.version is not None:
+    AGTkVersion = options.version
+else:
+    AGTkVersion = "X.Y"
+
 # Build Name
 #  This is the default name we use for the installer
 BuildTime = time.strftime("%Y%m%d-%H%M%S")
 
+# Names for the software
+if options.metainfo is not None:
+    metainfo = options.metainfo
+else:
+    metainfo = "Snapshot %s" % BuildTime
+
 # Create the dest dir stamped with the same time stamp
 DestDir = os.path.join(SourceDir, "dist-%s" % BuildTime)
-
-# Names for the software
-metainformation = "Snapshot %s" % BuildTime
 
 # The directory we're building from
 BuildDir = os.path.join(SourceDir, "AccessGrid-%s" % BuildTime)
@@ -66,84 +97,16 @@ except WindowsError:
     innopath = r"\Program Files\ISTool 4"
     inno_compiler = os.path.join(innopath, "iscc.exe")
 
-def usage():
-    print """
-%s: 
-    -h|--help : print usage
-    
-    -s|--sourcedir <directory>
-       The directory the AG source code is in. If the code is in
-       The default is: %s
-       
-    -m|--meta <name>
-       Meta information string about this release.
-       The default is: %s
-    
-    -c|--checkoutcvs
-       A flag that indicates the snapshot should be built from an
-       exported cvs checkout. This is cleaner.
-    
-    -i|--innopath <directory>
-       The path to the isxtool.
-       If this is not specified on the command line, the value is retrieved
-       from the system registry.
-    
-    -v|--verbose
-       The option to be very very spammy when run.
-
-    --version
-       The version of the toolkit.
-       The default is: %s
-       """ % (sys.argv[0], SourceDir, metainformation, AGTkVersion)
-
 # Innosoft config file names
 iss_orig = "agtk.iss"
-
-# Innosoft path
-innopath = ""
-
-# CVS Flag
-checkoutnew = 0
-
-# Verbosity flag
-verbose = 0
-
-try:
-    opts, args = getopt.getopt(sys.argv[1:], "s:i:m:chv",
-                               ["version=", "sourcedir=", "innopath=", 
-                                "shortname=", "metainfo=", "checkoutcvs",
-                                "help", "verbose"])
-except:
-    usage()
-    sys.exit(2)
-
-for o, a in opts:
-    if o == "--version":
-        AGTkVersion = a
-    elif o in ("-s", "--sourcedir"):
-        SourceDir = a
-    elif o in ("-i", "--innopath"):
-        innopath = a
-    elif o in ("-m", "--metainfo"):
-        metainformation = a
-    elif o in ("-c", "--checkoutcvs"):
-        checkoutnew = 1
-    elif o in ("-h", "--help"):
-        usage()
-        sys.exit(0)
-    elif o in ("-v", "--verbose"):
-        verbose = 1
-    else:
-        usage()
-        sys.exit(0)
 
 #
 # Location of the Inno compiler
 #
-if innopath != "":
+if options.innopath != "":
     # It was set on the command line
-    inno_compiler = os.path.join(innopath, "iscc.exe")
-    if verbose:
+    inno_compiler = os.path.join(options.innopath, "iscc.exe")
+    if options.verbose:
         if os.path.exists(inno_compiler):
             print "BUILD: Found ISXTool in default path:", inno_compiler
         else:
@@ -156,7 +119,7 @@ if innopath != "":
 # Grab stuff from cvs
 #
 
-if checkoutnew:
+if options.cvs:
     # Either we check out a copy
     cvsroot = ":pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl"
 
@@ -174,7 +137,7 @@ if checkoutnew:
 
 RunDir = os.path.join(BuildDir, "packaging", "windows")
 
-if verbose:
+if options.verbose:
     print "BUILD: Changing to directory: %s" % RunDir
     
 os.chdir(RunDir)
@@ -205,7 +168,7 @@ for cmd in [
     "BuildPythonModules.cmd"
     ]:
     cmd = "%s %s %s %s" % (cmd, SourceDir, BuildDir, DestDir)
-    if verbose:
+    if options.verbose:
         print "BUILD: Running: %s" % cmd
 
     os.system(cmd)
@@ -215,9 +178,9 @@ for cmd in [
 #
 
 # Add quotes around command.
-iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" /dSourceDir=%s /dBuildDir=%s" % (inno_compiler, iss_orig, AGTkVersion, metainformation.replace(' ', '_'), SourceDir, DestDir)
+iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" /dSourceDir=%s /dBuildDir=%s" % (inno_compiler, iss_orig, AGTkVersion, metainfo.replace(' ', '_'), SourceDir, DestDir)
 
-if verbose:
+if options.verbose:
     print "BUILD: Executing:", iscc_cmd
 
 os.system(iscc_cmd)
