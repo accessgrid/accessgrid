@@ -116,14 +116,14 @@ mv %{buildroot}%{prefix}/var %{buildroot}
 %defattr(0755,ag,ag)
 %dir %{aghome}/local_services
 %defattr(0644,root,root)
-%config %{sysconfdir}/AGServiceManager
+%config %{sysconfdir}/AGServiceManager.cfg
 
 %files VenueClient
 %defattr(-,root,root)
 %{prefix}/bin/AGNodeService.py
 %{prefix}/bin/VenueClient.py
 %{prefix}/bin/NodeManagement.py
-%config %{sysconfdir}/AGNodeService
+%config %{sysconfdir}/AGNodeService.cfg
 /etc/init.d/agns
 %{sharedir}/%{name}/services/
 %{gnomedir}/%{name}/.desktop
@@ -133,7 +133,7 @@ mv %{buildroot}%{prefix}/var %{buildroot}
 %{kdedir}/%{name}/VenueClient.desktop
 %{kdedir}/%{name}/NodeManagement.desktop
 %defattr(0644,ag,ag)
-%config %{sharedir}/%{name}/defaultLinux
+%config %{sharedir}/%{name}/nodeConfig/defaultLinux
 
 
 %files VenueServer
