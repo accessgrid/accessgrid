@@ -5,15 +5,25 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.7 2003-03-11 22:12:10 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.8 2003-04-28 18:26:55 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+try:
+    import _winreg
+    from AccessGrid.Platform import Win32RegisterMimeType
+except:
+    pass
+
+from wxPython.wx import wxTheMimeTypesManager as mtm
+from wxPython.wx import wxFileTypeInfo
+
 from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
 from AccessGrid import icons
 
 from AccessGrid.Utilities import formatExceptionInfo
+
 
 class MessageDialog:
     def __init__(self, frame, text, text2 = "", style = wxOK|wxICON_INFORMATION):
@@ -95,3 +105,48 @@ class AboutDialog(wxPopupTransientWindow):
     def ProcessLeftDown(self, evt):
         self.Hide()
         return false
+
+def InitMimeTypes(file):
+    """
+    This function is used to load in our AG specific mimetypes.
+    """
+    success = 0
+
+    # This only works for augmenting the mailcap entries on Linux
+    if os.path.isfile(file):
+        success = mtm.ReadMailcap(file, 1)
+    else:
+        return 0
+    
+    # For windows we have cope with the fact that it's the registry
+    # that's dealt with during the "creating new associations" sequence
+    # for now we load the mailcap file and stuff things in the registry
+    if sys.platform == 'win32':
+        fp = open(file)
+        caps = mailcap.readmailcapfile(fp)
+        fp.close()
+
+        ftl = []
+        for k in caps.keys():
+            opencmd = u""
+            printcmd = u""
+            desc = u""
+            ext = None
+            cmds = []
+            stuff = caps[k][0]
+            for k2 in stuff.keys():
+                if k2 == 'view':
+                    cmds.append(('open', stuff[k2].replace('%s', '%1'), ''))
+                elif k2 == 'description':
+                    desc = stuff[k2]
+                elif k2 == 'nametemplate':
+                    ext = "." + stuff[k2].split('.')[1]
+                elif k2 == 'print':
+                    cmds.append((k2, stuff[k2].replace('%s', '%1'), ''))
+
+            fileType = k.split('/')[1]
+            fileType.replace('-', '.')
+            Win32RegisterMimeType(k, ext, fileType, desc, cmds)
+                    
+    return success
+    
