@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.105 2003-07-17 22:22:09 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.106 2003-08-04 20:14:50 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -306,6 +306,7 @@ class Venue(ServiceBase.ServiceBase):
         self.services = dict()
         self.streamList = StreamDescriptionList()
         self.clients = dict()
+        self.netServices = dict()
 
         #
         # Dictionary keyed on client private id; value
@@ -578,6 +579,37 @@ class Venue(ServiceBase.ServiceBase):
 
             self.RemoveUser(privateId)
 
+        for privateId in self.netServices.keys():
+            (netServiceType,then_sec) = self.netServices[privateId]
+
+            if abs(now_sec - then_sec) > self.cleanupTime:
+                log.info("Removing netservice %s with expired heartbeat time",
+                         privateId)
+                self.RemoveNetService(privateId)
+
+
+    def AddNetService(self, clientType):
+        """
+        AddNetService adds a net service to those in the venue
+        """
+        privateId = str(GUID())
+        self.netServices[privateId] = (clientType, time.time())
+        return privateId
+    AddNetService.soap_export_as = "AddNetService"
+
+    def RemoveNetService(self, privateId):
+        """
+        RemoveNetService removes a netservice from those in the venue
+        """
+
+        # Remove associated transports from streams
+        netServiceType = self.netServices[privateId][0]
+        if netServiceType == "bridge":
+           self.RemoveNetworkLocationsByPrivateId(privateId)     
+        
+        # Remove the netservice from the netservice list
+        del self.netServices[privateId]
+
     def ClientHeartbeat(self, event):
         """
         This is an Event handler for heartbeat events. When a
@@ -609,6 +641,9 @@ class Venue(ServiceBase.ServiceBase):
             self.clients[privateId].UpdateAccessTime()
 
             self.heartbeatLock.release()
+        elif self.netServices.has_key(privateId):
+            (netServiceType, heartbeatTime) = self.netServices[privateId]
+            self.netServices[privateId] = (netServiceType,now)
         else:
             log.debug("ClientHeartbeat: Got heartbeat for missing client")
     
@@ -1676,6 +1711,12 @@ class Venue(ServiceBase.ServiceBase):
 
         self.simpleLock.release()
         
+        # Distribute event announcing new stream
+        self.server.eventService.Distribute( self.uniqueId,
+                                             Event( Event.ADD_STREAM,
+                                                    self.uniqueId,
+                                                    streamDescription ) )
+
     AddStream.soap_export_as = "AddStream"
 
     def RemoveStream(self, inStreamDescription):
@@ -1710,6 +1751,12 @@ class Venue(ServiceBase.ServiceBase):
         self.streamList.RemoveStream( streamDescription )
 
         self.simpleLock.release()
+
+        # Distribute event announcing removal of stream
+        self.server.eventService.Distribute( self.uniqueId,
+                                             Event( Event.REMOVE_STREAM,
+                                                    self.uniqueId,
+                                                    streamDescription ) )
 
     RemoveStream.soap_export_as = "RemoveStream"
 
@@ -2108,6 +2155,104 @@ class Venue(ServiceBase.ServiceBase):
         del self.applications[appId]
 
     DestroyApplication.soap_export_as = "DestroyApplication"
+
+
+
+    def AddNetworkLocationToStream(self, privateId, streamId, networkLocation):
+        """
+        Add a transport to an existing stream
+
+        **Arguments:**
+
+            *streamId* The id of the stream to which to add the transport
+            *networkLocation* The network location (transport) to add
+            
+        **Raises:**
+ 
+
+        Note:  This method overwrites the private id in the incoming
+               network location
+
+        """
+
+        # Validate private id before allowing call
+        pass
+
+        # Add the network location to the specified stream
+        streamList = self.streamList.GetStreams()
+        for stream in streamList:
+            if stream.id == streamId:
+                # Add the network location to the stream
+                networkLocation.privateId = privateId
+                id = stream.AddNetworkLocation(networkLocation)
+                log.info("Added network location %s to stream %s for private id %s",
+                         id, streamId, privateId)
+
+                # Send a ModifyStream event
+                self.server.eventService.Distribute( self.uniqueId,
+                                         Event( Event.MODIFY_STREAM,
+                                                self.uniqueId,
+                                                stream ) )
+
+
+                return id
+
+        return None
+            
+    AddNetworkLocationToStream.soap_export_as = "AddNetworkLocationToStream"
+
+    def RemoveNetworkLocationFromStream(self, privateId, streamId, networkLocationId):
+        
+        # Validate private id before allowing call
+        pass
+
+        # Remove the network location from the specified stream
+        streamList = self.streamList.GetStreams()
+        for stream in streamList:
+            if stream.id == streamId:
+                # Remove network location from stream
+                log.info("Removing network location %s from stream %s",
+                         networkLocationId, streamId)
+                stream.RemoveNetworkLocation(networkLocationId)
+
+                # Send a ModifyStream event
+                self.server.eventService.Distribute( self.uniqueId,
+                                         Event( Event.MODIFY_STREAM,
+                                                self.uniqueId,
+                                                stream ) )
+
+                
+    RemoveNetworkLocationFromStream.soap_export_as = "RemoveNetworkLocationFromStream"
+
+    def RemoveNetworkLocationsByPrivateId(self, privateId):
+
+        # Validate private id before allowing call
+        pass
+
+        log.info("Removing network locations for private id %s", privateId)
+
+        # Remove network locations tagged with specified private id
+        streamList = self.streamList.GetStreams()
+        for stream in streamList:
+            for netloc in stream.networkLocations:
+                if netloc.privateId == privateId:
+                    # Remove network location from stream
+                    log.info("Removing network location %s from stream %s",
+                         netloc.id, stream.id)
+                    stream.RemoveNetworkLocation(netloc.id)
+
+                    # Send a ModifyStream event
+                    self.server.eventService.Distribute( self.uniqueId,
+                                             Event( Event.MODIFY_STREAM,
+                                                    self.uniqueId,
+                                                    stream ) )
+
+
+    def GetEventServiceLocation(self):
+        return (self.server.eventService.GetLocation(), self.uniqueId)
+    GetEventServiceLocation.soap_export_as = "GetEventServiceLocation"
+
+
 
 class StreamDescriptionList:
     """
