@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.127 2003-08-21 23:10:39 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.128 2003-09-15 22:42:11 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -2180,6 +2180,8 @@ class Venue(ServiceBase.ServiceBase):
 
         appImpl = AppService.CreateApplication(name, description, mimeType, 
                                            self.server.eventService, id)
+        appImpl.SetVenueURL(self.uri)
+        
         app = AppService.AppObject(appImpl)
 
         hostObj = self.server.hostingEnvironment.BindService(app)

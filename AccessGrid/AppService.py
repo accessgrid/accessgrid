@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: AppService.py,v 1.10 2003-08-28 18:45:54 judson Exp $
+# RCS-ID:      $Id: AppService.py,v 1.11 2003-09-15 22:41:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -26,7 +26,6 @@ from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid.Descriptions import ApplicationDescription
 
 log = logging.getLogger("AG.AppService")
-
 
 def CreateApplication(name, description, mimeType, eventService, id=None ):
     """
@@ -70,6 +69,10 @@ class AppObject(ServiceBase.ServiceBase):
         return self.impl.GetDataChannel(private_token)
     GetDataChannel.soap_export_as = "GetDataChannel"
 
+    def GetVenueURL(self, private_token):
+        return self.impl.GetVenueURL(private_token)
+    GetVenueURL.soap_export_as = "GetVenueURL"
+    
 #
 # End of interfaces. Start the implementation classes.
 # 
@@ -190,6 +193,12 @@ class AppObjectImpl:
             
         return appState
 
+    def SetVenueURL(self, url):
+        self.venueURL = url
+
+    def GetVenueURL(self):
+        return self.venueURL
+    
     def GetEventServiceLocation(self):
         return self.eventService.GetLocation()
         
@@ -235,6 +244,15 @@ class AppObjectImpl:
         
         return (channelId, location)
 
+    def GetVenueURL(self, private_token):
+        """
+        Return the url of the venue this app object is in.
+        """
+        if no self.components.has_key(private_token):
+            raise InvalidPrivateToken
+
+        return self.venueURL
+    
     def GetComponents(self, private_token):
         if not self.components.has_key(private_token):
             raise InvalidPrivateToken
