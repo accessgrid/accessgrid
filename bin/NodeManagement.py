@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.17 2003-08-04 22:19:17 turam Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.18 2003-08-14 21:22:32 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -22,7 +22,9 @@ class MyApp(wxApp):
         frame = NodeManagementClientFrame(NULL, -1, "Access Grid Node Management")
         try:
             frame.AttachToNode( "https://localhost:11000/NodeService" )
-            frame.UpdateUI()
+            # Avoid UI errors if fail to attach to node.
+            if frame.nodeServiceHandle().IsValid():
+                frame.UpdateUI()
         except:
             pass
         frame.Show(true)
