@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.29 2003-08-07 13:48:40 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.30 2003-08-15 21:18:47 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ AGTK_INSTALL = 'AGTK_INSTALL'
 # Windows Defaults
 WIN = 'win32'
 WinGPI = "wgpi.exe"
-AGTkRegBaseKey = "SOFTWARE\\Access Grid Toolkit\\2.0"
+AGTkRegBaseKey = "SOFTWARE\\Access Grid Toolkit\\2.1"
 
 def isWindows():
     if sys.platform == WIN:
@@ -119,7 +119,7 @@ def GetSystemConfigDir():
     if "" == configDir:
 
         if sys.platform == WIN:
-            base = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA, 0, 0)
+            base = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
             configDir = os.path.join(base, "AccessGrid")
 
         elif sys.platform == LINUX or sys.platform == OSX:

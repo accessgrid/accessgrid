@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.37 2003-08-14 21:52:05 olson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.38 2003-08-15 21:19:13 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ from threading import Lock, Condition
 import logging
 log = logging.getLogger("AG.Utilities")
 
-from AccessGrid.Platform import GetInstallDir
+from AccessGrid.Platform import GetUserConfigDir
 
 def LoadConfig(fileName, config={}):
     """
@@ -169,8 +169,9 @@ def GetLogText(maxSize):
         #
         # Try to get text from VenueClient.log
         #
-        logFileLocation = os.path.join(GetInstallDir(), "VenueClient.log")
-        logFile = file(logFileLocation)
+        # logFileLocation = os.path.join(GetInstallDir(), "VenueClient.log")
+        # logFile = file(logFileLocation)
+        logFile = file(os.path.join(GetUserConfigDir(), "VenueClient.log"))
         
         #
         # Move to a position "maxSize" bytes from the end of the file. 
