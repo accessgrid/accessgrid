@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.56 2003-04-04 22:43:08 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.57 2003-04-07 17:17:44 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -103,10 +103,10 @@ class VenueManagementClient(wxApp):
                 wxLogDebug("Connect to server")
                 self.server = handle.get_proxy()
                 wxLogDebug("Get venues from server")
-                self.venueList = []
+                self.venueList = {}
                 vl = self.server.GetVenues()
                 for v in vl:
-                    self.venueList.append(CreateVenueDescription(v))
+                    self.venueList[v.uri] = CreateVenueDescription(v)
 
                 self.serverUrl = URL
 
@@ -120,7 +120,7 @@ class VenueManagementClient(wxApp):
                 # fill in venues
                 self.tabs.Enable(true)
                 if len(self.venueList) != 0 :
-                    for venue in self.venueList:
+                    for venue in self.venueList.values():
                         wxLogDebug("Add venue: %s" % venue.name)
                         vlp.venuesList.Append(venue.name, venue)
                     currentVenue = vlp.venuesList.GetClientData(0)
@@ -274,9 +274,8 @@ class VenueManagementClient(wxApp):
     def DeleteVenue(self, venue):
         wxLogDebug("Delete venue: %s" %str(venue.uri))
         self.server.RemoveVenue(venue.uri)
-        index = self.venueList.index(venue)
-        if index > -1:
-            del self.venueList[index]
+        if self.venueList.has_key(venue.uri):
+            del self.venueList[venue.uri]
 
     def ConvertVenuesToConnections(self, list):
         wxLogDebug("Convert venue to connections %s" %str(list))
@@ -485,7 +484,8 @@ class VenueProfilePanel(wxPanel):
 
     def ChangeCurrentVenue(self, venue = None):
         if venue == None:
-            self.__hideFields
+            self.ClearAllFields()
+            self.__hideFields()
             self.description.SetValue("No venues in server")
             self.application.SetCurrentVenue(None)
 
@@ -1372,20 +1372,20 @@ class VenueParamFrame(wxDialog):
         sap = self.staticAddressingPanel
         if(sap.staticAddressingButton.GetValue()==1):
             # Static Video
-            svml = MulticastNetworkLocation(sa.GetVideoAddress(),
+            svml = MulticastNetworkLocation(sap.GetVideoAddress(),
                                             int(sap.GetVideoPort()),
-                                            int(sapGetVideoTtl()))
+                                            int(sap.GetVideoTtl()))
             staticVideoCap = Capability(Capability.PRODUCER, Capability.VIDEO)
-            streams.Append(StreamDescription("Static Video",
+            streams.append(StreamDescription("Static Video",
                                                   "Static Video",
                                                   svml, staticVideoCap,
                                                   None, 1))
             # Static Audio
-            saml = MulticastNetworkLocation(sa.GetAudioAddress(),
+            saml = MulticastNetworkLocation(sap.GetAudioAddress(),
                                             int(sap.GetAudioPort()),
-                                            int(sapGetAudioTtl()))
+                                            int(sap.GetAudioTtl()))
             staticAudioCap = Capability(Capability.PRODUCER, Capability.AUDIO)
-            streams.Append(StreamDescription("Static Audio",
+            streams.append(StreamDescription("Static Audio",
                                                   "Static Audio",
                                                   saml, staticAudioCap,
                                                   None, 1))
@@ -1703,7 +1703,7 @@ class ModifyVenueFrame(VenueParamFrame):
         self.application.SetCurrentVenue(self.venue)
         venueC = self.application.currentVenueClient
 
-        if(self.venue.encryptionKey != 'None'):
+        if(self.venue.encryptMedia):
             wxLogDebug("We have a key %s" % self.venue.encryptionKey)
             self.encryptionPanel.ClickEncryptionButton(None, true)
             self.encryptionPanel.keyCtrl.SetValue(self.venue.encryptionKey)
