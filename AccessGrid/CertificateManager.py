@@ -899,7 +899,7 @@ class Certificate:
             fh = open(nkpath, "w")
             fh.write(self.keyText)
             fh.close()
-            os.chmod(0600, nkpath)
+            os.chmod(nkpath, 0600)
 
         if self.policyPath is not None:
             fh = open(os.path.join(repoPath, "%s.signing_policy" % (hash)), "w")
