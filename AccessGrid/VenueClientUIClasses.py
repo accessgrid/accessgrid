@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.168 2003-05-07 14:24:35 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.169 2003-05-07 14:46:28 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -817,8 +817,8 @@ class VenueClientFrame(wxFrame):
             commands = GetMimeCommands(filename = tfilepath,
                                        ext = name.split('.')[-1])
             if commands == None:
-                message = ("No registered for the selected data\n(mimetype = %s)" % data.mimeType)
-                dlg = MessageDialog(self.frame, message)
+                message = ("No client registered for the selected data") #\n (mimetype = %s)" % data.mimeType)
+                dlg = MessageDialog(self, message)
                 wxLogDebug(message)
             else:
                 if commands.has_key('open'):
@@ -1258,6 +1258,7 @@ class ContentListPanel(wxPanel):
 
         EVT_SIZE(self, self.OnSize)
         EVT_RIGHT_DOWN(self.tree, self.OnRightClick)
+        EVT_LEFT_DCLICK(self.tree, self.OnDoubleClick)
         EVT_TREE_KEY_DOWN(self.tree, id, self.OnKeyDown) 
         # EVT_LEFT_DOWN(self.tree, self.OnLeftDown)
 	
@@ -1603,6 +1604,26 @@ class ContentListPanel(wxPanel):
             #    if serviceItem != None and serviceItem.name == object:
             #        self.app.RemoveService(serviceItem)
             #        break
+
+    def OnDoubleClick(self, event):
+        treeId = self.tree.GetSelection()
+        item = self.tree.GetItemData(treeId).GetData()
+        text = self.tree.GetItemText(treeId)
+        
+        if item == None:
+            pass
+
+        elif isinstance(item,ClientProfile):
+            self.parent.OpenParticipantProfile(None)
+
+        elif isinstance(item, DataDescription):
+            self.parent.OpenData(None)
+            
+        elif isinstance(item, ServiceDescription):
+            self.parent.OpenService(None)
+            
+        elif isinstance(item, ApplicationDescription):
+            self.JoinApp(None)
                 
     def OnRightClick(self, event):
         self.x = event.GetX()
@@ -1612,7 +1633,6 @@ class ContentListPanel(wxPanel):
         text = self.tree.GetItemText(treeId)
 
         if text == 'Data':
-            print '====================== Data'
             self.PopupMenu(self.parent.dataHeadingMenu, wxPoint(self.x, self.y))
 
         elif text == 'Services':
@@ -1632,7 +1652,6 @@ class ContentListPanel(wxPanel):
             self.PopupMenu(self.parent.applicationEntryMenu, wxPoint(self.x, self.y))
             
         elif isinstance(item, DataDescription):
-            print '====================== DataDescription'
             self.PopupMenu(self.parent.dataEntryMenu, wxPoint(self.x, self.y))
 
         elif isinstance(item,ClientProfile):
