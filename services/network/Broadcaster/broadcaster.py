@@ -2,7 +2,7 @@
 # Name:        broadcaster.py
 # Purpose:     
 # Created:     2005/05/01
-# RCS-ID:      $Id: broadcaster.py,v 1.4 2005-01-31 20:57:04 lefvert Exp $
+# RCS-ID:      $Id: broadcaster.py,v 1.5 2005-02-03 21:09:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -36,6 +36,8 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from bridge import RTPReceiver
 
 bridge = None
+
+debug = 0
 
 class Broadcaster:
     """
@@ -92,7 +94,9 @@ class Broadcaster:
         '''
         Signal callback that shuts down the service cleanly. 
         '''
+        print "Exiting..."
         self.flag = 0
+        bridge.stop()
         self.StopProcesses()
     
     def StopProcesses(self):
@@ -136,10 +140,10 @@ class Broadcaster:
             fromAudioPort = int(self.app.options.audioPort)
 
         if fromVideoHost == 0 or fromVideoPort == 0:
-            print "Video stream is not received from venue, you will not receive video"
+            if debug: print "Video stream is not received from venue, you will not receive video"
 
         if fromAudioHost == 0 or fromAudioPort == 0:
-            print "Audio stream is not received from venue, you will not receive audio"
+            if debug: print "Audio stream is not received from venue, you will not receive audio"
 
         # We may receive odd ports from the venue (bug), so make
         # sure rtp only uses even ports .
@@ -160,11 +164,11 @@ class Broadcaster:
         dOptions.append("%s"%(self.transcoderHost))
         dOptions.append("%d"%(self.transcoderPort))
 
-        print "********* START down-sampler", downSampExec, dOptions, '\n'
+        if debug: print "********* START down-sampler", downSampExec, dOptions, '\n'
         self.processManager.StartProcess(downSampExec, dOptions)
 
 
-        print "****************** BEFORE RAT", self.toAudioPort
+        if debug: print "****************** BEFORE RAT", self.toAudioPort
         
         # Start audio transcoder (rat linear -> ulaw)
         ratExec = os.path.join(os.getcwd(), 'rat')
@@ -173,7 +177,7 @@ class Broadcaster:
         roptions.append("%s/%d/127"%(self.transcoderHost, self.transcoderPort))
         roptions.append("%s/%d/127/pcm"%(self.toAudioHost, int(self.toAudioPort)))
               
-        print "********* START transcoder ", ratExec, roptions, '\n'
+        if debug: print "********* START transcoder ", ratExec, roptions, '\n'
         self.processManager.StartProcess(ratExec, roptions)
 
         selectorExec = os.path.join(os.getcwd(), 'Selector')
@@ -184,18 +188,18 @@ class Broadcaster:
         soptions.append("%d"%int(self.toVideoPort))
 
         # Start video selector
-        print "********* START selector with options = ", soptions, '\n'
+        if debug: print "********* START selector with options = ", soptions, '\n'
         self.processManager.StartProcess(selectorExec, soptions)
 
-        print "----------------------------------------"
-        print "*** Video from %s/%d is forwarded to %s/%d"%(fromVideoHost, fromVideoPort,
+        if debug: print "----------------------------------------"
+        if debug: print "*** Video from %s/%d is forwarded to %s/%d"%(fromVideoHost, fromVideoPort,
                                                             self.toVideoHost, self.toVideoPort)
-        print "*** Audio from %s/%d is forwarded to %s/%d"%(fromAudioHost, fromAudioPort,
+        if debug: print "*** Audio from %s/%d is forwarded to %s/%d"%(fromAudioHost, fromAudioPort,
                                                             self.toAudioHost, self.toAudioPort)
-        print "----------------------------------------"
+        if debug: print "----------------------------------------"
 
         # Start the bridge
-        print "server is here ", socket.gethostbyname(socket.gethostname()), ":", 9999
+        print "Server URL: http://%s:%d" % (socket.gethostbyname(socket.gethostname()),9999)
         bridge = Bridge(self.toAudioHost, int(self.toAudioPort),
                         self.toVideoHost, int(self.toVideoPort), 9999)
          
@@ -211,46 +215,54 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
         # which is a tuple (address, port)
         fname = self.path[1:]
 
-        print "************* this is f name", fname
+        if debug: print "************* this is f name", fname
         
         if os.path.exists(fname):
             try:
-                print "fname does exist....."
+                if debug: print "fname does exist....."
 
                           
                 f = open(fname)
-                print "after open ", fname
+                if debug: print "after open ", fname
                 lines = f.readlines()
-                print 'after read lines'
+                if debug: print 'after read lines'
                 my_ip = bridge.get_host()
                 aport = bridge.get_aport()
                 vport = bridge.get_vport()
 
-                print "add client", self.client_address[0], self.client_address[1]
+                if debug: print "add client", self.client_address[0], self.client_address[1]
                 
                 bridge.add_client(self.client_address[0])
 
-                print "after add client"
-                self.send_response(200)
-                self.send_header("Content-type", "application/sdp")
-                self.send_header("Content-Length", str(os.fstat(f.fileno())[6]))
-                self.send_header("Connection", "close")
-                self.end_headers()
-                
-                print "MYIPADDR", my_ip
-                print "MYAUDIOPORT", aport
-                print "MYVIDEOPORT", vport
-                
+                # Modify sdp data with address/port info
+                # Note: this changes the length, so compute the length
+                # of the modified sdp
+                length = 0
+                mlines = []
                 for line in lines:
                     line = line.replace("MYIPADDR", str(my_ip))
                     line = line.replace("MYAUDIOPORT", str(aport))
                     line = line.replace("MYVIDEOPORT", str(vport))
-                    print line[:-1]
-                                        
-                    self.wfile.write(line[:])
-                    #    print "after write"
+                    length += len(line)
+                    mlines.append(line)
 
-                print "after for"
+                # Send the http header
+                if debug: print "after add client"
+                self.send_response(200)
+                self.send_header("Content-type", "application/sdp")
+                self.send_header("Content-Length", str(length))
+                self.send_header("Connection", "close")
+                self.end_headers()
+                
+                if debug: print "MYIPADDR", my_ip
+                if debug: print "MYAUDIOPORT", aport
+                if debug: print "MYVIDEOPORT", vport
+                
+                # Send the modified sdp data
+                for line in mlines:
+                    self.wfile.write(line[:])
+
+                if debug: print "after for; wrote ", length
 
             except:
                 log.exception("this is an exception")
@@ -270,22 +282,23 @@ class Bridge:
         self.v_port = v_port
         self.http_port = http_port
 
-        print "bridge audio ", audio_addr, "/", a_port
-        print "bridge video", video_addr, "/", v_port
+        print "bridge audio: %s/%d" % (audio_addr, a_port)
+        print "bridge video: %s/%d" % (video_addr, v_port)
 
         self.http = HTTPServer(('', http_port), BridgeRequestHandler)
         self.http_thread = threading.Thread(target=self.http.serve_forever,
                                             name="HTTP Thread")
+        self.http_thread.setDaemon(1)
 
         self.host = socket.gethostbyname(socket.gethostname())
 
-        print "this is http host and port", self.host, "/", http_port
+        if debug: print "this is http host and port", self.host, "/", http_port
 
         CHECK_TIMEOUT = 15
                 
         self.abridge = RTPReceiver(self.host, a_port, CHECK_TIMEOUT)
         self.vbridge = RTPReceiver(self.host, v_port, CHECK_TIMEOUT)
-       
+        
     def start(self):
         self.http_thread.start()
         self.abridge.start()
@@ -293,23 +306,23 @@ class Bridge:
 
         self.abridge.add_client(self.audio_addr, self.a_port, 1)
         self.vbridge.add_client(self.video_addr, self.v_port, 1)
-        print "********************* end of start"
+        if debug: print "********************* end of start"
         
     def stop(self):
         self.abridge.stop()
         self.vbridge.stop()
-        self.http_thread.stop()
+        self.http.server_close()
 
     def get_host(self):
-        print "get host", self.host
+        if debug: print "get host", self.host
         return self.host
 
     def get_aport(self):
-        print "get a port", self.a_port
+        if debug: print "get a port", self.a_port
         return self.a_port
 
     def get_vport(self):
-        print "get v port", self.v_port
+        if debug: print "get v port", self.v_port
         return self.v_port
 
     def add_client(self, addr):
@@ -323,13 +336,8 @@ class Bridge:
             return 0
 
 if __name__ == "__main__":
+
     # Start broadcaster
-
-    print len(sys.argv)
-
-    if not (len(sys.argv) == 2 or len(sys.argv) == 5):
-        print "\nUsage: Broadcaster.py  --venueUrl <venueUrl>"
-        sys.exit(1)
 
     # We need the simple wx app for when the
     # app.HaveValidProxy() call opens a
@@ -357,13 +365,13 @@ if __name__ == "__main__":
                                 dest="audioPort",
                                 help="Port for audio source"))
     
+    if debug: print "initializing"
     try:
         app.Initialize("Broadcaster")
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
         sys.exit(-1)
-
 
     if not  app.options.venueUrl:
         if  (app.options.videoHost and
@@ -375,7 +383,8 @@ if __name__ == "__main__":
             print "\nUsage: Broadcaster.py  --venueUrl <venueUrl>"
             sys.exit(1)
 
-  
+    debug = app.options.debug
+    
     if not app.certificateManager.HaveValidProxy():
         sys.exit(-1)
 
@@ -387,6 +396,7 @@ if __name__ == "__main__":
     
     # Stop broadcaster
     bcaster.StopProcesses()
+    
     
             
 
