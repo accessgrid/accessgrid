@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.90 2003-03-21 16:37:39 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.91 2003-03-21 17:07:08 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -506,9 +506,16 @@ class VenueClientFrame(wxFrame):
     def OpenProfileDialog(self, event):
         profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile information')
         profileDialog.SetProfile(self.app.profile)
+        #        lastType = self.app.profile.type
            
-        if (profileDialog.ShowModal() == wxID_OK): 
-            self.app.ChangeProfile(profileDialog.GetNewProfile())
+        if (profileDialog.ShowModal() == wxID_OK):
+            profile = profileDialog.GetNewProfile()
+            self.app.ChangeProfile(profile)
+         #   if(profile.type != lastType):
+         #       if profile.type == 'Node':#
+         #
+         #                elif profile.type == 'User':
+                    
 
         profileDialog.Destroy()
 
@@ -737,7 +744,6 @@ class VenueListPanel(wxSashLayoutWindow):
         EVT_BUTTON(self, self.ID_MAXIMIZE, self.OnClick) 
 
     def FixDoorsLayout(self):
-        print '----------- fix doors layout'
         wxLayoutAlgorithm().LayoutWindow(self, self.panel)
 
     def Layout(self):
@@ -992,13 +998,17 @@ class ContentListPanel(wxPanel):
         self.tree.Delete(id)
                           
     def RemoveParticipant(self, description):
+        wxLogDebug("Remove participant")
         if description!=None :
             if(self.participantDict.has_key(description.publicId)):
+                wxLogDebug("Found participant in tree")
                 id = self.participantDict[description.publicId]
 
                 if id!=None:
-                     self.tree.Delete(id)
-                
+                    wxLogDebug("Removed participant from tree")
+                    self.tree.Delete(id)
+                    
+                wxLogDebug("Delete participant from dictionary")
                 del self.participantDict[description.publicId]
                
     def RemoveNode(self, profile):
@@ -1205,12 +1215,15 @@ class ContentListPanel(wxPanel):
                  self.nodeDict.has_key(item.publicId):
 
             if(item.publicId == self.app.profile.publicId):
+                wxLogDebug("This is me")
                 self.PopupMenu(self.parent.meMenu, wxPoint(self.x, self.y))
 
             elif(item.profileType == 'node'):
+                wxLogDebug("This is a node")
                 self.PopupMenu(self.parent.nodeMenu, wxPoint(self.x, self.y))
 
             elif(item.profileType == 'user'):
+                wxLogDebug("This is a user")
                 self.PopupMenu(self.parent.participantMenu, wxPoint(self.x, self.y))
 
             

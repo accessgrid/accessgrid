@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.34 2003-03-21 16:26:31 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.35 2003-03-21 17:02:20 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -96,7 +96,6 @@ class VenueClient( ServiceBase):
         self.venueState.ModifyUser(data)
 
     def AddDataEvent(self, data):
-        print "Getting Add Data Event in VenueClient.AddDataEvent"
         self.venueState.AddData(data)
 
     def UpdateDataEvent(self, data):
@@ -124,8 +123,6 @@ class VenueClient( ServiceBase):
         """
         EnterVenue puts this client into the specified venue.
         """
-        print '----------------- NEW ENTER'
-        
         haveValidNodeService = 0
         if self.nodeServiceUri != None:
             haveValidNodeService = Client.Handle( self.nodeServiceUri ).IsValid()
@@ -254,7 +251,6 @@ class VenueClient( ServiceBase):
         if(self.urlToFollow!=None):
             self.Unfollow(self.urlToFollow)
        
-        print '------------follow url: ', venueClientUrl
         Client.Handle( venueClientUrl ).get_proxy().Lead( self.profile )
         self.urlToFollow = venueClientUrl
         
@@ -263,7 +259,6 @@ class VenueClient( ServiceBase):
         Unfollow tells this venue client to stop following
         the node specified.
         """
-        print '------------unfollow: '
         Client.Handle( venueClientUri ).get_proxy().Unlead( self.profile )
 
     def Lead( self, clientProfile):
@@ -271,7 +266,6 @@ class VenueClient( ServiceBase):
         Lead tells this venue client to drag the specified
         node with it.
         """
-        print '--------------this person is following me: ', clientProfile.name
         self.followerProfiles[clientProfile.publicId] = clientProfile
     Lead.soap_export_as = "Lead"
 
@@ -283,7 +277,6 @@ class VenueClient( ServiceBase):
       
         for profile in self.followerProfiles.values():
             if profile.publicId == clientProfile.publicId:
-                print '-------------- I am unleading this person', clientProfile.name
                 del self.followerProfiles[clientProfile.publicId]
     Unlead.soap_export_as = "Unlead"
 
