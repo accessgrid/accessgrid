@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.146 2003-05-16 21:56:15 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.147 2003-05-16 21:59:52 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -664,7 +664,7 @@ class VenueClientUI(wxApp, VenueClient):
                 text2 = 'Invalid proxy'
                 
             else:
-                text = 'You were not able to enter the venue.  Please, make sure the venue URL address is correct.\n\nNote: If your computer clock is unsynchronized you might be unable to connect to a venue.'
+                text = 'You were not able to enter the venue.  Please, make sure the venue URL address is correct.\n\nNote: If your computer clock is not synchronized you might be unable to connect to a venue.'
                 text2 = 'Invalid URL'
 
             MessageDialog(None, text, text2)
