@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.54 2004-04-27 17:19:31 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.55 2004-04-29 21:12:40 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.54 2004-04-27 17:19:31 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.55 2004-04-29 21:12:40 eolson Exp $"
 
 # Standard imports
 import os
@@ -84,7 +84,7 @@ class AppBase:
        # This initializes logging
        self.log = Log.GetLogger(Log.Toolkit)
        levelHandler = Log.HandleLoggers(self.mlh, Log.GetDefaultLoggers())
-       levelHandler.SetLevel(Log.ERROR)
+       levelHandler.SetLevel(Log.DEBUG)
        self.log.debug("Initializing AG Toolkit version %s", GetVersion())
 
     # This method implements the initialization strategy outlined
@@ -129,11 +129,15 @@ class AppBase:
            filename = os.path.join(self.userConfig.GetLogDir(), self.name)
            fh = Log.FileHandler(filename)
            
-       fh.setFormatter(Log.GetFormatter())
-       levelHandler = Log.HandleLoggers(fh, Log.GetDefaultLoggers())
-       levelHandler.SetLevel(Log.ERROR)
+           fh.setFormatter(Log.GetFormatter())
+           levelHandler = Log.HandleLoggers(fh, Log.GetDefaultLoggers())
+           levelHandler.SetLevel(Log.ERROR)
        
-       self.mlh.setTarget(fh)
+       # Send the log in memory to stream (debug) or file handler.
+       if self.options.debug:
+           self.mlh.setTarget(self.defLogHandler)
+       else:
+           self.mlh.setTarget(fh)
        self.mlh.close()
        del self.mlh
        
