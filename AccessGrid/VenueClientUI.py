@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.17 2004-03-16 21:21:22 eolson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.18 2004-03-16 22:46:57 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.17 2004-03-16 21:21:22 eolson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.18 2004-03-16 22:46:57 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2168,9 +2168,15 @@ class VenueAddressBar(wxSashLayoutWindow):
                                   choices = venuesList.keys(),
                                   style = wxCB_DROPDOWN)
         
-        self.goButton = wxButton(self.addressPanel, self.ID_GO, "Go",
+        if isOSX():
+            self.goButton = wxButton(self.addressPanel, self.ID_GO, "Go",
+                                 wxDefaultPosition, wxSize(40, 21))
+            self.backButton = wxButton(self.addressPanel, self.ID_BACK ,
+                                   "<<", wxDefaultPosition, wxSize(36, 21))
+        else:
+            self.goButton = wxButton(self.addressPanel, self.ID_GO, "Go",
                                  wxDefaultPosition, wxSize(20, 21))
-        self.backButton = wxButton(self.addressPanel, self.ID_BACK ,
+            self.backButton = wxButton(self.addressPanel, self.ID_BACK ,
                                    "<<", wxDefaultPosition, wxSize(20, 21))
         self.Layout()
         self.__AddEvents()
@@ -2312,6 +2318,7 @@ class VenueListPanel(wxSashLayoutWindow):
 
     def Hide(self):
         currentHeight = self.GetSize().GetHeight()
+        self.exitsText.Hide()
         self.minimizeButton.Hide()  
         self.maximizeButton.Show()
         self.list.HideDoors()
@@ -2320,6 +2327,7 @@ class VenueListPanel(wxSashLayoutWindow):
 
     def Show(self):
         currentHeight = self.GetSize().GetHeight()
+        self.exitsText.Show()
         self.maximizeButton.Hide()
         self.minimizeButton.Show()  
         self.list.ShowDoors()
@@ -2408,7 +2416,7 @@ class VenueList(wxScrolledWindow):
             description = self.exitsDict[id]
             self.app.EnterVenueCB(description.uri)
         else:
-            text = "The exit is no longer valid "+name
+            text = "The exit is no longer valid "
             title = "Notification"
             MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
                 
