@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.238 2003-08-22 19:26:41 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.239 2003-08-22 19:30:16 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1829,7 +1829,7 @@ class ContentListPanel(wxPanel):
                     else:
                         text = "You have nothing configured to open this data."
                         title = "Notification"
-                        EVT_MENU(self, id, lambda event, text=text,
+                        EVT_MENU(self, wxNewId(), lambda event, text=text,
                                  title=title: MessageDialog(self, text, title,
                                                style = wxOK|wxICON_INFORMATION))
                 elif isinstance(item, ServiceDescription):
@@ -1843,7 +1843,7 @@ class ContentListPanel(wxPanel):
                     else:
                         text = "You have nothing configured to open this data."
                         title = "Notification"
-                        EVT_MENU(self, id, lambda event, text=text,
+                        EVT_MENU(self, wxNewId(), lambda event, text=text,
                                  title=title: MessageDialog(self, text, title,
                                                style = wxOK|wxICON_INFORMATION))
                 else:
