@@ -1,7 +1,3 @@
-
-
-
-
 #-----------------------------------------------------------------------------
 # Name:        UIUtilities.py
 # Purpose:     
@@ -9,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.24 2003-08-13 22:07:03 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.25 2003-08-14 21:30:27 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -132,10 +128,11 @@ class AboutDialog(wxDialog):
         self.panel.SetSize(wxSize(bmp.GetWidth(),bmp.GetHeight()))
         self.image = wxStaticBitmap(self.panel, -1, bmp, size = wxSize(bmp.GetWidth(), bmp.GetHeight()))
         self.text = wxStaticText(self.panel, -1, info, pos = wxPoint(80,100))
+        self.Layout()
                             
-    def ProcessLeftDown(self, evt):
-        self.Hide()
-        return false
+    #def ProcessLeftDown(self, evt):
+    #    self.Hide()
+    #    return false
 
 class AppSplash(wxSplashScreen):
     def __init__(self):
@@ -148,7 +145,7 @@ class AppSplash(wxSplashScreen):
                                 wxFRAME_NO_TASKBAR
                                 |wxSTAY_ON_TOP)
 
-        self.info = wxStaticText(self, -1, "Loading Venue Client\nPlease be patient.")
+        self.info = wxStaticText(self, -1, "Loading Venue Client.")
         self.__layout()
         EVT_CLOSE(self, self.OnClose)
 
