@@ -85,9 +85,9 @@ Name: {group}\Documentation\README; Filename: {app}\Documentation\README
 Name: {group}\Documentation\License; Filename: {app}\COPYING.txt
 
 [Registry]
-Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}
-Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: ConfigPath; ValueData: {app}\config
-Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: UserConfigPath; ValueData: {userappdata}\AccessGridToolkit\config
+Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}; Flags: uninsdeletekey
+Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: ConfigPath; ValueData: {app}\config; Flags: uninsdeletekey
+Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: UserConfigPath; ValueData: %USERPROFILE%\Application Data\AccessGridToolkit\config; Flags: uninsdeletekey
 
 [Types]
 
@@ -110,4 +110,4 @@ Name: {reg:HKLM\Software\Python\PythonCore\2.2\PythonPath\win32com,|C:\Python22\
 Name: {app}\config; Components: Venue_Client
 
 [_ISToolPreCompile]
-Name: C:\AccessGridBuild\AccessGrid\packaging\windows\Prebuild.cmd; Parameters: 
+Name: C:\AccessGridBuild\AccessGrid\packaging\windows\Prebuild.cmd; Parameters: ; Flags: abortonerror
