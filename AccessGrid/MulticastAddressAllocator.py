@@ -5,7 +5,7 @@
 # Author:      Robert Olson, Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.9 2003-02-10 14:47:35 judson Exp $
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.10 2003-02-22 15:15:24 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,8 +27,10 @@ class MulticastAddressAllocator:
 
     RANDOM = "random"
     INTERVAL = "interval"
+    SDR_BASE_ADDRESS = '224.2.128.0'
+    SDR_MASK_SIZE = 17
 
-    def __init__(self, baseAddress = None, addressMask = None,
+    def __init__(self, baseAddress = None, addressMaskSize = 24,
                  portBase = 49152):
         """
         We initialize this class with the information needed to allocate
@@ -36,42 +38,48 @@ class MulticastAddressAllocator:
         from a GLOP address space. If a base address and mask are not supplied
         the allocator allocates from the SDR address space.
         """
+        self.baseAddress = baseAddress
+        self.addressMaskSize = addressMaskSize
+        self.portBase = portBase
+        
         self.allocatedAddresses = []
         self.allocatedPorts = []
         
-        if baseAddress == None:
+        if self.baseAddress == None:
             # 224.2.128.0
-            self.baseAddress = socket.htonl(0xe0028000)
+            self.baseAddress = struct.unpack("L",
+               socket.inet_aton(MulticastAddressAllocator.SDR_BASE_ADDRESS))[0]
+            self.addressMaskSize = MulticastAddressAllocator.SDR_MASK_SIZE
         else:
             self.baseAddress = struct.unpack("L",
                                         socket.inet_aton(baseAddress))[0]
 
-        if addressMask == None:
-            # 255.255.128.0
-            self.addressMask = socket.htonl(0xffff8000)
-        else:
-            self.addressMask = socket.htonl(~((1 << (32 - addressMask)) - 1))
+        
+        self.addressMask = socket.htonl(~((1<<(32-self.addressMaskSize))-1))
 
-        self.portBase = portBase
         self.random = Random(time.clock())
 
-        self.addressAllocationMethod = MulticastAddressAllocator.INTERVAL
+        self.addressAllocationMethod = MulticastAddressAllocator.RANDOM
 
     def SetBaseAddress(self, baseAddress):
         self.baseAddress = struct.unpack("L", socket.inet_aton(baseAddress))[0]
+        return self.baseAddress
                                         
     def GetBaseAddress(self):
         return socket.inet_ntoa(struct.pack('L', self.baseAddress))
 
-    def SetAddressMask(self, addressMask = None):
-        self.addressMask = addressMask
+    # These don't mean what they did before! IRJ-2002-2-22
+    def SetAddressMask(self, addressMaskSize = 24):
+        self.addressMaskSize = addressMaskSize
+        return self.addressMaskSize
 
     def GetAddressMask( self ):
-        return self.addressMask
+        return self.addressMaskSize
 
     def SetAddressAllocationMethod( self, method ):
         self.addressAllocationMethod = method
-
+        return self.addressAllocationMethod
+    
     def GetAddressAllocationMethod( self ):
         return self.addressAllocationMethod
 
@@ -98,7 +106,8 @@ class MulticastAddressAllocator:
         
     def RecyclePort(self, port):
         self.allocatedPorts.remove(port)
-
+        return port
+    
     def AllocateAddress(self):
         randomNumber = self.random.randrange(sys.maxint)
         newAddress = self.baseAddress & self.addressMask
@@ -117,7 +126,8 @@ class MulticastAddressAllocator:
 
     def RecycleAddress(self, address):
         self.addressesInUse.remove(address)
-
+        return address
+    
 if __name__ == "__main__":
     iter = 10
     multicastAddressAllocator = MulticastAddressAllocator()
