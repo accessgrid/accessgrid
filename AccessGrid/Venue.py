@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.34 2003-02-17 16:20:55 olson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.35 2003-02-17 17:22:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -558,7 +558,7 @@ class Venue(ServiceBase.ServiceBase):
     def wsUpdateData(self, dataDescription):
         return self.UpdateData(dataDescription)
 
-    wsAddData.soap_export_as = "UpdateData"
+    wsUpdateData.soap_export_as = "UpdateData"
         
     def UpdateData(self, dataDescription):
         """
