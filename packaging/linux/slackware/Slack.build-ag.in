@@ -13,7 +13,7 @@ kdedir=${sharedir}/applnk
 buildroot=/var/tmp/${name}-${version}
 debug_package=${nil}
 
-python=python2.3
+python=pythonPYVER
 arch=i486
 here=`pwd`
 if [ $# -lt 1 ]; then
