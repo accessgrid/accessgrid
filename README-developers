@@ -22,7 +22,7 @@ tree instead of building entire packages and installing them each time.
 You'll need to setup configuration files so you can test newly modified
 code or a fresh cvs checkout without building an installation package.
 
-To set up a configuration, run the bin/CvsSetup.py tool in either 
+To set up a configuration, run the tools/CvsSetup.py tool in either 
 windows or linux.  It generates AccessGrid configuration files for
 use with AccessGrid applications.
 
@@ -46,7 +46,7 @@ Create a directory to hold the configuration files
 
 Run the CvsSetup tool and specify the source and destination directories.
 The checked out AccessGrid source is located in the "AccessGrid" directory.
-  > python AccessGrid/bin/CvsSetup.py --agdir AccessGrid --dst cfg
+  > python AccessGrid/tools/CvsSetup.py --agdir AccessGrid --dst cfg
 
 Configuration files have now been created in the "cfg" directory.  Instructions
 for setting your paths to use the new configuration are displayed.  You
@@ -61,7 +61,7 @@ the appropriate script that was created:
       >  env-init.bat
 
 Do the final configuration step and configure video sources.
-  > cd AccessGrid/bin
+  > cd AccessGrid/tools
   > python SetupVideo.py
 
 Now you should be able to run the VenueClient (personalNode mode shown).
