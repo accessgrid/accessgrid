@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.38 2004-04-12 19:18:36 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.39 2004-04-12 19:47:13 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.38 2004-04-12 19:18:36 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.39 2004-04-12 19:47:13 judson Exp $"
 
 # Standard imports
 import os
@@ -431,35 +431,38 @@ class Service(AppBase):
 
         # Deal with the profile if it was passed instead of cert/key pair
         if self.options.profile is not None:
-           self.profile = ServiceProfile()
-           if not self.options.profile.endswith(".profile"):
-               profile = self.options.profile + ".profile"
-           else:
-               profile = self.options.profile
-           if os.path.dirname(profile) == '':
-               # There is no directory
-               profPath = os.path.join(self.userConfig.GetServicesDir(),
+            self.profile = ServiceProfile()
+            if not self.options.profile.endswith(".profile"):
+                profile = self.options.profile + ".profile"
+            else:
+                profile = self.options.profile
+
+            if os.path.dirname(profile) == '':
+                # There is no directory
+                profPath = os.path.join(self.userConfig.GetServicesDir(),
                                        profile)
-           log.info("SP: %s", profPath)
-           self.profile.Import(profPath)
-           print self.profile.AsINIBlock()
+            self.profile.Import(profPath)
 
         # 5. Initialize Certificate Management
         # This has to be done by sub-classes
         configDir = self.userConfig.GetConfigDir()
         self.certMgrUI = CertificateManager.CertificateManagerUserInterface()
         certMgr = self.certificateManager = \
-            CertificateManager.CertificateManager(configDir, self.certMgrUI)
+                  CertificateManager.CertificateManager(configDir,
+                                                        self.certMgrUI)
 
         # If we have a service profile, load and parse, then configure
         # certificate manager appropriately.
         if self.profile:
-           if self.profile.subject is not None:
-               self._CheckRequestedCert(self.profile.subject)
-               certMgr.SetTemporaryDefaultIdentity(useDefaultDN = self.profile.subject)
-           elif self.profile.certfile is not None:
-               certMgr.SetTemporaryDefaultIdentity(useCertFile = self.profile.certfile,
-                                                   useKeyFile = self.profile.keyfile)
+            if self.profile.subject is not None:
+                self._CheckRequestedCert(self.profile.subject)
+                certMgr.SetTemporaryDefaultIdentity(useDefaultDN = \
+                                                   self.profile.subject)
+            elif self.profile.certfile is not None:
+                certMgr.SetTemporaryDefaultIdentity(useCertFile = \
+                                                    self.profile.certfile,
+                                                    useKeyFile = \
+                                                    self.profile.keyfile)
 
         self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
 
@@ -467,9 +470,9 @@ class Service(AppBase):
         #    Identity we bail, there's nothing useful to do.
 
         if self.GetDefaultSubject() is None:
-           log.error("Toolkit initialized with no default identity.")
-           log.error("Exiting because there's no default identity.")
-           sys.exit(-1)
+            log.error("Toolkit initialized with no default identity.")
+            log.error("Exiting because there's no default identity.")
+            sys.exit(-1)
 
         return argvResult
 
