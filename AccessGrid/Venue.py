@@ -6,18 +6,20 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.12 2003-01-23 17:42:57 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.13 2003-01-24 04:32:46 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys
 import time
+import string
 
 from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid.Types import Capability, Event
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
+from AccessGrid.CoherenceService import CoherenceService
 from AccessGrid.CoherenceClient import CoherenceClient
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.scheduler import Scheduler
@@ -26,8 +28,7 @@ class Venue(ServiceBase.ServiceBase):
     """
     A Virtual Venue is a virtual space for collaboration on the Access Grid.
     """
-    def __init__(self, server, uniqueId, description, administrator,
-                 coherenceService, multicastAddressAllocator, dataStore):
+    def __init__(self, server, uniqueId, description, administrator):
         self.connections = dict()
         self.users = dict()
         self.nodes = dict()
@@ -41,28 +42,31 @@ class Venue(ServiceBase.ServiceBase):
 
         self.uniqueId = uniqueId
         self.description = description
-        self.venueServer = server
         self.administrators.append(administrator)
-        self.coherenceService = coherenceService
-        self.coherenceService.start()
-        cl = self.coherenceService.GetLocation()
-        self.coherenceClient = CoherenceClient(cl.GetHost(), cl.GetPort(), 
-                                               self.CoherenceCallback,
-                                               self.uniqueId)
-        self.coherenceClient.start()
-        self.multicastAddressAllocator = multicastAddressAllocator
-        self.dataStore = dataStore
 
         self.producerCapabilities = []
         self.consumerCapabilities = []
 
+        self.cleanupTime = 30
+        self.nextPrivateId = 1
+        self.defaultTtl = 127
+
+        self.venueServer = server
+        
+        self.coherenceService = CoherenceService(('', 
+                self.venueServer.multicastAddressAllocator.AllocatePort()))
+                                            
+        self.coherenceService.start()
+        
+        cl = self.coherenceService.GetLocation()
+        
+        self.coherenceClient = CoherenceClient(cl.GetHost(), cl.GetPort(), 
+                                               self.CoherenceCallback,
+                                               self.uniqueId)
+        self.coherenceClient.start()
+            
         self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.CleanupClients, 45)
-        self.cleanupTime = 30
-        
-        self.nextPrivateId = 1
-
-        self.defaultTtl = 127
 
     # Management methods
     def AddNetworkService(self, connectionInfo, networkServiceDescription):
@@ -109,7 +113,8 @@ class Venue(ServiceBase.ServiceBase):
         try:
 
             self.connections[connectionDescription.uri] = connectionDescription
-            self.coherenceService.distribute( Event( Event.ADD_CONNECTION, connectionDescription ) )
+            self.coherenceService.distribute( Event( Event.ADD_CONNECTION, 
+                                                connectionDescription ) )
         except:
             print "Connection already exists ", connectionDescription.uri
 
@@ -397,9 +402,11 @@ class Venue(ServiceBase.ServiceBase):
                 del self.clients[client]
         
     def CoherenceCallback(self, event):
-        print "Venue Coherence Callback: %s, %s" % (event.eventType,
-                                                    event.data)
-    
+        data = event.data
+        if event.eventType == Event.HEARTBEAT:
+            (id, time) = data.split('-')
+            self.clients[id] = time
+   
     def Serialize(self):
         """
         This method packs up all the relevant data to be stored for persistence.
@@ -465,8 +472,8 @@ class Venue(ServiceBase.ServiceBase):
         This method creates a new Multicast Network Location.
         """
         return MulticastNetworkLocation(
-            self.multicastAddressAllocator.AllocateAddress(),
-            self.multicastAddressAllocator.AllocatePort(), 
+            self.venueServer.multicastAddressAllocator.AllocateAddress(),
+            self.venueServer.multicastAddressAllocator.AllocatePort(), 
             self.defaultTtl )
        
     def GetNextPrivateId( self ):
@@ -479,3 +486,13 @@ class Venue(ServiceBase.ServiceBase):
             return 1 
         return 0
     
+
+class VenueSerializer:
+    def Serialize(self, venue):
+        """
+        This enables persistence.
+        """
+    def Deserialize(self, data):
+        """
+        This enables retrieval from persistent storage.
+        """
