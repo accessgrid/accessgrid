@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.19 2003-02-10 14:47:37 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.20 2003-02-10 21:26:48 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -149,8 +149,9 @@ class VenueClientFrame(wxFrame):
         '''
         Called when the window is closed using the built in close button
         '''
-        self.Close()
-	      
+        print '------------ ON EXIT'
+        self.Destroy()
+                     	      
     def UpdateLayout(self):
         #self.venueClientSizer.Fit(self)
 	#self.SetAutoLayout(1)  
@@ -167,6 +168,7 @@ class VenueClientFrame(wxFrame):
         dlg.Destroy()
 
     def OpenProfileDialog(self, event):
+        print '------------- open profile dialog'
         profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', self.app.profile)
            
         if (profileDialog.ShowModal() == wxID_OK): 
@@ -456,7 +458,8 @@ class ContentListPanel(wxPanel):
 
 	
     def __setImageList(self):
-	imageList = wxImageList(32,19)  
+	imageList = wxImageList(32,19)
+        self.emptyImageId = imageList.Add(icons.getEmptyBitmap())
 	self.defaultPersonId = imageList.Add(icons.getDefaultParticipantBitmap())
         self.importantPaperId = imageList.Add(icons.getDefaultDataBitmap())
 	self.serviceId = imageList.Add(icons.getDefaultServiceBitmap())
@@ -553,17 +556,18 @@ class ContentListPanel(wxPanel):
         
     def __setTree(self):
         self.root = self.tree.AddRoot("The Lobby")
+        image = self.emptyImageId
              
-	self.participants = self.tree.AppendItem(self.root, "Participants")
+	self.participants = self.tree.AppendItem(self.root, "Participants", image)
 	self.tree.SetItemBold(self.participants)
              
-	self.data = self.tree.AppendItem(self.root, "Data")
+	self.data = self.tree.AppendItem(self.root, "Data", image)
 	self.tree.SetItemBold(self.data)
              
-	self.services = self.tree.AppendItem(self.root, "Services")
+	self.services = self.tree.AppendItem(self.root, "Services", image)
 	self.tree.SetItemBold(self.services)
              
-	self.nodes = self.tree.AppendItem(self.root, "Nodes")
+	self.nodes = self.tree.AppendItem(self.root, "Nodes", image)
 	self.tree.SetItemBold(self.nodes)
              
         self.tree.Expand(self.participants)
