@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.1 2004-03-10 23:07:10 olson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.2 2004-03-19 22:20:16 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -26,6 +26,7 @@ from AccessGrid.Security import CertificateRepository, CertificateManager
 from AccessGrid.Security.CertificateRepository import RepoDoesNotExist
 from AccessGrid.Security.CertificateRepository import RepoInvalidCertificate
 from AccessGrid.Security.CRSClient import CRSClient
+from HTTPProxyConfigPanel import HTTPProxyConfigPanel
 
 from CertificateStatusDialog import CertificateStatusDialog
 
@@ -45,7 +46,6 @@ log = logging.getLogger("AG.CertificateRequestTool")
 ServiceTypes = [("Venue Server", "VenueServer"),
                 ("Node Service", "NodeService"),
                 ("Service Manager", "ServiceManager"),
-                ("Venue Data Store", "DataStoreService"),
                 ("Bridging Service", "BridgeService"),
                 ("Other", None),
                 ]
@@ -142,7 +142,7 @@ class CertificateRequestTool(wxWizard):
         """
         log = logging.getLogger("AG.CertificateRequestTool")
         log.setLevel(logging.DEBUG)
-        logFile = os.path.join(Platform.GetUserConfigDir(), "CertificateRequestTool.log")
+        logFile = os.path.join(Platform.Config.UserConfig.instance().GetConfigDir(), "CertificateRequestTool.log")
         hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
         logFormat = "%(asctime)s %(levelname)-5s %(message)s (%(filename)s)"
         hdlr.setFormatter(logging.Formatter(logFormat))
@@ -916,75 +916,6 @@ class ServiceCertValidator(wxPyValidator):
         return true # Prevent wxDialog from complaining.
 
 
-class HTTPProxyConfigPanel(wxPanel):
-    def __init__(self, parent):
-        wxPanel.__init__(self, parent, -1)
-
-        sbox = wxStaticBox(self, -1, "Proxy server")
-        self.sizer = wxStaticBoxSizer(sbox, wxVERTICAL)
-
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(1)
-        
-        #
-        # Stuff for the proxy configuration.
-        #
-        
-
-        proxies = NetUtilities.GetHTTPProxyAddresses()
-
-        defaultProxyHost = ""
-        defaultProxyPort = ""
-        defaultEnabled = 0
-        
-        if proxies != []:
-            defaultProxy, defaultEnabled = proxies[0]
-            defaultProxyHost, defaultProxyPort = defaultProxy
-            if defaultProxyPort is None:
-                defaultProxyPort = ""
-
-        self.proxyEnabled = wxCheckBox(self, -1, "Use a proxy server to connect to the certificate server")
-
-        EVT_CHECKBOX(self, self.proxyEnabled.GetId(), self.OnCheckbox)
-
-        self.proxyText = wxTextCtrl(self, -1, defaultProxyHost)
-        self.proxyPort = wxTextCtrl(self, -1, defaultProxyPort)
-
-        self.proxyEnabled.SetValue(defaultEnabled)
-        self.UpdateProxyEnabledState()
-
-        self._Layout()
-        self.Fit()
-
-    def _Layout(self):
-        #
-        # Labelled box for the proxy stuff.
-        #
-
-        self.sizer.Add(self.proxyEnabled, 0, wxEXPAND | wxALL, 5)
-        hsizer = wxBoxSizer(wxHORIZONTAL)
-        hsizer.Add(wxStaticText(self, -1, "Address: "), 0, wxALIGN_CENTER_VERTICAL | wxALL, 2)
-        hsizer.Add(self.proxyText, 1, wxEXPAND|wxRIGHT, 5)
-        hsizer.Add(wxStaticText(self, -1, "Port: "), 0, wxALIGN_CENTER_VERTICAL | wxALL, 2)
-        hsizer.Add(self.proxyPort, 0, wxEXPAND|wxRIGHT, 5)
-        
-        self.sizer.Add(hsizer, 0, wxEXPAND |wxBOTTOM, 5)
-
-    def OnCheckbox(self, event):
-        self.UpdateProxyEnabledState()
-        
-    def UpdateProxyEnabledState(self):
-
-        en = self.proxyEnabled.GetValue()
-
-        self.proxyText.Enable(en)
-        self.proxyPort.Enable(en)
-
-    def GetInfo(self):
-        return (self.proxyEnabled.GetValue(),
-                self.proxyText.GetValue(),
-                self.proxyPort.GetValue())
-
 class SubmitReqWindow(TitledPage):
     '''
     Shows the user what information will be submitted in the certificate
@@ -1060,7 +991,7 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
 
         try:
             proxyInfo = self.proxyPanel.GetInfo()
-            certMgr = Toolkit.GetApplication().GetCertificateManager()
+            certMgr = Toolkit.Application.instance().GetCertificateManager()
             gui = certMgr.GetUserInterface()
             success = gui.RequestCertificate(self.certInfo,
                                              self.password,
