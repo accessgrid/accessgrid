@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.16 2003-03-24 20:26:12 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.17 2003-03-25 16:06:33 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -104,6 +104,8 @@ class DataDescription(ObjectDescription):
         return self.status
 
     def SetSize(self, size):
+        if type(size) != int:
+            raise TypeError("Size must be an int.")
         self.size = size
 
     def GetSize(self):
