@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.7 2004-03-17 16:45:16 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.8 2004-03-19 22:17:14 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.7 2004-03-17 16:45:16 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.8 2004-03-19 22:17:14 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -1206,7 +1206,7 @@ class IdentityCertificateRequestInfo(CertificateRequestInfo):
 
         dn = self.GetDNBase()
         dn.extend([("OU", self.domain),
-                   ("CN", self.email)])
+                   ("CN", self.name)])
 
         return dn
 
