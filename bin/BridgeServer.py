@@ -258,9 +258,9 @@ class Venue:
         self.log = logging.getLogger("AG.BridgeServer")
 
         self.ConnectEventClient()
-
-        # Create bridges for the venue
-        self.AddBridges()
+        if self.eventClient.connected:
+            # Create bridges for the venue
+            self.AddBridges()
 
 
         threading.Thread(target=self.RunQueueThread).start()
@@ -399,37 +399,56 @@ class Venue:
         """
         import time
         while self.sendHeartbeats:
+        
+            # Sleeeep (in short intervals)
+            for i in range(12):
+                if self.sendHeartbeats:
+                    time.sleep(1)
+        
             try:
-              if self.eventClient.connected:
-                self.eventClient.Send(HeartbeatEvent(self.channelId, self.privateId))
-              else:
-                self.log.debug("Trying to reach venue")
-                try:
-                  self.venueProxy._IsValid()
-                  self.log.debug("- venue reachable again; re-creating bridges")
-                  self.log.debug("  url =  %s", self.venueUrl )
-                  self.ConnectEventClient()
-                  if self.eventClient.connected:
-                    # event client reconnected; re-bridge venue
-                    self.AddBridges()
-                except:  # pyGlobus.io.GSITCPSocketException
-                  self.log.debug("- venue unreachable")
-            except EventClientWriteDataException:
-                if not self.eventClient.connected:
-                  self.log.debug("Connection lost; shutting down venue")
-                  self.RemoveBridges()
+                if self.eventClient.connected:
+                    self.eventClient.Send(HeartbeatEvent(self.channelId, self.privateId))
                 else:
-                  # couldn't send, but i'm still connected, so just
-                  # continue trying to send
-                  pass
+                    self.log.debug("Trying to reach venue")
+                    try:
+                    
+                        # Test whether venue is reachable 
+                        self.venueProxy._IsValid()
+                        self.log.debug("- venue reachable; url=%s" % self.venueUrl)
+                        
+                        # Try to connect the event client
+                        self.ConnectEventClient()
+                        
+                        # If event client is connected; recreate the bridges
+                        if self.eventClient.connected:
+                            self.log.debug("event client connected; url=%s" % self.venueUrl)
+                            self.log.debug("- re-creating bridges; url=%s" % self.venueUrl)
+
+                            # Event client reconnected; re-bridge venue
+                            self.AddBridges()
+                        else:
+                            self.log.debug("event client NOT connected; url=%s" % self.venueUrl)
+
+                          
+                    except:  # pyGlobus.io.GSITCPSocketException
+                        self.log.exception("While testing/reconnecting; url=%s" % self.venueUrl)
+                        self.log.debug("- venue unreachable; url=%s" % self.venueUrl)
+                        
+            except EventClientWriteDataException:
+                self.log.debug("- EventClientWriteDataException")
+                
+                if not self.eventClient.connected:
+                    # connection broken; remove bridges
+                    self.log.debug("Connection lost; shutting down venue; url=%s" % self.venueUrl)
+                    self.RemoveBridges()
+                else:
+                    # couldn't send, but i'm still connected, so just
+                    # continue trying to send
+                    self.log.debug("- still connected; do nothing; url=%s" % self.venueUrl)
             except:
                 self.log.exception("*** Unexpected exception; no action taken ****")
 
 
-            # sleep in short intervals
-            for i in range(10):
-                if self.sendHeartbeats:
-                    time.sleep(1)
         self.log.debug("Heartbeat thread exiting")
 
 
