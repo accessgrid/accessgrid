@@ -1,0 +1,222 @@
+#
+# The following are variables that are used throughout the rest of the
+# spec file. If you see %{variable_name} this is where it's assigned
+#
+name=AccessGrid
+version=2.2
+release=RELEASE
+prefix=/usr
+sysconfdir=etc/${name}/Config
+sharedir=${prefix}/share
+gnomedir=${sharedir}/gnome/apps
+kdedir=${sharedir}/applnk
+#buildroot=/usr/src/redhat/BUILD/AccessGrid-2.2
+buildroot=/var/tmp/${name}-${version}
+debug_package=${nil}
+
+python=python2.3
+arch=i486
+here=`pwd`
+if [ $# -lt 1 ]; then
+  echo "Please tell me the source directory"
+  exit 4
+fi
+srcdir=${1}
+pkgname=${name}-${version}-${arch}-${release}.tgz
+
+#
+# The following defines the AccessGrid rpm
+# Required: pyGlobus rpm installed
+# Required: logging rpm installed
+# Obsoletes: AccessGrid-2.0alpha
+#
+
+#Summary:	The Access Grid Toolkit
+#Name:		%{name}
+#Version:	%{version}
+#Release:	%{release}
+#Copyright:	AGTPL
+#Group:		Utilities/System
+#URL:		http://www.accessgrid.org
+#Vendor:		Argonne National Laboratory
+#Source:		%{name}-%{version}-%{release}.tar.gz
+#BuildRoot:	%{buildroot}
+#Requires:	wxPythonGTK-py2.2
+#Requires:	globus-accessgrid
+#Requires:	xawtv
+#Requires:	glibc >= 2.2.5-43
+#Obsoletes:	AccessGrid-2.0alpha
+#Obsoletes:	AccessGrid-2.0beta
+#Obsoletes:	AccessGrid-BridgeServer
+#Obsoletes:	AccessGrid-VenueServer
+#Obsoletes:	AccessGrid-VenueClient
+#Obsoletes:	AccessGrid-rat
+#Obsoletes:	AccessGrid-vic
+#Obsoletes:	pyOpenSSL_AG
+#Obsoletes:	pyGlobus
+
+
+#%description
+#The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
+#
+#This module provides the core components to start participating in the Access Grid.
+
+#%prep
+#%setup -n AccessGrid-%{version} -c
+[ -n "${buildroot}" -a "${buildroot}" != / ] && rm -rf ${buildroot}
+mkdir -p ${buildroot}
+
+#
+# The following builds the package using setup.py
+# It starts by zipping up the services in the services directory
+# then builds the package
+#
+
+#%build
+echo ${pyver}
+
+#
+# The following installs the package in the buildroot,
+# moves the etc directory to the "root" directory,
+# until services are starting at boot
+#
+
+#%install
+#
+cp -a ${srcdir}/* ${buildroot}/
+
+# Move node services and shared apps into etc 
+#
+cd ${buildroot}
+mv NodeServices etc/AccessGrid
+mv SharedApplications etc/AccessGrid/
+mkdir etc/AccessGrid/Services
+mkdir etc/AccessGrid/PackageCache
+mkdir etc/AccessGrid/Logs
+
+# Create a usr dir, and move dirs thereunder
+mkdir usr
+mv share usr/share
+mv lib usr/lib
+mv bin usr/bin
+
+# Replace RH abomination with Slackware init scripts
+#
+[ -n "${buildroot}/etc/init.d" -a "${buildroot}/etc/init.d" != / ] && rm -rf ${buildroot}/etc/init.d
+mkdir -p ${buildroot}/etc/rc.d
+cp ${here}/rc.agns ${buildroot}/etc/rc.d/
+cp ${here}/rc.agsm ${buildroot}/etc/rc.d/
+chmod -R 0755 ${buildroot}/etc/rc.d
+
+
+#################################### STILL TODO ##############################
+## Define the files that are to go into the AccessGrid package
+## - Mark documents as documents for rpm
+## - Install python modules with default permissions
+## - Install AGServiceManager.py and agsm service with executable permissions
+##
+#%files
+#%defattr(-,root,root)
+#%{prefix}/lib
+#/etc/AccessGrid
+#/etc/init.d/agns
+#/etc/init.d/agsm
+#%{sharedir}/%{name}/ag.ico
+#%defattr(0755,root,root)
+#%{prefix}/bin/AGServiceManager.py
+## - Install AGNodeService.py, VenueClient.py, and NodeManagement.py with
+##   executable permissions
+## - Install the AGNodeService config file and tag it as a config file
+##   for rpm
+## - Install the default node configuration, make it owned by ag, and tag it
+##   as a config file for rpm
+#%defattr(0755,root,root)
+#%{prefix}/bin/AGNodeService.py
+#%{prefix}/bin/VenueClient.py
+#%{prefix}/bin/NodeManagement.py
+#%{prefix}/bin/NodeSetupWizard.py
+#%{prefix}/bin/CertificateRequestTool.py
+#%{prefix}/bin/certmgr.py
+#%{prefix}/bin/agpm.py
+#%{sharedir}/doc/AccessGrid
+##
+## - Install VenueManagement.py and VenueServer.py
+##   with executable permissions
+##
+#%defattr(0755,root,root)
+#%{prefix}/bin/VenueManagement.py
+#%{prefix}/bin/VenueServer.py
+##
+## - Install the python BridgeServer implementation
+## - Install the QuickBridge executable
+##
+#%defattr(0755,root,root)
+#%{prefix}/bin/BridgeServer.py
+#%{prefix}/bin/QuickBridge
+## - Install the GNOME and KDE menu items
+#%{gnomedir}/%{name}
+#%{kdedir}/%{name}
+#################################### STILL TODO ##############################
+
+
+#
+# AccessGrid package postinstall commands
+# - Make a file, /tmp/AccessGrid-Postinstall.py, run it, then delete.
+#   This script will compile all the AccessGrid python modules
+#
+
+#%post
+mkdir ${buildroot}/install
+cat <<EOF > ${buildroot}/install/AccessGrid-Postinstall.py
+#!/usr/bin/${python}
+import AccessGrid
+import AccessGrid.hosting
+import os
+import os.path
+import glob
+import sys
+
+def modimport(module):
+    for module_file in glob.glob(os.path.join(module.__path__[0], "*.py")):
+	try:
+            __import__(module.__name__ + "." + os.path.basename(module_file[:-3]))
+	except:
+	    pass
+
+sys.stdout.write("Compiling Access Grid Python modules.... ")
+modimport(AccessGrid)
+modimport(AccessGrid.hosting)
+modimport(AccessGrid.Platform)
+sys.stdout.write("Done compiling AccessGrid modules\n")
+EOF
+chmod +x ${buildroot}/install/AccessGrid-Postinstall.py
+
+
+#. /etc/profile.d/globus.sh
+#/tmp/AccessGrid-Postinstall.py
+#rm -f /tmp/AccessGrid-Postinstall.py
+#agpm.py --post-install
+
+# Invoke AccessGrid-Postinstall.py from /install/doinst.sh
+#
+cat <<EOF > ${buildroot}/install/doinst.sh
+#!/bin/sh
+
+. /etc/profile.d/globus.sh
+install/AccessGrid-Postinstall.py
+
+EOF
+chmod +x ${buildroot}/install/doinst.sh
+
+
+# Make the package
+#
+cd ${buildroot}
+/sbin/makepkg -c n -l y ${here}/${pkgname}
+cd ${here}
+
+
+
+#%clean
+[ -n "%{buildroot}" -a "%{buildroot}" != / ] && rm -rf %{buildroot}
+

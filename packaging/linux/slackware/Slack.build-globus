@@ -1,0 +1,109 @@
+
+name=globus-accessgrid
+version=2.4
+release=1
+arch=i486
+python=python2.3
+here=`pwd`
+
+buildroot=/var/tmp
+srcdir=${AGBUILDROOT}/gt3.0.2-source-installer
+pkgdir=${buildroot}/${name}-${version}-pkg
+pkgname=${name}-${version}-${arch}-${release}.tgz
+prefix=/usr/lib/globus
+
+# prep
+#[ -n "${srcdir}" -a "${srcdir}" != / ] && rm -rf ${srcdir}
+[ -n "${pkgdir}" -a "${pkgdir}" != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+
+# unpack source installation package
+#cd ${buildroot}
+#tar zxvf ${here}/gt3.0.2-source-installer.tar.gz
+
+
+# build
+#
+cd ${srcdir}
+if [ -z ${GPT_LOCATION} ]; then
+  echo "Couldn't find GPT_LOCATION. Exit!"
+  exit
+fi
+
+
+export GLOBUS_LOCATION=${pkgdir}${prefix}
+${GPT_LOCATION}/sbin/gpt-build globus-data-management-client-2.4.3-src_bundle.tar.gz gcc32pthr
+${GPT_LOCATION}/sbin/gpt-verify
+
+# Fix der_chop from openssl from using the not right /usr/local/bin/perl and instead use /usr/bin/perl
+sed -e 's,/usr/local/bin/perl,/usr/bin/perl,g' < ${pkgdir}${prefix}/bin/der_chop > ${pkgdir}${prefix}/bin/der_chop.sed
+mv -f ${pkgdir}${prefix}/bin/der_chop.sed ${pkgdir}${prefix}/bin/der_chop
+chmod 0755 ${pkgdir}${prefix}/bin/der_chop
+
+
+# documentation
+#
+#mkdir -p ${pkgdir}/usr/doc/${name}-${version}
+
+# post install
+#
+mkdir -p ${pkgdir}/install
+cat <<EOF >${pkgdir}/install/doinst.sh
+#!/bin/sh
+
+grep "${prefix}/lib" etc/ld.so.conf
+if [ ! \$? -eq 0 ]; then
+    echo "/usr/lib/globus/lib" >>etc/ld.so.conf
+    ldconfig
+fi
+EOF
+chmod 0755 ${pkgdir}/install/doinst.sh
+
+mkdir -p ${pkgdir}/etc/profile.d
+cat <<EOF > ${pkgdir}/etc/profile.d/globus.sh
+#!/bin/sh
+GLOBUS_LOCATION=${prefix}
+export GLOBUS_LOCATION
+
+. \${GLOBUS_LOCATION}/etc/globus-user-env.sh
+EOF
+
+cat <<EOF > ${pkgdir}/etc/profile.d/globus.csh
+#!/bin/csh
+setenv GLOBUS_LOCATION ${prefix}
+
+source \${GLOBUS_LOCATION}/etc/globus-user-env.csh
+EOF
+chmod 0755 ${pkgdir}/etc/profile.d/globus.*
+
+
+# package description
+#
+cat <<EOF >${pkgdir}/install/slack-desc
+${name}: ${name}-${version}
+${name}: 
+${name}: 
+${name}: ${name} is an open implementation of the grid framework
+${name}: 
+${name}: 
+${name}: 
+${name}: 
+${name}: 
+${name}: 
+${name}: 
+EOF
+chmod 0644 ${pkgdir}/install/slack-desc
+
+# make the Slackware package
+#
+cd ${pkgdir}
+/sbin/makepkg -c n -l y ${here}/${pkgname}
+cd ${here}
+
+
+# cleanup
+#
+#[ -n "${pkgdir}" -a "${pkgdir}" != / ] && rm -rf ${pkgdir}
+
+
