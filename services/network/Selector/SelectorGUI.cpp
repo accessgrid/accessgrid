@@ -30,10 +30,10 @@ int GetParticipants(struct participant* participantList);
 
 /*
 ------------------------------------------------
-  VideoSelectorGUI
+   SelectorGUI
 ------------------------------------------------
 */
-class VideoSelectorGUI{
+class  SelectorGUI{
 private:
   
 public:
@@ -49,17 +49,17 @@ public:
   void selectCB(Fl_Widget* w, void* data);
   void closeCB(Fl_Widget* w);
   void idleCB();
-  static void static_applyCB(Fl_Widget *w, void* v){((VideoSelectorGUI*)v)->applyCB(w);}
-  static void static_selectCB(Fl_Widget *w, void* v){((VideoSelectorGUI*)v)->selectCB(w, v);}
-  static void static_closeCB(Fl_Widget *w, void* v){((VideoSelectorGUI*)v)->closeCB(w);}
-  static void static_idleCB(void* v){((VideoSelectorGUI*)v)->idleCB();}
+  static void static_applyCB(Fl_Widget *w, void* v){(( SelectorGUI*)v)->applyCB(w);}
+  static void static_selectCB(Fl_Widget *w, void* v){(( SelectorGUI*)v)->selectCB(w, v);}
+  static void static_closeCB(Fl_Widget *w, void* v){(( SelectorGUI*)v)->closeCB(w);}
+  static void static_idleCB(void* v){(( SelectorGUI*)v)->idleCB();}
 };
 
 /*
   Called everytime we click the refresh button. This will request all participants
   and update the UI.
  */ 
-void VideoSelectorGUI::update(){
+void SelectorGUI::update(){
   int x = 40;
   int y = 10;
   int dy = 20; 
@@ -86,7 +86,7 @@ void VideoSelectorGUI::update(){
 /*
   Initial creation of ui components.
 */
-void VideoSelectorGUI::create(){
+void SelectorGUI::create(){
   Fl_Window *window = new Fl_Window(400,460);
   x = 80;
   y = 10;
@@ -129,9 +129,9 @@ void VideoSelectorGUI::create(){
 
 /*
   Called when you press the refresh button.
-  Sets allowed participant in video selector service.
+  Sets allowed participant in selector service.
 */ 
-void VideoSelectorGUI::applyCB(Fl_Widget *w){
+void SelectorGUI::applyCB(Fl_Widget *w){
   update();
 }
 
@@ -139,7 +139,7 @@ void VideoSelectorGUI::applyCB(Fl_Widget *w){
   Called whey you select a participant. Participants
   stream will be forwarded to new multicast address.
 */
-void VideoSelectorGUI::selectCB(Fl_Widget *w, void* data){
+void SelectorGUI::selectCB(Fl_Widget *w, void* data){
   unsigned int d = (unsigned int) data;
   SetAllowedParticipant(d);
 }
@@ -148,11 +148,11 @@ void VideoSelectorGUI::selectCB(Fl_Widget *w, void* data){
   Called when you press the apply button.
   Closes the window.
 */
-void VideoSelectorGUI::closeCB(Fl_Widget *w){
+void SelectorGUI::closeCB(Fl_Widget *w){
   exit(0);
 }
 
-void VideoSelectorGUI::idleCB(){
+void SelectorGUI::idleCB(){
   update();
 }
 
@@ -180,7 +180,7 @@ int main(int argc, char ** argv) {
   pthread_create(&t, NULL, start, (void*)&a);
   
   // Start the program
-  VideoSelectorGUI v;
+  SelectorGUI v;
   v.create();
     
   return Fl::run();
