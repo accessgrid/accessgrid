@@ -70,11 +70,13 @@ echo %{pyver}
 
 %install
 # Move node services and shared apps into etc 
-mv NodeServices etc/AccessGrid/Config
-mv SharedApplications etc/AccessGrid/Config
-mkdir etc/AccessGrid/Config/Services
-mkdir etc/AccessGrid/Config/PackageCache
-mkdir etc/AccessGrid/Config/Logs
+mv NodeServices etc/AccessGrid
+mkdir etc/AccessGrid/SharedApplications
+mv SharedApplications/VenueVNC.agpkg etc/AccessGrid/SharedApplications
+mv SharedApplications/VenueVNC.zip etc/AccessGrid/SharedApplications
+mkdir etc/AccessGrid/Services
+mkdir etc/AccessGrid/PackageCache
+mkdir etc/AccessGrid/Logs
 
 
 
