@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.40 2003-03-11 18:04:44 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.41 2003-03-11 21:58:13 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.Utilities import formatExceptionInfo, HaveValidProxy 
 from AccessGrid import icons
 from AccessGrid.Platform import GPI 
-from AccessGrid.UIUtilities import *
+from AccessGrid.UIUtilities import MyLog
 
 import logging, logging.handlers
 import string
@@ -41,8 +41,8 @@ class VenueManagementClient(wxApp):
     currentVenueClient = None
     currentVenue = None
     encrypt = false
-   
-     
+    administrators = {}
+      
     def OnInit(self):
         self.frame = wxFrame(NULL, -1, "Venue Management" )
        	self.address = VenueServerAddress(self.frame, self)
@@ -66,7 +66,7 @@ class VenueManagementClient(wxApp):
         wxLog_SetActiveTarget(wxLogGui())  
         wxLog_SetActiveTarget(wxLogChain(MyLog(log)))
         wxLogInfo(" ")
-        wxLogDebug("----- START -------------")
+        wxLogDebug("--------- START VenueManagement")
     
     def __setProperties(self):
         self.frame.SetIcon(icons.getAGIconIcon())
@@ -81,7 +81,7 @@ class VenueManagementClient(wxApp):
 	self.frame.SetSizer(box)
 
     def OnExit(self):
-        wxLogInfo("----- END: %s -------------"% time.strftime("%a, %d %b %Y %H:%M:%S"))
+        wxLogInfo("--------- END VenueManagement")
      
     def ConnectToServer(self, URL):
         wxLogDebug("Connect to server %s" %URL)
@@ -127,7 +127,8 @@ class VenueManagementClient(wxApp):
                 self.tabs.configurationPanel.administratorsListPanel.administratorsList.Clear()
                 if len(administratorList) != 0 :
                     for admin in administratorList:
-                        self.tabs.configurationPanel.administratorsListPanel.administratorsList.Append(admin, admin)
+                        cn = self.GetCName(admin)
+                        self.tabs.configurationPanel.administratorsListPanel.administratorsList.Append(cn, admin)
                         self.tabs.configurationPanel.administratorsListPanel.administratorsList.SetSelection(0)
 
                 # fill in multicast address
@@ -159,7 +160,7 @@ class VenueManagementClient(wxApp):
 
                 # fill in encryption
                 key = self.server.GetEncryptAllMedia()
-                wxLogDebug("Set server encryption key: %s" %str(key))
+                wxLogDebug("Set server encryption key: %s" %key)
                 self.tabs.configurationPanel.detailPanel.encryptionButton.SetValue(key)
                 self.encrypt = key
                     
@@ -182,6 +183,14 @@ class VenueManagementClient(wxApp):
             dlg.ShowModal()
             dlg.Destroy()
             wxLogDebug(text)
+
+    def GetCName(self, distinguishedName):
+        index = distinguishedName.find("CN=")
+        if(index > -1):
+            cn = distinguishedName[index+3:]
+        else:
+            cn = distinguishedName
+        return cn
 
     def SetCurrentVenue(self, venue = None):
         # To avoid getting proxy all the time.
@@ -722,7 +731,7 @@ class AdministratorsListPanel(wxPanel):
         index = self.administratorsList.GetSelection()
 
         if index > -1:
-            name = self.administratorsList.GetString(index)
+            name = self.administratorsList.GetClientData(index)
             modifyAdministratorDialog = ModifyAdministratorFrame(self, -1,
                                                                  "Modify Venue Server Administrator", name)
                      
@@ -735,7 +744,7 @@ class AdministratorsListPanel(wxPanel):
             wxLog_GetActiveTarget().Flush()
             
         else:
-            self.administratorsList.Append(data, data)
+            self.administratorsList.Append(self.application.GetCName(data), data)
             self.administratorsList.Select(self.administratorsList.Number()-1)
 
     def ModifyAdministrator(self, oldName, newName):
@@ -1495,10 +1504,10 @@ class AdministratorParamFrame(wxDialog):
         wxDialog.__init__(self, *args)
         self.Centre()
 	self.SetSize(wxSize(400, 40))
-        self.text = wxStaticText(self, -1, "Please, fill in the distinguished name \nfor the administator you want to add.")
+        self.text = wxStaticText(self, -1, "Please, fill in the distinguished name for the administator you want to add.")
         self.informationBox = wxStaticBox(self, -1, "Information")
         self.nameLabel =  wxStaticText(self, -1, "DN Name:")
-	self.name =  wxTextCtrl(self, -1, "",  size = wxSize(200, 20))
+	self.name =  wxTextCtrl(self, -1, "",  size = wxSize(400, 20))
 	self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton =  wxButton(self, wxID_CANCEL, "Cancel")
 	self.doLayout() 
@@ -1540,7 +1549,7 @@ class AddAdministratorFrame(AdministratorParamFrame):
 class ModifyAdministratorFrame(AdministratorParamFrame):
     def __init__(self, parent, id, title, oldName):
         AdministratorParamFrame.__init__(self, parent, id, title)
-        self.text.SetLabel("Please, fill in a new distinguished\nname for the administator")
+        self.text.SetLabel("Please, fill in a new distinguished name for the administator")
         self.parent = parent
         self.name.Clear()
         self.name.AppendText(oldName)
@@ -1657,7 +1666,7 @@ class DigitValidator(wxPyValidator):
         if not wxValidator_IsSilent():
             wxBell()
 
-        # Returning without calling even.Skip eats the event before it
+        # Returning without calling event.Skip eats the event before it
         # gets to the text control
         return
 
@@ -1696,35 +1705,6 @@ class IpAddressConverter:
     def IpToString(self, ip1, ip2, ip3, ip4):
         self.ipString = str(ip1)+'.'+str(ip2)+'.'+str(ip3)+'.'+str(ip4)
         return self.ipString
-
-class MyLog(wxPyLog):
-    ERROR = 1
-    MESSAGE = 3
-    DEBUG = 6
-    INFO = 5
-    WARNING = 2
-        
-    def __init__(self, log):
-        wxPyLog.__init__(self)
-        self.log = log
-              
-    def DoLog(self, level, message, timeStamp):
-        thisTime =  time.strftime("%X", time.localtime(timeStamp))
-                           
-        if level  == self.ERROR:
-            self.log.exception(message)
-
-        elif level  == self.MESSAGE:
-            self.log.info(message)
-            
-        elif level  == self.DEBUG:
-            self.log.debug(message)
-
-        elif level  == self.INFO:
-            self.log.info(message)
-
-        elif level  == self.WARNING:
-            self.log.info(message)
      
 if __name__ == "__main__":
     wxInitAllImageHandlers()
