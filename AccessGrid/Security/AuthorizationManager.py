@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.14 2004-03-19 22:47:48 lefvert Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.15 2004-03-26 17:03:28 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.14 2004-03-19 22:47:48 lefvert Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.15 2004-03-26 17:03:28 lefvert Exp $"
 
 # External Imports
 import os
@@ -161,7 +161,7 @@ class AuthorizationManager:
         """
         domImpl = xml.dom.minidom.getDOMImplementation()
         authDoc = domImpl.createDocument(xml.dom.minidom.EMPTY_NAMESPACE,
-                                         "AuthorizationPolicy", '')
+                                         "AuthorizationPolicy", None)
         authP = authDoc.documentElement
 
         for r in self.roles:
