@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.29 2003-02-17 21:00:21 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.30 2003-02-17 21:33:07 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -96,6 +96,7 @@ class VenueClientFrame(wxFrame):
         self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete", "Delete service")
         #self.serviceMenu.Append(233,"Profile")
 	self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",self.serviceMenu)
+
 	self.menubar.Append(self.venue, "&Venue")
         #self.venue.AppendSeparator()
         #self.venue.Append(self.ID_VENUE_VIRTUAL,"Open virtual venue...",  "Go to new venue")
@@ -121,6 +122,21 @@ class VenueClientFrame(wxFrame):
 	#self.help.Append(301, "Manual")
 	self.help.Append(self.ID_HELP_ABOUT, "About", "Information about the application")
         self.menubar.Append(self.help, "&Help")
+        self.HideMenu()
+
+    def HideMenu(self):
+        self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
+        self.menubar.Enable(self.ID_VENUE_DATA_SAVE, false)
+        self.menubar.Enable(self.ID_VENUE_DATA_DELETE, false)
+        self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
+        self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, false)
+       
+    def ShowMenu(self):
+        self.menubar.Enable(self.ID_VENUE_DATA_ADD, true)
+        self.menubar.Enable(self.ID_VENUE_DATA_SAVE, true)
+        self.menubar.Enable(self.ID_VENUE_DATA_DELETE, true)
+        self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
+        self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, true)
      
     def __setEvents(self):
         EVT_MENU(self, self.ID_VENUE_DATA_ADD, self.OpenAddDataDialog)
@@ -148,7 +164,7 @@ class VenueClientFrame(wxFrame):
         pass
        	
     def __setProperties(self):
-        self.SetTitle("Access Grid - The Lobby")
+        self.SetTitle("You are not in a venue")
         self.SetIcon(icons.getAGIconIcon())
         self.statusbar.SetStatusWidths([-1])
 	self.statusbar.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "adventure"))
@@ -169,7 +185,12 @@ class VenueClientFrame(wxFrame):
 	self.venueClientSizer.Fit(self)
 	self.SetAutoLayout(1)
 
+    def FillInAddress(self, event):
+        url = self.menubar.GetLabel(event.GetId())
+        self.venueAddressBar.SetAddress(url)
+
     def ConnectToMyVenue(self, event):
+        print '----------- connect to my venue'
         url = self.menubar.GetLabel(event.GetId())
         connectToVenueDialog = UrlDialogCombo(self, -1, 'Connect to server', url, list = self.myVenuesList)
         if (connectToVenueDialog.ShowModal() == wxID_OK):
@@ -194,7 +215,7 @@ class VenueClientFrame(wxFrame):
         for url in self.myVenuesList:
             id = NewId()
             self.myVenues.Append(id, url)
-            EVT_MENU(self, id, self.ConnectToMyVenue)
+            EVT_MENU(self, id, self.FillInAddress)
 
     def AddToMyVenues(self, event):
         setMyVenueUrlDialog = UrlDialog(self, -1, "Add venue URL to your venues", \
@@ -204,7 +225,7 @@ class VenueClientFrame(wxFrame):
             url = setMyVenueUrlDialog.address.GetValue()
             self.myVenues.Append(id, url)
             self.myVenuesList.append(url)
-            EVT_MENU(self, id, self.ConnectToMyVenue)
+            EVT_MENU(self, id, self.FillInAddress)
 
             myVenuesFile = open(self.myVenuesFile, 'w')
             for venueUrl in self.myVenuesList:

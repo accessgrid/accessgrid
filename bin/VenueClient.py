@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.44 2003-02-17 20:59:47 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.45 2003-02-17 21:32:45 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT -----------------------------------------------------------------------------
 import threading
@@ -298,6 +298,7 @@ class VenueClientUI(wxApp, VenueClient):
 
             try:
                 self.EnterVenue(venueUri)
+                wxCallAfter(self.frame.ShowMenu)
                 #   return true
                 
             except GSITCPSocketException:  # no proxy
