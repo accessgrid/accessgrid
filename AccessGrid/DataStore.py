@@ -1,3 +1,4 @@
+
 #-----------------------------------------------------------------------------
 # Name:        DataStore.py
 # Purpose:     This is a data storage server.
@@ -5,7 +6,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.32 2003-08-15 20:35:54 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.33 2003-08-21 19:56:48 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -35,11 +36,14 @@ from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.EventServiceAsynch import EventService
-from AccessGrid.Events import Event, AddPersonalDataEvent
-from AccessGrid.Events import RemovePersonalDataEvent, UpdatePersonalDataEvent
+from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent,  AddDataEvent
 from pyGlobus.io import GSITCPSocketException
-
+#from AccessGrid.DataStore import GSIHTTPTransferServer
 import logging
+from AccessGrid.EventClient import EventClient, EventClientWriteDataException
+from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
+from AccessGrid.Events import Event, ConnectEvent, HeartbeatEvent
+
 log = logging.getLogger("AG.DataStore")
 
 class NotAPlainFile(Exception):
@@ -60,11 +64,143 @@ class UploadFailed(Exception):
 class DownloadFailed(Exception):
     pass
 
-class DataAlreadyPresent(Exception):
+class DatDAlreadyPresent(Exception):
     pass
 
 class DataNotFound(Exception):
     pass
+
+
+class DataService(ServiceBase):
+    '''
+    The DataService class is used for venue data storage. Each venue calls the
+    RegisterVenue soap method to create a venue datastore. The data service has a
+    transfer engine that is used for data upload and download by all datastores.
+    The venue communicates to its datastore via a SOAP interface
+    '''
+   
+    def __init__(self, path, port, webServicePort):
+        '''
+        Starts a DataService
+
+        **Arguments:**
+        
+         *path* Base path for all datastores (string).
+         *port* Port used by transfer engine for data transfer (int).
+         *webServicePort* Port for DataService SOAP service (int)
+        '''
+
+        self.path = path
+        self.dataPort = port
+        self.webServicePort = webServicePort
+        self.dataStores = dict()
+        self.__CreateWebService()
+        self.__CreateTransferEngine()
+        self.__CheckPath()
+            
+    def __CreateWebService(self):
+        '''
+        Initiates the DataStore SOAP service.
+        '''
+        
+        def AuthCallback(server, g_handle, remote_user, context):
+            return 1
+        
+        self.server = Server.Server(self.webServicePort, auth_callback=AuthCallback)
+        self.service = self.server.CreateServiceObject("DataService")
+        self._bind_to_service( self.service )
+        self.server.run_in_thread()
+        print "Data Service running at ", self.service.GetHandle()
+        print "Port used for data transfer: ", self.dataPort
+        print "Storage path: ", self.path
+        #log.debug("DataService.__CreateWebService: Start data service %s"%self.service.GetHandle())
+        
+    def __CreateTransferEngine(self):
+        '''
+        Start transfer engine used by all datastores in this service object
+        '''
+
+        self.dataTransferServer = GSIHTTPTransferServer(('',
+                                                         int(self.dataPort)),
+                                                        numThreads = 4,
+                                                        sslCompat = 0)
+        self.dataTransferServer.run()
+
+    def __CheckPath(self):
+        '''
+        Create base path for data service used by all created datastores.
+        '''
+
+        if not os.path.exists(self.path):
+            #self.log.exception("DataStore::init: Datastore path %s does not exist" % (self.path))
+            try:
+                os.mkdir(self.path)
+            except OSError:
+                #self.log.exception("Could not create Data Service.")
+                self.path = None
+       
+    def RegisterVenue(self, privateId, eventServiceLocation, channelId):
+        '''
+        This methods creates a datastore and adds the transfer engine
+        and an event client to the created datastore. It returns the
+        handler to its SOAP interface.  
+        
+        **Arguments:**
+        
+         *privateId* Unique id for this datastore (int).
+         *eventServiceLocation* Event service location used by venue (host, port)
+         *channelId* Channel id (Venues private id) to use for events.(int)
+
+        *Returns*
+         *url* location of SOAP interface (string)
+        '''
+
+        #self.log.debug('Register venue with channelId %s' %channelId)
+        #self.log.debug("Create Data Store at %s" %self.path)
+
+        # Create event client
+        eventClient = EventClient(privateId, eventServiceLocation, str(channelId))
+        eventClient.start()
+        eventClient.Send(ConnectEvent(channelId, privateId))
+        
+        # Create data store based on venues unique channelId 
+        pathName = os.path.join(self.path, str(channelId))
+        dataStore = DataStore(pathName, str(channelId), self.dataPort)
+        dataStore.SetTransferEngine(self.dataTransferServer)
+                
+        # Set event channel for data store
+        dataStore.SetEventDistributor(eventClient, channelId)
+                      
+        # Start sending heartbeats to venue
+        threading.Thread(target=dataStore.HeartbeatThread).start()
+
+        # Store the datastore
+        self.dataStores[channelId] = dataStore
+       
+        url = dataStore.service.GetHandle()
+        #self.log.debug("Create web interface at %s"%url)
+        
+        return url
+
+    RegisterVenue.soap_export_as = "RegisterVenue"
+
+       
+    def UnRegisterVenue(self, channelId):
+        '''
+        This method shuts down the data store allocated for venue with channelId. 
+
+        **Arguments:**
+         *channelId* Channel id (Venues private id) (int)
+
+        '''
+         
+        #self.log.debug('Unregister venue with channelId %s' %channelId)
+
+        # Stop the dataStore
+        self.dataStores[channelId].Shutdown()
+        del self.dataStores[channelId]
+        
+    UnRegisterVenue.soap_export_as = "UnRegisterVenue"
 
 
 class DataDescriptionContainer:
@@ -78,7 +214,7 @@ class DataDescriptionContainer:
         self.channelId = None 
         self.eventDistributor = None
         self.data = dict()
-
+       
     def SetEventDistributor(self, eventDistributor, channelId):
         '''
         Sets the object used to send events
@@ -104,7 +240,6 @@ class DataDescriptionContainer:
             *DataAlreadyPresent* Raised when the data is not found in the Venue.
 
         """
-
         name = dataDescription.name
         log.debug("DataDescriptionContainer::AddData with name %s " %name)
              
@@ -115,15 +250,7 @@ class DataDescriptionContainer:
         self.data[name] = dataDescription
         log.debug("DataDescriptionContainer::AddData: Distribute ADD_DATA event %s", dataDescription)
 
-        # DataStore belongs to venue
-        if isinstance(self.eventDistributor, EventService):
-            self.eventDistributor.Distribute( self.channelId,
-                                              Event(Event.ADD_DATA,
-                                                    self.channelId,
-                                                    dataDescription))
-        # DataStore belongs to participant
-        else:
-            self.eventDistributor.Send(AddPersonalDataEvent(self.channelId, dataDescription))
+        self.eventDistributor.Send(AddDataEvent(self.channelId, dataDescription))
       
     def UpdateData(self, dataDescription,):
         """
@@ -144,16 +271,7 @@ class DataDescriptionContainer:
 
         log.debug("Distribute UPDATE_DATA event %s", dataDescription)
 
-        
-        # DataStore belongs to venue
-        if isinstance(self.eventDistributor, EventService):
-            self.eventDistributor.Distribute(self.channelId,
-                                             Event(Event.UPDATE_DATA,
-                                                   self.channelId,
-                                                   dataDescription))
-        # DataStore belongs to participant
-        else:
-            self.eventDistributor.Send(UpdatePersonalDataEvent(self.channelId, dataDescription))
+        self.eventDistributor.Send(UpdateDataEvent(self.channelId, dataDescription))
 
     def GetData(self, fileName):
         """
@@ -184,22 +302,13 @@ class DataDescriptionContainer:
         **Raises:**
             *DataNotFound* Raised when the data is not found.
         """
-
         name = dataDescription.name
 
         #
         # We always want to send an event to clean up UI for clients.
         #
-
-        # DataStore belongs to venue
-        if isinstance(self.eventDistributor, EventService):
-            self.eventDistributor.Distribute(self.channelId,
-                                             Event( Event.REMOVE_DATA,
-                                                    self.channelId,
-                                                    dataDescription ) )
-        # DataStore belongs to participant
-        else:
-            self.eventDistributor.Send(RemovePersonalDataEvent(self.channelId, dataDescription))
+       
+        self.eventDistributor.Send(RemoveDataEvent(self.channelId, dataDescription))
             
         if self.data.has_key(name):
             del self.data[ dataDescription.name ]
@@ -214,15 +323,14 @@ class DataDescriptionContainer:
         block of text.
 
         **Returns**
-            *iniblock* string of serialized data. If no data is present,
+        *iniblock* string of serialized data. If no data is present,
         
         """
-        iniblock = ""
-        
-        dataList = ":".join(map( lambda data: data.GetId(), self.data.values()))
 
-        return dataList
-                
+        string = ""
+        string +="".join(map(lambda data: data.AsINIBlock(), self.GetDataDescriptions()))
+        return string
+    
     def LoadPersistentData(self, dataList):
         '''
         Adds a list of DataDescriptions without distributing events
@@ -230,10 +338,10 @@ class DataDescriptionContainer:
         **Arguments**
         *dataList* List of DataDescriptions you want to add
         '''
+      
         for description in dataList:
             self.data[description.name] = description
-            
-
+           
     def GetDataDescriptions(self):
         """
         This methods returns a list containing all present DataDescriptions.
@@ -248,15 +356,14 @@ class DataDescriptionContainer:
             dList.append(data)
 
         return dList
-    
+  
 
 class DataStore(ServiceBase):
     """
     A DataStore implements a per-venue data storage server.
-    
     """
     
-    def __init__(self, pathname, prefix):
+    def __init__(self, pathname, prefix, port = None):
         """
         Create the datastore.
 
@@ -266,18 +373,117 @@ class DataStore(ServiceBase):
         """
         self.cbLock = threading.Lock()
         self.transferEngineLock = threading.Lock()
-             
         self.prefix = prefix
         self.callbackClass = DataDescriptionContainer()
-        log.debug("Datastore path is %s" %pathname)
-        
-        if not os.path.exists(pathname):
-            log.exception("DataStore::init: Datastore path %s does not exist" % (pathname))
-            raise Exception("Datastore path %s does not exist" % (pathname))
-
+        self.sendHeartBeats = 1
+        self.eventClient = None
         self.pathname = pathname
+        self.path = pathname
+        self.persistenceFileName = os.path.join(self.path, "DataStore.dat")
+        
+        if port:
+            self.dataPort = port
+        else:
+            self.port = 8006
+       
         self.__CreateWebService()
+        self.__CheckPath()
 
+    def __CheckPath(self):
+        if not os.path.exists(self.path):
+            log.exception("DataStore::init: Datastore path %s does not exist" % (self.path))
+            try:
+                os.mkdir(self.path)
+            except OSError:
+                log.exception("Could not create Data Service.")
+                self.path = None
+       
+
+    def __CreateWebService(self):
+        '''
+        Initiates the DataStore SOAP service.
+        '''
+        
+        def AuthCallback(server, g_handle, remote_user, context):
+            return 1
+        
+        from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
+        self.webServicePort = MulticastAddressAllocator().AllocatePort()
+
+        self.server = Server.Server(self.webServicePort, auth_callback=AuthCallback)
+        self.service = self.server.CreateServiceObject("DataStore")
+        self._bind_to_service( self.service )
+        self.server.run_in_thread()
+
+    def LoadPersistentInfo(self):
+        cp = ConfigParser.ConfigParser()
+        cp.read(self.persistenceFileName)
+
+        log.debug("Reading persisted data from: %s", self.persistenceFileName)
+        persistentData = []
+        
+        for sec in cp.sections():
+            dd = DataDescription(cp.get(sec, 'name'))
+            dd.SetId(sec)
+            try:
+                dd.SetDescription(cp.get(sec, 'description'))
+            except ConfigParser.NoOptionError:
+                log.info("LoadPersistentVenues: Data has no description")
+            dd.SetStatus(cp.get(sec, 'status'))
+            dd.SetSize(cp.getint(sec, 'size'))
+            dd.SetChecksum(cp.get(sec, 'checksum'))
+            dd.SetOwner(cp.get(sec, 'owner'))
+            dd.SetType(cp.get(sec, 'type'))
+            persistentData.append(dd)
+            self.callbackClass.LoadPersistentData(persistentData)
+                
+    def Shutdown(self):
+        # Open the persistent store
+        store = file(self.persistenceFileName, "w")
+               
+        store.write(self.AsINIBlock())
+        
+        store.close()
+        
+        # Stop sending heartbeats
+        self.sendHeartBeats = 0
+
+        # Stop web service
+        if self.server:
+            self.server.Stop()
+
+        # Stop event client
+        try:
+            privateId = self.eventClient.privateId
+            channelId = self.eventClient.channelId
+            
+            # Don't send exiting event because this is done when the venue is
+            # removed and this call might hang.
+            
+            #self.eventClient.Send(ClientExitingEvent(privateId, channelId))
+            self.eventClient.Stop()
+            self.eventClient = None
+        except:
+            pass
+                   
+    def HeartbeatThread(self):
+        """
+        HeartbeatThread loops while the object is active,
+        to keep the connection with the Venue open
+        """
+        import time
+        while self.sendHeartBeats:
+            try:
+                self.eventClient.Send(HeartbeatEvent(self.channelId, self.privateId))
+            except EventClientWriteDataException:
+                self.Shutdown()
+                break
+            except:
+                pass
+                
+            time.sleep(10)
+
+            
     def SetTransferEngine(self, engine):
         """
         Set the datastore's default transfer engine.
@@ -288,28 +494,6 @@ class DataStore(ServiceBase):
         engine.RegisterPrefix(self.prefix, self)
         self.transferEngineLock.release()
 
-    # ------------------------
-    #
-    # New methods
-    #
-
-        
-    def __CreateWebService(self):
-        '''
-        Initiates the DataStore SOAP service.
-        '''
-
-        def AuthCallback(server, g_handle, remote_user, context):
-            return 1
-        
-        from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-        port = MulticastAddressAllocator().AllocatePort()
-
-        self.server = Server.Server(port, auth_callback=AuthCallback)
-        self.service = self.server.CreateServiceObject("DataStore")
-        self._bind_to_service( self.service )
-        self.server.run_in_thread()
-
     def SetEventDistributor(self, eventDistributor, channelId):
         '''
         Set the object responsible for sending events.
@@ -317,6 +501,7 @@ class DataStore(ServiceBase):
 
         self.cbLock.acquire()
         self.callbackClass.SetEventDistributor(eventDistributor, channelId)
+        self.LoadPersistentInfo()
         self.cbLock.release()
         
     def GetLocation(self):
@@ -329,15 +514,17 @@ class DataStore(ServiceBase):
         '''
         return self.service.get_handle()
 
+    GetLocation.soap_export_as = "GetLocation"
+
     def LoadPersistentData(self, dataList):
         '''
-        Adds a list of DataDescriptions.  If the datastore location has changed, url of data
-        passed in is changed. If data is no longer present in the file system, the DataDescription
+        Adds a list of DataDescriptions.  If the datastore location
+        has changed, url of data passed in is changed. If data is no
+        longer present in the file system, the DataDescription
         is not ignored.
         '''
 
         persistentData = []
-
         
         for data in dataList:
             url = self.GetDownloadDescriptor(data.name)
@@ -379,6 +566,8 @@ class DataStore(ServiceBase):
         
         return block
 
+    AsINIBlock.soap_export_as = "AsINIBlock"
+
     def GetDataDescriptions(self):
         '''
         Retreive data in the DataStore as a list of DataDescriptions.
@@ -386,7 +575,6 @@ class DataStore(ServiceBase):
         **Returns**
             *dataDescriptionList* A list of DataDescriptions representing data currently in the DataStore
         '''
-
         self.cbLock.acquire()
         dataDescriptionList = self.callbackClass.GetDataDescriptions()
         self.cbLock.release()
@@ -436,9 +624,7 @@ class DataStore(ServiceBase):
             
         
     RemoveFiles.soap_export_as = "RemoveFiles"
-    
-    # -----------------------
-    
+        
     def UploadLocalFiles(self, fileList, dn, id):
         '''
         Add file to a local datastore
@@ -679,9 +865,7 @@ class DataStore(ServiceBase):
         
         return desc
 
-    def Shutdown(self):
-        if self.server:
-            self.server.Stop()
+
 
 import BaseHTTPServer
 
@@ -2195,3 +2379,5 @@ if __name__ == "__main__":
 
     except:
         os._exit(0)
+
+
