@@ -9,13 +9,16 @@ import os
 import sys
 import base64
 
+if sys.platform == 'darwin':
+    import pyGlobus.ioc
+
 from AccessGrid.hosting import Client
 
 from AccessGrid import Events
 from AccessGrid import EventClient
 from AccessGrid import Toolkit
 from AccessGrid.Platform.Config import UserConfig
-from AccessGrid.Platform import isWindows
+from AccessGrid.Platform import IsWindows,IsLinux,IsOSX
 from AccessGrid import DataStore
 from AccessGrid import Platform
 from AccessGrid.GUID import GUID
@@ -78,7 +81,8 @@ class vncSharedAppClient:
         # Change to the location of the application before running, since helper executables are located here.
         print "Running from directory", os.getcwd()
 
-        if isWindows():
+        execString = ""
+        if IsWindows():
             width=eval(self.vncGeometry.split('x')[0]);
             if width >= 5120:
                 execString='vncviewer -shared -scale 1/4 -passwd %s %s'%(self.passwdFilename,self.vncContact)
@@ -88,18 +92,23 @@ class vncSharedAppClient:
                 execString='vncviewer -shared -scale 1/2 -passwd %s %s'%(self.passwdFilename,self.vncContact)
             else:
                 execString='vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)                
-            print "About the execute: %s"%(execString)
-            os.system(execString);
-        else:
+        elif IsLinux():
             execString='chmod +x ./vncviewer; ./vncviewer -shared -passwd %s %s'%(self.passwdFilename,self.vncContact)
-            print "About the execute: %s"%(execString)
-            os.system(execString);
-
+        elif IsOSX():
+            vncviewer='/Volumes/Chicken\ of\ the\ VNC/Chicken\ of\ the\ VNC.app/Contents/MacOS/Chicken\ of\ the\ VNC'
+            execString='%s --PasswordFile %s %s' % (vncviewer,self.passwdFilename,self.vncContact)
+        else:
+            raise Exception("Unsupported platform")
+        print "About the execute: %s"%(execString)
+        log.info("Starting vnc client: %s", execString)
+        os.system(execString);
         os.unlink(self.passwdFilename);
 
 if __name__ == "__main__":
     app = CmdlineApplication.instance()
     app.Initialize("VenueVNCClient")
+
+    log = app.GetLog()
 
     if len(sys.argv) < 2:
         print "Usage: %s <appObjectUrl>" % sys.argv[0]
