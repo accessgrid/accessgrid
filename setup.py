@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.60 2004-04-19 17:20:31 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.61 2004-04-21 17:12:27 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -133,7 +133,7 @@ linux_data = [('etc/init.d',
               ('share/doc/AccessGrid/Documentation/VenueManagementManual',
                [r"doc/VenueManagementManual/VenueManagementManual.htm",
                 r"doc/VenueManagementManual/VenueManagementManualHTML.htm",
-                r"doc/VenueManagementManual/11.htm"
+                r"doc/VenueManagementManual/1.htm"
                 ]
                ),
               ('share/doc/AccessGrid/Documentation/VenueManagementManual/VenueManagementManual_files',
