@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.218 2003-06-27 18:28:01 eolson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.219 2003-06-27 21:43:46 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -2479,7 +2479,7 @@ class AddMyVenueDialog(wxDialog):
         info = "Current venue will be added to your list of venues."
         self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
         self.addressText = wxStaticText(self, -1, "Name: ", style=wxALIGN_LEFT)
-        name = app.venueState.name
+        name = app.venueClient.venueState.name
         self.address = wxTextCtrl(self, -1, name, size = wxSize(300,20))
         #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
         self.Layout()
