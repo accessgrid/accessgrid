@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.161 2003-04-28 20:46:22 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.162 2003-04-28 21:35:49 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -780,9 +780,17 @@ class VenueClientFrame(wxFrame):
 
             commands = GetMimeCommands(filename = tfilepath,
                                        ext = name.split('.')[-1])
-            if commands.has_key('open'):
-                wxLogDebug("executing cmd: %s" % commands['open'])
-                wxExecute(commands['open'])
+            if commands == None:
+                message = "No registered for the selected data\n(mimetype = %s)", % data.mimeType)
+                dlg = MessageDialog(self.frame, message)
+                wxLogDebug(message)
+            else:
+                if commands.has_key('open'):
+                    wxLogDebug("executing cmd: %s" % commands['open'])
+                    if commands['open'][0:6] == "WX_DDE":
+                        pid = wxExecute(commands['open'])
+                    else:
+                        pid = wxShell(commands['open'])
         else:
             self.__showNoSelectionDialog("Please, select the data you want to open")     
     
