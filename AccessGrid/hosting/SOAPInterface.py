@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: SOAPInterface.py,v 1.2 2004-02-24 21:30:50 judson Exp $
+# RCS-ID:      $Id: SOAPInterface.py,v 1.3 2004-03-01 20:02:42 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ primary methods, the constructor and a default authorization for all
 interfaces.
 """
 
-__revision__ = "$Id: SOAPInterface.py,v 1.2 2004-02-24 21:30:50 judson Exp $"
+__revision__ = "$Id: SOAPInterface.py,v 1.3 2004-03-01 20:02:42 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -77,6 +77,13 @@ class SOAPInterface:
         return actions
 
     def IsValid(self):
+        """
+        This method is here to support calls that just want to see if there
+        is a valid server endpoint for communication from the client.
+        """
+        return 1
+
+    def _IsValid(self):
         """
         This method is here to support calls that just want to see if there
         is a valid server endpoint for communication from the client.
