@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ServiceObject.py,v 1.7 2003-03-13 12:18:45 judson Exp $
+# RCS-ID:      $Id: ServiceObject.py,v 1.8 2003-03-13 23:19:46 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -74,7 +74,7 @@ class ServiceObject:
 	self.server = server
         # This fixes the case where we pass a path from something like
         # urlparse.urlparse (which is probably an increasingly common case)
-        if id[0] == '/':
+        if type(id) == str and id[0] == '/':
             self.id = id[1:]
         else:
             self.id = id
