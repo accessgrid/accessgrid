@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.9 2004-12-16 21:14:53 leggett Exp $
+ * $Id: QuickBridge.c,v 1.10 2004-12-16 21:22:41 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -1264,11 +1264,12 @@ int main( int argc, char *argv[] )
       debug( 4, "After select( )\n" );
       FD_ZERO( &readfds );
       session_set( s, &readfds );
+      /*
       if ( debugFlag >= 1 )
 	{
 	  FD_SET( 0, &readfds );
 	}
-
+      */
       /*check for activity and processor accordingly*/
       /*
        * We add a timeout when there are active unicast
@@ -1280,17 +1281,9 @@ int main( int argc, char *argv[] )
        * be empty so block.
        */
       debug( 4, "About to select unicast clients\n" );
-      //if ( num_unicast(s) > 0 && ! all_fixed( s ) )
-      //{
       tv.tv_sec = 2; 
       tv.tv_usec = 0; 
       nfds = select( maxfds, &readfds, NULL, NULL, &tv );
-      //}
-      //else
-      //{
-      //debug( 9, "We have no unicast clients. Waiting indefinitely\n" );
-      //nfds = select( maxfds, &readfds, NULL, NULL, NULL );
-      //}
       debug( 4, "Unicast clients selected\n" );
       /*if specified on the command line, check for input on stdin*/
       if ( debugFlag >= 1 )
