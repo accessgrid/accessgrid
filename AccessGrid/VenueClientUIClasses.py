@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.197 2003-05-23 16:33:46 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.198 2003-05-23 20:06:03 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -45,6 +45,7 @@ try:
     import win32api
 except:
     pass
+
 
 class VenueClientFrame(wxFrame):
     
@@ -1438,6 +1439,10 @@ class ContentListPanel(wxPanel):
             if(self.participantDict.has_key(id)):
                 log.debug("Data belongs to a participant")
                 participantId = self.participantDict[id]
+
+                ownerProfile = self.tree.GetItemData(participantId).GetData()
+                self.parent.statusbar.SetStatusText("%s just added personal file '%s'"%(ownerProfile.name, profile.name))
+                
                 dataId = self.tree.AppendItem(participantId, profile.name, \
                                      self.defaultDataId, self.defaultDataId)
                 self.tree.SetItemData(dataId, wxTreeItemData(profile))
@@ -1477,6 +1482,8 @@ class ContentListPanel(wxPanel):
                           
     def RemoveData(self, profile):
         #if venue data
+        id = None
+        
         if(self.dataDict.has_key(profile.name)):
             log.debug("Remove venue data")
             id = self.dataDict[profile.name]
@@ -1484,6 +1491,10 @@ class ContentListPanel(wxPanel):
             
         #if personal data
         elif (self.personalDataDict.has_key(profile.name)):
+            id = self.personalDataDict[profile.name]
+            ownerId = self.tree.GetItemParent(id)
+            ownerProfile = self.tree.GetItemData(ownerId).GetData()
+            self.parent.statusbar.SetStatusText("%s just removed personal file '%s'"%(ownerProfile.name, profile.name))
             log.debug("Remove personal data")
             id = self.personalDataDict[profile.name]
             del self.personalDataDict[profile.name]
@@ -1967,8 +1978,7 @@ class TextClientPanel(wxPanel):
     def OnCloseWindow(self):
         log.debug("VenueClientUIClasses.py: Destroy text client")
         self.Destroy()
-        
-      
+          
 class SaveFileDialog(wxDialog):
     def __init__(self, parent, id, title, message, doneMessage, fileSize):
         wxDialog.__init__(self, parent, id, title,
