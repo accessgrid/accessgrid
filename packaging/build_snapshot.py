@@ -154,7 +154,7 @@ if bdir is not None:
     NextDir = os.path.join(RunDir, bdir)
     if os.path.exists(NextDir):
         os.chdir(NextDir)
-        os.system("%s %s --verbose -b %s -s %s -d %s -p %s -m %s -v %s" % (sys.executable,
+        os.system("%s %s --verbose -s %s -b %s -d %s -p %s -m %s -v %s" % (sys.executable,
                                                                  pkg_script,
                                                                  SourceDir,
                                                                  BuildDir,

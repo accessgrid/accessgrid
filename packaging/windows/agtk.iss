@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.57 2004-04-07 17:47:05 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.58 2004-04-07 20:21:25 judson Exp $
 ;
 
 ; Set externally
@@ -8,25 +8,17 @@
 ; VersionInformation: a string indicating the more version information
 ; PythonVersion: a string indicating the version of python (2.2 or 2.3)
 
-#define SourceDir "\software\AccessGrid\build"
-
 #ifndef SourceDir
 #error "SourceDir must be defined to build a package."
 #endif
-
-#define BuildDir "\software\AccessGrid\build\AccessGrid-20040407-113752"
 
 #ifndef BuildDir
 #error "BuildDir must be defined to build a package."
 #endif
 
-#define AppVersion "2.2"
-
 #ifndef AppVersion
 #error "AppVersion must be defined to build a package."
 #endif
-
-#define VersionInformation "Test Build"
 
 #ifndef VersionInformation
 #error "VersionInformation must be defined to build a package."
