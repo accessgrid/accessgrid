@@ -11,6 +11,10 @@
 #  venue.  
 #
 #  Notes:
+#  - the vnc server is assumed to be installed, and varies by platform:
+#    - Linux: tightvnc, realvnc
+#    - Windows: RealVNC
+#    - OSX: OSXvnc
 #  - the vnc server executable is searched for in the expected location (varies
 #    per platform, see code) and in the user's path
 #  - On Linux, the vnc server is started on display ':9' by default
