@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.52 2004-04-07 01:25:07 judson Exp $
+# RCS-ID:      $Id: setup.py,v 1.53 2004-04-07 02:25:49 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -41,7 +41,7 @@ if dest is not None:
            os.path.join("doc", "Developer"),
            "-n", "Access Grid Toolkit", "-u",
            "http://www.mcs.anl.gov/fl/research/accessgrid/", "AccessGrid"]
-    spawn(cmd, verbose=1)
+#    spawn(cmd, verbose=1)
 
 win32_scripts = list()
 win32_data = [
