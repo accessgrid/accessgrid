@@ -3,12 +3,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.17 2004-04-07 23:18:33 eolson Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.18 2004-04-08 20:52:10 eolson Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.17 2004-04-07 23:18:33 eolson Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.18 2004-04-08 20:52:10 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -21,7 +21,7 @@ import time
 
 
 # Access Grid imports
-from AccessGrid import Toolkit
+from AccessGrid.Toolkit import Application
 from AccessGrid import Log
 from AccessGrid import DataStore
 from AccessGrid.AppDb import AppDb
@@ -798,7 +798,7 @@ class VenueClientController:
                 log.debug("Url starts with https:")
                 DataStore.GSIHTTPUploadFiles(uploadUrl, fileList, progressCB)
             else:
-                my_identity = self.__venueClient.GetDefaultIdentityDN()
+                my_identity = str(Application.instance().GetDefaultSubject())
                 log.debug("Got identity %s" % my_identity)
                 DataStore.HTTPUploadFiles(my_identity, uploadUrl,
                 fileList, progressCB)
@@ -991,7 +991,7 @@ class VenueClientController:
 
             else:
                 log.debug("url does not start with https")
-                my_identity = self.__venueClient.GetDefaultIdentityDN()
+                my_identity = str(Application.instance().GetDefaultSubject())
                 DataStore.HTTPDownloadFile(my_identity, url, local_pathname, size,
                                            checksum, progressCB)
         except DataStore.DownloadFailed:
@@ -1029,7 +1029,7 @@ class VenueClientController:
                         return
                                          
             try:
-                my_identity = self.__venueClient.GetDefaultIdentityDN()
+                my_identity = str(Application.instance().GetDefaultSubject())
                 self.__venueClient.dataStore.UploadLocalFiles([filepath], my_identity, self.__venueClient.GetProfile().publicId)
 
                 # Send an event alerting about new data (only if it is new)
@@ -1067,7 +1067,7 @@ class VenueClientController:
             if uploadUrl.startswith("https:"):
                 DataStore.GSIHTTPUploadFiles(uploadUrl, fileList)
             else:
-                my_identity = self.__venueClient.GetDefaultIdentityDN()
+                my_identity = str(Application.instance().GetDefaultSubject())
                 DataStore.HTTPUploadFiles(my_identity, uploadUrl, fileList)
         except DataStore.FileNotFound, e:
             error_msg = "File not found: %s" % (e[0])

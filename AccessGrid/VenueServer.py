@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.137 2004-04-07 23:50:11 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.138 2004-04-08 20:52:10 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.137 2004-04-07 23:50:11 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.138 2004-04-08 20:52:10 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -159,10 +159,8 @@ class VenueServer(AuthorizationMixIn):
 
         # Get the silly default subject this really should be fixed
         certMgr = Application.instance().GetCertificateManager()
-        di = certMgr.GetDefaultIdentity().GetSubject()
-        ds = X509Subject.CreateSubjectFromString(str(di))
         admins = self.authManager.FindRole("Administrators")
-        admins.AddSubject(ds)
+        admins.AddSubject(Application.instance().GetDefaultSubject())
         admins.SetRequireDefault(1)
 
         # In the venueserver we default to admins

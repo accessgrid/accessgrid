@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.33 2004-04-07 23:20:40 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.34 2004-04-08 20:52:10 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.33 2004-04-07 23:20:40 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.34 2004-04-08 20:52:10 eolson Exp $"
 
 # Standard imports
 import os
@@ -25,6 +25,7 @@ from AccessGrid.Platform.Config import AGTkConfig, GlobusConfig
 from AccessGrid.Platform.Config import SystemConfig, UserConfig
 from AccessGrid.ServiceProfile import ServiceProfile
 from AccessGrid.Version import GetVersion
+from AccessGrid.Security import X509Subject
 
 class AppBase:
     """
@@ -201,12 +202,10 @@ class AppBase:
     def GetGlobusConfig(self):
         return self.globusConfig
 
-    def GetDefaultIdentityDN(self):
+    def GetDefaultSubject(self):
         ident = self.certificateManager.GetDefaultIdentity()
-        if ident is None:
-            return None
-        else:
-            return str(ident.GetSubject())
+        subject = X509Subject.CreateSubjectFromString(str(ident.GetSubject()))
+        return subject
 
     def GetCertificateManager(self):
        return self.certificateManager
@@ -395,7 +394,7 @@ class Service(AppBase):
         # 7. Do one final check, if we don't have a default
         #    Identity we bail, there's nothing useful to do.
 
-        if self.GetDefaultIdentityDN() is None:
+        if self.GetDefaultSubject() is None:
            log.error("Toolkit initialized with no default identity.")
            log.error("Exiting because there's no default identity.")
            sys.exit(-1)

@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.179 2004-04-08 15:46:51 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.180 2004-04-08 20:52:10 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.179 2004-04-08 15:46:51 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.180 2004-04-08 20:52:10 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -330,10 +330,7 @@ class Venue(AuthorizationMixIn):
         # Default actions for VenueUsers Roles.
         self.defaultVenueUserActionNames = []
 
-        certMgr = Application.instance().GetCertificateManager()
-        di = certMgr.GetDefaultIdentity().GetSubject()
-        ds = X509Subject.CreateSubjectFromString(str(di))
-        admin.AddSubject(ds)
+        admin.AddSubject(Application.instance().GetDefaultSubject())
         
         # Set parent auth mgr to server so administrators cascades?
 
