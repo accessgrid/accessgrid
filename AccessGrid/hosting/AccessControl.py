@@ -161,7 +161,7 @@ class RoleManager:
 def CreateSubjectFromGSIContext(context):
     initiator, acceptor, valid_time, mechanism_oid, flags, local_flag, open_flag = context.inquire()
     subj_name = initiator.display()
-    self.subject = Subject(subj_name, AUTH_X509)
+    return Subject(subj_name, AUTH_X509)
 
 class SecurityManager:
     """
