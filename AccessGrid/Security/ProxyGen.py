@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.16 2004-05-18 15:22:02 olson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.17 2004-05-18 15:23:14 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.16 2004-05-18 15:22:02 olson Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.17 2004-05-18 15:23:14 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -559,16 +559,16 @@ else:
     if hasattr(pyGlobus, "gsic"):
 	from pyGlobus import gsic
 	if hasattr(gsic, "grid_proxy_init2"):
-	    print 'use new globus'
+	    log.debug("Using GT24 proxy code")
             from pyGlobus import gssc
 	    CreateGlobusProxy = CreateGlobusProxyProgrammatic_GT24
 	    IsGlobusProxy = IsGlobusProxy_GT24
 	else:
-	    print 'use old globus'
+            log.debug("Using pre-GT24 proxy code")
 	    CreateGlobusProxy = CreateGlobusProxyGPI
 	    IsGlobusProxy = IsGlobusProxy_Generic
     else:
-	print 'use new globus'
+        log.debug("Using GT24 proxy code")
         from pyGlobus import gssc
 	CreateGlobusProxy = CreateGlobusProxyProgrammatic_GT24
 	IsGlobusProxy = IsGlobusProxy_GT24
