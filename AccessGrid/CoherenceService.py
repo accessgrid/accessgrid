@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceService.py,v 1.6 2003-01-15 17:33:44 judson Exp $
+# RCS-ID:      $Id: CoherenceService.py,v 1.7 2003-01-15 20:25:40 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -72,14 +72,11 @@ class AcceptHandler(Thread):
         sys.stderr.write("Accept Handler Exiting\n")
         
 class CoherenceService(Thread):
-    connections = {}
-    location = None
-    sock = None
-    acceptThread = None
-    
     def __init__(self, location):
         Thread.__init__(self)
         self.location = location
+        self.connections = None
+        self.acceptThread = None
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.bind((self.location.GetHost(), self.location.GetPort()))
     
@@ -88,9 +85,9 @@ class CoherenceService(Thread):
         self.sock.listen(1)
         self.acceptThread = AcceptHandler(self, self.sock)
         self.acceptThread.start()
-        while(self.running == 1):
-            print "Still running"
-            time.sleep(1)
+#        while(self.running == 1):
+#            print "Still running"
+#            time.sleep(1)
             
     def stop(self):
         """ """
