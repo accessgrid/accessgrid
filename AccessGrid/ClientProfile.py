@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.38 2004-04-27 02:53:29 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.39 2004-05-27 19:29:25 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.38 2004-04-27 02:53:29 judson Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.39 2004-05-27 19:29:25 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -84,6 +84,7 @@ class ClientProfile:
         self.distinguishedName = None
         self.capabilities = []
         self.techSupportInfo = ''
+        self.connectionId = None
 
         if profileFile != None and os.path.exists(profileFile):
             self.Load(self.profileFile)
