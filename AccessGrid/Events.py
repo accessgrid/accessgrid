@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.15 2003-08-04 18:11:38 turam Exp $
+# RCS-ID:      $Id: Events.py,v 1.16 2003-08-21 20:25:15 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -51,6 +51,39 @@ class ConnectEvent(Event):
     def __init__(self, venueId, privateId):
         Event.__init__(self, ConnectEvent.CONNECT, venueId, privateId)
 
+
+class AddDataEvent(Event):
+    '''
+    Event for adding data
+    '''
+    ADD_DATA = "Add data"
+    
+    def __init__(self, venueId, d):
+        Event.__init__(self, AddPersonalDataEvent.ADD_PERSONAL_DATA , venueId, d)
+
+class RemoveDataEvent(Event):
+    '''
+    Event for removing data
+    '''
+    REMOVE_DATA = "Remove data"
+    
+    def __init__(self, venueId, d):
+        Event.__init__(self, RemovePersonalDataEvent.REMOVE_PERSONAL_DATA , venueId, d)
+  
+class UpdateDataEvent(Event):
+    '''
+    Event for updating data
+    '''
+
+    UPDATE_DATA = "Update data"
+    
+    def __init__(self, venueId, d):
+        Event.__init__(self, UpdatePersonalDataEvent.UPDATE_PERSONAL_DATA , venueId, d)
+        
+
+
+# Have to stay for 2.0 clients
+# -----------------------------
 class AddPersonalDataEvent(Event):
     '''
     Event for adding personal data
@@ -74,10 +107,12 @@ class UpdatePersonalDataEvent(Event):
     Event for updating personal data
     '''
 
-    UPDATE_PERSONAL_DATA = "Remove data"
+    UPDATE_PERSONAL_DATA = "Update data"
     
     def __init__(self, venueId, d):
         Event.__init__(self, UpdatePersonalDataEvent.UPDATE_PERSONAL_DATA , venueId, d)
+        
+# -----------------------------
 
 class DisconnectEvent(Event):
     DISCONNECT = "Disconnect"
