@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.33 2003-02-20 20:02:45 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.34 2003-02-21 14:53:08 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -190,6 +190,8 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_ME_PROFILE, self.OpenParticipantProfile)
         EVT_MENU(self, self.ID_PARTICIPANT_PROFILE, self.OpenParticipantProfile)
         EVT_MENU(self, self.ID_NODE_PROFILE, self.OpenParticipantProfile)
+
+        EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.Follow)
         
     def __setToolbar(self):
         """
@@ -221,6 +223,13 @@ class VenueClientFrame(wxFrame):
 	self.SetSizer(self.venueClientSizer)
 	self.venueClientSizer.Fit(self)
 	self.SetAutoLayout(1)
+
+    def Follow(self, event):
+        print 'follow'
+        #treeId = self.contentListPanel.tree.GetSelection()
+        #personToFollow = self.contentListPanel.tree.GetItemData(treeId).GetData()
+        #print personToFollow.venueClientURL
+        #self.Follow(personToFollow.venueClientURL)
 
     def FillInAddress(self, event):
         url = self.menubar.GetLabel(event.GetId())
@@ -587,7 +596,7 @@ class VenueList(wxScrolledWindow):
         self.doorsAndLabelsList = []
         self.exitsDict = {}
         self.__doLayout()
-        self.EnableScrolling(true, false)
+        self.EnableScrolling(true, true)
 
     def __doLayout(self):
         self.box = wxBoxSizer(wxVERTICAL)
@@ -600,13 +609,13 @@ class VenueList(wxScrolledWindow):
         #self.EnableScrolling(true, false)
         #self.SetScrollRate(0, 20)
         self.box.SetVirtualSizeHints(self)
-        #self.SetScrollRate(20, 20)
+        self.SetScrollRate(20, 20)
         
         self.box.Add(self.column, 1, wxEXPAND)
         self.SetSizer(self.box)
         self.box.Fit(self)
-        self.SetAutoLayout(1)  
-
+        self.SetAutoLayout(1)
+        
     def GoToNewVenue(self, event):
         id = event.GetId()
         description = self.exitsDict[id]
@@ -632,17 +641,18 @@ class VenueList(wxScrolledWindow):
         b.Add(label, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
         panel.SetSizer(b)
         b.Fit(panel)
-        panel.SetAutoLayout(1)
+        #panel.SetAutoLayout(1)
         
         self.column.Add(panel, -1, wxEXPAND)
         self.doorsAndLabelsList.append(panel)
         
 	self.SetSize(wxDefaultSize)
 	self.Layout()
-	self.box.SetVirtualSizeHints(self)
+	#self.box.SetVirtualSizeHints(self)
         self.exitsDict[id] = profile
         EVT_BUTTON(self, id, self.GoToNewVenue)
-               
+        #self.EnableScrolling(true, true)
+        
     def RemoveVenueDoor(self):
         print 'remove venue door'
 
@@ -655,12 +665,12 @@ class VenueList(wxScrolledWindow):
         del self.doorsAndLabelsList[0:]
               
     def HideDoors(self):
-        self.EnableScrolling(false, false)
+        #self.EnableScrolling(false, false)
         for item in self.doorsAndLabelsList:
             self.column.Hide(item)
 
     def ShowDoors(self):
-        self.EnableScrolling(true, false)
+        #self.EnableScrolling(true, false)
         for item in self.doorsAndLabelsList:
             self.column.Show(item)
                    
@@ -1249,10 +1259,6 @@ class ProfileDialog(wxDialog):
         self.SetSizer(sizer1)
         sizer1.Fit(self)
         self.SetAutoLayout(1)
-
-class ProfileView(ProfileDialog):
-    def __init__(self, parent, id, title, item):
-        ProfileDialog.__init__(self, parent, id, title)
                 
 class TextValidator(wxPyValidator):
     def __init__(self):
