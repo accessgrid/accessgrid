@@ -155,11 +155,6 @@ os.system("%s install --prefix=%s --no-compile" % (cmd, DestDir))
 
 os.chdir(s)
 
-# Build the other python modules
-cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
-                          BuildDir, DestDir)
-os.system(cmd)
-
 # save the old path
 if os.environ.has_key('PYTHONPATH'):
     oldpath = os.environ['PYTHONPATH']
@@ -176,6 +171,11 @@ if not oldpath:
 else:
     nppath = npath
 os.environ['PYTHONPATH'] = nppath
+
+# Build the other python modules
+cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
+                          BuildDir, DestDir)
+os.system(cmd)
 
 # run the tests
 os.chdir(os.path.join(BuildDir, "tests"))
