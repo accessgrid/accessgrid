@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.49 2003-04-11 17:05:23 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.50 2003-04-17 20:09:07 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -159,79 +159,72 @@ class VenueClient( ServiceBase):
         #
         # Enter the venue and configure the client
         #
-        try:
+                   
+        if self.venueUri != None:
+            self.ExitVenue()
+
+        #
+        # Retrieve list of node capabilities
+        #
+        if haveValidNodeService:
+            self.profile.capabilities = Client.Handle( self.nodeServiceUri ).get_proxy().GetCapabilities()
             
-            if self.venueUri != None:
-                self.ExitVenue()
-
-            #
-            # Retrieve list of node capabilities
-            #
-            if haveValidNodeService:
-                self.profile.capabilities = Client.Handle( self.nodeServiceUri ).get_proxy().GetCapabilities()
-            
-            #
-            # Enter the venue
-            #
-            (venueState, self.privateId, self.streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
-
-            if hasattr(venueState, "applications"):
-                applications = venueState.applications
-            else:
-                applications = {}
-            try:
-                self.venueState = VenueState( venueState.uniqueId,
-                                              venueState.name,
-                                              venueState.description,
-                                              venueState.uri,
-                                              venueState.connections, 
-                                              venueState.users,
-                                              venueState.nodes, 
-                                              venueState.data,
-                                              venueState.eventLocation,
-                                              venueState.textLocation,
-                                              applications)
-            except:
-                log.exception("AccessGrid.VenueClient::Failed to convert venuestate to object")
-                
-            self.venueUri = URL
-            self.venueId = self.venueState.GetUniqueId()
-            self.venueProxy = Client.Handle( URL ).get_proxy()
-
-            #
-            # Create the event client
-            #
-            coherenceCallbacks = {
-               Event.ENTER: self.AddUserEvent,
-               Event.EXIT: self.RemoveUserEvent,
-               Event.MODIFY_USER: self.ModifyUserEvent,
-               Event.ADD_DATA: self.AddDataEvent,
-               Event.UPDATE_DATA: self.UpdateDataEvent,
-               Event.REMOVE_DATA: self.RemoveDataEvent,
-               Event.ADD_SERVICE: self.AddServiceEvent,
-               Event.REMOVE_SERVICE: self.RemoveServiceEvent,
-               Event.ADD_APPLICATION: self.AddApplicationEvent,
-               Event.REMOVE_APPLICATION: self.RemoveApplicationEvent,
-               Event.ADD_CONNECTION: self.AddConnectionEvent,
-               Event.REMOVE_CONNECTION: self.RemoveConnectionEvent,
-               Event.SET_CONNECTIONS: self.SetConnectionsEvent,
+        #
+        # Enter the venue
+        #
+        (venueState, self.privateId, self.streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
+        
+        if hasattr(venueState, "applications"):
+            applications = venueState.applications
+        else:
+            applications = {}
+        
+        self.venueState = VenueState( venueState.uniqueId,
+                                      venueState.name,
+                                      venueState.description,
+                                      venueState.uri,
+                                      venueState.connections, 
+                                      venueState.clients,
+                                      venueState.data,
+                                      venueState.eventLocation,
+                                      venueState.textLocation,
+                                      applications,
+                                      venueState.services)
+        self.venueUri = URL
+        self.venueId = self.venueState.GetUniqueId()
+        self.venueProxy = Client.Handle( URL ).get_proxy()
+        
+        #
+        # Create the event client
+        #
+        coherenceCallbacks = {
+            Event.ENTER: self.AddUserEvent,
+            Event.EXIT: self.RemoveUserEvent,
+            Event.MODIFY_USER: self.ModifyUserEvent,
+            Event.ADD_DATA: self.AddDataEvent,
+            Event.UPDATE_DATA: self.UpdateDataEvent,
+            Event.REMOVE_DATA: self.RemoveDataEvent,
+            Event.ADD_SERVICE: self.AddServiceEvent,
+            Event.REMOVE_SERVICE: self.RemoveServiceEvent,
+            Event.ADD_APPLICATION: self.AddApplicationEvent,
+            Event.REMOVE_APPLICATION: self.RemoveApplicationEvent,
+            Event.ADD_CONNECTION: self.AddConnectionEvent,
+            Event.REMOVE_CONNECTION: self.RemoveConnectionEvent,
+            Event.SET_CONNECTIONS: self.SetConnectionsEvent,
             }
 
-            self.eventClient = EventClient(self.venueState.eventLocation,
-                                           self.venueState.uniqueId)
-            for e in coherenceCallbacks.keys():
-                self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
-
-            self.eventClient.start()
-            self.eventClient.Send(ConnectEvent(self.venueState.uniqueId))
+        h, p = self.venueState.eventLocation
+        self.eventClient = EventClient(self.venueState.eventLocation,
+                                       self.venueState.uniqueId)
+        for e in coherenceCallbacks.keys():
+            self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
             
-            self.heartbeatTask = self.houseKeeper.AddTask(self.Heartbeat, 5)
-            self.heartbeatTask.start()
- 
-        except:
-            log.error("AccessGrid.VenueClient::Exception in EnterVenue")
-            raise EnterVenueException("Enter Failed!")
-
+        self.eventClient.start()
+        self.eventClient.Send(ConnectEvent(self.venueState.uniqueId))
+            
+        self.heartbeatTask = self.houseKeeper.AddTask(self.Heartbeat, 5)
+        self.heartbeatTask.start()
+         
         # 
         # Update the node service with stream descriptions
         #
@@ -263,8 +256,6 @@ class VenueClient( ServiceBase):
         self.heartbeatTask.stop()
         self.eventClient.Send(DisconnectEvent(self.venueState.uniqueId))
         self.eventClient.Stop()
-
-        #self.followLeadClient.Stop()
         self.venueProxy.Exit( self.privateId )
         self.__InitVenueData__()
 
@@ -291,8 +282,6 @@ class VenueClient( ServiceBase):
         Bind the given node service to this venue client
         """
         self.nodeServiceUri = nodeServiceUri
-
-
 
     #
     # Method support for FOLLOW
