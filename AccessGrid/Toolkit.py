@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.9 2003-08-21 23:27:11 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.10 2003-08-22 19:17:45 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -159,6 +159,12 @@ class Application:
 
         log.debug("userConfigDir: %s", self.userConfigDir)
 
+        if not os.path.exists(Platform.GetUserAppPath()):
+            try:
+                os.mkdir(Platform.GetUserAppPath())
+            except:
+                log.exception("Couldn't make user app directory.")
+                
         self.AppDb = AppDb()
 
     def Initialize(self):
