@@ -22,7 +22,7 @@ elif sys.platform == 'linux2':
     ratFiles = [ 'rat',
                  'rat-4.2.22-media',
                  'rat-4.2.22-ui',
-                 'rat-4.2.22-kill' ]
+                 'rat-kill' ]
     copyExe = 'cp'
 else:
     print "** Error: Unsupported platform: " + sys.platform
@@ -31,7 +31,7 @@ else:
 # Check whether we need to build
 needBuild = 0
 for f in ratFiles:
-    if not os.path.exists(os.path.join(DEST,f)):
+    if not os.path.exists(os.path.join(servicesDir,f)):
         needBuild = 1
         break
 
@@ -40,26 +40,8 @@ if needBuild:
     print "source dist = ", SOURCE, DEST
     buildCmd = '%s %s %s %s' % (sys.executable,
                                 os.path.join(AGDIR,'packaging','BuildRat.py'),
-                                SOURCE, DEST)
+                                SOURCE, servicesDir)
     os.system(buildCmd)
-
-
-# Copy the rat files  
-for f in ratFiles:
-    ratFile = os.path.join(DEST,f)
-    if os.path.exists(ratFile):
-        destFile = os.path.join(servicesDir,ratFile)
-        # rename rat-kill on linux
-        if ratFile.endswith('kill'):
-            destFile = os.path.join(servicesDir,'rat-kill')
-            indx = ratFiles.index(f)
-            ratFiles[indx] = 'rat-kill'
-        print 'Copying %s' % (ratFile,)
-        copyCmd = '%s %s %s' % (copyExe,ratFile,
-                                destFile)
-        os.system(copyCmd)
-    else:
-        print '** Error: %s does not exist; not copying' % (ratFile,)
 
 # Write the service manifest
 os.chdir(servicesDir)
