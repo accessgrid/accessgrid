@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.191 2003-05-19 19:38:52 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.192 2003-05-20 19:10:21 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -17,6 +17,7 @@ import cPickle
 import threading
 import socket
 from wxPython.wx import *
+import string
 
 log = logging.getLogger("AG.VenueClientUIClasses")
 
@@ -707,7 +708,8 @@ class VenueClientFrame(wxFrame):
         dlg.Destroy()
 
     def OpenMyProfileDialog(self, event = None):
-        profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile information')
+        profileDialog = ProfileDialog(NULL, -1,
+                                  'Please, fill in your profile information')
         profileDialog.SetProfile(self.app.profile)
                 
         if (profileDialog.ShowModal() == wxID_OK):
@@ -802,13 +804,10 @@ class VenueClientFrame(wxFrame):
 
             self.app.SaveFile(data, tfilepath)
 
-            if sys.platform == 'win32':
-                tfilepath = win32api.GetShortPathName(tfilepath)
-
             commands = GetMimeCommands(filename = tfilepath,
                                        ext = name.split('.')[-1])
             if commands == None:
-                message = ("No client registered for the selected data") #\n (mimetype = %s)" % data.mimeType)
+                message = ("No client registered for the selected data")
                 dlg = MessageDialog(self, message)
                 log.debug(message)
             else:
@@ -830,8 +829,9 @@ class VenueClientFrame(wxFrame):
         
         if(data != None and isinstance(data, DataDescription)):
             text ="Are you sure you want to delete "+ data.name
-            areYouSureDialog = wxMessageDialog(self, text, \
-                                               '', wxOK |  wxCANCEL |wxICON_INFORMATION)
+            areYouSureDialog = wxMessageDialog(self, text, 
+                                               '', wxOK |
+                                               wxCANCEL |wxICON_INFORMATION)
             if(areYouSureDialog.ShowModal() == wxID_OK):
                 self.app.RemoveData(data)
                                     
@@ -847,7 +847,8 @@ class VenueClientFrame(wxFrame):
         if(service != None and isinstance(service, ServiceDescription)):
             text ="Are you sure you want to delete "+ service.name
             areYouSureDialog = wxMessageDialog(self, text, \
-                                               '', wxOK |  wxCANCEL |wxICON_INFORMATION)
+                                               '', wxOK |  wxCANCEL
+                                               |wxICON_INFORMATION)
             if(areYouSureDialog.ShowModal() == wxID_OK):
                 self.app.RemoveService(service)
             
@@ -1559,7 +1560,6 @@ class ContentListPanel(wxPanel):
             elif isinstance(item,ClientProfile):
                 if item.publicId == self.app.profile.publicId:
                     self.parent.OpenMyProfileDialog(None)
-
                 else:
                     self.parent.OpenParticipantProfile(None)
                 
@@ -1584,33 +1584,34 @@ class ContentListPanel(wxPanel):
             text = self.tree.GetItemText(treeId)
                         
             if text == 'Data':
-                self.PopupMenu(self.parent.dataHeadingMenu, wxPoint(self.x, self.y))
-                
+                self.PopupMenu(self.parent.dataHeadingMenu,
+                               wxPoint(self.x, self.y))
             elif text == 'Services':
-                self.PopupMenu(self.parent.serviceHeadingMenu, wxPoint(self.x, self.y))
-                
+                self.PopupMenu(self.parent.serviceHeadingMenu,
+                               wxPoint(self.x, self.y))
             elif text == 'Applications':
                 self.PopupMenu(self.parent.applicationMenu,
                                wxPoint(self.x, self.y))
             elif text == 'Participants' or item == None:
+                # We don't have anything to do with this heading
                 pass
             
             elif isinstance(item, ServiceDescription):
-                self.PopupMenu(self.parent.serviceEntryMenu, wxPoint(self.x,self.y))
+                menu = self.BuildServiceMenu(event, item)
+                self.PopupMenu(menu, wxPoint(self.x,self.y))
 
-            elif isinstance(item,ApplicationDescription):
-                self.PopupMenu(self.parent.applicationEntryMenu, wxPoint(self.x, self.y))
-            
+            elif isinstance(item, ApplicationDescription):
+                self.PopupMenu(self.parent.applicationEntryMenu,
+                               wxPoint(self.x, self.y))
+
             elif isinstance(item, DataDescription):
+                menu = self.BuildDataMenu(event, item)
+                self.PopupMenu(menu, wxPoint(self.x,self.y))
                 parent = self.tree.GetItemParent(treeId)
                 
-                if(self.tree.GetItemText(parent) == 'Data'):
-                    self.PopupMenu(self.parent.dataEntryMenu, wxPoint(self.x, self.y))
-                else:
-                    self.PopupMenu(self.parent.personalDataEntryMenu, wxPoint(self.x, self.y))
-               
             elif isinstance(item,ClientProfile):
-                log.debug("Is this me? public is = %s, my id = %s "%(item.publicId, self.app.profile.publicId))
+                log.debug("Is this me? public is = %s, my id = %s "
+                          % (item.publicId, self.app.profile.publicId))
                 if(item.publicId == self.app.profile.publicId):
                     log.debug("This is me")
                     self.PopupMenu(self.parent.meMenu, wxPoint(self.x, self.y))
@@ -1620,6 +1621,123 @@ class ContentListPanel(wxPanel):
                     self.PopupMenu(self.parent.participantMenu,
                                    wxPoint(self.x, self.y))
 
+    def BuildDataMenu(self, event, item):
+        """
+        Programmatically build a menu based on the mime based verb
+        list passed in.
+        """
+        tfile = os.path.join(GetTempDir(), item.name)
+
+        self.app.SaveFileNoProgress(item, tfile)
+
+        commands = GetMimeCommands(filename = tfile,
+                                   ext = item.name.split('.')[-1])
+
+        menu = wxMenu()
+
+        # We always have open
+        if not commands.has_key('open'):
+            id = wxNewId()
+            menu.Append(id, "Open", "Open this item.")
+            EVT_MENU(self, id, lambda event: self.MakeAssociation(event))
+        else:
+            id = wxNewId()
+            menu.Append(id, 'Open')
+            EVT_MENU(self, id, lambda event,
+                     cmd=commands['open']: self.StartCmd(cmd))
+            
+        # We always have Remove
+        id = wxNewId()
+        menu.Append(id, "Remove", "Remove this item.")
+        EVT_MENU(self, id, lambda event: self.parent.RemoveData(event))
+            
+        # Do the rest
+        if commands != None:
+            for key in commands.keys():
+                if key != 'open':
+                    id = wxNewId()
+                    menu.Append(id, string.capwords(key))
+                    EVT_MENU(self, id, lambda event,
+                             cmd=commands[key]: self.StartCmd(cmd))
+
+        menu.AppendSeparator()
+
+        # We always have properties
+        id = wxNewId()
+        menu.Append(id, "Properties", "View the details of this item.")
+        EVT_MENU(self, id, lambda event, item=item:
+                 self.LookAtProperties(item))
+
+        return menu
+
+    def BuildServiceMenu(self, event, item):
+        """
+        Programmatically build a menu based on the mime based verb
+        list passed in.
+        """
+        commands = GetMimeCommands(filename = item.uri, type = item.mimeType)
+            
+        menu = wxMenu()
+
+        # We always have open
+        id = wxNewId()
+        menu.Append(id, "Open", "Open this item.")
+        if commands.has_key('open'):
+            EVT_MENU(self, id, lambda event, cmd=commands['open']:
+                     self.StartCmd(cmd))
+        else:
+            EVT_MENU(self, id, lambda event, cmd=commands['open']:
+                     self.MakeAssociation(event))
+
+        # We always have Remove
+        id = wxNewId()
+        menu.Append(id, "Remove", "Remove this item.")
+        EVT_MENU(self, id, lambda event: self.parent.RemoveService(event))
+            
+        # Do the rest
+        if commands != None:
+            for key in commands.keys():
+                if key != 'open':
+                    id = wxNewId()
+                    menu.Append(id, string.capwords(key))
+                    EVT_MENU(self, id, lambda event, cmd=commands[key]:
+                             self.StartCmd(cmd))
+
+        menu.AppendSeparator()
+
+        # Add properties
+        id = wxNewId()
+        menu.Append(id, "Properties", "View the details of this item.")
+        EVT_MENU(self, id, lambda event, item=item:
+                 self.LookAtProperties(item))
+
+        return menu
+
+    def LookAtProperties(self, desc):
+        """
+        """
+        if isinstance(desc, DataDescription):
+            dataView = DataDialog(self, -1, "Data Properties")
+            dataView.SetDescription(desc)
+            dataView.ShowModal()
+            dataView.Destroy()
+        elif isinstance(desc, ServiceDescription):
+            serviceView = ServiceDialog(self, -1, "Service Properties")
+            serviceView.SetDescription(desc)
+            serviceView.ShowModal()
+            serviceView.Destroy()
+                
+    def StartCmd(self, command):
+        """
+        """
+        print "Command: %s" % command
+        wxExecute(command)
+        
+    def MakeAssociation(self, event):
+        """
+        """
+        pass
+    
     def CleanUp(self):
         for index in self.participantDict.values():
             self.tree.Delete(index)
@@ -2150,18 +2268,22 @@ class ProfileDialog(wxDialog):
         log.debug("VenueClientUIClasses.py: Create profile dialog")
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
-        self.nameCtrl = wxTextCtrl(self, -1, "", size = (400,20), validator = TextValidator())
+        self.nameCtrl = wxTextCtrl(self, -1, "", size = (400,20),
+                                   validator = TextValidator())
         self.emailText = wxStaticText(self, -1, "Email:", style=wxALIGN_LEFT)
         self.emailCtrl = wxTextCtrl(self, -1, "")
-        self.phoneNumberText = wxStaticText(self, -1, "Phone Number:", style=wxALIGN_LEFT)
+        self.phoneNumberText = wxStaticText(self, -1, "Phone Number:",
+                                            style=wxALIGN_LEFT)
         self.phoneNumberCtrl = wxTextCtrl(self, -1, "")
         self.locationText = wxStaticText(self, -1, "Location:")
         self.locationCtrl = wxTextCtrl(self, -1, "")
-        self.supportText = wxStaticText(self, -1, "Support Information:", style=wxALIGN_LEFT)
+        self.supportText = wxStaticText(self, -1, "Support Information:",
+                                        style=wxALIGN_LEFT)
         self.supportCtrl = wxTextCtrl(self, -1, "")
         self.homeVenue= wxStaticText(self, -1, "Home Venue:")
         self.homeVenueCtrl = wxTextCtrl(self, -1, "")
-        self.profileTypeText = wxStaticText(self, -1, "Profile Type:", style=wxALIGN_LEFT)
+        self.profileTypeText = wxStaticText(self, -1, "Profile Type:",
+                                            style=wxALIGN_LEFT)
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.profile = None
@@ -2423,7 +2545,7 @@ class DataDialog(wxDialog):
         This method is called if you only want to view the dialog.
         '''
         self.nameCtrl.SetValue(dataDescription.name)
-        self.ownerCtrl.SetValue(str(dataDescription.owner.dn))
+        self.ownerCtrl.SetValue(str(dataDescription.owner))
         self.sizeCtrl.SetValue(str(dataDescription.size))
         self.SetTitle("Data Properties")
         self.__setEditable(false)
@@ -2520,7 +2642,8 @@ class SelectAppDialog(wxDialog):
         gridSizer.Add( fieldButtonSizer, 1, wxEXPAND )
 
         # Create default checkbox
-        self.defaultCheckbox = wxCheckBox(self,-1,"Always use this application")
+        self.defaultCheckbox = wxCheckBox(self,-1,
+                                          "Always use this application")
         gridSizer.Add( self.defaultCheckbox, 1, wxEXPAND )
 
     
