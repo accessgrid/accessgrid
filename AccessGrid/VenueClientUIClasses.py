@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.22 2003-02-10 23:01:38 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.23 2003-02-11 22:21:29 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -377,7 +377,7 @@ class VenueList(wxScrolledWindow):
         #id = wxNewId()
         #exit = wxListItem()
         #self.list.InsertImageStringItem(0,"LABEL",self.doorOpenId)
-                
+                        
         bitmap = icons.getDoorClosedBitmap()
         bitmapSelect = icons.getDoorOpenBitmap()
 
@@ -388,7 +388,6 @@ class VenueList(wxScrolledWindow):
 	tc.SetBitmapFocus(bitmapSelect)
 	tc.SetToolTipString(profile.description)
 	label = wxStaticText(panel, -1, profile.name)
-       
         b = wxBoxSizer(wxVERTICAL)
         b.Add(tc, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
         b.Add(label, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
@@ -404,7 +403,7 @@ class VenueList(wxScrolledWindow):
 	self.box.SetVirtualSizeHints(self)
         self.exitsDict[id] = profile
         EVT_BUTTON(self, id, self.GoToNewVenue)
-        
+               
     def RemoveVenueDoor(self):
         print 'remove venue door'
 
@@ -415,7 +414,7 @@ class VenueList(wxScrolledWindow):
 
         self.exitsDict.clear()
         del self.doorsAndLabelsList[0:]
-
+              
     def HideDoors(self):
         self.EnableScrolling(false, false)
         for item in self.doorsAndLabelsList:
@@ -636,10 +635,10 @@ class ContentListPanel(wxPanel):
 
         for index in self.nodeDict.values():
             self.tree.Delete(index)
-        
+
         for index in self.serviceDict.values():
             self.tree.Delete(index)
-        
+
         for index in self.dataDict.values():
             self.tree.Delete(index)                                   
         
@@ -647,7 +646,7 @@ class ContentListPanel(wxPanel):
         self.dataDict.clear()
         self.serviceDict.clear()
         self.nodeDict.clear()
-                            
+                                    
     def __doLayout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
         sizer1.Add(self.text, 0, wxALL, 20)
