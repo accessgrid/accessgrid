@@ -1,4 +1,4 @@
-#-----------------------------------------------------------------------------
+ #-----------------------------------------------------------------------------
 # Name:        CoherenceService.py
 # Purpose:     This service provides coherence among the Venues Clients and
 #               the virtual venue. Each venue client connects to this service.
@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceService.py,v 1.5 2003-01-13 05:16:28 judson Exp $
+# RCS-ID:      $Id: CoherenceService.py,v 1.6 2003-01-15 17:33:44 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -60,8 +60,7 @@ class AcceptHandler(Thread):
     def run(self):
         self.running = 1
         while(self.running == 1):
-            sys.stderr.write("AH Running\n")
-            rr,rw,re = select.select([self.socket], [], [], 30)
+            rr,rw,re = select.select([self.socket], [], [], 1)
             if(len(rr) != 0 and self.running):
                 print rr
                 connection, address = rr[0].accept()
