@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.29 2004-03-10 23:17:09 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.30 2004-03-11 18:43:24 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ import sys
 import signal, time, os
 import getopt
 
-from AccessGird import Log
+from AccessGrid import Log
 from AccessGrid import Platform
 from AccessGrid.AGServiceManager import AGServiceManager, AGServiceManagerI
 from AccessGrid import PersonalNode
