@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.80 2003-08-04 22:16:07 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.81 2003-08-04 22:30:26 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -296,7 +296,6 @@ class VenueServer(ServiceBase.ServiceBase):
                 except ConfigParser.NoOptionError:
                     log.warn("No roles for venue %s", sec)
                     role_names = []
-                    v.RegisterDefaultSubjects()
 
                 # Read the subjects for the role names we just read (if any).
                 if len(role_names):
