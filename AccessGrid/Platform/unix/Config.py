@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.51 2004-09-07 18:55:51 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.52 2004-09-09 14:30:19 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.51 2004-09-07 18:55:51 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.52 2004-09-09 14:30:19 turam Exp $"
 
 import os
 import mimetypes
@@ -979,28 +979,22 @@ Comment=%s
             result = f.read()
             f.close()
             pathList = result.split(":")
-            kdeSystemApps = ""
             kdeUserApps = ""
             # if kde-config failed, the paths should stay == ""
             for path in pathList:
                 if path.find(homedir) != -1:
                     kdeUserApps = path # expecting /home/user/.kde/share/applnk[-redhat]
-                elif path.find("kde") != -1:  # expecting /var/lib/menu/kde/Applications/
-                    kdeSystemApps = path  # Unused, sym links here from another dir.
 
             # Find the user and system mime paths.
             f = os.popen("kde-config --path mime")
             result = f.read()
             f.close()
             pathList = result.split(":")
-            kdeSystemMime = ""
             kdeUserMime = ""
             # if kde-config failed, the paths should stay == ""
             for path in pathList:
                 if path.find(homedir) != -1:
                     kdeUserMime = path # expecting /home/user/.kde/share/applnk[-redhat]
-                elif path.find("mimelnk") != -1:  # expecting /usr/share/mimelnk/
-                    kdeSystemMime = path
 
             userMimeFile = os.path.join(kdeUserMime, extension[1:] + ".desktop")
             userAppFile = os.path.join(kdeUserApps, cmd[0] +".desktop")
@@ -1022,7 +1016,6 @@ Comment=%s
         # --- GNOME USER REGISTRATION ---
 
         # if gnome files exist, register with them.
-        gnomeDir = os.path.join(homedir, ".gnome")
         gnomeAppDir = os.path.join(homedir, ".gnome", "application-info")
         gnomeMimeDir = os.path.join(homedir, ".gnome", "mime-info")
         gnomeAppFile = os.path.join(gnomeAppDir, cmd[0] + ".applications")
