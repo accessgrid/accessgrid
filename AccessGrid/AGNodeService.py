@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.72 2004-05-27 20:59:11 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.73 2004-06-01 21:10:31 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.72 2004-05-27 20:59:11 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.73 2004-06-01 21:10:31 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -818,8 +818,10 @@ class AGNodeServiceI(SOAPInterface):
             resource = None
             
         serviceConfig = []
-        for parm in serviceConfigStruct:
-            serviceConfig.append(CreateParameter(parm))
+
+        if serviceConfigStruct:
+            for parm in serviceConfigStruct:
+                serviceConfig.append(CreateParameter(parm))
             
         return self.impl.AddService(serviceDescription, serviceManagerUri, 
                     resource, serviceConfig )
