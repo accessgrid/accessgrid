@@ -1,9 +1,9 @@
 # KDE Config File
 [Desktop Entry]
 Encoding=UTF-8
-Name=Venue Client
+Name=Service Manager
 Type=Application
-Exec=VenueClient.py 
+Exec=AGServiceManager.py 
 Icon=/usr/share/AccessGrid/ag.ico
-GenericName=Run the venue client software
+GenericName=Run the service manager software
 Terminal=0

@@ -3,10 +3,7 @@
 Encoding=UTF-8
 Name=Venue Manager
 Type=Application
-Exec=VenueManagement.py
+Exec=VenueManagement.py 
 Icon=/usr/share/AccessGrid/ag.ico
-#DocPath=kalarm/index.html
-GenericName=Manage your Access Grid Venue
+GenericName=Manage venue servers
 Terminal=0
-#X-DCOP-ServiceType=Unique
-#X-KDE-StartupNotify=true

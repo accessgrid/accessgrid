@@ -1,0 +1,9 @@
+# KDE Config File
+[Desktop Entry]
+Encoding=UTF-8
+Name=Venue Client Manual
+Type=Link
+URL=/usr/share/doc/AccessGrid/Documentation/VenueClientManual/VenueClientManual.htm
+Icon=/usr/share/AccessGrid/ag.ico
+GenericName=View Venue Client Manual
+Terminal=0

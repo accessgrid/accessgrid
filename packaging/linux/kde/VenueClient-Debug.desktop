@@ -1,0 +1,9 @@
+# KDE Config File
+[Desktop Entry]
+Encoding=UTF-8
+Name=Venue Client (Debug)
+Type=Application
+Exec=VenueClient.py -d
+Icon=/usr/share/AccessGrid/ag.ico
+GenericName=Run the venue client software in debug mode
+Terminal=1

@@ -1,9 +1,9 @@
 # KDE Config File
 [Desktop Entry]
 Encoding=UTF-8
-Name=Node Manager
-Type=Application
-Exec=NodeManagement.py 
+Name=View README
+Type=Link
+URL=/usr/share/doc/AccessGrid/README
 Icon=/usr/share/AccessGrid/ag.ico
-GenericName=Manage nodes
+GenericName=Read the ReadMe
 Terminal=0

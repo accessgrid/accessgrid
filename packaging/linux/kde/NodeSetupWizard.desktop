@@ -1,9 +1,9 @@
 # KDE Config File
 [Desktop Entry]
 Encoding=UTF-8
-Name=Venue Client
+Name=Node Setup Wizard
 Type=Application
 Exec=VenueClient.py 
 Icon=/usr/share/AccessGrid/ag.ico
-GenericName=Run the venue client software
+GenericName=Run the AG Node Configuration Wizard
 Terminal=0

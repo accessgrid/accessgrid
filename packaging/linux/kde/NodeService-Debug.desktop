@@ -1,0 +1,9 @@
+# KDE Config File
+[Desktop Entry]
+Encoding=UTF-8
+Name=Node Service
+Type=Application
+Exec=AGNodeService.py -d
+Icon=/usr/share/AccessGrid/ag.ico
+GenericName=Run the node service software in debug mode
+Terminal=1

@@ -1,9 +1,9 @@
 # KDE Config File
 [Desktop Entry]
 Encoding=UTF-8
-Name=Venue Client
+Name=Certificate Request Tool
 Type=Application
-Exec=VenueClient.py 
+Exec=CertificateRequestTool.py 
 Icon=/usr/share/AccessGrid/ag.ico
-GenericName=Run the venue client software
+GenericName=Request a certificate
 Terminal=0

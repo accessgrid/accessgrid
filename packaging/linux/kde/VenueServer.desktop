@@ -1,9 +1,9 @@
 # KDE Config File
 [Desktop Entry]
 Encoding=UTF-8
-Name=Venue Client
+Name=Venue Server
 Type=Application
-Exec=VenueClient.py 
+Exec=VenueServer.py 
 Icon=/usr/share/AccessGrid/ag.ico
-GenericName=Run the venue client software
+GenericName=Run the venue server software
 Terminal=0
