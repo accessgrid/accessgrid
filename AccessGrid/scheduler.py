@@ -5,13 +5,13 @@
 # Author:      From the Python Cookbook
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: scheduler.py,v 1.6 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: scheduler.py,v 1.7 2004-03-08 22:21:23 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: scheduler.py,v 1.6 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: scheduler.py,v 1.7 2004-03-08 22:21:23 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -53,7 +53,8 @@ class Task( Thread ):
     def stop( self ):
         self._running = 0
         self._quitEvent.set()
-        self.join()
+        if self is not threading.currentThread():
+            self.join()
         
 class Scheduler:
     def __init__( self ):
