@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.220 2003-09-22 21:36:48 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.221 2003-09-24 22:30:25 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1125,20 +1125,40 @@ class VenueClientUI(VenueClientEventSubscriber):
 
         """
         log.debug("Upload personal files")
-        try:
-            my_identity = self.app.GetDefaultIdentityDN()
-            self.venueClient.dataStore.UploadLocalFiles(fileList, my_identity, self.venueClient.profile.publicId)
 
-        except DataStore.DuplicateFile, e:
-            title = "Add Personal Data Error"
-            ErrorDialog(self.frame, e, title, style = wxOK|wxICON_ERROR)
+        for file in fileList:
 
-        except Exception, e:
-            log.exception("bin.VenueClient:UploadPersonalFiles failed")
-            title = "Add Personal Data Error"
-            text = "The file could not be added, error occured."
-            ErrorDialog(self.frame, text, title,  wxOK | wxICON_ERROR)
-                               
+            # Check if data is already added
+            pathParts = file.split('/')
+            index = len(pathParts)-1
+            name = pathParts[index]
+
+            dataDescriptions = self.venueClient.dataStore.GetDataDescriptions()
+            for data in dataDescriptions:
+                if data.name == name:
+                    title = "Duplicated File"
+                    info = "A file named %s is already added, do you want to overwrite?" % name
+                    dlg = wxMessageDialog(self.frame, info, title, style = wxICON_INFORMATION | wxOK | wxCANCEL)
+                    # Overwrite?
+                    if dlg.ShowModal() == wxID_OK:
+                        self.venueClient.dataStore.RemoveFiles([data])
+                    else:
+                        return
+                     
+            try:
+                my_identity = self.app.GetDefaultIdentityDN()
+                self.venueClient.dataStore.UploadLocalFiles([file], my_identity, self.venueClient.profile.publicId)
+            except DataStore.DuplicateFile, e:
+                title = "Duplicated File"
+                info = "This file %s is already added. Rename your file and add it again." %e
+                MessageDialog(self.frame, info, title)
+                                                     
+            except Exception, e:
+                log.exception("bin.VenueClient:UploadPersonalFiles failed")
+                title = "Add Personal Data Error"
+                text = "The file could not be added, error occured."
+                ErrorDialog(self.frame, text, title,  wxOK | wxICON_ERROR)
+                
     def UploadVenueFiles(self, file_list):
         """
         Upload the given files to the venue.
