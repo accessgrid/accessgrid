@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.211 2003-09-12 16:36:25 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.212 2003-09-15 15:05:07 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -139,8 +139,8 @@ class VenueClientUI(VenueClientEventSubscriber):
         
         # Tell the UI about installed applications
         self.startupDialog.UpdateOneStep()
-        appdb = self.app.GetAppDatabase()
-        self.frame.SetInstalledApps( appdb.ListAppsAsAppDescriptions() )
+#        appdb = self.app.GetAppDatabase()
+#        self.frame.SetInstalledApps( appdb.ListAppsAsAppDescriptions() )
 #        self.frame.SetInstalledApps( self.venueClient.GetInstalledApps() )
         self.frame.EnableAppMenu( false )
        
