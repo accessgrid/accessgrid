@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.15 2004-08-04 21:27:27 turam Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.16 2004-09-03 18:10:54 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.15 2004-08-04 21:27:27 turam Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.16 2004-09-03 18:10:54 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -441,7 +441,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                                   style = wxOK)
             dlg.ShowModal()
             dlg.Destroy()
-            return
+            return 0
 
 
         #
@@ -523,7 +523,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
 
                 if rc != wxID_YES:
                     return 0
-                
+
         return 1
 
     def RequestCertificate(self, reqInfo, password,
