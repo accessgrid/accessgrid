@@ -37,12 +37,6 @@ from AccessGrid.Venue import Venue
 from AccessGrid import Toolkit
 from AccessGrid.Security import X509Subject
 
-class VenueServerTestSuite(unittest.TestSuite):
-    """A TestSuite that creates a server for use by VenueServerTestCase."""
-
-    def __init__(self, tests=()):
-        unittest.TestSuite.__init__(self, tests) # Important to call base class constructor
-
 class VenueServerTestCase(unittest.TestCase):
     """A test case for VenueServers."""
 
@@ -98,12 +92,12 @@ class VenueServerTestCase(unittest.TestCase):
 
     def testAddRemoveAdministrator(self):
         venueServer.authManager.FindRole("Administrators").AddSubject(X509Subject.CreateSubjectFromString("testAdmin"))
-        assert "testAdmin" in venueServer.authManager.FindRole("Administrators").GetSubjectListAsStrings()
-        venueServer.authManager.FindRole("Administrators").RemoveSubject("testAdmin")
-        assert "testAdmin" not in venueServer.authManager.FindRole("Administrators").GetSubjectListAsStrings()
+
+        assert venueServer.authManager.FindRole("Administrators").HasSubject(X509Subject.CreateSubjectFromString("testAdmin"))
+        venueServer.authManager.FindRole("Administrators").RemoveSubject(X509Subject.CreateSubjectFromString("testAdmin"))
+        assert not venueServer.authManager.FindRole("Administrators").HasSubject(X509Subject.CreateSubjectFromString("testAdmin"))
 
     def testAAABegin(self):
-        print "__INIT__"
         global venueServer  # so TestCases can access it
         global venue1       # so TestCases can access it
         logFile = "VenueServer.log"
@@ -161,7 +155,7 @@ class VenueServerTestCase(unittest.TestCase):
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
-    suite1 = unittest.makeSuite(VenueServerTestCase, suiteClass=VenueServerTestSuite)
+    suite1 = unittest.makeSuite(VenueServerTestCase)
     return unittest.TestSuite( [suite1] )
 
 if __name__ == '__main__':
