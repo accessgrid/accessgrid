@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.154 2004-04-01 19:29:17 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.155 2004-04-01 23:37:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.154 2004-04-01 19:29:17 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.155 2004-04-01 23:37:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -44,8 +44,11 @@ from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache, InvalidP
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
 from AccessGrid.Descriptions import DataDescription, ConnectionDescription
 from AccessGrid.Descriptions import CreateDataDescription, CreateVenueState
+from AccessGrid.Descriptions import CreateConnectionDescription
+from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.Descriptions import CreateServiceDescription
 from AccessGrid.Descriptions import CreateApplicationDescription
+from AccessGrid.Descriptions import CreateStreamDescription
 from AccessGrid.Venue import VenueIW, ServiceAlreadyPresent
 from AccessGrid.AGNodeService import AGNodeServiceIW
 from AccessGrid.Platform.Config import SystemConfig
@@ -632,11 +635,10 @@ class VenueClient:
 
             host, port = venueState.eventLocation
 
-            #
             # Retreive stream descriptions
             #
             self.streamDescList = self.__venueProxy.GetStreams()
-                    
+
             #
             # Create the event client
             #
@@ -1302,8 +1304,8 @@ class VenueClient:
     def GetEventChannelId(self):
         return self.venueState.GetUniqueId()
 
-    def GetVenueDataDescriptions(self):
-        return self.venueState.data.values()
+    def GetVenueData(self):
+        return self.venueState.GetData()
 
     def GetVenue( self ):
         """
@@ -1312,7 +1314,7 @@ class VenueClient:
         return self.venueUri
         
     def GetVenueName(self):
-        return self.venueState.name
+        return self.venueState.GetName()
         
     def GetDataStoreUploadUrl(self):
         return self.dataStoreUploadUrl
@@ -1337,24 +1339,21 @@ class VenueClient:
         else:
             return self.dataStore.GetUploadDescriptor(), self.dataStore.GetLocation()
         
-    def GetDataDescriptions(self):
-        '''
-        Retreive data in the DataStore as a list of DataDescriptions.
-        
-        **Returns**
-            *dataDescriptionList* A list of DataDescriptions representing data currently in the DataStore
-        '''
-        dataDescriptionList = self.dataStore.GetDataDescriptions()
-        
-        return dataDescriptionList
-
-    def GetPersonalData(self, clientProfile):
+    def GetPersonalData(self, clientProfile=None):
         '''
         Get personal data from client
         
         **Arguments**
             *clientProfile* of the person we want to get data from
         '''
+        
+        # Handle request for my own data
+        # (bleh, multipurpose code)
+        if not clientProfile or clientProfile.publicId == self.profile.publicId:
+            log.debug('GetPersonalData: I am trying to get my own data')
+            return self.dataStore.GetDataDescriptions()
+        
+        
         url = clientProfile.venueClientURL
         publicId = clientProfile.publicId
 
@@ -1368,35 +1367,46 @@ class VenueClient:
             log.debug("GetPersonalData: The client has NOT been queried for personal data yet %s", clientProfile.name)
             self.requests.append(publicId)
                     
-            #
-            # If this is my data, ignore remote SOAP call
-            #
-                       
-            if url == self.profile.venueClientURL:
-                log.debug('GetPersonalData: I am trying to get my own data')
-                return self.dataStore.GetDataDescriptions()
-            else:
-                log.debug("GetPersonalData: This is somebody else's data")
-                try:
-                    v = VenueClientIW(url)
-                    dataDescriptionList = v.GetDataDescriptions()
-                except:
-                    log.exception("GetPersonalData: GetDataDescriptions call failed")
-                    raise GetDataDescriptionsError()
-                
-                for data in dataDescriptionList:
-                    dataDesc = CreateDataDescription(data)
-                    dataList.append( dataDesc )
+            log.debug("GetPersonalData: This is somebody else's data")
+            try:
+                v = VenueClientIW(url)
+                dataDescriptionList = v.GetDataDescriptions()
+            except:
+                log.exception("GetPersonalData: GetDataDescriptions call failed")
+                raise GetDataDescriptionsError()
+            
+            for data in dataDescriptionList:
+                dataDesc = CreateDataDescription(data)
+                dataList.append( dataDesc )
         
         else:
             log.debug("GetPersonalData: The client has been queried for personal %s" %clientProfile.name)
             
         return dataList
 
-    def GetSubjectRoles(self):
-        return self.__venueProxy.DetermineSubjectRoles()
+    def GetUsers(self):
+        return self.venueState.GetUsers()
         
-                         
+    def GetServices(self):
+        return self.venueState.GetServices()
+        
+    def GetApplications(self):
+        return self.venueState.GetApplications()
+                
+    def GetConnections(self):
+        return self.venueState.GetConnections()
+        
+    def GetVenueURL(self):
+        return self.venueState.GetUri()
+        
+    def GetNodeServiceURL(self):
+        return self.nodeServiceUri
+        
+    def GetStreams(self):
+        return self.streamDescList
+        
+    
+
     #
     # NodeService Info
     #
@@ -1559,6 +1569,9 @@ class VenueClientI(SOAPInterface):
     
     def EnterVenue(self, url):
         return self.impl.EnterVenue(url)
+        
+    def ExitVenue():
+        self.impl.ExitVenue()
 
     def RequestLead(self, followerProfile):
         p = CreateClientProfile(followProfile)
@@ -1584,9 +1597,60 @@ class VenueClientI(SOAPInterface):
         r = self.impl.GetDataStoreInformation()
         return r
 
-    def GetDataDescriptions(self):
-        dl = self.impl.GetDataDescriptions()
+    def GetPersonalData(self):
+        dl = self.impl.GetPersonalData()
         return dl
+
+    def GetVenueData(self):
+        dl = self.impl.GetVenueData()
+        return dl
+
+    def GetUsers(self):
+        profileStructList = self.impl.GetUsers()
+        
+        profileList = list()
+        for profileStruct in profileStructList:
+            profileList.append(CreateClientProfile(profileStruct))
+        return profileList
+        
+    def GetServices(self):
+        serviceStructList = self.impl.GetServices()
+        
+        serviceList = list()
+        for serviceStruct in serviceStructList:
+            serviceList.append(CreateServiceDescription(serviceStruct))
+        return serviceList
+        
+    def GetApplications(self):
+        appStructList = self.impl.GetApplications()
+        
+        appList = list()
+        for appStruct in appStructList:
+            appList.append(CreateApplicationDescription(appStruct))
+        return appList
+        
+    def GetConnections(self):
+        connStructList = self.impl.GetConnections()
+        
+        connList = list()
+        for connStruct in connStructList:
+            connList.append(CreateConnectionDescription(connStruct))
+        return connList
+        
+    def GetVenueURL(self):
+        return self.impl.GetVenueURL()
+        
+    def GetClientProfile(self):
+        profileStruct = self.impl.GetProfile()
+        profile = CreateClientProfile(profileStruct)
+        return profile
+        
+    def GetNodeServiceURL(self):
+        return self.impl.GetNodeServiceURL()
+        
+    def GetStreams(self):
+        return self.impl.GetStreams()
+    
 
 class VenueClientIW(SOAPIWrapper):
     def __init__(self, url=None):
@@ -1614,7 +1678,70 @@ class VenueClientIW(SOAPIWrapper):
         r = self.proxy.GetDataStoreInformation()
         return r
 
-    def GetDataDescriptions(self):
-        dl = self.proxy.GetDataDescriptions()
-        return dl
+    def GetVenueData(self):
+        dataStructList = self.proxy.GetVenueData()
+        
+        dataList = list()
+        for dataStruct in dataStructList:
+            dataList.append(CreateDataDescription(dataStruct))
+        return dataList
+        
+    def GetPersonalData(self):
+        dataStructList = self.proxy.GetPersonalData()
+        
+        dataList = list()
+        for dataStruct in dataStructList:
+            dataList.append(CreateDataDescription(dataStruct))
+        return dataList
+        
+    def GetUsers(self):
+        profileStructList = self.proxy.GetUsers()
+        
+        profileList = list()
+        for profileStruct in profileStructList:
+            profileList.append(CreateClientProfile(profileStruct))
+        return profileList
+        
+    def GetServices(self):
+        serviceStructList = self.proxy.GetServices()
+        
+        serviceList = list()
+        for serviceStruct in serviceStructList:
+            serviceList.append(CreateServiceDescription(serviceStruct))
+        return serviceList
+        
+    def GetApplications(self):
+        appStructList = self.proxy.GetApplications()
+        
+        appList = list()
+        for appStruct in appStructList:
+            appList.append(CreateApplicationDescription(appStruct))
+        return appList
+        
+    def GetConnections(self):
+        connStructList = self.proxy.GetConnections()
+        
+        connList = list()
+        for connStruct in connStructList:
+            connList.append(CreateConnectionDescription(connStruct))
+        return connList
+        
+    def GetVenueURL(self):
+        return self.proxy.GetVenueURL()
+        
+    def GetClientProfile(self):
+        profileStruct = self.proxy.GetClientProfile()
+        profile = CreateClientProfile(profileStruct)
+        return profile
+        
+    def GetNodeServiceURL(self):
+        return self.proxy.GetNodeServiceURL()
+        
+    def GetStreams(self):
+        streamStructList = self.proxy.GetStreams()
+        
+        streamList = list()
+        for streamStruct in streamStructList:
+            streamList.append(CreateStreamDescription(streamStruct))
+        return streamList
 
