@@ -89,7 +89,6 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, 302, self.OpenAboutDialog)
         EVT_MENU(self, 320, self.OnExit)
         EVT_MENU(self, 342, self.OpenConnectToVenueDialog)
-        EVT_TOOL_RCLICKED(self, 20, self.OpenDockMenu)
         EVT_MENU(self, 500, self.OpenNodeMgmtApp)
         
     def __setToolbar(self):
@@ -97,7 +96,6 @@ class VenueClientFrame(wxFrame):
                                    "ImportantPaper.doc", "ImportantPaper.doc",)
 	self.tool2Id = self.toolbar.AddSimpleTool(21, icons.getPowerPointBitmap(), \
                                    "Presentation.ppt", "Presentation.ppt",)
-        print '----------tool'
         print self.tool1Id
 	
     def __setProperties(self):
@@ -124,9 +122,7 @@ class VenueClientFrame(wxFrame):
 	self.venueClientSizer.Fit(self)
 	self.SetAutoLayout(1)  
 
-    def OpenDockMenu(self, event):
-        print '-------OPEN DOCK MENU'
-
+    
     def OnExit(self, event):
         self.Close()
 	      
@@ -362,7 +358,7 @@ class VenueList(wxScrolledWindow):
        
         b = wxBoxSizer(wxVERTICAL)
         b.Add(tc, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
-        b.Add(label, 0, wxALIGN_CENTER|wxLEFT|wxRIGHT, 5)
+        b.Add(label, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5)
         panel.SetSizer(b)
         b.Fit(panel)
         panel.SetAutoLayout(1)
