@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.131 2003-04-24 22:09:34 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.132 2003-04-25 03:55:57 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,7 +29,7 @@ import AccessGrid.ClientProfile
 from AccessGrid import DataStore
 
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
-from AccessGrid.Utilities import HaveValidProxy, InitMimeTypes, GetMimeCommands
+from AccessGrid.Utilities import HaveValidProxy, InitMimeTypes, GetMimeCommands, StartDetachedProcess
 from AccessGrid.UIUtilities import MyLog, MessageDialog
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 from AccessGrid.GUID import GUID
@@ -1108,7 +1108,7 @@ class VenueClientUI(wxApp, VenueClient):
                 if commands['open'][0:6] == "WX_DDE":
                     pid = wxExecute(commands['open'])
                 else:
-                    pid = wxShell(commands['open'])
+                    StartDetachedProcess(commands['open'])
 
     def RemoveApp(self,app):
         """
