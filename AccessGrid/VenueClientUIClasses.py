@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.162 2003-04-28 21:35:49 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.163 2003-04-28 21:51:33 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -781,7 +781,7 @@ class VenueClientFrame(wxFrame):
             commands = GetMimeCommands(filename = tfilepath,
                                        ext = name.split('.')[-1])
             if commands == None:
-                message = "No registered for the selected data\n(mimetype = %s)", % data.mimeType)
+                message = ("No registered for the selected data\n(mimetype = %s)" % data.mimeType)
                 dlg = MessageDialog(self.frame, message)
                 wxLogDebug(message)
             else:
