@@ -2,23 +2,25 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.28 2004-03-22 21:45:10 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.29 2004-03-22 22:56:16 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.28 2004-03-22 21:45:10 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.29 2004-03-22 22:56:16 olson Exp $"
 
 # Standard imports
 import os
 import sys
 import getopt
+import md5
 from optparse import OptionParser, Option
 
 # AGTk imports
 from AccessGrid import Log
 from AccessGrid.Security import CertificateManager
+from AccessGrid.Security import CertificateRepository
 from AccessGrid.Platform.Config import AGTkConfig, GlobusConfig
 from AccessGrid.Platform.Config import SystemConfig, UserConfig
 from AccessGrid.ServiceProfile import ServiceProfile
@@ -318,70 +320,152 @@ class Service(AppBase):
 
     # The real constructor
     def __init__(self):
-       """
-       The application constructor that enforces the singleton pattern.
-       """
-       AppBase.__init__(self)
+        """
+        The application constructor that enforces the singleton pattern.
+        """
+        AppBase.__init__(self)
 
-       self.profile = None
-       
-       if Service.theServiceInstance is not None:
+        self.profile = None
+
+        if Service.theServiceInstance is not None:
           raise Exception, "Only one instance of Service is allowed"
-       
-       # Create the singleton instance
-       Service.theServiceInstance = self
 
-       # Add cert, key, and profile options
-       profileOption = Option("--profile", dest="profile", metavar="PROFILE",
+        # Create the singleton instance
+        Service.theServiceInstance = self
+
+        # Add cert, key, and profile options
+        profileOption = Option("--profile", dest="profile", metavar="PROFILE",
                            help="Specify a service profile.")
-       self.AddCmdLineOption(profileOption)
+        self.AddCmdLineOption(profileOption)
 
     # This method implements the initialization strategy outlined
     # in AGEP-0112
     def Initialize(self, name=None):
-       """
-       This method sets up everything for reasonable execution.
-       At the first sign of any problems it raises exceptions and exits.
-       """
-       argvResult = AppBase.Initialize(self, name)
+        """
+        This method sets up everything for reasonable execution.
+        At the first sign of any problems it raises exceptions and exits.
+        """
+        argvResult = AppBase.Initialize(self, name)
 
-       print "Service init: have profile ", self.options.profile
+        print "Service init: have profile ", self.options.profile
 
-       # Deal with the profile if it was passed instead of cert/key pair
-       if self.options.profile is not None:
+        # Deal with the profile if it was passed instead of cert/key pair
+        if self.options.profile is not None:
            self.profile = ServiceProfile()
            self.profile.Import(self.options.profile)
            print self.profile.AsINIBlock()
-       
-       # 6. Initialize Certificate Management
-       # This has to be done by sub-classes
-       configDir = self.userConfig.GetConfigDir()
-       self.certMgrUI = CertificateManager.CertificateManagerUserInterface()
-       certMgr = self.certificateManager = \
+
+        # 6. Initialize Certificate Management
+        # This has to be done by sub-classes
+        configDir = self.userConfig.GetConfigDir()
+        self.certMgrUI = CertificateManager.CertificateManagerUserInterface()
+        certMgr = self.certificateManager = \
             CertificateManager.CertificateManager(configDir, self.certMgrUI)
 
-       #
-       # If we have a service profile, load and parse, then configure
-       # certificate manager appropriately.
-       #
+        #
+        # If we have a service profile, load and parse, then configure
+        # certificate manager appropriately.
+        #
 
-       if self.profile:
+        if self.profile:
            if self.profile.subject is not None:
+
+               self._CheckRequestedCert(self.profile.subject)
+
                certMgr.SetTemporaryDefaultIdentity(useDefaultDN = self.profile.subject)
            elif self.profile.certfile is not None:
                certMgr.SetTemporaryDefaultIdentity(useCertFile = self.profile.certfile,
                                                    useKeyFile = self.profile.keyfile)
-                                                                   
-       self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
 
-       # 7. Do one final check, if we don't have a default
-       #    Identity we bail, there's nothing useful to do.
+        self.GetCertificateManager().GetUserInterface().InitGlobusEnvironment()
 
-       if self.GetDefaultIdentityDN() is None:
+        # 7. Do one final check, if we don't have a default
+        #    Identity we bail, there's nothing useful to do.
+
+        if self.GetDefaultIdentityDN() is None:
            log.error("Toolkit initialized with no default identity.")
            log.error("Exiting because there's no default identity.")
            sys.exit(-1)
-           
-       return argvResult
 
+        return argvResult
+
+    def _CheckRequestedCert(self, dn):
+        """
+        Check to see if we have a cert with this dn; if we do not,
+        check to see if there's a request pending for it. If there is,
+        install. Otherwise just return.
+
+        @param dn: Distinguished name of identity to check for.
         
+        """
+
+        certMgr = self.certificateManager
+        repo = self.certificateManager.GetCertificateRepository()
+
+        certs = repo.FindCertificatesWithSubject(dn)
+        validCerts = filter(lambda a: not a.IsExpired(), certs)
+        
+        if len(validCerts) > 0:
+            return
+
+        #
+        # No certs found, see if we have a request for this one.
+        #
+
+        pending = certMgr.GetPendingRequests()
+
+        reqs = filter(lambda a: str(a[0].GetSubject()) == dn, pending)
+        if len(reqs) == 0:
+            print "No requests found"
+            return
+
+        if len(reqs) > 1:
+            print "Multiple requests found, just picking one"
+            
+        request, token, server, created = reqs[0]
+
+        print "Found request at ", server
+
+        #
+        # Check status. Note that if a proxy is required, we
+        # may not be using it. However, underlying library might
+        # set it up if the environment requires it.
+        #
+        
+        status = certMgr.CheckRequestedCertificate(request, token, server)
+        success, certText = status
+        if not success:
+            #
+            # Nope, not ready.
+            #
+            print "Certificate not ready: ", certText
+            return
+
+        #
+        # Success! we can install the cert.
+        #
+
+        hash = md5.new(certText).hexdigest()
+        tempfile = os.path.join(UserConfig.instance().GetTempDir(), "%s.pem" % (hash))
+
+        try:
+            try:
+                fh = open(tempfile, "w")
+                fh.write(certText)
+                fh.close()
+
+                impCert = certMgr.ImportRequestedCertificate(tempfile)
+
+                print "Successfully imported certificate for ", \
+                      str(impCert.GetSubject())
+
+            except CertificateRepository.RepoInvalidCertificate, e:
+                msg = e[0]
+                print "The import of your approved certificate failed: ", msg
+
+            except Exception, e:
+                print "The import of your approved certificate failed: ", e
+
+        finally:
+            os.unlink(tempfile)
+            
