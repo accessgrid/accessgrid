@@ -115,12 +115,14 @@ if not os.path.exists(nodeConfigPath):
     os.mkdir(nodeConfigPath)
 
 # copy certificates
-CACertDir = os.path.join(agtkConfig.GetConfigDir(), "CACertificates")
+srcCACertDir = os.path.join(ABS_AG_BASE_DIR, "packaging", "config", "CAcertificates")
+CACertDir = os.path.join(agtkConfig.GetConfigDir(), "CAcertificates")
+print "Copying CA certificates from %s to %s" %( srcCACertDir, CACertDir)
 if not os.path.exists(CACertDir):
     os.mkdir(CACertDir)
-for filename in os.listdir(os.path.join(ABS_AG_BASE_DIR, "packaging", "config", "CAcertificates")):
-    if "." in filename:
-        shutil.copy2( os.path.join(ABS_AG_BASE_DIR, "packaging", "config", "CAcertificates", filename), CACertDir)
+for filename in os.listdir(srcCACertDir):
+    if "." in filename: 
+        shutil.copy2( os.path.join(srcCACertDir, filename), CACertDir)
 
 # Copy default configuration files
 if sys.platform == WIN:
