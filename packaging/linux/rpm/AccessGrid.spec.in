@@ -179,6 +179,10 @@ cat <<EOF > /tmp/AccessGrid-Preuninstall.py
 #!/usr/bin/python2
 import AccessGrid
 import AccessGrid.hosting
+import AccessGrid.Security
+import AccessGrid.Security.wxgui
+import AccessGrid.Platform
+import AccessGrid.Platform.unix
 import os
 import os.path
 import glob
@@ -190,9 +194,11 @@ def delcompiled(module):
         except os.error:
             pass
 
+delcompiled(AccessGrid.Security.wxgui)
+delcompiled(AccessGrid.Security)
+delcompiled(AccessGrid.Platform.unix)
+delcompiled(AccessGrid.Platform)
 delcompiled(AccessGrid.hosting.SOAPpy)
-delcompiled(AccessGrid.hosting.Security)
-delcompiled(AccessGrid.hosting.Platform)
 delcompiled(AccessGrid.hosting)
 delcompiled(AccessGrid)
 EOF
