@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.22 2004-09-07 20:36:51 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.23 2004-09-08 18:57:08 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.22 2004-09-07 20:36:51 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.23 2004-09-08 18:57:08 turam Exp $"
 
 import os
 import sys
@@ -650,11 +650,11 @@ class MimeConfig:
         err_str = "This should not be called directly, but through a subclass."
         raise Exception(err_str)
     
-    def GetMimeType(extension = None):
+    def GetMimeType(self,extension = None):
         raise Exception, "This should not be called directly, but through a subclass."
 
-    def GetMimeCommands(mimeType = None, ext = None):
+    def GetMimeCommands(self,mimeType = None, ext = None):
         raise Exception, "This should not be called directly, but through a subclass."
 
-    def RegisterMimeType():
+    def RegisterMimeType(self):
         raise Exception, "This should not be called directly, but through a subclass."
