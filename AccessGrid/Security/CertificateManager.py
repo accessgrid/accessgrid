@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.18 2004-04-12 20:48:47 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.19 2004-04-12 21:38:02 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.18 2004-04-12 20:48:47 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.19 2004-04-12 21:38:02 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -397,7 +397,7 @@ class CertificateManager(object):
             for f in possibleCertFiles:
 
                 path = os.path.join(caDir, f);
-                # print "%s might be a cert" % (path)
+                log.debug("%s might be a cert" % (path))
 
                 try:
                     desc = self.ImportCACertificatePEM(repo, path)
@@ -721,6 +721,7 @@ class CertificateManager(object):
         #
 
         certs = self.certRepo.FindCertificatesWithSubject(dn)
+
         validCerts = filter(lambda a: not a.IsExpired(), certs)
         
         if len(validCerts) == 0:
@@ -732,15 +733,12 @@ class CertificateManager(object):
 
         self.defaultIdentity = validCerts[0]
 
-        print "Loaded identity ", self.defaultIdentity.GetVerboseText()
+        log.debug("Loaded identity %s" % self.defaultIdentity.GetVerboseText())
 
-        #
         # Lock down the repository so it doesn't get modified.
-        #
-
         self.certRepo.LockMetadata()
 
-        if defaultIdentity.HasEncryptedPrivateKey():
+        if self.defaultIdentity.HasEncryptedPrivateKey():
             self._InitEnvWithProxy()
         else:
             self._InitEnvWithCert()
@@ -751,11 +749,12 @@ class CertificateManager(object):
         Do not modify the default identity keys in the repository.
         """
 
-        self.defaultIdentity = CertificateRepository.Certificate(certFile, keyFile,
+        self.defaultIdentity = CertificateRepository.Certificate(certFile,
+                                                                 keyFile,
                                                                  self.certRepo)
 
-        print certFile, keyFile
-        print "Loaded identity ", self.defaultIdentity.GetVerboseText()
+        log.debug("Cert: %s, Key: %s", certFile, keyFile)
+        log.debug("Loaded identity %s", self.defaultIdentity.GetVerboseText())
 
         #
         # Lock down the repository so it doesn't get modified.
@@ -784,7 +783,6 @@ class CertificateManager(object):
         #
 
         if defaultIdentity:
-
             if defaultIdentity.HasEncryptedPrivateKey():
                 self._InitEnvWithProxy()
             else:
@@ -881,10 +879,6 @@ class CertificateManager(object):
         self.globusConfig.RemoveKeyFileName()
         self.globusConfig.RemoveServerFlag()
         
-        for envar in ('X509_USER_CERT', 'X509_USER_KEY', 'X509_RUN_AS_SERVER'):
-            if os.environ.has_key(envar):
-                del os.environ[envar]
-
     def _FindProxyCertificatePath(self, identity = None):
         """
         Determine the path into which the proxy should be installed.
@@ -1026,7 +1020,7 @@ class CertificateManager(object):
 
     def _InitEnvWithCert(self):
 
-        log.debug("Initializing environment with unencrypted user cert %s",
+        log.debug("Initializing environment with unencrypted cert %s",
                   self.defaultIdentity.GetSubject())
 
         certPath = self.defaultIdentity.GetPath()
@@ -1036,13 +1030,16 @@ class CertificateManager(object):
         # X509_RUN_AS_SERVER is ignored.
 
         self.globusConfig.RemoveProxyFileName()
-        
+
         self.globusConfig.SetCertFileName(certPath)
         self.globusConfig.SetKeyFileName(keyPath)
 
         import pyGlobus.utilc
-        print "PROXY TEST: os='%s' gl='%s'" % ( os.getenv('X509_USER_PROXY'),
-                                          pyGlobus.utilc.getenv('X509_USER_PROXY'))
+        log.debug("PROXY TEST: os='%s' gl='%s'", os.getenv('X509_USER_PROXY'),
+                  pyGlobus.utilc.getenv('X509_USER_PROXY'))
+        log.debug("SERVER TEST: os='%s' gl='%s'",
+                  os.getenv('X509_RUN_AS_SERVER'),
+                  pyGlobus.utilc.getenv('X509_RUN_AS_SERVER'))
 
     def SetDefaultIdentity(self, certDesc):
         """
