@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.6 2003-01-21 19:27:35 turam Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.7 2003-01-24 04:26:52 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -165,12 +165,3 @@ class ClientProfile:
     def GetPublicID(self):
         """ """
         return self.publicId
-
-if __name__ == "__main__":
-    profile = ClientProfile('userProfileExample')
-    print "\nProfile from File:"
-    profile.Dump()
-
-    profile2 = ClientProfile()
-    print "\nEmpty Profile:"
-    profile2.Dump()
