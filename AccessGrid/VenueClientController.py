@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.2 2004-02-24 18:36:21 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.3 2004-02-25 15:47:54 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
@@ -95,6 +95,12 @@ class VenueClientController:
             
             
     def __LoadMyVenues(self):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         try:
             myVenuesFileH = open(self.myVenuesFile, 'r')
         except:
@@ -113,10 +119,22 @@ class VenueClientController:
     # Controller Implementation
 
     def SetGui(self,gui):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         self.gui = gui
         
     def SetVenueClient(self,venueClient):
-        self.venueClient = venueClient
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
+        self.__venueClient = venueClient
 
     # end Controller Implementation
     #
@@ -127,37 +145,50 @@ class VenueClientController:
     # Menu Callbacks
 
     def AddDataCB(self, fileList):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         # Upload if we have a file list
         if fileList:
             self.UploadVenueFiles(fileList)
 
     def AddServiceCB(self,serviceDescription):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         if serviceDescription:
             log.debug("Adding service: %s to venue" %serviceDescription.name)
-            try:
-                self.venueClient.AddService(serviceDescription)
-            except Exception, e:
-                if isinstance(e,faultType) and e.faultstring == "ServiceAlreadyPresent":
-                    self.gui.Error("A service by that name already exists", "Add Service Error")
-                else:
-                    log.exception("bin.VenueClient::AddService: Error occured when trying to add service")
-                    self.gui.Error("The service could not be added", "Add Service Error")
-
+            self.__venueClient.AddService(serviceDescription)
+                    
     def SaveTextCB(self,filePath,text):
         '''
         Saves text from text chat to file.
         '''
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         if filePath:
             # Save the text from chat in file.
-            try:
-                textFile = open(filePath, "w")
-                textFile.write(text)
-                textFile.close()
-            except:
-                log.exception("VenueClientFrame.SaveText: Can not save text.")
-                self.gui.Error("Text could not be saved.", "Save Text")
+            textFile = open(filePath, "w")
+            textFile.write(text)
+            textFile.close()
         
     def ModifyVenueRolesCB(self,rolesDict):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         try:
             if rolesDict:
                 # Get new role configuration
@@ -180,15 +211,21 @@ class VenueClientController:
         '''
         Called when the window is closed using the built in close button
         '''
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         #
         # If we are connected to a venue, exit the venue
         # Do this before terminating services, since we need
         # to message them to shut down their services first
         #
-        if self.venueClient.IsInVenue():
-            self.venueClient.ExitVenue()
+        if self.__venueClient.IsInVenue():
+            self.__venueClient.ExitVenue()
 
-        self.venueClient.Shutdown()
+        self.__venueClient.Shutdown()
 
         os._exit(0)  # this should not be necessary, replace if needed.
 
@@ -199,6 +236,12 @@ class VenueClientController:
     #
     
     def EditProfileCB(self,profile):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         if profile:
             self.ChangeProfile(profile)
         
@@ -209,50 +252,75 @@ class VenueClientController:
 
 
     def UseMulticastCB(self):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         try:
-            self.venueClient.SetTransport("multicast")
-            self.venueClient.UpdateNodeService()
+            self.__venueClient.SetTransport("multicast")
+            self.__venueClient.UpdateNodeService()
         except NetworkLocationNotFound, e:
             log.exception("VenueClientFrame.UseMulticast: EXCEPTION UPDATING NODE SERVICE")
 
     def UseUnicastCB(self,provider):
+        """
+        This method 
 
-        oldProvider = self.venueClient.GetProvider()
-        oldTransport = self.venueClient.GetTransport()
+        **Arguments:**
+        
+        """
+
+        oldProvider = self.__venueClient.GetProvider()
+        oldTransport = self.__venueClient.GetTransport()
 
         # Set the transport in the venue client and update the node service
-        self.venueClient.SetProvider(provider)
-        self.venueClient.SetTransport("unicast")
+        self.__venueClient.SetProvider(provider)
+        self.__venueClient.SetTransport("unicast")
         try:
-            self.venueClient.UpdateNodeService()
-        except NetworkLocationNotFound:
-
+            self.__venueClient.UpdateNodeService()
+        except:
             # Reset the provider/transport 
-            self.venueClient.SetProvider(oldProvider)
-            self.venueClient.SetTransport(oldTransport)
-
-            # Report the error to the user
-            text="Can't access streams from selected bridge; reverting to previous selection"
-            self.gui.Warn(None, text, "Use Unicast failed")
-
+            self.__venueClient.SetProvider(oldProvider)
+            self.__venueClient.SetTransport(oldTransport)
+            raise
 
     def EnableVideoCB(self,enableFlag):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         try:
-            self.venueClient.SetVideoEnabled(enableFlag)
+            self.__venueClient.SetVideoEnabled(enableFlag)
         except:
             #self.gui.Error("Error enabling/disabling video", "Error enabling/disabling video")
             log.info("Couldn't enable/disable video")
 
     def EnableAudioCB(self,enableFlag):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         try:
-            self.venueClient.SetAudioEnabled(enableFlag)
+            self.__venueClient.SetAudioEnabled(enableFlag)
         except:
             #self.gui.Error("Error enabling/disabling audio", "Error enabling/disabling audio")
             log.info("Couldn't enable/disable video")
     
     def SetNodeUrlCB(self,nodeUrl):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         if nodeUrl:
-            self.venueClient.SetNodeUrl(nodeUrl)
+            self.__venueClient.SetNodeUrl(nodeUrl)
 
     
     # 
@@ -260,30 +328,60 @@ class VenueClientController:
     #
     
     def GoToDefaultVenueCB(self):
-        venueUrl = self.venueClient.GetProfile().homeVenue
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
+        venueUrl = self.__venueClient.GetProfile().homeVenue
         self.EnterVenueCB(venueUrl, 1)
 
     def SetAsDefaultVenueCB(self):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         # Get the current profile
-        profile = self.venueClient.GetProfile()
+        profile = self.__venueClient.GetProfile()
 
         # Update the home venue to the current venue url
-        profile.homeVenue = self.venueClient.GetVenue()
+        profile.homeVenue = self.__venueClient.GetVenue()
 
         # Store the changes
         self.ChangeProfile(profile)
 
     def AddToMyVenuesCB(self,name,url):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         self.myVenuesDict[name] = url
-        self.SaveMyVenuesToFile()
+        self.SaveMyVenuesToFile(self.myVenuesFile)
 
                        
     def EditMyVenuesCB(self,myVenuesDict):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         if myVenuesDict:
             self.myVenuesDict = myVenuesDict
-            self.SaveMyVenuesToFile()
+            self.SaveMyVenuesToFile(self.myVenuesFile)
 
     def GoToMenuAddressCB(self,venueUrl):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         self.EnterVenueCB(venueUrl,0)
 
     # Menu Callbacks
@@ -295,6 +393,12 @@ class VenueClientController:
     # Core UI Callbacks
     
     def GoBackCB(self):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         l = len(self.history)
         if(l>0):
             #
@@ -304,16 +408,28 @@ class VenueClientController:
             self.EnterVenueCB(uri, 1)
     
     def EnterVenueCB(self,venueUrl,backFlag):
-        self.__SetHistory(self.venueClient.GetVenue(),backFlag)
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
+        self.__SetHistory(self.__venueClient.GetVenue(),backFlag)
 
         # Enter the venue
-        self.venueClient.EnterVenue(venueUrl)
+        self.__venueClient.EnterVenue(venueUrl)
 
     #
     # Participant Actions
     #
        
     def AddPersonalDataCB(self, fileList):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         #
         # Verify that we have a valid upload URL. If we don't have one,
         # then there isn't a data upload service available.
@@ -325,25 +441,31 @@ class VenueClientController:
             self.UploadPersonalFiles(fileList)
 
     def FollowCB(self, personToFollow):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
 
         if(personToFollow != None and isinstance(personToFollow, ClientProfile)):
             url = personToFollow.venueClientURL
             name = personToFollow.name
             log.debug("VenueClientFrame.Follow: You are trying to follow :%s url:%s " %(name, url))
 
-            if(self.venueClient.leaderProfile == personToFollow):
+            if(self.__venueClient.leaderProfile == personToFollow):
                 text = "You are already following "+name
                 title = "Notification"
                 self.gui.Notify(text, title)
             
-            elif (self.venueClient.pendingLeader == personToFollow):
+            elif (self.__venueClient.pendingLeader == personToFollow):
                 text = "You have already sent a request to follow "+name+". Please, wait for answer."
                 title = "Notification"
                 self.gui.Notify(text,title)
 
             else:
                 try:
-                    self.venueClient.Follow(personToFollow)
+                    self.__venueClient.Follow(personToFollow)
                 except:
                     log.exception("VenueClientFrame.Follow: Can not follow %s" %personToFollow.name)
                     text = "You can not follow "+name
@@ -351,17 +473,23 @@ class VenueClientController:
                     self.gui.Notify(text, title)
                 
     def UnFollowCB(self):
+        """
+        This method 
 
-        log.debug("VenueClientFrame.Unfollow: In UnFollow we are being lead by %s" %self.venueClient.leaderProfile.name)
-        if self.venueClient.leaderProfile != None :
+        **Arguments:**
+        
+        """
+
+        log.debug("VenueClientFrame.Unfollow: In UnFollow we are being lead by %s" %self.__venueClient.leaderProfile.name)
+        if self.__venueClient.leaderProfile != None :
            
             try:
               
-                self.venueClient.UnFollow(self.venueClient.leaderProfile)
+                self.__venueClient.UnFollow(self.__venueClient.leaderProfile)
                 self.meMenu.Remove(self.ID_ME_UNFOLLOW)
             except:
                
-                log.exception("VenueClientFrame.Unfollow: Can not stop following %s" %self.venueClient.leaderProfile.name)
+                log.exception("VenueClientFrame.Unfollow: Can not stop following %s" %self.__venueClient.leaderProfile.name)
 
         else:
             log.debug("VenueClientFrame.Unfollow: You are trying to stop following somebody you are not following")
@@ -378,6 +506,10 @@ class VenueClientController:
 
     def OpenDataCB(self,data):
         """
+        This method 
+
+        **Arguments:**
+        
         """
        
         if(data != None and isinstance(data, DataDescription)):
@@ -390,33 +522,41 @@ class VenueClientController:
                 if commands.has_key('Open'):
                     cmd = commands['Open']
                     self.StartCmd(cmd, data, verb='Open')
-        else:
-            self.gui.Notify("Please, select the data you want to open", "Open Data")     
     
     def SaveDataCB(self,data,path):
+        """
+        This method 
+
+        **Arguments:**
+        
+        """
         self.SaveFile(data,path)
 
     def RemoveDataCB(self,itemList):
-        
-        for item in itemList:
+        """
+        This method removes data in the specified list from the venue
 
+        **Arguments:**
+        
+        *itemList* List of 
+        
+        """
+        for item in itemList:
             if(item != None and isinstance(item, DataDescription)):
                 text ="Are you sure you want to delete "+ item.name + "?"
                 if self.gui.Prompt(text, "Confirmation"):
+                    self.__venueClient.RemoveData(item)
 
-                    try:
-                        self.venueClient.RemoveData(item)
-                    except NotAuthorizedError:
-                        log.info("bin.VenueClient::RemoveData: Not authorized to  remove data")
-                        self.gui.Prompt("You are not authorized to remove the file", "Remove Personal Files")        
-                    except:
-                        log.exception("bin.VenueClient::RemoveData: Error occured when trying to remove data")
-                        self.gui.Error("The file could not be removed", "Remove Personal Files Error")
-                             
-            else:
-                self.gui.Error("Please, select the data you want to delete", "No file selected")
+    def ModifyDataCB(self,dataDesc):
+        """
+        This method modifies the specified data in the venue
 
-
+        **Arguments:**
+        
+        *dataDesc* DataDescription of the data to modify
+        
+        """
+        self.__venueClient.ModifyData(dataDesc)
 
 
     #
@@ -427,26 +567,43 @@ class VenueClientController:
     AddService is up above in menu callbacks
     """
 
-    def OpenServiceCB(self,service):
+    def OpenServiceCB(self,serviceDesc):
+        """
+        This method opens the specified service
+
+        **Arguments:**
         
-        if(service != None and isinstance(service, ServiceDescription)):
-            self.venueClient.OpenService( service )
-        else:
-            self.gui.Notify("Please, select the service you want to open","Open Service")       
+        *serviceDesc* ServiceDescription of the service to open
+        
+        """
+        if(serviceDesc != None and isinstance(serviceDesc, ServiceDescription)):
+            self.__venueClient.OpenService( serviceDesc )
     
     def RemoveServiceCB(self,itemList):
+        """
+        This method removes services in the specified list from the venue
+
+        **Arguments:**
+        
+        *itemList* List of ServiceDescriptions to remove
+        
+        """
         for item in itemList:
             if(item != None and isinstance(item, ServiceDescription)):
                 text ="Are you sure you want to delete "+ item.name + "?"
                 if self.gui.Prompt(text, "Confirmation"):
-                    try:
-                        self.venueClient.RemoveService(item)
-                    except:
-                        log.exception("bin.VenueClient::RemoveService: Error occured when trying to remove service")
-                        self.gui.Error("The service could not be removed", "Remove Service Error")
-            else:
-               self.gui.Notify("Please, select the service you want to delete")       
+                    self.__venueClient.RemoveService(item)
+
+    def UpdateServiceCB(self,serviceDesc):
+        """
+        This method updates the specified service
+
+        **Arguments:**
         
+        *serviceDesc* ServiceDescription of the service to update
+        
+        """
+        self.__venueClient.UpdateService(serviceDesc)
 
     #
     # Application Actions
@@ -454,23 +611,30 @@ class VenueClientController:
     
     def OpenApplicationCB(self, appDesc):
         """
+        This method opens the specified application
+
+        **Arguments:**
+        
+        *appDesc* ApplicationDescription of the app to open
+        
         """
-      
         if appDesc != None and isinstance(appDesc, ApplicationDescription):
             self.RunApp(appDesc)
-        else:
-            self.gui.Notify("Please, select the data you want to open","Open Application")
-    
 
     def RemoveApplicationCB(self,appList):
+        """
+        This method removes applications in the specified list from the venue
 
+        **Arguments:**
+        
+        *appList* List of ApplicationDescriptions to remove from venue
+        
+        """
         for app in appList:
             if(app != None and isinstance(app, ApplicationDescription)):
                 text ="Are you sure you want to delete "+ app.name + "?"
                 if self.gui.Prompt(text, "Confirmation"):
-                    self.venueClient.DestroyApplication( app.id )
-            else:
-                self.gui.Notify( "Please, select the application you want to delete")
+                    self.__venueClient.DestroyApplication( app.id )
             
 
     def StartApplicationCB(self, name, appDesc):
@@ -480,54 +644,93 @@ class VenueClientController:
 
         **Arguments:**
         
-        *app* The ApplicationDescription of the application we want to start
+        *name* User-specified name of the application to start
+        *app* ApplicationDescription of the application we want to start
         """
         log.debug("VenueClientFrame.StartApp: Creating application: %s" % app.name)
 
         appName = appDesc.name + ' - ' + name
-        self.venueClient.CreateApplication( appName,
+        self.__venueClient.CreateApplication( appName,
                                             appDesc.description,
                                             app.mimeType )
               
     def RunApplicationCB(self, appDesc, cmd='Open'):
+        """
+        This method runs the specified application
+
+        **Arguments:**
+        
+        *appDesc* ApplicationDescription of app to run
+        *cmd* Command to execute on the app
+        
+        """
         appdb = Toolkit.GetApplication().GetAppDatabase()
         
         cmdline = appdb.GetCommandLine(appDesc.mimeType, cmd)
 
         self.StartCmd(cmdline, appDesc, verb=cmd)
         
+    def UpdateApplicationCB(self,appDesc):
+        """
+        This method updates the application description for the specified application
+
+        **Arguments:**
+        
+        *appDesc* ApplicationDescription of the app to update
+        
+        """
+        self.__venueClient.UpdateApplication(appDesc)
+        
 
     #
     # Application Integration code
     #
-    def JoinApp(self,app):
+    def JoinApp(self,appDesc):
         """
         Join the specified application
 
         **Arguments:**
         
-        *app* The ApplicationDescription of the application we want to join
+        *appDesc* The ApplicationDescription of the application we want to join
         """
-        log.debug("Joining application: %s / %s" % (app.name, app.mimeType))
+        log.debug("Joining application: %s / %s" % (appDesc.name, appDesc.mimeType))
         appdb = Toolkit.GetApplication().GetAppDatabase()
-        commands = appdb.GetCommandNames(app.mimeType)
+        commands = appdb.GetCommandNames(appDesc.mimeType)
 
         if commands == None:
-            message = "No client registered for the selected application\n(mime type = %s)" % app.mimeType
+            message = "No client registered for the selected application\n(mime type = %s)" % appDesc.mimeType
             self.gui.Prompt(message,message )
             log.debug(message)
         else:
             if 'Open' in commands:
-                cmdLine = appdb.GetCommandLine(app.mimeType, 'Open')
+                cmdLine = appdb.GetCommandLine(appDesc.mimeType, 'Open')
                 log.debug("executing cmd: %s" % cmdLine)
                 pid = wxExecute(cmdLine)
                 
     def GetMimeCommandNames(self,mimeType):
+        """
+        This method returns mime command names for the given mime type
+
+        **Arguments:**
+        
+        *mimeType* A mime type
+        
+        """
         appdb = Toolkit.GetApplication().GetAppDatabase()
         commands = appdb.GetCommandNames(mimeType = mimeType)
         return commands
         
     def GetMimeCommandLine(self,mimeType,command):
+        """
+        This method returns the command line associated with the
+        given mime type and command
+
+        **Arguments:**
+        
+        *mimeType* Mime type for which to retrieve the command line
+        *command* Related command
+        
+        """
         appdb = Toolkit.GetApplication().GetAppDatabase()
         commandLine = appdb.GetCommandLine(mimeType,command)        
         return commandLine
@@ -536,7 +739,7 @@ class VenueClientController:
     #
                 
     def SendTextCB(self,text):
-        self.venueClient.SendText(text)
+        self.__venueClient.SendText(text)
 
     # end Core UI Callbacks
     #
@@ -546,27 +749,31 @@ class VenueClientController:
     #
     # General Implementation
 
-    def UploadVenueFiles(self, file_list):
+    def UploadVenueFiles(self, fileList):
         """
         Upload the given files to the venue.
 
         This implementation fires up a separate thread for the actual
         transfer. We want to do this to keep the application live for possible
         long-term transfers and to allow for live updates of a download status.
+
+        **Arguments:**
+        
+        *fileList* The list of files to upload
         
         """
         log.debug("In VenueClientController.UploadVenueFiles")
-        log.debug("  file_list = %s" % str(file_list))
+        log.debug("  fileList = %s" % str(fileList))
         
         filesToAdd = []
         
         # Check if data is already added
-        for file in file_list:
+        for file in fileList:
             pathParts = os.path.split(file)
             name = pathParts[-1]
             fileExists = 0
                                 
-            dataDescriptions = self.venueClient.GetVenueDataDescriptions()
+            dataDescriptions = self.__venueClient.GetVenueDataDescriptions()
             for data in dataDescriptions:
                 if data.name == name:
                     fileExists = 1
@@ -577,7 +784,7 @@ class VenueClientController:
                 title = "Duplicated File"
                 info = "A file named %s is already added, do you want to overwrite?" % name
                 if self.gui.Prompt(info,title):
-                    self.venueClient.RemoveData(data)
+                    self.__venueClient.RemoveData(data)
                     filesToAdd.append(name)
             else:
                 # file doesn't exist; add it           
@@ -606,7 +813,7 @@ class VenueClientController:
         # We use get_ident_and_upload as the body of the thread.
 
 
-        url = self.venueClient.GetDataStoreUploadUrl()
+        url = self.__venueClient.GetDataStoreUploadUrl()
         method = self.get_ident_and_upload
         ul_args = (url, filesToAdd, progressCB)
 
@@ -623,19 +830,30 @@ class VenueClientController:
 
 
 
-    def get_ident_and_upload(self, upload_url, file_list, progressCB, dialog=None):
+    def get_ident_and_upload(self, uploadUrl, fileList, progressCB):
+        """
+        This method uploads the specified files to the given upload destination
+
+        **Arguments:**
+        
+        *uploadUrl* URL to upload destination
+        *fileList* List of files to upload
+        *progressCB* A callable that will be called periodically for progress updates
+                     (see the DataStore module for the method signature)
+        
+        """
         log.debug("Upload: getting identity")
 
         error_msg = None
         try:
-            if upload_url.startswith("https:"):
+            if uploadUrl.startswith("https:"):
                 log.debug("Url starts with https:")
-                DataStore.GSIHTTPUploadFiles(upload_url, file_list, progressCB)
+                DataStore.GSIHTTPUploadFiles(uploadUrl, fileList, progressCB)
             else:
-                my_identity = self.venueClient.GetDefaultIdentityDN()
+                my_identity = self.__venueClient.GetDefaultIdentityDN()
                 log.debug("Got identity %s" % my_identity)
-                DataStore.HTTPUploadFiles(my_identity, upload_url,
-                file_list, progressCB)
+                DataStore.HTTPUploadFiles(my_identity, uploadUrl,
+                fileList, progressCB)
 
         except DataStore.FileNotFound, e:
             error_msg = "File not found: %s" % (e[0])
@@ -660,21 +878,16 @@ class VenueClientController:
         
         *profile* The ClientProfile including the new profile information
         """
-        #self.venueClient.profile = profile
-        #self.venueClient.profile.Save(self.profileFile)
-        #log.debug("Save profile")
-
-        # use profile from path
-        #self.venueClient.profile = ClientProfile(self.profileFile)
-        #self.venueClient.SetProfile(self.venueClient.profile)
         
-        self.venueClient.SaveProfile()
+        # Save the profile locally
+        self.__venueClient.SaveProfile()
 
-        if(self.venueClient.venueUri != None):
+        # Update client profile in venue
+        if(self.__venueClient.venueUri != None):
             log.debug("Update client profile in venue")
 
             try:
-                self.venueClient.UpdateClientProfile(profile)
+                self.__venueClient.UpdateClientProfile(profile)
             except:
                 log.exception("bin.VenueClient::ChangeProfile: Error occured when trying to update profile")
                 # User does not need to know about this. The profile info got saved locally anyhow.                
@@ -686,30 +899,39 @@ class VenueClientController:
 
 
     def AuthorizeLeadDialog(self, clientProfile):
+        """
+        This method is used to prompt the user to authorize a
+        request to lead another user
+
+        **Arguments:**
+        
+        *clientProfile* Profile of the user requesting to be led
+        
+        """
         idPending = None
         idLeading = None
 
-        if(self.venueClient.pendingLeader!=None):
-            idPending = self.venueClient.pendingLeader.publicId
+        if(self.__venueClient.pendingLeader!=None):
+            idPending = self.__venueClient.pendingLeader.publicId
           
 
-        if(self.venueClient.leaderProfile!=None):
-            idLeading = self.venueClient.leaderProfile.publicId
+        if(self.__venueClient.leaderProfile!=None):
+            idLeading = self.__venueClient.leaderProfile.publicId
           
           
         if(clientProfile.publicId != idPending and clientProfile.publicId != idLeading):
             text = "Do you want "+clientProfile.name+" to follow you?"
             title = "Authorize follow"
             response = self.gui.Prompt(text, title)
-            self.venueClient.SendLeadResponse(clientProfile, response)
+            self.__venueClient.SendLeadResponse(clientProfile, response)
 
             dlg.Destroy()
 
         else:
-            self.venueClient.SendLeadResponse(clientProfile, 0)
+            self.__venueClient.SendLeadResponse(clientProfile, 0)
 
 
-    def SaveFile(self, data_descriptor, local_pathname):
+    def SaveFile(self, dataDescription, localPathname):
         """
         Save a file from the datastore into a local file.
 
@@ -722,9 +944,14 @@ class VenueClientController:
         long-term transfers, to allow for live updates of a download status,
         and to perhaps allow multiple simultaneous transfers.
 
+        **Arguments:**
+        
+        *dataDescription* DataDescription of the file to save
+        *localPathname* Path to destination file
+        
         """
         log.debug("Save file descriptor: %s, path: %s"
-                  % (data_descriptor, local_pathname))
+                  % (dataDescription, localPathname))
 
 
         failure_reason = None
@@ -732,26 +959,26 @@ class VenueClientController:
             #
             # Retrieve details from the descriptor
             #
-            size = data_descriptor.size
-            checksum = data_descriptor.checksum
-            url = data_descriptor.uri
+            size = dataDescription.size
+            checksum = dataDescription.checksum
+            url = dataDescription.uri
 
             #
             # Make sure this data item is valid
             #
-            log.debug("data descriptor is %s" %data_descriptor.__class__)
+            log.debug("data descriptor is %s" %dataDescription.__class__)
 
-            if data_descriptor.status != DataDescription.STATUS_PRESENT:
-                self.gui.Prompt("File %s is not downloadable - it has status %s"
-                              % (data_descriptor.name,
-                                 data_descriptor.status), "Notification")
+            if dataDescription.status != DataDescription.STATUS_PRESENT:
+                self.gui.Notify("File %s is not downloadable - it has status %s"
+                              % (dataDescription.name,
+                                 dataDescription.status), "Notification")
                 return
                 
             log.debug("Downloading: size=%s checksum=%s url=%s"
                       % (size, checksum, url))
 
 
-            self.gui.OpenSaveFileDialog(local_pathname, size)
+            self.gui.OpenSaveFileDialog(localPathname, size)
 
             #
             # Plumbing for getting progress callbacks to the dialog
@@ -771,7 +998,7 @@ class VenueClientController:
 
             # Arguments to pass to get_ident_and_download
             #
-            dl_args = (url, local_pathname, size, checksum, progressCB)
+            dl_args = (url, localPathname, size, checksum, progressCB)
                 
             download_thread = threading.Thread(target = self.get_ident_and_download,
                                                args = dl_args)
@@ -788,10 +1015,10 @@ class VenueClientController:
             failure_reason = "Exception: %s" % (str(e))
 
         if failure_reason is not None:
-            self.gui.Prompt(failure_reason, "Download error")
+            self.gui.Notify(failure_reason, "Download error")
 
 
-    def SaveFileNoProgress(self, data_descriptor, local_pathname):
+    def SaveFileNoProgress(self, dataDescription, localPathname):
         """
         Save a file from the datastore into a local file.
 
@@ -804,27 +1031,32 @@ class VenueClientController:
         long-term transfers, to allow for live updates of a download status,
         and to perhaps allow multiple simultaneous transfers.
 
+        **Arguments:**
+        
+        *dataDescription* DataDescription of the file to save
+        *localPathname* Path to destination file
+        
         """
-        log.debug("Save file descriptor: %s, path: %s"%(data_descriptor, local_pathname))
+        log.debug("Save file descriptor: %s, path: %s"%(dataDescription, localPathname))
 
         failure_reason = None
         try:
             #
             # Retrieve details from the descriptor
             #
-            size = data_descriptor.size
-            checksum = data_descriptor.checksum
-            url = data_descriptor.uri
+            size = dataDescription.size
+            checksum = dataDescription.checksum
+            url = dataDescription.uri
 
             #
             # Make sure this data item is valid
             #
-            log.debug("data descriptor is %s" %data_descriptor.__class__)
+            log.debug("data descriptor is %s" %dataDescription.__class__)
 
-            if data_descriptor.status != DataDescription.STATUS_PRESENT:
-                self.gui.Prompt("File %s is not downloadable - it has status %s"
-                              % (data_descriptor.name,
-                                 data_descriptor.status), "Notification")
+            if dataDescription.status != DataDescription.STATUS_PRESENT:
+                self.gui.Notify("File %s is not downloadable - it has status %s"
+                              % (dataDescription.name,
+                                 dataDescription.status), "Notification")
                 return
             #
             # Create the thread to run the download.
@@ -836,7 +1068,7 @@ class VenueClientController:
 
             # Arguments to pass to get_ident_and_download
             #
-            dl_args = (url, local_pathname, size, checksum,
+            dl_args = (url, localPathname, size, checksum,
                        lambda done, dialog: None)
             download_thread = threading.Thread(target = self.get_ident_and_download,
                                                args = dl_args)
@@ -848,9 +1080,22 @@ class VenueClientController:
             failure_reason = "Exception: %s" % (str(e))
 
         if failure_reason is not None:
-            self.gui.Prompt(failure_reason, "Download error")
+            self.gui.Notify(failure_reason, "Download error")
 
     def get_ident_and_download(self, url, local_pathname, size, checksum, progressCB):
+        """
+        This method 
+
+        **Arguments:**
+        
+        *url* The url of the file to download
+        *local_pathname* The path to the destination file
+        *size* The size of the file
+        *checksum* File checksum
+        *progressCB* A callable that will be called periodically for progress updates
+                     (see the DataStore module for the method signature)
+        
+        """
         log.debug("Get ident and download")
         try:
             if url.startswith("https"):
@@ -871,8 +1116,12 @@ class VenueClientController:
                                 
     def UploadPersonalFiles(self, fileList):
         """
-        Upload the given personal files to the venue.
+        This method uploads the given personal files to the venue.
 
+        **Arguments:**
+        
+        *fileList* The list of files to upload
+        
         """
         log.debug("Upload personal files")
 
@@ -883,35 +1132,35 @@ class VenueClientController:
             index = len(pathParts)-1
             name = pathParts[index]
 
-            dataDescriptions = self.venueClient.GetDataDescriptions()
+            dataDescriptions = self.__venueClient.GetDataDescriptions()
             for data in dataDescriptions:
                 if data.name == name:
                     title = "Duplicated File"
                     info = "A file named %s is already added, do you want to overwrite?" % name
                     # Overwrite?
                     if self.gui.Prompt( info, title ):
-                        self.venueClient.dataStore.RemoveFiles([data])
+                        self.__venueClient.dataStore.RemoveFiles([data])
                         
                         # The data description have to be removed, else the size parameter will
                         # not match and open will fail for modified data.
-                        self.venueClient.SendEvent(Events.RemoveDataEvent(self.venueClient.GetEventChannelId(), data))
+                        self.__venueClient.SendEvent(Events.RemoveDataEvent(self.__venueClient.GetEventChannelId(), data))
                         
                     else:
                         return
                                          
             try:
                 my_identity = self.app.GetDefaultIdentityDN()
-                self.venueClient.dataStore.UploadLocalFiles([file], my_identity, self.venueClient.GetProfile().publicId)
+                self.__venueClient.dataStore.UploadLocalFiles([file], my_identity, self.__venueClient.GetProfile().publicId)
 
                 # Send an event alerting about new data (only if it is new)
                 #if newData: 
-                dataDescription = self.venueClient.dataStore.GetDescription(name)
-                self.venueClient.SendEvent(Events.AddDataEvent(self.venueClient.GetEventChannelId(), 
+                dataDescription = self.__venueClient.dataStore.GetDescription(name)
+                self.__venueClient.SendEvent(Events.AddDataEvent(self.__venueClient.GetEventChannelId(), 
                                                                dataDescription))
             except DataStore.DuplicateFile, e:
                 title = "Duplicated File"
                 info = "This file %s is already added. Rename your file and add it again." %e
-                self.gui.Prompt(info, title)
+                self.gui.Notify(info, title)
                                                      
             except Exception, e:
                 log.exception("bin.VenueClient:UploadPersonalFiles failed")
@@ -919,23 +1168,27 @@ class VenueClientController:
                 text = "The file could not be added, error occured."
                 self.gui.Error(text, title)
                 
-    def UploadFilesNoDialog(self, file_list):
+    def UploadFilesNoDialog(self, fileList):
         """
-        Upload the given files to the venue.
-
+        This method uploads the given files to the venue.
         This uses the DataStore HTTP upload engine code.
+
+        **Arguments:**
+        
+        *fileList*  The list of files to upload
+        
         """
 
-        log.debug("Upload files - no dialog. upload_url=%s", self.venueClient.dataStoreUploadUrl)
-        upload_url = self.venueClient.dataStoreUploadUrl
+        uploadUrl = self.__venueClient.GetDataStoreUploadUrl
+        log.debug("Upload files - no dialog. uploadUrl=%s", uploadUrl)
 
         error_msg = None
         try:
-            if upload_url.startswith("https:"):
-                DataStore.GSIHTTPUploadFiles(upload_url, file_list)
+            if uploadUrl.startswith("https:"):
+                DataStore.GSIHTTPUploadFiles(uploadUrl, fileList)
             else:
                 my_identity = self.app.GetDefaultIdentityDN()
-                DataStore.HTTPUploadFiles(my_identity, upload_url, file_list)
+                DataStore.HTTPUploadFiles(my_identity, uploadUrl, fileList)
         except DataStore.FileNotFound, e:
             error_msg = "File not found: %s" % (e[0])
         except DataStore.NotAPlainFile, e:
@@ -953,6 +1206,17 @@ class VenueClientController:
 
     def StartCmd(self, command, item=None, namedVars=None, verb=None):
         """
+        This method builds up the command line given a command-line
+        specification, and executes it
+
+        **Arguments:**
+        
+        *command*
+        *item*
+        *namedVars*
+        *verb*
+        
+        
         """
         localFilePath = None
         name = None
@@ -1027,7 +1291,7 @@ class VenueClientController:
         # namedVars['appMimeType'] = item.mimeType
         namedVars['appUrl'] = item.uri
         namedVars['localFilePath'] = localFilePath
-        namedVars['venueUrl'] = self.venueClient.GetVenue()
+        namedVars['venueUrl'] = self.__venueClient.GetVenue()
         
         # We're doing some icky munging to make our lives easier
         # We're only doing this for a single occurance of a windows
@@ -1057,14 +1321,20 @@ class VenueClientController:
             
         aList = realCommand.split(' ')
         print "CMD: ", realCommand
-        self.venueClient.StartProcess(aList[0], aList[1:])
+        self.__venueClient.StartProcess(aList[0], aList[1:])
        
-    def SaveMyVenuesToFile(self):
-        myVenuesFileH = open(self.myVenuesFile, 'w')
+    def SaveMyVenuesToFile(self,myVenuesFile):
+        """
+        This method synchs the saved venues list to disk
+        """
+        myVenuesFileH = open(myVenuesFile, 'w')
         cPickle.dump(self.myVenuesDict, myVenuesFileH)
         myVenuesFileH.close()
 
     def GetMyVenues(self):
+        """
+        This method returns the user's saved venues list
+        """
         return self.myVenuesDict
 
     # end General Implementation
