@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.29 2003-08-14 16:42:50 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.30 2003-08-18 15:42:54 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -77,19 +77,10 @@ setup(
                     r"services/node/VideoProducerService.svc"
                     ]
                    ),
-                  ('share/AccessGrid',
-                   [r"packaging/windows/agicons.exe",
-                    r"packaging/ag.ico"
-                    ]
-                   ),
                   ('share/AccessGrid/services',
                    [r"services/node/AudioService.zip",
                     r"services/node/VideoConsumerService.zip",
                     r"services/node/VideoProducerService.zip"
-                    ]
-                   ),
-                  ('share/AccessGrid/packaging/windows',
-                   [r"packaging/windows/Postinstall.py"
                     ]
                    ),
                   ('share/gnome/apps/AccessGrid',
