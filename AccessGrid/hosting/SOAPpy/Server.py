@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.7 2004-03-04 22:35:29 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.8 2004-03-05 21:45:00 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ SOAPpy server wrappers
 
 This module provides helper classes for servers using the SOAPpy server.
 """
-__revision__ = "$Id: Server.py,v 1.7 2004-03-04 22:35:29 judson Exp $"
+__revision__ = "$Id: Server.py,v 1.8 2004-03-05 21:45:00 judson Exp $"
 
 # External imports
 from threading import Thread, Event
@@ -196,6 +196,25 @@ class Server:
         """
         match_url = "%s%s" % (self.GetURLBase(), path)
         return self.FindObjectForURL(match_url)
+
+    def FindPathForObject(self, obj):
+        """
+        Retrieve the path that represents the web service endpoint for
+        the specified object.
+
+        @param obj: the object to find the URL of
+        @type obj: a python object
+
+        @return: the path or None
+        """
+        path = None
+        URL = self.FindURLForObject(obj)
+        if URL != None:
+            if URL[0:5] == 'httpg':
+                path = urlparse.urlparse(URL[6:])[2]
+            else:
+                path = urlparse.urlparse(URL)[2]
+        return path
         
 class SecureServer(Server):
     """
