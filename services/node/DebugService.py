@@ -10,18 +10,20 @@
 import sys
 import os
 
-from AccessGrid.Platform.Config import SystemConfig
-from AccessGrid.GUID import GUID
-
 from AccessGrid.hosting import SecureServer as Server
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
+from AccessGrid.Platform.Config import SystemConfig
+from AccessGrid.GUID import GUID
+from AccessGrid.AGService import AGService
 
-class DebugService:
+class DebugService(AGService):
    """
    Simple service that prints out configuration information. It claims to be
    a video and audio producer and consumer just to get information.
    """
    def __init__(self):
+      AGService.__init__(self)
+      
       self.id = str(GUID())
 
       # a fictional debug level

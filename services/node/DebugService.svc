@@ -4,7 +4,7 @@ description = Example Debug Service
 capabilities = Capability1 Capability2 Capability3 Capability4
 executable = DebugService.py
 platform = neutral
-version = 2.0
+version = 1.0
 
 [Capability1]
 role = producer
