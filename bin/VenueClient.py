@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.92 2003-03-31 21:53:04 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.93 2003-04-01 15:00:53 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -33,6 +33,8 @@ from AccessGrid import DataStore
 from AccessGrid.GUID import GUID
 
 from AccessGrid.hosting.pyGlobus import Server
+if sys.platform == "win32":
+    from win32com.shell import shell, shellcon
     
 class VenueClientUI(wxApp, VenueClient):
     """
@@ -88,10 +90,8 @@ class VenueClientUI(wxApp, VenueClient):
             wxLogDebug("Checking file %s for validity"%file)
             path = os.path.join(self.personalDataStorePrefix, file)
             url = self.dataStore.GetDownloadDescriptor(path)
-            print '================ this is url: ',url
-                
+                           
             if url is None:
-                wxLogDebug("================File %s has vanished" %file)
                 del self.personalDataDict[file]
                                           
     def __setLogger(self):
@@ -109,9 +109,17 @@ class VenueClientUI(wxApp, VenueClient):
         wxLogInfo("--------- START VenueClient")
 
     def __createHomePath(self):
-        self.accessGridPath = GetUserConfigDir()
-        self.profileFile = os.path.join(self.accessGridPath, "profile" )
+        #self.accessGridPath = GetUserConfigDir()
+        #------
+        if sys.platform == "win32":
+            myHomePath = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
+        elif sys.platform == "linux2":
+            myHomePath = os.environ['HOME']
 
+        self.accessGridPath = os.path.join(myHomePath, '.AccessGrid')
+        #-------
+
+        self.profileFile = os.path.join(self.accessGridPath, "profile" )
         wxLogDebug("Home path is %s" %self.accessGridPath)
         try:  # does the profile dir exist?
             os.listdir(self.accessGridPath)
