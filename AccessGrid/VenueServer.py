@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.77 2003-05-23 21:39:24 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.78 2003-05-28 18:38:07 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1089,7 +1089,9 @@ class VenueServer(ServiceBase.ServiceBase):
         if not self._Authorize():
             raise NotAuthorized
 
-        self.houseKeeper.AddTask(self.Shutdown, 0, secondsFromNow)
+        log.debug("Calling wsShutdown with seconds %d" % secondsFromNow)
+
+        self.Shutdown()
         
     wsShutdown.soap_export_as = "Shutdown"
 
@@ -1379,16 +1381,16 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         Shutdown shuts down the server.
         """
+        if not self._Authorize():
+            log.exception("Shutdown: Not authorized.")
+            raise NotAuthorized
+
         log.info("Starting Shutdown!")
 
         for v in self.venues.values():
             v.Shutdown()
             
         self.houseKeeper.StopAllTasks()
-
-        if not self._Authorize():
-            log.exception("Shutdown: Not authorized.")
-            raise NotAuthorized
 
         log.info("Shutdown -> Checkpointing...")
         self.Checkpoint()
@@ -1402,10 +1404,9 @@ class VenueServer(ServiceBase.ServiceBase):
         self.eventService.Stop()
         log.info("                         data")
         self.dataTransferServer.stop()
-        if self.internalHostingEnvironment:
-            log.info("                         internally created hostingEnvironment")
-            self.hostingEnvironment.Stop()
-            del self.hostingEnvironment
+
+        self.hostingEnvironment.Stop()
+        del self.hostingEnvironment
         log.info("                              done.")
 
         log.info("Shutdown Complete.")

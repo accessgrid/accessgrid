@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.26 2003-05-23 21:20:17 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.27 2003-05-28 18:37:42 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,7 +24,6 @@ from AccessGrid.Platform import GPI
 from AccessGrid import Toolkit
 
 # defaults
-running = 0
 port = 8000
 configFile = None
 logFile = "VenueServer.log"
@@ -37,11 +36,9 @@ def SignalHandler(signum, frame):
     SignalHandler catches signals and shuts down the VenueServer (and
     all of it's Venues. Then it stops the hostingEnvironment.
     """
-    global running
     global venueServer
     print "Got Signal!!!!"
     venueServer.Shutdown()
-    running = 0
 
 # Authorization callback for the server
 def AuthCallback(server, g_handle, remote_user, context):
@@ -58,8 +55,8 @@ def Usage():
     print "    --key <filename>: identity certificate's private key"
 
 def main():
-    global running, port, configFile, logFile, identityKey, identityCert
-    global venueServer
+    global port, configFile, logFile, identityKey, identityCert
+    global venueServer, hostingEnvironment
 
     # Parse command line options
     try:
@@ -104,37 +101,20 @@ def main():
         log.addHandler(hdlr)
 
     if identityCert is not None or identityKey is not None:
-        #
         # Sanity check on identity cert stuff
-        #
-
         if identityCert is None or identityKey is None:
             log.critical("Both a certificate and key must be provided")
             print "Both a certificate and key must be provided"
             sys.exit(0)
 
-        #
         # Init toolkit with explicit identity.
-        #
-
         app = Toolkit.ServiceApplicationWithIdentity(identityCert, identityKey)
 
     else:
-        #
         # Init toolkit with standard environment.
-        #
-
         app = Toolkit.CmdlineApplication()
 
     app.Initialize()
-
-    # Real first thing we do is get a sane environment
-    # if not HaveValidProxy():
-    #     GPI()
-
-    #
-    # Verify: Try to get our identity
-    #
 
     from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
     try:
@@ -163,8 +143,7 @@ def main():
     # We run in a stupid loop so there is still a main thread
     # We might be able to simply join the hostingEnvironmentThread, but
     # we have to be able to catch signals.
-    running = 1
-    while running:
+    while hostingEnvironment.IsRunning():
         time.sleep(1)
 
     log.debug("After main loop!")
