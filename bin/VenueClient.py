@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.96 2003-04-01 19:23:33 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.97 2003-04-01 21:57:33 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -72,7 +72,7 @@ class VenueClientUI(wxApp, VenueClient):
         return true
 
     def __createPersonalDataStore(self):
-        self.personalDataStorePath = os.path.join(self.accessGridPath, "personalDataStore")
+        self.personalDataStorePath = os.path.join(self.accessGridPath, self.personalDataStorePrefix)
         self.personalDataFile = os.path.join(self.personalDataStorePath, "myData.txt" )
         self.dataStore = DataStore.DataStore(self, self.personalDataStorePath,
                                    self.personalDataStorePrefix)
@@ -81,8 +81,8 @@ class VenueClientUI(wxApp, VenueClient):
         self.transferEngine.RegisterPrefix(self.personalDataStorePrefix, self)
         self.dataStore.SetTransferEngine(self.transferEngine)
               
-        wxLogDebug("Creating personal datastore at %s using port %s" %(self.personalDataStorePath,
-                                                                          self.personalDataStorePrefix))
+        wxLogDebug("Creating personal datastore at %s using prefix %s and port %s" %(self.personalDataStorePath,
+                                                                          self.personalDataStorePrefix, self.personalDataStorePort))
         # load personal data
         if os.path.exists(self.personalDataFile):
             file = open(self.personalDataFile, 'r')
@@ -92,9 +92,9 @@ class VenueClientUI(wxApp, VenueClient):
         wxLogDebug("check for validity")
         for file, desc in self.personalDataDict.items():
             wxLogDebug("Checking file %s for validity"%file)
-            path = os.path.join(self.personalDataStorePrefix, file)
-            url = self.dataStore.GetDownloadDescriptor(path)
-                           
+            url = self.transferEngine.GetDownloadDescriptor(self.personalDataStorePrefix, file)
+            wxLogDebug("File url is %s"%url)
+            
             if url is None:
                 del self.personalDataDict[file]
                                           
@@ -482,14 +482,16 @@ class VenueClientUI(wxApp, VenueClient):
         done as the application is about to exit.
         """
         wxLogInfo("--------- END VenueClient")
-        
-        file = open(self.personalDataFile, 'w')
-        cPickle.dump(self.personalDataDict, file)
-        file.close()
-                
+                        
         if self.venueUri != None:
             self.ExitVenue()
 
+        # save personal data
+        file = open(self.personalDataFile, 'w')
+        cPickle.dump(self.personalDataDict, file)
+        file.close()
+        
+        # stop personal data server
         self.transferEngine.stop()
         os._exit(0)
        
@@ -508,7 +510,6 @@ class VenueClientUI(wxApp, VenueClient):
         and to perhaps allow multiple simultaneous transfers.
 
         """
-        wxCallAfter(wxLogDebug, "---------------------------------")
         wxCallAfter(wxLogDebug, "Save file descriptor: %s, path: %s"%(data_descriptor, local_pathname))
         
         failure_reason = None
@@ -556,7 +557,6 @@ class VenueClientUI(wxApp, VenueClient):
             download_thread = threading.Thread(target = self.get_ident_and_download,
                                                args = dl_args)
 
-            wxCallAfter(wxLogDebug, "AFTER THREAD ---------------------------------")
             # Use wxCallAfter so we get the dialog filled in properly.
             wxCallAfter(download_thread.start)
 
@@ -716,7 +716,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
         This method adds local data to the venue
         """
-        wxLogDebug("----------------------- Adding data: %s to venue" %data.name)
+        wxLogDebug("Adding data: %s to venue" %data.name)
         try:
             self.client.AddData(data)
             self.personalDataDict[data.name] = data
@@ -729,13 +729,12 @@ class VenueClientUI(wxApp, VenueClient):
         """
         This method removes a data from the venue
         """
-        wxLogDebug("------------------------Remove data: %s from venue" %data.name)
+        wxLogDebug("Remove data: %s from venue" %data.name)
         try:
             self.client.RemoveData(data)
             if(data.type == self.profile.publicId and self.personalDataDict.has_key(data.name)):
                 del self.personalDataDict[data.name]
-                fileToDelete = os.path.join(self.dataStore.prefix, data.name)
-                self.dataStore.DeleteFile(fileToDelete)
+                self.dataStore.DeleteFile(data.name)
                 
         except:
             wxLogError("Error occured when trying to remove data")
