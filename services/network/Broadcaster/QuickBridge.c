@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.44 2004-12-17 23:41:10 leggett Exp $
+ * $Id: QuickBridge.c,v 1.45 2004-12-17 23:43:11 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -913,10 +913,6 @@ Session *setup_session( Ports ucport, Ports mcport, u_long multicastaddress, u_c
       }
   }
   
-  printf( "SETUP[data]: before: %d mcaddr: %s/%d\n", multicastaddress, inet_ntoa( s->mcaddr[data].sin_addr ), ntohs( s->mcaddr[data].sin_port ) );
-  printf( "SETUP[rtcp]: before: %d mcaddr: %s/%d\n", multicastaddress, inet_ntoa( s->mcaddr[rtcp].sin_addr ), ntohs( s->mcaddr[rtcp].sin_port ) );
-
-
   memset( (char *)&s->mcreq, 0, sizeof( s->mcreq ) );
   if ( s->use_multicast )
     {
@@ -1110,15 +1106,6 @@ int main( int argc, char *argv[] )
 	  break;
 	case 'n':
 	  s = setup_session( ucport, mcport, multicastaddress, ttl, forward, s );
-	  for ( foo = s; foo; foo = foo->next )
-	    {
-	      printf( " ucfd[data]: %d mcfd[data]: %d uc: %s/%d mc: %s/%d\n", foo->ucfd[data], foo->mcfd[data], inet_ntoa( foo->ucaddr[data].sin_addr ), ntohs( foo->ucaddr[data].sin_port ),
-		      inet_ntoa( foo->mcaddr[data].sin_addr ), ntohs( foo->mcaddr[data].sin_port ) );
-	      printf( " ucfd[rtcp]: %d mcfd[rtcp]: %d uc: %s/%d mc: %s/%d\n", foo->ucfd[rtcp], foo->mcfd[rtcp], inet_ntoa( foo->ucaddr[rtcp].sin_addr ), ntohs( foo->ucaddr[rtcp].sin_port ),
-		      inet_ntoa( foo->mcaddr[rtcp].sin_addr ), ntohs( foo->mcaddr[rtcp].sin_port ) );
-	    }
-	  
-	  sleep( 10 );
 
 	  if ( ! s )
 	    {
@@ -1157,6 +1144,15 @@ int main( int argc, char *argv[] )
       exit( 1 );
     }
   
+  for ( foo = s; foo; foo = foo->next )
+    {
+      printf( " ucfd[data]: %d mcfd[data]: %d uc: %s/%d mc: %s/%d\n", foo->ucfd[data], foo->mcfd[data], inet_ntoa( foo->ucaddr[data].sin_addr ), ntohs( foo->ucaddr[data].sin_port ),
+	      inet_ntoa( foo->mcaddr[data].sin_addr ), ntohs( foo->mcaddr[data].sin_port ) );
+      printf( " ucfd[rtcp]: %d mcfd[rtcp]: %d uc: %s/%d mc: %s/%d\n", foo->ucfd[rtcp], foo->mcfd[rtcp], inet_ntoa( foo->ucaddr[rtcp].sin_addr ), ntohs( foo->ucaddr[rtcp].sin_port ),
+	      inet_ntoa( foo->mcaddr[rtcp].sin_addr ), ntohs( foo->mcaddr[rtcp].sin_port ) );
+    }
+  
+  sleep( 10 );
 
   /* code for gateway mode */
   set_acl(ACLFILE);
