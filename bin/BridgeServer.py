@@ -93,7 +93,7 @@ class BridgeFactory:
 
         retBridge = None
 
- # - Check for an existing bridge with the given multicast addr/port
+        # - Check for an existing bridge with the given multicast addr/port
         for bridge,refcount in self.bridges.values():
             if bridge.maddr == maddr and bridge.mport == mport:
                 self.log.info("- using existing bridge")
@@ -247,6 +247,10 @@ class Venue:
 
         self.log = logging.getLogger("AG.BridgeServer")
 
+        self.CreateVenueBridges()
+
+    def CreateVenueBridges(self):
+
         # Register with the venue
         self.privateId = self.venueProxy.AddNetService(NetService.BridgeNetService.TYPE)
 
@@ -373,9 +377,20 @@ class Venue:
         import time
         while self.sendHeartbeats:
             try:
+              if self.eventClient.connected:
                 self.eventClient.Send(HeartbeatEvent(self.channelId, self.privateId))
+              else:
+                self.log.debug("Trying to reach venue")
+                if self.venueProxy._IsValid():
+                  self.log.debug("- venue reachable again; re-creating bridges")
+                  self.log.debug("  url =  %s", self.venueUrl )
+                  self.CreateVenueBridges()
+                else:
+                  self.log.debug("- venue unreachable")
             except EventClientWriteDataException:
-                self.Shutdown()
+                print "connected ? ", self.eventClient.connected
+                if not self.eventClient.connected:
+                  self.log.debug("Connection lost; shutting down venue")
                 break
             except:
                 self.log.exception("BridgeServer:Heartbeat: Heartbeat exception is caught.")
