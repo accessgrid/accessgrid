@@ -3,18 +3,23 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.46 2004-03-15 23:57:16 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.47 2004-03-17 23:30:05 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.46 2004-03-15 23:57:16 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.47 2004-03-17 23:30:05 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
 import sys
+
+if sys.platform=="darwin":
+    # On osx pyGlobus/globus need to be loaded before various modules such as socket.
+    import pyGlobus.ioc
+
 import signal, time, os
 
 if sys.version.startswith('2.2'):
