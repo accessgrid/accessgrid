@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.8 2004-03-12 22:38:22 olson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.9 2004-03-16 22:31:03 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.8 2004-03-12 22:38:22 olson Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.9 2004-03-16 22:31:03 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -146,7 +146,7 @@ def CreateGlobusProxyGPI(passphrase, certFile, keyFile, certDir, outFile,
     # Windows pipe code needs to have the whole thing quoted. Linux doesn't.
     #
 
-    if Platform.isWindows:
+    if Platform.isWindows():
         cmd = '"%s"' % (cmd)
 
     log.debug("Running command: '%s'", cmd)
@@ -174,7 +174,7 @@ def CreateGlobusProxyGPI(passphrase, certFile, keyFile, certDir, outFile,
 
         wr.write(passphrase + "\n")
 
-        if not Platform.isWindows:
+        if not Platform.isWindows():
             wr.close()
 
         while 1:
@@ -209,7 +209,7 @@ def CreateGlobusProxyGPI(passphrase, certFile, keyFile, certDir, outFile,
 
         rd.close()
 
-        if Platform.isWindows:
+        if Platform.isWindows():
             wr.close()
 
     except IOError:
