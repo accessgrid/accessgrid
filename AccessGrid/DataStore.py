@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.11 2003-03-27 17:33:33 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.12 2003-03-27 21:33:08 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -175,11 +175,11 @@ class DataStore:
         desc = self.venue.GetData(filename)
         
         if desc is None:
-            print "Venue data for %s not present" % (filename)
+            log.debug("Venue data for %s not present", filename)
             return None
 
         if desc.GetStatus() != DataDescription.STATUS_PENDING:
-            print "Invalid status in GetUploadFileHandle()"
+            log.debug("Invalid status in GetUploadFileHandle()")
             return None
 
         #
@@ -200,13 +200,13 @@ class DataStore:
         """
 
         desc = self.venue.GetData(file_info['name'])
-        # print "CompleteUpload: got desc ", desc, desc.__dict__
+        log.debug("CompleteUpload: got desc %s %s", desc, desc.__dict__)
         desc.SetChecksum(file_info['checksum'])
         desc.SetSize(int(file_info['size']))
         desc.SetStatus(DataDescription.STATUS_PRESENT)
         desc.SetOwner(dn)
         desc.SetURI(self.GetDownloadDescriptor(file_info['name']))
-        print "CompleteUpload: updating with ", desc, desc.__dict__
+        log.debug("CompleteUpload: updating with %s %s", desc, desc.__dict__)
         self.venue.UpdateData(desc)
 
     def DeleteFile(self, filename):
@@ -214,8 +214,7 @@ class DataStore:
         Delete filename from the datastore.
 
         """
-
-        print "DeleteFile: ", filename
+        log.debug("DeleteFile: %s", filename)
         path = os.path.join(self.pathname, filename)
         if not os.path.exists(path):
             raise FileNotFound(filename)
@@ -223,7 +222,7 @@ class DataStore:
         try:
             os.remove(path)
         except OSError, e:
-            print "DeleteFile raised error ", e
+            log.exception("DeleteFile raised error ")
 
     def AddPendingUpload(self, dn, filename):
         """
@@ -244,6 +243,10 @@ import BaseHTTPServer
 
 class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
+    def log_message(self, format, *args):
+        log.info("%s - - [%s] %s", self.address_string(),
+                 self.log_date_time_string(), format % args)
+        
     def do_GET(self):
 
         #
@@ -255,7 +258,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         #
 
         identityToken = self.server.GetIdentityToken(self)
-        print "GET identity token ", identityToken
+        log.debug("GET identity token %s", identityToken)
         
         try:
             self.ProcessGet(identityToken)
@@ -369,7 +372,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         #
 
         file_info = self.server.LookupUploadInformation(transfer_key, file_num)
-        print "Got this for %s: %s" % (file_num, file_info)
+        log.debug("Got this for %s: %s", file_num, file_info)
 
         #
         # Verify the filesize is what we expect
@@ -436,8 +439,9 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             # Wups, something bad happened.
             #
 
-            print "Could not get upload filehandle for ", filename
-            self.send_error(400, "Could not get upload filehandle for %s" % (filename))
+            log.debug("Could not get upload filehandle for %s", filename)
+            self.send_error(400, "Could not get upload filehandle for %s"
+                            % filename)
             return None
 
         digest = md5.new()
@@ -471,7 +475,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             fp.close()
             
         except EnvironmentError, e:
-            print "Hm, got an exception on upload"
+            log.debug("Hm, got an exception on upload")
             self.send_error(400, "Error on upload: %s" % (str(e)))
             fp.close()
             return None
@@ -568,9 +572,9 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         #
         try:
             manifest.readfp(io)
-            print "have manifest"
-            print manifest.sections()
-            manifest.write(sys.stdout)
+#            log.debug("have manifest")
+#            log.debug(manifest.sections())
+#            manifest.write(sys.stdout)
 
             #
             # Go through the potential files to be uploaded and ensure
@@ -593,12 +597,12 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 
         except ValueError, e:
-            print "ConfigParser error: ", str(e)
+            log.exception("ConfigParser error.")
             self.send_error(400, "ConfigParser error: " + str(e))
             return None
 
         except ConfigParser.Error, e:
-            print "ConfigParser error: ", str(e)
+            log.exception("ConfigParser error.")
             self.send_error(400, "ConfigParser error: " + str(e))
             return None
 
@@ -712,7 +716,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.end_headers()
             # print "Start copy to output"
             shutil.copyfileobj(fp, self.wfile)
-            print "Done copying"
+            log.debug("Done copying")
             fp.close()
 
 class TransferServer:
@@ -720,30 +724,34 @@ class TransferServer:
     A TransferServer provides file upload and download services.
 
     It is intended to be subclassed to produce a protocol-specific
-    transfer engine. This class handles the connection to the data store itself,
-    and the manipulation of manifests.
+    transfer engine. This class handles the connection to the data
+    store itself, and the manipulation of manifests.
 
-    The transfer server provides services based on URL prefixes. That is,
-    a client (um, a client in the same process as this object that is using
-    its services to provide file upload and download capabilities) of the
-    transfer server will register its interest in upload and downloads for some
-    URL prefix. Access to files under that prefix is gated through the
-    registered object.
+    The transfer server provides services based on URL prefixes. That
+    is, a client (um, a client in the same process as this object that
+    is using its services to provide file upload and download
+    capabilities) of the transfer server will register its interest in
+    upload and downloads for some URL prefix. Access to files under
+    that prefix is gated through the registered object.
 
-    A local client registers a callback handler with the TransferServer. This handler
-    will be invoked in the following situations:
+    A local client registers a callback handler with the
+    TransferServer. This handler will be invoked in the following
+    situations:
 
-    When a HTTP GET request occurs to initiate a file download, the handler's
-    GetDownloadFilename(id_token, url_path) is invoked, and expects to be returned a
-    pathname to the file on the local filesystem. The url_path does not include the
-    client's transfer prefix. id_token is an identifier token representing the
-    identity of the downloading client.
+    When a HTTP GET request occurs to initiate a file download, the
+    handler's GetDownloadFilename(id_token, url_path) is invoked, and
+    expects to be returned a pathname to the file on the local
+    filesystem. The url_path does not include the client's transfer
+    prefix. id_token is an identifier token representing the identity
+    of the downloading client.
 
-    When a HTTP POST request occurs with a transfer manifest, the manifest is
-    parsed. For each file, the handler's CanUpload(id_token, file_info) 
-    callback is invoked.  The callback is to determine whether it can accept the upload
-    of the file and return 1 if the server will accept the file, 0 otherwise. id_token is an
-    identifier token representing the identity of the uploading client.
+    When a HTTP POST request occurs with a transfer manifest, the
+    manifest is parsed. For each file, the handler's
+    CanUpload(id_token, file_info) callback is invoked.  The callback
+    is to determine whether it can accept the upload of the file and
+    return 1 if the server will accept the file, 0 otherwise. id_token
+    is an identifier token representing the identity of the uploading
+    client.
 
     file_info is a dictionary with the following keys:
     
@@ -751,17 +759,19 @@ class TransferServer:
         size		Size of the file in bytes
         checksum	MD5 checksum of the file
 
-    If the manifest processing indicates that the file upload can continue,
-    the transfer handler's AddPendingUpload(id_token, filename) method is invoked.
+    If the manifest processing indicates that the file upload can
+    continue, the transfer handler's AddPendingUpload(id_token,
+    filename) method is invoked.
 
-    When a HTTP POST request occurs with an actual file upload, the handler's
-    GetUploadFilename(id_token, file_info) method is invoked. The handler validates
-    the request and returns the pathname to which the file should be uploaded. id_token is an
-    identifier token representing the identity of the uploading client.
+    When a HTTP POST request occurs with an actual file upload, the
+    handler's GetUploadFilename(id_token, file_info) method is
+    invoked. The handler validates the request and returns the
+    pathname to which the file should be uploaded. id_token is an
+    identifier token representing the identity of the uploading
+    client.
 
-    When the file upload is completed, the handler's CompleteUpload(id_token, file_info)
-    method is invoked.  
-
+    When the file upload is completed, the handler's
+    CompleteUpload(id_token, file_info) method is invoked.
     """
 
     def __init__(self):
@@ -843,15 +853,15 @@ class TransferServer:
 
         num_files = manifest.getint("manifest", "num_files")
         if int(file_num) < 0 or int(file_num) >= num_files:
-            print "invalid file_num '%s'" % (file_num)
-            print "Have manifest: "
-            manifest.write(sys.stdout)
+            log.debug("invalid file_num '%s'", file_num)
+            log.debug("Have manifest: ")
+#            manifest.write(sys.stdout)
             raise FileNotFound
 
         file_num = str(file_num)
 
         if not manifest.has_section(file_num):
-            print "section not found for ", file_num
+            log.debug("section not found for %s", file_num)
             raise FileNotFound
 
         info = {}
@@ -1097,10 +1107,10 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
     host = url_info[1]
     path = url_info[2]
 
-    print "Connect to ", host
+    log.debug("Connect to %s", host)
     conn = connectionClass(host)
 
-    print "Downloading %s into %s" % (download_url, destination)
+    log.debug("Downloading %s into %s", download_url, destination)
 
     #
     # We want strict enabled here, otherwise the empty
@@ -1112,12 +1122,12 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
         conn.strict = 1
         conn.request("GET", path, headers = headers)
 
-        print "request sent to ", conn
+        log.debug("request sent to %s", conn)
 
         resp = conn.getresponse()
 
-        print "response is ", resp
-        print "Request got status ", resp.status
+        log.debug("response is %s", resp)
+        log.debug("Request got status %s", resp.status)
     except httplib.BadStatusLine:
         raise DownloadFailed("bad status from http (server type mismatch?)")
 
@@ -1126,8 +1136,8 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
 
     try:
         hdr = resp.getheader("Content-Length")
-        print "Got hdr ", hdr
-        print resp.msg.headers
+        log.debug("Got hdr %s", hdr)
+        log.debug(resp.msg.headers)
         hdr_size = int(hdr)
     except (TypeError, KeyError):
         raise DownloadFailed("server must provide a valid content length")
@@ -1139,7 +1149,7 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
     if size is not None:
         size = int(size)
 
-        print "got size ", hdr_size
+        log.debug("got size %s", hdr_size)
 
         if hdr_size != size:
             raise DownloadFailed("Size mismatch: server says %d, metadata says %d" %
@@ -1170,7 +1180,7 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
         buf = resp.read(bytes_to_read)
 
         if buf == "":
-            print "FILE TOO SHORT in download"
+            log.debug("FILE TOO SHORT in download")
             dest_fp.close()
             raise DownloadFailed("End of file before %d bytes read" % (size))
 
@@ -1183,7 +1193,7 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
         if progressCB is not None:
             cancel = progressCB(size - bytes_left, 0)
             if cancel:
-                print "DL got cancel!"
+                log.debug("DL got cancel!")
                 dest_fp.close()
                 raise DownloadFailed("Cancelled by user")
         
@@ -1210,7 +1220,7 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
             raise DownloadFailed("Checksum mismatch on download: download was %s, metadata was %s"
                                  % (download_digest, checksum))
         else:
-            print "DOwnload success! ", download_digest
+            log.debug("DOwnload success! %s", download_digest)
 
 def HTTPUploadFiles(identity, upload_url, file_list, progressCB):
     """
@@ -1285,7 +1295,7 @@ class HTTPUploadEngine:
         them to ensure that they are all files.
         """
 
-        print "Upload: check files"
+        log.debug("Upload: check files")
 
         for file in file_list:
             if not os.path.exists(file):
@@ -1293,10 +1303,10 @@ class HTTPUploadEngine:
             elif not os.path.isfile(file):
                 raise NotAPlainFile(file)
 
-        print "Upload: create manifest"
+        log.debug("Upload: create manifest")
         (manifest, file_info) = self.constructManifest(file_list)
 
-        print "Upload: Created manifest"
+        log.debug("Upload: Created manifest")
 
         try:
             parsed = urlparse.urlparse(self.upload_url)
@@ -1327,7 +1337,7 @@ class HTTPUploadEngine:
                 self.progressCB('', 0, 0, 0, 1)
 
         except UploadFailed, e:
-             print "Upload failed: ", e
+             log.exception("Upload failed.")
              if self.progressCB is not None:
                  self.progressCB('', 0, 0, 0, 1)
 
@@ -1365,7 +1375,7 @@ class HTTPUploadEngine:
         # Fire up the connection and send headers
         #
 
-        print "Send headers"
+        log.debug("Send headers")
 
         conn.connect()
         conn.putrequest("POST", url_path)
@@ -1383,7 +1393,7 @@ class HTTPUploadEngine:
 
         n_sent = 0
 
-        print "sending file"
+        log.debug("sending file")
 
         try:
             left = 0
@@ -1399,7 +1409,7 @@ class HTTPUploadEngine:
         except socket.error, e:
             if self.progressCB is not None:
                 self.progressCB(file, n_sent, size, 1, 1)
-            print "Hm, got a socket error."
+            log.debug("Hm, got a socket error.")
             raise UploadFailed(e[1])
 
         if self.progressCB is not None:
@@ -1410,7 +1420,7 @@ class HTTPUploadEngine:
 
         resp = conn.getresponse()
 
-        print "Upload got status ", resp.status
+        log.debug("Upload got status %s", resp.status)
 
         conn.close()
         
@@ -1431,7 +1441,7 @@ class HTTPUploadEngine:
         conn.request("POST", upload_url, manifest, headers)
         resp = conn.getresponse()
 
-        print "post returns ", resp
+        log.debug("post returns %s", resp)
 
         if resp.status != 200:
             raise UploadFailed((resp.status, resp.reason))
@@ -1439,11 +1449,11 @@ class HTTPUploadEngine:
         transfer_key = None
         error_reasons = []
 
-        print "Reading response, headers are ", resp.msg.headers
+        log.debug("Reading response, headers are %s", resp.msg.headers)
         result = resp.read()
         
         for tline in result.split("\n"):
-            print "got tline <%s>" % (tline)
+            log.debug("got tline <%s>", tline)
             if tline == "":
                 continue
             m = re.search("^(\S+):\s+(.*)", tline)
@@ -1464,9 +1474,9 @@ class HTTPUploadEngine:
         if return_code == 0:
             return transfer_key
         else:
-            print "Upload failed: "
+            log.debug("Upload failed:")
             for r in error_reasons:
-                print "   ", r
+                log.debug("   %s", r)
             raise UploadFailed((return_code, error_reasons))
         
     
@@ -1516,7 +1526,7 @@ class HTTPUploadEngine:
 
         for idx, file, base in file_info:
 
-            print "Checksum ", file
+            log.debug("Checksum %s", file)
 
             s = os.stat(file)
 
@@ -1565,17 +1575,16 @@ if __name__ == "__main__":
                 d = self.data[filename]
             else:
                 d = None
-            print "GetData %s returning %s" % (filename, d)
+            log.debug("GetData %s returning %s", filename, d)
             return d
 
         def UpdateData(self, desc):
             self.data[desc.GetName()] = desc
-            print "UpdateData: ", desc
+            log.debug("UpdateData: %s", desc)
 
         def AddData(self, desc):
             self.data[desc.GetName()] = desc
-            print "AddData: ", desc
-            
+            log.debug("AddData: %s", desc)
 
     v = TestVenue()
     ds = DataStore(v, "/temp")
@@ -1583,30 +1592,30 @@ if __name__ == "__main__":
 
     class Handler:
         def GetDownloadFilename(self, id_token, url_path):
-            print "Get download: id='%s' path='%s'" % (id_token, url_path)
+            log.debug("Get download: id='%s' path='%s'", id_token, url_path)
             return r"c:\temp\junoSetup.exe"
 
         def GetUploadFilename(self, id_token, file_info):
-            print "Get upload filename for %s %s" % (id_token, file_info)
+            log.debug("Get upload filename for %s %s", id_token, file_info)
             return os.path.join("c:\\", "temp", "uploads", file_info['name'])
 
         def CanUploadFile(self, id_token, file_info):
-            print "CanUpload: id=%s file_info=%s" % (id_token, file_info)
+            log.debug("CanUpload: id=%s file_info=%s", id_token, file_info)
             return 1
 
         def AddPendingUpload(self, id_token, filename):
-            print "AddPendingUpload: %s %s" % (id_token, filename)
+            log.debug("AddPendingUpload: %s %s", id_token, filename)
 
         def CompleteUpload(self, id_token, file_info):
-            print "CompleteUpload %s %s" % (id_token, file_info)
+            log.debug("CompleteUpload %s %s", id_token, file_info)
 
     ds.SetTransferEngine(s)
 
     prefix = "test"
     s.RegisterPrefix(prefix, Handler())
 
-    print s.GetDownloadDescriptor(prefix, "JunoSetup.exe")
-    print s.GetUploadDescriptor(prefix)
+    log.debug("%s", s.GetDownloadDescriptor(prefix, "JunoSetup.exe"))
+    log.debug("%s", s.GetUploadDescriptor(prefix))
 
     s.run()
 
