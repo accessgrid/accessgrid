@@ -1,26 +1,26 @@
 #-----------------------------------------------------------------------------
-# Name:        ProcessManagerWin32.py
+# Name:        ProcessManager.py
 # Purpose:     
 #
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerWin32.py,v 1.8 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.1 2004-02-26 16:45:35 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManagerWin32.py,v 1.8 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.1 2004-02-26 16:45:35 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import win32process
 
 import logging
 
-log = logging.getLogger("AG.ProcessManagerWin32")
+log = logging.getLogger("AG.ProcessManager")
 
-class ProcessManagerWin32:
+class ProcessManager:
     def __init__(self):
         self.processes = []
 
@@ -91,10 +91,8 @@ class ProcessManagerWin32:
             log.exception("couldn't terminate process %s: %s", phandle, e)
 
 if __name__ == "__main__":
-
     import time
-
-    mgr = ProcessManagerWin32()
+    mgr = ProcessManager()
     mgr.start_process("notepad", [r"\boot.ini"])
 
     time.sleep(5)

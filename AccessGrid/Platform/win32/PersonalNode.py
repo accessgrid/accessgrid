@@ -1,11 +1,11 @@
 #-----------------------------------------------------------------------------
-# Name:        PersonalNodeWin32.py
+# Name:        PersonalNode.py
 # Purpose:     Support for PersonalNode startup on Windows.
 #
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: PersonalNodeWin32.py,v 1.4 2003-10-14 04:27:00 judson Exp $
+# RCS-ID:      $Id: PersonalNode.py,v 1.1 2004-02-26 16:45:35 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ of a Personal Node.
 
 """
 
-__revision__ = "$Id: PersonalNodeWin32.py,v 1.4 2003-10-14 04:27:00 judson Exp $"
+__revision__ = "$Id: PersonalNode.py,v 1.1 2004-02-26 16:45:35 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -31,7 +31,7 @@ import re
 
 import logging
 
-from AccessGrid import Platform
+from AccessGrid.Platform import Platform
 
 log = logging.getLogger("AG.PersonalNode")
 log.setLevel(logging.WARN)

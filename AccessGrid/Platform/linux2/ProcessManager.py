@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerUnix.py,v 1.11 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.1 2004-02-26 16:45:35 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManagerUnix.py,v 1.11 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.1 2004-02-26 16:45:35 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import signal
@@ -19,9 +19,9 @@ import os
 import time
 import logging
 
-log = logging.getLogger("AG.ProcessManagerUnix")
+log = logging.getLogger("AG.ProcessManager")
 
-class ProcessManagerUnix:
+class ProcessManager:
 
     def __init__(self):
         self.processes = []
@@ -118,7 +118,7 @@ class ProcessManagerUnix:
 
 
 if __name__ == "__main__":
-    mgr = ProcessManagerUnix()
+    mgr = ProcessManager()
     mgr.start_process("date",[])
 
     time.sleep(3)

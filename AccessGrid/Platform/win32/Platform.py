@@ -1,80 +1,23 @@
-#-----------------------------------------------------------------------------
-# Name:        Platform.py
-# Purpose:
-#
-# Author:      Ivan R. Judson
-#
-# Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.59 2004-02-24 21:57:06 judson Exp $
-# Copyright:   (c) 2002-2003
-# Licence:     See COPYING.txt
-#-----------------------------------------------------------------------------
-"""
-The Platform Module is to isolate OS specific interfaces.
-"""
-__revision__ = "$Id: Platform.py,v 1.59 2004-02-24 21:57:06 judson Exp $"
-__docformat__ = "restructuredtext en"
-
 import os
 import sys
-import getpass
-import time
-import mimetypes, mailcap
-
 import logging
 
 from AccessGrid.Version import GetVersion
 
 log = logging.getLogger("AG.Platform")
-log.setLevel(logging.WARN)
-
-# Global env var
-AGTK = 'AGTK'
-AGTK_LOCATION = 'AGTK_LOCATION'
-AGTK_USER = 'AGTK_USER'
-AGTK_INSTALL = 'AGTK_INSTALL'
+log.setLevel(logging.INFO)
 
 # Windows Defaults
-WIN = 'win32'
-
 try:
     import _winreg
     import win32api
     from win32com.shell import shell, shellcon
 except:
+    print "Python windows extensions are missing, but required!"
     pass
 
 # This gets updated with a call to get the version
 AGTkRegBaseKey = "SOFTWARE\Access Grid Toolkit\%s" % GetVersion()
-
-def isWindows():
-    """Function that retusn 1 if the platform is windows, 0 otherwise """
-    if sys.platform == WIN:
-        return 1
-    else:
-        return 0
-
-# Linux Defaults
-LINUX = 'linux2'
-AGTkBasePath = "/etc/AccessGrid"
-
-def isLinux():
-    """Function that retusn 1 if the platform is linux, 0 otherwise """
-    if sys.platform == LINUX:
-        return 1
-    else:
-        return 0
-
-# Mac OS X Defaults
-OSX='darwin'
-AGTkBasePath="/etc/AccessGrid"
-
-def isOSX():
-    """Function that retusn 1 if the platform is mac os x, 0 otherwise """
-    if sys.platform == OSX:
-        return 1
-    else:
-        return 0
 
 def GetSystemConfigDir():
     """
@@ -84,21 +27,8 @@ def GetSystemConfigDir():
     try:
         configDir = os.environ[AGTK_LOCATION]
     except:
-        configDir = ""
-
-    """
-    If environment variable not set, check for settings from installation.
-    """
-
-    if "" == configDir:
-
-        if isWindows():
-            base = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA, 0,
-                                         0)
-            configDir = os.path.join(base, "AccessGrid")
-
-        elif isLinux() or isOSX():
-            configDir = AGTkBasePath
+        base = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA, 0, 0)
+        configDir = os.path.join(base, "AccessGrid")
 
     return configDir
 
@@ -106,32 +36,18 @@ def GetUserConfigDir():
     """
     Determine the user configuration directory
     """
-
     try:
         configDir = os.environ[AGTK_USER]
     except:
-        configDir = ""
-
-    """
-    If environment variable not set, check for settings from installation.
-    """
-
-    if "" == configDir:
-        if isWindows():
-            base = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
-            configDir = os.path.join(base, "AccessGrid")
-        elif isLinux() or isOSX():
-            configDir = os.path.join(os.environ["HOME"],".AccessGrid")
-
+        base = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
+        configDir = os.path.join(base, "AccessGrid")
     return configDir
 
 def GetUserAppPath():
     """
     Return the path to the users shared applications directory.
     """
-
     ucd = GetUserConfigDir()
-
     appPath = os.path.join(ucd, "SharedApplications")
 
     return appPath
@@ -159,25 +75,16 @@ def GetInstallDir():
     """
     Determine the install directory
     """
-
+    global AGTkRegBaseKey
     try:
         installDir = os.environ[AGTK_INSTALL]
     except:
-        installDir = ""
-
-    if installDir != "":
-        return installDir;
-
-    if isWindows():
         try:
             AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
             installDir, valuetype = _winreg.QueryValueEx(AG20,"InstallPath")
             installDir = os.path.join(installDir, "bin")
-        except WindowsError:
-            log.exception("Cannot open install directory reg key")
+        except:
             installDir = ""
-    elif isLinux() or isOSX():
-        installDir = "/usr/bin"
 
     return installDir
 
@@ -185,64 +92,41 @@ def GetSharedDocDir():
     """
     Determine the shared doc directory
     """
-
+    global AGTkRegBaseKey
+    
     try:
         sharedDocDir = os.environ[AGTK_INSTALL]
     except:
-        sharedDocDir = ""
-
-    if sharedDocDir != "":
-        return sharedDocDir;
-
-    if isWindows():
         try:
             AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
             sharedDocDir, valuetype = _winreg.QueryValueEx(AG20,"InstallPath")
             sharedDocDir = os.path.join(sharedDocDir, "doc")
-        except WindowsError:
-            log.exception("Cannot open InstallPath directory reg key")
+        except:
             sharedDocDir = ""
-
-    elif isLinux() or isOSX():
-        sharedDocDir = "/usr/share/doc/AccessGrid/Documentation"
-
+        
     return sharedDocDir
 
 def GetTempDir():
     """
     Return a directory in which temporary files may be written.
     """
-
-    if isWindows():
-        return win32api.GetTempPath()
-    else:
-        return "/tmp"
-
+    return win32api.GetTempPath()
 
 def GetSystemTempDir():
     """
     Return a directory in which temporary files may be written.
     The system temp dir is guaranteed to not be tied to any particular user.
     """
-
-    if isWindows():
-        winPath = win32api.GetWindowsDirectory()
-        return os.path.join(winPath, "TEMP")
-    else:
-        return "/tmp"
+    winPath = win32api.GetWindowsDirectory()
+    return os.path.join(winPath, "TEMP")
 
 def GetUsername():
-
-    if isWindows():
-        try:
-            user = win32api.GetUserName()
-            user.replace(" ", "")
-            return user
-        except:
-            pass
-
-    return getpass.getuser()
-
+    try:
+        user = win32api.GetUserName()
+        user.replace(" ", "")
+        return user
+    except:
+        raise
 
 def GetFilesystemFreeSpace(path):
     """
@@ -251,94 +135,66 @@ def GetFilesystemFreeSpace(path):
 
     Returns a value in bytes.
     """
-
     #
-    # On Unix-like systems (including Linux) we can use os.statvfs.
+    # Otherwise use win32api.GetDiskFreeSpace.
     #
-    # f_bsize is the "preferred filesystem block size"
-    # f_frsize is the "fundamental filesystem block size"
-    # f_bavail is the number of blocks free
+    # From the source to win32api:
     #
-    if hasattr(os, "statvfs"):
-        x = os.statvfs(path)
+    # The return value is a tuple of 4 integers, containing
+    # the number of sectors per cluster, the number of bytes per sector,
+    # the total number of free clusters on the disk and the total number of
+    # clusters on the disk.
+    #
 
-        #
-        # On some older linux systems, f_frsize is 0. Use f_bsize instead then.
-        # cf http://www.uwsg.iu.edu/hypermail/linux/kernel/9907.3/0019.html
-        #
-        if x.f_frsize == 0:
-            blockSize = x.f_bsize
-        else:
-            blockSize = x.f_frsize
-
-        freeBytes = blockSize * x.f_bavail
-
-    elif isWindows():
-
-        #
-        # Otherwise use win32api.GetDiskFreeSpace.
-        #
-        # From the source to win32api:
-        #
-        # The return value is a tuple of 4 integers, containing
-        # the number of sectors per cluster, the number of bytes per sector,
-        # the total number of free clusters on the disk and the total number of
-        # clusters on the disk.
-        #
-
+    try:
         x = win32api.GetDiskFreeSpace(path)
 
         freeBytes = x[0] * x[1] * x[2]
-    else:
+    except:
         freeBytes = None
 
     return freeBytes
 
-if isWindows():
+def FindRegistryEnvironmentVariable(varname):
+    """
+    Find the definition of varname in the registry.
+    
+    Returns the tuple (global_value, user_value).
+    
+    We can use this to determine if the user has set an environment
+    variable at the commandline if it's causing problems.
+    
+    """
+    env_key = r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
+    global_reg = None
+    user_reg = None
+    
+    #
+    # Read the system registry
+    #
+    k = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, env_key)
+              
+    try:
+        (val, valuetype) = _winreg.QueryValueEx(k, varname)
+        global_reg = val
+    except:
+        pass
+    k.Close()
+    
+    # Read the user registry
+    k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment")
+    
+    try:
+        (val, valuetype) = _winreg.QueryValueEx(k, varname)
+        user_reg = val
+    except:
+        pass
+    k.Close()
+    
+    
+    return (global_reg, user_reg)
 
-    def FindRegistryEnvironmentVariable(varname):
-        """
-        Find the definition of varname in the registry.
-
-        Returns the tuple (global_value, user_value).
-
-        We can use this to determine if the user has set an environment
-        variable at the commandline if it's causing problems.
-
-        """
-
-        global_reg = None
-        user_reg = None
-
-        #
-        # Read the system registry
-        #
-        k = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE,
-        r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment")
-        try:
-            (val, valuetype) = _winreg.QueryValueEx(k, varname)
-            global_reg = val
-        except:
-            pass
-        k.Close()
-
-        #
-        # Read the user registry
-        #
-
-        k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment")
-
-        try:
-            (val, valuetype) = _winreg.QueryValueEx(k, varname)
-            user_reg = val
-        except:
-            pass
-        k.Close()
-
-
-        return (global_reg, user_reg)
-
-def Win32SendSettingChange():
+def SendSettingChange():
     """
     This updates all windows with registry changes to the HKCU\Environment key.
     """
@@ -350,11 +206,7 @@ def Win32SendSettingChange():
                                       1000)
     return ret
 
-#
-# Windows register mime type function
-#
-
-def Win32RegisterMimeType(mimeType, extension, fileType, description, cmds):
+def RegisterMimeType(mimeType, extension, fileType, description, cmds):
     """
     mimeType - mimetype designator
     extension - file extension
@@ -441,7 +293,7 @@ def Win32RegisterMimeType(mimeType, extension, fileType, description, cmds):
     except EnvironmentError, e:
         log.debug("Couldn't open registry for mime registration!")
 
-def Win32GetMimeCommands(mimeType = None, ext = None):
+def GetMimeCommands(mimeType = None, ext = None):
     """
     This gets the mime commands from one of the three types of specifiers
     windows knows about. Depending on which is passed in the following
@@ -529,7 +381,7 @@ def Win32GetMimeCommands(mimeType = None, ext = None):
 
     return cdict
 
-def Win32GetMimeType(extension = None):
+def GetMimeType(extension = None):
     mimeType = None
     if extension != None:
         if extension[0] != ".":
@@ -545,7 +397,7 @@ def Win32GetMimeType(extension = None):
 
     return mimeType
 
-def Win32InitUserEnv():
+def InitUserEnv():
     """
     This is a placeholder for doing per user initialization that should
     happen the first time the user runs any toolkit application. For now,
@@ -643,7 +495,7 @@ def Win32InitUserEnv():
     sharedAppPkgCmds = list()
     sharedAppPkgCmds.append(open)
 
-    Win32RegisterMimeType(sharedAppPkgType, sharedAppPkgExt,
+    RegisterMimeType(sharedAppPkgType, sharedAppPkgExt,
                           "x-ag-shared-app-pkg", sharedAppPkgDesc,
                           sharedAppPkgCmds)
 
@@ -677,73 +529,11 @@ def Win32InitUserEnv():
     # Invoke windows magic to get settings to be recognized by the
     # system. After this incantation all new things know about the
     # settings.
-    Win32SendSettingChange()
+    SendSettingChange()
     
     return 1
     
-def LinuxInitUserEnv():
-    """
-    This is the place for user initialization code to go.
-    """
-    pass
-
-def LinuxGetMimeType(extension = None):
-    """
-    """
-    fauxFn = ".".join(["Faux", extension])
-    mimetypes.init()
-
-    # This is always a tuple so this is Ok
-    mimeType = mimetypes.guess_type(fauxFn)[0]
-
-    return mimeType
-
-def LinuxGetMimeCommands(mimeType = None, ext = None):
-    """
-    """
-    cdict = dict()
-    view = 'view'
-
-    if mimeType == None:
-        mimeType = LinuxGetMimeType(extension = ext)
-
-    # We only care about mapping view to Open
-    caps = mailcap.getcaps()
-
-    # This always returns a tuple, so this should be safe
-    if mimeType != None:
-        match = mailcap.findmatch(caps, mimeType, view)[1]
-    else:
-        return cdict
-
-    if match != None:
-        cdict['Open'] = match[view]
-
-    return cdict
-
-#
-# Unix Daemonize, this is not appropriate for Win32
-#
-
-def LinuxDaemonize():
-    try:
-        pid = os.fork()
-    except:
-        print "Could not fork"
-        sys.exit(1)
-
-        if pid:
-            # Let parent die !
-            sys.exit(0)
-        else:
-            try:
-                # Create new session
-                os.setsid()
-            except:
-                print "Could not create new session"
-                sys.exit(1)
-
-def SetRtpDefaultsWin( profile ):
+def SetRtpDefaults( profile ):
     """
     Set registry values used by vic and rat for identification
     """
@@ -770,44 +560,4 @@ def SetRtpDefaultsWin( profile ):
     _winreg.SetValueEx(k, "rtpNote", 0, _winreg.REG_SZ, str(profile.publicId) )
 
     _winreg.CloseKey(k)
-
-def SetRtpDefaultsUnix( profile ):
-    """
-    Set registry values used by vic and rat for identification
-    """
-    #
-    # Write the rtp defaults file
-    #
-    rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
-                     %s\n*rtpNote: %s\n"
-    rtpDefaultsFile=open( os.path.join(os.environ["HOME"], ".RTPdefaults"),"w")
-    rtpDefaultsFile.write( rtpDefaultsText % ( profile.name,
-    profile.email,
-    profile.location,
-    profile.phoneNumber,
-    profile.publicId ) )
-    rtpDefaultsFile.close()
-
-if isWindows():
-    SetRtpDefaults = SetRtpDefaultsWin
-    Daemonize = lambda : None
-    RegisterMimeType = Win32RegisterMimeType
-    GetMimeCommands = Win32GetMimeCommands
-    GetMimeType = Win32GetMimeType
-    InitUserEnv = Win32InitUserEnv
-elif isOSX():
-    SetRtpDefaults = SetRtpDefaultsUnix
-    RegisterMimeType = lambda : None
-    GetMimeCommands = lambda : None # LinuxGetMimeCommands
-    GetMimeType = lambda : None # LinuxGetMimeType
-    Daemonize = LinuxDaemonize
-    InitUserEnv = LinuxInitUserEnv
-else:
-    SetRtpDefaults = SetRtpDefaultsUnix
-    # We do need this on linux
-    RegisterMimeType = lambda : None
-    GetMimeCommands = LinuxGetMimeCommands
-    GetMimeType = LinuxGetMimeType
-    Daemonize = LinuxDaemonize
-    InitUserEnv = LinuxInitUserEnv
 

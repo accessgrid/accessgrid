@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.113 2004-02-26 04:59:44 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.114 2004-02-26 16:47:22 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.113 2004-02-26 04:59:44 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.114 2004-02-26 16:47:22 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -144,10 +144,19 @@ class VenueServer(AuthorizationMixIn):
         # Initialize Auth stuff
         AuthorizationMixIn.__init__(self)
         self.AddRole(Role.Role("Administrators"))
-        
         rl = self.GetRoles()
         self.authManager.AddRoles(rl)
 
+        # Get the silly default subject this really should be fixed
+        certMgr = Toolkit.GetApplication().GetCertificateManager()
+        di = certMgr.GetDefaultIdentity().GetSubject()
+        ds = X509Subject.CreateSubjectFromString(di)
+        admins = self.authManager.FindRole("Administrators")
+        admins.AddSubject(ds)
+
+        # In the venueserver we default to admins
+        self.authManager.SetDefaultRoles([admins])
+        
         # Initialize our state
         self.persistenceFilename = 'VenueServer.dat'
         self.houseKeeperFrequency = 30
@@ -184,7 +193,7 @@ class VenueServer(AuthorizationMixIn):
         self.InitFromFile(LoadConfig(self.configFile, self.configDefaults))
 
         # Initialize the multicast address allocator
-        self.multicastAddressAllocator.SetAddressAllocationMethod(self.addressAllocationMethod)
+        self.multicastAddressAllocator.SetAllocationMethod(self.addressAllocationMethod)
         self.multicastAddressAllocator.SetBaseAddress(self.baseAddress)
         self.addressMask = int(self.addressMask)
         self.multicastAddressAllocator.SetAddressMask(self.addressMask)
@@ -260,19 +269,6 @@ class VenueServer(AuthorizationMixIn):
         # Get all the methodactions
         ma = vsi._GetMethodActions()
         self.authManager.AddActions(ma)
-        
-#         rl = self.GetRoles()
-#         self.authManager.AddRoles(rl)
-        
-        # Get the silly default subject this really should be fixed
-        certMgr = Toolkit.GetApplication().GetCertificateManager()
-        di = certMgr.GetDefaultIdentity().GetSubject()
-        ds = X509Subject.CreateSubjectFromString(di)
-        admins = self.authManager.FindRole("Administrators")
-        admins.AddSubject(ds)
-
-        # In the venueserver we default to admins
-        self.authManager.SetDefaultRoles([admins])
         
         # Then we create the VenueServer service
         self.hostingEnvironment.RegisterObject(vsi, path='/VenueServer')
@@ -843,7 +839,7 @@ class VenueServer(AuthorizationMixIn):
         self.simpleLock.acquire()
 
         self.addressAllocationMethod = addressAllocationMethod
-        self.multicastAddressAllocator.SetAddressAllocationMethod(
+        self.multicastAddressAllocator.SetAllocationMethod(
             addressAllocationMethod )
         self.config["VenueServer.addressAllocationMethod"] = addressAllocationMethod
 
@@ -855,7 +851,7 @@ class VenueServer(AuthorizationMixIn):
         Get the method used for multicast address allocation:
             either RANDOM or INTERVAL (defined in MulticastAddressAllocator)
         """
-        return self.multicastAddressAllocator.GetAddressAllocationMethod()
+        return self.multicastAddressAllocator.GetAllocationMethod()
 
     def SetBaseAddress(self, address):
         """

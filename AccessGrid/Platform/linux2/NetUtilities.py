@@ -5,13 +5,13 @@
 # Author:      Robert Olson
 #
 # Created:     9/11/2003
-# RCS-ID:      $Id: NetUtilitiesLinux.py,v 1.2 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: NetUtilities.py,v 1.1 2004-02-26 16:45:35 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetUtilitiesLinux.py,v 1.2 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: NetUtilities.py,v 1.1 2004-02-26 16:45:35 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys

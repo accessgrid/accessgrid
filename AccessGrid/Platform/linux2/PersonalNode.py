@@ -1,11 +1,11 @@
 #-----------------------------------------------------------------------------
-# Name:        PersonalNodePipes.py
+# Name:        PersonalNode.py
 # Purpose:     Support for PersonalNode startup using unix pipes for synchronization.
 #
 # Author:      Robert Olson
 #
 # Created:     2003/05/05
-# RCS-ID:      $Id: PersonalNodePipes.py,v 1.5 2004-01-20 23:06:49 eolson Exp $
+# RCS-ID:      $Id: PersonalNode.py,v 1.1 2004-02-26 16:45:35 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ Svc mgr:
 
 """
 
-__revision__ = "$Id: PersonalNodePipes.py,v 1.5 2004-01-20 23:06:49 eolson Exp $"
+__revision__ = "$Id: PersonalNode.py,v 1.1 2004-02-26 16:45:35 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -64,7 +64,7 @@ import logging
 
 from AccessGrid import Platform
 
-log = logging.getLogger("AG.PersonalNodePipes")
+log = logging.getLogger("AG.PersonalNode")
 
 class Pipe:
     """
