@@ -61,6 +61,11 @@ cmd = "cp globus-accessgrid-2.4-i486-1.tgz %s" % (RpmDir,)
 print "cmd = ", cmd     
 os.system(cmd)      
 
+# Now that the globus pkg has been copied to the "RpmDir" for packaging,
+# remove it from here
+cmd = "rm -f globus-accessgrid-2.4-i486-1.tgz"
+os.system(cmd)
+
 #
 # Build AccessGrid packages for Slackware
 #
@@ -90,6 +95,11 @@ os.system(cmd)
 print "** Copying RPMs to the RPM directory **"
 cmd = "cp AccessGrid-%s-i486-%s.tgz %s" % (version,metainfo,RpmDir)
 print "cmd = ", cmd
+os.system(cmd)
+
+# Now that the AccessGrid pkg has been copied to the "RpmDir" for packaging,
+# remove it from here
+cmd = "rm -f AccessGrid-%s-i486-%s.tgz" % (version,metainfo)
 os.system(cmd)
 
 #
