@@ -217,6 +217,7 @@ mkdir -p %{buildroot}/tmp/local_services
 %{prefix}/bin/AGNodeService.py
 %{prefix}/bin/VenueClient.py
 %{prefix}/bin/NodeManagement.py
+%{prefix}/doc/VENUE_CLIENT_MANUAL_HTML
 /etc/init.d/agns
 %defattr(0644,root,root)
 %config %{sysconfdir}/AGNodeService.cfg
