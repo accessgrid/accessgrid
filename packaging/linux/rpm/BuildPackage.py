@@ -25,9 +25,6 @@ parser.add_option("--verbose", action="store_true", dest="verbose",
 parser.add_option("-p", "--pythonversion", dest="pyver",
                   metavar="PYTHONVERSION", default="2.3",
                   help="Which version of python to build the installer for.")
-parser.add_option("-n", dest="buildnum",
-                  metavar="BUILDNUM", 
-                  help="Build (or release) number")
 
 options, args = parser.parse_args()
 
@@ -36,7 +33,6 @@ BuildDir = options.builddir
 DestDir = options.destdir
 metainfo = options.metainfo
 version = options.version
-buildnum = options.buildnum
 
 
 print "In rpm/build_package.py"
@@ -49,7 +45,7 @@ print "version = ", version
 TmpDir = os.tmpnam()
 if not os.path.exists(TmpDir):
     os.mkdir(TmpDir)
-RpmDir = os.path.join(TmpDir,"AccessGrid-%s" % (version,))
+RpmDir = os.path.join(TmpDir,"AccessGrid-%s-%s" % (version,metainfo))
 if not os.path.exists(RpmDir):
     os.mkdir(RpmDir)
 StartDir = os.getcwd()
@@ -71,7 +67,7 @@ os.system(cmd)
 print "** Building AccessGrid RPMs"
 # - build the targz file for the AG rpms
 os.chdir(DestDir)
-tar_dst_filename = "AccessGrid-%s-%s.tar.gz" % (version,buildnum)
+tar_dst_filename = "AccessGrid-%s-%s.tar.gz" % (version,metainfo)
 
 rpm_srcdir = "/usr/src/redhat/SOURCES"
 tar_command = "tar czhf %s ." % ( os.path.join(rpm_srcdir, tar_dst_filename), )
@@ -80,25 +76,34 @@ rc = os.system(tar_command)
 if rc != 0:
     print "tar command \"", tar_command, "\" failed with rc ", rc
     sys.exit(1)
+
+# - set the release number in AccessGrid.spec
+os.chdir(StartDir)
+spec_in = 'AccessGrid.spec.in'
+spec_out = 'AccessGrid.spec'
+cmd = 'sed s/RELEASE/%s/ %s > %s' % (metainfo,
+                                     spec_in,spec_out)
+print "cmd = ", cmd
+os.system(cmd)
     
 # - build the rpms
-os.chdir(StartDir)
 cmd = "rpmbuild -ba AccessGrid.spec" 
 print "cmd = ", cmd
 os.system(cmd)
 
 # - copy the rpms to the dist dir
 print "** Copying RPMs to the RPM directory"
-cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-%s-4.i386.rpm %s" % (version,RpmDir)
+cmd = "cp /usr/src/redhat/RPMS/i386/AccessGrid-%s-%s.i386.rpm %s" % (version,metainfo,RpmDir)
 print "cmd = ", cmd
 os.system(cmd)
 
 #
 # Copy the install.sh script into the dist dir
 #
-installsh = os.path.join(BuildDir,'packaging','linux','rpm','install.sh')
-cmd = "cp %s %s" % (installsh,
-                    RpmDir)
+installsh_in = os.path.join(BuildDir,'packaging','linux','rpm','install.sh')
+installsh_out = os.path.join(RpmDir,'install.sh')
+cmd = 'sed s/AG_VER=VER/AG_VER=\\"%s-%s\\"/ %s > %s' % (version,metainfo,
+                                                    installsh_in,installsh_out)
 print "cmd = ", cmd
 os.system(cmd)
 
@@ -106,10 +111,10 @@ os.system(cmd)
 # Create the targz file including the rpms and install script
 #
 print "Creating the AccessGrid install bundle"
-targzfile = 'AccessGrid-%s.tar.gz' % version
+targzfile = 'AccessGrid-%s-%s.tar.gz' % (version,metainfo)
 targzpath=os.path.join(SourceDir,targzfile)
 os.chdir(TmpDir)
-cmd = "tar czf %s AccessGrid-%s" % (targzpath,version)
+cmd = "tar czf %s AccessGrid-%s-%s" % (targzpath,version,metainfo)
 print "cmd = ", cmd
 os.system(cmd)
 
