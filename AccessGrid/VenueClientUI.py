@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.69 2004-08-18 15:22:37 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.70 2004-08-18 16:55:33 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.69 2004-08-18 15:22:37 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.70 2004-08-18 16:55:33 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -161,6 +161,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     def __init__(self, venueClient, controller, app):
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
+
+        self.app = app
         
         self.venueClient = venueClient
         self.controller = controller
@@ -955,11 +957,15 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         setNodeUrlDialog.Destroy()
         
     def ManageNodeCB(self, event):
+        if not self.app.certificateManager.HaveValidProxy():
+                self.app.certificateManager.CreateProxy()
+        
         if self.nodeManagementFrame:
             self.nodeManagementFrame.Raise()
         else:
             self.nodeManagementFrame = NodeManagementClientFrame(self, -1, "Access Grid Node Management")
             log.debug("VenueClientFrame.OpenNodeMgmtApp: open node management")
+
             try:
                 self.nodeManagementFrame.AttachToNode( self.venueClient.GetNodeServiceUri() )
             except:
