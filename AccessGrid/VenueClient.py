@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.42 2003-03-26 15:13:25 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.43 2003-03-26 15:17:34 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -359,14 +359,28 @@ class VenueClient( ServiceBase):
         UnLead tells this venue client to stop dragging the specified client.
         """
 
-        log.debug( "AccessGrid.VenueClient::Received request to lead %s %s" %(clientProfile.name, clientProfile.venueClientURL))
+        log.debug( "AccessGrid.VenueClient::Received request to unlead %s %s"
+                   %(clientProfile.name, clientProfile.venueClientURL))
+
         if(self.followerProfiles.has_key(clientProfile.publicId)):
             del self.followerProfiles[clientProfile.publicId]
 
         if(self.pendingFollowers.has_key(clientProfile.publicId)):
             del self.pendingFollowers[clientProfile.publicId]
 
+        threading.Thread(target = self.NotifyUnLead, args = (clientProfile,) ).start()
+            
+    Lead.soap_export_as = "UnLead"
+
+    def NotifyUnLead(self, clientProfile):
+        """
+        Notify requests to stop leading this client.  
         
+        Subclasses should override this method to perform their specific 
+        notification
+        """
+        pass
+               
     def SetNodeServiceUri( self, nodeServiceUri ):
         """
         Bind the given node service to this venue client
