@@ -39,10 +39,8 @@ class VenueManagementClient(wxApp):
     def ConnectToServer(self, URL):
         try:
             self.client = Client.Handle(URL).get_proxy()
-            print 'getting venues'
             venueList = self.client.GetVenues()
-            print 'after getting venues'
-
+            
         except:
             ErrorDialog(self.frame, 'The server you are trying to connect to is not running!')
                  
@@ -218,6 +216,10 @@ class VenueProfilePanel(wxPanel):
 	self.exitsLabel = wxStaticText(self, -1, 'Exits:', size = wxSize(50, 20), \
 				       name = "exitsLabel", style = wxALIGN_RIGHT)
 	self.exits = wxListBox(self, 10, size = wxSize(250, 100), style = wxTE_READONLY)
+        self.exitsLabel.Hide()
+        self.exits.Hide()
+        self.venueProfileBox.SetLabel("")
+        self.description.SetLabel("Not connected to server")
 	self.__doLayout()
 
     def EvtListBox(self, event):
@@ -231,8 +233,10 @@ class VenueProfilePanel(wxPanel):
         if data == None:
             self.venueProfileBox.SetLabel("")
             self.description.SetLabel("No venues in server")
-            
+                       
         else:
+            self.exitsLabel.Show()
+            self.exits.Show()
             self.venueProfileBox.SetLabel(data.name)
             self.description.SetLabel(data.description)
             # self.icon.SetBitmap(wxBitmap(data.icon))
@@ -453,7 +457,6 @@ class AdministratorsListPanel(wxPanel):
         addAdministratorDialog = AddAdministratorFrame(self, -1, "")
 
     def OpenModifyAdministratorDialog(self, title):
-        print '***********'
         index =  self.administratorsList.GetSelection()
         name = self.administratorsList.GetString(index)
         self.administratorsList.Delete(index)
@@ -952,7 +955,6 @@ class ModifyAdministratorFrame(AdministratorParamFrame):
         AdministratorParamFrame.__init__(self, parent, id, title)
         self.parent = parent
         self.name.Clear()
-        print oldName
         self.name.AppendText(oldName)
         if (self.ShowModal() == wxID_OK ):
             self.parent.ModifyAdministrator(oldName, self.name.GetValue())      
