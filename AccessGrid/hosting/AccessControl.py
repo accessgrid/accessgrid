@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: AccessControl.py,v 1.8 2003-08-04 22:16:07 eolson Exp $
+# RCS-ID:      $Id: AccessControl.py,v 1.9 2003-08-08 19:25:00 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -152,7 +152,7 @@ class Role:
         #print "Remove Subject: self.subjects:", self.subjects
         for i in range(len(self.subjects)-1, -1, -1):
             if isinstance(self.subjects[i], Subject):
-                if self.subjects[i].isUser(subject):
+                if self.subjects[i].IsUser(subject):
                     del self.subjects[i]
             elif self.subjects[i] == subject:
                 del self.subjects[i]
