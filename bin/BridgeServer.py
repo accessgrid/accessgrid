@@ -1,5 +1,6 @@
 #!/usr/bin/python2
 
+import os
 import logging
 import Queue
 import threading
@@ -14,15 +15,131 @@ from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.Events import Event, ConnectEvent, HeartbeatEvent
 from AccessGrid.EventClient import EventClient, EventClientWriteDataException
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-from AccessGrid.NetworkLocation import UnicastNetworkLocation
+from AccessGrid.NetworkLocation import UnicastNetworkLocation, ProviderProfile
 from AccessGrid.ProcessManagerUnix import ProcessManagerUnix as ProcessManager
 
 
-quickBridgeExec = None
 logFile = 'BridgeServer.log'
 
+
+class BridgeFactory:
+    """
+    The BridgeFactory class is used to create and manage Bridges.
+    If multiple bridges are requested for a multicast group, they
+    use the same, single bridge.  When the reference count on a
+    Bridge goes to zero, the Bridge is actually stopped and 
+    deleted
+    """
+
+    class Bridge:
+        """
+        The Bridge class encapsulates execution of the bridge software
+        """
+        def __init__(self, qbexec,id, maddr, mport, mttl, uaddr, uport):
+            self.qbexec = qbexec
+            self.id = id
+            self.maddr = maddr
+            self.mport = mport
+            self.mttl = mttl
+            self.uaddr = uaddr
+            self.uport = uport
+
+            # Instantiate the process manager
+            self.processManager = ProcessManager()
+
+            # Setup the log
+            self.log = logging.getLogger("AG.BridgeServer")
+
+        def Start(self):
+            """
+            Start the Bridge (actually execute the bridge process)
+            """
+            self.log.debug("Method Bridge.Start called")
+
+            # Log detail about bridge being started
+            self.log.debug("Starting bridge:")
+            self.log.debug("  [maddr,mport,mttl] = %s %d %d", self.maddr, self.mport, self.mttl)
+            self.log.debug("  [uaddr,uport] = %s %d", self.uaddr, self.uport)
+
+            # Start the process
+            args = [
+                    "-g", self.maddr,
+                    "-m", '%d' % (self.mport,),
+                    "-u", '%d' % (self.uport,),
+                   ]
+            self.processManager.start_process(self.qbexec,args)
+
+        def Stop(self):
+            """
+            Stop stops the bridge, terminating bridge processes
+            """
+            self.log.debug("Method Bridge.Stop called")
+            self.processManager.terminate_all_processes()
+
+
+    def __init__(self, qbexec):
+        self.qbexec = qbexec
+        self.bridges = dict()
+        self.log = logging.getLogger("AG.BridgeServer")
+
+    def CreateBridge(self,id,maddr,mport,mttl,uaddr,uport):
+        """
+        This method returns an existing bridge for the given maddr/mport,
+        or a new one
+        """
+
+        self.log.info("Method CreateBridge called")
+
+        retBridge = None
+
+        # - Check for an existing bridge with the given multicast addr/port
+        for bridge,refcount in self.bridges.values():
+            if bridge.maddr == maddr and bridge.mport == mport:
+                self.log.info("- using existing bridge")
+                retBridge = bridge
+                refcount += 1
+                key = "%s%d" % (maddr,mport)
+                self.bridges[key] = (retBridge,refcount)
+
+        # - If bridge does not exist; create one
+        if not retBridge:
+            # Instantiate a new bridge
+            self.log.debug("- creating new bridge")
+            retBridge = BridgeFactory.Bridge(self.qbexec,id,maddr,mport,mttl,uaddr,uport)
+            retBridge.Start()
+   
+            # Add the bridge to the list of bridges
+            key = "%s%d" % (retBridge.maddr,retBridge.mport)
+            self.bridges[key] = (retBridge,1)
+
+        return retBridge
+
+
+    def DestroyBridge(self,bridge):
+        """
+        DestroyBridge deletes the specified bridge from the list of bridges
+        """
+
+        self.log.info("Method DestroyBridge called")
+
+        key = "%s%d" % (bridge.maddr,bridge.mport)
+        if self.bridges.has_key(key):
+            bridge,refcount = self.bridges[key]
+            refcount -= 1
+            self.bridges[key] = (bridge,refcount)
+
+            # if the refcount is 1 (the factory holds the only reference),
+            # stop and delete the bridge
+            if refcount == 0:
+                self.log.info("- Stopping and deleting bridge")
+                bridge.Stop()
+                del self.bridges[key]
+
+
 class BridgeServer:
-    def __init__(self, debug=0):
+    def __init__(self, providerProfile, bridgeFactory, debug=0):
+        self.providerProfile = providerProfile
+        self.bridgeFactory = bridgeFactory
         self.debug = debug
 
         self.venues = dict()
@@ -36,7 +153,7 @@ class BridgeServer:
         by the BridgeServer
         """
         self.log.debug("Method BridgeServer.AddVenue called")
-        self.venues[venueUrl] = Venue(venueUrl)
+        self.venues[venueUrl] = Venue(venueUrl, self.providerProfile, self.bridgeFactory)
 
     def RemoveVenue(self, venueUrl):
         """
@@ -45,6 +162,7 @@ class BridgeServer:
         """
         self.log.debug("Method BridgeServer.RemoveVenue called")
         if self.venues.has_key(venueUrl):
+            self.venues[venueUrl].Shutdown()
             del self.venues[venueUrl]
 	    
     def GetVenues(self):
@@ -83,7 +201,6 @@ class BridgeServer:
         self.log.debug("Method BridgeServer.Shutdown called")
 
         # Remove venues
-        self.log.debug("- Removing venues")
         self.RemoveVenues()
 
         # Clear the running state
@@ -114,10 +231,13 @@ class Venue:
     EVT_REMOVEBRIDGE="RemoveBridge"
     EVT_QUIT="Quit"
 
-    def __init__(self, venueUrl):
+    def __init__(self, venueUrl, providerProfile, bridgeFactory ):
 
         # Init data
         self.venueUrl = venueUrl
+        self.providerProfile = providerProfile
+        self.bridgeFactory = bridgeFactory
+
         self.venueProxy = Client.Handle(venueUrl).GetProxy()
         self.bridges = dict()
         self.queue = Queue.Queue()
@@ -146,10 +266,8 @@ class Venue:
         self.eventClient.RegisterCallback(Event.ADD_STREAM, self.EventReceivedCB)
         self.eventClient.RegisterCallback(Event.REMOVE_STREAM, self.EventReceivedCB)
         
-        t1 = threading.Thread(target=self.RunQueueThread)
-        t2 = threading.Thread(target=self.HeartbeatThread)
-        t1.start()
-        t2.start()
+        threading.Thread(target=self.RunQueueThread).start()
+        threading.Thread(target=self.HeartbeatThread).start()
 
 
     def EventReceivedCB(self, event):
@@ -164,7 +282,7 @@ class Venue:
             self.AddBridge(strDesc)
         elif event.eventType == Event.REMOVE_STREAM:
             strDesc = event.data
-            self.__RemoveBridge(strDesc.id)
+            self.RemoveBridge(strDesc.id)
 
 
     def AddBridge(self, streamDesc):
@@ -195,16 +313,16 @@ class Venue:
         uport = MulticastAddressAllocator().AllocatePort()
 
         # Create the bridge and start it
-        bridge = Bridge(streamDesc.id, 
+        bridge = self.bridgeFactory.CreateBridge(streamDesc.id, 
                         streamDesc.location.host, 
                         streamDesc.location.port, 
                         streamDesc.location.ttl, 
                         uaddr, uport)
-        bridge.Start()
         self.bridges[streamDesc.id] = bridge
 
         # Add the related network location to the venue
         networkLocation = UnicastNetworkLocation(bridge.uaddr, bridge.uport)
+        networkLocation.profile = self.providerProfile
         self.venueProxy.AddNetworkLocationToStream(self.privateId,
                                                    streamDesc.id,
                                                    networkLocation)
@@ -218,7 +336,7 @@ class Venue:
         self.log.debug("  id = %s", id)
         if self.bridges.has_key(id):
             self.log.debug("  removed")
-            self.bridges[id].Stop()
+            self.bridgeFactory.DestroyBridge(self.bridges[id])
             del self.bridges[id]
         else:  
             self.log.debug("  not found")
@@ -300,54 +418,12 @@ class Venue:
 
         # Send stop message to queue thread
         self.log.debug("- Send stop message to queue processor")
-        self.queue.put("quit")
+        self.queue.put(Venue.EVT_QUIT)
 
         # Clear the running flag
         self.running = 0
 
         self.log.debug("Shutdown exiting")
-
-class Bridge:
-    def __init__(self, id, maddr, mport, mttl, uaddr, uport):
-        self.id = id
-        self.maddr = maddr
-        self.mport = mport
-        self.mttl = mttl
-        self.uaddr = uaddr
-        self.uport = uport
-
-        # Instantiate the process manager
-        self.processManager = ProcessManager()
-
-        # Setup the log
-        self.log = logging.getLogger("AG.BridgeServer")
-
-    def Start(self):
-        """
-        Start the Bridge (actually execute the bridge process)
-        """
-        self.log.debug("Method Bridge.Start called")
-
-        # Log detail about bridge being started
-        self.log.debug("Starting bridge:")
-        self.log.debug("  [maddr,mport,mttl] = %s %d %d", self.maddr, self.mport, self.mttl)
-        self.log.debug("  [uaddr,uport] = %s %d", self.uaddr, self.uport)
-
-        # Start the process
-        args = [
-                "-g", self.maddr,
-                "-m", '%d' % (self.mport,),
-                "-u", '%d' % (self.uport,),
-               ]
-        self.processManager.start_process(quickBridgeExec,args)
-
-    def Stop(self):
-        """
-        Stop stops the bridge, terminating bridge processes
-        """
-        self.log.debug("Method Bridge.Stop called")
-	self.processManager.terminate_all_processes()
-
 
 
 
@@ -355,15 +431,25 @@ class Bridge:
 def main():
    
 
+    import sys
+    import signal
+    import time
+
     bridgeServer = None
+    global logFile
 
 
     def usage():
         print """
-Usage: BridgeServer.py <<--venueServer venueServerUrl>|<[-f|--file] venueUrlFile>|<[-v|--venue] venueUrl>>
+Usage: BridgeServer.py <<--venueServer venueServerUrl>|
+                        <--venueServerFile venueServerFile>|
+                        <--file venueUrlFile>|
+                        <--venue venueUrl>>
                        <--qbexec quickbridgeExecutable>
                        [--cert certpath]
                        [--key keypath]
+                       [--name name]
+                       [--location location]
                        [-h|--help]
                        [-d|--debug]
 """
@@ -378,27 +464,29 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|<[-f|--file] venueUrlFile
         print "Shutting down..."
         bridgeServer.Shutdown()
   
-    import sys
-    import signal
-    import time
 
     # initialization
-    venueServerUrl = venueUrl = venueFile = None
-    numExclusiveArgs = 0
+    venueServerUrl = venueServerFile = venueUrl = venueFile = None
     debugMode = 0
     identityCert = None
     identityKey = None
-
+    name=None
+    location=None
+    configFile=None
+    qbexec=None
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hdlv:f:",
+        opts, args = getopt.getopt(sys.argv[1:], "hdlc:",
                                    [
                                    "venueServer=", 
+                                   "venueServerFile=",
                                    "venue=",
-                                   "file=",
+                                   "venueFile=",
                                    "qbexec=",
-                                   "cert=",
-                                   "key="
+                                   #"cert=",
+                                   #"key=",
+                                   "name=",
+                                   "location="
                                    ])
 
     except getopt.GetoptError:
@@ -410,37 +498,82 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|<[-f|--file] venueUrlFile
         if opt in ('-h', '--help'):
             usage()
             sys.exit(0)
+        elif opt == '-c':
+            configFile = arg
         elif opt == '--venueServer':
             venueServerUrl = arg
-            numExclusiveArgs += 1
-        elif opt in ('--venue', '-v'):
+        elif opt == '--venueServerFile':
+            venueServerFile = arg
+        elif opt == '--venue':
             venueUrl = arg
-            numExclusiveArgs += 1
-        elif opt in ('--file', '-f'):
+        elif opt == '--file':
             venueFile = arg
-            numExclusiveArgs += 1
         elif opt == '--qbexec':
-            global quickBridgeExec
-            quickBridgeExec = arg
+            qbexec = arg
         elif opt in ('--debug', '-d'):
             debugMode = 1
         elif opt in ('--logfile', '-l'):
-            global logFile
             logFile = arg
         elif opt == "--key":
             identityKey = arg
         elif opt == "--cert":
             identityCert = arg
+        elif opt == "--name": 
+            name = arg
+        elif opt == "--location":
+            location = arg
+
+
+    # Read config file, if given
+    if configFile:
+
+        def GetConfigVal(config,varName):
+            """
+            SetConfigVal sets the given variable to the value in
+            the configuration dict, if it exists, and if the var
+            was not already set
+            """
+            configKey = "BridgeServer."+varName
+            if config.has_key(configKey):
+                return config[configKey]
+            return None
+
+        config = Utilities.LoadConfig(configFile)
+        if not venueServerUrl: 
+            venueServerUrl = GetConfigVal(config,"venueServerUrl")
+        if not venueServerFile: 
+            venueServerFile = GetConfigVal(config,"venueServerFile")
+        if not venueUrl:
+            venueUrl = GetConfigVal(config,"venueUrl")
+        if not venueFile:
+            venueFile = GetConfigVal(config,"venueFile")
+        if not qbexec: 
+            qbexec = GetConfigVal(config,"qbexec")
+        if not identityCert: 
+            identityCert = GetConfigVal(config,"cert")
+        if not identityKey: 
+            identityKey = GetConfigVal(config,"key")
+        if not name: 
+            name = GetConfigVal(config,"name")
+        if not location: 
+            location = GetConfigVal(config,"location")
+        if not logFile: 
+            logFile = GetConfigVal(config,"logFile")
 
     # catch bad arguments
-    if numExclusiveArgs > 1:
-        print "* Error : Only one of venueServer|venue|file args can be specified"
+    if (venueServerUrl!=None) + (venueServerFile!=None) + (venueUrl!=None) + (venueFile!=None) > 1:
+        print "* Error : Only one of venueServer|venueServerFile|venue|file args can be specified"
         usage()
         sys.exit(1)
-    if not quickBridgeExec:
+    if not qbexec:
         print "* Error : Quickbridge executable not given"
         usage()
         sys.exit(1)
+    else:
+        if not os.path.exists(qbexec):
+            print "* Error : Quickbridge executable does not exist"
+            print "          (%s)" % (qbexec,)
+            sys.exit(1)
 
     # Initialize the application
     if identityCert is not None or identityKey is not None:
@@ -458,9 +591,19 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|<[-f|--file] venueUrlFile
     app.Initialize()
 
 
+
     # Determine venue(s) to bridge
     venueList = []
-    if venueServerUrl:
+    if venueServerFile:
+        f = open(venueServerFile,"r")
+        venueServerList = f.readlines()
+        f.close()
+        print "vslist = ", venueServerList
+        for venueServerUrl in venueServerList:
+            print "Retrieving venues from venue server : ", venueServerUrl
+            venueDescList = Client.Handle(venueServerUrl).GetProxy().GetVenues()
+            venueList += map( lambda venue: venue.uri, venueDescList )
+    elif venueServerUrl:
         print "Retrieving venues from venue server : ", venueServerUrl
         venueDescList = Client.Handle(venueServerUrl).GetProxy().GetVenues()
         venueList = map( lambda venue: venue.uri, venueDescList )
@@ -477,12 +620,17 @@ Usage: BridgeServer.py <<--venueServer venueServerUrl>|<[-f|--file] venueUrlFile
     # Register a signal handler so we can shut down cleanly
     signal.signal(signal.SIGINT, SignalHandler)
 
+    # Create a provider profile to identify the bridge owner
+    providerProfile = ProviderProfile(name, location)
+
     # Create the bridge server
-    bridgeServer = BridgeServer(debugMode)
+    bridgeFactory = BridgeFactory(qbexec)
+    bridgeServer = BridgeServer(providerProfile,bridgeFactory,debugMode)
 
     # Bridge those venues !
     for venueUrl in venueList:
         venueUrl = venueUrl.strip()
+        print "venueUrl = ", venueUrl
         if len(venueUrl):
             bridgeServer.AddVenue(venueUrl)
 
