@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.71 2004-05-18 16:03:22 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.72 2004-05-18 18:25:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.71 2004-05-18 16:03:22 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.72 2004-05-18 18:25:25 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -162,8 +162,8 @@ class AGServiceManager:
         # Get the path to which to extract this service
         servicePath = self.__GetServicePath(serviceDescription)
 
-	    # Create dir for package
-  	    if not os.path.exists(servicePath):
+        # Create dir for package
+        if not os.path.exists(servicePath):
   	        log.info("Creating service path %s", servicePath)
   	        os.makedirs(servicePath)
 
