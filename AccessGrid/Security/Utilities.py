@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Utilities.py,v 1.3 2004-03-10 23:06:53 olson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.4 2004-03-19 22:18:06 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@
 pyGlobus hosting environment utility classes and functions.
 """
 
-__revision__ = "$Id: Utilities.py,v 1.3 2004-03-10 23:06:53 olson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.4 2004-03-19 22:18:06 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pyGlobus.io
@@ -207,12 +207,15 @@ try:
             # handle error
             pass
 
-        user_ck_tuple = get_user_cert_filename()
-        if user_ck_tuple[0] == 0:
-            retDict['user_cert'] = user_ck_tuple[1][0]
-            retDict['user_key'] = user_ck_tuple[1][1]
-        else:
-            # handle error
+        try:
+            user_ck_tuple = get_user_cert_filename()
+            if user_ck_tuple[0] == 0:
+                retDict['user_cert'] = user_ck_tuple[1][0]
+                retDict['user_key'] = user_ck_tuple[1][1]
+            else:
+                # handle error
+                pass
+        except:
             pass
 
         return retDict
