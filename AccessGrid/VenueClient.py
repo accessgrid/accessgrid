@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.25 2003-03-19 16:08:16 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.26 2003-03-19 23:11:44 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -108,11 +108,7 @@ class VenueClient( ServiceBase ):
 
         haveValidNodeService = 0
         if self.nodeServiceUri != None:
-            try:
-                Client.Handle( self.nodeServiceUri ).get_proxy().Ping()
-                haveValidNodeService = 1    
-            except:
-                pass
+            haveValidNodeService = Client.Handle( self.nodeServiceUri ).IsValid()
 
         try:
             
@@ -228,14 +224,14 @@ class VenueClient( ServiceBase ):
         Follow tells this venue client to follow the node
         specified.
         """
-        Client.Handle( venueClientUri ).get_proxy().wsLead( self.profile )
+        Client.Handle( venueClientUri ).get_proxy().Lead( self.profile )
 
     def Unfollow( self, venueClientUri ):
         """
         Unfollow tells this venue client to stop following
         the node specified.
         """
-        Client.Handle( venueClientUri ).get_proxy().wsUnlead( self.profile )
+        Client.Handle( venueClientUri ).get_proxy().Unlead( self.profile )
 
     def Lead( self, clientProfile):
         """
@@ -243,6 +239,7 @@ class VenueClient( ServiceBase ):
         node with it.
         """
         self.followerProfiles[clientProfile.publicId] = clientProfile
+    Lead.soap_export_as = "Lead"
 
     def Unlead( self, clientProfile):
         """
@@ -252,6 +249,7 @@ class VenueClient( ServiceBase ):
         for profile in self.followerProfiles.values():
             if profile.publicId == clientProfile.publicId:
                 del self.followerProfiles[clientProfile.publicId]
+    Unlead.soap_export_as = "Unlead"
 
     def SetNodeServiceUri( self, nodeServiceUri ):
         """
@@ -259,64 +257,3 @@ class VenueClient( ServiceBase ):
         """
         self.nodeServiceUri = nodeServiceUri
 
-    #
-    # Web Service methods
-    #
-
-    def wsSetProfile(self, profile):
-        self.SetProfile( profile )
-
-    wsSetProfile.soap_export_as = "wsSetProfile"
-
-    def wsEnterVenue(self, venueUri ):
-        try:
-            self.EnterVenue( venueUri )
-        except:
-            print "EXception in wsEnterVenue ", sys.exc_type, sys.exc_value
-
-    wsEnterVenue.soap_export_as = "wsEnterVenue"
-        
-    def wsExitVenue(self):
-        self.ExitVenue()
-
-    wsExitVenue.soap_export_as = "wsExitVenue"
-        
-    def wsGetVenue(self):
-        return self.GetVenue()
-
-    wsGetVenue.soap_export_as = "wsGetVenue"
-        
-    def wsGetHomeVenue(self):
-        return self.GetHomeVenue()
-
-    wsGetHomeVenue.soap_export_as = "wsGetHomeVenue"
-        
-    def wsSetHomeVenue(self, venueUri ):
-        self.SetHomeVenue( venueUri )
-
-    wsSetHomeVenue.soap_export_as = "wsSetHomeVenue"
-        
-    def wsLead( self, clientProfile):
-        self.Lead( clientProfile )
-
-    wsLead.soap_export_as = "wsLead"
-
-    def wsUnlead( self, clientProfile):
-        self.Unlead( clientProfile )
-
-    wsUnlead.soap_export_as = "wsUnlead"
-
-    def wsFollow(self, venueClientUri ):
-        self.Follow( venueClientUri )
-
-    wsFollow.soap_export_as = "wsFollow"
-
-    def wsUnfollow(self, venueClientUri ):
-        self.Unfollow( venueClientUri )
-
-    wsUnfollow.soap_export_as = "wsUnfollow"
-
-    def wsSetNodeServiceUri( self, nodeServiceUri ):
-        self.SetNodeServiceUri( nodeServiceUri )
-
-    wsSetNodeServiceUri.soap_export_as = "wsSetNodeServiceUri"
