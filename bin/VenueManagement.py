@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.38 2003-03-11 15:13:46 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.39 2003-03-11 15:53:19 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -290,8 +290,8 @@ class VenueServerAddress(wxPanel):
 			 wxDefaultSize, wxNO_BORDER)
          self.application = application
 	 self.addressLabel =  wxStaticText(self, -1,'Venue Server Address:')
-         self.defaultServer = 'https://moonbeam:8000/VenueServer'
-         self.serverList = ['https://moonbeam:8000/VenueServer']
+         self.defaultServer = 'https://localhost:8000/VenueServer'
+         self.serverList = ['https://localhost:8000/VenueServer']
          self.addressText = wxComboBox(self, wxNewId(), self.defaultServer,\
                         choices = self.serverList, style = wxCB_DROPDOWN)
 
@@ -1694,6 +1694,8 @@ class MyLog(wxPyLog):
     MESSAGE = 3
     DEBUG = 6
     INFO = 5
+    WARNING = 2
+    
     
     def __init__(self, log, logTime=0):
         wxPyLog.__init__(self)
@@ -1702,7 +1704,7 @@ class MyLog(wxPyLog):
        
     def DoLog(self, level, message, timeStamp):
         thisTime =  time.strftime("%X", time.localtime(timeStamp))
-                    
+                           
         if level  == self.ERROR:
             #box = wxMessageDialog(NULL, "UNEXPECTED ERROR\n"+message, "An error occured", wxICON_ERROR | wxOK )
             #box.ShowModal()
@@ -1721,6 +1723,9 @@ class MyLog(wxPyLog):
 
         elif level  == self.INFO:
             message = '[INFO] '+ message
+
+        elif level  == self.WARNING:
+            message = '[WARNING] '+ message
 
         message = thisTime +' '+ message
         self.DoLogString(message, timeStamp)
