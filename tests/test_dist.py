@@ -2,7 +2,7 @@
 # Name:        unittest_all.py
 # Purpose:     Automatic testing with machine readable output
 # Created:     2004/04/014
-# RCS-ID:      $Id: test_dist.py,v 1.3 2004-04-16 18:49:53 judson Exp $
+# RCS-ID:      $Id: test_dist.py,v 1.4 2004-04-16 19:29:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ html_xform = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
    <H2>AGTk Automatic Test Results</H2>
    <H4>Platform <xsl:value-of select=\"@Platform\"/></H4>
    <H4>Timestamp <xsl:value-of select=\"@Timestamp\"/></H4>
-   <H4>File <xsl:value-of select=\"@File\"/></H4>
+   <H4>File <a href=\"PACKAGEFILE\">PACKAGEFILE</a></H4>
    <H4>Elapsed Time <xsl:value-of select=\"@Elapsed_Time\"/></H4>
      <table border=\"1\" cellpadding=\"2\">
       <tbody>
@@ -133,7 +133,6 @@ class _XMLTestResult(TestResult):
         resDoc.documentElement.setAttribute("Platform", "%s" % sys.platform)
         resDoc.documentElement.setAttribute("Timestamp", "%s" % timestamp)
         resDoc.documentElement.setAttribute("Elapsed_Time", "%s" % elapsedTime)
-        resDoc.documentElement.setAttribute("File", "PACKAGEFILE")
 
         # go through successes appending a child for each
         results = self.success + self.errors + self.failures
