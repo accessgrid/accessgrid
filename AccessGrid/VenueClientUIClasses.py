@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.94 2003-03-21 17:55:19 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.95 2003-03-21 22:59:49 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -184,7 +184,7 @@ class VenueClientFrame(wxFrame):
         self.meMenu = wxMenu()
         self.meMenu.Append(self.ID_ME_PROFILE,"View Profile...",\
                                            "View participant's profile information")
-        self.meMenu.Append(self.ID_ME_DATA,"Add personal data...",\
+        self.meMenu.Append(self.ID_ME_DATA,"Add private data...",\
                                            "Add data you can bring to other venues")
 
         self.participantMenu = wxMenu()
@@ -210,7 +210,7 @@ class VenueClientFrame(wxFrame):
         # until implemented
         self.nodeMenu.Enable(self.ID_NODE_LEAD, false)
         self.nodeMenu.Enable(self.ID_NODE_FOLLOW, false)
-        self.nodeMenu.Enable(self.ID_NODE_MANAGE, false)
+        #self.nodeMenu.Enable(self.ID_NODE_MANAGE, false)
         self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
         self.participantMenu.Enable(self.ID_PARTICIPANT_FOLLOW, false)
         self.serviceMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
@@ -1540,11 +1540,20 @@ class EditMyVenuesDialog(wxDialog):
         self.__setEvents()
         
     def OnDelete(self, event):
-        del self.dictCopy[self.currentItem]
-        self.__populateList()
+        if(self.dictCopy.has_key(self.currentItem)):
+            del self.dictCopy[self.currentItem]
+            self.__populateList()
+        else:
+            wxLogMessage('Please, select the venue you want to delete')
+            wxLog_GetActiveTarget().Flush()
 
     def OnRename(self, event):
-        renameDialog = RenameDialog(self, -1, "Rename venue")
+        if(self.dictCopy.has_key(self.currentItem)):
+            renameDialog = RenameDialog(self, -1, "Rename venue")
+        else:
+            wxLogMessage('Please, select the venue you want to rename')
+            wxLog_GetActiveTarget().Flush()
+            
 
     def Rename(self, name):
         self.dictCopy[name] = self.dictCopy[self.currentItem]
@@ -1559,11 +1568,12 @@ class EditMyVenuesDialog(wxDialog):
     def OnRightDown(self, event):
         self.x = event.GetX() + self.myVenuesList.GetPosition().x
         self.y = event.GetY() + self.myVenuesList.GetPosition().y
-        event.Skip()
-
-    def OnRightClick(self, event):
         self.PopupMenu(self.menu, wxPoint(self.x, self.y))
         event.Skip()
+
+    #def OnRightClick(self, event):
+    #    self.PopupMenu(self.menu, wxPoint(self.x, self.y))
+    #    event.Skip()
 
     def OnBeginEdit(self, event):
         print 'begin'
@@ -1573,7 +1583,7 @@ class EditMyVenuesDialog(wxDialog):
 
     def __setEvents(self):
         EVT_RIGHT_DOWN(self.myVenuesList, self.OnRightDown)
-        EVT_RIGHT_UP(self.myVenuesList, self.OnRightClick)
+        #EVT_RIGHT_UP(self.myVenuesList, self.OnRightClick)
         EVT_LIST_ITEM_SELECTED(self.myVenuesList, self.ID_LIST, self.OnItemSelected)
         EVT_MENU(self.menu, self.ID_RENAME, self.OnRename)
         EVT_MENU(self.menu, self.ID_DELETE, self.OnDelete)
