@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.42 2004-12-17 23:31:31 leggett Exp $
+ * $Id: QuickBridge.c,v 1.43 2004-12-17 23:37:26 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -1108,6 +1108,16 @@ int main( int argc, char *argv[] )
 	  break;
 	case 'n':
 	  s = setup_session( ucport, mcport, multicastaddress, ttl, forward, s );
+  for ( foo = s; foo; foo = foo->next )
+    {
+      printf( " ucfd[data]: %d mcfd[data]: %d uc: %s/%d mc: %s/%d\n", foo->ucfd[data], foo->mcfd[data], inet_ntoa( foo->ucaddr[data].sin_addr ), ntohs( foo->ucaddr[data].sin_port ),
+	      inet_ntoa( foo->mcaddr[data].sin_addr ), ntohs( foo->mcaddr[data].sin_port ) );
+      printf( " ucfd[rtcp]: %d mcfd[rtcp]: %d uc: %s/%d mc: %s/%d\n", foo->ucfd[rtcp], foo->mcfd[rtcp], inet_ntoa( foo->ucaddr[rtcp].sin_addr ), ntohs( foo->ucaddr[rtcp].sin_port ),
+	      inet_ntoa( foo->mcaddr[rtcp].sin_addr ), ntohs( foo->mcaddr[rtcp].sin_port ) );
+    }
+
+  sleep( 10 );
+
 	  if ( ! s )
 	    {
 	      perror( "No session" );
@@ -1137,16 +1147,6 @@ int main( int argc, char *argv[] )
       print_usage( progname );
       exit( 1 );
     }
-  for ( foo = s; foo; foo = foo->next )
-    {
-      printf( " ucfd[data]: %d mcfd[data]: %d uc: %s/%d mc: %s/%d\n", foo->ucfd[data], foo->mcfd[data], inet_ntoa( foo->ucaddr[data].sin_addr ), ntohs( foo->ucaddr[data].sin_port ),
-	      inet_ntoa( foo->mcaddr[data].sin_addr ), ntohs( foo->mcaddr[data].sin_port ) );
-      printf( " ucfd[rtcp]: %d mcfd[rtcp]: %d uc: %s/%d mc: %s/%d\n", foo->ucfd[rtcp], foo->mcfd[rtcp], inet_ntoa( foo->ucaddr[rtcp].sin_addr ), ntohs( foo->ucaddr[rtcp].sin_port ),
-	      inet_ntoa( foo->mcaddr[rtcp].sin_addr ), ntohs( foo->mcaddr[rtcp].sin_port ) );
-    }
-
-  sleep( 10 );
-
 
   s = setup_session( ucport, mcport, multicastaddress, ttl, forward, s );
   if ( ! s )
