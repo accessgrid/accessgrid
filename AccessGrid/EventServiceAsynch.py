@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.32 2004-07-08 20:22:15 turam Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.33 2004-07-14 19:49:18 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.32 2004-07-08 20:22:15 turam Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.33 2004-07-14 19:49:18 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -20,6 +20,7 @@ import pickle
 import struct
 import Queue
 import threading
+import time
 
 from pyGlobus.io import GSITCPSocket
 from pyGlobus.io import IOBaseException
@@ -37,6 +38,109 @@ from AccessGrid.GUID import GUID
 
 log = Log.GetLogger(Log.EventService)
 Log.SetDefaultLevel(Log.EventService, Log.DEBUG)
+
+
+class ConnectionRecord:
+    def __init__(self,conn):
+        self.connObj = conn
+        self.start = time.time()
+        
+    def GetStart(self):
+        return self.start
+
+
+class ConnectionMonitor:
+
+    def __init__(self, timeout):
+        self.timeout = timeout
+        
+        self.connectionList = []
+        
+        self.listModLock = threading.Lock()
+        
+        self.running = threading.Event()
+        self.running.clear()
+        
+        
+    def Run(self):
+        """
+        Main loop for connection monitor
+        Periodically check connections being monitored,
+        closing them if they have timed out
+        """
+        log.debug("STARTING ConnectionMonitor.Run")
+        self.running.set()
+        while self.running.isSet():
+            try:
+                self.listModLock.acquire()
+                now = time.time()
+                index = 0
+                while index < len(self.connectionList):
+                    conn = self.connectionList[index]
+                    tm = now - conn.GetStart()
+                    log.debug( "ConnectionMonitor: conn,tm,timeout =%s %f %f", conn.connObj,tm,self.timeout)
+                    if  tm > self.timeout:
+                        log.info("Connection being terminated by connection monitor")
+                        try:
+                            conn.connObj.handleEOF()
+                        except:
+                            log.exception("ConnectionMonitor: Exception removing connection from list")
+                        del self.connectionList[index]
+                        continue
+                    
+                    index += 1
+                        
+                        
+            except:
+                log.exception("Exception in connection monitor")
+               
+            self.listModLock.release()
+            
+            # Sleep until it's time to check again
+            time.sleep(self.timeout)
+            
+        log.debug("EXITING ConnectionMonitor.Run")
+                
+        
+    def Start(self):
+        """
+        Start the connection monitor
+        """
+        threading.Thread(target=self.Run,name="ConnectionMonitor.Run").start()
+        
+    def Stop(self):
+        self.running.clear()
+        
+    def AddConnection(self,connObj):
+        """
+        Add connection to list of connections to monitor
+        """
+        self.listModLock.acquire()
+        try:
+            c = ConnectionRecord(connObj)
+            log.debug("ConnectionMonitor: Adding connection: %s start=%s", connObj, str(c.GetStart()))
+            self.connectionList.append(c)
+        except:
+            log.exception("Error adding to connection list")
+        self.listModLock.release()
+        
+    def RemoveConnection(self,connObj):
+        """
+        Remove connection from list of connections to monitor
+        """
+        self.listModLock.acquire()
+        try:
+            for conn in self.connectionList:
+                if conn.connObj == connObj:
+                    connTime = time.time()-conn.GetStart()
+                    log.debug("ConnectionMonitor: Removing connection: %s duration=%s", connObj,str(connTime ))
+                    self.connectionList.remove(conn)
+                    break
+        except:
+            log.exception("Error removing from connection list")
+        self.listModLock.release()
+        
+        
 
 class ConnectionHandler:
     """
@@ -62,7 +166,8 @@ class ConnectionHandler:
         log.debug("EventServiceAsynch: ConnectionHandler delete")
 
     def GetId(self):
-        return self.id
+        return self.id 
+
 
     def registerAccept(self, attr):
         log.info("EventServiceAsynch: conn handler registering accept")
@@ -128,9 +233,13 @@ class ConnectionHandler:
 
 	if self.wfile is not None:        
 	    try:
+                self.server.connectionMonitor.AddConnection(self)
                 mEvent.Write(self.wfile)
+                #time.sleep(12)
+                self.server.connectionMonitor.RemoveConnection(self)
                 return 1
             except:
+                self.server.connectionMonitor.RemoveConnection(self)
                 log.exception("writeMarshalledEvent write error!")
         else:
 	    log.info("not sending event, conn obj is none.")
@@ -444,6 +553,10 @@ class EventService:
         # Initialize socket for listening.
         port = self.socket.create_listener(self.attr, server_address[1])
         log.debug("EventServiceAsynch: Bound to %s (server_address=%s)", port, server_address)
+        
+        
+        self.connectionMonitor = ConnectionMonitor(2)
+        self.connectionMonitor.Start()
 
     def findConnectionChannel(self, id):
         try:
@@ -530,7 +643,7 @@ class EventService:
                     if channel == 'quit':
                         self.inQEvt.clear()
                         break
-		except Empty:
+		except Queue.Empty:
 		    log.info("Didn't get anything to distribute.")
 		    data = None
 	
@@ -570,6 +683,8 @@ class EventService:
             
 	self.outQEvt.clear()
 	self.inQEvt.clear()
+        
+        self.connectionMonitor.Stop()
 
     def EnqueueQuit(self):
         self.outQueue.put(("quit",))
@@ -691,9 +806,11 @@ class EventService:
         """
 
         connId = connObj.GetId()
+        connChannel = self.findConnectionChannel(connId)
 
-        self.CloseConnection(connObj)
-        
+        log.debug("EventServiceAsynch: EventConnection: Removing client connection to %s",
+                  connChannel.id)
+        connChannel.RemoveConnection(connObj)
 
     def HandleEventForDisconnectedChannel(self, event, connObj):
         """
