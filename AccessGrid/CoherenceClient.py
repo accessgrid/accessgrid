@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceClient.py,v 1.12 2003-01-24 04:27:40 judson Exp $
+# RCS-ID:      $Id: CoherenceClient.py,v 1.13 2003-01-24 20:48:34 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -38,6 +38,7 @@ class CoherenceClient(Thread):
         callback for coherence data.
         """
         # Standard initialization
+
         Thread.__init__(self)
         self.host = host
         self.port = port
@@ -84,7 +85,8 @@ class CoherenceClient(Thread):
         The run method starts this thread actively getting and
         processing Coherence data provided by a CoherenceService.
         """
-        while self.sock != None:
+        self.running = 1
+        while self.sock != None and self.running:
             try:
                 # Read the size
                 size = self.rfile.readline()
@@ -94,6 +96,7 @@ class CoherenceClient(Thread):
                 event = pickle.loads(pdata)
                 # Send it on its way
                 self.callback(event)
+
             except:
                 print "Server closed connection!", formatExceptionInfo()
                 self.sock.close()
@@ -118,6 +121,10 @@ class CoherenceClient(Thread):
         This is kept private since it really isn't for general use.
         """
         print "Got Event: ", event.eventType, "Data: " + event.data
+
+    def stop(self):
+        self.running = 0
+
     
 class Heartbeat(Thread):
     """
