@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.19 2003-05-15 03:00:57 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.20 2003-05-20 21:45:36 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -22,7 +22,6 @@ from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.Types import *
 from AccessGrid.AGParameter import *
 from AccessGrid.Descriptions import StreamDescription
-from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.AuthorizationManager import AuthorizationManager
 
 if sys.platform == 'win32':
@@ -121,7 +120,7 @@ class AGService( ServiceBase ):
            self.authManager.SetAuthorizedUsers( authorizedUsers )
         except:
            self.log.exception("Exception in AGService.SetAuthorizedUsers")
-           raise faultType("AGService.SetAuthorizedUsers failed : " + str(sys.exc_value) )
+           raise Exception("AGService.SetAuthorizedUsers failed : " + str(sys.exc_value) )
     SetAuthorizedUsers.soap_export_as = "SetAuthorizedUsers"
 
 
@@ -166,7 +165,7 @@ class AGService( ServiceBase ):
                     self.configuration[parm.name].SetValue( parm.value )
         except:
             self.log.exception("Exception in AGService.SetConfiguration")
-            raise faultType("AGService.SetConfiguration failed : " + str(sys.exc_value) )
+            raise Exception("AGService.SetConfiguration failed : " + str(sys.exc_value) )
     SetConfiguration.soap_export_as = "SetConfiguration"
 
 
@@ -176,7 +175,7 @@ class AGService( ServiceBase ):
             serviceConfig = ServiceConfiguration( self.resource, self.executable, self.configuration.values() )
         except:
             self.log.exception("Exception in GetConfiguration ")
-            raise faultType("AGService.GetConfiguration failed : " + str(sys.exc_value) )
+            raise Exception("AGService.GetConfiguration failed : " + str(sys.exc_value) )
 
         return serviceConfig
     GetConfiguration.soap_export_as = "GetConfiguration"
@@ -203,7 +202,7 @@ class AGService( ServiceBase ):
                self.streamDescription = streamDescription
         except:
             self.log.exception("Exception in ConfigureStream ")
-            raise faultType("AGService.ConfigureStream failed : " + str(sys.exc_value) )
+            raise Exception("AGService.ConfigureStream failed : " + str(sys.exc_value) )
 
         return 0
     ConfigureStream.soap_export_as = "ConfigureStream"
