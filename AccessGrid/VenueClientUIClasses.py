@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.98 2003-03-25 17:02:16 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.99 2003-03-25 17:57:55 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -560,6 +560,7 @@ class VenueClientFrame(wxFrame):
 
     def OpenNodeMgmtApp(self, event):
         frame = NodeManagementClientFrame(self, -1, "Access Grid Node Management")
+        wxLogDebug("open node management")
         frame.AttachToNode( self.app.nodeServiceUri )
         if frame.Connected(): # Right node service uri
             frame.Update()
@@ -862,6 +863,7 @@ class VenueList(wxScrolledWindow):
         self.doorsAndLabelsList.sort(lambda x, y: cmp(x.GetName(), y.GetName()))
         index = self.doorsAndLabelsList.index(panel)
                       
+        #self.column.Insert(index, panel, 1, wxEXPAND)
         self.column.Insert(index, panel, 1, wxEXPAND)
         id = panel.GetButtonId()
 
@@ -918,7 +920,7 @@ class ExitPanel(wxPanel):
 	#self.button.SetToolTipString(profile.description)
         #self.label = wxStaticText(self, -1, profile.name)
         self.SetToolTipString(profile.description)
-        self.label = wxTextCtrl(self, self.id, "", size= wxSize(132,10),
+        self.label = wxTextCtrl(self, self.id, "", size= wxSize(30,10),
                                 style = wxNO_BORDER|wxTE_MULTILINE|wxTE_RICH)
         self.label.SetValue(profile.name)
         self.label.SetBackgroundColour(wxColour(190,190,190))
@@ -982,6 +984,7 @@ class ContentListPanel(wxPanel):
     dataDict = {}
     serviceDict = {}
     nodeDict = {}
+    applicationDict = {}
     personalDataDict = {}
     
     def __init__(self, parent, app):
@@ -1005,15 +1008,19 @@ class ContentListPanel(wxPanel):
 	
     def __setImageList(self):
 	imageList = wxImageList(32,19)
-     	self.defaultPersonId = imageList.Add(icons.getDefaultParticipantBitmap())
-        self.importantPaperId = imageList.Add(icons.getDefaultDataBitmap())
+     	self.participantId = imageList.Add(icons.getDefaultParticipantBitmap())
+        #self.participantFollowId = imageList.Add(icons.getParticipantFollowBitmap())
+        #self.participantLeadId = imageList.Add(icons.getParticipantLeadBitmap())
+        self.defaultDataId = imageList.Add(icons.getDefaultDataBitmap())
 	self.serviceId = imageList.Add(icons.getDefaultServiceBitmap())
         self.nodeId = imageList.Add(icons.getDefaultNodeBitmap())
+        #self.nodeFollowId = imageList.Add(icons.getNodeFollowBitmap())
+        #self.nodeLeadId = imageList.Add(icons.getNodeLeadBitmap())
         self.tree.AssignImageList(imageList)
 
     def AddParticipant(self, profile):
         participant = self.tree.AppendItem(self.participants, profile.name, \
-                                           self.defaultPersonId, self.defaultPersonId)
+                                           self.participantId, self.participantId)
         self.tree.SetItemData(participant, wxTreeItemData(profile)) 
         self.participantDict[profile.publicId] = participant
         self.tree.Expand(self.participants)
@@ -1100,7 +1107,7 @@ class ContentListPanel(wxPanel):
         #if venue data
         if(storageLocation == 'venue'):
             dataId = self.tree.AppendItem(self.data, profile.name, \
-                                        self.importantPaperId, self.importantPaperId)
+                                        self.defaultDataId, self.defaultDataId)
             self.tree.SetItemData(dataId, wxTreeItemData(profile)) 
             self.dataDict[profile.name] = dataId
             self.tree.Expand(self.data)
@@ -1111,7 +1118,7 @@ class ContentListPanel(wxPanel):
             if(self.participantDict.has_key(id)):
                 participantId = self.participantDict[id]
                 dataId = self.tree.AppendItem(participantId, profile.name, \
-                                     self.importantPaperId, self.importantPaperId)
+                                     self.defaultDataId, self.defaultDataId)
                 self.tree.SetItemData(dataId, wxTreeItemData(profile))
                 self.personalDataDict[profile.name] = dataId
        
@@ -1159,7 +1166,7 @@ class ContentListPanel(wxPanel):
         application = self.tree.AppendItem(self.applications, profile.name,
                                            self.serviceId, self.serviceId)
         self.tree.SetItemData(application, wxTreeItemData(profile)) 
-        self.serviceDict[profile.name] = service
+        self.applicationDict[profile.name] = application
         self.tree.Expand(self.applications)
       
     def AddNode(self, profile):
@@ -1253,13 +1260,14 @@ class ContentListPanel(wxPanel):
                  self.serviceDict.has_key(item.name):
             self.PopupMenu(self.parent.serviceMenu, wxPoint(self.x, self.y))
 
-        elif text == 'Participants' or text == 'Nodes' or item == None:
-            pass
-
         elif text == 'Applications' or item != None and \
                  self.applicationDict.has_key(item.name):
             self.PopupMenu(self.parent.applicationMenu,
                            wxPoint(self.x, self.y))
+            
+        elif text == 'Participants' or text == 'Nodes' or item == None:
+            pass
+
         elif self.personalDataDict.has_key(item.name):
             self.PopupMenu(self.parent.dataMenu, wxPoint(self.x, self.y))
             
@@ -1367,10 +1375,10 @@ class TextClientPanel(wxPanel):
         TextSizer.Add(self.TextOutput, 2, wxEXPAND|wxALIGN_CENTER_HORIZONTAL, 0)
         box = wxBoxSizer(wxHORIZONTAL)
         box.Add(self.label, 0, wxALIGN_CENTER |wxLEFT, 5)
-        box.Add(self.TextInput, 1, wxALIGN_CENTER)
+        box.Add(self.TextInput, 1, wxALIGN_CENTER )
         box.Add(self.display, 0, wxALIGN_CENTER |wxLEFT|wxRIGHT, 5)
         
-        TextSizer.Add(box, 0, wxEXPAND|wxALIGN_BOTTOM, 0)
+        TextSizer.Add(box, 0, wxEXPAND|wxALIGN_CENTER| wxTOP|wxBOTTOM, 2)
         self.SetAutoLayout(1)
         self.SetSizer(TextSizer)
         self.Layout()
@@ -1704,7 +1712,7 @@ class AddMyVenueDialog(wxDialog):
         info = "Current venue will be added to your list of venues."
         self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
         self.addressText = wxStaticText(self, -1, "Name: ", style=wxALIGN_LEFT)
-        name = app.venueState.description.name
+        name = app.venueState.name
         self.address = wxTextCtrl(self, -1, name, size = wxSize(300,20))
         #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
         self.Layout()
