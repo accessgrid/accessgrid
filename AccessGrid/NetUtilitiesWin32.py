@@ -5,15 +5,20 @@
 # Author:      Robert Olson
 #
 # Created:     9/11/2003
-# RCS-ID:      $Id: NetUtilitiesWin32.py,v 1.2 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: NetUtilitiesWin32.py,v 1.3 2004-02-23 16:55:40 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetUtilitiesWin32.py,v 1.2 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: NetUtilitiesWin32.py,v 1.3 2004-02-23 16:55:40 olson Exp $"
 __docformat__ = "restructuredtext en"
 
+
+import string
+import re
+import os
+import os.path
 import sys
 import _winreg
 
@@ -100,6 +105,72 @@ def GetIEProxyAddress():
 
     return (proxy, enabled)
 
+def EnumerateInterfaces():
+    """
+    Enumerate the interfaces present on a windows box.
+
+    Run ipconfig /all
+
+    """
+
+    adapter_re = re.compile("^Ethernet adapter (.*):$")
+    ip_re = re.compile("^\s*IP Address.*:\s+(\d+\.\d+\.\d+\.\d+)")
+    dns_re = re.compile("^\s*DNS Servers.*:\s+(\S+)")
+
+    ipconfig = os.path.join(os.getenv("SystemRoot"), "system32", "ipconfig.exe")
+    p = os.popen(r"%s /all" % ipconfig, "r")
+    # print "popen returns ", p
+
+    adapters = []
+    dns_servers = []
+
+    for l in p:
+        l = l.strip()
+        m = adapter_re.search(l)
+        if m is not None:
+            cur_adapter = {'name': m.group(1),
+                           'ip': None,
+                           'dns': None}
+            cur_adapter['name'] = m.group(1)
+            adapters.append(cur_adapter)
+
+        m = ip_re.search(l)
+        if m is not None:
+            # print "got Ip addr '%s'" % (m.group(1))
+            cur_adapter['ip'] = m.group(1)
+
+        m = dns_re.search(l)
+        if m is not None:
+            cur_adapter['dns'] = m.group(1)
+            # print "got dns ", m.group(1)
+            dns_servers.append(m.group(1))
+
+    p.close()
+
+    return adapters
+
+def GetDefaultRouteIP():
+    """
+    Retrieve the IP address of the interface that the
+    default route points to.
+    """
+
+    route = os.path.join(os.getenv("SystemRoot"), "system32", "route.exe")
+    p = os.popen(r"%s print" % route, "r")
+
+    for l in p:
+        parts = l.split()
+        if parts[0] == "0.0.0.0":
+            int = parts[3]
+            p.close()
+            return int
+
+    return None
+    
+
 if __name__ == "__main__":
 
+    print EnumerateInterfaces()
+    defroute = GetDefaultRouteIP()
+    print "Default: ", defroute
     print GetHTTPProxyAddresses()
