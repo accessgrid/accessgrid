@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.120 2003-08-14 17:27:35 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.121 2003-08-15 14:48:20 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -397,6 +397,15 @@ class Venue(ServiceBase.ServiceBase):
             *string* Simple string representation of the Venue.
         """
         return "Venue: name=%s id=%s" % (self.name, id(self))
+
+    def _IsSubjectInRole(self, subject, role_name=""):
+        sm = AccessControl.GetSecurityManager()
+        if sm == None:
+            return 1
+
+        role_manager = self.GetRoleManager()
+
+        return sm.ValidateSubjectInRole(subject, role_name, role_manager)
 
     def _IsInRole(self, role_name=""):
         """
@@ -2424,9 +2433,38 @@ class Venue(ServiceBase.ServiceBase):
         except:
             log.exception("wsSetSubjectsInRole: exception")
             #raise "wsSetSubjectsInRole: exception"
+
+        # In case current venue users are no longer allowed there.
+        # Not needed for administrator roles, just allowed entry
+        self.FlushRoles()
+
         return 0
 
     wsSetSubjectsInRole.soap_export_as = "SetSubjectsInRole"
+
+    def FlushRoles(self):
+        """
+        Enforce roles that may have just changed.
+        Not needed for administrator roles, just allowed entry.
+        Since "VenueUsers" is not fully enforced yet, we'll
+        check the connections.
+        """
+
+        sm = AccessControl.GetSecurityManager()
+        rm = self.GetRoleManager()
+
+        for clientPrivateId in self.clients:
+            client = self.clients[clientPrivateId].clientProfile
+            # Special Case: if all users are DisallowedEntry, then specific users are allowed.
+            if "ALL_USERS" in rm.validRoles["Venue.DisallowedEntry"].GetSubjectList():
+                if not self._IsSubjectInRole(client.distinguishedName, "Venue.AllowedEntry"):
+                    log.info("FlushRoles() kicking no longer authorized user:" + str(client.distinguishedName))
+                    self.RemoveUser(clientPrivateId)
+            # Normal operation when all users are not DisallowedEntry by default.
+            else:
+                if self._IsSubjectInRole(client.distinguishedName, "Venue.DisallowedEntry") or not self._IsSubjectInRole(client.distinguishedName, "Venue.AllowedEntry"):
+                    log.info("FlushRoles() kicking no longer authorized user:" + str(client.distinguishedName))
+                    self.RemoveUser(clientPrivateId)
 
     def wsAddRole(self, role_string):
         """
@@ -2438,11 +2476,11 @@ class Venue(ServiceBase.ServiceBase):
         sm = AccessControl.GetSecurityManager()
         rm = self.GetRoleManager()
         if sm.ValidateRole([role_string], self.GetRoleManager()):
-            log.info("Role ", role_string, " already registered in security manager.")
+            log.info("Role " + role_string + " already registered in security manager.")
         else:
             rm.RegisterRole(role_string)
         if rm.has_key(role_string):
-            log.info("Role ", role_string, " already exists in venue.")
+            log.info("Role " + role_string + " already exists in venue.")
         else:
             rm.validRoles[role_string] = AccessControl.Role(role_string, self)
 
