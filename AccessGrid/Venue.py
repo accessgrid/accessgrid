@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.11 2003-01-23 14:39:54 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.12 2003-01-23 17:42:57 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -203,17 +203,17 @@ class Venue(ServiceBase.ServiceBase):
             print "Called Venue Enter for: "
             print dir(clientProfile)
 
-            userInVenue = False
+            userInVenue = 0
             for key in self.users.keys():
                 user = self.users[key]
                 if user.publicId == clientProfile.publicId:
                     print "* * User already in venue"
 #FIXME - temporarily ignore that user is already in venue, for testing
-                    #userInVenue = True
+                    #userInVenue = 1
                     privateId = key
                     break
             
-            if userInVenue == False:
+            if userInVenue == 0:
                 privateId = self.GetNextPrivateId()
                 print "Assigning private id: ", privateId
                 self.users[privateId] = clientProfile
@@ -471,11 +471,11 @@ class Venue(ServiceBase.ServiceBase):
        
     def GetNextPrivateId( self ):
         """This method creates the next Private Id."""
-        return GUID()
+        return str(GUID())
 
     def IsValidPrivateId( self, privateId ):
         """This method verifies the private Id is valid."""
         if privateId in self.users.keys():
-            return True 
-        return False
+            return 1 
+        return 0
     
