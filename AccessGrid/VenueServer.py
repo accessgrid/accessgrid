@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.18 2003-01-22 22:13:10 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.19 2003-01-24 04:31:33 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,6 @@ import signal
 from Utilities import formatExceptionInfo
 from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid import Venue
-import CoherenceService
 import GUID
 import NetworkLocation
 from MulticastAddressAllocator import MulticastAddressAllocator
@@ -56,7 +55,6 @@ class VenueServer(ServiceBase.ServiceBase):
     configDefaults = {
             "VenueServer.houseKeeperFrequency" : 30,
             "VenueServer.persistenceData" : 'VenueData',
-            "CoherenceService.coherencePortBase" : 9000,
             "DataStorage.store" : 'Data/',
             "DataStorage.port" : 8892
             }
@@ -91,7 +89,6 @@ class VenueServer(ServiceBase.ServiceBase):
         self.venues = {}
         self.services = []
         self.dataStorageLocation = None
-        self.coherencePort = self.config['CoherenceService.coherencePortBase']
 
         # Try to open the persistent store for Venues. If we fail, we
         # open a temporary store, but it'll be empty.
@@ -171,11 +168,6 @@ class VenueServer(ServiceBase.ServiceBase):
                                                  venueDescription.icon,
                                                  venueDescription.extendedDescription )
 
-            print "Next coherence port is: %d" % self.coherencePort
-            # Build the new coherenceService
-            coherenceService = CoherenceService.CoherenceService((socket.getfqdn(), self.coherencePort))
-#            coherenceService = CoherenceService.CoherenceService( NetworkLocation.UnicastNetworkLocation(socket.getfqdn(), coherencePort))
-
             venueID = GUID.GUID()
             venuePath = "Venues/%s" % venueID
             venueURL = self.hostingEnvironment.get_url_base() + "/" + venuePath
@@ -185,10 +177,7 @@ class VenueServer(ServiceBase.ServiceBase):
             #       the server's Multicast Address Allocator, and the server's
             #       Data Storage object
             venue = Venue.Venue(self, venueID, venueDescription,
-                                connectionInfo.get_remote_name(),
-                                coherenceService,
-                                self.multicastAddressAllocator,
-                                self.dataStorage)
+                                connectionInfo.get_remote_name())
 
             # Somehow we have to register this venue as a new service
             # on the server.  This gets tricky, since we're not assuming
@@ -204,8 +193,6 @@ class VenueServer(ServiceBase.ServiceBase):
             # Add the venue to the list of venues
             self.venues[venueURL] = venue
 
-            # increment the coherence Port for the next venue
-            self.coherencePort = self.coherencePort + 1
         except:
             print "Exception in AddVenue ", formatExceptionInfo()
 
@@ -481,24 +468,8 @@ class VenueServer(ServiceBase.ServiceBase):
 
             store.close()
         except:
-            print "Corrupt persistence database detected.", sys.exc_type, sys.exc_value
+            print "Checkpoint problem!", formatExceptionInfo()
 
         self.SaveConfig(file(self.configFile, 'w+'))
         
     Checkpoint.soap_export_as = "Checkpoint"
-
-if __name__ == "__main__":
-    from AccessGrid.hosting.pyGlobus import Server, ServiceBase
-    from AccessGrid.VenueServer import VenueServer
-    import sys
-
-    # Explicitly binding the service to a path
-
-    hostingEnvironment = Server.Server(8000)
-    venueServer = VenueServer(hostingEnvironment)
-    serviceObject = hostingEnvironment.create_service_object(pathId = 'VenueServer')
-    venueServer._bind_to_service(serviceObject)
-
-    print "Service running at: %s" % venueServer.get_handle()
-    hostingEnvironment.run()
-    sys.exit(0)
