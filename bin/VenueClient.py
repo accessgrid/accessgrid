@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.60 2003-03-05 16:34:22 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.61 2003-03-10 20:49:31 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,16 +31,20 @@ from AccessGrid.Utilities import formatExceptionInfo, HaveValidProxy
 from AccessGrid.UIUtilities import MessageDialog
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN 
 
-#from AccessGrid.TextClientUI import TextClientUI
 from AccessGrid import DataStore
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
- 
+
+if sys.platform == "win32":
+    from win32com.shell import shell, shellcon
+    
 class VenueClientUI(wxApp, VenueClient):
     """
     VenueClientUI is a wrapper for the base VenueClient.
     It updates its UI when it enters or exits a venue or
     receives a coherence event. 
     """
+    history = []
+    
     def OnInit(self):
         """
         This method initiates all gui related classes.
@@ -50,18 +54,18 @@ class VenueClientUI(wxApp, VenueClient):
         VenueClient.__init__(self)
         self.__createHomePath()
         self.frame = VenueClientFrame(NULL, -1,"", self)
-        self.frame.SetSize(wxSize(300, 400))
+        self.frame.SetSize(wxSize(500, 400))
         self.SetTopWindow(self.frame)
         self.client = None
         self.gotClient = false
         self.clientHandle = None
-    #    self.textClient = None
         self.venueUri = None
         return true
 
     def __createHomePath(self):
         if sys.platform == "win32":
-            myHomePath = os.environ['HOMEDRIVE'] + os.environ['HOMEPATH']
+            myHomePath = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0) 
+            #myHomePath = os.environ['HOMEDRIVE'] + os.environ['HOMEPATH']
         elif sys.platform == "linux2":
             myHomePath = os.environ['HOME']
 
@@ -73,7 +77,6 @@ class VenueClientUI(wxApp, VenueClient):
                       
         except:
             os.mkdir(self.accessGridPath)
-
 
     def ConnectToVenue(self):
         """
@@ -248,8 +251,28 @@ class VenueClientUI(wxApp, VenueClient):
         performs its own operations when the client exits a venue.
         """
         VenueClient.ExitVenue(self)
-        
-    def GoToNewVenue(self, uri):
+
+    def SetHistory(self, uri, back):
+        length = len(self.history)
+        last = length -1
+                   
+        if(length>0):
+            if back is None:           # clicked go button
+                if(self.history[last].uri != uri):
+                    self.history.append(uri)
+            else:
+                del self.history[last] # clicked back button
+                
+        elif(uri is not None):
+            self.history.append(uri)
+
+    def GoBack(self):
+        l = len(self.history)
+        if(l>0):
+            uri = self.history[l - 1]
+            self.GoToNewVenue(uri, true)
+      
+    def GoToNewVenue(self, uri, back = None):
         oldUri = None
         
         if not HaveValidProxy():
@@ -276,20 +299,19 @@ class VenueClientUI(wxApp, VenueClient):
                     self.ExitVenue()
             
                 self.EnterVenue(venueUri)
+                self.SetHistory(oldUri, back)
                 wxCallAfter(self.frame.ShowMenu)
                
             except EnterVenueException:
                 if oldUri != None:
                     self.EnterVenue(oldUri) # go back to venue where we came from
-                    print 'go to old venue ', oldUri
+                    raise EnterVenueException
                     
-                         
         else:
             text = ""
             text2 = ""
             
             if not HaveValidProxy():
-                print '------ bit have valid proxy'
                 text = 'You do not have a valid proxy.' +\
                        '\nPlease, run "grid-proxy-init" on the command line"'
                 text2 = 'Invalid proxy'
@@ -315,10 +337,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method performs all processing which needs to be
         done as the application is about to exit.
         """
-        #if self.textClient != None:
-        #    wxCallAfter(self.textClient.Stop)
-
-        # We need to test to see if we're in a Venue!?
+        
         if self.venueUri != None:
             self.ExitVenue()
 
@@ -449,6 +468,7 @@ class VenueClientUI(wxApp, VenueClient):
         if failure_reason is not None:
             MessageDialog(self.frame, failure_reason, "Download error",
                                   wxOK  | wxICON_INFORMATION)
+
     def UploadFiles(self, file_list):
         """
         Upload the given files to the venue.
@@ -588,7 +608,6 @@ class VenueClientUI(wxApp, VenueClient):
         """
         This method adds a service to the venue
         """
-        print '---------- add servic'
         self.client.AddService(service)
         
     def RemoveData(self, data):
