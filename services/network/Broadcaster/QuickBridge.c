@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.29 2004-12-17 21:33:08 leggett Exp $
+ * $Id: QuickBridge.c,v 1.30 2004-12-17 21:42:44 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -699,16 +699,11 @@ void process_session( Session *head, fd_set *readfds, u_long myip )
 	    } /* FD_ISSET */
 	} /* nchan loop */
 
-      debug( 2, "About to process the following session:\n" );
-      
       if ( s->use_multicast )
 	{
-	  debug( 4, "About to use_multicast\n" );
 	  /*3:receive from multicast, send on unicast to all unicast participants */ 
 	  for ( i = 0; i < nchan; i++ )
 	    {
-	      debug( 2, "Unicast Address[%d]: %s/%d\n", i, inet_ntoa( s->ucaddr[i].sin_addr ), ntohs( s->ucaddr[i].sin_port ) );
-	      debug( 2, "Multicast Address[%d]: %s/%d\n", i, inet_ntoa( s->mcaddr[i].sin_addr ), ntohs( s->mcaddr[i].sin_port ) );
 	      if ( FD_ISSET( s->mcfd[i], readfds ) )
 		{
 		  debug( 4, "ready to receive data on mcfd[%d]!\n", i );
@@ -1271,7 +1266,6 @@ int main( int argc, char *argv[] )
 	    }
 	}
     
-      debug( 4, "After select( )\n" );
       //FD_ZERO( &readfds );
       //session_set( s, &readfds );
 
@@ -1285,11 +1279,9 @@ int main( int argc, char *argv[] )
        * time.  If we have fixed sessions the list will never
        * be empty so block.
        */
-      debug( 4, "About to select unicast clients\n" );
       tv.tv_sec = 0;
       tv.tv_usec = 0; 
       nfds = select( maxfds, &readfds, NULL, NULL, &tv );
-      debug( 4, "Unicast clients selected\n" );
 
       process_session( s, &readfds, myip );
 
