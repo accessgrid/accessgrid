@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.119 2004-03-15 19:44:20 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.120 2004-03-16 18:09:11 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.119 2004-03-15 19:44:20 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.120 2004-03-16 18:09:11 lefvert Exp $"
 
 import string
 import time
@@ -43,7 +43,7 @@ from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid import icons
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog, ErrorDialog
 from AccessGrid.Utilities import VENUE_MANAGEMENT_LOG
-from AccessGrid.AuthorizationUI import AuthorizationUIPanel, AuthorizationUIDialog
+from AccessGrid.Security.wxgui.AuthorizationUI import AuthorizationUIPanel, AuthorizationUIDialog
 from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
 
 log = Log.GetLogger(Log.VenueManagement)
@@ -126,7 +126,8 @@ class VenueManagementClient(wxApp):
         self.menubar.Append(self.helpMenu, "&Help")
 
     def SetLogger(self, debugMode):
-        hdlr = Log.FileHandler(os.path.join(GetUserConfigDir(), "VenueManagement.log"))
+        userConfig = UserConfig.instance()
+        hdlr = Log.FileHandler(os.path.join(userConfig.GetConfigDir(), "VenueManagement.log"))
         hdlr.setFormatter(Log.GetFormatter())
         hdlr.setLevel(Log.DEBUG)
         Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
@@ -444,6 +445,7 @@ class VenueProfilePanel(wxPanel):
                          name = "venueProfilePanel")
         self.application = application
         self.venueProfileBox = wxStaticBox(self, -1, "")
+        self.venueProfileBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         self.description = wxTextCtrl(self, -1,'', size = wxSize(20,50),
                                       style = wxSIMPLE_BORDER
                                       | wxNO_3D | wxTE_MULTILINE
@@ -506,7 +508,7 @@ class VenueProfilePanel(wxPanel):
     def __doLayout(self):
         venueListProfileSizer = wxStaticBoxSizer(self.venueProfileBox,
                                                  wxVERTICAL)
-        venueListProfileSizer.Add(5, 20)
+        venueListProfileSizer.Add(5, 5)
         venueListProfileSizer.Add(self.description, 4,
                                   wxEXPAND|wxLEFT|wxRIGHT, 15)
         venueListProfileSizer.Add(5, 10)
@@ -545,6 +547,7 @@ class VenueListPanel(wxPanel):
         self.application = application
         self.venuesListBox = wxStaticBox(self, -1, "Venues",
                                          name = 'venueListBox')
+        self.venuesListBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         self.venuesList = wxListBox(self, self.ID_LIST, name = 'venueList',
                                     style = wxLB_SORT)
         self.addButton = wxButton(self, self.ID_ADD, 'Add',
@@ -828,23 +831,25 @@ class DetailPanel(wxPanel):
         self.multicastBox = wxStaticBox(self, -1, "Multicast Address",
                                         size = wxSize(50, 50),
                                         name = 'multicastBox')
+        self.multicastBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         self.encryptionBox = wxStaticBox(self, -1, "Encryption",
                                          size = wxSize(500, 50),
                                          name = 'encryptionBox')
+        self.encryptionBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         
         self.randomButton = wxRadioButton(self, self.ID_RANDOM,
                                           "Standard Range")
         self.intervalButton = wxRadioButton(self, self.ID_INTERVAL,
                                             "Custom Range: ")
-        self.ipAddress = wxStaticText(self, -1, "224.2.128.0/17",
-                                      style = wxALIGN_LEFT,
-                                      size = wxSize(150, 20))
+        self.ipAddress = wxStaticText(self, -1, "224.2.128.0/17")
         self.changeButton = wxButton(self, self.ID_CHANGE, "Change")
         self.encryptionButton = wxCheckBox(self, self.ID_ENCRYPT,
                                            " Encrypt media ")
         self.securityBox = wxStaticBox(self, -1, "Security",
                                          size = wxSize(500, 50),
                                          name = 'securityBox')
+        self.securityBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
+                
         self.securityText = wxStaticText(self, -1, "Manage access to venue server including which users are allowed to administrate.")
         self.securityButton = wxButton(self, self.ID_SECURITY, "Manage Security")
         self.ipString = "224.2.128.0"
@@ -985,17 +990,18 @@ class DetailPanel(wxPanel):
                         style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
          
     def OpenIntervalDialog(self, event):
-        MulticastDialog(self, -1, "Enter Multicast Address")
+        MulticastDialog(self, -1, "Multicast Address - Custom Range")
 
     def __doLayout(self):
         serviceSizer = wxBoxSizer(wxVERTICAL)
         multicastBoxSizer = wxStaticBoxSizer(self.multicastBox, wxVERTICAL)
+        
 
         multicastBoxSizer.Add(self.randomButton, 0, wxALL, 5)
         flexSizer = wxBoxSizer(wxHORIZONTAL)
-        flexSizer.Add(self.intervalButton)
-        flexSizer.Add(self.ipAddress, 1, wxALIGN_CENTER)
-        flexSizer.Add(self.changeButton, 0, wxALIGN_RIGHT)
+        flexSizer.Add(self.intervalButton, 0, wxCENTER|wxRIGHT, 5)
+        flexSizer.Add(self.ipAddress, 1, wxCENTER)
+        flexSizer.Add(self.changeButton, 0, wxCENTER)
         multicastBoxSizer.Add(flexSizer, 0, wxEXPAND | wxALL, 5)
         
         serviceSizer.Add(multicastBoxSizer, 0,  wxBOTTOM|wxEXPAND, 10)
@@ -1008,8 +1014,9 @@ class DetailPanel(wxPanel):
 
         securityBoxSizer = wxStaticBoxSizer(self.securityBox, wxHORIZONTAL)
         
-        securityBoxSizer.Add(self.securityText, 1 , wxEXPAND|wxALL, 5)
-        securityBoxSizer.Add(self.securityButton, 0, wxALIGN_RIGHT|wxALL, 5)
+        securityBoxSizer.Add(self.securityText, 1 , wxALL|wxCENTER, 5)
+        securityBoxSizer.Add(1,40)
+        securityBoxSizer.Add(self.securityButton, 0, wxALIGN_RIGHT|wxALL|wxCENTER, 5)
         serviceSizer.Add(securityBoxSizer, 0, wxEXPAND| wxBOTTOM, 10)
         
         self.SetSizer(serviceSizer)
@@ -1065,11 +1072,12 @@ class MulticastDialog(wxDialog):
         theSizer.Add(self.mask)
 
         buttonSizer = wxBoxSizer(wxHORIZONTAL)
-        buttonSizer.Add(self.okButton, 0, wxRIGHT, 5)
-        buttonSizer.Add(self.cancelButton, 0, wxLEFT, 5)
+        buttonSizer.Add(self.okButton, 0, wxALL, 5)
+        buttonSizer.Add(self.cancelButton, 0, wxALL, 5)
 
-        sizer.Add(theSizer, 0, wxALL, 20)
-        sizer.Add(buttonSizer, 0, wxALIGN_CENTER|wxBOTTOM, 10)
+        sizer.Add(theSizer, 0, wxALL, 10)
+        sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND|wxALL, 5)
+        sizer.Add(buttonSizer, 0, wxALIGN_CENTER)
 
         self.SetSizer(sizer)
         sizer.Fit(self)
@@ -1079,9 +1087,8 @@ class MulticastDialog(wxDialog):
 class VenueParamFrame(wxDialog):
        
     def __init__(self, parent, id, title, application):
-        wxDialog.__init__(self, parent, id, title, style = wxRESIZE_BORDER)
+        wxDialog.__init__(self, parent, id, title, style = wxRESIZE_BORDER | wxDEFAULT_DIALOG_STYLE)
         self.Centre()
-       
         self.noteBook = wxNotebook(self, -1)
 
         self.venue = None
@@ -1096,7 +1103,7 @@ class VenueParamFrame(wxDialog):
         self.staticAddressingPanel = StaticAddressingPanel(self.noteBook, -1)
         self.encryptionPanel = EncryptionPanel(self.noteBook, -1)
         self.authorizationPanel = AuthorizationUIPanel(self.noteBook, -1, log)
-               
+        
         self.noteBook.AddPage(self.generalPanel, "General")
         self.noteBook.AddPage(self.encryptionPanel, "Encryption")
         self.noteBook.AddPage(self.staticAddressingPanel, "Addressing")
@@ -1186,7 +1193,9 @@ class GeneralPanel(wxPanel):
         self.application = app
         self.parent = parent
         self.informationBox = wxStaticBox(self, -1, "Information")
+        self.informationBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         self.exitsBox = wxStaticBox(self, -1, "Exits")
+        self.exitsBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         self.titleLabel =  wxStaticText(self, -1, "Title:")
         self.title =  wxTextCtrl(self, -1, "",  size = wxSize(200, 20),
         validator = TextValidator())
@@ -1298,7 +1307,6 @@ class GeneralPanel(wxPanel):
 
         topParamSizer = wxStaticBoxSizer(self.informationBox, wxVERTICAL)
         topParamSizer.Add(paramFrameSizer, 0, wxEXPAND | wxALL, 10)
-        topParamSizer.Add(10,10)
         topParamSizer.Add(self.descriptionLabel, 0, wxALIGN_LEFT |wxLEFT, 10)
         topParamSizer.Add(self.description, 1,
                           wxEXPAND |wxLEFT | wxRIGHT| wxBOTTOM, 10)
@@ -1371,6 +1379,7 @@ class EncryptionPanel(wxPanel):
 
     def __doLayout(self):
         sizer = wxBoxSizer(wxVERTICAL)
+        sizer.Add(10,10)
         sizer.Add(self.encryptMediaButton, 0, wxEXPAND|wxALL, 5)
         sizer2 = wxBoxSizer(wxHORIZONTAL)
         sizer2.Add(25, 10)
@@ -1391,20 +1400,22 @@ class StaticAddressingPanel(wxPanel):
         self.panel = wxPanel(self, -1)
         self.videoTitleText = wxStaticText(self.panel, -1, "Video (h261)",
                                            size = wxSize(100,20))
+        self.videoTitleText.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         self.audioTitleText = wxStaticText(self.panel, -1, "Audio (16kHz)",
                                            size = wxSize(100,20))
+        self.audioTitleText.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         self.videoAddressText = wxStaticText(self.panel, -1, "Address: ",
-                                             size = wxSize(60,20))
+                                             size = wxSize(60,20), style = wxALIGN_RIGHT)
         self.audioAddressText = wxStaticText(self.panel, -1, "Address: ",
-                                             size = wxSize(60,20))
+                                             size = wxSize(60,20), style = wxALIGN_RIGHT)
         self.videoPortText = wxStaticText(self.panel, -1, " Port: ",
-                                          size = wxSize(45,20))
+                                          size = wxSize(45,20), style = wxALIGN_RIGHT)
         self.audioPortText = wxStaticText(self.panel, -1, " Port: ",
-                                          size = wxSize(45,20))
+                                          size = wxSize(45,20), style = wxALIGN_RIGHT)
         self.videoTtlText = wxStaticText(self.panel, -1, " TTL:",
-                                         size = wxSize(40,20))
+                                         size = wxSize(40,20), style = wxALIGN_RIGHT)
         self.audioTtlText = wxStaticText(self.panel, -1, " TTL:",
-                                         size = wxSize(40,20))
+                                         size = wxSize(40,20), style = wxALIGN_RIGHT)
         self.videoIp1 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20),
                                    validator = DigitValidator(IP))
         self.videoIp2 = wxTextCtrl(self.panel, -1, "", size = wxSize(30,20),
@@ -1440,6 +1451,7 @@ class StaticAddressingPanel(wxPanel):
 
     def __doLayout(self):
         staticAddressingSizer = wxBoxSizer(wxVERTICAL)
+        staticAddressingSizer.Add(10,10)
         staticAddressingSizer.Add(self.staticAddressingButton, 0,
                                   wxEXPAND|wxALL, 5)
 
@@ -1465,11 +1477,11 @@ class StaticAddressingPanel(wxPanel):
 
         flexSizer = wxFlexGridSizer(7, 7, 0, 0)
         flexSizer.Add(10,10)
-        flexSizer.Add(self.videoAddressText, 0 , wxEXPAND|wxALIGN_CENTER)
+        flexSizer.Add(self.videoAddressText, 0 , wxEXPAND)
         flexSizer.Add(videoIpSizer, 0 , wxEXPAND)
-        flexSizer.Add(self.videoPortText, 0 , wxEXPAND|wxALIGN_CENTER)
+        flexSizer.Add(self.videoPortText)
         flexSizer.Add(self.videoPort, 0 , wxEXPAND)
-        flexSizer.Add(self.videoTtlText,0 , wxEXPAND|wxALIGN_CENTER)
+        flexSizer.Add(self.videoTtlText,0 , wxEXPAND)
         flexSizer.Add(self.videoTtl,0 , wxEXPAND)
 
         panelSizer.Add(flexSizer, 0 , wxEXPAND|wxALL, 5)
@@ -1561,14 +1573,12 @@ class AddVenueFrame(VenueParamFrame):
     def __init__(self, parent, id, title, venueList, application):
         VenueParamFrame.__init__(self, parent, id, title, application)
         self.parent = parent
+        self.authorizationPanel.Hide()
         self.SetSize(wxSize(600, 470))
         self.SetLabel('Add Venue')
         self.generalPanel.LoadLocalVenues()
         self.encryptionPanel.ClickEncryptionButton(None,
                                                    self.application.encrypt)
-
-        
-        
         EVT_BUTTON (self.okButton, wxID_OK, self.OnOK)
         self.ShowModal()
 
@@ -1679,9 +1689,9 @@ class ModifyVenueFrame(VenueParamFrame):
             # Set this venue as default venue for this server.
             url = self.application.server.GetDefaultVenue()
             if self.venue.uri == url:
-                self.generalPanel.defaultVenue.Hide()
+                self.generalPanel.defaultVenue.Enable(0)
             else:
-                self.generalPanel.defaultVenue.Show()
+                self.generalPanel.defaultVenue.Enable(1)
           
         except:
             log.exception("ModifyVenueFrame.__loadCurrentVenueInfo: SetDefaultVenue failed")
@@ -1725,6 +1735,7 @@ class AdministratorParamFrame(wxDialog):
         self.SetSize(wxSize(400, 40))
         self.text = wxStaticText(self, -1, "Please, fill in the distinguished name for the administrator you want to add.")
         self.informationBox = wxStaticBox(self, -1, "Information")
+        self.informationBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         self.nameLabel =  wxStaticText(self, -1, "DN Name:")
         self.name =  wxTextCtrl(self, -1, "",  size = wxSize(400, 20))
         self.okButton = wxButton(self, wxID_OK, "Ok")
