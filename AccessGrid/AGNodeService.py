@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.74 2004-07-27 19:58:16 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.75 2004-07-28 22:43:07 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.74 2004-07-27 19:58:16 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.75 2004-07-28 22:43:07 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -36,8 +36,6 @@ from AccessGrid.Descriptions import CreateResource
 from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.Descriptions import CreateStreamDescription
 from AccessGrid.Descriptions import CreateParameter
-
-from AccessGrid.AGServicePackageRepository import AGServicePackageRepository
 
 from SOAPpy.Types import SOAPException
 
@@ -110,15 +108,8 @@ class AGNodeService:
         # Read the configuration file (directory options and such)
         self.__ReadConfigFile()
 
-        # Start the service package repository
-        # (now that the services directory is known)
-        self.servicePackageRepository = AGServicePackageRepository(
-            self.servicesDir, prefix="packages" )
-        self.servicePackageRepository.Start()
-
     def Stop(self):
         log.info("NodeService.Stop")
-        self.servicePackageRepository.Stop()
 
     ####################
     ## SERVICE MANAGER methods
@@ -232,12 +223,6 @@ class AGNodeService:
                             serviceDescription.name)
 
         return serviceDescription
-
-    def GetAvailableServices( self ):
-        """Get list of available services """
-        log.info("NodeService.GetAvailableServices")
-
-        return self.servicePackageRepository.GetServiceDescriptions()
 
     def GetServices( self ):
         """Get list of installed services """
@@ -489,11 +474,12 @@ class AGNodeService:
                 try:
                 
                     # Actually add the service to the servicemgr
-                    AGServiceManagerIW( serviceManager.uri ).AddService( 
-                        self.servicePackageRepository.GetServiceDescription( service.packageName ), 
+                    AGServiceManagerIW( serviceManager.uri ).AddServicePackage( 
+                        service.packageName, 
                         service.resource,
                         service.parameters )
 
+                        
                 except:
                     log.exception("Exception adding service %s" % (service.packageName))
                     exceptionText += "Couldn't add service %s" % (service.packageName)
@@ -571,7 +557,7 @@ class AGNodeService:
                 serviceSection = 'service%d' % numServices
                 config.add_section( serviceSection )
                 servicemanager_services += serviceSection + " "
-                config.set( serviceSection, "packageName", os.path.basename( service.servicePackageUri ) )
+                config.set( serviceSection, "packageName", os.path.basename( service.servicePackageFile ) )
                 config.set( serviceSection, "resource", resourceSection )
                 config.set( serviceSection, "serviceconfig", serviceConfigSection )
 
