@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.6 2003-03-30 02:48:55 turam Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.7 2003-04-19 05:49:42 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,15 +13,22 @@
 import sys
 import pickle
 import logging
+import struct
 
 from threading import Thread
 
-from pyGlobus.io import GSITCPSocket
+from pyGlobus.io import GSITCPSocket, IOBaseException
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
- 
+
+class TextClientConnectException(Exception):
+    """
+    This gets returned when a connect fails.
+    """
+    pass
+
 class SimpleTextProcessor:
     def __init__(self, socket, venueId, callback):
         """ """
@@ -49,13 +56,16 @@ class SimpleTextProcessor:
         self.log.debug("%s", event)
         
         # the exception should be caught in UI not here.
-        try: 
+        try:
+            # Pickle the data
             pdata = pickle.dumps(event)
-            lenStr = "%s\n" % len(pdata)
-            self.wfile.write(lenStr)
+            size = struct.pack("i", len(pdata))
+            # Send the size as 4 bytes
+            self.wfile.write(size)
+            # Send the pickled event data
             self.wfile.write(pdata)
         except:
-            self.log.debug("in except")
+            self.log.exception("SimpleTextProcessor: Filed to write data")
            
     def Output(self, text):
         """ """
@@ -81,11 +91,18 @@ class SimpleTextProcessor:
         self.log.debug("Process network")
         self.running = 1
         while self.running:
-            str = self.rfile.readline()
-            self.log.debug("READ /%s/ from network.", str)
-            size = int(str)
-            pdata = self.rfile.read(size, size)
+            try:
+                data = self.rfile.read(4)
+                sizeTuple = struct.unpack('i', data)
+                size = sizeTuple[0]
+                self.log.debug("Read %d", size)
+            except IOBaseException:
+                size = 0
+                self.running = 0
+                self.log.exception("Error reading text service!")
+                
+            pdata = self.rfile.read(size)
             event = pickle.loads(pdata)
             self.Output(event.data)
-
+            
         self.socket.close()
