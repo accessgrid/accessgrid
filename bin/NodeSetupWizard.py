@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.15 2003-09-19 18:43:40 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.16 2003-09-19 18:54:35 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -451,12 +451,6 @@ class VideoCaptureWindow2(TitledPage):
         # No cameras are installed
         if nrOfCameras == 0:
             text = "No cameras found."
-            
-            if isWindows():
-                text = text + "\n\nNote: Select 'Search for Video Devices' found under 'Access Grid Toolkit - Configure' in the start menu and try this wizard again."
-            if isLinux():
-                text = text + "\n\nNote: Run 'SetupVideo.py' and try this wizard again."
-                
             self.gridSizer.Add(wxStaticText(self.scrolledWindow, -1, text))
             
         i = 0
