@@ -1,3 +1,4 @@
+#!/usr/bin/python2
 import os
 import sys
 import signal
