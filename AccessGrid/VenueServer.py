@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.156 2004-07-27 19:21:20 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.157 2004-07-27 19:49:07 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.156 2004-07-27 19:21:20 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.157 2004-07-27 19:49:07 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -193,7 +193,7 @@ class VenueServer(AuthorizationMixIn):
         self.checkpointing = 0
         self.defaultVenue = ''
         self.multicastAddressAllocator = MulticastAddressAllocator()
-        self.hostname = SystemConfig.instance().GetHostname()
+        self.hostname = Service.instance().GetHostname()
         self.venues = {}
         self.services = []
         self.configFile = configFile
