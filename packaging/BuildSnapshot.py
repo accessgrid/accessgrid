@@ -56,6 +56,9 @@ parser = OptionParser()
 parser.add_option("-s", "--sourcedir", dest="sourcedir", metavar="SOURCEDIR",
                   default=None,
                   help="The directory the AG source code is in.")
+parser.add_option("-t", "--tag", dest="tag", metavar="TAG",
+                  default=None,
+                  help="Specifies the tag for a revision of code in cvs.")
 parser.add_option("-m", "--meta", dest="metainfo", metavar="METAINFO",
                   default=None,
                   help="Meta information string about this release.")
@@ -112,13 +115,18 @@ if not options.nocheckout:
 
     # WE ASSUME YOU HAVE ALREADY LOGGED IN WITH:
     # cvs -d :pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl login
+
+    if not options.tag:
+        tagString = ""
+    else:
+        tagString = "-r " + options.tag
     
     # Go to the source dir, and checkout using relative path;
     # cvs (linux) complains about checking out to an absolute path
     os.chdir(SourceDir)
 
-    cvs_cmd = "cvs -z6 -d %s export -d %s -D now AccessGrid" % (cvsroot,
-                                                              BuildDirName)
+    cvs_cmd = "cvs -z6 -d %s export -d %s %s -D now AccessGrid" % (cvsroot,
+                                                   BuildDirName, tagString)
     if options.verbose:
         print "BUILD: Checking out code with command: ", cvs_cmd
 
