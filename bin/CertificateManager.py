@@ -1,3 +1,5 @@
+#!/usr/bin/python2
+
 import os, sys
 from optparse import Option
 
