@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.36 2004-04-27 02:06:37 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.37 2004-04-27 02:40:22 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ClientProfile.py,v 1.36 2004-04-27 02:06:37 judson Exp $"
+__revision__ = "$Id: ClientProfile.py,v 1.37 2004-04-27 02:40:22 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -48,6 +48,7 @@ class ClientProfile:
         'id',
         'location',
         'venueclienturl',
+        'techsupportinfo',
         'home',
         'distinguishedname']
         
