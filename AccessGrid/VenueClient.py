@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.41 2003-03-25 21:08:43 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.42 2003-03-26 15:13:25 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -79,8 +79,7 @@ class VenueClient( ServiceBase):
         self.profile = profile
         if(self.profile != None):
            self.profile.venueClientURL = self.service.get_handle()
-           #self.followLeadClient = Client.Handle(self.profile.venueClientURL).get_proxy()
-        
+                
     def CreateVenueClientWebService(self):
 
         from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
@@ -93,9 +92,8 @@ class VenueClient( ServiceBase):
         
         if(self.profile != None):
             self.profile.venueClientURL = self.service.get_handle()
-            print "venue client serving :", self.profile.venueClientURL
-            #self.followLeadClient = Client.Handle(self.profile.venueClientURL).get_proxy()
-      
+            log.debug("AccessGrid.VenueClient::venue client serving : %s" %self.profile.venueClientURL)
+                 
     #
     # Event Handlers
     #
@@ -190,7 +188,7 @@ class VenueClient( ServiceBase):
                                               venueState.textLocation,
                                               applications)
             except:
-                log.exception("Failed to convert venuestate to object")
+                log.exception("AccessGrid.VenueClient::Failed to convert venuestate to object")
                 
             self.venueUri = URL
             self.venueId = self.venueState.GetUniqueId()
@@ -227,28 +225,28 @@ class VenueClient( ServiceBase):
             self.heartbeatTask.start()
  
         except:
-            print "Exception in EnterVenue : ", sys.exc_type, sys.exc_value
+            log.error("AccessGrid.VenueClient::Exception in EnterVenue")
             raise EnterVenueException("Enter Failed!")
 
         # 
         # Update the node service with stream descriptions
         #
-        try:
-            if haveValidNodeService:
-                Client.Handle( self.nodeServiceUri ).get_proxy().ConfigureStreams( self.streamDescList )
-        except:
-            print "Exception configuring node service streams", sys.exc_type, sys.exc_value
+        #try:
+        if haveValidNodeService:
+            Client.Handle( self.nodeServiceUri ).get_proxy().ConfigureStreams( self.streamDescList )
+        #except:
+        #    log.error("AccessGrid.VenueClient::Exception configuring node service streams")
 
         #
         # Update venue clients being led with stream descriptions
         #
         for profile in self.followerProfiles.values():
-            try:
-                Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue( URL )
-            except:
-                print "Exception: ", sys.exc_type, sys.exc_value
-                print "while leading follower: ", profile.name, profile.venueClientURL
-
+            #Try:
+            Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue( URL )
+            #except:
+            #print "Exception: ", sys.exc_type, sys.exc_value
+            #print "while leading follower: ", profile.name, profile.venueClientURL
+            
         # Finally, set the venue uri now that we have successfully
         # entered the venue
         self.venueUri = URL
@@ -294,7 +292,7 @@ class VenueClient( ServiceBase):
 
         # request permission to follow the leader
         # (response will come in via the LeadResponse method)
-        print 'Requesting permission to follow this leader: ', leaderProfile.name
+        log.debug('Requesting permission to follow this leader: %s' %leaderProfile.name)
         Client.Handle( leaderProfile.venueClientURL ).get_proxy().Lead( self.profile )
 
     def Lead( self, clientProfile):
@@ -302,7 +300,7 @@ class VenueClient( ServiceBase):
         Lead tells this venue client to drag the specified client with it.
         """
 
-        print "Received request to lead ", clientProfile.name, clientProfile.venueClientURL
+        log.debug("Received request to lead %s %s" %clientProfile.name, clientProfile.venueClientURL)
 
         # Add profile to list of followers awaiting authorization
         self.pendingFollowers[clientProfile.publicId] = clientProfile
@@ -319,7 +317,7 @@ class VenueClient( ServiceBase):
         Subclasses should override this method to perform their specific 
         authorization, calling SendLeadResponse thereafter.
         """
-
+        
         # For now, the base VenueClient authorizes every Lead request
         self.SendLeadResponse(clientProfile,True)
 
@@ -331,15 +329,15 @@ class VenueClient( ServiceBase):
         # remove profile from list of pending followers
         del self.pendingFollowers[clientProfile.publicId]
 
-        if response == True:
+        if response:
             # add profile to list of followers
-            print "Authorizing lead request for ", clientProfile.name
+            log.debug("Authorizing lead request for %s" %clientProfile.name)
             self.followerProfiles[clientProfile.publicId] = clientProfile
 
             # send the response
-            Client.Handle( clientProfile.venueClientURL ).get_proxy().LeadResponse(self.profile,True)
+            Client.Handle( clientProfile.venueClientURL ).get_proxy().LeadResponse(self.profile, 1)
         else:
-            print "Rejecting lead request for ", clientProfile.name
+            log.debug("Rejecting lead request for %s" %clientProfile.name)
 
     def LeadResponse(self, leaderProfile, isAuthorized):
         """
@@ -348,14 +346,27 @@ class VenueClient( ServiceBase):
         this method to give the user visual feedback to the Lead request.
         """
         if leaderProfile.publicId == self.pendingLeader.publicId and isAuthorized:
-            print "Leader has agreed to lead you: ", self.pendingLeader.name, self.pendingLeader.distinguishedName
+            log.debug("Leader has agreed to lead you: %s, %s" %(self.pendingLeader.name, self.pendingLeader.distinguishedName))
             self.leaderProfile = self.pendingLeader
         else:
-            print "Leader has rejected request to lead you: ", leaderProfile.name
+            log.debug("Leader has rejected request to lead you: %s", leaderProfile.name)
         self.pendingLeader = None
 
     LeadResponse.soap_export_as = "LeadResponse"
 
+    def UnLead(self, clientProfile):
+        """
+        UnLead tells this venue client to stop dragging the specified client.
+        """
+
+        log.debug( "AccessGrid.VenueClient::Received request to lead %s %s" %(clientProfile.name, clientProfile.venueClientURL))
+        if(self.followerProfiles.has_key(clientProfile.publicId)):
+            del self.followerProfiles[clientProfile.publicId]
+
+        if(self.pendingFollowers.has_key(clientProfile.publicId)):
+            del self.pendingFollowers[clientProfile.publicId]
+
+        
     def SetNodeServiceUri( self, nodeServiceUri ):
         """
         Bind the given node service to this venue client
