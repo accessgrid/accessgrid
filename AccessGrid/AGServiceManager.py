@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.83 2005-01-06 22:24:50 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.84 2005-01-12 20:26:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.83 2005-01-06 22:24:50 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.84 2005-01-12 20:26:20 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -228,10 +228,10 @@ class AGServiceManager:
     def GetNodeServiceUrl(self):
         return self.nodeServiceUri
         
-    def SetUrl(self,url):
+    def SetUri(self,url):
         self.uri = url
         
-    def GetUrl(self):
+    def GetUri(self):
         return self.uri
         
     def SetName(self,name):
@@ -532,7 +532,7 @@ class AGServiceManagerIW(SOAPIWrapper):
 
     def GetServicePackageDescriptions(self):
         svcList = list()
-        for s in self.proxy.GetServicePackages():
+        for s in self.proxy.GetServicePackageDescriptions():
             svcList.append(CreateAGServicePackageDescription(s))
         return svcList
 
