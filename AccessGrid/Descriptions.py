@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.46 2004-03-08 22:12:32 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.47 2004-03-10 07:19:34 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.46 2004-03-08 22:12:32 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.47 2004-03-10 07:19:34 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -443,6 +443,16 @@ class VenueState:
 #
 #
 #
+def CreateCapability(capabilityStruct):
+    cap = Capability(capabilityStruct.role,capabilityStruct.type)
+    if hasattr(capabilityStruct.parms,"_asdict"):
+        parmsdict = capabilityStruct.parms._asdict()
+        for k,v in parmsdict.items():
+            cap.parms[k] = v
+    else:
+        cap.parms = dict()
+    return cap
+
 def CreateClientProfile( clientProfileStruct ):
     """
     Create a client profile from a SOAP struct
@@ -467,8 +477,11 @@ def CreateClientProfile( clientProfileStruct ):
     clientProfile.techSupportInfo = clientProfileStruct.techSupportInfo
     clientProfile.venueClientURL = clientProfileStruct.venueClientURL
 
-    # should be converting capabilities here
-    clientProfile.capabilities = clientProfileStruct.capabilities
+    # convert capabilities from structtypes to objects
+    capList = []
+    for cap in clientProfileStruct.capabilities:
+        capList.append(CreateCapability(cap))
+    clientProfile.capabilities = capList
 
     return clientProfile
 
