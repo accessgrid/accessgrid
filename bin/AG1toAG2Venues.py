@@ -8,7 +8,7 @@
 #                     ag1 venues db lives (currently ag.mcs.anl.gov)
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: AG1toAG2Venues.py,v 1.2 2004-03-01 20:54:32 turam Exp $
+# RCS-ID:      $Id: AG1toAG2Venues.py,v 1.3 2004-03-01 21:00:18 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -85,8 +85,11 @@ if __name__ == "__main__":
     
     venue_id_map = {}
 
+    user=""
+    passwd=""
+
     db_conn = pg.connect(dbname='ag_venues', host='pgsql.mcs.anl.gov',
-                         user='wwwtrans', passwd='bigvoyage')
+                         user=user, passwd=passwd)
     load_pass_1(db_conn, venue_id_map)
     load_pass_2(db_conn, venue_id_map)
     
