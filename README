@@ -16,6 +16,16 @@ Mailing List
 
 Building and Installing the Access Grid Toolkit
 
+Prequisite Software
+
+- Node Management
+. Globus 2.0
+. pyGlobus
+. vic
+. rat
+. Intergroup Chat (if we use it)
+.     implies Java !
+
 Acknowledgements
 
 
