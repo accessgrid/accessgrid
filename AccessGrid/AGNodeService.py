@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.43 2004-02-19 17:59:02 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.44 2004-02-24 23:29:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.43 2004-02-19 17:59:02 eolson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.44 2004-02-24 23:29:25 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting.pyGlobus import Client
@@ -282,9 +282,7 @@ class AGNodeService( ServiceBase ):
         serviceList = self.GetServices()
         for service in serviceList:
             serviceMediaTypes = map( lambda cap: cap.type, service.capabilities )
-            print "service : ", service.name, serviceMediaTypes
             if mediaType in serviceMediaTypes:
-                print " -- set enable ", enableFlag
                 self.SetServiceEnabled( service.uri, enableFlag) 
 
     SetServiceEnabledByMediaType.soap_export_as = "SetServiceEnabledByMediaType"

@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.37 2004-02-19 17:59:02 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.38 2004-02-24 23:29:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.37 2004-02-19 17:59:02 eolson Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.38 2004-02-24 23:29:25 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting.pyGlobus import Client
@@ -161,7 +161,7 @@ class AGServiceManager( ServiceBase ):
             serviceDescription.resource = resource
 
         except:
-            print "Exception in AddService, retrieving service implementation\n-- ", sys.exc_type, sys.exc_value
+            log.exception("Service Manager failed to retrieve service implementation for %s", serviceDescription.name)
             raise Exception("AGServiceManager.AddService failed: " + str( sys.exc_value ) )
 
         #
@@ -182,7 +182,8 @@ class AGServiceManager( ServiceBase ):
             # Designate port for service
             port = MulticastAddressAllocator().AllocatePort()
             options.append( port )
-            print "Running Service; options:", executable, options
+            log.debug("Running Service; options: %s %s", executable, str(options))
+            
             pid = self.processManager.start_process( executable, options )
 
             #
@@ -193,24 +194,21 @@ class AGServiceManager( ServiceBase ):
             elapsedTries = 0
             maxTries = 10
             while elapsedTries < maxTries:
-                print "Trying client handle "
                 try:
                     Client.Handle(serviceUrl).IsValid()
-                    print "* * Service handle is valid ! "
+                    log.info("Service %s successfully started", serviceDescription.name)
                     break
                 except:
-                    print "Wait another sec for service to boot"
-                    print " - elapsedTries = ", elapsedTries
                     time.sleep(1)
                     elapsedTries += 1
 
             # Detect unreachable service
             if elapsedTries >= maxTries:
-                raise Exception("Add service failed; service is unreachable")
+                log.error("Add %s failed; service is unreachable", serviceDescription.name)
 
         except:
-            print "Exception in AddService, executing service ", sys.exc_type, sys.exc_value
-            raise sys.exc_value
+            log.exception("Failed to add service")
+            raise 
 
         #
         # Add and configure the service
@@ -341,7 +339,6 @@ class AGServiceManager( ServiceBase ):
         """
         Returns the install directory path where services are expected to be found.
         """
-        print '------------ get install dir ', GetInstallDir()
 
         return GetInstallDir()
     
