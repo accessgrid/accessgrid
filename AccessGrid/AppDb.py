@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.15 2004-03-22 19:42:43 eolson Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.16 2004-03-22 22:31:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,12 +15,13 @@ used by client software that wants to keep track of what AG specific
 tools are appropriate for specific data types. It also keeps track of
 how to invoke those tools.
 """
-__revision__ = "$Id: AppDb.py,v 1.15 2004-03-22 19:42:43 eolson Exp $"
+__revision__ = "$Id: AppDb.py,v 1.16 2004-03-22 22:31:43 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
 import sys
 import shutil
+import stat
 
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.Utilities import LoadConfig, SaveConfig
@@ -87,13 +88,8 @@ class AppDb:
             self.path = path
 
         self.fileName = os.path.join(self.path, filename)
-
-        try:
-            self.AppDb = LoadConfig(self.fileName, dict(),
-            self.defaultSeparator)
-        except:
-            print sys.exc_info()
-            print "Couldn't open application database: %s" % self.fileName
+        
+        self.Load(self.fileName)
 
     def Load(self, fileName=None):
         """
@@ -101,12 +97,30 @@ class AppDb:
         """
         if fileName == None:
             fileName = self.fileName
-
+            
         try:
-            self.AppDb = LoadConfig(fileName, self.defaultSeparator)
+            self.AppDb = LoadConfig(fileName, separator=self.defaultSeparator)
         except:
             print sys.exc_info()
             print "Couldn't open application database: %s" % fileName
+            
+        # update the file modification time
+        self._UpdateModTime()
+
+    def _Synch(self):
+        """
+        Synch the in-memory app db with the file, if necessary
+        """
+        fileLastModified = os.stat(self.fileName)[stat.ST_MTIME]
+        if fileLastModified > self.fileLastModified:
+            self.Load()
+            
+    def _UpdateModTime(self):
+        """
+        Update the last modified time of the appdb file
+        """
+        # store the file modification time
+        self.fileLastModified = os.stat(self.fileName)[stat.ST_MTIME]
 
     def _Flush(self):
         """
@@ -114,6 +128,9 @@ class AppDb:
         """
         try:
             SaveConfig(self.fileName, self.AppDb, self.defaultSeparator)
+
+            # update the file modification time
+            self._UpdateModTime()
         except:
             print "Couldn't flush the db to disk."
 
@@ -172,6 +189,9 @@ class AppDb:
 
         returns a mimeType in a string.
         """
+        # Ensure that we're in synch with the on-disk appdb
+        self._Synch()
+        
         mimeType = None
 
         if name != None:
@@ -199,6 +219,9 @@ class AppDb:
         """
         returns a name in a string.
         """
+        # Ensure that we're in synch with the on-disk appdb
+        self._Synch()
+        
         appName = None
 
         for key in self.AppDb.keys():
@@ -214,6 +237,9 @@ class AppDb:
         """
         returns a extension in a string.
         """
+        # Ensure that we're in synch with the on-disk appdb
+        self._Synch()
+        
         ext = None
 
         for key in self.AppDb.keys():
@@ -230,6 +256,9 @@ class AppDb:
         returns a tuple of (int, string). Success is (1, mimeType),
         failure is (0, reason)
         """
+
+        # Ensure that we're in synch with the on-disk appdb
+        self._Synch()
 
         namekey = self._GetPrivName(name)
         if namekey == None:
@@ -254,6 +283,9 @@ class AppDb:
         returns a tuple of (int, string). Success is (1, mimeType),
         failure is (0, reason)
         """
+
+        # Ensure that we're in synch with the on-disk appdb
+        self._Synch()
 
         if name == None and extension == None and mimeType == None:
             return (0, "Not enough information to remove mime type.")
@@ -305,6 +337,9 @@ class AppDb:
         """
         returns a list of command names for this mime type.
         """
+        # Ensure that we're in synch with the on-disk appdb
+        self._Synch()
+
         cmds = list()
 
         for key in self.AppDb.keys():
@@ -320,6 +355,9 @@ class AppDb:
         """
         returns a dict of [commandname:command] for this mimetype
         """
+        # Ensure that we're in synch with the on-disk appdb
+        self._Synch()
+
         cmds = dict()
 
         for key in self.AppDb.keys():
@@ -337,6 +375,9 @@ class AppDb:
         optionally if vars is a dictionary, of name = value, named parameter
         substitution is done for the command line.
         """
+        # Ensure that we're in synch with the on-disk appdb
+        self._Synch()
+
         cmdStr = ""
 
         if mimeType == None or cmdName == None:
@@ -364,6 +405,9 @@ class AppDb:
         failure is (0, reason).
         """
 
+        # Ensure that we're in synch with the on-disk appdb
+        self._Synch()
+
         pCmd = self._GetPrivVerb(cmdName, mimeType)
         if pCmd == None:
             pCmd = str(GUID())
@@ -382,6 +426,9 @@ class AppDb:
         returns a tuple (int, string). Success is (1, cmdName),
         failure is (0, reason).
         """
+
+        # Ensure that we're in synch with the on-disk appdb
+        self._Synch()
 
         pCmd = self._GetPrivVerb(cmdName, mimeType)
         cmdkey = self.defaultSeparator.join([mimeType, pCmd])
@@ -443,6 +490,9 @@ class AppDb:
     def ListApplications(self):
         """
         """
+        # Ensure that we're in synch with the on-disk appdb
+        self._Synch()
+
         apps = list()
 
         for key in self.AppDb.keys():
@@ -455,6 +505,9 @@ class AppDb:
     def ListMimeTypes(self):
         """
         """
+        # Ensure that we're in synch with the on-disk appdb
+        self._Synch()
+
         mt = list()
 
         for key in self.AppDb.keys():
@@ -471,6 +524,9 @@ class AppDb:
     def ListAppsAsAppDescriptions(self):
         """
         """
+        # Ensure that we're in synch with the on-disk appdb
+        self._Synch()
+
         apps = list()
 
         for key in self.AppDb.keys():
