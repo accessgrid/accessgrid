@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.8 2003-09-16 07:25:16 judson Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.9 2003-09-17 20:04:34 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.8 2003-09-16 07:25:16 judson Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.9 2003-09-17 20:04:34 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -25,6 +25,8 @@ from AccessGrid import Platform
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid import DataStore
 from pyGlobus import ftpClient
+
+log = logging.getLogger("AG.DataStoreClient")
 
 class FileNotFound(Exception):
     pass
@@ -290,6 +292,7 @@ class DataStoreClient:
         """
 
         try:
+            log.debug("Upload %s to %s", localFile, self.uploadURL)
             DataStore.GSIHTTPUploadFiles(self.uploadURL, [localFile], None)
         except DataStore.UploadFailed, e:
             rc, errlist = e.args[0]
@@ -395,8 +398,8 @@ class DataStoreShell(cmd.Cmd):
             if os.path.isfile(file):
                 try:
                     self.dsc.Upload(arg)
-                except:
-                    print "Upload failed"
+                except Exception, e:
+                    print "Upload failed: ", e
             else:
                 print "%s is not a regular file" % (file)
         self.dsc.LoadData()
@@ -604,15 +607,15 @@ if __name__ == "__main__":
 
         sh = DataStoreShell(dsc)
         sh.run()
+        
+        # ppt = dsc.QueryMatchingFiles("*.ppt")
+        # print "Ppt: ", ppt
 
-        ppt = dsc.QueryMatchingFiles("*.ppt")
-        print "Ppt: ", ppt
+        # dsc.Download(ppt[0], "\\temp\\foo.ppt")
+        # dsc.Upload("\\temp\\foo.ppt")
 
-        dsc.Download(ppt[0], "\\temp\\foo.ppt")
-        dsc.Upload("\\temp\\foo.ppt")
-
-#    logging.root.addHandler(logging.StreamHandler())
-#    logging.root.setLevel(logging.ERROR)
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel(logging.DEBUG)
 
 
     if len(sys.argv) < 2:
