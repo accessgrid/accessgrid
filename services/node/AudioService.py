@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.18 2004-05-07 22:56:56 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.19 2004-05-09 03:04:10 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,9 +34,9 @@ class AudioService( AGService ):
         #
         # Set configuration parameters
         #
-        self.talk = OptionSetParameter( "Talk", "On", ["On", "Off"] )
-        self.inputGain = RangeParameter( "Input gain", 50, 0, 100 )
-        self.outputGain = RangeParameter( "Output gain", 50, 0, 100 )
+        self.talk = OptionSetParameter( "talk", "On", ["On", "Off"] )
+        self.inputGain = RangeParameter( "inputgain", 50, 0, 100 )
+        self.outputGain = RangeParameter( "outputgain", 50, 0, 100 )
 
         self.configuration.append(self.talk)
         self.configuration.append(self.inputGain)
