@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.25 2004-04-05 18:46:10 judson Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.26 2004-04-05 19:11:08 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -802,9 +802,30 @@ class ConfigWindow(TitledPage):
                 log.exception("ConfigWindow.Validate: Could not add service to audio machine")
                 errors = errors + "The audio machine could not be added to the configuration. An error occured.\n\n"
                    
-        # Save configuration
+       
         self.name = self.configNameCtrl.GetValue()
 
+        configs = []
+
+        # Get known configurations from the Node Service
+        try:
+            configs = self.nodeClient.GetConfigurations()
+        except:
+            log.exception("ConfigWindow.Validate: Could not retrieve configurations.")
+                       
+        # Confirm overwrite
+        if configName in configs:
+            text ="The configuration %s already exists. Do you want to overwrite?" % (configName,)
+            dlg = wxMessageDialog(self, text, "Confirm",
+                                  style = wxICON_INFORMATION | wxOK | wxCANCEL)
+            ret = dlg.ShowModal()
+            dlg.Destroy()
+            if ret != wxID_OK:
+                wxEndBusyCursor()
+                # User does not want to overwrite.
+                return false
+
+        # Save configuration
         try:
             self.nodeClient.GetNodeService().StoreConfiguration(self.name)
         except:
@@ -966,6 +987,12 @@ class NodeClient:
 
         return self.cameraList
 
+
+    def GetConfigurations(self):
+        '''
+        Returns a list of existing configuration names.
+        '''
+        return self.node.GetConfigurations()
 
 def main():
     log = None
