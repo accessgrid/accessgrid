@@ -1,5 +1,10 @@
+import os.path
 import time
+import md5
 
+from AccessGrid.Platform.Config import UserConfig
+from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
+from AccessGrid.Security import CertificateRepository
 from AccessGrid import Log
 log = Log.GetLogger("CertificateStatus")
 
@@ -55,6 +60,58 @@ class CertRequestWrapper:
 
     def GetCertReady(self):
         return self.certReady
+
+    def Install(self):
+        """
+        Install this certificate into the local repo:
+
+            Write cert to a tempfile.
+            Invoke cert mgr's import method.
+            Delete the tempfile.
+
+        """
+
+        if not self.certReady:
+            raise Exception("Certificate is not ready for installation")
+        
+        certText = self.fullStatus
+
+        hash = md5.new(certText).hexdigest()
+        tempfile = os.path.join(UserConfig.instance().GetTempDir(), "%s.pem" % (hash))
+
+        try:
+            try:
+                fh = open(tempfile, "w")
+                fh.write(certText)
+                fh.close()
+
+                certMgr = self.browser.GetCertificateManager()
+                impCert = certMgr.ImportRequestedCertificate(tempfile)
+
+                MessageDialog(self.browser,
+                              "Successfully imported certificate for\n" +
+                              str(impCert.GetSubject()),
+                              "Import Successful")
+                self.browser.Load()
+
+            except CertificateRepository.RepoInvalidCertificate, e:
+                log.exception("Invalid certificate")
+                msg = e[0]
+                ErrorDialog(self.browser,
+                            "The import of your approved certificate failed:\n"+
+                            msg,
+                            "Import Failed")
+
+
+            except:
+                log.exception("Import of requested cert failed")
+                ErrorDialog(self.browser,
+                            "The import of your approved certificate failed.",
+                            "Import Failed")
+
+        finally:
+            os.unlink(tempfile)
+        
 
     def UpdateStatus(self):
         """
@@ -177,11 +234,12 @@ class CertificateStatusBrowser(CertificateBrowserBase):
         sizer.Add(self.httpProxyPanel, 0, wxEXPAND)
 
     def OnInstallCert(self, event):
-        cert = self.GetSelectedCertificate()
-        if cert is None:
+        req = self.GetSelectedCertificate()
+        if req is None:
             return
 
-        print "Install ", cert
+        req.Install()
+        
 
     def OnDeleteRequest(self, event):
         req = self.GetSelectedCertificate()
