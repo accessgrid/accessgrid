@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.25 2004-03-23 17:57:52 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.26 2004-03-24 22:38:34 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.25 2004-03-23 17:57:52 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.26 2004-03-24 22:38:34 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -47,6 +47,7 @@ from AccessGrid.Venue import ServiceAlreadyPresent
 from AccessGrid.VenueClient import NetworkLocationNotFound, NotAuthorizedError
 from AccessGrid.VenueClient import DisconnectError
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
+from AccessGrid.UIUtilities import AddURLBaseDialog, EditURLBaseDialog
 
 try:
     import win32api
@@ -77,10 +78,6 @@ Dialogs
 
 class SaveFileDialog(wxDialog):
 class UploadFilesDialog(wxDialog):
-class EditMyVenuesDialog(wxDialog):
-class MyVenuesEditValidator(wxPyValidator):
-class RenameDialog(wxDialog):
-class AddMyVenueDialog(wxDialog):
 class UrlDialog(wxDialog):
 class ProfileDialog(wxDialog):
 class TextValidator(wxPyValidator):
@@ -1000,7 +997,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         name = self.venueClient.GetVenueName()
         myVenuesDict = self.controller.GetMyVenues()
         
-        print "URL = ", url
         if not url:
             log.info("Invalid venue url %s", url)
             self.Error("Error adding venue to venue list","Add Venue Error")
@@ -1020,7 +1016,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             # - Prompt for name and validate
             #
             venueName = None
-            dialog = AddMyVenueDialog(self, -1, name)
+            dialog = AddURLBaseDialog(self, -1, name)
             if (dialog.ShowModal() == wxID_OK):
                 venueName = dialog.GetValue()
             dialog.Destroy()
@@ -1062,14 +1058,16 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         myVenues = None
         venuesDict = self.controller.GetMyVenues()
 
-        editMyVenuesDialog = EditMyVenuesDialog(self, -1, "Edit your venues", 
+        editMyVenuesDialog = EditURLBaseDialog(self, -1, "Edit your venues", 
                                                 venuesDict)
+        
         if (editMyVenuesDialog.ShowModal() == wxID_OK):
             myVenues = editMyVenuesDialog.GetValue()
             try:
                 self.controller.EditMyVenuesCB(myVenues)
                 self.__LoadMyVenues()
             except:
+                log.exception("Error saving changes to my venues")
                 self.Error("Error saving changes to my venues","Edit Venues Error")
 
         editMyVenuesDialog.Destroy()
@@ -1599,7 +1597,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         This method is called when the user wants to go back to last visited venue
         """
         log.debug("Go back")
-        print "calling controller back"
         self.controller.GoBackCB()
         
     def StartCmd(self, objDesc, verb=None,cmd=None):
@@ -3724,233 +3721,6 @@ class UploadFilesDialog(wxDialog):
         self.progress.SetValue(value)
 
  
-################################################################################
-#
-# Edit Venues Dialog
-
-class EditMyVenuesDialog(wxDialog):
-    ID_DELETE = wxNewId() 
-    ID_RENAME = wxNewId()
-    listWidth = 500
-    listHeight = 200
-    currentItem = 0
-    ID_LIST = wxNewId()
-      
-    def __init__(self, parent, id, title, myVenuesDict):
-        wxDialog.__init__(self, parent, id, title)
-        self.parent = parent 
-        self.dictCopy = myVenuesDict.copy()
-        self.okButton = wxButton(self, wxID_OK, "Ok")
-        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
-        self.Centre()
-        info = "Please, right click on the venue you want to edit and choose from the \noptions available in the menu."
-        self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
-        self.myVenuesList= wxListCtrl(self, self.ID_LIST, 
-                                       size = wxSize(self.listWidth, self.listHeight), 
-                                       style=wxLC_REPORT)
-        self.myVenuesList.InsertColumn(0, "Name")
-        self.myVenuesList.SetColumnWidth(0, self.listWidth * 1.0/3.0)
-        self.myVenuesList.InsertColumn(1, "Url ")
-        self.myVenuesList.SetColumnWidth(1, self.listWidth * 2.0/3.0)
-        
-        self.menu = wxMenu()
-        self.menu.Append(self.ID_RENAME,"Rename", "Rename selected venue")
-        self.menu.Append(self.ID_DELETE,"Delete", "Delete selected venue")
-        #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
-        self.Layout()
-        self.__PopulateList()
-        self.__SetEvents()
-        
-    def __SetEvents(self):
-        EVT_RIGHT_DOWN(self.myVenuesList, self.OnRightDown)
-        EVT_LIST_ITEM_SELECTED(self.myVenuesList, self.ID_LIST, self.OnItemSelected)
-        EVT_MENU(self.menu, self.ID_RENAME, self.OnRename)
-        EVT_MENU(self.menu, self.ID_DELETE, self.OnDelete)
-               
-    def __PopulateList(self):
-        i = 0
-        self.myVenuesList.DeleteAllItems()
-        for name in self.dictCopy.keys():
-            self.myVenuesList.InsertStringItem(i, name)
-            self.myVenuesList.SetStringItem(i, 1, self.dictCopy[name])
-            i = i + 1
-        
-    def Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
-        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 10)
-        sizer1.Add(self.myVenuesList, 1, wxALL, 10)
-
-        sizer3 =  wxBoxSizer(wxHORIZONTAL)
-        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
-
-        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer.Add(sizer3, 0, wxALIGN_CENTER)
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.SetAutoLayout(1)
-
-    def OnDelete(self, event):
-        print "Deleting ",self.currentItem
-        if(self.dictCopy.has_key(self.currentItem)):
-            del self.dictCopy[self.currentItem]
-            self.__PopulateList()
-            print " dict copy = ", self.dictCopy
-        else:
-            text = "Please, select the venue you want to delete"
-            title = "Notification"
-            MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
-
-    def OnRename(self, event):
-        if(self.dictCopy.has_key(self.currentItem)):
-            renameDialog = RenameDialog(self, -1, "Rename venue")
-        else:
-            text = "Please, select the venue you want to rename"
-            title = "Notification"
-            MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
-
-    def DoesVenueExist(self, name):
-        return self.dictCopy.has_key(name)
-                        
-    def Rename(self, name):
-        if(self.dictCopy.has_key(self.currentItem)):
-            self.dictCopy[name] = self.dictCopy[self.currentItem]
-            del self.dictCopy[self.currentItem]
-
-            self.myVenuesList.SetItemText(self.currentIndex, name)
-        else:
-            log.info("EditMyVenuesDialog:Rename: The venue is not present in the dictionary")
-               
-    def OnItemSelected(self, event):
-        self.currentIndex = event.m_itemIndex
-        self.currentItem = self.myVenuesList.GetItemText(event.m_itemIndex)
-        print "Selected ", self.currentItem
-              
-    def OnRightDown(self, event):
-        self.x = event.GetX() + self.myVenuesList.GetPosition().x
-        self.y = event.GetY() + self.myVenuesList.GetPosition().y
-        self.PopupMenu(self.menu, wxPoint(self.x, self.y))
-        event.Skip()
-        
-    def GetValue(self):
-        print "dict copy = ", self.dictCopy
-        return self.dictCopy
-
-
-
-class RenameDialog(wxDialog):
-    def __init__(self, parent, id, title):
-        wxDialog.__init__(self, parent, id, title)
-        self.text = wxStaticText(self, -1, "Please, fill in the new name of your venue", style=wxALIGN_LEFT)
-        self.nameText = wxStaticText(self, -1, "New Name: ",
-                                     style=wxALIGN_LEFT)
-        self.name = wxTextCtrl(self, -1, "", size = wxSize(300,20),
-                               validator = MyVenuesEditValidator())
-        self.okButton = wxButton(self, wxID_OK, "Ok")
-        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
-        self.Centre()
-        self.Layout()
-        self.parent = parent
-        
-        if(self.ShowModal() == wxID_OK):
-            parent.Rename(self.name.GetValue())
-        self.Destroy()
-
-    def Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
-        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
-
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.nameText, 0)
-        sizer2.Add(self.name, 1, wxEXPAND)
-
-        sizer1.Add(sizer2, 0, wxEXPAND | wxALL, 20)
-
-        sizer3 =  wxBoxSizer(wxHORIZONTAL)
-        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
-
-        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer.Add(sizer3, 0, wxALIGN_CENTER)
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.SetAutoLayout(1)
-        
-    def DoesVenueExist(self, name):
-        return self.parent.DoesVenueExist(name)
-        
-    def GetValue(self):
-        return self.address.GetValue()
-        
-        
-class MyVenuesEditValidator(wxPyValidator):
-    def __init__(self):
-        wxPyValidator.__init__(self)
-            
-    def Clone(self):
-        return MyVenuesEditValidator()
-
-    def Validate(self, win):
-        tc = self.GetWindow()
-        val = tc.GetValue()
-        venueExists = win.DoesVenueExist(val)
-
-        if venueExists:
-            info = "A venue with the same name is already added, please select a different name." 
-            dlg = wxMessageDialog(None, info, "Duplicated Venue", 
-                                  style = wxOK | wxICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
-            return false
-
-        return true
-    
-    def TransferToWindow(self):
-        return true # Prevent wxDialog from complaining.
-
-    def TransferFromWindow(self):
-        return true # Prevent wxDialog from complaining.
-                
-############################################################################
-
-class AddMyVenueDialog(wxDialog):
-    def __init__(self, parent, id, venueName):
-        wxDialog.__init__(self, parent, id, "Add current venue")
-        self.okButton = wxButton(self, wxID_OK, "Ok")
-        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
-        self.Centre()
-        info = "Current venue will be added to your list of venues."
-        self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
-        self.addressText = wxStaticText(self, -1, "Name: ", style=wxALIGN_LEFT)
-        self.address = wxTextCtrl(self, -1, venueName, size = wxSize(300,20))
-        self.Layout()
-        
-    def Layout(self):
-        sizer = wxBoxSizer(wxVERTICAL)
-        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
-        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
-
-        sizer2 = wxBoxSizer(wxHORIZONTAL)
-        sizer2.Add(self.addressText, 0)
-        sizer2.Add(self.address, 1, wxEXPAND)
-
-        sizer1.Add(sizer2, 0, wxEXPAND | wxALL, 20)
-
-        sizer3 =  wxBoxSizer(wxHORIZONTAL)
-        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
-
-        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
-        sizer.Add(sizer3, 0, wxALIGN_CENTER)
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.SetAutoLayout(1)
-        
-    def GetValue(self):
-        return self.address.GetValue()
-
 
  
 #############################################################################

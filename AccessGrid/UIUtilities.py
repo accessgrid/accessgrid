@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.50 2004-03-19 20:44:10 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.51 2004-03-24 22:38:34 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.50 2004-03-19 20:44:10 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.51 2004-03-24 22:38:34 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import isWindows, isLinux, isOSX
@@ -748,6 +748,246 @@ def PassphraseVerifyDialogTest():
     d.Destroy()
 
     print chars
+   
+############################################################################
+# Add URL Base Dialog
+
+class AddURLBaseDialog(wxDialog):
+       
+    def __init__(self, parent, id, name, type = 'venue'):
+        wxDialog.__init__(self, parent, id, "Add current venue")
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.type = type
+        self.Centre()
+        info = "Current %s will be added to your list of %s."%(self.type,self.type)
+        self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
+        self.addressText = wxStaticText(self, -1, "Name: ", style=wxALIGN_LEFT)
+        self.address = wxTextCtrl(self, -1, name, size = wxSize(300,20))
+        self.Layout()
+                        
+    def Layout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
+        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
+
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.addressText, 0)
+        sizer2.Add(self.address, 1, wxEXPAND)
+
+        sizer1.Add(sizer2, 0, wxEXPAND | wxALL, 20)
+
+        sizer3 =  wxBoxSizer(wxHORIZONTAL)
+        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
+
+        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer.Add(sizer3, 0, wxALIGN_CENTER)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+        
+    def GetValue(self):
+        return self.address.GetValue()
+
+
+################################################################################
+#
+# Edit URL Base Dialog
+
+class EditURLBaseDialog(wxDialog):
+    ID_DELETE = wxNewId() 
+    ID_RENAME = wxNewId()
+    ID_LIST = wxNewId()
+    listWidth = 500
+    listHeight = 200
+    currentItem = 0
+             
+    def __init__(self, parent, id, title, myUrlsDict, type = 'venue'):
+        wxDialog.__init__(self, parent, id, title)
+        self.parent = parent 
+        self.dictCopy = myUrlsDict.copy()
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.Centre()
+        self.type = type
+        info = "Please, right click on the %s you want to edit and choose from the \noptions available in the menu."%(self.type)
+        self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
+        self.myUrlsList= wxListCtrl(self, self.ID_LIST, 
+                                       size = wxSize(self.listWidth, self.listHeight), 
+                                       style=wxLC_REPORT)
+        self.myUrlsList.InsertColumn(0, "Name")
+        self.myUrlsList.SetColumnWidth(0, self.listWidth * 1.0/3.0)
+        self.myUrlsList.InsertColumn(1, "Url ")
+        self.myUrlsList.SetColumnWidth(1, self.listWidth * 2.0/3.0)
+        
+        self.menu = wxMenu()
+        self.menu.Append(self.ID_RENAME,"Rename", "Rename selected %s" %self.type)
+        self.menu.Append(self.ID_DELETE,"Delete", "Delete selected %s" %self.type)
+        #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
+        self.Layout()
+        self.__PopulateList()
+        self.__SetEvents()
+        
+    def __SetEvents(self):
+        EVT_RIGHT_DOWN(self.myUrlsList, self.OnRightDown)
+        EVT_LIST_ITEM_SELECTED(self.myUrlsList, self.ID_LIST, self.OnItemSelected)
+        EVT_MENU(self.menu, self.ID_RENAME, self.OnRename)
+        EVT_MENU(self.menu, self.ID_DELETE, self.OnDelete)
+               
+    def __PopulateList(self):
+        i = 0
+        self.myUrlsList.DeleteAllItems()
+        for name in self.dictCopy.keys():
+            self.myUrlsList.InsertStringItem(i, name)
+            self.myUrlsList.SetStringItem(i, 1, self.dictCopy[name])
+            i = i + 1
+
+    def Layout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
+        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 10)
+        sizer1.Add(self.myUrlsList, 1, wxALL, 10)
+
+        sizer3 =  wxBoxSizer(wxHORIZONTAL)
+        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
+
+        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer.Add(sizer3, 0, wxALIGN_CENTER)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+
+    def OnDelete(self, event):
+        print "Deleting ",self.currentItem
+        if(self.dictCopy.has_key(self.currentItem)):
+            del self.dictCopy[self.currentItem]
+            self.__PopulateList()
+            print " dict copy = ", self.dictCopy
+        else:
+            text = "Please, select the %s you want to delete"%self.type
+            title = "Notification"
+            MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
+
+    def OnRename(self, event):
+        if(self.dictCopy.has_key(self.currentItem)):
+            renameDialog = RenameDialog(self, -1, "Rename %s"%self.type, type = self.type)
+            
+        else:
+            text = "Please, select the %s you want to rename"%self.type
+            title = "Notification"
+            MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
+
+    def DoesNameExist(self, name):
+        return self.dictCopy.has_key(name)
+                        
+    def Rename(self, name):
+        if(self.dictCopy.has_key(self.currentItem)):
+            self.dictCopy[name] = self.dictCopy[self.currentItem]
+            del self.dictCopy[self.currentItem]
+
+            self.myUrlsList.SetItemText(self.currentIndex, name)
+        else:
+            log.info("EditMyUrlsDialog:Rename: The %s is not present in the dictionary"%self.type)
+               
+    def OnItemSelected(self, event):
+        self.currentIndex = event.m_itemIndex
+        self.currentItem = self.myUrlsList.GetItemText(event.m_itemIndex)
+        print "Selected ", self.currentItem
+              
+    def OnRightDown(self, event):
+        self.x = event.GetX() + self.myUrlsList.GetPosition().x
+        self.y = event.GetY() + self.myUrlsList.GetPosition().y
+        self.PopupMenu(self.menu, wxPoint(self.x, self.y))
+        event.Skip()
+        
+    def GetValue(self):
+        return self.dictCopy
+
+
+class RenameDialog(wxDialog):
+
+    def __init__(self, parent, id, title, type = 'venue'):
+        wxDialog.__init__(self, parent, id, title)
+        self.type = type
+        self.text = wxStaticText(self, -1, "Please, fill in the new name of your %s"%self.type,
+                                 style=wxALIGN_LEFT)
+        self.nameText = wxStaticText(self, -1, "New Name: ",
+                                     style=wxALIGN_LEFT)
+        print 'before creating my urls ', self.type
+        v = MyUrlsEditValidator(type = self.type)
+        self.name = wxTextCtrl(self, -1, "", size = wxSize(300,20),
+                               validator = v)
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.Centre()
+        self.Layout()
+        self.parent = parent
+        
+        if(self.ShowModal() == wxID_OK):
+            parent.Rename(self.name.GetValue())
+        self.Destroy()
+                       
+    def Layout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
+        sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
+
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.nameText, 0)
+        sizer2.Add(self.name, 1, wxEXPAND)
+
+        sizer1.Add(sizer2, 0, wxEXPAND | wxALL, 20)
+
+        sizer3 =  wxBoxSizer(wxHORIZONTAL)
+        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
+
+        sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
+        sizer.Add(sizer3, 0, wxALIGN_CENTER)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+        
+    def DoesNameExist(self, name):
+        return self.parent.DoesNameExist(name)
+        
+    def GetValue(self):
+        return self.address.GetValue()
+        
+        
+class MyUrlsEditValidator(wxPyValidator):
+    def __init__(self, type = 'venue'):
+        wxPyValidator.__init__(self)
+        self.type = type
+
+    def Clone(self):
+        return MyUrlsEditValidator(self.type)
+
+    def Validate(self, win):
+        tc = self.GetWindow()
+        val = tc.GetValue()
+        nameExists = win.DoesNameExist(val)
+
+        if nameExists:
+            info = "A %s with the same name is already added, please select a different name."%self.type
+            dlg = wxMessageDialog(None, info, "Duplicated %s"%self.type, 
+                                  style = wxOK | wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return false
+
+        return true
+    
+    def TransferToWindow(self):
+        return true # Prevent wxDialog from complaining.
+
+    def TransferFromWindow(self):
+        return true # Prevent wxDialog from complaining.
+                
+
+
         
 if __name__ == "__main__":
     app = wxPySimpleApp()
