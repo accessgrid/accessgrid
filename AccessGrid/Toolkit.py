@@ -2,30 +2,19 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.27 2004-03-22 20:12:34 olson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.28 2004-03-22 21:45:10 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.27 2004-03-22 20:12:34 olson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.28 2004-03-22 21:45:10 judson Exp $"
 
 # Standard imports
 import os
 import sys
 import getopt
-
-if sys.version.startswith('2.2'):
-    try:
-        from optik import OptionParser, Option
-    except:
-        raise Exception, "Missing module optik necessary for the AG Toolkit."
-
-if sys.version.startswith('2.3'):
-    try:
-        from optparse import OptionParser, Option
-    except:
-        raise Exception, "Missing module optparse, check your python installation."
+from optparse import OptionParser, Option
 
 # AGTk imports
 from AccessGrid import Log
@@ -153,7 +142,7 @@ class AppBase:
        (self.options, args) = self.parser.parse_args()
 
        if self.options.debug:
-           levelHandler = Log.HandleLoggers(Log.StreamHandler(),
+           levelHandler = Log.HandleLoggers(self.defLogHandler,
                                            Log.GetDefaultLoggers())
            levelHandler.SetLevel(Log.DEBUG)
            
