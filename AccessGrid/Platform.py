@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.40 2003-08-22 14:40:06 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.41 2003-08-22 16:10:55 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -562,7 +562,7 @@ def LinuxGetMimeCommands(mimeType = None, ext = None):
     if mimeType != None:
         match = mailcap.findmatch(caps, mimeType, view)[1]
     else:
-        return cdict()
+        return cdict
 
     if match != None:
         cdict['Open'] = match[view]
