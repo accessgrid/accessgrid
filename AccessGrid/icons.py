@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: icons.py,v 1.8 2003-03-17 20:11:47 lefvert Exp $
+# RCS-ID:      $Id: icons.py,v 1.9 2003-03-17 20:16:01 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -2750,79 +2750,8 @@ catalog['Empty'].getImage = getEmptyImage
 catalog['Empty'].getBitmap = getEmptyBitmap
 catalog['Empty'].getIcon = getEmptyIcon
 
-
 #----------------------------------------------------------------------
-def getdefaultData2Data():
-    return zlib.decompress(
-'x\xda\xeb\x0c\xf0s\xe7\xe5\x92\xe2b``\xe0\xf5\xf4p\t\x02\xd2\x12@,\xcc\xc1\
-\x06$\xbb6\x9c\xb5\x06R,\xc5N\x9e!\x1c@P\xc3\x91\xd2\x01\xe4/\xf2tq\x0c\xa9\
-\x98\xf3v\xeai\xc1\x16\x05\x01\x97j\x9d`\x03\xb9\x13gn\xca\xdc\xd1\xb8\xa3\
-\xd0v"\x8d\x7f\xdd"\xa6:\r\x9d\xef\t\xf7\x1b\x9e\xede\x0e\xe1]\xb9\xea\x91\
-\xb8\x92S\xe7\x99\t+\xc4\x0b\xd2\x1a\x18\xaf\x9aq\xfb|a\xaaH\xe8\x9dd\x15Vr.\
-\x953ie\xd7D\xb9\x83\xf7\xb9\x16\xed\x7fq\xf9\xfb\xcc\x1d\xcff,\xa8n?z\xa7\
-\x85I\xef\x18[\xc1ui\x9f\x87\xc2K\\\xca\xa3\x19\x1c\x8e\xbc\xdb\xb4v\xea\x93\
-\x9b\xeb\x0e8\xef\xf1P\xe1\x8dy\xfe\xcc\x9c!\xa1\xc7r\x83\xfa\xc9\xdf&|2\xf6\
-9\x157#t\x17sZ\xd9\x9ce\xdeU\xb5\xa8\x96\xf1\'\x93^\xfdf\x99\xd7\x0e@\xd72x\
-\xba\xfa\xb9\xacsJh\x02\x00\n\'Zm' )
-
-def getdefaultData2Bitmap():
-    return wxBitmapFromImage(getdefaultData2Image())
-
-def getdefaultData2Image():
-    stream = cStringIO.StringIO(getdefaultData2Data())
-    return wxImageFromStream(stream)
-
-def getdefaultData2Icon():
-    icon = wxEmptyIcon()
-    icon.CopyFromBitmap(getdefaultData2Bitmap())
-    return icon
-
-index.append('defaultData2')
-catalog['defaultData2'] = ImageClass()
-catalog['defaultData2'].getData = getdefaultData2Data
-catalog['defaultData2'].getImage = getdefaultData2Image
-catalog['defaultData2'].getBitmap = getdefaultData2Bitmap
-catalog['defaultData2'].getIcon = getdefaultData2Icon
-
-
-#----------------------------------------------------------------------
-def getdefaultDoorClosedData():
-    return zlib.decompress(
-'x\xda\xeb\x0c\xf0s\xe7\xe5\x92\xe2b``\xe0\xf5\xf4p\t\x02\xd2\n \xcc\xc1\x06\
-$\x8b\xab\xaa\xbe\x00)\x96b\'\xcf\x10\x0e \xa8\xe1H\xe9\x00\xf2\xafy\xba8\
-\x86T\xccy;]\x91\xaf\xd9@\xc2M>%o\xfb\x8cY\x87\xae87\xc9\xd7mw8\x93h\xb0\x83\
-3\xcf\xf0|\x8d\xf0\x07\x89+.\xc6\x07e\x97\xcd\xbc\xf9\xec\x86\x86\x89\x89\
-\xf7\xaf\x99]\xffNVg\xde\xda\xbfV}\xa9\xcc\x06\x89\xfbj2\t\xc6K5\xfa\x1e\xbb\
-\nh>5bl8\xfe\xd7\x8a{\xdf]\xd9\x15\xb3\xfaTx\xa6q2\xdc\xd1K\xd7\xfd\xf1\xaf\
-\xe2Wdr-\xbf\x05\xa3\xfa\x03\x96-\xac.a\xca\x9bn\xf55\x9c\xc8\x9a\x12\xa4\
-\xb1\xb4\xc73\xa3\xd4\xa9a\xdf\xfb\xde\x86t\xce-\xae-\x15\xb1>\xb9\x82k\xf5\
-\x13\x84\xfe\x9c\xfb?\x97\t\xa8|N\xc3\xcb\x0c\xd3E\x9a\xfdg6\xf6\xec\xed\xb1\
-M\xb8t^\xe3\xec\xe9\xc8\x07F\xfe\xfb\xcfUg\xc6\xf1yJ\xd4\xf0\\\x97\xab\x9d\
-\xfda\xd5\xcb\x0f\xb9\x87\xeer\xa9$\x1e\x10\xce\x98#\xb55}\xdb<\x16\xa0\x0f\
-\x19<]\xfd\\\xd69%4\x01\x00U0si' )
-
-def getdefaultDoorClosedBitmap():
-    return wxBitmapFromImage(getdefaultDoorClosedImage())
-
-def getdefaultDoorClosedImage():
-    stream = cStringIO.StringIO(getdefaultDoorClosedData())
-    return wxImageFromStream(stream)
-
-def getdefaultDoorClosedIcon():
-    icon = wxEmptyIcon()
-    icon.CopyFromBitmap(getdefaultDoorClosedBitmap())
-    return icon
-
-index.append('defaultDoorClosed')
-catalog['defaultDoorClosed'] = ImageClass()
-catalog['defaultDoorClosed'].getData = getdefaultDoorClosedData
-catalog['defaultDoorClosed'].getImage = getdefaultDoorClosedImage
-catalog['defaultDoorClosed'].getBitmap = getdefaultDoorClosedBitmap
-catalog['defaultDoorClosed'].getIcon = getdefaultDoorClosedIcon
-
-
-#----------------------------------------------------------------------
-def getdefaultDoorOpenedData():
+def getDefaultDoorOpenedData():
     return zlib.decompress(
 'x\xda\x01e\x01\x9a\xfe\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00 \x00\
 \x00\x00 \x08\x06\x00\x00\x00szz\xf4\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\
@@ -2839,23 +2768,93 @@ def getdefaultDoorOpenedData():
 \xd5 \xed\xc0\'\xdc\xb4\x06Y\x07\\\xe0u\xdb!\xa4\xe8\x80z\x80\xda\xc2\xcb,\
 \xc1\x0b+\xf2M\x84\xd1\x03\xedP\x00\x00\x00\x00IEND\xaeB`\x82\xe0s\x8f"' )
 
-def getdefaultDoorOpenedBitmap():
-    return wxBitmapFromImage(getdefaultDoorOpenedImage())
+def getDefaultDoorOpenedBitmap():
+    return wxBitmapFromImage(getDefaultDoorOpenedImage())
 
-def getdefaultDoorOpenedImage():
-    stream = cStringIO.StringIO(getdefaultDoorOpenedData())
+def getDefaultDoorOpenedImage():
+    stream = cStringIO.StringIO(getDefaultDoorOpenedData())
     return wxImageFromStream(stream)
 
-def getdefaultDoorOpenedIcon():
+def getDefaultDoorOpenedIcon():
     icon = wxEmptyIcon()
-    icon.CopyFromBitmap(getdefaultDoorOpenedBitmap())
+    icon.CopyFromBitmap(getDefaultDoorOpenedBitmap())
     return icon
 
-index.append('defaultDoorOpened')
-catalog['defaultDoorOpened'] = ImageClass()
-catalog['defaultDoorOpened'].getData = getdefaultDoorOpenedData
-catalog['defaultDoorOpened'].getImage = getdefaultDoorOpenedImage
-catalog['defaultDoorOpened'].getBitmap = getdefaultDoorOpenedBitmap
-catalog['defaultDoorOpened'].getIcon = getdefaultDoorOpenedIcon
+index.append('DefaultDoorOpened')
+catalog['DefaultDoorOpened'] = ImageClass()
+catalog['DefaultDoorOpened'].getData = getDefaultDoorOpenedData
+catalog['DefaultDoorOpened'].getImage = getDefaultDoorOpenedImage
+catalog['DefaultDoorOpened'].getBitmap = getDefaultDoorOpenedBitmap
+catalog['DefaultDoorOpened'].getIcon = getDefaultDoorOpenedIcon
+
+
+#----------------------------------------------------------------------
+def getDefaultDoorClosedData():
+    return zlib.decompress(
+'x\xda\xeb\x0c\xf0s\xe7\xe5\x92\xe2b``\xe0\xf5\xf4p\t\x02\xd2\n \xcc\xc1\x06\
+$\x8b\xab\xaa\xbe\x00)\x96b\'\xcf\x10\x0e \xa8\xe1H\xe9\x00\xf2\xafy\xba8\
+\x86T\xccy;]\x91\xaf\xd9@\xc2M>%o\xfb\x8cY\x87\xae87\xc9\xd7mw8\x93h\xb0\x83\
+3\xcf\xf0|\x8d\xf0\x07\x89+.\xc6\x07e\x97\xcd\xbc\xf9\xec\x86\x86\x89\x89\
+\xf7\xaf\x99]\xffNVg\xde\xda\xbfV}\xa9\xcc\x06\x89\xfbj2\t\xc6K5\xfa\x1e\xbb\
+\nh>5bl8\xfe\xd7\x8a{\xdf]\xd9\x15\xb3\xfaTx\xa6q2\xdc\xd1K\xd7\xfd\xf1\xaf\
+\xe2Wdr-\xbf\x05\xa3\xfa\x03\x96-\xac.a\xca\x9bn\xf55\x9c\xc8\x9a\x12\xa4\
+\xb1\xb4\xc73\xa3\xd4\xa9a\xdf\xfb\xde\x86t\xce-\xae-\x15\xb1>\xb9\x82k\xf5\
+\x13\x84\xfe\x9c\xfb?\x97\t\xa8|N\xc3\xcb\x0c\xd3E\x9a\xfdg6\xf6\xec\xed\xb1\
+M\xb8t^\xe3\xec\xe9\xc8\x07F\xfe\xfb\xcfUg\xc6\xf1yJ\xd4\xf0\\\x97\xab\x9d\
+\xfda\xd5\xcb\x0f\xb9\x87\xeer\xa9$\x1e\x10\xce\x98#\xb55}\xdb<\x16\xa0\x0f\
+\x19<]\xfd\\\xd69%4\x01\x00U0si' )
+
+def getDefaultDoorClosedBitmap():
+    return wxBitmapFromImage(getDefaultDoorClosedImage())
+
+def getDefaultDoorClosedImage():
+    stream = cStringIO.StringIO(getDefaultDoorClosedData())
+    return wxImageFromStream(stream)
+
+def getDefaultDoorClosedIcon():
+    icon = wxEmptyIcon()
+    icon.CopyFromBitmap(getDefaultDoorClosedBitmap())
+    return icon
+
+index.append('DefaultDoorClosed')
+catalog['DefaultDoorClosed'] = ImageClass()
+catalog['DefaultDoorClosed'].getData = getDefaultDoorClosedData
+catalog['DefaultDoorClosed'].getImage = getDefaultDoorClosedImage
+catalog['DefaultDoorClosed'].getBitmap = getDefaultDoorClosedBitmap
+catalog['DefaultDoorClosed'].getIcon = getDefaultDoorClosedIcon
+
+
+#----------------------------------------------------------------------
+def getDefaultData2Data():
+    return zlib.decompress(
+'x\xda\xeb\x0c\xf0s\xe7\xe5\x92\xe2b``\xe0\xf5\xf4p\t\x02\xd2\x12@,\xcc\xc1\
+\x06$\xbb6\x9c\xb5\x06R,\xc5N\x9e!\x1c@P\xc3\x91\xd2\x01\xe4/\xf2tq\x0c\xa9\
+\x98\xf3v\xeai\xc1\x16\x05\x01\x97j\x9d`\x03\xb9\x13gn\xca\xdc\xd1\xb8\xa3\
+\xd0v"\x8d\x7f\xdd"\xa6:\r\x9d\xef\t\xf7\x1b\x9e\xede\x0e\xe1]\xb9\xea\x91\
+\xb8\x92S\xe7\x99\t+\xc4\x0b\xd2\x1a\x18\xaf\x9aq\xfb|a\xaaH\xe8\x9dd\x15Vr.\
+\x953ie\xd7D\xb9\x83\xf7\xb9\x16\xed\x7fq\xf9\xfb\xcc\x1d\xcff,\xa8n?z\xa7\
+\x85I\xef\x18[\xc1ui\x9f\x87\xc2K\\\xca\xa3\x19\x1c\x8e\xbc\xdb\xb4v\xea\x93\
+\x9b\xeb\x0e8\xef\xf1P\xe1\x8dy\xfe\xcc\x9c!\xa1\xc7r\x83\xfa\xc9\xdf&|2\xf6\
+9\x157#t\x17sZ\xd9\x9ce\xdeU\xb5\xa8\x96\xf1\'\x93^\xfdf\x99\xd7\x0e@\xd72x\
+\xba\xfa\xb9\xacsJh\x02\x00\n\'Zm' )
+
+def getDefaultData2Bitmap():
+    return wxBitmapFromImage(getDefaultData2Image())
+
+def getDefaultData2Image():
+    stream = cStringIO.StringIO(getDefaultData2Data())
+    return wxImageFromStream(stream)
+
+def getDefaultData2Icon():
+    icon = wxEmptyIcon()
+    icon.CopyFromBitmap(getDefaultData2Bitmap())
+    return icon
+
+index.append('DefaultData2')
+catalog['DefaultData2'] = ImageClass()
+catalog['DefaultData2'].getData = getDefaultData2Data
+catalog['DefaultData2'].getImage = getDefaultData2Image
+catalog['DefaultData2'].getBitmap = getDefaultData2Bitmap
+catalog['DefaultData2'].getIcon = getDefaultData2Icon
 
 
