@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.216 2003-09-17 21:05:45 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.217 2003-09-18 16:20:46 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -79,6 +79,7 @@ class VenueClientUI(VenueClientEventSubscriber):
     fallbackRecoveryUrl = None
     
     def __init__(self, startupDialog):
+        self.__processArgs()
         self.frame = None
         self.startupDialog = startupDialog
         self.startupDialog.UpdateOneStep()
@@ -100,7 +101,7 @@ class VenueClientUI(VenueClientEventSubscriber):
         
         self.startupDialog.UpdateOneStep()
          
-        self.__processArgs()
+        
         self.__setLogger()
 
         # We verify first because the Toolkit code assumes a valid
@@ -231,11 +232,13 @@ class VenueClientUI(VenueClientEventSubscriber):
         except getopt.GetoptError:
             self.__Usage()
             sys.exit(2)
+            
 
         for opt, arg in opts:
             if opt in ('-h', '--help'):
                 self.__Usage()
                 sys.exit(0)
+               
             elif opt == '--personalNode':
                 self.isPersonalNode = 1
             elif opt in ('--debug', '-d'):
@@ -1414,7 +1417,7 @@ if __name__ == "__main__":
     from AccessGrid.ClientProfile import ClientProfile
     from AccessGrid.Types import *
 
-    wxInitAllImageHandlers()
+    #wxInitAllImageHandlers()
 
     app = wxPySimpleApp()
 
