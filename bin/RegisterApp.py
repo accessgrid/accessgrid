@@ -6,14 +6,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: RegisterApp.py,v 1.4 2003-09-18 17:16:45 judson Exp $
+# RCS-ID:      $Id: RegisterApp.py,v 1.5 2003-09-18 17:50:44 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This program is used to register applications with the users AGTk installation.
 """
-__revision__ = "$Id: RegisterApp.py,v 1.4 2003-09-18 17:16:45 judson Exp $"
+__revision__ = "$Id: RegisterApp.py,v 1.5 2003-09-18 17:50:44 judson Exp $"
 
 import os
 import re
@@ -95,7 +95,7 @@ def main():
     then digs the files out of the directory, or archive and installs them.
     It registers the application with the users AG environment.
     """
-    workingDir = None
+    workingDir = "."
     appFile = None
     zipFile = None
     commands = dict()
