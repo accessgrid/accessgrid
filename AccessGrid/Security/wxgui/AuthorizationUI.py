@@ -6,13 +6,13 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.9 2004-04-05 18:38:52 judson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.10 2004-04-06 18:35:14 eolson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.9 2004-04-05 18:38:52 judson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.10 2004-04-06 18:35:14 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -40,7 +40,8 @@ class AuthorizationUIPanel(wxPanel):
     modify roles are available, such as Create/Remove Role and Add/Remove Person to role.
     '''
     ID_ROLE_ADDPERSON = wxNewId()
-    ID_ROLE_ADDROLE = wxNewId()
+    ID_ROLE_ADDALLOWROLE = wxNewId()
+    ID_ROLE_ADDDENYROLE = wxNewId()
     ID_ROLE_REMOVEROLE = wxNewId()
     ID_PERSON_ADDPERSON = wxNewId()
     ID_PERSON_DELETE = wxNewId()
@@ -122,7 +123,6 @@ class AuthorizationUIPanel(wxPanel):
         # Get roles
         try:
             self.allRoles = self.authClient.ListRoles()
-
         except:
             self.log.exception("AuthorizationUIPanel.ConnectToAuthManager:Failed to list roles. %s"%(authUrl))
         
@@ -255,7 +255,8 @@ class AuthorizationUIPanel(wxPanel):
         EVT_MENU(self, self.ID_PERSON_PROPERTIES, self.OpenPersonProperties)
 
         EVT_MENU(self, self.ID_ROLE_ADDPERSON, self.AddPerson)
-        EVT_MENU(self, self.ID_ROLE_ADDROLE, self.CreateRole)
+        EVT_MENU(self, self.ID_ROLE_ADDALLOWROLE, self.CreateAllowRole)
+        EVT_MENU(self, self.ID_ROLE_ADDDENYROLE, self.CreateDenyRole)
         EVT_MENU(self, self.ID_ROLE_REMOVEROLE, self.RemoveRole)
         
         EVT_SASH_DRAGGED(self, self.ID_WINDOW_LEFT, self.__OnSashDrag)
@@ -331,6 +332,9 @@ class AuthorizationUIPanel(wxPanel):
         for a in self.allActions:
             for r in a.GetRoles():
                 if r.name == role.name:
+                    #if isinstance(r, SOAPpy.Types.structType):
+                        #a.RemoveRole(r)
+                        #a.AddRole(CreateRoleFromStruct(r))
                     actions.append(a)
         return actions
             
@@ -340,16 +344,20 @@ class AuthorizationUIPanel(wxPanel):
         '''
         # Menu when user clicks the tree.
         self.treeMenu = wxMenu()
-        self.treeMenu.Append(self.ID_ROLE_ADDROLE,"Create Role",
-                             "Create a new role")
+        self.treeMenu.Append(self.ID_ROLE_ADDALLOWROLE,"Create Allow Role",
+                             "Create a new allow role")
+        self.treeMenu.Append(self.ID_ROLE_ADDDENYROLE,"Create Deny Role",
+                             "Create a new deny role")
 
         # Menu when user clicks on a role item
         self.roleMenu = wxMenu()
         self.roleMenu.Append(self.ID_ROLE_ADDPERSON,"Add Person",
                              "Add participant to selected role")
         self.roleMenu.AppendSeparator()
-        self.roleMenu.Append(self.ID_ROLE_ADDROLE,"Create Role",
-                             "Create a new role")
+        self.roleMenu.Append(self.ID_ROLE_ADDALLOWROLE,"Create Allow Role",
+                             "Create a new allow role")
+        self.roleMenu.Append(self.ID_ROLE_ADDDENYROLE,"Create Deny Role",
+                             "Create a new deny role")
         self.roleMenu.Append(self.ID_ROLE_REMOVEROLE,"Remove Role",
                              "Remove selected role")
         self.roleMenu.AppendSeparator()
@@ -622,8 +630,14 @@ class AuthorizationUIPanel(wxPanel):
                 message = wxMessageDialog(self, '%s is already added to %s'%(item.name, role.name), 'Error',  style = wxOK|wxICON_INFORMATION)
                 # Do not use modal; it hangs the dialog.
                 message.Show()
+
+    def CreateAllowRole(self, event):
+        self._CreateRole(event, "Allow")
+
+    def CreateDenyRole(self, event):
+        self._CreateRole(event, "Deny")
     
-    def CreateRole(self, event):
+    def _CreateRole(self, event, type="Allow"):
         '''
         Create new role
         '''
@@ -641,7 +655,10 @@ class AuthorizationUIPanel(wxPanel):
                     return None
                         
             self.changed = 1
-            newRole = Role(name)
+            if type == "Deny":
+                newRole = DenyRole(name)
+            else:
+                newRole = AllowRole(name)
             roleId = self.tree.AppendItem(self.root, newRole.name, self.bulletId,
                                           self.bulletId)
             self.tree.SetItemBold(roleId)
