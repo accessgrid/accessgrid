@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.49 2004-03-12 05:23:11 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.50 2004-03-16 07:00:30 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.49 2004-03-12 05:23:11 judson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.50 2004-03-16 07:00:30 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -30,6 +30,14 @@ from AccessGrid.AGService import AGServiceIW
 from AccessGrid.Types import ServiceConfiguration, AGResource
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.AGParameter import ValueParameter
+from AccessGrid.Descriptions import CreateAGServiceManagerDescription
+from AccessGrid.Descriptions import CreateAGServiceDescription
+from AccessGrid.Descriptions import CreateCapability
+from AccessGrid.Descriptions import CreateResource
+from AccessGrid.Descriptions import CreateClientProfile
+from AccessGrid.Descriptions import CreateServiceConfiguration
+
+from SOAPpy.Types import SOAPException
 
 log = Log.GetLogger(Log.NodeService)
 
@@ -164,6 +172,7 @@ class AGNodeService:
         """
         Add a service package to the service manager.  
         """
+        
         serviceDescription = None
 
         # Add the service to the service manager
@@ -171,9 +180,12 @@ class AGNodeService:
             serviceDescription = AGServiceManagerIW( serviceManagerUri ).AddService( servicePackageUri,
                                                                   resourceToAssign,
                                                                   serviceConfig )
+        except SOAPException, e:
+            log.exception("Error adding service")
+            raise Exception("Error adding service: " + e.string )
         except Exception, e:
             log.exception("Error adding service")
-            raise Exception("Error adding service: " + e.faultstring )
+            raise Exception("Error adding service" )
         
         # Set the identity for the service
         if self.profile:
@@ -199,7 +211,7 @@ class AGNodeService:
         services = []
         try:
             for serviceManager in self.serviceManagers.values():
-                serviceSubset = AGServiceManagerIW( serviceManager.uri ).GetServices().data
+                serviceSubset = AGServiceManagerIW( serviceManager.uri ).GetServices()
                 for service in serviceSubset:
                     service = AGServiceDescription( service.name, service.description, service.uri,
                                                     service.capabilities, service.resource,
@@ -236,9 +248,7 @@ class AGNodeService:
         serviceList = self.GetServices()
         for service in serviceList:
             serviceMediaTypes = map( lambda cap: cap.type, service.capabilities )
-            print "service : ", service.name, serviceMediaTypes
             if mediaType in serviceMediaTypes:
-                print " -- set enable ", enableFlag
                 self.SetServiceEnabled( service.uri, enableFlag) 
 
 
@@ -432,8 +442,8 @@ class AGNodeService:
                                                                                 service.resource,
                                                                                 serviceConfig )
                 except:
-                    log.exception("Exception adding service %s" % (service.name))
-                    exceptionText += "Couldn't add service %s" % (service.name)
+                    log.exception("Exception adding service %s" % (service.packageName))
+                    exceptionText += "Couldn't add service %s" % (service.packageName)
 
         if len(exceptionText):
             raise Exception(exceptionText)
@@ -483,7 +493,7 @@ class AGNodeService:
                 # 
                 # Create Resource section
                 #
-                if service.resource == "None":
+                if not service.resource or service.resource == "None":
                     resourceSection = "None"
                 else:
                     resourceSection = 'resource%d' % numServices
@@ -775,7 +785,7 @@ class AGNodeServiceI(SOAPInterface):
 
         SOAPInterface.__init__(self, impl)
 
-    def AddServiceManager( self, serviceManager ):
+    def AddServiceManager( self, svcMgrDescStruct ):
         """
         Interface to add service manager
 
@@ -784,10 +794,12 @@ class AGNodeServiceI(SOAPInterface):
         **Raises:**
         **Returns:**
         """
+        
+        serviceManagerDesc = CreateAGServiceManagerDescription(svcMgrDescStruct)
+        
+        self.impl.AddServiceManager(serviceManagerDesc)
 
-        self.impl.AddServiceManager(serviceManager)
-
-    def RemoveServiceManager( self, serviceManagerToRemove ):
+    def RemoveServiceManager( self, svcMgrDescStruct ):
         """
         Interface to remove service manager
 
@@ -796,8 +808,9 @@ class AGNodeServiceI(SOAPInterface):
         **Raises:**
         **Returns:**
         """
-
-        self.impl.RemoveServiceManager(serviceManagerToRemove)
+        serviceManagerDesc = CreateAGServiceManagerDescription(svcMgrDescStruct)
+        
+        self.impl.RemoveServiceManager(serviceManagerDesc)
 
     def GetServiceManagers(self):
         """
@@ -812,7 +825,7 @@ class AGNodeServiceI(SOAPInterface):
         return self.impl.GetServiceManagers()
 
     def AddService( self, servicePackageUri, serviceManagerUri, 
-                    resourceToAssign, serviceConfig ):
+                    resourceStruct, serviceConfigStruct ):
         """
         Interface to add a service
 
@@ -825,8 +838,17 @@ class AGNodeServiceI(SOAPInterface):
         **Returns:**
         """
 
+        if resourceStruct:
+            resource = CreateResource(resourceStruct)
+        else:
+            resource = None
+        if serviceConfigStruct:
+            serviceConfig = CreateServiceConfiguration(serviceConfigStruct)
+        else:
+            serviceConfig = None
+            
         return self.impl.AddService(servicePackageUri, serviceManagerUri, 
-                    resourceToAssign, serviceConfig )
+                    resource, serviceConfig )
 
     def GetAvailableServices(self):
         """
@@ -889,7 +911,7 @@ class AGNodeServiceI(SOAPInterface):
 
         self.impl.StopServices()
 
-    def SetStreams( self, streamDescriptionList ):
+    def SetStreams( self, streamDescriptionStructList ):
         """
         Interface to set streams used by node
 
@@ -898,10 +920,13 @@ class AGNodeServiceI(SOAPInterface):
         **Raises:**
         **Returns:**
         """
-
+        streamDescriptionList = map( lambda streamDescStruct:
+                                     CreateStreamDescription(streamDescStruct),
+                                     streamDescriptionStructList)
+                                     
         self.impl.SetStreams(streamDescriptionList)
 
-    def AddStream( self, streamDescription ):
+    def AddStream( self, streamDescriptionStruct ):
         """
         Interface to add a stream
 
@@ -910,10 +935,11 @@ class AGNodeServiceI(SOAPInterface):
         **Raises:**
         **Returns:**
         """
+        streamDescription = CreateStreamDescription(streamDescriptionStruct)
 
         self.impl.AddStream(streamDescription)
 
-    def RemoveStream( self, streamDescription ):
+    def RemoveStream( self, streamDescriptionStruct ):
         """
         Interface to remove a stream
 
@@ -922,6 +948,8 @@ class AGNodeServiceI(SOAPInterface):
         **Raises:**
         **Returns:**
         """
+
+        streamDescription = CreateStreamDescription(streamDescriptionStruct)
 
         self.impl.RemoveStream(streamDescription)
 
@@ -988,7 +1016,7 @@ class AGNodeServiceI(SOAPInterface):
 
         return self.impl.GetCapabilities()
 
-    def SetIdentity(self, profile):
+    def SetIdentity(self, profileStruct):
         """
         Interface to set the identity of the node executor
 
@@ -997,6 +1025,8 @@ class AGNodeServiceI(SOAPInterface):
         **Raises:**
         **Returns:**
         """
+        
+        profile = CreateClientProfile(profileStruct)
 
         self.impl.SetIdentity(profile)
 
@@ -1019,18 +1049,27 @@ class AGNodeServiceIW(SOAPIWrapper):
         self.proxy.RemoveServiceManager(serviceManagerToRemove)
 
     def GetServiceManagers(self):
-        return self.proxy.GetServiceManagers()
-
+        smList = list()
+        for sm in self.proxy.GetServiceManagers():   
+            smList.append(CreateAGServiceManagerDescription(sm))
+        return smList
+            
     def AddService( self, servicePackageUri, serviceManagerUri, 
                     resourceToAssign, serviceConfig ):
         return self.proxy.AddService(servicePackageUri, serviceManagerUri, 
                     resourceToAssign, serviceConfig )
 
     def GetAvailableServices(self):
-        return self.proxy.GetAvailableServices()
+        svcList = list()
+        for s in self.proxy.GetAvailableServices():
+            svcList.append(CreateAGServiceDescription(s))
+        return svcList
 
     def GetServices(self):
-        return self.proxy.GetServices()
+        svcList = list()
+        for s in self.proxy.GetServices():
+            svcList.append(CreateAGServiceDescription(s))
+        return svcList
 
     def SetServiceEnabled(self, serviceUri, enabled):
         self.proxy.SetServiceEnabled(serviceUri, enabled)
@@ -1063,7 +1102,10 @@ class AGNodeServiceIW(SOAPIWrapper):
         return self.proxy.GetConfigurations()
 
     def GetCapabilities(self):
-        return self.proxy.GetCapabilities()
+        capList = list()
+        for s in self.proxy.GetCapabilities():
+            capList.append(CreateCapability(s))
+        return capList
 
     def SetIdentity(self, profile):
         self.proxy.SetIdentity(profile)

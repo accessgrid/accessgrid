@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.46 2004-03-12 21:32:23 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.47 2004-03-16 07:00:30 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.46 2004-03-12 21:32:23 eolson Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.47 2004-03-16 07:00:30 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -17,7 +17,6 @@ import os
 import time
 
 from AccessGrid import Log
-from AccessGrid.hosting import Client
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
 from AccessGrid import Utilities
@@ -25,6 +24,9 @@ from AccessGrid.Types import AGServicePackage
 from AccessGrid.DataStore import GSIHTTPDownloadFile
 from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
+from AccessGrid.Descriptions import CreateAGServiceDescription, CreateResource
+from AccessGrid.Descriptions import CreateServiceConfiguration
+from AccessGrid.AGService import AGServiceIW
 
 log = Log.GetLogger(Log.ServiceManager)
 hdlr = Log.StreamHandler()
@@ -58,6 +60,8 @@ class AGServiceManager:
                 log.exception("Couldn't create user services directory %s", self.servicesDir)
 
         self.__DiscoverResources()
+        
+        self.url = None
 
     def Shutdown(self):
         log.info("Remove services")
@@ -94,6 +98,11 @@ class AGServiceManager:
         """
         Add a service package to the service manager.  
         """
+        
+        # Get the service manager url (first time only)
+        if not self.url:
+            self.url = self.server.GetURLForObject(self)
+
 
         #
         # Determine resource to assign to service
@@ -101,11 +110,11 @@ class AGServiceManager:
         resource = None
         if resourceToAssign != None and resourceToAssign != "None":
             foundResource = 0
-            for resource in self.resources:
-                if resourceToAssign.resource == resource.resource:
-                    if resource.inUse == 1:
+            for res in self.resources:
+                if resourceToAssign.resource == res.resource:
+                    if res.inUse == 1:
                         log.debug("** Resource is already in use! : %s ",
-                                  resource.resource)
+                                  res.resource)
                     # should error out here later; for now,
                     # services aren't using the resources anyway
                     foundResource = 1
@@ -160,12 +169,13 @@ class AGServiceManager:
             # Wait for service to boot and become reachable,
             # timing out reasonably
             #
-            serviceUrl = 'https://%s:%s/Service' % ( GetHostname(), port )
+            hostname = SystemConfig.instance().GetHostname()
+            serviceUrl = 'https://%s:%s/Service' % ( hostname, port )
             elapsedTries = 0
             maxTries = 10
             while elapsedTries < maxTries:
                 try:
-                    Client.Handle(serviceUrl).IsValid()
+                    AGServiceIW(serviceUrl).IsValid()
                     log.info("Service %s successfully started", serviceDescription.name)
                     break
                 except:
@@ -188,19 +198,19 @@ class AGServiceManager:
             #
             # Set the uri and add service to list of services
             #
-            serviceDescription.serviceManagerUri = self.get_handle()
+            serviceDescription.serviceManagerUri = self.url
             serviceDescription.uri = serviceUrl
             self.services[pid] = serviceDescription
-
-            # Assign resource to the service
-            #
-            if serviceDescription.resource and serviceDescription.resource != "None":
-                Client.Handle( serviceDescription.uri ).get_proxy().SetResource( serviceDescription.resource )
 
             # Configure the service
             #
             if serviceConfig and serviceConfig != "None":
-                Client.Handle( serviceDescription.uri ).get_proxy().SetConfiguration( serviceConfig )
+                AGServiceIW( serviceDescription.uri ).SetConfiguration( serviceConfig )
+
+            # Assign resource to the service
+            #
+            if serviceDescription.resource and serviceDescription.resource != "None":
+                AGServiceIW( serviceDescription.uri ).SetResource( serviceDescription.resource )
 
             # Query the service for its capabilities
             # (the service implementation knows its capabilities better than
@@ -208,7 +218,7 @@ class AGServiceManager:
             # storage was retrieved from)
             # 
             serviceDescription.capabilities = \
-                Client.Handle( serviceDescription.uri ).GetProxy().GetCapabilities()
+                AGServiceIW( serviceDescription.uri ).GetCapabilities()
             
         except:
             log.exception("Exception in AddService, adding service to service list.")
@@ -234,7 +244,7 @@ class AGServiceManager:
                 if service.uri == serviceToRemove.uri:
 
                     pid = key
-                    Client.Handle( service.uri ).get_proxy().Shutdown()
+                    AGServiceIW( service.uri ).Shutdown()
 
                     #
                     # Kill service
@@ -293,7 +303,7 @@ class AGServiceManager:
         Stop all services on service manager
         """
         for service in self.services.values():
-            Client.Handle( service.uri ).get_proxy().Stop()
+            AGServiceIW( service.uri ).Stop()
 
 
 
@@ -398,7 +408,7 @@ class AGServiceManagerI(SOAPInterface):
         """
         self.impl.DiscoverResources()
 
-    def AddService(self, servicePackageUri, resourceToAssign, serviceConfig):
+    def AddService(self, servicePackageUri, resourceStruct, serviceConfigStruct):
         """
         Interface to add a service to the service manager
 
@@ -409,9 +419,18 @@ class AGServiceManagerI(SOAPInterface):
         **Raises:**
         **Returns:**
         """
-        return self.impl.AddService(servicePackageUri, resourceToAssign, serviceConfig)
+        if resourceStruct and resourceStruct != "None":
+            resource = CreateResource(resourceStruct)
+        else:
+            resource = None
+            
+        if serviceConfigStruct and serviceConfigStruct != "None":
+            serviceConfig = CreateServiceConfiguration(serviceConfigStruct)
+        else:
+            serviceConfig = None
+        return self.impl.AddService(servicePackageUri, resource, serviceConfig)
 
-    def RemoveService(self, serviceToRemove):
+    def RemoveService(self, serviceDescStruct):
         """
         Interface to remove a service from the service manager
 
@@ -420,7 +439,8 @@ class AGServiceManagerI(SOAPInterface):
         **Raises:**
         **Returns:**
         """
-        self.impl.RemoveService(serviceToRemove)
+        serviceDesc = CreateAGServiceDescription(serviceDescStruct)
+        self.impl.RemoveService(serviceDesc)
 
     def RemoveServices(self):
         """
@@ -481,13 +501,19 @@ class AGServiceManagerIW(SOAPIWrapper):
         self.proxy.Shutdown()
 
     def GetResources(self):
-        return self.proxy.GetResources()
+        rscList = list()
+        rscStructList = self.proxy.GetResources()
+        for rscStruct in rscStructList:
+            rscList.append( CreateResource(rscStruct))
+        return rscList
 
     def DiscoverResources(self):
         self.proxy.DiscoverResources()
 
-    def AddService(self, servicePackageUri, resourceToAssign, serviceConfig):
-        return self.proxy.AddService(servicePackageUri, resourceToAssign, serviceConfig)
+    def AddService(self, servicePackageUri, resource, serviceConfig):
+        serviceDescStruct = self.proxy.AddService(servicePackageUri, resource, serviceConfig)
+        serviceDesc = CreateAGServiceDescription(serviceDescStruct)
+        return serviceDesc
 
     def RemoveService(self, serviceToRemove):
         self.proxy.RemoveService(serviceToRemove)
@@ -496,7 +522,10 @@ class AGServiceManagerIW(SOAPIWrapper):
         self.proxy.RemoveServices()
 
     def GetServices(self):
-        return self.proxy.GetServices()
+        svcList = list()
+        for s in self.proxy.GetServices():
+            svcList.append(CreateAGServiceDescription(s))
+        return svcList
 
     def StopServices(self):
         self.proxy.StopServices()

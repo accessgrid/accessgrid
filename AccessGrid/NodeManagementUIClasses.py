@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.53 2004-03-12 00:32:12 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.54 2004-03-16 07:01:16 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.53 2004-03-12 00:32:12 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.54 2004-03-16 07:01:16 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -36,7 +36,10 @@ from AccessGrid import Platform
 from AccessGrid.UIUtilities import AboutDialog
 from AccessGrid import Toolkit
 from AccessGrid.Platform import isWindows
-from AccessGrid.NetUtilities import GetHostname
+from AccessGrid.Platform.Config import SystemConfig
+from AccessGrid.Types import AGResource
+
+from SOAPpy import SOAPException
 
 # imports for Debug menu; can be removed if Debug menu is removed
 from AccessGrid.Descriptions import StreamDescription
@@ -404,9 +407,9 @@ class NodeManagementClientFrame(wxFrame):
         self.SetIcon(icons.getAGIconIcon())
         self.serviceManagers = []
         self.services = []
-        self.nodeServiceHandle = Client.Handle("")
+        self.nodeServiceHandle = None
 
-        self.app = Toolkit.GetApplication()
+        self.app = Toolkit.Application.instance()
 
         menuBar = wxMenuBar()
 
@@ -553,7 +556,7 @@ class NodeManagementClientFrame(wxFrame):
                 return
 
             if host == "localhost":
-                host = GetHostname()
+                host = SystemConfig.instance().GetHostname()
 
             # Attach (or fail)
             uri = 'https://%s:%s/NodeService' % (host,port)
@@ -601,9 +604,9 @@ class NodeManagementClientFrame(wxFrame):
 
             try:
                 self.nodeServiceHandle.LoadConfiguration( conf )
-            except Exception, e:
+            except SOAPException, e:
                 log.exception("NodeManagementClientFrame.LoadConfiguration: Can not load configuration from node service")
-                self.Error(e.faultstring)
+                self.Error(e.string)
 
             self.UpdateHostList()
             self.UpdateServiceList()
@@ -633,9 +636,9 @@ class NodeManagementClientFrame(wxFrame):
                 # Store the configuration
                 try:
                     self.nodeServiceHandle.StoreConfiguration( configName )
-                except Exception,e:
+                except SOAPException,e:
                     log.exception("NodeManagementClientFrame.StoreConfiguration: Can not store configuration in node service")
-                    self.Error(e.faultstring)
+                    self.Error(e.string)
 
                 # Set the default configuration
                 if isDefault:
@@ -693,16 +696,18 @@ class NodeManagementClientFrame(wxFrame):
                 return
 
             if host == "localhost":
-                host = GetHostname()
+                host = SystemConfig.instance().GetHostname()
 
             # Add the service manager to the node service
             uri = 'https://%s:%s/ServiceManager' % (host,port)
             name = '%s:%s' % (host,port)
             try:
-                self.nodeServiceHandle.AddServiceManager( AGServiceManagerDescription( name, uri ) )
-            except Exception, e:
+                serviceManagerDesc = AGServiceManagerDescription( name, uri )
+                self.nodeServiceHandle.AddServiceManager( serviceManagerDesc )
+            except SOAPException, e:
                 log.exception("NodeManagementClientFrame.AddHost: Can not add service manager to node service")
-                self.Error(e.faultstring)
+                #self.Error(e.string)
+                self.Error("NodeManagementClientFrame.AddHost: Can not add service manager to node service")
                 self.ClearUI()
                 self.UpdateHostList()
                 return
@@ -759,7 +764,6 @@ class NodeManagementClientFrame(wxFrame):
 
         self.serviceManagers = self.nodeServiceHandle.GetServiceManagers()
         for serviceManager in self.serviceManagers:
-            print "name = ", serviceManager.name
             item = self.hostList.InsertStringItem( i, serviceManager.name )
 
             # Retain selection in host list
@@ -780,7 +784,7 @@ class NodeManagementClientFrame(wxFrame):
 
     def ServiceManagerSelectedCB(self, event):
         index = self.hostList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
-        uri = self.serviceManagers[index]
+        uri = self.serviceManagers[index].uri
         try:
             AGServiceManagerIW(uri).IsValid()
         except:
@@ -838,8 +842,8 @@ class NodeManagementClientFrame(wxFrame):
             #
             # Prompt for resource to assign
             #
-            resourceToAssign = None
-            resources = AGServiceManagerIW( serviceManager.uri ).GetResources().data
+            resourceToAssign = AGResource()
+            resources = AGServiceManagerIW( serviceManager.uri ).GetResources()
             if len(resources) > 0:
 
                 applicableResources1 = []
@@ -885,10 +889,10 @@ class NodeManagementClientFrame(wxFrame):
                                serviceManager.uri,
                                resourceToAssign,
                                None )
-            except Exception, e:
+            except SOAPException, e:
                 log.exception("NodeManagementClientFrame.AddService: Exception in AddService")
                 #self.Error( "Add Service failed :" + serviceToAdd.name )
-                self.Error(e.faultstring)
+                self.Error(e.string)
 
             self.UpdateServiceList()
 
@@ -914,9 +918,9 @@ class NodeManagementClientFrame(wxFrame):
             # Update the services list
             self.UpdateServiceList()
 
-        except Exception,e:
+        except SOAPException,e:
             log.exception("NodeManagementClientFrame.EnableService")
-            self.Error(e.faultstring)
+            self.Error(e.string)
 
     def EnableServices( self, event ):
         """
@@ -947,9 +951,9 @@ class NodeManagementClientFrame(wxFrame):
 
             # Update the service list
             self.UpdateServiceList()
-        except Exception,e:
+        except SOAPException,e:
             log.exception("NodeManagementClientFrame.DisableService.")
-            self.Error(e.faultstring)
+            self.Error(e.string)
 
 
     def DisableServices( self, event ):
@@ -1007,9 +1011,6 @@ class NodeManagementClientFrame(wxFrame):
             
         # Get configuration
         config = AGServiceIW( self.services[index].uri ).GetConfiguration()
-        if config == None or len(config) == 0 or config=="None":
-            self.Error("No configurable parameters for service")
-            return
 
         # Display the service configuration panel
         parameters = map( lambda parm: CreateParameter( parm ), config.parameters )
@@ -1100,9 +1101,9 @@ class NodeManagementClientFrame(wxFrame):
                              0, None, 0 ) )
         try:
             self.nodeServiceHandle.SetStreams( streamDs )
-        except Exception, e:
+        except SOAPException, e:
             log.exception("NodeManagementClientFrame.GotoTestRoom.")
-            self.Error(e.faultstring)
+            self.Error(e.string)
 
         self.UpdateServiceList()
 
@@ -1184,7 +1185,6 @@ class NodeManagementClientFrame(wxFrame):
 
 
 if __name__ == "__main__":
-    from AccessGrid.AGService import AGResource
     
     app = wxPySimpleApp()
 
