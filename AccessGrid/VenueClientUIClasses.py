@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.328 2004-02-23 23:20:12 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.329 2004-02-25 16:28:29 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.328 2004-02-23 23:20:12 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.329 2004-02-25 16:28:29 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -52,7 +52,8 @@ from AccessGrid.Platform import isWindows, isLinux, isOSX
 from AccessGrid.TextClient import TextClient
 from AccessGrid.RoleAuthorization import AddPeopleDialog, RoleClient
 from AccessGrid.Utilities import SubmitBug, NO_LOG, VENUE_CLIENT_LOG
-from AccessGrid.Utilities import GetHostname, split_quoted
+from AccessGrid.NetUtilities import GetHostname
+from AccessGrid.Utilities import split_quoted
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.AppMonitor import AppMonitor
 
