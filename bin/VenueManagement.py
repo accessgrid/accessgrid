@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.136 2004-07-06 21:03:44 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.137 2004-07-22 18:17:41 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.136 2004-07-06 21:03:44 judson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.137 2004-07-22 18:17:41 judson Exp $"
 
 # Standard imports
 import sys
@@ -1375,11 +1375,11 @@ class VenueParamFrame(wxDialog):
         boxSizer.Add(self.noteBook, 1, wxEXPAND)
 
         buttonSizer =  wxBoxSizer(wxHORIZONTAL)
-        buttonSizer.Add(20, 20, 1)
+        buttonSizer.Add(wxSize(20, 20), 1)
         buttonSizer.Add(self.okButton, 0)
         buttonSizer.Add(wxSize(10, 10))
         buttonSizer.Add(self.cancelButton, 0)
-        buttonSizer.Add(20, 20, 1)
+        buttonSizer.Add(wxSize(20, 20), 1)
 
         boxSizer.Add(buttonSizer, 0, wxEXPAND | wxBOTTOM | wxTOP, 5)
 
@@ -1401,7 +1401,7 @@ class VenueParamFrame(wxDialog):
         encryptTuple = (0, '')
         
         # Get Exits
-        for index in range(0, self.generalPanel.exits.Number()):
+        for index in range(0, self.generalPanel.exits.GetCount()):
             exit = self.generalPanel.exits.GetClientData(index)
             exitsList.append(exit)
 
@@ -1438,7 +1438,10 @@ class VenueParamFrame(wxDialog):
                                  self.generalPanel.description.GetValue(),
                                  encryptTuple, exitsList, streams)
         self.venue = venue
-        
+
+    def Validate(self):
+        return true
+    
 class GeneralPanel(wxPanel):
     ID_TRANSFER = wxNewId()
     ID_REMOVE_EXIT = wxNewId()
@@ -1616,7 +1619,7 @@ class GeneralPanel(wxPanel):
         bottomParamSizer = wxStaticBoxSizer(self.exitsBox, wxVERTICAL)
         exitsSizer = wxFlexGridSizer(10, 3, 5, 5)
         exitsSizer.Add(self.venuesLabel, 0)
-        exitsSizer.Add(10,10, wxEXPAND)
+        exitsSizer.Add(wxSize(10,10), wxEXPAND)
         exitsSizer.Add(self.exitsLabel, 0)
 
         exitsSizer.Add(self.venues, 0, wxEXPAND)
@@ -1645,6 +1648,9 @@ class GeneralPanel(wxPanel):
         boxSizer.Fit(self)
         self.SetAutoLayout(1)
 
+    def Validate(self):
+        return 1
+    
 class EncryptionPanel(wxPanel):
     ID_BUTTON = wxNewId()
     ID_GENKEYBUTTON = wxNewId()
