@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.195 2004-11-19 23:00:02 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.196 2004-11-30 19:05:46 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.195 2004-11-19 23:00:02 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.196 2004-11-30 19:05:46 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -707,6 +707,10 @@ class VenueClient:
 
             log.debug("EnterVenue: Invoke venue enter")
             (venueState, self.privateId, self.streamDescList ) = self.__venueProxy.Enter( self.profile )
+
+            # Retreive stream descriptions
+            self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.privateId,
+                                                                          self.profile.capabilities)
             
             # Retrieve the connection id from within the private id
             # (when we break compatability, the server will likely pass
@@ -765,8 +769,6 @@ class VenueClient:
                                
             self.heartbeatTask = self.houseKeeper.AddTask(self.__Heartbeat, 5)
             self.heartbeatTask.start()
-
-            self.streamDescList = self.__venueProxy.GetStreams()
 
             #
             # Get personaldatastore information
