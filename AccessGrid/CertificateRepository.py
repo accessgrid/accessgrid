@@ -1,0 +1,579 @@
+"""
+Certificate management module.
+
+The on-disk repository looks like this:
+
+<repo_root>/
+            metadata.db
+            certificates/<subject_hash>/
+                               <issuer_serial_hash>/cert.pem
+                                                    user_files/
+                               <modulus_hash>.req.pem
+            privatekeys/
+                        <modulus_hash>
+
+
+"""
+
+from __future__ import generators
+
+import re
+import os
+import os.path
+import popen2
+import time
+import logging
+import getpass
+import string
+import sys
+import md5
+import struct
+import bsddb
+import operator
+
+from OpenSSL_AG import crypto
+
+class RepoAlreadyExists(Exception):
+    """
+    Thrown if repository already exists, and the CertificateRepository
+    constructor was invoked with create=1.
+    """
+    pass
+
+class RepoDoesNotExist(Exception):
+    """
+    Thrown if repository does not exist, and the CertificateRepository
+    constructor was invoked with create=0.
+    """
+    pass
+
+class RepoInvalidCertificate(Exception):
+    """
+    Thrown if an attempt was made to use an invalid certificate.
+    """
+    pass
+
+
+class CertificateRepository:
+
+    #
+    # Private key types.
+    #
+
+    KEYTYPE_RSA = crypto.TYPE_RSA
+    KEYTYPE_DSA = crypto.TYPE_DSA
+
+    #
+    # Valid name components for cert request DNs. Lowercased
+    # for easy comparison.
+    #
+
+    validNameComponents = [
+        "cn",
+        "c",
+        "l",
+        "st",
+        "o",
+        "ou",
+        "emailaddress"
+        ]
+    
+    def __init__(self, dir, create = 0):
+        """
+        Create the repository.
+
+        dir - directory in which to store certificates.
+
+        """
+
+        self.dir = dir
+        self.dbPath = os.path.join(self.dir, "metadata.db")
+
+        if create:
+            if os.path.isdir(self.dir):
+                raise RepoAlreadyExists
+            os.makedirs(self.dir)
+            os.mkdir(os.path.join(self.dir, "user_files"))
+            os.mkdir(os.path.join(self.dir, "privatekeys"))
+            os.mkdir(os.path.join(self.dir, "requests"))
+            os.mkdir(os.path.join(self.dir, "certificatess"))
+            #
+            # Create the dbhash too.
+            #
+
+            self.db = bsddb.hashopen(self.dbPath, 'n')
+        else:
+            #
+            # Just check for directory existence now; we can/should
+            # add more checks that the repo dir actually does contain
+            # a valid repository.
+            #
+            if not os.path.isdir(self.dir):
+                raise RepoDoesNotExist
+            self.db = bsddb.hashopen(self.dbPath, 'w')
+
+    def ImportCertificatePEM(self, certFile, keyFile = None,
+                             passphraseCB = None):
+        """
+        Import a PEM-formatted certificate from certFile.
+
+        If keyFile is not None, load it as a private key for cert.
+
+        We don't currently inspect the key itself to ensure it matches
+        the certificate, as that may require a passphrase.
+        """
+
+        #
+        # Load the cert into a pyOpenSSL data structure.
+        #
+
+        cert = Certificate(certFile, keyFile, self)
+        path = self._GetCertDirPath(cert)
+        print "Would put cert in dir ", path
+
+        #
+        # Double check that someone's not trying to import a
+        # globus proxy cert.
+        #
+
+        name = cert.GetSubject().get_name_components()
+        lastComp = name[-1]
+        if lastComp[0] == "CN" and lastComp[1] == "proxy":
+            raise RepoInvalidCertificate, "Cannot import a Globus proxy certificate"
+
+        #
+        # If the path already exists, we already have this (uniquely named)
+        # certificate.
+        #
+
+        if os.path.isdir(path):
+            raise RepoInvalidCertificate, "Certificate already in repository"
+
+        #
+        # Otherwise, we can go ahead and import.
+        #
+
+        self._ImportCertificate(cert, path)
+
+        #
+        # Import done, set the metadata about the cert.
+        #
+
+        cert.SetMetadata("System.importTime", str(time.time()))
+        cert.SetMetadata("System.certImportedFrom", certFile)
+        if keyFile:
+            cert.SetMetadata("System.keyImportedFrom", keyFile)
+            cert.SetMetadata("System.hasKey", "1")
+        else:
+            cert.SetMetadata("System.hasKey", "0")
+            
+    def _ImportCertificate(self, cert, path):
+        """
+        Import a certificate. We've already done the due diligence
+        that this is a valid cert that is okay to just copy into place.
+        """
+
+        os.makedirs(path)
+
+        certPath = os.path.join(path, "cert.pem")
+        cert.WriteCertificate(certPath)
+        
+    def _ImportCertificateRequest(self, req):
+        """
+        Import the given certificate request into the repository.
+
+        req is an OpenSSL_AG.crypto.X509Req object.
+
+        The pathname of the imported request will be
+        <repo_root>/requests/<modulus_hash>.pem.
+        """
+
+        desc = CertificateRequestDescriptor(req, self)
+
+        hash = desc.GetModulusHash()
+
+        path = os.path.join(self.dir,
+                            "requests",
+                            "%s.pem" % (hash))
+
+        print "Writing to ", path
+        fh = open(path, 'w')
+        fh.write(crypto.dump_certificate_request(crypto.FILETYPE_PEM, req))
+        fh.close()
+
+        return desc
+
+    def _ImportPrivateKey(self, pkey, passwdCB):
+        """
+        Import the given private key into the repository.
+
+        passwdCB is passed to the underlying pyOpenSSL routine if it is
+        present and not None. It can be either a string, in which case
+        it represents the passphrase, or a python callable object, in which
+        case it will be invoked by the underlying pyOpenSSL code to
+        retrieve the desired passphrase.
+        """
+
+        #
+        # Compute the directory to store the key in based on a
+        # md5 hash of the key's public-key modulus.
+        #
+
+        dig = md5.new(pkey.get_modulus())
+        hash = dig.hexdigest()
+
+        path = os.path.join(self.dir,
+                            "privatekeys",
+                            "%s.pem" % (hash))
+
+        pktext = crypto.dump_privatekey(crypto.FILETYPE_PEM,
+                                        pkey,
+                                        "DES3",
+                                        passwdCB)
+        fh = open(path, 'w')
+        fh.write(pktext)
+        fh.close()
+
+    def _GetCertDirPath(self, cert):
+        """
+        Compute the path name for the directory the cert will use
+        """
+
+        path = os.path.join(self.dir,
+                            "certificates",
+                            cert.GetSubjectHash(),
+                            cert.GetIssuerSerialHash())
+        return path
+
+
+    #
+    # Certificate Request support
+    #
+
+    def CreateCertificateRequest(self, nameEntries, passphraseCB,
+                                 keyType = KEYTYPE_RSA,
+                                 bits = 1024,
+                                 messageDigest = "md5",
+                                 extensions = None):
+        """
+        Create a new certificate request and store it in the repository.
+        Returns a CertificateRequestDescriptor for that request.
+
+        nameEntries is a list of pairs (key, value) where key is
+        a standard distinguished name key, and value is the value to
+        be used for that key.
+
+        extensions is a list of triples (name, critical, value) to be used
+        to set the requests extensions. If passed in as none, a useful
+        default set of extensions will be used.
+        """
+
+        #
+        # make sure nameEntries is what we expect it to be.
+        #
+
+        if not operator.isSequenceType(nameEntries):
+            raise Exception, "nameEntries must be a sequence"
+        
+        try:
+            for k, v in nameEntries:
+                if k.lower() not in self.validNameComponents:
+                    raise Exception, "Invalid name component %s" % (k)
+        except ValueError, e:
+            raise Exception, "Invalid value in nameEntry list"
+        except TypeError, e:
+            raise Exception, "nameEntries may not be a list"
+
+        #
+        # Name list is okay. Create the cert request obj and set up the
+        # subject.
+        #
+
+        req = crypto.X509Req()
+        sub = req.get_subject()
+
+        for (k, v) in nameEntries:
+            sub.add(k, v)
+
+        #
+        # set our extensions.
+        #
+        
+        if extensions is None:
+            extensions = [("nsCertType", 0, "client,server,objsign,email"),
+                          ("basicConstraints", 1, "CA:false")
+                          ]
+
+        xextlist = []
+        for name, critical, value in extensions:
+            xext = crypto.X509Extension(name, critical, value)
+            xextlist.append(xext)
+        req.add_extensions(xextlist)
+
+        #
+        # Generate our private key, stash it in the repo,
+        # and sign the cert request.
+        #
+
+        pkey = crypto.PKey()
+        pkey.generate_key(keyType, bits)
+
+        req.set_pubkey(pkey)
+        req.sign(pkey, messageDigest)
+
+        self._ImportPrivateKey(pkey, passphraseCB)
+        desc = self._ImportCertificateRequest(req)
+
+        return desc
+        
+
+    #
+    # Certificate database querying methods
+    #
+    
+        
+    def _GetCertificates(self):
+        """
+        This is a generator function that will walk through all of the
+        certificates we have.
+        """
+
+        certDir = os.path.join(self.dir, "certificates")
+        subjHashes = os.listdir(certDir)
+        for subjHash in subjHashes:
+            subjHashDir = os.path.join(certDir, subjHash)
+            isHashes = os.listdir(subjHashDir)
+            for isHash in isHashes:
+                certFile = os.path.join(subjHashDir, isHash, "cert.pem")
+                desc = CertificateDescriptor(certFile, self)
+                yield desc
+
+    def GetAllCertificates(self):
+        return self._GetCertificates()
+
+    def FindCertificates(self, pred):
+        """
+        Return a list of certificates for which pred(cert) returns true.
+        """
+
+        #
+        # This is also a generator. That way, we can short-circuit the
+        # search if we only want some.
+        #
+
+        for cert in self._GetCertificates():
+            if pred(cert):
+                yield cert
+
+    def FindCertificatesWithSubject(self, subj):
+        return self.FindCertificates(lambda c: str(c.GetSubject()) == subj)
+    
+    def FindCertificatesWithIssuer(self, issuer):
+        return self.FindCertificates(lambda c: str(c.GetIssuer()) == issuer)
+    
+    def FindCertificatesWithMetadata(self, mdkey, mdvalue):
+        return self.FindCertificates(lambda c: c.GetMetadata(mdkey) == mdvalue)
+
+    def SetMetadata(self, key, value):
+        self.db[key] = value
+    
+    def GetMetadata(self, key):
+        return self.db[key]
+    
+class CertificateDescriptor:
+    def __init__(self, file, repo):
+        self.cert = Certificate(file, repo = repo)
+        self.repo = repo
+
+    def GetIssuer(self):
+        return self.cert.GetIssuer()
+
+    def GetSubject(self):
+        return self.cert.GetSubject()
+
+    def GetMetadata(self, k):
+        return self.cert.GetMetadata(k)
+
+    def SetMetadata(self, k, v):
+        return self.cert.SetMetadata(k, v)
+
+    def GetFilePath(self, file):
+        return self.cert.GetFilePath(file)
+
+class CertificateRequestDescriptor:
+    def __init__(self, req, repo):
+        self.req = req
+        self.repo = repo
+        self.modulusHash = None
+
+    def GetSubject(self):
+        return self.req.get_subject()
+
+    def GetModulus(self):
+        key = self.req.get_pubkey()
+        return key.get_modulus()
+
+    def GetModulusHash(self):
+        if self.modulusHash is None:
+            m = self.GetModulus()
+            dig = md5.new(m)
+            self.modulusHash = dig.hexdigest()
+        return self.modulusHash
+
+    def ExportPEM(self):
+        """
+        Returns the PEM-formatted version of the certificate request.
+        """
+
+        return crypto.dump_certificate_request(crypto.FILETYPE_PEM, self.req)
+
+class Certificate:
+    def __init__(self,  path, keyPath = None, repo = None):
+        """
+        Create a certificate object.
+
+        This wraps an underlying OpenSSL X.509 cert object.
+
+        path - pathname of the stored certificate
+        keyPath - pathname of the private key for the certificate
+        poicyPath - pathame of the policy definition file for this CA cert
+        """
+
+        self.path = path
+        self.keyPath = keyPath
+        self.repo = repo
+
+        #
+        # Cached hash values.
+        #
+        self.subjectHash = None
+        self.issuerSerialHash = None
+
+        fh = open(self.path, "r")
+        self.certText = fh.read()
+        self.cert = crypto.load_certificate(crypto.FILETYPE_PEM, self.certText)
+        fh.close()
+
+        #
+        # We don't load the privatekey with the load_privatekey method,
+        # as that requires the passphrase for the key.
+        # We'll just cache the text here.
+        #
+
+        if keyPath is not None:
+            fh = open(keyPath, "r")
+            self.keyText = fh.read()
+            fh.close()
+
+    def GetPath(self):
+        return self.path
+
+    def GetKeyPath(self):
+        return self.keyPath
+
+    def GetSubject(self):
+        return self.cert.get_subject()
+
+    def GetIssuer(self):
+        return self.cert.get_issuer()
+
+    def GetSubjectHash(self):
+
+        if self.subjectHash is None:
+            subj = self.cert.get_subject().get_der()
+            dig = md5.new(subj)
+            self.subjectHash = dig.hexdigest()
+
+        return self.subjectHash
+
+    def GetIssuerSerialHash(self):
+
+        if self.issuerSerialHash is None:
+            issuer = self.cert.get_issuer().get_der()
+            #
+            # Get serial number in its 4-byte form
+            #
+            serial = struct.pack("l", self.cert.get_serial_number())
+            dig = md5.new(issuer)
+            dig.update(serial)
+            self.issuerSerialHash = dig.hexdigest()
+
+        return self.issuerSerialHash
+
+    def IsExpired(self):
+        return self.cert.is_expired()
+
+    def WriteCertificate(self, file):
+        """
+        Write the certificate to the given file.
+        """
+
+        fh = open(file, "w")
+        fh.write(crypto.dump_certificate(crypto.FILETYPE_PEM, self.cert))
+        fh.close()
+
+    def _GetMetadataKey(self, key):
+        hashkey = "|".join([self.GetSubjectHash(),
+                            self.GetIssuerSerialHash(),
+                            key])
+        return hashkey
+
+    def GetFilePath(self, filename):
+        return os.path.join(self.dir, "user_files", filename)
+
+    def GetMetadata(self, key):
+        hashkey = self._GetMetadataKey(key)
+        val = self.repo.GetMetadata(hashkey)
+        return val
+
+    def SetMetadata(self, key, value):
+        hashkey = self._GetMetadataKey(key)
+        self.repo.SetMetadata(hashkey, value)
+        
+if __name__ == "__main__":
+
+    import os.path
+    import os
+
+    certPath = os.path.join(os.environ["HOME"], ".globus", "usercert.pem")
+    keyPath = os.path.join(os.environ["HOME"], ".globus", "userkey.pem")
+    c = Certificate(certPath)
+
+    proxy = r"\Documents and Settings\olson\Local Settings\Temp\x509_up_olson"
+    print proxy
+    print "hash = ", c.GetSubjectHash(), c.GetIssuerSerialHash()
+
+    repo = CertificateRepository("repo", 1)
+    print "Importing ", certPath
+
+    try:
+        repo.ImportCertificatePEM(certPath, keyPath)
+    except RepoInvalidCertificate:
+        print "Cert already there maybe"
+
+    #
+    # Import some CA certs
+    #
+
+    caDir = r"\Program Files\Windows Globus\certificates"
+    for certFile in os.listdir(caDir):
+        if re.search(r"\.\d+$", certFile):
+            try:
+                repo.ImportCertificatePEM(os.path.join(caDir, certFile))
+            except RepoInvalidCertificate:
+                print "yup, you can't import a proxy"
+    
+    try:
+        repo.ImportCertificatePEM(proxy)
+    except RepoInvalidCertificate:
+        print "yup, you can't import a proxy"
+
+    certlist = list(repo._GetCertificates())
+    print "Certs: "
+    for c in certlist:
+        print "%s %s" % (c.GetIssuer(), c.GetSubject())
+
+    globus = "/C=US/O=Globus/CN=Globus Certification Authority"
+    me = "/O=Grid/O=Globus/OU=mcs.anl.gov/CN=Bob Olson"
+    print "My certs: ", repo.FindCertificatesWithSubject(me)
+    print "Globus certs: ", repo.FindCertificatesWithIssuer(globus)
