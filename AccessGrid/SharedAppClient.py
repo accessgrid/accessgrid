@@ -101,15 +101,15 @@ class SharedAppClient:
         try:
             # Join the application object with your client profile
             (self.__publicId, self.__privateId) = self.__appProxy.Join(clientProfile)
-        except Client.MethodNotFound, e:
-            self.log.excpetion("SharedAppClient.Join failed: %s"
+        except Client.MethodFailed, e:
+            self.log.excpetion("SharedAppClient.Join failed: %s",
                                self.__appUrl)
             try:
                 (self.__publicId, self.__privateId) = self.__appProxy.Join()
                 self.log.info("SharedAppClient.Join: %s using old software",
                               self.__appUrl)
             except:
-                self.log.excpetion("SharedAppClient.Join failed: %s"
+                self.log.excpetion("SharedAppClient.Join failed: %s",
                                    self.__appUrl)
                 raise "Failed to join application service at %s." %self.__appUrl                
         try:
