@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.2 2003-02-06 14:44:55 judson Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.3 2003-02-12 17:11:17 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,66 +18,69 @@ from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangePara
 
 class VideoConsumerService( AGService ):
 
-    def __init__( self ):
-        print self.__class__, ".init"
-        AGService.__init__( self )
+   def __init__( self ):
+      print self.__class__, ".init"
+      AGService.__init__( self )
 
-        self.capabilities = [ Capability( Capability.CONSUMER, Capability.VIDEO ) ]
-        self.executable = "vic"
+      self.capabilities = [ Capability( Capability.CONSUMER, Capability.VIDEO ) ]
+      self.executable = "vic"
 
-        #
-        # Set configuration parameters
-        #
-        pass
-
-
-    def Start( self, connInfo ):
-        __doc__ = """Start service"""
-        try:
-
-            #
-            # Start the service; in this case, store command line args in a list and let
-            # the superclass _Start the service
-            print "Start service"
-            print "Location : ", self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl
-            options = []
-            options.append( '%s/%d/%d' % ( self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl ) )
-            self._Start( options )
-            print "pid = ", self.childPid
-        except:
-            print "Exception ", sys.exc_type, sys.exc_value
-    Start.soap_export_as = "Start"
-    Start.pass_connection_info = 1
+      #
+      # Set configuration parameters
+      #
+      pass
 
 
-    def ConfigureStream( self, connInfo, streamDescription ):
-        """Configure the Service according to the StreamDescription, and stop and start app"""
-        print "in AudioService.ConfigureStream"
-        AGService.ConfigureStream( self, connInfo, streamDescription )
+   def Start( self, connInfo ):
+      __doc__ = """Start service"""
+      try:
 
-        # restart app, since this is the only way to change the
-        # stream location (for now!)
-        if self.started:
-            self.Stop( connInfo )
-            self.Start( connInfo )
-    ConfigureStream.soap_export_as = "ConfigureStream"
-    ConfigureStream.pass_connection_info = 1
+         # 
+         # Start the service; in this case, store command line args in a list and let
+         # the superclass _Start the service
+         print "Start service"
+         print "Location : ", self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl
+         options = []
+         if self.streamDescription.encryptionKey != None:
+            options.append( "-K" )
+            options.append( self.streamDescription.encryptionKey )
+         options.append( '%s/%d/%d' % ( self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl ) )
+         self._Start( options )
+         print "pid = ", self.childPid
+      except:
+         print "Exception ", sys.exc_type, sys.exc_value
+   Start.soap_export_as = "Start"
+   Start.pass_connection_info = 1
+
+
+   def ConfigureStream( self, connInfo, streamDescription ):
+      """Configure the Service according to the StreamDescription, and stop and start app"""
+      print "in AudioService.ConfigureStream"
+      AGService.ConfigureStream( self, connInfo, streamDescription )
+
+      # restart app, since this is the only way to change the 
+      # stream location (for now!)
+      if self.started:
+         self.Stop( connInfo )
+         self.Start( connInfo )
+   ConfigureStream.soap_export_as = "ConfigureStream"
+   ConfigureStream.pass_connection_info = 1
 
 
 def AuthCallback(server, g_handle, remote_user, context):
     return 1
 
 if __name__ == '__main__':
-    from AccessGrid.hosting.pyGlobus import Client
-    import thread
+   from AccessGrid.hosting.pyGlobus import Client
+   import thread
 
-    agService = VideoConsumerService()
-    server = Server( 0, auth_callback=AuthCallback )
-    service = server.create_service_object()
-    agService._bind_to_service( service )
+   agService = VideoConsumerService()
+   server = Server( 0, auth_callback=AuthCallback )
+   service = server.create_service_object()
+   agService._bind_to_service( service )
 
-    thread.start_new_thread( Client.Handle( sys.argv[2] ).get_proxy().RegisterService,
-                             ( sys.argv[1], agService.get_handle() ) )
+   thread.start_new_thread( Client.Handle( sys.argv[2] ).get_proxy().RegisterService, 
+                            ( sys.argv[1], agService.get_handle() ) )
 
-    print "Starting server at", agService.get_handle()
-    server.run()
+   print "Starting server at", agService.get_handle()
+   server.run()
