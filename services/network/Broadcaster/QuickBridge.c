@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.47 2004-12-18 00:14:41 leggett Exp $
+ * $Id: QuickBridge.c,v 1.48 2004-12-18 00:23:08 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -564,6 +564,7 @@ void session_set( Session *head, fd_set *readfds )
       FD_SET( s->ucfd[rtcp], readfds );
       if ( s->use_multicast )
 	{
+	  printf( "SESSION_SET: ucfd[data] %d, ucfd[rtcp] %d mcfd[data] %d mcfd[rtcp] %d\n", s->ucfd[data], s->ucfd[rtcp], s->mcfd[data], s->mcfd[rtcp] );
 	  FD_SET( s->mcfd[data], readfds );
 	  FD_SET( s->mcfd[rtcp], readfds );
 	}
@@ -1281,16 +1282,9 @@ int main( int argc, char *argv[] )
        * time.  If we have fixed sessions the list will never
        * be empty so block.
        */
-      tv.tv_sec = 0;
+      tv.tv_sec = 60;
       tv.tv_usec = 0; 
       nfds = select( maxfds, &readfds, NULL, NULL, &tv );
-      for ( i = 0; i <= maxfds; i++ )
-	{
-	  if ( FD_ISSET( i, &readfds ) )
-	    {
-	      printf( "FD %d IS READY\n", i );
-	    }
-	}
 
       process_session( s, &readfds, myip );
 
