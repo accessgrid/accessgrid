@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.25 2003-09-17 18:39:19 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.26 2003-09-19 02:15:34 judson Exp $
 ;
 
 #define SourceDir "C:\Software\AccessGrid\AccessGrid"
@@ -100,6 +100,7 @@ Source: COPYING.txt; DestDir: {app}
 Source: README; DestDir: {app}; Flags: isreadme; DestName: README.txt
 
 Source: bin\VenueServer.py; DestDir: {app}\bin
+Source: bin\DataService.py; DestDir: {app}\bin
 Source: bin\VenueClient.py; DestDir: {app}\bin
 Source: bin\AGServiceManager.py; DestDir: {app}\bin
 Source: bin\CertificateRequestTool.py; DestDir: {app}\bin; DestName: CertificateRequestTool.pyw
@@ -138,7 +139,6 @@ Name: {group}\Configure\Reconfigure Globus; Filename: {reg:HKLM\Software\Python\
 Name: {group}\Configure\Reconfigure Network; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\network_init.pyw"""; WorkingDir: {userappdata}\AccessGrid; Comment: Set up Globus network configuration; IconFilename: {app}\install\agicons.exe
 Name: {group}\Configure\Node Setup Wizard; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\NodeSetupWizard.pyw"""; WorkingDir: {userappdata}\AccessGrid; IconFilename: {app}\install\agicons.exe
 Name: {group}\Request a Certificate; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\CertificateRequestTool.pyw"""; WorkingDir: {userappdata}\AccessGrid; IconFilename: {app}\install\agicons.exe
-Name: {group}\Venue Server\Venue Server; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\VenueServer.py"""; WorkingDir: {userappdata}\AccessGrid; Comment: Run the venue server software.
 Name: {group}\Venue Server\Venue Server (Debug); IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\python.exe; Parameters: """{app}\bin\VenueServer.py"" --debug"; WorkingDir: {userappdata}\AccessGrid; Comment: Run the venue server software in debugging mode.
 Name: {group}\Venue Server\Manage Venue Servers; IconFilename: {app}\install\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\pythonw.exe; Parameters: """{app}\bin\VenueManagement.py"""; WorkingDir: {userappdata}\AccessGrid; Comment: Run the venue management tool.
 
