@@ -15,6 +15,8 @@ LogFileAppend=false
 ; to do list :-)
 Name: python; Parameters: C:\AccessGridBuild\AccessGrid\packaging\makeServicePackages.py C:\AccessGridBuild\AccessGrid\AccessGrid\services; Flags: abortonerror
 Name: C:\AccessGridBuild\AccessGrid\packaging\windows\Prebuild.cmd; Parameters: C:\AccessGridBuild\AccessGrid; Flags: abortonerror
+Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\AccessGridBuild\ag-vic C:\AccessGridBuild\AccessGrid\Release\bin; Flags: abortonerror
+Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: C:\AccessGridBuild\ag-rat C:\AccessGridBuild\AccessGrid\Release\bin; Flags: abortonerror
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -122,12 +124,12 @@ Source: share\AccessGrid\packaging\windows\Postinstall.py; DestDir: {app}\config
 ;Source: share\AccessGrid\packaging\windows\AGServiceManagerPostinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
 
 ; Vic Video Tool
-Source: ..\..\ag-vic\vic\vic___win32_ddraw_release\vic.exe; DestDir: {app}; Components: Video_Consumer Video_Producer
+Source: bin\vic.exe; DestDir: {app}; Components: Video_Consumer Video_Producer
 
 ; Rat Audio Tool
-Source: ..\..\ag-rat\rat\Release\rat.exe; DestDir: {app}; Components: Audio_Service
-Source: ..\..\ag-rat\rat\Release\ratmedia.exe; DestDir: {app}; Components: Audio_Service
-Source: ..\..\ag-rat\rat\Release\ratui.exe; DestDir: {app}; Components: Audio_Service
+Source: bin\rat.exe; DestDir: {app}; Components: Audio_Service
+Source: bin\ratmedia.exe; DestDir: {app}; Components: Audio_Service
+Source: bin\ratui.exe; DestDir: {app}; Components: Audio_Service
 
 
 [Icons]

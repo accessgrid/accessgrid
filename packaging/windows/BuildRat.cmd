@@ -34,11 +34,27 @@
 @set INCLUDE=%MSVCDir%\ATLMFC\INCLUDE;%MSVCDir%\INCLUDE;%MSVCDir%\PlatformSDK\include\prerelease;%MSVCDir%\PlatformSDK\include;%FrameworkSDKDir%\include;%INCLUDE%
 @set LIB=%MSVCDir%\ATLMFC\LIB;%MSVCDir%\LIB;%MSVCDir%\PlatformSDK\lib\prerelease;%MSVCDir%\PlatformSDK\lib;%FrameworkSDKDir%\lib;%LIB%
 
-@set AGDIR=%1
+@set RATDIR=%1
+@set DESTDIR=%2
 
-@rmdir /s /q %AGDIR%\Release
-@rmdir /s /q %AGDIR%\build
-@cd %AGDIR%
-@echo Building AG
-@python setup.py build
-@python setup.py install --prefix=%AGDIR%\Release --no-compile
+if not exist %RATDIR%\rat\Release\rat.exe goto do_compile
+if not exist %RATDIR%\rat\Release\ratmedia.exe goto do_compile
+if not exist %RATDIR%\rat\Release\ratui.exe goto do_compile
+
+:do_copy
+
+copy %RATDIR%\rat\Release\rat.exe %DESTDIR%
+copy %RATDIR%\rat\Release\ratmedia.exe %DESTDIR%
+copy %RATDIR%\rat\Release\ratui.exe %DESTDIR%
+
+
+goto end
+
+:do_compile
+
+echo Building ag-rat
+devenv %RATDIR%\rat\rat.sln /rebuild Release
+
+goto do_copy
+
+:end
