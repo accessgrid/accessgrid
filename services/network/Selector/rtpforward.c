@@ -104,9 +104,11 @@ static void rtp_event_handler(struct rtp *session, rtp_event *e)
      	len_ssrclist ++;
       }
       
+      
+
       // Check if we are allowed to forward participant.
       if (p->ssrc == (uint32_t)allowed_ssrc) {
-	rtp_send_data(data->session, p->ts, p->pt, p->m, p->cc, p->csrc, 
+	rtp_send_data(data->session, NULL, p->pt, p->m, p->cc, p->csrc, 
 		      p->data, p->data_len, p->extn, p->extn_len, 
 		      p->extn_type);
       }
@@ -193,6 +195,7 @@ void* start(void* address)
   if (from_session && data.session) {
     /* Run main loop */
     uint32_t my_ssrc = rtp_my_ssrc(data.session);
+    
     /*
     const char 	*username  = "Malcovich Malcovitch";
     const char	*telephone = "1-800-RTP-DEMO";
@@ -201,13 +204,13 @@ void* start(void* address)
     const char  *cname     = "Ain't telling ya!";
 
     rtp_set_sdes(data.session, my_ssrc, RTCP_SDES_NAME,
-		 username, strlen(username));
+	 	 username, strlen(username));
     rtp_set_sdes(data.session, my_ssrc, RTCP_SDES_PHONE,
-		 telephone, strlen(telephone));
+	 	 telephone, strlen(telephone));
     rtp_set_sdes(data.session, my_ssrc, RTCP_SDES_TOOL,
-		 toolname, strlen(toolname));
+	 	 toolname, strlen(toolname));
     rtp_set_sdes(data.session, my_ssrc, RTCP_SDES_EMAIL,
-		 email, strlen(email));
+	 	 email, strlen(email));
     rtp_set_sdes(data.session, my_ssrc, RTCP_SDES_CNAME,
 		 cname, strlen(cname));
     */
