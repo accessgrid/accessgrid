@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.48 2003-02-25 22:22:21 olson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.49 2003-02-27 20:08:17 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,29 +16,28 @@ import string
 import types
 import socket
 import os.path
-
-# import logging
-# log = logging.getLogger("AG.Venue")
+import logging
 
 from AccessGrid.hosting.pyGlobus import ServiceBase
+
+from AccessGrid.hosting import AccessControl
+
 from AccessGrid.Types import Capability
 from AccessGrid.Descriptions import StreamDescription, CreateStreamDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
-from AccessGrid.TextService import TextService
-from AccessGrid.EventService import EventService
+from AccessGrid import DataStore
+from AccessGrid.scheduler import Scheduler
 from AccessGrid.Events import Event, HeartbeatEvent
 from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import GetHostname
-from AccessGrid.scheduler import Scheduler
-from AccessGrid import DataStore
 
+log = logging.getLogger("AG.VenueServer")
 
 class VenueException(Exception):
     """
     A generic exception type to be raised by the Venue code.
     """
-
     pass
 
 
@@ -58,6 +57,7 @@ class Venue(ServiceBase.ServiceBase):
         self.services = dict()
         self.networkServices = []
         self.administrators = []
+        self.encryptMedia = 1
 
         self.uniqueId = uniqueId
         # This contains a name, description, uri, icon, extended description
@@ -84,7 +84,19 @@ class Venue(ServiceBase.ServiceBase):
         # self.AllowedEntryRole = AccessControl.Role("Venue.AllowedEntry", self)
         # self.VenueUsersRole = AccessControl.Role("Venue.VenueUsers", self)
 
-        self.encryptionKey = AllocateEncryptionKey()
+        if self.encryptMedia == 1:
+            self.encryptionKey = AllocateEncryptionKey()
+
+    def _authorize(self):
+        """
+        """
+        sm = AccessControl.GetSecurityManager()
+        if sm == None:
+            return 1
+        elif sm.GetSubject().GetName() in self.administrators:
+            return 1
+        else:
+            return 0
 
     def __repr__(self):
         return "Venue: name=%s id=%s" % (self.description.name, id(self))
@@ -95,12 +107,12 @@ class Venue(ServiceBase.ServiceBase):
 
         We don't pickle any object instances, except for the
         uniqueId and description.
-        
+
         """
         odict = self.__dict__.copy()
         # We don't save things in this list
         keys = ("users", "clients", "nodes", "multicastAllocator",
-                "producerCapabilities", "consumerCapabilities", 
+                "producerCapabilities", "consumerCapabilities",
                 "textService", "eventService", "dataService",
                 "_service_object", "houseKeeper",
                 "dataTransferServer", "dataStore")
@@ -126,29 +138,26 @@ class Venue(ServiceBase.ServiceBase):
         self.multicastAllocator = None
         self.cleanupTime = 30
         self.nextPrivateId = 1
-        self.encryptionKey = AllocateEncryptionKey()
         self.dataStore = None
+        if self.encryptMedia == 1:
+            self.encryptionKey = AllocateEncryptionKey()
 
     def Start(self, multicastAllocator, dataTransferServer,
               eventService, textService):
         """ """
-        # We assume the multicast allocator has been set by now
-        # this is an icky assumption and can be fixed when I clean up
-        # other icky things (description, state, venue) issues -- IRJ
-
         self.multicastAllocator = multicastAllocator
         self.dataTransferServer = dataTransferServer
         self.eventService = eventService
         self.textService = textService
 
-        self.eventService.AddVenue(self.uniqueId)
-        self.textService.AddVenue(self.uniqueId)
-        
-        # log.debug("Registering heartbeat for %s", self.uniqueId)
+        self.eventService.AddChannel(self.uniqueId)
+        self.textService.AddChannel(self.uniqueId)
+
+        log.debug("Registering heartbeat for %s", self.uniqueId)
         self.eventService.RegisterCallback(self.uniqueId,
-                                           HeartbeatEvent.HEARTBEAT, 
+                                           HeartbeatEvent.HEARTBEAT,
                                            self.ClientHeartbeat)
-        
+
         self.houseKeeper = Scheduler()
         self.houseKeeper.AddTask(self.CleanupClients, 45)
         self.houseKeeper.StartAllTasks()
@@ -172,22 +181,23 @@ class Venue(ServiceBase.ServiceBase):
         """
 
         if self.dataStorePath is None or not os.path.isdir(self.dataStorePath):
-            print "Not starting datastore for venue: %s does not exist" % (
-                self.dataStorePath)
+            log.debug("Not starting datastore for venue: %s does not exist %s",
+                      self.uniqueId, self.dataStorePath)
             return
 
         self.dataTransferServer.RegisterPrefix(str(self.uniqueId), self)
 
-        self.dataStore = DataStore.DataStore(self, self.dataStorePath, str(self.uniqueId))
+        self.dataStore = DataStore.DataStore(self, self.dataStorePath,
+                                             str(self.uniqueId))
         self.dataStore.SetTransferEngine(self.dataTransferServer)
 
-        print "Have upload url: %s" % (self.dataStore.GetUploadDescriptor())
+        log.debug("Have upload url: %s", self.dataStore.GetUploadDescriptor())
 
         for file, desc in self.data.items():
-            print "Checking file %s for validity" % (file)
+            log.debug("Checking file %s for validity", file)
             url = self.dataStore.GetDownloadDescriptor(file)
             if url is None:
-                print "File %s has vanished" % (file)
+                log.debug("File %s has vanished", file)
                 del self.data[file]
             else:
                 desc.SetURI(url)
@@ -206,72 +216,58 @@ class Venue(ServiceBase.ServiceBase):
         store the venue server uses.
         """
         self.dataStore = dataStore
-    
-    # Internal Methods
+
     def GetState(self):
         """
-        GetState enables a VenueClient to poll the Virtual Venue for the
-        current state of the Virtual Venue.
+        GetState returns the current state of the Virtual Venue.
         """
 
-        try:
-           print "Called GetState on ", self.uniqueId
+        log.debug("Called GetState on %s", self.uniqueId)
 
-           venueState = {
-               'uniqueId' : self.uniqueId,
-               'description' : self.description,
-               'connections' : self.connections.values(),
-               'users' : self.users.values(),
-               'nodes' : self.nodes.values(),
-               'services' : self.services.values(),
-               'eventLocation' : self.eventService.GetLocation(),
-               'textLocation' : self.textService.GetLocation()
-               }
+        venueState = {
+            'uniqueId' : self.uniqueId,
+            'description' : self.description,
+            'connections' : self.connections.values(),
+            'users' : self.users.values(),
+            'nodes' : self.nodes.values(),
+            'services' : self.services.values(),
+            'eventLocation' : self.eventService.GetLocation(),
+            'textLocation' : self.textService.GetLocation()
+            }
 
-           #
-           # If we don't have a datastore, don't advertise
-           # the existence of any data. We won't be able to get
-           # at it anyway.
-           #
-           if self.dataStore is None:
-               venueState['data'] = []
-           else:
-               venueState['data'] = self.data.values()
-    
-        except:
-           print "Exception in GetState ", sys.exc_type, sys.exc_value
+        #
+        # If we don't have a datastore, don't advertise
+        # the existence of any data. We won't be able to get
+        # at it anyway.
+        #
+        if self.dataStore is None:
+            venueState['data'] = []
+        else:
+            venueState['data'] = self.data.values()
 
         return venueState
-    
-    GetState.soap_export_as = "GetState"
 
     def CleanupClients(self):
         now_sec = time.time()
         for privateId in self.clients.keys():
             then_sec = self.clients[privateId]
             if abs(now_sec - then_sec) > self.cleanupTime:
-                print "  Removing user : ", self.users[privateId].name
+                log.debug("  Removing user : %s", self.users[privateId].name)
                 self.RemoveUser( privateId )
-        
+
     def ClientHeartbeat(self, event):
         privateId = event
         now = time.time()
         self.clients[privateId] = now
-        print "Got Client Heartbeat for %s at %s." % (event, now)
-    
-    def Shutdown(self):
-        """
-        This method cleanly shuts down all active threads associated with the
-        Virtual Venue. Currently there are a few threads in the Event
-        Service.
-        """
+        log.debug("Got Client Heartbeat for %s at %s." % (event, now))
 
-    def NegotiateCapabilities(self, clientProfile):
+    def NegotiateCapabilities(self, clientProfile, privateId):
         """
-        This method takes a client profile and finds a set of streams that
-        matches the client profile. Later this method could use network
-        services to find The Best Match of all the network services,
-        the existing streams, and all the client capabilities.
+        This method takes a client profile and matching privateId, then it
+        finds a set of streams that matches the client profile. Later this
+        method could use network services to find The Best Match of all the
+        network services, the existing streams, and all the client
+        capabilities.
         """
         streamDescriptions = []
 
@@ -280,7 +276,7 @@ class Venue(ServiceBase.ServiceBase):
         # description capabilities. New producer capabilities are added
         # to the stream descriptions, and an event is emitted to alert
         # current participants about the new stream
-        # 
+        #
 
         for clientCapability in clientProfile.capabilities:
             if clientCapability.role == Capability.PRODUCER:
@@ -290,23 +286,28 @@ class Venue(ServiceBase.ServiceBase):
                 for stream in self.streamList.GetStreams():
                     if stream.capability.matches( clientCapability ):
                         streamDesc = stream
-                        self.streamList.AddStreamProducer( clientProfile.publicId, streamDesc )
+                        self.streamList.AddStreamProducer( privateId,
+                                                           streamDesc )
                         streamDescriptions.append( streamDesc )
                         matchesExistingStream = 1
-                        print "added user as producer of existent stream"
-                
+                        log.debug("added user as producer of existent stream")
+
                 # add user as producer of non-existent stream
                 if not matchesExistingStream:
                     capability = Capability( clientCapability.role,
                                              clientCapability.type )
                     capability.parms = clientCapability.parms
+                    if self.encryptMedia:
+                        key = 0
+                    else:
+                        key = self.encryptionKey
+
+                    addr = self.AllocateMulticastLocation()
                     streamDesc = StreamDescription( self.description.name,
-                                                    "noDesc",
-                                             self.AllocateMulticastLocation(), 
-                                             capability, self.encryptionKey )
-                    print "added user as producer of non-existent stream"
-#FIXME - uses public id now; should use private id instead
-                    self.streamList.AddStreamProducer( clientProfile.publicId,
+                                                    "noDesc", addr,
+                                                    capability, key)
+                    log.debug("added user as producer of non-existent stream")
+                    self.streamList.AddStreamProducer( privateId,
                                                        streamDesc )
 
 
@@ -314,7 +315,7 @@ class Venue(ServiceBase.ServiceBase):
         # Compare user's consumer capabilities with existing stream
         # description capabilities. The user will receive a list of
         # compatible stream descriptions
-        # 
+        #
         clientConsumerCapTypes = []
         for capability in clientProfile.capabilities:
             if capability.role == Capability.CONSUMER:
@@ -332,9 +333,9 @@ class Venue(ServiceBase.ServiceBase):
         defaultTtl = 127
         return MulticastNetworkLocation(
             self.multicastAllocator.AllocateAddress(),
-            self.multicastAllocator.AllocatePort(), 
+            self.multicastAllocator.AllocatePort(),
             defaultTtl )
-       
+
     def GetNextPrivateId( self ):
         """This method creates the next Private Id."""
         return str(GUID())
@@ -342,58 +343,103 @@ class Venue(ServiceBase.ServiceBase):
     def IsValidPrivateId( self, privateId ):
         """This method verifies the private Id is valid."""
         if privateId in self.users.keys():
-            return 1 
+            return 1
         return 0
 
+    def FindUserByProfile(self, profile):
+        """
+        Find out if a given user is in the venue from their client profile.
+        If they are return their private id, if not, return None.
+        """
+
+        for key in self.users.keys():
+            user = self.users[key]
+            if user.publicId == profile.publicId:
+                return key
+
+        return None
+
     # Management methods
+    def SetEncryptMedia(self, value, key=None):
+        """
+        Turn media encryption on or off.
+        """
+        if not self._authorize():
+            raise VenueException("You are not authorized to perform this action.")
+        self.encryptMedia = value
+        if not self.encryptMedia:
+            self.encryptionKey = None
+        else:
+            self.encryptionKey = key
+
+        return self.encryptMedia
+
+    SetEncryptMedia.soap_export_as = "SetEncryptMedia"
+
+    def GetEncryptMedia(self):
+        """
+        Return whether we are encrypting streams or not.
+        """
+        return self.encryptionKey
+
+    GetEncryptMedia.soap_export_as = "GetEncryptMedia"
+
     def AddNetworkService(self, networkServiceDescription):
         """
         AddNetworkService allows an administrator to add functionality to
         the Venue. Network services are described in the design documents.
         """
+        if not self._authorize():
+            raise VenueException("You are not authorized to perform this action.")
         try:
             self.networkServices[ networkServiceDescription.uri ] = networkServiceDescription
         except:
-            print "Network Service already exists ", networkServiceDescription.uri
-
+            log.exception("Exception in Add Network Service!")
+            raise VenueException("Add Network Service Failed!")
+        
     AddNetworkService.soap_export_as = "AddNetworkService"
-    
+
     def GetNetworkServices(self):
         """
         GetNetworkServices retreives the list of network service descriptions
         from the venue.
         """
         return self.networkServices
-    
+
     GetNetworkServices.soap_export_as = "GetNetworkServices"
-    
+
     def RemoveNetworkService(selfnetworkServiceDescription):
         """
         RemoveNetworkService removes a network service from a venue, making
         it unavailable to users of the venue.
         """
+        if not self._authorize():
+            raise VenueException("You are not authorized to perform this action.")
         try:
             del self.networkServices[ networkServiceDescription.uri ]
         except:
-            print "Exception in RemoveNetworkService", sys.exc_type, sys.exc_value
-            print "Network Service does not exist ", networkServiceDescription.uri
+            log.exception("Exception in RemoveNetworkService!")
+            raise VenueException("Remove Network Service Failed!")
+
     RemoveNetworkService.soap_export_as = "RemoveNetworkService"
-        
+
     def AddConnection(self, connectionDescription):
         """
         AddConnection allows an administrator to add a connection to a
         virtual venue to this virtual venue.
         """
+        if not self._authorize():
+            raise VenueException("You are not authorized to perform this action.")
         try:
-
             self.connections[connectionDescription.uri] = connectionDescription
             self.eventService.Distribute( self.uniqueId,
                                           Event( Event.ADD_CONNECTION,
                                                  self.uniqueId,
                                                  connectionDescription ) )
         except:
-            print "Connection already exists ", connectionDescription.uri
-
+            log.exception("Exception in AddConnection!")
+            raise VenueException("Add Connection Failed!")
+        
     AddConnection.soap_export_as = "AddConnection"
 
     def RemoveConnection(self, connectionDescription):
@@ -401,6 +447,8 @@ class Venue(ServiceBase.ServiceBase):
         RemoveConnection removes a connection to another virtual venue
         from this virtual venue. This is an administrative operation.
         """
+        if not self._authorize():
+            raise VenueException("You are not authorized to perform this action.")
         try:
             del self.connections[ connectionDescription.uri ]
             self.eventService.Distribute( self.uniqueId,
@@ -408,8 +456,8 @@ class Venue(ServiceBase.ServiceBase):
                                                  self.uniqueId,
                                                  connectionDescription ) )
         except:
-            print "Exception in RemoveConnection", sys.exc_type, sys.exc_value
-            print "Connection does not exist ", connectionDescription.uri
+            log.exception("Exception in RemoveConnection.")
+            raise VenueException("Remove Connection Failed!")
 
     RemoveConnection.soap_export_as = "RemoveConnection"
 
@@ -429,6 +477,8 @@ class Venue(ServiceBase.ServiceBase):
         a list of connections adding them one by one, but this is more
         desirable.
         """
+        if not self._authorize():
+            raise VenueException("You are not authorized to perform this action.")
         try:
             self.connections = dict()
             for connection in connectionList:
@@ -437,10 +487,9 @@ class Venue(ServiceBase.ServiceBase):
                                           Event( Event.SET_CONNECTIONS,
                                                  self.uniqueId,
                                                  connectionList ) )
-
         except:
-            print "Exception in SetConnections", sys.exc_type, sys.exc_value
-            print "Connection does not exist ", connectionDescription.uri
+            log.exception("SetConnections failed.")
+            raise VenueException("Set Connections Failed!")
 
     SetConnections.soap_export_as = "SetConnections"
 
@@ -449,6 +498,8 @@ class Venue(ServiceBase.ServiceBase):
         SetDescription allows an administrator to set the venues description
         to something new.
         """
+        if not self._authorize():
+            raise VenueException("You are not authorized to perform this action.")
         self.description = description
 
     SetDescription.soap_export_as = "SetDescription"
@@ -465,15 +516,30 @@ class Venue(ServiceBase.ServiceBase):
         """
         Add a stream to the list of streams "in" the venue
         """
+        if not self._authorize():
+            raise VenueException("You are not authorized to perform this action.")
+        log.debug("%s - Adding Stream: ", self.uniqueId)
+        
         streamDescription = CreateStreamDescription( inStreamDescription )
+        log.debug("%s - Location: %s %d", self.uniqueId, streamDescription.location.GetHost(),
+                  streamDescription.location.GetPort())
+        log.debug("%s - Capability: %s %s", self.uniqueId, streamDescription.capability.role,
+                  streamDescription.capability.type)
+        log.debug("%s - Encyrption Key: %s", self.uniqueId, streamDescription.encryptionKey)
+        log.debug("%s - Static: %d", self.uniqueId, streamDescription.static)
+        
         self.streamList.AddStream( streamDescription )
+
     AddStream.soap_export_as = "AddStream"
 
     def RemoveStream(self, streamDescription):
         """
         Remove the given stream from the venue
         """
+        if not self._authorize():
+            raise VenueException("You are not authorized to perform this action.")
         self.streamList.RemoveStream( streamDescription )
+
     RemoveStream.soap_export_as = "RemoveStream"
 
     def GetStreams(self):
@@ -486,9 +552,13 @@ class Venue(ServiceBase.ServiceBase):
 
     def GetStaticStreams(self):
         """
-        GetStaticStreams returns a list of static stream descriptions to the caller.
+        GetStaticStreams returns a list of static stream descriptions
+        to the caller.
         """
+        log.debug("Called Venue.GetStaticStreams.")
+        
         return self.streamList.GetStaticStreams()
+
     GetStaticStreams.soap_export_as = "GetStaticStreams"
 
     # Client Methods
@@ -500,7 +570,6 @@ class Venue(ServiceBase.ServiceBase):
         privateId = None
         streamDescriptions = []
         state = self.GetState()
-
 
         #
         # Authorization management.
@@ -522,41 +591,38 @@ class Venue(ServiceBase.ServiceBase):
 #          else:
 #              log.info("User %s rejected for entry to %s", sm.GetSubject(), self)
 #              raise VenueException("Entry denied")
-            
+
 
         try:
-#            print "Called Venue Enter for: "
-#            print dir(clientProfile)
+            log.debug("Called Venue Enter for: ")
+            log.debug(dir(clientProfile))
 
-            userInVenue = 0
-            for key in self.users.keys():
-                user = self.users[key]
-                if user.publicId == clientProfile.publicId:
-                    print "* * User already in venue"
-                    userInVenue = 1
-                    privateId = key
-                    break
+            privateId = self.FindUserByProfile(clientProfile)
 
-            if userInVenue == 0:
+            if privateId != None:
+                log.debug("* * User already in venue")
+            else:
                 privateId = self.GetNextPrivateId()
-                print "Assigning private id: ", privateId
+                log.debug("Assigning private id: %s", privateId)
                 self.users[privateId] = clientProfile
                 state['users'] = self.users.values()
 
             # negotiate to get stream descriptions to return
-            streamDescriptions = self.NegotiateCapabilities(clientProfile)
+            streamDescriptions = self.NegotiateCapabilities(clientProfile,
+                                                            privateId)
             self.eventService.Distribute( self.uniqueId,
                                           Event( Event.ENTER,
                                                  self.uniqueId,
                                                  clientProfile ) )
 
         except:
-           print "Exception in Enter ", formatExceptionInfo()
+            log.exception("Exception in Enter!")
+            raise VenueException("Enter: ")
 
         return ( state, privateId, streamDescriptions )
 
     Enter.soap_export_as = "Enter"
-    
+
     def Exit(self, privateId ):
         """
         The Exit method is used by a VenueClient to cleanly leave a Virtual
@@ -564,23 +630,24 @@ class Venue(ServiceBase.ServiceBase):
         any state associated (or caused by) the VenueClients presence.
         """
         try:
-            print "Called Venue Exit on ..."
+            log.debug("Called Venue Exit on ...")
 
             if self.IsValidPrivateId( privateId ):
-                print "Deleting user ", privateId, self.users[privateId].name
+                log.debug("Deleting user %s %s", privateId,
+                          self.users[privateId].name)
                 self.RemoveUser( privateId )
 
             else:
-                print "* * Invalid private id !! ", privateId
+                log.debug("* * Invalid private id %s!!", privateId)
         except:
-            print "Exception in Exit ", sys.exc_type, sys.exc_value
-        
+            log.exception("Exception in Exit!")
+            raise VenueException("ExitVenue: ")
+
     Exit.soap_export_as = "Exit"
 
     def RemoveUser(self, privateId):
         # Remove user as stream producer
-#FIXME - uses public id now; should use private id instead
-        self.streamList.RemoveProducer( self.users[privateId].publicId )
+        self.streamList.RemoveProducer(privateId)
 
         # Distribute event
         clientProfile = self.users[privateId]
@@ -606,7 +673,7 @@ class Venue(ServiceBase.ServiceBase):
                                           Event( Event.MODIFY_USER,
                                                  self.uniqueId,
                                                  clientProfile ) )
-        
+
     UpdateClientProfile.soap_export_as = "UpdateClientProfile"
 
     def wsAddData(self, dataDescription ):
@@ -628,11 +695,11 @@ class Venue(ServiceBase.ServiceBase):
             # We already have this data; raise an exception.
             #
 
-            print "AddData: data already present: ", name
+            log.debug("AddData: data already present: %s", name)
             raise VenueException("AddData: data %s already present" % (name))
 
         self.data[dataDescription.name] = dataDescription
-        # log.debug("Send ADD_DATA event %s", dataDescription)
+        log.debug("Send ADD_DATA event %s", dataDescription)
         self.eventService.Distribute( self.uniqueId,
                                       Event( Event.ADD_DATA,
                                              self.uniqueId,
@@ -642,7 +709,7 @@ class Venue(ServiceBase.ServiceBase):
         return self.UpdateData(dataDescription)
 
     wsUpdateData.soap_export_as = "UpdateData"
-        
+
     def UpdateData(self, dataDescription):
         """
         Replace the current description for dataDescription.name with
@@ -658,11 +725,11 @@ class Venue(ServiceBase.ServiceBase):
             # We don't already have this data; raise an exception.
             #
 
-            print "UpdateData: data not already present: ", name
+            log.debug("UpdateData: data not already present: %s", name)
             raise VenueException("UpdateData: data %s not already present" % (name))
 
         self.data[dataDescription.name] = dataDescription
-        # log.debug("Send UPDATE_DATA event %s", dataDescription)
+        log.debug("Send UPDATE_DATA event %s", dataDescription)
         self.eventService.Distribute( self.uniqueId,
                                       Event( Event.UPDATE_DATA,
                                              self.uniqueId,
@@ -672,7 +739,7 @@ class Venue(ServiceBase.ServiceBase):
         return self.GetData(name)
 
     wsGetData.soap_export_as = "GetData"
-        
+
     def GetData(self, name):
         """
         GetData is the method called by a VenueClient to retrieve information
@@ -708,8 +775,8 @@ class Venue(ServiceBase.ServiceBase):
                                                  self.uniqueId,
                                                  dataDescription ) )
         except:
-            print "Exception in RemoveData", sys.exc_type, sys.exc_value
-            print "Data does not exist", dataDescription.name
+            log.exception("Exception in RemoveData!")
+            raise VenueException("Cannot remove data!")
 
     RemoveData.soap_export_as = "RemoveData"
 
@@ -734,7 +801,8 @@ class Venue(ServiceBase.ServiceBase):
         """
         This method adds a service description to the Venue.
         """
-        print "Adding service ", serviceDescription.name, serviceDescription.uri
+        log.debug("Adding service %s", serviceDescription.name,
+                  serviceDescription.uri)
         try:
             self.services[serviceDescription.uri] = serviceDescription
             self.eventService.Distribute( self.uniqueId,
@@ -742,8 +810,8 @@ class Venue(ServiceBase.ServiceBase):
                                                  self.uniqueId,
                                                  serviceDescription ) )
         except:
-            print "Exception in AddService ", sys.exc_type, sys.exc_value
-            print "Error adding service ", serviceDescription.name
+            log.exception("Exception in AddService!")
+            raise VenueException("AddService: ")
 
     AddService.soap_export_as = "AddService"
 
@@ -752,7 +820,7 @@ class Venue(ServiceBase.ServiceBase):
         This method removes a service description from the list of services
         in the Virtual Venue.
         """
-        
+
         try:
             del self.services[serviceDescription.uri]
             self.eventService.Distribute( self.uniqueId,
@@ -760,12 +828,10 @@ class Venue(ServiceBase.ServiceBase):
                                                  self.uniqueId,
                                                  serviceDescription ) )
         except:
-            print "Exception in RemoveService", sys.exc_type, sys.exc_value
-            print "Service does not exist ", serviceDescription.name
+            log.exception("Exception in removeService!")
+            raise VenueException("RemoveService: ")
 
     RemoveService.soap_export_as = "RemoveService"
-
- 
 
 
 class StreamDescriptionList:
@@ -789,6 +855,8 @@ class StreamDescriptionList:
         - remove non-static streams
         - strip the producerList from each item, so only the stream descriptions remain
         """
+        log.debug("Calling Venue.__getstate__.")
+
         odict = self.__dict__.copy()
         odict['streams'] = self.GetStaticStreams()
         return odict
@@ -797,6 +865,8 @@ class StreamDescriptionList:
         """
         Rebuild list tuples from incoming dictionary
         """
+        log.debug("Calling Venue.__setstate_.")
+        
         dict['streams'] = map( lambda stream: ( stream, [] ), dict['streams'] )
         self.__dict__ = dict
 
@@ -804,35 +874,30 @@ class StreamDescriptionList:
         """
         Add a stream to the list, only if it doesn't already exist
         """
-        try:
-            self.index( stream ) 
-        except ValueError:
+        if not self.FindStreamByDescription(stream):
             self.streams.append( ( stream, [] ) )
-
+        
     def RemoveStream( self, stream ):
         """
         Remove a stream from the list
         """
-        try:
-            index = self.index( stream )
-            del self.streams[index]
-        except ValueError:
-            pass 
+        streamListItem = self.FindStreamByDescription(stream)
+        if streamListItem != None:
+            self.streams.remove(streamListItem)
 
     def AddStreamProducer( self, producingUser, inStream ):
         """
         Add a stream to the list, with the given producer
         """
         try:
-            index = self.index( inStream )
-            stream, producerList = self.streams[index]
+            (stream, producerList) = self.FindStreamByDescription(inStream)
             producerList.append( producingUser )
-            self.streams[index] = ( stream, producerList )
-            print "* * * Added stream producer ", producingUser
-        except ValueError:   
+            log.debug( "* * * Added stream producer %s", producingUser )
+        except ValueError:
+            log.exception( "* * * Added new stream with producer %s",
+                           producingUser)
             self.streams.append( (inStream, [ producingUser ] ) )
-            print "* * * Added new stream with producer ", producingUser
-            
+
     def RemoveStreamProducer( self, producingUser, inStream ):
         """
         Remove a stream producer from the given stream.  If the last
@@ -840,10 +905,11 @@ class StreamDescriptionList:
         if it is non-static.
         """
         try:
-            index = self.index( inStream )
             self.__RemoveProducer( producingUser, inStream )
-            streamDesc, producerList = self.streams[index]
-            if len(producerList) == 0:  del self.streams[index]
+            (streamDesc, producerList) = self.FindStreamByDescription(inStream)
+            if len(producerList) == 0:
+                self.streams.remove((streamDesc, producerList))
+                
         except ValueError:
             pass
 
@@ -860,12 +926,10 @@ class StreamDescriptionList:
         """
         Internal : Remove producer from stream with given index
         """
-        index = self.index( inStream )
-        stream, producerList = self.streams[index]
+        (stream, producerList) = self.FindStreamByDescription(inStream)
         if producingUser in producerList:
             producerList.remove( producingUser )
-            self.streams[index] = ( stream, producerList )
-    
+
     def CleanupStreams( self ):
         """
         Remove streams with empty producer list
@@ -884,30 +948,39 @@ class StreamDescriptionList:
 
     def GetStaticStreams(self):
         """
-        GetStaticStreams returns a list of static stream descriptions to the caller.
+        GetStaticStreams returns a list of static stream descriptions
+        to the caller.
         """
+        log.debug("Called StreamDescriptionList.GetStaticStreams.")
+
         staticStreams = []
         for stream, producerList in self.streams:
+            log.debug("GetStaticStreams - Location: %s %d", 
+                      stream.location.GetHost(),
+                      stream.location.GetPort())
+            log.debug("GetStaticStreams - Capability: %s %s",
+                      stream.capability.role,
+                      stream.capability.type)
+            log.debug("GetStaticStreams - Encyrption Key: %s",
+                      stream.encryptionKey)
+            log.debug("GetStaticStreams - Static: %d",
+                      stream.static)
             if stream.static:
                 staticStreams.append( stream )
         return staticStreams
 
-    def index( self, inStream ):
+    def FindStreamByDescription( self, inStream ):
         """
-        Retrieve the list index of the given stream description
-        Note:  streams are keyed on address/port
         """
-        try:
-            index=0
-            for stream, producerList in self.streams:
-                print "-- - -- -  Address ", inStream.location.host, stream.location.host
-                print "- - - -- - Port ", inStream.location.port, stream.location.port
-                if inStream.location.host == stream.location.host and \
+        for stream, producerList in self.streams:
+            log.debug("StreamDescriptionList.index Address %s %s",
+                      inStream.location.host,
+                      stream.location.host)
+            log.debug("StreamDescriptionList.index Port %d %d",
+                      inStream.location.port,
+                      stream.location.port)
+            if inStream.location.host == stream.location.host and \
                    inStream.location.port == stream.location.port:
-                    return index
-                index = index + 1
-        except:
-            print "Exception in StreamDescriptionList.index ", sys.exc_type, sys.exc_value
+                return (stream, producerList)
 
-        raise ValueError
-
+        return None
