@@ -3,7 +3,8 @@ import time
 from wxPython.wx import *
 
 from AccessGrid.Security.Utilities import GetCNFromX509Subject
-
+from AccessGrid import Platform
+from AccessGrid.ServiceProfile import ServiceProfile
 from CertificateBrowserBase import CertificateBrowserBase
 from CertificateViewer import CertificateViewer
 
@@ -47,6 +48,15 @@ class IdentityBrowser(CertificateBrowserBase):
         sizer.Add(b, 0, wxEXPAND)
         self.certOnlyButtons.append(b)
 
+        sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND | wxALL , 3)
+
+        self.exportServiceProfileButton = wxButton(self, -1,
+                                                   "Export service profile")
+        EVT_BUTTON(self, self.exportServiceProfileButton.GetId(),
+                   self.OnExportServiceProfile)
+        sizer.Add(self.exportServiceProfileButton, 0, wxEXPAND)
+        self.exportServiceProfileButton.Enable(0)
+        
         sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND | wxALL , 3)
 
         b = wxButton(self, -1, "Refresh")
@@ -144,12 +154,15 @@ class IdentityBrowser(CertificateBrowserBase):
         else:
             self.defaultButton.Enable(1)
 
+        self.exportServiceProfileButton.Enable(cert.IsServiceCert() is not None)
+        
     def OnCertDeselected(self, event, cert):
         if cert is None:
             return
 
         for b in self.certOnlyButtons:
             b.Enable(0)
+        self.exportServiceProfileButton.Enable(0)
 
         self.defaultButton.Enable(0)
 
@@ -167,6 +180,47 @@ class IdentityBrowser(CertificateBrowserBase):
 
         dlg = CertificateViewer(self, -1, cert, self.certMgr)
         dlg.Show()
+
+    def OnExportServiceProfile(self, event):
+        cert = self.GetSelectedCertificate()
+        if cert is None:
+            return
+
+        svcInfo = cert.IsServiceCert()
+
+        if svcInfo is None:
+            return
+
+        dn = str(cert.GetSubject())
+        serviceName, hostname = svcInfo
+        
+        print "Export a service profile for ", serviceName, dn
+        profile = ServiceProfile(serviceName,
+                                 authType = "x509",
+                                 subject = dn)
+
+        dir = Platform.Config.UserConfig.instance().GetServicesDir()
+        file = "%s.profile" % (serviceName)
+
+        dlg = wxFileDialog(self, "Export service profile",
+                           dir, file,
+                           "Service profiles|*.profile|All files|*.*",
+                           wxSAVE | wxOVERWRITE_PROMPT)
+        rc = dlg.ShowModal()
+        if rc == wxID_OK:
+            path = dlg.GetPath()
+            dlg.Destroy()
+            try:
+                print "Exporting to ", path
+                profile.Export(path)
+            except:
+                log.exception("Failure exporting profile to %s", path)
+                ErrorDialog(self, "Cannot export service profile",
+                            "Cannot export service profile")
+
+        else:
+            dlg.Destroy()
+        
 
     #
     # Overrides from superclass.

@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.2 2004-03-19 22:20:16 olson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.3 2004-03-22 17:36:40 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -21,14 +21,14 @@ from wxPython.wizard import *
 from AccessGrid import Toolkit
 from AccessGrid import Platform
 from AccessGrid import NetUtilities, Utilities
+from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.Security import CertificateRepository, CertificateManager
 from AccessGrid.Security.CertificateRepository import RepoDoesNotExist
 from AccessGrid.Security.CertificateRepository import RepoInvalidCertificate
 from AccessGrid.Security.CRSClient import CRSClient
 from HTTPProxyConfigPanel import HTTPProxyConfigPanel
-
-from CertificateStatusDialog import CertificateStatusDialog
+from AccessGrid.ServiceProfile import ServiceProfile
 
 import string
 import time
@@ -216,6 +216,7 @@ class CertificateRequestTool(wxWizard):
 
                     next.SetText(certInfo, password)
                     next.SetPrev(page)
+                next.OnPageShow()
                 
         elif dir == backward:
             self.log.debug("ChangingPage: Go back from %s to %s"
@@ -250,6 +251,14 @@ class TitledPage(wxPyWizardPage):
         self.sizer.AddWindow(wxStaticLine(self, -1), 0, wxEXPAND|wxALL, 5)
         self.sizer.Add(10, 10)
                        
+    def OnPageShow(self):
+        """
+        Called when page is about to be shown.
+        """
+
+        pass
+        
+
     def SetNext(self, next):
         '''
         Set following page that will show up when user clicks on next button.
@@ -641,10 +650,9 @@ class HostCertWindow(TitledPage):
         self.emailText = wxStaticText(self, -1, "E-mail:")
         self.hostText = wxStaticText(self, -1, "Machine Name:")
         self.emailCtrl = wxTextCtrl(self, self.emailId, validator = HostCertValidator())
-        try:
-            self.hostName = os.environ['HOSTNAME']
-        except:
-            self.hostName = ''
+
+        self.hostName = SystemConfig.instance().GetHostname();
+        
         self.hostCtrl = wxTextCtrl(self, self.hostId, self.hostName, validator = HostCertValidator())
         self.SetEvents()
         self.Layout()
@@ -773,10 +781,8 @@ class ServiceCertWindow(TitledPage):
         self.serviceName = None
         self.userTyped = 0
         
-        try:
-            self.hostName = Utilities.GetHostname()
-        except:
-            self.hostName = ''
+        self.hostName = SystemConfig.instance().GetHostname();
+
         self.hostCtrl = wxTextCtrl(self, self.hostId, self.hostName,
                                    validator = ServiceCertValidator())
 
@@ -931,7 +937,9 @@ class SubmitReqWindow(TitledPage):
         self.text.SetBackgroundColour(self.GetBackgroundColour())
 
         self.proxyPanel = HTTPProxyConfigPanel(self)
-
+        self.ExportProfileButton = wxButton(self, -1, "Export service profile...")
+        EVT_BUTTON(self, self.ExportProfileButton.GetId(),
+                   self.ExportServiceProfile)
         self.Layout()
 
 
@@ -1010,8 +1018,52 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
         Handles UI layout.
         '''
         self.sizer.Add(self.text, 1, wxALL|wxEXPAND, 5)
-        self.sizer.Add(self.proxyPanel, 0, wxEXPAND | wxALIGN_BOTTOM)
+
+        hs = wxBoxSizer(wxHORIZONTAL);
+        hs.Add(self.proxyPanel, 1, wxEXPAND | wxALL, 3)
+
+        box = wxStaticBox(self, -1, "Service profile")
+        boxs = wxStaticBoxSizer(box, wxHORIZONTAL);
+        boxs.Add(self.ExportProfileButton, 0, wxALIGN_CENTER)
+
+        hs.Add(boxs, 0, wxEXPAND | wxALL, 3)
+        self.sizer.Add(hs, 0, wxEXPAND | wxALIGN_BOTTOM)
+
+    def ExportServiceProfile(self, event):
+
+        dn = "/" + "/".join(map(lambda a: "=".join(a), self.certInfo.GetDN()))
+        print "Export a service profile for ", self.certInfo.GetDN(), dn
+        profile = ServiceProfile(self.certInfo.GetName(),
+                                 authType = "x509",
+                                 subject = dn)
+
+        dir = Platform.Config.UserConfig.instance().GetServicesDir()
+        file = "%s.profile" % (self.certInfo.GetName())
+
+        dlg = wxFileDialog(self, "Export service profile",
+                           dir, file,
+                           "Service profiles|*.profile|All files|*.*",
+                           wxSAVE | wxOVERWRITE_PROMPT)
+        rc = dlg.ShowModal()
+        if rc == wxID_OK:
+            path = dlg.GetPath()
+            dlg.Destroy()
+            try:
+                print "Exporting to ", path
+                profile.Export(path)
+            except:
+                log.exception("Failure exporting profile to %s", path)
+                ErrorDialog(self, "Cannot export service profile",
+                            "Cannot export service profile")
+
+        else:
+            dlg.Destroy()
                
+    def OnPageShow(self):
+        if self.certInfo.GetType() == "service":
+            self.ExportProfileButton.Enable(1)
+        else:
+            self.ExportProfileButton.Enable(0)
                         
 if __name__ == "__main__":
     pp = wxPySimpleApp()
@@ -1024,17 +1076,7 @@ if __name__ == "__main__":
     app = Toolkit.WXGUIApplication()
     app.Initialize()
 
-    # Check if we have any pending certificate requests
-    testURL = "http://www-unix.mcs.anl.gov/~judson/certReqServer.cgi"
-    certificateClient = CRSClient(testURL)
-    # nrOfReq = certificateClient.GetRequestedCertificates().keys()
-    nrOfReq = 0
-    if nrOfReq > 0:
-        # Show pending requests
-        certStatus = CertificateStatusDialog(None, -1, "Certificate Status Dialog")
-        certStatus.ShowModal()    
-
-    else:
-        # Show certificate request wizard
-        certReq = CertificateRequestTool(None, certificateType = "SERVICE")
-        certReq.Destroy()
+    # Show certificate request wizard
+    certReq = CertificateRequestTool(None)
+#    certReq = CertificateRequestTool(None, certificateType = "SERVICE")
+    certReq.Destroy()
