@@ -2,22 +2,65 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.45 2004-03-25 14:29:58 judson Exp $
+# RCS-ID:      $Id: setup.py,v 1.46 2004-04-05 15:29:24 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 from distutils.core import setup
+from distutils.spawn import spawn
+from distutils.sysconfig import get_config_vars
+
 import os
 import sys
 import glob
+import string
 
 """
 Setup script for the Access Grid Toolkit. The module is described
 by the set up below.
 """
 
+cdir = os.getcwd()
+
+# Generate epydoc documentation
+if sys.platform == 'win32':
+    ep = os.path.join(os.path.dirname(sys.executable), "Scripts", "epydoc.py")
+else:
+    ep = "epydoc.py"
+
+# We pluck off the prefix, this is totally unkosher, but hey
+dest = None
+for arg in sys.argv[1:]:
+    if string.find(arg, '--prefix') == 0:
+        al = string.split(arg, '=')
+        if len(al) == 2:
+            dest = al[1]
+
+if dest == None:
+    print "Destination required to run setup. Please specify with the"
+    print "--prefix command line argument."
+    sys.exit(-1)
+
+print "DESTINATION: ", dest
+
+cmd = [sys.executable, ep, "--html", "-o", os.path.join("doc", "Developer"),
+       "-n", "Access Grid Toolkit", "-u",
+       "http://www.mcs.anl.gov/fl/research/accessgrid/", "AccessGrid"]
+spawn(cmd, verbose=1)
+
 win32_scripts = list()
-win32_data = [('bin', glob.glob('bin/*.py')),]
+win32_data = [
+    ('', [r'COPYING.txt', r'Install.WINDOWS', r'README', r'README-developers',
+          r'TODO', r'VERSION', r'ChangeLog']), 
+    ('bin', glob.glob('bin/*.py')),
+    ('services', ''),
+    ('sharedapps', ''),
+    ('doc/Developer', glob.glob('doc/Developer/*.*')),
+    ('doc/VenueClientManual', glob.glob('doc/VenueClientManual/*.*')),
+    ('doc/VenueManagementManual', glob.glob('doc/VenueManagementManual/*.*')),
+    ('install', [r'packaging/windows/agicons.exe']),
+    ('CAcertificates', glob.glob('packaging/config/CAcertificates/*.*')),
+    ]
 
 linux_scripts = [ r"bin/VenueServer.py", 
                   r"bin/VenueClient.py", 
@@ -125,7 +168,6 @@ if sys.platform == 'win32':
 
 if sys.platform == 'linux2' or sys.platform == 'darwin':
     packages.append('AccessGrid.Platform.unix')
-    
 
 setup (
     name = 'AGTk',
@@ -158,3 +200,24 @@ functionality of the Access Grid.
     #    Data Files list -- these are things like the services, etc.
     data_files = inst_data
 )
+
+# invoke service package script
+# packaging\makeServicePackages.py %AGDIR%\services\node %DEST%\services
+cmd = [
+    sys.executable,
+    os.path.join("packaging", "makeServicePackages.py"),
+    os.path.abspath(os.path.join("services", "node")),
+    os.path.join(dest, "services")
+    ]
+spawn(cmd, verbose=1)
+
+# invoke shared app packaging script
+# packaging\makeAppPackages.py %AGDIR%\sharedapps %DEST%\sharedapps
+cmd = [
+    sys.executable,
+    os.path.join("packaging","makeAppPackages.py"),
+    os.path.abspath("sharedapps"),
+    os.path.join(dest, "sharedapps")
+    ]
+spawn(cmd, verbose=1)
+
