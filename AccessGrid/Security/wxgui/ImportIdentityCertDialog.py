@@ -97,7 +97,8 @@ class ImportIdentityCertDialog(wxDialog):
         # Introductory text.
         #
 
-        introText = """This talks about the stuff that one needs to know about cert imports.
+        introText = """Enter the pathname to your identity certificate below,
+or use the Browse button to browse to it.         
     """
         intro = wxStaticText(self, -1, introText)
         topsizer.Add(intro, 0, wxEXPAND)
@@ -138,10 +139,10 @@ class ImportIdentityCertDialog(wxDialog):
         # Private key text.
         #
 
-        pkText = """
-This talks
-about the weird stuff that one
-needs to know about private keys.
+        pkText = """\
+Enter the filename of the private key for this identity
+certificate below, or use the Browse button to browse for
+it. The private key may be included in the certificate file.
     """
         sp = wxStaticText(self, -1, pkText)
         
