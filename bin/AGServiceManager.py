@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.46 2004-07-26 14:44:13 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.47 2004-08-18 17:01:06 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -77,8 +77,15 @@ def main():
         print " Initialization Error: ", e
         sys.exit(-1)
 
+   
     log = app.GetLog()
     Log.SetDefaultLevel(Log.ServiceManager, Log.DEBUG)
+
+    if not app.certificateManager.GetDefaultIdentity():
+        log.error('No default identity, check your certificates.')
+        print 'No default identity, check your certificates.'
+        sys.exit(-1)
+
 
     port = app.GetOption("port")
         

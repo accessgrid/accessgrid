@@ -3,14 +3,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.58 2004-07-26 14:44:33 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.59 2004-08-18 17:01:06 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.58 2004-07-26 14:44:33 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.59 2004-08-18 17:01:06 lefvert Exp $"
 
 # The standard imports
 import sys
@@ -79,6 +79,11 @@ def main():
 
     log = app.GetLog()
     Log.SetDefaultLevel(Log.NodeService, Log.DEBUG)
+
+    if not app.certificateManager.GetDefaultIdentity():
+        log.error('No default identity, check your certificates.')
+        print 'No default identity, check your certificates.'
+        sys.exit(-1)
 
     port = app.GetOption("port")
         
