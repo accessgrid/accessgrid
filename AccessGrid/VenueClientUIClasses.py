@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.116 2003-03-31 21:46:55 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.117 2003-04-01 23:23:48 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ from AccessGrid.VenueClient import VenueClient, EnterVenueException
 from AccessGrid import Utilities
 from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid.ClientProfile import *
-from AccessGrid.Descriptions import DataDescription
+from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import MyLog 
@@ -47,41 +47,41 @@ class VenueClientFrame(wxFrame):
     user travels to another venue/room, which contents will be shown
     in the contentListPanel.
     '''
-    ID_WINDOW_TOP = NewId()
-    ID_WINDOW_LEFT  = NewId()
-    ID_WINDOW_BOTTOM = NewId()
-    ID_VENUE_DATA = NewId()
-    ID_VENUE_DATA_OPEN = NewId() 
-    ID_VENUE_DATA_PROPERTIES = NewId() 
-    ID_VENUE_DATA_ADD = NewId() 
-    ID_VENUE_DATA_SAVE = NewId() 
-    ID_VENUE_DATA_DELETE = NewId() 
-    #ID_VENUE_SERVICE = NewId() 
-    #ID_VENUE_SERVICE_ADD = NewId()
-    #ID_VENUE_SERVICE_DELETE = NewId()
-    ID_VENUE_APPLICATION = NewId() 
-    ID_VENUE_APPLICATION_ADD = NewId()
-    ID_VENUE_APPLICATION_DELETE = NewId()
-    ID_VENUE_OPEN_CHAT = NewId()
-    ID_VENUE_CLOSE = NewId()
-    ID_PROFILE = NewId()
-    ID_PROFILE_EDIT = NewId()
-    ID_MYNODE_MANAGE = NewId()
-    ID_MYNODE_URL = NewId()
-    ID_MYVENUE_ADD = NewId()
-    ID_MYVENUE_EDIT = NewId()
-    ID_HELP = NewId()
-    ID_HELP_ABOUT = NewId()
-    ID_PARTICIPANT_PROFILE = NewId()
-    ID_PARTICIPANT_FOLLOW = NewId()
-    ID_PARTICIPANT_LEAD = NewId()
-    ID_NODE_PROFILE = NewId()
-    ID_NODE_FOLLOW = NewId()
-    ID_NODE_LEAD = NewId()
-    ID_NODE_MANAGE = NewId()
-    ID_ME_PROFILE = NewId()
-    ID_ME_DATA = NewId()
-    ID_ME_UNFOLLOW = NewId()
+    ID_WINDOW_TOP = wxNewId()
+    ID_WINDOW_LEFT  = wxNewId()
+    ID_WINDOW_BOTTOM = wxNewId()
+    ID_VENUE_DATA = wxNewId()
+    ID_VENUE_DATA_OPEN = wxNewId() 
+    ID_VENUE_DATA_PROPERTIES = wxNewId() 
+    ID_VENUE_DATA_ADD = wxNewId() 
+    ID_VENUE_DATA_SAVE = wxNewId() 
+    ID_VENUE_DATA_DELETE = wxNewId() 
+    ID_VENUE_SERVICE = wxNewId() 
+    ID_VENUE_SERVICE_ADD = wxNewId()
+    ID_VENUE_SERVICE_DELETE = wxNewId()
+    ID_VENUE_APPLICATION = wxNewId() 
+    ID_VENUE_APPLICATION_ADD = wxNewId()
+    ID_VENUE_APPLICATION_DELETE = wxNewId()
+    ID_VENUE_OPEN_CHAT = wxNewId()
+    ID_VENUE_CLOSE = wxNewId()
+    ID_PROFILE = wxNewId()
+    ID_PROFILE_EDIT = wxNewId()
+    ID_MYNODE_MANAGE = wxNewId()
+    ID_MYNODE_URL = wxNewId()
+    ID_MYVENUE_ADD = wxNewId()
+    ID_MYVENUE_EDIT = wxNewId()
+    ID_HELP = wxNewId()
+    ID_HELP_ABOUT = wxNewId()
+    ID_PARTICIPANT_PROFILE = wxNewId()
+    ID_PARTICIPANT_FOLLOW = wxNewId()
+    ID_PARTICIPANT_LEAD = wxNewId()
+    ID_NODE_PROFILE = wxNewId()
+    ID_NODE_FOLLOW = wxNewId()
+    ID_NODE_LEAD = wxNewId()
+    ID_NODE_MANAGE = wxNewId()
+    ID_ME_PROFILE = wxNewId()
+    ID_ME_DATA = wxNewId()
+    ID_ME_UNFOLLOW = wxNewId()
 
     #https://vv2.mcs.anl.gov:8880/Venues/000000f42704a7fa008c00dd000b00371fc
 
@@ -166,13 +166,13 @@ class VenueClientFrame(wxFrame):
 	self.dataMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties",
                              "View the data properties")
         self.venue.AppendMenu(self.ID_VENUE_DATA,"&Data", self.dataMenu)
-	#self.serviceMenu = wxMenu()
-	#self.serviceMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
-        #                        "Add service to the venue")
-        #self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete",
-        #                        "Remove service")
-        #self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",
-        #                      self.serviceMenu)
+	self.serviceMenu = wxMenu()
+	self.serviceMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
+                                "Add service to the venue")
+        self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete",
+                                "Remove service")
+        self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",
+                              self.serviceMenu)
 
 	self.applicationMenu = wxMenu()
 	self.applicationMenu.Append(self.ID_VENUE_APPLICATION_ADD,"Add...",
@@ -265,11 +265,12 @@ class VenueClientFrame(wxFrame):
                                self.ID_WINDOW_BOTTOM, self.OnSashDrag)
         EVT_SIZE(self, self.OnSize)
                 
+        EVT_MENU(self, self.ID_VENUE_DATA_OPEN, self.OpenData)
         EVT_MENU(self, self.ID_VENUE_DATA_ADD, self.OpenAddDataDialog)
         EVT_MENU(self, self.ID_VENUE_DATA_SAVE, self.SaveData)
         EVT_MENU(self, self.ID_VENUE_DATA_DELETE, self.RemoveData)
-        #EVT_MENU(self, self.ID_VENUE_SERVICE_ADD, self.OpenAddServiceDialog)
-        #EVT_MENU(self, self.ID_VENUE_SERVICE_DELETE, self.RemoveService)
+        EVT_MENU(self, self.ID_VENUE_SERVICE_ADD, self.OpenAddServiceDialog)
+        EVT_MENU(self, self.ID_VENUE_SERVICE_DELETE, self.RemoveService)
         EVT_MENU(self, self.ID_VENUE_CLOSE, self.Exit)
         EVT_MENU(self, self.ID_PROFILE, self.OpenProfileDialog)
         EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialog)
@@ -525,7 +526,7 @@ class VenueClientFrame(wxFrame):
             self.myVenuesDict = cPickle.load(myVenuesFile)
                         
             for name in self.myVenuesDict.keys():
-                id = NewId()
+                id = wxNewId()
                 self.myVenuesMenuIds.append(id)
                 url = self.myVenuesDict[name]
                 text = "Go to: " + url
@@ -547,12 +548,13 @@ class VenueClientFrame(wxFrame):
         myVenuesFile.close()
 
     def AddToMyVenues(self, event):
-        id = NewId()
+        id = wxNewId()
         url = self.app.venueUri
                 
         if url is not None:
             if(url not in self.myVenuesDict.values()):
-                dialog = AddMyVenueDialog(self, -1, "Add current venue", self.app)
+                dialog = AddMyVenueDialog(self, -1, "Add current venue",
+                                          self.app)
                 name = ""
                 if (dialog.ShowModal() == wxID_OK):
                     name = dialog.address.GetValue()
@@ -595,7 +597,7 @@ class VenueClientFrame(wxFrame):
             self.app.SetNodeUrl(setNodeUrlDialog.address.GetValue())
        
         setNodeUrlDialog.Destroy()
-                
+
     def OpenAddDataDialog(self, event = None):
 
         #
@@ -640,12 +642,12 @@ class VenueClientFrame(wxFrame):
 
         profileDialog.Destroy()
 
-    #def OpenAddServiceDialog(self, event):
-    #    addServiceDialog = AddServiceDialog(self, -1, 'Please, fill in service details')
-    #    if (addServiceDialog.ShowModal() == wxID_OK):
-    #        self.app.AddService(addServiceDialog.GetNewProfile())
+    def OpenAddServiceDialog(self, event):
+        addServiceDialog = AddServiceDialog(self, -1, 'Please, fill in service details')
+        if (addServiceDialog.ShowModal() == wxID_OK):
+            self.app.AddService(addServiceDialog.GetNewProfile())
 
-    #    addServiceDialog.Destroy()
+        addServiceDialog.Destroy()
 
     def OpenConnectToVenueDialog(self, event = None):
         connectToVenueDialog = UrlDialogCombo(self, -1, 'Connect to server', list = self.myVenuesDict)
@@ -716,11 +718,28 @@ class VenueClientFrame(wxFrame):
                 
             else:
                 dlg.Destroy()
-            
 
         else:
             self.__showNoSelectionDialog("Please, select the data you want to save")
 
+    def OpenData(self, event):
+        """
+        """
+        id = self.contentListPanel.tree.GetSelection()
+        data = self.contentListPanel.tree.GetItemData(id).GetData()
+        name = data.name
+        (base, ext) = name.split('.')
+        if data != None:
+            if sys.platform == 'win32':
+                tmppath = os.environ['TEMP']
+
+            tfilepath = os.path.join(tmppath, name)
+            
+            self.app.SaveFile(data, tfilepath)
+            fileType = wxTheMimeTypesManager.GetFileTypeFromExtension(ext)
+            mimetype = fileType.GetMimeType()
+            wxExecute(fileType.GetOpenCommand(tfilepath, mimetype))
+            
     def RemoveData(self, event):
         id = self.contentListPanel.tree.GetSelection()
         data = self.contentListPanel.tree.GetItemData(id).GetData()
@@ -737,16 +756,16 @@ class VenueClientFrame(wxFrame):
         else:
             self.__showNoSelectionDialog("Please, select the data you want to delete")
 
-    #def RemoveService(self, event):
-    #    id = self.contentListPanel.tree.GetSelection()
-    #    service =  self.contentListPanel.tree.GetItemData(id).GetData()
+    def RemoveService(self, event):
+        id = self.contentListPanel.tree.GetSelection()
+        service =  self.contentListPanel.tree.GetItemData(id).GetData()
         
-    #    if(service != None):
-    #        self.app.RemoveService(service)
-
-    #   else:
-    #       self.__showNoSelectionDialog("Please, select the service you want to delete")       
-
+        if(service != None):
+            self.app.RemoveService(service)
+            
+        else:
+            self.__showNoSelectionDialog("Please, select the service you want to delete")       
+            
     def __showNoSelectionDialog(self, text):
         MessageDialog(self, text)
 
@@ -944,7 +963,7 @@ class VenueList(wxScrolledWindow):
             wxLog_GetActiveTarget().Flush()
                 
     def AddVenueDoor(self, profile):
-        panel = ExitPanel(self, NewId(), profile)
+        panel = ExitPanel(self, wxNewId(), profile)
         self.doorsAndLabelsList.append(panel)
         
         self.doorsAndLabelsList.sort(lambda x, y: cmp(x.GetName(), y.GetName()))
@@ -1050,9 +1069,11 @@ class ExitPanel(wxPanel):
 class ContentListPanel(wxPanel):                   
     '''ContentListPanel.
     
-    The contentListPanel represents current venue and has information about all participants 
-    in the venue, it also shows what data and services are available in the venue, as well as 
-    nodes connected to the venue.  It represents a room, with its contents visible for the user.
+    The contentListPanel represents current venue and has information
+    about all participants in the venue, it also shows what data and
+    services are available in the venue, as well as nodes connected to
+    the venue.  It represents a room, with its contents visible for
+    the user.
     
     '''
     participantDict = {}
@@ -1065,7 +1086,7 @@ class ContentListPanel(wxPanel):
     def __init__(self, parent, app):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, 
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D)
-     	id = NewId()
+     	id = wxNewId()
        
         self.parent = parent
 	self.app = app
@@ -1230,19 +1251,19 @@ class ContentListPanel(wxPanel):
         if(id != None):
             self.tree.Delete(id)
                           
-    #def AddService(self, profile):
-    #    service = self.tree.AppendItem(self.services, profile.name,\
-    #                                  self.serviceId, self.serviceId)
-    #  self.tree.SetItemData(service, wxTreeItemData(profile)) 
-    #  self.serviceDict[profile.name] = service
-    #  self.tree.Expand(self.services)
-    
-    #def RemoveService(self, profile):
-    #    if(self.serviceDict.has_key(profile.name)):
-    #        id = self.serviceDict[profile.name]
-    #        del self.serviceDict[profile.name]
-    #        if(id != None):
-    #            self.tree.Delete(id)
+    def AddService(self, profile):
+        service = self.tree.AppendItem(self.services, profile.name,\
+                                       self.serviceId, self.serviceId)
+        self.tree.SetItemData(service, wxTreeItemData(profile)) 
+        self.serviceDict[profile.name] = service
+        self.tree.Expand(self.services)
+
+    def RemoveService(self, profile):
+        if(self.serviceDict.has_key(profile.name)):
+            id = self.serviceDict[profile.name]
+            del self.serviceDict[profile.name]
+            if(id != None):
+                self.tree.Delete(id)
 
     def AddApplication(self, profile):
         application = self.tree.AppendItem(self.applications, profile.name,
@@ -1276,9 +1297,9 @@ class ContentListPanel(wxPanel):
 	self.data = self.tree.AppendItem(self.root, "Data", index, index) 
 	self.tree.SetItemBold(self.data)
              
-	#self.services = self.tree.AppendItem(self.root, "Services", index,
-        #                                     index)
-	#self.tree.SetItemBold(self.services)
+	self.services = self.tree.AppendItem(self.root, "Services", index,
+                                             index)
+	self.tree.SetItemBold(self.services)
              
 	self.applications = self.tree.AppendItem(self.root, "Applications",
                                              index, index)
@@ -1289,7 +1310,7 @@ class ContentListPanel(wxPanel):
              
         self.tree.Expand(self.participants)
         self.tree.Expand(self.data)
-        #self.tree.Expand(self.services)
+        self.tree.Expand(self.services)
         self.tree.Expand(self.nodes)
         
     def __setProperties(self):
@@ -1338,9 +1359,9 @@ class ContentListPanel(wxPanel):
         if text == 'Data' or item != None and self.dataDict.has_key(item.name):
             self.PopupMenu(self.parent.dataMenu, wxPoint(self.x, self.y))
 
-        #elif text == 'Services' or item != None and \
-        #         self.serviceDict.has_key(item.name):
-        #    self.PopupMenu(self.parent.serviceMenu, wxPoint(self.x, self.y))
+        elif text == 'Services' or item != None and \
+                 self.serviceDict.has_key(item.name):
+            self.PopupMenu(self.parent.serviceMenu, wxPoint(self.x, self.y))
 
         elif text == 'Applications' or item != None and \
                  self.applicationDict.has_key(item.name):
@@ -1642,8 +1663,8 @@ class UploadFilesDialog(wxDialog):
         self.progress.SetValue(value)
 
 class EditMyVenuesDialog(wxDialog):
-    ID_DELETE = NewId() 
-    ID_RENAME = NewId()
+    ID_DELETE = wxNewId() 
+    ID_RENAME = wxNewId()
     listWidth = 500
     listHeight = 200
     currentItem = 0
@@ -2067,27 +2088,26 @@ class TextValidator(wxPyValidator):
     def TransferFromWindow(self):
         return true # Prevent wxDialog from complaining.
 
-
- 
-'''class AddServiceDialog(wxDialog):
-def __init__(self, parent, id, title):
-    wxDialog.__init__(self, parent, id, title)
-    self.Centre()
-    self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
-    self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,20))
-    self.descriptionText = wxStaticText(self, -1, "Description:", style=wxALIGN_LEFT)
-    self.descriptionCtrl = wxTextCtrl(self, -1, "")
-    self.uriText = wxStaticText(self, -1, "Location URL:", style=wxALIGN_LEFT | wxTE_MULTILINE )
-    self.uriCtrl = wxTextCtrl(self, -1, "")
-    self.typeText = wxStaticText(self, -1, "Mime Type:")
-    self.typeCtrl = wxTextCtrl(self, -1, "")
-    self.okButton = wxButton(self, wxID_OK, "Ok")
-    self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
-    self.__setProperties()
-    self.Layout()
+class AddServiceDialog(wxDialog):
+    def __init__(self, parent, id, title):
+        wxDialog.__init__(self, parent, id, title)
+        self.Centre()
+        self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
+        self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,20))
+        self.descriptionText = wxStaticText(self, -1, "Description:", style=wxALIGN_LEFT)
+        self.descriptionCtrl = wxTextCtrl(self, -1, "")
+        self.uriText = wxStaticText(self, -1, "Location URL:", style=wxALIGN_LEFT | wxTE_MULTILINE )
+        self.uriCtrl = wxTextCtrl(self, -1, "")
+        self.typeText = wxStaticText(self, -1, "Mime Type:")
+        self.typeCtrl = wxTextCtrl(self, -1, "")
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.__setProperties()
+        self.Layout()
     
     def GetNewProfile(self):
-        service = ServiceDescription("service", "service", "uri", "icon", "storagetype")
+        service = ServiceDescription("service", "service", "uri",
+                                     "storagetype")
         service.SetName(self.nameCtrl.GetValue())
         service.SetDescription(self.descriptionCtrl.GetValue())
         service.SetURI(self.uriCtrl.GetValue())
@@ -2123,7 +2143,7 @@ def __init__(self, parent, id, title):
         self.SetSizer(sizer1)
         sizer1.Fit(self)
         self.SetAutoLayout(1)
-'''
+
 
 class DataDropTarget(wxFileDropTarget):
     def __init__(self, application):
@@ -2166,12 +2186,11 @@ class FileDropTarget(wxFileDropTarget):
             fileName = fileNameList[len(fileNameList)-1]
             self.dock.AddSimpleTool(20, icons.getDefaultDataBitmap(), fileName)
         return d
-        
-
 
 '''VenueClient. 
 
-The VenueClient class creates the main frame of the application, the VenueClientFrame. 
+The VenueClient class creates the main frame of the application, the
+VenueClientFrame.
 
 '''
 if __name__ == "__main__":
@@ -2185,4 +2204,3 @@ if __name__ == "__main__":
             self.frame.SetSize(wxSize(300, 400))
             self.SetTopWindow(self.frame)
             self.client = venueClient
-            re

@@ -5,13 +5,15 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.19 2003-04-01 16:16:29 lefvert Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.20 2003-04-01 23:23:48 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import string
 from AccessGrid.GUID import GUID
+from AccessGrid.NetworkLocation import MulticastNetworkLocation
+from AccessGrid.Types import Capability
 
 class ObjectDescription:
     """
@@ -20,7 +22,6 @@ class ObjectDescription:
         name : string
         description : string
         uri : uri (string)
-        icon : IconType
     """
     def __init__(self, name, description = "", uri = ""):
         self.id = str(GUID())
@@ -146,16 +147,98 @@ class ConnectionDescription(ObjectDescription):
     """
     pass    
 
+class VenueDescription(ObjectDescription):
+    """
+    A Venue Description is used to represent a Venue.
+    """
+    def __init__(self, name=None, description=None, adminList=[],
+                 encryptionInfo=(0,''), connectionList=[], staticStreams=[]):
+        ObjectDescription.__init__(self, name, description, None)
 
-from AccessGrid.NetworkLocation import MulticastNetworkLocation
-from AccessGrid.Types import Capability
+        self.streams = ()
+        self.connections = {}
+        self.encryptMedia = 0
+        self.encryptionKey = None
+        self.administrators = ()
+        
+        self.encryptMedia = encryptionInfo[0]
+        
+        if self.encryptMedia:
+            self.encryptionKey = encryptionInfo[1]
+        else:
+            self.encryptionKey = None
+            
+        self.administrators = adminList
+
+        self.connections = {}
+        for c in connectionList:
+            self.connections[c.uri] = c
+
+        self.streams = staticStreams
+    
+    def AsINIBlock(self):
+        string = ObjectDescription.AsINIBlock(self)
+        string += "administrators : %s\n" % ":".join(self.administrators)
+        string += "encryptMedia: %d\n" % self.encryptMedia
+        if self.encryptMedia:
+            string += "encryptionKey : %s\n" % self.encryptionKey
+        clist = ":".join(map(lambda conn: conn.GetId(),
+                             self.connections.values()))
+        string += "connections : %s\n" % clist
+        slist = ":".join(map(lambda stream: stream.GetId(),
+                             self.streams))
+        string += "streams : %s\n" % slist
+        string += "\n".join(map(lambda conn: conn.AsINIBlock(),
+                                self.connections.values()))
+        string += "\n".join(map(lambda stream: stream.AsINIBlock(),
+                                self.streams))
+        return string
+
+    def __repr__(self):
+        return self.AsINIBlock()
+    
+def CreateVenueDescription(venueDescStruct):
+    clist = []
+    for c in venueDescStruct.connections:
+        clist.append(ConnectionDescription(c.name, c.description, c.uri))
+
+    slist = []
+    for s in venueDescStruct.streams:
+        slist.append(CreateStreamDescription(s))
+
+    vdesc = VenueDescription(venueDescStruct.name, venueDescStruct.description,
+                             venueDescStruct.administrators,
+                             (venueDescStruct.encryptMedia,
+                              venueDescStruct.encryptionKey), clist, slist)
+
+    vdesc.uri = venueDescStruct.uri
+    
+    return vdesc
+
+class ServiceDescription(ObjectDescription):
+    """
+    The Service Description is the Virtual Venue resident information
+    about services users can interact with. This is an extension of
+    the Object Description that adds a mimeType which should be a
+    standard mime-type.
+    """
+    def __init__(self, name, description, uri, mimetype):   
+        ObjectDescription.__init__(self, name, description, uri)   
+        self.mimeType = mimetype   
+    
+    def SetMimeType(self, mimetype):   
+        self.mimeType = mimetype   
+            
+    def GetMimeType(self):   
+        return self.mimeType   
 
 class StreamDescription( ObjectDescription ):
    """A Stream Description represents a stream within a venue"""
    def __init__( self, name=None, description=None,
                  location=MulticastNetworkLocation(), 
                  capability=Capability(),
-                 encryptionKey=0 ):
+                 encryptionKey=None,
+                 static=0):
       ObjectDescription.__init__( self, name, description, None)
       self.location = location
       self.capability = capability
@@ -171,21 +254,19 @@ class StreamDescription( ObjectDescription ):
 
        return string
    
-def CreateStreamDescription( streamDescriptionStruct ):
-    networkLocation = MulticastNetworkLocation( streamDescriptionStruct.location.host,
-                                                streamDescriptionStruct.location.port,
-                                                streamDescriptionStruct.location.ttl )
-    cap = Capability( streamDescriptionStruct.capability.role, 
-                      streamDescriptionStruct.capability.type )
-    streamDescription = StreamDescription( streamDescriptionStruct.name, 
-                                           streamDescriptionStruct.description,
+def CreateStreamDescription( streamDescStruct ):
+    networkLocation = MulticastNetworkLocation( streamDescStruct.location.host,
+                                                streamDescStruct.location.port,
+                                                streamDescStruct.location.ttl )
+    cap = Capability( streamDescStruct.capability.role, 
+                      streamDescStruct.capability.type )
+    streamDescription = StreamDescription( streamDescStruct.name, 
+                                           streamDescStruct.description,
                                            networkLocation,
                                            cap,
-                                           streamDescriptionStruct.encryptionKey )
-    streamDescription.static = streamDescriptionStruct.static
+                                           streamDescStruct.encryptionKey )
+    streamDescription.static = streamDescStruct.static
     return streamDescription
-
-
 
 class AGServiceManagerDescription:
     def __init__( self, name, uri ):

@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.53 2003-03-27 21:35:41 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.54 2003-04-01 23:23:48 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,7 +17,6 @@ import os.path
 import socket
 import string
 from threading import Thread, RLock
-import signal
 import traceback
 import logging
 import urlparse
@@ -40,7 +39,8 @@ from AccessGrid.scheduler import Scheduler
 from AccessGrid.TextService import TextService
 
 from AccessGrid.Descriptions import ConnectionDescription, StreamDescription
-from AccessGrid.Descriptions import DataDescription
+from AccessGrid.Descriptions import DataDescription, VenueDescription
+from AccessGrid.Descriptions import CreateVenueDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.Types import Capability
 
@@ -50,6 +50,12 @@ class VenueServerException(Exception):
     """
     A generic exception type to be raised by the Venue code.
     """
+    pass
+
+class NotAuthorized(Exception):
+    pass
+
+class InvalidVenueURL(Exception):
     pass
 
 class VenueServer(ServiceBase.ServiceBase):
@@ -93,8 +99,7 @@ class VenueServer(ServiceBase.ServiceBase):
             "VenueServer.dataSize" : '10M'
             }
 
-    defaultVenueName = "Venue Server Lobby"
-    defaultVenueDescription = """This is the lobby of the Venue Server, it has been created because there are no venues yet. Please configure your Venue Server! For more information see http://www.accessgrid.org/ and http://www.mcs.anl.gov/fl/research/accessgrid."""
+    defaultVenueDesc = VenueDescription("Venue Server Lobby", """ This is the lobby of the Venue Server, it has been created because there are no venues yet. Please configure your Venue Server! For more information see http://www.accessgrid.org/ and http://www.mcs.anl.gov/fl/research/accessgrid.""")
 
     def __init__(self, hostEnvironment = None, configFile=None):
         """
@@ -172,7 +177,7 @@ class VenueServer(ServiceBase.ServiceBase):
             self.SetDefaultVenue(self.MakeVenueURL(self.defaultVenue))
         else:
             log.debug("Creating default venue")
-            self.AddVenue(self.defaultVenueName, self.defaultVenueDescription)
+            self.AddVenue(self.defaultVenueDesc)
 
         # The houseKeeper is a task that is doing garbage collection and
         # other general housekeeping tasks for the Venue Server.
@@ -191,21 +196,18 @@ class VenueServer(ServiceBase.ServiceBase):
             if cp.has_option(sec, "type"):
                 name = cp.get(sec, 'name')
                 description = cp.get(sec, 'description')
-                dsp = cp.get(sec, 'dataStorePath')
-                if dsp == 'None':
-                    dsp = self.dataStorageLocation
                 administrators = string.split(cp.get(sec, 'administrators'),
                                               ':')
-                v = Venue(self, name, description, administrators, dsp)
+                v = Venue(self, name, description, administrators,
+                          self.dataStorageLocation)
                 v.encryptMedia = cp.getint(sec, 'encryptMedia')
                 v.cleanupTime = cp.getint(sec, 'cleanupTime')
                 v._ChangeUniqueId(sec)
 
                 self.venues[self.IdFromURL(v.uri)] = v
-                vs = self.hostingEnvironment.CreateServiceObject(self.PathFromURL(v.uri))
-                v._bind_to_service(vs)
+                self.hostingEnvironment.BindService(v, self.PathFromURL(v.uri))
                 
-                cl = []
+                cl = {}
                 for c in string.split(cp.get(sec, 'connections'), ':'):
                     if len(c) != 0:
                         name = cp.get(c, 'name')
@@ -213,7 +215,7 @@ class VenueServer(ServiceBase.ServiceBase):
                         uri = self.MakeVenueURL(self.IdFromURL(cp.get(c,
                                                                       'uri')))
                         cd = ConnectionDescription(name, desc, uri)
-                        cl.append(cd)
+                        cl[cd.uri] = cd
                         
                 v.SetConnections(cl)
                         
@@ -279,6 +281,40 @@ class VenueServer(ServiceBase.ServiceBase):
         path = self.PathFromURL(URL)
         return path.split('/')[-1]
     
+    def wsAddVenue(self, venueDescStruct):
+        """
+        Inteface call for Adding a venue.
+        """
+        
+        if not self._authorize():
+            log.exception("Unauthorized attempt to Add Venue.")
+            raise NotAuthorized
+        else:
+            try:
+                venueDesc = CreateVenueDescription(venueDescStruct)
+                venueDesc.administrators.append(GetDefaultIdentityDN())
+                venueUri = self.AddVenue(venueDesc)
+                return venueUri
+            except:
+                log.exception("Exception in AddVenue!")
+                raise VenueServerException("Couldn't Add Venue.")
+
+
+    wsAddVenue.soap_export_as = "AddVenue"
+    
+    def wsModifyVenue(self, URL, venueDescStruct):
+        if not self._authorize():   
+            raise NotAuthorized
+
+        if URL == None:
+            raise InvalidVenueURL
+        else:
+            vd = CreateVenueDescription(venueDescStruct)
+        
+            self.ModifyVenue(URL, vd)
+        
+    wsModifyVenue.soap_export_as = "ModifyVenue"
+    
     def MakeVenueURL(self, uniqueId):
         """
         Helper method to make a venue URI from a uniqueId.
@@ -287,50 +323,73 @@ class VenueServer(ServiceBase.ServiceBase):
                            self.venuePathPrefix, uniqueId], '/')
         return uri
 
-    def AddVenue(self, name, description):
+    def AddVenue(self, venueDesc):
         """
         The AddVenue method takes a venue description and creates a new
         Venue Object, complete with a event service, then makes it
         available from this Venue Server.
         """
+        # Create a new Venue object pass it the server
+        venue = Venue(self, venueDesc.name, venueDesc.description,
+                      venueDesc.administrators, self.dataStorageLocation)
+        
+        # Add Connections if there are any
+        venue.SetConnections(venueDesc.connections)
+        
+        # Add Streams if there are any
+        for sd in venueDesc.streams:
+            venue.streamList.AddStream(sd)
+            
+        venuePath = self.PathFromURL(venue.uri)
+            
+        # Add the venue to the list of venues
+        self.venues[self.IdFromURL(venue.uri)] = venue
+        
+        # We have to register this venue as a new service.
+        if(self.hostingEnvironment != None):
+            self.hostingEnvironment.BindService(venue, venuePath)
+            
+        # If this is the first venue, set it as the default venue
+        if(len(self.venues) == 1):
+            self.SetDefaultVenue(venue.uri)
+                
+        # return the URL to the new venue
+        return venue.uri
 
-        if not self._authorize():
-            log.exception("Unauthorized attempt to Add Venue.")
-            raise VenueServerException("You are not authorized to perform this action.")
-        try:
-            # Create a new Venue object pass it the server
-            venue = Venue(self, name, description, [GetDefaultIdentityDN()],
-                          self.dataStorageLocation)
+    def ModifyVenue(self, URL, venueDesc):   
+        """   
+        ModifyVenue updates a Venue Description.   
+        """
+        print "URL: %s" % URL
+        
+        id = self.IdFromURL(URL)   
 
-            venuePath = self.PathFromURL(venue.uri)
+        print "ID: %s" % id
 
-            # Add the venue to the list of venues
-            self.venues[self.IdFromURL(venue.uri)] = venue
+        print "VD: %s %s" % (venueDesc.AsINIBlock(), type(venueDesc))
+        
+        if(venueDesc.uri == URL):
+            self.venues[id].name = venueDesc.name
+            self.venues[id].description = venueDesc.description
+            self.venues[id].uri = venueDesc.uri
+            self.venues[id].administrators = venueDesc.administrators
+            self.venues[id].encryptMedia = venueDesc.encryptMedia
+            if self.venues[id].encryptMedia:
+                self.venues[id].encryptionKey = venueDesc.encryptionKey
 
-            # We have to register this venue as a new service.
-            if(self.hostingEnvironment != None):
-                venueService = self.hostingEnvironment.CreateServiceObject(venuePath)
-                venue._bind_to_service(venueService)
+            self.venues[id].SetConnections(venueDesc.connections.values())
+            
+            for sd in venueDesc.streams:
+                self.venues[id].AddStream(sd)
 
-            # If this is the first venue, set it as the default venue
-            if(len(self.venues) == 1):
-                self.SetDefaultVenue(venue.uri)
-
-            # return the URL to the new venue
-            return venue.uri
-
-        except:
-            log.exception("Exception in AddVenue!")
-            raise VenueServerException("Couldn't Add Venue.")
-
-    AddVenue.soap_export_as = "AddVenue"
-
+        print "Done with modify Venue."
+        
     def RemoveVenue(self, URL):
         """
         RemoveVenue removes a venue from the VenueServer.
         """
         if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
+            raise NotAuthorized
 
         id = self.IdFromURL(URL)
         
@@ -345,7 +404,7 @@ class VenueServer(ServiceBase.ServiceBase):
         for this VenueServer.
         """
         if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
+            raise NotAuthorized
 
         if string not in self.administratorList:
             self.administratorList.append(string)
@@ -362,7 +421,7 @@ class VenueServer(ServiceBase.ServiceBase):
         administrators for this VenueServer.
         """
         if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
+            raise NotAuthorized
 
         if string in self.administratorList:
             self.administratorList.remove(string)
@@ -389,7 +448,7 @@ class VenueServer(ServiceBase.ServiceBase):
         registration page at Argonne for now.
         """
         if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
+            raise NotAuthorized
         # registryService = SOAP.SOAPProxy(URL)
         # registryService.Register(#data)
 
@@ -401,18 +460,13 @@ class VenueServer(ServiceBase.ServiceBase):
         hosted by this VenueServer.
         """
         try:
-#            venueDescriptionList = map( lambda venue: venue.GetDescription(),
-#                                        self.venues.values() )
-            venueDescriptionList = map( lambda venue: {
-                'name' : venue.name,
-                'description' : venue.description,
-                'uri' : venue.uri
-                }, self.venues.values() )
+            venueDescList = map(lambda venue: venue.AsVenueDescription(),
+                                        self.venues.values() )
 
-            for d in venueDescriptionList:
-                log.info("%s", d)
-                
-            return venueDescriptionList
+            for v in venueDescList:
+                v.connections = v.connections.values()
+
+            return venueDescList
         except:
             log.exception("Exception in GetVenues!")
             raise VenueServerException("GetVenues Failed!")
@@ -434,7 +488,7 @@ class VenueServer(ServiceBase.ServiceBase):
         VenueServer.
         """
         if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
+            raise NotAuthorized
 
         defaultPath = "/Venues/default"
 
@@ -456,7 +510,8 @@ class VenueServer(ServiceBase.ServiceBase):
         Set the path for data storage
         """
         if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
+            raise NotAuthorized
+        
         self.dataStorageLocation = dataStorageLocation
         self.config["VenueServer.dataStorageLocation"] = dataStorageLocation
 
@@ -478,7 +533,8 @@ class VenueServer(ServiceBase.ServiceBase):
             either RANDOM or INTERVAL (defined in MulticastAddressAllocator)
         """
         if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
+            raise NotAuthorized
+        
         self.multicastAddressAllocator.SetAddressAllocationMethod( addressAllocationMethod )
 
     SetAddressAllocationMethod.soap_export_as = "SetAddressAllocationMethod"
@@ -497,7 +553,8 @@ class VenueServer(ServiceBase.ServiceBase):
         Turn on or off server wide default for venue media encryption.
         """
         if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
+            raise NotAuthorized
+        
         self.encryptAllMedia = int(value)
         return self.encryptAllMedia
 
@@ -517,7 +574,8 @@ class VenueServer(ServiceBase.ServiceBase):
         an interval
         """
         if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
+            raise NotAuthorized
+        
         self.multicastAddressAllocator.SetBaseAddress( address )
 
     SetBaseAddress.soap_export_as = "SetBaseAddress"
@@ -537,7 +595,8 @@ class VenueServer(ServiceBase.ServiceBase):
         an interval
         """
         if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
+            raise NotAuthorized
+        
         self.multicastAddressAllocator.SetAddressMask( mask )
 
     SetAddressMask.soap_export_as = "SetAddressMask"
@@ -563,7 +622,7 @@ class VenueServer(ServiceBase.ServiceBase):
         self.houseKeeper.StopAllTasks()
 
         if not self._authorize():
-            raise VenueServerException("You are not authorized to perform this action.")
+            raise NotAuthorized
 
         log.info("Shutdown -> Checkpointing...")
         self.Checkpoint()

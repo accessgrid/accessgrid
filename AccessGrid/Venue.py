@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.66 2003-04-01 16:04:10 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.67 2003-04-01 23:23:48 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -28,7 +28,7 @@ from AccessGrid.hosting import AccessControl
 from AccessGrid import AppService
 from AccessGrid.Types import Capability
 from AccessGrid.Descriptions import StreamDescription, CreateStreamDescription
-from AccessGrid.Descriptions import ConnectionDescription
+from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
 from AccessGrid import DataStore
@@ -157,6 +157,18 @@ class Venue(ServiceBase.ServiceBase):
                        self.streamList.GetStaticStreams()))
 
         return string
+
+    def AsVenueDescription(self):
+        """
+        """
+        desc = VenueDescription(self.name, self.description,
+                                self.administrators, 
+                                (self.encryptMedia, self.encryptionKey),
+                                self.connections.values(),
+                                self.GetStaticStreams())
+        desc.SetURI(self.uri)
+        
+        return desc
     
     def _authorize(self):
         """
@@ -255,12 +267,12 @@ class Venue(ServiceBase.ServiceBase):
             'description' : self.description,
             'uri' : self.uri,
             'connections' : self.connections.values(),
+            'applications': map(lambda x: x.GetState(),
+                                self.applications.values()),
             'users' : self.users.values(),
             'nodes' : self.nodes.values(),
             'eventLocation' : self.server.eventService.GetLocation(),
-            'textLocation' : self.server.textService.GetLocation(),
-            'applications': map(lambda x: x.GetState(),
-                                self.applications.values())
+            'textLocation' : self.server.textService.GetLocation()
             }
 
         #
@@ -395,31 +407,32 @@ class Venue(ServiceBase.ServiceBase):
 
         return None
 
+    # Interface methods
+    def wsAddData(self, dataDescription ):
+        if not self._authorize():
+            raise NotAuthorized
+        else:
+            return self.AddData(dataDescription)
+
+    wsAddData.soap_export_as = "AddData"
+
+    def wsUpdateData(self, dataDescription):
+        if not self._authorize():
+            raise NotAuthorized
+        else:
+            return self.UpdateData(dataDescription)
+
+    wsUpdateData.soap_export_as = "UpdateData"
+
+    def wsGetData(self, name):
+        if not self._authorize():
+            raise NotAuthorized
+        else:        
+            return self.GetData(name)
+
+    wsGetData.soap_export_as = "GetData"
+
     # Management methods
-
-    def SetName(self, name):
-        """
-        """
-        if not self._authorize():
-            raise NotAuthorized
-        self.name = name
-
-        return name
-
-    SetName.soap_export_as = "SetName"
-
-    def SetDescription(self, description):
-        """
-        """
-        if not self._authorize():
-            raise NotAuthorized
-        
-        self.description = description
-
-        return description
-
-    SetDescription.soap_export_as = "SetDescription"
-
     def AddAdministrator(self, string):
         """
         """
@@ -490,44 +503,44 @@ class Venue(ServiceBase.ServiceBase):
 
     GetEncryptMedia.soap_export_as = "GetEncryptMedia"
 
-    def AddNetworkService(self, networkServiceDescription):
-        """
-        AddNetworkService allows an administrator to add functionality to
-        the Venue. Network services are described in the design documents.
-        """
-        if not self._authorize():
-            raise NotAuthorized
-        try:
-            self.networkServices[ networkServiceDescription.uri ] = networkServiceDescription
-        except:
-            log.exception("Exception in Add Network Service!")
-            raise VenueException("Add Network Service Failed!")
+#     def AddNetworkService(self, networkServiceDescription):
+#         """
+#         AddNetworkService allows an administrator to add functionality to
+#         the Venue. Network services are described in the design documents.
+#         """
+#         if not self._authorize():
+#             raise NotAuthorized
+#         try:
+#             self.networkServices[ networkServiceDescription.uri ] = networkServiceDescription
+#         except:
+#             log.exception("Exception in Add Network Service!")
+#             raise VenueException("Add Network Service Failed!")
         
-    AddNetworkService.soap_export_as = "AddNetworkService"
+#     AddNetworkService.soap_export_as = "AddNetworkService"
 
-    def GetNetworkServices(self):
-        """
-        GetNetworkServices retreives the list of network service descriptions
-        from the venue.
-        """
-        return self.networkServices
+#     def GetNetworkServices(self):
+#         """
+#         GetNetworkServices retreives the list of network service descriptions
+#         from the venue.
+#         """
+#         return self.networkServices
 
-    GetNetworkServices.soap_export_as = "GetNetworkServices"
+#     GetNetworkServices.soap_export_as = "GetNetworkServices"
 
-    def RemoveNetworkService(selfnetworkServiceDescription):
-        """
-        RemoveNetworkService removes a network service from a venue, making
-        it unavailable to users of the venue.
-        """
-        if not self._authorize():
-            raise NotAuthorized
-        try:
-            del self.networkServices[ networkServiceDescription.uri ]
-        except:
-            log.exception("Exception in RemoveNetworkService!")
-            raise VenueException("Remove Network Service Failed!")
+#     def RemoveNetworkService(self, networkServiceDescription):
+#         """
+#         RemoveNetworkService removes a network service from a venue, making
+#         it unavailable to users of the venue.
+#         """
+#         if not self._authorize():
+#             raise NotAuthorized
+#         try:
+#             del self.networkServices[ networkServiceDescription.uri ]
+#         except:
+#             log.exception("Exception in RemoveNetworkService!")
+#             raise VenueException("Remove Network Service Failed!")
 
-    RemoveNetworkService.soap_export_as = "RemoveNetworkService"
+#     RemoveNetworkService.soap_export_as = "RemoveNetworkService"
 
     def AddConnection(self, connectionDescription):
         """
@@ -582,7 +595,26 @@ class Venue(ServiceBase.ServiceBase):
 
     GetConnections.soap_export_as = "GetConnections"
 
-    def SetConnections(self, connectionList):
+    def wsSetConnections(self, connectionList):
+        if not self._authorize():
+            raise NotAuthorized
+        else:
+            cdict = {}
+            try:
+                # Add them all
+                for connection in connectionList:
+                    c = ConnectionDescription(connection.name,
+                                              connection.description,
+                                              connection.uri)
+                    cdict[connection.uri] = c
+                    self.SetConnections(cdict)
+            except:
+                log.exception("SetConnections failed.")
+                raise VenueException("Set Connections Failed!")
+
+    wsSetConnections.soap_export_as = "SetConnections"
+        
+    def SetConnections(self, connectionDict):
         """
         SetConnections is a convenient aggregate accessor for the list of
         connections for this venue. Alternatively the user could iterate over
@@ -590,27 +622,14 @@ class Venue(ServiceBase.ServiceBase):
         desirable.
         """
         log.debug("Calling SetConnections.")
-        if not self._authorize():
-            raise NotAuthorized
-        try:
-            # Reset the connections
-            self.connections = dict()
-
-            # Add them all
-            for connection in connectionList:
-                c = ConnectionDescription(connection.name, connection.description, connection.uri)
-                self.connections[connection.uri] = c
-
-            # Send the event
-            self.server.eventService.Distribute( self.uniqueId,
-                                          Event( Event.SET_CONNECTIONS,
-                                                 self.uniqueId,
-                                                 connectionList ) )
-        except:
-            log.exception("SetConnections failed.")
-            raise VenueException("Set Connections Failed!")
-
-    SetConnections.soap_export_as = "SetConnections"
+        
+        self.connections = connectionDict
+            
+        # Send the event
+        self.server.eventService.Distribute( self.uniqueId,
+                                             Event( Event.SET_CONNECTIONS,
+                                                    self.uniqueId,
+                                                    connectionDict.values() ) )
 
     def SetDescription(self, description):
         """
@@ -619,6 +638,7 @@ class Venue(ServiceBase.ServiceBase):
         """
         if not self._authorize():
             raise NotAuthorized
+
         self.description = description
 
     SetDescription.soap_export_as = "SetDescription"
@@ -628,7 +648,7 @@ class Venue(ServiceBase.ServiceBase):
         GetDescription returns the description for the virtual venue.
         """
         return self.description
-
+    
     GetDescription.soap_export_as = "GetDescription"
 
     def AddStream(self, inStreamDescription ):
@@ -810,11 +830,6 @@ class Venue(ServiceBase.ServiceBase):
 
     UpdateClientProfile.soap_export_as = "UpdateClientProfile"
 
-    def wsAddData(self, dataDescription ):
-        return self.AddData(dataDescription)
-
-    wsAddData.soap_export_as = "AddData"
-
     def AddData(self, dataDescription ):
         """
         The AddData method enables VenuesClients to put data in the Virtual
@@ -839,11 +854,6 @@ class Venue(ServiceBase.ServiceBase):
                                              self.uniqueId,
                                              dataDescription ) )
 
-    def wsUpdateData(self, dataDescription):
-        return self.UpdateData(dataDescription)
-
-    wsUpdateData.soap_export_as = "UpdateData"
-
     def UpdateData(self, dataDescription):
         """
         Replace the current description for dataDescription.name with
@@ -860,7 +870,8 @@ class Venue(ServiceBase.ServiceBase):
             #
 
             log.exception("UpdateData: data not already present: %s", name)
-            raise VenueException("UpdateData: data %s not already present" % (name))
+            raise VenueException("UpdateData: data %s not already present" %
+                                 name)
 
         self.data[dataDescription.name] = dataDescription
         log.debug("Send UPDATE_DATA event %s", dataDescription)
@@ -868,11 +879,6 @@ class Venue(ServiceBase.ServiceBase):
                                       Event( Event.UPDATE_DATA,
                                              self.uniqueId,
                                              dataDescription ) )
-
-    def wsGetData(self, name):
-        return self.GetData(name)
-
-    wsGetData.soap_export_as = "GetData"
 
     def GetData(self, name):
         """
