@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.23 2003-04-14 23:44:15 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.24 2003-04-17 23:58:21 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -468,8 +468,17 @@ class AGNodeService( ServiceBase ):
             self.defaultConfig = config[defaultNodeConfigurationOption]
         if configDirOption in config.keys():
             self.configDir = config[configDirOption]
+            # If relative path in config file, use SystemConfigDir as the base
+            if not os.path.isabs(self.configDir):
+                self.configDir = GetConfigFilePath(self.configDir)
         if servicesDirOption in config.keys():
             self.servicesDir = config[servicesDirOption]
+            print "servicesDir: ", self.servicesDir
+            # If relative path in config file, use SystemConfigDir as the base
+            if not os.path.isabs(self.servicesDir):
+                self.servicesDir = GetConfigFilePath(self.servicesDir)
+        print "configDir: ", self.configDir
+        print "servicesDir: ", self.servicesDir
 
 
 

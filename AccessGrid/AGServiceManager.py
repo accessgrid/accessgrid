@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.18 2003-03-19 23:13:58 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.19 2003-04-17 23:58:21 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -366,3 +366,6 @@ class AGServiceManager( ServiceBase ):
         config = LoadConfig( configFile )
         if servicesDirOption in config.keys():
             self.servicesDir = config[servicesDirOption]
+            # If relative path in config file, use SystemConfigDir as the base
+            if not os.path.isabs(self.servicesDir):
+                self.servicesDir = GetConfigFilePath(self.servicesDir)
