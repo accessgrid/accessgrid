@@ -2,7 +2,7 @@
 # Name:        unittest_all.py
 # Purpose:     Automatic testing with machine readable output
 # Created:     2004/04/014
-# RCS-ID:      $Id: unittest_all_new.py,v 1.3 2004-04-14 22:45:17 judson Exp $
+# RCS-ID:      $Id: unittest_all_new.py,v 1.4 2004-04-15 17:58:49 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -12,49 +12,54 @@ import xml.dom.minidom
 from unittest import TestResult, TestSuite, findTestCases
 from optparse import OptionParser
 
-default_xform = """
-<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">
-<xsl:output method=\"html\"/>
- <xsl:template match=\"BeaconReport\">
+html_xform = """<?xml version='1.0' encoding='UTF-8'?>
+<xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+<xsl:output method='html'/>
+ <xsl:template match='BeaconReport'>
  <html>
   <head>
    <title>Multicast Beacon Report</title>
   </head>
-  <body bgcolor=\"#A0A0A0\" text=\"#000000\">
-   <H2>Multicast Beacon Report for <xsl:value-of select=\"@time\"/></H2>
-     <table border=\"1\" cellpadding=\"2\">
+  <body bgcolor='#A0A0A0' text='#000000'>
+   <H2>Multicast Beacon Report for <xsl:value-of select='@time'/></H2>
+     <table border='1' cellpadding='2'>
       <tbody>
-       <xsl:apply-templates select=\"Beacon\"/>
+       <xsl:apply-templates select='Beacon'/>
       </tbody>
      </table>
   </body>
  </html>
  </xsl:template>
 	
- <xsl:template match=\"Beacon\">
+ <xsl:template match='Beacon'>
   <tr>
    <td>
-    SSRC: <xsl:value-of select=\"@ssrc\"/><br/>	
-    Host: <xsl:value-of select=\"@name\"/><br/>
-    IP: <xsl:value-of select=\"@ip\"/>
+    SSRC: <xsl:value-of select='@ssrc'/><br/>	
+    Host: <xsl:value-of select='@name'/><br/>
+    IP: <xsl:value-of select='@ip'/>
    </td>
-   <xsl:apply-templates select=\"Data\"/>
+   <xsl:apply-templates select='Data'/>
   </tr>
  </xsl:template>
 	
- <xsl:template match=\"Data\">
+ <xsl:template match='Data'>
   <td>
-   SSRC: <xsl:value-of select=\"@send_ssrc\"/><br/>
-   <xsl:apply-templates select=\"Loss\"/>
+   SSRC: <xsl:value-of select='@send_ssrc'/><br/>
+   <xsl:apply-templates select='Loss'/>
   </td>
  </xsl:template>
  
- <xsl:template match=\"Loss\">
-  Total Loss: <xsl:value-of select=\"@total\"/><br/>
-  Fractional Loss: <xsl:value-of select=\"@fractional\"/>
+ <xsl:template match='Loss'>
+  Total Loss: <xsl:value-of select='@total'/><br/>
+  Fractional Loss: <xsl:value-of select='@fractional'/>
  </xsl:template>
  
+</xsl:stylesheet>
+"""
+
+text_xform="""<?xml version='1.0' encoding='UTF-8'?>
+<xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+
 </xsl:stylesheet>
 """
 
@@ -147,8 +152,13 @@ if __name__ == '__main__':
     parser.add_option("-o", "--outputFile", dest="outputFile", metavar="FILE",
                       default=None,
                       help="specify the output file to store results in.")
-    parser.add_option("--html", action="store_true", dest="ohtml", default=0,
+    parser.add_option("--html", dest="format", metavar="FORMAT", 
+                      action="store_const", const="html", default="text",
                       help="Output HTML results.")
+    parser.add_option("--text", dest="format", metavar="FORMAT", 
+                      action="store_const", const="text", default="text",
+                      help="Output TEXT results.")
+    
     options, args = parser.parse_args()
     
     # List modules to test
@@ -174,7 +184,7 @@ if __name__ == '__main__':
     output, result = XMLTestRunner().run(suite)
 
     ro = output
-    if options.ohtml:
+    if options.format == 'html':
         try:
             from Ft.Lib import Uri
             from Ft.Xml.InputSource import DefaultFactory
@@ -183,8 +193,8 @@ if __name__ == '__main__':
             print "Couldn't import modules to generate HTML."
             
         processor = Processor()
-        stylesheet = DefaultFactory.fromString(default_xform)
-        processor.appendStylesheet(stylesheet)
+        xform = DefaultFactory.fromString(html_xform, "")
+        processor.appendStylesheet(xform)
         
         try:
             ro = processor.run(output)
