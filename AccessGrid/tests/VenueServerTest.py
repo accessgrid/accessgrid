@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueServerTest.py,v 1.5 2003-02-10 14:48:39 judson Exp $
+# RCS-ID:      $Id: VenueServerTest.py,v 1.6 2003-02-14 22:49:27 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ class VenueServerTest:
         description = "this is a test venue"
         print " "
         print "------------------ INSERT VENUE"
-        print "venue info -- "+"name: "+name+", description: "+description
+        print "name: "+name+"\n"+description
         venue = VenueDescription(name, description, "", None)
         uri = self.client.AddVenue(venue)
         
@@ -37,7 +37,7 @@ class VenueServerTest:
         venueList = self.client.GetVenues()
         
         for v in venueList:
-            print "/n name: "+name+"/n "+description
+            print "\n name: "+v.name+"\n "+v.description
             
         exit1 = VenueDescription("Exit1", "Exit1 description", "", None)
         exit2 = VenueDescription("Exit2", "Exit2 description", "", None)
@@ -66,7 +66,7 @@ class VenueServerTest:
         print "------------------ All venues in server"
         venueList = self.client.GetVenues()
         for v in venueList:
-            print "/n name: "+name+"/n "+description
+            print "\n name: "+v.name+"\n "+v.description
 
         dnName = "dnName"
         print " "
@@ -77,7 +77,7 @@ class VenueServerTest:
         print " "
         print "------------------ All administrators in server"
         for v in adminList:
-            print "/n dnName: "+v
+            print "\n dnName: "+v
             
         print " "
         print "------------------ Remove the administrator"
@@ -87,7 +87,7 @@ class VenueServerTest:
         print " "
         print "------------------ All administrators in server"
         for v in adminList:
-            print "/n dnName: "+v
+            print "\n dnName: "+v
 
         address = "225.224.224.224"
         print " "
@@ -141,7 +141,7 @@ class VenueServerTest:
         print "------------------ All venues in server"
         venueList = self.client.GetVenues()
         for v in venueList:
-            print "/n name: "+name+"/n "+description
+            print "\n name: "+v.name+"\n "+v.description
             
 if __name__ == "__main__":       
     venueServerPort = 8000
