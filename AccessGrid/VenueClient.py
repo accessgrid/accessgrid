@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.4 2003-01-15 22:55:54 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.5 2003-01-16 01:24:42 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -116,7 +116,7 @@ class VenueClient:
       # Update the node service with stream descriptions
       #
       if self.nodeServiceUri:
-         Client.Handle( self.nodeServiceUri ).get_proxy().ConfigureStreams( streamDescList )
+         Client.Handle( self.nodeServiceUri ).get_proxy().ConfigureStreams( self.streamDescList )
       
    def ExitVenue(self):
       """
