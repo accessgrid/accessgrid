@@ -54,9 +54,9 @@ parser.add_option("-s", "--sourcedir", dest="sourcedir", metavar="SOURCEDIR",
 parser.add_option("-m", "--meta", dest="metainfo", metavar="METAINFO",
                   default=None,
                   help="Meta information string about this release.")
-parser.add_option("-c", "--checkoutcvs", action="store_true", dest="cvs",
-                  default=1,
-                  help="A flag that indicates the snapshot should be built from anexported cvs checkout.")
+parser.add_option("--no-checkout", action="store_true", dest="nocheckout",
+                  default=0,
+                  help="A flag that indicates the snapshot should be built from a previously exported source directory.")
 parser.add_option("-i", "--innopath", dest="innopath", metavar="INNOPATH",
                   default="", help="The path to the isxtool.")
 parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
@@ -65,14 +65,16 @@ parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
 parser.add_option("-p", "--pythonversion", dest="pyver",
                   metavar="PYTHONVERSION", default="2.2",
                   help="Which version of python to build the installer for.")
-
+parser.add_option("-r", "--rebuild", action="store_true", dest="rebuild",
+                  help="Rebuild an installer from a previously used build dir.")
 options, args = parser.parse_args()
 
 #
 # The openssl in winglobus is critical put it in our path
 #
-oldpath = os.environ['PATH']
-os.environ['PATH'] = os.path.join(SourceDir, "WinGlobus", "bin")+";"+oldpath
+if sys.platform == 'win32':
+    oldpath = os.environ['PATH']
+    os.environ['PATH'] = os.path.join(SourceDir, "WinGlobus", "bin")+";"+oldpath
 
 # Build Name
 #  This is the default name we use for the installer
@@ -88,7 +90,78 @@ else:
 DestDir = os.path.join(SourceDir, "dist-%s" % BuildTime)
 
 # The directory we're building from
-BuildDir = os.path.join(SourceDir, "AccessGrid-%s" % BuildTime)
+if options.nocheckout:
+    BuildDir = os.path.join(SourceDir, "AccessGrid")
+else:
+    BuildDir = os.path.join(SourceDir, "AccessGrid-%s" % BuildTime)
+
+#
+# Grab stuff from cvs
+#
+
+if not options.nocheckout:
+    # Either we check out a copy
+    cvsroot = ":pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl"
+
+    # WE ASSUME YOU HAVE ALREADY LOGGED IN WITH:
+    # cvs -d :pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl login
+
+    cvs_cmd = "cvs -z6 -d %s export -d %s -D now AccessGrid" % (cvsroot,
+                                                                BuildDir)
+    if options.verbose:
+        print "BUILD: Checking out code with command: ", cvs_cmd
+
+    os.system(cvs_cmd)
+
+#
+# Go to that checkout to build stuff
+#
+
+if not options.nocheckout:
+    if sys.platform == 'win32':
+        RunDir = os.path.join(BuildDir, "packaging", "windows")
+    else:
+        RunDir = os.path.join(BuildDir, "packaging", "linux")
+
+    if options.verbose:
+        print "BUILD: Changing to directory: %s" % RunDir
+    
+    os.chdir(RunDir)
+
+#
+# Run the setup script first to create the distribution directory structure
+# and auxillary packages, config, and documentation
+#
+s = os.getcwd()
+os.chdir(BuildDir)
+
+cmd = "%s %s" % (sys.executable, "setup.py")
+for c in ["clean", "build"]:
+    os.system("%s %s" % (cmd, c))
+
+os.system("%s install --prefix=%s --no-compile" % (cmd, DestDir))
+
+os.chdir(s)
+
+#
+# PLATFORM DEPENDENT CODE BELOW HERE
+#
+
+# Run precompile scripts
+
+for cmd in [
+    "BuildVic.cmd",
+    "BuildRat.cmd",
+    # I have decided we'll assume these are built *outside* of our build
+    # process, so we don't build globus in either packaging anymore.
+    #"BuildGlobus.cmd",
+    "BuildPythonModules.cmd"
+    ]:
+    cmd = "%s %s %s %s %s" % (cmd, SourceDir, BuildDir, DestDir, options.pyver)
+    if options.verbose:
+        print "BUILD: Running: %s" % cmd
+
+    os.system(cmd)
 
 # Grab innosetup from the environment
 try:
@@ -107,9 +180,7 @@ except WindowsError:
 # Innosoft config file names
 iss_orig = "agtk.iss"
 
-#
 # Location of the Inno compiler
-#
 if options.innopath != "":
     # It was set on the command line
     inno_compiler = os.path.join(options.innopath, "iscc.exe")
@@ -122,71 +193,6 @@ if options.innopath != "":
             print "BUILD:   If necessary, specify the location of iscc.exe "
             print "BUILD:   with command-line option -i."
             sys.exit()
-#
-# Grab stuff from cvs
-#
-
-if options.cvs:
-    # Either we check out a copy
-    cvsroot = ":pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl"
-
-    # WE ASSUME YOU HAVE ALREADY LOGGED IN WITH:
-    # cvs -d :pserver:anonymous@cvs.mcs.anl.gov:/cvs/fl login
-
-    cvs_cmd = "cvs -z6 -d %s export -d %s -D now AccessGrid" % (cvsroot,
-                                                                BuildDir)
-    if options.verbose:
-        print "BUILD: Checking out code with command: ", cvs_cmd
-
-    os.system(cvs_cmd)
-
-#
-# Go to that checkout to build stuff
-#
-
-RunDir = os.path.join(BuildDir, "packaging", "windows")
-
-if options.verbose:
-    print "BUILD: Changing to directory: %s" % RunDir
-    
-os.chdir(RunDir)
-
-#
-# Run the setup script first to create the distribution directory structure
-# and auxillary packages, config, and documentation
-#
-s = os.getcwd()
-os.chdir(BuildDir)
-
-cmd = "%s %s" % (sys.executable, "setup.py")
-for c in ["clean", "build"]:
-    os.system("%s %s" % (cmd, c))
-
-os.system("%s install --prefix=%s --no-compile" % (cmd, DestDir))
-
-os.chdir(s)
-
-#
-# Run precompile scripts
-#
-
-for cmd in [
-    "BuildVic.cmd",
-    "BuildRat.cmd",
-    # I have decided we'll assume these are built *outside* of our build
-    # process, so we don't build globus in either packaging anymore.
-    #"BuildGlobus.cmd",
-    "BuildPythonModules.cmd"
-    ]:
-    cmd = "%s %s %s %s %s" % (cmd, SourceDir, BuildDir, DestDir, options.pyver)
-    if options.verbose:
-        print "BUILD: Running: %s" % cmd
-
-    os.system(cmd)
-
-#
-# Now we can compile
-#
 
 # Add quotes around command.
 iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" \
@@ -197,5 +203,6 @@ iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" \
 if options.verbose:
     print "BUILD: Executing:", iscc_cmd
 
+# Compile the installer
 os.system(iscc_cmd)
 
