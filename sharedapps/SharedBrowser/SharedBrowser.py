@@ -78,6 +78,11 @@ class WebBrowser(wxPanel):
             self.title_base = frame.GetTitle()
 
         self.just_received_navigate = 0
+        # The document url currently being loaded.
+        self.docLoading = ""
+        # Pages whose completion we need to ignore.  This is because
+        #  the events don't tell us which events are for the main page.
+        self.ignoreComplete = []
 
     def add_navigation_callback(self, listener):
         self.navigation_callbacks.append(listener)
@@ -143,9 +148,23 @@ class WebBrowser(wxPanel):
         url = event.GetText1()
 
         if self.just_received_navigate:
-            self.just_received_navigate = 0
+            if url != self.docLoading:
+                print "OnBeforeNav Skipping", url,", already loading", self.docLoading
+                # If we get a navigation event while loading, we will ignore
+                #   the completion since it is from a popup or sub-page.
+                self.ignoreComplete.append(url)
+                # Because of popups and lack of complete information from
+                #   events, we won't reset this (and let the user
+                #   navigate) until the document is finished loading.
+                # self.just_received_navigate = 0
+            else:
+                pass # Do nothing since we are already loading this url.
         else:
+            # Go to a new url and also send it to the other Shared
+            #   Browser clients.  The Send is done in IBrowseCallback.
             print "Before navigate ", url
+            self.just_received_navigate = 1
+            self.docLoading = url
             map(lambda a: a(url), self.navigation_callbacks)
 
     def OnNewWindow2(self, event):
@@ -155,7 +174,26 @@ class WebBrowser(wxPanel):
     def OnDocumentComplete(self, event):
         print "OnDocumentComplete: ", event.GetText1()
         self.current = event.GetText1()
-        self.location.SetValue(self.current)
+
+        # Check if we are finishing the main document or not.
+        if event.GetText1() not in self.ignoreComplete:
+            
+            if event.GetText1() == "about:blank" and self.docLoading != "about:blank":
+                # This case happens at startup.
+                print "Ignoring DocComplete for first about:blank"
+            else:
+                # Finished loading, allow user to click links again now.
+                #  Needed since there is not enough information in the
+                #   events to tell if they refer to a popup (and other sub-
+                #   pages) or a user clicking on a url.
+                print "Finished loading."
+                self.just_received_navigate = 0
+                self.current = event.GetText1()
+                self.location.SetValue(self.current)
+                while len(self.ignoreComplete) > 0:
+                    self.ignoreComplete.pop()
+        else:
+            print "Ignoring DocComplete for ", event.GetText1()
 
     def OnTitleChange(self, event):
         print "titlechange: ", event.GetText1()
@@ -183,9 +221,13 @@ class WebBrowser(wxPanel):
         self.ie.Refresh(wxIEHTML_REFRESH_COMPLETELY)
 
     def navigate(self, url):
-        print "NAVIGATE to ", url
-        self.just_received_navigate = 1
-        self.ie.Navigate(url)
+        if self.just_received_navigate:
+            print "___cancelled NAVIGATE to ", url
+        else:
+            print "NAVIGATE to ", url
+            self.just_received_navigate = 1
+            self.docLoading = url
+            self.ie.Navigate(url)
 
     def OnLocationSelect(self, event):
         url = self.location.GetStringSelection()
@@ -270,6 +312,7 @@ class SharedBrowser( wxApp ):
         #
         # Send out the event, including our public ID in the message.
         #
+        print "IBrowse --> ", data
         self.eventClient.Send(Events.Event("browse", self.channelId, ( self.publicId, data ) ))
 
         # Store the URL in the app object in the venue
