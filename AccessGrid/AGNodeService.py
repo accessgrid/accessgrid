@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.65 2004-05-03 17:39:24 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.66 2004-05-04 15:41:26 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.65 2004-05-03 17:39:24 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.66 2004-05-04 15:41:26 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -348,7 +348,7 @@ class AGNodeService:
         if not os.path.exists(configFile):
             raise Exception("Configuration file does not exist (%s)", configFile)
         else:
-            log.info("Trying to load default configuration from: %s", configFile)
+            log.info("Trying to load node configuration from: %s", configFile)
 
         try:
             config = ConfigParser.ConfigParser()
