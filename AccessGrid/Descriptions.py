@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.67 2004-10-21 20:58:17 lefvert Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.68 2004-12-06 19:52:03 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.67 2004-10-21 20:58:17 lefvert Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.68 2004-12-06 19:52:03 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -237,7 +237,7 @@ class ServiceDescription(ObjectDescription):
     def __init__(self, name, description, uri, mimetype):   
         ObjectDescription.__init__(self, name, description, uri)   
         self.mimeType = mimetype   
-    
+          
     def SetMimeType(self, mimetype):   
         self.mimeType = mimetype   
             
@@ -552,15 +552,7 @@ def CreateClientProfile( clientProfileStruct ):
     else:
         # Pre-2.3 venue client (legacy, remove when breaking compatability)
         clientProfile.connectionId = clientProfileStruct.venueClientURL
-
-    # convert capabilities from structtypes to objects
-    capList = []
-   
-    for cap in clientProfileStruct.capabilities:
-        capList.append(CreateCapability(cap))
-
-    clientProfile.capabilities = capList
-
+  
     return clientProfile
 
 def CreateDataDescription(dataDescStruct):

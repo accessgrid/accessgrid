@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.229 2004-11-30 19:04:56 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.230 2004-12-06 19:52:03 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.229 2004-11-30 19:04:56 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.230 2004-12-06 19:52:03 lefvert Exp $"
 
 import sys
 import time
@@ -1233,12 +1233,10 @@ class Venue(AuthorizationMixIn):
 
         **Returns:**
 
-        *(state, privateId, streamDescriptions)* This tuple is
+        *(state, privateId)* This tuple is
         returned upon success. The state is a snapshot of the
         current venuestate. The privateId is a private, unique id
-        assigned by the venue for this client session, the
-        streamDescriptions are the stream descriptions the venue
-        has found best match this clients capabilities.
+        assigned by the venue for this client session.
         """
         log.debug("Enter called.")
 
@@ -1281,10 +1279,7 @@ class Venue(AuthorizationMixIn):
             log.exception("Enter: Can't get state.")
             raise InvalidVenueState
 
-        # Call NegotiateCapabilities separately 
-        streamDescriptions = []
-
-        return ( state, privateId, streamDescriptions)
+        return ( state, privateId )
 
     def _UpdateProfileCache(self, profile):
         try:
@@ -2330,14 +2325,12 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
 
         **Returns:**
 
-        *(state, privateId, streamDescriptions)* This tuple is
+        *(state, privateId)* This tuple is
         returned to the client on success. The state is the
         current state of the Virtual Venue and includes locations
         for the text and event services. The private Id is a venue
         assigned private id for the lifetime of this client
-        session. The stream descriptions are the result of the
-        venue negotiating the client capabilities.
-
+        session.
         """        
         log.debug("Interface Enter: Called.")
 
@@ -3353,8 +3346,8 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
         return self.proxy.Shutdown()
 
     def Enter(self, profile):
-        (r1, r2, r3) = self.proxy.Enter(profile)
-        return (r1, r2, r3)
+        (r1, r2) = self.proxy.Enter(profile)
+        return (r1, r2)
 
     def Exit(self, pid):
         return self.proxy.Exit(pid)

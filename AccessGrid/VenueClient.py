@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.196 2004-11-30 19:05:46 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.197 2004-12-06 19:52:02 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.196 2004-11-30 19:05:46 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.197 2004-12-06 19:52:02 lefvert Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -98,12 +98,14 @@ class VenueClient:
 
         self.preferences = self.app.GetPreferences()
         self.profile = self.preferences.GetProfile()
+       
         self.defaultNodeServiceUri = self.preferences.GetPreference(Preferences.NODE_URL) 
         
         if pnode == 0:
             pnode = int(self.preferences.GetPreference(Preferences.STARTUP_MEDIA))
             self.isPersonalNode = pnode
-                
+
+        self.capabilities = None
         self.nodeServiceUri = self.defaultNodeServiceUri
         self.nodeService = AGNodeServiceIW(self.nodeServiceUri)
         self.homeVenue = None
@@ -706,11 +708,11 @@ class VenueClient:
             self.__venueProxy = VenueIW(URL, self.SOAPFaultHandler)
 
             log.debug("EnterVenue: Invoke venue enter")
-            (venueState, self.privateId, self.streamDescList ) = self.__venueProxy.Enter( self.profile )
+            (venueState, self.privateId) = self.__venueProxy.Enter( self.profile )
 
             # Retreive stream descriptions
             self.streamDescList = self.__venueProxy.NegotiateCapabilities(self.privateId,
-                                                                          self.profile.capabilities)
+                                                                          self.capabilities)
             
             # Retrieve the connection id from within the private id
             # (when we break compatability, the server will likely pass
@@ -828,7 +830,7 @@ class VenueClient:
                 errorInNode = 0
 
                 try:
-                    self.profile.capabilities = self.nodeService.GetCapabilities()
+                    self.capabilities = self.nodeService.GetCapabilities()
                 except:
                     # This is a non fatal error, users should be notified
                     # but still enter the venue
