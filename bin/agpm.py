@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.9 2004-03-16 03:23:44 judson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.10 2004-03-18 19:17:24 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This program is used to register applications with the users AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.9 2004-03-16 03:23:44 judson Exp $"
+__revision__ = "$Id: agpm.py,v 1.10 2004-03-18 19:17:24 judson Exp $"
 
 import os
 import re
@@ -38,7 +38,7 @@ if sys.version.startswith('2.3'):
 
 from AccessGrid.AppDb import AppDb
 from AccessGrid.Utilities import LoadConfig
-from AccessGrid.Platform.Config import SystemConfig
+from AccessGrid.Platform.Config import SystemConfig, AGTkConfig
 
 tempfile.tmpdir = SystemConfig.instance().GetTempDir()
 
@@ -137,14 +137,19 @@ def main():
     origDir = os.getcwd()
     cleanup = 0
     
-    appdb = AppDb()
-
     # We're going to assume there's a .app file in the current directory,
     # but only after we check for a command line argument that specifies one.
     # We also have the ability to pass in a zip file that contains a .app
     # file and the other parts of the shared application.
 
     options = ProcessArgs()
+
+    if options.sys_install:
+        systemFile = os.path.join(AGTkConfig.instance().GetConfigDir(),
+                                  "ApplicationDatabase")
+        appdb = AppDb(file=systemFile)
+    else:
+        appdb = AppDb()
 
     if options.listapps:
         apps = appdb.ListApplications()
