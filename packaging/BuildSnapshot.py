@@ -188,6 +188,10 @@ if sys.platform != 'darwin':
     cmd = "%s %s" % (sys.executable, "BuildOpenSSL.py")
     os.system(cmd)
 
+if sys.platform == 'win32':
+    cmd = os.path.join(BuildDir, "tools", "MakeVfwScan.bat", DestDir)
+    os.system(cmd)
+     
 # Build the other python modules
 cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
                           BuildDir, DestDir)
