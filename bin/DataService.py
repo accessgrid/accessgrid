@@ -1,9 +1,26 @@
 import os
 import sys
+import signal
 
 from AccessGrid.DataStore import DataService
+from AccessGrid import Toolkit
+
+
+dataService = None
+
+# Signal handler to catch signals and shutdown
+def SignalHandler(signum, frame):
+    """
+    SignalHandler catches signals and shuts down the DataService
+    """
+    print "Shutting down..."
+    dataService.Shutdown()
+
 
 def Main():
+        
+        global dataService
+
         path = 'DATA'
         dataPort = 8886
         servicePort = 8500
@@ -31,8 +48,20 @@ def Main():
             else:
                 Usage()
                 sys.exit(0)
+
+        app = Toolkit.CmdlineApplication()
+        app.InitGlobusEnvironment()
                            
+        # Register a signal handler so we can shut down cleanly
+        signal.signal(signal.SIGINT, SignalHandler)
+
         dataService = DataService(path, dataPort, servicePort)
+
+        import time
+        while dataService.IsRunning():
+            time.sleep(1)
+
+        os._exit(1)
    
 def Usage():
     print "%s:" % (sys.argv[0])
