@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.13 2004-04-21 21:37:24 olson Exp $
+# RCS-ID:      $Id: Config.py,v 1.14 2004-04-23 15:28:54 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.13 2004-04-21 21:37:24 olson Exp $"
+__revision__ = "$Id: Config.py,v 1.14 2004-04-23 15:28:54 olson Exp $"
 
 import os
 import mimetypes
@@ -297,14 +297,14 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         uappdata = os.environ['HOME']
         agtkdata = AGTkConfig.instance().GetConfigDir()
         
-        gloc = AGTkConfig.instance().GetInstallDir()
+        self.installdir = AGTkConfig.instance().GetInstallDir()
             
         self.distKeyFileName = os.path.join(uappdata, ".globus", "userkey.pem")
         self.distCertFileName = os.path.join(uappdata, ".globus", "usercert.pem")
 
         self.proxyFileName = os.path.join(UserConfig.instance().GetTempDir(),
                                           "x509up_u%s" %(os.getuid()))
-        self.distCACertDir = os.path.join(agtkdata, "config", "CAcertificates")
+        self.distCACertDir = os.path.join(agtkdata, "CACertificates")
 
         self._Initialize()
         
@@ -315,16 +315,20 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         application. For now, I'm putting globus registry crud in
         here, later there might be other stuff.
         """
+
         if os.environ.has_key('GLOBUS_LOCATION'):
             self.location = os.environ['GLOBUS_LOCATION']
         else:
             if self.initIfNeeded:
-                self.SetLocation(gloc)
+                self.SetLocation(self.installdir)
                 
         if os.environ.has_key('GLOBUS_HOSTNAME'):
             self.hostname = os.environ['GLOBUS_HOSTNAME']
+	    print "<<< set hostname to ", self.hostname
         else:
+	    print "<<< need to compute hostname ", self.initIfNeeded
             if self.initIfNeeded:
+		print "<<< Init hostname"
                 self.SetHostname()
                 
         if os.environ.has_key('X509_RUN_AS_SERVER'):
@@ -343,6 +347,20 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
                 
         if os.environ.has_key('X509_USER_KEY'):
             self.distKeyFileName = os.environ['X509_USER_KEY']
+
+
+    def _SetHostnameToLocalIP(self):
+        try:
+            self.hostname = SystemConfig.instance().GetLocalIPAddress()
+            log.debug("retrieved local IP address %s", self.hostname)
+        except:
+            self.hostname = "127.0.0.1"
+            
+            log.exception("Failed to determine local IP address, using %s",
+                          self.hostname)
+
+        self.Setenv("GLOBUS_HOSTNAME", self.hostname)
+
 
 class UserConfig(AccessGrid.Config.UserConfig):
     """

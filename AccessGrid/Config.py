@@ -3,16 +3,17 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.10 2004-04-21 21:37:24 olson Exp $
+# RCS-ID:      $Id: Config.py,v 1.11 2004-04-23 15:28:54 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.10 2004-04-21 21:37:24 olson Exp $"
+__revision__ = "$Id: Config.py,v 1.11 2004-04-23 15:28:54 olson Exp $"
 
 import os
 import sys
+import re
 import struct
 import time
 import select
@@ -224,18 +225,6 @@ class GlobusConfig:
             # and use that.
 
             return self._SetHostnameToLocalIP()
-
-    def _SetHostnameToLocalIP(self):
-        try:
-            self.hostname = SystemConfig.instance().GetLocalIPAddress()
-            log.debug("retrieved local IP address %s", self.hostname)
-        except:
-            self.hostname = "127.0.0.1"
-            
-            log.exception("Failed to determine local IP address, using %s",
-                          self.hostname)
-
-        self.Setenv("GLOBUS_HOSTNAME", self.hostname)
 
     def GetHostname(self):
         if self.hostname is None:
@@ -482,6 +471,142 @@ class SystemConfig:
                 return (0, diff)
         else:
             return (-1, None)
+
+    def GetLocalIPAddress(self):
+	#
+	# Attempt to determine our local hostname based on the
+	# network environment.
+	#
+	# This implementation reads the routing table for the default route.
+	# We then look at the interface config for the interface that holds the default.
+	#
+	#
+	# Linux routing table:
+	# [olson@yips 0.0.0]$ netstat -rn
+	#     Kernel IP routing table
+	#     Destination     Gateway         Genmask         Flags   MSS Window  irtt Iface
+	#     140.221.34.32   0.0.0.0         255.255.255.224 U         0 0          0 eth0
+	#     169.254.0.0     0.0.0.0         255.255.0.0     U         0 0          0 eth0
+	#     127.0.0.0       0.0.0.0         255.0.0.0       U         0 0          0 lo
+	#     0.0.0.0         140.221.34.61   0.0.0.0         UG        0 0          0 eth0
+	# 
+	#     Mac routing table:
+	# 
+	#     bash-2.05a$ netstat -rn
+	#     Routing tables
+	# 
+	#  Internet:
+	#     Destination        Gateway            Flags    Refs      Use  Netif Expire
+	#     default            140.221.11.253     UGSc       12      120    en0
+	#     127.0.0.1          127.0.0.1          UH         16  8415486    lo0
+	#     140.221.8/22       link#4             UCS        12        0    en0
+	#     140.221.8.78       0:6:5b:f:51:c4     UHLW        0      183    en0    408
+	#     140.221.8.191      0:3:93:84:ab:e8    UHLW        0       92    en0    622
+	#     140.221.8.198      0:e0:98:8e:36:e2   UHLW        0        5    en0    691
+	#     140.221.9.6        0:6:5b:f:51:d6     UHLW        1       63    en0   1197
+	#     140.221.10.135     0:d0:59:34:26:34   UHLW        2     2134    en0   1199
+	#     140.221.10.152     0:30:1b:b0:ec:dd   UHLW        1      137    en0   1122
+	#     140.221.10.153     127.0.0.1          UHS         0        0    lo0
+	#     140.221.11.37      0:9:6b:53:4e:4b    UHLW        1      624    en0   1136
+	#     140.221.11.103     0:30:48:22:59:e6   UHLW        3      973    en0   1016
+	#     140.221.11.224     0:a:95:6f:7:10     UHLW        1        1    en0    605
+	#     140.221.11.237     0:1:30:b8:80:c0    UHLW        0        0    en0   1158
+	#     140.221.11.250     0:1:30:3:1:0       UHLW        0        0    en0   1141
+	#     140.221.11.253     0:d0:3:e:70:a      UHLW       13        0    en0   1199
+	#     169.254            link#4             UCS         0        0    en0
+	# 
+	#     Internet6:
+	#     Destination                       Gateway                       Flags      Netif Expire
+	#                                                                     UH          lo0
+	#     fe80::%lo0/64                                                   Uc          lo0
+	#                                       link#1                        UHL         lo0
+	#     fe80::%en0/64                     link#4                        UC          en0
+	#     0:a:95:a8:26:68               UHL         lo0
+	#     ff01::/32                                                       U           lo0
+	#     ff02::%lo0/32                                                   UC          lo0
+	#     ff02::%en0/32                     link#4                        UC          en0
+
+	try:
+	    fh = os.popen("netstat -rn", "r")
+	except:
+	    return "127.0.0.1"
+
+	interface_name = None
+	for l in fh:
+	    cols = l.strip().split()
+
+	    if len(cols) > 0 and (cols[0] == "default" or cols[0] == "0.0.0.0"):
+		interface_name = cols[-1]
+		break
+	    
+	fh.close()
+	
+	# print "Default route on ", interface_name
+
+	#
+	# Find ifconfig.
+	#
+
+	ifconfig = None
+
+	path = os.environ["PATH"].split(":")
+	path.extend(["/sbin", "/usr/sbin"])
+	for p in path: 
+	    i = os.path.join(p, "ifconfig")
+	    if os.access(i, os.X_OK):
+		ifconfig = i
+		break
+
+	if ifconfig is None:
+	    print >> sys.stderr, "Ifconfig not found"
+	    return "localhost"
+
+	# print >> sys.stderr, "found ifconfig ", ifconfig
+
+	try:
+	    fh = os.popen(ifconfig+ " " + interface_name, "r")
+	except:
+	    print >> sys.stderr, "Could not run ", ifconfig
+	    return "localhost"
+
+	ip = None
+
+	linux_re = re.compile("inet\s+addr:(\d+\.\d+\.\d+\.\d+)\s+")
+	mac_re = re.compile("inet\s+(\d+\.\d+\.\d+\.\d+)\s+")
+
+	for l in fh:
+	    #
+	    # Mac:
+	    #         inet 140.221.10.153 netmask 0xfffffc00 broadcast 140.221.11.255
+	    # Linux:
+	    #           inet addr:140.221.34.37  Bcast:140.221.34.63  Mask:255.255.255.224
+	    #
+
+	    l = l.strip()
+
+	    m = linux_re.search(l)
+	    if m:
+		#
+		# Linux hit.
+		#
+		ip = m.group(1)
+		break
+
+	    m = mac_re.search(l)
+
+	    if m:
+		#
+		# Mac hit.
+		#
+		ip = m.group(1)
+		break
+	fh.close()
+
+	if ip is None:
+	    print >> sys.stderr, "Didn't find an IP"
+	    return "127.0.0.1"
+
+	return ip
         
 class MimeConfig:
     """

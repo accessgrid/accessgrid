@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.12 2004-04-05 18:38:52 judson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.13 2004-04-23 15:28:54 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.12 2004-04-05 18:38:52 judson Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.13 2004-04-23 15:28:54 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -540,7 +540,7 @@ def IsGlobusProxy_Generic(certObj):
 def IsGlobusProxy_GT24(certObj):
 
     try:
-        attrs = security.grid_proxy_info2(0, certObj.GetPath())
+        attrstring, attrs = security.grid_proxy_info(0, certObj.GetPath())
         return attrs['type'] is not None
     
     except security.GSIException, ex:
@@ -560,14 +560,20 @@ else:
     # We're using a GT24 pyglobus; see if we have the very latest changes.
     #
 
-    from pyGlobus import gsic
-    if hasattr(gsic, "grid_proxy_init2"):
-        print 'use new globus'
-        CreateGlobusProxy = CreateGlobusProxyProgrammatic_GT24
-        IsGlobusProxy = IsGlobusProxy_GT24
+    import pyGlobus
+    if hasattr(pyGlobus, "gsic"):
+	from pyGlobus import gsic
+	if hasattr(gsic, "grid_proxy_init2"):
+	    print 'use new globus'
+	    CreateGlobusProxy = CreateGlobusProxyProgrammatic_GT24
+	    IsGlobusProxy = IsGlobusProxy_GT24
+	else:
+	    print 'use old globus'
+	    CreateGlobusProxy = CreateGlobusProxyGPI
+	    IsGlobusProxy = IsGlobusProxy_Generic
     else:
-        print 'use old globus'
-        CreateGlobusProxy = CreateGlobusProxyGPI
-        IsGlobusProxy = IsGlobusProxy_Generic
-        
+	print 'use new globus'
+	CreateGlobusProxy = CreateGlobusProxyProgrammatic_GT24
+	IsGlobusProxy = IsGlobusProxy_GT24
+		
 

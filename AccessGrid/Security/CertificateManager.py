@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.22 2004-04-21 21:38:35 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.23 2004-04-23 15:28:54 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.22 2004-04-21 21:38:35 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.23 2004-04-23 15:28:54 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -216,7 +216,7 @@ class CertificateManager(object):
         # I'd rather this were not conditional and the config object
         # were either a required argument, or entirely created inside
         # this object and an accessor could be used to retrieve it
-        self.globusConfig = GlobusConfig.instance(initIfNeeded=0)
+        self.globusConfig = GlobusConfig.instance()
         
         self.useDefaultDN = None
         self.useCertFile = None
