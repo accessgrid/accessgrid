@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.84 2003-07-15 20:19:38 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.85 2003-07-15 21:36:14 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -539,6 +539,8 @@ class VenueClient( ServiceBase):
                 #
                 log.info("AccessGrid.VenueClient::Exception configuring node service streams")
                 errorInNode = 1
+
+            self.dataStore.SetEventDistributor(self.eventClient, self.venueState.uniqueId)
                  
             # Finally, set the flag that we are in a venue
             self.isInVenue = 1

@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.177 2003-07-15 20:03:05 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.178 2003-07-15 21:36:14 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -617,8 +617,6 @@ class VenueClientUI(wxApp):
             
             wxCallAfter(self.frame.statusbar.SetStatusText, "Entered venue %s successfully" %self.venueClient.venueState.name)
 
-            self.venueClient.dataStore.SetEventDistributor(self.venueClient.eventClient, self.venueClient.venueState.uniqueId)
-                      
             # clean up ui from current venue before entering a new venue
             if self.venueClient.venueUri != None:
                 log.debug("clean up frame")
