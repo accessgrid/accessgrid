@@ -5,13 +5,13 @@
 # Author:      Robert Olson
 #
 # Created:     9/11/2003
-# RCS-ID:      $Id: NetUtilities.py,v 1.3 2003-09-22 21:34:55 olson Exp $
+# RCS-ID:      $Id: NetUtilities.py,v 1.4 2004-02-19 18:10:10 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetUtilities.py,v 1.3 2003-09-22 21:34:55 olson Exp $"
+__revision__ = "$Id: NetUtilities.py,v 1.4 2004-02-19 18:10:10 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -19,6 +19,7 @@ import struct
 import time
 import select
 import socket
+from AccessGrid.Platform import isOSX
 
 TIME1970 = 2208988800L      # Thanks to F.Lundh
 
@@ -27,6 +28,10 @@ if sys.platform == "win32":
     from NetUtilitiesWin32 import *
 
 elif sys.platform.startswith("linux"):
+
+    from NetUtilitiesLinux import *
+
+elif isOSX():
 
     from NetUtilitiesLinux import *
 

@@ -5,16 +5,17 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.57 2003-10-21 03:29:30 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.58 2004-02-19 18:10:10 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 The Platform Module is to isolate OS specific interfaces.
 """
-__revision__ = "$Id: Platform.py,v 1.57 2003-10-21 03:29:30 judson Exp $"
+__revision__ = "$Id: Platform.py,v 1.58 2004-02-19 18:10:10 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
+from AccessGrid.hosting.pyGlobus import Client
 import os
 import sys
 import getpass
@@ -795,6 +796,13 @@ if isWindows():
     GetMimeCommands = Win32GetMimeCommands
     GetMimeType = Win32GetMimeType
     InitUserEnv = Win32InitUserEnv
+elif isOSX():
+    SetRtpDefaults = SetRtpDefaultsUnix
+    RegisterMimeType = lambda : None
+    GetMimeCommands = lambda : None # LinuxGetMimeCommands
+    GetMimeType = lambda : None # LinuxGetMimeType
+    Daemonize = LinuxDaemonize
+    InitUserEnv = LinuxInitUserEnv
 else:
     SetRtpDefaults = SetRtpDefaultsUnix
     # We do need this on linux
