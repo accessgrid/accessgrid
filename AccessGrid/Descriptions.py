@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.62 2004-07-27 06:40:59 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.63 2004-07-28 22:41:52 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.62 2004-07-27 06:40:59 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.63 2004-07-28 22:41:52 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -335,7 +335,7 @@ class AGServiceManagerDescription:
 class AGServiceDescription:
     def __init__( self, name, description, uri, capabilities,
                   resource, executable, serviceManagerUri,
-                  servicePackageUri, version ):
+                  servicePackageFile, version ):
         self.name = name
         self.description = description
 
@@ -345,7 +345,7 @@ class AGServiceDescription:
         self.resource = resource
         self.executable = executable
         self.serviceManagerUri = serviceManagerUri
-        self.servicePackageUri = servicePackageUri
+        self.servicePackageFile = servicePackageFile
         self.version = version
 
 class AGNetworkServiceDescription:
@@ -711,7 +711,7 @@ def CreateAGServiceDescription(svcDescStruct):
                                    resource, 
                                    svcDescStruct.executable, 
                                    svcDescStruct.serviceManagerUri,
-                                   svcDescStruct.servicePackageUri,
+                                   svcDescStruct.servicePackageFile,
                                    svcDescStruct.version )
     return svcDesc
 
