@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.66 2003-03-14 19:18:08 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.67 2003-03-14 19:23:14 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1226,7 +1226,11 @@ class SaveFileDialog(wxDialog):
         # sizes. Rescale to 0-100.
         #
 
-        value = int(100 * int(value) / self.fileSize)
+        if self.fileSize == 0:
+            value = 100
+        else:
+            value = int(100 * int(value) / self.fileSize)
+            
         self.progress.SetValue(value)
         if doneFlag:
             self.transferDone = 1
