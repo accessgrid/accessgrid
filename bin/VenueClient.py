@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.136 2003-04-28 20:44:45 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.137 2003-04-29 15:37:11 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -537,7 +537,7 @@ class VenueClientUI(wxApp, VenueClient):
             # Start text location
             wxCallAfter(wxLogDebug, "Set text location and address bar")
             wxCallAfter(self.frame.SetTextLocation)
-            #wxCallAfter(self.frame.FillInAddress, None, URL)
+            wxCallAfter(self.frame.FillInAddress, None, URL)
             self.venueUri = URL
 
             # Venue data storage location
