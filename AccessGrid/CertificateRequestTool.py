@@ -19,6 +19,7 @@ from AccessGrid import Toolkit
 from AccessGrid.CertificateRepository import RepoDoesNotExist, RepoInvalidCertificate
 from AccessGrid.CRSClient import CRSClient
 from AccessGrid import Platform
+from AccessGrid import NetUtilities
 
 import string
 import time
@@ -846,6 +847,75 @@ class ServiceCertValidator(wxPyValidator):
         return true # Prevent wxDialog from complaining.
 
 
+class HTTPProxyConfigPanel(wxPanel):
+    def __init__(self, parent):
+        wxPanel.__init__(self, parent, -1)
+
+        sbox = wxStaticBox(self, -1, "Proxy server")
+        self.sizer = wxStaticBoxSizer(sbox, wxVERTICAL)
+
+        self.SetSizer(self.sizer)
+        self.SetAutoLayout(1)
+        
+        #
+        # Stuff for the proxy configuration.
+        #
+        
+
+        proxies = NetUtilities.GetHTTPProxyAddresses()
+
+        defaultProxyHost = ""
+        defaultProxyPort = ""
+        defaultEnabled = 0
+        
+        if proxies != []:
+            defaultProxy, defaultEnabled = proxies[0]
+            defaultProxyHost, defaultProxyPort = defaultProxy
+            if defaultProxyPort is None:
+                defaultProxyPort = ""
+
+        self.proxyEnabled = wxCheckBox(self, -1, "Use a proxy server to connect to the certificate server")
+
+        EVT_CHECKBOX(self, self.proxyEnabled.GetId(), self.OnCheckbox)
+
+        self.proxyText = wxTextCtrl(self, -1, defaultProxyHost)
+        self.proxyPort = wxTextCtrl(self, -1, defaultProxyPort)
+
+        self.proxyEnabled.SetValue(defaultEnabled)
+        self.UpdateProxyEnabledState()
+
+        self._Layout()
+        self.Fit()
+
+    def _Layout(self):
+        #
+        # Labelled box for the proxy stuff.
+        #
+
+        self.sizer.Add(self.proxyEnabled, 0, wxEXPAND | wxALL, 5)
+        hsizer = wxBoxSizer(wxHORIZONTAL)
+        hsizer.Add(wxStaticText(self, -1, "Address: "), 0, wxALIGN_CENTER_VERTICAL | wxALL, 2)
+        hsizer.Add(self.proxyText, 1, wxEXPAND)
+        hsizer.Add(wxStaticText(self, -1, "Port: "), 0, wxALIGN_CENTER_VERTICAL | wxALL, 2)
+        hsizer.Add(self.proxyPort, 0, wxEXPAND)
+
+        self.sizer.Add(hsizer, 0, wxEXPAND)
+
+    def OnCheckbox(self, event):
+        self.UpdateProxyEnabledState()
+        
+    def UpdateProxyEnabledState(self):
+
+        en = self.proxyEnabled.GetValue()
+
+        self.proxyText.Enable(en)
+        self.proxyPort.Enable(en)
+
+    def GetInfo(self):
+        return (self.proxyEnabled.GetValue(),
+                self.proxyText.GetValue(),
+                self.proxyPort.GetValue())
+
 class SubmitReqWindow(TitledPage):
     '''
     Shows the user what information will be submitted in the certificate
@@ -859,7 +929,11 @@ class SubmitReqWindow(TitledPage):
                                style = wxNO_BORDER | wxNO_3D | wxTE_MULTILINE |
                                wxTE_RICH2 | wxTE_READONLY)
         self.text.SetBackgroundColour(self.GetBackgroundColour())
+
+        self.proxyPanel = HTTPProxyConfigPanel(self)
+
         self.Layout()
+
 
     def SetText(self, name, email, domain, requestType, password):
         '''
@@ -907,23 +981,30 @@ class SubmitReqWindow(TitledPage):
         self.Refresh()
         self.Update()
 
+        success = false
+
         try:
-            self.parent.createIdentityCertCB(str(self.name),
-                                             str(self.email),
-                                             str(self.domain),
-                                             str(self.password))
+            pinfo = self.proxyPanel.GetInfo()
+            success = self.parent.createIdentityCertCB(str(self.name),
+                                                       str(self.email),
+                                                       str(self.domain),
+                                                       str(self.password),
+                                                       pinfo[0],
+                                                       pinfo[1],
+                                                       pinfo[2])
         finally:
             wxEndBusyCursor()
             self.Refresh()
             self.Update()
 
-        return true
+        return success
 
     def Layout(self):
         '''
         Handles UI layout.
         '''
-        self.sizer.Add(self.text, 0, wxALL|wxEXPAND, 5)
+        self.sizer.Add(self.text, 1, wxALL|wxEXPAND, 5)
+        self.sizer.Add(self.proxyPanel, 0, wxEXPAND | wxALIGN_BOTTOM)
 
 
 class CertificateStatusDialog(wxDialog):
@@ -935,8 +1016,9 @@ class CertificateStatusDialog(wxDialog):
         wxDialog.__init__(self, parent, id, title,
                           style=wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER )
 
+        self.SetSize(wxSize(800,350))
         self.createIdentityCertCB = createIdentityCertCB
-        self.SetSize(wxSize(800,250))
+
         self.info = wxStaticText(self, -1, "You have requested following certificates:")
         self.list = wxListCtrl(self, wxNewId(),
                                style = wxLC_REPORT | wxSUNKEN_BORDER)
@@ -949,7 +1031,11 @@ class CertificateStatusDialog(wxDialog):
 
         self.getStatusButton = wxButton(self, -1, "Update Status")
         self.closeButton = wxButton(self, wxID_CLOSE, "Close")
+
+        self.proxyPanel = HTTPProxyConfigPanel(self)
+        
         self.newRequestButton = wxButton(self, wxNewId(), "Create New Request")
+
         self.certReqDict = {}
         self.certStatus = {}
         self.beforeStatus = 0
@@ -988,6 +1074,8 @@ class CertificateStatusDialog(wxDialog):
 
         sizer.Add(hs, 1, wxEXPAND)
         
+        sizer.Add(self.proxyPanel, 0, wxEXPAND)
+
         sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND)
 
         box = wxBoxSizer(wxHORIZONTAL)
@@ -1167,6 +1255,9 @@ class CertificateStatusDialog(wxDialog):
         """
 
         certMgr = Toolkit.GetApplication().GetCertificateManager()
+
+        proxyEnabled, proxyHost, proxyPort = self.proxyPanel.GetInfo()
+        print "Check got pinfo ", proxyEnabled, proxyHost, proxyPort
         
         # Check status of certificate requests
         for row in range(0, self.list.GetItemCount()):
@@ -1188,12 +1279,28 @@ class CertificateStatusDialog(wxDialog):
                 #
                 self.list.SetStringItem(row, 3, "Invalid")
                 continue
-            
-            certReturn = certMgr.CheckRequestedCertificate(requestDescriptor, token, server)
+
+            if proxyEnabled:
+                certReturn = certMgr.CheckRequestedCertificate(requestDescriptor, token, server,
+                                                               proxyHost, proxyPort)
+            else:
+                certReturn = certMgr.CheckRequestedCertificate(requestDescriptor, token, server)
 
             success, msg = certReturn
             if not success:
-                self.list.SetStringItem(row, 3, "Not ready")
+
+                #
+                # Map nonobvious errors
+                #
+
+                if msg.startswith("Couldn't open certificate file."):
+                    msg = "Not ready"
+                elif msg.startswith("Couldn't read from certificate file."):
+                    msg = "Not ready"
+                elif msg.startswith("There is no certificate for this token."):
+                    msg = "Request not found"
+                
+                self.list.SetStringItem(row, 3, msg)
                 self.certStatus[row] = ("NotReady")
             else:
                 self.list.SetStringItem(row, 3, "Ready for installation")
@@ -1219,11 +1326,15 @@ class CertificateStatusDialog(wxDialog):
 if __name__ == "__main__":
     pp = wxPySimpleApp()
 
+    from AccessGrid import Toolkit
+    app = Toolkit.WXGUIApplication()
+    app.Initialize()
+
     # Check if we have any pending certificate requests
     testURL = "http://www-unix.mcs.anl.gov/~judson/certReqServer.cgi"
     certificateClient = CRSClient(testURL)
     # nrOfReq = certificateClient.GetRequestedCertificates().keys()
-    nrOfReq = 0
+    nrOfReq = 1
     if nrOfReq > 0:
         # Show pending requests
         certStatus = CertificateStatusDialog(None, -1, "Certificate Status Dialog")

@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.23 2003-09-11 20:43:41 judson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.24 2003-09-11 21:10:57 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -32,7 +32,7 @@ from AccessGrid.UIUtilities import MessageDialog, ErrorDialog, ErrorDialogWithTr
 from AccessGrid import CertificateManager
 from AccessGrid import CertificateRepository
 from AccessGrid.CertificateRequestTool import CertificateRequestTool, CertificateStatusDialog
-from AccessGrid.CRSClient import CRSClient
+from AccessGrid.CRSClient import CRSClient, CRSClientInvalidURL, CRSClientConnectionFailed
 
 #
 # Custom event types for the cert browser.
@@ -426,7 +426,8 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                 
         return 1
 
-    def CreateCertificateRequestCB(self, name, email, domain, password):
+    def CreateCertificateRequestCB(self, name, email, domain, password,
+                                   proxyEnabled, proxyHost, proxyPort):
         """
         Callback routine that is passed to the CertificateRequestTool.
 
@@ -436,7 +437,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
         """
 
         log.debug("CreateCertificateRequestCB:Create a certificate request")
-
+        log.debug("Proxy enabled: %s value: %s:%s", proxyEnabled, proxyHost, proxyPort)
 
         try:
             repo = self.certificateManager.GetCertificateRepository()
@@ -465,17 +466,47 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
             log.debug("SubmitRequest:Validate:modhash is %s",
                       certificateRequest.GetModulusHash())
 
-            certificateClient = CRSClient(submitServerURL)
-            requestId = certificateClient.RequestCertificate(email, pem)
+            if proxyEnabled:
+                certificateClient = CRSClient(submitServerURL, proxyHost, proxyPort)
+            else:
+                certificateClient = CRSClient(submitServerURL)
 
-            log.debug("SubmitRequest:Validate:Request id is %s", requestId)
+            try:
+                requestId = certificateClient.RequestCertificate(email, pem)
 
-            certificateRequest.SetMetadata("AG.CertificateManager.requestToken",
-                                           str(requestId))
-            certificateRequest.SetMetadata("AG.CertificateManager.requestURL",
-                                           submitServerURL)
-            certificateRequest.SetMetadata("AG.CertificateManager.creationTime",
-                                           str(int(time.time())))
+                log.debug("SubmitRequest:Validate:Request id is %s", requestId)
+
+                certificateRequest.SetMetadata("AG.CertificateManager.requestToken",
+                                               str(requestId))
+                certificateRequest.SetMetadata("AG.CertificateManager.requestURL",
+                                               submitServerURL)
+                certificateRequest.SetMetadata("AG.CertificateManager.creationTime",
+                                               str(int(time.time())))
+
+                return 1
+            except CRSClientInvalidURL:
+                MessageDialog(None,
+                              "Certificate request failed: invalid request URL",
+                              style = wxICON_ERROR)
+                return 0
+            except CRSClientConnectionFailed:
+                if proxyEnabled:
+                    MessageDialog(None,
+                                  "Certificate request failed: Connection failed.\n"  +
+                                  "Did you specify the http proxy address correctly?",
+                                  style = wxICON_ERROR)
+                else:
+                    MessageDialog(None,
+                                  "Certificate request failed: Connection failed.\n"  +
+                                  "Do you need to configure an http proxy address?",
+                                  style = wxICON_ERROR)
+                return 0
+            except:
+                log.exception("Unexpected error in cert request")
+                MessageDialog(None,
+                              "Certificate request failed",
+                              style = wxICON_ERROR)
+                return 0
             
             
         except CertificateRepository.RepoDoesNotExist:
