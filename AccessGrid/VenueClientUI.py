@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.67 2004-08-11 19:42:44 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.68 2004-08-13 21:31:44 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.67 2004-08-11 19:42:44 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.68 2004-08-13 21:31:44 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1361,7 +1361,10 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     
     def SendTextCB(self,text):
         try:
-            self.controller.SendTextCB(text)
+            if self.venueClient.IsInVenue():
+                self.controller.SendTextCB(text)
+            else:
+                self.Notify("Connect to a venue before sending text messages.", "Send Text Error")
         except:
             self.Error("Error sending text","Send Text Error")
         
