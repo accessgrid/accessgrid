@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.227 2004-09-10 03:58:53 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.228 2004-10-21 20:59:23 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.227 2004-09-10 03:58:53 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.228 2004-10-21 20:59:23 lefvert Exp $"
 
 import sys
 import time
@@ -800,7 +800,7 @@ class Venue(AuthorizationMixIn):
         the client profile passed in.
 
         """
-
+        log.debug("negotiate capabilities")
         clientProfile = vcstate.GetClientProfile()
         privateId = vcstate.GetPrivateId()
 
@@ -816,7 +816,7 @@ class Venue(AuthorizationMixIn):
         for clientCapability in clientProfile.capabilities:
             if clientCapability.role == Capability.PRODUCER:
                 matchesExistingStream = 0
-
+                
                 # add user as producer of all existing streams that match
                 for stream in self.streamList.GetStreams():
                     if stream.capability.matches( clientCapability ):
@@ -865,6 +865,7 @@ class Venue(AuthorizationMixIn):
         clientConsumerCapTypes = []
         newCapabilities = []
         mismatchedStreams = []
+        matchingStreams = []
               
         for capability in clientProfile.capabilities:
             if capability.role == Capability.CONSUMER:
@@ -882,11 +883,12 @@ class Venue(AuthorizationMixIn):
         # Find mismatches in new capabilities. The streams might already
         # be added to the streamDescriptions list, so remove them from the list
         # and send them to the network service manager for resolution.
-               
+        
         for s in self.streamList.GetStreams():
             match = 0
             # If stream has new capability
             if hasattr(s.capability, 'xml') and s.capability.xml:
+
                 # Check for matches for new consumer capabilities
                 sCap = ServiceCapability.CreateServiceCapability(s.capability.xml)
                 for c in newCapabilities:
@@ -904,22 +906,26 @@ class Venue(AuthorizationMixIn):
                     for stream in streamDescriptions:
                         if s.id == stream.id:
                             streamDescriptions.remove(stream)
-                      
+
+        log.debug('Number of mismatched streams %s'%len(mismatchedStreams))
+
         # Use network services to resolve mismatches.
         if len(mismatchedStreams)>0:
+            log.debug('Resolve mismatch')
+            
             matchingStreams = self.networkServicesManager.ResolveMismatch(
                 mismatchedStreams, clientProfile.capabilities)
-            
+           
+            log.debug('Number of new streams %s'%len(matchingStreams))
+
             for s in matchingStreams:
-                c = ServiceCapability.CreateServiceCapability(s.capability.xml)
-                
                 if not self.streamList.FindStreamByDescription(s):
                     # Make new stream available for other clients.
                     self.streamList.AddStream(s)
-
+                    
             # Return new streams to the client.
             streamDescriptions.extend(matchingStreams)
-        
+
         return streamDescriptions
     
 
@@ -1281,7 +1287,7 @@ class Venue(AuthorizationMixIn):
             log.exception("Enter: Can't get state.")
             raise InvalidVenueState
 
-        return ( state, privateId, streamDescriptions )
+        return ( state, privateId, streamDescriptions)
 
     def _UpdateProfileCache(self, profile):
         try:
@@ -1298,8 +1304,13 @@ class Venue(AuthorizationMixIn):
         @Param networkServiceDescription: A network service description.
         """
         nsd = CreateAGNetworkServiceDescription(networkServiceDescription)
+        log.debug('register network service %s'%nsd)
         try:
             self.networkServicesManager.RegisterService(nsd)
+            self.server.eventService.Distribute( self.uniqueId,
+                                                 Event( Event.ADD_SERVICE,
+                                                        self.uniqueId,
+                                                        nsd ) )
 
         except:
             log.exception('Venue.RegisterNetworkService: Failed')
@@ -1314,7 +1325,11 @@ class Venue(AuthorizationMixIn):
         nsd = CreateAGNetworkServiceDescription(networkServiceDescription)
         try:
             self.networkServicesManager.UnRegisterService(nsd)
-            
+            self.server.eventService.Distribute( self.uniqueId,
+                                                 Event( Event.REMOVE_SERVICE,
+                                                        self.uniqueId,
+                                                        nsd ) )
+
         except:
             log.exception('Venue.UnRegisterNetworkService: Failed')
             raise Exception, 'Venue.UnRegisterNetworkService: Failed'
@@ -1531,15 +1546,20 @@ class Venue(AuthorizationMixIn):
     def RemoveConnection(self, connectionDesc):
         """
         """
+        
+        found = 0
+            
         for c in self.connections:
             if c.GetURI() == connectionDesc.GetURI():
+                found = 1
                 self.connections.remove(c)
                 self.server.eventService.Distribute( self.uniqueId,
                                              Event( Event.REMOVE_CONNECTION,
                                                     self.uniqueId,
                                                     connectionDesc ) )
-            else:
-                raise ConnectionNotFound
+
+        if not found:
+            raise ConnectionNotFound
             
     def GetConnections(self):
         """
@@ -1925,7 +1945,6 @@ class Venue(AuthorizationMixIn):
         *aid* The id of the application being retrieved.
 
         **Raises:**
-
         *ApplicationNotFound* Raised when the application is not
         found in the venue.
 
@@ -2025,7 +2044,6 @@ class Venue(AuthorizationMixIn):
         *ApplicationNotFound* Raised when an application is not
         found for the application id specified.
         """
-             
         if not self.applications.has_key(appDescStruct.id):
             raise ApplicationNotFound
 
@@ -3302,13 +3320,19 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
         return self.proxy.RemoveConnection(cid)
 
     def GetConnections(self):
-        return self.proxy.GetConnections()
+        cDescList = []
+        cList = self.proxy.GetConnections()
+        
+        for struct in cList:
+            cDescList.append(CreateConnectionDescription(struct))
+                
+        return cDescList
 
     def AddStream(self, streamDesc):
         return self.proxy.AddStream(streamDesc)
 
-    def RemoveStream(self, sid):
-        return self.proxy.RemoveStream(sid)
+    def RemoveStream(self, stream):
+        return self.proxy.RemoveStream(stream)
 
     def GetStreams(self):
         streamDescList = []
