@@ -404,18 +404,18 @@ class CertificateStatusBrowser(CertificateBrowserBase):
         sizer.Add(b, 0, wxEXPAND | wxALL, 3)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "View request")
+        b = wxButton(self, -1, "View Request")
         EVT_BUTTON(self, b.GetId(), self.OnViewRequest)
         sizer.Add(b, 0, wxEXPAND | wxALL, 3)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "Check status")
+        b = wxButton(self, -1, "Check Status")
         EVT_BUTTON(self, b.GetId(), self.OnCheckStatus)
         sizer.Add(b, 0, wxEXPAND | wxALL, 3)
 
         sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND | wxALL , 3)
 
-        b = wxButton(self, -1, "Request a new certificate")
+        b = wxButton(self, -1, "Request New Certificate")
         EVT_BUTTON(self, b.GetId(), self.OnRequestNewCertificate)
         sizer.Add(b, 0, wxEXPAND | wxALL, 3)
 

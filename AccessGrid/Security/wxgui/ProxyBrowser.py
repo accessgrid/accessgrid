@@ -29,12 +29,12 @@ class ProxyBrowser(CertificateBrowserBase):
         sizer.Add(b, 0, wxEXPAND)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "View proxy")
+        b = wxButton(self, -1, "View Proxy")
         EVT_BUTTON(self, b.GetId(), self.OnViewCertificate)
         sizer.Add(b, 0, wxEXPAND)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "Refresh display")
+        b = wxButton(self, -1, "Refresh")
         EVT_BUTTON(self, b.GetId(), lambda event, self = self: self.Load())
         sizer.Add(b, 0, wxEXPAND)
 

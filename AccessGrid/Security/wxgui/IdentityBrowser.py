@@ -57,9 +57,7 @@ class IdentityBrowser(CertificateBrowserBase):
 
     def _buildButtons(self, sizer):
 
-        #
         # Buttons that are only valid when a cert is selected.
-        #
         self.certOnlyButtons = []
 
         b = wxButton(self, -1, "Import")
@@ -76,13 +74,13 @@ class IdentityBrowser(CertificateBrowserBase):
         sizer.Add(b, 0, wxEXPAND)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "Set as default")
+        b = wxButton(self, -1, "Make Default")
         EVT_BUTTON(self, b.GetId(), self.OnSetDefault)
         sizer.Add(b, 0, wxEXPAND)
         self.defaultButton = b
         b.Enable(0)
 
-        b = wxButton(self, -1, "View certificate")
+        b = wxButton(self, -1, "View Certificate")
         EVT_BUTTON(self, b.GetId(), self.OnViewCertificate)
         sizer.Add(b, 0, wxEXPAND)
         self.certOnlyButtons.append(b)
@@ -90,7 +88,7 @@ class IdentityBrowser(CertificateBrowserBase):
         sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND | wxALL , 3)
 
         self.exportServiceProfileButton = wxButton(self, -1,
-                                                   "Export service profile")
+                                                   "Export Service Profile")
         EVT_BUTTON(self, self.exportServiceProfileButton.GetId(),
                    self.OnExportServiceProfile)
         sizer.Add(self.exportServiceProfileButton, 0, wxEXPAND)

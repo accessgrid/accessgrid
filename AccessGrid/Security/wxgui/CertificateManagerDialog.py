@@ -14,17 +14,11 @@ class CertificateManagerDialog(wxDialog):
 
         self.certMgr = certMgr
 
-        #
         # Toplevel vsizer with a notebook and a hsizer with
         # window ops buttons.
-        #
-
         sizer = wxBoxSizer(wxVERTICAL)
 
-        #
         # Build the notebook.
-        #
-
         self.notebook = wxNotebook(self, -1)
         sizer.Add(self.notebook, 1, wxEXPAND)
 
@@ -40,35 +34,18 @@ class CertificateManagerDialog(wxDialog):
         self.statusBrowser = CertificateStatusBrowser(self.notebook, -1, self.certMgr)
         self.notebook.AddPage(self.statusBrowser, "Certificate Requests")
 
-        #
         # Default to certificate pane.
-        #
         self.notebook.SetSelection(1)
-
-        #
-        # Legacy ones
-        #
-
-        # self.idBrowser = RepositoryBrowser(self.notebook, -1, self.certMgr, RepositoryBrowser.TYPE_IDENTITY)
-        # self.notebook.AddPage(self.idBrowser, "Personal")
-        
-        # self.caBrowser = RepositoryBrowser(self.notebook, -1, self.certMgr, RepositoryBrowser.TYPE_CA)
-        # self.notebook.AddPage(self.caBrowser, "Authorities")
 
         hsizer = wxBoxSizer(wxHORIZONTAL)
         sizer.Add(hsizer, 0)
 
         b = wxButton(self, -1, "Close")
         EVT_BUTTON(self, b.GetId(), self.OnOK)
-        hsizer.Add(b, 0, wxALIGN_RIGHT | wxEXPAND)
+        sizer.Add(b, 0, wxALIGN_RIGHT)
 
         self.SetSizer(sizer)
         self.SetAutoLayout(1)
-
-        #EVT_CERT_SELECTED(self.browser, self.OnCertSelected)
-        #EVT_CERT_IMPORT(self.browser, self.OnCertImport)
-        #EVT_CERT_EXPORT(self.browser, self.OnCertExport)
-        #EVT_CERT_DELETE(self.browser, self.OnCertDelete)
 
         EVT_CLOSE(self, self.OnClose)
 

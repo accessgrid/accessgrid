@@ -35,7 +35,7 @@ class CABrowser(CertificateBrowserBase):
         sizer.Add(b, 0, wxEXPAND)
         self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "View certificate")
+        b = wxButton(self, -1, "View Certificate")
         EVT_BUTTON(self, b.GetId(), self.OnViewCertificate)
         sizer.Add(b, 0, wxEXPAND)
         self.certOnlyButtons.append(b)
