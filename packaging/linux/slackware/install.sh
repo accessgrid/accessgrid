@@ -12,21 +12,31 @@
 #
 # Has wxPythonGTK been installed?
 #
-WXPYGTK=`ls /var/adm/packages | grep wxPythonGTK`
+WXPYGTK=`ls /var/adm/packages | grep wxPythonGTK2`
 if [ ! $? -eq 0 ]; then
-    echo "Can't find wxPythonGTK package installed"
+    echo "Can't find wxPythonGTK2 package installed"
     echo "Please install wxPythonGTK package, before running this script again"
     exit 1
 fi
 
 # Has xawtv been installed? (need v4lctl)
-# We could just look for v4lctl
+# Maybe we could just look for v4lctl, rather than the whole lot?
 #
 XAWTV=`ls /var/adm/packages | grep xawtv`
 if [ ! $? -eq 0 ]; then
     echo "Can't find xawtv package installed"
     echo "Please install xawtv package, before running this script again"
     exit 2
+fi
+
+# Has wxMozilla been installed?
+# Needed for SharedBrowser application
+#
+WXMOZ=`ls /var/adm/packages | grep wxMozilla`
+if [ ! $? -eq 0 ]; then
+    echo "Can't find wxMozilla package installed"
+    echo "Please install wxMozilla package, before running this script again"
+    exit 3
 fi
 
 
@@ -148,6 +158,10 @@ echo "Installing Access Grid package "
 echo "***********************************************"
 Install $AG $AG_VER
 echo ""
+
+#
+# Any weird stuff for Shared apps?
+#
 
 #
 # Install XDG menu stuff
