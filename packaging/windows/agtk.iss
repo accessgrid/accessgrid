@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.23 2003-09-17 17:21:21 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.24 2003-09-17 17:34:29 judson Exp $
 ;
 
 #define SourceDir "C:\Software\AccessGrid\AccessGrid"
@@ -14,6 +14,8 @@
 EnableISX=true
 
 [_ISToolPreCompile]
+Name: mkdir; Parameters: C:\Software\AccessGrid\AccessGrid\dist\bin
+Name: mkdir; Parameters: C:\Software\AccessGrid\AccessGrid\dist\services
 Name: python; Parameters: C:\Software\AccessGrid\AccessGrid\packaging\makeServicePackages.py C:\Software\AccessGrid\AccessGrid\services\node C:\Software\AccessGrid\AccessGrid\dist\services; Flags: abortonerror
 Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\Software\AccessGrid\ag-vic C:\Software\AccessGrid\AccessGrid\dist\bin; Flags: abortonerror
 Name: C:\Software\AccessGrid\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: C:\Software\AccessGrid\ag-rat C:\Software\AccessGrid\AccessGrid\dist\bin; Flags: abortonerror
