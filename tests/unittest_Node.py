@@ -54,7 +54,7 @@ class NodeTestCase(unittest.TestCase):
         global nodeService, server, log, smurl
 
         # initialize toolkit and environment
-        app = Toolkit.Service().instance()
+        app = Toolkit.Service.instance()
         app.Initialize("Node_test", sys.argv[:1])
         log = app.GetLog()
         

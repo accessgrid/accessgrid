@@ -100,7 +100,7 @@ class VenueServerTestCase(unittest.TestCase):
         global venueServer  # so TestCases can access it
         global venue1       # so TestCases can access it
         # initialize toolkit and environment
-        app = Toolkit.Service()
+        app = Toolkit.Service.instance()
         #
         app.Initialize("VenueServer_test", sys.argv[:1])
         # server
