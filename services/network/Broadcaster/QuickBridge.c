@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.12 2004-12-16 21:27:25 leggett Exp $
+ * $Id: QuickBridge.c,v 1.13 2004-12-16 21:35:17 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -1238,6 +1238,8 @@ int main( int argc, char *argv[] )
 		  debug( 2, "Connection accepted.\n" );
 		  debug( 4, "File descriptor for accepted socket: %d\n", msgsock );
 		  debug( 6, "Client IP: %s\n", inet_ntoa( client.sin_addr ) );
+		  debug( 2, "Adding fixed IP\n" );
+		  insert_fixed( s, client.sin_addr.s_addr );
 		  chid = fork( );
 		  if ( chid == 0 )
 		    {
