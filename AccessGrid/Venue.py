@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.221 2004-08-09 21:07:07 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.222 2004-08-16 16:57:52 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.221 2004-08-09 21:07:07 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.222 2004-08-16 16:57:52 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1291,6 +1291,8 @@ class Venue(AuthorizationMixIn):
             self.cache.updateProfile(profile)
         except InvalidProfileException:
             log.warn("UpdateProfileCache: InvalidProfile when storing a venue user's profile in the cache.")
+        except:
+            log.exception("UpdateProfileCache: Unable to write venue user's profile in the cache.")
 
     def RegisterNetworkService(self, networkServiceDescription):
         """
