@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Client.py,v 1.5 2003-02-11 10:16:43 judson Exp $
+# RCS-ID:      $Id: Client.py,v 1.6 2003-02-14 20:51:38 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -33,10 +33,10 @@ class Handle:
         self.namespace = namespace
         self.authCallback = authCallback
 
-    def get_url(self):
+    def GetURL(self):
         return self.url
 
-    def get_proxy(self):
+    def GetProxy(self):
 
         if self.proxy is None:
             #
@@ -58,18 +58,25 @@ class Handle:
     def __repr__(self):
         return self.url
 
+    #
+    # Mappings to other naming style
+    #
+
+    get_url = GetURL
+    get_proxy = GetProxy
+
 def create_proxy(url, namespace, authCallback = None):
     
     from AGGSISOAP import SOAPConfig
-    import utilities
+    import Utilities
 
     if authCallback is None:
-        io_attr = utilities.CreateTCPAttrAlwaysAuth()
+        io_attr = Utilities.CreateTCPAttrAlwaysAuth()
     else:
-        io_attr = utilities.CreateTCPAttrCallbackAuth(authCallback)
+        io_attr = Utilities.CreateTCPAttrCallbackAuth(authCallback)
 
 
-    config = SOAPConfig(tcpAttr = io_attr)
+    config = SOAPConfig(tcpAttr = io_attr, debug = 0)
 
     # print "creating proxy on ", url, " ioattr is ", io_attr
 
@@ -157,7 +164,7 @@ class HTTPTransport:
         if config.dumpSOAPIn:
             data = r.getfile().read(contentLen)
 
-            s = 'Incoming SOAP'
+            s = 'Incoming SOAP len=%s contentLen=%s' % (len(data), contentLen)
             debugHeader(s)
             print data,
             if data[-1] != '\n':

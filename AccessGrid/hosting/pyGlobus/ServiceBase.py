@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ServiceBase.py,v 1.5 2003-02-10 14:48:06 judson Exp $
+# RCS-ID:      $Id: ServiceBase.py,v 1.6 2003-02-14 20:51:38 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -17,7 +17,7 @@ class ServiceBase:
         self._register_exports(service_obj)
         self._service_object = service_obj
 
-    def get_handle(self):
+    def GetHandle(self):
         return self._service_object.get_handle()
 
     def _register_exports(self, service_obj):
@@ -82,3 +82,9 @@ class ServiceBase:
 
             for method, export_name, pass_cinfo in exported_methods.values():
                 service_obj.register_function(method, export_name, pass_cinfo)
+
+    #
+    # Mappings to other function naming style.
+    #
+
+    get_handle = GetHandle

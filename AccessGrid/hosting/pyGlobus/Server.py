@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/29/01
-# RCS-ID:      $Id: Server.py,v 1.8 2003-02-10 14:48:06 judson Exp $
+# RCS-ID:      $Id: Server.py,v 1.9 2003-02-14 20:51:38 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ from threading import Thread
 
 import ServiceObject
 import ServiceBase
-import utilities
+import Utilities
 
 from AGGSISOAP import SOAPProxy, SOAPServer, SOAPConfig
 
@@ -48,9 +48,9 @@ class Server:
     def _create_server(self, port, server_auth_callback, debug = 0):
 
         if server_auth_callback is None:
-            attr = utilities.CreateTCPAttrAlwaysAuth()
+            attr = Utilities.CreateTCPAttrAlwaysAuth()
         else:
-            attr = utilities.CreateTCPAttrCallbackAuth(server_auth_callback)
+            attr = Utilities.CreateTCPAttrCallbackAuth(server_auth_callback)
 
         config = SOAPConfig()
         config.debug = debug
@@ -61,7 +61,7 @@ class Server:
                                   log = 0,
                                   config = config)
 
-    def run(self):
+    def Run(self):
         """
         Run the server.
 
@@ -78,7 +78,7 @@ class Server:
 
         self._server.server_close()
         
-    def run_in_thread(self):
+    def RunInThread(self):
         """
         Start the server in a new thread.
 
@@ -90,10 +90,10 @@ class Server:
         server_thread = Thread(target = self.run)
         server_thread.start()
 
-    def stop(self):
+    def Stop(self):
         self._running = 0
 
-    def create_service(self, service_class, 
+    def CreateService(self, service_class, 
                        pathId = None,
                        *args):
 	"""
@@ -117,7 +117,7 @@ class Server:
 
 	return appobj
 
-    def create_service_object(self, pathId = None):
+    def CreateServiceObject(self, pathId = None):
 	"""
         Instantiate a new service object.
 
@@ -146,7 +146,7 @@ class Server:
 
 	return service_obj
 
-    def allocate_id(self):
+    def AllocateId(self):
         #
 	# Allocate the ID
         #
@@ -178,17 +178,28 @@ class Server:
         except Exception, e:
              "Other exception ", e
 
-    def get_connection_info(self, connection):
-        return utilities.SecureConnectionInfo(connection.get_security_context())
+    def GetConnectionInfo(self, connection):
+        return Utilities.SecureConnectionInfo(connection.get_security_context())
 
-    def get_port(self):
+    def GetPort(self):
         """Return the port on which this server is listening. """
         return self._server.port
 
-    def get_url_base(self):
+    def GetURLBase(self):
         """Return the base URL that represents this server. """
 
-        hostname = utilities.GetHostname()
+        hostname = Utilities.GetHostname()
         return "https://%s:%s" % (hostname, self.get_port())
 
+    #
+    # Mappings for different naming styles.
+    #
 
+    run = Run
+    run_in_thread = RunInThread
+    stop = Stop
+    create_service = CreateService
+    create_service_object = CreateServiceObject
+    allocate_id = AllocateId
+    get_port = GetPort
+    get_url_base = GetURLBase

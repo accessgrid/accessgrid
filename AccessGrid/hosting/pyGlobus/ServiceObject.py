@@ -5,11 +5,12 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ServiceObject.py,v 1.4 2003-02-10 14:48:06 judson Exp $
+# RCS-ID:      $Id: ServiceObject.py,v 1.5 2003-02-14 20:51:38 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
-from AccessGrid.hosting import access_control
+
+from AccessGrid.hosting import AccessControl
 
 class NoServiceMethodException(Exception):
     """No such method.
@@ -96,17 +97,17 @@ class ServiceObject:
             self, server, g_handle, remote_user, context)
         return 1
 
-    def get_path(self):
+    def GetPath(self):
         """Return the path part of the service's URL."""
         path = "/%s" % (self.id)
         return path
     
-    def get_handle(self):
+    def GetHandle(self):
         """Return the service's handle (as a URL)."""
         handle = self.server.get_url_base() + self.get_path()
         return handle
 
-    def register_functions(self, function_dict, pass_connection_info = 0):
+    def RegisterFunctions(self, function_dict, pass_connection_info = 0):
         """Register these functions as SOAP handler methods.
 
         The function_dict is a dictionary where the key is the SOAP
@@ -118,7 +119,7 @@ class ServiceObject:
             func = function_dict[name]
             self.register_function(func, name, pass_connection_info)
 
-    def register_function(self, function, name = None,
+    def RegisterFunction(self, function, name = None,
                           pass_connection_info = 0):
         """
         Register a function to respond to SOAP requests.
@@ -136,7 +137,7 @@ class ServiceObject:
 
         #        print "Service %s registers function %s as %s" % (self, function, name)
 
-	wrapper = access_control.InvocationWrapper(function, pass_connection_info, self)
+	wrapper = AccessControl.InvocationWrapper(function, pass_connection_info, self)
         self.function_map[name] = (wrapper, 1)
 
         # self.function_map[name] = (function, pass_connection_info)
@@ -167,4 +168,11 @@ class ServiceObject:
             raise NoServiceMethodException()
         
         return func, pass_connection_info
+    #
+    # Mappings for different naming styles.
+    #
 
+    get_path = GetPath
+    get_handle = GetHandle
+    register_functions = RegisterFunctions
+    register_function = RegisterFunction
