@@ -2,7 +2,7 @@
 # Name:        broadcaster.py
 # Purpose:     
 # Created:     2005/05/01
-# RCS-ID:      $Id: broadcaster.py,v 1.6 2005-02-04 20:42:51 turam Exp $
+# RCS-ID:      $Id: broadcaster.py,v 1.7 2005-02-11 20:51:58 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -35,6 +35,8 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 from bridge import RTPReceiver
 from l16_to_l8_transcoder import L16_to_L8
+from VideoSelector import VideoSelector
+from SelectorGUI import SelectorGUI
 
 bridge = None
 
@@ -48,7 +50,7 @@ class Broadcaster:
     stream to forward. 
     """
 
-    def __init__(self, name, app):
+    def __init__(self, name, app, mixAudio):
         global bridge
         
         self.flag = 1
@@ -56,6 +58,11 @@ class Broadcaster:
         self.processManager = ProcessManager()
         self.log = app.GetLog()
 
+        self.selectAudio = 1
+        
+        if mixAudio:
+            self.selectAudio = 0
+    
         # Initiate multicast address allocator.
         self.multicastAddressAllocator = MulticastAddressAllocator()
         self.multicastAddressAllocator.SetAllocationMethod(
@@ -162,33 +169,39 @@ class Broadcaster:
         # Create commands to execute
 
         # Start audio down-sampler (linear16 kHz -> linear8 kHz)
+
+        if debug: print "****************** START DOWN-SAMPLER", fromAudioHost, "/", fromAudioPort, "  ",self.transcoderHost, "/", self.transcoderPort
         self.tcoder = L16_to_L8(fromAudioHost,fromAudioPort,
-                                self.transcoderHost,self.transcoderPort)
+                                self.transcoderHost,self.transcoderPort, self.selectAudio)
         self.tcoder.Start()
 
+        wxapp = wxPySimpleApp()
+
+        if self.selectAudio:
+            audioSelectorUI = SelectorGUI("Audio Selector", self.tcoder)
+       
         if debug: print "****************** BEFORE RAT", self.toAudioPort
         
         # Start audio transcoder (rat linear -> ulaw)
         ratExec = os.path.join(os.getcwd(), 'rat')
         roptions = []
         roptions.append("-T")
-        roptions.append("%s/%d/127"%(self.transcoderHost, self.transcoderPort))
+        roptions.append("%s/%d/127/l16"%(self.transcoderHost, int(self.transcoderPort)))
         roptions.append("%s/%d/127/pcm"%(self.toAudioHost, int(self.toAudioPort)))
               
         if debug: print "********* START transcoder ", ratExec, roptions, '\n'
         self.processManager.StartProcess(ratExec, roptions)
 
-        selectorExec = os.path.join(os.getcwd(), 'Selector')
-        soptions = []
-        soptions.append("%s"%fromVideoHost)
-        soptions.append("%d"%fromVideoPort)
-        soptions.append("%s"%self.toVideoHost)
-        soptions.append("%d"%int(self.toVideoPort))
 
+        self.vselector = VideoSelector(fromVideoHost, int(fromVideoPort),
+                                       self.toVideoHost, int(self.toVideoPort), 1)
+        self.vselector.Start()
+
+        videoSelectorUI = SelectorGUI("VideoSelector", self.vselector)
+        
         # Start video selector
-        if debug: print "********* START selector with options = ", soptions, '\n'
-        self.processManager.StartProcess(selectorExec, soptions)
-
+        if debug: print "****************** START VIDEO SELECTOR", fromVideoHost, "/", fromVideoPort, "  ",self.toVideoHost, "/", self.toVideoPort
+        
         if debug: print "----------------------------------------"
         if debug: print "*** Video from %s/%d is forwarded to %s/%d"%(fromVideoHost, fromVideoPort,
                                                             self.toVideoHost, self.toVideoPort)
@@ -202,6 +215,13 @@ class Broadcaster:
                         self.toVideoHost, int(self.toVideoPort), 9999)
          
         bridge.start()
+
+        wxapp.SetTopWindow(videoSelectorUI)
+        if self.selectAudio:
+            audioSelectorUI.Show()
+        videoSelectorUI.Show()
+        wxapp.MainLoop()
+        
          
 
 class BridgeRequestHandler(BaseHTTPRequestHandler):
@@ -362,6 +382,9 @@ if __name__ == "__main__":
     app.AddCmdLineOption(Option("--audioPort",
                                 dest="audioPort",
                                 help="Port for audio source"))
+    app.AddCmdLineOption(Option("--mixAudio",
+                                dest = "mixAudio", action = "store_true", default = 0,
+                                help ="Try mixing all audio sources (High failure rate)"))
     
     if debug: print "initializing"
     try:
@@ -386,8 +409,14 @@ if __name__ == "__main__":
     if not app.certificateManager.HaveValidProxy():
         sys.exit(-1)
 
+
+    print app.options.mixAudio
+    mix = 0
+    if app.options.mixAudio:
+        mix = 1
+
     # Create the network service.
-    bcaster = Broadcaster('Broadcaster', app)
+    bcaster = Broadcaster('Broadcaster', app, mix)
     
     # Start signal loop to make it possible to exit cleanly
     bcaster.StartSignalLoop()
