@@ -1,10 +1,11 @@
+import threading
 import os
-from wxPython.wx import *
 
+from wxPython.wx import *
 import AccessGrid.Types
 import AccessGrid.Utilities
 from AccessGrid.VenueClientUIClasses import VenueClient
-from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog, ConnectToVenueDialog
+from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog, ConnectToVenueDialog, WelcomeDialog
 import AccessGrid.ClientProfile
 from AccessGrid.Descriptions import DataDescription
 
@@ -26,6 +27,7 @@ class VenueClientUI(wxApp, VenueClient):
         return true
 
     def ConnectToVenue(self):
+        myHomePath = os.environ['HOME']
         # venueServerUri = "https://localhost:6000/VenueServer"
         # venueUri = Client.Handle( venueServerUri ).get_proxy().GetDefaultVenue()
         
@@ -43,15 +45,16 @@ class VenueClientUI(wxApp, VenueClient):
             
         except:
             os.mkdir(myHomePath+'/'+accessGridDir)
-            
+
         self.profile = ClientProfile(self.profilePath)
                   
         if self.profile.IsDefault():  # not your profile
             self.__openProfileDialog()
+
         else:
             self.__startMainLoop(self.profile)
 
-    def __openProfileDialog(self, profile):
+    def __openProfileDialog(self):
         profileDialog = ProfileDialog(NULL, -1, 'Please, fill in your profile', self.profile)
 
         if (profileDialog.ShowModal() == wxID_OK): 
@@ -66,6 +69,13 @@ class VenueClientUI(wxApp, VenueClient):
         self.gotClient = true
         self.SetProfile(profile)
         uri = self.profile.homeVenue
+        
+        try: # is this a server
+            venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
+            
+        except: # no, it is a venue
+            venueUri = uri
+            
         try:
             self.client = Client.Handle(venueUri).get_proxy()
             self.EnterVenue(venueUri)
@@ -75,18 +85,28 @@ class VenueClientUI(wxApp, VenueClient):
             connectToVenueDialog = ConnectToVenueDialog(NULL, -1, 'Connect to server')
             if (connectToVenueDialog.ShowModal() == wxID_OK):
                 uri = connectToVenueDialog.address.GetValue()
-                
-            connectToVenueDialog.Destroy()
+                try: # is this a server
+                    venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
 
-            try: # is this a server
-                venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
-            except: # no, it is a venue
-                venueUri = uri
+                except: # no, it is a venue
+                    venueUri = uri
 
-            self.client = Client.Handle(venueUri).get_proxy()
-            self.EnterVenue(venueUri)
-            self.frame.Show(true)
-            self.MainLoop()
+                try:
+                    self.client = Client.Handle(venueUri).get_proxy()
+                    self.EnterVenue(venueUri)
+                    connectToVenueDialog.Destroy()
+                    self.frame.Show(true)
+                    self.MainLoop()
+                    
+                except:
+                    print "Exception in __startMainLoop : ", sys.exc_type, sys.exc_value   
+                    text = "Could not establish connection to venue."
+                    noConnectionDialog = wxMessageDialog(NULL, text ,'', wxOK | wxICON_INFORMATION)
+                    noConnectionDialog.ShowModal()
+                    noConnectionDialog.Destroy()
+
+            else:
+                connectToVenueDialog.Destroy()
 
         else:
             self.frame.Show(true)
@@ -103,8 +123,9 @@ class VenueClientUI(wxApp, VenueClient):
             self.frame.contentListPanel.AddParticipant(event.data)
 
         elif event.eventType == Event.EXIT:
-            self.frame.contentListPanel.RemoveParticipant(event.data)
-            
+            if(event.data.publicId != self.profile.publicId):
+                self.frame.contentListPanel.RemoveParticipant(event.data)
+                                 
         elif event.eventType == Event.ADD_DATA:
             self.frame.contentListPanel.AddData(event.data)
 
@@ -130,7 +151,7 @@ class VenueClientUI(wxApp, VenueClient):
             print 'update venue state'
 
        # else:
-            #print 'HEARTBEAT!'
+         #   print 'HEARTBEAT!'
     
     def EnterVenue(self, URL):
         """
@@ -139,14 +160,16 @@ class VenueClientUI(wxApp, VenueClient):
         performs its own operations when the client enters a venue.
         """
         VenueClient.EnterVenue( self, URL )
-
+       
         venueState = self.venueState
         self.frame.SetLabel(venueState.description.name)
-        text = self.profile.name + ', welcome to:\n' + self.venueState.description.name\
-               + '\n' +self.venueState.description.description 
-        welcomeDialog = wxMessageDialog(NULL, text ,'', wxOK | wxICON_INFORMATION)
-        welcomeDialog.ShowModal()
-        welcomeDialog.Destroy()
+       # text = self.profile.name + ', welcome to:\n' + self.venueState.description.name\
+        #       + '\n' +self.venueState.description.description
+        name = self.profile.name
+        title = self.venueState.description.name
+        description = self.venueState.description.description
+        welcomeDialog = WelcomeDialog(NULL, -1, 'Enter Venue', name, title, description)
+
         users = venueState.users.values()
         for user in users:
             if(user.profileType == 'user'):
@@ -176,21 +199,12 @@ class VenueClientUI(wxApp, VenueClient):
         performs its own operations when the client exits a venue.
         """
         VenueClient.ExitVenue( self )
-        
-    #def GoToNewVenue(self, description):
-     #   uri =  description.uri
-      #  self.frame.CleanUp()
-       # self.OnExit()
-        #self.client = Client.Handle(uri).get_proxy()
-        #self.EnterVenue(uri)
-
+                                     
     def GoToNewVenue(self, uri):
         try: # is this a server
-            print '========================this is a server'
             venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
 
         except: # no, it is a venue
-            print '=========================this is a venue'
             venueUri = uri
             
         self.frame.CleanUp()
@@ -198,17 +212,13 @@ class VenueClientUI(wxApp, VenueClient):
         self.client = Client.Handle(venueUri).get_proxy()
         self.EnterVenue(venueUri)
 
-    def GoToNewServer(self, serverUri):
-        venueUri = Client.Handle( serverUri ).get_proxy().GetDefaultVenue()
-        self.GoToNewVenue(venueUri)
-
     def OnExit(self):
         """
         This method performs all processing which needs to be
         done as the application is about to exit.
         """
         self.ExitVenue()
-        
+                
     def AddData(self, data):
         self.client.AddData(data)
 
@@ -237,9 +247,8 @@ if __name__ == "__main__":
     from AccessGrid.hosting.pyGlobus import Client
     from AccessGrid.ClientProfile import ClientProfile
     from AccessGrid.Types import *
-
     wxInitAllImageHandlers()
-    
+
     vc = VenueClientUI()
     vc.ConnectToVenue()
        
