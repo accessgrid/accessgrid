@@ -7,10 +7,7 @@ from AccessGrid.Security.Utilities import GetCNFromX509Subject
 from CertificateBrowserBase import CertificateBrowserBase
 from CertificateViewer import CertificateViewer
 
-import CertificateManagerWXGUI
-#from CertificateManagerWXGUI import ImportPKCS12IdentityCertificate
-#from CertificateManagerWXGUI import ImportPEMIdentityCertificate
-#from CertificateManagerWXGUI import ExportIDCertDialog
+import ImportExportUtils
 
 from ImportIdentityCertDialog import ImportIdentityCertDialog
 
@@ -50,6 +47,11 @@ class IdentityBrowser(CertificateBrowserBase):
         sizer.Add(b, 0, wxEXPAND)
         self.certOnlyButtons.append(b)
 
+        b = wxButton(self, -1, "Refresh")
+        EVT_BUTTON(self, b.GetId(), lambda event, self = self: self.Load())
+        sizer.Add(b, 0, wxEXPAND)
+
+
         for b in self.certOnlyButtons:
             b.Enable(0)
 
@@ -68,9 +70,9 @@ class IdentityBrowser(CertificateBrowserBase):
         certType, certFile, privateKeyFile = ret
 
         if certType == "PKCS12":
-            impCert = CertificateManagerWXGUI.ImportPKCS12IdentityCertificate(self.certMgr, certFile)
+            impCert = ImportExportUtils.ImportPKCS12IdentityCertificate(self.certMgr, certFile)
         elif certType == "PEM":
-            impCert = CertificateManagerWXGUI.ImportPEMIdentityCertificate(self.certMgr, certFile, privateKeyFile)
+            impCert = ImportExportUtils.ImportPEMIdentityCertificate(self.certMgr, certFile, privateKeyFile)
         else:
 
             dlg = wxMessageDialog(self,
@@ -92,7 +94,7 @@ class IdentityBrowser(CertificateBrowserBase):
         if cert is None:
             return
 
-        dlg = CertificateManagerWXGUI.ExportIDCertDialog(self, cert)
+        dlg = ImportExportUtils.ExportIDCertDialog(self, cert)
         dlg.ShowModal()
         dlg.Destroy()
 
@@ -132,6 +134,15 @@ class IdentityBrowser(CertificateBrowserBase):
             self.defaultButton.Enable(0)
         else:
             self.defaultButton.Enable(1)
+
+    def OnCertDeselected(self, event, cert):
+        if cert is None:
+            return
+
+        for b in self.certOnlyButtons:
+            b.Enable(0)
+
+        self.defaultButton.Enable(0)
 
     def OnCertActivated(self, event, cert):
         if cert is None:

@@ -108,6 +108,8 @@ class CertificateBrowserBase(wxPanel):
 
         EVT_LIST_ITEM_SELECTED(self.list, self.list.GetId(),
                                self.OnListItemSelected)
+        EVT_LIST_ITEM_DESELECTED(self.list, self.list.GetId(),
+                               self.OnListItemDeselected)
         EVT_LIST_ITEM_ACTIVATED(self.list, self.list.GetId(),
                                 self.OnListItemActivated)
 
@@ -147,8 +149,14 @@ class CertificateBrowserBase(wxPanel):
         row = event.m_itemIndex
 
         data = self._getListItem(row)
-
         self.OnCertSelected(event, data)
+
+    def OnListItemDeselected(self, event):
+        row = event.m_itemIndex
+
+        data = self._getListItem(row)
+
+        self.OnCertDeselected(event, data)
 
     def OnListItemActivated(self, event):
         row = event.m_itemIndex
@@ -290,5 +298,8 @@ class CertificateBrowserBase(wxPanel):
         pass
 
     def OnCertSelected(self, event, cert):
+        pass
+
+    def OnCertDeselected(self, event, cert):
         pass
 

@@ -8,11 +8,7 @@ from CertificateBrowserBase import CertificateBrowserBase
 from CertificateViewer import CertificateViewer
 from ImportCACertDialog import ImportCACertDialog
 
-import CertificateManagerWXGUI
-
-#from CertificateManagerWXGUI import ExportCACertDialog
-#from CertificateManagerWXGUI import ImportCACertificate
-
+import ImportExportUtils
 
 class CABrowser(CertificateBrowserBase):
     def __init__(self, parent, id, certMgr):
@@ -44,6 +40,10 @@ class CABrowser(CertificateBrowserBase):
         sizer.Add(b, 0, wxEXPAND)
         self.certOnlyButtons.append(b)
 
+        b = wxButton(self, -1, "Refresh")
+        EVT_BUTTON(self, b.GetId(), lambda event, self = self: self.Load())
+        sizer.Add(b, 0, wxEXPAND)
+
         for b in self.certOnlyButtons:
             b.Enable(0)
 
@@ -64,7 +64,7 @@ class CABrowser(CertificateBrowserBase):
 
         dlg.Destroy()
 
-        CertificateManagerWXGUI.ImportCACertificate(self.certMgr, certFile, signingPolicy)
+        ImportExportUtils.ImportCACertificate(self.certMgr, certFile, signingPolicy)
         self.Load()
 
     def OnDelete(self, event):
@@ -94,7 +94,7 @@ class CABrowser(CertificateBrowserBase):
         if cert is None:
             return
 
-        dlg = CertificateManagerWXGUI.ExportCACertDialog(self, cert)
+        dlg = ImportExportUtils.ExportCACertDialog(self, cert)
         dlg.ShowModal()
         dlg.Destroy()
 
@@ -104,6 +104,10 @@ class CABrowser(CertificateBrowserBase):
 
         for b in self.certOnlyButtons:
             b.Enable(1)
+
+    def OnCertDeselected(self, event, cert):
+        for b in self.certOnlyButtons:
+            b.Enable(0)
 
     def OnCertActivated(self, event, cert):
         if cert is None:
