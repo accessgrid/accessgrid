@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.84 2003-09-02 22:13:10 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.85 2003-09-03 22:19:59 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -51,19 +51,20 @@ class VenueManagementClient(wxApp):
     ID_HELP_ABOUT = wxNewId()
     ID_HELP_MANUAL =  wxNewId()
 
-    manual_url = "http://www-unix.mcs.anl.gov/~lefvert/PROJECTS/ACCESS_GRID/MANUALS/VENUE_MANAGEMENT_MANUAL/VenueManagementManualHTML.htm" 
-    server = None
-    serverUrl = None
-    currentVenueClient = None
-    currentVenue = None
-    encrypt = false
-    administrators = {}
-    venueList = []
-    help_open = 0
-
     def OnInit(self):
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
+
+        self.manual_url = "http://www-unix.mcs.anl.gov/fl/research/accessgrid/documentation/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML.htm"
+        self.server = None
+        self.serverUrl = None
+        self.currentVenueClient = None
+        self.currentVenue = None
+        self.encrypt = false
+        self.administrators = {}
+        self.venueList = []
+        self.help_open = 0
+    
         self.frame = wxFrame(NULL, -1, "Venue Management" )
         self.address = VenueServerAddress(self.frame, self)
         self.tabs = VenueManagementTabs(self.frame, -1, self)
@@ -165,7 +166,7 @@ class VenueManagementClient(wxApp):
         handle = Client.Handle(URL)
 
         if(1):
-            log.debug("You have a valid proxy")
+            
             try:
                 wxBeginBusyCursor()
                 log.debug("Connect to server")
@@ -184,13 +185,21 @@ class VenueManagementClient(wxApp):
                 # Clear out old ones
                 vlp.venuesList.Clear()
                 vp.venueProfilePanel.ClearAllFields()
+
+                # Get default venue
+                defaultVenueUrl = self.server.GetDefaultVenue()
                 
-                # fill in venues
+                # Fill in venues
                 self.tabs.Enable(true)
                 if len(self.venueList) != 0 :
                     for venue in self.venueList.values():
                         log.debug("Add venue: %s" % venue.name)
                         vlp.venuesList.Append(venue.name, venue)
+
+                        # Set default venue
+                        if venue.uri == defaultVenueUrl:
+                            vlp.SetDefaultVenue(venue, init = true)
+
                     currentVenue = vlp.venuesList.GetClientData(0)
                     vp.venueProfilePanel.ChangeCurrentVenue(currentVenue)
                     vlp.venuesList.SetSelection(0)
@@ -411,8 +420,6 @@ class VenueManagementTabs(wxNotebook):
     """
 
     def __init__(self, parent, id, application):
-
-
         wxNotebook.__init__(self, parent, id)
         self.parent = parent
         self.venuesPanel = VenuesPanel(self, application)
@@ -574,6 +581,7 @@ class VenueListPanel(wxPanel):
     ID_ADD = wxNewId()
     ID_MODIFY = wxNewId()
     ID_DELETE = wxNewId()
+    DEFAULT_STRING = " (default)"
 
     def __init__(self, parent, application):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition,
@@ -592,6 +600,7 @@ class VenueListPanel(wxPanel):
         self.deleteButton = wxButton(self, self.ID_DELETE, 'Delete',
                                      size = wxSize(50, 20),
                                      name = 'deleteButton')
+        self.defaultVenue = None
         self.__doLayout()
         self.__addEvents()
 
@@ -642,7 +651,24 @@ class VenueListPanel(wxPanel):
             index = self.venuesList.GetSelection()
             venueToDelete = self.venuesList.GetClientData(index)
 
-            text =  "Are you sure you want to delete " + venueToDelete.name
+
+            # Check to see if we are deleting the default venue
+            defaultVenueUrl = ""
+
+            try:
+                defaultVenueUrl = self.application.server.GetDefaultVenue()
+            except:
+                log.error("VenueListPanel.DeleteVenue: Could not get default venue")
+
+            # Default venue
+            if defaultVenueUrl == venueToDelete.uri:
+                text =  "'"+ venueToDelete.name +"'"+\
+                       " is the default venue on this server.  If you delete this venue, \nit is highly recommended that you select another venue as default from the \n'Modify Venue' dialog.  \n\nAre you sure you want to delete this venue?" 
+                
+            else:
+                text =  "Are you sure you want to delete " + venueToDelete.name
+               
+
             text2 = "Delete venue"
             message = wxMessageDialog(self, text, text2,
                                       style = wxOK|wxCANCEL|wxICON_INFORMATION)
@@ -678,6 +704,11 @@ class VenueListPanel(wxPanel):
     def AddVenue(self, venue):
         # ICKY ICKY ICKY
         venue.connections = venue.connections.values()
+
+        #
+        # Check to see if a venue with the same name is already added.
+        # The string can either be venue's name or venue's name and a default indicator.
+        #
         if(self.venuesList.FindString(venue.name) == wxNOT_FOUND):
             newUri = self.application.server.AddVenue(venue)
             venue.uri = newUri
@@ -699,6 +730,34 @@ class VenueListPanel(wxPanel):
                                       style = wxOK|wxICON_INFORMATION)
             message.ShowModal()
             message.Destroy()
+
+    def SetDefaultVenue(self, venue, init = false):
+        '''
+        Sets default venue.
+
+        ** Arguments **
+         *venue* Venue to set as default
+        '''
+       
+        #
+        # Set default venue if it has changed.  If init is set, the method is
+        # called during initialization of the application and default venue
+        # is already set in the server.
+        #
+        
+        if not init and venue.name != self.defaultVenue.name:
+            # Remove default text from old default venue
+            id = self.venuesList.FindString(self.defaultVenue.name +self.DEFAULT_STRING)
+            self.venuesList.SetString(id, self.defaultVenue.name)
+
+            # Set default venue for this server
+            self.application.server.SetDefaultVenue(venue.uri)
+            
+        self.defaultVenue = venue
+        id = self.venuesList.FindString(venue.name)
+               
+        if id != wxNOT_FOUND:
+            self.venuesList.SetString(id, venue.name+self.DEFAULT_STRING)
 
     def ModifyVenue(self, venue):
         item = self.venuesList.GetSelection()
@@ -1161,19 +1220,21 @@ class MulticastDialog(wxDialog):
 
 
 class VenueParamFrame(wxDialog):
-    venue = None
-    exitsList = []
-    streams = []
-    encryptionType = (0, None)
-    
     ID_TRANSFER = wxNewId()
     ID_REMOVE_EXIT = wxNewId()
     ID_LOAD = wxNewId()
     ID_MODIFY_ROLES = wxNewId()
+    ID_DEFAULT = wxNewId()
 
     def __init__(self, parent, id, title, application):
         wxDialog.__init__(self, parent, id, title)
         self.Centre()
+
+        self.venue = None
+        self.exitsList = []
+        self.streams = []
+        self.encryptionType = (0, None)
+        
         self.SetSize(wxSize(400, 350))
         self.application = application
         self.rolesDict = None
@@ -1186,6 +1247,7 @@ class VenueParamFrame(wxDialog):
         self.description =  wxTextCtrl(self, -1, "", size = wxSize(200, 100),
                                        style = wxTE_MULTILINE |
                                        wxTE_RICH2, validator = TextValidator())
+        self.defaultVenue = wxCheckBox(self, self.ID_DEFAULT, "Set this venue as default.")
         self.staticAddressingPanel = StaticAddressingPanel(self, -1)
         self.encryptionPanel = EncryptionPanel(self, -1)
         self.venuesLabel = wxStaticText(self, -1, "Available Venues:")
@@ -1231,6 +1293,8 @@ class VenueParamFrame(wxDialog):
         topParamSizer.Add(10,10)
         topParamSizer.Add(self.descriptionLabel, 0, wxALIGN_LEFT |wxLEFT, 10)
         topParamSizer.Add(self.description, 1,
+                          wxEXPAND |wxLEFT | wxRIGHT| wxBOTTOM, 10)
+        topParamSizer.Add(self.defaultVenue, 0,
                           wxEXPAND |wxLEFT | wxRIGHT| wxBOTTOM, 10)
 
         topSizer.Add(topParamSizer, 1, wxRIGHT | wxEXPAND, 5)
@@ -1692,13 +1756,19 @@ class AddVenueFrame(VenueParamFrame):
                 try:
                     log.info("Add venue")
                     self.parent.AddVenue(self.venue)
-                    # from super class
-                    # Not needed anymore, already set in description in AddVenue.
-                    #self.SetEncryption() 
-
+                   
                 except:
                     log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type) ,
                                                            str(sys.exc_value)))
+
+                if self.defaultVenue.IsChecked():
+                    try:
+                        # Set this venue as default venue for this server.
+                        self.parent.SetDefaultVenue(self.venue)
+                    except:
+                        log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type) ,
+                                                           str(sys.exc_value)))
+
                   
                 self.Hide()
         wxEndBusyCursor()
@@ -1729,16 +1799,22 @@ class ModifyVenueFrame(VenueParamFrame):
                 try:
                     log.info("Modify venue")
                     self.parent.ModifyVenue(self.venue)
+
                     # Set roles
                     if self.rolesDict:
                         RoleClient(venueUri).SetVenueRoles(self.rolesDict)
                         self.rolesDict = None
-                    # from super class
-                    # Don't need to reset encryption with ModifyVenue 
-                    # Works, but not needed anymore since it's been set by the description in ModifyVenue.
-                    #self.SetEncryption()
+                   
                 except:
                     log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
+                                                           str(sys.exc_value)))
+
+                if self.defaultVenue.IsChecked():
+                    try:
+                        # Set this venue as default venue for this server.
+                        self.parent.SetDefaultVenue(self.venue)
+                    except:
+                        log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type) ,
                                                            str(sys.exc_value)))
                  
                 self.Hide()
@@ -1755,6 +1831,18 @@ class ModifyVenueFrame(VenueParamFrame):
         log.debug("Get venue information")
         self.application.SetCurrentVenue(self.venue)
         venueC = self.application.currentVenueClient
+
+        try:
+            # Set this venue as default venue for this server.
+            url = self.application.server.GetDefaultVenue()
+            if self.venue.uri == url:
+                self.defaultVenue.Hide()
+            else:
+                self.defaultVenue.Show()
+            
+        except:
+            log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type) ,
+                                                  str(sys.exc_value)))
 
         if(self.venue.encryptMedia):
             log.debug("We have a key %s" % self.venue.encryptionKey)
@@ -1791,7 +1879,7 @@ class ModifyVenueFrame(VenueParamFrame):
         
 class AdministratorParamFrame(wxDialog):
     def __init__(self, *args):
-        wxDialog.__init__(self, args)
+        wxDialog.__init__(self, *args)
         self.Centre()
         self.SetSize(wxSize(400, 40))
         self.text = wxStaticText(self, -1, "Please, fill in the distinguished name for the administator you want to add.")
