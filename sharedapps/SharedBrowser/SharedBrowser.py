@@ -149,6 +149,7 @@ class WebBrowser(wxPanel):
                     self.ignoreComplete.pop()
         else:
             message = "Ignoring DocComplete for ", event.GetText1()
+            self.just_received_navigate = 0
             self.log.debug(message)
 
     def LocalEvent(self):
@@ -222,7 +223,6 @@ class SharedBrowser( wxApp ):
         '''
         Shut down shared browser.
         '''
-
         self.sharedAppClient.Shutdown()
         os._exit(1)
 
@@ -330,7 +330,7 @@ class ArgumentManager:
         Handle any arguments we're interested in.
         """
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "v:a:l:h",
+            opts, args = getopt.getopt(sys.argv[1:], "v:a:l:dh",
                                        ["venueURL=", "applicationURL=",
                                         "logging=", "debug", "help"])
         except getopt.GetoptError:
@@ -344,7 +344,7 @@ class ArgumentManager:
                 self.arguments["applicationUrl"] = a
             elif o in ("-l", "--logging"):
                 self.arguments["logging"] = a
-            elif o in ("--debug",):
+            elif o in ("-d", "--debug"):
                 self.arguments["debug"] = 1
             elif o in ("-h", "--help"):
                 self.Usage()
@@ -361,7 +361,7 @@ if __name__ == "__main__":
     appUrl = aDict['applicationUrl']
     logging = aDict['logging']
     debugMode = aDict['debug']
-    
+      
     if not appUrl:
         am.Usage()
     else:
@@ -369,33 +369,40 @@ if __name__ == "__main__":
         sb.MainLoop()
         
     #
-    # Stress test
+    # Stress test. Start a client and send events.
     #
     #import threading
     #import time
     
     #browsers = []
     #threadList = []
-    #sharedAppClient = SharedAppClient("Test sharedAppClient")
+    #urls = ["www.oea.se","www.aftonbladet.se", "www.passagen.se"]
     
     #def StartBrowser():
     #    sb = SharedBrowser(appUrl, debugMode, logging)
-    #    sharedAppClient.InitLogging()
     #    browsers.append(sb)
     #    sb.MainLoop()
 
-    #def SendEvents():
+    #def SendEvents(sharedAppClient):
+    #    time.sleep(3)
     #    while 1:
-    #        publicId = sharedAppClient.GetPublicId()
-    #        sharedAppClient.SendEvent("browse", (publicId, "http://www.aftonbladet.se"))
-    #        # Store the URL in the application service in the venue
-    #        sharedAppClient.SetData("url", "http://www.aftonbladet.se")
-    #        time.sleep(0.5)
-
-    #sharedAppClient.Join(appUrl)
-    #thread = threading.Thread(target = SendEvents)
-    #thread.start()
+    #        for url in urls:
+    #            publicId = sharedAppClient.GetPublicId()
+    #            sharedAppClient.SendEvent("browse", (publicId, url))
+    #            sharedAppClient.SetParticipantStatus(url)
+    #            # Store the URL in the application service in the venue
+    #            sharedAppClient.SetData("url", url)
+    #            time.sleep(0.07)
+            
+    #s = SharedAppClient("SharedAppClientTest")
+    #s.InitLogging()
+    #clientProfileFile = os.path.join(GetUserConfigDir(), "profile")
+    #clientProfile = ClientProfile(clientProfileFile)
+    #s.Join(appUrl, clientProfile)
     
+    #thread = threading.Thread(target = SendEvents, args = [s])
+    #thread.start()
+
     #StartBrowser()
     
 
