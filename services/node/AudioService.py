@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.17 2004-05-07 21:29:15 eolson Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.18 2004-05-07 22:56:56 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -256,6 +256,13 @@ class AudioService( AGService ):
 if __name__ == '__main__':
 
     from AccessGrid.AGService import AGServiceI, RunService
+
+    # Look for executables in the current directory,
+    # since the rat startup script needs to 
+    if os.environ.has_key("PATH"):
+        os.environ["PATH"] = os.pathsep.join([os.environ["PATH"],'.'])
+    else:
+        os.environ["PATH"] = '.'
 
     service = AudioService()
     serviceI = AGServiceI(service)
