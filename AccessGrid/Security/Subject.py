@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Subject.py,v 1.10 2004-03-09 17:00:42 lefvert Exp $
+# RCS-ID:      $Id: Subject.py,v 1.11 2004-03-24 18:42:48 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ Subjects are the basic security handle on entities that want to be a
 part of the secure Access Grid Toolkit.
 """
 
-__revision__ = "$Id: Subject.py,v 1.10 2004-03-09 17:00:42 lefvert Exp $"
+__revision__ = "$Id: Subject.py,v 1.11 2004-03-24 18:42:48 eolson Exp $"
 
 # External Imports
 import xml.dom.minidom
@@ -139,7 +139,7 @@ class Subject:
         c = self.ToXML(doc)
         
         # Add it to the document
-        doc.appendChild(c)
+        doc.documentElement.appendChild(c)
         
         # Serialize this object as part of that document
         return doc.toxml()

@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.9 2004-03-23 22:55:38 lefvert Exp $
+# RCS-ID:      $Id: Role.py,v 1.10 2004-03-24 18:42:48 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ much more dynamic. We programmatically create, destroy and modify
 roles.
 """
 
-__revision__ = "$Id: Role.py,v 1.9 2004-03-23 22:55:38 lefvert Exp $"
+__revision__ = "$Id: Role.py,v 1.10 2004-03-24 18:42:48 eolson Exp $"
 
 # external imports
 import xml.dom.minidom
@@ -91,7 +91,7 @@ class Role:
                                      "Role", '')
         # create the child node, then attach it to the document
         c = self.ToXML(doc)
-        doc.appendChild(c)
+        doc.documentElement.appendChild(c)
         
         return doc.toxml()
 
