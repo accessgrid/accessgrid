@@ -82,7 +82,7 @@ class Server:
         config.debug = debug
         self._server = SOAPServer(('localhost', port),
                                   tcpAttr = attr,
-                                  log = 1,
+                                  log = 0,
                                   config = config)
 
     def run(self):

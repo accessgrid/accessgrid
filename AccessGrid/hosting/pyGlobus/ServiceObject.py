@@ -62,7 +62,7 @@ class ServiceObject:
 	self.id = id
         self.function_map = {}
         self.binding_table = {}
-        print "Created serivce ", self
+#        print "Created service ", self
 
     def auth_callback(self, server, g_handle, remote_user, context):
         print "Service got auth_callback: slef=%s server=%s handle=%s remote_user=%s context=%s" % (
@@ -71,12 +71,12 @@ class ServiceObject:
 
     def get_path(self):
         """Return the path part of the service's URL."""
-	path = "/%s" % (self.id)
-	return path
+        path = "/%s" % (self.id)
+        return path
     
     def get_handle(self):
         """Return the service's handle (as a URL)."""
-	handle = self.server.get_url_base() + self.get_path()
+        handle = self.server.get_url_base() + self.get_path()
         return handle
 
     def register_functions(self, function_dict, pass_connection_info = 0):
@@ -119,12 +119,12 @@ class ServiceObject:
         to get connection-level information passed to it.
         """
 
-        print "Lookup method ", method
+#        print "Lookup method ", method
 
         func = None
         try:
             func, pass_connection_info = self.function_map[method]
-            print "Found func ", func
+#            print "Found func ", func
 
         except KeyError:
             pass
@@ -134,6 +134,5 @@ class ServiceObject:
         if func is None:
             raise NoServiceMethodException()
         
-
         return func, pass_connection_info
 

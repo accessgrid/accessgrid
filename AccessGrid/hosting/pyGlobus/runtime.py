@@ -31,5 +31,3 @@ def typecheck_arg(arg, type, argname, service):
 def typecheck_return(arg, type, service):
     if not typecheck_okay(arg, type):
         print "Invalid type in return from call to %s" % (service)
-        
-        

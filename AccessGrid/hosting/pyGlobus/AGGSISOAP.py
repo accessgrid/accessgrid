@@ -91,7 +91,7 @@ from types import *
 try: from M2Crypto import SSL
 except: pass
 
-ident = '$Id: AGGSISOAP.py,v 1.2 2002-12-16 23:50:03 olson Exp $'
+ident = '$Id: AGGSISOAP.py,v 1.3 2003-01-07 20:27:13 judson Exp $'
 
 __version__ = "0.9.7"
 
@@ -3762,11 +3762,11 @@ class SOAPServer(GSITCPSocketServer):
                         # Dispatch through the pathmap.
                         #
 
-                        print "Search for method ", method, self.path
+                        # print "Search for method ", method, self.path
                         pm = self.server.pathmap[ns]
-                        print "Look in pathmap ", pm
+                        #print "Look in pathmap ", pm
                         f, pass_conn_info = pm.lookup_path(method, self.path)
-                        print "Server lookup got meth ", f
+                        #print "Server lookup got meth ", f
                         
                     else: # Now look at registered objects
                         # Check for nested attributes. This works even if

@@ -66,4 +66,3 @@ class ServiceBase:
 
             for method, export_name, pass_cinfo in exported_methods.values():
                 service_obj.register_function(method, export_name, pass_cinfo)
-        
