@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.59 2004-05-03 22:42:24 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.60 2004-05-04 18:56:35 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.59 2004-05-03 22:42:24 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.60 2004-05-04 18:56:35 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -107,7 +107,7 @@ class AGServiceManager:
             self.url = self.server.FindURLForObject(self)
 
         # Determine resource to assign to service
-        res = None
+        resource = None
         if resourceToAssign != None and resourceToAssign != "None":
             foundResource = 0
             for res in self.resources:
@@ -118,6 +118,7 @@ class AGServiceManager:
                     # should error out here later; for now,
                     # services aren't using the resources anyway
                     foundResource = 1
+                    resource = res
                     break
 
             if foundResource == 0:
@@ -126,34 +127,39 @@ class AGServiceManager:
 #FIXME - # should error out here later
 
         try:
+            servicePackageToInstall = None
+            
             #
             # Check for local copy of service package
             #
-            localSvcDesc = None
-            svcDescList = self.packageRepo.GetServiceDescriptions()
-            for svcDesc in svcDescList:
-                if svcDesc.name == serviceDescription.name:
-                    localSvcDesc = svcDesc
+            servicePkgList = self.packageRepo.GetServicePackages()
+            for servicePkg in servicePkgList:
+                serviceDesc = servicePkg.GetServiceDescription()
+                if serviceDesc.name == serviceDescription.name:
+                    servicePackageToInstall = servicePkg
                     log.debug("Found local service %s, v%d", 
-                              localSvcDesc.name,
-                              localSvcDesc.version)
-                    break                   
+                              serviceDesc.name,
+                              serviceDesc.version)
+                    break     
 
             # Retrieve the service package if there is no local copy, 
             # or if we're adding a newer copy
-            if not localSvcDesc or localSvcDesc.version < serviceDescription.version:
+            if(not servicePackageToInstall or 
+               servicePackageToInstall.GetServiceDescription().version < serviceDescription.version):
                 log.debug("Retrieving service package %s", 
                           serviceDescription.servicePackageUri)
                 #
                 # Retrieve service implementation
                 #
-                servicePackageFile = self.__RetrieveServicePackage( serviceDescription.servicePackageUri )
-                serviceDescription = AGServicePackage( servicePackageFile ).GetServiceDescription()
-            else:
-                log.debug("Using local service package")
-                serviceDescription = localSvcDesc
+                servicePackageToInstall = self.__RetrieveServicePackage( serviceDescription.servicePackageUri )
+                
+                
+            # Extract the service package
+            servicePackageToInstall.ExtractPackage(self.servicesDir)
             
-            serviceDescription.resource = res
+            # Get the service description and set the resource
+            serviceDescription = servicePackageToInstall.GetServiceDescription()
+            serviceDescription.resource = resource
 
         except:
             log.exception("Service Manager failed to retrieve service implementation for %s", 
@@ -184,6 +190,10 @@ class AGServiceManager:
             options.append( port )
             log.debug("Running Service; options: %s %s", executable, str(options))
             
+            # 
+            # Change to the services directory to start the process
+            # Note: services rely on this being true
+            #
             os.chdir(self.servicesDir)
             pid = self.processManager.StartProcess( executable, options )
 
@@ -369,20 +379,9 @@ class AGServiceManager:
             GSIHTTPDownloadFile(servicePackageUrl, servicePackageFile,
                                 None, None)
 
-        #
-        # Extract the executable from the service package
-        #
         package = AGServicePackage( servicePackageFile )
-        package.ExtractPackage( self.servicesDir )
-
-        if isNewServicePackage:
-            #
-            # Open permissions on the service package and executable 
-            #
-            os.chmod( servicePackageFile, 0777 )
-            os.chmod( os.path.join(self.servicesDir, package.exeFile), 0777 )
-
-        return servicePackageFile
+        
+        return package
 
 
     def __DiscoverResources( self ):
