@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.19 2003-09-19 03:52:03 judson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.20 2003-09-19 16:37:37 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.19 2003-09-19 03:52:03 judson Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.20 2003-09-19 16:37:37 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -670,11 +670,6 @@ class EventService:
         """
 
         connId = connObj.GetId()
-
-#        connChannel = self.findConnectionChannel(connId)
-
-#        if connChannel is not None:
-#            connChannel.RemoveConnection(connObj)
 
         self.CloseConnection(connObj)
         
