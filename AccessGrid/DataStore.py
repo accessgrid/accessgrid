@@ -6,7 +6,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.39 2003-08-22 21:23:07 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.40 2003-08-22 21:38:58 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -456,9 +456,11 @@ class DataStore(ServiceBase):
             url = self.GetDownloadDescriptor(dd.name)
             if url != None:
                 dd.SetURI(url)
-
-            persistentData.append(dd)
-            self.callbackClass.LoadPersistentData(persistentData)
+                # Only load if url not None (means file exists)
+                persistentData.append(dd)
+                self.callbackClass.LoadPersistentData(persistentData)
+            else:
+                log.info("File " + dd.name + " was not found, so it was not loaded.")
                 
     def Shutdown(self):
         # Open the persistent store
