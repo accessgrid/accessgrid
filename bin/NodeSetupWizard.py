@@ -1,11 +1,13 @@
+#!/usr/bin/python2
 #-----------------------------------------------------------------------------
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 #
-# Author:      Susanne Lefvert
+# $Author: lefvert $
 #
-# Created:     2003/08/02
-# RCS-ID:      $Id: NodeSetupWizard.py,v
+#
+# $Date: 2003-08-12 21:24:19 $
+# $Id: NodeSetupWizard.py,v 1.3 2003-08-12 21:24:19 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
