@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.63 2003-05-22 20:15:47 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.64 2003-05-22 20:33:58 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -390,7 +390,7 @@ class VenueClient( ServiceBase):
         #
         for profile in self.followerProfiles.values():
             try:
-                Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue(self.venueUri, false)
+                Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue(self.venueUri, 0)
             except:
                 log.exception("AccessGrid.VenueClient::Exception while leading follower")
 
