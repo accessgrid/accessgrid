@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.12 2003-08-21 20:23:19 lefvert Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.13 2003-08-21 22:50:24 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -310,7 +310,7 @@ class EventChannel:
                 log.debug("EventServiceAsynch: Auth callback %s returns %s", self.authCallback,
                           authorized)
             except:
-                log.info("EventServiceAsynch: Authorization callback failed")
+                log.exception("EventServiceAsynch: Authorization callback failed")
                 authorized = 0
         else:
             log.debug("EventServiceAsynch: Default authorization (no calblack registered")
