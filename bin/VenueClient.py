@@ -28,7 +28,13 @@ class VenueClientUI(wxApp, VenueClient):
     def ConnectToVenue(self):
         # venueServerUri = "https://localhost:6000/VenueServer"
         # venueUri = Client.Handle( venueServerUri ).get_proxy().GetDefaultVenue()
-        myHomePath = os.environ['HOME']
+        
+        # This will set defaults for either of our platforms, hopefully
+        if sys.platform == "win32":
+            myHomePath = os.environ['HOMEPATH']
+        elif sys.platform == "linux2":
+            myHomePath = os.environ['HOME']
+
         accessGridDir = '.AccessGrid'
         self.profilePath = myHomePath+'/'+accessGridDir+'/profile'
 
