@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.18 2003-01-30 02:40:52 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.19 2003-02-03 14:12:37 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,12 +17,13 @@ import types
 import socket
 
 from AccessGrid.hosting.pyGlobus import ServiceBase
-from AccessGrid.Types import Capability, Event
+from AccessGrid.Types import Capability
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
-from AccessGrid.CoherenceService import CoherenceService
-from AccessGrid.CoherenceClient import CoherenceClient
+from AccessGrid.TextService import TextService
+from AccessGrid.EventService import EventService
+from AccessGrid.Events import Event, HeartbeatEvent, TextEvent
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.scheduler import Scheduler
 
@@ -49,8 +50,11 @@ class Venue(ServiceBase.ServiceBase):
         self.multicastAllocator = multicastAllocator
         self.dataStore = dataStore
 
-        self.coherenceHost = socket.getfqdn()
-        self.coherencePort = self.multicastAllocator.AllocatePort()
+        self.textHost = socket.getfqdn()
+        self.textPort = self.multicastAllocator.AllocatePort()
+        
+        self.eventHost = socket.getfqdn()
+        self.eventPort = self.multicastAllocator.AllocatePort()
         
         self.producerCapabilities = []
         self.consumerCapabilities = []
@@ -58,39 +62,153 @@ class Venue(ServiceBase.ServiceBase):
         self.cleanupTime = 30
         self.nextPrivateId = 1
 
-    def Start(self):
-        self.coherenceService = CoherenceService((self.coherenceHost,
-                                                  self.coherencePort))
-        self.coherenceService.start()
-        
-        self.coherenceClient = CoherenceClient(self.coherenceHost, 
-                                               self.coherencePort, 
-                                               self.CoherenceCallback,
-                                               self.uniqueId)
-        self.coherenceClient.start()
-
-        self.houseKeeper = Scheduler()
-        self.houseKeeper.AddTask(self.CleanupClients, 45)
-        self.houseKeeper.StartAllTasks()
-
-#                if issubclass(odict[k].__class__, Thread):
-
     def __getstate__(self):
-#        print "Getting ", self.__class__, " state"
         odict = self.__dict__.copy()
         for k in odict.keys():
-#            print "Key: %s Type: %s" % (k, type(odict[k]))
             if type(odict[k]) == types.InstanceType:
                 if k != "uniqueId" and k != "description":
                     del odict[k]
         return odict
 
     def __setstate__(self, dict):
-#        print "Setting ", self.__class__, " state"
-#        for i in dict:
-#            print "%s" % i
         self.__dict__ = dict
         self.Start()
+
+    def Start(self):
+        self.eventService = EventService((self.eventHost, self.eventPort))
+        self.eventService.RegisterCallback(HeartbeatEvent.HEARTBEAT, 
+                                    self.ClientHeartbeat)
+        self.eventService.start()
+        
+#        self.textService = TextService((self.textHost, self.textPort))
+#        self.textService.start()
+        
+        self.houseKeeper = Scheduler()
+        self.houseKeeper.AddTask(self.CleanupClients, 45)
+        self.houseKeeper.StartAllTasks()
+
+   # Internal Methods
+    def GetState(self, connectionInfo):
+        """
+        GetState enables a VenueClient to poll the Virtual Venue for the
+        current state of the Virtual Venue.
+        """
+
+        try:
+           print "Called GetState on ", self.uniqueId
+
+           venueState = {
+               'description' : self.description,
+               'connections' : self.connections.values(),
+               'users' : self.users.values(),
+               'nodes' : self.nodes.values(),
+               'data' : self.data.values(),
+               'services' : self.services.values(),
+               'eventLocation' : self.eventService.GetLocation()
+               }
+        except:
+           print "Exception in GetState ", sys.exc_type, sys.exc_value
+
+#        print "state:", dir(venueState)
+        return venueState
+    
+    GetState.pass_connection_info = 1
+    GetState.soap_export_as = "GetState"
+
+    def CleanupClients(self):
+        now_sec = time.time()
+        for privateId in self.clients.keys():
+           if privateId in self.users.keys():
+            then_sec = self.clients[privateId]
+            if abs(now_sec - then_sec) > self.cleanupTime:
+                print "  Removing user : ", self.users[privateId].name
+                if privateId in self.users.keys():
+                    clientProfile = self.users[privateId]
+                elif privateId in self.nodes.keys():
+                    clientProfile = self.nodes[privateId]
+                self.eventService.Distribute( Event( Event.EXIT,
+                                                         clientProfile ) )
+                del self.clients[privateId]
+        
+    def ClientHeartbeat(self, event):
+        privateId = event
+        now = time.time()
+        self.clients[privateId] = now
+        print "Got Client Heartbeat for %s at %s." % (event, now)
+    
+    def Shutdown(self):
+        """
+        This method cleanly shuts down all active threads associated with the
+        Virtual Venue. Currently there are a few threads in the Event
+        Service.
+        """
+        self.eventService.stop()
+
+    def NegotiateCapabilities(self, clientProfile):
+        """
+        This method takes a client profile and finds a set of streams that
+        matches the client profile. Later this method could use network
+        services to find The Best Match of all the network services,
+        the existing streams, and all the client capabilities.
+        """
+        streamDescriptions = []
+
+        #
+        # Compare user's producer capabilities with existing stream
+        # description capabilities. New producer capabilities are added
+        # to the stream descriptions, and an event is emitted to alert
+        # current participants about the new stream
+        # 
+        streamCapTypes = map( lambda streamDesc: streamDesc.capability.type,
+                              self.streams )
+
+        for capability in clientProfile.capabilities:
+            if capability.role == Capability.PRODUCER:
+                if capability.type not in streamCapTypes:
+                    # add new stream description
+
+                    print "* * Adding new producer of type ", capability.type
+                    encryptionKey = "venue didn't assign an encryption key"
+                    streamDesc = StreamDescription( "noName", "noDesc",
+                                             self.AllocateMulticastLocation(), 
+                                             capability, encryptionKey )
+                    self.streams.append( streamDesc )
+                    streamDescriptions.append( streamDesc )
+        
+        #
+        # Compare user's consumer capabilities with existing stream
+        # description capabilities. The user will receive a list of
+        # compatible stream descriptions
+        # 
+        clientConsumerCapTypes = []
+        for capability in clientProfile.capabilities:
+            if capability.role == Capability.CONSUMER:
+                clientConsumerCapTypes.append( capability.type )
+        for stream in self.streams:
+            if stream.capability.type in clientConsumerCapTypes:
+                streamDescriptions.append( stream )
+
+        return streamDescriptions
+
+    def AllocateMulticastLocation(self):
+        """
+        This method creates a new Multicast Network Location.
+        """
+        defaultTtl = 127
+        return MulticastNetworkLocation(
+            self.multicastAllocator.AllocateAddress(),
+            self.multicastAllocator.AllocatePort(), 
+            defaultTtl )
+       
+    def GetNextPrivateId( self ):
+        """This method creates the next Private Id."""
+        return str(GUID())
+
+    def IsValidPrivateId( self, privateId ):
+        """This method verifies the private Id is valid."""
+        if privateId in self.users.keys():
+            return 1 
+        return 0
 
     # Management methods
     def AddNetworkService(self, connectionInfo, networkServiceDescription):
@@ -137,7 +255,7 @@ class Venue(ServiceBase.ServiceBase):
         try:
 
             self.connections[connectionDescription.uri] = connectionDescription
-            self.coherenceService.distribute( Event( Event.ADD_CONNECTION, 
+            self.eventService.Distribute( Event( Event.ADD_CONNECTION, 
                                                 connectionDescription ) )
         except:
             print "Connection already exists ", connectionDescription.uri
@@ -152,7 +270,7 @@ class Venue(ServiceBase.ServiceBase):
         """
         try:
             del self.connections[ connectionDescription.uri ]
-            self.coherenceService.distribute( Event( Event.REMOVE_CONNECTION, connectionDescription ) )
+            self.eventService.Distribute( Event( Event.REMOVE_CONNECTION, connectionDescription ) )
         except:
             print "Exception in RemoveConnection", sys.exc_type, sys.exc_value
             print "Connection does not exist ", connectionDescription.uri
@@ -229,8 +347,8 @@ class Venue(ServiceBase.ServiceBase):
         state = self.GetState( connectionInfo )
 
         try:
-            print "Called Venue Enter for: "
-            print dir(clientProfile)
+#            print "Called Venue Enter for: "
+#            print dir(clientProfile)
 
             userInVenue = 0
             for key in self.users.keys():
@@ -238,7 +356,7 @@ class Venue(ServiceBase.ServiceBase):
                 if user.publicId == clientProfile.publicId:
                     print "* * User already in venue"
 #FIXME - temporarily ignore that user is already in venue, for testing
-                    #userInVenue = 1
+                    userInVenue = 1
                     privateId = key
                     break
             
@@ -250,7 +368,7 @@ class Venue(ServiceBase.ServiceBase):
 
                 # negotiate to get stream descriptions to return
                 streamDescriptions = self.NegotiateCapabilities( clientProfile )
-                self.coherenceService.distribute( Event( Event.ENTER, clientProfile ) )
+                self.eventService.Distribute( Event( Event.ENTER, clientProfile ) )
 
         except:
            print "Exception in Enter ", formatExceptionInfo()
@@ -274,7 +392,7 @@ class Venue(ServiceBase.ServiceBase):
                 clientProfile = self.users[privateId]
                 del self.users[privateId]
 
-                self.coherenceService.distribute( Event( Event.EXIT, clientProfile ) )
+                self.eventService.Distribute( Event( Event.EXIT, clientProfile ) )
             else:
                 print "* * Invalid private id !! ", privateId
         except:
@@ -282,32 +400,6 @@ class Venue(ServiceBase.ServiceBase):
         
     Exit.pass_connection_info = 1
     Exit.soap_export_as = "Exit"
-
-    def GetState(self, connectionInfo):
-        """
-        GetState enables a VenueClient to poll the Virtual Venue for the
-        current state of the Virtual Venue.
-        """
-
-        try:
-           print "Called GetState on ", self.uniqueId
-
-           venueState = {
-               'description' : self.description,
-               'connections' : self.connections.values(),
-               'users' : self.users.values(),
-               'nodes' : self.nodes.values(),
-               'data' : self.data.values(),
-               'services' : self.services.values(),
-               'coherenceLocation' : self.coherenceService.GetLocation()
-               }
-        except:
-           print "Exception in GetState ", sys.exc_type, sys.exc_value
-
-        return venueState
-    
-    GetState.pass_connection_info = 1
-    GetState.soap_export_as = "GetState"
 
     def UpdateClientProfile(self, connectionInfo, clientProfile):
         """
@@ -318,7 +410,7 @@ class Venue(ServiceBase.ServiceBase):
         for user in self.users.values():
             if user.publicId == clientProfile.publicId:
                 self.users[user.privateId] = clientProfile
-            self.coherenceService.distribute( Event( Event.MODIFY_USER, clientProfile ) )
+            self.eventService.Distribute( Event( Event.MODIFY_USER, clientProfile ) )
         
     UpdateClientProfile.pass_connection_info = 1
     UpdateClientProfile.soap_export_as = "UpdateClientProfile"
@@ -332,7 +424,7 @@ class Venue(ServiceBase.ServiceBase):
         try:
             # We also have to actually add real data, but not yet
             self.data[dataDescription.name] = dataDescription
-            self.coherenceService.distribute( Event( Event.ADD_DATA,
+            self.eventService.Distribute( Event( Event.ADD_DATA,
                                                      dataDescription ) )
         except:
             print "Exception in AddData ", sys.exc_type, sys.exc_value
@@ -361,7 +453,7 @@ class Venue(ServiceBase.ServiceBase):
             # We actually have to remove the real data, not just the
             # data description -- I guess that's later :-)
             del self.data[ dataDescription.name ]
-            self.coherenceService.distribute( Event( Event.REMOVE_DATA,
+            self.eventService.Distribute( Event( Event.REMOVE_DATA,
                                                      dataDescription ) )
         except:
             print "Exception in RemoveData", sys.exc_type, sys.exc_value
@@ -377,7 +469,7 @@ class Venue(ServiceBase.ServiceBase):
         print "Adding service ", serviceDescription.name, serviceDescription.uri
         try:
             self.services[serviceDescription.uri] = serviceDescription
-            self.coherenceService.distribute( Event( Event.ADD_SERVICE,
+            self.eventService.Distribute( Event( Event.ADD_SERVICE,
                                                      serviceDescription ) )
         except:
             print "Exception in AddService ", sys.exc_type, sys.exc_value
@@ -394,7 +486,7 @@ class Venue(ServiceBase.ServiceBase):
         
         try:
             del self.services[serviceDescription.uri]
-            self.coherenceService.distribute( Event( Event.REMOVE_SERVICE,
+            self.eventService.Distribute( Event( Event.REMOVE_SERVICE,
                                                      serviceDescription ) )
         except:
             print "Exception in RemoveService", sys.exc_type, sys.exc_value
@@ -411,105 +503,4 @@ class Venue(ServiceBase.ServiceBase):
     Ping.pass_connection_info = 0
     Ping.soap_export_as = "Ping"
 
-    # Internal Methods
-    def CleanupClients(self):
-#        print "Cleaning up dead clients."
-        now_sec = time.time()
-        for privateId in self.clients.keys():
-           if privateId in self.users.keys():
-            then_sec = self.clients[privateId]
-            if abs(now_sec - then_sec) > self.cleanupTime:
-                print "  Removing user : ", self.users[privateId].name
-                if privateId in self.users.keys():
-                    clientProfile = self.users[privateId]
-                elif privateId in self.nodes.keys():
-                    clientProfile = self.nodes[privateId]
-                self.coherenceService.distribute( Event( Event.EXIT,
-                                                         clientProfile ) )
-                del self.clients[privateId]
-        
-    def CoherenceCallback(self, event):
-        data = event.data
-        if event.eventType == Event.HEARTBEAT:
-            privateId = data
-            self.clients[privateId] = time.time()
-   
-    def Serialize(self):
-        """
-        This method packs up all the relevant data to be stored for persistence.
-        """
-        
-    def Shutdown(self):
-        """
-        This method cleanly shuts down all active threads associated with the
-        Virtual Venue. Currently there are a few threads in the Coherence
-        Service.
-        """
-        self.coherenceClient.stop()
-        self.coherenceService.stop()
-
-    def NegotiateCapabilities(self, clientProfile):
-        """
-        This method takes a client profile and finds a set of streams that
-        matches the client profile. Later this method could use network
-        services to find The Best Match of all the network services,
-        the existing streams, and all the client capabilities.
-        """
-        streamDescriptions = []
-
-        #
-        # Compare user's producer capabilities with existing stream
-        # description capabilities. New producer capabilities are added
-        # to the stream descriptions, and an event is emitted to alert
-        # current participants about the new stream
-        # 
-        streamCapTypes = map( lambda streamDesc: streamDesc.capability.type,
-                              self.streams )
-
-        for capability in clientProfile.capabilities:
-            if capability.role == Capability.PRODUCER:
-                if capability.type not in streamCapTypes:
-                    # add new stream description
-
-                    print "* * Adding new producer of type ", capability.type
-                    encryptionKey = "venue didn't assign an encryption key"
-                    streamDesc = StreamDescription( "noName", "noDesc",
-                                             self.AllocateMulticastLocation(), 
-                                             capability, encryptionKey )
-                    self.streams.append( streamDesc )
-                    streamDescriptions.append( streamDesc )
-        
-        #
-        # Compare user's consumer capabilities with existing stream
-        # description capabilities. The user will receive a list of
-        # compatible stream descriptions
-        # 
-        clientConsumerCapTypes = []
-        for capability in clientProfile.capabilities:
-            if capability.role == Capability.CONSUMER:
-                clientConsumerCapTypes.append( capability.type )
-        for stream in self.streams:
-            if stream.capability.type in clientConsumerCapTypes:
-                streamDescriptions.append( stream )
-
-        return streamDescriptions
-
-    def AllocateMulticastLocation(self):
-        """
-        This method creates a new Multicast Network Location.
-        """
-        defaultTtl = 127
-        return MulticastNetworkLocation(
-            self.multicastAllocator.AllocateAddress(),
-            self.multicastAllocator.AllocatePort(), 
-            defaultTtl )
-       
-    def GetNextPrivateId( self ):
-        """This method creates the next Private Id."""
-        return str(GUID())
-
-    def IsValidPrivateId( self, privateId ):
-        """This method verifies the private Id is valid."""
-        if privateId in self.users.keys():
-            return 1 
-        return 0
+ 

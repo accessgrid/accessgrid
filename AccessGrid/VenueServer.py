@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.23 2003-01-30 02:39:25 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.24 2003-02-03 14:12:37 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -112,6 +112,12 @@ class VenueServer(ServiceBase.ServiceBase):
             store.close()
         except:
             print "Corrupt persistence database detected.", formatExceptionInfo()
+        
+        #
+        # Reinitialize the default venue
+        #
+        defaultVenue = self.hostingEnvironment.create_service_object(pathId = 'Venues/default')
+        self.venues[self.defaultVenue]._bind_to_service(defaultVenue)
 
         # The houseKeeper is a task that is doing garbage collection and
         # other general housekeeping tasks for the Venue Server.
@@ -168,6 +174,8 @@ class VenueServer(ServiceBase.ServiceBase):
 
             # If this is the first venue, set it as the default venue
             if(len(self.venues) == 0):
+                defaultVenue = self.hostingEnvironment.create_service_object(pathId = 'Venues/default')
+                venue._bind_to_service(defaultVenue)
                 self.SetDefaultVenue(connectionInfo, venueURL)
 
             # Add the venue to the list of venues

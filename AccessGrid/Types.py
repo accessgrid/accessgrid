@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.13 2003-01-30 23:34:10 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.14 2003-02-03 14:12:37 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,33 +18,13 @@ import SimpleHTTPServer
 import SocketServer
 import string
 
-class Event:
-    TEST_EVENT = "Test"
-
-    ENTER = "Enter"
-    EXIT = "Exit"
-    MODIFY_USER = "Modify user"
-    ADD_DATA = "Add data"
-    REMOVE_DATA = "Remove data"
-    ADD_SERVICE = "Add service"
-    REMOVE_SERVICE = "Remove service"
-    ADD_CONNECTION = "Add connection"
-    REMOVE_CONNECTION = "Remove connection"
-    UPDATE_VENUE_STATE = "Update venue state"
-
-    HEARTBEAT = "Client Heartbeat"
-    
-    def __init__( self, eventType, data ):
-        self.eventType = eventType
-        self.data = data
-
 from AccessGrid.AGParameter import *
         
 class VenueState:
     def __init__( self, description, connections, users,
-                  nodes, data, services, coherenceLocation ):
+                  nodes, data, services, eventLocation ):
         self.description = description
-        self.coherenceLocation = coherenceLocation
+        self.eventLocation = eventLocation
 
         self.connections = dict()
         self.users = dict()
