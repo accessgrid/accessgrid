@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: test_venueserver.py,v 1.1 2005-01-26 22:45:47 judson Exp $
+# RCS-ID:      $Id: test_venueserver.py,v 1.2 2005-01-31 22:42:37 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: test_venueserver.py,v 1.1 2005-01-26 22:45:47 judson Exp $"
+__revision__ = "$Id: test_venueserver.py,v 1.2 2005-01-31 22:42:37 judson Exp $"
 
 # Standard stuff
 import sys
@@ -56,7 +56,7 @@ from AccessGrid.Types import Capability
 log = Log.GetLogger(Log.VenueServer)
 
 # ZSI Stuff
-from AccessGrid.cache.VenueServer_services import *
+from AccessGrid.cache.VenueServer_messages import *
 from AccessGrid.hosting.Tools import CreateObj
 from AccessGrid.cache import Venue_interface
 
