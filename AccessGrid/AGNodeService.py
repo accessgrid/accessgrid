@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.20 2003-03-14 17:11:45 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.21 2003-03-19 23:09:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -105,19 +105,24 @@ class AGNodeService( ServiceBase ):
 
     def AddServiceManager( self, serviceManager ):
         """Add a service manager"""
-        try:
-            Client.Handle( serviceManager.uri ).get_proxy().Ping()
-        except:
+
+        # Try to reach the service manager
+        if not Client.Handle( serviceManager.uri ).IsValid():
             log.exception("Exception in AddServiceManager.")
             raise faultType("Service Manager is unreachable: "
                             + serviceManager.uri )
 
+        #
+        # Add service manager to list
+        #
         try:
             self.serviceManagers.append( serviceManager )
-            Client.Handle( serviceManager.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
+            Client.Handle( serviceManager.uri ).get_proxy().SetAuthorizedUsers( 
+                           self.authManager.GetAuthorizedUsers() )
         except:
             log.exception("Exception in AGNodeService.AddServiceManager.")
-            raise faultType("Failed to set Service Manager user authorization: " + serviceManager.uri )
+            raise faultType("Failed to set Service Manager user authorization: " + 
+                            serviceManager.uri )
         
     AddServiceManager.soap_export_as = "AddServiceManager"
 
@@ -132,7 +137,8 @@ class AGNodeService( ServiceBase ):
                     break
         except:
             log.exception("Exception in AGNodeService.RemoveServiceManager.")
-            raise faultType("AGNodeService.RemoveServiceManager failed: " + serviceManagerToRemove.uri )
+            raise faultType("AGNodeService.RemoveServiceManager failed: " + 
+                            serviceManagerToRemove.uri )
     RemoveServiceManager.soap_export_as = "RemoveServiceManager"
 
 
@@ -145,7 +151,6 @@ class AGNodeService( ServiceBase ):
     ####################
     ## SERVICE methods
     ####################
-
 
     def GetAvailableServices( self ):
         """Get list of available services """
@@ -164,7 +169,7 @@ class AGNodeService( ServiceBase ):
                                                     service.capabilities, service.resource,
                                                     service.executable, service.serviceManagerUri,
                                                     service.servicePackageUri )
-                    services = services + [ service ]
+                    services.append( service )
 
         except:
             log.exception("Exception in AGNodeService.GetServices.")
@@ -276,13 +281,11 @@ class AGNodeService( ServiceBase ):
             #
             # Skip unreachable service managers
             #
-            try:
-                Client.Handle( serviceManager.uri ).get_proxy().Ping()
-            except:
+            if not Client.Handle( serviceManager.uri ).IsValid():
                 log.info("Couldn't reach service manager: %s", serviceManager.uri)
                 continue
 
-            # Add service manager to list (since it's reachable)
+            # Add service manager to list
             self.serviceManagers.append( serviceManager )
 
             #
@@ -409,14 +412,6 @@ class AGNodeService( ServiceBase ):
             raise faultType("AGNodeService.GetCapabilities failed: " + str( sys.exc_value ) )
         return capabilities
     GetCapabilities.soap_export_as = "GetCapabilities"
-
-
-    def Ping( self ):
-        """
-        Allows clients to determine whether node service is alive
-        """
-        return 1
-    Ping.soap_export_as = "Ping"
 
 
     ####################
