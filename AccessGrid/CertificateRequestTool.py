@@ -58,7 +58,7 @@ class CertificateRequestTool(wxWizard):
         
         self.step = 1
         self.maxStep = 4
-        self.SetPageSize(wxSize(400, 80))
+        self.SetPageSize(wxSize(430, 80))
 
         self.page0 = IntroWindow(self, "Welcome to the Certificate Request Wizard", )
         self.page1 = SelectCertWindow(self, "Select Certificate Type")
@@ -898,8 +898,8 @@ class HTTPProxyConfigPanel(wxPanel):
         hsizer.Add(self.proxyText, 1, wxEXPAND)
         hsizer.Add(wxStaticText(self, -1, "Port: "), 0, wxALIGN_CENTER_VERTICAL | wxALL, 2)
         hsizer.Add(self.proxyPort, 0, wxEXPAND)
-
-        self.sizer.Add(hsizer, 0, wxEXPAND)
+        
+        self.sizer.Add(hsizer, 0, wxEXPAND |wxBOTTOM, 5)
 
     def OnCheckbox(self, event):
         self.UpdateProxyEnabledState()
@@ -966,8 +966,7 @@ class SubmitReqWindow(TitledPage):
                            wxTextAttr(wxNullColour, font = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)))
 
         self.text.Refresh()
-                        
-
+        
     def Validate(self):
 
         #
@@ -1005,8 +1004,7 @@ class SubmitReqWindow(TitledPage):
         '''
         self.sizer.Add(self.text, 1, wxALL|wxEXPAND, 5)
         self.sizer.Add(self.proxyPanel, 0, wxEXPAND | wxALIGN_BOTTOM)
-
-
+               
 class CertificateStatusDialog(wxDialog):
     '''
     Dialog showing submitted certificate requests.  It allows users to check status
@@ -1016,7 +1014,7 @@ class CertificateStatusDialog(wxDialog):
         wxDialog.__init__(self, parent, id, title,
                           style=wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER )
 
-        self.SetSize(wxSize(800,350))
+        self.SetSize(wxSize(700,350))
         self.createIdentityCertCB = createIdentityCertCB
 
         self.info = wxStaticText(self, -1, "You have requested following certificates:")
@@ -1034,7 +1032,7 @@ class CertificateStatusDialog(wxDialog):
 
         self.proxyPanel = HTTPProxyConfigPanel(self)
         
-        self.newRequestButton = wxButton(self, wxNewId(), "Create New Request")
+        self.newRequestButton = wxButton(self, wxNewId(), "New Request")
 
         self.certReqDict = {}
         self.certStatus = {}
@@ -1071,19 +1069,16 @@ class CertificateStatusDialog(wxDialog):
         
         vs.Add(self.importButton, 0, wxALL | wxEXPAND, 2)
         vs.Add(self.deleteButton, 0, wxALL | wxEXPAND, 2)
-
-        sizer.Add(hs, 1, wxEXPAND)
         
-        sizer.Add(self.proxyPanel, 0, wxEXPAND)
-
-        sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND)
+        sizer.Add(hs, 1, wxEXPAND | wxRIGHT, 8)
+        
+        sizer.Add(self.proxyPanel, 0, wxEXPAND | wxALL, 10)
 
         box = wxBoxSizer(wxHORIZONTAL)
         box.Add(self.getStatusButton, 0 , wxALL, 5)
         box.Add(self.newRequestButton, 0 , wxALL, 5)
         box.Add(self.closeButton, 0 , wxALL, 5)
-
-        sizer.Add(box, 0, wxCENTER)
+        sizer.Add(box, 0, wxCENTER | wxBOTTOM, 5)
 
         self.SetAutoLayout(1)
         self.SetSizer(sizer)
