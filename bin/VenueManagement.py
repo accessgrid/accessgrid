@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.113 2004-03-01 17:25:07 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.114 2004-03-04 15:33:22 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.113 2004-03-01 17:25:07 judson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.114 2004-03-04 15:33:22 judson Exp $"
 
 import string
 import time
@@ -34,7 +34,7 @@ from AccessGrid.Venue import VenueIW
 from AccessGrid.Descriptions import StreamDescription, ConnectionDescription
 from AccessGrid.Descriptions import VenueDescription, CreateVenueDescription
 from AccessGrid.Descriptions import Capability
-from AccessGrid.CertificateManager import CertificateManager
+from AccessGrid.Security.CertificateManager import CertificateManager
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid import icons
@@ -182,7 +182,6 @@ class VenueManagementClient(wxApp):
         if not certMgt.HaveValidProxy():
             log.debug("VenueManagementClient.ConnectToServer:: no valid proxy")
             certMgt.CreateProxy()
-            
         try:
             wxBeginBusyCursor()
             log.debug("VenueManagementClient.ConnectToServer: Connect to server")
@@ -314,17 +313,6 @@ class VenueManagementClient(wxApp):
         self.server.RemoveVenue(venue.uri)
         if self.venueList.has_key(venue.uri):
             del self.venueList[venue.uri]
-
-    def ConvertVenuesToConnections(self, list):
-        log.debug("VenueManagementClient.ConvertVenuesToConnections: Convert venue to connections %s" %str(list))
-
-        connectionsList = []
-        for venue in list:
-            c = ConnectionDescription(venue.name, venue.description,
-                                      venue.uri)
-            connectionsList.append(c)
-
-        return connectionsList
 
     def AddAdministrator(self, dnName):
         log.debug("VenueManagementClient.AddAdministrator: Add administrator: %s" %dnName)
@@ -760,6 +748,7 @@ class VenueListPanel(wxPanel):
         item = self.venuesList.GetSelection()
         index = self.venuesList.FindString(venue.name)
 
+        print venue
         if(index != wxNOT_FOUND and index != item):
             text = "The venue could not be modified, a venue with the same name is already present"
             text2 = "Add venue error"
@@ -777,10 +766,8 @@ class VenueListPanel(wxPanel):
 
                 # Set default venue
                              
-                if venue.uri == self.defaultVenue.uri:
+                if self.defaultVenue == None or venue.uri == self.defaultVenue.uri:
                     self.SetDefaultVenue(venue)
-                    
-                
      
     def SetEncryption(self, value, key):
         item = self.venuesList.GetSelection()
@@ -1861,15 +1848,11 @@ class ModifyVenueFrame(VenueParamFrame):
                     except:
                         # Modify venues should work even if SetVenueRoles fail
                         log.exception("ModifyVenueFrame.OnOk: Can not set roles for venue")
-
                 except Exception, e:
-                    if e.string == "NotAuthorized":
-                            text = "You are not authorized to modify this venue.\n"
-                            MessageDialog(None, text, "Authorization Error", style=wxOK|wxICON_WARNING)
-                            log.info("ModifyVenueFrame.OnOK: Not authorized to modify venue.")
-                except:
                     log.exception("ModifyVenueFrame.OnOk: Modify venue failed")
                     text = "Could not modify venue %s" %self.venue.name
+                    if hasattr(e, "string"):
+                        text = text + "\n%s" % e.string
                     ErrorDialog(None, text, "Modify Venue Error",
                                 style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
 
@@ -1916,7 +1899,6 @@ class ModifyVenueFrame(VenueParamFrame):
             self.encryptionPanel.ClickEncryptionButton(None, false)
 
         for e in self.venue.connections:
-            print e
             self.exits.Append(e.name, e)
             
         if(len(self.venue.streams)==0):
