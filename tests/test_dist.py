@@ -2,7 +2,7 @@
 # Name:        unittest_all.py
 # Purpose:     Automatic testing with machine readable output
 # Created:     2004/04/014
-# RCS-ID:      $Id: test_dist.py,v 1.2 2004-04-16 17:22:33 judson Exp $
+# RCS-ID:      $Id: test_dist.py,v 1.3 2004-04-16 18:49:53 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -22,7 +22,10 @@ html_xform = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
   </head>
   <body bgcolor=\"#ffffff\" text=\"#000000\">
    <H2>AGTk Automatic Test Results</H2>
-   <H3>Elapsed Time <xsl:value-of select=\"@Elapsed_Time\"/></H3>
+   <H4>Platform <xsl:value-of select=\"@Platform\"/></H4>
+   <H4>Timestamp <xsl:value-of select=\"@Timestamp\"/></H4>
+   <H4>File <xsl:value-of select=\"@File\"/></H4>
+   <H4>Elapsed Time <xsl:value-of select=\"@Elapsed_Time\"/></H4>
      <table border=\"1\" cellpadding=\"2\">
       <tbody>
         <xsl:apply-templates select=\"Test\"/>
@@ -124,10 +127,13 @@ class _XMLTestResult(TestResult):
         self.printErrorList('ERROR', self.errors)
         self.printErrorList('FAIL', self.failures)
 
-    def getResults(self, elapsedTime):
+    def getResults(self, elapsedTime, timestamp):
         resDoc = self.domI.createDocument(xml.dom.minidom.EMPTY_NAMESPACE,
                                           "TestResults", None)
+        resDoc.documentElement.setAttribute("Platform", "%s" % sys.platform)
+        resDoc.documentElement.setAttribute("Timestamp", "%s" % timestamp)
         resDoc.documentElement.setAttribute("Elapsed_Time", "%s" % elapsedTime)
+        resDoc.documentElement.setAttribute("File", "PACKAGEFILE")
 
         # go through successes appending a child for each
         results = self.success + self.errors + self.failures
@@ -162,13 +168,13 @@ class XMLTestRunner:
     def _makeResult(self):
         return _XMLTestResult(self.stream, self.descriptions)
 
-    def run(self, test):
+    def run(self, test, timestamp):
         result = self._makeResult()
         startTime = time.time()
         test(result)
         stopTime = time.time()
         timeTaken = float(stopTime - startTime)
-        outxml = result.getResults(timeTaken)
+        outxml = result.getResults(timeTaken, timestamp)
         return outxml, result
 
 if __name__ == '__main__':
@@ -182,9 +188,9 @@ if __name__ == '__main__':
     parser.add_option("--text", dest="format", metavar="FORMAT", 
                       action="store_const", const="text", default=None,
                       help="Output TEXT results.")
-
-    parser.add_option("-p", "--path", dest="path", metavar="PATH",
-                      default=None, help="Path to the dist lib for adding to the python path")
+    parser.add_option("-t", "--timestamp", dest="timestamp",
+                      metavar="TIMESTAMP", default=None,
+                      help="Timestamp for this snapshot.")
     
     options, args = parser.parse_args()
     
@@ -208,7 +214,7 @@ if __name__ == '__main__':
     for module in map(__import__, modules_to_test):
        suite.addTest(findTestCases(module))
 
-    output, result = XMLTestRunner().run(suite)
+    output, result = XMLTestRunner().run(suite, options.timestamp)
 
     ro = output
     if options.format is not None:
