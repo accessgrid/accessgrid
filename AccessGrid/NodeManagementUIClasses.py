@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.71 2004-09-08 20:57:34 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.72 2004-09-08 21:10:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.71 2004-09-08 20:57:34 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.72 2004-09-08 21:10:52 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -566,7 +566,7 @@ class NodeManagementClientFrame(wxFrame):
         """
 
         # Prompt for node service location
-        names = { "Hostname" : "", "Port":"" }
+        names = { "Hostname" : "", "Port":"11000" }
         dlg = MultiTextFieldDialog( self, -1, \
             "Node Attach Dialog", names )
 
@@ -732,7 +732,7 @@ class NodeManagementClientFrame(wxFrame):
         """
 
         # Prompt for service manager location
-        names = { "Hostname" : "", "Port":"" }
+        names = { "Hostname" : "", "Port":"11000" }
         dlg = MultiTextFieldDialog( self, -1, \
             "Add Service Manager Dialog", names )
      
