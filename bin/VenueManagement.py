@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.57 2003-04-07 17:17:44 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.58 2003-04-07 21:46:17 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1317,25 +1317,26 @@ class VenueParamFrame(wxDialog):
         index = self.venues.GetSelection()
         if index != -1:
             venue = self.venues.GetClientData(index)
-            sv = self.application.currentVenue
-            if sv.connections.has_key(venue.uri):
+            
+            existingExit = 0
+            numExits = self.exits.GetCount()
+            for index in range(numExits):
+                exit = self.exits.GetClientData(index)
+                if exit.uri == venue.uri:
+                    existingExit = 1
+                    break
+            if existingExit:
                 text = ""+venue.name+" is added already"
                 exitExistDialog = wxMessageDialog(self, text, '',
                                                   wxOK | wxICON_INFORMATION)
                 exitExistDialog.ShowModal()
                 exitExistDialog.Destroy()
             else:
-                sv.connections[venue.uri] = venue
                 self.exits.Append(venue.name, venue)
 
     def RemoveExit(self, event):
         index = self.exits.GetSelection()
         if index != -1:
-            exit = self.venues.GetClientData(index)
-            sv = self.application.currentVenue
-            if sv.connections.has_key(exit.uri):
-                del sv.connections[exit.uri]
-
             self.exits.Delete(index)
                 
     def SetEncryption(self):
