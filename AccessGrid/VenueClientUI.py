@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.40 2004-04-26 16:29:45 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.41 2004-04-26 20:38:20 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.40 2004-04-26 16:29:45 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.41 2004-04-26 20:38:20 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2260,7 +2260,7 @@ class VenueAddressBar(wxSashLayoutWindow):
         venueServerAddressBox = wxBoxSizer(wxVERTICAL)
         
         box = wxBoxSizer(wxHORIZONTAL)
-        box.Add((2,5))
+        box.Add(2,5)
         box.Add(self.backButton, 0, wxRIGHT|wxALIGN_CENTER|wxLEFT, 5)
         box.Add(self.address, 1, wxRIGHT|wxALIGN_CENTER, 5)
         box.Add(self.goButton, 0, wxRIGHT|wxALIGN_CENTER, 5)
@@ -2269,7 +2269,7 @@ class VenueAddressBar(wxSashLayoutWindow):
 
         titleBox = wxBoxSizer(wxHORIZONTAL)
         titleBox.Add(self.title, 1, wxEXPAND|wxCENTER)
-        titleBox.Add((2,5))
+        titleBox.Add(2,5)
         self.titlePanel.SetSizer(titleBox)
         titleBox.Fit(self.titlePanel)
 
@@ -2554,7 +2554,7 @@ class ExitPanel(wxPanel):
         b = wxBoxSizer(wxHORIZONTAL)
         b.Add(self.button, 0, wxALIGN_LEFT|wxTOP|wxBOTTOM|wxRIGHT|wxLEFT, 2)
         b.Add(self.label, 1,  wxALIGN_CENTER|wxTOP|wxBOTTOM|wxRIGHT|wxEXPAND, 2)
-        b.Add((5,2))
+        b.Add(5,2)
         self.SetSizer(b)
         b.Fit(self)
         self.SetAutoLayout(1)
@@ -3691,7 +3691,7 @@ class UploadFilesDialog(wxDialog):
        
     def Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add((5,5))
+        sizer.Add(5,5)
         sizer.Add(self.text, 0, wxEXPAND|wxALL, 5)
         sizer.Add(self.progress, 0, wxEXPAND|wxALL, 5)
         sizer.Add(self.button, 0, wxCENTER|wxALL, 5)
@@ -4016,7 +4016,7 @@ class AddAppDialog(wxDialog):
         sizer = wxBoxSizer(wxVERTICAL)
 
         sizer.Add(self.info, 0, wxEXPAND|wxALL, 10)
-        sizer.Add((5,5))
+        sizer.Add(5,5)
         
         gridSizer = wxFlexGridSizer(2, 2, 10, 5)
         gridSizer.Add(self.nameText)

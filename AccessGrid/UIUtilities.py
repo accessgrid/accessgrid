@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.55 2004-04-23 17:15:42 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.56 2004-04-26 20:43:31 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.55 2004-04-23 17:15:42 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.56 2004-04-26 20:43:31 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import IsWindows
@@ -103,7 +103,7 @@ class BugReportCommentDialog(wxDialog):
         sizer.Add(self.text, 0, wxALL, 10)
         sizer.Add(self.commentText, 0, wxLEFT| wxRIGHT | wxEXPAND, 10)
         sizer.Add(self.commentBox, 0,  wxLEFT| wxRIGHT | wxEXPAND, 10)
-        sizer.Add((10,10))
+        sizer.Add(10,10)
         sizer.Add(self.emailText, 0, wxLEFT| wxRIGHT | wxTOP| wxEXPAND, 10)
         sizer.Add(self.emailBox, 0,  wxLEFT| wxRIGHT | wxBOTTOM | wxEXPAND, 10)
         sizer.Add(self.infoText, 0, wxLEFT | wxRIGHT | wxTOP |  wxEXPAND, 10)
@@ -233,7 +233,7 @@ class AboutDialog(wxDialog):
         sizer.Add(self.panel, 1, wxEXPAND)
         
         boxSizer = wxBoxSizer(wxVERTICAL)
-        boxSizer.Add((5,5))
+        boxSizer.Add(5,5)
         boxSizer.Add(self.image, 0 ,wxALIGN_CENTER)
         boxSizer.Add(self.text, 0 ,wxALIGN_LEFT | wxALL, 10)
         boxSizer.Add(self.license, 1 ,wxALIGN_CENTER |wxEXPAND| wxLEFT | wxRIGHT| wxBOTTOM, 10)

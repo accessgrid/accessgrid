@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.30 2004-04-26 18:52:24 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.31 2004-04-26 20:39:27 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -67,7 +67,7 @@ class TitledPage(wxPyWizardPage):
         title.SetFont(wxFont(14, wxNORMAL, wxNORMAL, wxBOLD))
         self.sizer.AddWindow(title, 0, wxALL|wxEXPAND, 5)
         self.sizer.AddWindow(wxStaticLine(self, -1), 0, wxEXPAND|wxALL, 5)
-        self.sizer.Add((10, 10))
+        self.sizer.Add(10, 10)
                
     def SetNext(self, next):
         '''
@@ -215,10 +215,10 @@ class WelcomeWindow(TitledPage):
     def Layout(self):
         ''' Handles UI layout '''
         self.sizer.Add(self.info, 0, wxALL, 5)
-        self.sizer.Add((10,10))
+        self.sizer.Add(10,10)
         self.sizer.Add(self.beforeText, 0, wxALL|wxEXPAND, 5)
         self.sizer.Add(self.beforeText2, 0, wxALL, 5)
-        self.sizer.Add((10, 100))
+        self.sizer.Add(10, 100)
         self.sizer.Add(self.contText, 0, wxALIGN_CENTER|wxALL|wxEXPAND, 5)
         
 
@@ -343,7 +343,7 @@ class VideoCaptureWindow(TitledPage):
         Handles UI layout
         '''
         self.sizer.Add(self.text, 0, wxALL, 5)
-        self.sizer.Add((20,20))
+        self.sizer.Add(20,20)
         
         gridSizer = wxFlexGridSizer(2, 2, 6, 6)
         gridSizer.Add(self.machineText)
@@ -352,10 +352,10 @@ class VideoCaptureWindow(TitledPage):
         gridSizer.Add(self.portCtrl, 0, wxEXPAND)
         gridSizer.AddGrowableCol(1)
         self.sizer.Add(gridSizer, 0, wxALL | wxEXPAND, 5)
-        self.sizer.Add((10,10))
+        self.sizer.Add(10,10)
         self.sizer.Add(self.checkBox, 0, wxEXPAND)
         
-        self.sizer.Add((20, 20))
+        self.sizer.Add(20, 20)
 
                 
 class VideoCaptureWindow2(TitledPage):
@@ -449,11 +449,11 @@ class VideoCaptureWindow2(TitledPage):
             self.text2.SetSize(wxSize(150, 20))
 
         self.sizer.Add(self.text, 0, wxALL, 5)
-        self.sizer.Add((10,10))
+        self.sizer.Add(10,10)
         self.sizer.Add(self.text2, 0, wxLEFT, 5)
         self.sizer.Add(self.scrolledWindow, 1, wxEXPAND|wxLEFT|wxRIGHT, 5)
         self.boxSizer = wxBoxSizer(wxVERTICAL)
-        self.boxSizer.Add((10,10))
+        self.boxSizer.Add(10,10)
         self.scrolledWindow.SetSizer(self.boxSizer)
         self.scrolledWindow.SetAutoLayout(1)
 
@@ -553,7 +553,7 @@ class VideoDisplayWindow(TitledPage):
         Handles UI layout
         '''
         self.sizer.Add(self.text, 0, wxALL, 5)
-        self.sizer.Add((20,20))
+        self.sizer.Add(20,20)
         
         gridSizer = wxFlexGridSizer(2, 2, 6, 6)
         gridSizer.Add(self.machineText)
@@ -562,9 +562,9 @@ class VideoDisplayWindow(TitledPage):
         gridSizer.Add(self.portCtrl, 0, wxEXPAND)
         self.sizer.Add(gridSizer, 0, wxALL | wxEXPAND, 5)
         gridSizer.AddGrowableCol(1)
-        self.sizer.Add((10,10))
+        self.sizer.Add(10,10)
         self.sizer.Add(self.checkBox, 0, wxEXPAND)
-        self.sizer.Add((20, 20))
+        self.sizer.Add(20, 20)
 
         
 class AudioWindow(TitledPage):
@@ -654,8 +654,7 @@ class AudioWindow(TitledPage):
         Handles UI layout
         '''
         self.sizer.Add(self.text, 0, wxALL, 5)
-        self.sizer.Add((20,20))
-        
+        self.sizer.Add(20,20)        
         gridSizer = wxFlexGridSizer(2, 2, 6, 6)
         gridSizer.Add(self.machineText)
         gridSizer.Add(self.machineCtrl, 0, wxEXPAND)
@@ -663,9 +662,9 @@ class AudioWindow(TitledPage):
         gridSizer.Add(self.portCtrl, 0, wxEXPAND)
         gridSizer.AddGrowableCol(1)
         self.sizer.Add(gridSizer, 0, wxALL | wxEXPAND, 5)
-        self.sizer.Add((10,10))
+        self.sizer.Add(10,10)
         self.sizer.Add(self.checkBox, 0, wxEXPAND)
-        self.sizer.Add((20, 20))
+        self.sizer.Add(20, 20)
 
 
 class ConfigWindow(TitledPage):
@@ -886,25 +885,25 @@ class ConfigWindow(TitledPage):
             self.audioHeading.SetSize(wxSize(100, 20))
                      
         self.sizer.Add(self.info, 0, wxALL, 5)
-        self.sizer.Add((20, 20))
+        self.sizer.Add(20, 20)
         box = wxBoxSizer(wxHORIZONTAL)
        
         box.Add(self.vCapHeading, 0, wxALIGN_CENTER)
         box.Add(wxStaticLine(self, -1), 1, wxALIGN_CENTER)
         self.sizer.Add(box, 0, wxEXPAND)
 
-        self.sizer.Add((5,5))
+        self.sizer.Add(5,5)
         self.sizer.Add(self.vCapMachineText, 0, wxLEFT | wxEXPAND, 30)
-        self.sizer.Add((10, 10))
+        self.sizer.Add(10, 10)
 
         box = wxBoxSizer(wxHORIZONTAL)
         box.Add(self.vDispHeading, 0, wxALIGN_CENTER)
         box.Add(wxStaticLine(self, -1), 1, wxALIGN_CENTER)
         self.sizer.Add(box, 0, wxEXPAND)
         
-        self.sizer.Add((5,5))
+        self.sizer.Add(5,5)
         self.sizer.Add(self.vDispMachineText, 0, wxLEFT | wxEXPAND, 30)
-        self.sizer.Add((10, 10))
+        self.sizer.Add(10, 10)
         
         box = wxBoxSizer(wxHORIZONTAL)
        
@@ -912,13 +911,13 @@ class ConfigWindow(TitledPage):
         box.Add(wxStaticLine(self, -1), 1, wxALIGN_CENTER)
         self.sizer.Add(box, 0, wxEXPAND)
 
-        self.sizer.Add((5,5))
+        self.sizer.Add(5,5)
         self.sizer.Add(self.audioMachineText, 0, wxLEFT | wxEXPAND, 30)
 
-        self.sizer.Add((20,20))
+        self.sizer.Add(20,20)
         self.sizer.Add(self.checkBox, 0, wxLEFT | wxEXPAND, 5)
 
-        self.sizer.Add((5,5))
+        self.sizer.Add(5,5)
         box = wxBoxSizer(wxHORIZONTAL)
         box.Add(self.configName, 0, wxCENTER|wxALL, 5)
         box.Add(self.configNameCtrl, 1, wxALL, 5)
@@ -957,7 +956,7 @@ class NodeClient:
          self.server.RunInThread()
 
          self.serviceList = self.node.GetAvailableServices()
-
+       
     def Stop(self):
         # Exit cleanly
         self.nodeService.Stop()

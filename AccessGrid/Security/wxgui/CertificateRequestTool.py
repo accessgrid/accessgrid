@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.7 2004-04-26 15:40:22 lefvert Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.8 2004-04-26 20:38:54 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -260,7 +260,7 @@ class TitledPage(wxPyWizardPage):
         title.SetFont(wxFont(14, wxNORMAL, wxNORMAL, wxBOLD))
         self.sizer.AddWindow(title, 0, wxALL|wxEXPAND, 5)
         self.sizer.AddWindow(wxStaticLine(self, -1), 0, wxEXPAND|wxALL, 5)
-        self.sizer.Add((10, 10))
+        self.sizer.Add(10, 10)
                        
     def OnPageShow(self):
         """
@@ -370,7 +370,7 @@ class SelectCertWindow(TitledPage):
         Handles UI layout
         '''
         self.sizer.Add(self.info, 0, wxALL, 5)
-        self.sizer.Add((10, 10))
+        self.sizer.Add(10, 10)
         
         infoSizer = wxFlexGridSizer(3, 2, 6, 6)
         infoSizer.Add(self.info1, 0, wxCENTER)
@@ -380,7 +380,7 @@ class SelectCertWindow(TitledPage):
         infoSizer.Add(self.info5, 0, wxCENTER)
         infoSizer.Add(self.info6, 0, wxEXPAND | wxALIGN_LEFT)    
         self.sizer.Add(infoSizer, 0, wxALL| wxEXPAND, 5)
-        self.sizer.Add((10, 10))
+        self.sizer.Add(10, 10)
         
         gridSizer = wxFlexGridSizer(1, 2, 6,6)
         gridSizer.Add(self.text, 0, wxALIGN_CENTER)
@@ -487,7 +487,7 @@ remember it: it is not possible to determine the passphrase from the certificate
         Handles UI layout.
         '''
         self.sizer.Add(self.text, 0, wxALL, 5)
-        self.sizer.Add((10, 10))
+        self.sizer.Add(10, 10)
         gridSizer = wxFlexGridSizer(4, 2, 6, 6)
         #gridSizer.Add(self.nameText)
         box = wxBoxSizer(wxHORIZONTAL)
@@ -723,7 +723,7 @@ class HostCertWindow(TitledPage):
         Handles UI layout.
         '''
         self.sizer.Add(self.text, 0, wxALL, 5)
-        self.sizer.Add((10, 10)) 
+        self.sizer.Add(10, 10) 
         gridSizer = wxFlexGridSizer(2, 2, 6, 6)
         gridSizer.Add(self.hostText)
         gridSizer.Add(self.hostCtrl, 0, wxEXPAND)
@@ -885,7 +885,7 @@ class ServiceCertWindow(TitledPage):
         Handles UI layout
         '''
         self.sizer.Add(self.text, 0, wxALL, 5)
-        self.sizer.Add((10, 10)) 
+        self.sizer.Add(10, 10) 
         gridSizer = wxFlexGridSizer(2, 2, 6, 6)
         gridSizer.Add(self.serviceText, 0, wxALIGN_CENTER_VERTICAL)
         gridSizer.Add(self.serviceDropdown, 0, wxEXPAND)
