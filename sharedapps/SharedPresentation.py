@@ -7,7 +7,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.2 2003-04-18 23:05:32 judson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.3 2003-04-19 16:37:45 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -66,7 +66,7 @@ def Usage():
     print "    -h|--help : print usage"
     print "    -a|--applicationURL : <url to application in venue>"
     print "    -i|--information : <print information about this application>"
-    print "    -l|--logging : <turn logging on>"
+    print "    -l|--logging : <log name: defaults to SharedPresentation>"
 
 
 class PowerPointViewer:
@@ -592,11 +592,11 @@ if __name__ == "__main__":
     # Initialization of variables
     venueURL = None
     applicationURL = None
-    log = None
+    logName = "SharedPresentation"
 
     # Here we parse command line options
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "v:a:ilh",
+        opts, args = getopt.getopt(sys.argv[1:], "v:a:l:ih",
                                    ["venueURL", "applicationURL",
                                     "information", "logging", "help"])
     except getopt.GetoptError:
@@ -609,7 +609,7 @@ if __name__ == "__main__":
         elif o in ("-a", "--applicationURL"):
             applicationURL = a
         elif o in ("-l", "--logging"):
-            log = InitLogging(SharedPresentation.appName)
+            logName = a
         elif o in ("-i", "--information"):
             print "App Name: %s" % SharedPresentation.appName
             print "App Description: %s" % SharedPresentation.appDescription
@@ -618,6 +618,9 @@ if __name__ == "__main__":
         elif o in ("-h", "--help"):
             Usage()
             sys.exit(0)
+
+    # Initialize logging
+    log = InitLogging(logName)
 
     # If we're not passed some url that we can use, bail showing usage
     if applicationURL == None and venueURL == None:
