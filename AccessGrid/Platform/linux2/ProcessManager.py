@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManager.py,v 1.1 2004-02-26 16:45:35 judson Exp $
+# RCS-ID:      $Id: ProcessManager.py,v 1.2 2004-03-10 07:23:51 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: ProcessManager.py,v 1.1 2004-02-26 16:45:35 judson Exp $"
+__revision__ = "$Id: ProcessManager.py,v 1.2 2004-03-10 07:23:51 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import signal
@@ -34,9 +34,9 @@ class ProcessManager:
         Arglist is a list of the arguments to the command.
         """
 
-        arglist.insert(0, command)
 
         arglist = map(lambda a: str(a), arglist)
+        arglist.insert(0, str(command))
         pid = os.spawnvp(os.P_NOWAIT, command, arglist)
 
         self.processes.append(pid)
