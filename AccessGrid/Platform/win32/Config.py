@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.27 2004-04-13 03:29:39 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.28 2004-04-13 18:46:43 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.27 2004-04-13 03:29:39 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.28 2004-04-13 18:46:43 judson Exp $"
 
 import os
 import sys
@@ -51,14 +51,14 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
     @ivar installDir: The directory this toolkit is installed in.
     @ivar docDir: The directory for documentation for the toolkit.
     @ivar appDir: The directory for system installed shared applications
-    @ivar nodeServiceDir: the directory for system installed node services
+    @ivar nodeServicesDir: the directory for system installed node services
     @ivar servicesDir: the directory for system installed services
     @ivar pkgCacheDir: The directory of shared application and node
     service packages for all users of this installation.
     @ivar configDir: The directory for installation configuration.
 
     @type appDir: string
-    @type nodeServiceDir: string
+    @type nodeServicesDir: string
     @type servicesDir: string
     @type configDir: string
     @type pkgCacheDir: string
@@ -83,6 +83,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
             raise Exception, "Only one instance of AGTkConfig is allowed."
 
         # Create the singleton
+        AccessGrid.Config.AGTkConfig.__init__(self)
         AGTkConfig.theAGTkConfigInstance = self
 
         # Set the flag to initialize if needed
@@ -96,7 +97,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         self.logDir = None
         self.pkgCacheDir = None
         self.servicesDir = None
-        self.nodeServiceDir = None
+        self.nodeServicesDir = None
         self.appDir = None
         self.docDir = None
         
@@ -110,7 +111,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         self.GetPkgCacheDir()
         self.GetLogDir()
         self.GetSharedAppDir()
-        self.GetNodeServiceDir()
+        self.GetNodeServicesDir()
         self.GetServicesDir()
         
     def GetVersion(self):
@@ -137,7 +138,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
             
         # Check the installation
         if not os.path.exists(self.installBase):
-            raise Exception, "AGTkConfig: installation base does not exist."
+            raise IOError("AGTkConfig: installation base does not exist.")
         
         return self.installBase
         
@@ -154,7 +155,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
                 os.mkdir(self.configDir)
 
         if self.configDir is not None and not os.path.exists(self.configDir):
-            raise Exception, "AGTkConfig: config dir does not exist."
+            raise IOError("AGTkConfig: config dir does not exist.")
 
         return self.configDir
 
@@ -168,7 +169,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
         # Check the installation
         if self.installDir is not None and not os.path.exists(self.installDir):
-            raise Exception, "AGTkConfig: install dir does not exist."
+            raise IOError("AGTkConfig: install dir does not exist.")
 
         return self.installDir
 
@@ -186,7 +187,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
         # Check the installation
         if self.docDir is not None and not os.path.exists(self.docDir):
-            raise Exception, "AGTkConfig: doc dir does not exist."
+            raise IOError("AGTkConfig: doc dir does not exist.")
 
         return self.docDir
 
@@ -199,12 +200,15 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         if self.initIfNeeded:
             if self.pkgCacheDir is not None and \
                    not os.path.exists(self.pkgCacheDir):
-                os.mkdir(self.pkgCacheDir)
-
+                try:
+                    os.mkdir(self.pkgCacheDir)
+                except:
+                    log.exception("Couldn't make package cache dir.")
+                    
         # Check the installation
         if self.pkgCacheDir is not None and \
                not os.path.exists(self.pkgCacheDir):
-            raise Exception, "AGTkConfig: pkg cache dir does not exist."
+            raise IOError("AGTkConfig: pkg cache dir does not exist.")
 
         return self.pkgCacheDir
 
@@ -217,12 +221,15 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         if self.initIfNeeded:
             if self.logDir is not None and \
                    not os.path.exists(self.logDir):
-                os.mkdir(self.logDir)
+                try:
+                    os.mkdir(self.logDir)
+                except:
+                    log.exception("Couldn't make log dir.")
 
         # Check the installation
         if self.logDir is not None and \
                not os.path.exists(self.logDir):
-            raise Exception, "AGTkConfig: log dir does not exist."            
+            raise IOError("AGTkConfig: log dir does not exist.")
  
         return self.logDir
     
@@ -234,29 +241,37 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         # Check dir and create it if needed.
         if self.initIfNeeded:
             if self.appDir is not None and not os.path.exists(self.appDir):
-                os.mkdir(self.appDir)
+                try:
+                    os.mkdir(self.appDir)
+                except:
+                    log.exception("Couldn't make app dir.")
 
         # Check the installation
         if self.appDir is not None and not os.path.exists(self.appDir):
-            raise Exception, "AGTkConfig: app dir does not exist."
+            raise IOError("AGTkConfig: app dir does not exist.")
 
         return self.appDir
 
-    def GetNodeServiceDir(self):
-        if self.nodeServiceDir == None:
+    def GetNodeServicesDir(self):
+        if self.nodeServicesDir == None:
             ucd = self.GetBaseDir()
-            self.nodeServiceDir = os.path.join(ucd, "NodeServices")
+            self.nodeServicesDir = os.path.join(ucd, "NodeServices")
 
         # Check dir and create it if needed.
         if self.initIfNeeded:
-            if self.nodeServiceDir is not None and not os.path.exists(self.nodeServiceDir):
-                os.mkdir(self.nodeServiceDir)
+            if self.nodeServicesDir is not None and \
+                   not os.path.exists(self.nodeServicesDir):
+                try:
+                    os.mkdir(self.nodeServicesDir)
+                except:
+                    log.exception("Couldn't make node services dir.")
 
         # Check the installation
-        if self.nodeServiceDir is not None and not os.path.exists(self.nodeServiceDir):
-            raise Exception, "AGTkConfig: node service dir does not exist."
+        if self.nodeServicesDir is not None and \
+               not os.path.exists(self.nodeServicesDir):
+            raise IOError("AGTkConfig: node service dir does not exist.")
 
-        return self.nodeServiceDir
+        return self.nodeServicesDir
 
     def GetServicesDir(self):
         if self.servicesDir == None:
@@ -265,12 +280,17 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
         # Check dir and create it if needed.
         if self.initIfNeeded:
-            if self.servicesDir is not None and not os.path.exists(self.servicesDir):
-                os.mkdir(self.servicesDir)
+            if self.servicesDir is not None and \
+                   not os.path.exists(self.servicesDir):
+                try:
+                    os.mkdir(self.servicesDir)
+                except:
+                    log.exception("Couldn't make services dir.")
 
         # Check the installation
-        if self.servicesDir is not None and not os.path.exists(self.servicesDir):
-            raise Exception, "AGTkConfig: services dir does not exist."
+        if self.servicesDir is not None and \
+               not os.path.exists(self.servicesDir):
+            raise IOError("AGTkConfig: services dir does not exist.")
 
         return self.servicesDir
 
@@ -586,6 +606,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
 
     def GetCACertDir(self):
         if self.caCertDir is not None and not os.path.exists(self.caCertDir):
+            log.exception("GlobusConfig: CA Certificate dir does not exist.")
             raise Exception, "GlobusConfig: CA Certificate dir does not exist."
 
         return self.caCertDir
@@ -718,7 +739,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
     @ivar profile: the user profile
     @ivar tempDir: a temporary directory for files for this user
     @ivar appDir: The directory for system installed shared applications
-    @ivar nodeServiceDir: the directory for system installed node services
+    @ivar nodeServicesDir: the directory for system installed node services
     @ivar servicesDir: the directory for system installed services
     @ivar pkgCacheDir: The directory of shared application and node
     service packages for all users of this installation.
@@ -727,7 +748,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
     @type profileFile: the filename of the client profile
     @type tempDir: string
     @type appDir: string
-    @type nodeServiceDir: string
+    @type nodeServicesDir: string
     @type servicesDir: string
     @type configDir: string
     @type pkgCacheDir: string
@@ -758,7 +779,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
         self.appDir = None
         self.pkgCacheDir = None
         self.sharedAppDir = None
-        self.nodeServiceDir = None
+        self.nodeServicesDir = None
         self.servicesDir = None
         self.profileFilename = None
 
@@ -782,7 +803,7 @@ class UserConfig(AccessGrid.Config.UserConfig):
         except:
             log.warn("No Shared App Dir!")
         try:
-            self.GetNodeServiceDir()
+            self.GetNodeServicesDir()
         except:
             log.warn("No Node Service Dir!")
         try:
@@ -932,24 +953,24 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
         return self.appDir
 
-    def GetNodeServiceDir(self):
-        if self.nodeServiceDir == None:
+    def GetNodeServicesDir(self):
+        if self.nodeServicesDir == None:
             ucd = self.GetBaseDir()
-            self.nodeServiceDir = os.path.join(ucd, "NodeServices")
+            self.nodeServicesDir = os.path.join(ucd, "NodeServices")
 
         # Check dir and create it if needed.
         if self.initIfNeeded:
-            if self.nodeServiceDir is not None and \
-                   not os.path.exists(self.nodeServiceDir):
-                os.mkdir(self.nodeServiceDir)
+            if self.nodeServicesDir is not None and \
+                   not os.path.exists(self.nodeServicesDir):
+                os.mkdir(self.nodeServicesDir)
 
         # Check the installation
-        if self.nodeServiceDir is not None and \
-               not os.path.exists(self.nodeServiceDir):
+        if self.nodeServicesDir is not None and \
+               not os.path.exists(self.nodeServicesDir):
             raise Exception, "AGTkConfig: node service dir does not exist."
 
         # check to make it if needed
-        return self.nodeServiceDir
+        return self.nodeServicesDir
 
     def GetServicesDir(self):
         if self.servicesDir == None:
@@ -1525,7 +1546,7 @@ if __name__ == "__main__":
             print "\tConfigDir: ", tkConf.GetConfigDir()
             print "\tPkgCacheDir: ", tkConf.GetPkgCacheDir()
             print "\tSharedAppDir: ", tkConf.GetSharedAppDir()
-            print "\tNodeServiceDir: ", tkConf.GetNodeServiceDir()
+            print "\tNodeServiceDir: ", tkConf.GetNodeServicesDir()
             print "\tServiceDir: ", tkConf.GetServicesDir()
             print "\tLogDir: ", tkConf.GetLogDir()
         except Exception, e:
@@ -1593,7 +1614,7 @@ if __name__ == "__main__":
             print "\tLog Dir: ", userConf.GetLogDir()
             print "\tTemp Dir: ", userConf.GetTempDir()
             print "\tShared App Dir: ", userConf.GetSharedAppDir()
-            print "\tNode Service Dir: ", userConf.GetNodeServiceDir()
+            print "\tNode Service Dir: ", userConf.GetNodeServicesDir()
             print "\tService Dir: ", userConf.GetServicesDir()
         except Exception, e:
             print "Error trying to retrieve the user Configuration:\n", e
