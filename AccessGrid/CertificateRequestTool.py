@@ -158,11 +158,13 @@ class CertificateRequestTool(wxWizard):
                     name = ""
                     email = ""
                     request = ""
+                    password = ""
 
                     if isinstance(page, IdentityCertWindow):
                         name = page.nameCtrl.GetValue()
                         email = page.emailCtrl.GetValue()
                         request = "identity"
+                        password = page.passwordCtrl.GetValue()
                         
                     elif  isinstance(page, HostCertWindow):
                         name = page.hostCtrl.GetValue()
@@ -174,7 +176,7 @@ class CertificateRequestTool(wxWizard):
                         email = page.emailCtrl.GetValue()
                         request = "service"
 
-                    next.SetText(name, email, request)
+                    next.SetText(name, email, request, password)
                     next.SetPrev(page)
                 
         elif dir == backward:
@@ -450,9 +452,8 @@ class ValidatorHelp(wxPyValidator):
         an IP address.
         '''
         for char in host:
-            if char in string.letters and char != '.':
-                return true
-
+            return char in string.letters
+              
         return false
 
     
@@ -774,12 +775,14 @@ class SubmitReqWindow(TitledPage):
         self.text.SetBackgroundColour(self.GetBackgroundColour())
         self.Layout()
 
-    def SetText(self, name, email, requestType):
+    def SetText(self, name, email, requestType, password):
         '''
         Sets the text based on previous page
         '''
+        # Parameters for requesting a certificate
         self.name = name
         self.email = email
+        self.password = password
         self.request = requestType
         
         self.info =  "Click 'Finish' to submit %s certificate request for %s to Argonne.  A confirmation e-mail will be sent, within 2 business days, to %s.  \n\nPlease contact agdev_ca@mcs.anl.gov if you have questions."%(self.request, self.name, self.email)
@@ -920,7 +923,7 @@ class CertificateStatusDialog(wxDialog):
             
     def RequestCertificate(self, event):
         self.Hide()
-        certReq = CertificateRequestTool(self)
+        certReq = CertificateRequestTool(self, None)
                             
     def AddCertificates(self):
         
@@ -1046,5 +1049,5 @@ if __name__ == "__main__":
 
     else:
         # Show certificate request wizard
-        certReq = CertificateRequestTool(None)
+        certReq = CertificateRequestTool(certificateType = "IDENTITY")
         certReq.Destroy()
