@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.12 2003-02-03 14:18:05 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.13 2003-02-05 21:36:46 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -58,22 +58,36 @@ class VenueClient( ServiceBase ):
     def DoNothing(self, data):
         pass
 
-    def RegisterCallbacks(self, client):
-        coherenceCallbacks = {
-           Event.ENTER: self.venueState.AddUser ,
-           Event.EXIT: self.venueState.RemoveUser ,
-           Event.MODIFY_USER: self.venueState.ModifyUser,
-           Event.ADD_DATA: self.venueState.AddData ,
-           Event.REMOVE_DATA: self.venueState.RemoveData ,
-           Event.ADD_SERVICE: self.venueState.AddService ,
-           Event.REMOVE_SERVICE: self.venueState.RemoveService ,
-           Event.ADD_CONNECTION: self.venueState.AddConnection ,
-           Event.REMOVE_CONNECTION: self.venueState.RemoveConnection,
-           }
+    #
+    # Event Handlers
+    #
+    def AddUserEvent(self, data):
+        self.venueState.AddUser(data)
 
-        for e in coherenceCallbacks.keys():
-            client.RegisterCallback(e, coherenceCallbacks[e])
+    def RemoveUserEvent(self, data):
+        self.venueState.RemoveUser(data)
 
+    def ModifyUserEvent(self, data):
+        self.venueState.ModifyUser(data)
+
+    def AddDataEvent(self, data):
+        self.venueState.AddData(data)
+
+    def RemoveDataEvent(self, data):
+        self.venueState.RemoveData(data)
+
+    def AddServiceEvent(self, data):
+        self.venueState.AddService(data)
+
+    def RemoveServiceEvent(self, data):
+        self.venueState.RemoveService(data)
+
+    def AddConnectionEvent(self, data):
+        self.venueState.AddConnection(data)
+
+    def RemoveConnectionEvent(self, data):
+        self.venueState.RemoveConnection(data)
+        
     def EnterVenue(self, URL):
         """
         EnterVenue puts this client into the specified venue.
@@ -104,8 +118,21 @@ class VenueClient( ServiceBase ):
             #
             # Create the event client
             #
+            coherenceCallbacks = {
+               Event.ENTER: self.AddUserEvent,
+               Event.EXIT: self.RemoveUserEvent,
+               Event.MODIFY_USER: self.ModifyUserEvent,
+               Event.ADD_DATA: self.AddDataEvent,
+               Event.REMOVE_DATA: self.RemoveDataEvent,
+               Event.ADD_SERVICE: self.AddServiceEvent,
+               Event.REMOVE_SERVICE: self.RemoveServiceEvent,
+               Event.ADD_CONNECTION: self.AddConnectionEvent,
+               Event.REMOVE_CONNECTION: self.RemoveConnectionEvent,
+            }
+
             self.eventClient = EventClient(self.venueState.eventLocation)
-            self.RegisterCallbacks(self.eventClient)
+            for e in coherenceCallbacks.keys():
+                self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
             self.eventClient.start()
             
             self.heartbeatTask = self.houseKeeper.AddTask(self.Heartbeat, 15)
@@ -131,8 +158,8 @@ class VenueClient( ServiceBase ):
         ExitVenue removes this client from the specified venue.
         """
         self.heartbeatTask.stop()
+        self.eventClient.Stop()
         self.venueProxy.Exit( self.privateId )
-        self.eventClient.Stop()        
         self.__InitVenueData__()
 
     def GetVenue( self ):

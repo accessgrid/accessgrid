@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.21 2003-02-03 15:05:00 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.22 2003-02-05 21:36:46 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------

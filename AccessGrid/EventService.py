@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.1 2003-02-03 17:30:17 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.2 2003-02-05 21:36:46 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -112,6 +112,7 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         """
         Distribute sends the data to all connections.
         """
+        print "Sending Event %s" % data.eventType
         # This should be more generic
         pdata = pickle.dumps(data)
         for c in self.connections:

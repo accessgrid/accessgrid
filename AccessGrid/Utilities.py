@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.9 2003-01-30 23:32:25 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.10 2003-02-05 21:36:46 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,6 +14,9 @@ import string
 import sys
 import traceback
 import ConfigParser
+import time
+from random import Random
+import sha
 
 def LoadConfig(fileName, config={}):
     """
@@ -67,6 +70,31 @@ def Which( file ):
 
     return None
 
+def GetRandInt(r):
+    return int(r.random() * sys.maxint)
+    
+def AllocateEncryptionKey():
+    """
+    This function returns a key that can be used to encrypt/decrypt media
+    streams.    
+    
+    Return: string
+    """
+    
+    # I know that the python documentation says the builtin random is not
+    # cryptographically safe, but 1) our requirements are not fort knox, and 2)
+    # the random function is being upgraded to a better version in Python 2.3
+        
+    rg = Random(time.time())
+    
+    intKey = GetRandInt(rg)
+    
+    for i in range(1, rg.randrange(GetRandInt(rg), GetRandInt(rg))):
+        intKey = intKey ^ rg.randrange(GetRandInt(rg), GetRandInt(rg))
+
+    print "Key: %x" % intKey
+    
+    return "%x" % intKey
 
 def GetResourceList():
     """

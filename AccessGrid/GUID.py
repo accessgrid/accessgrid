@@ -34,7 +34,7 @@ class GUID:
   merging two databases together, combining data, or generating keys
   in distributed systems.
   '''
-  rand = random.Random()
+  rand = random.Random(time.time())
   ip = ''
   try:
     ip = socket.gethostbyname(socket.gethostname())
