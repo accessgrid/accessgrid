@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.37 2004-07-16 14:03:51 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.38 2004-08-31 18:00:49 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.37 2004-07-16 14:03:51 judson Exp $"
+__revision__ = "$Id: TextClient.py,v 1.38 2004-08-31 18:00:49 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -248,9 +248,9 @@ class TextConnection:
         # Unpickle the data
         try:
             event = pickle.loads(pdata)
-        except EOFError:
-            self.log.exception("TextConnection: unpickle got EOF.")
-            raise TextClientBadDataException
+        except:
+            self.log.exception("TextConnection: exception handling incoming data")
+            return
 
         # Handle the data
         if self.processor != None:
