@@ -23,9 +23,6 @@ from com.sun.star.util import URL
 
 from AccessGrid import Platform
 
-# local file to help find the OpenOffice directory
-import GetPaths
-
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
@@ -58,11 +55,22 @@ class ImpressViewer:
 
         self.doc = None
 
+
     def Start(self):
         """
-        This method actually fires up PowerPoint and if specified opens a
+        This method actually fires up OpenOffice and if specified opens a
         file and starts viewing it.
         """
+
+        def iscommand(cmd, search_path=os.environ['PATH']):
+            """Return true if cmd can be found in the search path."""
+            if not search_path:
+                return 0
+            for path in search_path.split(os.pathsep):
+                if os.path.exists(os.path.join(path, cmd)):
+                    return 1
+            return 0
+        
         localContext = uno.getComponentContext()
         resolver = localContext.ServiceManager.createInstanceWithContext(
             "com.sun.star.bridge.UnoUrlResolver", localContext )
@@ -71,16 +79,26 @@ class ImpressViewer:
         except:
             print "Starting listening OpenOffice"
 
-            if os.path.exists( os.path.join(GetPaths.GetOOHomeDir(), "soffice") ):
-                # The single user installation provides binary "soffice".
-                oo_bin = os.path.join(GetPaths.GetOOHomeDir(), "soffice")
-            else:
-                # The system wide installation provides binary "ooffice".
-                #   (redhat/fedora tested, please notify us if other distributions vary)
+            if iscommand("ooffice"):
                 oo_bin = "ooffice"
+            elif iscommand("soffice"):
+                oo_bin = "soffice"
+            else :
+                # local file to help find the OpenOffice directory
+                import GetPaths
+
+                if os.path.exists( os.path.join(GetPaths.GetOOHomeDir(), "soffice") ):
+                    # The single user installation provides binary "soffice".
+                    oo_bin = os.path.join(GetPaths.GetOOHomeDir(), "soffice")
+                elif os.path.exists( os.path.join(GetPaths.GetOOHomeDir(), "ooffice") ):
+                    # The single user installation provides binary "ooffice".
+                    oo_bin = os.path.join(GetPaths.GetOOHomeDir(), "ooffice")
+                else:
+                    # oo_bin fallback value
+                    oo_bin = "soffice"
             os.system( oo_bin + " \"-accept=socket,host=localhost,port=2002;urp;\" &")
             start = time.time()
-            timeout = 40
+            timeout = 80
             failed = 1
             print "Trying to connect",
             while time.time() - start < timeout and failed == 1:
@@ -109,7 +127,7 @@ class ImpressViewer:
 
     def Quit(self):
         """
-        This method quits the powerpoint application.
+        This method quits the openoffice application.
         """
         if self.doc:
             self.doc.close(1)
@@ -127,11 +145,12 @@ class ImpressViewer:
         if not file:
             print "Blank presentation"
             self.doc = self.desktop.loadComponentFromURL("private:factory/simpress","_blank", 0, ()  )
-        if str.startswith(file, "http"):
-            print "loading from http"
-            self.doc = self.desktop.loadComponentFromURL(file,"_blank", 0, ()  )
-        else: 
-            self.doc = self.desktop.loadComponentFromURL("File:" + file,"_blank", 0, ()  )
+        else:
+            if str.startswith(file, "http"):
+                print "loading from http"
+                self.doc = self.desktop.loadComponentFromURL(file,"_blank", 0, ()  )
+            else: 
+                self.doc = self.desktop.loadComponentFromURL("File:" + file,"_blank", 0, ()  )
 
         if not self.doc:
             self.doc = self.desktop.loadComponentFromURL("private:factory/simpress","_blank", 0, ()  )
@@ -143,6 +162,7 @@ class ImpressViewer:
         # Start viewing the slides in a window
         #self.presentation.SlideShowSettings.ShowType = win32com.client.constants.ppShowTypeWindow
         #self.win = self.presentation.SlideShowSettings.Run()
+        self.win = 1
 
     def Next(self):
         """
@@ -190,6 +210,7 @@ class ImpressViewer:
         # Quit the presentation
         if self.doc:
             self.doc.close(1)
+        self.win = None
 
     def GetLastSlide(self):
         """
