@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.130 2004-02-24 23:31:48 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.131 2004-02-26 04:57:45 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.130 2004-02-24 23:31:48 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.131 2004-02-26 04:57:45 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting.pyGlobus import Client
@@ -51,6 +51,7 @@ from AccessGrid import Toolkit
 from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.Descriptions import CreateDataDescription, CreateServiceDescription
 from AccessGrid.Descriptions import CreateApplicationDescription
+from AccessGrid.Venue import VenueIW
 
 class EnterVenueException(Exception):
     pass
@@ -586,7 +587,7 @@ class VenueClient(ServiceBase):
             # Enter the venue
             #
             self.venueUri = URL
-            self.venueProxy = Client.Handle( URL ).GetProxy()
+            self.venueProxy = VenueIW(URL)
 
             log.debug("EnterVenue: Invoke venue enter")
             (venueState, self.privateId, self.streamDescList ) = self.venueProxy.Enter( self.profile )
@@ -1420,7 +1421,7 @@ class VenueClient(ServiceBase):
             log.debug("GetPersonalData: The client has been queried for personal %s" %clientProfile.name)
             
     def GetSubjectRoles(self):
-        return self.venueProxy.DetermineSubjectRoles()    
+        return self.venueProxy.DetermineSubjectRoles()
         
                          
     #
