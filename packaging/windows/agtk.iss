@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.27 2003-10-14 04:30:00 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.28 2003-10-14 05:37:51 judson Exp $
 ;
 
 #define SourceDir "C:\Software\AccessGrid\AccessGrid"
@@ -84,7 +84,7 @@ Source: dist\Lib\site-packages\*.*; DestDir: {reg:HKLM\Software\Python\PythonCor
 
 ; Documentation
 Source: doc\AccessGrid\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
-Source: doc\VENUE_CLIENT_MANUAL_HTML\*.*; DestDir: {app}\doc\VenueClient; Flags: recursesubdirs
+Source: doc\VENUE_CLIENT_MANUAL_HTML\*.*; DestDir: {app}\doc\VenueClientManual; Flags: recursesubdirs
 Source: doc\VENUE_MANAGEMENT_MANUAL_HTML\*.*; DestDir: {app}\doc\VenueManagement; Flags: recursesubdirs
 
 ; Program Files
