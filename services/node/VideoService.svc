@@ -1,0 +1,14 @@
+[ServiceDescription]
+name = VideoService
+description = Vic-based video service to send and receive video
+capabilities = Capability1 Capability2
+executable = VideoService.py
+platform = neutral
+
+[Capability1]
+role = producer
+type = video
+
+[Capability2]
+role = consumer
+type = video
