@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.76 2004-08-05 21:29:16 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.77 2004-08-06 17:23:29 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.76 2004-08-05 21:29:16 eolson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.77 2004-08-06 17:23:29 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -474,11 +474,15 @@ class AGNodeService:
                 try:
                 
                     # Actually add the service to the servicemgr
-                    AGServiceManagerIW( serviceManager.uri ).AddServicePackage( 
+                    serviceDesc = AGServiceManagerIW( serviceManager.uri ).AddServicePackage( 
                         service.packageName, 
                         service.resource,
                         service.parameters )
-
+                    
+                    # Set the identity to be used by the service
+                    if self.profile:
+                        AGServiceIW( serviceDesc.uri ).SetIdentity(
+                            self.profile )
                         
                 except:
                     log.exception("Exception adding service %s" % (service.packageName))
