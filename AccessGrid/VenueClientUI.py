@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.32 2004-04-09 19:16:03 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.33 2004-04-23 15:16:25 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.32 2004-04-09 19:16:03 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.33 2004-04-23 15:16:25 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -25,6 +25,7 @@ import string
 import webbrowser
 import traceback
 import re
+import sys
 
 from time import localtime , strftime
 from AccessGrid import Log
@@ -158,7 +159,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
     ID_ME_UNFOLLOW = wxNewId()
 
     def __init__(self, venueClient, controller):
-
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
         
@@ -596,8 +596,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
         self.menubar.Enable(self.ID_MYVENUE_SETDEFAULT, false)
         self.menubar.Enable(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES, false)
+        self.menubar.Enable(self.ID_VENUE_PROPERTIES, false)
+        self.menubar.Enable(self.ID_VENUE_APPLICATION, false)
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, false)
         self.serviceHeadingMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
+        
         
     def __ShowMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, true)
@@ -605,6 +608,8 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.menubar.Enable(self.ID_MYVENUE_ADD, true)
         self.menubar.Enable(self.ID_MYVENUE_GOTODEFAULT, true)
         self.menubar.Enable(self.ID_MYVENUE_SETDEFAULT, true)
+        self.menubar.Enable(self.ID_VENUE_PROPERTIES, true)
+        self.menubar.Enable(self.ID_VENUE_APPLICATION, true)
         
         # Only show administrate button when you can administrate a venue.
         if self.isVenueAdministrator:
@@ -949,7 +954,11 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         else:
             self.nodeManagementFrame = NodeManagementClientFrame(self, -1, "Access Grid Node Management")
             log.debug("VenueClientFrame.OpenNodeMgmtApp: open node management")
-            self.nodeManagementFrame.AttachToNode( self.venueClient.GetNodeServiceUri() )
+            try:
+                self.nodeManagementFrame.AttachToNode( self.venueClient.GetNodeServiceUri() )
+            except:
+                log.exception("VenueClientUI.ManageNodeCB: Can not attach to node %s"%self.venueClient.GetNodeServiceUri())
+                              
             if self.nodeManagementFrame.Connected(): # Right node service uri
                 self.nodeManagementFrame.UpdateUI()
                 self.nodeManagementFrame.Show(true)
@@ -961,15 +970,20 @@ class VenueClientUI(VenueClientObserver, wxFrame):
 
                 if setNodeUrlDialog.ShowModal() == wxID_OK:
                     self.venueClient.SetNodeUrl(setNodeUrlDialog.GetValue())
-                    self.nodeManagementFrame.AttachToNode( self.venueClient.GetNodeServiceUri() )
 
+                    try:
+                        self.nodeManagementFrame.AttachToNode( self.venueClient.GetNodeServiceUri() )
+
+                    except:
+                        log.exception("VenueClientUI.ManageNodeCB: Can not attach to node")
+                                            
                     if self.nodeManagementFrame.Connected(): # try again
                         self.nodeManagementFrame.Update()
                         self.nodeManagementFrame.Show(true)
 
                     else: # wrong url
                         MessageDialog(self, \
-                             'Can not open node service management\nbased on the URL you specified',
+                             'Can not open node management\nat %s'%self.venueClient.GetNodeServiceUri(),
                              'Node Management Error')
 
                 setNodeUrlDialog.Destroy()
@@ -1140,8 +1154,12 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.SetStatusText("Trying to enter venue at %s" % (venueUrl,))
 
             self.controller.EnterVenueCB(venueUrl)
-        finally:
             wxEndBusyCursor()
+        except:
+            wxEndBusyCursor()
+            log.exception("VenueClientUI.EnterVenueCB: Failed to connect to %s"%venueUrl)
+            self.Notify("Can not connect to venue at %s"%venueUrl, "Notification")
+            
     #
     # Participant Actions
     #
@@ -2242,7 +2260,7 @@ class VenueAddressBar(wxSashLayoutWindow):
         venueServerAddressBox = wxBoxSizer(wxVERTICAL)
         
         box = wxBoxSizer(wxHORIZONTAL)
-        box.Add(2,5)
+        box.Add((2,5))
         box.Add(self.backButton, 0, wxRIGHT|wxALIGN_CENTER|wxLEFT, 5)
         box.Add(self.address, 1, wxRIGHT|wxALIGN_CENTER, 5)
         box.Add(self.goButton, 0, wxRIGHT|wxALIGN_CENTER, 5)
@@ -2251,7 +2269,7 @@ class VenueAddressBar(wxSashLayoutWindow):
 
         titleBox = wxBoxSizer(wxHORIZONTAL)
         titleBox.Add(self.title, 1, wxEXPAND|wxCENTER)
-        titleBox.Add(2,5)
+        titleBox.Add((2,5))
         self.titlePanel.SetSizer(titleBox)
         titleBox.Fit(self.titlePanel)
 
@@ -2536,7 +2554,7 @@ class ExitPanel(wxPanel):
         b = wxBoxSizer(wxHORIZONTAL)
         b.Add(self.button, 0, wxALIGN_LEFT|wxTOP|wxBOTTOM|wxRIGHT|wxLEFT, 2)
         b.Add(self.label, 1,  wxALIGN_CENTER|wxTOP|wxBOTTOM|wxRIGHT|wxEXPAND, 2)
-        b.Add(5,2)
+        b.Add((5,2))
         self.SetSizer(b)
         b.Fit(self)
         self.SetAutoLayout(1)
@@ -3671,7 +3689,7 @@ class UploadFilesDialog(wxDialog):
        
     def Layout(self):
         sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add(5,5)
+        sizer.Add((5,5))
         sizer.Add(self.text, 0, wxEXPAND|wxALL, 5)
         sizer.Add(self.progress, 0, wxEXPAND|wxALL, 5)
         sizer.Add(self.button, 0, wxCENTER|wxALL, 5)
@@ -3950,6 +3968,12 @@ class TextValidator(wxPyValidator):
         elif(len(val) < 1 or profile.IsDefault() 
              or profile.name == '<Insert Name Here>'
              or profile.email == '<Insert Email Address Here>'):
+            
+            if profile.name == '<Insert Name Here>':
+                self.fieldName == 'Name'
+            elif profile.email ==  '<Insert Email Address Here>':
+                self.fieldName = 'Email'
+                
             MessageDialog(NULL, "Please, fill in the %s field" %(self.fieldName,))
             return false
         return true
@@ -3990,7 +4014,7 @@ class AddAppDialog(wxDialog):
         sizer = wxBoxSizer(wxVERTICAL)
 
         sizer.Add(self.info, 0, wxEXPAND|wxALL, 10)
-        sizer.Add(5,5)
+        sizer.Add((5,5))
         
         gridSizer = wxFlexGridSizer(2, 2, 10, 5)
         gridSizer.Add(self.nameText)
@@ -4311,8 +4335,10 @@ class VenuePropertiesDialog(wxDialog):
         Enter correct values into the listctrl.
         '''
        
-        j = 0
+        if not streamList:
+            return
 
+        j = 0
         for stream in streamList:
             self.list.InsertStringItem(j, 'item')
             self.list.SetStringItem(j, 0, str(stream.location.host))
