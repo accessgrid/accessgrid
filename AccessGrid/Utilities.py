@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.66 2004-05-05 22:04:13 lefvert Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.67 2004-05-10 19:07:59 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.66 2004-05-05 22:04:13 lefvert Exp $"
+__revision__ = "$Id: Utilities.py,v 1.67 2004-05-10 19:07:59 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -247,8 +247,8 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
     args['form_name'] = "enter_bug"
     
     # Combine comment, profile, and log file information
-    userConfigDir = userConfig.GetConfigDir()
-
+    logDir = userConfig.GetLogDir()
+    
     # Get config information
     configData =  "\n%s" % Config.AGTkConfig.instance()
     configData += "\n%s" % Config.UserConfig.instance()
@@ -289,7 +289,7 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
         args['product'] = "Virtual Venue Server Software"
         args['component'] = "Management UI"
         
-        logText = GetLogText(20000, os.path.join(userConfigDir,
+        logText = GetLogText(20000, os.path.join(logDir,
                                                  "VenueManagement.log"))
         commentAndLog = commentAndLog \
             +"\n\n--- VenueManagement.log INFORMATION ---\n\n"+ logText
@@ -300,23 +300,24 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
         args['product'] = "Node Management Software"
         args['component'] = "NodeSetupWizard"
 
-        logText = GetLogText(20000, os.path.join(userConfigDir,
+        logText = GetLogText(20000, os.path.join(logDir,
                                                  "NodeSetupWizard.log"))
         commentAndLog = commentAndLog \
             +"\n\n--- NodeSetupWizard.log INFORMATION ---\n\n"+ logText
 
     else:
         args['short_desc'] = "Automatic Bug Report"
-        logToSearch = GetLogText(20000, os.path.join(userConfigDir,
+        logToSearch = GetLogText(20000, os.path.join(logDir,
                                                      "VenueClient.log"))
+      
         commentAndLog = commentAndLog \
              +"\n\n--- VenueClient.log INFORMATION ---\n\n"+ logToSearch \
-             +"\n\n--- agns.log INFORMATION ---\n\n"+GetLogText(20000,
-                                 os.path.join(userConfigDir, "agns.log"))\
-             +"\n\n--- agsm.log INFORMATION ---\n\n"+GetLogText(20000,
-                                 os.path.join(userConfigDir, "agsm.log"))\
+             +"\n\n--- VenueClientServices.log INFORMATION ---\n\n"+GetLogText(20000,
+                                 os.path.join(logDir, "VenueClientServices.log"))\
+             +"\n\n--- ServiceManager.log INFORMATION ---\n\n"+GetLogText(20000,
+                                 os.path.join(logDir, "ServiceManager.log"))\
              +"\n\n--- AGService.log INFORMATION ---\n\n"+GetLogText(20000,
-                                 os.path.join(userConfigDir, "AGService.log"))
+                                 os.path.join(logDir, "AGService.log"))
 
     # If we've got a logToSearch, look at it to find a GSI exception
     # at the end.  If it has one, mark the component as Certificate
