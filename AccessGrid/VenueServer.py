@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.17 2003-01-22 20:31:20 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.18 2003-01-22 22:13:10 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -370,7 +370,7 @@ class VenueServer(ServiceBase.ServiceBase):
     GetCoherencePortBase.soap_export_as = "GetCoherencePortBase"
 
 
-    def SetStorageLocation( self, dataStorageLocation ):
+    def SetStorageLocation( self, connectionInfo, dataStorageLocation ):
         """
         Set the path for data storage
         """
@@ -379,7 +379,7 @@ class VenueServer(ServiceBase.ServiceBase):
     SetStorageLocation.soap_export_as = "SetStorageLocation"
 
 
-    def GetStorageLocation( self ):
+    def GetStorageLocation( self, connectionInfo ):
         """
         Get the path for data storage
         """
