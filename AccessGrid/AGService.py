@@ -2,14 +2,14 @@
 # Name:        AGService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.43 2004-12-08 16:48:06 judson Exp $
+# RCS-ID:      $Id: AGService.py,v 1.44 2005-01-06 22:24:50 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.43 2004-12-08 16:48:06 judson Exp $"
+__revision__ = "$Id: AGService.py,v 1.44 2005-01-06 22:24:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -18,17 +18,20 @@ from optparse import Option
 
 from AccessGrid import Log
 
+from AccessGrid.GUID import GUID
 from AccessGrid.Types import *
 from AccessGrid.AGParameter import *
 from AccessGrid.Platform import IsWindows, IsLinux, IsOSX
 from AccessGrid.Toolkit import Service
 from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Descriptions import StreamDescription
-from AccessGrid.Descriptions import CreateResource
+from AccessGrid.Descriptions import CreateResourceDescription
 from AccessGrid.Descriptions import CreateStreamDescription
 from AccessGrid.Descriptions import CreateCapability
 from AccessGrid.Descriptions import CreateClientProfile
 from AccessGrid.Descriptions import CreateParameter
+from AccessGrid.Descriptions import CreateAGServiceDescription
+from AccessGrid.Descriptions import AGServiceDescription
 
 class AGService:
     """
@@ -38,23 +41,30 @@ class AGService:
         if self.__class__ == AGService:
             raise Exception("Can't instantiate abstract class AGService")
 
-        self.resource = AGResource()
-        self.executable = None
 
+        self.name = str(self.__class__).split('.')[-1]
+        self.uri = 0
+        self.serviceManagerUri = ''
+
+        self.resource = 0
+        self.executable = 0
+        self.streamDescription = 0
         self.capabilities = []
+        self.configuration = []
         self.started = 1
         self.enabled = 1
-        self.configuration = []
-        self.streamDescription = StreamDescription()
+        self.running = 1
+        self.packageFile = 0
+        
         self.processManager = ProcessManager()
         
         self.log = Service.instance().GetLog()
-        
-        self.running = 1
 
 
     def Start( self ):
-        """Start the service"""
+        """
+        Start the service
+        """
         raise Exception("AGService.Start is abstract!")
 
 
@@ -89,27 +99,37 @@ class AGService:
            # windows : do nothing special to force stop; it's forced anyway
            AGService.Stop(self)
         elif IsLinux() or IsOSX():
-           # linux : kill vic, instead of terminating
+           # linux : kill, instead of terminating
            self.started = 0
            self.processManager.KillAllProcesses()
 
     def GetCapabilities( self ):
-        """Get capabilities"""
+        """
+        Get capabilities
+        """
         return self.capabilities
 
 
     def GetResource( self ):
-        """Get resources"""
+        """
+        Get resources
+        """
         return self.resource
 
 
     def SetResource( self, resource ):
-        """Set the resource used by this service"""
+        """
+        Set the resource used by this service
+        """
         self.resource = resource
-
+        
+    def GetResources(self):
+        return []
 
     def SetConfiguration( self, configuration ):
-        """Set configuration of service"""
+        """
+        Set configuration of service
+        """
         try:
             for parm in configuration:
                 found = 0
@@ -126,15 +146,19 @@ class AGService:
 
 
     def GetConfiguration( self ):
-        """Return configuration of service"""
+        """
+        Return configuration of service
+        """
 
         return self.configuration
 
 
-    def ConfigureStream( self, streamDescription ):
-        """Configure the Service according to the StreamDescription"""
+    def SetStream( self, streamDescription ):
+        """
+        Set the StreamDescription
+        """
         try:
-            self.log.info("ConfigureStream: %s %s %s" % (streamDescription.capability.type, 
+            self.log.info("SetStream: %s %s %s" % (streamDescription.capability.type, 
                                        streamDescription.location.host,   
                                        streamDescription.location.port) )
 
@@ -144,7 +168,7 @@ class AGService:
                 and self.streamDescription.encryptionKey == streamDescription.encryptionKey:
                 # configuration with identical stream description;
                 # bail out
-                self.log.info("ConfigureStream: ignoring trivial re-configuration")
+                self.log.info("SetStream: ignoring trivial re-configuration")
                 return 1
 
 
@@ -152,14 +176,16 @@ class AGService:
             if streamDescription.capability.type in m:
                self.streamDescription = streamDescription
         except:
-            self.log.exception("Exception in ConfigureStream ")
-            raise Exception("AGService.ConfigureStream failed : " + str(sys.exc_value) )
+            self.log.exception("Exception in SetStream ")
+            raise Exception("AGService.SetStream failed : " + str(sys.exc_value) )
 
         return 0
-
+    ConfigureStream = SetStream
 
     def IsStarted( self ):
-        """Return the state of Service"""
+        """
+        Return the state of Service
+        """
         return self.started
 
     def SetEnabled(self, enabled):
@@ -200,8 +226,40 @@ class AGService:
         self.profile = profile
         
     def GetName(self):
-        className = str(self.__class__).split('.')[-1]
-        return className
+        return self.name
+        
+    def SetServiceManagerUrl(self,serviceManagerUri):
+        self.serviceManagerUri = serviceManagerUri
+        
+    def GetServiceManagerUrl(self):
+        return self.serviceManagerUri
+        
+    def GetDescription(self):
+        return AGServiceDescription(self.name,
+                                    self.uri,
+                                    self.capabilities,
+                                    self.resource,
+                                    self.packageFile)
+
+    def SetUri(self,uri):
+        self.uri = uri
+        
+    def GetUri(self):
+        return self.uri
+
+    def SetPackageFile(self,packageFile):
+        self.packageFile = packageFile
+        
+    def GetPackageFile(self):
+        return self.packageFile
+
+
+
+
+
+
+
+
 
 
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
@@ -231,7 +289,6 @@ class AGServiceI(SOAPInterface):
         return self.impl.GetResource()
 
     def SetResource( self, resourceStruct ):
-        resource = CreateResource(resourceStruct)
         self.impl.SetResource(resource )
 
     def SetConfiguration(self,serviceConfig ):
@@ -240,9 +297,9 @@ class AGServiceI(SOAPInterface):
     def GetConfiguration( self ):
         return self.impl.GetConfiguration()
 
-    def ConfigureStream( self, streamDescStruct ):
+    def SetStream( self, streamDescStruct ):
         streamDesc = CreateStreamDescription(streamDescStruct)
-        self.impl.ConfigureStream(streamDesc )
+        self.impl.SetStream(streamDesc )
 
     def IsStarted( self ):
         return self.impl.IsStarted()
@@ -260,9 +317,24 @@ class AGServiceI(SOAPInterface):
         profile = CreateClientProfile(profileStruct)
         self.impl.SetIdentity(profile)
 
+    def SetServiceManagerUrl(self,serviceManagerUri):
+        self.impl.SetServiceManagerUrl(serviceManagerUri)
+        
+    def GetServiceManagerUrl(self):
+        return self.impl.GetServiceManagerUrl()
     
+    def GetDescription(self):
+        return self.impl.GetDescription()
+        
+    def GetResources(self):
+        return self.impl.GetResources()
     
-    
+    def SetPackageFile(self,packageFile):
+        self.impl.SetPackageFile(packageFile)
+        
+    def GetPackageFile(self):
+        return self.impl.GetPackageFile()
+
 class AGServiceIW(SOAPIWrapper):
     """
     Interface Wrapper Class for AGService
@@ -289,8 +361,7 @@ class AGServiceIW(SOAPIWrapper):
 
     def GetResource( self ):
         resourceStruct = self.proxy.GetResource()
-        
-        resource = CreateResource(resourceStruct)
+        resource = CreateResourceDescription(resourceStruct)
         return resource
 
     def SetResource( self, resource ):
@@ -306,8 +377,8 @@ class AGServiceIW(SOAPIWrapper):
             config.append(CreateParameter(parmStruct))
         return config
 
-    def ConfigureStream( self, streamDescription ):
-        self.proxy.ConfigureStream(streamDescription )
+    def SetStream( self, streamDescription ):
+        self.proxy.SetStream(streamDescription )
 
     def IsStarted( self ):
         return self.proxy.IsStarted()
@@ -324,7 +395,28 @@ class AGServiceIW(SOAPIWrapper):
     def SetIdentity(self, profile):
         self.proxy.SetIdentity(profile)
 
+    def SetServiceManagerUrl(self,serviceManagerUri):
+        self.proxy.SetServiceManagerUrl(serviceManagerUri)
+        
+    def GetServiceManagerUrl(self):
+        return self.proxy.GetServiceManagerUrl()
     
+    def GetDescription(self):
+        serviceDescStruct = self.proxy.GetDescription()
+        serviceDesc = CreateAGServiceDescription(serviceDescStruct)
+        return serviceDesc
+        
+    def GetResources(self):
+        ret = self.proxy.GetResources()
+        retList = map(lambda x: x, ret)
+        return retList
+
+    def SetPackageFile(self,packageFile):
+        self.proxy.SetPackageFile(packageFile)
+        
+    def GetPackageFile(self):
+        return self.proxy.GetPackageFile()
+
 
 #
 # Utility routines to simplify service startup
@@ -348,25 +440,31 @@ def RunService(service,serviceInterface):
     from AccessGrid.hosting import SecureServer, InsecureServer
     from AccessGrid.AGServiceManager import AGServiceManagerIW
     
-    serviceName = service.GetName()
     
+    serviceName = service.GetName()
+
     # Initialize the service
     svc = Service.instance()
     svc.AddCmdLineOption(Option("-p", "--port", type="int", dest="port",
                         default=9999, metavar="PORT",
                         help="Set the port the service should run on."))
-    svc.AddCmdLineOption(Option("-s", "--serviceManagerUrl", type="string", dest="serviceManagerUrl",
+    svc.AddCmdLineOption(Option("-s", "--serviceManagerUri", type="string", dest="serviceManagerUri",
                         default=None, metavar="SERVICE_MANAGER_URL",
-                        help="URL of ServiceManager which started this service"))
+                        help="URL of ServiceManager to register with"))
     svc.AddCmdLineOption(Option("-t", "--token", type="string", dest="token",
                         default=None, metavar="TOKEN",
                         help="Token to pass to service manager when registering"))
+
 
     svc.Initialize(serviceName)
     log = svc.GetLog()
     Log.SetDefaultLevel(serviceName, Log.DEBUG)   
     
+    # Get options
     port = svc.GetOption("port")
+    serviceManagerUri = svc.GetOption('serviceManagerUri')
+    
+    print "SERVICE MANAGER URI = ", serviceManagerUri
      
     # Create the server
     hostname = Service.instance().GetHostname()
@@ -377,18 +475,23 @@ def RunService(service,serviceInterface):
         server = InsecureServer( (hostname, port) )
     
     # Register the service interface with the server
-    server.RegisterObject(serviceInterface, path = "/Service")
+    servicePath = '/Services/%s.%s' % (serviceName, str(GUID()))
+    server.RegisterObject(serviceInterface, path = servicePath)
     
     # Start the server
     server.RunInThread()
-    
     url = server.FindURLForObject(service)
     log.info("Starting Service URI: %s", url)
     print "Starting Service URI: %s" % url
     
+    # Set service data
+    service.SetServiceManagerUrl(serviceManagerUri)
+    service.SetUri(url)
+    
     # Register with the calling service manager
+    log.debug("Registering with service manager; url=%s", serviceManagerUri)
     token = svc.GetOption('token')
-    AGServiceManagerIW(svc.GetOption('serviceManagerUrl')).RegisterService(token,url)
+    AGServiceManagerIW(serviceManagerUri).RegisterService(token,url)
     
     # Register the signal handler so we can shut down cleanly
     # lambda is used to pass the service instance to the 

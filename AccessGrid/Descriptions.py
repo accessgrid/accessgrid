@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.70 2004-12-15 17:52:46 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.71 2005-01-06 22:24:50 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.70 2004-12-15 17:52:46 judson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.71 2005-01-06 22:24:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -21,11 +21,10 @@ from AccessGrid.GUID import GUID
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.NetworkLocation import ProviderProfile
-from AccessGrid.Types import Capability
-from AccessGrid.Types import AGResource, AGVideoResource
 from AccessGrid.ServiceCapability import ServiceCapability
-
 from AccessGrid.ClientProfile import ClientProfile
+
+
 
 class ObjectDescription:
     """
@@ -343,20 +342,31 @@ class AGServiceManagerDescription:
         self.uri = uri
 
 class AGServiceDescription:
-    def __init__( self, name, description, uri, capabilities,
-                  resource, executable, serviceManagerUri,
-                  servicePackageFile, version ):
+    def __init__( self, name, uri, capabilities, resource, packageFile):
         self.name = name
-        self.description = description
-
         self.uri = uri
-
         self.capabilities = capabilities
         self.resource = resource
-        self.executable = executable
-        self.serviceManagerUri = serviceManagerUri
-        self.servicePackageFile = servicePackageFile
-        self.version = version
+        self.packageFile = packageFile
+
+class AGServicePackageDescription:
+    def __init__(self,name,description,packageFile,resourceType):
+        self.name = name
+        self.description = description
+        self.packageFile = packageFile
+        self.resourceType = resourceType
+        
+    def GetName(self):
+        return self.name
+        
+    def GetDescription(self):
+        return self.description
+        
+    def GetPackageFile(self):
+        return self.packageFile
+        
+    def GetResourceType(self):
+        return self.resourceType
 
 class AGNetworkServiceDescription(ObjectDescription):
     def __init__(self, name, description, uri, mimeType, extension,
@@ -507,11 +517,45 @@ class VenueState:
     def GetTextLocation( self ):
         return self.textLocation
 
+class ResourceDescription(ObjectDescription): 
+    def __init__(self,name):
+        ObjectDescription.__init__(self,name)
+    
+
+class Capability:
+
+    PRODUCER = "producer"
+    CONSUMER = "consumer"
+
+    AUDIO = "audio"
+    VIDEO = "video"
+    TEXT  = "text"
+
+    def __init__( self, role=None, type=None ):
+        self.role = role
+        self.type = type
+        self.parms = dict()
+        self.xml = ''
+        
+    def __repr__(self):
+        string = "%s %s" % (self.role, self.type)
+        return string
+
+    def matches( self, capability ):
+        if self.type != capability.type:
+            # type mismatch
+            return 0
+
+        # capability match
+        return 1
+
 #
 #
 #
 #
 #
+
+
 def CreateCapability(capabilityStruct):
     # Old capability
     cap = Capability(capabilityStruct.role,capabilityStruct.type)
@@ -582,8 +626,6 @@ def CreateDataDescription(dataDescStruct):
     return dd
 
 def CreateStreamDescription( streamDescStruct ):
-    #cap = Capability( streamDescStruct.capability.role, 
-    #                  streamDescStruct.capability.type )
     cap = CreateCapability(streamDescStruct.capability)
 
     streamDescription = StreamDescription( streamDescStruct.name, 
@@ -698,22 +740,26 @@ def CreateAGServiceManagerDescription(svcMgrDescStruct):
                                            svcMgrDescStruct.uri)
     return svcMgrDesc
 
+def CreateAGServicePackageDescription(svcPkgDescStruct):
+    svcPkgDesc = AGServicePackageDescription(
+                        svcPkgDescStruct.name,
+                        svcPkgDescStruct.description,
+                        svcPkgDescStruct.packageFile,
+                        svcPkgDescStruct.resourceType)
+    return svcPkgDesc
+
 def CreateAGServiceDescription(svcDescStruct):
 
-    resource = CreateResource(svcDescStruct.resource)
+    resource = CreateResourceDescription(svcDescStruct.resource)
     capabilities = []
    
     for cap in svcDescStruct.capabilities:
         capabilities.append( CreateCapability(cap))
     svcDesc = AGServiceDescription(svcDescStruct.name, 
-                                   svcDescStruct.description, 
                                    svcDescStruct.uri, 
                                    capabilities,
-                                   resource, 
-                                   svcDescStruct.executable, 
-                                   svcDescStruct.serviceManagerUri,
-                                   svcDescStruct.servicePackageFile,
-                                   svcDescStruct.version )
+                                   resource,
+                                   svcDescStruct.packageFile)
     return svcDesc
 
 def CreateAGNetworkServiceDescription(svcDescStruct):
@@ -729,19 +775,10 @@ def CreateAGNetworkServiceDescription(svcDescStruct):
     return svcDesc
 
 
-def CreateResource(rscStruct):
+def CreateResourceDescription(rscStruct):
+    rsc = 0
     if rscStruct:
-        if rscStruct.type == 'video':
-            rsc = AGVideoResource(rscStruct.type,
-                                  rscStruct.resource,
-                                  rscStruct.role,
-                                  rscStruct.portTypes)
-        else:
-            rsc = AGResource(rscStruct.type,
-                             rscStruct.resource,
-                             rscStruct.role)
-    else:
-        rsc = AGResource()
+        rsc = ResourceDescription(rscStruct.name)
     return rsc
 
 def CreateNetworkLocation(networkLocationStruct):

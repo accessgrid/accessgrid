@@ -5,18 +5,19 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.75 2004-12-08 16:48:06 judson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.76 2005-01-06 22:24:50 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.75 2004-12-08 16:48:06 judson Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.76 2005-01-06 22:24:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
 from wxPython.wx import *
 from wxPython.lib.dialogs import wxMultipleChoiceDialog
+from wxPython.gizmos import wxTreeListCtrl
 
 # AG2 imports
 from AccessGrid import Log
@@ -27,19 +28,15 @@ from AccessGrid.Platform import IsWindows
 from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.hosting import Client
 from AccessGrid.UIUtilities import AboutDialog
-from AccessGrid.Types import Capability
 from AccessGrid.AGParameter import ValueParameter, RangeParameter
 from AccessGrid.AGParameter import OptionSetParameter
-from AccessGrid.Descriptions import AGServiceManagerDescription
-from AccessGrid.AGNodeService import AGNodeServiceIW
-from AccessGrid.AGServiceManager import AGServiceManagerIW
+from AccessGrid.Descriptions import AGServiceManagerDescription, AGServiceDescription
+from AccessGrid.AGNodeService import AGNodeServiceIW, AGNodeService
+from AccessGrid.AGServiceManager import AGServiceManagerIW, AGServiceManager
 from AccessGrid.AGService import AGServiceIW
-from AccessGrid.Types import AGResource
 from AccessGrid import Version
 
-# imports for Debug menu; can be removed if Debug menu is removed
-from AccessGrid.Descriptions import StreamDescription
-from AccessGrid.NetworkLocation import MulticastNetworkLocation
+from AccessGrid import ServiceDiscovery
 
 log = Log.GetLogger(Log.NodeManagementUIClasses)
 Log.SetDefaultLevel(Log.NodeManagementUIClasses, Log.WARN)
@@ -51,8 +48,6 @@ Log.SetDefaultLevel(Log.NodeManagementUIClasses, Log.WARN)
 ID_FILE_EXIT  = 100
 ID_FILE_LOAD_CONFIG = 101
 ID_FILE_STORE_CONFIG = 102
-
-ID_VIEW_REFRESH = 200
 
 ID_FILE_ATTACH = 800
 ID_NODE_LEASH = 801
@@ -71,6 +66,116 @@ ID_SERVICE_DISABLE_ONE = 407
 
 ID_HELP_ABOUT = 701
 
+class ServiceResolveFailed(Exception):  pass
+class ServiceResolveTimeout(Exception): pass
+class UnresolvableService(Exception):   pass
+
+
+class RendezvousServiceDialog(wxDialog):
+    """
+    """
+    def __init__(self, parent, id, title, choices, serviceType ):
+
+        wxDialog.__init__(self, parent, id, title, 
+                          style=wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER,
+                          )
+
+        self.listCtrl = wxListBox(self,-1,choices=choices)
+
+        # Set up sizers
+        sizer1 = wxBoxSizer(wxVERTICAL)
+        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxHORIZONTAL)
+        sizer2.Add(self.listCtrl, 1, wxEXPAND, 10)
+        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
+                 
+        # Create ok/cancel buttons
+        sizer3 = wxBoxSizer(wxHORIZONTAL)
+        okButton = wxButton( self, wxID_OK, "OK")
+        cancelButton = wxButton( self, wxID_CANCEL, "Cancel" )
+        sizer3.Add(okButton, 0, wxALL, 10)
+        sizer3.Add(cancelButton, 0, wxALL, 10)
+        sizer1.Add(sizer3, 0, wxALIGN_CENTER)
+        
+        self.SetSizer( sizer1 )
+        sizer1.Fit(self)
+        self.SetAutoLayout(1)
+        
+        self.browser = ServiceDiscovery.Browser(serviceType,self.BrowseCallback)
+        self.browser.Start()
+
+        x,y = wx.wxGetMousePosition()
+        w,h = self.GetSize()
+        self.Move( (x-w/2,y-h/2) )
+
+        #EVT_TEXT_ENTER(self, self.GetId(), self.OnOK)
+
+    def __del__(self):
+        self.browser.Stop()
+
+    def BrowseCallback(self,op,serviceName,url=None):
+        if op == ServiceDiscovery.Browser.ADD:
+            self.AddItem(serviceName,url)
+        
+    def AddItem(self,name,url):
+        wxCallAfter(self.listCtrl.Append,name,url)
+        wxCallAfter(self.listCtrl.Refresh)
+        
+    def GetValue(self):
+        # Get details of selected service
+        indx = self.listCtrl.GetSelection()
+        url = self.listCtrl.GetClientData(indx)
+        return url
+
+class ServiceChoiceDialog(wxDialog):
+    def __init__(self, parent, id, title, choices, serviceType, size=wxSize(450,130) ):
+
+        wxDialog.__init__(self, parent, id, title, style =
+                          wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER,
+                          size=size)
+                          
+        self.serviceType = serviceType
+              
+        # Set up sizers
+        gridSizer = wxFlexGridSizer(3, 2, 5, 5)
+        sizer1 = wxBoxSizer(wxVERTICAL)
+        sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxHORIZONTAL)
+        sizer2.Add(gridSizer, 1, wxALL, 10)
+        sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
+       
+        gridSizer.AddGrowableCol(0)
+
+        self.comboBoxCtrl = wxComboBox(self,-1, choices=choices)
+        gridSizer.Add( self.comboBoxCtrl, 0, wxEXPAND)
+        
+        browseButton = wxButton(self,-1,'Browse')
+        gridSizer.Add( browseButton, 0, wxALIGN_RIGHT)
+        EVT_BUTTON(self,browseButton.GetId(),self.OnBrowse)
+          
+        # Create ok/cancel buttons
+        sizer3 = wxBoxSizer(wxHORIZONTAL)
+        okButton = wxButton( self, wxID_OK, "OK")
+        cancelButton = wxButton( self, wxID_CANCEL, "Cancel" )
+        sizer3.Add(okButton, 0, wxALL, 10)
+        sizer3.Add(cancelButton, 0, wxALL, 10)
+        sizer1.Add(sizer3, 0, wxALIGN_CENTER)
+        
+        self.SetSizer( sizer1 )
+        
+        x,y = wx.wxGetMousePosition()
+        w,h = self.GetSize()
+        self.Move( (x-w/2,y-h/2) )
+        #EVT_TEXT_ENTER(self, self.GetId(), self.OnOK)
+
+    def OnBrowse(self,event):
+        dlg = RendezvousServiceDialog(self,-1,'Choose service',
+                                      [], self.serviceType)
+        ret = dlg.ShowModal()
+        if ret == wxID_OK:
+            val = dlg.GetValue()
+            self.comboBoxCtrl.SetValue(val)
+        
+    def GetValue(self):
+        return self.comboBoxCtrl.GetValue()
 
 def BuildServiceManagerMenu( ):
     """
@@ -374,8 +479,8 @@ class ServiceConfigurationDialog(wxDialog):
     """
     def __init__(self, parent, id, title, resource, serviceConfig ):
 
-        wxDialog.__init__(self, parent, id, title, style =
-                          wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+        wxDialog.__init__(self, parent, id, title, 
+                          style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 
         # Set up sizers
         sizer1 = wxBoxSizer(wxVERTICAL)
@@ -402,6 +507,10 @@ class ServiceConfigurationDialog(wxDialog):
         sizer1.Add(sizer3, 0, wxALIGN_CENTER)
 
         sizer1.Fit(self)
+        
+        x,y = wx.wxGetMousePosition()
+        w,h = self.GetSize()
+        self.Move( (x-w/2,y-h/2) )
 
     def GetConfiguration(self):
         return self.serviceConfigPanel.GetConfiguration()
@@ -417,7 +526,6 @@ class NodeManagementClientFrame(wxFrame):
         self.SetTitle(title)
         self.SetIcon(icons.getAGIconIcon())
         self.serviceManagers = []
-        self.services = []
         self.nodeServiceHandle = None
 
         self.app = Toolkit.Application.instance()
@@ -425,7 +533,6 @@ class NodeManagementClientFrame(wxFrame):
         menuBar = wxMenuBar()
 
         ## FILE menu
-
         self.fileMenu = wxMenu()
         self.fileMenu.Append(ID_FILE_ATTACH, "Connect to Node...", 
                              "Connect to a NodeService")
@@ -438,13 +545,7 @@ class NodeManagementClientFrame(wxFrame):
         self.fileMenu.Append(ID_FILE_EXIT, "E&xit", "Terminate the program")
         menuBar.Append(self.fileMenu, "&File");
 
-        ## VIEW menu
-
-        self.viewMenu = wxMenu()
-        self.viewMenu.Append(ID_VIEW_REFRESH, "Update", "Synch to the current NodeService state")
-        menuBar.Append(self.viewMenu, "&View");
-
-        ## HOST menu
+        ## SERVICE MANAGERS menu
         self.serviceManagersMenu = BuildServiceManagerMenu()
         menuBar.Append(self.serviceManagersMenu, "&ServiceManager");
         
@@ -461,57 +562,36 @@ class NodeManagementClientFrame(wxFrame):
 
         self.SetMenuBar(menuBar)
 
-        mainsz = wxBoxSizer( wxVERTICAL )
-        self.SetSizer( mainsz )
-       
-        mainPanel = wxPanel(self, -1)
-        s = wxBoxSizer(wxHORIZONTAL)
-        mainPanel.SetSizer(s)
+        self.tree = wxTreeListCtrl(self,-1,
+                                   style=wxEXPAND|wxALL|wxTR_HIDE_ROOT|wxTR_TWIST_BUTTONS)
+        self.tree.AddColumn("Name")
+        self.tree.AddColumn("Resource")
+        self.tree.AddColumn("Status")
+        self.tree.SetMainColumn(0)
         
-        mainsz.Add(mainPanel, 1, wxEXPAND)
+        self.tree.SetColumnWidth(0,175)
+        self.tree.SetColumnWidth(1,175)
+        self.tree.SetColumnWidth(2,90)
+        
+        
+        EVT_TREE_ITEM_RIGHT_CLICK(self, self.tree.GetId(), self.PopupThatMenu)
+        EVT_TREE_ITEM_ACTIVATED(self, self.tree.GetId(), self.DoubleClickCB )
+
+        wxInitAllImageHandlers()
+
+
+        imageSize = 19
+        imageList = wxImageList(imageSize,imageSize)
+        self.smImage = imageList.Add(icons.getHostBitmap())
+        self.svcImage = imageList.Add(icons.getServiceBitmap())
+        self.tree.SetImageList(imageList)
+        self.imageList = imageList
                 
-        self.splitter = wxSplitterWindow(mainPanel ,-1,style=wxSP_3D)
 
-        s.Add(self.splitter, 1, wxEXPAND|wxALL, 5)
-                
-        #
-        # Create Hosts panel
-        #
-
-        hostPanel = wxPanel( self.splitter, -1 )
-        statBox = wxStaticBox(hostPanel, -1, "ServiceManagers")
-        statBoxSizer = wxStaticBoxSizer( statBox, wxVERTICAL )
-        hostPanel.SetSizer( statBoxSizer )
-        self.hostList = wxListCtrl( hostPanel, -1, style=wxLC_LIST )
-        
-        statBoxSizer.Add( self.hostList, -1, wxEXPAND | wxALL, 5)
-        
-        # Handle events in the service managers list
-        EVT_LIST_ITEM_RIGHT_CLICK(self, self.hostList.GetId(), self.PopupHostMenu)
-        EVT_LIST_ITEM_SELECTED( self, self.hostList.GetId(), self.ServiceManagerSelectedCB )
-        EVT_LIST_ITEM_DESELECTED( self, self.hostList.GetId(), self.UpdateServiceList )
-   
-        #
-        # Create Services panel
-        #
-
-        servicesPanel = wxPanel( self.splitter, -1)
-        statBox = wxStaticBox(servicesPanel, -1, "Services")
-        statBoxSizer = wxStaticBoxSizer( statBox, wxVERTICAL )
-        servicesPanel.SetSizer( statBoxSizer )
-        self.serviceList = ServiceListCtrl( servicesPanel, wxNewId(), 
-                                            style=wxLC_REPORT )
-        
-        statBoxSizer.Add( self.serviceList, 1, wxEXPAND | wxALL, 5)
-        
         # Create the status bar
         self.CreateStatusBar(2)
         self.SetStatusText("This is the statusbar",1)
 
-        # Handle events in the services list
-        EVT_LIST_ITEM_RIGHT_CLICK(self, self.serviceList.GetId(), self.PopupServiceMenu)
-        EVT_LIST_ITEM_ACTIVATED(self, self.serviceList.GetId(), self.ConfigureService )
-       
         # Associate menu items with callbacks
         EVT_MENU(self, ID_FILE_ATTACH            ,  self.Attach )
         EVT_MENU(self, ID_FILE_EXIT              ,  self.TimeToQuit )
@@ -527,15 +607,31 @@ class NodeManagementClientFrame(wxFrame):
         EVT_MENU(self, ID_SERVICE_ENABLE_ONE     ,  self.EnableService )
         EVT_MENU(self, ID_SERVICE_DISABLE        ,  self.DisableServices )
         EVT_MENU(self, ID_SERVICE_DISABLE_ONE    ,  self.DisableService )
-        EVT_MENU(self, ID_VIEW_REFRESH           ,  self.UpdateUI )
+        
+        EVT_TREE_KEY_DOWN(self.tree, self.tree.GetId(), self.OnKeyDown)
         
         self.menuBar = menuBar
         
         self.EnableMenus(false)
             
-        self.splitter.SetMinimumPaneSize(10)
-        self.splitter.SplitVertically(hostPanel,servicesPanel, 130)
-                    
+        self.recentNodeServiceList = []
+        self.recentServiceManagerList = []
+        
+    def OnKeyDown(self,event):
+        key = event.GetKeyCode()
+      
+        if key == WXK_DELETE:
+
+            dlg = wxMessageDialog(self, "Delete selected items?" , "Confirm",
+                                  style = wxICON_INFORMATION | wxOK | wxCANCEL)
+            ret = dlg.ShowModal()
+            dlg.Destroy()
+            if ret == wxID_OK:
+                self.RemoveSelectedItems()
+            
+        elif key == WXK_F5:
+            self.UpdateUI()
+        
     def Connected(self):
         try:
             self.nodeServiceHandle.IsValid()
@@ -562,31 +658,34 @@ class NodeManagementClientFrame(wxFrame):
         Attach to a node service
         """
 
-        # Prompt for node service location
-        dlg = wxTextEntryDialog(self,"Node Service URL", "Node Connect Dialog", 
-                                defaultValue = 'http://localhost:11000/NodeService')
-
+        dlg = ServiceChoiceDialog(self,-1,'NodeService Dialog',
+                                  self.recentNodeServiceList,
+                                  AGNodeService.ServiceType)
         ret = dlg.ShowModal()
 
         if ret == wxID_OK:
             url = dlg.GetValue()
+            if url not in self.recentNodeServiceList:
+                self.recentNodeServiceList.append(url)
             
             # Attach (or fail)
+            wxBeginBusyCursor()
             self.AttachToNode( url )
             if not self.Connected():
                 self.Error( "Could not attach to AGNodeService at " + url  )
+                wxEndBusyCursor()
                 return
 
             # Update the servicemanager and service lists
-            self.UpdateHostList()
-            self.UpdateServiceList()
+            self.UpdateUI()
+            wxEndBusyCursor()
             
     def AttachToNode( self, nodeServiceUri ):
         """
         This method does the real work of attaching to a node service
         """
 
-        self.CheckCredentials()
+        # self.CheckCredentials()
 
         # Get proxy to the node service, if the url validates
         try:
@@ -631,13 +730,15 @@ class NodeManagementClientFrame(wxFrame):
                     
 
             try:
+                wxBeginBusyCursor()
                 self.nodeServiceHandle.LoadConfiguration( conf )
             except:
+                wxEndBusyCursor()
                 log.exception("NodeManagementClientFrame.LoadConfiguration: Can not load configuration from node service")
                 self.Error("Error loading node configuration %s" % (conf,))
 
-            self.UpdateHostList()
-            #self.UpdateServiceList()
+            self.UpdateUI()
+            wxEndBusyCursor()
 
     def StoreConfiguration( self, event ):
         """
@@ -673,14 +774,18 @@ class NodeManagementClientFrame(wxFrame):
 
                 # Store the configuration
                 try:
+                    wxBeginBusyCursor()
                     self.nodeServiceHandle.StoreConfiguration( configName )
                 except:
+                    wxEndBusyCursor()
                     log.exception("Error storing node configuration %s" % (configName,))
                     self.Error("Error storing node configuration %s" % (configName,))
 
                 # Set the default configuration
                 if isDefault:
                     self.nodeServiceHandle.SetDefaultConfiguration( configName )
+                
+                wxEndBusyCursor()
 
         d.Destroy()
 
@@ -694,18 +799,55 @@ class NodeManagementClientFrame(wxFrame):
     ############################
     ## VIEW menu
     ############################
+
     def UpdateUI( self, event=None ):
         """
-        Update the service manager and service lists
+        Update the service list (bring it into sync with the node service)
         """
+        
+        selections = self.GetSelectedItems()
+        selectionUrls = map( lambda x: x.uri, selections)
+        print "selections: " ,selections
 
-        # Update the service manager list
-        # (this call updates the services list, too)
-        try:
-            self.UpdateHostList()
-        except Exception:
-            log.exception("NodeManagementClientFrame.UpdateUI: Can not update host list.")
-            self.Error("Error updating UI")
+        self.serviceManagers = self.nodeServiceHandle.GetServiceManagers()
+
+        import urlparse
+        self.tree.DeleteAllItems()
+        root = self.tree.AddRoot("")    
+        for serviceManager in self.serviceManagers:
+            name = urlparse.urlsplit(serviceManager.uri)[1]
+            sm = self.tree.AppendItem(root,name)
+            self.tree.SetItemImage(sm, self.smImage,which=wxTreeItemIcon_Normal)
+            self.tree.SetItemImage(sm, self.smImage, which=wxTreeItemIcon_Expanded)
+            self.tree.SetItemData(sm,wxTreeItemData(serviceManager))
+            services = AGServiceManagerIW( serviceManager.uri ).GetServices()
+            
+            
+            for service in services:
+                s = self.tree.AppendItem(sm,service.name)
+                self.tree.SetItemImage(s, self.svcImage, which = wxTreeItemIcon_Normal)
+                self.tree.SetItemData(s,wxTreeItemData(service))
+                print "resource = ", service.resource
+                if service.resource:
+                    print "   ", service.resource.resource
+                if service.resource and type(service.resource.resource) == str:
+                    self.tree.SetItemText(s,service.resource.resource,1)
+                if AGServiceIW( service.uri ).GetEnabled():
+                    status = "Enabled"
+                else:
+                    status = "Disabled"
+                self.tree.SetItemText(s,status,2)
+                
+                print " service:", service
+                if service.uri in selectionUrls:
+                    self.tree.SelectItem(s)
+                
+            self.tree.Expand(sm)
+            
+            print "service manager : ", serviceManager
+            if serviceManager.uri in selectionUrls:
+                self.tree.SelectItem(sm)
+        self.tree.Expand(root)
 
 
     ############################
@@ -716,93 +858,56 @@ class NodeManagementClientFrame(wxFrame):
         Add a service manager to the node service
         """
 
-        # Prompt for service manager location
-        dlg = wxTextEntryDialog(self,"Service Manager URL", "Add Service Manager Dialog",
-                                defaultValue = 'http://localhost:11000/ServiceManager')
-     
+        dlg = ServiceChoiceDialog(self,-1,'ServiceManager Dialog',
+                                  self.recentServiceManagerList,
+                                  AGServiceManager.ServiceType)
         ret = dlg.ShowModal()
         if ret == wxID_OK:
 
             url = dlg.GetValue()
+            if url not in self.recentServiceManagerList:
+                self.recentServiceManagerList.append(url)
             try:
-                serviceManagerDesc = AGServiceManagerDescription( url, url )
-                self.nodeServiceHandle.AddServiceManager( serviceManagerDesc )
+                wxBeginBusyCursor()
+                self.nodeServiceHandle.AddServiceManager( url )
             except:
                 log.exception("Exception in AddHost")
                 self.Error("Can not add service manager to node service.")
-                self.ClearUI()
-                self.UpdateHostList()
-                return
 
             # Update the service manager list
-            self.UpdateHostList()
+            self.UpdateUI()
+            
+            wxEndBusyCursor()
 
     def RemoveHost( self, event ):
         """
         Remove a host from the node service
         """
+        
+        selections = self.GetSelectedServiceManagers()
 
         # Require a service manager to be selected
-        if self.hostList.GetSelectedItemCount() == 0:
-            self.Error( "No host selected!" )
+        if len(selections) == 0:
+            self.Error( "No service manager selected!" )
             return
 
         # Find selected service manager and remove it
-        index = -1
-        for i in range( self.hostList.GetSelectedItemCount() ):
-            index = self.hostList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-            self.nodeServiceHandle.RemoveServiceManager( self.serviceManagers[index] )
-
-        # Update the service manager list
-        self.UpdateHostList()
-
-        # Update the service list
-        self.UpdateServiceList()
-
-    def UpdateHostList( self, event=None ):
-        """
-        Update the service manager list
-        """
-        # Find selected service managers, to retain selections after update
-        selectedServiceManagerUri = None
-            
-        if self.hostList.GetSelectedItemCount() != 0:
+        wxBeginBusyCursor()
+        try:
             index = -1
-            index = self.hostList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-            selectedServiceManagerUri = self.serviceManagers[index].uri
+            for obj in selections:
+                try:
+                    self.nodeServiceHandle.RemoveServiceManager( obj.uri )
+                except:
+                    log.exception("Error removing service manager %s", self.serviceManagers[index].uri)
 
-        # Empty the list
-        self.hostList.DeleteAllItems()
-
-        # Add service managers to the list
-        i = 0
-
-        self.serviceManagers = self.nodeServiceHandle.GetServiceManagers()
-        for serviceManager in self.serviceManagers:
-            item = self.hostList.InsertStringItem( i, serviceManager.name )
-
-            # Retain selection in host list
-            if serviceManager.uri == selectedServiceManagerUri:
-                self.hostList.SetItemState( item, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED )
-
-            i = i + 1
-
-        if self.hostList.GetSelectedItemCount() == 0:
-            # if no host is selected, select the first item
-
-            if self.hostList.GetItemCount() == 0:
-                # With no hosts in the list, just clear the service list
-                self.UpdateServiceList()
-            try:
-                self.hostList.SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
-            except:
-                pass
-
-        # Update the service list
-        #self.UpdateServiceList()
+            # Update the service list
+            self.UpdateUI()
+        finally:
+            wxEndBusyCursor()
 
     def ServiceManagerSelectedCB(self, event):
-        index = self.hostList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
+        index = self.serviceManagerList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
         uri = self.serviceManagers[index].uri
         try:
             AGServiceManagerIW(uri).IsValid()
@@ -811,7 +916,7 @@ class NodeManagementClientFrame(wxFrame):
             self.Error("Service Manager is unreachable (%s)" % (uri,))
             return
 
-        self.UpdateServiceList()
+        self.UpdateUI()
 
     ############################
     ## SERVICE menu
@@ -821,22 +926,27 @@ class NodeManagementClientFrame(wxFrame):
         """
         Add a service to the node service
         """
+        
+        selections = self.GetSelectedServiceManagers()
 
         # Require a single host to be selected
-        if self.hostList.GetSelectedItemCount() == 0:
+        if len(selections) == 0:
             self.Error( "No Service Manager selected for service!")
             return
-        if self.hostList.GetSelectedItemCount() > 1:
+        if len(selections) > 1:
             self.Error("Multiple hosts selected")
             return
-
-        # Determine the selected host
-        index = self.hostList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
-        serviceManager = self.serviceManagers[index]
+            
+        serviceManager = selections[0]
 
         # Get services available
-        availServices =  AGServiceManagerIW(serviceManager.uri).GetAvailableServices()
-        availServiceNames = map( lambda serviceDesc: serviceDesc.name, availServices )
+        try:
+            wxBeginBusyCursor()
+            servicePackages =  AGServiceManagerIW(serviceManager.uri).GetServicePackages()
+        except:
+            log.exception("Exception getting service packages")
+        wxEndBusyCursor()
+        availServiceNames = map( lambda servicePkg: servicePkg.name, servicePackages )
 
         #
         # Prompt for service to add
@@ -852,33 +962,77 @@ class NodeManagementClientFrame(wxFrame):
             # Find the selected service description based on the name
             serviceToAdd = None
             serviceName = dlg.GetStringSelection()
-            for service in availServices:
-                if serviceName == service.name:
-                    serviceToAdd = service
+            for servicePkg in servicePackages:
+                if serviceName == servicePkg.name:
+                    serviceToAdd = servicePkg
                     break
 
             if serviceToAdd == None:
                 raise Exception("Can't add NULL service")
 
-            #
-            # Prompt for resource to assign
-            #
-            resourceToAssign = AGResource()
-            resources = AGServiceManagerIW( serviceManager.uri ).GetResources()
-            if len(resources) > 0:
+#             #
+#             # Prompt for resource to assign
+#             #
+#             resourceToAssign = AGResource()
+#             try:
+#                 wxBeginBusyCursor()
+#                 resources = AGServiceManagerIW( serviceManager.uri ).GetResources()
+#             except:
+#                 log.exception("Exception getting resources")
+#             wxEndBusyCursor()
+#             if len(resources) > 0:
+# 
+#                 # Find resources applicable to this service
+#                 applicableResources = []
+#                 for resource in resources:
+#                     for cap in serviceToAdd.capabilities:
+#                         if resource.type == cap.type:
+#                             applicableResources.append( resource )
+# 
+#                 if len(applicableResources) > 0:
+#                     log.info("%d resources found; prompt", len(applicableResources))
+#                     choices = map( lambda res: res.resource, applicableResources )
+#                     dlg = wxSingleChoiceDialog( self, "Select resource for service", "Add Service: Select Resource",
+#                            choices )
+# 
+#                     dlg.SetSize(wxSize(300,200))
+# 
+#                     ret = dlg.ShowModal()
+# 
+#                     if ret != wxID_OK:
+#                         return
+# 
+#                     selectedResource = dlg.GetStringSelection()
+# 
+#                     for resource in applicableResources:
+#                         if selectedResource == resource.resource:
+#                             resourceToAssign = resource
+#                             break
+#                 else:
+#                     log.info("No applicable resources found")
+# 
 
-                # Find resources applicable to this service
-                applicableResources = []
-                for resource in resources:
-                    for cap in serviceToAdd.capabilities:
-                        if resource.role == cap.role and resource.type == cap.type:
-                            applicableResources.append( resource )
 
-                if len(applicableResources) > 0:
-                    log.info("%d resources found; prompt", len(applicableResources))
-                    choices = map( lambda res: res.resource, applicableResources )
-                    dlg = wxSingleChoiceDialog( self, "Select resource for service", "Add Service: Select Resource",
-                           choices )
+                
+
+            try:
+                #
+                # Add the service
+                #
+                wxBeginBusyCursor()
+                serviceDescription = AGServiceManagerIW(serviceManager.uri).AddService( serviceToAdd )
+                
+                # Configure resource
+                service = AGServiceIW(serviceDescription.uri)
+                resources = service.GetResources()
+                if len(resources) > 0:
+                    log.info("Prompt for resource")
+                    log.debug("Resources: %s" % (resources,))
+                    
+                    dlg = wxSingleChoiceDialog( self, 
+                                                "Select resource for service", 
+                                                "Add Service: Select Resource",
+                                                resources )
 
                     dlg.SetSize(wxSize(300,200))
 
@@ -888,54 +1042,50 @@ class NodeManagementClientFrame(wxFrame):
                         return
 
                     selectedResource = dlg.GetStringSelection()
-
-                    for resource in applicableResources:
-                        if selectedResource == resource.resource:
-                            resourceToAssign = resource
-                            break
+                    
+                    service.SetResource(selectedResource)
                 else:
-                    log.info("No applicable resources found")
-
-
-            try:
-                #
-                # Add the service
-                #
-                self.nodeServiceHandle.AddService( serviceToAdd,
-                               serviceManager.uri,
-                               resourceToAssign,
-                               [] )
+                    log.info("No resources for service")
             except:
+                wxEndBusyCursor()
                 log.exception( "Add Service failed:" + serviceToAdd.name)
                 self.Error( "Add Service failed:" + serviceToAdd.name )
+                return
 
-            self.UpdateServiceList()
+            self.UpdateUI()
+            wxEndBusyCursor()
 
     def EnableService( self, event=None ):
         """
         Enable the selected service(s)
         """
+        
+        selections = self.GetSelectedServices()
 
         # Require a service to be selected
-        if self.serviceList.GetSelectedItemCount() == 0:
+        if len(selections) == 0:
             self.Error( "No service selected!" )
             return
 
         try:
+            wxBeginBusyCursor()
 
             # Enable all selected services
             index = -1
-            for i in range( self.serviceList.GetSelectedItemCount() ):
-                index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-                log.debug("NodeManagementClientFrame.EnableService: Enabling Service: %s" %self.services[index].name)
-                self.nodeServiceHandle.SetServiceEnabled(self.services[index].uri, 1)
+            for service in selections:
+                log.debug("NodeManagementClientFrame.EnableService: Enabling Service: %s" %service.name)
+                self.nodeServiceHandle.SetServiceEnabled(service.uri, 1)
 
             # Update the services list
-            self.UpdateServiceList()
+            self.UpdateUI()
 
         except:
+            wxEndBusyCursor()
             log.exception("Error enabling service")
             self.Error("Error enabling service")
+            
+        wxEndBusyCursor()
+        
 
     def EnableServices( self, event ):
         """
@@ -945,31 +1095,35 @@ class NodeManagementClientFrame(wxFrame):
         for service in services:
             self.nodeServiceHandle.SetServiceEnabled(service.uri,1)
 
-        self.UpdateServiceList()
+        self.UpdateUI()
 
     def DisableService( self, event=None ):
         """
         Disable the selected service(s)
         """
+        
+        selections = self.GetSelectedServices()
 
         # Require a service to be selected
-        if self.serviceList.GetSelectedItemCount() == 0:
+        if len(selections) == 0:
             self.Error( "No service selected!" )
             return
 
         try:
+            wxBeginBusyCursor()
             # Disable all selected services
             index = -1
-            for i in range( self.serviceList.GetSelectedItemCount() ):
-                index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-                self.nodeServiceHandle.SetServiceEnabled(self.services[index].uri,0)
+            for service in selections:
+                self.nodeServiceHandle.SetServiceEnabled(service.uri,0)
 
             # Update the service list
-            self.UpdateServiceList()
+            self.UpdateUI()
         except:
+            wxEndBusyCursor()
             log.exception("Error disabling service")
             self.Error("Error disabling service")
 
+        wxEndBusyCursor()
 
     def DisableServices( self, event ):
         """
@@ -979,119 +1133,98 @@ class NodeManagementClientFrame(wxFrame):
         for svc in svcs:
             self.nodeServiceHandle.SetServiceEnabled(svc.uri,0)
 
-        self.UpdateServiceList()
+        self.UpdateUI()
 
     def RemoveService( self, event ):
         """
         Remove the selected service(s)
         """
-
+        
+        selections = self.tree.GetSelections()
+        
         # Require a service to be selected
-        if self.serviceList.GetSelectedItemCount() == 0:
+        if len(selections) == 0:
             self.Error( "No service selected!" )
             return
+            
+        try:
+            wxBeginBusyCursor()
+            # Remove all selected services
+            for s in selections:
+                obj = self.tree.GetPyData(s)
+                if isinstance(obj,AGServiceDescription):
+                    smItem = self.tree.GetItemParent(s)
+                    sm = self.tree.GetItemData(smItem).GetData()
+                    AGServiceManagerIW( sm.uri ).RemoveService( obj )
+                    self.tree.Delete(s)
+                    selections.remove(s)
 
-        # Remove all selected services
-        index = -1
-        for i in range( self.serviceList.GetSelectedItemCount() ):
-            index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-            AGServiceManagerIW( self.services[index].serviceManagerUri ).RemoveService( self.services[index] )
-
-        # Update the service list
-        self.UpdateServiceList()
+            # Update the service list
+            self.UpdateUI()
+        finally:
+            wxEndBusyCursor()
+            
+    def DoubleClickCB(self,event):
+        selections = self.GetSelectedItems()
+        if len(selections):
+            if isinstance(selections[0],AGServiceManagerDescription):
+                item = event.GetItem()
+                self.tree.Toggle(item)
+            elif isinstance(selections[0],AGServiceDescription):
+                self.ConfigureService(event)
 
     def ConfigureService( self, event=None ):
         """
         Configure the selected service
         """
+        
+        selections = self.GetSelectedServices()
 
         # Require a single service to be selected
-        if self.serviceList.GetSelectedItemCount() == 0:
+        if len(selections) == 0:
             self.Error( "No service selected!" )
             return
-        if self.serviceList.GetSelectedItemCount() > 1:
+        if len(selections) > 1:
             self.Error("Multiple services selected")
             return
+            
+        service = selections[0]
 
-        # Retrieve the service configuration
-        index = self.serviceList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
-
-        # Trap service unreachable
+        # Get configuration
         try:
-            AGServiceIW( self.services[index].uri ).IsValid()
+            wxBeginBusyCursor()
+            config = AGServiceIW( service.uri ).GetConfiguration()
         except:
-            log.exception("Service is unreachable at %s" % (self.services[index].uri,))
-            self.Error("Service is unreachable at %s" % (self.services[index].uri,))
+            wxEndBusyCursor()
+            log.exception("Service is unreachable at %s" % (service.uri,))
+            self.Error("Service is unreachable at %s" % (service.uri,))
             return
             
-        # Get configuration
-        config = AGServiceIW( self.services[index].uri ).GetConfiguration()
-        resource = AGServiceIW( self.services[index].uri ).GetResource()
+        resource = AGServiceIW( service.uri ).GetResource()
 
-        if not config:
-            self.Error("Service has no configurable options")
-        else:
+        wxEndBusyCursor()
+        if config:
             # Display the service configuration panel
             dlg = ServiceConfigurationDialog(self,-1,"Service Config Dialog",
-                                             resource.resource, 
+                                             resource, 
                                              config)
             ret = dlg.ShowModal()
             if ret == wxID_OK:
             
                 # Get config from the dialog and set it in the service
                 config = dlg.GetConfiguration()
-                self.SetConfiguration( config )
+                wxBeginBusyCursor()
+                try:
+                    # Send the modified configuration to the service
+                    AGServiceIW( service.uri ).SetConfiguration( config )
+                except:
+                    log.exception("Exception setting configuration")
+                wxEndBusyCursor()
+        else:
+            self.Error("Service has no configurable options")
 
 
-    def SetConfiguration( self, serviceConfig ):
-        """
-        Configure the service according to the service configuration panel
-        """
 
-        # Require a service to be selected (this error should never occur)
-        if self.serviceList.GetSelectedItemCount() == 0:
-            self.Error( "No service selected!" )
-            return
-
-        # Determine the selected service
-        index = self.serviceList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
-
-        # Send the modified configuration to the service
-        AGServiceIW( self.services[index].uri ).SetConfiguration( serviceConfig )
-
-
-    def UpdateServiceList( self, event=None ):
-        """
-        Update the service list (bring it into sync with the node service)
-        """
-        self.serviceList.DeleteAllItems()
-
-        index = -1
-        indices = []
-        for i in range( self.hostList.GetSelectedItemCount() ):
-            index = self.hostList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-            indices.append( index )
-            
-        if len(self.serviceManagers) > 0 and index >= 0:
-            for index in indices:
-                self.services = AGServiceManagerIW( self.serviceManagers[index].uri ).GetServices()
-                for svc in self.services:
-                    itemindex = self.serviceList.InsertStringItem( i, svc.name )
-                    self.serviceList.SetItemImage( itemindex, 0, 0 )
-                    
-                    resource = AGServiceIW(svc.uri).GetResource()
-                    if resource.resource:
-                        self.serviceList.SetStringItem( i,1, resource.resource )
-                    else:
-                        self.serviceList.SetStringItem( i,1, "" )
-                    try:
-                        if AGServiceIW( svc.uri ).GetEnabled() == 1:
-                            self.serviceList.SetStringItem( i,2, "Enabled" )
-                        else:
-                            self.serviceList.SetStringItem( i,2, "Disabled" )
-                    except:
-                        log.exception("NodeManagementClientFrame.UpdateServiceList")
-                    i = i + 1
 
 
     ############################
@@ -1113,19 +1246,56 @@ class NodeManagementClientFrame(wxFrame):
     def Error( self, message ):
         wxMessageDialog( self, message, style = wxOK | wxICON_INFORMATION ).ShowModal()
         
+    def PopupThatMenu(self, evt):
+    
+        selections = self.GetSelectedItems()
+        
+        if len(selections) == 0:
+            return
+            
+        selection = selections[0]
+        print "sel = ", selection
+        if isinstance(selection,AGServiceManagerDescription):
+            self.PopupHostMenu(evt)
+        elif isinstance(selection,AGServiceDescription):
+            self.PopupServiceMenu(evt)
+    
     def PopupServiceMenu(self, evt):
         """
         Popup the service menu
         """
-        pos = evt.GetPoint() + wxPoint(240, 20)
-        self.PopupMenu(self.serviceMenu, pos)
+        
+            
+        menu = wxMenu()
+        menu.Append(ID_SERVICE_ENABLE_ONE, "Enable", "Enable the selected service")
+        menu.Append(ID_SERVICE_DISABLE_ONE, "Disable", "Disable the selected service")
+        menu.Append(ID_SERVICE_CONFIGURE, "Configure...", "Configure the selected service")
+        menu.Append(ID_SERVICE_REMOVE, "Remove", "Remove the selected service")
+
+        # Get the Mouse Position on the Screen 
+        (windowx, windowy) = wx.wxGetMousePosition() 
+        # Translate the Mouse's Screen Position to the Mouse's Control Position 
+        pos = self.tree.ScreenToClientXY(windowx, windowy)
+        posl = [ pos[0] + 155, pos[1] + 25 ]
+        self.PopupMenu(menu,pos)
 
     def PopupHostMenu(self, evt):
         """
         Popup the service manager menu
         """
-        pos = evt.GetPoint() + wxPoint(20, 20)
-        self.PopupMenu(self.serviceManagersMenu, pos)
+        
+        menu = wxMenu()
+        
+        menu.Append(ID_SERVICE_ADD_SERVICE, "Add Service...", "Add a service")
+        menu.AppendSeparator()
+        menu.Append(ID_HOST_REMOVE, "Remove Service Manager", "Remove a service manager")
+
+        # Get the Mouse Position on the Screen 
+        (windowx, windowy) = wx.wxGetMousePosition() 
+        # Translate the Mouse's Screen Position to the Mouse's Control Position 
+        pos = self.tree.ScreenToClientXY(windowx, windowy)
+        posl = [ pos[0] + 25, pos[1] + 25 ]
+        self.PopupMenu(menu, pos)
 
     def CheckCredentials(self):
         """
@@ -1138,8 +1308,52 @@ class NodeManagementClientFrame(wxFrame):
         """
         Clear the UI
         """
-        self.hostList.DeleteAllItems()
-        self.serviceList.DeleteAllItems()
+        self.tree.DeleteAllItems()
+        
+    def GetSelectedItems(self,selType=None):
+        """
+        Get list of selected items
+        """
+        retList = []
+        selections = self.tree.GetSelections()
+        
+        if len(selections) == 0:
+            return retList
+            
+        for s in selections:
+            obj = self.tree.GetItemData(s).GetData()
+            if not selType or isinstance(obj,selType):
+                retList.append(obj)
+            
+        return retList
+        
+    def GetSelectedServiceManagers(self):
+        return self.GetSelectedItems(AGServiceManagerDescription)
+        
+    def GetSelectedServices(self):
+        return self.GetSelectedItems(AGServiceDescription)
+        
+    def RemoveSelectedItems(self):
+    
+        selections = self.tree.GetSelections()
+        
+        # Remove services first
+        for s in selections:
+            obj = self.tree.GetPyData(s)
+            if isinstance(obj,AGServiceDescription):
+                smItem = self.tree.GetItemParent(s)
+                sm = self.tree.GetItemData(smItem).GetData()
+                AGServiceManagerIW( sm.uri ).RemoveService( obj )
+                self.tree.Delete(s)
+                selections.remove(s)
+
+        # Remove service managers
+        for s in selections:
+            obj = self.tree.GetPyData(s)
+            if isinstance(obj,AGServiceManagerDescription):
+                self.nodeServiceHandle.RemoveServiceManager( obj.uri )
+                self.tree.Delete(s)
+            
 
 
 if __name__ == "__main__":
@@ -1147,8 +1361,7 @@ if __name__ == "__main__":
     app = wxPySimpleApp()
 
     # Service config dialog test
-    resource = AGResource()
-    resource.resource = "resource"
+    resource = ResourceDescription("resource")
     config = []
 
     dlg = ServiceConfigurationDialog(None, -1, "Service Config Dialog", resource,config)
