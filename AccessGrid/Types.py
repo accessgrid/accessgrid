@@ -5,13 +5,13 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.43 2004-03-10 23:17:07 eolson Exp $
+# RCS-ID:      $Id: Types.py,v 1.44 2004-03-15 23:37:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.43 2004-03-10 23:17:07 eolson Exp $"
+__revision__ = "$Id: Types.py,v 1.44 2004-03-15 23:37:12 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -24,7 +24,7 @@ log = Log.GetLogger(Log.Types)
 from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetParameter, CreateParameter
 
 class AGResource:
-    def __init__( self, type=None, resource=None, role="" ):
+    def __init__( self, type=None, resource="", role="" ):
         self.type = type
         self.resource = resource
         self.role = role
@@ -196,7 +196,7 @@ class ServiceConfiguration:
     ServiceConfiguration encapsulates the configuration of 
     AGServices
     """
-    def __init__( self, resource, executable, parameters ):
-        self.executable = executable
+    def __init__( self, resource=AGResource(), executable="", parameters=dict() ):
         self.resource = resource
+        self.executable = executable
         self.parameters = map( lambda parm: CreateParameter( parm ), parameters )
