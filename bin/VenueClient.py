@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.86 2003-03-25 21:41:27 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.87 2003-03-25 21:42:55 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -33,6 +33,9 @@ from AccessGrid.hosting.pyGlobus import Server
 
 if sys.platform == "win32":
     from win32com.shell import shell, shellcon
+
+#https://vv2.mcs.anl.gov:8880/Venues/000000f42704a7fa008c00dd000b00371fc 
+
     
 class VenueClientUI(wxApp, VenueClient):
     """
@@ -94,7 +97,8 @@ class VenueClientUI(wxApp, VenueClient):
         except:
             wxLogDebug("profile does not exist")
             os.mkdir(self.accessGridPath)
-           https://vv2.mcs.anl.gov:8880/Venues/000000f42704a7fa008c00dd000b00371fc 
+
+           
     def ConnectToVenue(self):
         """
         This method is called during program startup. If this is the first time
