@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.19 2003-04-08 21:08:53 olson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.20 2003-04-17 20:12:07 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -96,39 +96,45 @@ class DataStore:
                 log.debug("DataStore::AddFile: Add file %s to local datastore" %filename)
                 input = open(filename, 'r')
                 fileString = input.read()
-
+                
                 path, name = os.path.split(filename)
                                                
                 if not os.path.exists(self.pathname):
                     log.debug("DataStore::AddFile: Personal data storage directory does not exist, create it")
                     os.mkdir(self.pathname)
-                    
-                dataStorePath = os.path.join(self.pathname, name)
-                log.debug("DataStore::AddFile: Personal datastorage is located at %s"%dataStorePath)
-                output = open(dataStorePath, 'w')
-                output.write(fileString)
-                input.close()
-                output.close()
-            
-                # Create DataDescription
-                size = os.path.getsize(dataStorePath)
-                log.debug("DataStore::AddFile: Size of file %s" %size)
-                
-                # This should be done in a loop in case
-                # the file is big
-                checksum = md5.new(fileString).hexdigest()
-                log.debug("DataStore::AddFile: Checksum %s" %checksum)
-                
-                desc = DataDescription(name)
-                desc.SetOwner(dn)
-                desc.SetType(id) # id shows that this data is personal
-                desc.SetChecksum(checksum)
-                desc.SetSize(int(size))
-                desc.SetStatus(DataDescription.STATUS_PRESENT)
-                desc.SetURI(self.transfer_engine.GetDownloadDescriptor(self.prefix, name))
-                log.debug("DataStore::AddFile: updating with %s %s", desc, desc.__dict__)
-                self.callbackClass.AddData(desc)
 
+                log.debug("DataStore::AddFile: GetData returns %s"%self.callbackClass.GetData(name))
+                log.debug("DataStore::AddFile: GetVenueData returns %s"%self.callbackClass.GetVenueData(name))
+                if self.callbackClass.GetData(name) == None and self.callbackClass.GetVenueData(name) == None:
+                    
+                    dataStorePath = os.path.join(self.pathname, name)
+                    log.debug("DataStore::AddFile: Personal datastorage is located at %s"%dataStorePath)
+                    output = open(dataStorePath, 'w')
+                    output.write(fileString)
+                    input.close()
+                    output.close()
+                    
+                    # Create DataDescription
+                    size = os.path.getsize(dataStorePath)
+                    log.debug("DataStore::AddFile: Size of file %s" %size)
+                    
+                    # This should be done in a loop in case
+                    # the file is big
+                    checksum = md5.new(fileString).hexdigest()
+                    log.debug("DataStore::AddFile: Checksum %s" %checksum)
+                    
+                    desc = DataDescription(name)
+                    desc.SetOwner(dn)
+                    desc.SetType(id) # id shows that this data is personal
+                    desc.SetChecksum(checksum)
+                    desc.SetSize(int(size))
+                    desc.SetStatus(DataDescription.STATUS_PRESENT)
+                    desc.SetURI(self.transfer_engine.GetDownloadDescriptor(self.prefix, name))
+                    log.debug("DataStore::AddFile: updating with %s %s", desc, desc.__dict__)
+                    self.callbackClass.AddData(desc)
+
+                else:
+                    raise DuplicateFile("A file named %s already exists in the venue, \nplease rename your file and try again" %name) 
             except:
                 log.exception("DataStore::AddFile: Error when trying to add local data to datastorage")
                 raise UploadFailed("Error when trying to add local data to datastorage")
