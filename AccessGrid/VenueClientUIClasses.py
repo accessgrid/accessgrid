@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.266 2003-09-16 22:11:57 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.267 2003-09-17 14:00:23 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.266 2003-09-16 22:11:57 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.267 2003-09-17 14:00:23 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -198,12 +198,13 @@ class VenueClientFrame(wxFrame):
                              "Add data to the venue.")
 	self.venue.Append(self.ID_VENUE_SERVICE_ADD,"Add Service...",
                                 "Add a service to the venue.")
+
+     	self.applicationMenu = self.BuildAppMenu(None, "")
+        self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"Add &Application...",
+                              self.applicationMenu)
+        
         self.venue.Append(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES,"Administrate Roles...",
                              "Change venue authorization settings.")
-     	self.applicationMenu = wxMenu()
-
-        self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"&Applications",
-                              self.BuildAppMenu(None))
         self.venue.AppendSeparator()
         self.venue.Append(self.ID_VENUE_CLOSE,"&Exit", "Exit venue")
         
@@ -978,43 +979,24 @@ class VenueClientFrame(wxFrame):
     #
     # Applications Integration code
     #
-    def SetInstalledApps(self, applicationList):
+    def BuildAppMenu(self, event, prefix):
         """
         Build the menu of installed applications
         """
+        menu = wxMenu()
         
-        # Remove existing menu items
-        for item in self.applicationMenu.GetMenuItems():
-            self.applicationMenu.Delete(item)
-
-        # Add applications in the appList to the menu
-        for app in applicationList:
-            menuEntryLabel = "Start " + app.name
-            appId = wxNewId()
-            self.applicationMenu.Append(appId,menuEntryLabel,menuEntryLabel)
-            callback = lambda event,theApp=app: self.StartApp(theApp, event)
-            EVT_MENU(self, appId, callback)
-
-    def BuildAppMenu(self, event):
-        """
-        Build the menu of installed applications
-        """
         app = Toolkit.GetApplication()
         appdb = app.GetAppDatabase()
         
-        # Remove existing menu items
-        for item in self.applicationMenu.GetMenuItems():
-            self.applicationMenu.Delete(item)
-
         # Add applications in the appList to the menu
         for app in appdb.ListAppsAsAppDescriptions():
-            menuEntryLabel = "Start " + app.name
+            menuEntryLabel = prefix + app.name
             appId = wxNewId()
-            self.applicationMenu.Append(appId,menuEntryLabel,menuEntryLabel)
+            menu.Append(appId,menuEntryLabel,menuEntryLabel)
             callback = lambda event,theApp=app: self.StartApp(theApp, event)
             EVT_MENU(self, appId, callback)
 
-        return self.applicationMenu
+        return menu
     
     def EnableAppMenu(self, flag):
         for entry in self.applicationMenu.GetMenuItems():
@@ -1033,7 +1015,8 @@ class VenueClientFrame(wxFrame):
         appDesc = self.app.venueClient.client.CreateApplication( app.name,
                                                                  app.description,
                                                                  app.mimeType )
-        self.RunApp(appDesc)
+        # We're not going to run the client now it's less intuitive
+        # self.RunApp(appDesc)
         
     def OpenApp(self, event):
         """
@@ -2006,6 +1989,9 @@ class ContentListPanel(wxPanel):
         self.x = event.GetX()
         self.y = event.GetY()
 
+        if self.app.venueClient.venueUri == None:
+            return
+        
         treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
       
         if(treeId.IsOk()):
@@ -2020,7 +2006,7 @@ class ContentListPanel(wxPanel):
                 self.PopupMenu(self.parent.serviceHeadingMenu,
                                wxPoint(self.x, self.y))
             elif text == 'Applications':
-                self.PopupMenu(self.parent.applicationMenu,
+                self.PopupMenu(self.parent.BuildAppMenu(None, "Start "),
                                wxPoint(self.x, self.y))
             elif text == 'Participants' or item == None:
                 # We don't have anything to do with this heading
