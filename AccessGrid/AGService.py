@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.35 2004-05-10 19:43:00 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.36 2004-05-12 17:08:03 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.35 2004-05-10 19:43:00 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.36 2004-05-12 17:08:03 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -29,9 +29,9 @@ from AccessGrid.Platform.ProcessManager import ProcessManager
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.Descriptions import CreateResource
 from AccessGrid.Descriptions import CreateStreamDescription
-from AccessGrid.Descriptions import CreateServiceConfiguration
 from AccessGrid.Descriptions import CreateCapability
 from AccessGrid.Descriptions import CreateClientProfile
+from AccessGrid.Descriptions import CreateParameter
 
 class AGService:
     """
@@ -111,26 +111,18 @@ class AGService:
         self.resource = resource
 
 
-    def GetExecutable( self ):
-        """Get resources"""
-        return self.executable
-
-
-    def SetExecutable( self, executable ):
-        """Set the resource used by this service"""
-        self.executable = executable
-
-
     def SetConfiguration( self, configuration ):
         """Set configuration of service"""
         try:
-            self.resource = configuration.resource
-            self.executable = configuration.executable
-
-            for parm in configuration.parameters:
+            for parm in configuration:
+                found = 0
                 for i in range(len(self.configuration)):
                     if parm.name == self.configuration[i].name:
                        self.configuration[i].SetValue( parm.value )
+                       found = 1
+                
+                if not found:
+                    log.info("SetConfiguration: Unrecognized parameter ignored: %s", parm.name)
         except:
             self.log.exception("Exception in AGService.SetConfiguration")
             raise Exception("AGService.SetConfiguration failed : " + str(sys.exc_value) )
@@ -138,14 +130,8 @@ class AGService:
 
     def GetConfiguration( self ):
         """Return configuration of service"""
-        try:
-            serviceConfig = ServiceConfiguration( self.resource, self.executable, self.configuration )
 
-        except:
-            self.log.exception("Exception in GetConfiguration ")
-            raise Exception("AGService.GetConfiguration failed : " + str(sys.exc_value) )
-
-        return serviceConfig
+        return self.configuration
 
 
     def ConfigureStream( self, streamDescription ):
@@ -250,14 +236,7 @@ class AGServiceI(SOAPInterface):
         resource = CreateResource(resourceStruct)
         self.impl.SetResource(resource )
 
-    def GetExecutable( self ):
-        return self.impl.GetExecutable()
-
-    def SetExecutable( self, executable ):
-        self.impl.SetExecutable( self, executable )
-
-    def SetConfiguration(self,serviceConfigStruct ):
-        serviceConfig = CreateServiceConfiguration(serviceConfigStruct)
+    def SetConfiguration(self,serviceConfig ):
         self.impl.SetConfiguration(serviceConfig )
 
     def GetConfiguration( self ):
@@ -319,21 +298,14 @@ class AGServiceIW(SOAPIWrapper):
     def SetResource( self, resource ):
         self.proxy.SetResource(resource )
 
-    def GetExecutable( self ):
-        return self.proxy.GetExecutable()
-
-    def SetExecutable( self, executable ):
-        self.proxy.SetExecutable( self, executable )
-
     def SetConfiguration(self,configuration ):
         self.proxy.SetConfiguration(configuration )
 
     def GetConfiguration( self ):
+        config = []
         configStruct = self.proxy.GetConfiguration()
-        
-        config = ServiceConfiguration(CreateResource(configStruct.resource),
-                                      configStruct.executable,
-                                      configStruct.parameters)
+        for parmStruct in configStruct:
+            config.append(CreateParameter(parmStruct))
         return config
 
     def ConfigureStream( self, streamDescription ):
