@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.35 2004-05-04 05:05:51 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.36 2004-07-14 20:40:54 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.35 2004-05-04 05:05:51 judson Exp $"
+__revision__ = "$Id: TextClient.py,v 1.36 2004-07-14 20:40:54 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -329,16 +329,7 @@ if __name__ == "__main__":
     last_one = 0
     
     app = Toolkit.CmdlineApplication()
-    app.Initialize()
-    app.InitGlobusEnvironment()
-
-    certMgr = app.GetCertificateManager()
-    if not certMgr.HaveValidProxy():
-        certMgr.CreateProxy()
-
-    log = Log.GetLogger(Log.TextClient)
-    Log.SetDefaultLevel(Log.TextClient, Log.WARN)
-    Log.HandleLoggers(Log.StreamHandler(), Log.GetDefaultLoggers())
+    app.Initialize("TextClient-Main")
 
     if len(sys.argv) > 3:
         host = sys.argv[1]
@@ -356,8 +347,7 @@ if __name__ == "__main__":
         channel = "Test"
         count = int(sys.argv[1])
         
-    log.debug("TextClient: Creating connection to service at: %s %d.",
-              host, port)
+    print "TextClient: Creating connection to service at: %s %d." % (host, port)
 
     def out(string):
         global last_one

@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.41 2004-04-19 21:26:12 lefvert Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.42 2004-07-14 20:40:54 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventClient.py,v 1.41 2004-04-19 21:26:12 lefvert Exp $"
+__revision__ = "$Id: EventClient.py,v 1.42 2004-07-14 20:40:54 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from threading import Thread, Lock
@@ -356,17 +356,12 @@ if __name__ == "__main__":
     last_one = 0
     
     app = Toolkit.CmdlineApplication()
-    app.Initialize()
+    try:
+        app.Initialize("EventClient-Main")
+    except:
+        print "Toolkit initialization failed."
+        sys.exit(-1)
 
-    certMgr = app.GetCertificateManager()
-    if not certMgr.HaveValidProxy():
-        certMgr.CreateProxy()
-
-    log = Log.GetLogger(Log.TextClient)
-    hdlr = Log.StreamHandler()
-    hdlr.setLevel(Log.DEBUG)
-    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
-    
     if len(sys.argv) > 3:
         host = sys.argv[1]
         port = int(sys.argv[2])
