@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.45 2004-06-01 20:15:48 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.46 2004-07-26 14:44:13 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -112,7 +112,8 @@ def main():
     server.RunInThread()
 
     # Tell the world where to find the service manager
-    log.info("Starting Service Manager URI: %s", server.GetURLBase())
+    log.info("Starting Service Manager URL: %s", url)
+    print "Starting Service Manager URL:", url
 
     # Keep the main thread busy so we can catch signals
     running = 1
