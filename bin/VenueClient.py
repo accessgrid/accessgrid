@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.198 2003-08-14 21:35:07 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.199 2003-08-18 20:36:30 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -149,6 +149,12 @@ class VenueClientUI(VenueClientEventSubscriber):
         self.frame.EnableAppMenu( false )
        
         #
+        # Initialize globus runtime stuff.
+        #
+        self.startupDialog.UpdateOneStep()
+        self.app.InitGlobusEnvironment()
+       
+        #
         # Load user mailcap from AG Config Dir
         #
         self.startupDialog.UpdateOneStep()
@@ -165,12 +171,6 @@ class VenueClientUI(VenueClientEventSubscriber):
             self.personalNode = PersonalNode.PersonalNodeManager(setSvcCallback, self.debugMode)
             self.personalNode.Run()
 
-        #
-        # Initialize globus runtime stuff.
-        #
-        self.startupDialog.UpdateOneStep()
-        self.app.InitGlobusEnvironment()
-       
         #
         # Check if profile is created then open venue client
         #
