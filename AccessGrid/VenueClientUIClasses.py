@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.311 2004-01-14 20:10:45 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.312 2004-01-26 21:06:00 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.311 2004-01-14 20:10:45 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.312 2004-01-26 21:06:00 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1452,7 +1452,7 @@ class VenueListPanel(wxSashLayoutWindow):
         self.minimizeButton.Hide()  
         self.maximizeButton.Show()
         self.list.HideDoors()
-        self.SetSize(wxSize(20, currentHeight))
+        self.SetSize(wxSize(25, currentHeight))
         self.parent.UpdateLayout()
 
     def Show(self):
