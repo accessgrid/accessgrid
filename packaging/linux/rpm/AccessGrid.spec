@@ -10,7 +10,7 @@
 %define sharedir	%{prefix}/share
 %define gnomedir	%{sharedir}/gnome/apps
 %define kdedir		%{sharedir}/applnk
-%define buildroot	/var/tmp/%{name}-%{version}
+%define buildroot	/usr/src/redhat/BUILD/AccessGrid-2.2
 
 #
 # The following defines the AccessGrid rpm
@@ -104,7 +104,7 @@ This module provides the components needed to run the Bridge Server.  This serve
 #
 
 %prep
-%setup
+%setup -n AccessGrid-2.2 -c
 [ -n "%{buildroot}" -a "%{buildroot}" != / ] && rm -rf %{buildroot}
 
 #
@@ -113,11 +113,7 @@ This module provides the components needed to run the Bridge Server.  This serve
 # then builds the package
 #
 
-%build
-python2.2 packaging/makeServicePackages.py services/node
-(cd services/network/QuickBridge; gcc -o QuickBridge QuickBridge.c)
-python2.2 setup.py build
-
+#%build
 
 #
 # The following installs the package in the buildroot,
@@ -126,8 +122,16 @@ python2.2 setup.py build
 #
 
 %install
-python2.2 setup.py install --prefix=%{buildroot}%{prefix} --no-compile
-mv %{buildroot}%{prefix}/etc %{buildroot}
+# Move node services and shared apps into etc 
+mv NodeServices etc/AccessGrid
+mv SharedApplications etc/AccessGrid
+
+# Create a usr dir, and move dirs thereunder
+mkdir usr
+mv share usr/share
+mv lib usr/lib
+mv bin usr/bin
+
 
 #
 # Define the files that are to go into the AccessGrid package
@@ -139,6 +143,7 @@ mv %{buildroot}%{prefix}/etc %{buildroot}
 %files
 %defattr(-,root,root)
 %{prefix}/lib
+/etc
 %{sharedir}/%{name}/ag.ico
 %defattr(0755,root,root)
 %{prefix}/bin/AGServiceManager.py
@@ -169,7 +174,6 @@ mv %{buildroot}%{prefix}/etc %{buildroot}
 %config %{sysconfdir}/AGNodeService.cfg
 %config %{sysconfdir}/nodeConfig/defaultLinux
 %defattr(-,root,root)
-%{sysconfdir}/services/
 %{gnomedir}/%{name}/.desktop
 %{gnomedir}/%{name}/VenueClient.desktop
 %{gnomedir}/%{name}/VenueClient-PersonalNode.desktop
@@ -190,7 +194,6 @@ mv %{buildroot}%{prefix}/etc %{buildroot}
 %defattr(0755,root,root)
 %{prefix}/bin/VenueManagement.py
 %{prefix}/bin/VenueServer.py
-#%{prefix}/bin/VenuesServerRegistry.py
 %defattr(-,root,root)
 %{gnomedir}/%{name}/.desktop
 %{gnomedir}/%{name}/VenueManagement.desktop
