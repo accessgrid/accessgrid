@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: RunMe.py,v 1.1 2003-02-28 21:08:50 judson Exp $
+# RCS-ID:      $Id: RunMe.py,v 1.2 2003-03-12 08:09:44 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,6 +14,7 @@
 import sys
 import os
 import signal
+import time
 
 if sys.platform == 'win32':
     from AccessGrid.ProcessManagerWin32 import ProcessManagerWin32 as ProcessManager 
@@ -22,8 +23,9 @@ else:
 
 pm = ProcessManager()
 
-pm.start_process(sys.executable, ["AGNodeService.py"])
 pm.start_process(sys.executable, ["AGServiceManager.py"])
+
+pm.start_process(sys.executable, ["AGNodeService.py"])
 
 vcpic = os.spawnv(os.P_WAIT, sys.executable,
                   [sys.executable, "VenueClient.py"])
