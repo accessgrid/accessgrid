@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.114 2003-03-27 17:21:58 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.115 2003-03-27 21:34:48 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -55,6 +55,8 @@ class VenueClientFrame(wxFrame):
     ID_WINDOW_LEFT  = NewId()
     ID_WINDOW_BOTTOM = NewId()
     ID_VENUE_DATA = NewId()
+    ID_VENUE_DATA_OPEN = NewId() 
+    ID_VENUE_DATA_PROPERTIES = NewId() 
     ID_VENUE_DATA_ADD = NewId() 
     ID_VENUE_DATA_SAVE = NewId() 
     ID_VENUE_DATA_DELETE = NewId() 
@@ -158,11 +160,15 @@ class VenueClientFrame(wxFrame):
 
         self.venue = wxMenu()
 	self.dataMenu = wxMenu()
+	self.dataMenu.Append(self.ID_VENUE_DATA_OPEN,"Open...",
+                             "Open the data")
 	self.dataMenu.Append(self.ID_VENUE_DATA_ADD,"Add...",
                              "Add data to the venue")
 	self.dataMenu.Append(self.ID_VENUE_DATA_SAVE,"Save...",
                              "Save data to local disk")
 	self.dataMenu.Append(self.ID_VENUE_DATA_DELETE,"Delete", "Remove data")
+	self.dataMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties",
+                             "View the data properties")
         self.venue.AppendMenu(self.ID_VENUE_DATA,"&Data", self.dataMenu)
 	#self.serviceMenu = wxMenu()
 	#self.serviceMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
