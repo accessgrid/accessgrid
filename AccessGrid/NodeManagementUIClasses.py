@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.59 2004-04-30 20:33:07 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.60 2004-05-07 20:15:57 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.59 2004-04-30 20:33:07 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.60 2004-05-07 20:15:57 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -837,6 +837,8 @@ class NodeManagementClientFrame(wxFrame):
                     serviceToAdd = service
                     break
 
+            if serviceToAdd == None:
+                raise Exception("Can't add NULL service")
 
             #
             # Prompt for resource to assign
@@ -881,8 +883,6 @@ class NodeManagementClientFrame(wxFrame):
                 #
                 # Add the service
                 #
-                if serviceToAdd == None:
-                    raise Exception("Can't add NULL service")
                 self.nodeServiceHandle.AddService( serviceToAdd,
                                serviceManager.uri,
                                resourceToAssign,
