@@ -50,7 +50,7 @@ class Preferences:
                          self.STARTUP_MEDIA: 1,
                          self.NODE_URL: "https://localhost:11000/NodeService",
                          self.MULTICAST: 1,
-                         self.LOG_TO_CMD: 1,
+                         self.LOG_TO_CMD: 0,
                          self.ENABLE_VIDEO: 1,
                          self.ENABLE_AUDIO: 1
                          }
