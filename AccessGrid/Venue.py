@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.168 2004-03-25 23:31:51 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.169 2004-03-26 17:01:19 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.168 2004-03-25 23:31:51 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.169 2004-03-26 17:01:19 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -440,6 +440,7 @@ class Venue(AuthorizationMixIn):
         This serializes the data in this venue as a INI formatted
         block of text.
         """
+        
         # The Venue Block
         sclass = str(self.__class__).split('.')
         string = "\n[%s]\n" % self.uniqueId
@@ -500,7 +501,27 @@ class Venue(AuthorizationMixIn):
             string += "".join(map(lambda service: service.AsINIBlock(),
                                   self.services.values()))
 
+        if self.authManager:
+            policy = self.authManager.ExportPolicy()
+            # Don't store these control characters, but lets make sure we
+            # bring them back
+            policy = re.sub("\r\n", "<CRLF>", policy)
+            policy = re.sub("\r", "<CR>", policy)
+            policy = re.sub("\n", "<LF>", policy)
+            string += 'authorizationPolicy : %s' %policy
+            
         return string
+
+    def ImportAuthorizationPolicy(self, policy):
+        """
+        This method takes a string that is an XML representation of an
+        authorization policy. This policy is parsed and this object is
+        configured to enforce the specified policy.
+
+        @param policy: the policy as a string
+        @type policy: an XML formatted string
+        """
+        self.authManager.ImportPolicy(policy)
 
     def AsVenueDescription(self):
         """
@@ -2713,6 +2734,17 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         except:
             log.exception("VenueI.GetEventServiceLocation.")
             raise
+
+    def ImportAuthorizationPolicy(self, policy):
+        """
+        This method takes a string that is an XML representation of an
+        authorization policy. This policy is parsed and this object is
+        configured to enforce the specified policy.
+
+        @param policy: the policy as a string
+        @type policy: an XML formatted string
+        """
+        self.impl.ImportAuthorizationPolicy(policy)
 
 # Legacy calls
     def AddSubjectToRole(self, subject, role_string):
