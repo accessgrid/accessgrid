@@ -2,11 +2,8 @@
 #-----------------------------------------------------------------------------
 # Name:        certmgr.py
 # Purpose:     Command line certificate management tool.
-#
-# Author:      Robert Olson
-#
 # Created:     9/10/2003
-# RCS-ID:      $Id: certmgr.py,v 1.6 2004-03-12 05:23:13 judson Exp $
+# RCS-ID:      $Id: certmgr.py,v 1.7 2004-03-17 21:37:56 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +11,7 @@
 This tool is used on the command line to interact with the users certificate
 environment.
 """
-__revision__ = "$Id: certmgr.py,v 1.6 2004-03-12 05:23:13 judson Exp $"
+__revision__ = "$Id: certmgr.py,v 1.7 2004-03-17 21:37:56 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -24,23 +21,23 @@ import os
 import os.path
 import sys
 import cmd
-from AccessGrid import Toolkit
+
 from OpenSSL_AG import crypto
 
-from AccessGrid import Log
-log = Log.GetLogger(Log.CertificateManager)
+from AccessGrid.Toolkit import CmdlineApplication
 
 class CertMgrCmdProcessor(cmd.Cmd):
     """
     The certificate manager is a command processor based application; this is
     the cmd derived class for processing input.
     """
-    def __init__(self, certMgr):
+    def __init__(self, certMgr, log):
         """
         The constructor for the cert mgr command processor.
         """
         cmd.Cmd.__init__(self)
 
+        self.log = log
         self.certMgr = certMgr
         self.certRepo = certMgr.GetCertificateRepository()
 
@@ -441,7 +438,7 @@ the base name of certfile, with a .signing_policy suffix.
                     if validCert:
                         break
             fh.close()
-            log.debug("scan complete, validKey=%s validCert=%s", validKey,
+            self.log.debug("scan complete, validKey=%s validCert=%s", validKey,
                                                                  validCert)
 
         except IOError:
@@ -557,7 +554,7 @@ the base name of certfile, with a .signing_policy suffix.
                     validCert = 1
                     break
             fh.close()
-            log.debug("scan complete, validCert=%s",  validCert)
+            self.log.debug("scan complete, validCert=%s",  validCert)
 
         except IOError:
             print "Could not open certificate file %s", (certFile)
@@ -678,10 +675,17 @@ def main():
     """
     The main routine.
     """
-    app = Toolkit.CmdlineApplication()
-    args = app.Initialize()
+    # Instantiate the app
+    app = CmdlineApplication()
 
-    cmd = CertMgrCmdProcessor(app.GetCertificateManager())
+    try:
+        args = app.Initialize("CertificateManager")
+    except Exception, e:
+        print "Toolkit initialization failed."
+        print " Initialization Error: ", e
+
+    cmd = CertMgrCmdProcessor(app.GetCertificateManager(), app.GetLog())
+
     cmd.cmdloop()
 
 

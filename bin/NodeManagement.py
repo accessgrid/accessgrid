@@ -3,7 +3,7 @@
 # Name:        NodeManagement.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.23 2004-03-16 07:48:03 turam Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.24 2004-03-17 21:40:08 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -46,7 +46,13 @@ def main():
     wxInitAllImageHandlers()
 
     app = WXGUIApplication()
-    app.Initialize()
+
+    try:
+        app.Initialize("NodeManagement")
+    except Exception, e:
+        print "Toolkit initialization failed."
+        print " Initialization Error: ", e
+        sys.exit(-1)
 
     log = app.GetLog()
     
