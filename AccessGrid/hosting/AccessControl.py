@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: AccessControl.py,v 1.16 2003-08-14 18:34:22 eolson Exp $
+# RCS-ID:      $Id: AccessControl.py,v 1.17 2003-08-19 13:45:07 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -574,8 +574,13 @@ class InvocationWrapper(MethodSig):
               info = sys.exc_info()
 
               ftype = traceback.format_exception_only(info[0], info[1])
+
+              # Get rid of new line at the end of the string we're
+              # going to return -- IRJ
+              fString = ftype[0][:-1]
+              
               fault = faultType(faultcode = str(info[0]),
-                                faultstring = ftype[0])
+                                faultstring = fString)
               fault._setDetail("".join(traceback.format_exception(
                                     info[0], info[1], info[2])))
               raise fault
