@@ -5,13 +5,13 @@
 # Author:      Robert Olson, Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.17 2004-01-20 23:06:49 eolson Exp $
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.18 2004-02-26 14:41:55 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: MulticastAddressAllocator.py,v 1.17 2004-01-20 23:06:49 eolson Exp $"
+__revision__ = "$Id: MulticastAddressAllocator.py,v 1.18 2004-02-26 14:41:55 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -19,8 +19,9 @@ import socket
 import struct
 from random import Random
 
+from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
 
-class MulticastAddressAllocator:
+class MulticastAddressAllocator(NetworkAddressAllocator):
     """
     This class provides a clean API for allocating multicast addresses. It can 
     provide addresses either randomly from the predefined SDP pool or randomly
@@ -40,12 +41,11 @@ class MulticastAddressAllocator:
         from a GLOP address space. If a base address and mask are not supplied
         the allocator allocates from the SDR address space.
         """
+        NetworkAddressAllocator.__init__(self, portBase)
+        
         self.baseAddress = baseAddress
         self.addressMaskSize = addressMaskSize
-        self.portBase = portBase
-        
         self.allocatedAddresses = []
-        self.allocatedPorts = []
         
         if self.baseAddress == None:
             # 224.2.128.0
@@ -56,16 +56,11 @@ class MulticastAddressAllocator:
             self.baseAddress = struct.unpack("<L",
                                         socket.inet_aton(baseAddress))[0]
 
-        
         self.addressMask = socket.htonl(~((1<<(32-self.addressMaskSize))-1))
 
-        # self.random = Random(time.clock())
-        self.random = Random()
-
-        self.addressAllocationMethod = MulticastAddressAllocator.RANDOM
-
     def SetBaseAddress(self, baseAddress):
-        self.baseAddress = struct.unpack("<L", socket.inet_aton(baseAddress))[0]
+        self.baseAddress = struct.unpack("<L",
+                                         socket.inet_aton(baseAddress))[0]
         return self.baseAddress
                                         
     def GetBaseAddress(self):
@@ -80,39 +75,6 @@ class MulticastAddressAllocator:
     def GetAddressMask( self ):
         return self.addressMaskSize
 
-    def SetAddressAllocationMethod( self, method ):
-        self.addressAllocationMethod = method
-        return self.addressAllocationMethod
-    
-    def GetAddressAllocationMethod( self ):
-        return self.addressAllocationMethod
-
-    def AllocatePort(self):
-        """
-        We allocate only even numbered ports since that is the requirement
-        for rtp encapsulated streams.
-        """
-        # Check to see if port is used
-        while 1:
-            port = self.random.randrange(self.portBase, 65535, 2)
-            if port in self.allocatedPorts:
-                continue
-            
-            try:
-                s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
-                s.bind(("", port ) )
-                s.close()
-                break
-            except socket.error:
-                continue
-            
-        self.allocatedPorts.append(port)
-        return port
-        
-    def RecyclePort(self, port):
-        self.allocatedPorts.remove(port)
-        return port
-    
     def AllocateAddress(self):
         randomNumber = self.random.randrange(sys.maxint)
         newAddress = self.baseAddress & self.addressMask
@@ -148,6 +110,10 @@ if __name__ == "__main__":
     print "%d random ports:" % (iter)
     for i in range(0, iter):
         print multicastAddressAllocator.AllocatePort()
+
+    print "%d random even ports: " % (iter)
+    for i in range(0, iter):
+        print multicastAddressAllocator.AllocatePort(1)
 
     mask = 28
     multicastAddressAllocator.SetAddressMask(mask)
