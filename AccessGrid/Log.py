@@ -40,6 +40,7 @@ log.debug("Test debug")
 log.warn("Test warn")
 """
 
+import os
 import sys
 import logging
 import logging.handlers as handlers
@@ -427,11 +428,12 @@ class LevelHandler(logging.handlers.BufferingHandler):
                 handler.setLevel(level)
 
 # 0. Initialize logging, storing in log data memory
-defLogHandler = StreamHandler()
+#defLogHandler = StreamHandler()
+defLogHandler = handlers.FileHandler(os.tempfil("AGErr"))
 defLogHandler.setFormatter(GetFormatter())
 # This is set to 4096 to get around pythonw limitations!!!
 # http://mail.python.org/pipermail/python-list/2004-June/227268.html
-mlh = handlers.MemoryHandler(4096, flushLevel=ERROR, target=defLogHandler)
+mlh = handlers.MemoryHandler(4096, flushLevel=CRITICAL, target=defLogHandler)
 mlh.setFormatter(GetFormatter())
 memLevels = HandleLoggers(mlh, GetDefaultLoggers())
 memLevels.SetLevel(DEBUG)
