@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.30 2004-06-02 02:06:42 turam Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.31 2004-06-02 03:06:21 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.30 2004-06-02 02:06:42 turam Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.31 2004-06-02 03:06:21 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # standard imports
@@ -1247,8 +1247,8 @@ class VenueClientController:
                 return
 
         if IsWindows():
-            shell = os.environ['ComSpec']
-            realCommand = "%s %s %s" % (shell, "/c", realCommand)
+            #shell = os.environ['ComSpec']
+            #realCommand = "%s %s %s" % (shell, "/c", realCommand)
             log.info("StartCmd starting command: %s", realCommand)
             cmd = realCommand
             argList = []
