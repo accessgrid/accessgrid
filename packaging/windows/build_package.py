@@ -67,7 +67,7 @@ if options.verbose:
 
 # Add quotes around command.
 iscc_cmd = "%s agtk.iss /dAppVersion=\"%s\" /dVersionInformation=\"%s\" \
-            /dSourceDir=\"%s\" /dBuildDir=\"%s\" /dPythonVersion=\"%s\"" % \
+            /dSourceDir=\"%s\" /dBuildDir=\"%s\" /dPythonSubVersion=\"%s\"" % \
             (inno_compiler, options.version,
              options.metainfo.replace(' ', '_'), 
              options.sourcedir, options.destdir, options.pyver)
