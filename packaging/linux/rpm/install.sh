@@ -18,6 +18,10 @@
 
 export GLOBUS="globus-accessgrid"
 export GLOBUS_VER="2.4-1"
+export OPTIK="Optik"
+export OPTIK_VER="1.4.1-1"
+export LOGGING="logging"
+export LOGGING_VER="0.4.7-1"
 export FPCONST="fpconst"
 export FPCONST_VER="0.6.0-1"
 export PYGLOBUS="pyGlobus"
@@ -73,6 +77,9 @@ then
    exit
 fi
 
+echo "Determine the python version"
+pyver=`python2 -c 'import sys ; print sys.version[:3]' `
+
 #
 # Install Prerequisites
 #
@@ -80,6 +87,13 @@ echo "***********************************************"
 echo "Installing prerequisites" 
 echo "***********************************************"
 Install $GLOBUS $GLOBUS_VER i386
+# Install the optik and logging modules for 2.2 only
+# (they're included in 2.3)
+if [ "$pyver" == '2.2' ]; 
+then
+    Install $OPTIK $OPTIK_VER noarch
+    Install $LOGGING $LOGGING_VER noarch
+fi
 Install $FPCONST $FPCONST_VER noarch
 Install $SOAPPY $SOAPPY_VER noarch
 Install $PYGLOBUS $PYGLOBUS_VER i386
