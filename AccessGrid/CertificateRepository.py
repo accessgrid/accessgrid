@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.15 2003-09-19 21:16:03 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.16 2004-02-23 16:53:07 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.15 2003-09-19 21:16:03 olson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.16 2004-02-23 16:53:07 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -569,7 +569,7 @@ class CertificateRepository:
 
         if not operator.isSequenceType(nameEntries):
             raise Exception, "nameEntries must be a sequence"
-        
+
         try:
             for k, v in nameEntries:
                 if k.lower() not in self.validNameComponents:
@@ -807,6 +807,15 @@ class CertificateDescriptor:
     def GetSubject(self):
         return self.cert.GetSubject()
 
+    def GetVersion(self):
+        return self.cert.GetVersion()
+
+    def GetSerialNumber(self):
+        return self.cert.GetSerialNumber()
+
+    def GetFingerprint(self):
+        return self.cert.GetFingerprint()
+
     def GetMetadata(self, k):
         return self.cert.GetMetadata(k)
 
@@ -818,6 +827,9 @@ class CertificateDescriptor:
 
     def GetVerboseText(self):
         return self.cert.GetVerboseText()
+
+    def GetVerboseHtml(self):
+        return self.cert.GetVerboseHtml()
 
     def GetModulus(self):
         return self.cert.GetModulus()
@@ -837,6 +849,12 @@ class CertificateDescriptor:
     
     def GetNotValidAfter(self):
         return self.cert.GetNotValidAfter()
+
+    def GetNotValidBeforeText(self):
+        return self.cert.GetNotValidBeforeText()
+    
+    def GetNotValidAfterText(self):
+        return self.cert.GetNotValidAfterText()
 
     def IsExpired(self):
         return self.cert.IsExpired()
@@ -923,6 +941,9 @@ class Certificate:
         # Key path is based on the modulus.
         #
 
+        if not self.repo:
+           return None
+
         path = os.path.join(self.repo.dir,
                             "privatekeys",
                             "%s.pem" % (self.GetModulusHash()))
@@ -974,7 +995,6 @@ class Certificate:
     def IsExpired(self):
         return self.cert.is_expired()
 
-
     def IsGlobusProxy(self):
         name = self.GetSubject().get_name_components()
         lastComp = name[-1]
@@ -1013,12 +1033,51 @@ class Certificate:
         self.repo.SetMetadata(hashkey, value)
 
     def GetNotValidBefore(self):
+        """
+        Return notbefore time as seconds since the epoch
+        """
         notBefore = self.cert.get_not_before()
-        return time.strftime("%x %X", utc2tuple(notBefore))
+        sec = utc2time(notBefore)
+        return sec
 
     def GetNotValidAfter(self):
+        """
+        Return notafter time as seconds since the epoch
+        """
         notAfter = self.cert.get_not_after()
-        return time.strftime("%x %X", utc2tuple(notAfter))
+        sec = utc2time(notAfter)
+        return sec
+
+    def GetNotValidBeforeText(self):
+        """
+        Return notbefore time as a text string in the local timezone.
+        """
+        notBefore = self.cert.get_not_before()
+        sec = utc2time(notBefore)
+        return time.strftime("%x %X", time.localtime(sec))
+
+    def GetNotValidAfterText(self):
+        """
+        Return notafter time as a text string in the local timezone.
+        """
+        notAfter = self.cert.get_not_after()
+        sec = utc2time(notAfter)
+        return time.strftime("%x %X", time.localtime(sec))
+
+    def GetVersion(self):
+        # version is 0-based
+        return self.cert.get_version() + 1
+
+    def GetSerialNumber(self):
+        return self.cert.get_serial_number()
+
+    def GetFingerprint(self):
+        """
+        Returns a tuple (type, fingerprint)
+        """
+        
+        (type, fp) = self.cert.get_fingerprint()
+        return type, string.join(map(lambda a: "%02X" % (a), fp), ":")
 
     def GetVerboseText(self):
         fmt = ""
@@ -1027,11 +1086,8 @@ class Certificate:
         fmt += "Certificate version: %s\n" % (cert.get_version())
         fmt += "Serial number: %s\n" % (cert.get_serial_number())
 
-        notBefore = cert.get_not_before()
-        notAfter = cert.get_not_after()
-
-        fmt += "Not valid before: %s\n" % (time.strftime("%x %X", utc2tuple(notBefore)))
-        fmt += "Not valid after: %s\n" % (time.strftime("%x %X", utc2tuple(notAfter)))
+        fmt += "Not valid before: %s\n" % (self.GetNotValidBeforeText())
+        fmt += "Not valid after: %s\n" %  (self.GetNotValidAfterText())
 
         (type, fp) = cert.get_fingerprint()
         fmt += "%s Fingerprint: %s\n"  % (type,
@@ -1041,6 +1097,29 @@ class Certificate:
 
         if os.access(pkeyloc, os.R_OK):
             fmt += "Private key location: %s\n" % (pkeyloc,)
+
+        return fmt
+
+    def GetVerboseHtml(self):
+        fmt = ""
+        
+        cert = self.cert
+        fmt += "<b>Subject:</b>: %s<br>\n" % (cert.get_subject())
+        fmt += "<b>Issuer:</b>: %s<br>\n" % (cert.get_issuer())
+        fmt += "<b>Certificate version</b>: %s<br>\n" % (cert.get_version())
+        fmt += "<b>Serial number</b>: %s<br>\n" % (cert.get_serial_number())
+
+        fmt += "<b>Not valid before:</b> %s<br>\n" % (self.GetNotValidBeforeText())
+        fmt += "<b>Not valid after:</b> %s<br>\n" %  (self.GetNotValidAfterText())
+
+        (type, fp) = cert.get_fingerprint()
+        fmt += "<b>%s Fingerprint:</b> %s<br>\n"  % (type,
+                                          string.join(map(lambda a: "%02X" % (a), fp), ":"))
+        fmt += "<b>Certificate location:</b> %s<br>\n" % (self.GetPath(),)
+        pkeyloc = self.GetKeyPath()
+
+        if os.access(pkeyloc, os.R_OK):
+            fmt += "<b>Private key location:</b> %s<br>\n" % (pkeyloc,)
 
         return fmt
     
@@ -1106,6 +1185,10 @@ def utc2tuple(t):
         hour = t[6:8]
         min = t[8:10]
         sec = t[10:12]
+        zone = t[12]
+        if zone != "Z":
+            raise ValueError("utc2tuple received unknown timeformat (timezone != Z) " + t)
+        
     elif len(t) == 15:
         year = int(t[0:4])
         month = t[4:6]
@@ -1113,20 +1196,30 @@ def utc2tuple(t):
         hour = t[8:10]
         min = t[10:12]
         sec = t[12:14]
-
+        zone = t[14]
+        if zone != "Z":
+            raise ValueError("utc2tuple received unknown timeformat (timezone != Z): " + t)
+    else:
+        raise ValueError("utc2tuple received unknown timeformat (unknown length): " + t)
+    
     ttuple = (year, int(month), int(day), int(hour), int(min), int(sec), 0, 0, -1)
     return ttuple
 
 def utc2time(t):
+    """
+    Convert a UTC time (as kept in the X509 notbefore/notafter fields)
+    to seconds since the epoch.
+
+    We need to handle conversion out of our local timezone, because
+    time.mktime() converts to the local timezone, but the tuple returned
+    by utc2tuple is GMT.
+    """
+    
     ttuple = utc2tuple(t)
-    print "Tuple is ", ttuple
-    saved_timezone = time.timezone
-    saved_altzone = time.altzone
-    ret1 = int(time.mktime(ttuple))
-    time.timezone = time.altzone = 0
-    ret = int(time.mktime(ttuple))
-    # time.timezone = saved_timezone
-    # time.altzone = saved_altzone
-    print "ret=%s ret1=%s" % (ret, ret1)
-    return ret
+    secs = int(time.mktime(ttuple))
+    #
+    # Adjust for local timezone.
+    #
+    secs -= time.timezone
+    return secs
 
