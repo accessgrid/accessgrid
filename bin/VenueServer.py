@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.17 2003-04-18 17:18:35 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.18 2003-04-25 03:56:14 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -51,15 +51,19 @@ def Usage():
     
 # Parse command line options
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "p:l:c:h",
-                               ["port", "logfile", "configfile", "help"])
+    opts, args = getopt.getopt(sys.argv[1:], "p:l:c:hd",
+                               ["port", "logfile", "configfile", "help", "debug"])
 except getopt.GetoptError:
     Usage()
     sys.exit(2)
 
+debugMode = 0
+
 for o, a in opts:
     if o in ("-p", "--port"):
         port = int(a)
+    elif o in ("-d", "--debug"):
+        debugMode = 1
     elif o in ("-l", "--logfile"):
         logFile = a
     elif o in ("-c", "--configFile"):
@@ -75,6 +79,11 @@ hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
 fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
 hdlr.setFormatter(fmt)
 log.addHandler(hdlr)
+
+if debugMode:
+    hdlr = logging.StreamHandler()
+    hdlr.setFormatter(fmt)
+    log.addHandler(hdlr)
 
 # First thing we do is create a hosting environment
 hostingEnvironment = Server.Server(port, auth_callback=AuthCallback)
