@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.16 2003-03-14 14:34:37 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.17 2003-03-14 17:12:32 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -18,6 +18,10 @@ import logging
 
 try:     import win32process
 except:  pass
+if sys.platform == 'win32':
+    from AccessGrid.ProcessManagerWin32 import ProcessManagerWin32 as ProcessManager
+else:
+    from AccessGrid.ProcessManagerUnix import ProcessManagerUnix as ProcessManager
 
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
@@ -47,6 +51,7 @@ class AGServiceManager( ServiceBase ):
         self.services = dict()
         self.authManager = AuthorizationManager()
         self.executable = None
+        self.processManager = ProcessManager()
 
         self.servicesDir = "local_services"
 
@@ -163,18 +168,16 @@ class AGServiceManager( ServiceBase ):
 
             if serviceDescription.executable.endswith(".py"):
                 executable = sys.executable
-                options.append( sys.executable )
-                options.append( '"' + self.servicesDir + os.sep + serviceDescription.executable + '"' )
+                options.append( self.servicesDir + os.sep + serviceDescription.executable )
             else:
                 executable = self.servicesDir + os.sep + serviceDescription.executable
-                options.append( executable )
 
             token = str(GUID.GUID())
             options.append( token )
             options.append( self.get_handle() )
 
             print "Running Service; options:", executable, options
-            pid = os.spawnv( os.P_NOWAIT, executable, options )
+            pid = self.processManager.start_process( executable, options )
 
         except:
             print "Exception in AddService, starting service ", sys.exc_type, sys.exc_value
@@ -214,20 +217,9 @@ class AGServiceManager( ServiceBase ):
                     Client.Handle( service.uri ).get_proxy().Stop()
 
                     #
-                    # Kill service pid (note: key is pid)
+                    # Kill service
                     #
-                    if sys.platform == 'win32':
-                        win32process.TerminateProcess( pid, 0 )
-                    else:
-                        os.kill( pid, 9 )
-
-                    #
-                    # Wait on it
-                    #
-                    try:
-                        os.waitpid( pid, 1 )
-                    except:
-                        pass
+                    self.processManager.terminate_process(pid)
 
                     #
                     # Free the resource
