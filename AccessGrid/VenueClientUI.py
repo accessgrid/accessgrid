@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.8 2004-03-01 20:26:58 turam Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.9 2004-03-04 19:02:45 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.8 2004-03-01 20:26:58 turam Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.9 2004-03-04 19:02:45 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2207,7 +2207,7 @@ class VenueList(wxScrolledWindow):
         self.EnableScrolling(true, true)
                             
     def CleanUp(self):
-        for item in self.GetChildren():
+        for item in self.doorsAndLabelsList:
             self.box.Remove(item)
             item.Destroy()
 
@@ -3095,22 +3095,17 @@ class ContentListPanel(wxPanel):
                 
     def CleanUp(self):
     
-        # Clean up all the entries under the headings
-        for heading in (self.participants,self.data,self.services,self.applications):
-            cookie = 1
-            itemId,cookie = self.tree.GetFirstChild(heading,cookie)
-            itemsToDelete = []
-            while 1:
-                try:
-                    self.tree.GetItemData(itemId)
-                    itemsToDelete.append(itemId)
-                    # get the next item
-                    itemId,cookie = self.tree.GetNextChild(heading,cookie)
-                except:
-                    break
-                    
-            for item in itemsToDelete:
-                self.tree.Delete(item)
+        for index in self.participantDict.values():
+            self.tree.Delete(index)
+
+        for index in self.serviceDict.values():
+            self.tree.Delete(index)
+        
+        for index in self.dataDict.values():
+            self.tree.Delete(index)
+
+        for index in self.applicationDict.values():
+            self.tree.Delete(index)
 
         self.participantDict.clear()
         self.dataDict.clear()
