@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.19 2003-03-21 23:29:44 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.20 2003-03-31 15:27:02 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -26,7 +26,7 @@ from AccessGrid import Platform
 from AccessGrid.Utilities import HaveValidProxy
 
 # imports for Debug menu; can be removed if Debug menu is removed
-from AccessGrid.Descriptions import StreamDescription, AGServiceManagerDescription
+from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
 
@@ -168,21 +168,12 @@ class ServiceManagerPopup(wxPopupTransientWindow):
     def PopThatMenu( self, pos ):
         self.PopupMenuXY( self.m, pos[0], pos[1] )
 
-class HostListCtrl( wxListCtrl ):
-
-    def __init__(self, parent, ID, pos=wxDefaultPosition,
-                  size=wxDefaultSize, style=0):
-        listId = wxNewId()
-        wxListCtrl.__init__(self, parent, listId, pos, size, style=wxLC_REPORT)
-
-        self.InsertColumn( 0, "Service Managers", width=wxLIST_AUTOSIZE )
-
 class ServiceListCtrl( wxListCtrl ):
 
     def __init__(self, parent, ID, pos=wxDefaultPosition,
-                  size=wxDefaultSize, style=0):
+                  size=wxDefaultSize, style=wxLC_REPORT):
         listId = wxNewId()
-        wxListCtrl.__init__(self, parent, listId, pos, size, style=wxLC_REPORT)
+        wxListCtrl.__init__(self, parent, listId, pos, size, style=style)
 
 
         self.InsertColumn( 0, "Service Name", width=wxLIST_AUTOSIZE )
@@ -388,7 +379,7 @@ class NodeManagementClientFrame(wxFrame):
         statBoxSizer = wxStaticBoxSizer( statBox, wxVERTICAL )
         hortizontalSizer.Add( statBoxPanel, -1, wxEXPAND )
         statBoxPanel.SetSizer( statBoxSizer )
-        self.serviceList = ServiceListCtrl( statBoxPanel, -1, style=wxLC_ICON )
+        self.serviceList = ServiceListCtrl( statBoxPanel, -1, style=wxLC_REPORT )
         statBoxSizer.Add( self.serviceList, -1, wxEXPAND )
 
         # Handle events in the services list
@@ -415,7 +406,7 @@ class NodeManagementClientFrame(wxFrame):
         EVT_MENU(self, ID_VENUE_LOBBY            ,  self.GotoLobby )
         EVT_MENU(self, ID_VENUE_LOCAL            ,  self.GotoLocal )
         EVT_MENU(self, ID_VENUE_TESTROOM         ,  self.GotoTestRoom )
-        EVT_MENU(self, ID_VIEW_REFRESH           ,  self.Update )
+        EVT_MENU(self, ID_VIEW_REFRESH           ,  self.UpdateUI )
 
     def Connected(self):
         return self.nodeServiceHandle.IsValid()
@@ -516,7 +507,7 @@ class NodeManagementClientFrame(wxFrame):
     ############################
     ## VIEW menu
     ############################
-    def Update( self, event=None ):
+    def UpdateUI( self, event=None ):
         """
         Update the service manager and service lists
         """
@@ -735,7 +726,7 @@ class NodeManagementClientFrame(wxFrame):
             for i in range( self.serviceList.GetSelectedItemCount() ):
                 index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
                 print "** Starting Service:", index
-                ret = Client.Handle( self.services[index].uri ).get_proxy().Start()
+                Client.Handle( self.services[index].uri ).get_proxy().Start()
 
             # Update the services list
             self.UpdateServiceList()
@@ -878,10 +869,6 @@ class NodeManagementClientFrame(wxFrame):
         Update the service list (bring it into sync with the node service)
         """
         self.serviceList.DeleteAllItems()
-
-        i = 0
-
-        hosts = self.nodeServiceHandle.get_proxy().GetServiceManagers()
 
         index = -1
         indices = []

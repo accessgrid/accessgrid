@@ -5,14 +5,11 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerWin32.py,v 1.3 2003-03-14 16:35:55 turam Exp $
+# RCS-ID:      $Id: ProcessManagerWin32.py,v 1.4 2003-03-31 15:29:38 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
-import string
 import win32process
-import win32api
-import win32con
 
 class ProcessManagerWin32:
     def __init__(self):
