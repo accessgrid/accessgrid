@@ -1,0 +1,187 @@
+=====================================
+Venue Client Refactoring
+=====================================
+
+:Version:   $Revision: 1.1 $
+:Code Basis: AG 2.1.2
+:Author: 	Thomas D. Uram
+:Status:    Draft
+
+
+Abstract
+========
+This document describes a plan to refactor and rewrite the venue client code to separate the application code from the user interface code.  This will make the code easier to maintain, and allow components to replaced modularly.  The appearance of the venue client is expected to remain unchanged.
+
+
+Motivation
+==========
+This separation and refactoring work is motivated by several desires:
+
+* Define a minimal venue client base class
+
+  * Factor out a venue client base class that contains only the most essential venue client functionality
+  * Capture application functionality from UI code appropriate for this level 
+    
+* Derive an extended venue client class 
+
+  * Implement higher-level functionality than the base class (similar to the 2.1.2 venue client)
+  * Capture some of the application-level functionality from the UI code that is more appropriate for this level
+    
+* Isolate UI code
+
+  * Simplify maintenance and understanding of the UI and application code by separating them
+  * Define interface between UI components
+  * Enable development of new UI without disrupting functionality
+  * Hide interthread (app->wx) communications in the UI component
+  
+* Maintain encapsulation of components
+
+  * Avoid multi-level attribute references between UI components
+  * Avoid attribute references between UI and application code
+
+
+Design Summary
+==============
+The design uses the Model-View-Controller pattern, defining the following components:
+
+* VenueClient
+
+  Includes the application logic of the venue client (currently AccessGrid/VenueClient.py)
+  
+* VenueClientUI
+
+  Includes the user interface code (currently portions of AccessGrid/VenueClientUIClasses.py and bin/VenueClient.py)
+  
+* VenueClientController
+
+  Includes the functional code to handle user interface actions (currently portions of AccessGrid/VenueClientUIClasses.py and bin/VenueClient.py)
+  
+
+VenueClient
+-----------
+The VenueClient is factored as a BaseVenueClient and its derivative, VenueClient.
+
+BaseVenueClient
+```````````````
+The BaseVenueClient class captures the basic functionality of the venue client.
+
+* SOAP Proxy
+
+  Used to connect to the venue
+  
+* EventClient
+
+  Used to maintain the connection to the venue by sending heartbeats
+
+VenueClient
+```````````
+The VenueClient class (derived from the BaseVenueClient) includes the following additional components:
+
+* Text Client
+
+  Used to connect to the TextService for sending and receiving messages
+  
+* Data Store
+
+  Used to store personal data
+  
+* SOAP Server
+
+  Used for lead/follow and personal data
+  
+* Data Store Client
+
+  Used for file transfers with the venue data store
+
+
+VenueClientUI
+-------------
+* Defines callbacks to capture wx nature of callbacks and events
+
+  For example, the typical wx callback takes an "event" argument.  Callbacks will extract the necessary data from the event, and call the controller method to do the real work.
+  
+* Implements the VenueClientObserver interface
+
+  Enables the VenueClientUI as an observer of the VeneuClient.  Given that these calls may be made from a thread other than the main (wx) thread, wxCallAfter is used within these methods to pass the call off to the main thread.  This hides the interthread intricacy within the VenueClientUI.
+
+* Define interfaces to control each UI component to enforce encapsulation.
+
+? VenueClientUI will define top-level interfaces for access to the data it manages.    
+
+
+VenueClientController
+---------------------
+The controller defines methods that mirror the user interface callbacks in the view.  Through these methods, the controller manipulates the model and updates the view accordingly.
+
+
+Class Relationships
+-------------------
+The classes are associated according to the MVC pattern.  The Observer pattern [1] is used to define the relationship between the VenueClient and (its observer) the VenueClientUI.  Multiple observers can be registered with the VenueClient.  Observers must implement the VenueClientObserver interface [2].
+
+Calls made across each of the associations are categorized here.  These associations are explicit references:
+
+* VenueClientUI -> VenueClient
+
+  Calls to query venue client state
+
+* VenueClientUI -> VenueClientController
+
+  Calls originating from user interface callbacks, to manipulate the model and update the view
+
+* VenueClientController -> VenueClientUI
+
+  Update the view
+
+* VenueClientController -> VenueClient
+
+  Manipulate the model
+  
+This association is through the Observer pattern:
+
+* VenueClient -> VenueClientUI
+
+  Propagate changes in the VenueClient (possibly from incoming events) to the VenueClientUI
+
+
+Relocation of existing functionality
+------------------------------------
+The following functionality currently resides in user interface code, but will be moved to the appropriate venue client level:
+
+* data transfer code 
+* text client startup 
+* administrator detection 
+* SOAP calls
+
+
+Security Issues
+===============
+None; this set of modifications should in no way affect the security
+of the system.
+
+
+Interoperability Issues
+=======================
+The refactoring in this proposal should not affect the interoperability of the client with servers and services. This is an internal refactoring.
+
+
+References
+==========
+1. Design Patterns: Elements of Reusable Object-Oriented Software, Erich 
+   Gamma, Richard Helm, Ralph Johnson, John Vlissides. Addison-Wesley 
+   Professions Computing Series, Addison Wesley Longman, Inc, Reading, MA, 
+   1995.
+   
+2. VenueClient Design (2.1.3)
+
+
+Copyright
+=========
+This document is Copyright 2003, The University of Chicago/Argonne National Laboratory.
+
+
+
+
+
+
+
+
