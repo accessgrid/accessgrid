@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.116 2004-03-02 19:16:40 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.117 2004-03-02 19:27:30 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.116 2004-03-02 19:16:40 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.117 2004-03-02 19:27:30 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -143,8 +143,8 @@ class VenueServer(AuthorizationMixIn):
         """
         # Initialize Auth stuff
         AuthorizationMixIn.__init__(self)
-        self.AddRole(Role.Role("Administrators"))
-        rl = self.GetRoles()
+        self.AddRequiredRole(Role.Role("Administrators"))
+        rl = self.GetRequiredRoles()
         self.authManager.AddRoles(rl)
 
         # Get the silly default subject this really should be fixed
@@ -611,7 +611,7 @@ class VenueServer(AuthorizationMixIn):
         
         # Get method actions
         venue.authManager.AddActions(vi._GetMethodActions())
-        venue.authManager.AddRoles(self.GetRoles())
+        venue.authManager.AddRoles(self.GetRequiredRoles())
         
         # We have to register this venue as a new service.
         if(self.hostingEnvironment != None):
