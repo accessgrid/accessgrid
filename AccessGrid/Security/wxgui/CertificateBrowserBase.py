@@ -1,4 +1,5 @@
 from wxPython.wx import *
+import types
 
 class CertificateBrowserBase(wxPanel):
     """
