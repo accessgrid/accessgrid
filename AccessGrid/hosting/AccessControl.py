@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: AccessControl.py,v 1.15 2003-08-14 17:27:35 eolson Exp $
+# RCS-ID:      $Id: AccessControl.py,v 1.16 2003-08-14 18:34:22 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -437,7 +437,7 @@ class SecurityManager:
                         #print "recursing with :", r
                         tmp_recursed_roles = recursed_roles[:]
                         tmp_recursed_roles.append(erm_role_name) # append current role so we don't infinitely recurse.
-                        ret_val = self.ValidateSubjectInRole(r, role_manager, tmp_recursed_roles)
+                        ret_val = self.ValidateSubjectInRole(user, r, role_manager, tmp_recursed_roles)
                         if ret_val:
                             log.debug("User %s authorized for role %s", user, r.name)
                             #print "User",user,"authorized for role",  r.name
@@ -464,7 +464,7 @@ class SecurityManager:
                         #print "recursing with :", r
                         tmp2_recursed_roles = recursed_roles[:]
                         tmp2_recursed_roles.append(role_name) # append current role so we don't infinitely recurse.
-                        ret_val = self.ValidateSubjectInRole(r, role_manager, tmp2_recursed_roles)
+                        ret_val = self.ValidateSubjectInRole(user, r, role_manager, tmp2_recursed_roles)
                         if ret_val:
                             log.debug("User %s authorized for role %s", user, role.name)
                             #print "User",user,"authorized for role",  role.name
