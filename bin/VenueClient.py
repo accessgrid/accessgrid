@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.101 2003-04-03 16:05:30 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.102 2003-04-03 18:23:22 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -250,6 +250,7 @@ class VenueClientUI(wxApp, VenueClient):
         Appropriate gui updates are made in client.
         """
         wxCallAfter(wxLogDebug, "EVENT - Add data: %s" %(data.name))
+        wxCallAfter(wxLogDebug, "EVENT - Add data: %s" %(data.type))
         wxCallAfter(self.frame.contentListPanel.AddData, data)
         
 
@@ -473,7 +474,7 @@ class VenueClientUI(wxApp, VenueClient):
                  #    self.ExitVenue()
 
                  self.EnterVenue(venueUri)
-                 wxCallAfter(wxLogDebug, "--after enter venue %s" %venueUri)
+                 wxCallAfter(wxLogDebug, "after enter venue %s" %venueUri)
                  self.__setHistory(self.oldUri, back)
                  wxCallAfter(self.frame.ShowMenu)
                
@@ -634,9 +635,10 @@ class VenueClientUI(wxApp, VenueClient):
                     
     def UploadPersonalFiles(self, fileList):
         wxLogDebug("Upload personal files")
-        self.uploadPersonalDataUrl = self.dataStore.GetUploadDescriptor()
-        self.UploadFiles(fileList, self.uploadPersonalDataUrl,
-                         self.get_ident_and_upload)
+        self.dataStore.AddFile(fileList, self.profile.distinguishedName, self.profile.publicId) 
+        #self.uploadPersonalDataUrl = self.dataStore.GetUploadDescriptor()
+        #self.UploadFiles(fileList, self.uploadPersonalDataUrl,
+        #                self.get_ident_and_upload)
 
     def UploadVenueFiles(self, fileList):
         wxLogDebug("Upload venue files")
@@ -753,6 +755,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method adds local data to the venue
         """
         wxLogDebug("Adding data: %s to venue" %data.name)
+        wxLogDebug("Adding data: %s to venue" %data.type)
         try:
             self.client.AddData(data)
             self.personalDataDict[data.name] = data
@@ -834,8 +837,8 @@ class VenueClientUI(wxApp, VenueClient):
     # Methods to for personal data storage to call
     def GetData(self, filename):
         wxLogDebug("Get private data description: %s" %filename)
-        if self.privateDataDict.has_key(filename):
-            d = self.data[filename]
+        if self.personalDataDict.has_key(filename):
+            d = self.personalDataDict[filename]
         else:
             wxLogDebug("The private file does not exist")
             d = None
@@ -844,7 +847,7 @@ class VenueClientUI(wxApp, VenueClient):
     def UpdateData(self, desc):
         self.personalDataDict[desc.GetName()] = desc
         self.client.UpdateData(desc)
-        wxLogDebug("UpdateData: %s", desc)
+        wxLogDebug("UpdateData: %s" %desc)
 
 
 if __name__ == "__main__":
