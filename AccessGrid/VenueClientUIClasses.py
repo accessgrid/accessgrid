@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.165 2003-05-05 20:17:46 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.166 2003-05-05 21:38:04 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1367,16 +1367,12 @@ class ContentListPanel(wxPanel):
                 # I select the participant to ensure the twist button is
                 # visible when first data item is added. I have to do
                 # this due to a bug in wxPython.
-
-                id = self.tree.GetSelection()
-                #if(self.tree.GetChildrenCount(participantId) == 0):
+                              
                 if(self.tree.GetSelection() == participantId):
                     self.tree.Unselect()
-                #else:
+
                 self.tree.SelectItem(participantId)
-                self.tree.SelectItem(id)
-                
-               
+                              
             elif (self.nodeDict.has_key(id)):
                 wxLogDebug("Data belongs to a node")
                 nodeId = self.nodeDict[id]
@@ -1389,14 +1385,13 @@ class ContentListPanel(wxPanel):
                 # I select the node to ensure the twist button is visible
                 # when first data item is added. I have to do this due to
                 # a bug in wxPython.
-                id = self.tree.GetSelection()
+
                 if(self.tree.GetSelection() == nodeId):
                     self.tree.Unselect()
                 
                 self.tree.SelectItem(nodeId)
-                self.tree.SelectItem(id)
-                
-            elif (self.nodeDict.has_key(id)):
+                              
+            else:
                 wxLogInfo("Owner of data does not exist")
         
        
