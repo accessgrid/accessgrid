@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.305 2003-11-14 18:54:26 eolson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.306 2004-01-05 19:13:38 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.305 2003-11-14 18:54:26 eolson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.306 2004-01-05 19:13:38 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -53,7 +53,7 @@ from AccessGrid.RoleAuthorization import AddPeopleDialog, RoleClient
 from AccessGrid.Utilities import SubmitBug, NO_LOG, VENUE_CLIENT_LOG
 from AccessGrid.Utilities import GetHostname, split_quoted
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
-
+from AccessGrid.AppMonitor import AppMonitor
 
 try:
     import win32api
@@ -95,6 +95,7 @@ class VenueClientFrame(wxFrame):
     ID_VENUE_APPLICATION_JOIN = wxNewId()
     ID_VENUE_APPLICATION_DELETE = wxNewId()
     ID_VENUE_APPLICATION_PROPERTIES = wxNewId()
+    ID_VENUE_APPLICATION_MONITOR = wxNewId()
     ID_VENUE_SAVE_TEXT = wxNewId() 
     ID_VENUE_OPEN_CHAT = wxNewId()
     ID_VENUE_CLOSE = wxNewId()
@@ -159,7 +160,7 @@ class VenueClientFrame(wxFrame):
         self.contentListPanel = ContentListPanel(self, app)
         dataDropTarget = DataDropTarget(self.app)
         self.contentListPanel.tree.SetDropTarget(dataDropTarget)
-
+        
         self.__setStatusbar()
 	self.__setMenubar()
         self.__setProperties()
@@ -445,6 +446,7 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_VENUE_APPLICATION_JOIN, self.OpenApp)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_DELETE, self.RemoveApp)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_PROPERTIES, self.OpenApplicationProfile)
+        EVT_MENU(self, self.ID_VENUE_APPLICATION_MONITOR, self.OpenAppMonitor)
 
         EVT_CLOSE(self, self.Exit)
 
@@ -703,7 +705,18 @@ class VenueClientFrame(wxFrame):
             profileView.Destroy()
         else:
             self.__showNoSelectionDialog("Please, select the participant yow want to view information about") 
-         
+
+    def OpenAppMonitor(self, event, application):
+        '''
+        Open monitor for the application.
+        '''
+        # Get application proxy from service in venue.
+        appUrl = application.uri
+       
+        # Create new application monitor
+        self.monitor = AppMonitor(self, appUrl)
+    
+                       
     def SaveText(self, event):
         '''
         Saves text from text chat to file.
@@ -848,6 +861,15 @@ class VenueClientFrame(wxFrame):
         '''
         Called when the window is closed using the built in close button
         '''
+
+        # Call close on all open child windows so they can do necessary cleanup.
+        # If close is called instead of destroy, an EVT_CLOSE event is distributed
+        # for child windows and cleanup code can be put in the callback for that event.
+        
+        children = self.GetChildren()
+        for c in children:
+            c.Close(1)
+    
         self.app.OnExit()
                      	      
     def UpdateLayout(self):
@@ -2292,6 +2314,12 @@ class ContentListPanel(wxPanel):
         id = wxNewId()
         menu.Append(id, "Delete", "Delete this service.")
         EVT_MENU(self, id, lambda event: self.parent.RemoveApp(event))
+
+        # We always have an Application Monitor
+
+        id = wxNewId()
+        menu.Append(id, "Open Monitor...", "View data and participants present in this application session.")
+        EVT_MENU(self, id, lambda event: self.parent.OpenAppMonitor(event, item))
             
         # Do the rest
         if commands != None:
