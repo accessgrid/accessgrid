@@ -1,0 +1,2 @@
+[Service Configuration]
+localServiceDirectory = /var/lib/ag/local_services
