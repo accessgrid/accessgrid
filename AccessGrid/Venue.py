@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.53 2003-03-13 12:13:13 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.54 2003-03-13 14:44:59 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -838,7 +838,7 @@ class Venue(ServiceBase.ServiceBase):
                                                             dataDescription ) )
             else:
                 log.exception("Data not found!")
-#                raise DataNotFoundException("Data not found.")
+                raise VenueException("Data not found.")
         except:
             log.exception("Exception in RemoveData!")
             raise VenueException("Cannot remove data!")
@@ -946,7 +946,8 @@ class StreamDescriptionList:
         """
         Remove a stream from the list
         """
-        if self.FindStreamByDescription(stream):
+        streamListItem = self.FindStreamByDescription(stream)
+        if streamListItem != None:
             self.streams.remove(streamListItem)
 
     def AddStreamProducer( self, producingUser, inStream ):
