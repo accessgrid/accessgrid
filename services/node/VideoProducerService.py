@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.11 2003-08-07 14:54:39 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.12 2003-08-12 14:18:47 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -55,12 +55,18 @@ class VideoProducerService( AGService ):
       #
 
       # note: the datatype of the port parameter changes when a resource is set!
-      self.configuration["streamname"] = TextParameter( "streamname", "Video" )
-      self.configuration["port"] = TextParameter( "port", "" ) 
-      self.configuration["encoding"] = OptionSetParameter( "encoding", "h261", VideoProducerService.encodings )
-      self.configuration["standard"] = OptionSetParameter( "standard", "NTSC", VideoProducerService.standards )
-      self.configuration["bandwidth"] = RangeParameter( "bandwidth", 800, 0, 3072 ) 
-      self.configuration["framerate"] = RangeParameter( "framerate", 25, 1, 30 ) 
+      self.streamname = TextParameter( "streamname", "Video" )
+      self.port = TextParameter( "port", "" ) 
+      self.encoding = OptionSetParameter( "encoding", "h261", VideoProducerService.encodings )
+      self.standard = OptionSetParameter( "standard", "NTSC", VideoProducerService.standards )
+      self.bandwidth = RangeParameter( "bandwidth", 800, 0, 3072 ) 
+      self.framerate = RangeParameter( "framerate", 25, 1, 30 ) 
+      self.configuration.append( self.streamname )
+      self.configuration.append( self.port )
+      self.configuration.append( self.encoding )
+      self.configuration.append( self.standard )
+      self.configuration.append( self.bandwidth )
+      self.configuration.append( self.framerate )
 
 
    def Start( self ):
@@ -82,12 +88,12 @@ class VideoProducerService( AGService ):
             'VideoProducerService_%d.vic' % ( os.getpid() ) )
          
          f = open(startupfile,"w")
-         f.write( vicstartup % (self.configuration["bandwidth"].value, 
-                                    self.configuration["framerate"].value, 
-                                    self.configuration["encoding"].value, 
-				    self.configuration["standard"].value,
-                                    vicDevice,                 
-                                    self.configuration["port"].value  ) )
+         f.write( vicstartup % (self.bandwidth.value,
+                                 self.framerate.value, 
+                                 self.encoding.value,
+                                 self.standard.value,
+                                 vicDevice,                 
+                                 self.port.value  ) )
          f.close()
 
          # Replace double backslashes in the startupfile name with single
@@ -102,7 +108,7 @@ class VideoProducerService( AGService ):
          options.append( "-u" )
          options.append( startupfile ) 
          options.append( "-C" )
-         options.append( '"' + self.configuration["streamname"].value + '"'  )
+         options.append( '"' + self.streamname.value + '"'  )
          if self.streamDescription.encryptionFlag != 0:
             options.append( "-K" )
             options.append( self.streamDescription.encryptionKey )
@@ -160,7 +166,7 @@ class VideoProducerService( AGService ):
       self.log.info("VideoProducerService.SetResource : %s" % resource.resource )
       self.resource = resource
       if "portTypes" in self.resource.__dict__.keys():
-          self.configuration["port"] = OptionSetParameter( "port", self.resource.portTypes[0], 
+          self.port = OptionSetParameter( "port", self.resource.portTypes[0], 
                                                            self.resource.portTypes )
    SetResource.soap_export_as = "SetResource"
 
