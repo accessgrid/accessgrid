@@ -359,12 +359,12 @@ class BridgeServer:
             # remove this identifier from the config
             del itemConfig["type"]
 
-            if itemType == "VenueServer":
+            if itemType == "VenueServer" or itemType == "venueserver":
                 try:
                     self.AddVenueServer(url)
                 except:
                     log.exception("Error adding venue server; url=%s", url)
-            elif itemType == "Venue":
+            elif itemType == "Venue" or itemType == "venue":
                 try:
                     for item,value in itemConfig.items():
                         itemConfig[item] = int(value)
