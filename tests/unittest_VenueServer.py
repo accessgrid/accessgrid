@@ -64,9 +64,8 @@ class VenueServerTestCase(unittest.TestCase):
         venueRemoved = 0
         venueDescList = venueServer.GetVenues()
         for v in venueDescList:
-            print "venue:", v.name, ", ", v.uri
             if v.name == rvenue.name:
-                venueServer.RemoveVenue(v.uri)
+                venueServer.RemoveVenue(IdFromURL(v.uri))
                 venueRemoved = 1
         assert venueRemoved
 
