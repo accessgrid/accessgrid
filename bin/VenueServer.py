@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.14 2003-03-21 18:04:29 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.15 2003-03-27 21:38:54 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -69,7 +69,7 @@ for o, a in opts:
         sys.exit(0)
 
 # Start up the logging
-log = logging.getLogger("AG.VenueServer")
+log = logging.getLogger("AG")
 log.setLevel(logging.DEBUG)
 hdlr = logging.handlers.RotatingFileHandler(logFile, "a", 10000000, 0)
 fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
