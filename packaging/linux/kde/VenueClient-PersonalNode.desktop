@@ -1,0 +1,12 @@
+# KDE Config File
+[Desktop Entry]
+Encoding=UTF-8
+Name=Venue Client (Personal Node)
+Type=Application
+Exec=VenueClient.py --personalNode
+Icon=/usr/share/AccessGrid/ag.ico
+#DocPath=kalarm/index.html
+GenericName=Connect to Access Grid Venues
+Terminal=0
+#X-DCOP-ServiceType=Unique
+#X-KDE-StartupNotify=true
