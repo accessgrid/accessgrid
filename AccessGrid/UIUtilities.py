@@ -2,13 +2,13 @@
 # Name:        UIUtilities.py
 # Purpose:     
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.65 2004-09-10 01:41:09 judson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.66 2004-09-10 20:39:51 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.65 2004-09-10 01:41:09 judson Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.66 2004-09-10 20:39:51 turam Exp $"
 
 from AccessGrid import Log
 log = Log.GetLogger(Log.UIUtilities)
@@ -137,7 +137,7 @@ class TextValidator(wxPyValidator):
     def Clone(self):
         return TextValidator()
 
-    def Validate(self):
+    def Validate(self,win):
         tc = self.GetWindow()
         val = tc.GetValue()
 
