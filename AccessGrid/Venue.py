@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.173 2004-04-01 19:26:47 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.174 2004-04-02 19:07:02 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.173 2004-04-01 19:26:47 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.174 2004-04-02 19:07:02 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1898,6 +1898,14 @@ class Venue(AuthorizationMixIn):
     def GetEventServiceLocation(self):
         return (self.server.eventService.GetLocation(), self.uniqueId)
 
+    def AllocateMulticastLocation(self):
+        try:
+            return self.impl.AllocateMulticastLocation()
+        except:
+            log.exception("AllocateMulticastLocation: exception")
+            raise
+
+
 # Legacy calls
     def AddSubjectToRole(self, subject, role_string):
         """
@@ -2995,6 +3003,8 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
     def GetEventServiceLocation(self):
         return self.proxy.GetEventServiceLocation()
     
+    def AllocateMulticastLocation(self):
+        return self.proxy.AllocateMulticastLocation()
 
 class StreamDescriptionList:
     """
