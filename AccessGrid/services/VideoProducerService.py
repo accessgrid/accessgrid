@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.8 2003-02-28 17:24:45 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.9 2003-02-28 20:20:29 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -51,11 +51,11 @@ class VideoProducerService( AGService ):
       #
 
       # note: the datatype of the port parameter changes when a resource is set!
-      self.configuration["stream name"] = TextParameter( "stream name", "Video" )
+      self.configuration["streamname"] = TextParameter( "streamname", "Video" )
       self.configuration["port"] = TextParameter( "port", "" ) 
       self.configuration["encoding"] = OptionSetParameter( "encoding", "h261", VideoProducerService.encodings )
       self.configuration["bandwidth"] = RangeParameter( "bandwidth", 800, 0, 3072 ) 
-      self.configuration["frame rate"] = RangeParameter( "frame rate", 25, 1, 30 ) 
+      self.configuration["framerate"] = RangeParameter( "framerate", 25, 1, 30 ) 
 
 
    def Start( self ):
@@ -76,7 +76,7 @@ class VideoProducerService( AGService ):
          startupfile = 'VideoProducerService_%d.vic' % ( os.getpid() )
          f = open(startupfile,"w")
          f.write( vicstartup % (self.configuration["bandwidth"].value, 
-                                    self.configuration["frame rate"].value, 
+                                    self.configuration["framerate"].value, 
                                     self.configuration["encoding"].value, 
                                     vicDevice,                 
                                     self.configuration["port"].value  ) )
@@ -90,7 +90,7 @@ class VideoProducerService( AGService ):
          options.append( "-u" )
          options.append( startupfile ) 
          options.append( "-C" )
-         options.append( '"' + self.configuration["stream name"].value + '"'  )
+         options.append( '"' + self.configuration["streamname"].value + '"'  )
          if self.streamDescription.encryptionKey != 0:
             options.append( "-K" )
             options.append( self.streamDescription.encryptionKey )

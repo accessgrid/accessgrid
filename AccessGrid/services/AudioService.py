@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.8 2003-02-28 17:24:45 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.9 2003-02-28 20:20:29 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -28,8 +28,8 @@ class AudioService( AGService ):
       #
       # Set configuration parameters
       #
-      self.configuration["microphone gain"] = RangeParameter( "microphone gain", 30, 0, 100 )
-      self.configuration["speaker volume"] = RangeParameter( "speaker volume", 50, 0, 100 ) 
+      #self.configuration["microphonegain"] = RangeParameter( "microphonegain", 30, 0, 100 )
+      #self.configuration["speakervolume"] = RangeParameter( "speakervolume", 50, 0, 100 ) 
 
 
    def Start( self ):
