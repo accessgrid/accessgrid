@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.48 2004-05-04 14:33:48 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.49 2004-05-05 21:40:48 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.48 2004-05-04 14:33:48 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.49 2004-05-05 21:40:48 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -175,8 +175,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.myVenuesMenuIds = {}
         self.onExitCalled = false
         # State kept so UI can add venue administration options.
-        self.isVenueAdministrator = false
-
+        
         wxFrame.__init__(self, NULL, -1, "")
         self.__BuildUI()
         self.SetSize(wxSize(400, 500))
@@ -596,7 +595,6 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
         self.menubar.Enable(self.ID_MYVENUE_SETDEFAULT, false)
-        self.menubar.Enable(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES, false)
         self.menubar.Enable(self.ID_VENUE_PROPERTIES, false)
         self.menubar.Enable(self.ID_VENUE_APPLICATION, false)
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, false)
@@ -613,10 +611,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         self.menubar.Enable(self.ID_VENUE_APPLICATION, true)
         
         # Only show administrate button when you can administrate a venue.
-              
-        if self.isVenueAdministrator:
-            self.menubar.Enable(self.ID_VENUE_ADMINISTRATE_VENUE_ROLES, true)
-        
+                   
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, true)
         self.serviceHeadingMenu.Enable(self.ID_VENUE_SERVICE_ADD, true)
 
@@ -826,6 +821,14 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         
     def ModifyVenueRolesCB(self,event):
         venueUri = self.venueClient.GetVenue()
+
+        # Check if I am a venue administrator before
+        # opening the dialog
+        adminFlag = self.venueClient.IsVenueAdministrator()
+
+        if not adminFlag:
+            self.Notify("Only venue administrators are allowed to modify roles. ", "Modify Roles")
+            return
         
         # Open the dialog
         f = AuthorizationUIDialog(None, -1, "Manage Roles", log)
@@ -2127,10 +2130,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                         self.venueClient.GetVenueDescription())
 
             wxCallAfter(self.SetVenueUrl, URL)
-            
-            # Get the user's administrative status
-            self.isVenueAdministrator = self.venueClient.IsVenueAdministrator()
-                        
+                                              
             # log.debug("Add your personal data descriptions to venue")
             wxCallAfter(self.statusbar.SetStatusText, "Add your personal data to venue")
 
