@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.61 2003-05-15 03:08:49 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.62 2003-05-15 19:59:53 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -79,11 +79,8 @@ class VenueClient( ServiceBase):
 
     def Heartbeat(self):
         if self.eventClient != None:
-            try:
-                self.eventClient.Send(HeartbeatEvent(self.venueId, self.privateId))
-            except:
-                log.info("AccessGrid.VenueClient:: Heartbeat failed")
-            
+            self.eventClient.Send(HeartbeatEvent(self.venueId, self.privateId))
+                        
     def SetProfile(self, profile):
         self.profile = profile
         if(self.profile != None):
@@ -196,30 +193,42 @@ class VenueClient( ServiceBase):
             callerDN = securityManager.GetSubject().GetName()
             if callerDN != None and callerDN != self.leaderProfile.distinguishedName:
                 raise AuthorizationFailedError("Unauthorized leader tried to lead venue client")
-        
-        haveValidNodeService = 0
-        if self.nodeServiceUri != None:
-            haveValidNodeService = Client.Handle( self.nodeServiceUri ).IsValid()
 
         #
-        # Enter the venue and configure the client
+        # Exit the venue you are currently in before entering a new venue
         #
-                   
         if self.isInVenue:
             self.ExitVenue()
 
         #
-        # Retrieve list of node capabilities
+        # Get capabilities from your node
         #
-        if haveValidNodeService:
-            self.profile.capabilities = Client.Handle( self.nodeServiceUri ).get_proxy().GetCapabilities()
-            
+
+        errorInNode = 0
+        haveValidNodeService = 0
+        try:
+            if self.nodeServiceUri != None:
+                haveValidNodeService = Client.Handle( self.nodeServiceUri ).IsValid()
+                
+                #
+                # Retrieve list of node capabilities
+                #
+            if haveValidNodeService:
+                self.profile.capabilities = Client.Handle( self.nodeServiceUri ).get_proxy().GetCapabilities()
+                
+        except Exception, e:
+            #
+            # This is a non fatal error, users should be notified but still enter the venue
+            #
+            log.exception("AccessGrid.VenueClient::Get node capabilities failed")
+            errorInNode = 1
+                        
         #
         # Enter the venue
         #
+      
         (venueState, self.privateId, streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
-        
-
+      
         #
         # construct a venue state that consists of real objects
         # instead of the structs we get back from the SOAP call
@@ -294,6 +303,7 @@ class VenueClient( ServiceBase):
         #
         # Create the event client
         #
+        
         coherenceCallbacks = {
             Event.ENTER: self.AddUserEvent,
             Event.EXIT: self.RemoveUserEvent,
@@ -311,8 +321,9 @@ class VenueClient( ServiceBase):
             Event.ADD_STREAM: self.AddStreamEvent,
             Event.REMOVE_STREAM: self.RemoveStreamEvent
             }
-
+        
         h, p = self.venueState.eventLocation
+        
         self.eventClient = EventClient(self.privateId,
                                        self.venueState.eventLocation,
                                        self.venueState.uniqueId)
@@ -321,11 +332,11 @@ class VenueClient( ServiceBase):
             
         self.eventClient.start()
         self.eventClient.Send(ConnectEvent(self.venueState.uniqueId,
-                                               self.privateId))
-                    
+                                           self.privateId))
+                           
         self.heartbeatTask = self.houseKeeper.AddTask(self.Heartbeat, 5)
         self.heartbeatTask.start()
-         
+
         # 
         # Update the node service with stream descriptions
         #
@@ -337,23 +348,30 @@ class VenueClient( ServiceBase):
                     """
                     Client.Handle(self.nodeServiceUri).GetProxy().SetIdentity(self.profile)
                     self.isIdentitySet = 1
-
+                    
                 Client.Handle( self.nodeServiceUri ).GetProxy().SetStreams( streamDescList )
-        except:
-            log.exception("AccessGrid.VenueClient::Exception configuring node service streams")
 
-        #
-        # Update venue clients being led with stream descriptions
-        #
-        #for profile in self.followerProfiles.values():
-        #    try:
-        #        Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue( URL )
-        #    except:
-        #        log.exception("AccessGrid.VenueClient::Exception while leading follower")
-            
+        except Exception, e:
+            #
+            # This is a non fatal error, users should be notified but still enter the venue
+            #
+            log.exception("AccessGrid.VenueClient::Exception configuring node service streams")
+            errorInNode = 1
+                 
         # Finally, set the flag that we are in a venue
         self.isInVenue = 1
 
+        #
+        # Return a string of warnings that can be displayed to the user 
+        #
+
+        self.warningString = ''
+
+        if errorInNode:
+            self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences-My Node" from the main menu'
+            
+        return self.warningString
+        
     EnterVenue.soap_export_as = "EnterVenue"
 
     def LeadFollowers(self):
@@ -362,7 +380,7 @@ class VenueClient( ServiceBase):
         #
         for profile in self.followerProfiles.values():
             try:
-                Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue(self.venueUri)
+                Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue(self.venueUri, false)
             except:
                 log.exception("AccessGrid.VenueClient::Exception while leading follower")
 
@@ -375,7 +393,7 @@ class VenueClient( ServiceBase):
         # Exit the venue
         try:         
             self.venueProxy.Exit( self.privateId )
-        except Exception:
+        except Exception, e:
             log.exception("AccessGrid.VenueClient::ExitVenue exception")
 
         # Stop sending heartbeats
