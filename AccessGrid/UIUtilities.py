@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.18 2003-06-17 21:40:14 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.19 2003-06-18 14:52:57 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -56,11 +56,19 @@ class ErrorDialog:
             bugReportCommentDialog.Destroy()
             errorDialog.Destroy()
 
+
+#def __init__(self, parent, id, title, message, doneMessage, fileSize):
+#        wxDialog.__init__(self, parent, id, title,
+#                          size = wxSize(300, 200))
+
+
+
 class BugReportCommentDialog(wxDialog):
     def __init__(self, parent):
-        wxDialog.__init__(self, parent, -1, "Comment for Bug Report", style =  wxOK)
+        wxDialog.__init__(self, parent, -1, "Comment for Bug Report")
         self.text = wxStaticText(self, -1, "Please, enter a description of the problem you are experiencing.", style=wxALIGN_LEFT)
-        self.button = wxButton(self, wxID_OK, "Ok")
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.commentBox = wxTextCtrl(self, -1, "", size = wxSize(300,100), style = wxTE_MULTILINE)
         self.line = wxStaticLine(self, -1)
         self.Centre()
@@ -74,7 +82,11 @@ class BugReportCommentDialog(wxDialog):
         sizer.Add(self.text, 0, wxALL, 10)
         sizer.Add(self.commentBox, 0, wxALL | wxEXPAND, 10)
         sizer.Add(self.line, 0, wxALL | wxEXPAND, 10)
-        sizer.Add(self.button, 0, wxALL | wxALIGN_CENTER, 10)
+
+        buttonSizer = wxBoxSizer(wxHORIZONTAL)
+        buttonSizer.Add(self.okButton, 0, wxALL, 5)
+        buttonSizer.Add(self.cancelButton, 0, wxALL, 5)
+        sizer.Add(buttonSizer, 0, wxALIGN_CENTER | wxBOTTOM, 5) 
             
         self.SetSizer(sizer)
         sizer.Fit(self)
