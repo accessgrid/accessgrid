@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.54 2004-11-19 23:05:32 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.55 2004-11-29 21:03:41 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.54 2004-11-19 23:05:32 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.55 2004-11-29 21:03:41 turam Exp $"
 
 import os
 import mimetypes
@@ -40,24 +40,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
     Toolkit. This object provides primarily read-only access to configuration
     data that is created when the toolkit is installed.
 
-    @ivar version: The version of this installation.
-    @ivar installDir: The directory this toolkit is installed in.
-    @ivar docDir: The directory for documentation for the toolkit.
-    @ivar appDir: The directory for system installed shared applications
-    @ivar nodeServicesDir: the directory for system installed node services
-    @ivar servicesDir: the directory for system installed services
-    @ivar configDir: The directory for installation configuration.
-
-    @type appDir: string
-    @type nodeServicesDir: string
-    @type servicesDir: string
-    @type configDir: string
-    @type version: string
-    @type installDir: string
-    @type docDir: string
     """
-    theAGTkConfigInstance = None
-
     AGTkBasePath = "/etc/AccessGrid"
 
     def instance(initIfNeeded=0):
@@ -67,40 +50,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         return AGTkConfig.theAGTkConfigInstance
 
     instance = staticmethod(instance)
-    
-    def __init__(self, initIfNeeded):
 
-        if AGTkConfig.theAGTkConfigInstance is not None:
-            raise Exception, "Only one instance of AGTkConfig is allowed."
-
-        # Create the singleton
-        AGTkConfig.theAGTkConfigInstance = self
-
-        # Set the flag to initialize if needed
-        self.initIfNeeded = initIfNeeded
-        
-        # Initialize state
-        self.version = GetVersion()
-        self.installBase = None
-        self.installDir = None
-        self.configDir = None
-        self.logDir = None
-        self.servicesDir = None
-        self.nodeServicesDir = None
-        self.appDir = None
-        self.docDir = None
-        
-        # Now fill in data
-        self._Initialize()
-        
-    def _Initialize(self):
-        self.GetConfigDir()
-        self.GetInstallDir()
-        self.GetDocDir()
-        self.GetSharedAppDir()
-        self.GetNodeServicesDir()
-        self.GetServicesDir()
-        
     def GetVersion(self):
         return self.version
 
@@ -223,6 +173,21 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
             raise Exception, "AGTkConfig: node service dir does not exist."
 
         return self.nodeServicesDir
+
+    def GetNodeConfigDir(self):
+        if self.nodeConfigDir == None:
+            ucd = self.GetBaseDir()
+            self.nodeConfigDir = os.path.join(ucd, "nodeConfig")
+
+        # Check dir and make it if needed.
+        if self.initIfNeeded:
+            if not os.path.exists(self.nodeConfigDir):
+                os.mkdir(self.nodeConfigDir)
+
+        if not os.path.exists(self.nodeConfigDir):
+            raise Exception, "AGTkConfig: node config dir does not exist." + self.nodeConfigDir
+
+        return self.nodeConfigDir
 
     def GetServicesDir(self):
         if self.servicesDir == None:
@@ -354,20 +319,8 @@ class UserConfig(AccessGrid.Config.UserConfig):
     a running instance of the Access Grid Toolkit software.
 
     @ivar profileFilename: the user profile
-    @ivar tempDir: a temporary directory for files for this user
-    @ivar appDir: The directory for system installed shared applications
-    @ivar nodeServicesDir: the directory for system installed node services
-    @ivar servicesDir: the directory for system installed services
-    @ivar configDir: The directory for installation configuration.
-
     @type profileFilename: the filename of the client profile
-    @type tempDir: string
-    @type appDir: string
-    @type nodeServicesDir: string
-    @type servicesDir: string
-    @type configDir: string
     """
-    theUserConfigInstance = None
 
     def instance(initIfNeeded=1):
         if UserConfig.theUserConfigInstance == None:
@@ -377,50 +330,6 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
     instance = staticmethod(instance)
     
-    def __init__(self, initIfNeeded):
-        if UserConfig.theUserConfigInstance is not None:
-            raise Exception, "Only one instance of User Config is allowed."
-
-        UserConfig.theUserConfigInstance = self
-
-        self.initIfNeeded = initIfNeeded
-        
-        self.configDir = None
-        self.tempDir = None
-        self.appDir = None
-        self.sharedAppDir = None
-        self.nodeServicesDir = None
-        self.servicesDir = None
-        self.profileFilename = None
-        self.preferencesFilename = None
-        self.logDir = None
-        
-        self._Initialize()
-        
-    def _Initialize(self):
-        self.GetConfigDir()
-        self.GetTempDir()
-        self.GetProfile()
-        self.GetLogDir()
-
-        # These are new and so can fail
-        try:
-            self.GetSharedAppDir()
-        except:
-            print "No Shared App Dir!"
-        try:
-            self.GetNodeServicesDir()
-        except:
-            print "No Node Service Dir!"
-        try:
-            self.GetServicesDir()
-        except:
-            print "No Service Dir!"
-
-        # Move old config files to new location.
-        if self.initIfNeeded:
-            self._Migrate()
-
     def GetProfile(self):
         if self.profileFilename == None:
             self.profileFilename = os.path.join(self.GetConfigDir(), "profile")
@@ -522,6 +431,36 @@ class UserConfig(AccessGrid.Config.UserConfig):
             raise Exception, "AGTkConfig: node service dir does not exist."
 
         return self.nodeServicesDir
+
+    def GetLocalServicesDir(self):
+        if self.localServicesDir == None:
+            ucd = self.GetBaseDir()
+            self.localServicesDir = os.path.join(ucd, "local_services")
+
+        # Check dir and make it if needed.
+        if self.initIfNeeded:
+            if not os.path.exists(self.localServicesDir):
+                os.mkdir(self.localServicesDir)
+
+        if not os.path.exists(self.localServicesDir):
+            raise Exception, "AGTkConfig: local services dir does not exist."
+
+        return self.localServicesDir
+
+    def GetNodeConfigDir(self):
+        if self.nodeConfigDir == None:
+            ucd = self.GetBaseDir()
+            self.nodeConfigDir = os.path.join(ucd, "nodeConfig")
+
+        # Check dir and make it if needed.
+        if self.initIfNeeded:
+            if not os.path.exists(self.nodeConfigDir):
+                os.mkdir(self.nodeConfigDir)
+
+        if not os.path.exists(self.nodeConfigDir):
+            raise Exception, "AGTkConfig: node service dir does not exist."
+
+        return self.nodeConfigDir
 
     def GetServicesDir(self):
         if self.servicesDir == None:
@@ -735,7 +674,7 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
         resourceList = list()
         for device,portList in deviceList.items():
             try:
-                r = AGVideoResource('video', device, 'producer', portList)
+                r = AGVideoResource('video', device, portList)
                 resourceList.append(r)
             except Exception, e:
                 log.exception("Unable to add video resource to list. device: " + device + "  portlist: " + portList)
