@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: AccessControl.py,v 1.13 2003-08-13 17:51:04 eolson Exp $
+# RCS-ID:      $Id: AccessControl.py,v 1.14 2003-08-13 19:46:25 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,6 +29,7 @@ log = logging.getLogger("AG.hosting.AccessControl")
 
 from AccessGrid.hosting.pyGlobus.Utilities import SecureConnectionInfo
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import MethodSig, faultType
+from OpenSSL_AG.crypto import X509NameType
 
 #
 # The following is some magic (borrowed from Zope. Thanks guys!)
@@ -107,6 +108,8 @@ class Subject:
         elif isinstance(user, Subject):
             # print "match on obj ", self.GetSubject()
             return user.GetSubject() == self.GetSubject()
+        elif type(user) == X509NameType:
+            return str(user) == self.GetSubject()
         else:
             return 0
             
@@ -136,45 +139,68 @@ class Role:
         return self.manager.GetRoleList()
 
     def AddSubject(self, subject):
+        """
+        Accepts strings, Subjects, or X509Name.
+        Converts X509Names to Subjects before adding.
+        """
         if type(subject) == type(""):
             if len(subject) == 0:
                 return # don't append zero length strings
+
+        subject_to_add = subject
+        # Convert X509Name to Subject
+        if type(subject) == X509NameType:
+            subject_to_add = Subject(str(subject), AUTH_X509)
+
         for s in self.subjects:
             if isinstance(s, Subject):
-                if s.IsUser(subject):
+                if s.IsUser(subject_to_add):
                     return
-            elif isinstance(subject, Subject):
-                if subject.IsUser(s):
+            elif isinstance(subject_to_add, Subject):
+                if subject_to_add.IsUser(s):
                     return
-            elif type(s) == type(subject):
-                if s == subject:
+            # If they are both strings
+            elif type(s) == type(subject_to_add):
+                if s == subject_to_add:
                     return 
             else:
-                # Soap errors when sending the type of a variable
-                #  as a string so strip out not alpha characters.
+                # Soap gives errors when sending the type of a variable
+                #  as a string so strip out punctuation characters.
                 strng = ""
-                for a in str(type(subj)):
+                for a in str(type(subject_to_add)):
                     if not a in string.punctuation or a == "_":
                         strng += a
                 raise InvalidSubjectTypeError(strng)
                
-        self.subjects.append(subject)
+        self.subjects.append(subject_to_add)
 
     def RemoveSubject(self, subject):
-        #print "Remove Subject: self.subjects:", self.subjects
+        subject_to_remove = subject
+        # Convert X509Name to Subject
+        if type(subject) == X509NameType:
+            subject_to_remove = Subject(str(subject), AUTH_X509)
+
         for i in range(len(self.subjects)-1, -1, -1):
             if isinstance(self.subjects[i], Subject):
-                if self.subjects[i].IsUser(subject):
+                if self.subjects[i].IsUser(subject_to_remove):
                     del self.subjects[i]
-            elif self.subjects[i] == subject:
+            elif self.subjects[i] == subject_to_remove:
                 del self.subjects[i]
 
     def HasSubject(self, subject):
+        test_subject = subject
+        # Convert X509Name to Subject
+        if type(subject) == X509NameType:
+            test_subject = Subject(str(subject), AUTH_X509)
+
         for s in self.subjects:
             if isinstance(s, Subject):
-                if s.IsUser(subject):
+                if s.IsUser(test_subject):
                     return 1
-            elif s == subject:
+            if isinstance(test_subject, Subject):
+                if test_subject.IsUser(s):
+                    return 1
+            elif s == test_subject:
                     return 1
         return 0
 
@@ -197,6 +223,10 @@ class Role:
             elif isinstance(subj, Subject):
                 # print "match on obj ", self.GetSubject()
                 subjectStringList.append(subj.GetName())
+            # X509Name shouldn't be found here, but just in case.
+            elif type(subj) == X509NameType:
+                subjectStringList.append(str(subj))
+                log.warn("AccessGrid.hosting.AccessControl.Role.GetSubjectListAsStrings() found X509NameType")
             else:
                 # Soap errors when sending the type of a variable
                 #  as a string so strip out not alpha characters.
