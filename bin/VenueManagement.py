@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.142 2004-08-05 20:26:24 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.143 2004-08-06 19:33:59 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.142 2004-08-05 20:26:24 lefvert Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.143 2004-08-06 19:33:59 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -1302,7 +1302,7 @@ class SecurityPanel(wxPanel):
         else:
             self.securityTitle.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         
-        self.securityText = wxStaticText(self, -1, "Manage access to venue server including which users are \nallowed to administrate.")
+        self.securityText = wxStaticText(self, -1, "Manage access to venue server including which users are allowed to administrate.")
         self.securityButton = wxButton(self, self.ID_SECURITY, "Manage Security")
         self.__doLayout()
         EVT_BUTTON(self, self.ID_SECURITY, self.OpenSecurityDialog)
@@ -1321,10 +1321,15 @@ class SecurityPanel(wxPanel):
 
     def __doLayout(self):
         sizer = wxBoxSizer(wxVERTICAL)
-        sizer.Add(self.securityTitle,0,wxEXPAND|wxALL,5)
-        sizer.Add(self.line1,0,wxEXPAND)
-        sizer.Add(self.securityText,1,wxEXPAND|wxALL|wxCENTER,5)
-        sizer.Add(self.securityButton,0,wxALIGN_RIGHT|wxLEFT|wxRIGHT|wxBOTTOM|wxCENTER, 5)
+        sizer.Add(self.securityTitle,0,wxEXPAND|wxTOP|wxLEFT, 15)
+        sizer.Add(self.line1,0,wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 5)
+
+        sizer2 = wxBoxSizer(wxHORIZONTAL)
+        sizer2.Add(self.securityText, 1, wxEXPAND|wxALL|wxCENTER,5)
+        sizer2.Add(self.securityButton, 0, wxALL, 5)
+
+        sizer.Add(sizer2, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 15)
+        #sizer.Add(self.securityButton,0,wxALIGN_RIGHT|wxLEFT|wxRIGHT|wxBOTTOM|wxCENTER, 5)
         
         self.SetSizer(sizer)
         sizer.Fit(self)
@@ -1431,7 +1436,7 @@ class VenueParamFrame(wxDialog):
         buttonSizer.Add(self.cancelButton, 0,wxEXPAND)
         #buttonSizer.Add(20, 20, 1)
 
-        boxSizer.Add(buttonSizer, 0, wxEXPAND | wxBOTTOM | wxTOP, 5)
+        boxSizer.Add(buttonSizer, 0, wxCENTER | wxBOTTOM | wxTOP , 5)
 
         self.SetSizer(boxSizer)
         boxSizer.Fit(self)
@@ -1520,14 +1525,14 @@ class GeneralPanel(wxPanel):
             self.exitsTitle.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
 
         self.line1=wxStaticLine(self,-1)
-        self.line2=wxStaticLine(self,-1)
+        #self.line2=wxStaticLine(self,-1)
         self.line3=wxStaticLine(self,-1)
         
         #self.informationBox = wxStaticBox(self, -1, "Information")
         #self.informationBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         #self.exitsBox = wxStaticBox(self, -1, "Exits")
         #self.exitsBox.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        self.titleLabel =  wxStaticText(self, -1, "Title:")
+        self.titleLabel =  wxStaticText(self, -1, "Title: ")
         self.title =  wxTextCtrl(self, -1, "",  size = wxSize(200, -1))
         self.descriptionLabel = wxStaticText(self, -1, "Description:")
         self.description =  wxTextCtrl(self, -1, "", size = wxSize(200, 70),
@@ -1539,7 +1544,7 @@ class GeneralPanel(wxPanel):
         # This is actually available exits
         self.venues = wxListBox(self, -1, size = wxSize(250, 100),
                                 style = wxLB_SORT)
-        self.transferVenueLabel = wxStaticText(self, -1, "Add Exit")
+        self.transferVenueLabel = wxStaticText(self, -1, "Add Exit", style = wxALIGN_CENTER)
         self.transferVenueButton = wxButton(self, self.ID_TRANSFER, ">>")
 #                                                    size = wxSize(30, -1))
         self.address = wxComboBox(self, -1, self.application.serverUrl,\
@@ -1679,9 +1684,9 @@ class GeneralPanel(wxPanel):
         infoSizer.Add(self.informationTitle,0,wxEXPAND|wxALL,5)
         infoSizer.Add(self.line1,0,wxEXPAND)
         infoSizer.Add(titleSizer,0,wxEXPAND|wxALL,5)
-        infoSizer.Add(self.descriptionLabel, 0, wxEXPAND|wxALIGN_LEFT|wxTOP,5)
-        infoSizer.Add(self.description, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10)
-        infoSizer.Add(self.defaultVenue,0,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,10)
+        infoSizer.Add(self.descriptionLabel, 0, wxEXPAND|wxALIGN_LEFT|wxTOP|wxLEFT|wxBOTTOM,5)
+        infoSizer.Add(self.description, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 5)
+        infoSizer.Add(self.defaultVenue,0,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM|wxTOP,5)
 
         urlSizer=wxBoxSizer(wxHORIZONTAL)
         urlSizer.Add(self.address,1,wxEXPAND)
@@ -1713,7 +1718,7 @@ class GeneralPanel(wxPanel):
 
         mainSizer=wxBoxSizer(wxVERTICAL)
         mainSizer.Add(infoSizer,1,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,5)
-        mainSizer.Add(self.line2,0,wxEXPAND)
+        #mainSizer.Add(self.line2,0,wxEXPAND)
         mainSizer.Add(bottomSizer,1,wxEXPAND|wxALL,5)
 
         self.SetSizer(mainSizer)
