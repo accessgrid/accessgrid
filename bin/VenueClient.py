@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.147 2003-05-16 21:59:52 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.148 2003-05-17 17:59:32 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1228,8 +1228,9 @@ class VenueClientUI(wxApp, VenueClient):
         in the venue, and then joins it by starting the appropriate client
         """
         log.debug("Creating application: %s" % app.name)
-        app.uri = self.client.CreateApplication( app.name, app.description, app.mimeType )
-        self.JoinApp(app)
+        appDesc = self.client.CreateApplication( app.name, app.description,
+                                                 app.mimeType )
+        self.JoinApp(appDesc)
 
     def JoinApp(self,app):
         """
