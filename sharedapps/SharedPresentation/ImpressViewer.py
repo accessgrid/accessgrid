@@ -34,7 +34,7 @@ class ImpressViewer:
     """
     Here's a description of what we're keeping track of and why:
 
-    seld.desktop -- Open Office desktop.  Files are loaded from here.
+    self.desktop -- Open Office desktop.  Files are loaded from here.
     self.doc -- the current presentation document.
     self.controller -- the current presentation controller.
     """
@@ -117,6 +117,7 @@ class ImpressViewer:
  
         remoteContext = smgr.getPropertyValue( "DefaultContext" )
         self.desktop = smgr.createInstanceWithContext( "com.sun.star.frame.Desktop",remoteContext)
+        self.doc = self.desktop.getCurrentComponent()
 
     def Stop(self):
         """
@@ -150,7 +151,7 @@ class ImpressViewer:
                 print "loading from http"
                 self.doc = self.desktop.loadComponentFromURL(file,"_blank", 0, ()  )
             else: 
-                self.doc = self.desktop.loadComponentFromURL("File:" + file,"_blank", 0, ()  )
+                self.doc = self.desktop.loadComponentFromURL(unohelper.systemPathToFileUrl(file),"_blank", 0, ()  )
 
         if not self.doc:
             self.doc = self.desktop.loadComponentFromURL("private:factory/simpress","_blank", 0, ()  )
