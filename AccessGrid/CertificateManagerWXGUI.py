@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.20 2003-09-10 21:10:11 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.21 2003-09-10 22:02:53 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -159,31 +159,57 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
         certMenu = wxMenu()
 
         i = wxNewId()
-        certMenu.Append(i, "View &Trusted CA Certificates...")
+        certMenu.Append(i, "Import Identity Certificate")
         EVT_MENU(win, i,
-                 lambda event, win=win, self=self: self.OpenTrustedCertDialog(event, win))
+                 lambda event, win=win, self=self: self.ImportIdentityCert(event, win))
 
         i = wxNewId()
-        certMenu.Append(i, "View &Identity Certificates...")
+        certMenu.Append(i, "View &Identity Certificates")
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OpenIdentityCertDialog(event, win))
 
+        certMenu.AppendSeparator()
+
         i = wxNewId()
-        certMenu.Append(i, "Request a certificate...")
+        certMenu.Append(i, "Import Trusted CA Certificate")
+        EVT_MENU(win, i,
+                 lambda event, win=win, self=self: self.ImportTrustedCert(event, win))
+
+        i = wxNewId()
+        certMenu.Append(i, "View &Trusted CA Certificates")
+        EVT_MENU(win, i,
+                 lambda event, win=win, self=self: self.OpenTrustedCertDialog(event, win))
+
+        certMenu.AppendSeparator()
+
+        i = wxNewId()
+        certMenu.Append(i, "Request a certificate")
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OpenCertRequestDialog(event, win))
 
         i = wxNewId()
-        certMenu.Append(i, "View pending requests...")
+        certMenu.Append(i, "View pending requests")
         EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OpenPendingRequestsDialog(event, win))
 
         return certMenu
 
+    def ImportTrustedCert(self, event, win):
+        dlg = TrustedCertDialog(win, -1, "View trusted certificates",
+                                self.certificateManager)
+        dlg.OnCertImport(event)
+        dlg.Destroy()
+
     def OpenTrustedCertDialog(self, event, win):
         dlg = TrustedCertDialog(win, -1, "View trusted certificates",
                                 self.certificateManager)
         dlg.ShowModal()
+        dlg.Destroy()
+
+    def ImportIdentityCert(self, event, win):
+        dlg = IdentityCertDialog(win, -1, "View user identity certificates",
+                                self.certificateManager)
+        dlg.OnCertImport(event)
         dlg.Destroy()
 
     def OpenIdentityCertDialog(self, event, win):
@@ -941,6 +967,14 @@ class TrustedCertDialog(wxDialog):
             self.certMgr.GetUserInterface().InitGlobusEnvironment()
             self.browser.LoadCerts()
 
+            dlg = wxMessageDialog(None, "Certificate imported successfully. Subject is\n" +
+                                  str(impCert.GetSubject()),
+                                  "Import successful",
+                                  style = wxOK | wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            
+
         except:
             log.exception("Error importing certificate from %s", path)
             dlg = wxMessageDialog(None, "Error occurred during certificate import.",
@@ -1174,6 +1208,14 @@ class IdentityCertDialog(wxDialog):
                                   "Cannot verify certificate path")
             dlg.ShowModal()
             dlg.Destroy()
+
+        dlg = wxMessageDialog(None, "Certificate imported successfully. Subject is\n" +
+                              str(impCert.GetSubject()),
+                              "Import successful",
+                              style = wxOK | wxICON_INFORMATION)
+        dlg.ShowModal()
+        dlg.Destroy()
+
 
     def OnCertExport(self, event):
         print "Got export "
