@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 #-----------------------------------------------------------------------------
 # Name:        AGServiceManager.py
 # Purpose:     
@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.21 2003-05-21 20:15:31 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.22 2003-05-30 19:32:49 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,9 +15,9 @@ import signal, time, os
 import logging, logging.handlers
 import getopt
 
+from AccessGrid import Platform
 from AccessGrid.AGServiceManager import AGServiceManager
 from AccessGrid.hosting.pyGlobus.Server import Server
-from AccessGrid.Platform import Daemonize
 from AccessGrid import PersonalNode
 from AccessGrid import Toolkit
 
@@ -78,7 +78,7 @@ for o, a in opts:
     elif o == "--pnode":
         pnode = a
     elif o == "daemonize":
-        Daemonize()
+        Platform.Daemonize()
     elif o == "--key":
         identityKey = a
     elif o == "--cert":
@@ -149,6 +149,8 @@ else:
     
 # Register the signal handler so we can shut down cleanly
 signal.signal(signal.SIGINT, SignalHandler)
+if sys.platform == Platform.LINUX:
+    signal.signal(signal.SIGHUP, SignalHandler)
 
 # Start the service
 server.run_in_thread()
