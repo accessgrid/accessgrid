@@ -121,7 +121,14 @@ class IdentityBrowser(CertificateBrowserBase):
         self.Load()
 
     def OnSetDefault(self, event):
-        pass
+
+        cert = self.GetSelectedCertificate()
+        if cert is None:
+            return
+
+        self.certMgr.SetDefaultIdentity(cert)
+        self.certMgr.GetUserInterface().InitGlobusEnvironment()
+        self.Load()
 
     def OnCertSelected(self, event, cert):
         if cert is None:

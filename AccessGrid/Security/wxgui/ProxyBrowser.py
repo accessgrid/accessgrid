@@ -15,32 +15,36 @@ class ProxyBrowser(CertificateBrowserBase):
 
     def _buildButtons(self, sizer):
 
+        #
+        # Buttons that are only valid when a cert is selected.
+        #
+        self.certOnlyButtons = []
+
         b = wxButton(self, -1, "Create")
         EVT_BUTTON(self, b.GetId(), self.OnCreate)
-        sizer.Add(b, 0, wxEXPAND)
-
-        b = wxButton(self, -1, "Renew")
-        EVT_BUTTON(self, b.GetId(), self.OnRenew)
         sizer.Add(b, 0, wxEXPAND)
 
         b = wxButton(self, -1, "Destroy")
         EVT_BUTTON(self, b.GetId(), self.OnDestroy)
         sizer.Add(b, 0, wxEXPAND)
-        self.defaultButton = b
+        self.certOnlyButtons.append(b)
 
         b = wxButton(self, -1, "View proxy")
         EVT_BUTTON(self, b.GetId(), self.OnViewCertificate)
         sizer.Add(b, 0, wxEXPAND)
+        self.certOnlyButtons.append(b)
 
-        b = wxButton(self, -1, "Refresh")
+        b = wxButton(self, -1, "Refresh display")
         EVT_BUTTON(self, b.GetId(), lambda event, self = self: self.Load())
         sizer.Add(b, 0, wxEXPAND)
 
-    def OnCreate(self, event):
-        pass
+        for b in self.certOnlyButtons:
+            b.Enable(0)
 
-    def OnRenew(self, event):
-        pass
+    def OnCreate(self, event):
+        print "Creating proxy"
+        self.certMgr.CreateProxy()
+        self.Load()
 
     def OnDestroy(self, event):
 
@@ -70,6 +74,20 @@ class ProxyBrowser(CertificateBrowserBase):
             log.exception("exception removing proxy certificate");
 
         self.Load()
+
+    def OnCertSelected(self, event, cert):
+        if cert is None:
+            return
+
+        for b in self.certOnlyButtons:
+            b.Enable(1)
+
+    def OnCertDeselected(self, event, cert):
+        if cert is None:
+            return
+
+        for b in self.certOnlyButtons:
+            b.Enable(0)
 
     def OnCertActivated(self, event, cert):
         if cert is None:
