@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.190 2003-05-19 18:02:10 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.191 2003-05-19 19:38:52 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -2494,9 +2494,7 @@ class SelectAppDialog(wxDialog):
     """
     def __init__(self, parent, id, title, mimetype ):
 
-        wxDialog.__init__(self, parent, id, title, style = wxDEFAULT_DIALOG_STYLE)
-        
-        self.SetSize( wxSize(800,300) )
+        wxDialog.__init__(self, parent, id, title, style = wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE)
 
         # Set up sizers
         gridSizer = wxFlexGridSizer(5, 1, 5, 5)
@@ -2507,19 +2505,17 @@ class SelectAppDialog(wxDialog):
         self.SetAutoLayout(1)
 
         # Create config list label and listctrl
-        configLabel = wxStaticText(self,-1,"No client registered for mimetype:\n\t" + mimetype)
-        gridSizer.Add( configLabel, 1 )
-        configLabel = wxStaticText(self,-1,"Select an application to use with this mimetype")
-        gridSizer.Add( configLabel, 1 )
+        gridSizer.Add( wxStaticText(self,-1,"No client registered for mimetype:\n\t" + mimetype), 1 )
+        gridSizer.Add( wxStaticText(self,-1,"Select an application to use with this mimetype"), 1 )
 
         # Create application text field and button
-        fieldButtonSizer = wxFlexGridSizer(1,2,5,5)
-        self.configText = wxTextCtrl(self,-1,"")
+        fieldButtonSizer = wxBoxSizer(wxHORIZONTAL)
+        self.fileText = wxTextCtrl(self,-1,"")
         buttonId = wxNewId()
         button = wxButton(self,buttonId,"Browse...")
         EVT_BUTTON(self, buttonId, self.BrowseCallback)
 
-        fieldButtonSizer.Add( self.configText, 1 )
+        fieldButtonSizer.Add( self.fileText, 1 )
         fieldButtonSizer.Add( button )
         gridSizer.Add( fieldButtonSizer, 1, wxEXPAND )
 
@@ -2538,11 +2534,13 @@ class SelectAppDialog(wxDialog):
 
         sizer1.Fit(self)
 
+        self.SetSize( wxSize(350,200) )
+
     def GetPath(self):
         """
         Return path to selected file
         """
-        return self.configText.GetValue()
+        return self.fileText.GetValue()
 
     def GetCheckboxValue(self):
         """
@@ -2560,7 +2558,7 @@ class SelectAppDialog(wxDialog):
 
         if ret == wxID_OK:
             file = d.GetPath()
-            self.configText.SetValue( file )
+            self.fileText.SetValue( file )
 
 
 '''VenueClient.
