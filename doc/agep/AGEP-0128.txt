@@ -1,0 +1,240 @@
+=====================================
+Capabilities
+=====================================
+ 
+:version: $Revision: 1.1 $
+:author: Susanne Lefvert <lefvert@mcs.anl.gov>
+:status: Draft
+:contact: ag-tech@mcs.anl.gov
+
+Abstract
+========
+
+    This document describes a schema for describing node and network service capabilities.
+
+Overview
+========
+
+    In order to develop a framework for network services that seamlessly can 
+    bridge the gap between different client capabilities we need a general way to describe
+    available capabilities. 
+
+Summary of Modifications
+========================
+
+    New classes that would include serializer/deserializer methods for XML:
+    
+    * ServiceCapability
+    * NodeCapability
+    * NetworkServiceCapability
+      
+    Old capability class would be replaced with the new ServiceCapability class. 
+    The venue client provides one NodeCapability object when entering the venue 
+    including all service capabilities, preferences, and node settings.
+        
+Module Organization
+-------------------
+
+    AccessGrid
+        AccessGrid
+            **Capability** 
+                **NodeCapability**
+
+                **ServiceCapability**
+
+                **NetworkServiceCapability**
+
+Specifications
+==============
+        
+**ServiceCapability**
+    
+    Class describing a node service capability, for example for the VideoService. 
+    This would replace current Capability class and look like:
+
+    ::
+
+        ServiceCapability
+            id : int
+            type : video|audio
+            role : consumer|producer
+            priority : int
+            codec : string
+            bitRate : int
+            sampleRate : int
+            channel : int
+
+            def Match(ServiceCapability)
+            def ToXML()
+            def FromXML()
+
+       
+    ToXML() Example:
+
+    ::
+
+        <ServiceCapability>
+            <Id> 0909903939393 </Id>
+            <Type> video </Type>
+            <Role> consumer </Role>
+            <Priority> 1 </Role>
+            <Codec> "H.261" </Codec>
+            <BitRate> 64 </BitRate>
+            <SampleRate> 16000 </SampleRate>
+            <Channel> -1 </Channel>
+        </ServiceCapability>
+         
+**NodeCapability** 
+    
+    The node capability class describes a node with available node service capabilities 
+    and general settings such as multicast availability, bandwidth, and so forth.  
+    Each node service (AudioService, VideoService, etc) has a list of possible capabilities.  
+    Each capability has a priority field that determines which capabilities are preferred for a 
+    certain service.  The NodeCapabiliity class replaces the old list of capabilities that are 
+    shipped to the venue when a client enters. 
+    
+    ::
+
+        NodeCapability
+            id : int 
+            name : sting
+            host : string
+            bandwidth : int
+            multicast : int
+            nodeServices : {ServiceId :[ServiceCapability]}     
+
+            def ToXML()
+            def FromXML()
+            
+    ToXML() Example:
+    
+    ::
+    
+        <NodeCapability>
+            <Id> 554443322111 </Id>
+            <Name> "Susannes node" </Name>    
+            <Host> "lib-video.mcs.anl.gov" </Host>
+            <Bandwidth> -1 <Bandwidth>
+            <Multicast> 1 </Multicast>
+            <Service> VideoService
+                <ServiceCapability>
+                    <Id> 0809809808 </Id>
+                    <Type> video </Type>
+                    <Role> consumer </Role>
+                    <Priority> 1 </Priority>
+                    <Host> lib-video.mcs.anl.gov </Host>
+                    <Codec> "H.261" </Codec>
+                    <BitRate> 64 </BitRate>
+                    <SampleRate> 16000 </SampleRate>
+                    <Channel> -1 </Channel>
+                </ServiceCapability>
+                <ServiceCapability>
+                    <Id> 0809809808 </Id>
+                    <Type> video </Type>
+                    <Role> consumer </Role>
+                    <Priority> 2 </Priority>
+                    <Host> lib-video.mcs.anl.gov </Host>
+                    <Codec> "H.261" </Codec>
+                    <BitRate> 64 </BitRate>
+                    <SampleRate> 8000 </SampleRate>
+                    <Channel> -1 </Channel>
+                </ServiceCapability>
+            </Service>
+        </NodeCapability>
+
+
+** NetworkServiceCapability **
+    
+    The network service capability class has a list of in and out ServiceCapabilities 
+    that a network service is able to input and output.    
+
+    ::    
+
+        NetworkServiceCapability:
+            input = [ServiceCapability]
+            output = [ServiceCapability]
+    
+            def ToXML()
+            def FromXML()
+
+    ToXML() Example:
+    
+    ::
+    
+        <NetworkServiceCapability>
+            <Input>
+                <ServiceCapability>
+                    <Id> 3982738404 </Id>
+                    <Type> audio </Type>
+                    <Role> consumer </Role>
+                    <Priority> 1 </Priority>
+                    <Codec> linear16 </Codec>
+                    <BitRate> 64 </BitRate>
+                    <SampleRate> 8000 </SampleRate>
+                    <Channel> 1 </Channel>
+                </ServiceCapability>
+                <ServiceCapability>
+                    <Id> 093948748302 </Id>
+                    <Type> audio </Type>
+                    <Role> consumer </Role>
+                    <Priority> 2 </Priority>
+                    <Codec> pcmu </Codec>
+                    <BitRate> 64 </BitRate>
+                    <SampleRate> 8000 </SampleRate>
+                    <Channel> 1 </Channel>
+                </ServiceCapability>
+            </Input>
+            <Output>
+                <ServiceCapability>
+                    <Id> 453343444432 </Id>
+                    <Type> audio </Type>
+                    <Role> producer </Role>
+                    <Priority> 1 </Priority>
+                    <Codec> pcmu </Codec>
+                    <BitRate> 64 </BitRate>
+                    <SampleRate> 16000 </SampleRate>
+                    <Channel> 1 </Channel>
+                </ServiceCapability>
+                <ServiceCapability>
+                    <Id> 2342342211115 </Id>
+                    <Type> audio </Type>
+                    <Role> producer </Role>
+                    <Priority> 2 </Priority>
+                    <Codec> linear16 </Codec>
+                    <BitRate> 64 </BitRate>
+                    <SampleRate> 16000 </SampleRate>
+                    <Channel> 1 </Channel>
+                </ServiceCapability>
+            </Output>    
+            
+Interoperability Issues
+=======================
+
+    This change will break interoperability between client and servers.
+   
+Implementation
+==============
+
+    The XML would be created from python objects using xml.dom see 
+    http://www.python.org/doc/current/lib/module-xml.dom.html
+
+    The goal for preferences is for the user to be able to select them via a 
+    user interface, possibly from the node manager.  One solution would be to 
+    allow users to pick preferences for each node service based on available
+    services.  The default preference would be the consumer that has the lowest 
+    priority field set.  This solution allows us to send different video/audio 
+    formats to different services.     
+
+Copyright
+=========
+
+    This document is Copyright 2003, The University of Chicago/Argonne National Laboratory.
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
