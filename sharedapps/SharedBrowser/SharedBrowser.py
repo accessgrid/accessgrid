@@ -8,6 +8,8 @@ from wxPython.wx import *
 from wxPython.iewin import *
 
 from AccessGrid.SharedAppClient import SharedAppClient
+from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.ClientProfile import ClientProfile
     
 class WebBrowser(wxPanel):
     """
@@ -208,10 +210,19 @@ class SharedBrowser( wxApp ):
         return 1
 
     def OnExit(self):
+        '''
+        Shut down shared browser.
+        '''
+
         self.sharedAppClient.Shutdown()
         os._exit(1)
 
     def __init__( self, appUrl, debugMode = 0, logFile = None):
+        '''
+        Creates the shared application client, used for 
+        application service interaction, and opens a web browser 
+        for UI display. 
+        '''
         wxApp.__init__(self, False)
         
         # Create shared application client        
@@ -226,20 +237,13 @@ class SharedBrowser( wxApp ):
             self.log.info("SharedAppClient.Connect: Could not load client profile, set clientProfile = None")
             clientProfile = None
 
-        # Connect to shared application service. 
+        # Join the application session.
         self.sharedAppClient.Join(appUrl, clientProfile)
 
-        #
         # Register browse event callback
-        #
-        # The callback function is invoked with one argument,
-        # the data from the call.
-        #
         self.sharedAppClient.RegisterEventCallback("browse", self.BrowseCallback )
 
-        #
         # Create Browser Window
-        #
         self.frame = wxFrame(None, -1, "Browser")
         self.browser = WebBrowser(self.frame, -1, self.log, self.frame)
 
@@ -260,13 +264,14 @@ class SharedBrowser( wxApp ):
         self.SetTopWindow(self.frame)
 
     def IBrowsedCallback(self,data):
-        #
+        '''
+        Callback invoked when local browse events occur.
+        '''
         # Send out the event, including our public ID in the message.
-        #
         publicId = self.sharedAppClient.GetPublicId()
         self.sharedAppClient.SendEvent("browse", ( publicId, data ) )
        
-        # Store the URL in the app object in the venue
+        # Store the URL in the application service in the venue
         self.sharedAppClient.SetData("url", data)
         
     def BrowseCallback(self, event):
