@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.59 2003-04-04 21:44:39 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.60 2003-04-04 22:44:12 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -370,7 +370,7 @@ class VenueServer(ServiceBase.ServiceBase):
             if self.venues[id].encryptMedia:
                 self.venues[id].encryptionKey = venueDesc.encryptionKey
 
-            self.venues[id].SetConnections(venueDesc.connections.values())
+            self.venues[id].SetConnections(venueDesc.connections)
             
             for sd in venueDesc.streams:
                 self.venues[id].AddStream(sd)
