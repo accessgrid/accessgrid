@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.49 2003-03-24 20:58:41 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.50 2003-03-24 21:47:50 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -190,6 +190,7 @@ class VenueServer(ServiceBase.ServiceBase):
                 name = cp.get(sec, 'name')
                 description = cp.get(sec, 'description')
                 dsp = cp.get(sec, 'dataStorePath')
+#                if dsp == 'None':
                 administrators = string.split(cp.get(sec, 'administrators'),
                                               ':')
                 v = Venue(self, name, description, administrators, dsp)
@@ -360,11 +361,11 @@ class VenueServer(ServiceBase.ServiceBase):
         if not self._authorize():
             raise VenueServerException("You are not authorized to perform this action.")
 
-        path = self.PathFromURL(URL)
+        id = self.IdFromURL(URL)
         
-        venue = self.venues[path]
-        del self.venues[path]
-
+        venue = self.venues[id]
+        del self.venues[id]
+        
     RemoveVenue.soap_export_as = "RemoveVenue"
 
     def AddAdministrator(self, string):
