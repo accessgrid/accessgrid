@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.18 2003-03-13 14:15:58 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.19 2003-03-30 13:23:03 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -111,7 +111,6 @@ class ClientProfile:
         print "Name: " + self.name
         print "Email: " + self.email
         print "Phone Number: " + self.phoneNumber
-        print "Icon: " + self.icon
         print "Location: " + self.location
         print "Venue Client URL: " + self.venueClientURL
         print "Technical Support Information: " + self.techSupportInfo
@@ -125,7 +124,6 @@ class ClientProfile:
         config['ClientProfile.name'] = self.GetName()
         config['ClientProfile.email'] = self.GetEmail()
         config['ClientProfile.phone'] = self.GetPhoneNumber()
-        config['ClientProfile.icon'] = self.GetIcon()
         config['ClientProfile.location'] = self.GetLocation()
         config['ClientProfile.venueclienturl'] = self.GetVenueClientURL()
         config['ClientProfile.techsupportinfo'] = self.GetTechSupportInfo()
@@ -200,15 +198,6 @@ class ClientProfile:
     def GetPhoneNumber(self):
         """ """
         return self.phoneNumber
-    
-    def SetIcon(self, icon):
-        """ """
-        self.icon = icon
-        self.profile[ClientProfile.configSection + '.icon'] = icon
-        
-    def GetIcon(self):
-        """ """
-        return self.icon
     
     def SetVenuClientURL(self, venueClientURL):
         """ """
