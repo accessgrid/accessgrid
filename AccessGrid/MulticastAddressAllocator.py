@@ -5,7 +5,7 @@
 # Author:      Robert Olson, Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.5 2003-01-21 17:19:36 judson Exp $
+# RCS-ID:      $Id: MulticastAddressAllocator.py,v 1.6 2003-01-21 18:37:00 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -62,7 +62,7 @@ class MulticastAddressAllocator:
         self.baseAddress = struct.unpack("L", socket.inet_aton(baseAddress))[0]
                                         
     def GetBaseAddress(self):
-        return self.baseAddress
+        return socket.inet_ntoa(struct.pack('L', self.baseAddress))
 
     def SetAddressMask(self, addressMask = None):
         self.addressMask = addressMask
