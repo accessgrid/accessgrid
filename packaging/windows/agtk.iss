@@ -1,13 +1,13 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.14 2003-08-15 21:20:40 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.15 2003-08-22 20:15:03 judson Exp $
 ;
 
 #define SourceDir "C:\Software\AccessGrid\AccessGrid"
 #define OutputDir "C:\Software\AccessGrid"
 #define AppName "Access Grid Toolkit"
 #define AppNameShort "AGTk"
-#define AppVersionLong "2.1"
-#define AppVersionShort "2.1"
+#define AppVersionLong "2.1.1"
+#define AppVersionShort "2.1.1"
 
 [_ISTool]
 EnableISX=true
@@ -73,10 +73,11 @@ UninstallDisplayIcon={app}\install\agicons.exe
 DisableReadyPage=true
 UsePreviousSetupType=false
 UsePreviousTasks=false
+UsePreviousGroup=false
 
 [Files]
 ; The Python Modules
-Source: dist\Lib\site-packages\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\Lib\site-packages; Flags: recursesubdirs overwritereadonly
+Source: dist\Lib\site-packages\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22}\Lib\site-packages; Flags: recursesubdirs overwritereadonly restartreplace
 
 ; Documentation
 Source: doc\AccessGrid\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
@@ -146,7 +147,7 @@ Name: {commondesktop}\Access Grid Venue Client; Filename: {reg:HKLM\Software\Pyt
 
 [Registry]
 Root: HKLM; Subkey: SOFTWARE\{#AppName}; ValueType: none; Flags: uninsdeletekey
-Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersionShort}; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}\bin; Flags: uninsdeletekey
+Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersionShort}; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersionShort}; ValueType: expandsz; ValueName: ConfigPath; ValueData: {userappdata}\AccessGrid; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\{#AppName}\{#AppVersionShort}; ValueType: expandsz; ValueName: UserConfigPath; ValueData: {userappdata}\AccessGrid\config; Flags: uninsdeletekey
 Root: HKLM; Subkey: SYSTEM\CurrentControlSet\Control\Session Manager\Environment; ValueType: expandsz; ValueName: GLOBUS_LOCATION; ValueData: {commonappdata}\AccessGrid
