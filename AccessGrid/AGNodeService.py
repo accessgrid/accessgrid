@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.15 2003-02-28 17:20:43 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.16 2003-02-28 18:24:06 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -361,7 +361,7 @@ class AGNodeService( ServiceBase ):
         #
         # Write config file
         #
-        file = self.configDir + os.sep + configName + ".cfg"
+        file = self.configDir + os.sep + configName
         fp = open( file, "w" )
         config.write(fp)
         fp.close()
