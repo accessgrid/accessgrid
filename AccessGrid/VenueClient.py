@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.96 2003-08-15 13:39:07 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.97 2003-08-15 15:07:53 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -385,6 +385,7 @@ class VenueClient( ServiceBase):
         # Initialize a string of warnings that can be displayed to the user.
         self.warningString = ''
 
+       
         for s in self.eventSubscribers:
             s.PreEnterVenue(URL, back)
 
@@ -646,6 +647,9 @@ class VenueClient( ServiceBase):
         """
         log.info("VenueClient.ExitVenue")
 
+        # Clear the list of personal data requests.
+        self.requests = []
+       
         self.exitingLock.acquire()
         if self.exiting:
             log.debug("VenueClient already exiting, returning.")
@@ -883,7 +887,7 @@ class VenueClient( ServiceBase):
         #
         # After initial request, personal data will be updated via events.
         #
-      
+
         if not id in self.requests:
             log.debug("bin.VenueClient.GetPersonalData: The client has NOT been queried for personal data yet %s", clientProfile.name)
             self.requests.append(id)
