@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.142 2004-05-05 19:10:20 lefvert Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.143 2004-05-28 19:42:20 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.142 2004-05-05 19:10:20 lefvert Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.143 2004-05-28 19:42:20 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -158,6 +158,7 @@ class VenueServer(AuthorizationMixIn):
         # Initialize Auth stuff
         AuthorizationMixIn.__init__(self)
         self.AddRequiredRole(Role.Role("Administrators"))
+        self.AddRequiredRole(Role.Everybody)
         rl = self.GetRequiredRoles()
         self.authManager.AddRoles(rl)
 
@@ -169,7 +170,7 @@ class VenueServer(AuthorizationMixIn):
 
         # In the venueserver we default to admins
         self.authManager.SetDefaultRoles([admins])
-        
+
         # Initialize our state
         self.checkpointing = 0
         self.persistenceFilename = 'VenueServer.dat'
