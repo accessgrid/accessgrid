@@ -10,7 +10,7 @@
 # Author:      Ti Leggett
 # Copyright:   (c) 2002-2003
 # License:     See COPYING.txt
-# RCS-ID:      $Id: MailcapSetup.py,v 1.1 2003-05-16 21:00:53 leggett Exp $
+# RCS-ID:      $Id: MailcapSetup.py,v 1.2 2003-05-19 15:41:03 leggett Exp $
 #-----------------------------------------------------------------------------
 
 import os
@@ -19,10 +19,10 @@ import sys
 import AccessGrid.Platform
 import getopt
 
-try:
-    import win32api
-except:
-    pass
+#try:
+#    import win32api
+#except:
+#    pass
 
 class Mailcap:
     def __init__(self):
@@ -40,7 +40,7 @@ class Mailcap:
 
     def is_root(self):
         if sys.platform == AccessGrid.Platform.WIN:
-            return False
+            return True
         else:
             if os.getuid( ) == 0:
                 return True
