@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.13 2003-05-21 21:31:36 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.14 2003-05-23 20:22:41 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -102,6 +102,19 @@ class AboutDialog(wxPopupTransientWindow):
     def ProcessLeftDown(self, evt):
         self.Hide()
         return false
+
+class AppSplash(wxSplashScreen):
+    def __init__(self):
+        wxSplashScreen.__init__(self, bmp,
+                                wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_TIMEOUT,
+                                4000, None, -1,
+                                style=wxSIMPLE_BORDER|wxFRAME_NO_TASKBAR
+                                |wxSTAY_ON_TOP)
+        EVT_CLOSE(self, self.OnClose)
+        
+    def OnClose(self, evt):
+        
+        evt.Skip()
 
 def InitMimeTypes(file):
     """
