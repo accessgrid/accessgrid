@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.108 2003-08-04 22:34:47 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.109 2003-08-04 23:42:14 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -2324,10 +2324,7 @@ class Venue(ServiceBase.ServiceBase):
         if not self._IsInRole("Venue.Administrators"):
             raise NotAuthorized
 
-        if self._IsInRole("Venue.Administrators"):
-            return self.GetRoleManager().GetRoleList()
-        else:
-            raise "PermissionDenied"
+        return self.GetRoleManager().GetRoleList()
 
     wsGetRoleNames.soap_export_as = "GetRoleNames"
 
