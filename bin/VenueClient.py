@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.122 2003-04-20 21:54:05 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.123 2003-04-22 15:04:49 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -64,7 +64,7 @@ class VenueClientUI(wxApp, VenueClient):
     clientHandle = None
     venueUri = None
     personalDataStorePrefix = "personalDataStore"
-    personalDataStorePort = 9999
+    personalDataStorePort = 7777
     personalDataDict = {}
     accessGridPath = GetUserConfigDir()
     profileFile = os.path.join(accessGridPath, "profile" )
@@ -289,7 +289,7 @@ class VenueClientUI(wxApp, VenueClient):
     # Methods handling events sent when venue state changes
     #
         
-    def AddUserEvent(self, user):
+    def AddUserEvent(self, profile):
         """
         Note: Overridden from VenueClient
         This method is called every time a venue participant enters
@@ -298,7 +298,7 @@ class VenueClientUI(wxApp, VenueClient):
 
         VenueClient.AddUserEvent(self, profile)
         
-        if(user.profileType == 'user'):
+        if(profile.profileType == 'user'):
             wxCallAfter(self.frame.contentListPanel.AddParticipant, profile)
             wxCallAfter(wxLogDebug, "  add user: %s" %(profile.name))
             
