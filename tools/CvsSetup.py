@@ -192,13 +192,10 @@ if sys.platform == WIN:
     nsfile.write("defaultNodeConfiguration = defaultWindows\n\n")
 elif sys.platform == LINUX or sys.platform == OSX:
     nsfile.write("defaultNodeConfiguration = defaultLinux\n\n")
+nsfile.close()
 
 agtk_location = os.path.join(os.path.abspath(options.agsrcdir))
 python_path = os.path.abspath(options.agsrcdir)
-
-nsfile.write("[Service Manager]\n")
-nsfile.write("servicesDirectory = " + localServicePath + "\n\n")
-nsfile.close()
 
 # Tell users how to use the new configuration files.
 print "\n    --------------------------------------------------------------"
