@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/17/12
-# RCS-ID:      $Id: test_VenueServer.py,v 1.5 2003-03-19 16:08:17 judson Exp $
+# RCS-ID:      $Id: test_VenueServer.py,v 1.6 2003-03-25 17:03:15 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ import socket
 import sys
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid.Descriptions import VenueDescription, DataDescription
+from AccessGrid.Descriptions import DataDescription, ConnectionDescription
 
 #
 # Set up the venue space
@@ -26,22 +26,19 @@ if len(sys.argv) > 1:
    venueServerUri = sys.argv[1]
 venueServerProxy = Client.Handle( venueServerUri ).get_proxy()
 
-# add venues
-outsideVenueDesc = VenueDescription("Outside", "Outside venue", "", None) 
-insideVenueDesc = VenueDescription("Inside", "Inside venue", "", None) 
 
-outsideVenueUri = venueServerProxy.AddVenue( outsideVenueDesc )
-insideVenueUri = venueServerProxy.AddVenue( insideVenueDesc )
+# add venues
+outsideVenueUri = venueServerProxy.AddVenue( "Outside", "Outside venue" )
+insideVenueUri = venueServerProxy.AddVenue( "Inside", "Inside venue" )
 print "outsideVenueUri = ",  outsideVenueUri
 print "insideVenueUri = ", insideVenueUri
 
-outsideVenueDesc.uri = outsideVenueUri
-insideVenueDesc.uri = insideVenueUri
-
 # make connections between venues, using SetConnections method
-connectionList = [ insideVenueDesc ]
+connectionList = [ ConnectionDescription("Inside", "The inside one.",
+                                         insideVenueUri)]
 Client.Handle( outsideVenueUri ).get_proxy().SetConnections( connectionList )
-connectionList = [ outsideVenueDesc ]
+connectionList = [ ConnectionDescription("Outside", "The outside one.",
+                                         outsideVenueUri)]
 Client.Handle( insideVenueUri ).get_proxy().SetConnections( connectionList )
 
 # add some data to each venue
@@ -59,9 +56,11 @@ for venue in venueList:
     for connection in connectionList:
         print "      connection : ", connection.name, connection.description, connection.uri
 
-outsideVenueDesc.name = "Modified outside venue"
-outsideVenueDesc.description = "modified outside venue desc"
-venueServerProxy.ModifyVenue( outsideVenueDesc.uri, outsideVenueDesc )
+newname = "Modified outside venue."
+newdesc = "modified outside venue desc"
+
+Client.Handle(outsideVenueUri).get_proxy().SetName(newname)
+Client.Handle(outsideVenueUri).get_proxy().SetDescription(newdesc)
 
 print "-- Venues -- "
 venueList = venueServerProxy.GetVenues()
