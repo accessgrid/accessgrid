@@ -5,13 +5,25 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGParameter.py,v 1.6 2003-02-10 14:47:35 judson Exp $
+# RCS-ID:      $Id: AGParameter.py,v 1.7 2003-02-28 17:20:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 class ValueParameter:
 
     TYPE = "ValueParameter"
+
+    def __init__( self, name, value=None ):
+        self.name = name
+        self.value = value
+        self.type = self.TYPE
+
+    def SetValue( self, value ):
+        self.value = int(value)
+
+class TextParameter:
+
+    TYPE = "TextParameter"
 
     def __init__( self, name, value=None ):
         self.name = name
@@ -26,11 +38,14 @@ class RangeParameter( ValueParameter ):
     TYPE = "RangeParameter"
 
     def __init__( self, name, value, low, high ):
+
         ValueParameter.__init__( self, name, value )
         self.low = low
         self.high = high
 
     def SetValue( self, value ):
+
+        value = int(value)
 
         if self.low > value or self.high < value:
             raise ValueError("RangeParameter.SetValue")
@@ -63,5 +78,9 @@ def CreateParameter( parmstruct ):
         parameter = RangeParameter( parmstruct.name, parmstruct.value, parmstruct.low, parmstruct.high )
     elif parmstruct.type == ValueParameter.TYPE:
         parameter = ValueParameter( parmstruct.name, parmstruct.value )
+    elif parmstruct.type == TextParameter.TYPE:
+        parameter = TextParameter( parmstruct.name, parmstruct.value )
+    else:
+        raise TypeError("Unknown parameter type:", parmstruct.type )
 
     return parameter

@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.14 2003-02-24 20:56:22 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.15 2003-02-28 17:20:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,6 +14,8 @@ import sys
 import pickle
 import string
 import thread
+import string
+import ConfigParser
 
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
@@ -24,6 +26,8 @@ from AccessGrid.Descriptions import AGServiceDescription, AGServiceManagerDescri
 from AccessGrid.Types import ServiceConfiguration
 from AccessGrid.AuthorizationManager import AuthorizationManager
 from AccessGrid.Platform import GetConfigFilePath
+
+from AccessGrid.AGParameter import ValueParameter
 
 class AGNodeService( ServiceBase ):
     """
@@ -45,11 +49,10 @@ class AGNodeService( ServiceBase ):
 
         configFile = GetConfigFilePath("AGNodeService.cfg")
         if configFile:
-            print "loading config file = ", configFile
             self.__ReadConfigFile( configFile )
 
         if self.defaultConfig:
-            print "loading default config = ", self.defaultConfig
+            print "Loading default node config:", self.defaultConfig
             try:
                 self.LoadConfiguration( self.defaultConfig ) 
             except:
@@ -143,14 +146,12 @@ class AGNodeService( ServiceBase ):
         services = []
         try:
             for serviceManager in self.serviceManagers:
-                print "-- ", serviceManager.uri
                 serviceSubset = Client.Handle( serviceManager.uri ).get_proxy().GetServices().data
-                print "got services from sm"
                 for service in serviceSubset:
-                    print "  got service ", service.uri
                     service = AGServiceDescription( service.name, service.description, service.uri,
                                                     service.capabilities, service.resource,
-                                                    service.serviceManagerUri, service.executable )
+                                                    service.executable, service.serviceManagerUri,
+                                                    service.servicePackageUri )
                     services = services + [ service ]
 
         except:
@@ -177,7 +178,6 @@ class AGNodeService( ServiceBase ):
                 serviceCapabilities = map(lambda cap: cap.type, Client.Handle( service.uri ).get_proxy().GetCapabilities() )
                 for streamDescription in streamDescriptions:
                     if streamDescription.capability.type in serviceCapabilities:
-                        print "   ", service.uri, streamDescription.location.host
                         Client.Handle( service.uri ).get_proxy().ConfigureStream( streamDescription )
             except:
                 print "Exception in AGNodeService.ConfigureStreams ", sys.exc_type, sys.exc_value
@@ -185,180 +185,190 @@ class AGNodeService( ServiceBase ):
     ConfigureStreams.soap_export_as = "ConfigureStreams"
 
 
-#FIXME - LoadConfig and StoreConfig work with some level of reliability,
-#        but do need a complete reworking.
     def LoadConfiguration( self, configName ):
-        """Load named node configuration"""
+        """
+        Load named node configuration
+        """
 
-        print "In load configuration "
-        hadServiceException = 0
-        hadServiceManagerException = 0
-        services = []
-        serviceConfigs = []
-        try:
-
-            #
-            # Remove all services from service managers
-            #
-            for serviceManager in self.serviceManagers:
-                Client.Handle( serviceManager.uri ).get_proxy().RemoveServices()
-
-
-            #
-            # Remove service managers
-            #
-            self.serviceManagers = []
-
-        except:
-            print "Exception in AGNodeService.LoadConfiguration ", sys.exc_type, sys.exc_value
-            raise faultType("AGNodeService.LoadConfiguration failed: " + str( sys.exc_value ) )
+        class IncomingService:
+            def __init__(self):
+                self.packageName = None
+                self.resource = None
+                self.executable = None
+                self.parameters = None
 
         #
-        # Load configuration file
+        # Read config file
         #
-        print "Loading configuration file"
-        inp = open( self.configDir + os.sep + configName, "r")
-        while inp:
-            try:
-                o = pickle.load(inp)
-                if isinstance( o, AGServiceManagerDescription ):
-                    self.serviceManagers.append( o )
-                if isinstance( o, AGServiceDescription ):
-                    services.append( o )
-                    o = pickle.load(inp)
-                    if isinstance( o, ServiceConfiguration ):
-                        serviceConfigs.append( o )
-                    else:
-                        print "CONFIG FILE LOAD PROBLEM : service config doesn't follow service; instead ", o.__class__
-            except EOFError:
-                inp.close()
-                inp = None
-            except:
-                print "Exception in LoadConfiguration ", sys.exc_type, sys.exc_value
-                raise faultType("AGNodeService.LoadConfiguration failed: " + str( sys.exc_value ) )
+        config = ConfigParser.ConfigParser()
+        config.read( self.configDir + os.sep + configName )
 
         #
-        # Test service manager presence
+        # Parse config file into usable structures
         #
-        print "Test service manager presence"
         serviceManagerList = []
-        for serviceManager in self.serviceManagers:
+        serviceManagerSections = string.split( config.get("node", "servicemanagers") )
+        for serviceManagerSection in serviceManagerSections:
+            #
+            # Create Service Manager
+            #
+            serviceManager = AGServiceManagerDescription( config.get( serviceManagerSection, "name" ), 
+                                                          config.get( serviceManagerSection, "url" ) )
+
+            #
+            # Extract Service List
+            #
+            serviceList = [] 
+            serviceSections = string.split( config.get( serviceManagerSection, "services" ) )
+            for serviceSection in serviceSections:
+                #
+                # Read the resource
+                #
+                resourceSection = config.get( serviceSection, "resource" )
+                if resourceSection == "None":
+                    resource = "None"
+                else:
+                    resource = AGResource( config.get( resourceSection, "type" ),
+                                           config.get( resourceSection, "resource" ) )
+
+                #
+                # Read the service config
+                #
+                serviceConfigSection = config.get( serviceSection, "serviceConfig" )
+                parameters = []
+                for parameter in config.options( serviceConfigSection ):
+                    parameters.append( ValueParameter( parameter, config.get( serviceConfigSection, parameter ) ) )
+
+                #
+                # Add Service to List
+                #
+                incomingService = IncomingService()
+                incomingService.packageName = config.get( serviceSection, "packageName" )
+                incomingService.executable = config.get( serviceSection, "executable" )
+                incomingService.resource = resource
+                incomingService.parameters = parameters
+                serviceList.append( incomingService )
+                
+            #
+            # Add Service Manager to List
+            #
+            serviceManagerList.append( ( serviceManager, serviceList ) )
+
+
+        #
+        # Add service managers and services
+        #
+        self.serviceManagers = []
+        for serviceManager, serviceList in serviceManagerList:
+
+            #
+            # Skip unreachable service managers
+            #
             try:
-                Client.Handle( serviceManager.uri ).get_proxy().Ping(  )
-                serviceManagerList.append( serviceManager )
+                Client.Handle( serviceManager.uri ).get_proxy().Ping()
             except:
-                print "* * Couldn't contact host ; uri=", serviceManager.uri
-                hadServiceManagerException = 1
-
-        # Update service manager list to contain only reachable service managers
-        self.serviceManagers = serviceManagerList
-
-
-        #
-        # Remove all services from service managers
-        #
-        for serviceManager in self.serviceManagers:
-            Client.Handle( serviceManager.uri ).get_proxy().RemoveServices()
-
-        #
-        # Add services to service managers
-        #
-        print "Add services to hosts"
-        serviceIndex = 0
-        for s in services:
-
-
-            try:
-                # - Add the service
-
-                s.description = serviceIndex
-                serviceIndex = serviceIndex + 1
-
-                print "*** trying to add service ", s.name, " to servicemanager ", s.serviceManagerUri
-                Client.Handle( s.serviceManagerUri ).get_proxy().AddServiceDescription( s )
-            except:
-                print "Exception adding service", sys.exc_type, sys.exc_value
-                hadServiceException = 1
-
-
-        import time
-        time.sleep(1)
-
-        for s in services:
-
-            try:
-                smservices = Client.Handle( s.serviceManagerUri ).get_proxy().GetServices()
-            except:
+                print "Couldn't reach service manager:", serviceManager.uri
                 continue
 
-            for sms in smservices:
-                if sms.description == s.description:
-                    print "found service to configure ; desc = ", s.description
-                    try:
-                        # - Configure the service
-## FIXME - all of this config store/load code is bad, but fetching this index by searching the list
-##          should go even if the bad code stays for a while
-                        index = services.index( s )
-                        print "*** trying to configure service ", s.name, " using config ", serviceConfigs[index]
-                        Client.Handle( sms.uri ).get_proxy().SetConfiguration( serviceConfigs[index] )
-                    except:
-                        print "Exception setting config", sys.exc_type, sys.exc_value
-                        hadServiceException = 1
+            # Add service manager to list (since it's reachable)
+            self.serviceManagers.append( serviceManager )
 
-        if hadServiceManagerException and hadServiceException:
-            raise faultType("AGNodeService.LoadConfiguration failed: service manager and service faults")
-        elif hadServiceManagerException:
-            raise faultType("AGNodeService.LoadConfiguration failed: service manager fault")
-        elif hadServiceException:
-            raise faultType("AGNodeService.LoadConfiguration failed: service fault")
+            #
+            # Remove all services from service manager
+            #
+            Client.Handle( serviceManager.uri ).get_proxy().RemoveServices()
+
+            #
+            # Add Service to Service Manager
+            #
+            for service in serviceList:
+                serviceConfig = ServiceConfiguration( service.resource, service.executable, service.parameters)
+                Client.Handle( serviceManager.uri ).get_proxy().AddService( self.servicePackageRepository.GetPackageUrl( service.packageName ), 
+                                                                            service.resource,
+                                                                            serviceConfig )
     LoadConfiguration.soap_export_as = "LoadConfiguration"
 
 
     def StoreConfiguration( self, configName ):
-        """Store current configuration using specified name"""
+      """
+      Store node configuration with specified name
+      """
+      try:
+        numServiceManagers = 0
+        numServices = 0
 
-        print "in StoreConfiguration"
-        try:
-            out = open( self.configDir + os.sep + configName, "w")
-            print "in StoreConfiguration"
-            print "in StoreConfiguration"
-            for serviceManager in self.serviceManagers:
-                serviceManager = AGServiceManagerDescription( serviceManager.name, serviceManager.uri )
-                print "serviceManager ", serviceManager.uri, serviceManager.__class__
-                pickle.dump( serviceManager, out )
-                svcs = Client.Handle( serviceManager.uri ).get_proxy().GetServices().data
-                print svcs.__class__
-                for svc in svcs:
-                    svc = AGServiceDescription( svc.name, svc.description, svc.uri, svc.capabilities,
-                                                svc.resource, svc.serviceManagerUri, svc.executable )
-                    print "service ", svc.name, svc.uri, svc.serviceManagerUri, svc.executable
-                    pickle.dump( svc, out )
-                    configuration = 5
-                    print "get proxy"
-                    c = Client.Handle( svc.uri ).get_proxy()
-                    print "ping"
-                    c.Ping()
-                    print "get config"
-                    cfg = c.GetConfiguration()
-                    cfg = ServiceConfiguration( cfg.resource, cfg.executable, cfg.parameters )
-                    print c.__class__
-                    print cfg.__class__
-                    pickle.dump( cfg, out )
-            out.close()
+        config = ConfigParser.ConfigParser()
 
-            inp = open( self.configDir + os.sep + configName, "r")
-            while inp:
-                try:
-                    o = pickle.load(inp)
-                    print "got object ", o, o.__class__
-                except EOFError:
-                    inp.close()
-                    inp = None
+        nodeSection = "node"
+        config.add_section(nodeSection)
 
-        except:
-            out.close()
-            print "Exception in StoreConfiguration ", sys.exc_type, sys.exc_value
-            raise faultType("AGNodeService.StoreConfiguration failed: " + str( sys.exc_value ))
+        node_servicemanagers = ""
+
+        for serviceManager in self.serviceManagers:
+
+            servicemanager_services = ""
+
+            #
+            # Create Service Manager section
+            #
+            serviceManagerSection = 'servicemanager%d' % numServiceManagers
+            config.add_section( serviceManagerSection )
+            node_servicemanagers += serviceManagerSection + " "
+            config.set( serviceManagerSection, "name", serviceManager.name )
+            config.set( serviceManagerSection, "url", serviceManager.uri )
+
+            services = Client.Handle( serviceManager.uri ).get_proxy().GetServices()
+            for service in services:
+                # 
+                # Create Resource section
+                #
+                if service.resource == "None":
+                    resourceSection = "None"
+                else:
+                    resourceSection = 'resource%d' % numServices
+                    config.add_section( resourceSection )
+                    config.set( resourceSection, "type", service.resource.type )
+                    config.set( resourceSection, "resource", service.resource.resource )
+
+                # 
+                # Create Service Config section
+                #
+                serviceConfigSection = 'serviceconfig%d' % numServices
+                config.add_section( serviceConfigSection )
+                serviceConfig = Client.Handle( service.uri ).get_proxy().GetConfiguration()
+                for parameter in serviceConfig.parameters:
+                    config.set( serviceConfigSection, parameter.name, parameter.value )
+
+
+                #
+                # Create Service section
+                #
+                serviceSection = 'service%d' % numServices
+                config.add_section( serviceSection )
+                servicemanager_services += serviceSection + " "
+                config.set( serviceSection, "packageName", os.path.basename( service.servicePackageUri ) )
+                config.set( serviceSection, "executable", serviceConfig.executable )
+                config.set( serviceSection, "resource", resourceSection )
+                config.set( serviceSection, "serviceconfig", serviceConfigSection )
+
+                numServices += 1
+
+            config.set( serviceManagerSection, "services", servicemanager_services )
+            numServiceManagers += 1
+
+        config.set(nodeSection, "servicemanagers", node_servicemanagers )
+
+        #
+        # Write config file
+        #
+        file = self.configDir + os.sep + configName + ".cfg"
+        fp = open( file, "w" )
+        config.write(fp)
+        fp.close()
+
+      except:
+        print "Exception in AGNodeService.StoreConfiguration:", sys.exc_type, sys.exc_value
+
     StoreConfiguration.soap_export_as = "StoreConfiguration"
 
 
@@ -379,7 +389,6 @@ class AGNodeService( ServiceBase ):
         try:
             services = self.GetServices()
             for service in services:
-                print "-- ", service.uri
                 capabilitySubset = Client.Handle( service.uri ).get_proxy().GetCapabilities().data
                 capabilities = capabilities + capabilitySubset
 
@@ -421,7 +430,6 @@ class AGNodeService( ServiceBase ):
             for line in lines:
                 line = string.strip(line)
                 self.authManager.AddAuthorizedUser( line )
-                print "added user ", line
 
             # push authorization to service managers
             self.__PushAuthorizedUserList()
@@ -496,6 +504,8 @@ class AGServicePackageRepository:
         print "Download filename : ", self.servicesDir + os.sep + url_path 
         return self.servicesDir + os.sep + url_path 
 
+    def GetPackageUrl( self, file ):
+        return self.baseUrl + file
 
     def GetServiceDescriptions( self ):
         """
@@ -522,7 +532,7 @@ class AGServicePackageRepository:
                         serviceDesc = servicePackage.GetServiceDescription()
                     except InvalidServicePackage, InvalidServiceDescription:
                         invalidServicePackages = invalidServicePackages + 1
-                    serviceDesc.uri = self.baseUrl + file
+                    serviceDesc.servicePackageUri = self.baseUrl + file
                     self.serviceDescriptions.append( serviceDesc )
 
         if invalidServicePackages:

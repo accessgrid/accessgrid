@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.12 2003-02-24 20:56:23 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.13 2003-02-28 17:20:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -64,8 +64,6 @@ class AGServiceManager( ServiceBase ):
 
         try:
             self.authManager.SetAuthorizedUsers( authorizedUsers )
-            print "got authorized user list", authorizedUsers
-
             self.__PushAuthorizedUserList()
         except:
             print "AGServiceManager.SetAuthorizedUsers : ", sys.exc_type, sys.exc_value
@@ -101,20 +99,18 @@ class AGServiceManager( ServiceBase ):
     ## SERVICE methods
     ####################
 
-    def AddService( self, serviceDescription, resourceToAssign ):
+    def AddService( self, servicePackageUri, resourceToAssign, serviceConfig ):
         """
-        Add a service to the service manager.  The service is an executable
-        or python script, which will be started by the ServiceManager
+        Add a service package to the service manager.  
         """
         try:
             #
             # Determine resource to assign to service
             #
-            print "** resourceToAssign = ", resourceToAssign, type(resourceToAssign)
             if resourceToAssign != None and resourceToAssign != "None":
                 foundResource = 0
                 for resource in self.resources:
-                    if resource.resource == resourceToAssign.resource:
+                    if resourceToAssign.resource == resource.resource:
                         if resource.inUse == 1:
                             print "** Resource is already in use ! ", resource.resource
                             # should error out here later; for now, services aren't using the resources anyway
@@ -139,10 +135,15 @@ class AGServiceManager( ServiceBase ):
             #
             # Retrieve service implementation
             #
-            servicePackageFile = self.__RetrieveServicePackage( serviceDescription.uri )
-            serviceDescription.resource = resourceToAssign
-            print "service description = ", serviceDescription.name, serviceDescription.description, serviceDescription.executable
-            self.__AddServiceDescription( serviceDescription )
+            servicePackageFile = self.__RetrieveServicePackage( servicePackageUri )
+            serviceDescription = AGServicePackage( servicePackageFile ).GetServiceDescription()
+            serviceDescription.servicePackageUri = servicePackageUri
+            serviceDescription.resource = resource
+
+            #
+            # Add service
+            #
+            self.__AddServiceDescription( serviceDescription, serviceConfig )
 
         except:
             print "Exception in AddService, retrieving service implementation\n-- ", sys.exc_type, sys.exc_value
@@ -150,28 +151,7 @@ class AGServiceManager( ServiceBase ):
 
     AddService.soap_export_as = "AddService"
 
-
-    def AddServiceDescription( self, serviceDescription ):
-        """
-        Add a service to the service manager.  The service is an executable
-        or python script, which will be started by the ServiceManager
-        """
-        try:
-            serviceDescription = AGServiceDescription( serviceDescription.name,
-                                                       serviceDescription.description,
-                                                       serviceDescription.uri,
-                                                       serviceDescription.capabilities,
-                                                       serviceDescription.resource,
-                                                       serviceDescription.serviceManagerUri,
-                                                       serviceDescription.executable )
-
-            self.__AddServiceDescription( serviceDescription )
-        except:
-            print "Exception in AGServiceManager.AddServiceDescription ", sys.exc_type, sys.exc_value
-            raise faultType("AGServiceManager.AddServiceDescription failed: " + str( sys.exc_value ))
-    AddServiceDescription.soap_export_as = "AddServiceDescription"
-
-
+    
     def RemoveService( self, serviceToRemove ):
         """Remove a service
         """
@@ -208,8 +188,7 @@ class AGServiceManager( ServiceBase ):
 
                     #
                     # Free the resource
-                    #
-                    if service.resource.resource != None and service.resource.resource != "None":
+                    if service.resource != "None":
                         foundResource = 0
                         for resource in self.resources:
                             if resource.resource == service.resource.resource:
@@ -222,14 +201,13 @@ class AGServiceManager( ServiceBase ):
                     break
 
         except:
-            print "Exception in AGSM.RemoveService ", sys.exc_type, sys.exc_value
+            print "Exception in AGServiceManager.RemoveService ", sys.exc_type, sys.exc_value
             exc = sys.exc_value
 
         #
         # Remove service from list
         #
         if pid:
-            print "Removing service from list"
             del self.services[pid]
 
         # raise exception now, if one occurred
@@ -264,7 +242,6 @@ class AGServiceManager( ServiceBase ):
         Stop all services on service manager
         """
         for service in self.services.values():
-            print "stopping service at uri ", service.uri
             Client.Handle( service.uri ).get_proxy().Stop()
 
     StopServices.soap_export_as = "StopServices"
@@ -282,7 +259,7 @@ class AGServiceManager( ServiceBase ):
 
             # Use the token to identify the unregistered service
             #
-            pid, service = self.unregisteredServices[token]
+            pid, service, serviceConfig = self.unregisteredServices[token]
             del self.unregisteredServices[token]
 
             # Set the uri and add service to list of services
@@ -291,16 +268,20 @@ class AGServiceManager( ServiceBase ):
             self.services[pid] = service
 
             # Push authorized user list
-            print "* * * Pushing Authorized user list"
             Client.Handle( service.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
 
             # Assign resource to the service
             #
-            print "NOW SETTING RESOURCE "
-            Client.Handle( service.uri ).get_proxy().SetResource( service.resource )
+            if service.resource != "None":
+                Client.Handle( service.uri ).get_proxy().SetResource( service.resource )
 
+            # Configure the service
+            #
+            if serviceConfig != "None":
+                Client.Handle( service.uri ).get_proxy().SetConfiguration( serviceConfig )
+            
         except:
-            print "--- Exception in RegisterService ", sys.exc_type, sys.exc_value
+            print "Exception in RegisterService ", sys.exc_type, sys.exc_value
             raise faultType("AGServiceManager.RegisterService failed: " + str( sys.exc_value ))
 
     RegisterService.soap_export_as = "RegisterService"
@@ -323,7 +304,7 @@ class AGServiceManager( ServiceBase ):
 
     def __RetrieveServicePackage( self, servicePackageUrl ):
         """Internal : Retrieve a service implementation"""
-        print "Retrieving ", servicePackageUrl
+        print "Retrieving Service Package:", servicePackageUrl
 
         #
         # Retrieve the service package
@@ -335,16 +316,16 @@ class AGServiceManager( ServiceBase ):
         #
         # Extract the executable from the service package
         #
-        servicePackage = AGServicePackage( servicePackageFile )
-        servicePackage.ExtractExecutable( self.servicesDir )
+        AGServicePackage( servicePackageFile ).ExtractExecutable( self.servicesDir )
 
         return servicePackageFile
 
 
-    def __AddServiceDescription( self, serviceDescription ):
+    def __AddServiceDescription( self, serviceDescription, serviceConfig ):
         """
         Internal : Start the service with given description
         """
+
         try:
             options = []
 
@@ -363,7 +344,7 @@ class AGServiceManager( ServiceBase ):
             options.append( self.get_handle() )
             self.nextToken = self.nextToken + 1
 
-            print "starting with options ", executable, options
+            print "Running Service; options:", executable, options
             pid = os.spawnv( os.P_NOWAIT, executable, options )
 
 
@@ -377,8 +358,7 @@ class AGServiceManager( ServiceBase ):
             # Add the service to the list
             #
             serviceDescription.serviceManagerUri = self.get_handle()
-            self.unregisteredServices[token] = ( pid, serviceDescription )
-            print "service added ", serviceDescription.name, serviceDescription.uri, serviceDescription.serviceManagerUri, self.get_handle()
+            self.unregisteredServices[token] = ( pid, serviceDescription, serviceConfig )
 
         except:
             print "Exception in AddService, other ", sys.exc_type, sys.exc_value

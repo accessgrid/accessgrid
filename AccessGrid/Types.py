@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.24 2003-02-24 20:56:24 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.25 2003-02-28 17:20:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -245,8 +245,9 @@ class AGServicePackage:
                                                      None,
                                                      capabilities,
                                                      None,
+                                                     c.get( "ServiceDescription", "executable" ),
                                                      None,
-                                                     c.get( "ServiceDescription", "executable" ) )
+                                                     None )
 
         except:
             raise InvalidServiceDescription(sys.exc_value)

@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.9 2003-02-18 19:35:57 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.10 2003-02-28 17:20:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -134,8 +134,8 @@ class AGService( ServiceBase ):
          self.executable = configuration.executable
 
          for parm in configuration.parameters:
-            self.configuration[parm.name] = parm
-            print "set config ", parm.name, parm.value, parm.__class__
+            if parm.name in self.configuration.keys():
+                self.configuration[parm.name].SetValue( parm.value )
       except:
          print "Exception in AGService.SetConfiguration : ", sys.exc_type, sys.exc_value
          raise faultType("AGService.SetConfiguration failed : " + str(sys.exc_value) )
@@ -156,7 +156,6 @@ class AGService( ServiceBase ):
 
    def ConfigureStream( self, streamDescription ):
       """Configure the Service according to the StreamDescription"""
-      print "in AGService.ConfigureStream"
       try:
          m = map( lambda cap:cap.type, self.capabilities )
          print streamDescription.capability.type

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.14 2003-02-24 20:56:24 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.15 2003-02-28 17:20:43 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -215,7 +215,8 @@ class AGServiceManagerDescription:
 
 class AGServiceDescription:
     def __init__( self, name, description, uri, capabilities,
-                  resource, serviceManagerUri, executable ):
+                  resource, executable, serviceManagerUri,
+                  servicePackageUri ):
         self.name = name
         self.description = description
 
@@ -223,6 +224,7 @@ class AGServiceDescription:
 
         self.capabilities = capabilities
         self.resource = resource
-        self.serviceManagerUri = serviceManagerUri
         self.executable = executable
+        self.serviceManagerUri = serviceManagerUri
+        self.servicePackageUri = servicePackageUri
     

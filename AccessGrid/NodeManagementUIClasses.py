@@ -5,14 +5,11 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.16 2003-02-27 21:16:34 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.17 2003-02-28 17:20:43 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys
-import copy
-import time, thread
-import pprint
 import urlparse
 
 from wxPython.wx import *
@@ -131,7 +128,11 @@ class ServiceConfigurationPanel( wxPanel ):
         psz= wxBoxSizer( wxHORIZONTAL )
         pt = wxStaticText( self, -1, "Resource", style=wxALIGN_CENTRE )
         psz.Add( pt, 1 )
-        pComp = wxTextCtrl( self, -1, serviceConfig.resource.resource )
+        if serviceConfig.resource == "None":
+            resource = "None"
+        else:
+            resource = serviceConfig.resource.resource
+        pComp = wxTextCtrl( self, -1, resource )
         pComp.SetEditable( false )
         psz.Add( pComp, 1 )
         self.panelSizer.Add( psz, -1, wxEXPAND )
@@ -162,8 +163,6 @@ class ServiceConfigurationPanel( wxPanel ):
                     pComp.Append( option )
                 pComp.SetValue( parameter.value )
             else:
-                if parameter.TYPE != ValueParameter.TYPE :
-                    print "Unknown parameter type", parameter.TYPE
                 val = parameter.value
                 if type(val) == int:
                     val = '%d' % (val)
@@ -470,7 +469,6 @@ class NodeManagementClientFrame(wxFrame):
         i = 0
         self.serviceManagers = self.vc.GetServiceManagers()
         for serviceManager in self.serviceManagers:
-            print serviceManager
             item = self.hostList.InsertStringItem( i, serviceManager.name )
 
             # retain selection in host list
@@ -501,22 +499,29 @@ class NodeManagementClientFrame(wxFrame):
 
         availServices =  self.vc.GetAvailableServices()
         availServiceNames = map( lambda serviceDesc: serviceDesc.name, availServices )
+        
+        #
+        # Prompt for service to add
+        #
         dlg = wxSingleChoiceDialog( self, "Select Service to Add", "Add Service: Select Service", 
                                     availServiceNames )
-
         ret = dlg.ShowModal()
 
         if ret == wxID_OK:
+            # 
+            # Find the selected service description based on the name
             serviceToAdd = None
             serviceName = dlg.GetStringSelection()
             for service in availServices:
                 if serviceName == service.name:
-                    serviceUri = service.uri
                     serviceToAdd = service
                     break
 
 
-            resourceToAssign = AGResource()
+            #
+            # Prompt for resource to assign
+            #
+            resourceToAssign = None
             resources = Client.Handle( serviceManager.uri ).get_proxy().GetResources()
             if len(resources) > 0:
 
@@ -539,10 +544,14 @@ class NodeManagementClientFrame(wxFrame):
 
 
             try:
+                #
+                # Add the service
+                #
                 if serviceToAdd == None:
-                    raise Exception()
-                print "Adding service ", serviceToAdd.name, serviceToAdd.uri
-                Client.Handle( serviceManager.uri ).get_proxy().AddService( serviceToAdd, resourceToAssign )
+                    raise Exception("Can't add NULL service")
+                Client.Handle( serviceManager.uri ).get_proxy().AddService( serviceToAdd.servicePackageUri, 
+                               resourceToAssign,
+                               None )
             except:
                 print "Exception in AddService : ", sys.exc_type, sys.exc_value
                 self.Error( "Add Service failed :" + serviceToAdd.name )
@@ -550,7 +559,10 @@ class NodeManagementClientFrame(wxFrame):
             self.UpdateServiceList()
 
     def StartService( self, event=None ):
-
+        """
+        Start the selected service(s)
+        """
+        
         try:
 
             if self.serviceList.GetSelectedItemCount() == 0:
@@ -560,7 +572,7 @@ class NodeManagementClientFrame(wxFrame):
             index = -1
             for i in range( self.serviceList.GetSelectedItemCount() ):
                 index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-                print "** Starting service ", index
+                print "** Starting Service:", index
                 ret = Client.Handle( self.services[index].uri ).get_proxy().Start()
 
             self.UpdateServiceList()
@@ -569,7 +581,8 @@ class NodeManagementClientFrame(wxFrame):
             print "Exception in StartService ", sys.exc_type, sys.exc_value
 
     def StartServices( self, event ):
-        """ Start all known services
+        """ 
+        Start all known services
         """
         services = self.vc.GetServices()
         for service in services:
@@ -688,7 +701,7 @@ class NodeManagementClientFrame(wxFrame):
                         else:
                             self.serviceList.SetStringItem( i,1, "Stopped" )
                     except:
-                        print "Exception wxapp.UpdateServiceList ", sys.exc_type, sys.exc_value
+                        print "Exception in UpdateServiceList ", sys.exc_type, sys.exc_value
                     self.serviceList.SetStringItem( i,2, svc.uri )
                     i = i + 1
 
@@ -720,19 +733,16 @@ class NodeManagementClientFrame(wxFrame):
         streamDs.append( StreamDescription( "Test Room", "",
                              MulticastNetworkLocation( "233.2.171.38", 42002, 127 ),
                              Capability( Capability.CONSUMER, Capability.VIDEO ) ) )
-        streamDs.append( StreamDescription( "Test Room", "",
-                             MulticastNetworkLocation( "233.2.171.38", 42004, 127 ),
-                             Capability( Capability.CONSUMER, Capability.TEXT ) ) )
         self.vc.ConfigureStreams( streamDs )
 
         self.UpdateServiceList()
 
     def GotoArgonne( self, event=None ):
         streamDs = []
-        streamDs.append( StreamDescription( "", "",
+        streamDs.append( StreamDescription( "ANL", "",
                              MulticastNetworkLocation( "233.2.171.251", 59988, 127 ),
                              Capability( Capability.CONSUMER, Capability.AUDIO ) ) )
-        streamDs.append( StreamDescription( "", "",
+        streamDs.append( StreamDescription( "ANL", "",
                              MulticastNetworkLocation( "233.2.171.251", 59986, 127 ),
                              Capability( Capability.CONSUMER, Capability.VIDEO ) ) )
         self.vc.ConfigureStreams( streamDs )
@@ -741,9 +751,12 @@ class NodeManagementClientFrame(wxFrame):
 
     def GotoLobby( self, event=None ):
         streamDs = []
-        streamDs.append( StreamDescription( "", "",
+        streamDs.append( StreamDescription( "Lobby", "",
                              MulticastNetworkLocation( "224.2.177.155", 55524, 127 ),
                              Capability( Capability.CONSUMER, Capability.VIDEO ) ) )
+        streamDs.append( StreamDescription( "Lobby", "",
+                             MulticastNetworkLocation( "224.2.211.167", 16964, 127 ),
+                             Capability( Capability.CONSUMER, Capability.AUDIO ) ) )
         self.vc.ConfigureStreams( streamDs )
         self.UpdateServiceList()
 
