@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.119 2003-04-18 18:41:43 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.120 2003-04-18 23:03:27 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,9 +46,11 @@ if sys.platform == "win32":
 try:
     from AccessGrid import CertificateManager
     CertificateManager.CertificateManagerWXGUI
-    HaveCertificateManager = 0
+    HaveCertificateManager = 1
 except Exception, e:
     HaveCertificateManager = 0
+
+from AccessGrid.hosting.pyGlobus import Server
     
 class VenueClientUI(wxApp, VenueClient):
     """

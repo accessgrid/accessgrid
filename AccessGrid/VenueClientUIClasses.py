@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.141 2003-04-18 21:26:36 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.142 2003-04-18 23:01:14 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -31,6 +31,7 @@ from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import MyLog 
 from AccessGrid.Platform import GetTempDir, GetInstallDir
 from AccessGrid.TextClient import SimpleTextProcessor
+from AccessGrid.TextClient import TextClientConnectException
 from pyGlobus.io import GSITCPSocket
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth, GetHostname
 from AccessGrid.Events import ConnectEvent, TextEvent, DisconnectEvent
@@ -1474,14 +1475,20 @@ class TextClientPanel(wxPanel):
         self.venueId = venueId
         self.attr = CreateTCPAttrAlwaysAuth()
         self.socket = GSITCPSocket()
-        self.socket.connect(self.host, self.port, self.attr)
+        try:
+            self.socket.connect(self.host, self.port, self.attr)
+        except:
+            wxLogDebug("Couldn't connect to text service! %s:%d", self.host,
+                       self.port)
+            raise TextClientConnectException
 
-        wxLogDebug("VenueClientUIClasses.py: VenueClientUIClasses.py: Set text location host:%s, port:%d, venueId:%s, attr:%s, socket:%s"
-                   %(self.host,self.port, self.venueId, str(self.attr), str(self.socket)))
+        wxLogDebug("VenueClientUIClasses.py: Set text location")
+        wxLogDebug("\n\thost:%s\n\tport:%d\n\tvenueId:%s\n\tattr:%s"
+                   % (self.host, self.port, self.venueId, str(self.attr)))
+        wxLogDebug("\n\tsocket:%s" % str(self.socket))
         
         self.Processor = SimpleTextProcessor(self.socket, self.venueId,
                                              self.OutputText)
-                                                   
         self.Processor.Input(ConnectEvent(self.venueId))
         self.TextOutput.Clear()
         self.TextInput.Clear()
