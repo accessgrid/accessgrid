@@ -6,14 +6,14 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.135 2003-09-18 17:22:47 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.136 2003-09-25 22:04:27 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Venue.py,v 1.135 2003-09-18 17:22:47 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.136 2003-09-25 22:04:27 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -2377,7 +2377,10 @@ class Venue(ServiceBase.ServiceBase):
         sm = AccessControl.GetSecurityManager()
         rm = self.GetRoleManager()
 
-        for clientPrivateId in self.clients:
+        # Loop from end to beginning since list may be modifed here.
+        #  Dicts don't have duplicates, so remove() won't have side effects.
+        for i in range(len(self.clients.keys())-1, -1, -1):
+            clientPrivateId = self.clients.keys()[i]
             client = self.clients[clientPrivateId].clientProfile
             # Special Case: if all users are DisallowedEntry, then specific users are allowed.
             if "ALL_USERS" in rm.validRoles["Venue.DisallowedEntry"].GetSubjectList():
