@@ -5,13 +5,13 @@
 # Author:      Robert Olson
 #
 # Created:     9/11/2003
-# RCS-ID:      $Id: NetUtilities.py,v 1.4 2004-02-19 18:10:10 eolson Exp $
+# RCS-ID:      $Id: NetUtilities.py,v 1.5 2004-02-24 21:34:51 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetUtilities.py,v 1.4 2004-02-19 18:10:10 eolson Exp $"
+__revision__ = "$Id: NetUtilities.py,v 1.5 2004-02-24 21:34:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -77,3 +77,20 @@ def GetSNTPTime(server, timeout):
     else:
         client.close()
         return None
+
+import socket
+import pyGlobus.utilc
+
+def GetHostname():
+    """
+    Return the local hostname.
+
+    This uses the pyGlobus mechanism when possible, in order
+    to get a hostname that Globus will be happy with.
+
+    """
+    ret, host = pyGlobus.utilc.get_hostname(256)
+    if ret != 0:
+        host = socket.getfqdn()
+    return host
+

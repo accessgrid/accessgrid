@@ -6,42 +6,41 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: RoleAuthorization.py,v 1.11 2003-10-21 16:39:51 eolson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.2 2004-02-24 21:34:51 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: RoleAuthorization.py,v 1.11 2003-10-21 16:39:51 eolson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.2 2004-02-24 21:34:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from wxPython.wizard import *
 
-from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid import Toolkit
 from AccessGrid.ClientProfile import ClientProfileCache
-
+from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
        
-class RoleAuthorizationPanel(wxPanel):
+class AuthorizationUIPanel(wxPanel):
     '''
     This class shows a tree of people structured in roles.
     '''
-    def __init__(self, parent, id):
+    def __init__(self, parent, id, url):
         wxPanel.__init__(self, parent, id, wxDefaultPosition, \
 			 size = wxSize(400,200), style = wxRAISED_BORDER)
 
-        self.roleClient = RoleClient()
-        self.roleClient.ConnectToVenue("https://localhost:8000/Venues/default")
+        self.url = url
+        self.authClient = AuthorizationManagerIW(self.url)
 
         # Stores all tree ids for roles (key = role, value = tree id)
         self.headingDict = dict()
 
         # Stores the tree structure
-        self.rolesDict = self.roleClient.GetVenueRoles()
+        for role in self.authClient.ListRoles():
+            self.rolesDict[role] = self.authClient.ListSubjectInRole(role)
         
-     
         # Adjust tree for different platforms 
         if sys.platform == "win32":
             self.tree = wxTreeCtrl(self, wxNewId(), wxDefaultPosition, 
@@ -71,7 +70,6 @@ class RoleAuthorizationPanel(wxPanel):
         self.__setEvents()
         self.__initTree()
         self.__layout()
-        
 
     def __initTree(self):
         '''
@@ -122,6 +120,118 @@ class RoleAuthorizationPanel(wxPanel):
         EVT_MENU(self,self.ID_PERSON_RENAME, self.Rename)
         EVT_MENU(self,self.ID_PERSON_COPY, self.Copy)
         EVT_MENU(self,self.ID_PERSON_PASTE, self.Paste)
+
+    def __participantInRole(self, roleId, person):
+        '''
+        Check to see if person/group is added to a role already
+        '''
+        role = self.tree.GetItemText(roleId)
+        list = self.rolesDict[role]
+                       
+        return person in list        
+                   
+    def __rmParticipantFromDict(self, role, person):
+        '''
+        Remove a participant from the role dictionary
+        '''
+        list = self.rolesDict[role]
+        
+        i = 0
+        for item in list:
+            if item == person:
+                del list[i]
+                return
+            else:
+                i = i + 1
+                
+        self.rolesDict[role] = list
+
+    def __addParticipantToDict(self, role, person):
+        '''
+        Add a participant to the role dictionary
+        '''
+        list = self.rolesDict[role]
+        list.append(person)
+        self.rolesDict[role] = list
+
+    def __isRole(self, treeId):
+        '''
+        Check to see if a tree id is a role
+        '''
+        return self.tree.GetItemText(treeId) in self.rolesDict.keys()
+         
+    def __setMenus(self):
+        '''
+        Initiate menues that are shown when user right-clicks a tree item
+        '''
+        self.ID_ROLE_ADDPERSON = wxNewId()
+        #self.ID_ROLE_ADDROLE = wxNewId()
+        #self.ID_ROLE_RENAME = wxNewId()
+        #self.ID_ROLE_PASTE = wxNewId()
+        #self.ID_ROLE_DELETE = wxNewId()
+
+        self.ID_PERSON_ADDPERSON = wxNewId()
+        self.ID_PERSON_ADDROLE = wxNewId()
+        self.ID_PERSON_RENAME = wxNewId()
+        self.ID_PERSON_COPY = wxNewId()
+        self.ID_PERSON_PASTE = wxNewId()
+        self.ID_PERSON_DELETE = wxNewId()
+       
+
+        # Menu when user clicks on a role item
+        
+        self.roleMenu = wxMenu()
+        self.roleMenu.Append(self.ID_ROLE_ADDPERSON,"Add People...",
+                                   "Add participant to this role")
+        #self.roleMenu.Append(self.ID_ROLE_ADDROLE,"New Role...",
+        #                           "Add new role")
+        #self.roleMenu.AppendSeparator()
+        #self.roleMenu.Append(self.ID_ROLE_RENAME,"Rename",
+        #                           "Change name of this role")
+        #self.roleMenu.Append(self.ID_ROLE_PASTE,"Paste",
+        #                           "Paste copied participant to this role")
+        #self.roleMenu.AppendSeparator()
+        #self.roleMenu.Append(self.ID_ROLE_DELETE,"Delete",
+        #                           "Remove this role from venue")
+      
+
+        # Menu when user clicks on a participant/group
+        
+        self.personMenu = wxMenu()
+        self.personMenu.Append(self.ID_PERSON_ADDPERSON,"New Participant",
+                                   "New participant")
+        self.personMenu.Append(self.ID_PERSON_ADDROLE,"New Role",
+                                   "Add new role")
+        self.personMenu.AppendSeparator()
+        self.personMenu.Append(self.ID_PERSON_RENAME,"Rename",
+                                   "Rename this participant")
+        self.personMenu.Append(self.ID_PERSON_COPY,"Copy",
+                                   "Copy this participant")
+
+        self.personMenu.Append(self.ID_PERSON_PASTE,"Paste",
+                                   "Paste")
+        self.personMenu.AppendSeparator()
+        self.personMenu.Append(self.ID_PERSON_DELETE,"Delete",
+                                   "Remove this role from venue")
+       
+    def __layout(self):
+        '''
+        Handles ui layout
+        '''
+        sizer = wxBoxSizer(wxVERTICAL)
+
+        box = wxBoxSizer(wxHORIZONTAL)
+        box.Add(self.newRoleButton, 1)
+        box.Add(self.newPersonButton, 1)
+        box.Add(self.deleteButton, 1)
+        box.Add(self.renameButton, 1)
+
+        sizer.Add(box, 0, wxEXPAND|wxLEFT|wxRIGHT, 5)
+        sizer.Add(self.tree, 1, wxEXPAND| wxALL, 5)
+
+        self.SetAutoLayout(1)
+        self.SetSizer(sizer)
+        self.Layout()
 
     def Copy(self, event):
         '''
@@ -248,9 +358,10 @@ class RoleAuthorizationPanel(wxPanel):
                 for item in self.rolesDict[role]:
                     self.tree.AppendItem(self.headingDict[role], item)    
 
-            self.roleClient.SetVenueRoles(self.rolesDict)
+            # Upload Roles
+            for role in self.rolesDict.keys():
+                self.authClient.SetSubjectInRole(role, roleDictionary[role])
 
-     
     def Delete(self, event):
         '''
         Remove an item from the tree
@@ -283,40 +394,6 @@ class RoleAuthorizationPanel(wxPanel):
             else:
                 MessageDialog(self, "Please select the participant you want to remove")
 
-    def __participantInRole(self, roleId, person):
-        '''
-        Check to see if person/group is added to a role already
-        '''
-        role = self.tree.GetItemText(roleId)
-        list = self.rolesDict[role]
-                       
-        return person in list        
-                   
-    def __rmParticipantFromDict(self, role, person):
-        '''
-        Remove a participant from the role dictionary
-        '''
-        list = self.rolesDict[role]
-        
-        i = 0
-        for item in list:
-            if item == person:
-                del list[i]
-                return
-            else:
-                i = i + 1
-                
-        self.rolesDict[role] = list
-
-    def __addParticipantToDict(self, role, person):
-        '''
-        Add a participant to the role dictionary
-        '''
-        list = self.rolesDict[role]
-        list.append(person)
-        self.rolesDict[role] = list
-
-        
     def Rename(self, event):
         '''
         Is called when user wants to rename a participant/group
@@ -349,66 +426,6 @@ class RoleAuthorizationPanel(wxPanel):
         self.__rmParticipantFromDict(role, text)
         self.__addParticipantToDict(role, newText) 
             
-    def __isRole(self, treeId):
-        '''
-        Check to see if a tree id is a role
-        '''
-        return self.tree.GetItemText(treeId) in self.rolesDict.keys()
-         
-    def __setMenus(self):
-        '''
-        Initiate menues that are shown when user right-clicks a tree item
-        '''
-        self.ID_ROLE_ADDPERSON = wxNewId()
-        #self.ID_ROLE_ADDROLE = wxNewId()
-        #self.ID_ROLE_RENAME = wxNewId()
-        #self.ID_ROLE_PASTE = wxNewId()
-        #self.ID_ROLE_DELETE = wxNewId()
-
-        self.ID_PERSON_ADDPERSON = wxNewId()
-        self.ID_PERSON_ADDROLE = wxNewId()
-        self.ID_PERSON_RENAME = wxNewId()
-        self.ID_PERSON_COPY = wxNewId()
-        self.ID_PERSON_PASTE = wxNewId()
-        self.ID_PERSON_DELETE = wxNewId()
-       
-
-        # Menu when user clicks on a role item
-        
-        self.roleMenu = wxMenu()
-        self.roleMenu.Append(self.ID_ROLE_ADDPERSON,"Add People...",
-                                   "Add participant to this role")
-        #self.roleMenu.Append(self.ID_ROLE_ADDROLE,"New Role...",
-        #                           "Add new role")
-        #self.roleMenu.AppendSeparator()
-        #self.roleMenu.Append(self.ID_ROLE_RENAME,"Rename",
-        #                           "Change name of this role")
-        #self.roleMenu.Append(self.ID_ROLE_PASTE,"Paste",
-        #                           "Paste copied participant to this role")
-        #self.roleMenu.AppendSeparator()
-        #self.roleMenu.Append(self.ID_ROLE_DELETE,"Delete",
-        #                           "Remove this role from venue")
-      
-
-        # Menu when user clicks on a participant/group
-        
-        self.personMenu = wxMenu()
-        self.personMenu.Append(self.ID_PERSON_ADDPERSON,"New Participant",
-                                   "New participant")
-        self.personMenu.Append(self.ID_PERSON_ADDROLE,"New Role",
-                                   "Add new role")
-        self.personMenu.AppendSeparator()
-        self.personMenu.Append(self.ID_PERSON_RENAME,"Rename",
-                                   "Rename this participant")
-        self.personMenu.Append(self.ID_PERSON_COPY,"Copy",
-                                   "Copy this participant")
-
-        self.personMenu.Append(self.ID_PERSON_PASTE,"Paste",
-                                   "Paste")
-        self.personMenu.AppendSeparator()
-        self.personMenu.Append(self.ID_PERSON_DELETE,"Delete",
-                                   "Remove this role from venue")
-       
     def OnRightClick(self, event):
         '''
         Is called when user right-clicks a tree item. Opens a menu.
@@ -431,48 +448,38 @@ class RoleAuthorizationPanel(wxPanel):
                                wxPoint(self.x, self.y))
         
         
-    def __layout(self):
-        '''
-        Handles ui layout
-        '''
-        sizer = wxBoxSizer(wxVERTICAL)
-
-        box = wxBoxSizer(wxHORIZONTAL)
-        box.Add(self.newRoleButton, 1)
-        box.Add(self.newPersonButton, 1)
-        box.Add(self.deleteButton, 1)
-        box.Add(self.renameButton, 1)
-
-        sizer.Add(box, 0, wxEXPAND|wxLEFT|wxRIGHT, 5)
-        sizer.Add(self.tree, 1, wxEXPAND| wxALL, 5)
-
-        self.SetAutoLayout(1)
-        self.SetSizer(sizer)
-        self.Layout()
-
 class AddPeopleDialog(wxDialog):
     '''
     Dialog for adding people to roles
     '''
-    def __init__(self, parent, id, title, venueUrl="https://localhost:8000/Venues/default", infoDict=None, selectedRole=""):
-        wxDialog.__init__(self, parent, id, title, style=wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+    def __init__(self, parent, id, title, authMIW, infoDict=None,
+                 selectedRole=""):
+        wxDialog.__init__(self, parent, id, title,
+                          style=wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
         self.SetSize(wxSize(500, 450))
-        self.venueUrl = venueUrl
-        self.roleClient = RoleClient()
-        self.roleClient.ConnectToVenue(self.venueUrl)
+        self.authClient = authMIW
+        self.infoDict = dict()
+        self.rolesDict = dict()
+        self.selectedRole = selectedRole
+        
         if infoDict:
             self.infoDict = infoDict
         else:
-            self.infoDict = self.roleClient.GetVenueRoles()
+            for r in self.authClient.ListRoles():
+                self.infoDict[r.name] = self.authClient.ListSubjectsInRole(r.name)
 
-        if len(selectedRole) > 0: 
-            self.selectedRole = selectedRole
-        else:
-            self.selectedRole = self.infoDict.keys()[0]
+        for role in self.authClient.ListRoles():
+            self.rolesDict[role] = self.authClient.ListSubjectsInRole(role)
 
+        self.pList = []
 
-        self.pList = self.roleClient.GetCachedUsers()
-        self.gList = self.roleClient.GetGroups()
+        # Now from our local cache
+        c = ClientProfileCache()
+        for p in c.loadAllProfiles():
+            if p.GetDistinguishedName():
+                self.pList.append(p.GetDistinguishedName().split('=')[-1])
+                
+        self.gList = self.authClient.ListRoles()
         
         self.dnTextCtrl = wxTextCtrl(self,-1, "")
         self.addButton1 = wxButton(self, wxNewId(), "Add >>",
@@ -484,157 +491,40 @@ class AddPeopleDialog(wxDialog):
        
         self.addButton2 = wxButton(self, wxNewId(), "Add >>",
                                    style = wxBU_EXACTFIT)
-        self.groupList = wxListCtrl(self, wxNewId(),
-                                    style = wxLC_REPORT | wxLC_SORT_ASCENDING |
-                                    wxSUNKEN_BORDER|wxHSCROLL|wxLC_NO_HEADER)
-        self.groupList.InsertColumn(0, "Groups:")
 
         self.addList = wxListCtrl(self, wxNewId(),
-                                 style = wxLC_REPORT | wxLC_SORT_ASCENDING |
+                                  style = wxLC_REPORT | wxLC_SORT_ASCENDING |
                                   wxHSCROLL |wxSUNKEN_BORDER |wxLC_NO_HEADER)
         self.addList.InsertColumn(0, "")
-        self.addButton3 = wxButton(self, wxNewId(), "Add >>",
-                                   style = wxBU_EXACTFIT)
-
         self.removeUserButton = wxButton(self, wxNewId(), "Remove User",
                                    style = wxBU_EXACTFIT)
 
         self.selections = wxComboBox(self, wxNewId(),
-                                     style = wxCB_DROPDOWN | wxCB_READONLY, choices = self.infoDict.keys())
+                                     style = wxCB_DROPDOWN | wxCB_READONLY,
+                                     choices = self.infoDict.keys())
         
         self.AddPeople(self.pList)
-        self.AddGroups(self.gList)
-
         self.dnText = wxStaticText(self, -1,
                                    "Add person by distinguished name ")
         self.peopleText = wxStaticText(self, -1, "Add people from list ")
-        self.groupText = wxStaticText(self, -1, "Add groups from list ")
         self.dnText.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
 
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton =  wxButton(self, wxID_CANCEL, "Cancel")
 
-        self.groupText.SetFont(
-            wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        self.peopleText.SetFont(
-            wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
-        self.selectedGroupId = -1
+        self.peopleText.SetFont(wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD))
         self.selectedPersonId = -1
         self.__setEvents()
         self.__layout()
-        
-        self.selections.SetValue(self.selectedRole)
-        for item in  self.infoDict[self.selectedRole]:
-            #print '--------- insert item to addlist ', item
-            self.addList.InsertStringItem(0, item)
 
-        self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
-       
-    def __setEvents(self):
-        EVT_BUTTON(self.addButton1, self.addButton1.GetId(),
-                   self.AddDistinguished)
-        EVT_BUTTON(self.addButton2, self.addButton2.GetId(),
-                   self.AddFromPeopleList) 
-        EVT_BUTTON(self.addButton3, self.addButton3.GetId(),
-                   self.AddFromGroupList)
-        EVT_COMBOBOX(self.selections, self.selections.GetId(),
-                     self.ComboEvent)
-        EVT_BUTTON(self.removeUserButton, self.removeUserButton.GetId(),
-                   self.RemoveSelectedUsersFromList)
-
-        EVT_LIST_ITEM_SELECTED(self.list, self.list.GetId(),
-                               self.SelectPeople)
-        EVT_LIST_ITEM_SELECTED(self.groupList, self.groupList.GetId(),
-                               self.SelectGroup)
-
-    def GetInfo(self):
-        return self.infoDict
-      
-    def SelectGroup(self, event):
-        self.selectedGroupId = event.m_itemIndex
-                               
-    def SelectPeople(self, event):
-        self.selectedPersonId = event.m_itemIndex
-
-    def __addToList(self, item):
-        list = self.infoDict[self.selections.GetValue()]
-        
-        if not item in list:
-            list.append(item)
-            self.infoDict[self.selections.GetValue()] = list
-            self.addList.InsertStringItem(0, item)
-            self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
-            return true
-
-        return false
-
-    def __removeFromList(self, index):
-        if index == -1:
-            return false
-        # item is an integer
-        item_name = self.addList.GetItemText(index)
-        list = self.infoDict[self.selections.GetValue()]
-
-        if item_name in list:
-            list.remove(item_name)
-            self.infoDict[self.selections.GetValue()] = list
-            self.addList.DeleteItem(index)
-            return true
- 
-        return false
-        
-    def AddDistinguished(self, event):
-        item = self.dnTextCtrl.GetValue()
-        if item != "":
-            if not self.__addToList(item):
-                MessageDialog(self, "A person with the same name is already added")
-        
-    def AddFromPeopleList(self, event):
-        if self.selectedPersonId > -1:
-            item = self.list.GetItemText(self.selectedPersonId)
-            
-            if not self.__addToList(item):
-                MessageDialog(self, "A person with the same name is already added")
-
-    def AddFromGroupList(self, event):
-        if self.selectedGroupId > -1:
-            item = self.groupList.GetItemText(self.selectedGroupId)
-
-            if not self.__addToList(item):
-                MessageDialog(self, "A group with the same name is already added")
-             
-    def ComboEvent(self, event):
-        role = event.GetEventObject()
-        self.addList.DeleteAllItems()
-
-        selectedRole = self.selections.GetValue()
-               
-        for item in  self.infoDict[selectedRole]:
-            self.addList.InsertStringItem(0, item)
-
-        self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
-
-    def RemoveSelectedUsersFromList(self, event):
-        role = event.GetEventObject()
-
-        #selectedRole = self.selections.GetValue()
-
-        i = self.addList.GetFirstSelected(None)
-        while i != -1:
-            if not self.__removeFromList(i):
-                MessageDialog(self, "Unable to remove user from list.")
-                i = -1 # Break out of loop
-            else:
-                i = self.addList.GetFirstSelected(None)
-               
-    def AddPeople(self, list):
-        for item in list:
-            self.list.InsertStringItem(0, item)
-
-    def AddGroups(self, list):
-        for item in list:
-            self.groupList.InsertStringItem(0, item)
-
+        if len(self.selectedRole) > 0:
+            self.selections.SetValue(self.selectedRole)
+            self.SelectNewRole(self.selectedRole)
+        else:
+            if self.selections.Number():
+                nv = self.selections.GetString(0)
+                self.selections.SetValue(nv)
+                self.SelectNewRole(nv)
         
     def __layout(self):
         box = wxBoxSizer(wxHORIZONTAL)
@@ -667,17 +557,6 @@ class AddPeopleDialog(wxDialog):
         sizer.Add(tempSizer, 1, wxEXPAND)
             
         sizer.Add(10,10)
-        tempSizer =  wxBoxSizer(wxHORIZONTAL)
-        tempSizer.Add(self.groupText)
-        tempSizer.Add(wxStaticLine(self, -1), 1,  wxALIGN_CENTER)
-        sizer.Add(tempSizer, 0, wxEXPAND)
-        sizer.Add(10,10)
-        
-        tempSizer = wxBoxSizer(wxHORIZONTAL)
-        tempSizer.Add(self.groupList, 1, wxEXPAND)
-        tempSizer.Add(self.addButton3, 0, wxALIGN_CENTER | wxLEFT, 5)
-        sizer.Add(tempSizer, 1, wxEXPAND)
-        
         box.Add(sizer, 3, wxEXPAND|wxLEFT|wxBOTTOM|wxTOP, 5)
         
         tempSizer = wxBoxSizer(wxVERTICAL)
@@ -700,121 +579,123 @@ class AddPeopleDialog(wxDialog):
         self.SetAutoLayout(1)
         self.SetSizer(mainSizer)
         self.Layout()
-        #self.list.SetColumnWidth(0, self.list.GetSize().GetWidth()-4)
         self.list.SetColumnWidth(0, wxLIST_AUTOSIZE)
-        #self.groupList.SetColumnWidth(0, self.groupList.GetSize().GetWidth()-4)
-        self.groupList.SetColumnWidth(0, wxLIST_AUTOSIZE)
-        #self.addList.SetColumnWidth(0, self.addList.GetSize().GetWidth()-4)
-        #print '--------- auto rezize add list'
         self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
 
-class RoleAuthorizationFrame(wxFrame):
+    def __setEvents(self):
+        EVT_BUTTON(self.addButton1, self.addButton1.GetId(),
+                   self.AddDistinguished)
+        EVT_BUTTON(self.addButton2, self.addButton2.GetId(),
+                   self.AddFromPeopleList) 
+        EVT_COMBOBOX(self.selections, self.selections.GetId(),
+                     self.ComboEvent)
+        EVT_BUTTON(self.removeUserButton, self.removeUserButton.GetId(),
+                   self.RemoveSelectedUsersFromList)
+
+        EVT_LIST_ITEM_SELECTED(self.list, self.list.GetId(),
+                               self.SelectPeople)
+
+    def __addToList(self, item):
+        list = self.infoDict[self.selections.GetValue()]
+        
+        if not item in list:
+            list.append(item)
+            self.infoDict[self.selections.GetValue()] = list
+            self.addList.InsertStringItem(0, item)
+            self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
+            return true
+
+        return false
+
+    def __removeFromList(self, index):
+        if index == -1:
+            return false
+        item_name = self.addList.GetItemText(index)
+        list = self.infoDict[self.selections.GetValue()]
+
+        if item_name in list:
+            list.remove(item_name)
+            self.infoDict[self.selections.GetValue()] = list
+            self.addList.DeleteItem(index)
+            return true
+ 
+        return false
+        
+    def SelectNewRole(self, role):
+        self.selectedRole = role
+        for item in self.infoDict[self.selectedRole]:
+            self.addList.InsertStringItem(0, item.name.split('=')[-1])
+            self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
+            
+    def GetInfo(self):
+        return self.infoDict
+      
+    def SelectPeople(self, event):
+        self.selectedPersonId = event.m_itemIndex
+
+    def AddDistinguished(self, event):
+        item = self.dnTextCtrl.GetValue()
+        if item != "":
+            if not self.__addToList(item):
+                MessageDialog(self, "A person with the same name is already added")
+        
+    def AddFromPeopleList(self, event):
+        if self.selectedPersonId > -1:
+            item = self.list.GetItemText(self.selectedPersonId)
+            
+            if not self.__addToList(item):
+                MessageDialog(self, "A person with the same name is already added")
+
+    def ComboEvent(self, event):
+        role = event.GetEventObject()
+        self.addList.DeleteAllItems()
+        self.SelectNewRole(self.selections.GetValue())
+
+    def RemoveSelectedUsersFromList(self, event):
+        role = event.GetEventObject()
+
+        i = self.addList.GetFirstSelected(None)
+        while i != -1:
+            if not self.__removeFromList(i):
+                MessageDialog(self, "Unable to remove user from list.")
+                i = -1 # Break out of loop
+            else:
+                i = self.addList.GetFirstSelected(None)
+               
+    def AddPeople(self, list):
+        for item in list:
+            self.list.InsertStringItem(0, item)
+
+class AuthorizationUIFrame(wxFrame):
     def __init__(self, parent, id, title):
         wxFrame.__init__(self, parent, id, title)
-        self.panel = RoleAuthorizationPanel(self, -1)
-             
-
-class RoleClient:
-    def __init__(self, URL=""):
-        self.venue = None
-        self.connected = 0
-        if len(URL):
-            self.ConnectToVenue(URL)
-
-    def ConnectToVenue(self, URL):
-        #log.debug("Connect to server %s" %URL)
-
-        handle = Client.Handle(URL) 
-
-        try:
-            Client.Handle(URL).IsValid()
-        except Client.InvalidHandleException:
-            #log.exception("ConnectToVenue: handle.IsValid Failed.")
-            print "ConnectToVenue: handle.IsValid Failed."
-            #MessageDialog("Client.Handle(%s).IsValid() failed." % URL)
-            return 
-
-        handle = Client.Handle(URL)
-        self.venue = handle.GetProxy()
-        self.connected = 1
-        
-    def GetCachedUsers(self):
-        users = []
-        profiles = ClientProfileCache().loadAllProfiles()
-        for profile in profiles:
-            if profile.GetDistinguishedName():
-                users.append(profile.GetDistinguishedName())
-        return users
-        
-    def GetGroups(self):
-        if self.connected:
-            groups = []
-            groupStruct = self.venue.GetAvailableGroupRoles()
-            for group in groupStruct:
-                groups.append(group)
-            return groups
-        else:
-            raise "NotConnected"
-
-    def SetVenueRoles(self, roleDictionary):
-        if self.connected:
-            for role_name in roleDictionary:
-                self.venue.SetSubjectsInRole(roleDictionary[role_name], role_name)
-        else:
-            raise "NotConnected"
-
-    def GetVenueRoles(self):
-        rolesDict = dict()
-        if self.connected:
-            role_names = self.venue.GetRoleNames()
-            for role_name in role_names:
-                user_list = self.venue.GetUsersInRole(role_name)
-                rolesDict[role_name] = user_list
-        
-            # Venue.VenueUsers is a temporary role to indicate which users
-            #   are connected.  We will make this information part of roles later.
-            if "Venue.VenueUsers" in rolesDict:
-                del rolesDict["Venue.VenueUsers"]
-
-        else:
-            raise "NotConnected"
-
-        return rolesDict
+        self.panel = AuthorizationUIPanel(self, -1)
 
 if __name__ == "__main__":
+    if len(sys.argv) == 2:
+        uri = sys.argv[1]
+    else:
+        uri = "https://localhost:8000/VenueServer/Authorization"
+        
+    print "URI: ", uri
+    am = AuthorizationManagerIW(uri)
+    p1 = am.GetPolicy()
+    am.TestImportExport(p1)
+    p2 = am.GetPolicy()
 
-    # Templet class to test the ui
-    class RoleClient:
-        def __init__(self, URL=""):
-            pass
+    if p1 == p2:
+        print "Policies the same!"
+    else:
+        print "Policies differ."
+        import xml.dom.minidom
+        from xml.dom.ext import PrettyPrint
+        dp1 = xml.dom.minidom.parseString(p1)
+        PrettyPrint(dp1)
+        dp2 = xml.dom.minidom.parseString(p2)
+        PrettyPrint(dp2)
 
-        def ConnectToVenue(self, url):
-            pass
-            
-        def GetCachedUsers(self):
-            users = ["susanne", "eric", "ivan"]
-            return users
-        
-        def GetGroups(self):
-            groups = ["All users", "Server Administrators"]
-            return groups
-        
-        def SetVenueRoles(self, roleDictionary):
-            pass
-        
-        def GetVenueRoles(self):
-            rolesDict = {"Venue Administrators":["Susanne"],
-                         "Venue Participants":["Eric", "Tom"],
-                         "Blocked Venue Participants":["Ivan", "Bob"]}
-            return rolesDict
-        
-        
     app = wxPySimpleApp()
-    #roles = RoleAuthorizationFrame(None, -1, "Manage Roles")
-    roles = AddPeopleDialog(None, -1, "Manage Roles")
+    roles = AddPeopleDialog(None, -1, "Manage Roles", am)
     roles.ShowModal()
     roles.Destroy()
-    #app.MainLoop()
-    #print "destroy"
-    #roles.Destroy()
    

@@ -1,8 +1,5 @@
 from wxPython.wx import *
 
-#from AccessGrid.hosting.pyGlobus import Client
-#from AccessGrid.EventClient import EventClient
-#from AccessGrid.Events import ConnectEvent
 from AccessGrid.Events import Event
 from AccessGrid.Platform import isWindows
 from AccessGrid.Platform import GetUserConfigDir

@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.53 2004-02-23 16:56:12 olson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.54 2004-02-24 21:34:51 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.53 2004-02-23 16:56:12 olson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.54 2004-02-24 21:34:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -256,12 +256,13 @@ def GetLogText(maxSize, logFileName):
     return text
 
 
-def SubmitBug(comment, email, logFile = VENUE_CLIENT_LOG):
+def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
     """
     Submits a bug to bugzilla. 
 
     **Parameters**
       *comment* = Bug description from reporter
+      *profile* = Client Profile describing reporter
       *email* = Entered email address for support information. If the email
                 is blank, the reporter does not want to be contacted.
       
@@ -309,35 +310,45 @@ def SubmitBug(comment, email, logFile = VENUE_CLIENT_LOG):
    
     
     #
-    # Combine comment, email, and log file information
+    # Combine comment, profile, and log file information
     #
+
         
-            
+    if profile:
+        # Always set profile email to empty string so we don't write to wrong email address.
+        profile.email = ""
+        profileString = str(profile)
+
+    else:
+        profileString = "This reporter does not have a client profile"
+        
     if email == "":
         # This reporter does not want to be contacted. Do not submit email address.
         email = "This reporter does not want to be contacted.  No email address specified."
 
         
     commentAndLog = "\n\n--- EMAIL TO CONTACT REPORTER ---\n\n" + str(email) \
+                    +"\n\n--- REPORTER CLIENT PROFILE --- \n\n" + profileString \
                     +"\n\n--- COMMENT FROM REPORTER --- \n\n" + comment 
 
 
     if logFile == NO_LOG:
-        args['short_desc'] = "Automatic Bug Report - Feature or bug report from menu option"
+        args['short_desc'] = "Feature or bug report from menu option"
         
     
     elif logFile == VENUE_MANAGEMENT_LOG:
-        args['short_desc'] = "Automatic Bug Report - Venue Management"
+        args['short_desc'] = "Crash in Venue Management UI"
         commentAndLog = commentAndLog \
                         +"\n\n--- VenueManagement.log INFORMATION ---\n\n"+GetLogText(20000, "VenueManagement.log")
         
     elif logFile == NODE_SETUP_WIZARD_LOG:
-        args['short_desc'] = "Automatic Bug Report - Node Setup Wizard"
+        args['short_desc'] = "Crash in Node Setup Wizard UI"
         commentAndLog = commentAndLog \
                         +"\n\n--- NodeSetupWizard.log INFORMATION ---\n\n"+GetLogText(20000, "NodeSetupWizard.log")
 
     else:
         args['short_desc'] = "Automatic Bug Report"
+#        args['short_desc'] = "Crash in Venue Client UI"
         commentAndLog = commentAndLog \
                         +"\n\n--- VenueClient.log INFORMATION ---\n\n"+GetLogText(20000, "VenueClient.log") \
                         +"\n\n--- agns.log INFORMATION ---\n\n"+GetLogText(20000, "agns.log")\
@@ -365,22 +376,22 @@ def SubmitBug(comment, email, logFile = VENUE_CLIENT_LOG):
     o = open("out.html", "w")
     o.write(out)
     o.close()
-#
-# We use this import to get a reliable hostname; should be made more
-# general later (in the event we are using something other than hosting.pyGlobus
-#
-
-try:
-    import AccessGrid.hosting.pyGlobus.Utilities
-    GetHostname = AccessGrid.hosting.pyGlobus.Utilities.GetHostname
-except ImportError:
-    import socket
-    GetHostname = socket.getfqdn()
 
 def PathFromURL(URL):
     """
     """
-    return urlparse.urlparse(URL)[2]
+    if URL[0:5] == 'httpg':
+        return urlparse.urlparse(URL[6:])[2]
+    else:
+        return urlparse.urlparse(URL)[2]
+
+def IdFromURL(URL):
+    """
+    """
+    path = PathFromURL(URL)
+    id = path.split('/')[-1]
+
+    return id
 
 class ServerLock:
     """

@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.29 2004-01-20 23:06:49 eolson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.30 2004-02-24 21:34:51 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.29 2004-01-20 23:06:49 eolson Exp $"
+__revision__ = "$Id: TextClient.py,v 1.30 2004-02-24 21:34:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -20,9 +20,8 @@ import struct
 
 from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
 from AccessGrid.Events import DisconnectEvent, ClientExitingEvent, TextEvent
-
-from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
-from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
+from AccessGrid.Security.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
+from AccessGrid.NetUtilities import GetHostname
 
 from pyGlobus.io import GSITCPSocket, IOBaseException
 from pyGlobus.util import Buffer

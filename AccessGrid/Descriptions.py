@@ -5,21 +5,22 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.42 2004-02-23 23:06:57 lefvert Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.43 2004-02-24 21:34:51 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.42 2004-02-23 23:06:57 lefvert Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.43 2004-02-24 21:34:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
+import types
+
 from AccessGrid.GUID import GUID
-from AccessGrid.NetworkLocation import MulticastNetworkLocation, UnicastNetworkLocation
+from AccessGrid.NetworkLocation import MulticastNetworkLocation
+from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.Types import Capability
-from AccessGrid.Utilities import PathFromURL
-from AccessGrid.hosting.AccessControl import RoleManager
 
 class ObjectDescription:
     """
@@ -29,8 +30,8 @@ class ObjectDescription:
         description : string
         uri : uri (string)
     """
-    def __init__(self, name, description = None, uri = None):
-        self.id = str(GUID())
+    def __init__(self, name, description = None, uri = None, id = str(GUID())):
+        self.id = id
         self.name = name
         self.description = description
         self.uri = uri
@@ -47,7 +48,6 @@ class ObjectDescription:
             string += "description : %s\n" % self.description
         if self.uri != None:
             string += "uri : %s\n" % self.uri
-#            string += "uri : %s\n" % PathFromURL(self.uri)
 
         return string
 
@@ -199,26 +199,13 @@ class VenueDescription(ObjectDescription):
     """
     A Venue Description is used to represent a Venue.
     """
-    def __init__(self, name=None, description=None, roleManager=None,
-                 encryptionInfo=(0,''), connectionList=[], staticStreams=[]):
-        ObjectDescription.__init__(self, name, description, None)
+    def __init__(self, name=None, description=None, encryptionInfo=(0,''),
+                 connectionList=[], staticStreams=[], id = str(GUID())):
+        ObjectDescription.__init__(self, name, description, None, id)
 
-        self.streams = []
-        self.connections = {}
+        self.streams = list()
         self.encryptMedia = 0
         self.encryptionKey = None
-        #self.administrators = []
-        # Exclude roleManager.  Roles and admins handled separately.
-        self.roleManager = roleManager
-        #if roleManager:
-            #self.roleManager = roleManager
-        #else:
-            #self.roleManager = RoleManager()
-
-        #print "VenueDesc.__init__ : admins:"
-        #if "Venue.Administrators" in self.roleManager.GetRoleList():
-            #print self.roleManager.GetRole("Venue.Administrators").GetSubjectListAsStrings()
-        
         self.encryptMedia = encryptionInfo[0]
         
         if self.encryptMedia:
@@ -226,36 +213,21 @@ class VenueDescription(ObjectDescription):
         else:
             self.encryptionKey = None
            
-        self.connections = {}
-        for c in connectionList:
-            self.connections[c.uri] = c
-
+        self.connections = connectionList
         self.streams = staticStreams
     
     def AsINIBlock(self):
         string = ObjectDescription.AsINIBlock(self)
-        
-        # Usually the roleManager in the description is None
-        if self.roleManager:
-            rm = self.roleManager
-            if len(rm.validRoles):
-                # Write a list of roles names to the config file.
-                string += "roles : %s\n" % ":".join(rm.GetRoleList())
-                for r in rm.validRoles.keys():
-                    # Still include Venue.VenueUsers. 
-                    #if not r == "Venue.VenueUsers": # VenueUsers are not persisted
-                    string += r + " : %s\n" % ":".join(rm.validRoles[r].GetSubjectListAsStrings()) 
-        string += "encryptMedia: %d\n" % self.encryptMedia
         if self.encryptMedia:
             string += "encryptionKey : %s\n" % self.encryptionKey
         clist = ":".join(map(lambda conn: conn.GetId(),
-                             self.connections.values()))
+                             self.connections))
         string += "connections : %s\n" % clist
         slist = ":".join(map(lambda stream: stream.GetId(),
                              self.streams))
         string += "streams : %s\n" % slist
         string += "\n".join(map(lambda conn: conn.AsINIBlock(),
-                                self.connections.values()))
+                                self.connections))
         string += "\n".join(map(lambda stream: stream.AsINIBlock(),
                                 self.streams))
         return string
@@ -302,7 +274,7 @@ class ApplicationDescription(ObjectDescription):
         # We override the generated id
         self.id = id
         self.mimeType = mimetype   
-                   
+    
     def SetMimeType(self, mimetype):   
         self.mimeType = mimetype   
             
@@ -361,13 +333,10 @@ class StreamDescription( ObjectDescription ):
        string += "encryptionFlag : %s\n" % self.encryptionFlag
        if self.encryptionFlag:
            string += "encryptionKey : %s\n" % self.encryptionKey
-#       string += "static : %d\n" % self.static
        string += "location : %s\n" % self.location
        string += "capability : %s\n" % self.capability
 
        return string
-
-
    
 class AGServiceManagerDescription:
     def __init__( self, name, uri ):
@@ -388,21 +357,6 @@ class AGServiceDescription:
         self.executable = executable
         self.serviceManagerUri = serviceManagerUri
         self.servicePackageUri = servicePackageUri
-
-
-class AppParticipantDescription:
-    def __init__(self, appId, clientProfile, status):
-        self.appId = appId
-        self.clientProfile = clientProfile
-        self.status = status
-        
-
-class AppDataDescription:
-    def __init__(self, appId, key, value):
-        self.appId = appId
-        self.key = key
-        self.value = value
-
     
 def CreateStreamDescription( streamDescStruct ):
     if streamDescStruct.location.type == MulticastNetworkLocation.TYPE:
@@ -454,27 +408,12 @@ def CreateVenueDescription(venueDescStruct):
     for s in venueDescStruct.streams:
         slist.append(CreateStreamDescription(s))
 
-    # If a roleManager was sent with venueDescriptions, it would use
-    #   code like this, but we'll set admins and roles separately.
-    #if venueDescStruct.roleManager:
-        #roleManager = RoleManager()
-        #for role_struct in venueDescStruct.roleManager.validRoles:
-           #print "role_struct", role_struct
-           #roleManager.RegisterRole(role_struct.name)
-           #registered_role = roleManager.GetRole(role_struct.name)
-           #for subj in role_struct.subjects:
-               #registered_role.AddSubject(subj)
-    
-        #print "CreateVenueDesc: admins:"
-        #if "Venue.Administrators" in roleManager.GetRoleList():
-            #print roleManager.GetRole("Venue.Administrators").GetSubjectListAsStrings()
-   
-       
     vdesc = VenueDescription(venueDescStruct.name, venueDescStruct.description,
-                             None,
                              (venueDescStruct.encryptMedia,
                               venueDescStruct.encryptionKey), clist, slist)
-    vdesc.uri = venueDescStruct.uri
+
+    vdesc.SetId(venueDescStruct.id)
+    vdesc.SetURI(venueDescStruct.uri)
     
     return vdesc
 

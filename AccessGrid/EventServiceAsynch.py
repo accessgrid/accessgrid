@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.22 2004-01-15 00:46:58 eolson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.23 2004-02-24 21:34:51 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: EventServiceAsynch.py,v 1.22 2004-01-15 00:46:58 eolson Exp $"
+__revision__ = "$Id: EventServiceAsynch.py,v 1.23 2004-02-24 21:34:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -28,7 +28,8 @@ from pyGlobus.util import Buffer
 from pyGlobus import ioc, io
 
 
-from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth, CreateTCPAttrDefault
+from AccessGrid.Security.pyGlobus.Utilities import CreateTCPAttrDefault
+from AccessGrid.Security.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import ConnectEvent, DisconnectEvent, MarshalledEvent
 from AccessGrid.Events import Event, AddPersonalDataEvent

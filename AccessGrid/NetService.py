@@ -5,20 +5,19 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: NetService.py,v 1.5 2003-09-16 07:25:34 judson Exp $
+# RCS-ID:      $Id: NetService.py,v 1.6 2004-02-24 21:34:51 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NetService.py,v 1.5 2003-09-16 07:25:34 judson Exp $"
+__revision__ = "$Id: NetService.py,v 1.6 2004-02-24 21:34:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 class UnknownNetServiceType(Exception):
     pass
 
 class NetService:
-
     TYPE = "NetService"
     def __init__(self,venue,privateId):
         self.venue = venue
@@ -41,7 +40,6 @@ class DataStoreNetService(NetService):
     TYPE = "DataStoreNetService"
     def Stop(self):
         self.venue.RemoveNetworkLocationsByPrivateId(self.privateId)
-
         
 def CreateNetService(netServiceType, venue, privateId):
     netService = None
@@ -58,10 +56,7 @@ def CreateNetService(netServiceType, venue, privateId):
  
     return netService
     
-   
 if __name__ == "__main__":
-
-
     venue = "Venue"
     privateId = "private id"
     netService = CreateNetService(BridgeNetService.TYPE,venue,privateId)

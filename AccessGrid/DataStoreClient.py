@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.14 2004-01-23 21:31:21 lefvert Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.15 2004-02-24 21:34:51 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.14 2004-01-23 21:31:21 lefvert Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.15 2004-02-24 21:34:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -22,7 +22,7 @@ import getopt
 import fnmatch
 
 from AccessGrid import Platform
-from AccessGrid.hosting.pyGlobus import Client
+from AccessGrid.hosting import Client
 from AccessGrid import DataStore
 from pyGlobus import ftpClient
 

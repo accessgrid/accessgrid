@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.49 2004-02-19 17:59:02 eolson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.50 2004-02-24 21:34:51 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.49 2004-02-19 17:59:02 eolson Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.50 2004-02-24 21:34:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting.pyGlobus import Client
@@ -22,17 +22,18 @@ from wxPython.wx import *
 from wxPython.lib.dialogs import wxMultipleChoiceDialog
 
 # AG2 imports
-from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
-from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
+from AccessGrid.hosting import Client
 
 from AccessGrid.Types import Capability, ServiceConfiguration
-from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetParameter, CreateParameter
+from AccessGrid.AGParameter import ValueParameter, RangeParameter
+from AccessGrid.AGParameter import OptionSetParameter, CreateParameter
 from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid import icons
 from AccessGrid import Platform
 from AccessGrid.UIUtilities import AboutDialog
 from AccessGrid import Toolkit
 from AccessGrid.Platform import isWindows
+from AccessGrid.NetUtilities import GetHostname
 
 # imports for Debug menu; can be removed if Debug menu is removed
 from AccessGrid.Descriptions import StreamDescription
@@ -598,7 +599,7 @@ class NodeManagementClientFrame(wxFrame):
 
             try:
                 self.nodeServiceHandle.GetProxy().LoadConfiguration( conf )
-            except faultType, e:
+            except Exception, e:
                 log.exception("NodeManagementClientFrame.LoadConfiguration: Can not load configuration from node service")
                 self.Error(e.faultstring)
 
@@ -630,7 +631,7 @@ class NodeManagementClientFrame(wxFrame):
                 # Store the configuration
                 try:
                     self.nodeServiceHandle.GetProxy().StoreConfiguration( configName )
-                except faultType,e:
+                except Exception,e:
                     log.exception("NodeManagementClientFrame.StoreConfiguration: Can not store configuration in node service")
                     self.Error(e.faultstring)
 
@@ -697,7 +698,7 @@ class NodeManagementClientFrame(wxFrame):
             name = '%s:%s' % (host,port)
             try:
                 self.nodeServiceHandle.GetProxy().AddServiceManager( AGServiceManagerDescription( name, uri ) )
-            except faultType, e:
+            except Exception, e:
                 log.exception("NodeManagementClientFrame.AddHost: Can not add service manager to node service")
                 self.Error(e.faultstring)
                 self.ClearUI()
@@ -881,7 +882,7 @@ class NodeManagementClientFrame(wxFrame):
                                serviceManager.uri,
                                resourceToAssign,
                                None )
-            except faultType, e:
+            except Exception, e:
                 log.exception("NodeManagementClientFrame.AddService: Exception in AddService")
                 #self.Error( "Add Service failed :" + serviceToAdd.name )
                 self.Error(e.faultstring)
@@ -910,7 +911,7 @@ class NodeManagementClientFrame(wxFrame):
             # Update the services list
             self.UpdateServiceList()
 
-        except faultType,e:
+        except Exception,e:
             log.exception("NodeManagementClientFrame.EnableService")
             self.Error(e.faultstring)
 
@@ -943,7 +944,7 @@ class NodeManagementClientFrame(wxFrame):
 
             # Update the service list
             self.UpdateServiceList()
-        except faultType,e:
+        except Exception,e:
             log.exception("NodeManagementClientFrame.DisableService.")
             self.Error(e.faultstring)
 
@@ -1096,7 +1097,7 @@ class NodeManagementClientFrame(wxFrame):
                              0, None, 0 ) )
         try:
             self.nodeServiceHandle.GetProxy().SetStreams( streamDs )
-        except faultType, e:
+        except Exception, e:
             log.exception("NodeManagementClientFrame.GotoTestRoom.")
             self.Error(e.faultstring)
 

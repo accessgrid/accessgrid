@@ -6,7 +6,7 @@ from AccessGrid.EventClient import EventClient
 from AccessGrid.Events import ConnectEvent, Event
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Platform import GetUserConfigDir
-from AccessGrid.hosting.pyGlobus import Client
+from AccessGrid.hosting import Client
 
 class SharedAppClient:
     '''

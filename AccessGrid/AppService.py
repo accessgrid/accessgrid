@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: AppService.py,v 1.15 2004-01-07 20:45:08 lefvert Exp $
+# RCS-ID:      $Id: AppService.py,v 1.16 2004-02-24 21:34:51 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,17 +17,16 @@ AppObjectImpl is its implementation.
 
 """
 
-__revision__ = "$Id: AppService.py,v 1.15 2004-01-07 20:45:08 lefvert Exp $"
+__revision__ = "$Id: AppService.py,v 1.16 2004-02-24 21:34:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import logging
 
 from AccessGrid import GUID
 from AccessGrid import Events
-from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid.Descriptions import ApplicationDescription
-from AccessGrid.Descriptions import AppParticipantDescription, AppDataDescription
-from AccessGrid.Events import Event
+from AccessGrid.hosting.SOAPInterface import SOAPInterface
+from AccessGrid.Security.AuthorizationManager import AuthorizationMixIn
 
 log = logging.getLogger("AG.AppService")
 
@@ -37,73 +36,48 @@ def CreateApplication(name, description, mimeType, eventService, id=None ):
     """
     return AppObjectImpl(name, description, mimeType, eventService, id)
 
-
-class AppObject(ServiceBase.ServiceBase):
+class AppObjectI(SOAPInterface):
     """
     AppObject is the interface class for an application
     """
-    def __init__(self, impl):
-        self.impl = impl
-              
-    def Join(self, clientProfile = None):
-        return self.impl.Join(clientProfile)
-    Join.soap_export_as = "Join"
+    def GetId(self):
+        return self.impl.GetId()
+        
+    def Join(self):
+        return self.impl.Join()
+
+    def GetComponents(self):
+        return self.impl.GetComponents()
 
     def Leave(self, private_token):
         return self.impl.Leave(private_token)
-    Leave.soap_export_as = "Leave"
-
-    def GetId(self, private_token):
-        return self.impl.GetId()
-    GetId.soap_export_as = "GetId"
 
     def SetData(self, private_token, key, value):
         return self.impl.SetData(private_token, key, value)
-    SetData.soap_export_as = "SetData"
 
     def GetData(self, private_token, key):
         return self.impl.GetData(private_token, key)
-    GetData.soap_export_as = "GetData"
 
     def GetDataChannel(self, private_token):
         return self.impl.GetDataChannel(private_token)
-    GetDataChannel.soap_export_as = "GetDataChannel"
 
     def GetVenueURL(self, private_token):
         return self.impl.GetVenueURL(private_token)
-    GetVenueURL.soap_export_as = "GetVenueURL"
-
-    def GetState(self, private_token):
-        return self.impl.GetState(private_token)
-    GetState.soap_export_as = "GetState"
-
-    def GetParticipants(self, private_token):
-        return self.impl.GetParticipants(private_token)
-    GetParticipants.soap_export_as = "GetParticipants"
-
-    def GetComponents(self, private_token):
-        return self.impl.GetComponents(private_token)
-    GetComponents.soap_export_as = "GetComponents"
-
-    def GetDataKeys(self, private_token):
-        return self.impl.GetDataKeys(private_token)
-    GetDataKeys.soap_export_as = "GetDataKeys"
-
-    def SetParticipantStatus(self, private_token, status):
-        return self.impl.SetParticipantStatus(private_token, status)
-    SetParticipantStatus.soap_export_as = "SetParticipantStatus"
-
-    def SetParticipantProfile(self, private_token, profile):
-        return self.impl.SetParticipantProfile(private_token, profile)
-    SetParticipantProfile.soap_export_as = "SetParticipantProfile"
+    
 #
 # End of interfaces. Start the implementation classes.
 # 
 
-
-class AppObjectImpl:
+class InvalidPrivateToken(Exception):
     """
-    AppObjectImpl is the implementation class for an application
+    Raised if an attempt to call an AppObject method is made with
+    an invalid private token.
+    """
+    pass
+
+class AppObject(AuthorizationMixIn):
+    """
+    AppObject is the implementation class for an application
     """
     def __init__(self, name, description, mimeType, eventService, id = None):
         """
@@ -132,12 +106,11 @@ class AppObjectImpl:
         the app object is reawakened, it will recreate event channels
         for each of the channels that were registered.
         """
-
+            
         self.name = name
         self.description = description
         self.mimeType = mimeType
         self.eventService = eventService
-        self.uri = None
 
         self.components = {}
         self.channels = []
@@ -184,7 +157,7 @@ class AppObjectImpl:
         for channel in self.channels:
             self.eventService.RemoveChannel(channel)
 
-    def GetState(self, private_token):
+    def GetState(self):
         """
         Return the state of this application, used in the rollup of
         venue state for the return from the Venue.Enter call.
@@ -199,9 +172,7 @@ class AppObjectImpl:
            data - the application's data storage, itself a dictionary.
 
         """
-        if not self.components.has_key(private_token):
-            raise InvalidPrivateToken
-        
+
         appState = {
             'name' : self.name,
             'description' : self.description,
@@ -235,46 +206,20 @@ class AppObjectImpl:
     def GetId(self):
         return self.id
 
-    def Join(self, clientProfile = None):
-
-        # Takes a client profile until venue client has been refactored
-        # to include  a connection ID.
-
+    def Join(self):
         public_id = str(GUID.GUID())
         private_id = str(GUID.GUID())
+        self.components[private_id] = public_id
 
-        # Create participant description
-        participant = AppParticipantDescription(public_id, clientProfile,
-                                                'connected')
-        # Store description
-        self.components[private_id] = participant
-        
-        # Distribute event
-        for channelId in self.channels:
-            evt = Event(Event.APP_PARTICIPANT_JOIN, channelId, participant)
-            self.eventService.Distribute(channelId, evt)
- 
         return (public_id, private_id)
 
     def Leave(self, private_token):
-        # Remove the component
         if self.components.has_key(private_token):
-            participant = self.components[private_token]
-
-            # Distribute event
-            for channelId in self.channels:
-                evt = Event(Event.APP_PARTICIPANT_LEAVE, channelId,
-                            participant)
-                self.eventService.Distribute(channelId, evt)
-
             del self.components[private_token]
-                
             return 1
-            
         else:
-            log.exception("AppService.Leave Trying to remove component that does not exist.")
             raise InvalidPrivateToken
-                      
+
     def GetDataChannel(self, private_token):
         """
         Return the channel id and location of the
@@ -299,22 +244,19 @@ class AppObjectImpl:
 
         return self.venueURL
     
+    def GetComponents(self, private_token):
+        if not self.components.has_key(private_token):
+            raise InvalidPrivateToken
+
+        comps = self.components.values()
+        return comps
+    
     def SetData(self, private_token, key, value):
         if not self.components.has_key(private_token):
             raise InvalidPrivateToken
 
         self.app_data[key] = value
 
-        participant = self.components[private_token]
-
-        data = AppDataDescription(participant.appId, key, value)
-        
-        # Distribute event
-        for channelId in self.channels:
-            'send set data event'
-            evt = Event(Event.APP_SET_DATA, channelId, data)
-            self.eventService.Distribute(channelId, evt)
-                
     def GetData(self, private_token, key):
         if not self.components.has_key(private_token):
             raise InvalidPrivateToken
@@ -323,95 +265,7 @@ class AppObjectImpl:
             return self.app_data[key]
         else:
             return ""
-           
-    def GetDataKeys(self, private_token):
-        '''
-        Access method for retreiving all keys for application data.
 
-        **Returns**
-
-        *[key]* List of all keys for application data
-        
-        '''
-        if not self.components.has_key(private_token):
-            raise InvalidPrivateToken
-
-        return self.app_data.keys()
-    
-    def GetParticipants(self, private_token):
-        '''
-        Returns a list of AppParticipantDescriptions that have client profile set.
-        '''
-        if not self.components.has_key(private_token):
-            raise InvalidPrivateToken
-
-        participants = []
-        for c in self.components.values():
-            if c.clientProfile != None:
-                participants.append(c)
-
-        return participants
-        
-    def GetComponents(self, private_token):
-        '''
-        Return all public ids of instances connected to this service
-        (application clients, monitors, etc).
-        '''
-        if not self.components.has_key(private_token):
-            raise InvalidPrivateToken
-
-        ids = []
-        for c in self.components.values():
-            ids.append(c.appId)
-
-        return ids
-        
-    def SetParticipantProfile(self, private_token, profile):
-        '''
-        Sets profile of participant associated with private_token
-
-        **Arguments**
-        
-        *profile* New client profile.
-        '''
-        if not self.components.has_key(private_token):
-            raise InvalidPrivateToken
-        
-        participant = self.components[private_token]
-        participant.clientProfile = profile
-        self.components[private_token] = participant
-
-        for p in self.components.values():
-            if p.clientProfile != 'None' and p.clientProfile != None:
-                p.clientProfile.name
-                
-        # Distribute event
-        for channelId in self.channels:
-            evt = Event(Event.APP_UPDATE_PARTICIPANT, channelId, participant)
-            self.eventService.Distribute(channelId, evt)
-                          
-    def SetParticipantStatus(self, private_token, status):
-        '''
-        Sets status of participant associated with private_token
-
-        **Arguments**
-        
-        *status* New status value.
-        '''
-
-        if not self.components.has_key(private_token):
-            raise InvalidPrivateToken
-
-        
-        participant = self.components[private_token]
-        participant.status = status
-        self.components[private_token] = participant
-        
-        # Distribute event
-        for channelId in self.channels:
-            evt = Event(Event.APP_UPDATE_PARTICIPANT, channelId, participant)
-            self.eventService.Distribute(channelId, evt)
-            
     def __CreateDataChannel(self):
         """
         Create a new data channel.
@@ -461,13 +315,3 @@ class ChannelHandler:
         except:
             log.exception("handleEvent threw exception")
 
-#
-# -- Exceptions --
-#
-
-class InvalidPrivateToken(Exception):
-    """
-    Raised if an attempt to call an AppObject method is made with
-    an invalid private token.
-    """
-    pass
