@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.11 2004-04-09 13:50:29 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.12 2004-04-09 14:05:26 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.11 2004-04-09 13:50:29 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.12 2004-04-09 14:05:26 judson Exp $"
 
 import os
 import sys
@@ -388,8 +388,8 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         """
         # First, get the paths to stuff we need
         uappdata = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
-        agtkdata = AGTkConfig.instance(1).GetConfigDir()
-        gloc = AGTkConfig.instance(0).GetInstallDir()
+        agtkdata = AGTkConfig.instance().GetConfigDir()
+        gloc = AGTkConfig.instance().GetInstallDir()
         
         # second, create the values
         self.keyFileName = os.path.join(uappdata, "globus", "userkey.pem")
