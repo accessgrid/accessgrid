@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.8 2003-04-26 06:43:09 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.9 2003-04-28 19:13:13 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -115,7 +115,12 @@ class SimpleTextProcessor:
                 continue
 
             # Unpickle the data
-            event = pickle.loads(pdata)
+            try:
+                event = pickle.loads(pdata)
+            except EOFError, e:
+                self.running = 0
+                log.exception("TextClient: unpickle got EOF.")
+                continue
 
             # Handle the data
             self.Output(event.data)

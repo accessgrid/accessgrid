@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.17 2003-04-26 06:43:09 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.18 2003-04-28 19:13:13 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -87,7 +87,12 @@ class ConnectionHandler(StreamRequestHandler):
             
             # Unpickle the event data
             if event == None:
-                event = pickle.loads(pdata)
+                try:
+                    event = pickle.loads(pdata)
+                except EOFError, e:
+                    log.exception("EventService: unpickle got EOF.")
+                    self.running = 0
+                    continue
             
             # Pass this event to the callback registered for this
             # event.eventType
@@ -126,15 +131,6 @@ class ConnectionHandler(StreamRequestHandler):
                     log.info("EventService: No callback for %s, %s events.",
                              event.venue, event.eventType)
 
-        self.disconnect()
-        
-    def disconnect(self):
-        """
-        This is here to encapsulate all the parts of disconnection that matter.
-        """
-        # clean me out of all lists, this connection is no longer valid
-        pass
-        
 class EventService(ThreadingGSITCPSocketServer, Thread):
     """
     The EventService provides a secure event layer. This might be more 

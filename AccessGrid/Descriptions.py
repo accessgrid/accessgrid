@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.26 2003-04-28 00:44:58 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.27 2003-04-28 19:13:13 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -94,7 +94,7 @@ class DataDescription(ObjectDescription):
         ObjectDescription.__init__(self, name)
 
         self.status = self.STATUS_INVALID
-        self.size = None
+        self.size = 0
         self.checksum = None
         self.owner = None
         self.type = None # this is venue data
@@ -135,10 +135,10 @@ class DataDescription(ObjectDescription):
 
     def AsINIBlock(self):
         string = ObjectDescription.AsINIBlock(self)
-        string += "status : %s\n" % self.status
-        string += "size : %d\n" % self.size
-        string += "checksum : %s\n" % self.checksum
-        string += "owner: %s\n" % self.owner
+        string += "status : %s\n" % self.GetStatus()
+        string += "size : %d\n" % self.GetSize()
+        string += "checksum : %s\n" % self.GetChecksum()
+        string += "owner: %s\n" % self.GetOwner()
 
         return string
 

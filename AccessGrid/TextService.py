@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextService.py,v 1.17 2003-04-26 06:43:09 judson Exp $
+# RCS-ID:      $Id: TextService.py,v 1.18 2003-04-28 19:13:13 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -76,7 +76,12 @@ class ConnectionHandler(StreamRequestHandler):
                 continue
             
             # Unpickle the data
-            event = pickle.loads(pdata)
+            try:
+                event = pickle.loads(pdata)
+            except EOFError, e:
+                log.exception("TextConnection read EOF.")
+                self.running = 0
+                continue
 
             log.debug("TextConnection: Got Event %s", event)
             
@@ -104,14 +109,6 @@ class ConnectionHandler(StreamRequestHandler):
             # there is some notion of security :-)
             self.server.Distribute(event)
 
-        self.disconnect()
-        
-    def disconnect(self):
-        """
-        This is the disconnect method that cleans up the connection.
-        """
-        # Clean up
-#        self.server.connections[self.channel].remove(self)
         
 class TextService(ThreadingGSITCPSocketServer, Thread):
     """
