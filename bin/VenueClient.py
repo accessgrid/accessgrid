@@ -3,13 +3,13 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client software for the user.
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClient.py,v 1.255 2004-03-16 22:00:12 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.256 2004-03-19 04:58:25 judson Exp $
 # Copyright:   (c) 2004
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.255 2004-03-16 22:00:12 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.256 2004-03-19 04:58:25 judson Exp $"
 
 # Standard Imports
 import os
@@ -61,7 +61,7 @@ def main():
 
     # build options for this application
     portOption = Option("-p", "--port", type="int", dest="port",
-                        default=12000, metavar="PORT",
+                        default=11000, metavar="PORT",
                         help="Set the port the venueclient control interface\
                         should listen on.")
     app.AddCmdLineOption(portOption)
@@ -90,7 +90,7 @@ def main():
     startupDialog.UpdateOneStep("Initializing the VenueClient.")
 
     # Create venue client components
-    vc = VenueClient()
+    vc = VenueClient(pnode=pnode, port=port)
     vcc = VenueClientController()
     vcui = VenueClientUI(vc, vcc)
 
@@ -99,16 +99,6 @@ def main():
     vcc.SetVenueClient(vc)
     vc.AddObserver(vcui)
 
-    # Do personal node stuff if that was specified
-    if pnode:
-        startupDialog.UpdateOneStep("Starting personal node services.")
-        personalNode = PersonalNodeManager(app.GetDebugLevel(),
-                                           startupDialog.UpdateOneStep)
-        nsUrl = personalNode.Run()
-        vc.SetNodeUrl(nsUrl)
-    else:
-        log.debug("Not starting personal node services.")
-        
     # Enter the specified venue
     if url:
         vc.EnterVenue(url)
@@ -119,12 +109,6 @@ def main():
     # Spin
     wxapp.SetTopWindow(vcui)
     wxapp.MainLoop()
-
-    # When we exit, we have to cleanup personal node stuff,
-    # if we started it.
-    if pnode:
-        log.debug("Terminating personal node services.")
-        personalNode.Stop()
 
 # The main block
 if __name__ == "__main__":
