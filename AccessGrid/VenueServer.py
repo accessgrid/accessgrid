@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.159 2004-07-29 21:52:33 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.160 2004-07-30 23:22:48 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.159 2004-07-29 21:52:33 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.160 2004-07-30 23:22:48 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -345,7 +345,7 @@ class VenueServer(AuthorizationMixIn):
                 action.AddRole(adminRole)
             
         # Then we create the VenueServer service
-        self.hostingEnvironment.RegisterObject(vsi, path='/VenueServer')
+        venueServerUri = self.hostingEnvironment.RegisterObject(vsi, path='/VenueServer')
 
         # Then we create an authorization interface and serve it
         self.hostingEnvironment.RegisterObject(
@@ -356,7 +356,7 @@ class VenueServer(AuthorizationMixIn):
         
         # Some simple output to advertise the location of the service
         print("Server: %s \nEvent Port: %d Text Port: %d Data Port: %d" %
-              ( self.hostingEnvironment.GetURLBase(), int(self.eventPort),
+              ( venueServerUri, int(self.eventPort),
                 int(self.textPort), int(self.dataPort) ) )
 
     def LoadPersistentVenues(self, filename):
