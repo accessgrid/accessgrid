@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.177 2004-12-15 17:52:22 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.178 2005-01-04 18:18:56 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.177 2004-12-15 17:52:22 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.178 2005-01-04 18:18:56 turam Exp $"
 
 # Standard stuff
 import sys
@@ -350,6 +350,7 @@ class VenueServer(AuthorizationMixIn):
         # Some simple output to advertise the location of the service
         print("Server: %s \nData Port: %d" % ( venueServerUri,
                                                int(self.dataPort) ) )
+        print "Default venue url:", self.GetDefaultVenue()
 
     def _InitFromFile(self, config):
         """
