@@ -127,11 +127,11 @@ class VenueListPanel(wxPanel):
 	self.list = VenueList(self, -1)
 		
     	self.list.SetBackgroundColour(parent.GetBackgroundColour())
-	self.leftArrow = wxBitmap("IMAGES/leftArrow.gif", wxBITMAP_TYPE_GIF)
+#	self.leftArrow = wxBitmap("IMAGES/leftArrow.gif", wxBITMAP_TYPE_GIF)
 	#	self.minimizeButton = wxBitmapButton(self, 10, self.leftArrow, wxDefaultPosition, wxDefaultSize)
 	self.minimizeButton = wxButton(self, 10, "<<", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT )
 	self.minimizeButton.SetFont(wxFont(5, wxSWISS, wxNORMAL, wxNORMAL, 0, "adventure"))
-	self.rightArrow = wxBitmap("IMAGES/rightArrow.jpg", wxBITMAP_TYPE_JPEG)
+#	self.rightArrow = wxBitmap("IMAGES/rightArrow.jpg", wxBITMAP_TYPE_JPEG)
 	#self.maximizeButton = wxBitmapButton(self, 20, self.rightArrow, wxDefaultPosition, wxDefaultSize)
 	self.maximizeButton = wxButton(self, 20, ">>", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT )
 	self.maximizeButton.SetFont(wxFont(5, wxSWISS, wxNORMAL, wxNORMAL, 0, "adventure"))
@@ -173,6 +173,7 @@ class VenueListPanel(wxPanel):
 
     def OnClick(self, event):
 	currentHeight = self.GetSize().GetHeight()
+	parentSize = self.parent.GetSize()
         if event.GetId() == 10:
 		self.minimizeButton.Hide()  
 		self.maximizeButton.Show()
@@ -180,15 +181,15 @@ class VenueListPanel(wxPanel):
 		self.SetSize(wxSize(20, currentHeight))
 		self.Layout()
 		self.parent.UpdateLayout()
-				
+		self.parent.SetSize(parentSize)
+					
 	if event.GetId() == 20:
 		self.maximizeButton.Hide()
 		self.minimizeButton.Show()  
 		self.list.Show()
 		self.SetSize(wxSize(60, currentHeight))
-		self.Layout()
 		self.parent.UpdateLayout()
-
+	        self.parent.SetSize(parentSize)
 
 '''VenueList. 
 
@@ -258,8 +259,8 @@ class ContentListPanel(wxPanel):
      	id = NewId()
 	
 	self.tree = wxTreeCtrl(self, id, wxDefaultPosition, \
-			       wxDefaultSize,  wxTR_HAS_BUTTONS\
-			       | wxTR_NO_LINES| wxTR_TWIST_BUTTONS \
+			       wxDefaultSize,  wxTR_HAS_BUTTONS \
+			       | wxTR_NO_LINES | wxTR_TWIST_BUTTONS \
 			       | wxTR_HIDE_ROOT)
 	
 	self.__setImageList()
@@ -277,7 +278,8 @@ class ContentListPanel(wxPanel):
 #	smileyOn = wxBitmap('IMAGES/smileyOn.jpg', wxBITMAP_TYPE_JPEG)
 #	smileySelect = wxBitmap('IMAGES/smileySelect.jpg', wxBITMAP_TYPE_JPEG)
 
-	newImageList = wxImageList(16,16)  
+	newImageList = wxImageList(16,16) 
+	self.arrow = imageList.Add(wxBitmap("IMAGES/rightArrow.gif"))
 	self.defaultPersonId = imageList.Add(icons.getDefaultPersonIconBitmap())
 	self.pptDocId = imageList.Add(icons.getPptIconBitmap())
 	self.importantPaperId = imageList.Add(icons.getWordIconBitmap())
