@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.12 2003-09-16 19:26:21 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.13 2003-09-17 15:44:09 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -310,7 +310,7 @@ class VideoCaptureWindow(TitledPage):
         # A uri built with empty host will point at local host, to
         # avoid misunderstandings the user have to give a machine name.
         if self.machineCtrl.GetValue() == "":
-            MessageDialog(self, "COULD NOT CONNECT\n\nIs a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
+            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
             return false
         
         wxBeginBusyCursor()
@@ -341,7 +341,7 @@ class VideoCaptureWindow(TitledPage):
             return true
         
         else:
-            MessageDialog(self, "COULD NOT CONNECT\n\nIs a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
+            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
             wxEndBusyCursor()
             return false
           
@@ -534,7 +534,7 @@ class VideoDisplayWindow(TitledPage):
         # A uri built with empty host will point at local host, to
         # avoid misunderstandings the user have to give a machine name.
         if self.machineCtrl.GetValue() == "":
-            MessageDialog(self, "COULD NOT CONNECT\n\nIs a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
+            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
             return false
 
         # Verify access to machine
@@ -553,7 +553,7 @@ class VideoDisplayWindow(TitledPage):
             return true
             
         else:
-            MessageDialog(self, "COULD NOT CONNECT\n\nIs a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
+            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
             return false
                     
         
@@ -637,7 +637,7 @@ class AudioWindow(TitledPage):
         # A uri built with empty host will point at local host, to
         # avoid misunderstandings the user have to give a machine name.
         if self.machineCtrl.GetValue() == "":
-            MessageDialog(self, "COULD NOT CONNECT\n\nIs a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
+            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
             return false
         
         wxBeginBusyCursor()
@@ -653,7 +653,7 @@ class AudioWindow(TitledPage):
         if self.canConnect:
             return true
         else:
-            MessageDialog(self, "COULD NOT CONNECT\n\nIs a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
+            MessageDialog(self, "Could not connect. Is a service manager running\nat given machine and port?",  style = wxICON_ERROR|wxOK)
             return false
     
     def CheckBoxEvent(self, event):
