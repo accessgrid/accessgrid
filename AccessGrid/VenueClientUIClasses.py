@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.302 2003-10-29 21:03:56 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.303 2003-10-30 15:37:40 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.302 2003-10-29 21:03:56 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.303 2003-10-30 15:37:40 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2336,13 +2336,22 @@ class ContentListPanel(wxPanel):
             if isWindows():
                 if command.find("%1") != -1:
                     command = command.replace("%1", "")
-                    command = "\""+command+"\" \"%(localFilePath)s\""
+                if command.find("%L") != -1:
+                    command = command.replace("%L", "")
+                if command.find("%*") != -1:
+                    command = command.replace("%*", "")
             else:
                 if command.find("%s") != -1:
-                    command = command.replace("%s", "%(localFilePath)s")
+                    command = command.replace("%s", "")
 
-            if command.find("%") == -1:
-                command += " %(localFilePath)s"
+            command = command.replace("\"\"", "")
+            
+            if len(command) > 1:
+                if command.find("%") == -1:
+                    command = "\""+command+" \"%(localFilePath)s\"\""
+            else:
+                command = "\"%(localFilePath)s\""
+            
         else:
             # Get the app dir and run
             if isinstance(item, ApplicationDescription):
@@ -2362,13 +2371,17 @@ class ContentListPanel(wxPanel):
             if isWindows():
                 if command.find("%1") != -1:
                     command = command.replace("%1", "")
-                    command = "\""+command+"\" \"%(appUrl)s\""
             else:
                 if command.find("%s") != -1:
-                    command = command.replace("%s", "%(appUrl)s")
+                    command = command.replace("%s", "")
 
-            if command.find("%") == -1:
-                command += " %(appUrl)s"
+            command = command.replace("\"\"", "")
+            
+            if len(command) > 1:
+                if command.find("%") == -1:
+                    command = "\""+command+"\" \"%(appUrl)s\""
+            else:
+                command = "\""+command+"\""
                 
         if verb != None:
             namedVars['appCmd'] = verb
@@ -2401,9 +2414,6 @@ class ContentListPanel(wxPanel):
             realCommand = command.replace(subStr,
                                           "DORKYREPLACEMENT") % namedVars
             realCommand = realCommand.replace("DORKYREPLACEMENT", subStr)
-            if isWindows():
-                shell = os.environ['ComSpec']
-                realCommand = "%s %s %s" % (shell, "/c", realCommand)
         else:
             try:
                 realCommand = command % namedVars
@@ -2414,6 +2424,10 @@ class ContentListPanel(wxPanel):
                               pprint.pformat(namedVars))
                 return
 
+        if isWindows():
+            shell = os.environ['ComSpec']
+            realCommand = "%s %s %s" % (shell, "/c", realCommand)
+            
         aList = realCommand.split(' ')
         print "CMD: ", realCommand
         self.app.venueClient.processManager.start_process(aList[0], aList[1:])
