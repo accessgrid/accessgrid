@@ -3,7 +3,6 @@ class ValueParameter:
    TYPE = "ValueParameter"
 
    def __init__( self, name, value=None ):
-      self.type = ValueParameter.TYPE
       self.name = name
       self.value = value
 
@@ -16,7 +15,6 @@ class RangeParameter( ValueParameter ):
 
    def __init__( self, name, value, low, high ):
       ValueParameter.__init__( self, name, value )
-      self.type = RangeParameter.TYPE
       self.low = low
       self.high = high
 
@@ -33,7 +31,6 @@ class OptionSetParameter( ValueParameter ):
 
    def __init__( self, name, value, options ):
       ValueParameter.__init__( self, name, value )
-      self.type = OptionSetParameter.TYPE
       self.options = options
 
    def SetValue( self, value ):
@@ -48,11 +45,11 @@ def CreateParameter( parmstruct ):
    Object factory to create parameter instances from those moronic SOAPStructs, 
    emphasizing that we should be using WSDL
    """
-   if parmstruct.type == OptionSetParameter.TYPE:
+   if parmstruct.TYPE == OptionSetParameter.TYPE:
       parameter = OptionSetParameter( parmstruct.name, parmstruct.value, parmstruct.options )
-   elif parmstruct.type == RangeParameter.TYPE:
+   elif parmstruct.TYPE == RangeParameter.TYPE:
       parameter = RangeParameter( parmstruct.name, parmstruct.value, parmstruct.low, parmstruct.high )
-   elif parmstruct.type == ValueParameter.TYPE:
+   elif parmstruct.TYPE == ValueParameter.TYPE:
       parameter = ValueParameter( parmstruct.name, parmstruct.value )
 
    return parameter
