@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.32 2003-02-18 18:50:28 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.33 2003-02-20 20:02:45 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -84,6 +84,13 @@ class VenueClientFrame(wxFrame):
         self.ID_HELP = NewId()
         self.ID_HELP_ABOUT = NewId()
         self.ID_PARTICIPANT_PROFILE = NewId()
+        self.ID_PARTICIPANT_FOLLOW = NewId()
+        self.ID_PARTICIPANT_LEAD = NewId()
+        self.ID_NODE_PROFILE = NewId()
+        self.ID_NODE_FOLLOW = NewId()
+        self.ID_NODE_LEAD = NewId()
+        self.ID_NODE_MANAGE = NewId()
+        self.ID_ME_PROFILE = NewId()
       
         self.venue = wxMenu()
 	self.dataMenu = wxMenu()
@@ -125,10 +132,31 @@ class VenueClientFrame(wxFrame):
         self.menubar.Append(self.help, "&Help")
         self.HideMenu()
 
-        self.participantProfileMenu = wxMenu()
-	self.participantProfileMenu.Append(self.ID_PARTICIPANT_PROFILE,"View Profile...",\
+        self.meMenu = wxMenu()
+        self.meMenu.Append(self.ID_ME_PROFILE,"View Profile...",\
                                            "View participant's profile information")
 
+        self.participantMenu = wxMenu()
+	self.participantMenu.Append(self.ID_PARTICIPANT_PROFILE,"View Profile...",\
+                                           "View participant's profile information")
+        self.participantMenu.AppendSeparator()
+        self.participantMenu.Append(self.ID_PARTICIPANT_FOLLOW,"Follow",\
+                                           "Follow this person", wxITEM_CHECK)
+        self.participantMenu.Append(self.ID_PARTICIPANT_LEAD,"Lead",\
+                                           "Lead this person", wxITEM_CHECK)
+
+        self.nodeMenu = wxMenu()
+        self.nodeMenu.Append(self.ID_NODE_PROFILE,"View Profile...",\
+                             "View node's profile information")
+        self.nodeMenu.Append(self.ID_NODE_MANAGE,"Manage...",\
+                                           "Manage this node")
+        self.nodeMenu.AppendSeparator()
+        self.nodeMenu.Append(self.ID_NODE_FOLLOW,"Follow",\
+                                           "Follow this node", wxITEM_CHECK)
+        self.nodeMenu.Append(self.ID_NODE_LEAD,"Lead",\
+                                           "Lead this node", wxITEM_CHECK)
+     
+      
     def HideMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
         self.menubar.Enable(self.ID_VENUE_DATA_SAVE, false)
@@ -159,7 +187,9 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_MYVENUE_ADD, self.AddToMyVenues)
         EVT_MENU(self, self.ID_VENUE_CLOSE, self.Exit)
 
+        EVT_MENU(self, self.ID_ME_PROFILE, self.OpenParticipantProfile)
         EVT_MENU(self, self.ID_PARTICIPANT_PROFILE, self.OpenParticipantProfile)
+        EVT_MENU(self, self.ID_NODE_PROFILE, self.OpenParticipantProfile)
         
     def __setToolbar(self):
         """
@@ -384,8 +414,6 @@ class VenueClientFrame(wxFrame):
     def RemoveData(self, event):
         id = self.contentListPanel.tree.GetSelection()
         data =  self.contentListPanel.tree.GetItemData(id).GetData()
-
-        print "Removing data ", data
         
         if(data != None):
             self.app.RemoveData(data)
@@ -846,10 +874,21 @@ class ContentListPanel(wxPanel):
         elif text == 'Services' or item != None and self.serviceDict.has_key(item.name):
             self.PopupMenu(self.parent.serviceMenu, wxPoint(self.x, self.y))
 
+        elif text == 'Participants' or text == 'Nodes':
+            pass
+
         elif item != None and self.participantDict.has_key(item.publicId) or self.nodeDict.has_key(item.publicId):
-           
-            self.PopupMenu(self.parent.participantProfileMenu, wxPoint(self.x, self.y))
-        
+
+            if(item.publicId == self.app.profile.publicId):
+                self.PopupMenu(self.parent.meMenu, wxPoint(self.x, self.y))
+
+            elif(item.profileType == 'node'):
+                self.PopupMenu(self.parent.nodeMenu, wxPoint(self.x, self.y))
+
+            elif(item.profileType == 'user'):
+                self.PopupMenu(self.parent.participantMenu, wxPoint(self.x, self.y))
+
+            
     def CleanUp(self):
         for index in self.participantDict.values():
             self.tree.Delete(index)
