@@ -3,17 +3,17 @@
 # Purpose:     
 #
 # Created:     2004/03/30
-# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.5 2004-04-27 02:59:04 judson Exp $
+# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.6 2004-04-27 17:14:31 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import os
 import threading
 
+from AccessGrid.Toolkit import Application
 from AccessGrid.NetworkAddressAllocator import NetworkAddressAllocator
 from AccessGrid.Types import AGServicePackage, InvalidServicePackage
 from AccessGrid import DataStore
-from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid import Log
 
 log = Log.GetLogger("ServicePackageRepo")
@@ -34,27 +34,25 @@ class AGServicePackageRepository:
         self.prefix = prefix
 
     def Start(self):
-        #
         # Start the transfer server
-        #
         
         # if port is 0, find a free port
         if self.port == 0:
             self.port = NetworkAddressAllocator().AllocatePort()
 
-        # 
         # Define base url
-        #
-        hn = SystemConfig.instance().GetHostname()
+        hn = Application.instance().GetHostname()
         if self.prefix is None:
             self.prefix = "packages"
         self.baseUrl = 'https://%s:%d/%s/' % ( hn, self.port, self.prefix )
         
         # Start the transfer server
-        self.s = DataStore.GSIHTTPTransferServer(('', self.port)) 
+        self.s = DataStore.GSIHTTPTransferServer((hn, self.port)) 
         self.s.RegisterPrefix(self.prefix, self)
         threading.Thread( target=self.s.run, name="PackageRepo TransferServer" )
         self.running = 1
+        log.debug("Started AGServicePackageRepository Transfer Server at: %s",
+                  self.baseUrl)
 
     def Stop(self):
         if self.running:
@@ -110,8 +108,6 @@ class AGServicePackageRepository:
 
         return serviceDescriptions
             
-
-
 if __name__ == "__main__":
 
     from AccessGrid.Platform.Config import UserConfig, AGTkConfig
