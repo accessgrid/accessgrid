@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.41 2003-10-15 17:14:39 eolson Exp $
+# RCS-ID:      $Id: setup.py,v 1.42 2003-10-20 20:11:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ by the set up below.
 win32_scripts = glob.glob('bin/*.py') + glob.glob('dist/bin/*.exe')
 win32_data = list()
 
-linux_scripts = [r"bin/VenueServer.py", 
+linux_scripts = [ r"bin/VenueServer.py", 
                   r"bin/VenueClient.py", 
                   r"bin/VenueManagement.py",
                   r"bin/SetupVideo.py",
@@ -33,6 +33,7 @@ linux_scripts = [r"bin/VenueServer.py",
                   r"bin/CertificateRequestTool.py",
                   r"bin/BridgeServer.py",
                   r"bin/certmgr.py",
+                  r"bin/agpm.py",
                   r"services/network/QuickBridge/QuickBridge",
                   ]
 
@@ -112,11 +113,11 @@ setup (
 The Access Grid Toolkit provides the necessary components
 for users to participate in Access Grid based collaborations,
 and also for developers to work on network services,
-applications services and node services to extend the
+application services and node services to extend the
 functionality of the Access Grid.
 """,
     author = "Argonne National Laboratory",
-    author_email = "ag-dev@mcs.anl.gov",
+    author_email = "ag-info@mcs.anl.gov",
     url = "http://www.mcs.anl.gov/fl/research/accessgrid",
     license = "AGTPL",
 
