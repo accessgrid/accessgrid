@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.37 2003-08-20 17:30:18 eolson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.38 2003-08-20 21:35:18 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -875,7 +875,7 @@ class NodeManagementClientFrame(wxFrame):
         """
         services = self.nodeServiceHandle.GetProxy().GetServices()
         for service in services:
-            self.nodeServiceHandle.GetProxy().SetServiceEnabled(self.services[index].uri,1)
+            self.nodeServiceHandle.GetProxy().SetServiceEnabled(service.uri,1)
 
         self.UpdateServiceList()
 
@@ -909,7 +909,7 @@ class NodeManagementClientFrame(wxFrame):
         """
         svcs = self.nodeServiceHandle.GetProxy().GetServices()
         for svc in svcs:
-            self.nodeServiceHandle.GetProxy().SetServiceEnabled(self.services[index].uri,0)
+            self.nodeServiceHandle.GetProxy().SetServiceEnabled(svc.uri,0)
 
         self.UpdateServiceList()
 
