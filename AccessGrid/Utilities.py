@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.54 2004-02-24 21:34:51 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.55 2004-02-27 20:17:42 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.54 2004-02-24 21:34:51 judson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.55 2004-02-27 20:17:42 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -31,6 +31,7 @@ import re
 import logging
 log = logging.getLogger("AG.Utilities")
 
+from AccessGrid.Version import GetVersion
 from AccessGrid.Platform import GetUserConfigDir
 
 # Global variables for sending log files
@@ -277,7 +278,7 @@ def SubmitBug(comment, profile, email, logFile = VENUE_CLIENT_LOG):
     args['Bugzilla_login'] = bugzilla_login
     args['Bugzilla_password'] = bugzilla_password
     args['product'] = "Virtual Venues Client Software"
-    args['version'] = "2.1.1"
+    args['version'] = str(GetVersion())
     args['component'] = "Client UI"
     args['rep_platform'] = "Other"
     
