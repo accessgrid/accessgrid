@@ -1,0 +1,94 @@
+--- AccessGrid-20040726/packaging/linux/fedora/fc2/AccessGrid.spec.in.orig	2004-06-25 08:57:12.000000000 +1000
++++ AccessGrid-20040726/packaging/linux/fedora/fc2/AccessGrid.spec.in	2004-07-26 14:05:03.494993238 +1000
+@@ -30,7 +30,7 @@
+ Vendor:		Argonne National Laboratory
+ Source:		%{name}-%{version}-%{release}.tar.gz
+ BuildRoot:	%{buildroot}
+-Requires:	wxPython
++Requires:	wxPython >= 2.5
+ Requires:	globus-accessgrid
+ Requires:	xawtv
+ Requires:	glibc >= 2.2.5-43
+@@ -93,7 +93,7 @@
+ #
+ %files
+ %defattr(-,root,root)
+-%{prefix}/lib
++%{prefix}/lib/*
+ /etc/AccessGrid
+ /etc/init.d/agns
+ /etc/init.d/agsm
+@@ -133,8 +133,8 @@
+ %{prefix}/bin/QuickBridge
+ # - Install the Gnome/KDE menu items
+ %defattr(-,root,root)
+-%{xdg_config_dirs}/menus/applications-merged
+-%{xdg_data_dirs}/desktop-directories
++%{xdg_config_dirs}/menus/applications-merged/*
++%{xdg_data_dirs}/desktop-directories/*
+ %{xdg_data_dirs}/applications/%{name}
+ 
+ 
+--- AccessGrid-20040726/packaging/linux/BuildPackage.py.orig	2004-05-27 09:32:10.000000000 +1000
++++ AccessGrid-20040726/packaging/linux/BuildPackage.py	2004-07-22 16:26:40.000000000 +1000
+@@ -44,8 +44,8 @@
+ d,agsourcedir = os.path.split(BuildDir)
+ distDirs = [agsourcedir,
+             "ag-media",
+-            "SOAPpy-0.11.4",
+-            "fpconst-0.6.0",
++            "SOAPpy",
++            "fpconst-0.7.0",
+             "openssl-0.9.7d",
+             "pyGlobus",
+             "pyOpenSSL",
+--- AccessGrid-20040726/packaging/BuildPythonModules.py.orig	2004-05-06 02:05:02.000000000 +1000
++++ AccessGrid-20040726/packaging/BuildPythonModules.py	2004-07-22 16:27:42.000000000 +1000
+@@ -54,11 +54,11 @@
+     SetupModule("Optik-1.4.1", SOURCE, DEST)
+ 
+ 
+-print "Building fpconst 0.6.0"
+-SetupModule("fpconst-0.6.0", SOURCE, DEST)
++print "Building fpconst 0.7.0"
++SetupModule("fpconst-0.7.0", SOURCE, DEST)
+ 
+-print "Building SOAPpy 0.11.4"
+-SetupModule("SOAPpy-0.11.4", SOURCE, DEST)
++print "Building SOAPpy"
++SetupModule("SOAPpy", SOURCE, DEST)
+ 
+ print "Building pyOpenSSL_AG"
+ SetupModule("pyOpenSSL", SOURCE, DEST)
+--- AccessGrid-20040723/packaging/linux/rpm/globus.spec.orig	2004-06-25 07:41:14.000000000 +1000
++++ AccessGrid-20040723/packaging/linux/rpm/globus.spec	2004-07-23 11:48:56.099607870 +1000
+@@ -1,6 +1,6 @@
+ %define	name		globus-accessgrid
+ %define	version		2.4
+-%define	release		1
++%define	release		2
+ %define	prefix		/usr/lib/globus
+ %define buildroot	/var/tmp/%{name}-%{version}
+ 
+@@ -32,6 +32,7 @@
+ # Globus Data Management Client
+ ${GPT_LOCATION}/sbin/gpt-build ${AGBUILDROOT}/gt3.0.2-source-installer/globus-data-management-client-2.4.3-src_bundle.tar.gz gcc32pthr
+ ${GPT_LOCATION}/sbin/gpt-verify
++(cd ${GLOBUS_LOCATION}/setup/globus/ ; ./setup-globus-common )
+ 
+ ##
+ # Fix der_chop from openssl from using the not right /usr/local/bin/perl and instead use /usr/bin/perl
+--- AccessGrid-20040723_102916/AccessGrid/Platform/unix/Config.py.orig	2004-07-23 09:24:11.000000000 +1000
++++ AccessGrid-20040723_102916/AccessGrid/Platform/unix/Config.py	2004-07-23 10:36:27.000000000 +1000
+@@ -641,8 +641,9 @@
+     
+         deviceList = dict()
+         
+-        videodevpath = '/proc/video/dev'
+-
++        videodevpath = '/dev'
++        if os.path.exists('/proc/video/dev'):
++             videodevpath = '/proc/video/dev'
+         if os.path.exists('/sys/class/video4linux'):
+             videodevpath = '/sys/class/video4linux'
+
