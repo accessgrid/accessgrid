@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.267 2003-09-17 14:00:23 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.268 2003-09-17 14:40:00 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.267 2003-09-17 14:00:23 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.268 2003-09-17 14:40:00 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -423,7 +423,6 @@ class VenueClientFrame(wxFrame):
 
         EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.Follow)
 
-        EVT_MENU_OPEN(self.venue, self.BuildAppMenu)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_JOIN, self.OpenApp)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_DELETE, self.RemoveApp)
         EVT_MENU(self, self.ID_VENUE_APPLICATION_PROPERTIES, self.OpenApplicationProfile)
