@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.57 2004-05-12 17:10:07 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.58 2004-05-14 17:00:00 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.57 2004-05-12 17:10:07 turam Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.58 2004-05-14 17:00:00 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -533,22 +533,26 @@ def CreateDataDescription(dataDescStruct):
     return dd
 
 def CreateStreamDescription( streamDescStruct ):
-    location = streamDescStruct.location
-    if streamDescStruct.location.type == MulticastNetworkLocation.TYPE:
-        networkLocation = MulticastNetworkLocation( location.host,
-                                                    location.port,
-                                                    location.ttl )
-    else:
-        networkLocation = UnicastNetworkLocation( location.host,
-                                                  location.port)
     cap = Capability( streamDescStruct.capability.role, 
                       streamDescStruct.capability.type )
     streamDescription = StreamDescription( streamDescStruct.name, 
-                                           networkLocation,
+                                           None,
                                            cap,
                                            streamDescStruct.encryptionFlag,
                                            streamDescStruct.encryptionKey,
                                            streamDescStruct.static)
+                                           
+    # stream id must not change in this conversion
+    streamDescription.id = streamDescStruct.id
+    
+    # set the location explicitly, to avoid 
+    # netloc management in StreamDesc init
+    streamDescription.location = CreateNetworkLocation(streamDescStruct.location)
+    
+    # Convert network locations and add to stream description
+    for netloc in streamDescStruct.networkLocations:
+        streamDescription.AddNetworkLocation(CreateNetworkLocation(netloc))
+    
     return streamDescription
 
 def CreateServiceDescription(serviceDescStruct):
