@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.40 2004-08-11 22:18:23 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.41 2004-08-12 21:13:50 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -110,7 +110,7 @@ class NodeSetupWizard(wxWizard):
         self.progress = progress
         self.step = 1
         self.SetIcon(icons.getAGIconIcon())
-        self.SetPageSize(wxSize(510, 310))
+        self.SetPageSize(wxSize(510, 350))
         self.nodeClient = NodeClient(app)
         
         progress.UpdateOneStep("Initializing the Node Setup Wizard.")
