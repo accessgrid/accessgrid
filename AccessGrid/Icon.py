@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Icon.py,v 1.2 2003-01-15 17:37:48 judson Exp $
+# RCS-ID:      $Id: Icon.py,v 1.3 2003-03-29 23:37:39 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -58,13 +58,13 @@ class Icon:
         """
         SetData sets the base64 encoded data attribute.
         """
-        data = data
+        self.data = data
     
     def GetData(self):
         """
         GetData gets the base64 encoded data attribute.
         """
-        return data
+        return self.data
 
     def GetRawData(self):
         """
