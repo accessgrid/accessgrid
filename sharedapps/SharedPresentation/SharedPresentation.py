@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.13 2003-11-05 21:56:14 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.14 2003-11-06 17:17:26 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -262,7 +262,7 @@ class SharedPresentationFrame(wxFrame):
         self.SetMenuBar(menubar)
 
         # - Create main panel
-        self.panel = wxPanel(self, -1, size = wxSize(350, 150))
+        self.panel = wxPanel(self, -1, size = wxSize(300, 150))
         
         # - Create main sizer 
         mainSizer = wxBoxSizer(wxVERTICAL)
