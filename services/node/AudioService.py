@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.19 2004-05-09 03:04:10 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.20 2004-05-10 19:37:13 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -207,7 +207,7 @@ class AudioService( AGService ):
                 rk = "rat-kill"
 
             installDir = AGTkConfig.instance().GetInstallDir()
-            ratKillExe = os.path.join(installDir, rk)
+            ratKillExe = os.path.join('.', rk)
 
             if os.access(ratKillExe, os.X_OK):
                 self.log.info("Executing rat-kill")
