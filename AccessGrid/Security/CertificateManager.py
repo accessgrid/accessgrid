@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.35 2004-09-03 18:11:57 turam Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.36 2004-09-06 05:53:45 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.35 2004-09-03 18:11:57 turam Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.36 2004-09-06 05:53:45 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -407,25 +407,32 @@ class CertificateManager(object):
             for f in possibleCertFiles:
 
                 path = os.path.join(caDir, f);
-                log.debug("%s might be a cert" % (path))
+                log.info("%s might be a cert" % (path))
 
+                # Check for existence of signing policy
+                id = f.split('.')[0]
+                signingPolicyFile = '%s.signing_policy' % (id,)
+                signingPath = os.path.join(caDir,signingPolicyFile)
+                if not os.path.isfile(signingPath):
+                    log.info("Not importing CA cert %s; couldn't find signing policy file %s",
+                             f,signingPath)
+                    continue
+                    
                 try:
+                
+                    # Import the certificate
                     desc = self.ImportCACertificatePEM(repo, path)
                     
                     # print "Imported ", desc.GetSubject()
 
                     #
-                    # See if there's a signing policy file. It'll be named
-                    # without the .0
+                    # Copy the signing policy file
                     #
-
-                    signingPath = os.path.join(caDir,
-                                               "%s.signing_policy" %
-                                               (desc.GetSubject().get_hash()))
-                    if os.path.isfile(signingPath):
-                        # print "Copying signing policy ", signingPath
-                        shutil.copyfile(signingPath,
+                    # print "Copying signing policy ", signingPath
+                    shutil.copyfile(signingPath,
                                         desc.GetFilePath("signing_policy"))
+                    
+                    log.info("Imported cert as %s.0", desc.GetSubject().get_hash())
                     
                 except:
                     # print "Failure to import ", path
