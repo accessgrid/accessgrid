@@ -3,14 +3,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.52 2004-04-14 19:04:57 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.53 2004-04-23 22:01:34 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.52 2004-04-14 19:04:57 eolson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.53 2004-04-23 22:01:34 lefvert Exp $"
 
 # The standard imports
 import sys
@@ -21,7 +21,17 @@ if sys.platform=="darwin":
     import pyGlobus.ioc
 
 import signal, time, os
-from optik import Option
+if sys.version.startswith('2.2'):
+    try:
+        from optik import Option
+    except:
+        raise Exception, "Missing module optik necessary for the AG Toolkit."
+
+if sys.version.startswith('2.3'):
+    try:
+        from optparse import Option
+    except:
+        raise Exception, "Missing module optparse, check your python installation."
 
 # Our imports
 #from AccessGrid.Toolkit import Service
