@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.67 2004-04-12 21:42:14 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.68 2004-04-12 21:45:46 judson Exp $
 ;
 
 ; Set externally
@@ -155,7 +155,7 @@ Name: quicklaunchicon; Description: Create a &Quick Launch Icon; GroupDescriptio
 
 [Messages]
 DirExists=The directory:%n%n%1%n%nalready exists and appears to have an {#AppName} installation in it.%n%nIt is recommended that you uninstall any existing {#AppName} software before proceeding.  Do you wish to proceed anyway?
-WelcomeLabel2=This will install the {#AppName} {#AppVersion}-{#VersionInformation} on your computer.%n%nIt is strongly recommended that you uninstall any previous version of the {#AppName} before continuing.%n%nIt is also strongly recommended that you close all other applications you have running before continuing with this installation.%n%nThese steps will help prevent any conflicts during the installation process.
+WelcomeLabel2=This will install the {#AppName} {#AppVersion} {#VersionInformation} on your computer.%n%nIt is strongly recommended that you uninstall any previous version of the {#AppName} before continuing.%n%nIt is also strongly recommended that you close all other applications you have running before continuing with this installation.%n%nThese steps will help prevent any conflicts during the installation process.
 
 [Run]
 Filename: {reg:HKLM\Software\Python\PythonCore\{#PythonVersion}\InstallPath,|C:\Python22}\python.exe; WorkingDir: {app}\bin; Description: Setup what video devices will produce video streams; Flags: runminimized nowait shellexec; Parameters: SetupVideo.pyw
