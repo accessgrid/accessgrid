@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.148 2004-03-19 04:59:00 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.149 2004-03-19 17:39:49 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.148 2004-03-19 04:59:00 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.149 2004-03-19 17:39:49 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -48,6 +48,8 @@ from AccessGrid.Descriptions import CreateServiceDescription
 from AccessGrid.Descriptions import CreateApplicationDescription
 from AccessGrid.Venue import VenueIW, ServiceAlreadyPresent
 from AccessGrid.AGNodeService import AGNodeServiceIW
+from AccessGrid.Security.AuthorizationManager import AuthorizationManagerIW
+
 
 class EnterVenueException(Exception):
     pass
@@ -1446,20 +1448,21 @@ class VenueClient:
         # Determine if we are an administrator so we can add
         # administrator features to UI.
         isVenueAdministrator = 0
-        try:
-            if "Venue.Administrators" in self.GetSubjectRoles():
+        authUrl = self.venueUri + '/Authorization'
+       
+        authClient = AuthorizationManagerIW(authUrl)
+        role = authClient.FindRole('Administrators')
+                      
+        cm = Toolkit.Application.instance().GetCertificateManager()
+        di = cm.GetDefaultIdentity()
+               
+        for s in role.GetSubjects():
+            if s.GetName() == str(di.GetSubject()):
                 isVenueAdministrator = 1
-            else:
-                isVenueAdministrator = 0
-        except Exception, e:
-            log.exception(e)
-            isVenueAdministrator = 0
-            if e.faultstring == "No method DetermineSubjectRoles found":
-                log.info("Server has no method DetermineSubjectRoles.  Probably 2.0 server.")
-            else:
-                log.exception(e)
-                
+                return
+
         return isVenueAdministrator
+                                    
 
 class VenueClientI(SOAPInterface):
     def __init__(self, impl):
