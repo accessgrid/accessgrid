@@ -14,9 +14,7 @@ URL:      http://www-itg.lbl.gov/gtg/projects/pyGlobus/
 Vendor:		Argonne National Laboratory
 Source:		%{name}-%{version}.tar.gz
 BuildRoot:	%{buildroot}
-Requires:	/usr/bin/python2.3
 Requires:	globus-accessgrid
-BuildRequires:	/usr/bin/python2.3
 BuildRequires:	globus-accessgrid
 
 
