@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.54 2003-04-01 23:23:48 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.55 2003-04-03 18:07:42 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,6 +22,7 @@ import logging
 import urlparse
 import time
 import ConfigParser
+from AccessGrid.hosting.pyGlobus import Server
 
 # AG Stuff
 from AccessGrid.hosting import AccessControl
@@ -111,7 +112,13 @@ class VenueServer(ServiceBase.ServiceBase):
         self.administrators = ''
         self.administratorList = []
         self.defaultVenue = ''
-        self.hostingEnvironment = hostEnvironment
+        if None != hostEnvironment: 
+            self.hostingEnvironment = hostEnvironment
+            self.internalHostingEnvironment = False
+        else:
+            defaultPort = 8000
+            self.hostingEnvironment = Server.Server(defaultPort)
+            self.internalHostingEnvironment = True
         self.multicastAddressAllocator = MulticastAddressAllocator()
         self.hostname = GetHostname()
         self.venues = {}
@@ -636,6 +643,10 @@ class VenueServer(ServiceBase.ServiceBase):
         self.eventService.Stop()
         log.info("                         data")
         self.dataTransferServer.stop()
+        if True == self.internalHostingEnvironment:
+            log.info("                         internally created hostingEnvironment")
+            self.hostingEnvironment.Stop()
+            del self.hostingEnvironment
         log.info("                              done.")
 
         log.info("Shutdown Complete.")
