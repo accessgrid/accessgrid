@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.326 2004-02-23 22:54:27 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.327 2004-02-23 23:15:15 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.326 2004-02-23 22:54:27 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.327 2004-02-23 23:15:15 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -3536,7 +3536,15 @@ class DataDialog(wxDialog):
         self.nameCtrl.SetValue(dataDescription.name)
         self.ownerCtrl.SetValue(str(dataDescription.owner))
         self.sizeCtrl.SetValue(str(dataDescription.size))
-        self.lastModCtrl.SetValue(str(dataDescription.lastModified))
+        try:
+            self.lastModCtrl.SetValue(str(dataDescription.lastModified))
+        except:
+            self.lastModCtrl.SetValue("Not available.")
+            log.info("DataDialog.SetDescription: last modified param does not exist. Probably old data description. Ignore!")
+
+        if not dataDescription.lastModified:
+            self.lastModCtrl.SetValue("Not available.")
+            
         self.SetTitle("Data Properties")
         self.__setEditable(false)
         self.cancelButton.Destroy()
