@@ -117,7 +117,7 @@ fi
 #
 echo
 echo "This script installs the Slackware packages for the Access Grid software. " 
-echo "Continue?"
+echo "Continue ? [y/n]"
 read response
 if [ "$response" != 'y' ] && [ "$response" != "Y" ]
 then
@@ -131,6 +131,7 @@ echo "***********************************************"
 echo "Installing prerequisites" 
 echo "***********************************************"
 Install $GLOBUS $GLOBUS_VER
+echo ""
 
 #
 # Install AG RPMS
@@ -139,8 +140,36 @@ echo "***********************************************"
 echo "Installing Access Grid packages "
 echo "***********************************************"
 Install $AG $AG_VER
+echo ""
+
+#
+# Install XDG menu stuff
+#
+echo "***********************************************"
+echo "Install AG Menus "
+echo "***********************************************"
+here=`pwd`
+APPSMENU_PATCH=${here}/applications-all-users.vfolder-info.diff
+
+if [ ! -r ${APPSMENU_PATCH} ]; then
+  echo "No patch file found"
+  exit 1
+fi
+
+cd /etc/gnome-vfs-2.0/vfolders
+
+patch -p0 -N -t -l -s --dry-run 2>&1 > /dev/null < ${APPSMENU_PATCH}
+if [ $? -eq 0 ]; then
+  echo "Patching \"Applications\" menu"
+  patch -p0 -N -t -l -s  2>&1 > /dev/null < ${APPSMENU_PATCH}
+else
+  echo "Patch won't apply cleanly. Do it yourself!"
+  exit 2
+fi
 
 echo ""
 echo "Installation finished."
 echo ""
+
+exit 0
 
