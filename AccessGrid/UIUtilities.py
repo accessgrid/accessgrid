@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.44 2003-11-06 23:15:41 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.45 2004-01-28 21:02:40 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.44 2003-11-06 23:15:41 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.45 2004-01-28 21:02:40 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import isWindows, isLinux, isOSX
@@ -33,7 +33,6 @@ from AccessGrid.Utilities import SubmitBug, VENUE_CLIENT_LOG
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Version import GetVersion
 from AccessGrid.Platform import GetUserConfigDir, GetSharedDocDir
-from AccessGrid.ClientProfile import ClientProfile
 
 class MessageDialog:
     def __init__(self, frame, text, text2 = "", style = wxOK|wxICON_INFORMATION):
@@ -55,10 +54,9 @@ class ErrorDialog:
             if(bugReportCommentDialog.ShowModal() == wxID_OK):
                 # Submit the error report to Bugzilla
                 comment = bugReportCommentDialog.GetComment()
-                profile = bugReportCommentDialog.GetProfile()
                 email = bugReportCommentDialog.GetEmail()
 
-                SubmitBug(comment, profile, email, logFile)
+                SubmitBug(comment,  email, logFile)
                 bugFeedbackDialog = wxMessageDialog(frame, "Your error report has been sent, thank you.",
                                                     "Error Reported", style = wxOK|wxICON_INFORMATION)
                 bugFeedbackDialog.ShowModal()
@@ -91,31 +89,8 @@ class BugReportCommentDialog(wxDialog):
         self.infoText = wxStaticText(self, -1, "For more information on bugs, visit http://bugzilla.mcs.anl.gov/AccessGrid ")
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
-        self.GetClientProfile()
         self.Centre()
         self.Layout()
-
-    def GetClientProfile(self):
-        accessGridPath = GetUserConfigDir()
-        profileFile = os.path.join(accessGridPath, "profile" )
-        profile = ClientProfile(profileFile)
-
-        if profile.IsDefault():
-            # This is the default profile and we do not want to
-            # use values from it.
-            self.profile = None
-
-        else:
-            self.profile = profile
-      
-        # If we have a profile and the email is filled in properly,
-        # use email as default.
-        if (self.profile
-            and self.profile.email != ClientProfile.defaultProfile["ClientProfile.email"]):
-            self.emailBox.SetValue(self.profile.email)
-
-    def GetProfile(self):
-        return self.profile
     
     def GetEmail(self):
         return self.emailBox.GetValue()

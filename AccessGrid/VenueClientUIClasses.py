@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.314 2004-01-28 18:09:07 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.315 2004-01-28 21:02:40 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.314 2004-01-28 18:09:07 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.315 2004-01-28 21:02:40 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -478,10 +478,9 @@ class VenueClientFrame(wxFrame):
         if(bugReportCommentDialog.ShowModal() == wxID_OK):
             # Submit the error report to Bugzilla
             comment = bugReportCommentDialog.GetComment()
-            profile = bugReportCommentDialog.GetProfile()
             email = bugReportCommentDialog.GetEmail()
             
-            SubmitBug(comment, profile, email)
+            SubmitBug(comment, email)
             bugFeedbackDialog = wxMessageDialog(self, "Your error report has been sent, thank you.",
                                                 "Error Reported", style = wxOK|wxICON_INFORMATION)
             bugFeedbackDialog.ShowModal()
