@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Client.py,v 1.11 2003-05-23 20:59:54 judson Exp $
+# RCS-ID:      $Id: Client.py,v 1.12 2003-05-28 16:50:32 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -78,10 +78,10 @@ class Handle:
         try:
             ret = proxy._IsValid()
             return ret
-        except Exception, e:
+        except:
             # print "Attempt at calling isvalid fails: ", e
             # return 0
-            raise InvalidHandleException
+            raise
 
     def Implements(self, method):
         """
