@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.63 2004-05-25 12:03:37 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.64 2004-06-01 15:22:45 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.63 2004-05-25 12:03:37 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.64 2004-06-01 15:22:45 eolson Exp $"
 
 # Standard imports
 import os
@@ -131,7 +131,7 @@ class AppBase:
        else:
            Log.mlh.setTarget(fh)
        Log.mlh.close()
-       del Log.mlh
+       #del Log.mlh  # Comment out to allow and App and Service to call Initialize in the same program.
        
        return argvResult
 
