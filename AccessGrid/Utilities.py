@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.62 2004-04-09 18:36:58 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.63 2004-04-13 20:54:51 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.62 2004-04-09 18:36:58 judson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.63 2004-04-13 20:54:51 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -33,7 +33,7 @@ log = Log.GetLogger(Log.Utilities)
 
 from AccessGrid.Version import GetVersion
 from AccessGrid import Platform
-from AccessGrid.Platform.Config import UserConfig
+from AccessGrid.Platform import Config
 
 # Global variables for sending log files
 VENUE_CLIENT_LOG = 0
@@ -291,23 +291,23 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
     args['submit'] = "    Commit    "
     args['form_name'] = "enter_bug"
     
-   
-    
-    #
     # Combine comment, profile, and log file information
-    #
-
     userConfigDir = userConfig.GetConfigDir()
 
-    #
+    # Get config information
+    configData =  "%s\n---------------" % Config.AGTkConfig.instance()
+    configData += "%s\n---------------" % Config.UserConfig.instance()
+    configData += "%s\n---------------" % Config.GlobusConfig.instance()
+    configData += "%s\n---------------" % Config.SystemConfig.instance()
+
     # Defaults.
-    #
     args['product'] = "Virtual Venues Client Software"
     args['component'] = "Client UI"
     logToSearch = None
     
     if profile:
-        # Always set profile email to empty string so we don't write to wrong email address.
+        # Always set profile email to empty string so we don't write
+        # to wrong email address.
         profile.email = ""
         profileString = str(profile)
 
@@ -315,13 +315,14 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
         profileString = "This reporter does not have a client profile"
         
     if email == "":
-        # This reporter does not want to be contacted. Do not submit email address.
+        # This reporter does not want to be contacted. Do not submit
+        # email address.
         email = "This reporter does not want to be contacted.  No email address specified."
 
         
     commentAndLog = "\n\n--- EMAIL TO CONTACT REPORTER ---\n\n" + str(email) \
-                    +"\n\n--- REPORTER CLIENT PROFILE --- \n\n" + profileString \
-                    +"\n\n--- COMMENT FROM REPORTER --- \n\n" + comment 
+                +"\n\n--- REPORTER CLIENT PROFILE --- \n\n" + profileString \
+                +"\n\n--- COMMENT FROM REPORTER --- \n\n" + comment 
 
 
     if logFile == NO_LOG:
@@ -333,9 +334,10 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
         args['product'] = "Virtual Venue Server Software"
         args['component'] = "Management UI"
         
-        logText = GetLogText(20000, os.path.join(userConfigDir, "VenueManagement.log"))
+        logText = GetLogText(20000, os.path.join(userConfigDir,
+                                                 "VenueManagement.log"))
         commentAndLog = commentAndLog \
-                        +"\n\n--- VenueManagement.log INFORMATION ---\n\n"+ logText
+            +"\n\n--- VenueManagement.log INFORMATION ---\n\n"+ logText
         
     elif logFile == NODE_SETUP_WIZARD_LOG:
         args['short_desc'] = "Crash in Node Setup Wizard UI"
@@ -343,23 +345,27 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
         args['product'] = "Node Management Software"
         args['component'] = "NodeSetupWizard"
 
-        logText = GetLogText(20000, os.path.join(userConfigDir, "NodeSetupWizard.log"))
+        logText = GetLogText(20000, os.path.join(userConfigDir,
+                                                 "NodeSetupWizard.log"))
         commentAndLog = commentAndLog \
-                        +"\n\n--- NodeSetupWizard.log INFORMATION ---\n\n"+ logText
+            +"\n\n--- NodeSetupWizard.log INFORMATION ---\n\n"+ logText
 
     else:
         args['short_desc'] = "Automatic Bug Report"
-        logToSearch = GetLogText(20000, os.path.join(userConfigDir, "VenueClient.log"))
+        logToSearch = GetLogText(20000, os.path.join(userConfigDir,
+                                                     "VenueClient.log"))
         commentAndLog = commentAndLog \
-                        +"\n\n--- VenueClient.log INFORMATION ---\n\n"+ logToSearch \
-                        +"\n\n--- agns.log INFORMATION ---\n\n"+GetLogText(20000, os.path.join(userConfigDir, "agns.log"))\
-                        +"\n\n--- agsm.log INFORMATION ---\n\n"+GetLogText(20000, os.path.join(userConfigDir, "agsm.log"))\
-                        +"\n\n--- AGService.log INFORMATION ---\n\n"+GetLogText(20000, os.path.join(userConfigDir, "AGService.log"))
+             +"\n\n--- VenueClient.log INFORMATION ---\n\n"+ logToSearch \
+             +"\n\n--- agns.log INFORMATION ---\n\n"+GetLogText(20000,
+                                 os.path.join(userConfigDir, "agns.log"))\
+             +"\n\n--- agsm.log INFORMATION ---\n\n"+GetLogText(20000,
+                                 os.path.join(userConfigDir, "agsm.log"))\
+             +"\n\n--- AGService.log INFORMATION ---\n\n"+GetLogText(20000,
+                                 os.path.join(userConfigDir, "AGService.log"))
 
-    #
-    # If we've got a logToSearch, look at it to find a GSI exception at the end.
-    # If it has one, mark the component as Certificate Management.
-    #
+    # If we've got a logToSearch, look at it to find a GSI exception
+    # at the end.  If it has one, mark the component as Certificate
+    # Management.
 
     if logToSearch:
         loc = logToSearch.rfind("Traceback")
@@ -369,22 +375,15 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
                 args['component'] = "Certificate Management"
 
         logToSearch = None
-    #
+
     # Look at the end of the log and guess whether we need to mark this 
-    args['comment']= commentAndLog
+    args['comment']= configData + "\n\n" + commentAndLog
       
-    #
     # Now submit to the form.
-    #
-    
     params = urllib.urlencode(args)
-    
     f = urllib.urlopen(url, params)
     
-    #
     # And read the output.
-    #
-    
     out = f.read()
     f.close()
         
@@ -524,5 +523,7 @@ def split_quoted (s):
 # split_quoted ()
 
 if __name__ == "__main__":
-    SubmitBug("This is just a test for the Bug Reporting Tool", profile=None, email="", userConfig=UserConfig.instance(), logFile=NO_LOG)
+    SubmitBug("This is just a test for the Bug Reporting Tool", profile=None,
+              email="", userConfig=Config.UserConfig.instance(),
+              logFile=NO_LOG)
 
