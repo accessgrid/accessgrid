@@ -5,25 +5,28 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.57 2004-04-19 21:26:12 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.58 2004-04-27 17:18:52 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.57 2004-04-19 21:26:12 lefvert Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.58 2004-04-27 17:18:52 judson Exp $"
 __docformat__ = "restructuredtext en"
-
-from AccessGrid.hosting import Client
-
 import sys
 
 from wxPython.wx import *
 from wxPython.lib.dialogs import wxMultipleChoiceDialog
 
 # AG2 imports
-from AccessGrid.hosting import Client
 from AccessGrid import Log
+from AccessGrid import icons
+from AccessGrid import Platform
+from AccessGrid import Toolkit
+from AccessGrid.Platform import IsWindows
+from AccessGrid.Platform.Config import SystemConfig
+from AccessGrid.hosting import Client
+from AccessGrid.UIUtilities import AboutDialog
 from AccessGrid.Types import Capability, ServiceConfiguration
 from AccessGrid.AGParameter import ValueParameter, RangeParameter
 from AccessGrid.AGParameter import OptionSetParameter, CreateParameter
@@ -31,12 +34,6 @@ from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid.AGNodeService import AGNodeServiceIW
 from AccessGrid.AGServiceManager import AGServiceManagerIW
 from AccessGrid.AGService import AGServiceIW
-from AccessGrid import icons
-from AccessGrid import Platform
-from AccessGrid.UIUtilities import AboutDialog
-from AccessGrid import Toolkit
-from AccessGrid.Platform import IsWindows
-from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.Types import AGResource
 
 from SOAPpy import SOAPException
@@ -47,8 +44,6 @@ from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
 log = Log.GetLogger(Log.NodeManagementUIClasses)
 Log.SetDefaultLevel(Log.NodeManagementUIClasses, Log.WARN)
-
-
 
 ###
 ### MENU DEFS
@@ -540,7 +535,7 @@ class NodeManagementClientFrame(wxFrame):
         """
 
         # Prompt for service manager location
-        names = { "Hostname" : "", "Port":"11000" }
+        names = { "Hostname" : "", "Port":"" }
         dlg = MultiTextFieldDialog( self, -1, \
             "Node Attach Dialog", names )
 
@@ -557,7 +552,7 @@ class NodeManagementClientFrame(wxFrame):
                 return
 
             if host == "localhost":
-                host = SystemConfig.instance().GetHostname()
+                host = self.app.GetHostname()
 
             # Attach (or fail)
             uri = 'https://%s:%s/NodeService' % (host,port)
@@ -690,7 +685,7 @@ class NodeManagementClientFrame(wxFrame):
         """
 
         # Prompt for service manager location
-        names = { "Hostname" : "", "Port":"12000" }
+        names = { "Hostname" : "", "Port":"" }
         dlg = MultiTextFieldDialog( self, -1, \
             "Add Service Manager Dialog", names )
      
@@ -707,7 +702,7 @@ class NodeManagementClientFrame(wxFrame):
                 return
 
             if host == "localhost":
-                host = SystemConfig.instance().GetHostname()
+                host = self.app.GetHostname()
 
             # Add the service manager to the node service
             uri = 'https://%s:%s/ServiceManager' % (host,port)
