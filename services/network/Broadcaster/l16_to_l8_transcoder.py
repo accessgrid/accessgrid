@@ -1,5 +1,6 @@
 import array
 import time
+import sys
 
 from common.RTPSensor import RTPSensor
 from common import common
@@ -40,9 +41,9 @@ class L16_to_L8(RTPSensor):
             sdata = self.buffer
             self.buffer = None
         else:
-            self.buffer = e
+            self.buffer = e 
             common.free_rtp_packet(event.data)
-            common.free_rtp_packet(packet)
+            #common.free_rtp_packet(packet)
             return
         
         sdata.byteswap()
@@ -65,7 +66,7 @@ class L16_to_L8(RTPSensor):
         self.destination.update()
 
         common.free_rtp_packet(event.data)
-        common.free_rtp_packet(packet)
+#       common.free_rtp_packet(packet)
         
 
 if __name__ == "__main__":
