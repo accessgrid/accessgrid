@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.64 2004-04-29 16:46:20 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.65 2004-05-03 17:39:24 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.64 2004-04-29 16:46:20 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.65 2004-05-03 17:39:24 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -42,7 +42,6 @@ from AccessGrid.AGServicePackageRepository import AGServicePackageRepository
 from SOAPpy.Types import SOAPException
 
 log = Log.GetLogger(Log.NodeService)
-Log.SetDefaultLevel(Log.NodeService, Log.DEBUG)
 
 class SetStreamException(Exception): pass
 
