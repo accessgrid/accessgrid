@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ServiceObject.py,v 1.5 2003-02-14 20:51:38 olson Exp $
+# RCS-ID:      $Id: ServiceObject.py,v 1.6 2003-02-14 22:20:58 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ from AccessGrid.hosting import AccessControl
 class NoServiceMethodException(Exception):
     """No such method.
 
-    An incoming XMLRPC request will raise this exception when a
+    An incoming SOAP request will raise this exception when a
     the request specifies a service id that is not registered with
     this server."""
     
@@ -31,7 +31,7 @@ class ServiceObject:
     Following is an example of the use of a Service object.
 
     First, we define a class and method that will handle an incoming
-    XMLRPC request.
+    SOAP request.
 
     class Handler:
         def __init__(self):
@@ -53,7 +53,7 @@ class ServiceObject:
     Note that we bind to handler.handle_method; this is a Python bound
     instance that will remember the handler instance that is
     associated with the method. If we wanted to define a function (not
-    a class method) to handle the XMRPC call, it might look like this:
+    a class method) to handle the SOAP call, it might look like this:
 
         def handler_func(marg1, marg2):
             # Handle the incoming method, invoked with 2 arguments.
@@ -78,6 +78,14 @@ class ServiceObject:
         #        print "Created service ", self
 
         self.role_manager = None
+
+        #
+        # Handlers for internal methods for supporting Client.Handle.IsValid and Client.Handle.Implements().
+        #
+
+        self.RegisterFunction(self._IsValid, "_IsValid")
+        self.RegisterFunction(self._Implements, "_Implements")
+        
 
     def SetRoleManager(self, roleManager):
         """
@@ -168,6 +176,32 @@ class ServiceObject:
             raise NoServiceMethodException()
         
         return func, pass_connection_info
+
+    def _IsValid(self):
+        """
+        Method that just returns true.
+
+        Used in the implementation of Client.Handle.IsValid().
+
+        """
+
+        return 1
+
+    def _Implements(self, method):
+        """
+        Returns True if method is implemented here.
+
+        Used in the implementation of Client.Handle.Implements().
+
+        """
+
+        try:
+            info = self.function_map[method]
+            return callable(info[0])
+        except:
+            return 0
+
+
     #
     # Mappings for different naming styles.
     #
