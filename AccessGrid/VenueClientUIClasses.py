@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.180 2003-05-12 15:20:38 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.181 2003-05-12 21:11:26 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -409,7 +409,7 @@ class VenueClientFrame(wxFrame):
 
     def __setProperties(self):
         font = wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana")
-        self.SetTitle("You are not in a venue")
+        self.SetTitle("Venue Client")
         self.SetIcon(icons.getAGIconIcon())
         self.statusbar.SetStatusWidths([-1])
         #self.statusbar.SetFont(font)
@@ -419,7 +419,7 @@ class VenueClientFrame(wxFrame):
 	self.venueListPanel.SetSize(wxSize(180, 300))
         
     def Layout(self):
-        self.venueAddressBar.SetDefaultSize(wxSize(1000, 35))
+        self.venueAddressBar.SetDefaultSize(wxSize(1000, 60))
         self.venueAddressBar.SetOrientation(wxLAYOUT_HORIZONTAL)
         self.venueAddressBar.SetAlignment(wxLAYOUT_TOP)
 
@@ -952,12 +952,17 @@ class VenueAddressBar(wxSashLayoutWindow):
         
         self.application = application
         self.panel = wxPanel(self, -1)
-        self.address = wxComboBox(self.panel, self.ID_ADDRESS, defaultVenue,
+        self.addressPanel = wxPanel(self.panel, -1, style = wxRAISED_BORDER)
+        self.titlePanel =  wxPanel(self.panel, -1, size = wxSize(1000, 40), style = wxRAISED_BORDER)
+        self.title = wxStaticText(self.titlePanel, wxNewId(), 'You are not in a venue', style = wxALIGN_CENTER)
+        font = wxFont(18, wxSWISS, wxNORMAL, wxNORMAL, false)
+        self.title.SetFont(font)
+        self.address = wxComboBox(self.addressPanel, self.ID_ADDRESS, defaultVenue,
                                   choices = venuesList.keys(),
                                   style = wxCB_DROPDOWN)
         
-        self.goButton = wxButton(self.panel, self.ID_GO, "Go", wxDefaultPosition, wxSize(20, 21))
-        self.backButton = wxButton(self.panel, self.ID_BACK , "<<", wxDefaultPosition, wxSize(20, 21))
+        self.goButton = wxButton(self.addressPanel, self.ID_GO, "Go", wxDefaultPosition, wxSize(20, 21))
+        self.backButton = wxButton(self.addressPanel, self.ID_BACK , "<<", wxDefaultPosition, wxSize(20, 21))
         self.Layout()
         self.__addEvents()
         
@@ -968,6 +973,11 @@ class VenueAddressBar(wxSashLayoutWindow):
         
     def SetAddress(self, url):
         self.address.SetValue(url)
+
+    def SetTitle(self, name, description):
+        self.title.SetLabel(name)
+        self.titlePanel.SetToolTipString(description)
+        self.Layout()
 
     def AddChoice(self, url):
         if self.address.FindString(url) == wxNOT_FOUND:
@@ -997,14 +1007,27 @@ class VenueAddressBar(wxSashLayoutWindow):
         return url[index:]
                                       
     def Layout(self):
-        venueServerAddressBox = wxBoxSizer(wxVERTICAL)  
+        venueServerAddressBox = wxBoxSizer(wxVERTICAL)
+        
         box = wxBoxSizer(wxHORIZONTAL)
         box.Add(2,5)
         box.Add(self.backButton, 0, wxRIGHT|wxALIGN_CENTER|wxLEFT, 5)
         box.Add(self.address, 1, wxRIGHT|wxALIGN_CENTER, 5)
         box.Add(self.goButton, 0, wxRIGHT|wxALIGN_CENTER, 5)
-        self.panel.SetSizer(box)
-        box.Fit(self.panel)
+        self.addressPanel.SetSizer(box)
+        box.Fit(self.addressPanel)
+
+        titleBox = wxBoxSizer(wxHORIZONTAL)
+        titleBox.Add(self.title, 1, wxEXPAND|wxCENTER)
+        titleBox.Add(2,5)
+        self.titlePanel.SetSizer(titleBox)
+        titleBox.Fit(self.titlePanel)
+
+        venueServerAddressBox.Add(self.addressPanel, -1, wxEXPAND)
+        venueServerAddressBox.Add(self.titlePanel, -1, wxEXPAND)
+        self.panel.SetSizer(venueServerAddressBox)
+        venueServerAddressBox.Fit(self.panel)
+        
         wxLayoutAlgorithm().LayoutWindow(self, self.panel)
         
 class VenueListPanel(wxSashLayoutWindow):
