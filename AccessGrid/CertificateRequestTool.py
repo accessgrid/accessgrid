@@ -342,7 +342,12 @@ class IdentityCertWindow(TitledPage):
     '''
     def __init__(self, parent, title):
         TitledPage.__init__(self, parent, title)
-        self.text = wxStaticText(self, -1, "The e-mail address will be used for verification, please make sure it is valid.")
+        self.text = wxStaticText(self, -1, 
+            """
+            The name field should contain your first and last name; requests with incomplete names may be rejected.
+            The e-mail address will be used for verification; please make sure it is valid.
+            Remember your password.
+            """)
 
         self.nameId = wxNewId()
         self.emailId = wxNewId()
