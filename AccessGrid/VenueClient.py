@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.201 2004-12-10 14:25:20 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.202 2005-01-06 21:17:10 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.201 2004-12-10 14:25:20 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.202 2005-01-06 21:17:10 turam Exp $"
 
 from AccessGrid.hosting import Client
 import sys
@@ -300,14 +300,14 @@ class VenueClient:
             self.SetNodeUrl(self.server.FindURLForObject(self.ns))
             
         self.server.RunInThread()
-        
-        if pnode:
-            try:
-                defaultConfig = self.ns.GetDefaultConfiguration()
-                self.ns.MigrateNodeConfig(defaultConfig)
-                self.ns.LoadDefaultConfig()
-            except:
-                log.exception("Error loading default configuration")
+
+#FIXME: default node configuration needs to be stored in preferences,
+#       and retrieved from preferences here
+#         if pnode:
+#             try:
+#                 defaultConfig = self.ns.GetDefaultConfiguration()
+#             except:
+#                 log.exception("Error loading default configuration")
             
         # Save the location of the venue client url
         # for other apps to communicate with the venue client
@@ -1287,7 +1287,7 @@ class VenueClient:
         
         *url* The string including the new node url address
         """
-        log.debug("SerNodeUrl: Set node service url:  %s" %url)
+        log.debug("SetNodeUrl: Set node service url:  %s" %url)
         self.nodeServiceUri = url
         self.nodeService = AGNodeServiceIW(url)
 
