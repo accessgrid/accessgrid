@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.21 2003-05-09 20:27:54 eolson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.22 2003-05-09 22:59:58 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -79,6 +79,9 @@ class ClientProfile:
 
         if profileFile != None:
             self.Load(self.profileFile)
+        else:
+            self.profile = ClientProfile.defaultProfile.copy()
+            self.profile['ClientProfile.id'] = GUID()
 
     def Load(self, fileName):
 	"""
