@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.53 2004-04-07 02:25:49 judson Exp $
+# RCS-ID:      $Id: setup.py,v 1.54 2004-04-07 02:31:01 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -48,8 +48,8 @@ win32_data = [
     ('', [r'COPYING.txt', r'Install.WINDOWS', r'README', r'README-developers',
           r'TODO', r'VERSION', r'ChangeLog']), 
     ('bin', glob.glob('bin/*.py')),
-    ('services', ''),
-    ('sharedapps', ''),
+    ('NodeServices', ''),
+    ('SharedApplications', ''),
     ('doc/Developer', glob.glob('doc/Developer/*.*')),
     ('doc/Developer/private', glob.glob('doc/Developer/private/*.*')),
     ('doc/Developer/public', glob.glob('doc/Developer/public/*.*')),
@@ -210,7 +210,7 @@ if dest is not None:
         sys.executable,
         os.path.join("packaging", "makeServicePackages.py"),
         os.path.abspath(os.path.join("services", "node")),
-        os.path.join(dest, "services")
+        os.path.join(dest, "NodeServices")
         ]
     spawn(cmd, verbose=1)
     
@@ -220,7 +220,7 @@ if dest is not None:
         sys.executable,
         os.path.join("packaging","makeAppPackages.py"),
         os.path.abspath("sharedapps"),
-        os.path.join(dest, "sharedapps")
+        os.path.join(dest, "SharedApplications")
         ]
     spawn(cmd, verbose=1)
 

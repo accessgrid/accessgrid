@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.40 2004-04-07 02:25:01 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.41 2004-04-07 02:28:27 judson Exp $
 ;
 
 ; Set externally
@@ -204,7 +204,7 @@ Name: {pf}\Access Grid Toolkit; Type: filesandordirs
 var
   PythonPath : String;
 
-#include "registry.iss"
+;#include "registry.iss"
 
 function GetPythonDir(version: String): Boolean;
 var
