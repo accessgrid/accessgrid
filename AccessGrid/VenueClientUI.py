@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.53 2004-05-10 17:18:31 judson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.54 2004-05-10 18:49:39 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.53 2004-05-10 17:18:31 judson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.54 2004-05-10 18:49:39 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -514,7 +514,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
                                                    wxDefaultPosition,
                                                    wxSize(200, 35))
         self.textOutput = wxTextCtrl(self.textOutputWindow, wxNewId(), "",
-                                style= wxTE_MULTILINE | wxTE_READONLY |
+                                     style= wxTE_MULTILINE | wxTE_READONLY |
                                      wxTE_RICH|wxTE_AUTO_URL)
         self.textClientPanel = TextClientPanel(self.textInputWindow, -1,
                                                self.textOutput, self)
@@ -3428,10 +3428,12 @@ class TextClientPanel(wxPanel):
         self.textInput = wxTextCtrl(self, self.textInputId, "",
                                     size = wxSize(1000, 25),
                                     style= wxTE_MULTILINE)
+
+
         self.__SetProperties()
         self.__DoLayout()
 
-        EVT_TEXT_URL(self, self.textOutput.GetId(), self.OnUrl)
+        EVT_TEXT_URL(self.textOutput, self.textOutput.GetId(), self.OnUrl)
         EVT_CHAR(self.textOutput, self.ChangeTextWindow)
         EVT_CHAR(self.textInput, self.TestEnter) 
         EVT_BUTTON(self, self.ID_BUTTON, self.LocalInput)
@@ -3579,6 +3581,7 @@ class TextClientPanel(wxPanel):
         start = event.GetURLStart()
         end = event.GetURLEnd()
         url = self.textOutput.GetRange(start, end)
+        
         self.app.OpenURL(url)
       
     def ChangeTextWindow(self, event):
