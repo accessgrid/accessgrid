@@ -1,12 +1,14 @@
 #-----------------------------------------------------------------------------
-# Name:        RoleAuthorization.py
+# Name:        NodeSetupWizard.py
 # Purpose:     Roles Management UI
 #
-# Author:      Susanne Lefvert
+# Author:      Susanne Lefvert 
+#
 #
 # Created:     2003/08/07
+# RCS_ID:      $Id: RoleAuthorization.py,v 1.5 2003-08-13 14:38:49 lefvert Exp $ 
 # Copyright:   (c) 2003
-# License:     See COPYING.TXT
+# Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 
 from wxPython.wx import *
