@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.27 2003-03-20 21:19:22 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.28 2003-03-20 22:17:35 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -40,7 +40,6 @@ class VenueClient( ServiceBase):
         """
         This client class is used on shared and personal nodes.
         """
-        print '-----------********** start venue client'
         self.profile = profile
         self.nodeServiceUri = "https://localhost:11000/NodeService"
         self.workspaceDock = None
@@ -121,7 +120,8 @@ class VenueClient( ServiceBase):
         """
         EnterVenue puts this client into the specified venue.
         """
-
+        
+        
         haveValidNodeService = 0
         if self.nodeServiceUri != None:
             haveValidNodeService = Client.Handle( self.nodeServiceUri ).IsValid()
@@ -207,6 +207,12 @@ class VenueClient( ServiceBase):
         except:
             print "Exception in EnterVenue : ", sys.exc_type, sys.exc_value
             raise EnterVenueException("Enter Failed!")
+
+        print '----------- export enter venue'
+        EnterVenue.soap_export_as = "EnterVenue"
+        
+        print '----------- export enter venue 2'
+       
         
     def ExitVenue( self ):
         """
@@ -240,6 +246,7 @@ class VenueClient( ServiceBase):
         Follow tells this venue client to follow the node
         specified.
         """
+        print '------------follow url: ', venueClientUri 
         Client.Handle( venueClientUri ).get_proxy().Lead( self.profile )
 
     def Unfollow( self, venueClientUri ):
@@ -254,6 +261,7 @@ class VenueClient( ServiceBase):
         Lead tells this venue client to drag the specified
         node with it.
         """
+        print '--------------this person is following me: ', clientProfile.name
         self.followerProfiles[clientProfile.publicId] = clientProfile
         Lead.soap_export_as = "Lead"
 
