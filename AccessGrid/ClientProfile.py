@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.13 2003-01-28 20:14:21 lefvert Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.14 2003-01-30 01:19:33 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -85,7 +85,7 @@ class ClientProfile:
 	"""
         profile = ClientProfile.defaultProfile.copy()
         profile['ClientProfile.id'] = GUID()
-        self.profile = LoadConfig(fileName, ClientProfile.defaultProfile)
+        self.profile = LoadConfig(fileName, profile)
 
         if self.CheckProfile():
             self.profileType = self.profile['ClientProfile.type']
@@ -115,7 +115,7 @@ class ClientProfile:
         print "Location: " + self.location
         print "Venue Client URL: " + self.venueClientURL
         print "Technical Support Information: " + self.techSupportInfo
-        print "Public ID: " + self. publicId
+        print "Public ID: " + str(self.publicId)
         print "Home Venue: " + self.homeVenue
         
     def Save(self, fileName):
