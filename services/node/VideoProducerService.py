@@ -5,12 +5,11 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.17 2003-10-22 19:55:44 judson Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.18 2003-10-22 20:52:36 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
-import sys
-import os
+import sys, os
 
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
