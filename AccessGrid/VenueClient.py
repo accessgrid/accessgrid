@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.53 2003-04-20 21:49:58 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.54 2003-04-22 15:57:41 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -238,7 +238,7 @@ class VenueClient( ServiceBase):
             clientList.append( profile )
 
         dataList = []
-        for data in dataList:
+        for data in venueState.data:
             dataDesc = DataDescription( data.name )
             dataDesc.status = data.status
             dataDesc.size = data.size
