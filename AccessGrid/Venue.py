@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.78 2003-04-25 21:30:40 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.79 2003-04-27 21:02:11 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -37,6 +37,13 @@ from AccessGrid.scheduler import Scheduler
 from AccessGrid.Events import Event, HeartbeatEvent, DisconnectEvent
 from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import GetHostname
+
+# these imports are for dealing with SOAP structs, which we won't have to 
+# do when we have WSDL; at that time, these imports and the corresponding calls
+# should be removed
+from AccessGrid.ClientProfile import CreateClientProfile
+from AccessGrid.Descriptions import CreateServiceDescription
+from AccessGrid.Descriptions import CreateDataDescription
 
 log = logging.getLogger("AG.VenueServer")
 
@@ -437,11 +444,12 @@ class Venue(ServiceBase.ServiceBase):
         return None
 
     # Interface methods
-    def wsAddData(self, dataDescription ):
+    def wsAddData(self, dataDescriptionStruct ):
         log.debug("wsAddData")
         if not self._authorize():
             raise NotAuthorized
         else:
+            dataDescription = CreateDataDescription(dataDescriptionStruct)
             return self.AddData(dataDescription)
 
     wsAddData.soap_export_as = "AddData"
@@ -462,10 +470,13 @@ class Venue(ServiceBase.ServiceBase):
 
     wsGetData.soap_export_as = "GetData"
 
-    def wsAddService(self, serviceDescription ):
+    def wsAddService(self, serviceDescriptionStruct ):
         if not self._authorize():
             raise NotAuthorized
         else:
+            print "-- creating service description from struct"
+            serviceDescription = CreateServiceDescription(serviceDescriptionStruct)
+            print "-- done with that"
             return self.AddService(serviceDescription)
         
     wsAddService.soap_export_as = "AddService"
@@ -739,7 +750,7 @@ class Venue(ServiceBase.ServiceBase):
     GetStaticStreams.soap_export_as = "GetStaticStreams"
 
     # Client Methods
-    def Enter(self, clientProfile):
+    def Enter(self, clientProfileStruct):
         """
         The Enter method is used by a VenueClient to gain access to the
         services, clients, and content found within a Virtual Venue.
@@ -747,6 +758,12 @@ class Venue(ServiceBase.ServiceBase):
         privateId = None
         streamDescriptions = []
         state = self.GetState()
+
+        #
+        # Convert the ClientProfile struct to a ClientProfile obj
+        #
+        clientProfile = CreateClientProfile( clientProfileStruct )
+
 
         #
         # Authorization management.
@@ -847,13 +864,18 @@ class Venue(ServiceBase.ServiceBase):
         else:
             log.warn("Tried to remove a client that doesn't exist in the venue")
        
-    def UpdateClientProfile(self, clientProfile):
+    def UpdateClientProfile(self, clientProfileStruct ):
         """
         UpdateClientProfile allows a VenueClient to update/modify the client
         profile that is stored by the Virtual Venue that they gave to the Venue
         when they called the Enter method.
         """
-                
+
+        #
+        # Convert the ClientProfile struct to a ClientProfile obj
+        #
+        clientProfile = CreateClientProfile( clientProfileStruct )
+
         log.debug("Called UpdateClientProfile on %s " %clientProfile.name)
         for key in self.clients.keys():
             client, heartbeatTime = self.clients[key]

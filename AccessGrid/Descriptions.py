@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.24 2003-04-22 21:52:23 turam Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.25 2003-04-27 21:02:11 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -138,7 +138,7 @@ class DataDescription(ObjectDescription):
         string += "owner: %s\n" % self.owner
 
         return string
-        
+
 class ConnectionDescription(ObjectDescription):
     """
     A Connection Description is used to represent the 
@@ -196,25 +196,6 @@ class VenueDescription(ObjectDescription):
     def __repr__(self):
         return self.AsINIBlock()
     
-def CreateVenueDescription(venueDescStruct):
-    clist = []
-    for c in venueDescStruct.connections:
-        # THIS IS ICKY TOO
-        if c != '\n':
-            clist.append(ConnectionDescription(c.name, c.description, c.uri))
-
-    slist = []
-    for s in venueDescStruct.streams:
-        slist.append(CreateStreamDescription(s))
-
-    vdesc = VenueDescription(venueDescStruct.name, venueDescStruct.description,
-                             venueDescStruct.administrators,
-                             (venueDescStruct.encryptMedia,
-                              venueDescStruct.encryptionKey), clist, slist)
-    vdesc.uri = venueDescStruct.uri
-    
-    return vdesc
-
 class ServiceDescription(ObjectDescription):
     """
     The Service Description is the Virtual Venue resident information
@@ -275,20 +256,6 @@ class StreamDescription( ObjectDescription ):
 
        return string
    
-def CreateStreamDescription( streamDescStruct ):
-    networkLocation = MulticastNetworkLocation( streamDescStruct.location.host,
-                                                streamDescStruct.location.port,
-                                                streamDescStruct.location.ttl )
-    cap = Capability( streamDescStruct.capability.role, 
-                      streamDescStruct.capability.type )
-    streamDescription = StreamDescription( streamDescStruct.name, 
-                                           networkLocation,
-                                           cap,
-                                           streamDescStruct.encryptionFlag,
-                                           streamDescStruct.encryptionKey,
-                                           streamDescStruct.static)
-    return streamDescription
-
 class AGServiceManagerDescription:
     def __init__( self, name, uri ):
         self.name = name
@@ -309,3 +276,59 @@ class AGServiceDescription:
         self.serviceManagerUri = serviceManagerUri
         self.servicePackageUri = servicePackageUri
     
+
+
+def CreateDataDescription(dataDescriptionStruct):
+    dataDescription = DataDescription(dataDescriptionStruct.name)
+
+    dataDescription.description = dataDescriptionStruct.description
+    dataDescription.uri = dataDescriptionStruct.uri
+    dataDescription.status = dataDescriptionStruct.status
+    dataDescription.size = dataDescriptionStruct.size
+    dataDescription.checksum = dataDescriptionStruct.checksum
+    dataDescription.owner = dataDescriptionStruct.owner
+    dataDescription.type = dataDescriptionStruct.type
+
+    return dataDescription
+       
+
+def CreateStreamDescription( streamDescStruct ):
+    networkLocation = MulticastNetworkLocation( streamDescStruct.location.host,
+                                                streamDescStruct.location.port,
+                                                streamDescStruct.location.ttl )
+    cap = Capability( streamDescStruct.capability.role, 
+                      streamDescStruct.capability.type )
+    streamDescription = StreamDescription( streamDescStruct.name, 
+                                           networkLocation,
+                                           cap,
+                                           streamDescStruct.encryptionFlag,
+                                           streamDescStruct.encryptionKey,
+                                           streamDescStruct.static)
+    return streamDescription
+
+def CreateServiceDescription(serviceDescStruct):
+    serviceDescription = ServiceDescription( serviceDescStruct.name,    
+                                             serviceDescStruct.description,
+                                             serviceDescStruct.uri,
+                                             serviceDescStruct.mimeType )
+    return serviceDescription
+
+def CreateVenueDescription(venueDescStruct):
+    clist = []
+    for c in venueDescStruct.connections:
+        # THIS IS ICKY TOO
+        if c != '\n':
+            clist.append(ConnectionDescription(c.name, c.description, c.uri))
+
+    slist = []
+    for s in venueDescStruct.streams:
+        slist.append(CreateStreamDescription(s))
+
+    vdesc = VenueDescription(venueDescStruct.name, venueDescStruct.description,
+                             venueDescStruct.administrators,
+                             (venueDescStruct.encryptMedia,
+                              venueDescStruct.encryptionKey), clist, slist)
+    vdesc.uri = venueDescStruct.uri
+    
+    return vdesc
+

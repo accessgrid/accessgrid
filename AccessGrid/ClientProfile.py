@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.19 2003-03-30 13:23:03 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.20 2003-04-27 21:02:11 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -233,3 +233,34 @@ class ClientProfile:
     def GetHomeVenue(self):
         return self.homeVenue
 
+
+
+def CreateClientProfile( clientProfileStruct ):
+    """
+    Create a client profile from a SOAP struct
+    (this function should be removed when we have 
+    WSDL support)
+    """
+    from AccessGrid.Types import Capability
+
+    clientProfile = ClientProfile()
+
+    clientProfile.distinguishedName = clientProfileStruct.distinguishedName
+    clientProfile.email = clientProfileStruct.email
+    clientProfile.homeVenue = clientProfileStruct.homeVenue
+    clientProfile.icon = clientProfileStruct.icon
+    clientProfile.location = clientProfileStruct.location
+    clientProfile.name = clientProfileStruct.name
+    clientProfile.phoneNumber = clientProfileStruct.phoneNumber
+    clientProfile.privateId = clientProfileStruct.privateId
+    clientProfile.profileFile = clientProfileStruct.profileFile
+    clientProfile.profileType = clientProfileStruct.profileType
+    clientProfile.publicId = clientProfileStruct.publicId
+    clientProfile.techSupportInfo = clientProfileStruct.techSupportInfo
+    clientProfile.venueClientURL = clientProfileStruct.venueClientURL
+
+    # should be converting capabilities here
+    clientProfile.capabilities = clientProfileStruct.capabilities
+
+
+    return clientProfile
