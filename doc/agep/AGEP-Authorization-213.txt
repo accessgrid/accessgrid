@@ -1,0 +1,263 @@
+=================================
+Authorization Refactoring for 213
+=================================
+ 
+:version: $Revision: 1.1 $
+:author: Ivan R. Judson <judson@mcs.anl.gov>, Thomas D. Uram <turam@mcs.anl.gov>, Eric Olson <eolson@mcs.anl.gov>
+:status: Draft
+
+Abstract
+========
+
+This AGEP describes some modifications to the Authorization modules to
+support more general authorization. This more general authorization is
+proposed to be pushed throughout the existing toolkit (replacing other
+authorization solutions that are in place). It also provides the basis
+for future work for fine-grained authorization support.
+
+Overview
+========
+
+Authorization is necessary throughout the AGTk, currently there is
+limited support for authorization but it needs to be cleaned up and
+have interfaces completed and documented. This AGEP proposes to do
+that, plus, rework the toolkit to use the resulting authorization
+solution.
+
+As a part of this refactoring of the authorization, it's proposd that
+the new authorization modules be placed in the AccessGrid.Security
+package space to keep a clear delineation between the security code
+and the main toolkit code.
+
+Summary of Modifications
+========================
+
+Currently there are two separate authorization solutions in the AGTk,
+between the two solutions the following classes are defined:
+
+:Solution 1:
+
+- Subject
+- Role
+- Role Manager
+- Security Manager
+- Invocation Wrapper
+
+:Solution 2:
+
+- Authorization Manager
+  
+:Proposed Solution:
+
+- Subject
+- Role
+- Authorization Manager
+- AllowRole(Role)
+- DenyRole(Role)
+- Action
+- MethodAction(Action)
+
+Module Organization
+-------------------
+
+- AccessGrid
+
+  - Security
+
+    - Subject.py
+
+    - Role.py
+
+    - AuthorizationManager.py
+
+    - Action.py
+
+Deprecated Packages
+-------------------
+
+- SecurityManager.py
+- InvocationWrapper.py
+- RoleManager.py
+
+Specifications
+==============
+
+- AccessGrid
+
+  - Security
+
+    - __init__.py
+
+    - Subject.py
+
+      - InvalidSubject(Exception)
+
+      - Subject
+
+        - *Data*
+
+          - name : string
+          - auth_type : string
+          - auth_data : string
+
+        - *Methods*
+
+          - __init__(self, name, auth_type, auth_data = None)
+          - _repr_(self)
+          - GetName(self)
+          - GetAuthenticationType(self)
+          - GetAuthenticationData(self)
+          - GetSubject(self)
+          - IsUser(self, user : string)
+          - __cmp__(self, other)
+
+    - Role.py
+    
+      - RoleAlreadyPresent(Exception)
+
+      - Role
+
+        - *Data*
+
+          - name : string
+          - subjects : list of Subjects
+          - role_manager : Role Manager  **unused**
+
+        - *Methods*
+
+          - GetName()
+          - GetSubjectList()
+          - AddSubject(subject)
+          - RemoveSubject(subject)
+          - HasSubject(subject)
+          - GetSubjectListAsStrings()
+
+      - AllowRole
+
+        - *Class Data*
+
+          - type : "Allow"
+
+      - DenyRole
+
+        - *Class Data*
+
+          - type : "Deny"
+
+    - Action.py
+
+      - Action
+
+        - *Data*
+
+          - name : string
+          - roles : list of Roles
+
+        - *Methods*
+
+          - GetName()
+          - GetRoleList()
+          - AddRole(role)
+          - RemoveRole(role)
+          - HasRole(role)
+          - GetRoleListAsStrings()
+
+      - MethodAction    
+
+        - *Class Data*
+
+          - type : "Method"
+
+    - AuthorizationManager.py
+    
+      - InvalidParent(Exception)
+
+      - CircularReferenceWithParent(Exception)
+
+      - AuthorizationManager:
+
+        - *Data*
+
+          - roles : list of Roles
+          - actions : list of Actions
+          - defaultRoles : list of Roles
+
+        - *Methods*
+
+          - ExportPolicy() => policy
+          - ImportPolicy(policy)
+          - IsAuthorized(subject, action) => 1|0
+          - GetActions(subject=None, role=None) => list of Actions
+          - GetRoles(action=None) => list of Roles
+          - GetRoles(subject) => list of Roles
+          - GetSubjects(role) => list of Subjects
+          - GetParent() => Authorization Manager
+          - GetDefaultRoles() => list of Roles
+          - SetRoles(action, roles : list of Roles) => list of Roles
+          - SetSubjects(role, subjects : list of Subjects) => list of Subjects
+          - SetParent(authMgr) => AuthorizationManager
+          - SetDefaultRoles(roles) => list of Roles
+          - AddAction(action) => Action
+          - RemoveAction(action) => Action
+          - AddRole(role) => Role
+          - RemoveRole(role) => Role
+   
+Security Issues
+===============
+
+This AGEP should create a uniform authorization environment that is
+used throughout the toolkit. By unifying on a single authorization
+solution the toolkit should benefit from less confusion for developers
+which in turn makes it less likely there are security issues related
+to developer error.
+
+Interoperability Issues
+=======================
+
+There should be no resulting interoperability issues, this is an
+internal refactoring.
+
+Open Issues
+===========
+
+- Where does the authoritative list of roles get stored?
+- What are the system defined set of roles?
+
+  - All_Users
+  - No_Users
+  - All
+  - None
+  - Administrators
+  - Users_In_Venue
+
+- How does this support fine grained authorization? (in the future)
+- What requirements does the Data Storage (file system like) model have for authorization?
+
+Related AGEPs
+=============
+
+- The Core Toolkit Design Changes for 2.1.3 AGEP
+
+References
+==========
+
+1. AG Toolkit Design: Certificate Management Subsystem, Robert Olson, 2003.
+2. Virtual Venues Access Control: Architecture and Design Notes, Robert Olson, 2003.
+3. Certificate Management in AG 2.0, Robert Olson, 2003
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
