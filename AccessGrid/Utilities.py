@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.71 2004-05-27 19:43:23 eolson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.72 2004-07-15 15:24:41 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.71 2004-05-27 19:43:23 eolson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.72 2004-07-15 15:24:41 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -65,7 +65,9 @@ def LoadConfig(fileName, config=dict(), separator="."):
     cp.read(fileName)
     for sec in cp.sections():
         for opt in cp.options(sec):
-            rconfig[sec + separator + opt] = string.strip(cp.get(sec, opt, 1))
+            value = string.strip(cp.get(sec, opt, 1))
+            if value != "None":
+                rconfig[sec + separator + opt] = value
     return rconfig
 
 def SaveConfig(fileName, config, separator="."):
@@ -87,7 +89,7 @@ def SaveConfig(fileName, config, separator="."):
             except:
                 print "Couldn't add section."
         try:
-            if option != "None":
+            if option != "None" and value is not None:
                 cp.set(section, option, value)
         except:
             print "Couldn't set option."
