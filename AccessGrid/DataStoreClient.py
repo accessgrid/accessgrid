@@ -5,13 +5,13 @@
 # Author:      Robert D. Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStoreClient.py,v 1.19 2004-04-05 18:46:09 judson Exp $
+# RCS-ID:      $Id: DataStoreClient.py,v 1.20 2004-04-16 22:30:23 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: DataStoreClient.py,v 1.19 2004-04-05 18:46:09 judson Exp $"
+__revision__ = "$Id: DataStoreClient.py,v 1.20 2004-04-16 22:30:23 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -36,7 +36,7 @@ def GetVenueDataStore(venueURL):
     Return the default venue datastore for the given venue URL.
     """
 
-    vproxy = Client.Handle(venueURL).GetProxy()
+    vproxy = Client.SecureHandle(venueURL).GetProxy()
 
     ds = vproxy.GetDataStoreInformation()
     
@@ -224,7 +224,7 @@ class DataStoreClient:
     def __init__(self, uploadURL, datastoreURL):
         self.datastoreURL = datastoreURL
         self.uploadURL = uploadURL
-        self.datastoreProxy = Client.Handle(datastoreURL).GetProxy()
+        self.datastoreProxy = Client.SecureHandle(datastoreURL).GetProxy()
 
         self.LoadData()
 
@@ -245,7 +245,7 @@ class DataStoreClient:
         #
 
         for desc in descList:
-            ddict = desc._asdict
+            ddict = desc._asDict
             self.dataCache.append(ddict)
             self.dataIndex[str(ddict['name'])] = ddict
 
