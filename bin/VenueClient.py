@@ -121,12 +121,11 @@ class VenueListPanel(wxPanel):
     def __init__(self, parent):
         wxPanel.__init__(self, parent, -1)
 	self.parent = parent
-	self.SetBackgroundColour(parent.GetBackgroundColour())
-#	self.panel = wxPanel(self, -1)
-#	self.panel.SetBackgroundColour(parent.GetBackgroundColour())
+	#self.SetBackgroundColour(parent.GetBackgroundColour())
 	self.list = VenueList(self, -1)
 		
-    	self.list.SetBackgroundColour(parent.GetBackgroundColour())
+    #	self.list.SetBackgroundColour(parent.GetBackgroundColour())
+	
 #	self.leftArrow = wxBitmap("IMAGES/leftArrow.gif", wxBITMAP_TYPE_GIF)
 	#	self.minimizeButton = wxBitmapButton(self, 10, self.leftArrow, wxDefaultPosition, wxDefaultSize)
 	self.minimizeButton = wxButton(self, 10, "<<", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT )
@@ -138,6 +137,9 @@ class VenueListPanel(wxPanel):
 	self.minimizeButton.SetToolTipString("Hide Sidebar")
 	self.maximizeButton.SetToolTipString("Show Sidebar")
 	self.maximizeButton.Hide()
+	self.SetBackgroundColour(self.maximizeButton.GetBackgroundColour())
+	
+
 	self.imageList = wxImageList(16,16)
 	self.__doLayout()
 	self.__addEvents()
@@ -199,7 +201,7 @@ The venueList is a scrollable window containing all exits to current venue.
 class VenueList(wxScrolledWindow):
     def __init__(self, parent, log):
         self.log = log
-        wxScrolledWindow.__init__(self, parent, -1)
+        wxScrolledWindow.__init__(self, parent, -1, style = wxRAISED_BORDER)
 
 	self.box = wxBoxSizer(wxVERTICAL)
 	self.column = wxFlexGridSizer(cols=1, vgap=1, hgap=0)
@@ -214,7 +216,7 @@ class VenueList(wxScrolledWindow):
         self.box.SetVirtualSizeHints(self)
 	self.EnableScrolling(true, true)
         self.SetScrollRate(20, 20)
-	
+
 	##############  TEST
 	self.AddVenueDoor("Lobby", "This is the lobby room...", \
 			  wxBitmap('IMAGES/doorClosed.gif',  wxBITMAP_TYPE_GIF), \
