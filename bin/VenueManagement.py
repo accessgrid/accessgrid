@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.23 2003-02-10 15:22:16 leggett Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.24 2003-02-10 21:20:14 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,6 @@ from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.Utilities import formatExceptionInfo 
 from AccessGrid.UIUtilities import *
 from AccessGrid import icons
-from AccessGrid.Platform import GPI
 
 from pyGlobus.io import GSITCPSocketException
 
@@ -766,24 +765,34 @@ class VenueParamFrame(wxDialog):
         EVT_BUTTON(self, 190, self.LoadLocalVenues) 
         EVT_BUTTON(self, 200, self.LoadRemoteVenues) 
 
-    def LoadRemoteVenues(self, event):
+    def LoadRemoteVenues(self, event = None):
         remoteServerUrlDialog = RemoteServerUrlDialog(self, -1, 'Connect to server')
         if (remoteServerUrlDialog.ShowModal() == wxID_OK):
             URL = remoteServerUrlDialog.address.GetValue()
+            self.__loadVenues(URL)
                      
         remoteServerUrlDialog.Destroy()
-        self.__loadVenues(URL)
-
+      
     def LoadLocalVenues(self, event = None):
         self.__loadVenues(self.application.url)
          
     def __loadVenues(self, URL):
-        self.client = Client.Handle(URL).get_proxy()
-        venueList = self.client.GetVenues()
-        self.venues.Clear()
-        for venue in venueList:
-            if(venue.name != self.title.GetValue()):
-                self.venues.Append(venue.name, venue)
+        validVenue = false
+
+        # while not validVenue:
+        try:
+            print '-----------URL in while, :', URL
+            self.client = Client.Handle(URL).get_proxy()
+            venueList = self.client.GetVenues()
+            validVenue = true
+            self.venues.Clear()
+            for venue in venueList:
+                if(venue.name != self.title.GetValue()):
+                    self.venues.Append(venue.name, venue)
+                    
+        except:
+            self.LoadRemoteVenues()
+                    
                 
     def BrowseForImage(self, event):
         initial_dir = '/'
