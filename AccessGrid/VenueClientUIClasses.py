@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.55 2003-03-10 20:47:12 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.56 2003-03-12 20:37:17 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -77,6 +77,8 @@ class VenueClientFrame(wxFrame):
          
     def __init__(self, parent, id, title, app = None):
         wxFrame.__init__(self, parent, id, title)
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
         self.Centre()
 	self.app = app
         self.parent = parent
@@ -821,7 +823,7 @@ class VenueList(wxScrolledWindow):
         
         self.Layout()
         self.parent.Layout()
-
+        self.EnableScrolling(true, true)
                             
     def RemoveVenueDoor(self):
         print 'remove venue door'
