@@ -1,18 +1,15 @@
 #-----------------------------------------------------------------------------
 # Name:        AGService.py
 # Purpose:     
-#
-# Author:      Thomas D. Uram
-#
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.37 2004-05-21 06:04:29 turam Exp $
+# RCS-ID:      $Id: AGService.py,v 1.38 2004-09-09 05:20:40 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.37 2004-05-21 06:04:29 turam Exp $"
+__revision__ = "$Id: AGService.py,v 1.38 2004-09-09 05:20:40 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
