@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.140 2003-05-13 16:42:12 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.141 2003-05-13 21:50:39 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Utilities import HaveValidProxy, formatExceptionInfo
 from AccessGrid.Utilities import StartDetachedProcess
 from AccessGrid.UIUtilities import MyLog, MessageDialog, InitMimeTypes
-from AccessGrid.UIUtilities import GetMimeCommands
+from AccessGrid.UIUtilities import GetMimeCommands, ErrorDialog, ErrorDialogWithTraceback
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 from AccessGrid.GUID import GUID
 from AccessGrid.hosting.pyGlobus import Server
@@ -86,13 +86,33 @@ class VenueClientUI(wxApp, VenueClient):
 
         #
         # We verify first because the Toolkit code assumes a valid
-        # globus proxy.
+        # globus environment.
         #
 
         VerifyExecutionEnvironment()
-        
-        self.app = Toolkit.WXGUIApplication()
-        self.app.Initialize()
+
+        try:
+            self.app = Toolkit.WXGUIApplication()
+
+        except Exception, e:
+            log.exception("WXGUIApplication creation failed")
+
+            dlg = wxMessageDialog(None, "Application object creation failed\n%s\nThe venue client cannot continue." % (e,),
+                                  "Initialization failed",
+                                  wxOK)
+            dlg.ShowModal()
+            dlg.Destroy()
+            sys.exit(1)
+
+        try:
+            
+            self.app.Initialize()
+
+        except Exception, e:
+            log.exception("App initialization failed")
+
+            ErrorDialogWithTraceback(None, "Application initialization failed. Attempting to continue",
+                        "Initialization failed")
         
         self.__createPersonalDataStore()
         
@@ -649,9 +669,10 @@ class VenueClientUI(wxApp, VenueClient):
         wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: Go to new venue %s" %uri)
         self.oldUri = None
 
-        if not HaveValidProxy():
+        certMgr = self.app.GetCertificateManager()
+        if not certMgr.HaveValidProxy():
             wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: You don't have a valid proxy")
-            GPI()
+            certMgr.ConfigureProxy()
 
         if self.venueUri != None:
             self.oldUri = self.venueUri
@@ -686,7 +707,7 @@ class VenueClientUI(wxApp, VenueClient):
             #    self.EnterVenue(self.oldUri)
         else:
             wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: Handler is not valid")
-            if not HaveValidProxy():
+            if not certMgr.HaveValidProxy():
                 text = 'You do not have a valid proxy.' +\
                        '\nPlease, run "grid-proxy-init" on the command line"'
                 text2 = 'Invalid proxy'
