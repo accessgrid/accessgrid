@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.77 2003-03-20 15:13:28 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.78 2003-03-20 15:22:27 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -476,7 +476,7 @@ class VenueClientFrame(wxFrame):
         # then there isn't a data upload service available.
         #
 
-        wxDebug("Trying to upload to '%s'" % (self.app.upload_url))
+        wxLogDebug("Trying to upload to '%s'" % (self.app.upload_url))
         if self.app.upload_url is None or self.app.upload_url == "":
         
             MessageDialog(self,
@@ -488,7 +488,7 @@ class VenueClientFrame(wxFrame):
 
         if dlg.ShowModal() == wxID_OK:
             files = dlg.GetPaths()
-            wxDebug("Got files:%s ", str(files))
+            wxLogDebug("Got files:%s ", str(files))
 
             # upload!
 
@@ -578,7 +578,7 @@ class VenueClientFrame(wxFrame):
                                style = wxSAVE | wxOVERWRITE_PROMPT)
             if dlg.ShowModal() == wxID_OK:
                 path = dlg.GetPath()
-                wxDebug("Saving file as %s" %path)
+                wxLogDebug("Saving file as %s" %path)
 
                 dlg.Destroy()
 
@@ -1322,10 +1322,10 @@ class SaveFileDialog(wxDialog):
         try:
             self.fileSize = int(fileSize)
         except TypeError:
-            wxDebug("Received invalid file size: '%s'" % (fileSize))
+            wxLogDebug("Received invalid file size: '%s'" % (fileSize))
             fileSize = 1
             
-        wxDebug("created, size=%d " %fileSize)
+        wxLogDebug("created, size=%d " %fileSize)
         
         self.button = wxButton(self, wxNewId(), "Cancel")
         self.text = wxStaticText(self, -1, message)
@@ -1363,7 +1363,7 @@ class SaveFileDialog(wxDialog):
         if self.transferDone:
             self.EndModal(wxID_OK)
         else:
-            wxDebug("Cancelling transfer!")
+            wxLogDebug("Cancelling transfer!")
             self.EndModal(wxID_CANCEL)
             self.cancelFlag = 1
 
@@ -1430,7 +1430,7 @@ class UploadFilesDialog(wxDialog):
         if self.transferDone:
             self.EndModal(wxID_OK)
         else:
-            wxDebug("Cancelling transfer!")
+            wxLogDebug("Cancelling transfer!")
             self.EndModal(wxID_CANCEL)
             self.cancelFlag = 1
 
@@ -1958,7 +1958,7 @@ class FileDropTarget(wxFileDropTarget):
         self.SetDataObject(self.do)
         
     def OnDropFiles(self, x, y, filenames):
-        wxDebug('Drop files  %s' %str(filenames))
+        wxLogDebug('Drop files  %s' %str(filenames))
         for file in filenames:
             fileNameList = file.split('/')
             fileName = fileNameList[len(fileNameList)-1]
@@ -1966,7 +1966,7 @@ class FileDropTarget(wxFileDropTarget):
         return true
 
     def OnData(self, x, y, d):
-        wxDebug('on data')
+        wxLogDebug('on data')
         self.GetData()
         files = self.do.GetFilenames()
         for file in files:
