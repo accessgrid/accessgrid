@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.12 2004-04-16 20:33:04 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.13 2004-05-17 21:23:04 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ wxPython GUI code for the Certificate Manager.
 
 """
 
-__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.12 2004-04-16 20:33:04 olson Exp $"
+__revision__ = "$Id: CertificateManagerWXGUI.py,v 1.13 2004-05-17 21:23:04 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import time
@@ -589,6 +589,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
                 certificateRequest.SetMetadata("AG.CertificateManager.creationTime",
                                                str(int(time.time())))
 
+                repo.NotifyObservers()
                 return 1
             except CRSClientInvalidURL:
                 MessageDialog(None,

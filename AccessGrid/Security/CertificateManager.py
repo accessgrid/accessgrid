@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.25 2004-05-17 21:15:45 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.26 2004-05-17 21:23:03 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.25 2004-05-17 21:15:45 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.26 2004-05-17 21:23:03 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -1570,7 +1570,9 @@ class CertificateManagerUserInterface:
                 certificateRequest.SetMetadata("AG.CertificateManager.creationTime",
                                                str(int(time.time())))
 
+                repo.NotifyObservers()
                 return 1
+            
             except CRSClient.CRSClientInvalidURL:
                 print "Certificate request failed: invalid request URL"
                 log.error("Certificate request failed: invalid request URL")

@@ -471,7 +471,8 @@ class CertificateStatusBrowser(CertificateBrowserBase):
         # Turn off update so the load goes quickly.
         #
         self.updateStatus = 0
-        self.Load()
+
+        self.certMgr.GetCertificateRepository().NotifyObservers()
 
     def OnViewRequest(self, event):
 
