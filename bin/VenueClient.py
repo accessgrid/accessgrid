@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.31 2003-02-07 21:04:37 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.32 2003-02-08 20:07:23 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -102,20 +102,34 @@ class VenueClientUI(wxApp, VenueClient):
                
     def __startMainLoop(self, profile):
         """
-        This method is called during client startup.  It sets the participant profile,
-        enters the venue, and finally starts the wxPython main gui loop.
+        This method is called during client startup.  It sets the
+        participant profile, enters the venue, and finally starts the
+        wxPython main gui loop.
         """
         self.gotClient = true
         self.SetProfile(profile)
-        self.GoToNewVenue(self.profile.homeVenue)
+        # This test really wants to be "while the venue url is invalid, loop:
+        while len(self.profile.homeVenue) == 0:
+            connectToVenueDialog = ConnectToVenueDialog(NULL, -1,
+                                                        "Set Home Venue")
+            if connectToVenueDialog.ShowModal() == wxID_OK:
+                self.profile.homeVenue = connectToVenueDialog.address.GetValue()
+        # if the previous test were what it wants to be this would
+        # reduce to simply the enter.
+        while not self.GoToNewVenue(self.profile.homeVenue):
+            connectToVenueDialog = ConnectToVenueDialog(NULL, -1,
+                                                        "Set Home Venue")
+            if connectToVenueDialog.ShowModal() == wxID_OK:
+                self.profile.homeVenue = connectToVenueDialog.address.GetValue()
+
         self.frame.Show(true)
         self.MainLoop()
 
     def ModifyUserEvent(self, data):
         """
         Note: Overloaded from VenueClient
-        This method is called every time a venue participant changes its profile.
-        Appropriate gui updates are made in client.
+        This method is called every time a venue participant changes
+        its profile.  Appropriate gui updates are made in client.
         """
         self.frame.contentListPanel.ModifyParticipant(data)
         pass
@@ -236,19 +250,22 @@ class VenueClientUI(wxApp, VenueClient):
         except: # no, it is a venue
             venueUri = uri
 
-        try:  # temporary solution until exceptions work as should
+        try:  # temporary solution until we can verify a proxy before hand
             self.client = Client.Handle(venueUri).get_proxy()
             if oldUri != None:
                 self.frame.CleanUp()
                 self.ExitVenue()
             self.EnterVenue(venueUri)
+            return true
         except GSITCPSocketException:
             ErrorDialog(self.frame, sys.exc_info()[1][0])
         except EnterVenueException:
             ErrorDialog(self.frame, "GoToNewVenue:")
             if oldUri != None:
                 self.EnterVenue(oldUri)
-
+            else:
+                return false
+    
     def OnExit(self):
         """
         This method performs all processing which needs to be
