@@ -56,9 +56,9 @@ class SharedAppClient:
         # Set up a venue client log, too, since it's used by the event client
         self.log = Log.GetLogger(Log.VenueClient)
         
-        hdlr = Log.StreamHandler()
-        hdlr.setFormatter(Log.GetFormatter())
-        Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
+        #hdlr = Log.StreamHandler()
+        #hdlr.setFormatter(Log.GetFormatter())
+        #Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
         
         self.log = Log.GetLogger(self.__appName)
         Log.SetDefaultLevel(self.__appName, Log.DEBUG)
@@ -74,10 +74,10 @@ class SharedAppClient:
         Log.HandleLoggers(fileHandler, Log.GetDefaultLoggers())
 
         # If debug mode is on, log to command window too
-        if debug:
-            hdlr = Log.StreamHandler()
-            hdlr.setFormatter(Log.GetFormatter())
-            Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
+        #if debug:
+        #    hdlr = Log.StreamHandler()
+        #    hdlr.setFormatter(Log.GetFormatter())
+        #    Log.HandleLoggers(hdlr, Log.GetDefaultLoggers())
 
         return self.log
 
@@ -344,13 +344,15 @@ class SharedAppClient:
 
         try:
             components = self.__appProxy.GetComponents(self.__privateId)
+            print '----------------------- get components 2'
+            #components = self.__appProxy.GetComponents()
         except Client.MethodNotFound, e:
             self.log.exception("SharedAppClient.GetComponents: Failed to get components")
             raise "The server you are connecting to is running old software. This method is not implemented in that version." 
                            
-        #except:
-        #self.log.exception("SharedAppClient.GetComponents: Failed to get components")
-        #   raise "Failed to get application components" 
+        except:
+            self.log.exception("SharedAppClient.GetComponents: Failed to get components")
+            raise "Failed to get application components" 
 
         return components
         
