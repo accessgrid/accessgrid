@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.24 2004-08-23 18:21:07 judson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.25 2004-08-24 18:22:35 binns Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.24 2004-08-23 18:21:07 judson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.25 2004-08-24 18:22:35 binns Exp $"
 
 # External Imports
 import os
@@ -795,7 +795,7 @@ class AuthorizationManagerI(SOAPInterface):
         
         r = Reconstitute(role)
 
-        self.impl.AddRoleToAction(an.GetName(), r.GetName()
+        self.impl.AddRoleToAction(an.GetName(), r.GetName())
 
     def AddRolesToAction(self, action, roleList):
         """
