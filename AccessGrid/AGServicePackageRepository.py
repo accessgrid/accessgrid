@@ -3,7 +3,7 @@
 # Purpose:     
 #
 # Created:     2004/03/30
-# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.7 2004-04-28 22:19:09 turam Exp $
+# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.8 2004-04-29 13:24:21 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,9 +24,10 @@ class AGServicePackageRepository:
     packages and avails them to clients (service managers) via http(s)
     """
 
-    def __init__( self, servicesDir, port=0, prefix=None):
+    def __init__( self, servicesDir, port=0, prefix=None, secure=1):
         self.servicesDir = servicesDir
         self.port = port
+        self.secure = secure
         
         self.baseUrl = ''
         self.s = None
@@ -44,12 +45,19 @@ class AGServicePackageRepository:
         hn = Application.instance().GetHostname()
         if self.prefix is None:
             self.prefix = "packages"
-        self.baseUrl = 'https://%s:%d/%s/' % ( hn, self.port, self.prefix )
         
         # Start the transfer server
-        self.s = DataStore.GSIHTTPTransferServer((hn, self.port)) 
+        if self.secure:
+            self.baseUrl = 'https://%s:%d/%s/' % ( hn, self.port, self.prefix )
+            self.s = DataStore.GSIHTTPTransferServer((hn, self.port))
+        else:
+            self.baseUrl = 'http://%s:%d/%s/' % ( hn, self.port, self.prefix )
+            self.s = DataStore.HTTPTransferServer((hn, self.port))
+
         self.s.RegisterPrefix(self.prefix, self)
-        threading.Thread( target=self.s.run, name="PackageRepo TransferServer" ).start()
+
+        threading.Thread( target=self.s.run,
+                          name="PackageRepo TransferServer" ).start()
         self.running = 1
         log.debug("Started AGServicePackageRepository Transfer Server at: %s",
                   self.baseUrl)
