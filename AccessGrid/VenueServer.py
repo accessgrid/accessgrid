@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.162 2004-08-23 16:32:18 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.163 2004-08-23 18:27:33 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.162 2004-08-23 16:32:18 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.163 2004-08-23 18:27:33 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -117,7 +117,6 @@ class VenueServer(AuthorizationMixIn):
             "VenueServer.eventPort" : 8002,
             "VenueServer.textPort" : 8004,
             "VenueServer.dataPort" : 8006,
-            "VenueServer.administrators" : '',
             "VenueServer.encryptAllMedia" : 1,
             "VenueServer.houseKeeperFrequency" : 300,
             "VenueServer.persistenceFilename" : 'VenueServer.dat',
@@ -128,8 +127,8 @@ class VenueServer(AuthorizationMixIn):
             "VenueServer.addressAllocationMethod" : MulticastAddressAllocator.RANDOM,
             "VenueServer.baseAddress" : MulticastAddressAllocator.SDR_BASE_ADDRESS,
             "VenueServer.addressMask" : MulticastAddressAllocator.SDR_MASK_SIZE,
-            "VenueServer.authorizationPolicy" : '',
-            "VenueServer.performanceReportFile" : None,
+            "VenueServer.authorizationPolicy" : None,
+            "VenueServer.performanceReportFile" : '',
             "VenueServer.performanceReportFrequency" : 0
             }
 
@@ -161,33 +160,18 @@ class VenueServer(AuthorizationMixIn):
         # This handler will only handle the Usage logger.
         Log.HandleLoggers(usage_hdlr, [Log.Usage])
 
-        # Initialize Auth stuff
-        AuthorizationMixIn.__init__(self)
-        self.AddRequiredRole(Role.Role("Administrators"))
-        self.AddRequiredRole(Role.Everybody)
-        rl = self.GetRequiredRoles()
-        self.authManager.AddRoles(rl)
+        log.debug("VenueServer initializing authorization manager.")
 
 	# report
 	self.report = None
 
-        # Get the silly default subject this really should be fixed
-        certMgr = self.servicePtr.GetCertificateManager()
-        admins = self.authManager.FindRole("Administrators")
-
-	try:
-    	    subj = self.servicePtr.GetDefaultSubject()
-	except InvalidSubject:
-	    log.exception("Invalid Default Subject!")
-	    subj = None
-
-	if subj is not None:
-	    admins.AddSubject(subj)
-
-        admins.SetRequireDefault(1)
+        # Initialize Auth stuff
+        AuthorizationMixIn.__init__(self)
+        self.AddRequiredRole(Role.Administrators)
+        self.AddRequiredRole(Role.Everybody)
 
         # In the venueserver we default to admins
-        self.authManager.SetDefaultRoles([admins])
+        self.authManager.SetDefaultRoles([Role.Administrators])
 
         # Initialize our state
         self.checkpointing = 0
@@ -218,22 +202,19 @@ class VenueServer(AuthorizationMixIn):
             classpath = string.split(str(self.__class__), '.')
             self.configFile = classpath[-1]+'.cfg'
 
-        adminRole = self.authManager.FindRole('Administrators')
-
         # Read in and process a configuration
         self.InitFromFile(LoadConfig(self.configFile, self.configDefaults))
 
         # Initialize the multicast address allocator
-        self.multicastAddressAllocator.SetAllocationMethod(self.addressAllocationMethod)
+        self.multicastAddressAllocator.SetAllocationMethod(
+           self.addressAllocationMethod)
         self.multicastAddressAllocator.SetBaseAddress(self.baseAddress)
         self.addressMask = int(self.addressMask)
         self.multicastAddressAllocator.SetAddressMask(self.addressMask)
 
-        #
         # Data Store Initialization -- This should hopefully move
         # to a different place when the data stores are started independently
         # of the venue server...
-        #
 
         # Check for and if necessary create the data store directory
         if not os.path.exists(self.dataStorageLocation):
@@ -243,7 +224,9 @@ class VenueServer(AuthorizationMixIn):
                 log.exception("Could not create VenueServer Data Store.")
                 self.dataStorageLocation = None
 
-        # Start Venue Server wide services
+        # Starting Venue Server wide Services, these *could* also
+        # be separated, we just have to figure out the mechanics and
+        # make sure the usability doesn't plummet for administrators.
         if self.servicePtr.GetOption("insecure"):
             self.dataTransferServer = HTTPTransferServer(('',
                                                          int(self.dataPort)) )
@@ -253,19 +236,13 @@ class VenueServer(AuthorizationMixIn):
                                                         numThreads = 4,
                                                         sslCompat = 0)
         self.dataTransferServer.run()
-        # End of Data Store Initialization
 
-
-        # 
-        # Starting Venue Server wide Services, these *could* also
-        # be separated, we just have to figure out the mechanics and
-        # make sure the usability doesn't plummet for administrators.
-        #
         self.eventService = EventService((self.hostname, int(self.eventPort)))
         self.eventService.start()
 
         self.textService = TextService((self.hostname, int(self.textPort)))
         self.textService.start()
+        # End of server wide services initialization
 
         # Try to open the persistent store for Venues. If we fail, we
         # open a an empty store, ready to be loaded.
@@ -297,6 +274,8 @@ class VenueServer(AuthorizationMixIn):
                                  1)
         self.houseKeeper.AddTask(self.CleanupVenueClients, 30, 0, 1)
 
+        # Create report that tracks performance if the option is in the config
+        # This should get cleaned out and made a command line option
         if self.performanceReportFile is not None and \
                int(self.performanceReportFrequency) > 0:
             try:
@@ -319,31 +298,53 @@ class VenueServer(AuthorizationMixIn):
                 self.perfFile = None
         else:
             log.warn("Performance data configuration incorrect.")
-            
+
+        # Done with the performance report initialization
+
+        # Start all the periodic tasks registered with the housekeeper thread
         self.houseKeeper.StartAllTasks()
 
-        # End of Services startiong
-
-        # Create the interface
+        # Create the Web Service interface
         vsi = VenueServerI(self)
-        
-        # Get all the methodactions
-        ma = vsi._GetMethodActions()
-        try:
-            self.authManager.AddActions(ma)
-        except ActionAlreadyPresent:
-            # Do not add action if it is already present.
-            pass
 
-        # Default to giving administrators access to all actions.
-        adminRole = self.authManager.FindRole('Administrators')
-        if adminRole == None:
-            raise Exception, "AdminRoleNotFound"
-        allActions = self.authManager.GetActions()
-        for action in allActions:
-            if not action.HasRole(adminRole):
-                action.AddRole(adminRole)
+        if self.authorizationPolicy is None:
+           log.info("Creating new authorization policy, non in config.")
+           
+           self.authManager.AddActions(vsi._GetMethodActions())
+           self.authManager.AddRoles(self.GetRequiredRoles())
+           # Default to giving administrators access to all actions.
+           # This is implicitly adding the action too
+           for action in self.authManager.GetActions():
+              self.authManager.AddRoleToAction(action.GetName(),
+                                               Role.Administrators.GetName())
             
+           # Get the silly default subject this really should be fixed
+           try:
+              subj = self.servicePtr.GetDefaultSubject()
+           except InvalidSubject:
+              log.exception("Invalid Default Subject!")
+              subj = None
+
+           log.debug("Default Subject: %s", subj.GetName())
+        
+           if subj is not None:
+              self.authManager.AddSubjectToRole(subj.GetName(),
+                                                Role.Administrators.GetName())
+
+           # Get authorization policy.
+           pol = self.authManager.ExportPolicy()
+           pol  = re.sub("\r\n", "<CRLF>", pol )
+           pol  = re.sub("\r", "<CR>", pol )
+           pol  = re.sub("\n", "<LF>", pol )
+           self.config["VenueServer.authorizationPolicy"] = pol
+
+           SaveConfig(self.configFile, self.config)
+        else:
+           log.debug("Using policy from config file.")
+
+#        print "Venue Server Policy:"
+#        print self.authManager.xml.toprettyxml()
+        
         # Then we create the VenueServer service
         venueServerUri = self.hostingEnvironment.RegisterObject(vsi, path='/VenueServer')
 
@@ -455,14 +456,28 @@ class VenueServer(AuthorizationMixIn):
                                                encryptionKey, 1)
                         sl.append(sd)
 
+                # Deal with authorization
+                try:
+                    authPolicy =  cp.get(sec, 'authorizationPolicy')
+
+                    # We can't persist crlf or cr or lf, so we replace them
+                    # on each end (when storing and loading)
+                    authPolicy  = re.sub("<CRLF>", "\r\n", authPolicy )
+                    authPolicy  = re.sub("<CR>", "\r", authPolicy )
+                    authPolicy  = re.sub("<LF>", "\n", authPolicy )
+                except ConfigParser.NoOptionError, e:
+                    log.warn(e)
+                    authPolicy = None
+
                 # do the real work
-                vd = VenueDescription(name, desc, (venueEncryptMedia, venueEncryptionKey),
+                vd = VenueDescription(name, desc, (venueEncryptMedia,
+                                                   venueEncryptionKey),
                                       cl, sl, oid)
-                uri = self.AddVenue(vd)
+                uri = self.AddVenue(vd, authPolicy)
                 vif = self.hostingEnvironment.FindObjectForURL(uri)
                 v = vif.impl
                 v.cleanupTime = cleanupTime
-                
+
                 # Deal with apps if there are any
                 try:
                     appList = cp.get(sec, 'applications')
@@ -503,22 +518,6 @@ class VenueServer(AuthorizationMixIn):
                         v.AddService(ServiceDescription(name, description, uri,
                                                         mimeType))
 
-                # Deal with authorization
-                try:
-                    authPolicy =  cp.get(sec, 'authorizationPolicy')
-
-                    # We can't persist crlf or cr or lf, so we replace them
-                    # on each end (when storing and loading)
-                    authPolicy  = re.sub("<CRLF>", "\r\n", authPolicy )
-                    authPolicy  = re.sub("<CR>", "\r", authPolicy )
-                    authPolicy  = re.sub("<LF>", "\n", authPolicy )
-
-                    v.ImportAuthorizationPolicy(authPolicy)
-                except ConfigParser.NoOptionError, e:
-                    log.warn(e)
-                    authPolicy = ''
-
-                
 
     def InitFromFile(self, config):
         """
@@ -527,24 +526,22 @@ class VenueServer(AuthorizationMixIn):
         for k in config.keys():
             (section, option) = string.split(k, '.')
           
-            if option == "authorizationPolicy":
-                if len(config[k]) > 0:
-                    pol = config[k]
-                    pol  = re.sub("<CRLF>", "\r\n", pol )
-                    pol  = re.sub("<CR>", "\r", pol )
-                    pol  = re.sub("<LF>", "\n", pol )
-                    self.authManager.ImportPolicy(pol)
-            
-            elif option == "administrators":
-                adminList = string.split(config[k],':')
-                for a in adminList:
-                    if a != "":
-                        xs = X509Subject.CreateSubjectFromString(a)
-                        admins = self.authManager.FindRole("Administrators")
-                        if not admins.HasSubject(xs):
-                            admins.AddSubject(xs)
-                        admins.SetRequireDefault(1)
-                                    
+            if option == "authorizationPolicy" and config[k] is not None:
+               log.debug("Reading authorization policy.")
+               pol = config[k]
+               pol  = re.sub("<CRLF>", "\r\n", pol )
+               pol  = re.sub("<CR>", "\r", pol )
+               pol  = re.sub("<LF>", "\n", pol )
+               try:
+                  self.authManager.ImportPolicy(pol)
+                  setattr(self, option, pol)
+               except InvalidAuthorizationPolicy:
+                  log.exception("Invalid authorization policy import")
+                  setattr(self, option, config[k])
+            elif option == "administrators" and len(config[k]) > 0:
+               for a in config[k].split(':'):
+                  self.authManager.AddSubjectToRole(a,
+                                     Role.Administrators.GetName())
             else:
                 setattr(self, option, config[k])
 
@@ -702,13 +699,17 @@ class VenueServer(AuthorizationMixIn):
         log.info("Checkpointing completed at: %s", time.asctime())
 
         # Get authorization policy.
-        if self.authManager:
-            pol = self.authManager.ExportPolicy()
-            pol  = re.sub("\r\n", "<CRLF>", pol )
-            pol  = re.sub("\r", "<CR>", pol )
-            pol  = re.sub("\n", "<LF>", pol )
-            self.config["VenueServer.authorizationPolicy"] = pol
-
+        pol = self.authManager.ExportPolicy()
+        pol  = re.sub("\r\n", "<CRLF>", pol )
+        pol  = re.sub("\r", "<CR>", pol )
+        pol  = re.sub("\n", "<LF>", pol )
+        self.config["VenueServer.authorizationPolicy"] = pol
+        
+        # For now I'm removing the administrators key,
+        # since we're moving away from it
+        if self.config.has_key("VenueServer.administrators"):
+           del self.config["VenueServer.administrators"]
+        
         # Finally we save the current config
         SaveConfig(self.configFile, self.config)
 
@@ -716,7 +717,7 @@ class VenueServer(AuthorizationMixIn):
 
         return 1
 
-    def AddVenue(self, venueDesc):
+    def AddVenue(self, venueDesc, authPolicy = None):
         """
         The AddVenue method takes a venue description and creates a new
         Venue Object, complete with a event service, then makes it
@@ -744,24 +745,41 @@ class VenueServer(AuthorizationMixIn):
         self.simpleLock.acquire()
 
         # Add the venue to the list of venues
-
         oid = venue.GetId()
         self.venues[oid] = venue
 
         # Create an interface
         vi = VenueI(venue)
-        
-        # Get method actions
-        venue.authManager.AddActions(vi._GetMethodActions())
-        venue.authManager.AddRoles(venue.GetRequiredRoles())
-        venue._AddDefaultRolesToActions()
 
-        # Default to giving administrators access to all venue actions.
-        venueAdminRole = venue.authManager.FindRole("Administrators")
-        venueActions = venue.authManager.GetActions()
-        for action in venueActions:
-            action.AddRole(venueAdminRole)
+        if authPolicy is not None:
+            venue.ImportAuthorizationPolicy(authPolicy)
+        else:
+            # This is a new venue, not from persistence,
+             # so we have to create the policy
+            log.info("Creating new auth policy for the venue.")
+            
+            # Get method actions
+            venue.authManager.AddActions(vi._GetMethodActions())
+            venue.authManager.AddRoles(venue.GetRequiredRoles())
+            venue.authManager.AddRoles(venue.authManager.GetDefaultRoles())
+            venue._AddDefaultRolesToActions()
+
+            # Default to giving administrators access to all venue actions.
+            for action in venue.authManager.GetActions():
+                venue.authManager.AddRoleToAction(action.GetName(),
+                                               Role.Administrators.GetName())
         
+        # This could be done by the server, and probably should be
+        venue.authManager.AddSubjectToRole(
+            self.servicePtr.GetDefaultSubject().GetName(),
+            Role.Administrators.GetName())
+        
+#        print "Venue Policy:"
+#        print venue.authManager.xml.toprettyxml()
+            
+        # Set parent auth mgr to server so administrators cascades?
+        venue.authManager.SetParent(self.authManager)
+
         # We have to register this venue as a new service.
         if(self.hostingEnvironment != None):
             self.hostingEnvironment.RegisterObject(vi,
@@ -1100,12 +1118,10 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
 
         subject, action = self._GetContext()
         
-        log.info("Authorizing action: %s for subject %s", action.name,
-                 subject.name)
+        log.info("Authorizing action: %s for subject %s", action.GetName(),
+                 subject.GetName())
 
-        authManager = self.impl.authManager
-        
-        return authManager.IsAuthorized(subject, action)
+        return self.impl.authManager.IsAuthorized(subject, action)
 
     def Shutdown(self, secondsFromNow):
         """
@@ -1268,7 +1284,7 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
             log.exception("SetDefaultVenue: exception")
             raise
 
-    def AddAdministrator(self, string):
+    def AddAdministrator(self, subjStr):
         """
         LEGACY CALL: This is replace by GetAuthorizationManager.
 
@@ -1276,18 +1292,17 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         
         **Arguments:**
         
-        *string* The DN of the new administrator.
+        *subjStr* The DN of the new administrator.
         
         **Raises:**
         
         **Returns:**
         
-        *string* The DN of the administrator added.
+        *subjStr* The DN of the administrator added.
         """
         try:
-            xs = X509Subject.CreateSubjectFromString(string)
-            admins = self.impl.authManager.FindRole("Administrators")
-            admins.AddSubject(xs)
+            self.impl.authManager.AddSubjectToRole(subStr,
+                                               Role.Administrators.GetName())
             return xs
         except:
             log.exception("AddAdministrator: exception")
@@ -1310,7 +1325,8 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         """
         try:
             xs = X509Subject.CreateSubjectFromString(string)
-            admins = self.impl.authManager.FindRole("Administrators")
+            admins = self.impl.authManager.FindRole(
+               Role.Administrators.GetName())
             admins.RemoveSubject(xs)
         except:
             log.exception("RemoveAdministrator: exception")
@@ -1324,7 +1340,8 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         VenueServer.
         """
         try:
-            adminRole = self.impl.authManager.FindRole("Administrators")
+            adminRole = self.impl.authManager.FindRole(
+               Role.Administrators.GetName())
             subjs = self.impl.authManager.GetSubjects(role=adminRole)
             return subjs
         except:
