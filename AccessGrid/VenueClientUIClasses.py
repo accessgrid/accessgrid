@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.25 2003-02-13 22:13:46 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.26 2003-02-14 20:44:02 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -133,10 +133,13 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_VENUE_CLOSE, self.Exit)
         
     def __setToolbar(self):
+        """
 	self.toolbar.AddSimpleTool(20, icons.getWordBitmap(), \
                                    "ImportantPaper.doc", "ImportantPaper.doc",)
 	self.toolbar.AddSimpleTool(21, icons.getPowerPointBitmap(), \
                                    "Presentation.ppt", "Presentation.ppt",)
+        """
+        pass
        	
     def __setProperties(self):
         self.SetTitle("Access Grid - The Lobby")
