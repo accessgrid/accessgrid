@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.14 2004-04-23 17:07:02 olson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.15 2004-04-23 17:07:47 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.14 2004-04-23 17:07:02 olson Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.15 2004-04-23 17:07:47 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -511,8 +511,6 @@ def CreateGlobusProxyProgrammatic_GT24(passphrase, certFile, keyFile, certDir,
         err_str = e[0]
         
         error_match = None
-
-        err_args = []
 
         for etype in error_types:
             m = re.search(etype[0], err_str, re.DOTALL)
