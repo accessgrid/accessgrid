@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.36 2004-06-01 23:07:53 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.37 2004-06-02 00:55:43 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.36 2004-06-01 23:07:53 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.37 2004-06-02 00:55:43 turam Exp $"
 
 import os
 import mimetypes
@@ -104,7 +104,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
             try:
                 self.installBase = os.environ[AGTK_LOCATION]
             except:
-                self.installBase = "/usr/bin"
+                self.installBase = self.AGTkBasePath
 
         # remove trailing "\bin" if it's there
         if self.installBase.endswith("bin"):
@@ -118,11 +118,7 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
         
     def GetConfigDir(self):
 
-        try:
-            basePath = os.environ[AGTK_LOCATION]
-            self.configDir = os.path.join(basePath, "Config")
-        except:
-            self.configDir = os.path.join(self.AGTkBasePath, "Config")
+        self.configDir = os.path.join(self.GetBaseDir(), "Config")
 
         # Check dir and make it if needed.
         if self.initIfNeeded:
@@ -135,32 +131,37 @@ class AGTkConfig(AccessGrid.Config.AGTkConfig):
 
         return self.configDir
 
-    GetInstallDir = GetBaseDir
+    def GetInstallDir(self):
+        try:
+            self.installDir = os.environ[AGTK_LOCATION]
+        except:
+            self.installDir = "/usr"
 
-    def GetBinDir(self):
-        if self.installBase == None:
-            self.GetBaseDir()
-
-        self.installDir = os.path.join(self.installBase, "bin")
+        # Check dir and make it if needed.
+        if self.initIfNeeded:
+            if self.installDir is not None and \
+                   not os.path.exists(self.installDir):
+                os.mkdir(self.installDir)
 
         # Check the installation
         if self.installDir is not None and not os.path.exists(self.installDir):
             raise Exception, "AGTkConfig: install dir does not exist."
 
-        return self.installDir
+        return self.installDir 
+
+    def GetBinDir(self):
+        binDir = os.path.join(self.GetInstallDir(), "bin")
+        return binDir
 
     def GetDocDir(self):
-        if self.installBase == None:
-            self.GetBaseDir()
-            
-        self.docDir = os.path.join(self.installBase, "share", "doc",
+        self.docDir = os.path.join(self.GetInstallDir(), "share", "doc",
                                        "AccessGrid", "Documentation")
 
         # Check dir and make it if needed.
         if self.initIfNeeded:
             if self.docDir is not None and \
                    not os.path.exists(self.docDir):
-                if os.path.exists(self.installBase):
+                if os.path.exists(baseDir):
                     os.makedirs(self.docDir)
 
         # Check the installation
