@@ -7,91 +7,195 @@
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys
-import socket
 import os
 
-from wxPython.wx import wxGetDisplaySize;
+from wxPython import wx
 
-from AccessGrid.hosting.Server import Server
-from AccessGrid.Types import Capability
-from AccessGrid.AGService import AGService
-from AccessGrid.AGParameter import ValueParameter, OptionSetParameter
-from AccessGrid.AGParameter import RangeParameter
+from AccessGrid.Platform import isWindows, isLinux
+from AccessGrid.Platform.Config import SystemConfig
+from AccessGrid.GUID import GUID
 
-from AccessGrid.Platform import isWindows, isLinux, isOSX
-from AccessGrid.NetUtilities import GetHostname
+from AccessGrid.hosting import Server
+from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 
-class DisplayService( AGService ):
-   name = "display"
-   locationStr = "Location"
-   widthStr = "Width"
-   heightStr = "Height"
-   depthStr = "Depth"
-   sizeStr = "Size"
+if isWindows():
+   from DisplayWin32 import GetWindowList
+elif isLinux():
+   from DisplayLinux import *
    
-   def __init__( self ):
-      AGService.__init__( self )
+class DisplayService:
+   """
+   id : string
+   location : string [protocol://<host>:<port>/]  
+      - examples: 
+      - x://host:0
+      - windows://host
+      - vnc://host:port/
+      - rdp://host:port/)
+   
+   displayWidth : integer
+   displayHeight : integer
+   displayDepth : integer
+   windowList : list of window Id's
+   regionList : list of empty regions
+   """
+   def __init__(self):
+      self.id = str(GUID())
+      self.location = None
+      self.displayWidth = -1
+      self.displayHeight = -1
+      self.displayDepth = -1
+      self.windowList = list()
+      self.regionList = list()
 
-      tmpCapability=Capability(Capability.CONSUMER, self.name)
-      tmpCapability.parms[self.locationStr]=self.getLocation()
-      tmpCapability.parms[self.sizeStr]=self.getSize()
-      self.capabilities = [ tmpCapability ]
-      self.executable = None
-
-      # Set configuration parameters
-
-   def getLocation( self ):
-      hn = GetHostname()
-      if isWindows()
-         return "Win32://" + hn
+      self._Initialize()
+      
+   def _GetLocation(self):
+      """
+      """
+      hn = SystemConfig.instance().GetHostname()
+      if isWindows():
+         return "windows://" + hn
       elif isLinux():
          if os.getenv("DISPLAY"):
             return "X11://" + hn + ":" + os.getenv("DISPLAY").split(":")[-1]
          else:
             return "X11://" + hn + ":0.0"
       else:
-         return "Unknown://hn"
+         return "unknown://hn"
+
+   def _Initialize(self):
+      """
+      """
+      self.location = self._GetLocation()
+      size = wx.wxGetDisplaySize()
+      self.displayWidth = size.GetWidth()
+      self.displayHeight = size.GetHeight()
+      self.displayDepth = wx.wxGetDisplayDepth()
+      self.windowList = GetWindowList()
       
-   def getSize( self ):
-      myDisplaySize=wxGetDisplaySize()
-      return "%dx%d"%(myDisplaySize.GetWidth(),myDisplaySize.GetHeight())
+   def GetId(self):
+      return self.id
+   
+   def GetLocation(self):
+      return self.location
+   
+   def GetWidth(self):
+      return self.displayWidth
+   
+   def GetHeight(self):
+      return self.displayHeight
+   
+   def GetDepth(self):
+      return self.displayDepth
+   
+   def GetWindows(self):
+      return self.windowList
+   
+   def GetRegions(self):
+      return self.regionList
+   
+class DisplayServiceI(SOAPInterface):
+   """
+   """
+   def __init__(self, impl):
+      SOAPInterface.__init__(self, impl)
+      
+   def GetLocation(self):
+      return self.impl.GetLocation()
+   
+   def GetWindows(self):
+      return self.impl.GetWindows()
+   
+   def GetRegions(self):
+      return self.impl.GetRegions()
+   
+   def GetLocation(self):
+      return self.impl.GetLocation()
+   
+   def GetId(self):
+      return self.impl.GetId()
+   
+   def GetWidth(self):
+      return self.impl.GetWidth()
+   
+   def GetHeight(self):
+      return self.impl.GetHeight()
+   
+   def GetDepth(self):
+      return self.impl.GetDepth()
 
-   def Start( self ):
-      """Start service"""
-      #self.started = 1
-      try:
-         self.options=["Starting Display Service..."]
-         self._start(options)
-      except:
-         print "Exception in AudioService.Start", sys.exc_type, sys.exc_value
-         raise Exception("Failed to start service")
-   Start.soap_export_as = "Start"
+class DisplayServiceIW(SOAPIWrapper):
+   def __init__(self, url):
+      SOAPIWrapper.__init__(self, url)
 
-   def ConfigureStream( self, streamDescription ):
-      """
-      Configure the Service according to the StreamDescription, and
-      stop and start app
-      """
-      AGService.ConfigureStream( self, streamDescription )
+   def GetLocation(self):
+      return self.proxy.GetLocation()
 
-      # restart app, since this is the only way to change the 
-      # stream location (for now!)
-      if self.started:
-         self.Stop()
-         self.Start()
-   ConfigureStream.soap_export_as = "ConfigureStream"
+   def GetWindows(self):
+      return self.proxy.GetWindows()
 
-def AuthCallback(server, g_handle, remote_user, context):
-   return 1
+   def GetRegions(self):
+      return self.proxy.GetRegions()
 
+   def GetLocation(self):
+      return self.proxy.GetLocation()
+   
+   def GetId(self):
+      return self.proxy.GetId()
+
+   def GetWidth(self):
+      return self.proxy.GetWidth()
+
+   def GetHeight(self):
+      return self.proxy.GetHeight()
+
+   def GetDepth(self):
+      return self.proxy.GetDepth()
+   
 if __name__ == '__main__':
-   from AccessGrid.hosting.pyGlobus import Client
-   import thread
+   from AccessGrid.Toolkit import CmdlineApplication
+   import pprint
+   
+   # Do env init
+   app = CmdlineApplication()
+   app.Initialize("DisplayServiceTest")
+   
+   # Create a local hosting environment
+   hn = SystemConfig.instance().GetHostname()
+   server = Server((hn, int(sys.argv[1])))
 
-   agService = DisplayService()
-   server = Server( int(sys.argv[1]), auth_callback=AuthCallback )
-   service = server.create_service_object("Service")
-   agService._bind_to_service( service )
+   # Create the display service
+   dispService = DisplayService()
 
-   print "Starting server at", agService.get_handle()
-   server.run()
+   # Then it's interface
+   dispServiceI = DisplayServiceI(dispService)
+
+   # Then register the display service with the hosting environment
+   service = server.RegisterObject(dispServiceI, path = "/DisplayService")
+
+   # Get the url and print it
+   url = server.FindURLForObject(dispService)
+   print "Starting server at", url
+
+   # run the hosting environment until interrupted
+   server.RunInThread()
+
+   # Create a client
+   dispClient = DisplayServiceIW(url)
+
+   # Call the methods to test it
+   print "Location: ", dispClient.GetLocation()
+   print "ID: ", dispClient.GetId()
+   print "Width: ", dispClient.GetWidth()
+   print "Height: ", dispClient.GetHeight()
+   print "Depth: ", dispClient.GetDepth()
+   print "Windows: "
+   for w in dispClient.GetWindows():
+      pprint.pprint(w)
+   print "Regions: "
+   for r in dispClient.GetRegions():
+      pprint.pprint(r)
+
+   # Shutdown the service
+   server.Stop()
