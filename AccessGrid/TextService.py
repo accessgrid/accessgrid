@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextService.py,v 1.18 2003-04-28 19:13:13 judson Exp $
+# RCS-ID:      $Id: TextService.py,v 1.19 2003-04-28 19:19:40 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -79,7 +79,7 @@ class ConnectionHandler(StreamRequestHandler):
             try:
                 event = pickle.loads(pdata)
             except EOFError, e:
-                log.exception("TextConnection read EOF.")
+                log.debug("TextConnection read EOF.")
                 self.running = 0
                 continue
 

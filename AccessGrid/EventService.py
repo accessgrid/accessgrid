@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.18 2003-04-28 19:13:13 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.19 2003-04-28 19:19:40 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -90,7 +90,7 @@ class ConnectionHandler(StreamRequestHandler):
                 try:
                     event = pickle.loads(pdata)
                 except EOFError, e:
-                    log.exception("EventService: unpickle got EOF.")
+                    log.debug("EventService: unpickle got EOF.")
                     self.running = 0
                     continue
             

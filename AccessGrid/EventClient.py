@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.14 2003-04-26 06:43:09 judson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.15 2003-04-28 19:24:24 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -130,7 +130,7 @@ class EventClient(Thread):
             self.sock.write(pdata, len(pdata))
         except:
             self.running = 0
-            log.exception("EventClient.Send Error.")
+            log.debug("EventClient.Send Error.")
             
     def Stop(self):
         self.running = 0

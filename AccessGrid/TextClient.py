@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.9 2003-04-28 19:13:13 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.10 2003-04-28 19:19:40 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -97,7 +97,7 @@ class SimpleTextProcessor:
             except IOBaseException:
                 data = None
                 self.running = 0
-                self.log.exception("TextClient: Read data failed.")
+                self.log.debug("TextClient: Read data failed.")
 
             if data != None and len(data) == 4:
                 sizeTuple = struct.unpack('i', data)
@@ -119,7 +119,7 @@ class SimpleTextProcessor:
                 event = pickle.loads(pdata)
             except EOFError, e:
                 self.running = 0
-                log.exception("TextClient: unpickle got EOF.")
+                log.debug("TextClient: unpickle got EOF.")
                 continue
 
             # Handle the data
