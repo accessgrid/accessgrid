@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: RegisterApp.py,v 1.12 2003-10-13 17:13:16 judson Exp $
+# RCS-ID:      $Id: RegisterApp.py,v 1.13 2003-10-13 17:19:38 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This program is used to register applications with the users AGTk
 installation.
 """
-__revision__ = "$Id: RegisterApp.py,v 1.12 2003-10-13 17:13:16 judson Exp $"
+__revision__ = "$Id: RegisterApp.py,v 1.13 2003-10-13 17:19:38 judson Exp $"
 
 import os
 import re
@@ -158,7 +158,6 @@ def main():
         for filename in files:
             spList = filename.split('.')
             if len(spList) == 2:
-                print "< ", spList, " >"
                 (name, ext) = spList
                 if ext == "app":
                     appFile = filename
