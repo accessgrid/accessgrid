@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson, Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProxyGen.py,v 1.1 2004-03-02 22:42:48 judson Exp $
+# RCS-ID:      $Id: ProxyGen.py,v 1.2 2004-03-04 15:34:16 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 Globus proxy generation.
 """
 
-__revision__ = "$Id: ProxyGen.py,v 1.1 2004-03-02 22:42:48 judson Exp $"
+__revision__ = "$Id: ProxyGen.py,v 1.2 2004-03-04 15:34:16 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -351,7 +351,7 @@ def findCertInArgs(args):
     return data
 
 if isWindows():
-    ProxyGen = CreateGlobusProxyProgrammatic
+    CreateGlobusProxy = CreateGlobusProxyProgrammatic
 else:
-    ProxyGen = CreateGlobusProxyGPI
+    CreateGlobusProxy = CreateGlobusProxyGPI
     
