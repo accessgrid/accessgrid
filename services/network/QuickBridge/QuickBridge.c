@@ -24,7 +24,8 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.1 2003-08-13 19:26:27 turam Exp $
+ * $Id: QuickBridge.c,v 1.2 2003-09-18 17:08:11 turam Exp $
+ * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
 
@@ -52,10 +53,10 @@
 #define ACLFILE "bridge.acl"
 
 enum{
- data=0,
- rtcp,
- nchan
-};
+  data=0,
+    rtcp,
+    nchan
+    };
 
  
 typedef struct uctable{
@@ -85,7 +86,6 @@ int mctotalbytessent[nchan];
 int mcrecvfromcalls[nchan];
 int mcsendtocalls[nchan];
 
-int numunicastmem = 0;  /* number of current unicast members */
 int max_unicast_mem = MAXUNICASTMEMBERS;
 
 void zero_stats(){
@@ -103,107 +103,147 @@ void zero_stats(){
 }
 
 void printstats(){
-printf ("\n");
+  printf ("\n");
 
 
-/*print out debug information*/
-printf("number of uc data bytes received = %d\n", uctotalbytesrecv[data]);
-printf("number of uc data recvfromcalls = %d\n", ucrecvfromcalls[data]);
-printf("number of mc data bytes sent = %d\n", mctotalbytessent[data]);
-printf("number of mc data sendtocalls = %d\n", mcsendtocalls[data]);
-printf("--------------------------------\n");
-printf("number of uc rtcp bytes received = %d\n", uctotalbytesrecv[rtcp]);
-printf("number of uc rtcp recvfromcalls = %d\n", ucrecvfromcalls[rtcp]);
-printf("number of mc rtcp bytes sent = %d\n", mctotalbytessent[rtcp]);
-printf("number of mc rtcp sendtocalls = %d\n", mcsendtocalls[rtcp]);
-printf("--------------------------------\n");
-printf("number of mc data bytes received = %d\n", mctotalbytesrecv[data]);
-printf("number of mc data recvfromcalls = %d\n", mcrecvfromcalls[data]);
-printf("number of uc data bytes sent = %d\n", uctotalbytessent[data]);
-printf("number of uc data sendtocalls = %d\n", ucsendtocalls[data]);
-printf("--------------------------------\n");
-printf("number of mc rtcp bytes received = %d\n", mctotalbytesrecv[rtcp]);
-printf("number of mc rtcp recvfromcalls = %d\n", mcrecvfromcalls[rtcp]);
-printf("number of uc rtcp bytes sent = %d\n", uctotalbytessent[rtcp]);
-printf("number of uc rtcp sendtocalls = %d\n", ucsendtocalls[rtcp]);
+  /*print out debug information*/
+  printf("number of uc data bytes received = %d\n", uctotalbytesrecv[data]);
+  printf("number of uc data recvfromcalls = %d\n", ucrecvfromcalls[data]);
+  printf("number of mc data bytes sent = %d\n", mctotalbytessent[data]);
+  printf("number of mc data sendtocalls = %d\n", mcsendtocalls[data]);
+  printf("--------------------------------\n");
+  printf("number of uc rtcp bytes received = %d\n", uctotalbytesrecv[rtcp]);
+  printf("number of uc rtcp recvfromcalls = %d\n", ucrecvfromcalls[rtcp]);
+  printf("number of mc rtcp bytes sent = %d\n", mctotalbytessent[rtcp]);
+  printf("number of mc rtcp sendtocalls = %d\n", mcsendtocalls[rtcp]);
+  printf("--------------------------------\n");
+  printf("number of mc data bytes received = %d\n", mctotalbytesrecv[data]);
+  printf("number of mc data recvfromcalls = %d\n", mcrecvfromcalls[data]);
+  printf("number of uc data bytes sent = %d\n", uctotalbytessent[data]);
+  printf("number of uc data sendtocalls = %d\n", ucsendtocalls[data]);
+  printf("--------------------------------\n");
+  printf("number of mc rtcp bytes received = %d\n", mctotalbytesrecv[rtcp]);
+  printf("number of mc rtcp recvfromcalls = %d\n", mcrecvfromcalls[rtcp]);
+  printf("number of uc rtcp bytes sent = %d\n", uctotalbytessent[rtcp]);
+  printf("number of uc rtcp sendtocalls = %d\n", ucsendtocalls[rtcp]);
 
 }
  
 int programshutdown () {
-printstats();
-exit(0);
+  printstats();
+  exit(0);
 }
 
 long addr_lookup(char *s){
 
-long res;
-struct hostent *host;
-struct in_addr *a;
- res = inet_addr(s);
- if( res != -1 ){
-   return res;
- }
- if(host = gethostbyname(s)){
-   a = (struct in_addr *)host->h_addr_list[0];
-   res = a->s_addr;
-   return res;
- }
- return -1;
-}
-
-int findentrymatch(uctable_t *array, struct in_addr *address)  {
-int stopcond = 0;
-
-/*figure out if address is in array*/
-for (stopcond=0; stopcond<numunicastmem; stopcond++) {
-  if (array[stopcond].addr.s_addr == address->s_addr) {
-     return( stopcond );
+  long res;
+  struct hostent *host;
+  struct in_addr *a;
+  res = inet_addr(s);
+  if( res != -1 ){
+    return res;
   }
-}//end of for
-return (numunicastmem + 1);
+  if((host=gethostbyname(s)) != NULL){
+    a = (struct in_addr *)host->h_addr_list[0];
+    res = a->s_addr;
+    return res;
+  }
+  return -1;
 }
 
-int printmembers(uctable_t *array)  {
-int stopcond = 0;
-for (stopcond=0; stopcond<numunicastmem; stopcond++) {
-         printf("%d: %s",stopcond,inet_ntoa(array[stopcond].addr));
-         printf("\t%s",array[stopcond].active ? "active" : "inactive");
-         printf("\t%s",array[stopcond].fixed ? "fixed" : "dynamic");
-         printf("\n");
-}
+typedef struct qb_session{
+  int ucfd[nchan];    //unicast receive sockets
+  int mcfd[nchan];    //multicast receive socket
+  struct sockaddr_in ucaddr[nchan];
+  struct sockaddr_in mcaddr[nchan];
+  struct ip_mreq mcreq;
+  int group_member;     /* are we a member of the multicast group */
+  uctable_t *ucmemarray;
+  int numunicastmem;  /* number of current unicast members */
+  int use_multicast;
+  int forward_unicast;    /* do unicast members get to send data */
+  int has_fixed;
+  struct qb_session *next; /* for multiple session bridging */
+}Session;
+
+int num_unicast(Session *head){
+  int n=0;
+  Session *s;
+  for(s=head;s;s=s->next){
+    n += s->numunicastmem;
+  }
+  return n;
 }
 
-int zeroarray(uctable_t *array)  {
 
- bzero((char *) array, max_unicast_mem * sizeof(uctable_t));
-}
-
-int timeoutchk(uctable_t *array)  {
+int findentrymatch(Session *s, struct in_addr *address)  {
   int stopcond = 0;
-   //printf("checking for inactive unicast members\n");
-  for (stopcond=0; stopcond<numunicastmem; stopcond++) {
-    /*if activityflag=0, delete member*/ 
-    while((array[stopcond].active == 0) && 
-	  (array[stopcond].fixed == 0) && 
-	  (stopcond < numunicastmem)) {
-         printf("deleting an inactive unicast member=%s\n",inet_ntoa(array[stopcond].addr));
-         /* reduce count and copy down */
-         numunicastmem--;
-         array[stopcond] = array[numunicastmem];
-	 /*
-	  * The following are necessary for the case where 
-	  * stopcond == numunicastmem
-	  */
-         bzero((char *) (array+numunicastmem),sizeof(uctable_t));
-     }
-    if (stopcond < numunicastmem){ // don't over index array if array full 
-      array[stopcond].active = 0; // reset flag for next pass
+
+  /*figure out if address is in array*/
+  for (stopcond=0; stopcond<s->numunicastmem; stopcond++) {
+    if (s->ucmemarray[stopcond].addr.s_addr == address->s_addr) {
+      return( stopcond );
     }
   }//end of for
+  return (s->numunicastmem + 1);
 }
+
+void printmembers(Session *s);
+void zeroarray(Session *s);
+
+void printmembers(Session *head)  {
+  Session *s;
+  int stopcond = 0;
+  for(s=head;s;s=s->next){
+    printf("---------------\n");
+    for (stopcond=0; stopcond<s->numunicastmem; stopcond++) {
+      printf("%d: %s",stopcond,inet_ntoa(s->ucmemarray[stopcond].addr));
+      printf("\t%s",s->ucmemarray[stopcond].active ? "active" : "inactive");
+      printf("\t%s",s->ucmemarray[stopcond].fixed ? "fixed" : "dynamic");
+      printf("\n");
+    }
+  }
+}
+
+void zeroarray(Session *s)  {
+
+  bzero((char *) s->ucmemarray, max_unicast_mem * sizeof(uctable_t));
+}
+
+void timeoutchk(Session *head)  {
+  int stopcond = 0;
+  Session *s;
+  //printf("checking for inactive unicast members\n");
+  for(s=head;s;s=s->next){
+    for (stopcond=0; stopcond<s->numunicastmem; stopcond++) {
+      /*if activityflag=0, delete member*/ 
+      while((s->ucmemarray[stopcond].active == 0) && 
+	    (s->ucmemarray[stopcond].fixed == 0) && 
+	    (stopcond < s->numunicastmem)) {
+	printf("deleting an inactive unicast member=%s\n",inet_ntoa(s->ucmemarray[stopcond].addr));
+	/* reduce count and copy down */
+	s->numunicastmem--;
+	s->ucmemarray[stopcond] = s->ucmemarray[s->numunicastmem];
+	/*
+	 * The following are necessary for the case where 
+	 * stopcond == numunicastmem
+	 */
+	bzero((char *) (s->ucmemarray+s->numunicastmem),sizeof(uctable_t));
+      }
+      if (stopcond < s->numunicastmem){ // don't over index array if array full 
+	s->ucmemarray[stopcond].active = 0; // reset flag for next pass
+      }
+    }//end of for
+  }
+}
+
+int is_multicast(u_long a){
+  u_long mask = inet_addr("224.0.0.0");
+  return ( (a & mask) == mask );
+}
+
 int is_auth(u_long a){
-int result=0;
-struct acl *p;
+  struct acl *p;
   if( ! list){
     return 1;
   }
@@ -212,6 +252,7 @@ struct acl *p;
       return 1;
     }
   }
+
   return 0;
 }
 
@@ -226,67 +267,456 @@ void set_acl(char *file){
     printf("No %s file found, no ACL set\n",file);
     return;
   }
- printf("ACL is:\n");
- while( fgets(line,160,in) ){
-   a=NULL;
-   m=NULL;
-   skip=0;
-   for(s=line;*s;s++){
-     /* remove comments */
-     if( *s == '#' ){
-       *s='\0';
-       break;
-     }
-     if( *s == ' ' || *s == '\t' ){
-       *s='\0';
-       skip=0;
-     }else{
-       if( ! a ){
-	 a = s;
-	 skip=1;
-       }else{
-	 if( ! m && (skip == 0 )){
-	   m=s;
-	 }
-       }
-     }
-   }
+  printf("ACL is:\n");
+  while( fgets(line,160,in) ){
+    a=NULL;
+    m=NULL;
+    skip=0;
+    for(s=line;*s;s++){
+      /* remove comments */
+      if( *s == '#' ){
+	*s='\0';
+	break;
+      }
+      if( *s == ' ' || *s == '\t' ){
+	*s='\0';
+	skip=0;
+      }else{
+	if( ! a ){
+	  a = s;
+	  skip=1;
+	}else{
+	  if( ! m && (skip == 0 )){
+	    m=s;
+	  }
+	}
+      }
+    }
 
-   if( a && m ){
-     /* found a line with 2 strings */
-     printf("%s\t%s\n",a,m);
-     new = (acl_t *) malloc(sizeof(acl_t));
-     if( ! new ){
-       perror("malloc failed\n");
-       exit(1);
-     }
-     new->addr=inet_addr(a);
-     if( new->addr == -1 ){
-       printf("bad address in acl file %s\n",a);
-       exit(1);
-     }
-     new->mask=inet_addr(m);
-     if( new->mask == -1 ){
-       printf("bad mask in acl file %s\n",m);
-       exit(1);
-     }
-     /*
-      * There are no deny rules only permit so its fine to 
-      * build list in reverse order
-      */
+    if( a && m ){
+      /* found a line with 2 strings */
+      printf("%s\t%s\n",a,m);
+      new = (acl_t *) malloc(sizeof(acl_t));
+      if( ! new ){
+	perror("malloc failed\n");
+	exit(1);
+      }
+      new->addr=inet_addr(a);
+      if( new->addr == -1 ){
+	printf("bad address in acl file %s\n",a);
+	exit(1);
+      }
+      new->mask=inet_addr(m);
+      if( new->mask == -1 ){
+	printf("bad mask in acl file %s\n",m);
+	exit(1);
+      }
+      /*
+       * There are no deny rules only permit so its fine to 
+       * build list in reverse order
+       */
 
-     new->next=list;
-     list=new;
-   }
+      new->next=list;
+      list=new;
+    }
    
- }
- fclose(in);
+  }
+  fclose(in);
 
 }
 
 void print_usage(char * name){
-  printf("usage: %s [-g <multicast-group>] [-m mcast port] [-u ucast port] [-t ttl] [-a <fixed ucast peer>]\n",name);
-  printf("\n\nAccess list for dynamic unicast session defined in %s file\nad address netmask pairs\n",ACLFILE);
+  printf("usage: %s [-g <multicast-group>|<unicast peer>] [-m mcast port] [-u ucast port] [-t ttl] -n [ Flags for additional session ]\n",name);
+  printf("Any number of additional bridge sessions can be specified by using\nthe -n flag, unspecified values default to that of the previous session\n");
+  printf("\n\nAccess list for dynamic unicast session defined in %s file\nas address netmask pairs\n",ACLFILE);
+}
+
+
+void join_group(Session *s){
+  int i;
+  if( s->use_multicast && ! s->group_member ){
+    printf("joining multicast group\n");
+    for(i=0;i<nchan;i++){
+      if (setsockopt(s->mcfd[i], IPPROTO_IP, IP_ADD_MEMBERSHIP, &s->mcreq,\
+		     sizeof(s->mcreq)) < 0) {
+	perror("can't set socket options to join multicast group!");
+	exit(1);
+      } 
+    }
+    s->group_member=1;
+  }
+}
+
+void leave_group(Session *s){
+  int j;
+
+  if(s->use_multicast && s->group_member){
+    printf("leaving multicast group\n");
+    for(j=0;j<nchan;j++){
+      if (setsockopt(s->mcfd[j], IPPROTO_IP, IP_DROP_MEMBERSHIP, &s->mcreq,\
+		     sizeof(s->mcreq)) < 0) {
+	perror("can't set socket options to leave multicast group!");
+	exit(1);
+      } 
+    }
+    s->group_member=0;
+  }
+}
+
+void do_group_membership(Session *head){
+  int n=0;
+  Session *s;
+  for(s=head;s;s=s->next){
+    /* we are relying on the join/leave being a no-op if already in correct state */
+    if(s->numunicastmem > 0 ){
+      join_group(s);
+    }else{
+      leave_group(s);
+    }
+  }
+}
+
+int set_maxfds(Session *head, int maxfds){
+  Session *s;
+  for(s=head;s;s=s->next){
+    if(s->ucfd[data]>maxfds) maxfds = s->ucfd[data];
+    if(s->ucfd[rtcp]>maxfds) maxfds = s->ucfd[rtcp];
+    if( s->use_multicast ){
+      if(s->mcfd[data]>maxfds) maxfds = s->mcfd[data];
+      if(s->mcfd[rtcp]>maxfds) maxfds = s->mcfd[rtcp];
+    }
+  }
+  return maxfds;
+}
+
+void session_set(Session *head,fd_set *readfds){
+  Session *s;
+  for(s=head;s;s=s->next){
+    FD_SET(s->ucfd[data], readfds);
+    FD_SET(s->ucfd[rtcp], readfds);
+    if( s -> use_multicast ){
+      FD_SET(s->mcfd[data], readfds);
+      FD_SET(s->mcfd[rtcp], readfds);
+    }
+  }
+}
+
+int debugon = 0;
+
+
+
+void process_session(Session *head, fd_set *readfds, u_long myip){
+  int i;
+  int do_send;
+  struct sockaddr_in sourceaddr;
+  int sourceaddrlen;
+  char recvbuf[MSGBUFSIZE];
+  int foundindex;
+  int nr;
+  int ns;
+  int stopcond = 0;
+  u_long remoteunicastaddress;
+
+  Session *s;
+  for(s=head;s;s=s->next){
+    /*1:receive from unicast, send on multicast and other unicast participants */ 
+    for(i=0;i<nchan;i++){
+      do_send=s->forward_unicast;
+      if (FD_ISSET(s->ucfd[i], readfds)) {
+	//printf("\nready to receive data on s->ucfd[%d]!\n",i);
+	sourceaddrlen=sizeof(sourceaddr);
+	bzero((char *) &sourceaddr, sourceaddrlen);
+	nr = recvfrom(s->ucfd[i], recvbuf, MSGBUFSIZE, 0, (struct sockaddr *) \
+		      &sourceaddr, &sourceaddrlen);
+	if (debugon >= 2) {
+	  printf("\nreading from ucfd[%d], got data from %s:%d\n", i,inet_ntoa(sourceaddr.sin_addr),ntohs(sourceaddr.sin_port));
+	}
+	if( debugon > 0 ){
+	  ucrecvfromcalls[i] = ucrecvfromcalls[i] + 1;
+	  uctotalbytesrecv[i] = uctotalbytesrecv[i] + nr;
+	}
+
+	if (nr < 0){
+	  printf("ucfd[%d]:recvfrom over unicast error!(1) %s\n",i,strerror(errno));
+	  do_send=0;
+	}else{
+	  /*send to all unicast (execpt the one it came from)*/ 
+	  /*first figure out if sourceaddress is in ucmemarray*/
+	  /*if sourceaddress if local host address, do not update the ucmemarray*/
+	  if (sourceaddr.sin_addr.s_addr != myip ) {
+	    foundindex = findentrymatch(s, &sourceaddr.sin_addr);
+	    //printf("sourceaddr=%d\n",sourceaddr.sin_addr.s_addr);
+	    //printf("foundindex=%d\n",foundindex);
+	    if (foundindex < s->numunicastmem) {
+	      //printf("found address at ucmemarray[%d]\n",foundindex);
+	      /*update activity flag*/ 
+	      s->ucmemarray[foundindex].active = 1; 
+	    } else {
+	      if (debugon >= 2) printf("did not find address in ucmemarray\n");
+	      /*add entry to array*/
+	      if ((s->numunicastmem < max_unicast_mem) && 
+		  is_auth(sourceaddr.sin_addr.s_addr)) {
+		s->ucmemarray[s->numunicastmem].addr.s_addr = sourceaddr.sin_addr.s_addr;
+		s->ucmemarray[s->numunicastmem].active = 1;
+		s->ucmemarray[s->numunicastmem].fixed = 0; 
+		s->numunicastmem++;
+		printf("\nadding an entry, unicast members are now:\n");
+		printmembers(s);
+		join_group(s);
+	      } else {
+		if(debugon >= 1 ){
+		  printf("Not auth or too many unicast members, can't add another!\n");
+		}
+		do_send=0;
+	      }
+	    }//end of else 
+	  }else{
+		if(debugon >= 1 ){
+		  printf("Discarding packet from local host\n");
+		}
+	  } //end of updating ucmemarray values 
+
+	  /*now step thru array and send to all unicast members, except current source*/
+	  if( do_send ){
+	    for (stopcond=0; stopcond<s->numunicastmem; stopcond++) {
+	      remoteunicastaddress = s->ucmemarray[stopcond].addr.s_addr;
+	      if (remoteunicastaddress != sourceaddr.sin_addr.s_addr ) {
+		s->ucaddr[i].sin_addr.s_addr = remoteunicastaddress;
+		if (debugon >= 2) printf("sending to %s\n", inet_ntoa(s->ucmemarray[stopcond].addr));
+		ns = sendto(s->ucfd[i], recvbuf, nr, 0, (struct sockaddr *)&s->ucaddr[i], \
+			    sizeof(s->ucaddr[i]));
+	      } else {
+		if (debugon >= 4) printf("not resending to ORIGINATOR! or array entry = 0\n"); 
+	      }
+	    }//end of for (stopcond=0;....
+
+
+	    if( s->use_multicast && s->forward_unicast){
+	      /*sent to the multicast group*/
+	      if (debugon >= 2) printf("sending to %s\n", inet_ntoa(s->mcaddr[i].sin_addr));
+	      ns = sendto(s->mcfd[i], recvbuf, nr, 0, (struct sockaddr *)&s->mcaddr[i], \
+			  sizeof(s->mcaddr[i]));
+	      if( debugon > 0 ){
+		mcsendtocalls[i] = mcsendtocalls[i] + 1;
+		mctotalbytessent[i] = mctotalbytessent[i] + ns;
+	      }
+	      if (ns < 0)
+		perror("sendto over multicast address error!(2)\n");
+	    } /* use_multicast */
+	  } /* do send */
+	} /* recv failed */
+      } /* FD_ISSET */
+    } /* nchan loop */
+
+
+    if( s->use_multicast ){
+      /*3:receive from multicast, send on unicast to all unicast participants */ 
+      for(i=0;i<nchan;i++){
+	if (FD_ISSET(s->mcfd[i], readfds)) {
+	  //printf("ready to receive data on mcfd[%d]!\n",i);
+	  sourceaddrlen=sizeof(sourceaddr);
+	  bzero((char *) &sourceaddr, sourceaddrlen);
+	  nr = recvfrom(s->mcfd[i], recvbuf, MSGBUFSIZE, 0, (struct sockaddr *) \
+			&sourceaddr, &sourceaddrlen);
+	  if (nr < 0){
+	    printf ("mcfd[%d]:recvfrom over multicast error!(5) %s\n",i,strerror(errno));
+            
+	  }else{
+	    if (debugon >= 2)  {
+	      printf("\nreading from mcfd[%d], got data from=%s\n",i,inet_ntoa(sourceaddr.sin_addr));
+	    }
+	    if (debugon >= 2) 
+	      printf("retransmit to unicast addresses\n");
+	    //printf("chksrc=%d\n", chksrc);
+
+	    if( debugon > 0 ){
+	      mcrecvfromcalls[i] = mcrecvfromcalls[i] + 1;
+	      mctotalbytesrecv[i] = mctotalbytesrecv[i] + nr;
+	    }
+
+	    /*now step thru array and send to all unicast members*/
+	    for (stopcond=0; stopcond<s->numunicastmem; stopcond++) {
+#ifdef FEEDBACK_CHECK
+	      if(s->ucmemarray[stopcond].addr.s_addr  == sourceaddr.sin_addr.s_addr){
+		printf("ERROR detected multicast packet from a unicst peer\n");
+		printf("possible feedback configuration\n");
+		exit(2);
+	      }
+#endif
+	      remoteunicastaddress = s->ucmemarray[stopcond].addr.s_addr;
+	      s->ucaddr[i].sin_addr.s_addr = remoteunicastaddress;
+	      if (debugon >= 2) printf("sending to %s\n", inet_ntoa(s->ucmemarray[stopcond].addr));
+	      ns = sendto(s->ucfd[i], recvbuf, nr, 0, (struct sockaddr *)&s->ucaddr[i], \
+			  sizeof(s->ucaddr[i]));
+	      if( debugon > 0 ) {
+		ucsendtocalls[i] = ucsendtocalls[i] + 1;
+		uctotalbytessent[i] = uctotalbytessent[i] + 1;
+	      }
+	    }//end of for (stopcond=0;....
+	  }// end of if *nr < 0 )
+	}
+      }
+    }
+  }
+}
+
+void insert_fixed(Session *s, u_long addr){
+  /* now insert into list */
+  if (s->numunicastmem < max_unicast_mem){
+    s->ucmemarray[s->numunicastmem].addr.s_addr = addr;
+    s->ucmemarray[s->numunicastmem].active = 0;
+    s->ucmemarray[s->numunicastmem].fixed = 1;
+    printf("inserting a fixed unicast peer %s\n",inet_ntoa(s->ucmemarray[s->numunicastmem].addr));
+    s->numunicastmem++;
+    s->has_fixed=1;
+  }else{
+    printf("Too many fixed addresses\n");
+    exit(1);
+  }
+}
+
+typedef int Ports[nchan];
+
+Session *setup_session(Ports ucport,Ports mcport,u_long multicastaddress,u_char ttl, int forward, Session *list){
+  Session *s;
+  int i;
+  u_char do_loopback;
+
+  /* check values */
+  if( multicastaddress == -1 ){
+    printf("Bad multicast address\n");
+    return NULL;
+  }
+
+  s=(Session *) malloc(sizeof(Session));
+
+  if( s == NULL ){
+    perror("Session: malloc failed");
+    exit(1);
+  }
+
+  s->use_multicast= is_multicast(multicastaddress);
+
+  if(s->use_multicast){
+    printf("using multicast\n");
+
+    if( s->use_multicast && mcport[data] == 0 ){
+      printf("Bad multicast port\n");
+      return NULL;
+    }
+  }
+  if( ucport[data] == 0 ){
+    printf("Bad unicast port\n");
+    return NULL;
+  }
+  if( ttl < 1 ){
+    printf("Bad TTL value\n");
+    return NULL;
+  }
+
+
+  s->forward_unicast=forward;
+  s->group_member=0;
+  s->ucmemarray = calloc(sizeof(uctable_t),max_unicast_mem);
+  if( ! s->ucmemarray ){
+    perror("unicast table malloc failed");
+    exit(1);
+  }
+  s->numunicastmem=0;
+  /*zero out ucmemarray*/
+  zeroarray(s);
+
+  printf("ucport[data]=%d  ",ucport[data]);
+  printf("ucport[rtcp]=%d\n",ucport[rtcp]);
+  if(s->use_multicast){
+    printf("mcport[data]=%d  ",mcport[data]);
+    printf("mcport[rtcp]=%d\n",mcport[rtcp]);
+  }
+ 
+  //printf("multicastaddress=%d\n",multicastaddress);
+
+  for(i=0;i<nchan;i++){
+    /*enter the address/port data into the s->ucaddr[i] structure
+     * once the port is set up we will re-use this in the send calls
+     */
+    bzero((char *) &s->ucaddr[i], sizeof(s->ucaddr[i]));
+    s->ucaddr[i].sin_family = AF_INET;
+    s->ucaddr[i].sin_addr.s_addr = htonl(INADDR_ANY);
+    s->ucaddr[i].sin_port = htons(ucport[i]);
+    /*get the s->ucfd[data] socket, bind to address*/
+    if ((s->ucfd[i] = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+      perror("can't open s->ucfd socket!");
+      exit (1);
+    }
+    if (bind(s->ucfd[i], (struct sockaddr *) &s->ucaddr[i], \
+	     sizeof(s->ucaddr[i])) < 0) {
+      perror("can't bind ucaddr to socket!");
+      exit(1);
+    }
+    if( s->use_multicast ){
+      printf("making multicast port[%d]\n",i);
+      /*enter the address/port data into the mcaddr[data] structure*/
+      bzero((char *) &s->mcaddr[i], sizeof(s->mcaddr[i]));
+      s->mcaddr[i].sin_family=AF_INET;
+      s->mcaddr[i].sin_addr.s_addr = multicastaddress;
+      s->mcaddr[i].sin_port = htons(mcport[i]);
+
+      /*get a mcfd[data] socket, bind to address */
+      if ((s->mcfd[i] = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+	perror("can't open mcfd socket!");
+	exit(1);
+      }
+      if (bind(s->mcfd[i], (struct sockaddr *) &s->mcaddr[i], \
+	       sizeof(s->mcaddr[i])) < 0) {
+	perror("can't bind mcaddr to socket!");
+	exit(1);
+      }
+      /*now set multicast socket TTL option*/
+      /*setsocketopt (int filedescriptor, int level, in optname),*/
+      /*charpointer optvalue, intpointer optlen)*/
+      if (setsockopt(s->mcfd[i], IPPROTO_IP, IP_MULTICAST_TTL, \
+		     &ttl, sizeof(ttl)) < 0){
+	perror("can't set multicast ttl socket option!");
+	exit(1);
+      }
+      do_loopback=0;
+      if (setsockopt(s->mcfd[i], IPPROTO_IP, IP_MULTICAST_LOOP, \
+		     &do_loopback, sizeof(do_loopback)) < 0){
+	perror("can't set multicast ttl socket option!");
+	exit(1);
+      }
+    }
+
+  }
+
+  bzero((char *) &s->mcreq, sizeof(s->mcreq));
+  if( s->use_multicast ){
+    /*enter the address/port data into the mcreq structure*/
+    s->mcreq.imr_multiaddr.s_addr=multicastaddress;
+    s->mcreq.imr_interface.s_addr=htonl(INADDR_ANY);
+  }else{
+    /* make this a fixed unicast address instead */
+    insert_fixed(s,multicastaddress);
+  }
+
+  /* not actually needed if fixed and multicast are mutually exclusive 
+   * but put it in for completeness as we needed this in earlier versions
+   */
+  if( s->has_fixed ){
+    join_group(s);
+  }
+
+  s->next = list;
+  return s;
+}
+
+int all_fixed(Session *head){
+  Session *s;
+  int result=1;
+  for(s=head;result && s!=NULL;s=s->next){
+    result = result && s->has_fixed;
+  }
+  return result;
 }
 
 #if 1
@@ -297,52 +727,34 @@ void signal_handler(int signum) {
 }
 #endif
 
+
+
 main (argc, argv)
-int argc;
-char **argv;
+     int argc;
+     char **argv;
 
 
 {
   /*define variables*/
-  int has_fixed=0;
-  int ucrecvfd[nchan];    //unicast receive sockets
-  int mcrecvfd[nchan];    //multicast receive socket
-  int sendfd;    //local send socket
+  Session *s=NULL;
   u_char ttl;
-  struct sockaddr_in ucrecvaddr[nchan];
-  struct sockaddr_in mcaddr[nchan];
-  struct sockaddr_in ucsendaddr[nchan];
-  struct sockaddr_in localsendaddr;
-  struct sockaddr_in sourceaddr;
-  struct ip_mreq mcreq;
-  int sourceaddrlen;
-  char recvbuf[MSGBUFSIZE];
   int mcport[nchan];
   int ucport[nchan];
   u_long multicastaddress;
   u_long remoteunicastaddress;
 
+  char myhostname[MAXHOSTNAMELEN];
+  char *myhostnameipaddress;
+  u_long myip;  
+  struct hostent  *host;
+  int forward=1;
+
   int i;
-  int do_send;
-  int stopcond = 0;
-  int arrayindex = 0;
   fd_set readfds;
   int maxfds;
   int nfds;
-  int nr;
-  int ns;
-  int chksrc;
-  char myhostname[MAXHOSTNAMELEN];
-  char *myhostnameipaddress;
-  struct hostent  *host;
-  int debugon = 0;
-  char addressreadbuf[16];
-  uctable_t *ucmemarray=NULL;
-  int group_member=0;     /* are we a member of the multicast group */
-  int foundindex;
   int n2;
   int timeoutsecs = TIMEOUTSECS;
-  char input;
   char inputbuf[32];
   int timerstatus;
   struct itimerval timerval, chktimerval;
@@ -351,38 +763,50 @@ char **argv;
   char *tmp;
   int c, arg_err=0;
 
-
   /* don't want this as a command line flag as we want the array in place
    * before processing flags (the -a flag uses it 
    */
-  if( tmp = getenv("MAX_UNICAST_MEM")){
+  if( (tmp = getenv("MAX_UNICAST_MEM"))!=NULL){
     i = atoi(tmp);
     if( i > 0 ){
       max_unicast_mem = i;
     }
   }
   printf("max_unicast_mem is %d\n",max_unicast_mem);
-  ucmemarray = calloc(sizeof(uctable_t),max_unicast_mem);
-  if( ! ucmemarray ){
-    perror("unicast table malloc failed");
+
+  if( max_unicast_mem < 1 ){
+    printf("Bad max_unicast_mem value %d\n",max_unicast_mem);
     exit(1);
   }
-  /*zero out ucmemarray*/
-  zeroarray(ucmemarray);
+
+
+  /*figure out the hostname and get a local ip address*/
+  if (gethostname(myhostname, MAXHOSTNAMELEN) < 0){
+    perror("gethostname error");
+    exit(1);
+  }
+  printf("myhostname=%s\n", myhostname);
+  if((host = gethostbyname(myhostname)) == NULL){
+    perror("gethostbyname failure!");
+    exit(1);
+  }
+  myhostnameipaddress = (char *) inet_ntoa(*((struct in_addr *)host->h_addr_list[0]));
+  myip = inet_addr(myhostnameipaddress);
+  printf("myhostipaddress=%s\n\n", myhostnameipaddress);
 
 
   zero_stats();
 
   progname=argv[0];
   /* default values */
-  ttl = 1;
+  ttl = 127;
   mcport[data]=0;
   ucport[data]=0;
   mcport[rtcp]=0;
   ucport[rtcp]=0;
   multicastaddress = -1;
  
-  while((c = getopt(argc,argv,"g:t:u:m:a:d:")) != EOF){
+  while((c = getopt(argc,argv,"g:t:u:m:d:nl")) != EOF){
     switch(c) {
     case 'g':
       multicastaddress = addr_lookup(optarg);
@@ -411,24 +835,15 @@ char **argv;
     case 'd':
       debugon = atoi(optarg);
       break;
-
-    case 'a':
-      has_fixed=1;
-      remoteunicastaddress = addr_lookup(optarg);
-      if( remoteunicastaddress == -1 ){
-	printf("Bad remote unicast address\n");
+    case 'n':
+      s = setup_session(ucport,mcport,multicastaddress,ttl,forward,s);
+      if( ! s ){
+	print_usage(progname);
 	exit(1);
       }
-      /* now insert into list */
-      if (numunicastmem < max_unicast_mem){
-	ucmemarray[numunicastmem].addr.s_addr = remoteunicastaddress;
-	ucmemarray[numunicastmem].active = 0;
-	ucmemarray[numunicastmem].fixed = 1;
-	numunicastmem++;
-      }else{
-	printf("Too many fixed addresses\n");
-	exit(1);
-      }
+      break;
+    case 'l':
+      forward = ! forward;
       break;
     default:
       printf("Unknown flag %c\n",c);
@@ -437,171 +852,16 @@ char **argv;
     }
 
   }
-  /* check values */
-  if( multicastaddress == -1 ){
-    printf("Bad multicast address\n");
-    arg_err=1;
-  }
-  if( mcport[data] == 0 ){
-    printf("Bad multicast port\n");
-    arg_err=1;
-  }
-  if( ucport[data] == 0 ){
-    printf("Bad unicast port\n");
-    arg_err=1;
-  }
-  if( ttl < 1 ){
-    printf("Bad TTL value\n");
-    arg_err=1;
-  }
-  if( max_unicast_mem < 1 ){
-    printf("Bad TTL value\n");
-    arg_err=1;
-  }
-  if( arg_err ){
+
+
+  s = setup_session(ucport,mcport,multicastaddress,ttl,forward,s);
+  if( ! s ){
     print_usage(progname);
     exit(1);
   }
 
 
-
-  printf("ucport[data]=%d  ",ucport[data]);
-  printf("ucport[rtcp]=%d\n",ucport[rtcp]);
-  printf("mcport[data]=%d  ",mcport[data]);
-  printf("mcport[rtcp]=%d\n",mcport[rtcp]);
- 
-  //printf("multicastaddress=%d\n",multicastaddress);
-
-  for(i=0;i<nchan;i++){
-    /*enter the address/port data into the ucrecvaddr[i] structure*/
-    bzero((char *) &ucrecvaddr[i], sizeof(ucrecvaddr[i]));
-    ucrecvaddr[i].sin_family = AF_INET;
-    ucrecvaddr[i].sin_addr.s_addr = htonl(INADDR_ANY);
-    ucrecvaddr[i].sin_port = htons(ucport[i]);
-
-    /*enter the address/port data into the ucsendaddr[i] structure*/
-    bzero((char *) &ucsendaddr[i], sizeof(ucsendaddr[i]));
-    ucsendaddr[i].sin_family = AF_INET;
-    ucsendaddr[i].sin_addr.s_addr = remoteunicastaddress;
-    ucsendaddr[i].sin_port = htons(ucport[i]);
-
-    /*enter the address/port data into the mcaddr[data] structure*/
-    bzero((char *) &mcaddr[i], sizeof(mcaddr[i]));
-    mcaddr[i].sin_family=AF_INET;
-    mcaddr[i].sin_addr.s_addr = multicastaddress;
-    mcaddr[i].sin_port = htons(mcport[i]);
-
-  }
-
-  /*figure out the hostname and get a local ip address*/
-  if (gethostname(myhostname, MAXHOSTNAMELEN) < 0){
-    perror("gethostname error");
-    exit(1);
-  }
-  printf("myhostname=%s\n", myhostname);
   
-  if((host = gethostbyname(myhostname)) == NULL){
-    perror("gethostbyname failure!");
-    exit(1);
-  }
-  myhostnameipaddress = (char *) inet_ntoa(*((struct in_addr *)host->h_addr_list[0]));
-  printf("myhostipaddress=%s\n\n", myhostnameipaddress);
-
-  /*enter the address/port data into the localsendaddr structure*/
-  bzero((char *) &localsendaddr, sizeof(localsendaddr));
-  localsendaddr.sin_family=AF_INET;
-  localsendaddr.sin_addr.s_addr = inet_addr(myhostnameipaddress);
-  localsendaddr.sin_port = htons(0);
-  //printf("localsendaddr=%s\n",inet_ntoa(localsendaddr.sin_addr));
-
-  /*enter the address/port data into the mcreq structure*/
-  bzero((char *) &mcreq, sizeof(mcreq));
-  mcreq.imr_multiaddr.s_addr=multicastaddress;
-  mcreq.imr_interface.s_addr=htonl(INADDR_ANY);
-
-  /*get the ucrecvfd[data] socket, bind to address*/
-  if ((ucrecvfd[data] = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-    perror("can't open ucrecvfd[data] socket!");
-    exit (1);
-  }
-  if (bind(ucrecvfd[data], (struct sockaddr *) &ucrecvaddr[data], \
-	   sizeof(ucrecvaddr[data])) < 0) {
-    perror("can't bind ucrecvaddr[data] to socket!");
-    exit(1);
-  }
-
-  /*get the sendfd socket*/
-  if ((sendfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-    perror("can't open sendfd socket!");
-    exit (1);
-  }
-  if (bind(sendfd, (struct sockaddr *) &localsendaddr, \
-	   sizeof(localsendaddr)) < 0) {
-    perror("can't bind localsendaddr to socket!");
-    exit(1);
-  }
-
-  /*get the ucrecvfd[rtcp] socket, bind to address*/
-  if ((ucrecvfd[rtcp] = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-    perror("can't open ucrecvfd[rtcp] socket!");
-    exit (1);
-  }
-  if (bind(ucrecvfd[rtcp], (struct sockaddr *) &ucrecvaddr[rtcp], \
-	   sizeof(ucrecvaddr[rtcp])) < 0) {
-    perror("can't bind ucrecvaddr[rtcp] to socket!");
-    exit(1);
-  }
-
-  /*get a mcrecvfd[data] socket, bind to address */
-  if ((mcrecvfd[data] = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-    perror("can't open mcrecvfd[data] socket!");
-    exit(1);
-  }
-  if (bind(mcrecvfd[data], (struct sockaddr *) &mcaddr[data], \
-	   sizeof(mcaddr[data])) < 0) {
-    perror("can't bind mcaddr[data] to socket!");
-    exit(1);
-  }
-
-  /*get a mcrecvfd[rtcp] socket, bind to address */
-  if ((mcrecvfd[rtcp] = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-    perror("can't open mcrecvfd[rtcp] socket!");
-    exit(1);
-  }
-  if (bind(mcrecvfd[rtcp], (struct sockaddr *) &mcaddr[rtcp], \
-	   sizeof(mcaddr[rtcp])) < 0) {
-    perror("can't bind mcaddr[rtcp] to socket!");
-    exit(1);
-  }
-
-
-  /*now set multicast socket TTL option*/
-  /*setsocketopt (int filedescriptor, int level, in optname),*/
-  /*charpointer optvalue, intpointer optlen)*/
-  if (setsockopt(sendfd, IPPROTO_IP, IP_MULTICAST_TTL, \
-		 &ttl, sizeof(ttl)) < 0){
-    perror("can't set multicast ttl socket option!");
-    exit(1);
-  }
-
-  
-  if( has_fixed ){
-    printf("joining multicast group\n");
-    /*set socket options to join multicast group*/
-    /*setsockopt (int filedescriptor, int level, int optname,*/  
-    /*            charpointer optvalue, intpointer optlen)*/
-    if (setsockopt(mcrecvfd[data], IPPROTO_IP, IP_ADD_MEMBERSHIP, &mcreq,\
-		   sizeof(mcreq)) < 0) {
-      perror("can't set socket options to join multicast group!");
-      exit(1);
-    } 
-    if (setsockopt(mcrecvfd[rtcp], IPPROTO_IP, IP_ADD_MEMBERSHIP, &mcreq,\
-		   sizeof(mcreq)) < 0) {
-      perror("can't set socket options to join multicast group!");
-      exit(1);
-    } 
-    group_member=1;
-  }
 
   /* code for gateway mode */
   set_acl(ACLFILE);
@@ -629,19 +889,13 @@ char **argv;
  
   /* maxfds should be one more than largest fd */
   maxfds = 0;
-  if(ucrecvfd[data]>maxfds) maxfds = ucrecvfd[data];
-  if(mcrecvfd[data]>maxfds) maxfds = mcrecvfd[data];
-  if(ucrecvfd[rtcp]>maxfds) maxfds = ucrecvfd[rtcp];
-  if(mcrecvfd[rtcp]>maxfds) maxfds = mcrecvfd[rtcp];
+  maxfds = set_maxfds(s,maxfds);
   maxfds++;
 
 
   while(1) { 
     FD_ZERO(&readfds);
-    FD_SET(ucrecvfd[data], &readfds);
-    FD_SET(mcrecvfd[data], &readfds);
-    FD_SET(ucrecvfd[rtcp], &readfds);
-    FD_SET(mcrecvfd[rtcp], &readfds);
+    session_set(s,&readfds);
     if (debugon >= 1) {
       FD_SET(0, &readfds);
     }
@@ -654,7 +908,7 @@ char **argv;
      * some OS will change the timerval struct so make a new one each time.
      * If we have fixed sessions the list will never be empty so block.
      */
-    if( numunicastmem > 0 && ! has_fixed){
+    if( num_unicast(s) > 0 && ! all_fixed(s)){
       tv.tv_sec = timeoutsecs; 
       tv.tv_usec = 0; 
       nfds = select(maxfds, &readfds, NULL, NULL, &tv);
@@ -662,22 +916,15 @@ char **argv;
       nfds = select(maxfds, &readfds, NULL, NULL, NULL);
     }
 
-    if (!strcmp(inputbuf,"pa")) {
-      printf("unicast members array output:\n");
-      printmembers(ucmemarray);
-    } 
-
     /*if specified on the command line, check for input on stdin*/
     if (debugon >= 1) {
       if (FD_ISSET(0, &readfds)) {
 	n2 = read(0,inputbuf, sizeof(inputbuf));
 	//printf("inputbuf=%s\n",inputbuf);
 	inputbuf[n2>0? n2-1: 0] = '\0';
-	//input = inputbuf[data]; 
-	//printf("stdin input!=%d\n",input);
 	if (!strcmp(inputbuf,"p")) {
 	  printf("current unicast members:\n");
-	  printmembers(ucmemarray);
+	  printmembers(s);
 	} 
 	if (!strcmp(inputbuf,"s")) {
 	  printstats();
@@ -695,166 +942,7 @@ char **argv;
     }
 
 
-    /*1:receive from unicast, send on multicast and other unicast participants */ 
-    for(i=0;i<nchan;i++){
-      do_send=1;
-      if (FD_ISSET(ucrecvfd[i], &readfds)) {
-	//printf("\nready to receive data on ucrecvfd[%d]!\n",i);
-	nr = recvfrom(ucrecvfd[i], recvbuf, MSGBUFSIZE, 0, (struct sockaddr *) \
-		      &sourceaddr, &sourceaddrlen);
-	if (debugon >= 2) {
-	  printf("\nreading from ucrecvfd[%d], got data from %s\n", i,inet_ntoa(sourceaddr.sin_addr));
-	}
-	if( debugon > 0 ){
-	  ucrecvfromcalls[i] = ucrecvfromcalls[i] + 1;
-	  uctotalbytesrecv[i] = uctotalbytesrecv[i] + nr;
-	}
-
-	if (nr < 0){
-	  perror("ucrecvfd[i]:recvfrom over unicast address error!(1)\n");
-	  do_send=0;
-	}else{
-	  /*send to all unicast (execpt the one it came from)*/ 
-	  /*first figure out if sourceaddress is in ucmemarray*/
-	  /*if sourceaddress if local host address, do not update the ucmemarray*/
-	  if (sourceaddr.sin_addr.s_addr != localsendaddr.sin_addr.s_addr) {
-	    foundindex = findentrymatch(ucmemarray, &sourceaddr.sin_addr);
-	    //printf("sourceaddr=%d\n",sourceaddr.sin_addr.s_addr);
-	    //printf("foundindex=%d\n",foundindex);
-	    if (foundindex < numunicastmem) {
-	      //printf("found address at ucmemarray[%d]\n",foundindex);
-	      /*update activity flag*/ 
-	      ucmemarray[foundindex].active = 1; 
-	    } else {
-	      if (debugon >= 2) printf("did not find address in ucmemarray\n");
-	      /*add entry to array*/
-	      if ((numunicastmem < max_unicast_mem) && 
-		  is_auth(sourceaddr.sin_addr.s_addr)) {
-		ucmemarray[numunicastmem].addr.s_addr = sourceaddr.sin_addr.s_addr;
-		ucmemarray[numunicastmem].active = 1;
-		ucmemarray[numunicastmem].fixed = 0; 
-		numunicastmem++;
-		printf("\nadding an entry, unicast members are now:\n");
-		printmembers(ucmemarray);
-		if( ! group_member ){
-		  printf("joining multicast group\n");
-		  /*set socket options to join multicast group*/
-		  /*setsockopt (int filedescriptor, int level, int optname,*/  
-		  /*            charpointer optvalue, intpointer optlen)*/
-		  if (setsockopt(mcrecvfd[data], IPPROTO_IP, IP_ADD_MEMBERSHIP, &mcreq,\
-				 sizeof(mcreq)) < 0) {
-		    perror("can't set socket options to join multicast group!");
-		    exit(1);
-		  } 
-		  if (setsockopt(mcrecvfd[rtcp], IPPROTO_IP, IP_ADD_MEMBERSHIP, &mcreq,\
-				 sizeof(mcreq)) < 0) {
-		    perror("can't set socket options to join multicast group!");
-		    exit(1);
-		  } 
-		  group_member=1;
-		}else{
-		  printf("already in multicast group\n");
-		}
-	      } else {
-		if(debugon >= 1 ){
-		  printf("Not auth or too many unicast members, can't add another!\n");
-		}
-		do_send=0;
-	      }
-	    }//end of else
-	  } //end of updating ucmemarray values
-
-	  /*now step thru array and send to all unicast members, except current source*/
-	  if( do_send ){
-	    for (stopcond=0; stopcond<numunicastmem; stopcond++) {
-	      remoteunicastaddress = ucmemarray[stopcond].addr.s_addr;
-	      if (remoteunicastaddress != sourceaddr.sin_addr.s_addr ) {
-		ucsendaddr[i].sin_addr.s_addr = remoteunicastaddress;
-		if (debugon >= 2) printf("sending to %s\n", inet_ntoa(ucmemarray[stopcond].addr));
-		ns = sendto(sendfd, recvbuf, nr, 0, (struct sockaddr *)&ucsendaddr[i], \
-			    sizeof(ucsendaddr[i]));
-	      } else {
-		if (debugon >= 4) printf("not resending to ORIGINATOR! or array entry = 0\n"); 
-	      }
-	    }//end of for (stopcond=0;....
-
-
-	    /*sent to the multicast group*/
-	    if (debugon >= 2) printf("sending to %s\n", inet_ntoa(mcaddr[i].sin_addr));
-	    ns = sendto(sendfd, recvbuf, nr, 0, (struct sockaddr *)&mcaddr[i], \
-			sizeof(mcaddr[i]));
-	    if( debugon > 0 ){
-	      mcsendtocalls[i] = mcsendtocalls[i] + 1;
-	      mctotalbytessent[i] = mctotalbytessent[i] + ns;
-	    }
-	    if (ns < 0)
-	      perror("sendfd:sendto over multicast address error!(2)\n");
-	  } /* do send */
-	} /* recv failed */
-      } /* FD_ISSET */
-    } /* nchan loop */
-
-
-    /*3:receive from multicast, send on unicast to all unicast participants */ 
-    for(i=0;i<nchan;i++){
-      if (FD_ISSET(mcrecvfd[i], &readfds)) {
-	//printf("ready to receive data on mcrecvfd[%d]!\n",i);
-	nr = recvfrom(mcrecvfd[i], recvbuf, MSGBUFSIZE, 0, (struct sockaddr *) \
-		      &sourceaddr, &sourceaddrlen);
-	if (nr < 0){
-	  printf ("mcrecvfd[%d]:recvfrom over multicast address error!(5)\n",i);
-	}else{
-	  if (debugon >= 2)  {
-	    printf("\nreading from mcrecvfd[%d], got data from=%s\n",i,inet_ntoa(sourceaddr.sin_addr));
-	    printf("localsendaddr=%s\n",inet_ntoa(localsendaddr.sin_addr));
-	  }
-	  if (sourceaddr.sin_addr.s_addr == localsendaddr.sin_addr.s_addr){
-	    chksrc = 0;
-	    if (debugon >= 2) 
-	      printf("don't retransmit multicast sourced from gateway machine\n");
-	  } else {
-	    chksrc = 1;
-	    if (debugon >= 2) 
-	      printf("retransmit to unicast addresses\n");
-	  }
-	  //printf("chksrc=%d\n", chksrc);
-
-	  if (chksrc != 0 ) {
-	    if( debugon > 0 ){
-	      mcrecvfromcalls[i] = mcrecvfromcalls[i] + 1;
-	      mctotalbytesrecv[i] = mctotalbytesrecv[i] + nr;
-	    }
-
-	    /*now step thru array and send to all unicast members*/
-	    for (stopcond=0; stopcond<numunicastmem; stopcond++) {
-	      if(ucmemarray[stopcond].addr.s_addr  == sourceaddr.sin_addr.s_addr){
-		printf("ERROR detected multicast packet from a unicst peer\n");
-		printf("possible feedback configuration\n");
-		/*exit(2);*/
-		printf("* * offending unicast member will be dropped");
-	        /* drop offending unicast member
-		 * - set unicast member state to inactive
-		 * - force timeoutchk, so offending unicast member will be dropped                 
-		 */
-	        ucmemarray[stopcond].active = 0;
-		timeoutchk(ucmemarray);
-	        
-	      }
-
-	      remoteunicastaddress = ucmemarray[stopcond].addr.s_addr;
-	      ucsendaddr[i].sin_addr.s_addr = remoteunicastaddress;
-	      if (debugon >= 2) printf("sending to %s\n", inet_ntoa(ucmemarray[stopcond].addr));
-	      ns = sendto(sendfd, recvbuf, nr, 0, (struct sockaddr *)&ucsendaddr[i], \
-			  sizeof(ucsendaddr[i]));
-	      if( debugon > 0 ) {
-		ucsendtocalls[i] = ucsendtocalls[i] + 1;
-		uctotalbytessent[i] = uctotalbytessent[i] + 1;
-	      }
-	    }//end of for (stopcond=0;....
-	  }//end of if (chksrc == 0)
-	}// end of if *nr < 0 )
-      }
-    }
+    process_session(s, &readfds, myip);
 
     /*5:check for unicast members in array, that may have timed out*/
     /*first see i timer has expired*/
@@ -862,7 +950,8 @@ char **argv;
     timerstatus = chktimerval.it_value.tv_sec;
     if (timerstatus  == 0) {
       printf("\ntime to check to see if any unicast members are inactive\n");
-      timeoutchk(ucmemarray);
+      timeoutchk(s);
+      do_group_membership(s);
       /*reset timer*/
       timerval.it_value.tv_sec = timeoutsecs;;
       timerstatus = setitimer(ITIMER_REAL, &timerval, (struct itimerval *)0);
@@ -870,29 +959,10 @@ char **argv;
       timerstatus = chktimerval.it_value.tv_sec;
       printf("just reset the timer to %d sec\n",timerstatus);
       printf("current unicast members are now:\n");
-      printmembers(ucmemarray);
-      if( numunicastmem == 0 && group_member ){
-	printf("leaving multicast group\n");
-	if (setsockopt(mcrecvfd[data], IPPROTO_IP, IP_DROP_MEMBERSHIP, &mcreq,\
-		       sizeof(mcreq)) < 0) {
-	  perror("can't set socket options to leave multicast group!");
-	  exit(1);
-	} 
-	if (setsockopt(mcrecvfd[rtcp], IPPROTO_IP, IP_DROP_MEMBERSHIP, &mcreq,\
-		       sizeof(mcreq)) < 0) {
-	  perror("can't set socket options to leave multicast group!");
-	  exit(1);
-	} 
-	group_member=0;
-      }
+      printmembers(s);
     } 
 
   } //end of while loop
 } //end of main
-
-
-
-
-
 
 
