@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.94 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.95 2003-09-16 20:00:26 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.94 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.95 2003-09-16 20:00:26 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -119,7 +119,10 @@ class VenueServer(ServiceBase.ServiceBase):
             "VenueServer.venuePathPrefix" : 'Venues',
             "VenueServer.dataStorageLocation" : 'Data',
             "VenueServer.dataSize" : '10M',
-            "VenueServer.backupServer" : ''
+            "VenueServer.backupServer" : '',
+            "VenueServer.addressAllocationMethod" : MulticastAddressAllocator.RANDOM,
+            "VenueServer.baseAddress" : MulticastAddressAllocator.SDR_BASE_ADDRESS,
+            "VenueServer.addressMask" : MulticastAddressAllocator.SDR_MASK_SIZE
             }
 
     defaultVenueDesc = VenueDescription("Venue Server Lobby", """ This is the lobby of the Venue Server, it has been created because there are no venues yet. Please configure your Venue Server! For more information see http://www.accessgrid.org/ and http://www.mcs.anl.gov/fl/research/accessgrid.""")
@@ -174,7 +177,13 @@ class VenueServer(ServiceBase.ServiceBase):
 
         # Read in and process a configuration
         self.InitFromFile(LoadConfig(self.configFile, self.configDefaults))
-       
+
+        # Initialize the multicast address allocator
+        self.multicastAddressAllocator.SetAddressAllocationMethod(self.addressAllocationMethod)
+        self.multicastAddressAllocator.SetBaseAddress(self.baseAddress)
+        self.addressMask = int(self.addressMask)
+        self.multicastAddressAllocator.SetAddressMask(self.addressMask)
+
         if self.dataServiceUrl != '':
             # Connect to a remote data service
             try:
@@ -410,7 +419,49 @@ class VenueServer(ServiceBase.ServiceBase):
                     v.SetDataStore(dataStoreUrl)
                 except:
                     log.exception("VenueServer Can not connect to data store %s"%self.dataServiceUrl)
-                                   
+
+                # Deal with data if there is any
+                try:
+                    dataList = cp.get(sec, 'data')
+                except ConfigParser.NoOptionError:
+                    dataList = ""
+
+                # Handle data lists found in venue persistence
+                # (data was persisted with venues in 2.0, so this is 
+                # for backward compatibility)
+                if len(dataList) != 0:
+                    log.info("dataList found in venue persistence")
+
+                    # Get the list of files in the venue
+                    venueFiles = Client.Handle(dataStoreUrl).GetProxy().GetFiles()
+
+                    # For each file referenced in venue persistence
+                    for d in string.split(dataList, ':'):
+
+                        # Does the file exist in the data store?
+                        for f in venueFiles:
+                            if  f[0] == cp.get(d, 'name') and f[1] == cp.getint(d, 'size'):
+
+                                log.info(" - found match between venue persisted data and file in datastore")
+                        
+                                # Create the data description from the venue-persisted data
+                                dd = DataDescription(cp.get(d, 'name'))
+                                dd.SetId(d)
+                                try:
+                                    dd.SetDescription(cp.get(d, 'description'))
+                                except ConfigParser.NoOptionError:
+                                    log.info("LoadPersistentVenues: Data has no description")
+                                dd.SetStatus(cp.get(d, 'status'))
+                                dd.SetSize(cp.getint(d, 'size'))
+                                dd.SetChecksum(cp.get(d, 'checksum'))
+                                dd.SetOwner(cp.get(d, 'owner'))
+
+                                # Add the data description to the data store
+                                log.info(" - setting description for file %s" % f[0] )
+                                Client.Handle(dataStoreUrl).GetProxy().SetDescription(f[0],dd)
+
+                                break
+
                 # Deal with apps if there are any
                 try:
                     appList = cp.get(sec, 'applications')
@@ -558,6 +609,7 @@ class VenueServer(ServiceBase.ServiceBase):
         log.info("Checkpointing completed at %s.", time.asctime())
 
         # Finally we save the current config
+        config = self.config.copy()
         SaveConfig(self.configFile, self.config)
 
         return 1
@@ -1484,26 +1536,12 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         return self.dataStorageLocation
 
-    def SetAddressAllocationMethod(self,  addressAllocationMethod):
-        """
-        Set the method used for multicast address allocation:
-            either RANDOM or INTERVAL (defined in MulticastAddressAllocator)
-        """
-        self.multicastAddressAllocator.SetAddressAllocationMethod(
-            addressAllocationMethod )
-
-    def GetAddressAllocationMethod(self):
-        """
-        Get the method used for multicast address allocation:
-            either RANDOM or INTERVAL (defined in MulticastAddressAllocator)
-        """
-        return self.multicastAddressAllocator.GetAddressAllocationMethod()
-
     def SetEncryptAllMedia(self, value):
         """
         Turn on or off server wide default for venue media encryption.
         """
         self.encryptAllMedia = int(value)
+        self.config["VenueServer.encryptAllMedia"] = value
 
         return self.encryptAllMedia
 
@@ -1518,6 +1556,7 @@ class VenueServer(ServiceBase.ServiceBase):
         Turn on or off server wide default for venue media encryption.
         """
         self.backupServer = server
+        self.config["backupServer"] = server
 
         return self.backupServer
 
@@ -1527,12 +1566,31 @@ class VenueServer(ServiceBase.ServiceBase):
         """
         return self.backupServer
 
+    def SetAddressAllocationMethod(self,  addressAllocationMethod):
+        """
+        Set the method used for multicast address allocation:
+            either RANDOM or INTERVAL (defined in MulticastAddressAllocator)
+        """
+        self.addressAllocationMethod = addressAllocationMethod
+        self.multicastAddressAllocator.SetAddressAllocationMethod(
+            addressAllocationMethod )
+        self.config["VenueServer.addressAllocationMethod"] = addressAllocationMethod
+
+    def GetAddressAllocationMethod(self):
+        """
+        Get the method used for multicast address allocation:
+            either RANDOM or INTERVAL (defined in MulticastAddressAllocator)
+        """
+        return self.multicastAddressAllocator.GetAddressAllocationMethod()
+
     def SetBaseAddress(self, address):
         """
         Set base address used when allocating multicast addresses in
         an interval
         """
+        self.baseAddress = address
         self.multicastAddressAllocator.SetBaseAddress( address )
+        self.config["VenueServer.baseAddress"] = address
 
     def GetBaseAddress(self):
         """
@@ -1546,7 +1604,9 @@ class VenueServer(ServiceBase.ServiceBase):
         Set address mask used when allocating multicast addresses in
         an interval
         """
+        self.addressMask = mask
         self.multicastAddressAllocator.SetAddressMask( mask )
+        self.config["VenueServer.addressMask"] = mask
 
     def GetAddressMask(self):
         """
