@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: AppService.py,v 1.11 2003-09-15 22:41:58 judson Exp $
+# RCS-ID:      $Id: AppService.py,v 1.12 2003-09-16 06:54:26 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -248,7 +248,7 @@ class AppObjectImpl:
         """
         Return the url of the venue this app object is in.
         """
-        if no self.components.has_key(private_token):
+        if not self.components.has_key(private_token):
             raise InvalidPrivateToken
 
         return self.venueURL
