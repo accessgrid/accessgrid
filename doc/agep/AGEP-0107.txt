@@ -2,7 +2,7 @@
 Core Toolkit Design Changes for 2.1.3
 =====================================
  
-:version: $Revision: 1.1 $
+:version: $Revision: 1.2 $
 :author: Ivan R. Judson <judson@mcs.anl.gov>
 :status: Draft
 
@@ -99,15 +99,19 @@ Module Organization
    
   - hosting
 
-    - pyGlobus [Nothing required now]
+    - __init__.py
+    
+    - SOAPInterface.py
 
-      - tests
+    - SOAPpy
+    
+      - __init__.py
 
-        - tclient.py
-        - test_invalid.py
-        - tserver.py
+      - Client.py
 
-    - <pyGridware> (Future Addition)
+      - Server.py
+
+      - Tools.py
 
 - SOAPpy [standard SOAPpy install]
 
@@ -118,9 +122,94 @@ Module Organization
 Specifications
 ==============
 
-SOAPInterface:
+__init__.py
+
+  __hostingImpl = "SOAPpy"
+
+  def GetHostingImpl():
+
+  def SetHostingImpl():
+
+  def ListHostingImpls():
+    
+SOAPInterface.py:
+
+  class InvalidURL(Exception)
+
+  class ConnectionFailed(Exception)
+
+  class SOAPInterface:
+
     def __init__(self, impl):
+
     def _authorize(self, *args, **kw):
+
+    def _GetMethodActions(self):
+
+    def IsValid(self):
+
+    _IsValid = IsValid
+
+  class SOAPIWrapper:
+
+    def __init__(self, url):
+
+    def IsValid(self):
+
+    _IsValid = IsValid
+
+  SOAPpy/
+    
+    Client.py
+    
+      class Handle
+
+        def __init__(self, url):
+        
+        def GetUrl(self):
+
+        def GetProxy(self):
+
+        def __repr__(self):
+       
+
+   Server.py
+      
+      class Server
+      
+        def __init__(self, addr, server):
+
+        def IsRunning(self)
+
+        def Run(self):
+
+        def RunInThread(self):
+
+        def Stop(self):
+
+        def GetPort(self):
+
+        def GetURLBase(self):
+
+        def RegisterObject(self, object, namespace = '', path = ''):
+
+        def UnregisterObject(self, object):
+
+        def FindObject(self, obj):
+        
+        def GetURLForObject(self, obj):
+
+        def FindObjectForURL(self, url):
+
+        def FindObjectForPath(self, path):
+
+     class SecureServer(Server)
+
+        def __init__(self, addr, debug = 0)
+
+     class InsecureServer(Server)
+
+        def __init__(self, addr, debug = 0)
 
 VenueServer
 
@@ -147,8 +236,9 @@ Venue
 Security Issues
 ===============
 
-None, this set of modifications should in no way affect the security
-of the system.
+This modification makes no change to the underlying security solution,
+however it does provide new hooks for the completed authorization
+layer described elsewhere.
 
 Interoperability Issues
 =======================
