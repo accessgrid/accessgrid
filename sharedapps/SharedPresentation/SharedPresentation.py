@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.16 2003-11-07 00:30:43 eolson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.17 2003-11-07 19:17:41 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,13 +22,20 @@ from wxPython.wx import *
 
 from AccessGrid.DataStoreClient import GetVenueDataStore
 
-# Win 32 COM interfaces that we use
-try:
-    import win32com
-    import win32com.client
-except:
-    print "No Windows COM support!"
-    sys.exit(1)
+from AccessGrid import Platform
+if sys.platform == Platform.WIN:
+    # Win 32 COM interfaces that we use
+    try:
+        import win32com
+        import win32com.client
+    except:
+        print "No Windows COM support!"
+        sys.exit(1)
+else:
+    # An OpenOffice/StarOffice Viewer
+    # We will add options to make the viewer selectable if we have
+    #   a choice of more than one viewer.
+    from ImpressViewer import ImpressViewer
 
 # Imports we need from the Access Grid Module
 from AccessGrid.hosting.pyGlobus import Client
@@ -187,8 +194,10 @@ class PowerPointViewer:
 if sys.platform == Platform.WIN:
     # If we're on Windows we try to use the python/COM interface to PowerPoint
     defaultViewer = PowerPointViewer
-else:
+elif sys.platform == Platform.LINUX:
     # On Linux the best choice is probably Open/Star Office
+    defaultViewer = ImpressViewer
+else:
     defaultViewer = None
 
 
@@ -1023,10 +1032,10 @@ class SharedPresentation:
         # If the slides URL begins with https, retrieve the slides
         # from the venue data store
         if slidesUrl.startswith("https"):
-            tmpFile = Platform.GetTempDir() + "presentation.ppt"
+            tmpFile = os.path.join(Platform.GetTempDir(), "presentation.ppt")
             # Make sure filename is not currently open
             if tmpFile == self.viewer.openFile:
-                tmpFile = Platform.GetTempDir() + "presentation2.ppt"
+                tmpFile = os.path.join(Platform.GetTempDir(), "presentation2.ppt")
             DataStore.GSIHTTPDownloadFile(slidesUrl, tmpFile, None, None )
             self.viewer.LoadPresentation(tmpFile)
         else:
@@ -1239,10 +1248,10 @@ class SharedPresentation:
         # If the slides URL begins with https, retrieve the slides
         # from the venue data store
         if slidesUrl.startswith("https"):
-            tmpFile = Platform.GetTempDir() + "presentation.ppt"
+            tmpFile = os.path.join(Platform.GetTempDir(), "presentation.ppt")
             # If current filename is in use, use slightly different name.
             if tmpFile == self.viewer.openFile:
-                tmpFile = Platform.GetTempDir() + "presentation2.ppt"
+                tmpFile = os.path.join(Platform.GetTempDir(), "presentation2.ppt")
             DataStore.GSIHTTPDownloadFile(slidesUrl, tmpFile, None, None )
             self.viewer.LoadPresentation(tmpFile)
             # Remove datastore prefix on local url in UI since master checks
@@ -1318,10 +1327,10 @@ class SharedPresentation:
             # If the slides URL begins with https, retrieve the slides
             # from the venue data store
             if self.presentation.startswith("https"):
-                tmpFile = Platform.GetTempDir() + "presentation.ppt"
+                tmpFile = os.path.join(Platform.GetTempDir(), "presentation.ppt")
                 # If tmpFile name is in use, use a different name.
                 if tmpFile == self.viewer.openFile:
-                    tmpFile = Platform.GetTempDir() + "presentation2.ppt"
+                    tmpFile = os.path.join(Platform.GetTempDir(), "presentation2.ppt")
                 DataStore.GSIHTTPDownloadFile(self.presentation, tmpFile, None, None )
                 self.viewer.LoadPresentation(tmpFile)
             else:
