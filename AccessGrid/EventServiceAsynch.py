@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.9 2003-07-11 21:12:33 eolson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.10 2003-08-12 19:22:25 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -66,27 +66,29 @@ class ConnectionHandler:
         self.waitingLen = 0
 
     def __del__(self):
-        log.debug("ConnectionHandler delete")
+        log.debug("EventServiceAsynch: ConnectionHandler delete")
 
     def GetId(self):
         return self.id
 
     def registerAccept(self, attr):
-        logEvent("conn handler registering accept")
+        logEvent("EventServiceAsynch: conn handler registering accept")
 
-        socket, cb = self.lsocket.register_accept(attr, self.acceptCallback, None)
+        socket, cb = self.lsocket.register_accept(attr, self.acceptCallback,
+                                                  None)
         self.acceptCallbackHandle = cb
         
-        logEvent("register_accept returns socket=%s cb=%s", socket, cb)
+        logEvent("EventServiceAsynch: register_accept returns socket=%s cb=%s", socket, cb)
         self.socket = socket
 
     def acceptCallback(self, arg, handle, result):
         try:
             if result[0] != 0:
-                log.debug("acceptCallback returned failure: %s %s", result[1], result[2])
+                log.debug("EventServiceAsynch: acceptCallback returned failure: %s %s", result[1], result[2])
                 return
 
-            logEvent("Accept Callback '%s' '%s' '%s'", arg, handle, result)
+            logEvent("EventServiceAsynch: Accept Callback '%s' '%s' '%s'",
+                     arg, handle, result)
             self.lsocket.free_callback(self.acceptCallbackHandle)
             self.server.registerForListen()
 
@@ -136,11 +138,11 @@ class ConnectionHandler:
 
     def readCallback(self, arg, handle, result, buf, n):
 
-        logEvent("Got read handle=%s result=%s  n=%s waiting=%s\n",
+        logEvent("EventServiceAsynch: Got read handle=%s result=%s  n=%s waiting=%s\n",
                  handle, result, n, self.waitingLen)
 
         if result[0] != 0:
-            log.debug("readCallback returned failure: %s %s", result[1], result[2])
+            log.debug("EventServiceAsynch: readCallback returned failure: %s %s", result[1], result[2])
             self.handleEOF()
             return
 
@@ -166,7 +168,7 @@ class ConnectionHandler:
             self.waitingLen = dlen[0]
 
         if len(self.dataBuffer) >= self.waitingLen:
-            logEvent("Finished reading packet, wait=%s buflen=%s",
+            logEvent("EventServiceAsynch: Finished reading packet, wait=%s buflen=%s",
                       self.waitingLen, len(self.dataBuffer))
 
             thedata = self.dataBuffer[:self.waitingLen]
@@ -184,7 +186,7 @@ class ConnectionHandler:
                 self.wfile.close()
             self.socket.close()
         except IOBaseException:
-            log.info("IOBase exception on event service close (probably ok)")
+            log.info("EventServiceAsynch: IOBase exception on event service close (probably ok)")
 
     def handleData(self, pdata, event):
         """
@@ -197,11 +199,11 @@ class ConnectionHandler:
             try:
                 event = pickle.loads(pdata)
             except EOFError:
-                log.debug("EventService: unpickle got EOF.")
+                log.debug("EventServiceAsynch: unpickle got EOF.")
                 self.handleEOF()
                 return
 
-        logEvent("EventConnection: Received event %s", event)
+        logEvent("EventServiceAsynch: EventConnection: Received event %s", event)
 
         #
         # Drop this event on the event server's queue for processing
@@ -247,7 +249,7 @@ class EventChannel:
         self.authCallback = authCallback
 
     def __del__(self):
-        log.debug("Delete EventChannel %s", self.id)
+        log.debug("EventServiceAsynch: Delete EventChannel %s", self.id)
 
     def RegisterCallback(self, eventType, callback):
         """
@@ -261,7 +263,7 @@ class EventChannel:
             self.typedHandlers[eventType] = cbList
 
         if callback in cbList:
-            log.info("Callback %s already in handler list for type %s",
+            log.info("EventServiceAsynch: Callback %s already in handler list for type %s",
                      callback, eventType)
         else:
             cbList.append(callback)
@@ -272,7 +274,7 @@ class EventChannel:
         """
 
         if callback in self.channelHandlers:
-            log.info("Callback %s already in channel handler list", callback)
+            log.info("EventServiceAsynch: Callback %s already in channel handler list", callback)
         else:
             self.channelHandlers.append(callback)
 
@@ -287,11 +289,11 @@ class EventChannel:
         # We only allow a CONNECT event to attempt authorization.
         #
 
-        log.debug("Attempting authorization on event %s", event.eventType)
+        log.debug("EventServiceAsynch: Attempting authorization on event %s", event.eventType)
 
 
         if event.eventType != ConnectEvent.CONNECT:
-            log.debug("Channel refusing authorization, %s is not a connect event",
+            log.debug("EventServiceAsynch: Channel refusing authorization, %s is not a connect event",
                       event.eventType)
             return 0
 
@@ -304,13 +306,13 @@ class EventChannel:
         if self.authCallback is not None:
             try:
                 authorized = self.authCallback(event, connObj)
-                log.debug("Auth callback %s returns %s", self.authCallback,
+                log.debug("EventServiceAsynch: Auth callback %s returns %s", self.authCallback,
                           authorized)
             except:
-                log.info("Authorization callback failed")
+                log.info("EventServiceAsynch: Authorization callback failed")
                 authorized = 0
         else:
-            log.debug("Default authorization (no calblack registered")
+            log.debug("EventServiceAsynch: Default authorization (no calblack registered")
             authorized = 1
         return authorized
 
@@ -321,7 +323,7 @@ class EventChannel:
 
         if event.eventType == DisconnectEvent.DISCONNECT:
 
-            log.debug("EventConnection: Removing client connection to %s",
+            log.debug("EventServiceAsynch: EventConnection: Removing client connection to %s",
                       event.venue)
             self.RemoveConnection(connObj)
             self.server.CloseConnection(connObj)
@@ -330,22 +332,22 @@ class EventChannel:
         # event.eventType
         if self.typedHandlers.has_key(event.eventType):
             for cb in self.typedHandlers[event.eventType]:
-                log.debug("Specific event callback=%s", cb)
+                log.debug("EventServiceAsynch: Specific event callback=%s", cb)
                 if cb != None:
-                    logEvent("invoke callback %s", str(cb))
+                    logEvent("EventServiceAsynch: invoke callback %s", str(cb))
                     try:
                         cb(event)
                     except:
                         log.exception("Event callback failed")
 
         for cb in self.channelHandlers:
-            log.debug("invoke channel callback %s", cb)
+            log.debug("EventServiceAsynch: invoke channel callback %s", cb)
             try:
                 cb(event)
             except:
                 log.exception("Event callback failed")
 
-        logEvent("HandleEvent returns")
+        logEvent("EventServiceAsynch: HandleEvent returns")
 
 
     def Distribute(self, data):
@@ -373,7 +375,7 @@ class EventChannel:
         #
 
         for r in removeList:
-            log.debug("Removing connection %s due to write error", r.GetId())
+            log.debug("EventServiceAsynch: Removing connection %s due to write error", r.GetId())
             self.RemoveConnection(r)
 
     def RemoveConnection(self, connObj):
@@ -397,7 +399,7 @@ class EventService:
     In the TCP case the EventService is the Server, GSI is our secure version.
     """
     def __init__(self, server_address):
-        log.debug("Event Service Started")
+        log.debug("EventServiceAsynch: Event Service Started")
         
         self.location = server_address
 
@@ -437,7 +439,7 @@ class EventService:
         # Initialize socket for listening.
         #
         port = self.socket.create_listener(self.attr, server_address[1])
-        log.debug("Bound to %s (server_address=%s)", port, server_address)
+        log.debug("EventServiceAsynch: Bound to %s (server_address=%s)", port, server_address)
 
     def findConnectionChannel(self, id):
         try:
@@ -456,21 +458,21 @@ class EventService:
         Start. Initialize the asynch io on accept.
         """
 
-        log.debug("Event service start")
+        log.debug("EventServiceAsynch: Event service start")
         self.registerForListen()
 
     def registerForListen(self):
         ret = self.socket.register_listen(self.listenCallback, None)
         self.listenCallbackHandle = ret
-        logEvent("register_listen returns '%s'", ret)
+        logEvent("EventServiceAsynch: register_listen returns '%s'", ret)
 
     def listenCallback(self, arg, handle, result):
         try:
             if result[0] != 0:
-                log.debug("listenCallback returned failure: %s %s", result[1], result[2])
+                log.debug("EventServiceAsynch: listenCallback returned failure: %s %s", result[1], result[2])
                 return
             
-            logEvent("Listen Callback '%s' '%s' '%s'", arg, handle, result)
+            logEvent("EventServiceAsynch: Listen Callback '%s' '%s' '%s'", arg, handle, result)
             self.socket.free_callback(self.listenCallbackHandle)
             #
             # Don't do this! the handle that is passed in here is the
@@ -498,12 +500,12 @@ class EventService:
 
         cid = connObj.GetId()
 
-        log.debug("Removing connection %s", cid)
+        log.debug("EventServiceAsynch: Removing connection %s", cid)
         connObj.stop()
 
         channel = self.findConnectionChannel(cid)
         if channel is not None:
-            log.debug("Removing connection %s from channel %s", cid, channel.GetId())
+            log.debug("EventServiceAsynch: Removing connection %s from channel %s", cid, channel.GetId())
             channel.RemoveConnection(connObj)
         try:
             self.allConnections.remove(connObj)
@@ -522,11 +524,12 @@ class EventService:
         clear out any lingering state.
         """
         
-        log.debug("EventService: Stopping")
+        log.debug("EventServiceAsynch: Stopping")
 
         try:
             self.socket.close()
-        except:
+        except IOBaseException:
+            log.exception("EventServiceAsynch: socket close failed")
             pass
         
         self.EnqueueQuit()
@@ -545,11 +548,11 @@ class EventService:
         self.queue.put(("quit",))
         
     def EnqueueEvent(self, event, conn):
-        logEvent("Enqueue event %s for %s...", event.eventType, conn)
+        logEvent("EventServiceAsynch: Enqueue event %s for %s...", event.eventType, conn)
         self.queue.put(("event", event, conn))
 
     def EnqueueEOF(self, conn):
-        logEvent("Enqueue EOF for %s...", conn)
+        logEvent("EventServiceAsynch: Enqueue EOF for %s...", conn)
         self.queue.put(("eof", conn))
 
     def QueueHandler(self):
@@ -560,15 +563,15 @@ class EventService:
         try:
 
             while 1:
-                logEvent("Queue handler waiting for data")
+                logEvent("EventServiceAsynch: Queue handler waiting for data")
                 cmd = self.queue.get()
-                logEvent("Queue handler received %s", cmd)
+                logEvent("EventServiceAsynch: Queue handler received %s", cmd)
                 if cmd[0] == "quit":
-                    log.debug("Queue handler exiting")
+                    log.debug("EventServiceAsynch: Queue handler exiting")
                     return
                 elif cmd[0] == "eof":
                     connObj = cmd[1]
-                    log.debug("EOF on connection %s", connObj.GetId())
+                    log.debug("EventServiceAsynch: EOF on connection %s", connObj.GetId())
                     self.HandleEOF(connObj)
                 elif cmd[0] == "event":
 
@@ -612,7 +615,7 @@ class EventService:
             self.HandleEventForDisconnectedChannel(event, connObj)
         else:
             if event.eventType == AddPersonalDataEvent.ADD_PERSONAL_DATA:
-                log.debug("EventService:ConnectionHandlet: ADD_PERSONAL_DATA, venue id: %s, data: %s",
+                log.debug("EventServiceAsynch: ConnectionHandlet: ADD_PERSONAL_DATA, venue id: %s, data: %s",
                           event.venue, event.data)
 
                 #if self.channel != None:
@@ -622,7 +625,7 @@ class EventService:
                                        event.data))
 
             if event.eventType == RemovePersonalDataEvent.REMOVE_PERSONAL_DATA:
-                log.debug("EventService.ConnectionHandlet: REMOVE_PERSONAL_DATA, venue id: %s, data: %s",
+                log.debug("EventServiceAsynch: EventService.ConnectionHandlet: REMOVE_PERSONAL_DATA, venue id: %s, data: %s",
                           event.venue, event.data)
 
                 #if self.channel != None:
@@ -632,7 +635,7 @@ class EventService:
                                        event.data))
 
             if event.eventType == UpdatePersonalDataEvent.UPDATE_PERSONAL_DATA:
-                log.debug("EventService:ConnectionHandlet: ADD_PERSONAL_DATA, venue id: %s, data: %s",
+                log.debug("EventServiceAsynch: ConnectionHandlet: ADD_PERSONAL_DATA, venue id: %s, data: %s",
                           event.venue, event.data)
 
                 #if self.channel != None:
@@ -658,8 +661,8 @@ class EventService:
 
         connChannel = self.findConnectionChannel(connId)
 
-        if connChannel is not None:
-            connChannel.RemoveConnection(connObj)
+#        if connChannel is not None:
+#            connChannel.RemoveConnection(connObj)
 
         self.CloseConnection(connObj)
         
@@ -676,7 +679,7 @@ class EventService:
 
         channel = self.GetChannel(event.venue)
         if channel is None:
-            log.info("EventService receives event type %s for nonexistent channel %s",
+            log.info("EventServiceAsynch: EventService receives event type %s for nonexistent channel %s",
                      event.eventType, event.venue)
             self.CloseConnection(connObj)
             return
@@ -684,13 +687,13 @@ class EventService:
         allowed = channel.AuthorizeNewConnection(event, connObj)
 
         if allowed:
-            log.debug("Adding connObj %s to channel %s", connObj.GetId(),
+            log.debug("EventServiceAsynch: Adding connObj %s to channel %s", connObj.GetId(),
                       event.venue)
             channel.AddConnection(event, connObj)
             self.connectionMap[connObj.GetId()] = channel
 
         else:
-            log.debug("Rejected adding connObj %s to channel %s", connObj.GetId(),
+            log.debug("EventServiceAsynch: Rejected adding connObj %s to channel %s", connObj.GetId(),
                       event.venue)
             self.CloseConnection(connObj)
 
@@ -731,7 +734,7 @@ class EventService:
         Distribute sends the data to all connections.
         """
 
-        logEvent("EventService: Sending Event %s", data)
+        logEvent("EventServiceAsynch: Sending Event %s", data)
 
         channel = self.GetChannel(channelId)
 
@@ -745,7 +748,7 @@ class EventService:
         """
         GetLocation returns the (host,port) for this service.
         """
-        log.debug("EventService: GetLocation")
+        log.debug("EventServiceAsynch: GetLocation")
         
         return self.location
 
@@ -753,10 +756,10 @@ class EventService:
         """
         This adds a new channel to the Event Service.
         """
-        log.debug("EventService: AddChannel %s", channelId)
+        log.debug("EventServiceAsynch: AddChannel %s", channelId)
 
         if self.GetChannel(channelId) is not None:
-            log.info("Channel %s already exists", channelId)
+            log.info("EventServiceAsynch: Channel %s already exists", channelId)
             return
 
         channel = EventChannel(self, channelId, authCallback)
@@ -766,7 +769,7 @@ class EventService:
         """
         This removes a channel from the Event Service.
         """
-        log.debug("EventService: Remove Channel %s", channelId)
+        log.debug("EventServiceAsynch: Remove Channel %s", channelId)
 
         del self.channels[channelId]
 
