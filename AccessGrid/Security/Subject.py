@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Subject.py,v 1.5 2004-03-04 15:35:37 judson Exp $
+# RCS-ID:      $Id: Subject.py,v 1.6 2004-03-04 15:56:49 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,10 +16,12 @@ Subjects are the basic security handle on entities that want to be a
 part of the secure Access Grid Toolkit.
 """
 
-__revision__ = "$Id: Subject.py,v 1.5 2004-03-04 15:35:37 judson Exp $"
+__revision__ = "$Id: Subject.py,v 1.6 2004-03-04 15:56:49 turam Exp $"
 
 # External Imports
 import xml.dom.minidom
+
+from AccessGrid.GUID import GUID
 
 class InvalidSubject(Exception):
     """
