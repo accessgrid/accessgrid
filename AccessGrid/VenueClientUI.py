@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.37 2004-04-23 18:16:40 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.38 2004-04-23 19:27:29 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.37 2004-04-23 18:16:40 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.38 2004-04-23 19:27:29 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1721,7 +1721,7 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         menu = wxMenu()
         
         appDescList = self.controller.GetInstalledApps()
-                
+
         # Add applications in the appList to the menu
         for app in appDescList:
             if app != None and app.name != None:
@@ -2625,7 +2625,7 @@ class ContentListPanel(wxPanel):
         cookie = 0
         
         if(self.tree.GetChildrenCount(treeId)>0):
-            id, cookie = self.tree.GetFirstChild(treeId, cookie)
+            id, cookie = self.tree.GetFirstChild(treeId)
             d = self.tree.GetPyData(id)
             if d:
                 dataList.append(d)
@@ -3153,6 +3153,7 @@ class ContentListPanel(wxPanel):
 
         # - Open
         id = wxNewId()
+               
         menu.Append(id, "Open", "Open this service.")
         if commands != None and commands.has_key('Open'):
             EVT_MENU(self, id, lambda event,
@@ -3222,7 +3223,7 @@ class ContentListPanel(wxPanel):
         Programmatically build a menu based on the mime based verb
         list passed in.
         """
-
+     
         # Get the commands for this app type
         commands = self.parent.GetCommands(item)
 
@@ -3236,6 +3237,7 @@ class ContentListPanel(wxPanel):
         # - Open
         id = wxNewId()
         menu.Append(id, "Open", "Open application and join the session.")
+        
         if commands != None and 'Open' in commands:
             EVT_MENU(self, id, lambda event, cmd='Open':
                      self.parent.StartCmd(item,verb='Open'))
@@ -3439,14 +3441,20 @@ class TextClientPanel(wxPanel):
         # Someone is writing a message
         else:
             # Set names bold
-            f = wxFont(12, wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
+            pointSize = wxDEFAULT
+
+            # Fix for osx
+            if IsOSX():
+                pointSize = 12
+                
+            f = wxFont(pointSize, wxDEFAULT, wxNORMAL, wxBOLD)
             textAttr = wxTextAttr(wxBLACK)
             textAttr.SetFont(f)
             self.textOutput.SetDefaultStyle(textAttr)
             self.textOutput.AppendText(name)
           
             # Set text normal
-            f = wxFont(12, wxDEFAULT, wxNORMAL, wxNORMAL, wxNORMAL)
+            f = wxFont(pointSize, wxDEFAULT, wxNORMAL, wxNORMAL)
             textAttr = wxTextAttr(wxBLACK)
             textAttr.SetFont(f)
             self.textOutput.SetDefaultStyle(textAttr)
