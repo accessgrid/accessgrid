@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.20 2004-02-24 21:21:48 judson Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.21 2004-02-26 14:49:14 judson Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -19,6 +19,7 @@ from AccessGrid.AGParameter import ValueParameter
 from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid import Toolkit
+from AccessGrid.Platform import isWindows, isOSX, isLinux
 
 import os
 import logging, logging.handlers
@@ -483,7 +484,7 @@ class VideoCaptureWindow2(TitledPage):
         '''
         Handles UI layout
         '''
-        if sys.platform == "win32":
+        if isWindows():
             # For some reason the static text doesn't get the right size on windows
             self.text2.SetSize(wxSize(150, 20))
 
@@ -891,7 +892,7 @@ class ConfigWindow(TitledPage):
         '''
         Handles UI layout
         '''
-        if sys.platform == "win32":
+        if isWindows():
             # For some reason the static text doesn't get the right size on windows
             self.vCapHeading.SetSize(wxSize(150, 20))
             self.vDispHeading.SetSize(wxSize(150, 20))
