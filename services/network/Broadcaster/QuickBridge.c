@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.18 2004-12-17 15:29:40 leggett Exp $
+ * $Id: QuickBridge.c,v 1.19 2004-12-17 15:40:17 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -1213,7 +1213,7 @@ int main( int argc, char *argv[] )
   while ( 1 )
     { 
       web_readfds = web_masterfds;
-      tv.tv_sec = 2;
+      tv.tv_sec = 0;
       tv.tv_usec = 0;
       debug( 9, "About to select( ) web socket.\n" );
       if ( select( web_maxfds + 1, &web_readfds, NULL, NULL, &tv ) == -1 )
@@ -1287,7 +1287,7 @@ int main( int argc, char *argv[] )
        * be empty so block.
        */
       debug( 4, "About to select unicast clients\n" );
-      tv.tv_sec = 2; 
+      tv.tv_sec = 60;
       tv.tv_usec = 0; 
       nfds = select( maxfds, &readfds, NULL, NULL, &tv );
       debug( 4, "Unicast clients selected\n" );
