@@ -4,8 +4,8 @@
 # 
 # Author:      Susanne Lefvert 
 # 
-# Created:     $Date: 2005-02-25 22:29:34 $ 
-# RCS-ID:      $Id: VenueRecorder.py,v 1.2 2005-02-25 22:29:34 lefvert Exp $ 
+# Created:     $Date: 2005-03-02 21:20:40 $ 
+# RCS-ID:      $Id: VenueRecorder.py,v 1.3 2005-03-02 21:20:40 lefvert Exp $ 
 # Copyright:   (c) 2002 
 # Licence:     See COPYING.TXT 
 #----------------------------------------------------------------------------- 
@@ -435,7 +435,7 @@ class VenueRecorderModel(Model):
                                      str(recording.GetId())) 
         
         #Usage:  rtpplay -T -f file host/port 
-        rtpplay = "rtpplay" 
+        rtpplay =  os.path.join(os.getcwd(),"rtpplay") 
          
         # Send audio 
         if audioStream: 
@@ -516,6 +516,8 @@ class VenueRecorderModel(Model):
         if not os.path.exists(recordingPath): 
             os.mkdir(recordingPath) 
 
+        rtpdump = os.path.join(os.getcwd(),"rtpdump") 
+
         # Record video. 
         if videoStream: 
             l = videoStream.location 
@@ -524,8 +526,7 @@ class VenueRecorderModel(Model):
             #Usage: rtpdump -F dump -o file host/port 
             # Make sure rtp address is even.
             port = l.port - (l.port%2)
-            
-            rtpdump = "rtpdump" 
+         
             args = [ 
                 "-F", "dump", 
                 "-o", vFile, 
@@ -546,7 +547,7 @@ class VenueRecorderModel(Model):
 
             # Make sure rtp address is even.
             port = l.port - (l.port%2)
-            rtpdump = "rtpdump" 
+            
             args = [ 
                 "-F", "dump", 
                 "-o", aFile, 
