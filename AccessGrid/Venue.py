@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.31 2003-02-14 21:19:13 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.32 2003-02-14 22:33:32 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -141,9 +141,9 @@ class Venue(ServiceBase.ServiceBase):
         # We assume the multicast allocator has been set by now
         # this is an icky assumption and can be fixed when I clean up
         # other icky things (description, state, venue) issues -- IRJ
-        self.textHost = utilities.GetHostname()
+        self.textHost = GetHostname()
         self.textPort = self.multicastAllocator.AllocatePort()
-        self.eventHost = utilities.GetHostname()
+        self.eventHost = GetHostname()
         self.eventPort = self.multicastAllocator.AllocatePort()
         
         self.eventService = EventService((self.eventHost, self.eventPort))
