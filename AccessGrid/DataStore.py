@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.6 2003-02-28 16:17:15 olson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.7 2003-02-28 17:38:56 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -150,7 +150,7 @@ class DataStore:
         filename = file_info['name']
         desc = self.venue.GetData(filename)
 
-        if desc is  None or desc == ""
+        if desc is  None or desc == "":
             return 1
 
         return 0
