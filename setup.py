@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.18 2003-04-04 17:16:10 olson Exp $
+# RCS-ID:      $Id: setup.py,v 1.19 2003-04-04 17:26:01 leggett Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -74,8 +74,9 @@ setup(
                     ]
                    ),
                   ('share/AccessGrid',
-                   [r"packaging/windows/agicons.exe"],
-                   [r"packaging/ag.ico"]
+                   [r"packaging/windows/agicons.exe",
+                    r"packaging/ag.ico"
+                    ]
                    ),
                   ('share/AccessGrid/services',
                    [r"AccessGrid/services/AudioService.zip",
@@ -110,8 +111,7 @@ setup(
                     "TODO",
                     "VERSION"
                     ]
-                   ),
-                  ('bin', [])
+                   )
                   ]
                   
 )
