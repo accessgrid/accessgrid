@@ -192,7 +192,7 @@ for cmd in [
 #
 
 # Add quotes around command.
-iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" /dSourceDir=%s /dBuildDir=%s" % (inno_compiler, iss_orig, AGTkVersion, metainformation, SourceDir, BuildDir)
+iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" /dSourceDir=%s /dBuildDir=%s" % (inno_compiler, iss_orig, AGTkVersion, metainformation.replace(' ', '_'), SourceDir, DestDir)
 
 if verbose:
     print "Executing:", iscc_cmd
