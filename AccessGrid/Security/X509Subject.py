@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: X509Subject.py,v 1.6 2004-04-06 18:29:58 eolson Exp $
+# RCS-ID:      $Id: X509Subject.py,v 1.7 2004-08-23 18:18:25 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ Subjects are the basic security handle on entities that want to be a
 part of the security environment.
 """
 
-__revision__ = "$Id: X509Subject.py,v 1.6 2004-04-06 18:29:58 eolson Exp $"
+__revision__ = "$Id: X509Subject.py,v 1.7 2004-08-23 18:18:25 judson Exp $"
 
 
 # external imports
@@ -41,7 +41,7 @@ class X509Subject(Subject):
     AUTH_TYPE = "x509"
     AUTH_ANON = "anonymous"
 
-    def __init__(self, name, auth_data = None):
+    def __init__(self, name, auth_data = ""):
         """
         @param name: the name of the subject
         @param auth_data: opaque data associated with this subject.
@@ -57,7 +57,8 @@ class X509Subject(Subject):
         @return: name as a string.
 
         """
-        components = map(lambda a: a.split('='), self.name[1:].split('/'))
+        name = self.GetName()
+        components = map(lambda a: a.split('='), name.split('/'))
         cn = []
         
         for item in components:
@@ -66,7 +67,6 @@ class X509Subject(Subject):
                 
         return ", ".join(cn)
             
-                
 def CreateSubjectFromString(subjectString):
     """
     Utility function that creates an X509Subject from a string, which
