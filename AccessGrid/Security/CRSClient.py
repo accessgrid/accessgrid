@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CRSClient.py,v 1.4 2004-03-10 23:17:08 eolson Exp $
+# RCS-ID:      $Id: CRSClient.py,v 1.5 2004-04-15 21:59:19 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ proxy = xmlrpclib.ServerProxy(url, transport = transport, verbose=1)
 
 """
 
-__revision__ = "$Id: CRSClient.py,v 1.4 2004-03-10 23:17:08 eolson Exp $"
+__revision__ = "$Id: CRSClient.py,v 1.5 2004-04-15 21:59:19 olson Exp $"
 
 import xmlrpclib
 from AccessGrid import Log
@@ -99,7 +99,9 @@ class CRSClient:
 
         @raise CRSClientConnectionFailed: if the service can't get the certificate.
         @raise StandardError: if the retrieve fails
-        @return: the certificate in a string
+        @return: tuple (status, value). If status is zero, value contains
+        an error message about the failure. Otherwise, value is a string
+        containing the certificate.
         """
 
         log.debug("retrieve certificate for token %s", token)
@@ -115,6 +117,32 @@ class CRSClient:
 
         log.debug("retrieved certificate %s", certificate)
         return certificate
+
+    def RetrieveCACertificates(self):
+        """
+        Retrieve the CA certificate(s) for this server.
+
+        @raise CRSClientConnectionFailed: if the service can't get the certificate.
+        @raise StandardError: if the retrieve fails
+        @return: tuple (status, value). If status is zero, value contains
+        an error message about the failure. Otherwise, value is a list of pairs
+        (CACert, SigningPolicy) containing the CA certs and signing policy files
+        comprising the certifiation path for the certs issued by this server.
+        """
+
+        log.debug("retrieve certificate for token %s", token)
+
+        try:
+            rval = self.proxy.RetrieveCACertificates(token)
+        except IOError, e:
+            log.exception("IOError on Proxy.RetrieveCertificate")
+            raise CRSClientConnectionFailed
+        except StandardError, v:
+            log.exception("error on proxy.RetrieveCertificate(%s)", token)
+            raise v
+
+        log.debug("retrieved certificate list %s", rval)
+        return rval
 
 #
 # The following code is from:
