@@ -6,10 +6,6 @@ executable = DebugService.py
 platform = neutral
 version = 1.0
 
-[Capability1]
-role = producer
-type = debug
-
 [Capability2]
 role = consumer
 type = audio
