@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.30 2004-02-24 21:34:51 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.31 2004-02-25 15:49:25 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.30 2004-02-24 21:34:51 judson Exp $"
+__revision__ = "$Id: TextClient.py,v 1.31 2004-02-25 15:49:25 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -287,7 +287,7 @@ class TextClient:
         self.textConnection = TextConnection(self.textServiceLocation,
                                              self.textProcessor)
         self.textProcessor.SetTextConnection(self.textConnection)
-        self.textProcessor.Input(ConnectEvent(venueId, privateId))
+        self.textProcessor.Input(ConnectEvent(self.venueId, self.privateId))
         
     def Disconnect(self, venueId, privateId):
         """
