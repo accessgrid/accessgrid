@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.163 2004-08-23 18:27:33 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.164 2004-08-26 19:28:43 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.163 2004-08-23 18:27:33 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.164 2004-08-26 19:28:43 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -314,23 +314,10 @@ class VenueServer(AuthorizationMixIn):
            self.authManager.AddRoles(self.GetRequiredRoles())
            # Default to giving administrators access to all actions.
            # This is implicitly adding the action too
-           for action in self.authManager.GetActions():
+           for action in vsi._GetMethodActions():
               self.authManager.AddRoleToAction(action.GetName(),
                                                Role.Administrators.GetName())
             
-           # Get the silly default subject this really should be fixed
-           try:
-              subj = self.servicePtr.GetDefaultSubject()
-           except InvalidSubject:
-              log.exception("Invalid Default Subject!")
-              subj = None
-
-           log.debug("Default Subject: %s", subj.GetName())
-        
-           if subj is not None:
-              self.authManager.AddSubjectToRole(subj.GetName(),
-                                                Role.Administrators.GetName())
-
            # Get authorization policy.
            pol = self.authManager.ExportPolicy()
            pol  = re.sub("\r\n", "<CRLF>", pol )
@@ -341,6 +328,16 @@ class VenueServer(AuthorizationMixIn):
            SaveConfig(self.configFile, self.config)
         else:
            log.debug("Using policy from config file.")
+
+        # Get the silly default subject this really should be fixed
+        try:
+           subj = self.servicePtr.GetDefaultSubject()
+           if subj is not None:
+              log.debug("Default Subject: %s", subj.GetName())
+              self.authManager.AddSubjectToRole(subj.GetName(),
+                                                Role.Administrators.GetName())
+        except InvalidSubject:
+           log.exception("Invalid Default Subject!")
 
 #        print "Venue Server Policy:"
 #        print self.authManager.xml.toprettyxml()
