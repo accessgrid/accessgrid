@@ -6,7 +6,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.33 2003-08-21 19:56:48 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.34 2003-08-21 21:24:35 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -2125,6 +2125,8 @@ class HTTPUploadEngine:
         log.debug("Reading response, headers are %s", resp.msg.headers)
         result = resp.read()
         
+        return_code = -1
+
         for tline in result.split("\n"):
             log.debug("got tline <%s>", tline)
             if tline == "":
