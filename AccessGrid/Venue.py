@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.204 2004-05-27 18:07:38 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.205 2004-05-28 15:55:38 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.204 2004-05-27 18:07:38 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.205 2004-05-28 15:55:38 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -327,7 +327,7 @@ class Venue(AuthorizationMixIn):
         self.AddRequiredRole(admin)
         self.AddRequiredRole(Role.Everybody)
         # Default actions for Entry Roles.
-        self.defaultEntryActionNames = ["Enter", "Exit", "GetStreams", "GetStaticStreams", "GetUploadDescriptor", "GetRolesForSubject", "CreateApplication", "UpdateApplication", "DestroyApplication", "UpdateClientProfile", "AddService", "RemoveService", "UpdateService", "GetServices", "AddData", "UpdateData", "RemoveData", "GetDataStoreInformation", "GetDataDescriptions", "AddNetworkService", "RemoveNetworkService", "GetNetworkServices", "GetClients", "GetCachedProfiles", "AddConnection", "RemoveConnection", "GetConnections", "SetConnections", "GetEncryptMedia", "GetDescription", "GetName", "GetApplication", "GetApplications", "AddNetworkLocationToStream", "RemoveNetworkLocationFromStream", "GetEventServiceLocation", "DetermineSubjectRoles"]
+        self.defaultEntryActionNames = ["Enter", "Exit", "GetStreams", "GetStaticStreams", "GetUploadDescriptor", "GetRolesForSubject", "CreateApplication", "UpdateApplication", "DestroyApplication", "UpdateClientProfile", "AddService", "RemoveService", "UpdateService", "GetServices", "AddData", "UpdateData", "RemoveData", "GetDataStoreInformation", "GetDataDescriptions", "AddNetworkService", "RemoveNetworkService", "GetNetworkServices", "GetClients", "GetCachedProfiles", "AddConnection", "RemoveConnection", "GetConnections", "SetConnections", "GetEncryptMedia", "GetDescription", "GetName", "GetApplication", "GetApplications", "AddNetworkLocationToStream", "RemoveNetworkLocationFromStream", "GetEventServiceLocation", "DetermineSubjectRoles", "AddNetService", "RemoveNetService", "IsAuthorized", "IsValid"]
         # Methods in Venue IW that are not default to everybody:
         #   "Shutdown", "SetEncryptMedia", "RegenerateEncryptionKeys", "SetDescription", "SetName", "AddStream", "RemoveStream", "ImportAuthorizationPolicy", "AllocateMulticastLocation", "AddSubjectToRole", "RemoveSubjectFromRole", "SetSubjectsInRole", "FlushRoles", "GetUsersInRole", "GetRoleNames"
 
