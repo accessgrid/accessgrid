@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.42 2004-05-14 16:12:00 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.43 2004-05-21 16:34:54 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.42 2004-05-14 16:12:00 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.43 2004-05-21 16:34:54 olson Exp $"
 
 import os
 import sys
@@ -715,6 +715,16 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
         
         The key ProxyServer has the name of the proxy, and ProxyEnable
         is nonzero if it is enabled for use.
+
+        If there are different proxies for different protocols, the ProxyServer key will
+        look like this:
+
+        ftp=ftpp:2345;gopher=gopherp:3456;http=yips:8080;https=securep:1234;socks=socksp:4567
+
+        If it is set to use the same server for all protocols, it will look like this:
+
+        yips:8080
+        
         """
 
         proxies = []
@@ -726,6 +736,22 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
             (val, vtype) = _winreg.QueryValueEx(k, "ProxyServer")
 
             proxyStr = str(val)
+
+            #
+            # See if it is set for different protocols
+            #
+            if proxyStr.find(";"):
+                #
+                # It is. Find the http= part.
+                #
+
+                protos = proxyStr.split(";")
+                http = filter(lambda a: a.startswith("http="), protos)
+                if len(http) > 0:
+                    p = http[0][5:]
+                    log.debug("Found http proxy as %s from %s",
+                              p, proxyStr)
+                    proxyStr = p
 
             if proxyStr.find(":") >= 0:
                 # We have hostname and port
