@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.12 2004-04-29 21:47:08 lefvert Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.13 2004-04-30 21:57:41 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.12 2004-04-29 21:47:08 lefvert Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.13 2004-04-30 21:57:41 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -215,11 +215,24 @@ class SharedApplication(AuthorizationMixIn):
         return (public_id, private_id)
 
     def Leave(self, private_token):
+        # Remove the component
         if self.components.has_key(private_token):
+            participant = self.components[private_token]
+
+            # Distribute event
+            for channelId in self.channels:
+                evt = Event(Event.APP_PARTICIPANT_LEAVE, channelId,
+                            participant)
+                self.eventService.Distribute(channelId, evt)
+
             del self.components[private_token]
+                
             return 1
+            
         else:
+            log.exception("AppService.Leave Trying to remove component that does not exist.")
             raise InvalidPrivateToken
+                      
 
     def GetDataChannel(self, private_token):
         """
