@@ -8,13 +8,16 @@
 #-----------------------------------------------------------------------------
 """
 AccessGrid Log module
+=====================
 
 Enables toolkit wide logging.  Described in AGEP-0118.
+
 Depends on python logging module.
+
 Extends the python logging module by:
-  enabling per logger level settings when using multiple outputs,
-  using dynamic lists of logs instead of a static tree structure, and
-  adding two higher detail logging levels.
+  - enabling per logger level settings when using multiple outputs,
+  - using dynamic lists of logs instead of a static tree structure, and
+  - adding two higher detail logging levels.
 
 EXAMPLE:
 from AccessGrid import Log

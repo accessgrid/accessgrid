@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.4 2004-03-26 22:23:56 olson Exp $
+# RCS-ID:      $Id: Config.py,v 1.5 2004-04-07 03:10:54 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.4 2004-03-26 22:23:56 olson Exp $"
+__revision__ = "$Id: Config.py,v 1.5 2004-04-07 03:10:54 judson Exp $"
 
 import sys
 import struct
@@ -23,24 +23,23 @@ class AGTkConfig:
     Toolkit. This object provides primarily read-only access to configuration
     data that is created when the toolkit is installed.
 
-    @var version: The version of this installation.
-    @var installDir: The directory this toolkit is installed in.
-    @var docDir: The directory for documentation for the toolkit.
-    @var appDir: The directory for system installed shared applications
-    @var nodeServicesDir: the directory for system installed node services
-    @var servicesDir: the directory for system installed services
-    @var pkgCacheDir: The directory of shared application and node
-    service packages for all users of this installation.
-    @var configDir: The directory for installation configuration.
-
-    @type appDir: string
-    @type nodeServicesDir: string
-    @type servicesDir: string
-    @type configDir: string
-    @type pkgCacheDir: string
     @type version: string
+    @ivar version: The version of this installation.
     @type installDir: string
+    @ivar installDir: The directory this toolkit is installed in.
     @type docDir: string
+    @ivar docDir: The directory for documentation for the toolkit.
+    @type appDir: string
+    @ivar appDir: The directory for system installed shared applications
+    @type nodeServicesDir: string
+    @ivar nodeServicesDir: the directory for system installed node services
+    @type servicesDir: string
+    @ivar servicesDir: the directory for system installed services
+    @type pkgCacheDir: string
+    @ivar pkgCacheDir: The directory of shared application and node
+    service packages for all users of this installation.
+    @type configDir: string
+    @ivar configDir: The directory for installation configuration.
     """
     def __init__(self):
         raise "This should not be called directly, but through a subclass."
@@ -74,12 +73,12 @@ class GlobusConfig:
     This object encapsulates the information required to correctly configure
     Globus and pyGlobus for use with the Access Grid Toolkit.
 
-    @var location: the location of the globus installation
-    @var caCertDir: the directory of Certificate Authority Certificates
-    @var hostname: the Hostname for the globus configuration
-    @var proxyFile: THe filename for the globus proxy
-    @var certFile: The filename of the X509 certificate.
-    @var keyFile: The filename of the X509 key.
+    @ivar location: the location of the globus installation
+    @ivar caCertDir: the directory of Certificate Authority Certificates
+    @ivar hostname: the Hostname for the globus configuration
+    @ivar proxyFile: THe filename for the globus proxy
+    @ivar certFile: The filename of the X509 certificate.
+    @ivar keyFile: The filename of the X509 key.
     """
     def __init__(self, initEnvIfNeeded=0):
         """
@@ -87,10 +86,10 @@ class GlobusConfig:
         a desire to intialize the existing environment if it is discovered
         to be uninitialized.
 
-        @param initIfNeeded: a flag indicating if this object should
+        @param initEnvIfNeeded: a flag indicating if this object should
         initialize the system if it is not.
 
-        @type initIfNeeded: integer
+        @type initEnvIfNeeded: integer
         """
         raise "This should not be called directly, but through a subclass."
 
@@ -134,14 +133,14 @@ class UserConfig:
     A user config object encapsulates all of the configuration data for
     a running instance of the Access Grid Toolkit software.
 
-    @var profile: the user profile
-    @var tempDir: a temporary directory for files for this user
-    @var appDir: The directory for system installed shared applications
-    @var nodeServicesDir: the directory for system installed node services
-    @var servicesDir: the directory for system installed services
-    @var pkgCacheDir: The directory of shared application and node
+    @ivar profile: the user profile
+    @ivar tempDir: a temporary directory for files for this user
+    @ivar appDir: The directory for system installed shared applications
+    @ivar nodeServicesDir: the directory for system installed node services
+    @ivar servicesDir: the directory for system installed services
+    @ivar pkgCacheDir: The directory of shared application and node
     service packages for all users of this installation.
-    @var configDir: The directory for installation configuration.
+    @ivar configDir: The directory for installation configuration.
 
     @type profile: a Client Profile
     @type tempDir: string
@@ -184,7 +183,7 @@ class SystemConfig:
     configuration data, it should be extended to retrieve and store
     additional information as necessary.
 
-    @var tempDir: the system temp directory.
+    @ivar tempDir: the system temp directory.
     @type tempDir: string
     """
     def __init__(self):
@@ -224,7 +223,7 @@ class SystemConfig:
         err_str = "This should not be called directly, but through a subclass."
         raise Exception(err_str)
 
-    def _GetSNTPTime(self, timeout=0.3):
+    def _GetSNTPTime(self, server, timeout=0.3):
         """
         Retrieve the time from the given time server, with a timeout.
         
