@@ -45,26 +45,25 @@ for sec in cp.sections():
     vcap = Capability(Capability.PRODUCER, Capability.VIDEO)
     if cp.has_option(sec, 'video'):
         (host, port) = string.split(cp.get(sec, 'video'), ':')
-    vsd = StreamDescription("", "", MulticastNetworkLocation(host.strip(),
-                                                             int(port), 127),
-                            vcap)
+    vsd = StreamDescription(descriptions[sec].name, "Static Video",
+                            MulticastNetworkLocation(host.strip(),
+                                                     int(port), 127), vcap)
     vsd.static = 1
     acap = Capability(Capability.PRODUCER, Capability.AUDIO)
     if cp.has_option(sec, 'audio'):
         (host, port) = string.split(cp.get(sec, 'audio'), ':')
-    asd = StreamDescription("", "", MulticastNetworkLocation(host.strip(),
-                                                             int(port), 127),
-                            acap)
+    asd = StreamDescription(descriptions[sec].name, "Static Audio",
+                            MulticastNetworkLocation(host.strip(),
+                                                     int(port), 127), acap)
     asd.static = 1
     venue = Client.Handle(descriptions[sec].uri).get_proxy()
     print "Name: %s URI: %s" % (descriptions[sec].name, descriptions[sec].uri)
     venue.SetConnections(connections[sec])
     venue.AddStream(asd)
     venue.AddStream(vsd)
+    print "Encryption: %s" % venue.GetEncryptMedia()
     venue.SetEncryptMedia(0)
 
-    if venue.GetEncryptMedia() == 0:
-        print "Setting Encrypt worked"
     
 
 
