@@ -428,7 +428,8 @@ class LevelHandler(logging.handlers.BufferingHandler):
                 handler.setLevel(level)
 
 # 0. Initialize logging, storing in log data memory
-#defLogHandler = StreamHandler()
+defStreamHandler = StreamHandler()
+defStreamHandler.setFormatter(GetFormatter())
 fn = tempfile.mktemp(".aglog")
 defLogHandler = FileHandler(fn)
 defLogHandler.setFormatter(GetFormatter())

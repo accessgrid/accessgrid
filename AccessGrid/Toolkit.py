@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.84 2004-09-10 17:49:58 lefvert Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.85 2004-11-17 21:24:36 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.84 2004-09-10 17:49:58 lefvert Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.85 2004-11-17 21:24:36 eolson Exp $"
 
 # Standard imports
 import os
@@ -149,7 +149,7 @@ class AppBase:
        
        # Send the log in memory to stream (debug) or file handler.
        if self.options.debug:
-           Log.mlh.setTarget(Log.defLogHandler)
+           Log.mlh.setTarget(Log.defStreamHandler)
        else:
            Log.mlh.setTarget(fh)
        Log.mlh.close()
@@ -214,7 +214,7 @@ class AppBase:
            sys.exit(0)
            
        if self.options.debug:
-           self.streamLoggerLevels = Log.HandleLoggers(Log.defLogHandler,
+           self.streamLoggerLevels = Log.HandleLoggers(Log.defStreamHandler,
                                            Log.GetDefaultLoggers())
            self.streamLoggerLevels.SetLevel(Log.DEBUG)
            # When in debug mode, we'll make the stream the primary handler.
