@@ -1,0 +1,14 @@
+[VenueServer]
+defaultVenue = https://buffalojump.mcs.anl.gov:8000/Venues/000000f380c98a63008c00dd000b004cfb6
+dataStorageLocation = None
+venuePathPrefix = Venues
+eventPort = 8002
+dataLocation = Data
+dataPort = 8006
+serverPort = 8000
+serverPrefix = VenueServer
+textPort = 8004
+dataSize = 10M
+houseKeeperFrequency = 30
+persistenceFilename = VenuesServer.dat
+
