@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.124 2004-03-12 23:45:10 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.125 2004-03-18 19:39:35 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.124 2004-03-12 23:45:10 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.125 2004-03-18 19:39:35 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -619,7 +619,7 @@ class VenueServer(AuthorizationMixIn):
         
         # Get method actions
         venue.authManager.AddActions(vi._GetMethodActions())
-        venue.authManager.AddRoles(self.GetRequiredRoles())
+        venue.authManager.AddRoles(venue.GetRequiredRoles())
         
         # We have to register this venue as a new service.
         if(self.hostingEnvironment != None):
