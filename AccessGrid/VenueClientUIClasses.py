@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.72 2003-03-19 20:44:29 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.73 2003-03-19 21:25:00 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -114,8 +114,7 @@ class VenueClientFrame(wxFrame):
         self.__doLayout()
         self.__setEvents()
         self.__loadMyVenues()
-        self.__setLogger()
-     
+            
     def OnSashDrag(self, event):
         if event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE:
             return
@@ -620,21 +619,6 @@ class VenueClientFrame(wxFrame):
     def __showNoSelectionDialog(self, text):
         MessageDialog(self, text)
 
-    def __setLogger(self):
-        logger = logging.getLogger("AG.VenueClientUIClasses")
-        logger.setLevel(logging.DEBUG)
-        logname = "VenueClientUIClasses.log"
-        hdlr = logging.handlers.RotatingFileHandler(logname, "a", 10000000, 0)
-        fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s", "%x %X")
-        hdlr.setFormatter(fmt)
-        logger.addHandler(hdlr)
-        log = logging.getLogger("AG.VenueClientUIClasses")
-
-        wxLog_SetActiveTarget(wxLogGui())  
-        wxLog_SetActiveTarget(wxLogChain(MyLog(log)))
-        wxLogInfo(" ")
-        wxLogInfo("--------- START VenueClientUIClasses")
-        
     def CleanUp(self):
         self.venueListPanel.CleanUp()
         self.contentListPanel.CleanUp()
@@ -1231,7 +1215,7 @@ class TextClientPanel(wxPanel):
         self.socket = GSITCPSocket()
         self.socket.connect(self.host, self.port, self.attr)
 
-        wxLogDebug("Set text location host:%s, port:%d, venueId:%s, attr:%s, socket:%s"
+        wxLogDebug("VenueClientUIClasses.py: Set text location host:%s, port:%d, venueId:%s, attr:%s, socket:%s"
                    %(self.host,self.port, self.venueId, str(self.attr), str(self.socket)))
                    #%(self.host, self.port, self.venueId, self.attr, self.socket))
         
@@ -1262,7 +1246,7 @@ class TextClientPanel(wxPanel):
     def LocalInput(self, event):
         """ User input """
         if(self.venueId != None and self.Processor != None):
-            wxLogDebug("User writes: %s" %self.TextInput.GetValue())
+            wxLogDebug("VenueClientUIClasses.py:User writes: %s" %self.TextInput.GetValue())
             textEvent = TextEvent(self.venueId, None, 0, self.TextInput.GetValue())
             try:
                 self.Processor.Input(textEvent)
@@ -1270,14 +1254,14 @@ class TextClientPanel(wxPanel):
             except:
                 wxLogError("Could not send message successfully")
         else:
-            wxLogMessage( "Please, go to a venue before using the chat")
+            wxLogMessage( "VenueClientUIClasses.py:Please, go to a venue before using the chat")
            
     def Stop(self):
-        wxLogDebug("Stop processor")
+        wxLogDebug("VenueClientUIClasses.py:Stop processor")
         self.Processor.Stop()
         
     def OnCloseWindow(self):
-        wxLogDebug("Destroy text client")
+        wxLogDebug("VenueClientUIClasses.py:Destroy text client")
         self.Destroy()
         
       
