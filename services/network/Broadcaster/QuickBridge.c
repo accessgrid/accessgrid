@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.34 2004-12-17 22:08:17 leggett Exp $
+ * $Id: QuickBridge.c,v 1.35 2004-12-17 22:49:49 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -559,6 +559,7 @@ void session_set( Session *head, fd_set *readfds )
 
   debug( 9, "Entering session_set( )\n" );
   for ( s = head; s; s = s->next )
+    printf( "s->mcaddr[0].sin_addr.s_addr = %s/%d\n", inet_ntoa( s->mcaddr[0].sin_addr ), ntohs( s->mcaddr[0].sin_port ) );
     {
       FD_SET( s->ucfd[data], readfds );
       FD_SET( s->ucfd[rtcp], readfds );
