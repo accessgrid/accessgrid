@@ -1,14 +1,18 @@
 #-----------------------------------------------------------------------------
 # Name:        Platform.py
-# Purpose:     
+# Purpose:
 #
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.46 2003-09-10 14:21:53 turam Exp $
+# RCS-ID:      $Id: Platform.py,v 1.47 2003-09-11 20:05:28 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
+"""
+The Platform Module is to isolate OS specific interfaces.
+"""
+__revision__ = "$Id: Platform.py,v 1.47 2003-09-11 20:05:28 judson Exp $"
 
 import os
 import sys
@@ -16,6 +20,8 @@ import getpass
 import mimetypes, mailcap
 
 import logging
+
+from AccessGrid.Version import GetVersion
 
 log = logging.getLogger("AG.Platform")
 
@@ -28,35 +34,6 @@ AGTK_INSTALL = 'AGTK_INSTALL'
 # Windows Defaults
 WIN = 'win32'
 
-# This gets updated with a call to get the version
-AGTkRegBaseKey = "SOFTWARE\\Access Grid Toolkit\\2.1.1"
-
-def isWindows():
-    if sys.platform == WIN:
-	return 1
-    else:
-	return 0
-
-# Linux Defaults
-LINUX = 'linux2'
-AGTkBasePath = "/etc/AccessGrid"
-
-def isLinux():
-    if sys.platform == LINUX:
-	return 1
-    else:
-	return 0
-
-# Mac OS X Defaults
-OSX='darwin'
-AGTkBasePath="/etc/AccessGrid"
-        
-def isOSX():
-    if sys.platform == OSX:
-	return 1
-    else:
-	return 0
-
 try:
     import _winreg
     import win32api
@@ -64,12 +41,43 @@ try:
 except:
     pass
 
+# This gets updated with a call to get the version
+AGTkRegBaseKey = "SOFTWARE\\Access Grid Toolkit\\%s" % GetVersion()
+
+def isWindows():
+    """Function that retusn 1 if the platform is windows, 0 otherwise """
+    if sys.platform == WIN:
+        return 1
+    else:
+        return 0
+
+# Linux Defaults
+LINUX = 'linux2'
+AGTkBasePath = "/etc/AccessGrid"
+
+def isLinux():
+    """Function that retusn 1 if the platform is linux, 0 otherwise """
+    if sys.platform == LINUX:
+        return 1
+    else:
+        return 0
+
+# Mac OS X Defaults
+OSX='darwin'
+AGTkBasePath="/etc/AccessGrid"
+
+def isOSX():
+    """Function that retusn 1 if the platform is mac os x, 0 otherwise """
+    if sys.platform == OSX:
+        return 1
+    else:
+        return 0
 
 def GetSystemConfigDir():
     """
     Determine the system configuration directory
     """
-   
+
     try:
         configDir = os.environ[AGTK_LOCATION]
     except:
@@ -91,7 +99,7 @@ def GetSystemConfigDir():
     return configDir
 
 def GetUserConfigDir():
-    """ 
+    """
     Determine the user configuration directory
     """
 
@@ -103,7 +111,7 @@ def GetUserConfigDir():
     """
     If environment variable not set, check for settings from installation.
     """
-    
+
     if "" == configDir:
         if isWindows():
             base = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
@@ -115,19 +123,20 @@ def GetUserConfigDir():
 
 def GetUserAppPath():
     """
+    Return the path to the users shared applications directory.
     """
-    
+
     ucd = GetUserConfigDir()
 
     appPath = os.path.join(ucd, "SharedApplications")
 
     return appPath
-    
+
 def GetConfigFilePath( configFile ):
     """
-    Locate given file in configuration directories:  
-        first check user dir, then system dir; 
-        return None if not found
+    Locate given file in configuration directories:
+    first check user dir, then system dir;
+    return None if not found
     """
 
     userConfigPath = GetUserConfigDir()
@@ -143,7 +152,7 @@ def GetConfigFilePath( configFile ):
     return None
 
 def GetInstallDir():
-    """ 
+    """
     Determine the install directory
     """
 
@@ -158,7 +167,7 @@ def GetInstallDir():
     if isWindows():
         try:
             AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
-            installDir, type = _winreg.QueryValueEx(AG20,"InstallPath")
+            installDir, valuetype = _winreg.QueryValueEx(AG20,"InstallPath")
             installDir = os.path.join(installDir, "bin")
         except WindowsError:
             log.exception("Cannot open install directory reg key")
@@ -169,7 +178,7 @@ def GetInstallDir():
     return installDir
 
 def GetSharedDocDir():
-    """ 
+    """
     Determine the shared doc directory
     """
 
@@ -184,7 +193,7 @@ def GetSharedDocDir():
     if isWindows():
         try:
             AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
-            sharedDocDir, type = _winreg.QueryValueEx(AG20,"InstallPath")
+            sharedDocDir, valuetype = _winreg.QueryValueEx(AG20,"InstallPath")
             sharedDocDir = os.path.join(sharedDocDir, "doc")
         except WindowsError:
             log.exception("Cannot open InstallPath directory reg key")
@@ -280,7 +289,7 @@ def GetFilesystemFreeSpace(path):
         freeBytes = None
 
     return freeBytes
-        
+
 if isWindows():
 
     def FindRegistryEnvironmentVariable(varname):
@@ -301,9 +310,9 @@ if isWindows():
         # Read the system registry
         #
         k = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE,
-                            r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment")
+        r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment")
         try:
-            (val, type) = _winreg.QueryValueEx(k, varname)
+            (val, valuetype) = _winreg.QueryValueEx(k, varname)
             global_reg = val
         except:
             pass
@@ -314,9 +323,9 @@ if isWindows():
         #
 
         k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment")
-                            
+
         try:
-            (val, type) = _winreg.QueryValueEx(k, varname)
+            (val, valuetype) = _winreg.QueryValueEx(k, varname)
             user_reg = val
         except:
             pass
@@ -333,7 +342,7 @@ def Win32RegisterMimeType(mimeType, extension, fileType, description, cmds):
     """
     mimeType - mimetype designator
     extension - file extension
-               (doesn't have to be 3 letters, does have to start with a .)
+    (doesn't have to be 3 letters, does have to start with a .)
     fileType - file type, doesn't matter, just unique
     description - free form description of the type
 
@@ -343,18 +352,18 @@ def Win32RegisterMimeType(mimeType, extension, fileType, description, cmds):
     commandDesc - a description (menu format) for the command
 
     ----
-    
+
     This function gets the mime type registered with windows via the registry.
     The following documentation is from wxWindows, src/msw/mimetype.cpp:
-    
+
     1. "HKCR\MIME\Database\Content Type" contains subkeys for all known MIME
     types, each key has a string value "Extension" which gives (dot preceded)
     extension for the files of this MIME type.
-    
+
     2. "HKCR\.ext" contains
     a) unnamed value containing the "filetype"
     b) value "Content Type" containing the MIME type
-    
+
     3. "HKCR\filetype" contains
     a) unnamed value containing the description
     b) subkey "DefaultIcon" with single unnamed value giving the icon index in
@@ -367,12 +376,12 @@ def Win32RegisterMimeType(mimeType, extension, fileType, description, cmds):
     # Do 1. from above
     try:
         regKey = _winreg.CreateKey(_winreg.HKEY_CLASSES_ROOT,
-                                   "MIME\Database\Content Type\%s" % mimeType)
+        "MIME\Database\Content Type\%s" % mimeType)
         _winreg.SetValueEx(regKey, "Extension", 0, _winreg.REG_SZ, extension)
         _winreg.CloseKey(regKey)
     except EnvironmentError:
         log.debug("Couldn't open registry for mime registration!")
-    
+
     # Do 2. from above
     try:
         regKey = _winreg.CreateKey(_winreg.HKEY_CLASSES_ROOT, extension)
@@ -381,19 +390,19 @@ def Win32RegisterMimeType(mimeType, extension, fileType, description, cmds):
         _winreg.SetValueEx(regKey, "Content Type", 0, _winreg.REG_SZ, mimeType)
 
         _winreg.CloseKey(regKey)
-    except EnvironmentError, e:
+    except EnvironmentError:
         log.debug("Couldn't open registry for mime registration!")
 
     # Do 3. from above
     try:
         regKey = _winreg.CreateKey(_winreg.HKEY_CLASSES_ROOT, fileType)
-        
+
         _winreg.SetValueEx(regKey, "", 0, _winreg.REG_SZ, description)
 
         icoKey = _winreg.CreateKey(regKey, "DefaultIcon")
         _winreg.SetValueEx(icoKey, "", 0, _winreg.REG_SZ, "")
         _winreg.CloseKey(icoKey)
-        
+
         shellKey = _winreg.CreateKey(regKey, "shell")
 
         for trio in cmds:
@@ -409,9 +418,9 @@ def Win32RegisterMimeType(mimeType, extension, fileType, description, cmds):
             _winreg.SetValueEx(cmdKey, "", 0, _winreg.REG_SZ, newcommand)
             _winreg.CloseKey(cmdKey)
             _winreg.CloseKey(verbKey)
-            
+
         _winreg.CloseKey(shellKey)
-        
+
         _winreg.CloseKey(regKey)
     except EnvironmentError, e:
         log.debug("Couldn't open registry for mime registration!")
@@ -425,11 +434,11 @@ def Win32GetMimeCommands(mimeType = None, ext = None):
     1. "HKCR\MIME\Database\Content Type" contains subkeys for all known MIME
     types, each key has a string value "Extension" which gives (dot preceded)
     extension for the files of this MIME type.
-    
+
     2. "HKCR\.ext" contains
     a) unnamed value containing the "filetype"
     b) value "Content Type" containing the MIME type
-    
+
     3. "HKCR\filetype" contains
     a) unnamed value containing the description
     b) subkey "DefaultIcon" with single unnamed value giving the icon index in
@@ -444,12 +453,12 @@ def Win32GetMimeCommands(mimeType = None, ext = None):
     if mimeType != None:
         try:
             key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
-                                  "MIME\Database\Content Type\%s" % mimeType)
+            "MIME\Database\Content Type\%s" % mimeType)
             extension, type = _winreg.QueryValueEx(key, "Extension")
             _winreg.CloseKey(key)
         except WindowsError:
             log.warn("Couldn't open registry for mime types: %s",
-                          mimeType)
+            mimeType)
             return cdict
 
     if extension != None:
@@ -461,16 +470,16 @@ def Win32GetMimeCommands(mimeType = None, ext = None):
             _winreg.CloseKey(key)
         except WindowsError:
             log.warn("Couldn't open registry for file extension: %s.",
-                          extension)
+            extension)
             return cdict
 
     if filetype != None:
         try:
             key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
-                                  "%s\shell" % filetype)
+            "%s\shell" % filetype)
             nCommands = _winreg.QueryInfoKey(key)[0]
-#            defaultCommand = _winreg.QueryValue(key, "")
-            
+            #            defaultCommand = _winreg.QueryValue(key, "")
+
             for i in range(0,nCommands-1):
                 commandName = _winreg.EnumKey(key, i)
                 command = None
@@ -481,14 +490,16 @@ def Win32GetMimeCommands(mimeType = None, ext = None):
                     _winreg.CloseKey(ckey)
                 except:
                     log.warn("Couldn't get command for name: <%s>",
-                                  commandName)
+                    commandName)
                 commandName = commandName.capitalize()
                 cdict[commandName] = command
 
             _winreg.CloseKey(key)
-            
+
         except EnvironmentError:
-            log.warn("Couldn't retrieve list of commands: (mimeType: %s) (fileType: %s)", mimeType, filetype)
+            warnStr = "Couldn't retrieve list of commands: (mimeType: %s) \
+                       (fileType: %s)"
+            log.warn(warnStr, mimeType, filetype)
             return cdict
 
     return cdict
@@ -504,9 +515,9 @@ def Win32GetMimeType(extension = None):
             _winreg.CloseKey(key)
         except WindowsError:
             log.warn("Couldn't open registry for file extension: %s.",
-                          extension)
+            extension)
             return mimeType
-        
+
     return mimeType
 
 def LinuxGetMimeType(extension = None):
@@ -517,7 +528,7 @@ def LinuxGetMimeType(extension = None):
 
     # This is always a tuple so this is Ok
     mimeType = mimetypes.guess_type(fauxFn)[0]
-    
+
     return mimeType
 
 def LinuxGetMimeCommands(mimeType = None, ext = None):
@@ -525,13 +536,13 @@ def LinuxGetMimeCommands(mimeType = None, ext = None):
     """
     cdict = dict()
     view = 'view'
-    
+
     if mimeType == None:
         mimeType = LinuxGetMimeType(extension = ext)
 
     # We only care about mapping view to Open
     caps = mailcap.getcaps()
-    
+
     # This always returns a tuple, so this should be safe
     if mimeType != None:
         match = mailcap.findmatch(caps, mimeType, view)[1]
@@ -542,7 +553,7 @@ def LinuxGetMimeCommands(mimeType = None, ext = None):
         cdict['Open'] = match[view]
 
     return cdict
-    
+
 if isWindows():
     GetMimeCommands = Win32GetMimeCommands
     GetMimeType = Win32GetMimeType
@@ -554,7 +565,7 @@ else:
 # Unix Daemonize, this is not appropriate for Win32
 #
 
-def DaemonizeUnix(self):
+def DaemonizeUnix():
     try:
         pid = os.fork()
     except:
@@ -588,15 +599,13 @@ def SetRtpDefaultsWin( profile ):
     """
     Set registry values used by vic and rat for identification
     """
-    import _winreg
-
     #
     # Set RTP defaults according to the profile
     #
     k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
-                        r"Software\Mbone Applications\common",
-                        0,
-                        _winreg.KEY_SET_VALUE)
+    r"Software\Mbone Applications\common",
+    0,
+    _winreg.KEY_SET_VALUE)
     _winreg.SetValueEx(k, "rtpName", 0, _winreg.REG_SZ, profile.name)
     _winreg.SetValueEx(k, "rtpEmail", 0, _winreg.REG_SZ, profile.email)
     _winreg.SetValueEx(k, "rtpPhone", 0, _winreg.REG_SZ, profile.phoneNumber)
@@ -612,13 +621,14 @@ def SetRtpDefaultsUnix( profile ):
     #
     # Write the rtp defaults file
     #
-    rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: %s\n*rtpNote: %s\n"
+    rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
+                     %s\n*rtpNote: %s\n"
     rtpDefaultsFile=open( os.path.join(os.environ["HOME"], ".RTPdefaults"),"w")
     rtpDefaultsFile.write( rtpDefaultsText % ( profile.name,
-                                             profile.email,
-                                             profile.location,
-                                             profile.phoneNumber,
-                                             profile.publicId ) )
+    profile.email,
+    profile.location,
+    profile.phoneNumber,
+    profile.publicId ) )
     rtpDefaultsFile.close()
 
 #
@@ -629,4 +639,3 @@ if isWindows():
     SetRtpDefaults = SetRtpDefaultsWin
 else:
     SetRtpDefaults = SetRtpDefaultsUnix
-
