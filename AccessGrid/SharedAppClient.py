@@ -102,22 +102,22 @@ class SharedAppClient:
             # Join the application object with your client profile
             (self.__publicId, self.__privateId) = self.__appProxy.Join(clientProfile)
         except Client.MethodNotFound, e:
+            self.log.excpetion("SharedAppClient.Join failed: %s"
+                               self.__appUrl)
             try:
                 (self.__publicId, self.__privateId) = self.__appProxy.Join()
-                self.log.info("SharedAppClient.Connect: Service at %s is running old software"
-                          %self.__appUrl)
+                self.log.info("SharedAppClient.Join: %s using old software",
+                              self.__appUrl)
             except:
-                self.log.exception("SharedAppClient.Connect: Failed to join service at %s"%self.__appUrl)
-        except:
-            self.log.exception("SharedAppClient.Connect: Failed to join service at %s"%self.__appUrl)
-        
+                self.log.excpetion("SharedAppClient.Join failed: %s"
+                                   self.__appUrl)
+                raise "Failed to join application service at %s." %self.__appUrl                
         try:
             # Retrieve data/event channel id
             (self.__channelId, esl) = self.__appProxy.GetDataChannel(self.__privateId)
             
         except:
             self.log.exception("SharedAppClient.Connect: Failed to get data channel")
-            raise "Failed to join application service at %s." %self.__appUrl
                     
         # Subscribe to the data/event channel
         self.eventClient = EventClient(self.__privateId, esl, self.__channelId)
