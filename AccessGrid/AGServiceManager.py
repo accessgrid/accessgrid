@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.41 2004-03-10 23:17:07 eolson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.42 2004-03-11 22:38:02 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.41 2004-03-10 23:17:07 eolson Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.42 2004-03-11 22:38:02 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -24,7 +24,7 @@ from AccessGrid.hosting import Client
 from AccessGrid.NetUtilities import GetHostname
 
 from AccessGrid import Platform
-from AccessGrid.ProcessManager import ProcessManager
+from AccessGrid.Platform import ProcessManager
 from AccessGrid.Types import AGServicePackage
 from AccessGrid.DataStore import GSIHTTPDownloadFile
 from AccessGrid import Utilities
@@ -45,7 +45,7 @@ class AGServiceManager:
         self.resources = []
         # note: services dict is keyed on pid
         self.services = dict()
-        self.processManager = ProcessManager()
+        self.processManager = ProcessManager.ProcessManager()
 
         self.servicesDir = os.path.join(Platform.GetUserConfigDir(),"local_services")
 
