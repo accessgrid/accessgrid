@@ -1,17 +1,9 @@
 import sys
 import os
 from AccessGrid.hosting.pyGlobus.Server import Server
-from AccessGrid.hosting.pyGlobus import Client
-from AccessGrid.AGService import *
-from AccessGrid.AGParameter import *
-
-
-AG_VIDEO_PORT_TELEVISION = "Television"
-AG_VIDEO_PORT_SVIDEO = "S-Video"
-AG_VIDEO_PORT_COMPOSITE1 = "Composite1"
-AG_VIDEO_PORT_COMPOSITE3 = "Composite3"
-AG_VIDEO_PORTS = [ AG_VIDEO_PORT_TELEVISION, AG_VIDEO_PORT_SVIDEO, 
-                   AG_VIDEO_PORT_COMPOSITE1, AG_VIDEO_PORT_COMPOSITE3 ]
+from AccessGrid.Types import Capability
+from AccessGrid.AGService import AGService
+from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter
 
 
 vicstartup="""option add Vic.muteNewSources true startupFile
@@ -44,16 +36,12 @@ class VideoProducerService( AGService ):
       #
       # Set configuration parameters
       #
-      self.configuration["Port"] = OptionSetParameter( "Port", AG_VIDEO_PORT_SVIDEO, AG_VIDEO_PORTS ) 
+
+      # note: the datatype of the port parameter changes when a resource is set!
+      self.configuration["Port"] = ValueParameter( "Port", None ) 
       self.configuration["Bandwidth"] = RangeParameter( "Bandwidth", 800, 0, 3072 ) 
       self.configuration["Frame Rate"] = RangeParameter( "Frame Rate", 25, 1, 30 ) 
       self.configuration["Stream Name"] = ValueParameter( "Stream Name", "Video" )
-
-      #
-      # Discover vic video devices
-      #
-      self.__DiscoverVideoDevices()
-      print "vic devices ", self.vicDevices
 
 
    def Start( self, connInfo ):
@@ -63,11 +51,7 @@ class VideoProducerService( AGService ):
          #
          # Resolve assigned resource to a device understood by vic
          #
-         vicDevice = None
-         for device in self.vicDevices:   
-            if device.find( self.resource.resource ) > -1:
-               vicDevice = device
-               break
+         vicDevice = self.resource.resource
 
          #
          # Write vic startup file
@@ -87,13 +71,18 @@ class VideoProducerService( AGService ):
          # Start the service; in this case, store command line args in a list and let
          # the superclass _Start the service
          print "Start service"
-         print "Location : ", self.location.host, self.location.port, self.location.ttl
+         print "Location : ", self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl
          options = []
          options.append( "-u" )
          options.append( startupfile ) 
          options.append( "-C" )
          options.append( self.configuration["Stream Name"].value )
-         options.append( '%s/%d/%d' % ( self.location.host, self.location.port, self.location.ttl ) )
+         """
+         if self.streamDescription.encryptionKey != None:
+            options.append( "-k" )
+            options.append( self.streamDescription.encryptionKey )
+         """
+         options.append( '%s/%d/%d' % ( self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl ) )
          self._Start( options )
          print "pid = ", self.childPid
       except:
@@ -114,54 +103,29 @@ class VideoProducerService( AGService ):
    ConfigureStream.soap_export_as = "ConfigureStream"
    ConfigureStream.pass_connection_info = 1
 
+   def SetResource( self, connInfo, resource ):
+      """Set the resource used by this service"""
+      print " * ** * inside VideoProducerService.SetResource"
+
+      # Check authorization
+      if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
+
+      self.resource = resource
+      self.configuration["Port"] = OptionSetParameter( "Port", self.resource.portTypes[0], self.resource.portTypes )
+      
+   SetResource.soap_export_as = "SetResource"
+   SetResource.pass_connection_info = 1
 
 
-   def __DiscoverVideoDevices( self ):
-      """Discover video devices usable by vic, for matching with assigned resource"""
-
-      deviceDiscoveryScript="""foreach d $inputDeviceList {
-          set nick [$d nickname]
-          if { $nick == "still"  || $nick == "x11" } {
-         continue
-          }
-          set attr [$d attributes]
-          if { $attr == "disabled" } {
-         continue
-          }
-
-          set portnames [attribute_class $attr port]
-          puts "device: $nick"
-          puts "portnames: $portnames"
-      }
-      puts "doneWithPorts"
-
-      adios
-      """
-
-      deviceDiscoveryScriptFile="enum.tcl"
-
-      self.vicDevices = []
-
-      f = open(deviceDiscoveryScriptFile,"w")
-      f.write( deviceDiscoveryScript )
-      f.close()
-
-#FIXME - direct reference to vic
-      f = os.popen('vic -u %s' % (deviceDiscoveryScriptFile) )
-      outlines = f.readlines()
-      f.close()
-
-      os.remove( deviceDiscoveryScriptFile )
-
-      for line in outlines:
-         if line.beginswith("device:"):
-            vicDevice = line[8:]
-            self.vicDevices.append( vicDevice )
+def AuthCallback(server, g_handle, remote_user, context):
+    return 1
 
 if __name__ == '__main__':
+   from AccessGrid.hosting.pyGlobus import Client
+   import thread
 
    agService = VideoProducerService()
-   server = Server( 0 )
+   server = Server( 0, auth_callback=AuthCallback )
    service = server.create_service_object()
    agService._bind_to_service( service )
 

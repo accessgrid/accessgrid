@@ -1,8 +1,8 @@
 import sys
 from AccessGrid.hosting.pyGlobus.Server import Server
-from AccessGrid.hosting.pyGlobus import Client
-from AccessGrid.AGService import *
-from AccessGrid.AGParameter import *
+from AccessGrid.Types import Capability
+from AccessGrid.AGService import AGService
+from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter
 
 
 class VideoConsumerService( AGService ):
@@ -28,9 +28,9 @@ class VideoConsumerService( AGService ):
          # Start the service; in this case, store command line args in a list and let
          # the superclass _Start the service
          print "Start service"
-         print "Location : ", self.location.host, self.location.port, self.location.ttl
+         print "Location : ", self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl
          options = []
-         options.append( '%s/%d/%d' % ( self.location.host, self.location.port, self.location.ttl ) )
+         options.append( '%s/%d/%d' % ( self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl ) )
          self._Start( options )
          print "pid = ", self.childPid
       except:
@@ -53,10 +53,15 @@ class VideoConsumerService( AGService ):
    ConfigureStream.pass_connection_info = 1
 
 
+def AuthCallback(server, g_handle, remote_user, context):
+    return 1
+
 if __name__ == '__main__':
+   from AccessGrid.hosting.pyGlobus import Client
+   import thread
 
    agService = VideoConsumerService()
-   server = Server( 0 )
+   server = Server( 0, auth_callback=AuthCallback )
    service = server.create_service_object()
    agService._bind_to_service( service )
 
