@@ -1,4 +1,6 @@
 import os
+import mimetypes
+import mailcap
 
 # Linux Defaults
 AGTkBasePath = "/etc/AccessGrid"
