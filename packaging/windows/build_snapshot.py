@@ -33,7 +33,10 @@ import getopt
 #try:
 #    opts, args = getopt.getopt(sys.argv[1], "o:,
 
-build_base = r"c:\temp\snap"
+# Obvious variables we can use are SYSTEMDRIVE and HOMEDRIVE.
+INSTDRIVE = os.getenv("HOMEDRIVE")
+
+build_base = INSTDRIVE + r"\temp\snap"
 
 build_tag = time.strftime("%Y-%m%d-%H%M")
 
@@ -43,14 +46,14 @@ build_dir = os.path.join(build_base, build_tag)
 # We keep a rat and vic directory around as these don't change much
 #
 
-rat_dir = r"c:\AccessGridBuild\ag-rat"
-vic_dir = r"c:\AccessGridBuild\ag-vic"
+rat_dir = INSTDRIVE + r"\AccessGridBuild\ag-rat"
+vic_dir = INSTDRIVE + r"\AccessGridBuild\ag-vic"
 
 #
 # Location of the Inno compiler
 #
 
-inno_compiler = r"c:\Program Files\My Inno Setup Extensions 3\ISCC.exe"
+inno_compiler = INSTDRIVE + r"\Program Files\My Inno Setup Extensions 3\ISCC.exe"
 
 #
 # Mangle it to remove spaces; this also ensures it is present.
@@ -110,6 +113,9 @@ prebuild_re = re.compile(r"^Name:\s+([^;]+);\s+Parameters:\s+([^;]+)")
 commands = []
 section = ""
 
+# Use this to help us replace C: with whatever drive we're using.
+drive_replace = re.compile('C:|c:')
+
 for l in fp:
 
     l = re.sub(fix_vic_src, fix_vic_dst, l)
@@ -122,6 +128,9 @@ for l in fp:
     elif l.startswith("#define AppVersionShort"):
         l = '#define AppVersionShort "2.0-%s"\n' % (build_tag)
 
+    # Replace a few specific occurences of C: with INSTDRIVE
+    if l.startswith("#define SourceDir") or l.startswith("#define OutputDir") or l.startswith("LogFile"):
+        l = drive_replace.sub(INSTDRIVE,l)
 
     m = section_re.search(l)
     if m:
@@ -131,7 +140,9 @@ for l in fp:
         m = prebuild_re.search(l)
         if m:
             cmd = m.group(1)
+            cmd = drive_replace.sub(INSTDRIVE,cmd)
             args = m.group(2)
+            args = drive_replace.sub(INSTDRIVE,args)
             print "Have cmd='%s' args='%s'" % (cmd, args)
             commands.append((cmd, args))
     new_fp.write(l)
