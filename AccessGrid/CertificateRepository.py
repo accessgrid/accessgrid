@@ -307,6 +307,10 @@ class CertificateRepository:
         fh = open(path, 'w')
         fh.write(pktext)
         fh.close()
+        #
+        # Make the private key unreadable. Necessary for Unix-based Globus.
+        #
+        os.chmod(path, 0400)
 
     def _GetCertDirPath(self, cert):
         """

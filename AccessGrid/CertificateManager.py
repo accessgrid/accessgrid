@@ -839,10 +839,20 @@ class CertificateManagerUserInterface:
                 self.certificateManager.SetDefaultIdentity(certs[0])
                 # loop back to init env
 
-            except NoProxyFound, ProxyExpired:
+            except NoProxyFound:
                 print ""
                 print "No globus proxy found, creating.."
                 self.CreateProxy()
+
+            except ProxyExpired:
+                print ""
+                print "No globus proxy found, creating.."
+                self.CreateProxy()
+
+            except Exception, e:
+                print "Uncaught exception ", e.__class__
+                break
+                
 
         print "done, success=", success
 
@@ -901,6 +911,7 @@ class CertificateManagerUserInterface:
                 print "Proxy created"
                 break
             except:
+                log.exception("create proxy raised excpetion")
                 print ""
                 print "Invalid passphrase."
                 continue
