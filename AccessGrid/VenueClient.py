@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.79 2003-07-03 21:59:51 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.80 2003-07-07 17:32:00 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -335,6 +335,9 @@ class VenueClient( ServiceBase):
         EnterVenue puts this client into the specified venue.
         """
 
+        # Initialize a string of warnings that can be displayed to the user.
+        self.warningString = ''
+
         for s in self.eventSubscribers:
             s.PreEnterVenue(URL, back)
 
@@ -543,8 +546,6 @@ class VenueClient( ServiceBase):
             #
             # Return a string of warnings that can be displayed to the user 
             #
-
-            self.warningString = ''
 
             if errorInNode:
                 self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences-My Node" from the main menu'
