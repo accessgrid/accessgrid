@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.150 2004-03-19 22:44:38 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.151 2004-03-22 16:36:03 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.150 2004-03-19 22:44:38 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.151 2004-03-22 16:36:03 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -518,6 +518,21 @@ class VenueClient:
         for s in self.observers:
             s.AddText(name,text)
             
+    def SOAPFaultHandler(self, proxy, ex):
+        """
+        Handle a fault raised by an invocation through the venue server
+        proxy.
+
+        @param proxy: SOAPpy proxy through which the invocation failed
+        @param ex: The exception that was raised
+
+        @return: a true value if the invocation should be retried.
+
+        """
+
+        log.exception("SOAP fault occurred")
+        return 0
+
         
             
     # end Event Handlers
@@ -552,6 +567,10 @@ class VenueClient:
         self.warningString = ''
        
         app = Toolkit.Application.instance()
+
+        #
+        # Turn this block off when fatulHandler support gets finished.
+        #
         if not app.certificateManager.HaveValidProxy():
             log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
             app.certificateManager.CreateProxy()
@@ -574,7 +593,7 @@ class VenueClient:
             # Enter the venue
             #
             self.venueUri = URL
-            self.__venueProxy = VenueIW(URL)
+            self.__venueProxy = VenueIW(URL, self.SOAPFaultHandler)
 
             log.debug("EnterVenue: Invoke venue enter")
             (venueState, self.privateId, self.streamDescList ) = self.__venueProxy.Enter( self.profile )
