@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.23 2003-08-15 16:39:21 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.24 2003-08-15 21:14:23 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -328,7 +328,7 @@ class CertificateManager(object):
             if certObj is not None:
 
                 caption = "Initial import of Globus identity certificate"
-                message = "Import certificate for %s. Please enter the passphrase for the private key of this certificate." % (certObj.GetSubject())
+                message = "Import certificate for %s. \nPlease enter the passphrase for the private key of this certificate." % (certObj.GetSubject())
 
                 #
                 # Import the identity cert.
