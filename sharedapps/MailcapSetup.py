@@ -11,7 +11,7 @@
 # Author:      Ti Leggett
 # Copyright:   (c) 2002-2003
 # License:     See COPYING.txt
-# RCS-ID:      $Id: MailcapSetup.py,v 1.6 2003-05-29 22:01:21 judson Exp $
+# RCS-ID:      $Id: MailcapSetup.py,v 1.7 2003-05-29 22:07:55 judson Exp $
 #-----------------------------------------------------------------------------
 
 import os
@@ -77,6 +77,8 @@ class Mailcap:
             self.usage( )
             sys.exit(2)
 
+
+        passed_args = 0
         for opt, arg in opts:
             if opt in ('-h', '--help'):
                 self.usage( )
@@ -102,7 +104,6 @@ class Mailcap:
                         traceback.print_exc()
                 else:
                     self.executable = arg
-                self.executable = self.executable + " %s"
             elif opt in ('-d', '--description'):
                 self.description = arg
             elif opt in ('-n', '--nametemplate'):
@@ -111,12 +112,16 @@ class Mailcap:
             elif opt == '--mailcap':
                 self.mailcap = arg
             elif opt == '--exec-args':
+                passed_args = 1
                 self.execargs = arg
             elif opt == '--uninstall':
                 self.uninstall = True
             elif opt == '--update':
                 self.update = True
 
+        if not passed_args:
+            self.executable = self.executable + " %s"
+            
         if not self.mimetype:
             print "You must provide a mimetype."
             print ""
