@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.144 2003-05-16 16:03:04 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.145 2003-05-16 17:53:22 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -372,13 +372,14 @@ class VenueClientUI(wxApp, VenueClient):
             VenueClient.Heartbeat(self)
         except:
             log.exception("bin::VenueClient:Heartbeat: Heartbeat exception is caught, exit venue.")
-            MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  Please, try to connect again.", "Lost Connection")
+            MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", "Lost Connection")
             
             if self.venueUri != None:
+                log.debug("call exit venue")
+                wxCallAfter(self.frame.CleanUp)
+                wxCallAfter(self.frame.venueAddressBar.SetTitle, "You are not in a venue", 'Click "Go" to connect to the venue, which address is displayed in the address bar') 
                 self.ExitVenue()
-                
-            wxCallAfter(self.frame.venueAddressBar.SetTitle, "You are not in a venue", 'Click "Go" to connect to the venue, which address is displayed in the address bar') 
-                        
+                                        
     def RemoveUserEvent(self, user):
         """
         Note: Overridden from VenueClient
