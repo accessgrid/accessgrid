@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.47 2003-02-26 21:25:02 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.48 2003-02-26 22:12:33 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -276,10 +276,18 @@ class VenueClientFrame(wxFrame):
         #print personToFollow.venueClientURL
         #self.Follow(personToFollow.venueClientURL)
 
+    def __fillTempHelp(self, x):
+        if x == '\\':
+            x = '/'
+        return x
+        
     def FillInAddress(self, event):
         url = self.menubar.GetLabel(event.GetId())
-        print 'url2',url
-        self.venueAddressBar.SetAddress(url)
+        fixedUrlList = map(self.__fillTempHelp, url)
+        fixedUrl = ""
+        for x in fixedUrlList:
+            fixedUrl = fixedUrl + x
+        self.venueAddressBar.SetAddress(fixedUrl)
 
     def OpenChat(self, event = None):
         try:
@@ -328,7 +336,7 @@ class VenueClientFrame(wxFrame):
 
         for url in self.myVenuesList:
             id = NewId()
-            self.myVenues.Append(id, url)
+            self.myVenues.Append(id, url, url)
             EVT_MENU(self, id, self.FillInAddress)
 
     def AddToMyVenues(self, event):
@@ -337,7 +345,6 @@ class VenueClientFrame(wxFrame):
         if setMyVenueUrlDialog.ShowModal() == wxID_OK:
             id = NewId()
             url = setMyVenueUrlDialog.address.GetValue()
-            print '----url1', url
             self.myVenues.Append(id, url)
             self.myVenuesList.append(url)
             EVT_MENU(self, id, self.FillInAddress)
@@ -749,6 +756,7 @@ class VenueList(wxScrolledWindow):
         
         self.Layout()
         self.parent.Layout()
+
                             
     def RemoveVenueDoor(self):
         print 'remove venue door'
