@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.83 2003-08-22 20:09:31 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.84 2003-09-02 22:13:10 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1382,8 +1382,7 @@ class VenueParamFrame(wxDialog):
             numExits = self.exits.GetCount()
             for index in range(numExits):
                 exit = self.exits.GetClientData(index)
-                print exit.uri
-                print venue.uri
+              
                 if exit.uri == venue.uri:
                     existingExit = 1
                     break
@@ -1941,25 +1940,25 @@ class DigitValidator(wxPyValidator):
         for x in val:
             index = index+1
             if x not in string.digits:
-                MessageDialog(None, "Please, use digits for the mask!", "Notification")
+                MessageDialog(None, "Please, use digits for the mask.", "Notification")
                 return false
         if (self.flag == IP or self.flag == IP_1) and index == 0:
-            MessageDialog(None,"Please, fill in all IP Address fields!", "Notification")
+            MessageDialog(None,"Please, fill in all IP Address fields.", "Notification")
             return false
 
         elif (self.flag == PORT) and index == 0:
-            MessageDialog(None,"Please, fill in port for static addressing!", "Notification")
+            MessageDialog(None,"Please, fill in port for static addressing.", "Notification")
             return false
 
         elif (self.flag == TTL) and index == 0:
-            MessageDialog(None, "Please, fill in time to live (ttl) for static addressing!", "Notification")
+            MessageDialog(None, "Please, fill in time to live (TTL) for static addressing.", "Notification")
             return false
 
         elif self.flag == PORT:
             return true
 
         elif self.flag == TTL and (int(val)<0 or int(val)>127):
-            MessageDialog(None, "Time to live should be a value between 0 - 127", "Notification")
+            MessageDialog(None, "Time to live (TTL) should be a value between 0 - 127.", "Notification")
             return false
 
         elif self.flag == IP and (int(val)<0 or int(val)>255):
@@ -1971,11 +1970,11 @@ class DigitValidator(wxPyValidator):
             return false
 
         elif index == 0 and self.flag == MASK:
-            MessageDialog(None, "Please, fill in mask!", "Notification")
+            MessageDialog(None, "Please, fill in mask.", "Notification")
             return false
 
         elif self.flag == MASK and (int(val)>24 or int(val)<0):
-            MessageDialog(None, "Allowed values for mask are between 0 - 24", "Notification")
+            MessageDialog(None, "Allowed values for mask are between 0 - 24.", "Notification")
             return false
 
         return true
@@ -1988,14 +1987,32 @@ class DigitValidator(wxPyValidator):
 
     def OnChar(self, event):
         key = event.KeyCode()
+
         if key < WXK_SPACE or key == WXK_DELETE or key > 255:
             event.Skip()
             return
 
         if chr(key) in string.digits:
-            event.Skip()
-            return
+            tc = self.GetWindow()
+            val = tc.GetValue()
+           
+            if not val:
+                event.Skip()
+                return
 
+            # Set maximum number of digits to 3 for
+            # ip, ttl, and mask values. No limit for port.
+            elif  self.flag == PORT or len(val) < 3:
+                event.Skip()
+                return
+
+            else:
+                # Do not ring the bell if user tries to
+                # overwrite a selected string.
+                if len(tc.GetStringSelection()) != 0:
+                    event.Skip()
+                    return 
+            
         if not wxValidator_IsSilent():
             wxBell()
 
