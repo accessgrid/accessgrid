@@ -1,15 +1,10 @@
-import os
 from AccessGrid.VenueClient import VenueClient
-
 
 def PrintList( listname, thelist ):
    print " ",listname," ------"
    for item in thelist:
       print "  ", item.name
       if "uri" in item.__dict__.keys(): print "   uri = ", item.uri
-
-
-
 
 class MyVenueClient( VenueClient ):
     """
@@ -18,8 +13,9 @@ class MyVenueClient( VenueClient ):
     receives a coherence event.  A real client would probably
     update its UI instead of printing the venue state as text.
     """
-    
-
+    def __init__(self, profile, app):
+        VenueClient.__init__(self, profile=profile, app=app)
+       
     def EnterVenue(self, URL):
         """
         Note: Overloaded from VenueClient
@@ -27,18 +23,16 @@ class MyVenueClient( VenueClient ):
         performs its own operations when the client enters a venue.
         """
         VenueClient.EnterVenue( self, URL )
-        #self.PrintVenueState()
+        self.PrintVenueState()
 
-
-    def ExitVenue(self ):
+    def ExitVenue(self):
         """
         Note: Overloaded from VenueClient
         This method calls the venue client method and then
         performs its own operations when the client exits a venue.
         """
         VenueClient.ExitVenue( self )
-        #print "Exited venue ! "
-
+        print "Exited venue ! "
 
     def PrintVenueState( self ):
        venueState = self.venueState
@@ -53,50 +47,48 @@ class MyVenueClient( VenueClient ):
           ("Services", venueState.services.values())
           ]  )
 
-def Enter( venueUri, profile ):
-    
-    print "Entering venue: name = ", profile.name
-    vc = MyVenueClient( profile )
-    vc.EnterVenue( venueUri )
-
-
-
 if __name__ == "__main__":
-
-    import sys
-    from AccessGrid.hosting.pyGlobus.Server import Server
-    from AccessGrid.hosting.pyGlobus import Client
+    import os, sys
+    from optparse import Option
+    from AccessGrid.Toolkit import CmdlineApplication
+    from AccessGrid.VenueServer import VenueServerIW
     from AccessGrid.ClientProfile import ClientProfile
-    from AccessGrid.Types import *
 
-    NUM_VENUE_CLIENTS = 1
-    NUM_ROUNDTRIPS = 260
+    app = CmdlineApplication()
 
-    #
-    # process arguments
-    venueServerUri = "https://localhost:8000/VenueServer"
-    if len(sys.argv) > 1:
-        venueServerUri = sys.argv[1]
+    urlOption = Option("-u", "--url", dest="url",
+                       default="https://localhost:8000/VenueServer",
+                       help="URL to the venue server to test.")
+    app.AddCmdLineOption(urlOption)
 
-    #
+    nvcOption = Option("-n", "--num-clients", dest="nc", type="int",
+                       default=1, help="number of clients to use.")
+    app.AddCmdLineOption(nvcOption)
+
+    rtOption = Option("-t", "--traverse", dest="rt", type="int",
+              default=10, help="number of venues each client will traverse.")
+    app.AddCmdLineOption(rtOption)
+    
+    try:
+       app.Initialize("ClientSwarm")
+    except:
+       print "Application initialize failed, exiting."
+       sys.exit(-1)
+       
     # Get default venue from venue server
-    #
     print "Getting default venue"
-    venueUri = Client.Handle( venueServerUri ).get_proxy().GetDefaultVenue()
+    venueUri = VenueServerIW(app.GetOption("url")).GetDefaultVenue()
 
-    print "Reading profile"
-
-    vcList = []
+    vcList = list()
 
     print "Creating venue clients"
-    for id in range(NUM_VENUE_CLIENTS):
+    for id in range(app.GetOption("nc")):
         profile = ClientProfile('userProfile')
         profile.name = "User"+str(id)
         profile.publicId = profile.publicId + str(id)
-        vcList.append( MyVenueClient( profile ) )
+        vcList.append( MyVenueClient(profile, app))
 
-
-    for i in range(NUM_ROUNDTRIPS):
+    for i in range(app.GetOption("rt")):
         print "Roundtrip: ", i
         print "Clients entering: "
         for vc in vcList:
@@ -118,40 +110,5 @@ if __name__ == "__main__":
                 print sys.exc_value
                 print sys.exc_info()
 
-
-
     os._exit(1)
 
-
-
-    #
-    # Create VenueClient and enter venue
-    #os._exit(1)
-
-    """
-
-    #profile.name = "Changed name"
-    #Client.Handle( venueUri ).get_proxy().UpdateClientProfile( profile )
-
-
-    # 
-    # Create web service for venue client
-    server = Server( 8700 )
-    service = server.create_service_object("VenueClient")
-    vc._bind_to_service( service )
-
-
-    #
-    # Update venue client with venue client uri
-    #
-    vc.profile.venueClientUri = vc.get_handle()
-
-    #vc.coherenceClient.stop()
-
-
-    #
-    # Start service
-    #
-    print "Starting service; URI: ", vc.get_handle()
-    server.run()
-    """
