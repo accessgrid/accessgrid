@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.199 2003-05-23 20:23:04 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.200 2003-05-23 21:05:54 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -46,7 +46,6 @@ try:
     import win32api
 except:
     pass
-
 
 class VenueClientFrame(wxFrame):
     
@@ -358,6 +357,7 @@ class VenueClientFrame(wxFrame):
 #        self.menubar.Enable(self.ID_VENUE_SERVICE_OPEN, false)
 #        self.menubar.Enable(self.ID_VENUE_SERVICE_PROPERTIES, false)
 
+
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
 
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, false)
@@ -374,7 +374,6 @@ class VenueClientFrame(wxFrame):
     def ShowMenu(self):
         self.menubar.Enable(self.ID_VENUE_DATA_ADD, true)
         self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, true)
-
 #        self.menubar.Enable(self.ID_VENUE_PERSONAL_DATA_ADD, true)
 #        self.menubar.Enable(self.ID_VENUE_DATA_SAVE, true)
 #        self.menubar.Enable(self.ID_VENUE_DATA_OPEN, true)
@@ -383,9 +382,8 @@ class VenueClientFrame(wxFrame):
 #        self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, true)
 #        self.menubar.Enable(self.ID_VENUE_SERVICE_OPEN, true)
 #        self.menubar.Enable(self.ID_VENUE_SERVICE_PROPERTIES, true)
-
         self.menubar.Enable(self.ID_MYVENUE_ADD, true)
-
+        
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, true)
 
       	self.serviceHeadingMenu.Enable(self.ID_VENUE_SERVICE_ADD, true)
@@ -538,8 +536,14 @@ class VenueClientFrame(wxFrame):
         fixedUrl = ""
         for x in fixedUrlList:
             fixedUrl = fixedUrl + x
+
+        # Set url in address bar    
         self.venueAddressBar.SetAddress(fixedUrl)
 
+    def GoToMenuAddress(self, event):
+        self.FillInAddress(event)
+        self.venueAddressBar.callAddress(event)
+                  
     def CloseTextConnection(self):
         self.textClientPanel.CloseTextConnection()
 
@@ -685,8 +689,8 @@ class VenueClientFrame(wxFrame):
                 url = self.myVenuesDict[name]
                 text = "Go to: " + url
                 self.myVenues.Append(id, name, text)
-                EVT_MENU(self, id, self.FillInAddress)
-                
+                EVT_MENU(self, id, self.GoToMenuAddress)
+                            
     def EditMyVenues (self, event):
         editMyVenuesDialog = EditMyVenuesDialog(self, -1, "Edit your venues", self.myVenuesDict)
         if (editMyVenuesDialog.ShowModal() == wxID_OK):
@@ -704,7 +708,7 @@ class VenueClientFrame(wxFrame):
     def AddToMyVenues(self, event):
         id = wxNewId()
         url = self.app.venueUri
-                
+                      
         if url is not None:
             if(url not in self.myVenuesDict.values()):
                 dialog = AddMyVenueDialog(self, -1, "Add current venue",
@@ -718,8 +722,8 @@ class VenueClientFrame(wxFrame):
                 self.myVenues.Append(id, name, text)
                 self.myVenuesMenuIds.append(id)
                 self.myVenuesDict[name] = url
-                EVT_MENU(self, id, self.FillInAddress)
-
+                EVT_MENU(self, id, self.GoToMenuAddress)
+            
                 self.SaveMyVenuesToFile()
                                                
             else:
@@ -1043,7 +1047,7 @@ class VenueAddressBar(wxSashLayoutWindow):
         self.application.GoBack()
         wxEndBusyCursor()
       
-    def callAddress(self, event):
+    def callAddress(self, event = None):
         url = self.address.GetValue()
         venueUri = self.__fixSpaces(url)
         self.AddChoice(venueUri)
