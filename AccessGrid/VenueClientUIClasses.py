@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.321 2004-02-13 22:24:09 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.322 2004-02-13 22:57:19 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.321 2004-02-13 22:24:09 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.322 2004-02-13 22:57:19 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -823,8 +823,10 @@ class VenueClientFrame(wxFrame):
         
         children = self.GetChildren()
         for c in children:
-            c.Close(1)
-    
+            try:
+                c.Close(1)
+            except:
+                pass
         self.app.OnExit()
                      	      
     def UpdateLayout(self):
@@ -1994,8 +1996,8 @@ class ContentListPanel(wxPanel):
                 MessageDialog(None, "%s's data could not be retrieved."%item.name)
                 
     def OnDoubleClick(self, event):
-        x = event.GetX()
-        y = event.GetY()
+        self.x = event.GetX()
+        self.y = event.GetY()
         treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
         ext = None
         name = None
