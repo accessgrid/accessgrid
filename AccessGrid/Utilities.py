@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.73 2004-08-04 18:51:37 lefvert Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.74 2004-08-04 21:22:48 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.73 2004-08-04 18:51:37 lefvert Exp $"
+__revision__ = "$Id: Utilities.py,v 1.74 2004-08-04 21:22:48 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -496,6 +496,26 @@ def split_quoted (s):
             break
 
     return words
+
+def IsExecFileAvailable(file, path=None):
+    """ Used to check if a command is available to be executed.
+          Checks directories in the PATH variable are included.
+          On windows, the current directory is included automatically.
+          Note that the exact filename is required -- i.e. "python.exe"
+          will be found on windows, but "python" won't. """
+    if path == None:
+        path = os.environ['PATH']
+    # Windows always includes the current directory.
+    if Platform.IsWindows():
+        separatedPath = path.split(";")
+        separatedPath.append(".") 
+    else:
+        separatedPath = path.split(":")
+    for singlePath in separatedPath:
+        fullpath = os.path.join(singlePath, file)
+        #print "Checking full path:", fullpath
+        if os.access(fullpath, os.X_OK):
+            return 1
 
 # split_quoted ()
 
