@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.33 2003-09-10 03:56:52 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.34 2003-09-10 14:22:20 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -29,9 +29,6 @@ from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 
 log = logging.getLogger("AG.ServiceManager")
 
-class InvalidServicesDirectory(Exception):
-    pass
-
 class AGServiceManager( ServiceBase ):
     """
     AGServiceManager : exposes local resources and configures services
@@ -50,6 +47,7 @@ class AGServiceManager( ServiceBase ):
 
         self.servicesDir = os.path.join(Platform.GetUserConfigDir(),"local_services")
 
+
         #
         # Create directory if not exist
         #
@@ -59,7 +57,6 @@ class AGServiceManager( ServiceBase ):
                 os.mkdir(self.servicesDir)
             except:
                 log.exception("Couldn't create user services directory %s", self.servicesDir)
-                raise InvalidServicesDirectory("Couldn't create user services directory %s" % self.servicesDir)
 
         self.__DiscoverResources()
 
