@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.6 2003-05-16 18:10:54 eolson Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.7 2003-05-28 18:51:32 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -145,9 +145,7 @@ def SignalHandler(signum, frame):
     Then it stops the hostingEnvironment.
     """
     global agService
-    global running
-    agService.Stop()
-    running = 0
+    agService.Shutdown()
 
 
 if __name__ == '__main__':
@@ -167,13 +165,8 @@ if __name__ == '__main__':
    signal.signal(signal.SIGINT, SignalHandler)
 
    print "Starting server at", agService.get_handle()
-   server.run_in_thread()
+   server.RunInThread()
 
    # Keep the main thread busy so we can catch signals
-   running = 1
-   while running:
+   while server.IsRunning():
       time.sleep(1)
-
-   # Exit cleanly
-   server.Stop()
-
