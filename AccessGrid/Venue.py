@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.196 2004-05-12 15:44:32 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.197 2004-05-12 18:38:21 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.196 2004-05-12 15:44:32 lefvert Exp $"
+__revision__ = "$Id: Venue.py,v 1.197 2004-05-12 18:38:21 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1609,16 +1609,40 @@ class Venue(AuthorizationMixIn):
 
         return dataDescription
 
-    def UpdateData(self, dataDescription):
+    def UpdateData(self, dataDescription, dataStoreCall = 0):
         """
         Replace the current description for dataDescription.name with
         this one.
         """
-        self.server.eventService.Distribute( self.uniqueId,
-                                             Event( Event.UPDATE_DATA,
-                                                    self.uniqueId,
-                                                    dataDescription ) )
+        #
+        # This method is called both from the data store and from clients.
+        # The data store only wants to distribute an event, while clients
+        # need to modify the actual data store.
+        #
+        
+        if dataStoreCall:
+            self.server.eventService.Distribute( self.uniqueId,
+                                                 Event( Event.UPDATE_DATA,
+                                                        self.uniqueId,
+                                                        dataDescription ) )
+            return
 
+
+        name = dataDescription.name
+        
+        # This is venue resident so modify the file
+        if(dataDescription.type is None or dataDescription.type == "None"):
+            self.dataStore.ModifyData(dataDescription)
+            self.server.eventService.Distribute( self.uniqueId,
+                                                 Event( Event.UPDATE_DATA,
+                                                        self.uniqueId,
+                                                        dataDescription ) )
+
+        else:
+            log.info("Venue.UpdateData tried to modify non venue data. That should not happen")
+            
+        return dataDescription
+            
     def GetDataStoreInformation(self):
         """
         Retrieve an upload descriptor and a URL to the Venue's DataStore 
@@ -3136,6 +3160,7 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
 
     def GetCachedProfiles(self):
         return self.proxy.GetCachedProfiles()
+
 
 class StreamDescriptionList:
     """

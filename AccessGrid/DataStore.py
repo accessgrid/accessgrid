@@ -5,14 +5,14 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.66 2004-05-04 16:59:30 judson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.67 2004-05-12 18:38:21 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: DataStore.py,v 1.66 2004-05-04 16:59:30 judson Exp $"
+__revision__ = "$Id: DataStore.py,v 1.67 2004-05-12 18:38:21 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -693,7 +693,7 @@ class DataStore:
             desc.SetURI(url)
             self.cbLock.acquire()
             self.dataDescContainer.UpdateData(desc)
-            self.callbackClass.UpdateData(desc)
+            self.callbackClass.UpdateData(desc, 1)
             self.cbLock.release()
                       
     def AddPendingUpload(self, identityToken, filename):
