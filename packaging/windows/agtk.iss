@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.63 2004-04-07 20:45:48 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.64 2004-04-07 20:48:29 judson Exp $
 ;
 
 ; Set externally
@@ -81,7 +81,7 @@ ShowLanguageDialog=yes
 
 [Files]
 ; The Python Modules
-Source: Lib\site-packages\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\{#PythonVersion}\InstallPath,|C:\Python22}\Lib\site-packages:; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\{#PythonVersion}\InstallPath,|C:\Python22}\Lib\site-packages; Flags: recursesubdirs overwritereadonly restartreplace
 
 ; Documentation
 Source: doc\Developer\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
