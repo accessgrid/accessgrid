@@ -137,7 +137,7 @@ class AGParameterTestCase(unittest.TestCase):
         invalid_option = 0
         try:
             v.SetValue(47)
-        except ValueError:
+        except KeyError:
             invalid_option = 1
         else:
             assert 0 
