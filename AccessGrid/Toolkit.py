@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.79 2004-09-03 15:53:19 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.80 2004-09-03 20:40:08 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.79 2004-09-03 15:53:19 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.80 2004-09-03 20:40:08 turam Exp $"
 
 # Standard imports
 import os
@@ -58,6 +58,12 @@ class AppBase:
        self.parser.add_option("-l", "--logfile", dest="logfilename",
                               metavar="LOGFILE", default=None,
                               help="Specify a log file to output logging to.")
+       self.parser.add_option("--numlogfiles", dest="numlogfiles",
+                              metavar="NUMLOGFILES", default=1, type="int",
+                              help="Specify the number of log files to retain")
+       self.parser.add_option("--logfilesize", dest="logfilesize",
+                              metavar="LOGFILESIZE", default=10000000, type="long",
+                              help="Specify the size of log files to retain")
        self.parser.add_option("-c", "--configfile", dest="configfilename",
                               metavar="CONFIGFILE", default=None,
                          help="Specify a configuration file for the program.")
@@ -129,8 +135,10 @@ class AppBase:
            else:
                filename = self.name
            
-           fh = Log.FileHandler(filename)
-
+           fh = Log.RotatingFileHandler(filename,"a",
+                                        self.options.logfilesize,
+                                        self.options.numlogfiles)
+                                        
            fh.setFormatter(Log.GetFormatter())
            self.fhLoggerLevels = Log.HandleLoggers(fh, Log.GetDefaultLoggers())
            self.fhLoggerLevels.SetLevel(Log.DEBUG)
