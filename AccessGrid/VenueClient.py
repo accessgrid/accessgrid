@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.170 2004-05-04 04:55:43 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.171 2004-05-06 15:57:44 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.170 2004-05-04 04:55:43 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.171 2004-05-06 15:57:44 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -1450,7 +1450,8 @@ class VenueClient:
         if not clientProfile or clientProfile.publicId == self.profile.publicId:
             log.debug('GetPersonalData: I am trying to get my own data')
             self.requests.append(self.profile.publicId)
-            return self.dataStore.GetPersonalData()
+            return self.dataStore.GetDataDescriptions()
+
         
         
         url = clientProfile.venueClientURL
