@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.7 2003-02-21 18:27:24 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.8 2003-02-28 17:24:45 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,6 @@ from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangePara
 class AudioService( AGService ):
 
    def __init__( self ):
-      print self.__class__, ".init"
       AGService.__init__( self )
 
       self.capabilities = [ Capability( Capability.CONSUMER, Capability.AUDIO ), 
@@ -29,8 +28,8 @@ class AudioService( AGService ):
       #
       # Set configuration parameters
       #
-      self.configuration["Microphone Gain"] = RangeParameter( "Microphone Gain", 30, 0, 100 )
-      self.configuration["Speaker Volume"] = RangeParameter( "Speaker Volume", 50, 0, 100 ) 
+      self.configuration["microphone gain"] = RangeParameter( "microphone gain", 30, 0, 100 )
+      self.configuration["speaker volume"] = RangeParameter( "speaker volume", 50, 0, 100 ) 
 
 
    def Start( self ):
@@ -40,8 +39,6 @@ class AudioService( AGService ):
          # 
          # Start the service; in this case, store command line args in a list and let
          # the superclass _Start the service
-         print "Start service"
-         print "Location : ", self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl
          options = []
          #options.append( "-name" )
          #options.append( self.streamDescription.name )
@@ -52,12 +49,9 @@ class AudioService( AGService ):
             options.append( self.streamDescription.encryptionKey )
          options.append( '%s/%d' % ( self.streamDescription.location.host, self.streamDescription.location.port ) )
          self._Start( options )
-         print "pid = ", self.childPid
       except:
-         print "Exception ", sys.exc_type, sys.exc_value
-         print "type ", sys.exc_type, type(sys.exc_type)
-         print "value ", sys.exc_value, type(sys.exc_value), sys.exc_value.__class__
-         raise faultType("OS Error (could be missing executable)")
+         print "Exception in AudioService.Start", sys.exc_type, sys.exc_value
+         raise faultType("Failed to start service")
    Start.soap_export_as = "Start"
 
 
@@ -86,7 +80,7 @@ if __name__ == '__main__':
    service = server.create_service_object()
    agService._bind_to_service( service )
 
-   print "Register with the service manager ! "
+   # Register with the service manager
    thread.start_new_thread( Client.Handle( sys.argv[2] ).get_proxy().RegisterService, 
                             ( sys.argv[1], agService.get_handle() ) )
 

@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.7 2003-02-21 17:23:50 turam Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.8 2003-02-28 17:24:45 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,6 @@ from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangePara
 class VideoConsumerService( AGService ):
 
    def __init__( self ):
-      print self.__class__, ".init"
       AGService.__init__( self )
 
       self.capabilities = [ Capability( Capability.CONSUMER, Capability.VIDEO ) ]
@@ -38,11 +37,9 @@ class VideoConsumerService( AGService ):
          # 
          # Start the service; in this case, store command line args in a list and let
          # the superclass _Start the service
-         print "Start service"
-         print "Location : ", self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl
          options = []
          options.append( "-C" )
-         options.append( self.streamDescription.name )
+         options.append( '"' + self.streamDescription.name + '"' )
          if self.streamDescription.encryptionKey != 0:
             options.append( "-K" )
             options.append( self.streamDescription.encryptionKey )
@@ -51,15 +48,14 @@ class VideoConsumerService( AGService ):
          options.append( '%s/%d' % ( self.streamDescription.location.host, 
                                      self.streamDescription.location.port ) )
          self._Start( options )
-         print "pid = ", self.childPid
       except:
-         print "Exception ", sys.exc_type, sys.exc_value
+         print "Exception in VideoConsumerService.Start", sys.exc_type, sys.exc_value
+         raise faultType("Failed to start service")
    Start.soap_export_as = "Start"
 
 
    def ConfigureStream( self, streamDescription ):
       """Configure the Service according to the StreamDescription, and stop and start app"""
-      print "in VideoConsumerService.ConfigureStream"
       AGService.ConfigureStream( self, streamDescription )
 
       # restart app, since this is the only way to change the 
@@ -82,6 +78,7 @@ if __name__ == '__main__':
    service = server.create_service_object()
    agService._bind_to_service( service )
 
+   # Register with the service manager
    thread.start_new_thread( Client.Handle( sys.argv[2] ).get_proxy().RegisterService, 
                             ( sys.argv[1], agService.get_handle() ) )
 

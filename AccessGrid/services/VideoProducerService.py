@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.7 2003-02-27 23:02:18 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.8 2003-02-28 17:24:45 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ import os
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
-from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter
+from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
 
 
 vicstartup="""option add Vic.muteNewSources true startupFile
@@ -51,11 +51,11 @@ class VideoProducerService( AGService ):
       #
 
       # note: the datatype of the port parameter changes when a resource is set!
-      self.configuration["Port"] = ValueParameter( "Port", None ) 
-      self.configuration["Encoding"] = OptionSetParameter( "Encoding", "h261", VideoProducerService.encodings )
-      self.configuration["Bandwidth"] = RangeParameter( "Bandwidth", 800, 0, 3072 ) 
-      self.configuration["Frame Rate"] = RangeParameter( "Frame Rate", 25, 1, 30 ) 
-      self.configuration["Stream Name"] = ValueParameter( "Stream Name", "Video" )
+      self.configuration["stream name"] = TextParameter( "stream name", "Video" )
+      self.configuration["port"] = TextParameter( "port", "" ) 
+      self.configuration["encoding"] = OptionSetParameter( "encoding", "h261", VideoProducerService.encodings )
+      self.configuration["bandwidth"] = RangeParameter( "bandwidth", 800, 0, 3072 ) 
+      self.configuration["frame rate"] = RangeParameter( "frame rate", 25, 1, 30 ) 
 
 
    def Start( self ):
@@ -65,31 +65,32 @@ class VideoProducerService( AGService ):
          #
          # Resolve assigned resource to a device understood by vic
          #
-         vicDevice = self.resource.resource
+         if self.resource == "None":
+            vicDevice = "None"
+         else:
+            vicDevice = self.resource.resource
 
          #
          # Write vic startup file
          #
          startupfile = 'VideoProducerService_%d.vic' % ( os.getpid() )
          f = open(startupfile,"w")
-         f.write( vicstartup % (self.configuration["Bandwidth"].value, 
-                                    self.configuration["Frame Rate"].value, 
-                                    self.configuration["Encoding"].value, 
-                                    vicDevice,
-                                    self.configuration["Port"].value  ) )
+         f.write( vicstartup % (self.configuration["bandwidth"].value, 
+                                    self.configuration["frame rate"].value, 
+                                    self.configuration["encoding"].value, 
+                                    vicDevice,                 
+                                    self.configuration["port"].value  ) )
          f.close()
 
 
          # 
          # Start the service; in this case, store command line args in a list and let
          # the superclass _Start the service
-         print "Start service"
-         print "Location : ", self.streamDescription.location.host, self.streamDescription.location.port, self.streamDescription.location.ttl
          options = []
          options.append( "-u" )
          options.append( startupfile ) 
          options.append( "-C" )
-         options.append( self.configuration["Stream Name"].value )
+         options.append( '"' + self.configuration["stream name"].value + '"'  )
          if self.streamDescription.encryptionKey != 0:
             options.append( "-K" )
             options.append( self.streamDescription.encryptionKey )
@@ -98,9 +99,9 @@ class VideoProducerService( AGService ):
          options.append( '%s/%d' % ( self.streamDescription.location.host, 
                                         self.streamDescription.location.port) )
          self._Start( options )
-         print "pid = ", self.childPid
       except:
          print "Exception in VideoProducerService.Start", sys.exc_type, sys.exc_value
+         raise faultType("Failed to start service")
    Start.soap_export_as = "Start"
 
 
@@ -117,13 +118,10 @@ class VideoProducerService( AGService ):
 
    def SetResource( self, resource ):
       """Set the resource used by this service"""
-      print " * ** * inside VideoProducerService.SetResource"
       self.resource = resource
       if "portTypes" in self.resource.__dict__.keys():
-          self.configuration["Port"] = OptionSetParameter( "Port", self.resource.portTypes[0], 
+          self.configuration["port"] = OptionSetParameter( "port", self.resource.portTypes[0], 
                                                            self.resource.portTypes )
-
-      
    SetResource.soap_export_as = "SetResource"
 
 
@@ -139,7 +137,7 @@ if __name__ == '__main__':
    service = server.create_service_object()
    agService._bind_to_service( service )
 
-   print "Register with the service manager ! "
+   # Register with the service manager
    thread.start_new_thread( Client.Handle( sys.argv[2] ).get_proxy().RegisterService, 
                             ( sys.argv[1], agService.get_handle() ) )
 
