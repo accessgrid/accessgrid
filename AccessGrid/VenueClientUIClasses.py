@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.52 2003-02-28 16:54:36 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.53 2003-03-04 07:19:28 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -499,8 +499,8 @@ class VenueClientFrame(wxFrame):
                                   'Can not open node service management\nbased on the URL you specified', \
                                   'Node Management Error')
                 
-        setNodeUrlDialog.Destroy()
-                
+            setNodeUrlDialog.Destroy()
+                 
                           
     def OpenDataProfileDialog(self, event):
         self.contentList.tree.GetSelection()
