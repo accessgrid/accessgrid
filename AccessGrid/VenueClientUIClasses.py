@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.240 2003-08-22 19:35:41 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.241 2003-08-22 19:37:45 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1366,8 +1366,8 @@ class ExitPanel(wxPanel):
         '''
         Opens a menu for this connected venue
         '''
-        self.x = event.GetX() + self.GetPosition().x
-        self.y = event.GetY() + self.GetPosition().y
+        self.x = event.GetX() + self.button.GetPosition().x
+        self.y = event.GetY() + self.button.GetPosition().y
         
         propertiesMenu = wxMenu()
      	propertiesMenu.Append(self.ID_PROPERTIES,"Properties...",
