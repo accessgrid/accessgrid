@@ -86,6 +86,9 @@ BuildName = BuildTime
 iss_orig = "agtk.iss"
 iss_new  = "build_snap.iss"
 
+# Innosoft path
+innopath = ""
+
 # CVS Flag
 checkoutnew = 0
 
@@ -142,14 +145,41 @@ vic_dir = os.path.join(SourceDir, "ag-vic")
 # Location of the Inno compiler
 #
 
-try:
-    ipreg = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
-                               "Software\\Bjornar Henden\\ISTool\\Prefs")
-    innopath, type = _winreg.QueryValueEx(ipreg, "ExtFolder")
-    ip = os.path.join(innopath, "iscc.exe")
-    inno_compiler = win32api.GetShortPathName(ip)
-except WindowsError:
-    print "Cound't find ISXTool!"
+# If innopath specified at command-line, set inno_compiler
+if "" != innopath:
+    inno_compiler = os.path.join(innopath, "iscc.exe")
+    if not os.path.exists(inno_compiler):
+        print "command-line innopath not found: ", inno_compiler
+        sys.exit()
+
+# If no command-line specified, look in the registry
+else:
+    try:
+        ipreg = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+                                   "Software\\Bjornar Henden\\ISTool\\Prefs")
+        innopath, type = _winreg.QueryValueEx(ipreg, "ExtFolder")
+        ip = os.path.join(innopath, "iscc.exe")
+        inno_compiler = win32api.GetShortPathName(ip)
+    except WindowsError:
+        #if verbose:
+            #print "Couldn't find ISXTool from registry key." 
+
+        # If still not found, try default path:
+        innopath = r"\Program Files\My Inno Setup Extensions 3"
+        inno_compiler = os.path.join(innopath, "ISCC.exe")
+        #if verbose:
+            #if os.path.exists(inno_compiler):
+                #print "Found ISXTool in default path:", inno_compiler
+             #else:
+                #print "Could not find ISXTool in default path:", inno_compiler
+
+# Print error and exit if innotool's iscc.exe isn't found yet.
+if not os.path.exists(inno_compiler):
+        print "Couldn't find ISXTool!"
+        print "  Make sure My Inno Setup Extentions are installed, and if" 
+        print "  necessary, specify the location of iscc.exe with command-line option -i."
+        sys.exit()
+
 
 if verbose:
     print "ISXTool is: ", inno_compiler
@@ -189,7 +219,11 @@ if checkoutnew:
     
 # Okay, we've got our code. Go to the packaging
 # directory and fix up the paths in the iss file
-os.chdir(os.path.join(SourceDir, r"AccessGrid\packaging\windows"))
+
+packaging_dir = os.path.join(SourceDir, r"AccessGrid\packaging\windows")
+if verbose:
+    print "Packaging Directory:", packaging_dir
+os.chdir(packaging_dir)
 
 # Open new (and old) innosoft setup files
 file = open(iss_orig)
