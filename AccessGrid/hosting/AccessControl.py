@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: AccessControl.py,v 1.20 2003-09-16 07:20:38 judson Exp $
+# RCS-ID:      $Id: AccessControl.py,v 1.21 2003-09-17 17:02:42 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ Access Control mechanisms for the AG system.
 
 """
 
-__revision__ = "$Id: AccessControl.py,v 1.20 2003-09-16 07:20:38 judson Exp $"
+__revision__ = "$Id: AccessControl.py,v 1.21 2003-09-17 17:02:42 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 #
@@ -412,6 +412,10 @@ class SecurityManager:
            that would cause infinite loops.
         Role names that start with "Role." usually refer to an external role manager.
         """
+        if type(role_name) != type(""):
+            log.exception("Role name should be a string.")
+            return 0
+
         # Make sure we don't look through the same list twice.
         if role_name in recursed_roles: 
             recursed_strings = ""
@@ -436,15 +440,16 @@ class SecurityManager:
             else:
                 # Check if this role contains references to other roles.
                 for r in erm_role.GetSubjectList():
-                    if r.name.startswith("Role."):
-                        #print "recursing with :", r
-                        tmp_recursed_roles = recursed_roles[:]
-                        tmp_recursed_roles.append(erm_role_name) # append current role so we don't infinitely recurse.
-                        ret_val = self.ValidateSubjectInRole(user, r, role_manager, tmp_recursed_roles)
-                        if ret_val:
-                            log.debug("User %s authorized for role %s", user, r.name)
-                            #print "User",user,"authorized for role",  r.name
-                            return 1
+                    if type(r) == type(""):
+                        if r.name.startswith("Role."):
+                            #print "recursing with :", r
+                            tmp_recursed_roles = recursed_roles[:]
+                            tmp_recursed_roles.append(erm_role_name) # append current role so we don't infinitely recurse.
+                            ret_val = self.ValidateSubjectInRole(user, r, role_manager, tmp_recursed_roles)
+                            if ret_val:
+                                log.debug("User %s authorized for role %s", user, r.name)
+                                #print "User",user,"authorized for role",  r.name
+                                return 1
             # Failed to find user in role. 
             log.debug("User %s not authorized for role: %s", user, role_name)
             #print "User",user,"not authorized for role",  role_name
