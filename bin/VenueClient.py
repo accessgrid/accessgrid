@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.202 2003-08-19 19:19:08 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.203 2003-08-21 23:28:02 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -36,12 +36,8 @@ if sys.platform == "win32":
     utilc.globus_module_activate(ioc.get_module())
     Utilities.CreateTCPAttrAlwaysAuth()
 
-#
 # Back to your normal imports.
-#
-
 from wxPython.wx import *
-from wxPython.wx import wxTheMimeTypesManager as mtm
 
 from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.hosting.pyGlobus import Client
@@ -57,9 +53,7 @@ from AccessGrid import Events
 from AccessGrid.CertificateManager import CertificateManager
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Utilities import formatExceptionInfo
-from AccessGrid.Utilities import StartDetachedProcess
-from AccessGrid.UIUtilities import MessageDialog, InitMimeTypes, ProgressDialog
-from AccessGrid.UIUtilities import GetMimeCommands, ErrorDialog
+from AccessGrid.UIUtilities import MessageDialog, ProgressDialog, ErrorDialog
 from AccessGrid.UIUtilities import ErrorDialogWithTraceback
 from AccessGrid.VenueClientUIClasses import SaveFileDialog, UploadFilesDialog
 from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
@@ -98,18 +92,19 @@ class VenueClientUI(VenueClientEventSubscriber):
         self.onExitCalled = false
 
         self.startupDialog.UpdateOneStep()
+
         # State kept so UI can add venue administration options.
         self.isVenueAdministrator = false
+
+        self.connected = threading.Event()
         
         self.startupDialog.UpdateOneStep()
          
         self.__processArgs()
         self.__setLogger()
 
-        #
         # We verify first because the Toolkit code assumes a valid
         # globus environment.
-        #
         self.startupDialog.UpdateOneStep()
         
         VerifyExecutionEnvironment()
@@ -134,32 +129,24 @@ class VenueClientUI(VenueClientEventSubscriber):
             ErrorDialog(None, "Application initialization failed. Attempting to continue",
                         "Initialization failed")
         
-        #
         # Initiate user interface components
-        #
         self.startupDialog.UpdateOneStep()
         self.frame = VenueClientFrame(NULL, -1,"", self)
         self.frame.SetSize(wxSize(500, 400))
         
-        #
         # Tell the UI about installed applications
-        #
         self.startupDialog.UpdateOneStep()
-        self.frame.SetInstalledApps( self.venueClient.GetInstalledApps() )
+        appdb = self.app.GetAppDatabase()
+        self.frame.SetInstalledApps( appdb.ListAppsAsAppDescriptions() )
+#        self.frame.SetInstalledApps( self.venueClient.GetInstalledApps() )
         self.frame.EnableAppMenu( false )
        
-        #
         # Initialize globus runtime stuff.
-        #
         self.startupDialog.UpdateOneStep()
         self.app.InitGlobusEnvironment()
        
-        #
         # Load user mailcap from AG Config Dir
-        #
         self.startupDialog.UpdateOneStep()
-        mailcap = os.path.join(GetUserConfigDir(), "mailcap")
-        InitMimeTypes(mailcap)
 
         log.debug("bin.VenueClient::OnInit: ispersonal=%s", self.isPersonalNode)
         if self.isPersonalNode:
@@ -194,15 +181,11 @@ class VenueClientUI(VenueClientEventSubscriber):
         if (profileDialog.ShowModal() == wxID_OK):
             self.venueClient.profile = profileDialog.GetNewProfile()
             
-            #
             # Change profile based on values filled in to the profile dialog
-            #
             self.ChangeProfile(self.venueClient.profile)
             profileDialog.Destroy()
 
-            #
             # Start the main wxPython thread
-            #
             self.__openVenueClient(self.venueClient.profile)
 
         else:
@@ -388,59 +371,50 @@ class VenueClientUI(VenueClientEventSubscriber):
 
     def _TryReconnect(self):
         """
+        This method tries to reconnect to a server. It attempts to connect
+        3 times, at 10 second intervals. If it fails every time, it checks for
+        a backup server and attempts a connection to that server.
         """
         log.debug("Trying to reconnect")
         attempts = 3
-        connected = 0
         while attempts > 0:
             try:
+                log.debug("bin.VenueClient._TryReconnect: attempting to enter venue: %s (Attempt %d / %d)", self.venueClient.Uri, attempts, 3)
                 self.venueClient.EnterVenue(self.venueClient.Uri)
                 attempts = 0
-                connected = 1
             except:
                 attempts = attempts - 1
 
-        if connected == 0 and attempts == 0:
+        if not self.connected.isSet() and attempts == 0:
             if self.venueClient.venueUri != self.fallbackRecoveryUrl:
+                log.debug("bin.VenueClient._TryReconnect: attempting to enter fallback venue: %s", self.fallbackRecoveryUrl)
                 self.venueClient.EnterVenue(self.fallbackRecoveryUrl)
-                self.fallbackRecoveryUri = None
+                self.fallbackRecoveryUrl = None
             else:
                 self.fallbackRecoveryTimer.cancel()
                 self.fallbackRecoveryTimer = None
 
     def HandleServerConnectionFailure(self):
         log.debug("bin::VenueClient::HandleServerConnectionFailure: call exit venue")
-        # Try backup server if that's configured
-        if len(self.venueClient.venueState.backupServer) > 0:
-            log.debug("falling back to server: %s",
-                      self.venueClient.venueState.backupServer)
+        # This functionality is going to need some work, we're not
+        # going to get it into 2.1.1...sigh IRJ
+#         if len(self.venueClient.venueState.backupServer) > 0:
+#             urlparts = list(urlparse.urlparse(self.venueClient.venueUri))
+#             urlparts[1] = self.venueClient.venueState.backupServer
+#             self.fallbackRecoveryUrl = urlparse.urlunparse(urlparts)
 
-            urlparts = list(urlparse.urlparse(self.venueClient.venueUri))
-            urlparts[1] = self.venueClient.venueState.backupServer
-            backupurl = urlparse.urlunparse(urlparts)
+#             self.fallbackRecoveryTimer = threading.Timer(5.0,
+#                                                          self._TryReconnect)
+#             self.fallbackRecoveryTimer.start()
 
-            log.debug("current venue: %s, backup venue: %s",
-                      self.venueClient.venueUri,
-                      backupurl)
-
-            oldUrl = self.venueClient.venueUri
-
-            self.venueClient.EnterVenue(backupurl)
-
-            log.debug("Testing recovery url")
-            if self.fallbackRecoveryUrl == None:
-                log.debug("trying to recover")
-                self.fallbackRecoveryUrl = oldUrl
-                self.fallbackRecoveryTimer = threading.Timer(10.0,
-                                                             self._TryReconnect)
-                self.fallbackRecoveryTimer.start()
-        else:
-            # If not ohwell, you're stuck
-            self.frame.CleanUp()
-            self.frame.venueAddressBar.SetTitle("You are not in a venue",
-                                                'Click "Go" to connect to the venue, which address is displayed in the address bar') 
-            self.venueClient.ExitVenue()
-            MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", "Lost Connection")
+#         self.connected.wait(30.0)
+        
+        # If not ohwell, you're stuck
+        self.frame.CleanUp()
+        self.frame.venueAddressBar.SetTitle("You are not in a venue",
+                                            'Click "Go" to connect to the venue, which address is displayed in the address bar') 
+        self.venueClient.ExitVenue()
+        MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", "Lost Connection")
 
     def RemoveUserEvent(self, event):
         """
@@ -561,8 +535,10 @@ class VenueClientUI(VenueClientEventSubscriber):
         *app* The ApplicationDescription representing the application that just got added to the venue
         """
         app = event.data
-        wxCallAfter(self.frame.statusbar.SetStatusText, "Application '%s' just got added to the venue" %app.name)
-        log.debug("EVENT - Add application: %s, Mime Type: %s" %(app.name, app.mimeType))
+        wxCallAfter(self.frame.statusbar.SetStatusText,
+                    "Application '%s' just got added to the venue" %app.name)
+        log.debug("EVENT - Add application: %s, Mime Type: %s"
+                  % (app.name, app.mimeType))
         wxCallAfter(self.frame.contentListPanel.AddApplication, app)
 
     def RemoveApplicationEvent(self, event):
@@ -690,6 +666,10 @@ class VenueClientUI(VenueClientEventSubscriber):
                           style = wxOK  | wxICON_ERROR)
             return
 
+        # Set a connected flag (We have to sort this out better...)
+        # This is here to support recovery/failover
+        self.connected.set()
+        
         #
         # Check to see if we have a valid grid proxy
         # If not, run grid proxy init
@@ -1293,26 +1273,24 @@ class VenueClientUI(VenueClientEventSubscriber):
         
         *service* The ServiceDescription representing the service we want to open
         """
-        log.debug("Opening service: %s / %s" % (service.name,
-                                                 service.mimeType))
-        commands = GetMimeCommands(filename=service.uri, type=service.mimeType)
+        log.debug("Opening service: %s / %s" % (service.name,service.mimeType))
+        appdb = Toolkit.GetApplication().GetAppDatabase()
+        commands = appdb.GetCommandNames(service.mimeType)
        
         if commands == None:
             message = "No client registered for the selected application\n(mime type = %s)" % service.mimeType
             dlg = MessageDialog(None, message )
             log.debug(message)
-
         else:
             try:
                 if commands.has_key('open'):
-                    log.debug("executing cmd: %s" % commands['open'])
-                    if commands['open'][0:6] == "WX_DDE":
-                        pid = wxExecute(commands['open'])
-                    else:
-                        pid = wxShell(commands['open'])
+                    cmdLine = appdb.GetCommandLine(service.mimeType, 'open')
+                    log.debug("executing cmd: %s", cmdLine)
+                    pid = wxExecute(cmdLine)
             except:
                 log.exception("bin.VenueClient::OpenService: Open service failed")
-                ErrorDialog(None, "The service could not be opened", "Open Service Error", style = wxOK | wxICON_ERROR)
+                ErrorDialog(None, "The service could not be opened",
+                            "Open Service Error", style = wxOK | wxICON_ERROR)
                 
     def RemoveService(self, service):
         """
@@ -1361,20 +1339,6 @@ class VenueClientUI(VenueClientEventSubscriber):
     #
     # Application Integration code
     #
-    def StartApp(self,app):
-        """
-        Start the specified application.  This method creates the application
-        in the venue, and then joins it by starting the appropriate client
-
-        **Arguments:**
-        
-        *app* The ApplicationDescription of the application we want to start
-        """
-        log.debug("Creating application: %s" % app.name)
-        appDesc = self.venueClient.client.CreateApplication( app.name, app.description,
-                                                 app.mimeType )
-        self.JoinApp(appDesc)
-
     def JoinApp(self,app):
         """
         Join the specified application
@@ -1384,20 +1348,19 @@ class VenueClientUI(VenueClientEventSubscriber):
         *app* The ApplicationDescription of the application we want to join
         """
         log.debug("Joining application: %s / %s" % (app.name, app.mimeType))
-        commands = GetMimeCommands(filename=app.uri, type=app.mimeType)
+        appdb = Toolkit.GetApplication().GetAppDatabase()
+        commands = appdb.GetCommandNames(app.mimeType)
 
         if commands == None:
             message = "No client registered for the selected application\n(mime type = %s)" % app.mimeType
             dlg = MessageDialog(None, message )
             log.debug(message)
         else:
-            if commands.has_key('open'):
-                log.debug("executing cmd: %s" % commands['open'])
-                if commands['open'][0:6] == "WX_DDE":
-                    pid = wxExecute(commands['open'])
-                else:
-                    StartDetachedProcess(commands['open'])
-
+            if 'Open' in commands:
+                cmdLine = appdb.GetCommandLine(app.mimeType, 'Open')
+                log.debug("executing cmd: %s" % cmdLine)
+                pid = wxExecute(cmdLine)
+                
     def RemoveApp(self,app):
         """
         Delete the specified application from the venue
