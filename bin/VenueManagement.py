@@ -209,12 +209,12 @@ class VenueProfilePanel(wxPanel):
                                         size = wxSize(10, 30) ,\
                                       style = wxTE_MULTILINE | wxTE_READONLY)
 	self.line = wxStaticLine(self, -1)
-	self.iconLabel = wxStaticText(self, -1, 'Icon:', size = wxSize(40, 20),\
-				      name = "icon", style = wxALIGN_RIGHT)
+        #	self.iconLabel = wxStaticText(self, -1, 'Icon:', size = wxSize(40, 20),\
+	#			      name = "icon", style = wxALIGN_RIGHT)
 	wxInitAllImageHandlers()
-	bitmap =  wxBitmap('IMAGES/icon.gif', wxBITMAP_TYPE_GIF)
-	self.icon = wxStaticBitmap(self, -1, bitmap, \
-				   size = wxSize(bitmap.GetWidth(), bitmap.GetHeight()))
+	#bitmap =  wxBitmap('IMAGES/icon.gif', wxBITMAP_TYPE_GIF)
+	#self.icon = wxStaticBitmap(self, -1, bitmap, \
+        #				   size = wxSize(bitmap.GetWidth(), bitmap.GetHeight()))
 	self.exitsLabel = wxStaticText(self, -1, 'Exits:', size = wxSize(50, 20), \
 				       name = "exitsLabel", style = wxALIGN_RIGHT)
 	self.exits = wxListBox(self, 10, size = wxSize(250, 100), style = wxTE_READONLY)
@@ -248,8 +248,8 @@ class VenueProfilePanel(wxPanel):
 	venueListProfileSizer.Add(self.line, 0, wxEXPAND)
 
 	paramGridSizer = wxFlexGridSizer(4, 2, 10, 10)
-	paramGridSizer.Add(self.iconLabel, 0, wxEXPAND, 0)
-	paramGridSizer.Add(self.icon, 0, wxALIGN_LEFT, 0)
+        #	paramGridSizer.Add(self.iconLabel, 0, wxEXPAND, 0)
+	#paramGridSizer.Add(self.icon, 0, wxALIGN_LEFT, 0)
 	paramGridSizer.Add(self.exitsLabel, 0, wxEXPAND, 0)
 	paramGridSizer.Add(self.exits, 1, wxEXPAND|wxRIGHT|wxBOTTOM, 15)
 	paramGridSizer.AddGrowableCol(1) 
@@ -407,51 +407,6 @@ class ConfigurationPanel(wxPanel):
 	self.SetAutoLayout(1)  
 
 
-'''AdministratorssProfilePanel.
-
-Contains specific information about one administrators, such as name, icon, and direct name.
-'''
-#class AdministratorsProfilePanel(wxPanel):
-#   def __init__(self, parent):
-#        wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
-#                         wxDefaultSize, wxNO_BORDER|wxSW_3D, name = "venueProfilePanel")  
-#        self.administratorsProfileBox = wxStaticBox(self, -1, "Susanne Lefvert")
-#        self.description = wxStaticText(self, -1,"ops" ,size = wxSize(200, 30))
-#        self.line = wxStaticLine(self, -1)
-#        self.dnLabel = wxStaticText(self, -1, "DN:", size = wxSize(35, 20),\
-#                                    name = "dnLabel", style = wxALIGN_RIGHT)
-#        self.dn =  wxStaticText(self, -1, "http://www.thedn.com", size = wxSize(200, 20), name = "dn")
-#        self.iconLabel = wxStaticText(self, -1, "Icon:", size = wxSize(40, 20),\
-#                                      name = "icon", style = wxALIGN_RIGHT)
-#        wxInitAllImageHandlers()
-#        bitmap =  wxBitmap("IMAGES/icon.gif", wxBITMAP_TYPE_GIF)
-#        self.icon = wxStaticBitmap(self, -1, bitmap, \
-#                                   size =wxSize(bitmap.GetWidth(), bitmap.GetHeight()))
-#        self.__setProperties()
-#        self.__doLayout()
-#        
-#    def __setProperties(self):
-#        self.description.SetLabel("Employed at Argonne National \nLaboratory!\n")
-#        
-#    def __doLayout(self):
-#        administratorsProfileSizer = wxStaticBoxSizer(self.administratorsProfileBox, wxVERTICAL)
-#        administratorsProfileSizer.Add(self.description, 0, wxEXPAND|wxALL, 5)
-#        administratorsProfileSizer.Add(self.line, 0, wxEXPAND)
-#            
-#        self.SetSizer(administratorsProfileSizer)
-#        administratorsProfileSizer.Fit(self)
-#        
-#        paramGridSizer = wxFlexGridSizer(4, 2, 10, 10)
-#        paramGridSizer.Add(self.dnLabel, 0, wxEXPAND, 0)
-#        paramGridSizer.Add(self.dn, 0, wxEXPAND, 0)
-#        paramGridSizer.Add(self.iconLabel, 0, wxEXPAND, 0)
-#        paramGridSizer.Add(self.icon, 0, wxLEFT, 0)
-#        paramGridSizer.AddGrowableCol(1) 
-#        paramGridSizer.AddGrowableRow(2) 
-#        administratorsProfileSizer.Add(paramGridSizer, 10, wxEXPAND|wxTOP, 10)
-#        self.SetAutoLayout(1)
-            
-            
 '''AdministratorsListPanel.
 
 Contains the list of administratos that are authorized to manipulate venues and administrators.  This panel also
@@ -730,12 +685,12 @@ class VenueParamFrame(wxDialog):
 	self.descriptionLabel = wxStaticText(self, -1, "Description:")
 	self.description =  wxTextCtrl(self, -1, "",\
 				       size = wxSize(200, 100), style = wxTE_MULTILINE|wxHSCROLL)
-	self.iconLabel = wxStaticText(self, -1, "Icon:")
+	#self.iconLabel = wxStaticText(self, -1, "Icon:")
 	
-	self.bitmap =  wxBitmap('IMAGES/icon.gif', wxBITMAP_TYPE_GIF)
-	self.icon = wxStaticBitmap(self, -1, self.bitmap, \
-				   size = wxSize(self.bitmap.GetWidth(), self.bitmap.GetHeight()))
-	self.browseButton = wxButton(self, 160, "browse")
+	#self.bitmap =  wxBitmap('IMAGES/icon.gif', wxBITMAP_TYPE_GIF)
+	#self.icon = wxStaticBitmap(self, -1, self.bitmap, \
+	#			   size = wxSize(self.bitmap.GetWidth(), self.bitmap.GetHeight()))
+	#self.browseButton = wxButton(self, 160, "browse")
         self.venuesLabel = wxStaticText(self, -1, "Venues on this server:")
         self.venues = wxListBox(self, -1, size = wxSize(150, 100))
         self.transferVenueLabel = wxStaticText(self, -1, "Add Exit")
@@ -773,12 +728,12 @@ class VenueParamFrame(wxDialog):
 	paramFrameSizer.Add(self.titleLabel, 0, wxALIGN_RIGHT)
 	paramFrameSizer.Add(self.title, 0, wxEXPAND)
 	
-	paramFrameSizer.Add(self.iconLabel, 0, wxALIGN_RIGHT)
+	#paramFrameSizer.Add(self.iconLabel, 0, wxALIGN_RIGHT)
 	box = wxBoxSizer(wxHORIZONTAL)
 	box.Add(20, 10, 0, wxEXPAND)
-	box.Add(self.icon, 0, wxEXPAND)
+	#box.Add(self.icon, 0, wxEXPAND)
 	box.Add(20, 10, 0, wxEXPAND)
-	box.Add(self.browseButton, 0, wxEXPAND)
+	#box.Add(self.browseButton, 0, wxEXPAND)
 	paramFrameSizer.Add(box, 0, wxEXPAND)
 	
 	paramFrameSizer.AddGrowableCol(1) 
@@ -860,8 +815,7 @@ class VenueParamFrame(wxDialog):
    #    urlTest =  self.__isStringBlank(self.url.GetValue())
         descriptionTest =  self.__isStringBlank(self.description.GetValue())
             
-        if(titleTest or  \
-           (self.bitmap == None) or descriptionTest):
+        if(titleTest or descriptionTest):
             wrongParamsDialog = wxMessageDialog(self, 'Please, fill in all fields!', \
                                                 '', wxOK | wxICON_INFORMATION)
             wrongParamsDialog.ShowModal()
@@ -938,8 +892,8 @@ class ModifyVenueFrame(VenueParamFrame):
         exitsList = Client.Handle(data.uri).get_proxy().GetConnections()
         VenueParamFrame.InsertData(self, venuesList, exitsList)
                            
-#        bitmap =  wxBitmap("IMAGES/icon.gif", wxBITMAP_TYPE_GIF)
-#	self.icon.SetBitmap(bitmap)
+        #        bitmap =  wxBitmap("IMAGES/icon.gif", wxBITMAP_TYPE_GIF)
+        #	self.icon.SetBitmap(bitmap)
 	self.Layout()
 
 
