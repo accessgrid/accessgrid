@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.241 2003-08-22 19:37:45 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.242 2003-08-22 19:39:17 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1827,9 +1827,10 @@ class ContentListPanel(wxPanel):
                     if commands.has_key('Open'):
                         openCmd = commands['Open']
                     else:
-                        ErrorDialog(None,
-                                    "You have nothing configured for this data.",
-                                    style = wxOK  | wxICON_ERROR)
+                        MessageDialog(None,
+                                      "You have nothing configured for this data.",
+                                      "Application not configured.",
+                                      style = wxOK  | wxICON_ERROR)
                         return None
                 elif isinstance(item, ServiceDescription):
                     list = item.name.split('.')
@@ -1840,9 +1841,10 @@ class ContentListPanel(wxPanel):
                     if commands.has_key('Open'):
                         openCmd = commands['Open']
                     else:
-                        ErrorDialog(None,
-                                    "You have nothing configured for this data.",
-                                    style = wxOK  | wxICON_ERROR)
+                        MessageDialog(None,
+                                      "You have nothing configured for this data.",
+                                      "Application not configured.",
+                                      style = wxOK  | wxICON_ERROR)
                         return None
                 else:
                     appdb = Toolkit.GetApplication().GetAppDatabase()
@@ -2166,8 +2168,6 @@ class ContentListPanel(wxPanel):
         prog = re.compile("\%[a-zA-Z0-9\_]*\%")
         result = prog.match(command)
 
-        print "CMD: <%s>" % command
-
         if result != None:
             subStr = result.group()
 
@@ -2180,6 +2180,8 @@ class ContentListPanel(wxPanel):
         else:
             realCommand = command % namedVars
             
+        print "CMD: <%s>" % realCommand
+
         self.app.venueClient.processManager.start_process(realCommand, [])
         
     def CleanUp(self):
