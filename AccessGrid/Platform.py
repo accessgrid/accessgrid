@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.4 2003-02-14 15:23:35 leggett Exp $
+# RCS-ID:      $Id: Platform.py,v 1.5 2003-02-14 23:20:03 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -66,11 +66,6 @@ def GetConfigFilePath( configFile ):
         first check user dir, then system dir; 
         return None if not found
     """
-
-    userConfigPath = GetUserConfigDir()
-    pathToFile = os.path.join(userConfigPath,configFile)
-    if os.path.exists( pathToFile ):
-        return pathToFile
 
     systemConfigPath = GetSystemConfigDir()
     pathToFile = os.path.join(systemConfigPath,configFile)
