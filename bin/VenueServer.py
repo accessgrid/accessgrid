@@ -4,23 +4,34 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.47 2004-03-12 19:57:43 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.48 2004-03-12 21:23:59 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 This is the venue server program. This will run a venue server.
 """
-__revision__ = "$Id: VenueServer.py,v 1.47 2004-03-12 19:57:43 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.48 2004-03-12 21:23:59 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # The standard imports
 import os
 import sys
-import getopt
 import signal
 import time
 import threading
+
+if sys.version.startswith('2.2'):
+    try:
+        from optik import OptionParser
+    except:
+        raise Exception, "Missing module optik necessary for the AG Toolkit."
+
+if sys.version.startswith('2.3'):
+    try:
+        from optparse import OptionParse
+    except:
+        raise Exception, "Missing module optparse, check your python installation."
 
 # Our imports
 from AccessGrid.Platform.Config import SystemConfig
@@ -45,59 +56,23 @@ def SignalHandler(signum, frame):
 
     venueServer.Shutdown()
 
-def Usage(agtk):
-    """
-    This is the usage method, it prints out how to use this program.
-    """
-    print "USAGE: %s:" % os.path.split(sys.argv[0])[1]
-
-    print " Toolkit Options:"
-    agtk.Usage()
-
-    print " VenueServer Specific Options:"
-    print "\t-p|--port <int> : <port number to listen on>"
-    print "\t-h|--help : print usage"
-
-def ProcessArgs(app, argv):
-    """
-    """
-    options = dict()
-    
-    # Parse command line options
-    try:
-        opts = getopt.getopt(argv, "p:l:c:hd", ["port="])[0]
-    except getopt.GetoptError:
-        Usage(app)
-        sys.exit(2)
-        
-    for opt, arg in opts:
-        if opt in ("-p", "--port"):
-            port = int(arg)
-            options['port'] = port
-            options['p'] = port
-        else:
-            Usage(app)
-            sys.exit(0)
-            
-
-    if app.GetCmdlineArg('help') or app.GetCmdlineArg('h'):
-        Usage(app)
-        sys.exit(0)
-
-    return options
-        
 def main():
     """
     The main routine of this program.
     """
     global venueServer, log
 
-    # defaults
-    port = 8000
+    # build options for this application
+    parser = OptionParser()
+    parser.add_option("-p", "--port", type="int", dest="port",
+                      default=8000, metavar="PORT",
+                      help="Set the port the service manager should run on.")
 
     # Init toolkit with standard environment.
     app = CmdlineApplication()
 
+    app.SetOptionParser(parser)
+    
     # Try to initialize
     try:
         args = app.Initialize(sys.argv, "VenueServer")
@@ -106,23 +81,16 @@ def main():
         print " Initialization Error: ", e
         sys.exit(-1)
 
-    # Process the rest of the cmd line args
-    options = ProcessArgs(app, args)
-
     # Get the Log
     log = app.GetLog()
-
-    if options.has_key('port') or options.has_key('p'):
-        port = options['port']
-    else:
-        log.warn("Using default port: %d", port)
+    port = app.GetOption("port")
 
     # Second thing we do is create a hosting environment
     hostname = SystemConfig.instance().GetHostname()
     server = Server((hostname, port), debug = app.GetDebugLevel())
     
     # Then we create a VenueServer, giving it the hosting environment
-    venueServer = VenueServer(server, app.GetCmdlineArg('configFile'))
+    venueServer = VenueServer(server, app.GetOption('configfilename'))
 
     # We register signal handlers for the VenueServer. In the event of
     # a signal we just try to shut down cleanly.n
