@@ -2,7 +2,7 @@
 # Name:        setup.py
 # Purpose:     This is the setup.py for the Access Grid python module.
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.62 2004-04-21 18:24:52 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.63 2004-04-21 19:00:16 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,32 +23,6 @@ by the set up below.
 
 cdir = os.getcwd()
 
-# We pluck off the prefix, this is totally unkosher, but hey
-dest = None
-for arg in sys.argv[1:]:
-    if string.find(arg, '--prefix') == 0:
-        al = string.split(arg, '=')
-        if len(al) == 2:
-            dest = al[1]
-
-# Generate epydoc documentation
-if dest is not None:
-    if sys.platform == 'win32':
-        ep = os.path.join(os.path.dirname(sys.executable), "Scripts", "epydoc.py")
-    else:
-        ep = find_executable("epydoc")
-
-    cmd = [sys.executable, ep, "--html", "-o",
-           os.path.join("doc", "Developer"),
-           "-n", "Access Grid Toolkit", "-u",
-           "http://www.mcs.anl.gov/fl/research/accessgrid/", "AccessGrid"]
-    print "cmd = ", cmd
-    try:
-        spawn(cmd, verbose=1)
-    except Exception, e:
-        print "** Error generating documentation"
-        traceback.print_exc()
-
 win32_scripts = list()
 win32_data = [
     ('', [r'COPYING.txt', r'Install.WINDOWS', r'README', r'README-developers',
@@ -56,9 +30,9 @@ win32_data = [
     ('bin', glob.glob('bin/*.py')),
     ('NodeServices', ''),
     ('SharedApplications', ''),
-    ('doc/Developer', glob.glob('doc/Developer/*.*')),
-    ('doc/Developer/private', glob.glob('doc/Developer/private/*.*')),
-    ('doc/Developer/public', glob.glob('doc/Developer/public/*.*')),
+#    ('doc/Developer', glob.glob('doc/Developer/*.*')),
+#    ('doc/Developer/private', glob.glob('doc/Developer/private/*.*')),
+#    ('doc/Developer/public', glob.glob('doc/Developer/public/*.*')),
     ('doc/VenueClientManual', glob.glob('doc/VenueClientManual/*.*')),
     ('doc/VenueClientManual/VenueClientManual_files',
      glob.glob('doc/VenueClientManual/VenueClientManual_files/*.*')),
