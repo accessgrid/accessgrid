@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.88 2004-05-18 20:40:14 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.89 2004-06-01 15:50:35 judson Exp $
 ;
 
 ; Set externally
@@ -79,7 +79,11 @@ ShowLanguageDialog=yes
 
 [Files]
 ; The Python Modules
-Source: Lib\site-packages\*.*; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\AccessGrid\*.py; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\AccessGrid; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\OpenSSL_AG\*.py; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\OpenSSL_AG; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\pyGlobus\*.py; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\pyGlobus; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\SOAPpy\*.py; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\SOAPpy; Flags: recursesubdirs overwritereadonly restartreplace
+Source: Lib\site-packages\fpconst.py; DestDir: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\Lib\site-packages\fpconst.py; Flags: recursesubdirs overwritereadonly restartreplace
 
 ; Documentation
 Source: doc\Developer\*.*; DestDir: {app}\doc\Developer; Flags: recursesubdirs
@@ -111,7 +115,7 @@ Source: SharedApplications\*.agpkg; DestDir: {app}\SharedApplications
 
 ; System wide files, windows wierdness no doubt
 Source: install\agicons.exe; DestDir: {app}\install
-Source: install\msvcr70.dll; DestDir: {win}\system32; Flags: restartreplace uninsneveruninstall onlyifdoesntexist
+Source: install\msvcr70.dll; DestDir: {win}\system32; Flags: uninsneveruninstall onlyifdoesntexist
 ; end system files
 
 [Icons]
