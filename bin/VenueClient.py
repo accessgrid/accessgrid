@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.226 2003-09-29 19:34:49 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.227 2003-09-30 18:45:53 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1123,7 +1123,8 @@ class VenueClientUI(VenueClientEventSubscriber):
             log.exception("bin.VenueClient:get_ident_and_download: Got exception on download")
             MessageDialog(None, "The file could not be downloaded", "Download Error", 
                           style = wxOK  | wxICON_WARNING)
-            
+
+              
     def UploadPersonalFiles(self, fileList):
         """
         Upload the given personal files to the venue.
@@ -1181,6 +1182,33 @@ class VenueClientUI(VenueClientEventSubscriber):
         long-term transfers and to allow for live updates of a download status.
         
         """
+        fileNr = 0
+        
+        # Check if data is already added
+        for file in file_list:
+            pathParts = os.path.split(file)
+            index = len(pathParts)-1
+            name = pathParts[index]
+                                
+            dataDescriptions = self.venueClient.venueState.data.values()
+            
+            for data in dataDescriptions:
+                if data.name == name:
+                    title = "Duplicated File"
+                    info = "A file named %s is already added, do you want to overwrite?" % name
+                    dlg = wxMessageDialog(self.frame, info, title, style = wxICON_INFORMATION | wxOK | wxCANCEL)
+                    # Overwrite?
+                    if dlg.ShowModal() == wxID_OK:
+                        self.venueClient.RemoveData(data, None)
+                    else:
+                        # We don't want to upload this file
+                        del file_list[fileNr]
+
+            fileNr = fileNr + 1
+            
+        if len(file_list) < 1:
+            return
+        
         url = self.venueClient.dataStoreUploadUrl
         method = self.get_ident_and_upload
 
