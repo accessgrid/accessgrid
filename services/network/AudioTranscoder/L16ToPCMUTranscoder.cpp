@@ -1,6 +1,9 @@
 /*
- An audio transcoder that can translate L16-8K-Mono to u-law-8K-Mono. The code
- uses the live.com streaming media library (www.live.com/liveMedia)
+ An audio transcoder that can translate L16-8K-Mono to u-law-8K-Mono.  It also mixes
+ several audio streams into one stream that can be played back in for example Apple 
+ QuickTime Player.  The code uses the live.com streaming media library (www.live.com/liveMedia)
+
+ Author: Susanne Lefvert
 */
 
 #include "liveMedia.hh"
@@ -13,11 +16,12 @@ void afterPlaying(void* clientData); // forward
 // It is used in the "afterPlaying()" function to clean up the session.
 struct sessionState_t {
   FramedSource* source;
-  //RTPSource* source;
+  RTPSource* rtpSource;
+  RTCPInstance* rtcpInstanceReceive;
+  RTCPInstance* rtcpInstanceTransmit;
   RTPSink* sink;
   Groupsock* rtpGroupsock;
   Groupsock* rtcpGroupsock;
-  RTCPInstance* rtcpInstance;
   RTSPServer* rtspServer;
 } sessionState;
 
@@ -30,29 +34,29 @@ int main(int argc, char** argv) {
   env = BasicUsageEnvironment::createNew(*scheduler);
   
   if (argc != 5){
-    *env << "\n      Usage: L16ToPCMUTranscoder.cpp fromAddress fromPort toAddress toPort\n\n      fromAddress/fromPort transmits L16-8K-Mono audio \n      toAddress/toPort receives PCMu-8K-Mono\n\n";
+    *env << "\n      Usage: L16ToPCMUTranscoder.cpp fromAddress fromPort toAddress toPort\n\n      fromAddress/fromPort transmits L16-8K-Mono audio (rtp payload 122) \n      toAddress/toPort receives PCMu-8K-Mono (rtp payload 0) \n\n";
     exit(1);
   }
 
   unsigned const samplingFrequency = 8000; 
   unsigned char const numChannels = 1; 
-  unsigned char const bitsPerSample = 16;
-  unsigned bitsPerSecond = samplingFrequency*bitsPerSample*numChannels;
-  
+   
   // *********** SOURCE ****************
  
   // Create 'groupsocks' for RTP and RTCP:
   char* fromAddr = argv[1];
   const unsigned short fromPort = atoi(argv[2]);
-  const unsigned short rtcpPortNumSource = fromPort+1;
+  const unsigned short rtcpFromPort = fromPort + 1; 
   const unsigned char ttlSource = 255;
   char* mimeType = "PCM";
   unsigned char rtpPayloadFormat = 122;  //Receive L16-8K-Mono
+  unsigned char const bitsPerSample = 16;
+  unsigned bitsPerSecond = samplingFrequency*bitsPerSample*numChannels;
    
   struct in_addr sessionAddress;
   sessionAddress.s_addr = our_inet_addr(fromAddr);
   const Port rtpPortSource(fromPort);
-  const Port rtcpPortSource(rtcpPortNumSource);
+  const Port rtcpPortSource(rtcpFromPort);
   Groupsock rtpGroupsock(*env, sessionAddress, rtpPortSource, ttlSource);
   Groupsock rtcpGroupsock(*env, sessionAddress, rtcpPortSource, ttlSource);
   
@@ -60,13 +64,15 @@ int main(int argc, char** argv) {
     = SimpleRTPSource::createNew(*env, &rtpGroupsock, rtpPayloadFormat,
 				 samplingFrequency, mimeType, 1, true);
 
+  sessionState.rtpSource = rtpSource;
+  
   // Create (and start) a 'RTCP instance' for the RTP source:
   const unsigned estimatedSessionBandwidth = 130; // in kbps; for RTCP b/w share
   const unsigned maxCNAMElen = 100;
   unsigned char CNAME[maxCNAMElen+1];
   gethostname((char*)CNAME, maxCNAMElen);
   CNAME[maxCNAMElen] = '\0'; // just in case
-  sessionState.rtcpInstance
+  sessionState.rtcpInstanceReceive
     = RTCPInstance::createNew(*env, &rtcpGroupsock,
 			      estimatedSessionBandwidth, CNAME,
 			      NULL /* we're a client */, rtpSource);
@@ -93,7 +99,7 @@ int main(int argc, char** argv) {
     rtpPayloadFormat = 96; // a dynamic RTP payload type
   }
     
-  // ********** SINK ********************
+  // ************** SINK ********************
   
   // Get attributes of the audio source:
  
@@ -105,10 +111,10 @@ int main(int argc, char** argv) {
      
   char* toAddr = argv[3];
   const unsigned short toPort = atoi(argv[4]);
-  const unsigned short rtcpPortNumSink = toPort+1;
+  const unsigned short rtcpToPort = toPort + 1;
   const unsigned char ttlSink = 255;
   const Port rtpPortSink(toPort);
-  const Port rtcpPortSink(rtcpPortNumSink);
+  const Port rtcpPortSink(rtcpToPort);
   
   // Create 'groupsocks' for RTP and RTCP:
   struct in_addr destinationAddress;
@@ -131,7 +137,7 @@ int main(int argc, char** argv) {
   // Create (and start) a 'RTCP instance' for this RTP sink:
   gethostname((char*)CNAME, maxCNAMElen);
   CNAME[maxCNAMElen] = '\0'; // just in case
-  sessionState.rtcpInstance
+  sessionState.rtcpInstanceTransmit
     = RTCPInstance::createNew(*env, sessionState.rtcpGroupsock,
 			      estimatedSessionBandwidth, CNAME,
 			      sessionState.sink, NULL /* we're a server */,
@@ -148,10 +154,10 @@ int main(int argc, char** argv) {
   ServerMediaSession* sms
     = ServerMediaSession::createNew(*env, "Transcoder", "L16-8K-Mono -> PCMu-8K-Mono",
 				    "Session streamed by \"L16ToPCMUTranscoder\"", True/*SSM*/);
-  sms->addSubsession(PassiveServerMediaSubsession::createNew(*sessionState.sink, sessionState.rtcpInstance));
+  sms->addSubsession(PassiveServerMediaSubsession::createNew(*sessionState.sink, sessionState.rtcpInstanceTransmit));
   sessionState.rtspServer->addServerMediaSession(sms);
   
-  // ************ START RECEIVING AND SENDING *******************
+  // ************ START RECEIVING AND SENDING *************
 
   // Finally, start receiving the multicast stream:
   *env << "\nBegin receiving multicast stream at address "<< fromAddr << " port "<< fromPort<<"\n";
@@ -172,7 +178,11 @@ void afterPlaying(void* /*clientData*/) {
   *env << "...done receiving\n";
 
   // End by closing the media:
-  Medium::close(sessionState.rtcpInstance); // Note: Sends a RTCP BYE
+  Medium::close(sessionState.rtcpInstanceReceive); // Note: Sends a RTCP BYE
+  Medium::close(sessionState.rtcpInstanceTransmit); // Note: Sends a RTCP BYE
   Medium::close(sessionState.sink);
   Medium::close(sessionState.source);
+  Medium::close(sessionState.rtpSource);
+  Medium::close(sessionState.rtspServer);
+
 }
