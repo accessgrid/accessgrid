@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.29 2003-02-06 23:22:56 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.30 2003-02-07 20:51:05 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -59,7 +59,7 @@ class VenueClientUI(wxApp, VenueClient):
         to 'home venue' specified in the user profile, is this fails,  it will ask
         the user for a specific URL to a venue or venue server.
         """
-        myHomePath = os.environ['HOME']
+        # myHomePath = os.environ['HOME']
         # venueServerUri = "https://localhost:6000/VenueServer"
         # venueUri = Client.Handle( venueServerUri ).get_proxy().GetDefaultVenue()
         
