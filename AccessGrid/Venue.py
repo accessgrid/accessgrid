@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.94 2003-05-17 18:04:48 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.95 2003-05-22 20:15:47 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -217,6 +217,13 @@ class Venue(ServiceBase.ServiceBase):
         self.services = dict()
         self.streamList = StreamDescriptionList()
         self.clients = dict()
+
+        #
+        # Dictionary keyed on client private id; value
+        # true if a remove is in process on this client.
+        #
+        self.clientsBeingRemoved = {}
+        self.clientsBeingRemovedLock = Condition(Lock())
 
         self.dataStore = None
         self.producerCapabilities = []
@@ -488,7 +495,7 @@ class Venue(ServiceBase.ServiceBase):
         """
         now = time.time()
         
-        log.debug("Got Client Heartbeat for %s at %s." % (privateId, now))
+        # log.debug("Got Client Heartbeat for %s at %s." % (privateId, now))
        
         if self.clients.has_key(privateId):
             self.simpleLock.acquire()
@@ -513,12 +520,11 @@ class Venue(ServiceBase.ServiceBase):
         """
         log.debug("VenueServer: Got Client disconnect for %s", privateId)
 
-        self.simpleLock.acquire()
+        #
+        # We don't lock here; RemoveUser handles the locking.
+        #
         
         self.RemoveUser(privateId)
-
-        self.simpleLock.notify()
-        self.simpleLock.release()
         
     def Shutdown(self):
         """
@@ -670,16 +676,37 @@ class Venue(ServiceBase.ServiceBase):
             *privateId* The private Id of the user being removed.
 
         """
-        # Remove user as stream producer
-        log.debug("Called RemoveUser on %s", privateId)
-        self.streamList.RemoveProducer(privateId)
 
-        # Remove clients from venue
-        if self.clients.has_key(privateId):
+        self.clientsBeingRemovedLock.acquire()
+
+        if privateId in self.clientsBeingRemoved and self.clientsBeingRemoved[privateId]:
+            log.debug("RemoveUser: private id %s already being removed", privateId)
+            self.clientsBeingRemovedLock.notify()
+            self.clientsBeingRemovedLock.release()
+            return
+
+        self.clientsBeingRemoved[privateId] = 1
+        self.clientsBeingRemovedLock.notify()
+        self.clientsBeingRemovedLock.release()
+
+        self.simpleLock.acquire()
+        
+        try:
+            # Remove user as stream producer
+            log.debug("Called RemoveUser on %s", privateId)
+            self.streamList.RemoveProducer(privateId)
+
+            # Remove clients from venue
+            if not self.clients.has_key(privateId):
+                log.warn("RemoveUser: Tried to remove a client that doesn't exist")
+                self.simpleLock.notify()
+                self.simpleLock.release()
+                return
+            
+            client, heartbeatTime = self.clients[privateId]
             
             # Remove clients private data
             for description in self.data.values():
-                client, heartbeatTime = self.clients[privateId]
                 
                 if description.type == client.publicId:
                     log.debug("RemoveUser: Remove private data %s"
@@ -696,8 +723,16 @@ class Venue(ServiceBase.ServiceBase):
                                                         self.uniqueId,
                                                         clientProfile ) )
             del self.clients[privateId]
-        else:
-            log.warn("RemoveUser: Tried to remove a client that doesn't exist")
+        except:
+            log.exception("Venue.RemoveUser: Body of method threw exception")
+
+        self.clientsBeingRemovedLock.acquire()
+        del self.clientsBeingRemoved[privateId]
+        self.clientsBeingRemovedLock.notify()
+        self.clientsBeingRemovedLock.release()
+
+        self.simpleLock.notify()
+        self.simpleLock.release()
 
     def SetConnections(self, connectionDict):
         """

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.62 2003-05-15 19:59:53 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.63 2003-05-22 20:15:47 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -69,6 +69,13 @@ class VenueClient( ServiceBase):
         self.leaderProfile = None
         self.pendingFollowers = dict()
         self.followerProfiles = dict()
+
+        #
+        # Manage the currently-exiting state
+        #
+
+        self.exiting = 0
+        self.exitingLock = threading.Lock()
                           
     def __InitVenueData__( self ):
         self.eventClient = None
@@ -117,6 +124,8 @@ class VenueClient( ServiceBase):
 
         self.venueState.RemoveUser(data)
 
+        log.debug("Got Remove User Event...done")
+        
     def ModifyUserEvent(self, data):
         log.debug("Got Modify User Event")
 
@@ -226,7 +235,8 @@ class VenueClient( ServiceBase):
         #
         # Enter the venue
         #
-      
+
+        log.debug("Invoke venue enter")
         (venueState, self.privateId, streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
       
         #
@@ -390,6 +400,14 @@ class VenueClient( ServiceBase):
         """
         log.info("VenueClient.ExitVenue")
 
+        self.exitingLock.acquire()
+        if self.exiting:
+            log.debug("VenueClient already exiting, returning.")
+            self.exitingLock.release()
+            return
+        self.exiting = 1
+        self.exitingLock.release()
+
         # Exit the venue
         try:         
             self.venueProxy.Exit( self.privateId )
@@ -423,6 +441,9 @@ class VenueClient( ServiceBase):
 
         self.__InitVenueData__()
         self.isInVenue = 0
+        self.exitingLock.acquire()
+        self.exiting = 0
+        self.exitingLock.release()
 
     def GetVenue( self ):
         """

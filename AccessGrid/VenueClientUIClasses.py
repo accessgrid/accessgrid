@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.195 2003-05-22 04:46:44 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.196 2003-05-22 20:15:47 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -475,6 +475,9 @@ class VenueClientFrame(wxFrame):
         for x in fixedUrlList:
             fixedUrl = fixedUrl + x
         self.venueAddressBar.SetAddress(fixedUrl)
+
+    def CloseTextConnection(self):
+        self.textClientPanel.CloseTextConnection()
 
     def SetTextLocation(self, event = None):
         textLoc = tuple(self.app.venueState.GetTextLocation())
@@ -1887,6 +1890,16 @@ class TextClientPanel(wxPanel):
         self.Processor.Input(ConnectEvent(self.venueId, privateId))
         self.TextOutput.Clear()
         self.TextInput.Clear()
+
+    def CloseTextConnection(self):
+        """
+        Close the connection to the text service.
+        """
+
+        log.debug("Venue client closing connection to text service")
+        self.Processor.Stop()
+        self.socket.close()
+        del self.Processor
 
     def OutputText(self, textPayload):
         message, profile = textPayload.data

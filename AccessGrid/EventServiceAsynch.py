@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Robert D. Olson
 #
 # Created:     2003/05/19
-# RCS-ID:      $Id: EventServiceAsynch.py,v 1.3 2003-05-21 16:23:05 olson Exp $
+# RCS-ID:      $Id: EventServiceAsynch.py,v 1.4 2003-05-22 20:15:47 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,6 +31,19 @@ from AccessGrid.GUID import GUID
 log = logging.getLogger("AG.VenueServer")
 log.setLevel(logging.INFO)
 
+
+#
+# Per-event debugging might be useful sometimes, but not usually.
+# Leave the calls in the code via logEvent, but let them
+# be disabled.
+# 
+
+detailedEventLogging = 0
+if detailedEventLogging:
+    logEvent = log.debug
+else:
+    logEvent = lambda *sh: 0
+
 class ConnectionHandler:
     """
     The ConnectionHandler is the object than handles a single event
@@ -47,6 +60,9 @@ class ConnectionHandler:
         self.bufsize = 4096
         self.buffer= Buffer(self.bufsize)
         self.waitingLen = 0
+
+    def __del__(self):
+        log.debug("ConnectionHandler delete")
 
     def GetId(self):
         return self.id
@@ -95,7 +111,7 @@ class ConnectionHandler:
 
     def readCallback(self, arg, handle, ret, buf, n):
 
-        log.debug("Got read handle=%s ret=%s  n=%s \n", handle, ret, n)
+        logEvent("Got read handle=%s ret=%s  n=%s \n", handle, ret, n)
 
         if n == 0:
             event = DisconnectEvent(self.channel, self.privateId)
@@ -120,7 +136,7 @@ class ConnectionHandler:
             self.waitingLen = dlen[0]
 
         if len(self.dataBuffer) >= self.waitingLen:
-            log.debug("Finished reading packet, wait=%s buflen=%s",
+            logEvent("Finished reading packet, wait=%s buflen=%s",
                       self.waitingLen, len(self.dataBuffer))
 
             thedata = self.dataBuffer[:self.waitingLen]
@@ -149,7 +165,7 @@ class ConnectionHandler:
 
         # Pass this event to the callback registered for this
         # event.eventType
-        log.debug("EventConnection: Received event %s", event)
+        logEvent("EventConnection: Received event %s", event)
 
         if event.eventType == ConnectEvent.CONNECT:
             log.debug("EventConnection: Adding client %s to venue %s",
@@ -172,7 +188,7 @@ class ConnectionHandler:
                                           event.eventType)):
             cb = self.server.callbacks[(event.venue, event.eventType)]
             if cb != None:
-                log.debug("invoke callback %s", str(cb))
+                logEvent("invoke callback %s", str(cb))
                 cb(event.data)
         elif self.server.callbacks.has_key((event.venue,)):
             # Default handler for this channel.
@@ -225,7 +241,6 @@ class EventService:
 
             conn = ConnectionHandler(self.waiting_socket, self)
             conn.registerAccept(self.attr)
-
 
         except:
             log.exception("listenCallback failed")

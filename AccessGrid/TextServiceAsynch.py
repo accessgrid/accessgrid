@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.2 2003-05-21 16:23:45 olson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.3 2003-05-22 20:15:47 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -95,6 +95,7 @@ class ConnectionHandler:
 
         if n == 0:
             log.debug("TextService got EOF")
+            self.server.RemoveChannelConnection(self.channel, self)
             return
 
         dstr = str(buf)
@@ -250,6 +251,15 @@ class TextService:
         self.log.debug("Text Service: Adding Channel: %s", channelId)
         
         self.connections[channelId] = []
+
+    def RemoveChannelConnection(self, channelId, conn):
+        clist = self.connections[channelId]
+        if conn in clist:
+            log.debug("TextService: Remove channel %s from %s", conn, channelId)
+            clist.remove(conn)
+        else:
+            log.info("RemoveChannelConnection: conn %s not in channel %s",
+                     conn, channelId)
 
     def RemoveChannel(self, channelId):
         self.log.debug("Text Service: Removing Channel: %s", channelId)

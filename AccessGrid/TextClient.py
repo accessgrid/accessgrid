@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.15 2003-05-20 19:39:26 olson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.16 2003-05-22 20:15:47 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -81,6 +81,7 @@ class SimpleTextProcessor:
             self.InitAsynchIO()
 
     def Stop(self):
+        self.wfile.close()
         self.log.debug("Stop")
         self.running = 0
         self.outputThread = 0

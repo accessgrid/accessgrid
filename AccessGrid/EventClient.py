@@ -6,12 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.17 2003-05-20 19:39:26 olson Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.18 2003-05-22 20:15:47 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 from threading import Thread
+import Queue
 import pickle
 import logging
 import struct
@@ -59,7 +60,7 @@ class EventClient:
     Service to maintain state among a set of clients. This is done by sending
     events through the event service.
     """
-    bufsize = 128
+    bufsize = 4096
     def __init__(self, privateId, location, channel):
         """
         The EventClient constructor takes a host, port.
@@ -70,18 +71,48 @@ class EventClient:
         self.buffer = Buffer(EventClient.bufsize)
         self.location = location
         self.callbacks = []
-
-#        Thread.__init__(self)
+        self.connected = 0
         
+        self.queue = Queue.Queue()
+
+        self.qThread = Thread(target = self.queueThreadMain)
+        self.qThread.start()
+
         attr = CreateTCPAttrAlwaysAuth()
         self.sock = GSITCPSocket()
         try:
             self.sock.connect(location[0], location[1], attr)
+            self.connected = 1
         except:
             log.exception("Couldn't connect to event service.")
             raise EventClientConnectionException
         
         # self.rfile = self.sock.makefile('rb', -1)
+
+    def __del__(self):
+        log.debug("EventClient destructor")
+        if self.running:
+            self.Stop()
+        
+        log.debug("EventClient.del: closing queue")
+        self.queue.put(("quit",))
+        self.qThread.join()
+
+    def queueThreadMain(self):
+        print "In queue thread"
+
+        while 1:
+            log.debug("Queue waiting for data")
+            dat = self.queue.get()
+            log.debug("Queue got data %s", dat)
+            if dat[0] == "quit":
+                log.debug("Queue exiting")
+                return
+            elif dat[0] == "call":
+                try:
+                    dat[1](dat[2])
+                except:
+                    log.exception("callback invocation failed")
 
     def start(self):
         """
@@ -115,6 +146,12 @@ class EventClient:
 
         if n == 0:
             log.debug("EventClient got EOF")
+            try:
+                self.sock.close()
+            except IOBaseException:
+                # we may get here because the socket was already closed
+                pass
+            self.connected = 0
             return
 
         dstr = str(buf)
@@ -142,6 +179,7 @@ class EventClient:
             self.dataBuffer = self.dataBuffer[self.waitingLen:]
 
             self.handleData(thedata)
+            log.debug("handleData returns")
 
             self.waitingLen = 0
             
@@ -191,29 +229,40 @@ class EventClient:
         self.sock.close()
 
     def handleData(self, pdata):
-        # Unpack the data
-        event = pickle.loads(pdata)
+        try:
+            # Unpack the data
+            event = pickle.loads(pdata)
 
-        # Invoke registered callbacks
-        calls = []
-        for (evt, callback) in self.callbacks:
-            if evt == event.eventType:
-                calls.append(callback)
+            # Invoke registered callbacks
+            calls = []
+            for (evt, callback) in self.callbacks:
+                if evt == event.eventType:
+                    calls.append(callback)
 
-                if len(calls) != 0:
-                    for callback in calls:
-                        callback(event.data)
-                    else:
-                        log.info("No callback for %s!", event.eventType)
-                        self.DefaultCallback(event)
-
+            if len(calls) != 0:
+                for callback in calls:
+                    log.debug("Invoking callback %s...", callback)
+                    try:
+                        #callback(event.data)
+                        self.queue.put(("call", callback, event.data))
+                        print "FOOOO"
+                    except:
+                        log.exception("Callback fails")
+                    log.debug("Invoking callback %s...done", callback)
+                else:
+                    log.info("No callback for %s!", event.eventType)
+                    self.DefaultCallback(event)
+        except:
+            log.exception("handleData failed")
 
     def Send(self, data):
         """
         This method sends data to the Event Service.
         """
-        log.info("Sending data: %s", data)
-        
+        # log.info("Sending data: %s", data)
+        if not self.connected:
+            log.error("Attempting to send on a disconnected EventClient")
+            raise EventClientWriteDataException
         try:
             pdata = pickle.dumps(data)
             size = struct.pack("i", len(pdata))
@@ -221,15 +270,24 @@ class EventClient:
             self.sock.write(pdata, len(pdata))
         except:
             self.running = 0
+            self.connected = 0
+            self.sock.close()
             log.exception("EventClient.Send Error: socket write failed.")
             raise EventClientWriteDataException
         
     def Stop(self):
-
-        self.Send(DisconnectEvent(self.channel, self.privateId))
+#         try:
+#             self.Send(DisconnectEvent(self.channel, self.privateId))
+#         except:
+#             #
+#             # This may well fail, if the server side has already disconnected us.
+#             #
+#             pass
+        
         self.running = 0
-
+        log.debug("EventClient.Stop: closing socket")
         self.sock.close()
+        self.connected = 0
 
     def DefaultCallback(self, event):
         log.info("Got callback for %s event!", event.eventType)
