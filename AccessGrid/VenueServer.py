@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.128 2004-03-24 00:31:45 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.129 2004-03-26 17:02:12 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.128 2004-03-24 00:31:45 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.129 2004-03-26 17:02:12 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -438,6 +438,18 @@ class VenueServer(AuthorizationMixIn):
                         v.AddService(ServiceDescription(name, description, uri,
                                                         mimeType))
 
+                # Deal with authorization
+                authPolicy =  cp.get(sec, 'authorizationPolicy')
+
+                # We can't persist crlf or cr or lf, so we replace them
+                # on each end (when storing and loading)
+                authPolicy  = re.sub("<CRLF>", "\r\n", authPolicy )
+                authPolicy  = re.sub("<CR>", "\r", authPolicy )
+                authPolicy  = re.sub("<LF>", "\n", authPolicy )
+
+                v.ImportAuthorizationPolicy(authPolicy)
+                
+
     def InitFromFile(self, config):
         """
         """
@@ -525,10 +537,12 @@ class VenueServer(AuthorizationMixIn):
         state that is lost (the longer the time between checkpoints, the more
         that can be lost).
         """
+        
         # Don't checkpoint if we are already
         if not self.checkpointing:
             self.checkpointing = 1
         else:
+            self.checkpointing = 0
             return
         
         # Grab a copy of the venues to dump
@@ -536,7 +550,7 @@ class VenueServer(AuthorizationMixIn):
         self.simpleLock.acquire()
         venuesToDump = self.venues.copy()
         self.simpleLock.release()
-        
+
         # Before we backup we copy the previous backup to a safe place
         # We only do this once, ie, if the file exists, we don't copy
         # over it.
@@ -552,7 +566,8 @@ class VenueServer(AuthorizationMixIn):
         # Open the persistent store
         store = file(self.persistenceFilename, "w")
 
-        try:            
+        try:
+                       
             for venuePath in venuesToDump.keys():
                 # Change out the uri for storage,
                 # we don't bother to store the path since this is
@@ -614,6 +629,7 @@ class VenueServer(AuthorizationMixIn):
         self.simpleLock.acquire()
 
         # Add the venue to the list of venues
+
         oid = venue.GetId()
         self.venues[oid] = venue
 
