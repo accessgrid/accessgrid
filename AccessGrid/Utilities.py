@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.65 2004-05-04 20:35:07 turam Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.66 2004-05-05 22:04:13 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.65 2004-05-04 20:35:07 turam Exp $"
+__revision__ = "$Id: Utilities.py,v 1.66 2004-05-05 22:04:13 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -35,11 +35,22 @@ from AccessGrid.Version import GetVersion
 from AccessGrid import Platform
 from AccessGrid.Platform import Config
 
+
 # Global variables for sending log files
 VENUE_CLIENT_LOG = 0
 VENUE_MANAGEMENT_LOG = 1
 NODE_SETUP_WIZARD_LOG = 2
 NO_LOG = 3
+
+def formatExceptionInfo(maxTBlevel=5):
+    cla, exc, trbk = sys.exc_info()
+    excName = cla.__name__
+    try:
+        excArgs = exc.__dict__["args"]
+    except KeyError:
+        excArgs = "<no args>"
+    excTb = traceback.format_tb(trbk, maxTBlevel)
+    return (excName, excArgs, excTb)
 
 
 def LoadConfig(fileName, config=dict(), separator="."):

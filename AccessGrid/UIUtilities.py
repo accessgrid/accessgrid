@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.56 2004-04-26 20:43:31 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.57 2004-05-05 22:04:13 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.56 2004-04-26 20:43:31 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.57 2004-05-05 22:04:13 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import IsWindows
@@ -31,6 +31,7 @@ from wxPython.lib.imagebrowser import *
 
 from AccessGrid import icons
 from AccessGrid.Utilities import SubmitBug, VENUE_CLIENT_LOG
+from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Version import GetVersion
 from AccessGrid.Platform.Config import UserConfig, AGTkConfig
 from AccessGrid.Platform import Config
@@ -142,15 +143,7 @@ class TextValidator(wxPyValidator):
     def TransferFromWindow(self):
         return true # Prevent wxDialog from complaining.
         
-def formatExceptionInfo(maxTBlevel=5):
-    cla, exc, trbk = sys.exc_info()
-    excName = cla.__name__
-    try:
-        excArgs = exc.__dict__["args"]
-    except KeyError:
-        excArgs = "<no args>"
-    excTb = traceback.format_tb(trbk, maxTBlevel)
-    return (excName, excArgs, excTb)
+
 
 
 class ErrorDialogWithTraceback:
