@@ -2,7 +2,7 @@
 # Name:        VideoProducerService.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.36 2004-09-09 17:52:11 judson Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.37 2004-09-09 22:08:57 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -151,6 +151,39 @@ class VideoProducerService( AGService ):
         else:
             self.log.error("No support for platform: %s", sys.platform)
         
+    def MapWinDevice(self,deviceStr):
+        """
+        Abuse registry to get correct mapping from vfw names
+        to video sources
+        """
+        
+        self.log.info("Mapping windows device: %s", deviceStr)
+        if deviceStr.find('Videum') >= 0:
+            self.log.info("- videum")
+            devnum = -1
+            videum_re = re.compile(".*(\d)_Videum.*")
+            m = videum_re.search(deviceStr)
+            if m:
+                self.log.info("Found match : %d", int(m.group(1)))
+                devnum = int(m.group(1))
+            else:
+                self.log.info("No match")
+                if deviceStr.startswith('Videum Video Capture'):
+                    self.log.info("is videum video capture")
+                    devnum = 0
+                else:
+                    self.log.info("is not videum video capture")
+
+            self.log.info("Videum device: %d", devnum)
+            if devnum >= 0:
+                # Set the registry
+                keyStr = r"Software\Winnov\Videum\vic.exe%d" % (devnum,)
+                key = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER,
+                                        keyStr)
+                _winreg.SetValueEx(key,'Source',0,_winreg.REG_DWORD,int(devnum))
+                _winreg.CloseKey(key)
+                
+
     def Start( self ):
         """Start service"""
         try:
@@ -166,6 +199,13 @@ class VideoProducerService( AGService ):
                 vicDevice = self.resource.resource
                 vicDevice = vicDevice.replace("[","\[")
                 vicDevice = vicDevice.replace("]","\]")
+
+            if IsWindows():
+                try:
+                    self.MapWinDevice(self.resource.resource)
+                except:
+                    self.log.exception("Exception mapping device")
+
 
             #
             # Write vic startup file
