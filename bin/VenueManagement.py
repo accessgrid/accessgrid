@@ -249,9 +249,9 @@ class VenueProfilePanel(wxPanel):
 	paramGridSizer.Add(self.iconLabel, 0, wxEXPAND, 0)
 	paramGridSizer.Add(self.icon, 0, wxALIGN_LEFT, 0)
 	paramGridSizer.Add(self.exitsLabel, 0, wxEXPAND, 0)
-	paramGridSizer.Add(self.exits, 0, wxEXPAND|wxRIGHT|wxBOTTOM, 5)
+	paramGridSizer.Add(self.exits, 1, wxEXPAND|wxRIGHT|wxBOTTOM, 15)
 	paramGridSizer.AddGrowableCol(1) 
-	paramGridSizer.AddGrowableRow(2) 
+	paramGridSizer.AddGrowableRow(1) 
 	venueListProfileSizer.Add(paramGridSizer, 10, wxEXPAND|wxTOP, 10)
 
 	self.SetSizer(venueListProfileSizer)
@@ -309,7 +309,8 @@ class VenueListPanel(wxPanel):
                 venueToDelete = self.venuesList.GetClientData(index)
                 self.application.DeleteVenue(venueToDelete)
 		self.venuesList.Delete(index)
-		if self.venuesList.Number > 1 :
+                              
+		if self.venuesList.Number() > 1 :
 			self.venuesList.SetSelection(0)
                         venue = self.venuesList.GetClientData(0) 
                         exits = Client.Handle(venue.uri).get_proxy().GetConnections() 
@@ -352,7 +353,7 @@ class VenueListPanel(wxPanel):
 	
 
 # --------------------- TAB 2 -----------------------------------
-'''AdministratorsPanel.
+'''ConfigurationPanel.
 
 This is the second page in the notebook.  This page has a list of administrators
 that are authorized to modify the list of venues on the server and also entitled to add and remove
@@ -493,46 +494,64 @@ class DetailPanel(wxPanel):
         self.application = application
 	self.multicastBox = wxStaticBox(self, -1, "Multicast Address",size = wxSize(50, 50), name = 'multicastBox')
 	self.storageBox = wxStaticBox(self, -1, "Storage Location", size = wxSize(500, 50), name = 'storageBox')
-	self.randomButton = wxRadioButton(self, 1, "Random Address")
-	self.intervalButton = wxRadioButton(self, 2, "Interval Address")
-	self.ipAddress11 = wxTextCtrl(self, -1, size = wxSize(30, 20))
-	self.ipAddress12 = wxTextCtrl(self, -1, size = wxSize(30, 20))
-	self.ipAddress13 = wxTextCtrl(self, -1, size = wxSize(30, 20))
-	self.ipAddress14 = wxTextCtrl(self, -1, size = wxSize(30, 20))
-	self.line = wxStaticText(self, -1, '_')
-	self.ipAddress21 = wxTextCtrl(self, -1, size = wxSize(30, 20))
-	self.ipAddress22 = wxTextCtrl(self, -1, size = wxSize(30, 20))
-	self.ipAddress23 = wxTextCtrl(self, -1, size = wxSize(30, 20))
-	self.ipAddress24 = wxTextCtrl(self, -1, size = wxSize(30, 20))
-	self.storageLocation = wxTextCtrl(self, -1, size = wxSize(200, 20))
-	self.browseButton = wxButton(self, -1, "Browse")
-	self.__doLayout()
+	self.randomButton = wxRadioButton(self, 302, "Random Address")
+	self.intervalButton = wxRadioButton(self, 303, "Interval Address:")
+        self.ipAddress = wxStaticText(self, -1, "", size = wxSize(500,20))
+        self.changeButton = wxButton(self, 300, "Change")
+   	self.storageLocation = wxStaticText(self, -1, "/home/lefvert/cool_files/")
+	self.browseButton = wxButton(self, 301, "Change")
+        self.__doLayout()
+        self.__setEvents()
+        self.ipAddress.Enable(false)
+        self.changeButton .Enable(false)
+
+    def __setEvents(self):
+        EVT_BUTTON(self, 300, self.OpenIntervalDialog)
+        EVT_BUTTON(self, 301, self.OpenBrowseDialog)
+        EVT_RADIOBUTTON(self, 302, self.ClickedOnRandom)
+        EVT_RADIOBUTTON(self, 303, self.ClickedOnInterval)
+
+    def ClickedOnRandom(self, event):
+        self.ipAddress.Enable(false)
+        self.changeButton .Enable(false)
+        
+    def ClickedOnInterval(self, event):
+        self.ipAddress.Enable(true)
+        self.changeButton .Enable(true)
+
+    def OpenBrowseDialog(self, event):
+        dlg = wxDirDialog(self, "Choose a directory:")
+        if dlg.ShowModal() == wxID_OK:
+            self.storageLocation.SetLabel(dlg.GetPath())
+            dlg.Destroy()
+        
+    def OpenIntervalDialog(self, event):
+        MulticastDialog(self, -1, "Enter Multicast Address")
+    
+    def SetAddress(self, ip, mask):
+        text = " "+ip+" / "+mask
+        self.ipAddress.SetLabel(text)
 
     def __doLayout(self):
         serviceSizer = wxBoxSizer(wxVERTICAL)
         multicastBoxSizer = wxStaticBoxSizer(self.multicastBox, wxVERTICAL)
-	multicastBoxSizer.Add(self.randomButton, 0, wxALL|wxEXPAND, 5)
-	multicastBoxSizer.Add(self.intervalButton, 0, wxLEFT|wxRIGHT|wxEXPAND, 5) 
-  
-	intervalSizer = wxFlexGridSizer(1, 0, 2, 2)
-	intervalSizer.Add(self.ipAddress11, 0, wxALL, 1)
-	intervalSizer.Add(self.ipAddress12, 0, wxALL, 1) 
-	intervalSizer.Add(self.ipAddress13, 0, wxALL, 1) 
-	intervalSizer.Add(self.ipAddress14, 0, wxALL, 1) 
-	intervalSizer.Add(self.line, 0, wxALL, 1) 
-	intervalSizer.Add(self.ipAddress21, 0, wxALL, 1) 
-	intervalSizer.Add(self.ipAddress22, 0, wxALL, 1) 
-	intervalSizer.Add(self.ipAddress23, 0, wxALL, 1) 
-	intervalSizer.Add(self.ipAddress24, 0, wxALL, 1) 
-	multicastBoxSizer.Add(intervalSizer, 0, wxALL, 5)	
-	storageBoxSizer = wxStaticBoxSizer(self.storageBox, wxHORIZONTAL)
 
-	storageBoxSizer.Add(self.storageLocation, 5, wxALIGN_CENTER| wxLEFT | wxRIGHT, 5)
-	storageBoxSizer.Add(self.browseButton, 0, wxALIGN_CENTER | wxTOP | wxBOTTOM , 30)
-        storageBoxSizer.Add(10,10)
+	multicastBoxSizer.Add(self.randomButton, 0, wxALL, 5)
+        flexSizer = wxFlexGridSizer(0, 2, 1, 1)
+        flexSizer.Add(self.intervalButton, 0, wxALL|wxEXPAND, 5)
+        flexSizer.Add(self.ipAddress, 0, wxALIGN_BOTTOM|wxEXPAND)
+        multicastBoxSizer.Add(flexSizer)
+        multicastBoxSizer.Add(self.changeButton, 0, wxBOTTOM|wxALIGN_CENTER, 5) 
+
 	serviceSizer.Add(multicastBoxSizer, 0,  wxBOTTOM|wxEXPAND, 10)
-        #serviceSizer.Add(10, 10,  wxEXPAND)
-	serviceSizer.Add(storageBoxSizer, 0, wxEXPAND)
+        serviceSizer.Add(5,5)
+        
+	storageBoxSizer = wxStaticBoxSizer(self.storageBox, wxVERTICAL)
+        storageBoxSizer.Add(5,5)
+	storageBoxSizer.Add(self.storageLocation, 5, wxALL, 10)
+	storageBoxSizer.Add(self.browseButton, 0, wxCENTER|wxBOTTOM, 5)
+     
+   	serviceSizer.Add(storageBoxSizer, 0, wxEXPAND)
 
 	self.SetSizer(serviceSizer)
 	serviceSizer.Fit(self)
@@ -559,17 +578,69 @@ class ServicesPanel(wxPanel):
         self.SetAutoLayout(1)  
 
 
+#--------------------- DIALOGS -----------------------------------
+IP = 1
+MASK = 2
+
+class MulticastDialog(wxDialog):
+    def __init__(self, parent, id, title):
+        wxDialog.__init__(self, parent, id, title)
+        self.SetSize(wxSize(400, 350))
+        self.parent = parent
+        self.ipAddressLabel = wxStaticText(self, -1, "IP Address: ")
+        self.ipAddress1 = wxTextCtrl(self, -1, "", size = (30,20), validator = DigitValidator(IP))
+        self.ipAddress2 = wxTextCtrl(self, -1, "", size = (30,20), validator = DigitValidator(IP))
+        self.ipAddress3 = wxTextCtrl(self, -1, "", size = (30,20), validator = DigitValidator(IP))
+        self.ipAddress4 = wxTextCtrl(self, -1, "", size = (30,20), validator = DigitValidator(IP))
+        self.maskLabel = wxStaticText(self, -1, "Mask: ")
+        self.mask = wxTextCtrl(self, -1, "24", size = (30,20), validator = DigitValidator(MASK))
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.__doLayout()
+        if (self.ShowModal() == wxID_OK ):
+            print '---------------before get value'
+            address = self.ipAddress1.GetValue() + "." +\
+                      self.ipAddress1.GetValue() + "." +\
+                      self.ipAddress3.GetValue() + "." +\
+                      self.ipAddress3.GetValue()
+            print 'after getValue'
+            self.parent.SetAddress(address, self.mask.GetValue())
+        print 'before destroy'    
+        self.Destroy();
+        print 'after destroy'
+
+  
+    def __doLayout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+        theSizer = wxFlexGridSizer(0, 5, 10, 10)
+        theSizer.Add(self.ipAddressLabel, 0, wxALIGN_RIGHT)
+        theSizer.Add(self.ipAddress1)
+        theSizer.Add(self.ipAddress2)
+        theSizer.Add(self.ipAddress3)
+        theSizer.Add(self.ipAddress4)
+        theSizer.Add(self.maskLabel, 0, wxALIGN_RIGHT)
+        theSizer.Add(self.mask)
+
+        buttonSizer = wxBoxSizer(wxHORIZONTAL)
+        buttonSizer.Add(self.okButton, 0, wxRIGHT, 5)
+        buttonSizer.Add(self.cancelButton, 0, wxLEFT, 5)
+        
+        sizer.Add(theSizer, 0, wxALL, 20)
+        sizer.Add(buttonSizer, 0, wxALIGN_CENTER|wxBOTTOM, 10)
+
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)  
 
 class VenueParamFrame(wxDialog):
     def __init__(self, *args):
         wxDialog.__init__(self, *args)
 	self.SetSize(wxSize(400, 350))
-	exitsList = ['Chemistry', 'Physics']
+
   
 	self.informationBox = wxStaticBox(self, -1, "Information")
 	self.exitsBox = wxStaticBox(self, -1, "Exits")
-	self.topTExt =  wxStaticText(self, -1, "")
-	self.titleLabel =  wxStaticText(self, -1, "Title:")
+        self.titleLabel =  wxStaticText(self, -1, "Title:")
 	self.title =  wxTextCtrl(self, -1, "",  size = wxSize(200, 20))
 	self.descriptionLabel = wxStaticText(self, -1, "Description:")
 	self.description =  wxTextCtrl(self, -1, "",\
@@ -683,16 +754,17 @@ class VenueParamFrame(wxDialog):
 
     def TransferVenue(self, event):
         index = self.venues.GetSelection()
-        venue = self.venues.GetClientData(index)
-
-        if self.exits.FindString(venue.name) == -1:
-            self.exits.Append(venue.name, venue)
-        else:
-            text = ""+venue.name+" is added already"
-            exitExistDialog = wxMessageDialog(self, text, \
-                                         '', wxOK | wxICON_INFORMATION)
-            exitExistDialog.ShowModal()
-            exitExistDialog.Destroy() 
+        if index != -1:
+            venue = self.venues.GetClientData(index)
+            
+            if self.exits.FindString(venue.name) == -1:
+                self.exits.Append(venue.name, venue)
+            else:
+                text = ""+venue.name+" is added already"
+                exitExistDialog = wxMessageDialog(self, text, \
+                                                  '', wxOK | wxICON_INFORMATION)
+                exitExistDialog.ShowModal()
+                exitExistDialog.Destroy() 
 
     def RemoveExit(self, event):
         index = self.exits.GetSelection()
@@ -734,10 +806,7 @@ class AddVenueFrame(VenueParamFrame):
         if (self.ShowModal() == wxID_OK ):
             self.Ok()
         self.Destroy()
- 
-  #  def __addEvents(self):
-   #     EVT_BUTTON(self, 140, self.Ok)   
-    
+     
     def Ok(self):
         if self.RightValues():
             index = 0
@@ -840,6 +909,58 @@ class AddAdministratorFrame(AdministratorParamFrame):
             self.parent.InsertAdministrator(self.name.GetValue())
         
         self.Destroy();
+
+
+class DigitValidator(wxPyValidator):
+    def __init__(self, flag):
+        wxPyValidator.__init__(self)
+        self.flag = flag
+        EVT_CHAR(self, self.OnChar)
+     
+    def Clone(self):
+        return DigitValidator(self.flag)
+
+    def Validate(self, win):
+        print 'validate'
+        tc = self.GetWindow()
+        val = tc.GetValue()
+        index = 0
+        for x in val:
+            index = index+1
+            if x not in string.digits:
+                print 'false in validate'
+                return false
+        if index != 3 and self.flag == IP:
+            print 'false in validate'
+            return false
+        print 'true in validate'
+        return true
+
+    def TransferToWindow(self):
+        return true # Prevent wxDialog from complaining.
+
+    def TransferFromWindow(self):
+        return true # Prevent wxDialog from complaining.
+
+    def OnChar(self, event):
+        print 'on char'
+        key = event.KeyCode()
+        if key < WXK_SPACE or key == WXK_DELETE or key > 255:
+            event.Skip()
+            return
+       
+        if chr(key) in string.digits:
+            print "digits"
+            event.Skip()
+            return
+
+        if not wxValidator_IsSilent():
+            print "silent"
+            wxBell()
+
+        # Returning without calling even.Skip eats the event before it
+        # gets to the text control
+        return
 
 
 
