@@ -34,6 +34,8 @@ DestDir = options.destdir
 metainfo = options.metainfo
 version = options.version
 
+StartDir = os.getcwd()
+
 #
 # Define packages to include in src distribution
 #
@@ -45,9 +47,7 @@ distDirs = ["AccessGrid",
             "pyGlobus",
             "pyOpenSSL",
             "gt3.0.2-source-installer/globus-data-management-client-2.4.3-src_bundle.tar.gz",
-            "gt3.0.2-source-installer/globus-resource-management-client-2.4.3-src_bundle.tar.gz",
-            "globus/globus_simple_ca_45cc9e80_setup-0.12.tar.gz",
-            "gpt-1.0" ]
+            ]
 if float(options.pyver) < 2.3:
     distDirs.append("logging-0.4.7")
     distDirs.append("Optik-1.4.1")
@@ -69,7 +69,7 @@ print "cmd = ", cmd
 # (rpm for now)
 #
 pkg_script = "BuildPackage.py"
-DistDir = "rpm"
+DistDir = os.path.join(StartDir,"rpm")
 if os.path.exists(DistDir):
     os.chdir(DistDir)
     cmd = "%s %s --verbose -s %s -b %s -d %s -p %s -m %s -v %s" % (sys.executable,
