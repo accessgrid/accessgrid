@@ -23,7 +23,7 @@
  * To avoid the danger of generating multicast feedback the
  * program will abort if a multicast packet is received from a registered
  * unicast peer. Use this mode with caution e.g. set a restrictive TTL value.
- * $Id: QuickBridge.c,v 1.39 2004-12-17 23:26:45 leggett Exp $
+ * $Id: QuickBridge.c,v 1.40 2004-12-17 23:27:47 leggett Exp $
  * Original: Id: quickbridge.c,v 1.12 2003/05/02 11:34:15 spb Exp $
  */
 
@@ -1143,6 +1143,16 @@ int main( int argc, char *argv[] )
       exit( 1 );
     }
   
+  for ( foo = s; foo; foo = foo->next )
+    {
+      printf( " ucfd[data]: %d mcfd[data]: %d uc: %s/%d mc: %s/%d\n", foo->ucfd[data], foo->mcfd[data], inet_ntoa( foo->ucaddr[data].sin_addr ), ntohs( foo->ucaddr[data].sin_port ),
+	      inet_ntoa( foo->mcaddr[data].sin_addr ), ntohs( foo->mcaddr[data].sin_port ) );
+      printf( " ucfd[rtcp]: %d mcfd[rtcp]: %d uc: %s/%d mc: %s/%d\n", foo->ucfd[rtcp], foo->mcfd[rtcp], inet_ntoa( foo->ucaddr[rtcp].sin_addr ), ntohs( foo->ucaddr[rtcp].sin_port ),
+	      inet_ntoa( foo->mcaddr[rtcp].sin_addr ), ntohs( foo->mcaddr[rtcp].sin_port ) );
+    }
+
+  sleep( 10 );
+
 
   /* code for gateway mode */
   set_acl(ACLFILE);
@@ -1205,16 +1215,6 @@ int main( int argc, char *argv[] )
   maxfds = 0;
   maxfds = set_maxfds( s, maxfds );
   maxfds++;
-
-  for ( foo = s; foo; foo = foo->next )
-    {
-      printf( " ucfd[data]: %d mcfd[data]: %d uc: %s/%d mc: %s/%d\n", foo->ucfd[data], foo->mcfd[data], inet_ntoa( foo->ucaddr[data].sin_addr ), ntohs( foo->ucaddr[data].sin_port ),
-	      inet_ntoa( foo->mcaddr[data].sin_addr ), ntohs( foo->mcaddr[data].sin_port ) );
-      printf( " ucfd[rtcp]: %d mcfd[rtcp]: %d uc: %s/%d mc: %s/%d\n", foo->ucfd[rtcp], foo->mcfd[rtcp], inet_ntoa( foo->ucaddr[rtcp].sin_addr ), ntohs( foo->ucaddr[rtcp].sin_port ),
-	      inet_ntoa( foo->mcaddr[rtcp].sin_addr ), ntohs( foo->mcaddr[rtcp].sin_port ) );
-    }
-
-  sleep( 10 );
 
   FD_ZERO( &web_masterfds );
   FD_ZERO( &web_readfds );
