@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.29 2004-05-27 16:11:03 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.30 2004-06-29 14:34:06 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -244,7 +244,11 @@ class VideoProducerService( AGService ):
 
             # Create the port parameter as an option set parameter, now
             # that we have multiple possible values for "port"
-            self.port = OptionSetParameter( "port", self.resource.portTypes[0],
+            if ( isinstance(self.port, TextParameter) or isinstance(self.port, ValueParameter) ) and self.port.value != "" and self.port.value in self.resource.portTypes:
+                self.port = OptionSetParameter( "port", self.port.value,
+                                                             self.resource.portTypes )
+            else:
+                self.port = OptionSetParameter( "port", self.resource.portTypes[0],
                                                              self.resource.portTypes )
 
             # Replace or append the "port" element
