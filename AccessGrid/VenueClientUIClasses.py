@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.184 2003-05-13 16:28:01 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.185 2003-05-13 16:51:55 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -269,9 +269,6 @@ class VenueClientFrame(wxFrame):
         #                                   "Lead this node")
 
         self.dataEntryMenu = wxMenu()
-        self.dataEntryMenu.Append(self.ID_VENUE_DATA_ADD,"Add data to venue...",
-                             "Add data to the venue")
-        self.dataEntryMenu.AppendSeparator()
         self.dataEntryMenu.Append(self.ID_VENUE_DATA_OPEN,"Open",
                              "Open selected data")
 	self.dataEntryMenu.Append(self.ID_VENUE_DATA_SAVE,"Save...",
@@ -296,8 +293,6 @@ class VenueClientFrame(wxFrame):
 
 
         self.serviceEntryMenu = wxMenu()
-      	self.serviceEntryMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
-                                "Add service to the venue")
         self.serviceEntryMenu.Append(self.ID_VENUE_SERVICE_OPEN,
                                      "Open",  "Launch service client")
         self.serviceEntryMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete",
@@ -1699,9 +1694,9 @@ class ContentListPanel(wxPanel):
             elif text == 'Services':
                 self.PopupMenu(self.parent.serviceHeadingMenu, wxPoint(self.x, self.y))
                 
-            #elif text == 'Applications':
-            #    self.PopupMenu(self.parent.applicationEntryMenu,
-            #                   wxPoint(self.x, self.y))
+            elif text == 'Applications':
+                self.PopupMenu(self.parent.applicationMenu,
+                               wxPoint(self.x, self.y))
             #elif text == 'Participants' or text == 'Nodes' or item == None:
             elif text == 'Participants' or item == None:
                 pass
