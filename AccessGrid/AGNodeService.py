@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.68 2004-05-07 20:15:13 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.69 2004-05-12 17:14:18 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.68 2004-05-07 20:15:13 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.69 2004-05-12 17:14:18 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -26,7 +26,7 @@ from AccessGrid.Descriptions import AGServiceDescription
 from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid.AGServiceManager import AGServiceManagerI, AGServiceManagerIW
 from AccessGrid.AGService import AGServiceIW
-from AccessGrid.Types import ServiceConfiguration, AGResource
+from AccessGrid.Types import AGResource
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.AGParameter import ValueParameter
 from AccessGrid.Descriptions import CreateAGServiceManagerDescription
@@ -34,7 +34,6 @@ from AccessGrid.Descriptions import CreateAGServiceDescription
 from AccessGrid.Descriptions import CreateCapability
 from AccessGrid.Descriptions import CreateResource
 from AccessGrid.Descriptions import CreateClientProfile
-from AccessGrid.Descriptions import CreateServiceConfiguration
 from AccessGrid.Descriptions import CreateStreamDescription
 
 from AccessGrid.AGServicePackageRepository import AGServicePackageRepository
@@ -129,7 +128,7 @@ class AGNodeService:
         Add a service manager
         """
         log.info("NodeService.AddServiceManager")
-
+        
         # Check whether the service manager has already been added
         if self.serviceManagers.has_key( serviceManager.uri ):
             raise Exception("Service Manager already present:" + 
@@ -191,6 +190,11 @@ class AGNodeService:
         """
         
         log.info("NodeService.AddService")
+        
+        log.debug("serviceDesc = %s", str(serviceDesc))
+        log.debug("serviceManagerUri = %s", str(serviceManagerUri))
+        log.debug("resourceToAssign = %s", str(resourceToAssign))
+        log.debug("serviceConfig = %s", str(serviceConfig))
 
         serviceDescription = None
         
@@ -205,7 +209,7 @@ class AGNodeService:
             raise Exception("Error adding service: " + e.string )
         except Exception, e:
             log.exception("Error adding service")
-            raise Exception("Error adding service" )
+            raise Exception("Error adding service %s", serviceDesc.name )
         
         # Set the identity for the service
         if self.profile:
@@ -432,7 +436,6 @@ class AGNodeService:
                     #
                     incomingService = IncomingService()
                     incomingService.packageName = config.get( serviceSection, "packageName" )
-                    incomingService.executable = config.get( serviceSection, "executable" )
                     incomingService.resource = resource
                     incomingService.parameters = parameters
                     serviceList.append( incomingService )
@@ -473,19 +476,19 @@ class AGNodeService:
             except:
                 log.exception("Exception removing services from Service Manager")
                 exceptionText += "Couldn't remove services from Service Manager: %s" %(serviceManager.name)
-
+                
             #
             # Add Service to Service Manager
             #
             for service in serviceList:
                 try:
-                    serviceConfig = ServiceConfiguration( service.resource,
-                                                          service.executable,
-                                                          service.parameters)
+                
+                    # Actually add the service to the servicemgr
                     AGServiceManagerIW( serviceManager.uri ).AddService( 
                         self.servicePackageRepository.GetServiceDescription( service.packageName ), 
                         service.resource,
-                        serviceConfig )
+                        service.parameters )
+                        
                 except:
                     log.exception("Exception adding service %s" % (service.packageName))
                     exceptionText += "Couldn't add service %s" % (service.packageName)
@@ -553,7 +556,7 @@ class AGNodeService:
                 serviceConfigSection = 'serviceconfig%d' % numServices
                 config.add_section( serviceConfigSection )
                 serviceConfig = AGServiceIW( service.uri ).GetConfiguration()
-                for parameter in serviceConfig.parameters:
+                for parameter in serviceConfig:
                     config.set( serviceConfigSection, parameter.name, parameter.value )
 
 
@@ -564,7 +567,6 @@ class AGNodeService:
                 config.add_section( serviceSection )
                 servicemanager_services += serviceSection + " "
                 config.set( serviceSection, "packageName", os.path.basename( service.servicePackageUri ) )
-                config.set( serviceSection, "executable", serviceConfig.executable )
                 config.set( serviceSection, "resource", resourceSection )
                 config.set( serviceSection, "serviceconfig", serviceConfigSection )
 
@@ -707,9 +709,10 @@ class AGNodeService:
         """
         Send stream description(s) to service
         """
+        
         log.info("NodeService.__SendStreamsToService")
         failedSends = ""
-
+        
         serviceCapabilities = map(lambda cap: cap.type, 
             AGServiceIW( serviceUri ).GetCapabilities() )
         for streamDescription in self.streamDescriptionList.values():
@@ -787,7 +790,7 @@ class AGNodeServiceI(SOAPInterface):
         return self.impl.GetServiceManagers()
 
     def AddService( self, serviceDescStruct, serviceManagerUri, 
-                    resourceStruct, serviceConfigStruct ):
+                    resourceStruct, serviceConfig ):
         """
         Interface to add a service
 
@@ -810,10 +813,6 @@ class AGNodeServiceI(SOAPInterface):
             resource = CreateResource(resourceStruct)
         else:
             resource = None
-        if serviceConfigStruct:
-            serviceConfig = CreateServiceConfiguration(serviceConfigStruct)
-        else:
-            serviceConfig = None
             
         return self.impl.AddService(serviceDescription, serviceManagerUri, 
                     resource, serviceConfig )
