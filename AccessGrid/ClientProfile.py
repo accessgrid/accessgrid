@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.9 2003-01-27 22:43:01 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.10 2003-01-28 04:12:15 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,16 +23,16 @@ class ClientProfile:
     """
 
     defaultProfile = {
-        'VenueClient.profileType' : "user",
-        'VenueClient.name' : 'John Doe',
-        'VenueClient.email' : 'john@mail.com',
-        'VenueClient.phoneNumber' : '+1 888 959 5555',
-        'VenueClient.icon' : '',
-        'VenueClient.publicId' : 'do-de-do',
-        'VenueClient.location' : 'Nowhere, Fast',
-        'VenueClient.venueClientURL' : '',
-        'VenueClient.technicalSupportInformation' : '',
-        'VenueClient.homeVenue' : 'http://test.com/Venues/default'
+        'ClientProfile.type' : "user",
+        'ClientProfile.name' : 'John Doe',
+        'ClientProfile.email' : 'john@mail.com',
+        'ClientProfile.phone' : '+1 888 959 5555',
+        'ClientProfile.icon' : '',
+        'ClientProfile.id' : 'do-de-do',
+        'ClientProfile.location' : 'Nowhere, Fast',
+        'ClientProfile.venueclienturl' : '',
+        'ClientProfile.techsupportinfo' : '',
+        'ClientProfile.home' : 'http://test.com/Venues/default'
         }
 
     USER = "user"
@@ -48,8 +48,8 @@ class ClientProfile:
         self.icon = None
         self.publicId = ''
         self.location = ''
-        self.venueClientUri = ''
-        self.technicalSupportInformation = ''
+        self.venueClientURL = ''
+        self.techSupportInfo = ''
         self.homeVenue = ''
         self.privateId = None
         self.distinguishedName = None
@@ -61,19 +61,21 @@ class ClientProfile:
     def Load(self, fileName):
 	"""
 	"""
-        profile = {}
-        profile = LoadConfig(fileName, defaultProfile)
+        self.profile = LoadConfig(fileName, ClientProfile.defaultProfile)
         
-        self.profileType = profile['VenueClient.profiletype']
-        self.name = profile['VenueClient.name']
-        self.email = profile['VenueClient.email']
-        self.phoneNumber = profile['VenueClient.phonenumber']
-        self.icon = profile['VenueClient.icon']
-        self.publicId = profile['VenueClient.publicid']
-        self.location = profile['VenueClient.location']
-        self.technicalSupportInformation = profile['VenueClient.technicalsupportinformation']
-        self.homeVenue = profile['VenueClient.homevenue']
+        self.profileType = self.profile['ClientProfile.type']
+        self.name = self.profile['ClientProfile.name']
+        self.email = self.profile['ClientProfile.email']
+        self.phoneNumber = self.profile['ClientProfile.phone']
+        self.icon = self.profile['ClientProfile.icon']
+        self.publicId = self.profile['ClientProfile.id']
+        self.location = self.profile['ClientProfile.location']
+        self.venueClientURL = self.profile['ClientProfile.venueclienturl']
+        self.techSupportInfo = self.profile['ClientProfile.techsupportinfo']
+        self.homeVenue = self.profile['ClientProfile.home']
 
+        self.Dump()
+        
     def Dump(self):
         """
         """
@@ -81,15 +83,28 @@ class ClientProfile:
         print "Name: " + self.name
         print "Email: " + self.email
         print "Phone Number: " + self.phoneNumber
+        print "Icon: " + self.icon
         print "Location: " + self.location
         print "Venue Client URL: " + self.venueClientURL
-        print "Technical Support Information: " + self.technicalSupportInformation
-        print "Icon: " + str(self.icon)
+        print "Technical Support Information: " + self.techSupportInfo
         print "Public ID: " + self. publicId
+        print "Home Venue: " + self.homeVenue
         
     def Save(self, fileName):
         """ """
-        SaveConfig(fileName, self)
+        config = {}
+        config['ClientProfile.type'] = self.GetProfileType()
+        config['ClientProfile.name'] = self.GetName()
+        config['ClientProfile.email'] = self.GetEmail()
+        config['ClientProfile.phone'] = self.GetPhoneNumber()
+        config['ClientProfile.icon'] = self.GetIcon()
+        config['ClientProfile.location'] = self.GetLocation()
+        config['ClientProfile.venueclienturl'] = self.GetVenueClientURL()
+        config['ClientProfile.techsupportinfo'] = self.GetTechSupportInfo()
+        config['ClientProfile.id'] = self.GetPublicId()
+        config['ClientProfile.home'] = self.GetHomeVenue()
+        
+        SaveConfig(fileName, config)
         
     def SetProfileType(self, profileType):
         """ """
@@ -105,7 +120,7 @@ class ClientProfile:
     
     def GetLocation(self):
         """ """
-        return location
+        return self.location
     
     def SetEmail(self, email):
         """ """
@@ -147,18 +162,24 @@ class ClientProfile:
         """ """
         return self.venueClientURL
     
-    def SetTechnicalSupportInformation(self, technicalSupportInformation):
+    def SetTechSupportInfo(self, techSupportInfo):
         """ """
-        self.technicalSupportInformation = technicalSupportInformation
+        self.techSupportInfo = techSupportInfo
         
-    def GetTechnicalSupportInformation(self):
+    def GetTechSupportInfo(self):
         """ """
-        return self.technicalSupportInformation
+        return self.techSupportInfo
     
-    def SetPublicID(self, publicId):
+    def SetPublicId(self, publicId):
         """ """
         self.publicId = publicId
         
-    def GetPublicID(self):
+    def GetPublicId(self):
         """ """
         return self.publicId
+
+    def GetHomeVenue(self):
+        return self.homeVenue
+
+    def SetHomeVenue(self, venue):
+        self.homeVenue = venue
