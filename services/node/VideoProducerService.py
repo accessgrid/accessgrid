@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.6 2003-05-05 21:05:34 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.7 2003-05-12 16:28:40 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -17,8 +17,11 @@ from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid import Platform
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
+from AccessGrid.NetworkLocation import MulticastNetworkLocation
 
-vicstartup="""option add Vic.muteNewSources true startupFile
+
+vicstartup="""option add Vic.disable_autoplace true startupFile
+option add Vic.muteNewSources true startupFile
 option add Vic.maxbw 6000 startupFile
 option add Vic.bandwidth %d startupFile
 option add Vic.framerate %d startupFile
@@ -100,8 +103,16 @@ class VideoProducerService( AGService ):
          if self.streamDescription.encryptionFlag != 0:
             options.append( "-K" )
             options.append( self.streamDescription.encryptionKey )
-         options.append( "-t" )
-         options.append( '%d' % (self.streamDescription.location.ttl) )
+         # Check whether the network location has a "type" attribute
+         # Note: this condition is only to maintain compatibility between
+         # older venue servers creating network locations without this attribute
+         # and newer services relying on the attribute; it should be removed
+         # when the incompatibility is gone
+         if self.streamDescription.location.__dict__.has_key("type"):
+             # use TTL from multicast locations only
+             if self.streamDescription.location.type == MulticastNetworkLocation.TYPE:
+                options.append( "-t" )
+                options.append( '%d' % (self.streamDescription.location.ttl) )
          options.append( '%s/%d' % ( self.streamDescription.location.host, 
                                         self.streamDescription.location.port) )
          self.log.info("Starting VideoProducerService")
@@ -124,16 +135,19 @@ class VideoProducerService( AGService ):
 
 
    def ConfigureStream( self, streamDescription ):
-      """Configure the Service according to the StreamDescription, and stop and start rat"""
+      """Configure the Service according to the StreamDescription"""
 
       ret = AGService.ConfigureStream( self, streamDescription )
-      if ret:
+      if ret and self.started:
+         # service is already running with this config; ignore
          return
 
-      # restart rat, since this is the only way to change the 
-      # stream location (for now!)
+      # if started, stop
       if self.started:
          self.Stop()
+
+      # if enabled, start
+      if self.enabled:
          self.Start()
    ConfigureStream.soap_export_as = "ConfigureStream"
 
