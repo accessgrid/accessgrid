@@ -28,6 +28,8 @@ parser.add_option("-p", "--pythonversion", dest="pyver",
 
 options, args = parser.parse_args()
 
+
+
 # Run precompile scripts
 for cmd in [
     "BuildVic.cmd",
@@ -40,6 +42,8 @@ for cmd in [
         print "BUILD: Running: %s" % cmd
 
     os.system(cmd)
+
+
 
 # Grab innosetup from the environment
 try:
@@ -66,11 +70,15 @@ if options.verbose:
         sys.exit()
 
 # Add quotes around command.
+
+os.chdir(options.sourcedir)
+
 iscc_cmd = "%s agtk.iss /dAppVersion=\"%s\" /dVersionInformation=\"%s\" \
             /dSourceDir=\"%s\" /dBuildDir=\"%s\" /dPythonSubVersion=\"%s\"" % \
             (inno_compiler, options.version,
              options.metainfo.replace(' ', '_'), 
              options.sourcedir, options.destdir, options.pyver.split('.')[1])
+
 
 if options.verbose:
     print "BUILD: Executing:", iscc_cmd
