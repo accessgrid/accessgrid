@@ -9,7 +9,10 @@ def AuthCallback(server, g_handle, remote_user, context):
 nodeService = AGNodeService()
 
 # start the service
-server = Server( int( sys.argv[1] ) , auth_callback=AuthCallback )
+port = 11000
+if len(sys.argv) > 1:
+    port = sys.argv[1]
+server = Server( port , auth_callback=AuthCallback )
 service = server.create_service_object("NodeService")
 nodeService._bind_to_service( service )
 print "Starting service; URI: ", nodeService.get_handle()
