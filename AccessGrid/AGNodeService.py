@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.16 2003-02-28 18:24:06 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.17 2003-02-28 19:26:02 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -47,18 +47,30 @@ class AGNodeService( ServiceBase ):
         self.configDir = "config"
         self.servicesDir = "services"
 
+        #
+        # Read the configuration file (directory options and such)
+        #
         configFile = GetConfigFilePath("AGNodeService.cfg")
         if configFile:
             self.__ReadConfigFile( configFile )
 
+        #
+        # Start the service package repository
+        # (now that the services directory is known)
+        #
+        self.servicePackageRepository = AGServicePackageRepository( 0, self.servicesDir )
+
+        #
+        # Load default node configuration (service managers and services)
+        #
         if self.defaultConfig:
             print "Loading default node config:", self.defaultConfig
             try:
                 self.LoadConfiguration( self.defaultConfig ) 
             except:
+                print "Exception loading default configuration:", sys.exc_type, sys.exc_value
                 print "Failed to load default configuration"
 
-        self.servicePackageRepository = AGServicePackageRepository( 0, self.servicesDir )
 
 
     ####################
