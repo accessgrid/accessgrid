@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.29 2004-04-05 18:46:09 judson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.30 2004-04-07 13:19:40 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.29 2004-04-05 18:46:09 judson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.30 2004-04-07 13:19:40 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -728,30 +728,29 @@ class VenueClientUI(VenueClientObserver, wxFrame):
         #
         if fileList:
             filesToAdd = []
-            dataDescriptions = self.venueClient.GetVenueDataDescriptions()
+            dataDescriptions = self.venueClient.GetVenueData()
             for filepath in fileList:
                 pathParts = os.path.split(filepath)
                 name = pathParts[-1]
 
-                if dataDescriptions:
-                    for data in dataDescriptions:
-                        if data.name == name:
-                            # file exists; prompt for replacement
-                            title = "Duplicated File"
-                            info = "A file named %s already exists, do you want to overwrite?" % name
-                            if self.Prompt(info,title):
-                                try:
-                                    self.controller.RemoveDataCB(data)
-                                    filesToAdd.append(filepath)
-                                except:
-                                    log.exception("Error overwriting file %s", data)
-                                    self.Error("Can't overwrite file","Replace Data Error")
-                            break
-                        else:
-                            # file doesn't exist; add it           
-                            filesToAdd.append(filepath)
-                else:
-                    # No data exists, so no conflicts; add the file
+                fileExists = 0
+                for data in dataDescriptions:
+                    if data.name == name:
+                        # file exists; prompt for replacement
+                        fileExists = 1
+                        title = "Duplicated File"
+                        info = "A file named %s already exists, do you want to overwrite?" % name
+                        if self.Prompt(info,title):
+                            try:
+                                self.controller.RemoveDataCB(data)
+                                filesToAdd.append(filepath)
+                            except:
+                                log.exception("Error overwriting file %s", data)
+                                self.Error("Can't overwrite file","Replace Data Error")
+                        break
+                        
+                if not fileExists:
+                    # File does not exist; add the file
                     filesToAdd.append(filepath)
 
             #
