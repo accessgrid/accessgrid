@@ -1,3 +1,2282 @@
+2003-08-22 15:18  judson
+
+	* services/node/: DisplayService.py, DisplayService.svc: New
+	Display Service started.
+
+2003-08-22 15:17  judson
+
+	* doc/: AG-RPM-Build-HOWTO.doc, AG-Windows-Build-HOWTO.doc, AG.dot,
+	DisplayServiceDesign.doc: Updated for install docs (they need more
+	updating) and new template (that needs to be finished) and a start
+	at a display service design doc.
+
+2003-08-22 15:15  judson
+
+	* packaging/windows/: BuildPutty.cmd, BuildPythonModules.cmd,
+	BuildSendSettingChange.cmd, agtk.iss: Updated windows installer for
+	istool. This probably doesn't work with build_snapshot.py yet, I'll
+	fix that next week.
+
+2003-08-22 15:11  judson
+
+	* sharedapps/SharedPresentation/SharedPresentation.py: This is now
+	using the application registration process; we no longer need .app,
+	.iss, or .spec files. You can simply install this with the script.
+
+2003-08-22 15:10  judson
+
+	* AccessGrid/ProcessManagerUnix.py: Changed a comment formatting.
+
+2003-08-22 15:10  judson
+
+	* AccessGrid/Platform.py: Removed unused GPI stuff.
+
+2003-08-22 15:09  judson
+
+	* bin/: VenueManagement.py, VenueServer.py: Removed unused import
+	GPI
+
+2003-08-22 14:52  judson
+
+	* AccessGrid/VenueClientUIClasses.py: Final fix for linux.
+
+2003-08-22 14:50  judson
+
+	* AccessGrid/VenueClientUIClasses.py: Fixed start_process
+	invocation.
+
+2003-08-22 14:39  judson
+
+	* AccessGrid/VenueClientUIClasses.py: Moved a print.
+
+2003-08-22 14:37  turam
+
+	* AccessGrid/VenueClientUIClasses.py: Silly change to fix position
+	of Exit popup menu
+
+2003-08-22 14:35  judson
+
+	* AccessGrid/VenueClientUIClasses.py: More double clicking
+	nightmares on linux.
+
+2003-08-22 14:30  judson
+
+	* AccessGrid/VenueClientUIClasses.py: Wups, cut and paste error.
+
+2003-08-22 14:26  judson
+
+	* AccessGrid/VenueClientUIClasses.py: Fixed linux mime type
+	handling.
+
+2003-08-22 14:20  judson
+
+	* AccessGrid/VenueClient.py: Removed unused method.
+
+2003-08-22 14:17  judson
+
+	* AccessGrid/Toolkit.py: Make the user app dir if it doesn't exist.
+
+2003-08-22 14:17  judson
+
+	* AccessGrid/Platform.py: New method GetUserAppPath defaults to
+	UserConfigPath+"SharedApplications"
+
+2003-08-22 14:16  judson
+
+	* AccessGrid/AppDb.py: Fixed reversed arguments in registration.
+
+2003-08-22 13:01  eolson
+
+	* AccessGrid/DataStore.py: 
+	Extra logging showed that a few member variables weren't getting
+	set.
+
+2003-08-22 12:45  eolson
+
+	* AccessGrid/DataStore.py: 
+	Probably better to log the exception i had stopped catching.
+
+2003-08-22 12:38  eolson
+
+	* AccessGrid/DataStore.py: 
+	don't catch all exceptions, otherwise it's very hard to debug.
+
+2003-08-22 11:52  turam
+
+	* sharedapps/SharedPresentation/SharedPresentation.py: Fix getopt
+	options
+
+2003-08-22 11:32  turam
+
+	* bin/AGNodeService.py: Catch exception loading node configuration,
+	log it, and continue
+
+2003-08-22 11:32  turam
+
+	* AccessGrid/VenueClient.py: Remove textClient.Stop; the text
+	client is stopped in the preceding Disconnect call, so this one was
+	redundant
+
+2003-08-22 11:31  turam
+
+	* AccessGrid/AGNodeService.py: ConfigParser doesn't complain about
+	reading non-existent files.  Detect non-existent config files and
+	raise an exception.
+
+2003-08-22 11:10  eolson
+
+	* AccessGrid/Platform.py: 
+	Fix typo preventing unregistered mime types from popping up a menu
+	(in linux).
+
+2003-08-22 10:17  lefvert
+
+	* AccessGrid/VenueClient.py: * Only save venue data in venue state
+	object.  * Only react on personal data events after we have done
+	the initial request for data.
+
+2003-08-22 10:13  judson
+
+	* bin/VenueClient.py: Added a string that gets printed to the text
+	client when you change venues so that conversations are bounded by
+	events. I'd like to make it possible (via an option) to have all
+	events outputed as text in the text client so that we could have a
+	real log of what's happening. People who use the mud are used to
+	this.
+
+2003-08-22 09:40  judson
+
+	* AccessGrid/Platform.py: Fixed mistaken tuple nonparse error for
+	mimetype return tuple.
+
+2003-08-22 09:18  judson
+
+	* AccessGrid/Platform.py: Fixed mistaken tuple nonparse error for
+	mimetype return tuple.
+
+2003-08-22 09:12  judson
+
+	* AccessGrid/Platform.py: Fixed missing import.
+
+2003-08-22 00:06  judson
+
+	* AccessGrid/: Platform.py, VenueClientUIClasses.py: Documentation
+	pointer change stuff.
+
+2003-08-21 23:49  judson
+
+	* AccessGrid/: Platform.py, Utilities.py, VenueClient.py,
+	VenueClientUIClasses.py: Final fixes for windows data, service, and
+	shared app handling in the venue client.
+
+2003-08-21 23:24  judson
+
+	* AccessGrid/VenueClientUIClasses.py: Fixed a few remaining bugs
+	related to double clikcing, service client launching and other
+	data, service, app issues.
+
+2003-08-21 23:24  judson
+
+	* AccessGrid/Platform.py: Implemented linux mime commands.
+
+2003-08-21 18:59  turam
+
+	* AccessGrid/NetService.py: Fix conditional that broke creation of
+	BridgeNetService
+
+2003-08-21 18:44  judson
+
+	* AccessGrid/Platform.py: [no log message]
+
+2003-08-21 18:43  judson
+
+	* AccessGrid/Platform.py: Fixed Linux NULL mime type handlers
+	again, named arg mistake.
+
+2003-08-21 18:42  judson
+
+	* AccessGrid/Platform.py: Fixed Linux NULL mime type handlers.
+
+2003-08-21 18:28  judson
+
+	* sharedapps/: SharedBrowser/SharedBrowser.py,
+	SharedPresentation/SharedPresentation.py: Added registerApp
+	function that will put this in the appdb for hte user.
+
+2003-08-21 18:28  judson
+
+	* bin/VenueClient.py: Bunches of changes to support AppDb use.
+
+2003-08-21 18:27  judson
+
+	* AccessGrid/AppDb.py: AppDb for storing application configuratoins
+	for the ag specifically.
+
+2003-08-21 18:27  judson
+
+	* AccessGrid/: Platform.py, Toolkit.py, UIUtilities.py,
+	Utilities.py, VenueClient.py, VenueClientUIClasses.py: Bunches of
+	fixes. Adding AppDb soon.
+
+2003-08-21 18:23  eolson
+
+	* AccessGrid/EventServiceAsynch.py: 
+	event handled, in other function, don't print that it doesn't
+	exist.
+
+2003-08-21 18:10  eolson
+
+	* AccessGrid/Venue.py: 
+	Fix typo type exception
+
+2003-08-21 18:03  lefvert
+
+	* AccessGrid/Descriptions.py: added types to AsINIBlock
+
+2003-08-21 18:01  turam
+
+	* AccessGrid/Venue.py: Call SetConnection on netservice instead of
+	on tuple
+
+2003-08-21 17:50  eolson
+
+	* AccessGrid/EventServiceAsynch.py: 
+	Change log.info to log.exception.  It was catching other exceptions
+	and reporting it incorrectly.
+
+2003-08-21 17:08  turam
+
+	* sharedapps/SharedPresentation/SharedPresentation.py: Update usage
+
+2003-08-21 16:39  turam
+
+	* bin/: AGNodeService.py, AGServiceManager.py, BridgeServer.py,
+	NodeSetupWizard.py: Use app.InitGlobusEnvironment instead of
+	app.Initialize
+
+2003-08-21 16:29  turam
+
+	* bin/DataService.py: Fix typo in --servicePort option
+
+2003-08-21 16:24  eolson
+
+	* AccessGrid/DataStore.py: 
+	initialize uninitialized local variable (never corrected from first
+	checkin of this file, so probably not hit real often)
+
+2003-08-21 16:02  eolson
+
+	* AccessGrid/Venue.py: 
+	fix name to import.
+
+2003-08-21 15:58  lefvert
+
+	* AccessGrid/Events.py: fixed events
+
+2003-08-21 15:36  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: * Changed some variables that
+	was declared static.  * Changed log to "class.method: message" to
+	better see where the log is coming from * Cleaned up clients data
+	properly
+
+2003-08-21 15:32  lefvert
+
+	* AccessGrid/VenueClient.py: Proper cleanup when clients are
+	removed.  This will fix a personal data bug that occured when a
+	client added data then exited and entered. Other clients then
+	thought they already got the client data and didn't get them again.
+
+2003-08-21 15:28  lefvert
+
+	* AccessGrid/NetService.py: Added DataStoreNetService
+
+2003-08-21 15:26  lefvert
+
+	* AccessGrid/Events.py: are now sending right events
+
+2003-08-21 15:25  lefvert
+
+	* AccessGrid/Events.py: Added three data events (PersonalDataEvents
+	are now just used by 2.0 clients)
+
+2003-08-21 15:23  lefvert
+
+	* AccessGrid/EventServiceAsynch.py: Changed PersonalDataEvents to
+	DataEvents because they are sent from both personal and venue data
+	stores.  However, PersonalDataEvents will still work for 2.0
+	clients
+
+2003-08-21 15:20  lefvert
+
+	* bin/DataService.py: Run this file to start the dataservice
+	object.
+
+2003-08-21 15:19  lefvert
+
+	* AccessGrid/Venue.py: * Removed data from persistence *
+	SetDataStore now takes a url instead of a datastore object * When
+	the venue is shut down, the remote datastore is shut down * All
+	datastore calls are changed to soap calls
+
+2003-08-21 15:14  lefvert
+
+	* AccessGrid/VenueServer.py: Removed data persistence, now in
+	datastore Removed transferengine, now in dataservice
+	
+	The VenueServer config file now has an option for setting
+	DataServiceUrl to create a remote datastore. If DataServiceUrl = ''
+	the VenueServer creates its own DataService.
+	
+	When the venue server creates a new venue, or loads it from
+	persistence file, it calls DataService.RegisterVenue with event and
+	venue information and adds the datastore to the venue. The venue
+	will receive events from the datastore and can use its soap
+	interface to get info. IF THE DATASERVICE IS NOT RUNNING WHEN WE
+	ADD A VENUE OR START UP THE SERVER, THE VENUE WILL NOT HAVE A DATA
+	STORE (NEEDS SOME MORE WORK).
+
+2003-08-21 14:59  eolson
+
+	* bin/VenueManagement.py: 
+	No longer need to explicitly call SetEncryption() when Adding or
+	modifying a venue.  They are correctly set through the venue
+	description now, so the extra call was redundant.
+
+2003-08-21 14:56  lefvert
+
+	* AccessGrid/DataStore.py: Added DataService class. The DataService
+	has two SOAP methods, RegisterVenue and UnRegisterVenue, used by
+	the VenueServer to create a venue specific data store. The
+	RegisterVenue call creates a DataStore that uses the DataService
+	transfer engine for data upload and download and creates an Event
+	client to send data events to the venue. The venue can get
+	datadescriptions etc from the DataStore SOAP interface.  When a
+	venue is shut down, UnRegisterVenue is called to shut down the
+	DataStore SOAP interface, eventclient etc.
+	
+	DataDescriptionContainer doesn't send PersonalDataEvents any more.
+	Before, personal data stores used an eventclient and venue data
+	stores used the eventservice,  but now both uses an EventClient so
+	they send the same events.
+	
+	Persistence is moved from VenueServer to DataStore. When a
+	datastore is shut down, it stores the datadescriptions in a config
+	file.
+	
+	LEFT TO DO:  Be able to ctrl-c the dataservice and shut down
+	cleanly  Ideally if the dataservice would go down it should save
+	its current datastores info (url - venue id) in a config file that
+	can be loaded when restarted.
+
+2003-08-21 14:56  eolson
+
+	* AccessGrid/: Venue.py, VenueServer.py: 
+	Fix problem with loading persisted encryption key incorrectly.
+	
+	Also, make sure encryption key is always set in static streams if
+	it is set in the venue.
+
+2003-08-21 14:08  turam
+
+	* AccessGrid/VenueClientUIClasses.py: Use local documentation files
+	instead of from website
+
+2003-08-21 11:18  turam
+
+	* AccessGrid/NodeManagementUIClasses.py: Fixed interaction problems
+	with the store configuration dialog.  Now, user has to either enter
+	text or select a list item to activate the ok button.
+
+2003-08-20 17:31  turam
+
+	* bin/VenueManagement.py: Use the venue name for the static stream
+	description name, instead of "Static Audio/Video"; the stream
+	description name is used to title the media tools
+
+2003-08-20 16:37  turam
+
+	* AccessGrid/Venue.py: Close event connection when cleaning up
+	netservices
+
+2003-08-20 16:35  turam
+
+	* AccessGrid/NodeManagementUIClasses.py: Fix bad references in
+	EnableServices and DisableServices, even though they're not being
+	used
+
+2003-08-20 15:05  olson
+
+	* AccessGrid/: CertificateRepository.py, CertificateRequestTool.py:
+	Added support for deleting cert requests from cert status tool.
+
+2003-08-20 14:57  turam
+
+	* AccessGrid/NetService.py: Add connObj attribute to NetService
+	class
+
+2003-08-20 14:54  turam
+
+	* sharedapps/SharedPresentation/SharedPresentation.py: 
+	Handles transition steps in slides.  Added option for synching to
+	the app object state, to mitigate the fact that viewers can become
+	out of synch.  Added beginning of launching with specified URL,
+	which can be a venue data url (which is, for now, identified by
+	'https'; this distinction should be made more explicit)
+
+2003-08-20 14:27  eolson
+
+	* AccessGrid/AGService.py: 
+	Missed AGService.log when I was changing log locations to the
+	UserConfig  directory.
+
+2003-08-20 13:57  olson
+
+	* bin/VenueServer.py: Upon an attempt to use --cert/--key, print a
+	message saying that they are no longer used with instructions on
+	what to do instead.
+
+2003-08-20 13:28  olson
+
+	* AccessGrid/: CertificateManager.py, CertificateManagerWXGUI.py,
+	CertificateRequestTool.py,
+	hosting/pyGlobus/ProxyGenProgrammatic.py: Small bugfixes and
+	cosmetic improvements.
+
+2003-08-20 12:30  eolson
+
+	* AccessGrid/NodeManagementUIClasses.py: 
+	Add default style paramenter.  Right-click on services now provides
+	a menu.
+
+2003-08-20 10:26  eolson
+
+	* tests/unittest_version.py: 
+	Add a few more tests.
+
+2003-08-20 09:54  eolson
+
+	* AccessGrid/Toolkit.py: Bump the version to 2.1.1
+
+2003-08-20 09:53  eolson
+
+	* AccessGrid/UIUtilities.py: 
+	Use the Toolkit.GetVersion() to determine the version.
+
+2003-08-20 09:48  eolson
+
+	* AccessGrid/Toolkit.py, tests/unittest_version.py: 
+	Add Toolkit.GetVersion() function call.
+	
+	Version is a class that can use standard test	  operators >, >=,
+	==, <>, <=, and <.
+	
+	Also added unittest_version.py to verify that the operators work.
+
+2003-08-20 08:05  judson
+
+	* AccessGrid/PersonalNodeLinuxExt.py: Syntax error caught by
+	happydoc; but apparently not in the critical path.
+
+2003-08-19 23:29  turam
+
+	* AccessGrid/EventServiceAsynch.py: 
+	
+	Close the connection if an exception occurs in readCallbackWrap
+
+2003-08-19 17:20  olson
+
+	* AccessGrid/: CertificateManager.py, CertificateManagerWXGUI.py,
+	CertificateRepository.py, CertificateRequestTool.py: Code completed
+	for accessing certificates created on the cert server.
+
+2003-08-19 14:35  olson
+
+	* AccessGrid/: CRSClient.py, CertificateManager.py,
+	CertificateManagerWXGUI.py, CertificateRequestTool.py: Added
+	support for certificate retrieval.
+
+2003-08-19 14:19  eolson
+
+	* bin/: AGNodeService.py, AGServiceManager.py, BridgeServer.py,
+	VenueClient.py, VenueManagement.py, VenueServer.py: 
+	Logfiles are saved in .AccessGrid directory now.  Fixes bugs like
+	#387, where you can't write to the current directory.
+	
+	Also, hopefully this will fix the problem where linux bugs
+	submitted automatically (through the venueclient) don't include
+	logfiles because they aren't being found.
+
+2003-08-19 12:35  eolson
+
+	* bin/VenueClient.py: 
+	Fix the need to hit the back button twice the first time.
+	
+	Corrected the time when setHistory is called -- after verifying the
+	venue exists, but before finishing enter venue -- otherwise it puts
+	the new venue in the history.
+
+2003-08-19 10:17  olson
+
+	* AccessGrid/CertificateRepository.py: Hopefully fix the
+	zero-length metadata.db bug; cause: new db was created but not
+	sync()'d to disk; a later failure of the app would result in a
+	zero-length database file.
+	
+	We now sync() the db after every operation that changes it, and
+	always do it like this:
+	
+	    try:
+		<dboperation>
+	    finally:
+		db.sync()
+	
+	to sync even if there is an exception raised.
+	
+	This resolves bug 393.
+	
+	Also add support for retrieving certificate request descriptors.
+
+2003-08-19 09:22  eolson
+
+	* bin/VenueClient.py: 
+	2.1 Client compatibility with 2.0 Server.
+	
+	Catch soap exception since DetermineRoles didn't exist on 2.0
+	servers.
+	
+	Also, there is no longer an endline at the end of faultstring so we
+	can test for equality rather than str.startwith(...)
+
+2003-08-19 08:45  judson
+
+	* AccessGrid/hosting/AccessControl.py: Removed newline in exception
+	string.
+
+2003-08-18 15:36  olson
+
+	* bin/VenueClient.py: Initialize Globus stuff before trying to
+	start personal node, as the personal node communications requires a
+	valid cert.
+	
+	(addressing that issue is one that we're not addressing at this
+	point, but it probably be should. For intra-node inter-machien
+	comms, we don't have to have credentials that are known oustide the
+	node. Bootstrapping the credentials onto the components of a
+	multi-machien node might be hard, however; worth looking into).
+
+2003-08-18 12:20  turam
+
+	* setup.py: Put ag.ico line back in
+
+2003-08-18 11:05  lefvert
+
+	* AccessGrid/RoleAuthorization.py: changed list width
+
+2003-08-18 10:42  turam
+
+	* setup.py: Windows-specific stuff added breaks build on Linux;
+	I've removed it so I can build the Linux package; we'll have to fix
+	this moving forward
+
+2003-08-18 10:42  lefvert
+
+	* AccessGrid/RoleAuthorization.py: changed width of listCtrl so
+	names don't get cut off
+
+2003-08-18 10:21  olson
+
+	* AccessGrid/CertificateManager.py: Add fairly extensive
+	workarounds for faulty pyGlobus configuration; we shouldn't have to
+	use it, but it should get users up and running with the venue
+	client.
+
+2003-08-16 05:51  judson
+
+	* packaging/windows/build_snapshot.py: Cleaned up naming a bit.
+
+2003-08-16 05:35  judson
+
+	* packaging/windows/: AGNodeServicePostinstall.py,
+	AGServiceManagerPostinstall.py, Postinstall.py, Prebuild.cmd: No
+	longer needed.
+
+2003-08-16 05:28  judson
+
+	* AccessGrid/: tests/__init__.py,
+	hosting/pyGlobus/tests/__init__.py: Adding __init__ files in test
+	directory.
+
+2003-08-16 05:20  judson
+
+	* README.html, TODO.html: These should be automatically generated
+	by Happy Doc.
+
+2003-08-15 16:20  judson
+
+	* packaging/windows/agtk.iss: Updated for 2.1.
+
+2003-08-15 16:18  judson
+
+	* AccessGrid/: Platform.py, Utilities.py: Updated for 2.1. we're
+	avoiding shared configs and data for now.
+
+2003-08-15 16:15  judson
+
+	* Install.WINDOWS, VERSION, setup.cfg: Updated for 2.1.
+
+2003-08-15 16:14  lefvert
+
+	* AccessGrid/CertificateManager.py: changed the width of import
+	certificate dialog
+
+2003-08-15 15:58  lefvert
+
+	* AccessGrid/RoleAuthorization.py: can now resize dialog and a
+	scroll bar appears on lists if the items are too long
+
+2003-08-15 15:35  eolson
+
+	* AccessGrid/DataStore.py: 
+	fix static declaration of variable.
+
+2003-08-15 11:39  olson
+
+	* AccessGrid/: CertificateManagerWXGUI.py,
+	CertificateRepository.py: Add file headers.
+
+2003-08-15 11:39  olson
+
+	* AccessGrid/CertificateManager.py: Fix case where no usercert.pem
+	exists on glbous import Add file headers.
+
+2003-08-15 10:07  lefvert
+
+	* AccessGrid/VenueClient.py: cleaned up personal data properly
+
+2003-08-15 10:03  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: cleaned up personal data
+	properly.
+
+2003-08-15 09:48  eolson
+
+	* AccessGrid/Venue.py: 
+	Users now get kicked from the venue if roles are modified and they
+	are no	longer allowed entry.
+	
+	Uses Venue.RemoveUser to kick users.  A more descriptive event and
+	dialog might be nice, but the current default message isn't bad.
+
+2003-08-15 08:39  eolson
+
+	* AccessGrid/VenueClient.py: 
+	Fix my typo, when exits are modified in the venue it will show up
+	in venueclient now.
+
+2003-08-15 08:01  eolson
+
+	* bin/VenueManagement.py: 
+	I didn't completely hide Modify Roles button before in Add Venue
+	dialog.  Should show correctly now.
+
+2003-08-14 17:26  olson
+
+	* AccessGrid/: CertificateManager.py, CertificateManagerWXGUI.py,
+	CertificateRepository.py: Add certificate chain verification on
+	identity cert import.
+
+2003-08-14 16:56  olson
+
+	* AccessGrid/hosting/pyGlobus/Utilities.py: That's not what that
+	was, that was a debug print.
+
+2003-08-14 16:52  olson
+
+	* AccessGrid/: CertificateManager.py, CertificateManagerWXGUI.py,
+	CertificateRepository.py, Utilities.py,
+	hosting/pyGlobus/Utilities.py: Import/delete support for cert mgr.
+
+2003-08-14 16:44  eolson
+
+	* AccessGrid/NodeManagementUIClasses.py: 
+	Fix Bug #318 After adding and invalid servicemanager to
+	NodeManagement, existing list of servicemanagers in th UI is no
+	longer wiped out.
+
+2003-08-14 16:35  lefvert
+
+	* bin/VenueClient.py: removed 'please be patient' for real
+
+2003-08-14 16:30  lefvert
+
+	* AccessGrid/UIUtilities.py: removed 'please be patient' :)
+
+2003-08-14 16:22  eolson
+
+	* bin/NodeManagement.py: 
+	Don't try to update ui if failed to connect.
+
+2003-08-14 15:34  lefvert
+
+	* bin/VenueClient.py: changed GetDefaultIdentity to
+	app.GetDefaultIdentity
+
+2003-08-14 14:59  lefvert
+
+	* bin/VenueClient.py: changed to correct progress dialog parameters
+
+2003-08-14 14:25  lefvert
+
+	* doc/: VENUE_CLIENT_MANUAL_HTML/contents.htm,
+	VENUE_MANAGEMENT_MANUAL_HTML/contents.htm: removed 2.0
+
+2003-08-14 14:22  eolson
+
+	* AccessGrid/VenueClient.py, bin/VenueClient.py: 
+	If you are not authorized to enter a venue, the message dialog now
+	will tell you that instead of giving the normal unable to connect
+	error.
+
+2003-08-14 14:18  lefvert
+
+	* doc/: VenueClientManual.doc, VenueManagementManual.doc: removed
+	2.0
+
+2003-08-14 13:54  lefvert
+
+	* bin/VenueClient.py: Changed how wxApp is used. Use wxSimpleApp
+	instead of inheriting from wxApp which makes it possible to open a
+	progress dialog before the actual frame is opened. Removed OnInit,
+	ConnectToVenue, and changed name of __startMainLoop. OnInit is
+	related to wxApp and is not needed anymore. ConnectToVenue actually
+	didn't connect to a venue and had just a snippet of code. And we
+	don't have to call startmainloop from the VenueClientUI any more.
+	
+	Fixed exit cleanup to avoid (class still have open windows) error.
+
+2003-08-14 13:34  eolson
+
+	* AccessGrid/hosting/AccessControl.py: 
+	Fix incorrect parameters passed.
+
+2003-08-14 12:27  eolson
+
+	* AccessGrid/Venue.py, AccessGrid/VenueClientUIClasses.py,
+	AccessGrid/VenueServer.py, AccessGrid/hosting/AccessControl.py,
+	bin/CommandLineVenueClient.py, bin/VenueClient.py: 
+	Added Administrate Roles button to VenueClient "Venue" menu.
+	
+	The button should be grayed out when you are unable to Administrate
+	the venue. (I can't verify this entirely on my own yet since I
+	can't revoke my own administration rights, but it is grayed out
+	when I'm not connected to venues).
+	
+	To do this needed to add a DetermineRoles soap function to venue so
+	users can tell what roles they are in.
+	
+	I wanted to the VenueClient button to modify the entire venue (from
+	VenueManagement), but that requires knowledge of the VenueServer
+	(possible), and currently relies on the base VenueManagement Frame
+	being set up.  It will take a little bit of work to get that
+	working if we want it (for next release).
+
+2003-08-14 12:12  turam
+
+	* packaging/redhat/install.sh: Ignore dependencies when freshening
+	packages. The AG RPMs are installed individually.  The core package
+	is installed first, and it fails because the other packages depend
+	on the earlier version of the core.  (Yes, this should be
+	reworked.)
+
+2003-08-14 11:42  turam
+
+	* setup.py: Add CertificateRequestTool.py to scripts list
+
+2003-08-14 11:13  turam
+
+	* packaging/redhat/build_snapshot.py: Fix cvsroot; Update version
+	number
+
+2003-08-14 11:12  turam
+
+	* packaging/redhat/install.sh: Add BridgeServer package to list of
+	packages to install; Update version numbers of packages
+
+2003-08-14 11:08  turam
+
+	* packaging/redhat/AccessGrid.spec: Change permissions on
+	BridgeServer files; Add CertificateRequestTool.py to VenueClient
+	package
+
+2003-08-14 11:03  turam
+
+	* bin/: CertificateRequestTool.py, NodeSetupWizard.py: Set
+	permissions on files to 755
+
+2003-08-14 09:35  olson
+
+	* AccessGrid/CertificateManagerWXGUI.py: Handle the case in
+	CreateProxy() where:
+	
+	There is no defualt identity: just show a dialog; we need to figure
+	out what actually should happen in this case.
+	
+	The default identity does not require a passphrase: just continue.
+
+2003-08-14 08:57  lefvert
+
+	* bin/VenueClient.py: minor ui changes
+
+2003-08-13 18:57  eolson
+
+	* AccessGrid/RoleAuthorization.py: 
+	Role fix.
+
+2003-08-13 18:56  eolson
+
+	* AccessGrid/Venue.py: 
+	Log the roles and users set in VenueManagement.
+
+2003-08-13 17:31  eolson
+
+	* bin/VenueManagement.py: 
+	When I linked the roles UI to venuemanagement, I didn't include the
+	call to set the data in the venue.
+	
+	Roles should work correctly from VenueManagement now.
+
+2003-08-13 17:09  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: changed parent for about
+	dialog. For some reason the text didn't show up properly else.
+
+2003-08-13 17:07  lefvert
+
+	* AccessGrid/UIUtilities.py: fixed about dialog
+
+2003-08-13 16:58  lefvert
+
+	* bin/VenueClient.py: added fix for progress dialog
+
+2003-08-13 16:57  lefvert
+
+	* AccessGrid/UIUtilities.py: Fixed about dialog.
+
+2003-08-13 16:03  lefvert
+
+	* bin/VenueClient.py: added startup dialog
+
+2003-08-13 15:59  lefvert
+
+	* AccessGrid/UIUtilities.py: added progress dialog and tried to fix
+	about dialog.
+
+2003-08-13 15:06  eolson
+
+	* bin/VenueManagement.py: 
+	Only show the modify roles button in Modify Venue (and not Add
+	Venue) for now.  The current underlying code relies on a venue to
+	query, but if desired, code can be added to work with the expected
+	default roles, groups, and subjects for a venue.
+
+2003-08-13 14:52  turam
+
+	* packaging/redhat/AccessGrid.spec: Move build of QuickBridge
+	before setup.py call
+
+2003-08-13 14:50  turam
+
+	* setup.py: Fix location of QuickBridge
+
+2003-08-13 14:46  eolson
+
+	* AccessGrid/hosting/AccessControl.py: 
+	Handle cases of X509Name.
+
+2003-08-13 14:26  turam
+
+	* services/network/QuickBridge/QuickBridge.c: Initial commit of
+	QuickBridge code.  Note:  QuickBridge normally aborts if multicast
+	traffic is received from a unicast member; this version is modified
+	to simply remove the offending user.
+
+2003-08-13 14:13  turam
+
+	* setup.py: Add BridgeServer, NodeSetupWizard
+
+2003-08-13 14:12  turam
+
+	* packaging/redhat/AccessGrid.spec: Change ver to 2.1; Add
+	BridgeServer, NodeSetupWizard
+
+2003-08-13 14:05  lefvert
+
+	* bin/CertificateRequestTool.py: Certificate request tool. For now,
+	only identity certificates can be requested.
+
+2003-08-13 12:51  eolson
+
+	* AccessGrid/hosting/AccessControl.py: 
+	More detail when handling invalid subject type exceptions.
+
+2003-08-13 10:04  olson
+
+	* AccessGrid/CertificateManagerWXGUI.py: fix nested except thingie.
+
+2003-08-13 09:38  lefvert
+
+	* AccessGrid/RoleAuthorization.py: fixed header comment
+
+2003-08-13 09:35  lefvert
+
+	* AccessGrid/RoleAuthorization.py: minor ui changes
+
+2003-08-13 09:28  lefvert
+
+	* AccessGrid/RoleAuthorization.py: Minor ui fixes for windows
+	layout.
+
+2003-08-12 23:10  judson
+
+	* AccessGrid/CRSClient.py: Just fixing up line ending.
+
+2003-08-12 23:08  judson
+
+	* AccessGrid/CertificateRequestTool.py: Extremely minor increment
+	towards command line version working.
+
+2003-08-12 22:34  olson
+
+	* AccessGrid/CertificateManagerWXGUI.py: support change in CRS
+	server api
+
+2003-08-12 22:33  olson
+
+	* AccessGrid/CRSClient.py: server now takes email addr
+
+2003-08-12 21:38  olson
+
+	* AccessGrid/CRSClient.py: add test code
+
+2003-08-12 21:12  turam
+
+	* AccessGrid/TextServiceAsynch.py: Stop connection handler (and
+	thus close the socket) on read failure.  This prevents sockets
+	being left around in CLOSE_WAIT state.
+
+2003-08-12 18:02  olson
+
+	* AccessGrid/: CertificateManager.py, CertificateManagerWXGUI.py,
+	CertificateRepository.py: Fixes for fatfingering etc.
+
+2003-08-12 17:32  olson
+
+	* AccessGrid/CertificateManagerWXGUI.py: Ask for the import
+	passphrase with the gui.
+
+2003-08-12 17:19  olson
+
+	* AccessGrid/CertificateRepository.py: Detect corrupted repository
+	directory. In that case, rename it to a unqiue name, log an error,
+	and reinitialize.
+	
+	Also fix teh "certificatess" typo.
+
+2003-08-12 16:54  olson
+
+	* AccessGrid/: CertificateManager.py, CertificateRepository.py,
+	hosting/pyGlobus/ProxyGenGPI.py,
+	hosting/pyGlobus/ProxyGenProgrammatic.py: Linux fixes for new cert
+	stuff.
+
+2003-08-12 16:39  olson
+
+	* bin/: VenueClient.py, VenueServer.py: Only do the preload hack on
+	Windows.
+
+2003-08-12 16:39  olson
+
+	* AccessGrid/CertificateManager.py: Wups, make it actually import
+	the user cert.
+
+2003-08-12 16:30  lefvert
+
+	* bin/NodeSetupWizard.py: one more header commit
+
+2003-08-12 16:28  lefvert
+
+	* bin/NodeSetupWizard.py: fix header comment
+
+2003-08-12 16:24  lefvert
+
+	* bin/NodeSetupWizard.py: test for header comment
+
+2003-08-12 16:21  olson
+
+	* AccessGrid/hosting/pyGlobus/ProxyGenGPI.py: Initial impl, time to
+	go test on Linux.
+
+2003-08-12 16:16  olson
+
+	* AccessGrid/hosting/pyGlobus/: ProxyGenGPI.py, __init__.py: Add
+	(stubbed-out for now, impelmenting this next) GPI-based proxy gen.
+
+2003-08-12 16:06  lefvert
+
+	* AccessGrid/NodeSetupWizard.py: moved NodeSetupWizard from
+	AccessGrid/AccessGrid  AccessGrid/bin
+
+2003-08-12 16:06  eolson
+
+	* AccessGrid/VenueClient.py: 
+	Catch invalid profile exceptions when updating cached profile.
+
+2003-08-12 16:00  lefvert
+
+	* bin/NodeSetupWizard.py: removed print statements
+
+2003-08-12 15:59  eolson
+
+	* AccessGrid/ClientProfile.py: 
+	log not active in ClientProfile, raise exception instead.
+
+2003-08-12 15:58  lefvert
+
+	* bin/NodeSetupWizard.py: Wizard to setup a room based node.
+	
+	NOTE: The wizard actually creates a node and services so be careful
+	not to interrupt on-going meetings.
+
+2003-08-12 15:57  olson
+
+	* bin/: VenueClient.py, VenueManagement.py, VenueServer.py: SUpport
+	for new cermt gr.
+
+2003-08-12 15:57  olson
+
+	* AccessGrid/: CRSClient.py, CertificateManager.py,
+	CertificateManagerWXGUI.py, CertificateRepository.py,
+	CertificateRequestTool.py, DataStoreClient.py, Toolkit.py,
+	Venue.py, VenueClient.py, VenueServer.py: New certificate manager
+	mods.
+
+2003-08-12 15:56  olson
+
+	* AccessGrid/hosting/pyGlobus/: ProxyGenProgrammatic.py,
+	__init__.py: Proxy generation code.
+
+2003-08-12 14:39  lefvert
+
+	* AccessGrid/CertificateRequestTool.py: Transfer password to
+	SubmitReqWindow along with name email and requestType in
+	SubmitReqWindow.SetText()
+
+2003-08-12 14:24  judson
+
+	* bin/VenueClient.py: Last updates for text.
+
+2003-08-12 14:24  judson
+
+	* AccessGrid/: TextClient.py, TextServiceAsynch.py,
+	VenueClientUIClasses.py, VenueServer.py: Last updates for text,
+	removed redundant role code from venueserver.
+
+2003-08-12 14:22  judson
+
+	* AccessGrid/RoleAuthorization.py: Removed HaveValid Proxy import.
+
+2003-08-12 14:22  judson
+
+	* AccessGrid/EventServiceAsynch.py: Added EventServiceAsynch: to
+	each log message so I can track the source. Also logged anonymous
+	exception that was being eaten.
+
+2003-08-12 14:20  judson
+
+	* bin/VenueManagement.py: Using new cert stuff.
+
+2003-08-12 13:40  judson
+
+	* AccessGrid/NodeManagementUIClasses.py, AccessGrid/Utilities.py,
+	AccessGrid/Venue.py, AccessGrid/VenueClientUIClasses.py,
+	AccessGrid/VenueServer.py,
+	AccessGrid/hosting/pyGlobus/Utilities.py, bin/AGNodeService.py,
+	bin/VenueClient.py, bin/VenueManagement.py, bin/VenueServer.py:
+	Modifications to make Mac port work. Everything seems to work
+	except the actual venueclient, but these mods also clean security
+	stuff up and use the new app/cert mgr stuff.
+
+2003-08-12 13:31  turam
+
+	* AccessGrid/tests/test_EnterExit.py: Barebones enter/exit test.
+
+2003-08-12 12:30  turam
+
+	* bin/AGNodeService.py: Report service url on startup
+
+2003-08-12 12:22  turam
+
+	* bin/VenueServer.py: Localized some globals
+
+2003-08-12 10:56  eolson
+
+	* AccessGrid/Descriptions.py: 
+	Fix undefined variables.
+
+2003-08-12 10:55  eolson
+
+	* AccessGrid/hosting/AccessControl.py: 
+	use "+=" instead of append for strings.
+
+2003-08-12 10:47  lefvert
+
+	* doc/CertificateRequestToolDesign.doc: DRAFT document describing
+	the Certificate Request Tool design.
+
+2003-08-12 10:47  turam
+
+	* AccessGrid/NetworkLocation.py: NetworkLocation.__repr__ now
+	returns a string (it was just building it before)
+
+2003-08-12 10:44  turam
+
+	* AccessGrid/MulticastAddressAllocator.py: Remove unused modules
+	"time" and "NetworkLocation"
+
+2003-08-12 10:14  turam
+
+	* AccessGrid/AGNodeService.py: Removed unused import "pickle"
+
+2003-08-12 09:18  turam
+
+	* services/node/VideoProducerService.py: Use list instead of dict,
+	according to changes in AGService.py
+
+2003-08-12 07:49  turam
+
+	* AccessGrid/NodeManagementUIClasses.py: Fix layout of config
+	parameters in service configuration dialog (thanks brian!)
+
+2003-08-12 07:46  turam
+
+	* AccessGrid/AGService.py: Use list instead of dict for storing
+	local configuration, to preserve ordering of parameters in
+	management UI (thanks brian!)
+
+2003-08-12 01:00  turam
+
+	* AccessGrid/AppService.py: Fix AppService, so it adds a channel to
+	the event service before registering callbacks against it
+
+2003-08-11 20:59  judson
+
+	* AccessGrid/VenueClient.py: Fixed backupServer backward
+	compatibility, again, but this time for real
+
+2003-08-11 20:49  judson
+
+	* AccessGrid/VenueClient.py: Fixed backupServer backward
+	compatibility.
+
+2003-08-11 18:09  eolson
+
+	* AccessGrid/RoleAuthorization.py, bin/VenueManagement.py: 
+	Initial checkin of Role Management UI.
+
+2003-08-11 14:46  turam
+
+	* AccessGrid/Venue.py: Add some debugging for AddStream and
+	RemoveStream
+
+2003-08-11 14:46  turam
+
+	* AccessGrid/VenueServer.py: In ModifyVenue, remove static streams
+	before adding streams
+
+2003-08-11 14:44  turam
+
+	* bin/VenueManagement.py: Remove unnecessary static stream handling
+	code (streams are passed in the venue description, and streams are
+	modified appropriately in the venue code)
+
+2003-08-11 09:19  judson
+
+	* packaging/windows/build_snapshot.py: Much more extensive
+	documentation, this is working including building from exported
+	cvs.
+
+2003-08-10 23:22  turam
+
+	* AccessGrid/VenueClient.py: Add code to support selection of
+	bridge, modify stream events, and other
+
+2003-08-10 23:18  turam
+
+	* AccessGrid/AGNodeService.py: Fixed one line of code that was just
+	wrong wCVS:
+	----------------------------------------------------------------------
+
+2003-08-10 23:17  turam
+
+	* AccessGrid/VenueClientUIClasses.py: Add UI for selecting a bridge
+
+2003-08-10 23:14  turam
+
+	* bin/VenueClient.py: Changes to handle modifying streams
+
+2003-08-09 18:56  turam
+
+	* AccessGrid/NetworkLocation.py: Added a ProviderProfile for
+	identifying the entity providing the network location
+
+2003-08-09 18:54  turam
+
+	* bin/BridgeServer.py: Added a BridgeFactory to create/retrieve
+	bridges, and to destroy them
+
+2003-08-08 18:28  judson
+
+	* AccessGrid/NodeManagementUIClasses.py: Fixed about dialog to be a
+	wxDialog so it's portable.
+
+2003-08-08 18:23  judson
+
+	* AccessGrid/: UIUtilities.py, VenueClientUIClasses.py: Fixed about
+	dialog to be a wxDialog so it's portable.
+
+2003-08-08 17:58  lefvert
+
+	* AccessGrid/CertificateRequestTool.py: Added dialog to show
+	pending certificate requests...the ui is finished but the client is
+	not.  I have not tested this on windows yet.
+
+2003-08-08 17:19  eolson
+
+	* AccessGrid/Venue.py: 
+	Role bug fix.
+
+2003-08-08 16:37  judson
+
+	* bin/VenueClient.py: Fallback server client side work in place,
+	one thing to fix:
+	
+	1) it's not clearing out the scrollback (that might be Ok, the mud
+	never does either), but we used to clear it out.
+
+2003-08-08 16:36  judson
+
+	* AccessGrid/: TextClient.py, VenueClient.py,
+	VenueClientUIClasses.py, VenueServer.py: Fallback server client
+	side work in place, two things I'd like to fix:
+	
+	1) the Second time you get kicked to the fallback server it doesn't
+	seem to retry the original (dunno why yet) 2) add an input queue
+	and make the text client know if an enter is pending to not throw a
+	dialog, just wait and send upon success, or throw the failed enter
+	dialog.
+
+2003-08-08 16:35  eolson
+
+	* AccessGrid/: Venue.py, hosting/AccessControl.py: 
+	Add Venue api functions
+	
+	Set multiple users in a role at once (SetSubjectsInRole) Get
+	possible group roles such as VenueServer Administrators or All
+	Users  (GetAvailableGroupRoles).
+
+2003-08-08 14:53  eolson
+
+	* AccessGrid/hosting/AccessControl.py: 
+	Providing arguments to lstrip wasn't available until python 2.2.3,
+	so replace it with code that performs the substring.
+
+2003-08-08 14:25  eolson
+
+	* AccessGrid/hosting/AccessControl.py: 
+	Fix isUser error -- should be IsUser.
+
+2003-08-07 23:44  turam
+
+	* AccessGrid/AGNodeService.py: Fix test for writability of node
+	configuration file
+
+2003-08-07 16:03  judson
+
+	* AccessGrid/VenueServer.py: Added backup server configuration
+	option, added methods to set and retrieve the backup server.
+
+2003-08-07 16:01  judson
+
+	* AccessGrid/VenueClient.py: Added backupServer to state parsing in
+	venue client enter.
+
+2003-08-07 16:00  judson
+
+	* AccessGrid/Venue.py: Added backupServer to the state returned to
+	the client.
+
+2003-08-07 15:59  judson
+
+	* AccessGrid/UIUtilities.py: Fixed implicit splitting bug. (ie,
+	foo.split('.')[2] should be gone.
+
+2003-08-07 15:58  judson
+
+	* AccessGrid/Types.py: Type marshalling is our friend. added
+	backupServer to venuestate parsing/unmarshalling.
+
+2003-08-07 14:33  turam
+
+	* AccessGrid/NetService.py: Server-side NetService class module
+
+2003-08-07 14:31  turam
+
+	* bin/BridgeServer.py: Shut down bridges if EventClient is
+	disconnected; Shut down cleanly on Ctrl-C; Cleanup
+
+2003-08-07 14:22  turam
+
+	* AccessGrid/Venue.py: Abstract out notion of NetServices, of which
+	bridging is an example
+
+2003-08-07 14:17  turam
+
+	* AccessGrid/EventClient.py: Wrap sock.close in try block to catch
+	IOBaseException, which can (probably) be ignored
+
+2003-08-07 13:46  eolson
+
+	* bin/VenueClient.py: 
+	Make VenueClientUI inherit VenueClientEventSubscriber.	  Forgot to
+	do this earlier.  Now it doesn't have to    implement functions it
+	doesn't use.	For example AddStreamEvent wasn't implemented in
+	the UI and	doesn't need it be.
+
+2003-08-07 11:49  eolson
+
+	* AccessGrid/ClientProfile.py: 
+	Use hexdigest instead of base64.
+
+2003-08-07 11:21  eolson
+
+	* bin/VenueClient.py: 
+	Make sure streamDescList constains something before getting an
+	element.
+
+2003-08-07 11:11  lefvert
+
+	* AccessGrid/DataStore.py: changed callbackclass.Remove to
+	callbackclass.RemoveData
+
+2003-08-07 10:46  judson
+
+	* AccessGrid/CertificateRequestTool.py: Added CRSClient class and
+	an exception to raise for invalid url. This sould be all the client
+	side necessary. I'll work on the server side after venue failover.
+	
+	A test url that works is
+	http://aslan-34.mcs.anl.gov/cgi-bin/certReqServer (yes this is my
+	mac laptop :-)
+
+2003-08-07 09:54  turam
+
+	* services/node/VideoProducerService.py: Add video standard to
+	configuration, with NTSC and PAL options
+
+2003-08-07 09:41  lefvert
+
+	* AccessGrid/CertificateRequestTool.py: Tool for requesting a
+	certificate.
+
+2003-08-07 08:48  judson
+
+	* AccessGrid/Platform.py: Fixed new function declarations, forgot
+	()'s the first time.
+
+2003-08-07 07:35  judson
+
+	* AccessGrid/Platform.py: Added platform support for MACOSX; it's
+	not working yet, but I think it's wxWindows and pyGlobus porting
+	issues, not AG stuff (for now).
+
+2003-08-06 15:18  eolson
+
+	* AccessGrid/: ClientProfile.py, VenueClient.py: 
+	Add code for caching of DNs and profiles seen in venues.
+
+2003-08-05 12:01  turam
+
+	* bin/BridgeServer.py, AccessGrid/Venue.py: Fix bad merge
+
+2003-08-05 10:54  eolson
+
+	* AccessGrid/Venue.py: 
+	Get adding users to roles through soap function to work again.
+
+2003-08-04 18:42  eolson
+
+	* AccessGrid/Venue.py: 
+	Remove redundant authorization check.
+
+2003-08-04 17:34  eolson
+
+	* AccessGrid/Venue.py: Fix error
+
+2003-08-04 17:30  eolson
+
+	* AccessGrid/VenueServer.py: 
+	Removed old line of code.
+
+2003-08-04 17:19  turam
+
+	* bin/: AGNodeService.py, CvsSetup.py, NodeManagement.py,
+	SetupVideo.py, VenueClient.py, VenueManagement.py: Use python2 on
+	first line (instead of python)
+
+2003-08-04 17:16  eolson
+
+	* AccessGrid/Descriptions.py, AccessGrid/Venue.py,
+	AccessGrid/VenueServer.py, AccessGrid/hosting/AccessControl.py,
+	bin/CommandLineVenueClient.py, bin/VenueManagement.py: 
+	Checked in and enabling of roles-based authorization.
+
+2003-08-04 17:15  turam
+
+	* bin/BridgeServer.py: Update to match changed Venue interface
+
+2003-08-04 17:07  turam
+
+	* AccessGrid/: VenueClient.py, VenueClientUIClasses.py: VenueClient
+	support for bridging (intermediate commit)
+
+2003-08-04 17:05  turam
+
+	* bin/VenueClient.py: Enable/disable unicast menu entry
+	appropriately on enter (intermediate commit)
+
+2003-08-04 15:14  turam
+
+	* AccessGrid/Venue.py: Add support for bridging (intermediate
+	commit)
+
+2003-08-04 13:11  turam
+
+	* AccessGrid/Events.py: Add MODIFY_EVENT event type
+
+2003-08-04 13:11  turam
+
+	* AccessGrid/NetworkLocation.py: Add id and privateId attributes to
+	NetworkLocation
+
+2003-08-04 13:10  turam
+
+	* AccessGrid/Descriptions.py: New methods to add/remove a network
+	location to a stream description
+
+2003-08-04 12:34  olson
+
+	* AccessGrid/tests/CreateCertTest.py: Wups, fix up the name.
+
+2003-08-04 12:33  olson
+
+	* AccessGrid/tests/CreateCertTest.py: Trivial code to exercise
+	CertificateRepository.CreateCertificateRequest
+
+2003-08-04 12:32  olson
+
+	* AccessGrid/CertificateRepository.py: Initial checkin of cert
+	repository management code.
+
+2003-08-03 00:32  turam
+
+	* bin/BridgeServer.py: Initial check-in of unicast bridge server
+
+2003-08-01 16:39  lefvert
+
+	* doc/NodeSetupWizardDesign.doc: DRAFT document describing Node
+	Setup Wizard design
+
+2003-08-01 16:28  lefvert
+
+	* bin/AGNodeService.py: Added a AGNodeService.LoadDefaultConfig()
+	call if --personalNode option is set
+
+2003-08-01 16:23  lefvert
+
+	* AccessGrid/AGServiceManager.py: Added GetInstallDirectory SOAP
+	method to the interface in order to set services exec path
+	correctly.
+
+2003-08-01 16:21  lefvert
+
+	* AccessGrid/AGNodeService.py: * Made AddService return a
+	ServiceDescription * Changeed __init__ method to not load default
+	configuration * Added LoadDefaultConfig method based on __init__
+	code * If we wanted to store a configuraton, a config file with the
+	same name had to be present already. That is now changed *
+	StoreConfiguration now raises an exception when an error occurs
+
+2003-08-01 16:11  lefvert
+
+	* AccessGrid/NodeSetupWizard.py: Wizard for creating and testing a
+	node configuration.
+	
+	The wizard is actually adding service managers and services to a
+	node service in order to save the configuration so be careful not
+	to use the wizard on a node that is currently in a meeting.
+
+2003-07-29 11:13  eolson
+
+	* AccessGrid/VenueClientUIClasses.py: 
+	Get drag and drop data to work again.  Changed reference to old
+	variable name/location.
+
+2003-07-25 17:27  olson
+
+	* doc/DataStoreClientAPI.tex: more doc fix.
+
+2003-07-25 17:17  olson
+
+	* AccessGrid/DataStoreClient.py: Added filehandle objects.
+
+2003-07-25 17:16  olson
+
+	* doc/DataStoreClientAPI.tex: first cut at datstore client API doc.
+
+2003-07-25 16:37  eolson
+
+	* bin/CommandLineVenueClient.py: 
+	Add ability to list and change venues.
+
+2003-07-25 16:19  olson
+
+	* AccessGrid/DataStoreClient.py: Added put/get/remove/chdir/pwd
+
+2003-07-25 15:41  olson
+
+	* AccessGrid/DataStoreClient.py: Use localhost.
+
+2003-07-25 15:40  olson
+
+	* AccessGrid/DataStoreClient.py: MOre stuff.
+
+2003-07-25 13:35  olson
+
+	* AccessGrid/: DataStoreClient.py, DataStoreClientUI.py:
+	Client-side API for the venue datastore.
+
+2003-07-22 15:01  eolson
+
+	* bin/CommandLineVenueClient.py: 
+	Initial checkin of CommandLineVenueClient.  Doesn't have all the
+	venueclient features yet, but has the following basic commands:
+	entervenue, exitvenue, listparticipants, listdata (venue data),
+	status, help, quit.
+
+2003-07-22 14:58  eolson
+
+	* AccessGrid/VenueClientEventSubscriber.py: 
+	A base class for classes that want use AccessGrid.VenueClient and
+	receive callbacks from it.  bin/CommandLineVenueClient.py will be
+	an example of its use.
+
+2003-07-22 13:43  eolson
+
+	* sharedapps/MailcapSetup.py: 
+	Avoid using predefined "True".	(True not introduced until python
+	2.2.2)
+
+2003-07-22 13:36  eolson
+
+	* sharedapps/MailcapSetup.py: 
+	Replace True with AG_TRUE and False with AG_FALSE.  (True not
+	introduced until python 2.2.2)
+
+2003-07-22 13:31  eolson
+
+	* AccessGrid/CertificateManagerWXGUI.py: 
+	Replace True with AG_TRUE.  (True wasn't available until python
+	2.2.2)
+
+2003-07-22 13:28  eolson
+
+	* AccessGrid/CertificateManagerWXGUI.py: 
+	Replace "True", since True was first defined in python versions
+	2.2.2, which is still fairly recent.
+
+2003-07-18 11:24  eolson
+
+	* AccessGrid/TextServiceAsynch.py: 
+	Remove old unused code (2.0 branch).
+
+2003-07-18 11:09  eolson
+
+	* AccessGrid/TextServiceAsynch.py: 
+	Removing old code now unused.
+
+2003-07-17 17:22  eolson
+
+	* AccessGrid/Venue.py: 
+	Add a shutdown call to Venue.  VenueServer should shut down cleanly
+	now.
+
+2003-07-17 12:45  eolson
+
+	* AccessGrid/TextServiceAsynch.py: 
+	Include EventServiceAsynch stability changes into TextServiceAsynch
+	on 2.0 branch.
+	
+	TextServiceAsynch.py is exactly the same as the version in the head
+	branch at this time.
+
+2003-07-17 12:40  eolson
+
+	* bin/VenueClient.py: 
+	Move the check if venue enter was successful to the beginning of
+	bin.VenueClient.EnterVenue().  Addition to previous VC
+	restructuring changes.
+
+2003-07-17 12:35  eolson
+
+	* AccessGrid/TextServiceAsynch.py: 
+	Incorporate stability changes from EventServiceAsynch into
+	TextServiceAsynch.
+
+2003-07-16 11:47  turam
+
+	* sharedapps/SharedPresentation/SharedPresentation.py: Added a GUI;
+	Allow passive setting of master (only the master can send events,
+	but any one participant can choose to be master); Made robustness
+	fixes
+
+2003-07-15 16:36  eolson
+
+	* AccessGrid/VenueClient.py, bin/VenueClient.py: 
+	Move one line from UI code to base VenueClient code.  No functional
+	changes.
+
+2003-07-15 15:19  eolson
+
+	* AccessGrid/: DataStore.py, VenueClient.py: 
+	Enable bin.VenueClient to shutdown cleanly without using
+	os._exit().
+	
+	Added Shutdown method to AccessGrid.VenueClient.    Included is
+	code to stop a couple of Server objects on shutdown.	Server
+	objects in AG.VenueClient and Datastore are now kept track of	
+	and are shut down.  Shutdown method added to Datastore to allow   
+	the shutting down of its server.
+	
+	OnExit was being called twice in bin.VenueClient, so now have a
+	flag to make sure it is only called once.  Finding the source of
+	the calls would be nice too, but it's probably not a bad idea to
+	have that flag anyway.
+
+2003-07-15 15:03  eolson
+
+	* bin/VenueClient.py: [no log message]
+
+2003-07-14 16:08  eolson
+
+	* AccessGrid/VenueClient.py: 
+	Fix typo.
+
+2003-07-14 16:08  eolson
+
+	* AccessGrid/VenueClient.py: 
+	Fix typo.
+	
+	ExitEvent now sent when it should be.
+
+2003-07-11 16:12  eolson
+
+	* AccessGrid/DataStore.py, AccessGrid/EventClient.py,
+	AccessGrid/EventServiceAsynch.py, AccessGrid/Events.py,
+	AccessGrid/Venue.py, AccessGrid/VenueClient.py,
+	bin/AGNodeService.py, doc/DatastoreDesign.doc,
+	sharedapps/MailcapSetup.py: 
+	Merge 2.0/asynch branch into head branch.  All changes from asynch
+	branch should now be in the trunk.
+	
+	If you're running a server from the latest cvs code, you'll likely
+	need a newer pyGlobus than the one from 2.0. (at least I needed the
+	pyGlobus-cvs-7 rpm on linux).
+	
+	I've done some tests, and things are working for me.  There were a
+	few merging conflicts that should be resolved, but extra testing is
+	a good idea.
+
+2003-07-10 11:35  eolson
+
+	* AccessGrid/CertificateManager.py,
+	AccessGrid/CertificateManagerWXGUI.py, AccessGrid/DataStore.py,
+	AccessGrid/EventClient.py, AccessGrid/EventServiceAsynch.py,
+	AccessGrid/Events.py, AccessGrid/UIUtilities.py,
+	AccessGrid/Venue.py, AccessGrid/VenueClient.py,
+	AccessGrid/tests/VenueClientTest.py, AccessGrid/tests/test_Apps.py,
+	bin/AGNodeService.py, doc/AccessControlNotes.doc,
+	doc/CertificateManagement.doc, doc/DatastoreArch.doc,
+	doc/DatastoreDesign.doc, doc/EventService.doc,
+	doc/PersonalNodeDesign.doc,
+	doc/ToolkitConfigurationAndInitialization.doc,
+	doc/VenueClientDesign.doc, doc/VenueManagementDesign.doc,
+	doc/VenueServerDesign.vsd: 
+	Merge asynch branch to 2.0 branch.
+	
+	No actual merging within files needed since files in 2.0 branch are
+	the same as files at the beginning of asynch branch.
+
+2003-07-07 12:32  eolson
+
+	* AccessGrid/VenueClient.py: 
+	Move the initialization of warningString outside a try block in
+	EnterVenue.
+
+2003-07-03 17:00  lefvert
+
+	* bin/VenueClient.py: moved RemoveData call to
+	AccessGrid/VenueClient
+
+2003-07-03 16:59  lefvert
+
+	* AccessGrid/VenueClient.py: Removed venue.GetDataStoreInformation
+	call to make new clients compatible with old servers. Instead, the
+	client calls RemoveData, which was the only call that used the
+	GetDataStoreInformation method. Moved RemoveData to this file from
+	bin.VenueClient
+
+2003-07-03 16:55  lefvert
+
+	* AccessGrid/Venue.py: wsAddData, wxRemoveData, AddData, and
+	RemoveData is added back to the venue so old clients can connect to
+	the new server. Clients used AddData to add personal data
+	descriptions to venue and send an event, now it just sends an
+	event. RemoveData was used for all kinds of data, and the old code
+	is kept.
+
+2003-07-02 16:42  olson
+
+	* AccessGrid/CertificateManagerWXGUI.py, AccessGrid/DataStore.py,
+	AccessGrid/EventClient.py, AccessGrid/EventService.py,
+	AccessGrid/EventServiceAsynch.py, AccessGrid/Events.py,
+	AccessGrid/Toolkit.py, AccessGrid/UIUtilities.py,
+	AccessGrid/Utilities.py, AccessGrid/Venue.py,
+	AccessGrid/VenueClient.py, AccessGrid/VenueClientUIClasses.py,
+	AccessGrid/VenueServer.py, AccessGrid/scheduler.py,
+	AccessGrid/hosting/pyGlobus/Server.py, bin/VenueClient.py,
+	bin/VenueServer.py, doc/DatastoreDesign.doc, doc/EventService.doc,
+	doc/VenueServerDesign.vsd, doc/VirtualVenuesArch.doc,
+	doc/VirtualVenuesDesign.doc: Merge from HEAD.
+
+2003-07-02 13:37  olson
+
+	* AccessGrid/: AsynchIO.py, EventClient.py, EventServiceAsynch.py,
+	EventServiceAsynch2.py, hosting/pyGlobus/Server.py: [no log
+	message]
+
+2003-07-02 13:37  olson
+
+	* AccessGrid/AsynchIO.py: file AsynchIO.py was initially added on
+	branch asynch-dev-2003-0605.
+
+2003-07-02 13:37  olson
+
+	* AccessGrid/EventServiceAsynch2.py: file EventServiceAsynch2.py
+	was initially added on branch asynch-dev-2003-0605.
+
+2003-07-01 11:43  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: changed how exits are sorted.
+	 The sort does not care about upper and lower-case letters.
+	bugzilla #303 removed some commented menu code no longer used
+
+2003-06-30 14:18  lefvert
+
+	* AccessGrid/CertificateManagerWXGUI.py: Ok button gets pressed
+	when user hits enter. Changed passphrase to pass phrase.
+
+2003-06-27 17:12  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: fixed error that occured when
+	changing profile
+
+2003-06-27 17:02  eolson
+
+	* AccessGrid/VenueClient.py, bin/VenueClient.py: 
+	Fix setting of history and proxy detection (do before trying to
+	connect) by adding a PreEnter function/event.  The commands should
+	now be executing in the order before the restructure.
+
+2003-06-27 16:43  eolson
+
+	* AccessGrid/VenueClientUIClasses.py: Fix setting bookmark.
+
+2003-06-27 16:41  eolson
+
+	* AccessGrid/VenueClient.py, bin/VenueClient.py: 
+	move a try block and a couple commands from VenueClientUI
+	EnterVenue to AccessGrid/VenueClient.py EnterVenue.
+	
+	The order of a few commands was changed.  There are a couple
+	remaining commands whose order still needs to be fixed (setHistory
+	and certmanager.HaveValidProxy)
+
+2003-06-27 16:30  lefvert
+
+	* AccessGrid/EventClient.py: Added locks around eventClient.Send. 
+	After using Send in more places in the client, the writing to
+	socket have to be protected.
+
+2003-06-27 14:16  lefvert
+
+	* bin/VenueClient.py: fixed spelling error for changing profile
+
+2003-06-27 13:28  eolson
+
+	* AccessGrid/: VenueClient.py, VenueClientUIClasses.py: 
+	fix typos.
+
+2003-06-27 12:07  eolson
+
+	* AccessGrid/VenueClientUIClasses.py: 
+	Fixed forgotten typo.
+
+2003-06-27 12:02  eolson
+
+	* AccessGrid/VenueClient.py, AccessGrid/VenueClientUIClasses.py,
+	bin/VenueClient.py: 
+	Initial checkin of VenueClient restructure.
+	
+	For the most part, placed instance of AccessGrid.VenueClient in
+	VenueClientUI, removed the inheritance, and made sure code
+	references to  a VenueClient point to AccessGrid.VenueClient.
+	
+	There are still some chunks of code to move into
+	AccessGrid.VenueClient (AddService, AddApplication, etc.), but
+	hopefully doing things incrementally will prevent things from
+	breaking along the way.
+	
+	There shouldn't be any functional changes.
+
+2003-06-27 11:43  eolson
+
+	* AccessGrid/Toolkit.py: 
+	Added constants AG_TRUE=1 and AG_FALSE=0 to Toolkit since I need
+	something consistent.
+	
+	If there's is a better solution or a better location for it, feel
+	free to change it.
+
+2003-06-27 11:21  lefvert
+
+	* AccessGrid/VenueClient.py: Convert soap list to datadescription
+	list when getting personal data. Else, the menu's will not show up
+	when right-clicking personal data
+
+2003-06-27 11:11  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: added fix so personal data
+	can be removed remotely
+
+2003-06-27 11:09  lefvert
+
+	* bin/VenueClient.py: Fixed so other peoples personal data can be
+	removed remotely
+
+2003-06-27 11:08  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: Added try except statement
+	for personal data.  Removed ball icon for "No data available" text
+
+2003-06-26 16:17  lefvert
+
+	* AccessGrid/VenueClient.py: Moved personal data store logic to
+	this file from bin.VenueClient.
+	
+	Also added GetDataStoreInformation and GetPersonalData to client's
+	SOAP interface
+
+2003-06-26 16:10  lefvert
+
+	* AccessGrid/EventService.py: Removed all changes between 1.20 and
+	1.21.  Wrong code committed
+
+2003-06-26 16:06  lefvert
+
+	* AccessGrid/EventServiceAsynch.py: The datastore now uses the
+	event client to distribute events for personal data.  The events
+	are received in the EventService, which redistributes the events
+	(the same as calling the venue but now the events can be sent from
+	the datastore)
+
+2003-06-26 16:01  lefvert
+
+	* AccessGrid/DataStore.py: Added DataDescriptionContainer class
+	that manages DataDescriptions Runs the data store as a SOAP service
+	and added methods for that.
+
+2003-06-26 15:58  lefvert
+
+	* AccessGrid/Venue.py: removed interface methods for the datastore.
+	
+	AddData and wsAddData RemoveData and wsRemoveData UpdateData and
+	wsUpdateData
+	
+	Removed data exceptions and dict
+	
+	Moved persistence to datastore
+	
+	Added method GetDataStoreInformation(), which returns uploadUrl and
+	url to datastore soap interface
+
+2003-06-26 15:53  lefvert
+
+	* AccessGrid/EventService.py: The datastore now uses the event
+	client to distribute events for personal data.	The events are
+	received in the EventService, which redistributes the events (the
+	same as calling the venue but now the events can be sent from the
+	datastore)
+
+2003-06-26 15:50  lefvert
+
+	* AccessGrid/VenueServer.py: Moved datastore persistence logic to
+	datastore
+
+2003-06-26 15:48  lefvert
+
+	* AccessGrid/Events.py: Added Add/Updata/RemovePersonalDataEvent
+
+2003-06-26 15:34  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: Changes for personal data:
+	------------------------- * Store data based on id and not name. 
+	Personal data can now have the same name as venue data
+	
+	* Personal data is only fetched when the user tries to expand a
+	participant.  To enable twist buttons even though data is not
+	actually in the ui, I added a "No personal data available" text
+	that is removed when data is fetched.
+	
+	* Data events will always be received.
+
+2003-06-26 15:06  lefvert
+
+	* bin/VenueClient.py: Changes for personal data:
+	------------------------- Removed methods before used by the
+	datastore ( are now implemented in the datastore instead): -AddData
+	-RemoveData -GetData -GetVenueData
+	
+	Moved __createPersonalDataStore to AccessGrid.VenueClient Also
+	moved "save personal data" and data parameters
+	
+	In event methods, only changes made to venue data is changing
+	venuestate.
+	
+	Call GetDataStoreInfo to get upload url and soap url
+	---------------------------
+	
+	Added fix for multiple dialogs showing up when heartbeats are sent.
+	 I haven't been able to test it because I can not reproduce the
+	bug.
+
+2003-06-18 09:52  lefvert
+
+	* AccessGrid/UIUtilities.py: Added frame and cancel button to
+	BugReportCommentDialog
+
+2003-06-17 16:53  lefvert
+
+	* bin/VenueClient.py: Changed all MessageDialogs to ErrorDialogs
+	that are displayed when exceptions occurs.  ErrorDialog now
+	supports automated bug reporting
+
+2003-06-17 16:52  lefvert
+
+	* AccessGrid/Utilities.py: Added GetLogText(maxSize) to get the
+	last bytes (maxSize) of the VenueClient.log, returned as a string,
+	to use for bug reports.  Also, in the those last bytes, I'm just
+	sending log messages that are reported with current date.
+	
+	Modified SubmitBugs to take a string comment, received from the
+	user, describing the error.  Use GetLogText to also add
+	VenueClient.log in the bug report.
+
+2003-06-17 16:40  lefvert
+
+	* AccessGrid/UIUtilities.py: Added ErrorDialog,
+	BugReportCommentDialog and BugFeedbackDialog to send error reports
+	to bugzilla
+
+2003-06-17 11:32  judson
+
+	* sharedapps/MailcapSetup.py: Removed broken first line.
+
+2003-06-09 16:45  judson
+
+	* doc/VirtualVenuesDesign.doc: More text, more to come with edits,
+	but this is a fair chunk of it.
+
+2003-06-09 13:38  judson
+
+	* doc/: VenueServerDesign.vsd, VirtualVenuesDesign.doc: Sequences
+	in place, now on to narrative.
+
+2003-06-09 08:33  judson
+
+	* doc/: VenueServerDesign.vsd, VirtualVenuesArch.doc,
+	VirtualVenuesDesign.doc: Updated, but still updating venue
+	sequences.
+
+2003-06-06 16:39  olson
+
+	* doc/DatastoreDesign.doc: Mods for 2.0.
+
+2003-06-06 15:55  olson
+
+	* AccessGrid/EventServiceAsynch.py: Fix for the two-connect
+	problem.
+
+2003-06-06 10:06  olson
+
+	* doc/EventService.doc: New doc.
+
+2003-06-05 13:26  olson
+
+	* AccessGrid/DataStore.py, AccessGrid/EventClient.py,
+	AccessGrid/EventServiceAsynch.py, AccessGrid/Events.py,
+	AccessGrid/Venue.py, AccessGrid/VenueClient.py,
+	bin/AGNodeService.py: Misc asynch fixes.
+
+2003-06-05 13:22  olson
+
+	* AccessGrid/CertificateManagerWXGUI.py: Don't try to show the cert
+	details gui if there aren't any system ca certs found.
+
+2003-06-05 13:17  olson
+
+	* AccessGrid/CertificateManager.py: fix for bug 313: reset our
+	notion of sytem CA cert dir if the directory doesn't exist and
+	there's a new setting for it in the Globus registry settings.
+
+2003-06-05 13:13  eolson
+
+	* AccessGrid/UIUtilities.py: 
+	On windows, don't know why .log files return mimetype of None, but
+	now we at least handle the return of None now and get a basic menu
+	when we right-click on .log venue data.
+
+2003-06-04 16:36  eolson
+
+	* AccessGrid/tests/test_Apps.py: 
+	Added missing import.
+
+2003-06-04 15:49  eolson
+
+	* doc/ToolkitConfigurationAndInitialization.doc: 
+	Added tables of AG and globus registry keys for windows.
+
+2003-06-04 15:07  lefvert
+
+	* doc/VenueManagementDesign.doc: Added explanation of UML class
+	diagrams
+
+2003-06-04 15:03  lefvert
+
+	* doc/VenueClientDesign.doc: Added explanation of UML class
+	diagrams
+
+2003-06-04 14:56  olson
+
+	* doc/: AccessControlNotes.doc, CertificateManagement.doc,
+	DatastoreArch.doc, DatastoreDesign.doc, PersonalNodeDesign.doc: Doc
+	updates for 2.0.
+
+2003-06-04 13:53  eolson
+
+	* doc/ToolkitConfigurationAndInitialization.doc: 
+	Added notes on linux AG and Globus environments.
+
+2003-06-04 13:31  lefvert
+
+	* doc/VenueManagementDesign.doc: Venue Management design draft
+
+2003-06-04 13:21  lefvert
+
+	* doc/VenueClientDesign.doc: updated diagrams to reflect current
+	status of cvs
+
+2003-06-03 18:19  eolson
+
+	* doc/ToolkitConfigurationAndInitialization.doc: 
+	Add locations of windows AG files.  May need some polishing yet,
+	since I'm not sure what the best format is for this.
+
+2003-06-03 17:32  eolson
+
+	* doc/ToolkitConfigurationAndInitialization.doc: 
+	Adding appendix of installed files.  Linux entered, windows next.
+
+2003-06-03 16:42  eolson
+
+	* doc/ToolkitConfigurationAndInitialization.doc: 
+	Minor changes.	Added notes on the SharedDoc locations.  Also added
+	a note on CvsSetup and where to find details about it.
+
+2003-06-03 12:43  eolson
+
+	* AccessGrid/tests/VenueClientTest.py: 
+	Update a couple of old references to match minor changes.  Get the
+	Add and Remove venue data to work with the recent changes, too.
+
+2003-05-30 21:55  turam
+
+	* packaging/redhat/AccessGrid.spec: Update version; Add venue
+	client manual files
+
+2003-05-30 21:53  turam
+
+	* setup.py: Add venue client manual files
+
+2003-05-30 21:51  turam
+
+	* AccessGrid/VenueClientUIClasses.py: Fix application
+	double-clicking
+
+2003-05-30 19:55  turam
+
+	* packaging/redhat/AccessGrid.spec: Attempt 3
+
+2003-05-30 19:53  turam
+
+	* packaging/redhat/AccessGrid.spec: Attempt 2
+
+2003-05-30 19:36  turam
+
+	* packaging/redhat/AccessGrid.spec: Bring VenueClient manual HTML
+	files into RPM
+
+2003-05-30 17:26  judson
+
+	* AccessGrid/Platform.py: fixed from
+	/usr/share/AccessGrid/Documentation to
+	/usr/share/doc/AccessGrid/Documentation
+
+2003-05-30 17:07  judson
+
+	* packaging/windows/: BuildAccessGrid.cmd, agtk.iss: Added manuals
+	to the installation.
+
+2003-05-30 17:05  judson
+
+	* AccessGrid/: Platform.py, VenueClientUIClasses.py: Created new
+	GetSharedDocDir call in platform. The values are:
+	
+	GetSharedDocDir - win32: InstallPath\Documentation linux:
+	/usr/share/AccessGrid/Documentation
+	
+	Updated venueclientUI classes to have the manula lmenu active.
+
+2003-05-30 16:20  lefvert
+
+	* AccessGrid/VenueClientUIClasses.py: changed manual url to point
+	at right dir in my public html dir for now...
+
+2003-05-30 16:20  lefvert
+
+	* bin/VenueManagement.py: changed manual url to point at existing
+	dir in my public html
+
+2003-05-30 15:26  lefvert
+
+	*
+	doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/:
+	Thumbs.db, filelist.xml, header.htm, image001.jpg, image002.jpg,
+	image003.jpg, image004.jpg, image005.jpg, image006.jpg,
+	image007.jpg, image008.jpg, image009.gif, image009.jpg,
+	image010.jpg, image011.jpg, image012.jpg, image013.jpg,
+	image014.jpg, image015.jpg, image016.jpg, image017.jpg,
+	image018.jpg, image019.jpg, image020.jpg, image021.jpg,
+	image022.jpg, image023.jpg, image024.jpg, image025.jpg: binary...
+
+2003-05-30 15:25  lefvert
+
+	*
+	doc/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML_files/:
+	Thumbs.db, filelist.xml, header.htm, image001.jpg, image002.jpg,
+	image003.jpg, image004.jpg, image005.jpg, image006.jpg,
+	image007.jpg, image008.jpg, image009.gif, image009.jpg,
+	image010.jpg, image011.jpg, image012.jpg, image013.jpg,
+	image014.jpg, image015.jpg, image016.jpg, image017.jpg,
+	image018.jpg, image019.jpg, image020.jpg, image021.jpg,
+	image022.jpg, image023.jpg, image024.jpg, image025.jpg: add as
+	binary instead
+
+2003-05-30 15:16  eolson
+
+	* AccessGrid/DataStore.py: 
+	Fix personalData in windows (really this time).
+	
+	Needed to specify binary flag in windows when reading and writing.
+
+2003-05-30 15:16  lefvert
+
+	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/:
+	filelist.xml, header.htm, image001.gif, image001.jpg, image002.gif,
+	image002.jpg, image003.gif, image003.jpg, image004.jpg,
+	image005.gif, image005.jpg, image006.gif, image006.jpg,
+	image007.jpg, image008.gif, image008.jpg, image009.gif,
+	image009.jpg, image010.gif, image010.jpg, image011.jpg,
+	image012.gif, image012.jpg, image013.gif, image013.jpg,
+	image013.png, image014.jpg, image015.jpg, image016.jpg,
+	image017.gif, image017.jpg, image018.gif, image018.jpg,
+	image019.jpg, image020.gif, image020.jpg, image021.jpg,
+	image022.gif, image022.jpg, image023.gif, image023.jpg,
+	image024.jpg, image025.gif, image025.jpg, image026.gif,
+	image026.jpg, image027.jpg, image028.gif, image028.jpg,
+	image029.gif, image029.jpg, image030.jpg, image031.gif,
+	image031.jpg, image032.jpg, image033.emz, image034.gif,
+	image035.jpg, image036.jpg, image037.jpg, image038.jpg,
+	image039.jpg, image040.jpg, image055.jpg, image058.jpg,
+	image059.jpg, image061.jpg, image062.jpg, image064.jpg,
+	image065.jpg, image066.jpg, image070.jpg, image071.jpg,
+	image072.jpg, image076.jpg, image077.jpg, image078.jpg,
+	image079.jpg, image080.gif, oledata.mso, overview.jpg: binary?
+
+2003-05-30 15:15  lefvert
+
+	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/:
+	image006.gif, image016.jpg, image022.gif, image027.jpg,
+	image033.emz, image058.jpg, image072.jpg, oledata.mso,
+	overview.jpg: remove some more files
+
+2003-05-30 15:07  lefvert
+
+	* doc/VENUE_CLIENT_MANUAL_HTML/VenueClientManualHTML_files/:
+	filelist.xml, header.htm, image001.gif, image001.jpg, image002.gif,
+	image002.jpg, image003.gif, image003.jpg, image004.jpg,
+	image005.gif, image005.jpg, image006.jpg, image007.jpg,
+	image008.gif, image008.jpg, image009.gif, image009.jpg,
+	image010.gif, image010.jpg, image011.jpg, image012.gif,
+	image012.jpg, image013.gif, image013.jpg, image013.png,
+	image014.jpg, image015.jpg, image017.gif, image017.jpg,
+	image018.gif, image018.jpg, image019.jpg, image020.gif,
+	image020.jpg, image021.jpg, image022.jpg, image023.gif,
+	image023.jpg, image024.jpg, image025.gif, image025.jpg,
+	image026.gif, image026.jpg, image028.gif, image028.jpg,
+	image029.gif, image029.jpg, image030.jpg, image031.gif,
+	image031.jpg, image032.jpg, image034.gif, image035.jpg,
+	image036.jpg, image037.jpg, image038.jpg, image039.jpg,
+	image040.jpg, image055.jpg, image059.jpg, image061.jpg,
+	image062.jpg, image064.jpg, image065.jpg, image066.jpg,
+	image070.jpg, image071.jpg, image076.jpg, image077.jpg,
+	image078.jpg, image079.jpg, image080.gif: remove to check in as
+	binary instead...
+
+2003-05-30 14:57  judson
+
+	* ChangeLog: Updated for 2.0 Final.
+
 2003-05-30 14:44  lefvert
 
 	*
