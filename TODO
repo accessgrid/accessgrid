@@ -3,6 +3,8 @@
 ============================================================================
 
 Core Toolkit
+     - Log to files, instead of standard out
+     - AGNodeService/AGServiceManager Configuration files
      - Move to GT 2.2
      - Move to the latest pyGlobus
        - Native Grid Proxy Init
