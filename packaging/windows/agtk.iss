@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.93 2004-06-01 16:46:46 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.94 2004-06-01 17:02:46 judson Exp $
 ;
 
 ; Set externally
@@ -164,7 +164,7 @@ DirExists=The directory:%n%n%1%n%nalready exists and appears to have an {#AppNam
 WelcomeLabel2=This will install the {#AppName} {#AppVersion} {#VersionInformation} on your computer.%n%nIt is strongly recommended that you uninstall any previous version of the {#AppName} before continuing.%n%nIt is also strongly recommended that you close all other applications you have running before continuing with this installation.%n%nThese steps will help prevent any conflicts during the installation process.
 
 [Run]
-Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Description: Install shared apps system wide.; Flags: runminimized runhidden waituntilidle postinstall; Parameters: {app}\bin\agpm.py -s --post-install
+Filename: {reg:HKLM\Software\Python\PythonCore\2.{#PythonSubVersion}\InstallPath,|C:\Python2{#PythonSubVersion}}\python.exe; Description: Install shared apps system wide.; Flags: runhidden; Parameters: {app}\bin\agpm.py -s --post-install
 
 [UninstallDelete]
 Name: {app}; Type: filesandordirs
