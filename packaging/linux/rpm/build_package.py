@@ -43,11 +43,11 @@ print "metainfo = ", metainfo
 print "version = ", version
 
 """
-cmd =  /usr/bin/python2 build_package.py --verbose 
-    -s /home/turam/build 
-    -b /home/turam/build/AccessGrid-20040413-140420 
-    -d /home/turam/build/dist-20040413-174909 
-    -p 2.2 -m Snapshot_20040413-174909 
+cmd =  /usr/bin/python2 build_package.py --verbose   \
+    -s /home/turam/build               \
+    -b /home/turam/build/AccessGrid    \
+    -d /home/turam/build/dist          \
+    -p 2.2 -m Snapshot_20040413-174909 \
     -v 2.2
 """
 
@@ -87,26 +87,6 @@ print "cmd = ", cmd
 os.system(cmd)
 
 #
-# Copy the gpt rpm
-#
-cmd = "cp %s %s" % ( os.path.join(SourceDir,"gpt-3.1-1-rh73.i386.rpm"), DestDir)
-print "cmd = ", cmd
-os.system(cmd)
-
-
-#
-# Build globus rpm
-#
-os.chdir(CurDir)
-print "cwd = ", os.getcwd()
-cmd = "rpm -ba globus.spec"
-print "cmd = ", cmd
-os.system(cmd)
-cmd = "cp /usr/src/redhat/RPMS/i386/globus-accessgrid-2.4-1.i386.rpm %s" % (DestDir,)
-print "cmd = ", cmd
-os.system(cmd)
-
-#
 # Build the pyGlobus rpm
 #
 # - create tar file for the rpm
@@ -133,7 +113,7 @@ os.system(cmd)
 # Build AccessGrid rpms
 #
 # - build the targz file for the AG rpms
-os.chdir(SourceDir)
+os.chdir(DestDir)
 tar_dst_filename = "AccessGrid-%s.tar.gz" % (version)
 tar_src_filename = "AccessGrid-%s" % (version)
 
@@ -145,8 +125,8 @@ if not os.path.exists(tar_src_filename):
 rpm_srcdir = "/usr/src/redhat/SOURCES"
 tar_command = "tar czhf %s %s" % ( os.path.join(rpm_srcdir, tar_dst_filename), tar_src_filename)
 print "tar_command = ", tar_command
-r = os.system(tar_command)
-if r != 0:
+rc = os.system(tar_command)
+if rc != 0:
     print "tar command \"", tar_command, "\" failed with rc ", rc
     sys.exit(1)
     
@@ -187,10 +167,3 @@ os.chdir(DestDir)
 cmd = "tar czf %s *.rpm install.sh" % (targz,)
 print "cmd = ", cmd
 os.system(cmd)
-
-
-
-
-
-
-
