@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.79 2003-03-24 20:26:13 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.80 2003-03-25 17:56:02 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -46,12 +46,14 @@ class VenueClientUI(wxApp, VenueClient):
     clientHandle = None
     venueUri = None
 
+    def __init__(self):
+        wxApp.__init__(self,False)
+        VenueClient.__init__(self)
+
     def OnInit(self):
         """
         This method initiates all gui related classes.
         """
-        VenueClient.__init__(self)
-        #self.CreateFollowLeadServer()
         self.__setLogger()
         self.__createHomePath()
         self.frame = VenueClientFrame(NULL, -1,"", self)
@@ -220,6 +222,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method calls the venue client method and then
         performs its own operations when the client enters a venue.
         """
+
         wxCallAfter(wxLogDebug, "EVENT- Enter venue with url: %s" %(URL))
 
         # Make people you lead go to this venue
@@ -290,13 +293,19 @@ class VenueClientUI(wxApp, VenueClient):
         
     EnterVenue.soap_export_as = "EnterVenue"
 
+    EnterVenue.soap_export_as = "EnterVenue"
+
     def ExitVenue(self):
         """
         Note: Overloaded from VenueClient
         This method calls the venue client method and then
         performs its own operations when the client exits a venue.
         """
-        wxCallAfter(wxLogDebug, "Exit venue")
+        wxCallAfter(wxLogDebug, "Cleanup frame and exit venue")
+        try:
+            wxCallAfter(self.frame.CleanUp)
+        except:
+            pass
         VenueClient.ExitVenue(self)
 
     def __setHistory(self, uri, back):
@@ -382,7 +391,7 @@ class VenueClientUI(wxApp, VenueClient):
                 if self.oldUri != None:
                     wxLogDebug("Go back to old venue")
                     # go back to venue where we came from
-                    self.EnterVenue(oldUri) 
+                    self.EnterVenue(self.oldUri) 
         else:
             wxLogDebug("Handler is not valid")
             if not HaveValidProxy():
@@ -792,8 +801,7 @@ if __name__ == "__main__":
     wxInitAllImageHandlers()
 
     vc = VenueClientUI()
-    vc.ConnectToVenue()
-       
+    vc.ConnectToVenue()        
 
     
   
