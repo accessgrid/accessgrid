@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.43 2004-04-27 19:22:52 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.44 2004-05-06 17:55:01 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -19,6 +19,7 @@ import signal, time, os
 from optparse import Option
 
 # Our imports
+from AccessGrid import Log
 from AccessGrid.hosting import SecureServer
 from AccessGrid.Toolkit import Service
 from AccessGrid.Platform import IsLinux
@@ -70,13 +71,15 @@ def main():
     
     # Initialize the application
     try:
-        args = app.Initialize("ServiceManager")
+        args = app.Initialize(Log.ServiceManager)
     except Exception, e:
         print "Toolkit Initialization failed, exiting."
         print " Initialization Error: ", e
         sys.exit(-1)
 
     log = app.GetLog()
+    Log.SetDefaultLevel(Log.ServiceManager, Log.DEBUG)
+
     port = app.GetOption("port")
         
     # Create the hosting environment

@@ -3,14 +3,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.55 2004-04-29 23:05:58 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.56 2004-05-06 17:54:40 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 This is the Node Service for an AG Node.
 """
-__revision__ = "$Id: AGNodeService.py,v 1.55 2004-04-29 23:05:58 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.56 2004-05-06 17:54:40 turam Exp $"
 
 # The standard imports
 import sys
@@ -24,6 +24,7 @@ import signal, time, os
 from optparse import Option
 
 # Our imports
+from AccessGrid import Log
 from AccessGrid.Toolkit import Service
 from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
 from AccessGrid.Platform.Config import SystemConfig
@@ -74,6 +75,8 @@ def main():
         sys.exit(-1)
 
     log = app.GetLog()
+    Log.SetDefaultLevel(Log.NodeService, Log.DEBUG)
+
     port = app.GetOption("port")
         
     # Create a Node Service
