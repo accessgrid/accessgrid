@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.76 2004-05-07 16:31:57 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.77 2004-05-07 19:56:29 eolson Exp $
 ;
 
 ; Set externally
@@ -182,9 +182,9 @@ Filename: {app}\config\nodeConfig\defaultWindows; Section: service0; Key: packag
 Filename: {app}\config\nodeConfig\defaultWindows; Section: service0; Key: resource; String: None
 Filename: {app}\config\nodeConfig\defaultWindows; Section: service0; Key: executable; String: {app}\bin\rat.exe
 Filename: {app}\config\nodeConfig\defaultWindows; Section: service0; Key: serviceconfig; String: serviceconfig0
-Filename: {app}\config\nodeConfig\defaultWindows; Section: servicemanager0; Key: url; String: https://localhost:12000/ServiceManager
+Filename: {app}\config\nodeConfig\defaultWindows; Section: servicemanager0; Key: url; String: https://localhost:11000/ServiceManager
 Filename: {app}\config\nodeConfig\defaultWindows; Section: servicemanager0; Key: services; String: service0 service1
-Filename: {app}\config\nodeConfig\defaultWindows; Section: servicemanager0; Key: name; String: localhost:12000
+Filename: {app}\config\nodeConfig\defaultWindows; Section: servicemanager0; Key: name; String: localhost:11000
 Filename: {app}\config\nodeConfig\defaultWindows; Section: serviceconfig1; Key: ";key"; String: value
 Filename: {app}\config\nodeConfig\defaultWindows; Section: serviceconfig0; Key: ";key"; String: value
 
