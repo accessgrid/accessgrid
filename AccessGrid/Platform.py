@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.56 2003-10-20 21:15:38 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.57 2003-10-21 03:29:30 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 The Platform Module is to isolate OS specific interfaces.
 """
-__revision__ = "$Id: Platform.py,v 1.56 2003-10-20 21:15:38 judson Exp $"
+__revision__ = "$Id: Platform.py,v 1.57 2003-10-21 03:29:30 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -26,6 +26,7 @@ import logging
 from AccessGrid.Version import GetVersion
 
 log = logging.getLogger("AG.Platform")
+log.setLevel(logging.WARN)
 
 # Global env var
 AGTK = 'AGTK'
@@ -465,6 +466,9 @@ def Win32GetMimeCommands(mimeType = None, ext = None):
     cdict = dict()
     filetype = None
     extension = ext
+
+    log.debug("MimeType: %s", mimeType)
+
     if mimeType != None:
         try:
             key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
@@ -475,6 +479,8 @@ def Win32GetMimeCommands(mimeType = None, ext = None):
             log.warn("Couldn't open registry for mime types: %s",
             mimeType)
             return cdict
+
+    log.debug("Extension: %s", extension)
 
     if extension != None:
         if extension[0] != ".":
@@ -488,14 +494,18 @@ def Win32GetMimeCommands(mimeType = None, ext = None):
             extension)
             return cdict
 
+    log.debug("FileType: %s", filetype)
+    
     if filetype != None:
         try:
             key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
             "%s\shell" % filetype)
             nCommands = _winreg.QueryInfoKey(key)[0]
-            #            defaultCommand = _winreg.QueryValue(key, "")
 
-            for i in range(0,nCommands-1):
+            log.debug("Found %d commands for filetype %s.", nCommands,
+                      filetype)
+
+            for i in range(0,nCommands):
                 commandName = _winreg.EnumKey(key, i)
                 command = None
                 # Always use caps for names to make life easier
@@ -626,23 +636,26 @@ def Win32InitUserEnv():
     sharedAppPkgType = "application/x-ag-shared-app-pkg"
     sharedAppPkgExt = ".shared_app_pkg"
     sharedAppPkgDesc = "A shared application package for use with the Access \
-                        Grid Toolkit 2.0."
-    open = ('Open', installCmd + " -p %s", "Install this shared application.")
+    Grid Toolkit 2.0."
+    
+    open = ('Open', "%s %s -p %%1" % (sys.executable, installCmd),
+            "Install this shared application.")
     sharedAppPkgCmds = list()
     sharedAppPkgCmds.append(open)
 
     Win32RegisterMimeType(sharedAppPkgType, sharedAppPkgExt,
-                          "AG Shared Application Package",
-                          sharedAppPkgDesc, sharedAppPkgCmds)
+                          "x-ag-shared-app-pkg", sharedAppPkgDesc,
+                          sharedAppPkgCmds)
 
     log.debug("registered agpm for shared app packages.")
     
     # Install applications found in the shared app repository
     # Only install those that are not found in the user db.
 
-    # TO BE DONE
     sharedPkgPath = os.path.join(GetSystemConfigDir(), "sharedapps")
 
+    log.debug("Looking in %s for shared apps.", sharedPkgPath)
+    
     if os.path.exists(sharedPkgPath):
         for pkg in os.listdir(sharedPkgPath):
             t = pkg.split('.')
@@ -650,14 +663,10 @@ def Win32InitUserEnv():
                 (name, ext) = t
                 if ext == "shared_app_pkg":
                     pkgPath = win32api.GetShortPathName(os.path.join(sharedPkgPath, pkg))
-                    import AccessGrid.ProcessManager
-                    pm = AccessGrid.ProcessManager.ProcessManager()
-#                    pm.start_process(os.environ['ComSpec'], ("/c", installCmd,
-#                                                             "-p", pkgPath))
-                    pm.start_process(sys.executable, (installCmd, "-p", pkgPath))
-                    # This is because on windows we can't wait for the process
-                    # or so it seems to me right now.
-                    time.sleep(0.25)
+                    # This will wait for the completion cuz of the P_WAIT
+                    pid = os.spawnv(os.P_WAIT, sys.executable, (sys.executable,
+                                                                installCmd,
+                                                                "-p", pkgPath))
                 else:
                     log.debug("Not registering file: %s", t)
             else:
