@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.22 2003-04-24 19:18:09 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.23 2003-05-12 16:54:04 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -246,6 +246,8 @@ class AGServiceManager( ServiceBase ):
             log.exception("Exception in AddService, adding service to service list.")
             raise sys.exc_value
 
+        return serviceDescription
+
     AddService.soap_export_as = "AddService"
 
     
@@ -306,14 +308,18 @@ class AGServiceManager( ServiceBase ):
     def RemoveServices( self ):
         """Remove all services
         """
+        exc = None
 
-        try:
-            for service in self.services.values():
+        for service in self.services.values():
+            try:
                 self.RemoveService( service )
-        except:
-            log.exception("Exception in AGServiceManager.RemoveServices.")
-            raise faultType("AGServiceManager.RemoveServices failed : "
-                            + str( sys.exc_value ) )
+            except Exception, e:
+                log.exception("Exception in AGServiceManager.RemoveServices")
+                exc = e
+
+        if exc:
+            raise exc
+
     RemoveServices.soap_export_as = "RemoveServices"
 
 
