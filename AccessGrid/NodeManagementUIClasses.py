@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.39 2003-08-21 16:18:30 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.40 2003-09-08 16:15:58 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -214,7 +214,9 @@ class ServicePopup(wxPopupTransientWindow):
     """
     Popup for the service menu
     """
+    
     def __init__(self, parent, style = wxDEFAULT_DIALOG_STYLE):
+       
         wxPopupTransientWindow.__init__(self, parent, style)
         panel = wxPanel(self, -1)
         panel.SetBackgroundColour("#FFB6C1")
@@ -223,12 +225,12 @@ class ServicePopup(wxPopupTransientWindow):
     def PopThatMenu( self, pos ):
         self.PopupMenuXY( self.m, pos[0], pos[1] )
 
-class ServiceManagerPopup(wxDialog):
+class ServiceManagerPopup(wxPopupTransientWindow):
     """
     Popup for the service manager menu
     """
     def __init__(self, parent):
-        wxDialog.__init__(self, parent, -1, "ServiceManager")
+        wxPopupTransientWindow.__init__(self, parent)
         panel = wxPanel(self, -1)
         panel.SetBackgroundColour("#FFB6C1")
         self.m = BuildServiceManagerMenu()
@@ -454,7 +456,6 @@ class NodeManagementClientFrame(wxFrame):
 
         hortizontalSizer = wxBoxSizer( wxHORIZONTAL )
         mainsz.Add( hortizontalSizer, -1, wxEXPAND )
-
 
         #
         # Create Hosts panel
