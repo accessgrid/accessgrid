@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceClient.py,v 1.14 2003-01-27 20:57:33 judson Exp $
+# RCS-ID:      $Id: CoherenceClient.py,v 1.15 2003-01-28 17:05:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -147,8 +147,7 @@ class Heartbeat(Thread):
         import time
         self.running = 1
         while self.running:
-            data = "%s-%s" % (self.client.id,
-                              string.join(map(str, time.localtime()), ':'))
+            data = "%s" % (self.client.id)
             self.client.send(Event(Event.HEARTBEAT, data))
             time.sleep(self.period)
             

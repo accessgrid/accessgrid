@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.16 2003-01-28 04:16:49 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.17 2003-01-28 17:05:07 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -70,8 +70,9 @@ class Venue(ServiceBase.ServiceBase):
                                                self.uniqueId)
         self.coherenceClient.start()
         self.houseKeeper = Scheduler()
-#        self.tasks[self.CleanupClients] = 45
+
         self.houseKeeper.AddTask(self.CleanupClients, 45)
+        self.houseKeeper.StartAllTasks()
 
 #     def __getstate__(self):
 #         print "in get state"
@@ -414,23 +415,25 @@ class Venue(ServiceBase.ServiceBase):
     # Internal Methods
     def CleanupClients(self):
         print "Cleaning up dead clients."
-        now_sec = time.localtime()[5]
-        for client in self.clients.keys():
-            then_sec = self.clients[client][5]
+        now_sec = time.time()
+        for privateId in self.clients.keys():
+           if privateId in self.users.keys():
+            then_sec = self.clients[privateId]
             if abs(now_sec - then_sec) > self.cleanupTime:
-                if self.users[client] != None:
-                    clientProfile = self.users[client]
-                else:
-                    clientProfile = self.nodes[client]
+                print "  Removing user : ", self.users[privateId].name
+                if privateId in self.users.keys():
+                    clientProfile = self.users[privateId]
+                elif privateId in self.nodes.keys():
+                    clientProfile = self.nodes[privateId]
                 self.coherenceService.distribute( Event( Event.EXIT,
                                                          clientProfile ) )
-                del self.clients[client]
+                del self.clients[privateId]
         
     def CoherenceCallback(self, event):
         data = event.data
         if event.eventType == Event.HEARTBEAT:
-            (id, time) = data.split('-')
-            self.clients[id] = time
+            privateId = data
+            self.clients[privateId] = time.time()
    
     def Serialize(self):
         """
