@@ -3,19 +3,23 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.9 2004-04-13 20:15:17 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.10 2004-04-21 21:37:24 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.9 2004-04-13 20:15:17 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.10 2004-04-21 21:37:24 olson Exp $"
 
+import os
 import sys
 import struct
 import time
 import select
 import socket
+
+from AccessGrid import Log
+log = Log.GetLogger(Log.Toolkit)
 
 class AGTkConfig:
     """
@@ -170,77 +174,130 @@ class GlobusConfig:
     def __str__(self):
         return self._repr_()
 
-    def GetLocation(self):
-        raise "This should not be called directly, but through a subclass."
-    
-    def SetLocation(self):
-        raise "This should not be called directly, but through a subclass."
-    
-    def RemoveLocation(self):
-        raise "This should not be called directly, but through a subclass."
-    
-    def GetCACertDir(self):
-        raise "This should not be called directly, but through a subclass."
-    
-    def SetCACertDir(self):
-        raise "This should not be called directly, but through a subclass."
-    
-    def RemoveCACertDir(self):
-        raise "This should not be called directly, but through a subclass."
-    
-    def GetHostname(self):
+    def SetHostname(self):
         """
-        Return the local hostname.
+        Ensure that we have a valid Globus hostname.
 
-        This uses the pyGlobus mechanism when possible, in order
-        to get a hostname that Globus will be happy with.
+        If GLOBUS_HOSTNAME is set, we will do nothing further.
+
+        Otherwise, we will inspect the hostname as returned by the
+        socket.getfqdn() call. If it appears to be valid (where valid
+        means that it maps to an IP address and we can locally bind to
+        that address), we needn't do anythign, since the globus
+        hostname calls will return the right thing.
+
+        Otherwise, we need to get our IP address using
+        SystemConfig.GetLocalIPAddress()
         """
 
+        ghn = os.getenv("GLOBUS_HOSTNAME")
+            
+        if ghn is not None:
+            self.hostname = ghn
+            log.debug("Using GLOBUS_HOSTNAME=%s as set in the environment",
+                      self.hostname)
+            return
+        else:
+            hostname = socket.getfqdn()
+            #
+            # It has to really be a fqdn.
+            #
+            if hostname.find(".") < 0:
+                return self._SetHostnameToLocalIP()
+
+            #
+            # And one has to be able to bind to it.
+            #
+            
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                sock.bind((hostname, 0))
+                # This worked, so we are okay.
+                log.debug("System hostname of %s is valid", hostname)
+                self.hostname = hostname
+                self.Setenv("GLOBUS_HOSTNAME", hostname)
+                return
+            except socket.error:
+                log.exception("Error setting globus hostname.")
+
+            # Binding to our hostname didn't work. Retrieve our IP address
+            # and use that.
+
+            return self._SetHostnameToLocalIP()
+
+    def _SetHostnameToLocalIP(self):
         try:
-            from pyGlobus import utilc
-            ret, self.hostname = utilc.get_hostname(256)
-
-            if ret != 0:
-                self.hostname = socket.getfqdn()
+            self.hostname = SystemConfig.instance().GetLocalIPAddress()
+            log.debug("retrieved local IP address %s", self.hostname)
         except:
-            log.exception("pyGlobus hostname retrieval failed")
-            self.hostname = socket.getfqdn()
+            self.hostname = "127.0.0.1"
+            
+            log.exception("Failed to determine local IP address, using %s",
+                          self.hostname)
+
+        self.Setenv("GLOBUS_HOSTNAME", self.hostname)
+
+    def GetHostname(self):
+        if self.hostname is None:
+            self.SetHostname()
 
         return self.hostname
 
-    def SetHostname(self):
-        raise "This should not be called directly, but through a subclass."
-
     def RemoveHostname(self):
-        raise "This should not be called directly, but through a subclass."
+        self.Unsetenv("GLOBUS_HOSTNAME")
+        self.hostname = None
+        
+    def GetLocation(self):
+        if self.location is not None and not os.path.exists(self.location):
+            raise Exception, "GlobusConfig: Globus directory does not exist."
 
+        return self.location
+
+    def SetLocation(self, location):
+        self.location = location
+        self.Setenv("GLOBUS_LOCATION", location)
+        
+    def RemoveLocation(self):
+
+        self.location = None
+        self.Unsetenv("GLOBUS_LOCATION")
+
+    def SetActiveCACertDir(self, dir):
+        self.Setenv("X509_CERT_DIR", dir)
+
+    def SetProxyCert(self, proxyFile):
+        """
+        Configure globus runtime for using a proxy cert.
+
+        """
+
+        self.Unsetenv("X509_USER_CERT")
+        self.Unsetenv("X509_USER_KEY")
+        self.Unsetenv("X509_RUN_AS_SERVER")
+        self.Setenv("X509_USER_PROXY", proxyFile)
+
+    def SetUserCert(self, cert, key):
+        """
+        Configure globus runtime for using a cert and key pair.
+        """
+
+        self.Setenv("X509_USER_CERT", cert)
+        self.Setenv("X509_USER_KEY", key)
+        self.Setenv("X509_RUN_AS_SERVER", "1")
+        self.Unsetenv("X509_USER_PROXY")
+
+    def GetDistCACertDir(self):
+        return self.distCACertDir
+    
+    def GetDistCertFileName(self):
+        return self.distCertFileName
+
+    def GetDistKeyFileName(self):
+        return self.distKeyFileName
+    
     def GetProxyFileName(self):
-        raise "This should not be called directly, but through a subclass."
-    
-    def SetProxyFileName(self):
-        raise "This should not be called directly, but through a subclass."
-    
-    def RemoveProxyFileName(self):
-        raise "This should not be called directly, but through a subclass."
-    
-    def GetCertFileName(self):
-        raise "This should not be called directly, but through a subclass."
-
-    def SetCertFileName(self):
-        raise "This should not be called directly, but through a subclass."
-
-    def RemoveCertFileName(self):
-        raise "This should not be called directly, but through a subclass."
-
-    def GetKeyFileName(self):
-        raise "This should not be called directly, but through a subclass."    
-
-    def SetKeyFileName(self):
-        raise "This should not be called directly, but through a subclass."    
-
-    def RemoveKeyFileName(self):
-        raise "This should not be called directly, but through a subclass."    
-
+        return self.proxyFileName
+        
 class UserConfig:
     """
     A user config object encapsulates all of the configuration data for

@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.12 2004-04-19 21:27:14 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.13 2004-04-21 21:37:24 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.12 2004-04-19 21:27:14 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.13 2004-04-21 21:37:24 olson Exp $"
 
 import os
 import mimetypes
@@ -17,7 +17,7 @@ import mailcap
 import socket
 import getpass
 
-from pyGlobus import utilc
+from pyGlobus import security
 
 from AccessGrid import Log
 import AccessGrid.Config
@@ -298,11 +298,13 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         agtkdata = AGTkConfig.instance().GetConfigDir()
         
         gloc = AGTkConfig.instance().GetInstallDir()
-        self.keyFileName = os.path.join(uappdata, "globus", "userkey.pem")
-        self.certFileName = os.path.join(uappdata, "globus", "usercert.pem")
+            
+        self.distKeyFileName = os.path.join(uappdata, ".globus", "userkey.pem")
+        self.distCertFileName = os.path.join(uappdata, ".globus", "usercert.pem")
+
         self.proxyFileName = os.path.join(UserConfig.instance().GetTempDir(),
-                                          "proxy")
-        self.caCertDir = os.path.join(agtkdata, "config", "CAcertificates")
+                                          "x509up_u%s" %(os.getuid()))
+        self.distCACertDir = os.path.join(agtkdata, "config", "CAcertificates")
 
         self._Initialize()
         
@@ -331,163 +333,17 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
             self.serverFlag = None
 
         if os.environ.has_key('X509_CERT_DIR'):
-            self.caCertDir = os.environ['X509_CERT_DIR']
-        else:
-            if self.initIfNeeded:
-                self.SetCACertDir(cacertdir)
+            self.distCACertDir = os.environ['X509_CERT_DIR']
                 
         if os.environ.has_key('X509_USER_PROXY'):
             self.proxyFileName = os.environ['X509_USER_PROXY']
                 
         if os.environ.has_key('X509_USER_CERT'):
-            self.certFileName = os.environ['X509_USER_CERT']
-        else:
-            if self.initIfNeeded:
-                self.SetCertFileName(certFileName)
+            self.distCertFileName = os.environ['X509_USER_CERT']
                 
         if os.environ.has_key('X509_USER_KEY'):
-            self.keyFileName = os.environ['X509_USER_KEY']
-        else:
-            if self.initIfNeeded:
-                self.SetKeyFileName(keyFileName)
+            self.distKeyFileName = os.environ['X509_USER_KEY']
 
-    def SetHostname(self, hn = None):
-        try:
-            ghn = os.environ['GLOBUS_HOSTNAME']
-        except KeyError:
-            ghn = None
-
-        if ghn is not None and hn == ghn:
-            log.debug("Using GLOBUS_HOSTNAME=%s as set in the environment",
-                      self.hostname)
-            return
-        if hn is not None:
-            os.environ['GLOBUS_HOSTNAME'] = hn
-            self.hostname = hn
-        else:
-            hostname = socket.getfqdn()
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            try:
-                sock.bind((hostname, 0))
-                # This worked, so we are okay.
-                log.debug("System hostname of %s is valid", hostname) 
-                return
-            except socket.error:
-                log.exception("Error setting globus hostname.")
-
-            # Binding to our hostname didn't work. Retrieve our IP address
-            # and use that.
-            try:
-                self.hostname = SystemConfig.instance().GetLocalIPAddress()
-                log.debug("retrieved local IP address %s", myip)
-            except:
-                self.hostname = "127.0.0.1"
-                log.exception("Failed to determine local IP address, using %s",
-                              self.hostname)
-            
-    def GetHostname(self):
-        if self.hostname is None:
-            self.SetHostname()
-        
-        return self.hostname
-
-    def RemoveHostname(self):
-        if os.environ.has_key('GLOBUS_HOSTNAME'):
-            del os.environ['GLOBUS_HOSTNAME']
-            self.hostname = None
-            
-    def GetLocation(self):
-        if self.location is not None and not os.path.exists(self.location):
-            raise Exception, "GlobusConfig: Globus directory does not exist."
-        
-        return self.location
-
-    def SetLocation(self, loc):
-        os.environ['GLOBUS_LOCATION'] = loc
-        self.location = loc
-
-    def RemoveLocation(self):
-        if os.environ.has_key('GLOBUS_LOCATION'):
-            del os.environ['GLOBUS_LOCATION']
-            self.location = None
-            
-    def GetServerFlag(self):
-        if self.serverFlag is None:
-            raise Exception, "GlobusConfig: Globus directory does not exist."
-        
-        return self.serverFlag
-
-    def SetServerFlag(self, value):
-        os.environ['X509_RUN_AS_SERVER'] = value
-        self.serverFlag = value
-
-    def RemoveServerFlag(self):
-        if os.environ.has_key('X509_RUN_AS_SERVER'):
-            del os.environ['X509_RUN_AS_SERVER']
-            self.serverFlag = None
-            
-    def GetCACertDir(self):
-        if self.caCertDir is not None and not os.path.exists(self.caCertDir):
-            raise Exception, "GlobusConfig: CA Certificate dir does not exist."
-
-        return self.caCertDir
-    
-    def SetCACertDir(self, certdir):
-        os.environ['X509_CERT_DIR'] = certdir
-        self.caCertDir = certdir
-
-    def RemoveCACertDir(self):
-        if os.environ.has_key('X509_CERT_DIR'):
-            del os.environ['X509_CERT_DIR']
-            self.caCertDir = None
-            
-    def GetProxyFileName(self):
-        if self.proxyFileName is None:
-            raise Exception, "GlobusConfig: proxy file does not exist."
-
-        return self.proxyFileName
-    
-    def SetProxyFileName(self, proxyfn):
-        os.environ['X509_USER_PROXY'] = proxyfn
-        self.proxyFileName = proxyfn
-
-    def RemoveProxyFileName(self):
-        if os.environ.has_key('X509_USER_PROXY'):
-            del os.environ['X509_USER_PROXY']
-            self.proxyFileName = None
-            
-    def GetCertFileName(self):
-        if self.certFileName is not None and \
-               not os.path.exists(self.certFileName):
-            raise Exception, "GlobusConfig: certificate file does not exist."
-
-        return self.certFileName
-
-    def SetCertFileName(self, certfn):
-        os.environ['X509_USER_CERT'] = certfn
-        self.certFileName = certfn
-
-    def RemoveCertFileName(self):
-        if os.environ.has_key('X509_USER_CERT'):
-            del os.environ['X509_USER_CERT']
-            self.certFileName = None
-            
-    def GetKeyFileName(self):
-        if self.keyFileName is not None and \
-               not os.path.exists(self.keyFileName):
-            raise Exception, "GlobusConfig: key file does not exist."
-
-        return self.keyFileName
-
-    def SetKeyFileName(self, keyfn):
-        os.environ['X509_USER_KEY'] = keyfn
-        self.keyFileName = keyfn
-
-    def RemoveKeyFileName(self):
-        if os.environ.has_key('X509_USER_KEY'):
-            del os.environ['X509_USER_KEY']
-            self.keyFileName = None
-            
 class UserConfig(AccessGrid.Config.UserConfig):
     """
     A user config object encapsulates all of the configuration data for

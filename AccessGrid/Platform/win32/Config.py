@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.31 2004-04-19 21:27:44 lefvert Exp $
+# RCS-ID:      $Id: Config.py,v 1.32 2004-04-21 21:37:24 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.31 2004-04-19 21:27:44 lefvert Exp $"
+__revision__ = "$Id: Config.py,v 1.32 2004-04-21 21:37:24 olson Exp $"
 
 import os
 import sys
@@ -308,12 +308,18 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
     HKCU\Environment\GLOBUS_LOCATION = {app}
 
     @ivar location: the location of the globus installation
-    @ivar caCertDir: the directory of Certificate Authority Certificates
+
     @ivar hostname: the Hostname for the globus configuration
-    @ivar proxyFile: THe filename for the globus proxy
-    @ivar certFile: The filename of the X509 certificate.
-    @ivar keyFile: The filename of the X509 key.
+
+    @ivar distCACertDir: the directory of Certificate Authority Certificates as shipped
+    with the toolkit
+    @ivar distCertFileName: The filename of the X509 certificate as used by a system
+    installation of Globus
+    @ivar distKeyFileName: The filename of the X509 private key as used by a system
+    installation of Globus
+
     """
+
     theGlobusConfigInstance = None
     
     def instance(initIfNeeded=1):
@@ -351,9 +357,11 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         self.location = AGTkConfig.instance().GetInstallDir()
         self.proxyFileName = os.path.join(UserConfig.instance().GetTempDir(),
                                           "proxy")
-        self.caCertDir = os.path.join(agtkdata, "CAcertificates")
-        self.certFileName = os.path.join(uappdata, "globus", "usercert.pem")
-        self.keyFileName = os.path.join(uappdata, "globus", "userkey.pem")
+        self.distCACertDir = os.path.join(agtkdata, "CAcertificates")
+        self.distCertFileName = os.path.join(uappdata, "globus", "usercert.pem")
+        self.distKeyFileName = os.path.join(uappdata, "globus", "userkey.pem")
+
+        print "INIT globus config, proxy='%s'" % (self.proxyFileName)
 
         self._Initialize()
         
@@ -400,333 +408,58 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         gsikey = self.GetGlobusKey()
         
         # next try to setup GLOBUS_LOCATION, if it's not already set
-        try:
-            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment")
-            (self.location, type) = _winreg.QueryValueEx(key,
-                                                         "GLOBUS_LOCATION")
-            _winreg.CloseKey(key)
-        except WindowsError:
-            if self.initIfNeeded:
-                log.info("GLOBUS_LOCATION not set, setting...")
-                # Set Globus Location
-                self.SetLocation(self.location)
+        if os.getenv("GLOBUS_LOCATION") is None:
+            self.SetLocation(self.location)
 
         # Check GLOBUS_HOSTNAME
         self.SetHostname()
 
-        # Check server flag
-        self.GetServerFlag()
-            
-        # After globus location comes the all important x509_*
+        #
+        # Check for values out of the registry.
+        # It doesn't matter if they're not there; we're going to completely
+        # configure our environment later on.
+        # 
         try:
-            (self.keyFileName, type) = _winreg.QueryValueEx(gsikey,
+            (self.distKeyFileName, type) = _winreg.QueryValueEx(gsikey,
                                                              "x509_user_key")
         except WindowsError:
-            if self.initIfNeeded:
-                log.info("Globus user key registry entry not initialized.")
-                self.SetKeyFileName(self.keyFileName)
+            pass
 
         try:
-            (self.certFileName, type) = _winreg.QueryValueEx(gsikey,
-                                                             "x509_user_cert")
+            (self.distCertFileName, type) = _winreg.QueryValueEx(gsikey,
+                                                                 "x509_user_cert")
         except WindowsError:
-            if self.initIfNeeded:
-                log.info("Globus user cert registry entry not initialized.")
-                self.SetCertFileName(self.certFileName)
+            pass
 
         try:
-            (self.caCertDir, type) = _winreg.QueryValueEx(gsikey,
+            (self.distCACertDir, type) = _winreg.QueryValueEx(gsikey,
                                                              "x509_cert_dir")
         except WindowsError:
-            if self.initIfNeeded:
-                log.info("Globus proxy registry entry not initialized.")
-                self.SetCACertDir(self.caCertDir)
-
+            pass
+        
         try:
             _winreg.CloseKey(gsikey)
         except WindowsError:
             log.exception("Error trying to close globus registry key.")
             
-    def SetHostname(self, hn=None):
+    def SetUserCert(self, cert, key):
         """
-        Ensure that we have a valid Globus hostname.
-
-        If GLOBUS_HOSTNAME is set, we will do nothing further.
-
-        Otherwise, we will inspect the hostname as returned by the
-        socket.getfqdn() call. If it appears to be valid (where valid
-        means that it maps to an IP address and we can locally bind to
-        that address), we needn't do anythign, since the globus
-        hostname calls will return the right thing.
-
-        Otherwise, we need to get our IP address using
-        SystemConfig.GetLocalIPAddress()
+        Configure globus runtime for using a cert and key pair.
         """
-        try:
-            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment")
-            (ghn, type) = _winreg.QueryValueEx(key,
-                                                         "GLOBUS_HOSTNAME")
-            _winreg.CloseKey(key)
-        except WindowsError:
-            log.info("GLOBUS_HOSTNAME not set, setting...")
-            ghn = None
-            
-        if ghn is not None and hn == ghn:
-            log.debug("Using GLOBUS_HOSTNAME=%s as set in the environment",
-                      self.hostname)
-            return
-        elif hn is not None:
-            try:
-                key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment")
-                _winreg.SetValueEx(key, "GLOBUS_HOSTNAME", 0,
-                                   _winreg.REG_EXPAND_SZ, hn)
-                _winreg.CloseKey(key)
-                self.hostname = hn
-            except WindowsError:
-                log.exception("GLOBUS_HOSTNAME not set")
-        else:
-            hostname = socket.getfqdn()
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            try:
-                sock.bind((hostname, 0))
-                # This worked, so we are okay.
-                log.debug("System hostname of %s is valid", hostname) 
-                return
-            except socket.error:
-                log.exception("Error setting globus hostname.")
 
-            # Binding to our hostname didn't work. Retrieve our IP address
-            # and use that.
-            try:
-                self.hostname = SystemConfig.instance().GetLocalIPAddress()
-                log.debug("retrieved local IP address %s", myip)
-            except:
-                self.hostname = "127.0.0.1"
-                log.exception("Failed to determine local IP address, using %s",
-                              self.hostname)
+        AccessGrid.Config.GlobusConfig.SetUserCert(self, cert, key)
 
-        # Do the actual setting
-        try:
-            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment", 0,
-                                  _winreg.KEY_ALL_ACCESS)
-            _winreg.SetValueEx(key, "GLOBUS_HOSTNAME", 0,
-                               _winreg.REG_EXPAND_SZ, self.hostname)
-            _winreg.CloseKey(key)
-        except WindowsError:
-            log.exception("Couldn't setup GLOBUS_LOCATION.")
-            return 0
+        #
+        # On windows, if there's a proxy setting in the registry,
+        # it trumps the run_as_server setting.
+        #
 
-    def GetHostname(self):
-        if self.hostname is None:
-            self.SetHostname()
-
-        return self.hostname
-
-    def RemoveHostname(self):
-        try:
-            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment", 0,
-                                  _winreg.KEY_ALL_ACCESS)
-            _winreg.DeleteValue(key, "GLOBUS_HOSTNAME")
-            _winreg.CloseKey(key)
-        except WindowsError:
-            log.info("Couldn't remove GLOBUS_HOSTNAME, no big deal.")
-        self.hostname = None
-        
-    def GetLocation(self):
-        if self.location is not None and not os.path.exists(self.location):
-            raise Exception, "GlobusConfig: Globus directory does not exist."
-
-        return self.location
-
-    def SetLocation(self, location):
-        try:
-            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment", 0,
-                                  _winreg.KEY_ALL_ACCESS)
-            _winreg.SetValueEx(key, "GLOBUS_LOCATION", 0,
-                               _winreg.REG_EXPAND_SZ, location)
-            _winreg.CloseKey(key)
-            self.location = location
-            return 1
-        except WindowsError:
-            log.exception("Couldn't setup GLOBUS_LOCATION.")
-            return 0
-
-    def RemoveLocation(self):
-        try:
-            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment", 0,
-                                  _winreg.KEY_ALL_ACCESS)
-            _winreg.DeleteValue(key, "GLOBUS_LOCATION")
-            _winreg.CloseKey(key)
-        except WindowsError:
-            log.info("Couldn't remove GLOBUS_LOCATION, no big deal.")
-        self.location = None
-
-    def GetServerFlag(self):
-        if self.serverFlag is None:
-            try:
-                key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment",
-                                      0, _winreg.KEY_ALL_ACCESS)
-                (self.serverFlag, type) = _winreg.QueryValueEx(key,
-                                                         "X509_RUN_AS_SERVER")
-                _winreg.CloseKey(key)
-            except WindowsError:
-                log.warn("Couldn't get X509_RUN_AS_SERVER from environment.")
-
-        return self.serverFlag
-
-    def SetServerFlag(self, value):
-        try:
-            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment", 0,
-                                  _winreg.KEY_ALL_ACCESS)
-            _winreg.SetValueEx(key, "X509_RUN_AS_SERVER", 0,
-                               _winreg.REG_EXPAND_SZ, value)
-            _winreg.CloseKey(key)
-            self.serverFlag = value
-            return 1
-        except WindowsError:
-            log.exception("Couldn't setup X509_RUN_AS_SERVER.")
-            return 0
-
-    def RemoveServerFlag(self):
-        try:
-            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment", 0,
-                                  _winreg.KEY_ALL_ACCESS)
-            _winreg.DeleteValue(key, "X509_RUN_AS_SERVER")
-            _winreg.CloseKey(key)
-        except WindowsError:
-            log.info("Couldn't remove X509_RUN_AS_SERVER, no big deal.")
-
-        if os.environ.has_key('X509_RUN_AS_SERVER'):
-            del os.environ['X509_RUN_AS_SERVER']
-            
-        self.serverFlag = None
-
-    def GetCACertDir(self):
-        if self.caCertDir is not None and not os.path.exists(self.caCertDir):
-            log.exception("GlobusConfig: CA Certificate dir does not exist.")
-            print "CAD: ", self.caCertDir
-            raise IOError("GlobusConfig: CA Certificate dir does not exist.")
-
-        return self.caCertDir
-    
-    def SetCACertDir(self, cacertdir):
-        gkey = self.GetGlobusKey()
-        if gkey is None:
-            log.error("No Globus configuration, can't set ca cert dir.")
-            return -1
-        try:
-            _winreg.SetValueEx(gkey, "x509_cert_dir", 0,
-                               _winreg.REG_EXPAND_SZ, cacertdir)
-            _winreg.CloseKey(gkey)
-            self.caCertDir = cacertdir
-        except:
-            log.exception("Couldn't set the x509_cert_dir registry value.")
-            self.caCertDir = None
-            
-    def RemoveCACertDir(self):
-        gkey = self.GetGlobusKey()
-        try:
-            _winreg.DeleteValue(gkey, "x509_cert_dir")
-            _winreg.CloseKey(gkey)
-        except WindowsError:
-            log.info("Couldn't delete x509_cert_dir from registry, no big deal.")
-        if os.environ.has_key('X509_CERT_DIR'):
-            del os.environ['X509_CERT_DIR']
-            
-        self.caCertDir = None
-
-    def GetProxyFileName(self):
-        if self.proxyFileName is not None and \
-               not os.path.exists(self.proxyFileName):
-            raise Exception, "GlobusConfig: proxy file does not exist."
-
-        return self.proxyFileName
-    
-    def SetProxyFileName(self, filename):
-        gkey = self.GetGlobusKey()
-        try:
-            _winreg.SetValueEx(gkey, "x509_user_proxy", 0,
-                               _winreg.REG_EXPAND_SZ, filename)
-            _winreg.CloseKey(gkey)
-            self.proxyFileName = filename
-        except:
-            log.exception("Couldn't set the x509_user_proxy registry value.")
-            self.proxyFileName = None
-
-    def RemoveProxyFileName(self):
         gkey = self.GetGlobusKey()
         try:
             _winreg.DeleteValue(gkey, "x509_user_proxy")
             _winreg.CloseKey(gkey)
         except WindowsError:
-            log.info("Couldn't delete x509_user_proxy from registry, no big deal.")
-
-        if os.environ.has_key('X509_USER_PROXY'):
-            del os.environ['X509_USER_PROXY']
-            
-        self.proxyFileName = None
-        
-    def GetCertFileName(self):
-        if self.certFileName is not None and \
-               not os.path.exists(self.certFileName):
-            raise Exception, "GlobusConfig: certificate file does not exist."
-
-        return self.certFileName
-
-    def SetCertFileName(self, filename):
-        gkey = self.GetGlobusKey()
-        try:
-            _winreg.SetValueEx(gkey, "x509_user_cert", 0,
-                               _winreg.REG_EXPAND_SZ, filename)
-            _winreg.CloseKey(gkey)
-            self.certFileName = filename
-        except:
-            log.exception("Couldn't set the x509_user_cert registry value.")
-            self.certFileName = None
-
-    def RemoveCertFileName(self):
-        gkey = self.GetGlobusKey()
-        try:
-            _winreg.DeleteValue(gkey, "x509_user_cert")
-            _winreg.CloseKey(gkey)
-        except WindowsError:
-            log.info("Couldn't delete x509_user_cert from registry, no big deal.")
-
-        if os.environ.has_key('X509_USER_CERT'):
-            del os.environ['X509_USER_CERT']
-            
-        self.certFileName = None
-
-    def GetKeyFileName(self):
-        if self.keyFileName is not None and \
-               not os.path.exists(self.keyFileName):
-            raise Exception, "GlobusConfig: key file does not exist."
-
-        return self.keyFileName
-
-    def SetKeyFileName(self, filename):
-        gkey = self.GetGlobusKey()
-        try:
-            _winreg.SetValueEx(gkey, "x509_user_key", 0,
-                               _winreg.REG_EXPAND_SZ, filename)
-            _winreg.CloseKey(gkey)
-            self.keyFileName = filename
-        except:
-            log.exception("Couldn't set the x509_user_key registry value.")
-            self.keyFileName = None
-
-    def RemoveKeyFileName(self):
-        gkey = self.GetGlobusKey()
-        try:
-            _winreg.DeleteValue(gkey, "x509_user_key")
-            _winreg.CloseKey(gkey)
-        except WindowsError:
-            log.info("Couldn't delete x509_user_key from registry, no big deal.")
-
-        if os.environ.has_key('X509_USER_KEY'):
-            del os.environ['X509_USER_KEY']
-            
-        self.keyFileName = None
+            pass
         
 class UserConfig(AccessGrid.Config.UserConfig):
     """
