@@ -34,7 +34,6 @@ SourceDir = os.environ['AGBUILDROOT']
 try:
     cmd = "%s %s" % (sys.executable, os.path.join(SourceDir, "AccessGrid",
                                                   "AccessGrid", "Version.py"))
-    print "cmd ", cmd
     po = os.popen(cmd)
 except IOError:
     print "Error getting AGTk Version."
@@ -134,7 +133,9 @@ if options.cvs:
 
     cvs_cmd = "cvs -z6 -d %s export -d %s -D now AccessGrid" % (cvsroot,
                                                                 BuildDir)
-    print "BUILD: Checking out code with command: ", cvs_cmd
+    if options.verbose:
+        print "BUILD: Checking out code with command: ", cvs_cmd
+
     os.system(cvs_cmd)
 
 #
@@ -186,7 +187,10 @@ for cmd in [
 #
 
 # Add quotes around command.
-iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" /dSourceDir=%s /dBuildDir=%s /dPythonVersion=%s" % (inno_compiler,iss_orig, version, metainfo.replace(' ', '_'), SourceDir, DestDir, options.pyver)
+iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" \
+            /dSourceDir=\"%s\" /dBuildDir=\"%s\" /dPythonVersion=\"%s\"" % \
+            (inno_compiler,iss_orig, version, metainfo.replace(' ', '_'),
+             SourceDir, DestDir, options.pyver)
 
 if options.verbose:
     print "BUILD: Executing:", iscc_cmd
