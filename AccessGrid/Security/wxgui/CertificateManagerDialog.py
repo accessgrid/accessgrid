@@ -41,6 +41,11 @@ class CertificateManagerDialog(wxDialog):
         self.notebook.AddPage(self.statusBrowser, "Certificate Requests")
 
         #
+        # Default to certificate pane.
+        #
+        self.notebook.SetSelection(1)
+
+        #
         # Legacy ones
         #
 
