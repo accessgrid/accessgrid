@@ -4,7 +4,7 @@
 #
 %define	name		AccessGrid
 %define version		2.1
-%define release		1
+%define release		2
 %define	prefix		/usr
 %define sysconfdir	/etc/%{name}
 %define sharedir	%{prefix}/share
@@ -38,7 +38,7 @@ Requires:	globus-accessgrid
 Requires:	pyGlobus
 Requires:	logging
 Requires:	pyOpenSSL_AG
-Obsoletes:	AccessGrid-2.0beta
+Obsoletes:	AccessGrid-2.0beta AccessGrid-2.1
 
 %description
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
@@ -56,7 +56,7 @@ Version:	%{version}
 Release:	%{release}
 Group:		Utilities/System
 Requires:	AccessGrid = %{version}-%{release}
-Obsoletes:	AccessGrid-VenueClient-2.0beta
+Obsoletes:	AccessGrid-VenueClient-2.0beta AccessGrid-VenueClient-2.1
 
 %description VenueClient
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
@@ -74,7 +74,7 @@ Version:	%{version}
 Release:	%{release}
 Group:		Utilities/System
 Requires:	AccessGrid = %{version}-%{release}
-Obsoletes:	AccessGrid-VenueServer-2.0beta
+Obsoletes:	AccessGrid-VenueServer-2.0beta AccessGrid-VenueServer-2.1
 
 %description VenueServer
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
@@ -94,7 +94,7 @@ Release:	%{release}
 Group:		Utilities/System
 Requires:	AccessGrid = %{version}-%{release}
 Requires:	AccessGrid-vic
-Obsoletes:	AccessGrid-VideoProducer-2.0beta
+Obsoletes:	AccessGrid-VideoProducer-2.0beta AccessGrid-VideoProducer-2.1
 
 %description VideoProducer
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
@@ -112,7 +112,7 @@ Version:	%{version}
 Release:	%{release}
 Group:		Utilities/System
 Requires:	AccessGrid = %{version}-%{release}
-Obsoletes:	AccessGrid-VideoConsumer-2.0beta
+Obsoletes:	AccessGrid-VideoConsumer-2.0beta AccessGrid-VideoConsumer-2.1
 
 %description VideoConsumer
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
@@ -132,7 +132,7 @@ Release:	%{release}
 Group:		Utilities/System
 Requires:	AccessGrid = %{version}-%{release}
 Requires:	AccessGrid-rat
-Obsoletes:	AccessGrid-AudioService-2.0beta
+Obsoletes:	AccessGrid-AudioService-2.0beta AccessGrid-AudioService-2.1
 
 %description AudioService
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
