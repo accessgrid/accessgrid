@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.72 2004-08-18 20:56:01 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.73 2004-08-25 14:10:40 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.72 2004-08-18 20:56:01 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.73 2004-08-25 14:10:40 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2833,7 +2833,7 @@ class ContentListPanel(wxPanel):
                           
     def ModifyParticipant(self, profile):
         log.debug('ContentListPanel.ModifyParticipant: Modify participant')
-        personalData = None
+        personalData = []
         if self.participantDict.has_key(profile.connectionId):
             id = self.participantDict[profile.connectionId]
             personalData = self.__GetPersonalDataFromItem(id)
