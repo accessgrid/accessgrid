@@ -14,7 +14,7 @@
 #
 import sys, os, time
 from optparse import OptionParser
-
+from distutils.spawn import find_executable
 
 if not os.environ.has_key('AGBUILDROOT'):
     print "AGBUILDROOT environment variable must be set"
@@ -135,14 +135,13 @@ os.chdir(BuildDir)
 cmd = "%s %s" % (sys.executable, "setup.py")
 for c in ["clean", "build"]:
     os.system("%s %s" % (cmd, c))
-
 os.system("%s install --prefix=%s --no-compile" % (cmd, DestDir))
 
 os.chdir(s)
 
 # Build the other python modules
-cmd = "%s %s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
-                          BuildDir, DestDir, options.pyver)
+cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", BuildDir,
+                          SourceDir, DestDir)
 os.system(cmd)
 
 # Do automatic testing
@@ -170,6 +169,19 @@ testfile = "%s-test.html" % DestDir
 os.system("%s test_dist.py --html -o %s -t %s" % (sys.executable,
                                             "%s-test.html" % DestDir,
                                                   BuildTime))
+
+# Generate epydoc documentation
+if dest is not None:
+    if sys.platform == 'win32':
+        ep = os.path.join(os.path.dirname(sys.executable), "Scripts",
+                          "epydoc.py")
+    else:
+        ep = find_executable("epydoc")
+
+    cmd = "%s %s --html -o %s -n 'Access Grid Toolkit' -u %s AccessGrid" % \
+          (sys.executable, ep, "http://www.mcs.anl.gov/fl/research/accessgrid")
+
+    os.system(cmd)
 
 # put the old python path back
 if oldpath is not None:

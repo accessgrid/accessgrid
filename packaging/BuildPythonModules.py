@@ -13,8 +13,9 @@ import os
 SOURCE=sys.argv[1]
 AGDIR=sys.argv[2]
 DEST=sys.argv[3]
-PYVER=sys.argv[4]
 
+# Don't pass this in anymore
+PYVER=sys.winver
 
 #
 # Setup the given module in the given dest directory
@@ -41,6 +42,8 @@ else:
 #
 # Build python modules
 #
+
+print "Python: ", PYVER
 
 if PYVER=="2.2":
 	
