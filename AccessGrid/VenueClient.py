@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.176 2004-05-17 16:53:26 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.177 2004-05-17 17:02:39 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.176 2004-05-17 16:53:26 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.177 2004-05-17 17:02:39 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -295,13 +295,13 @@ class VenueClient:
         if pnode:
             from AccessGrid.AGServiceManager import AGServiceManager
             from AccessGrid.AGServiceManager import AGServiceManagerI
-            self.sm = AGServiceManager(self.server)
+            self.sm = AGServiceManager(self.server, app)
             smi = AGServiceManagerI(self.sm)
             uri = self.server.RegisterObject(smi, path="/ServiceManager")
             log.debug("__StartWebService: service manager: %s",
                       uri)
             from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
-            self.ns = AGNodeService()
+            self.ns = AGNodeService(app)
             nsi = AGNodeServiceI(self.ns)
             uri = self.server.RegisterObject(nsi, path="/NodeService")
             log.debug("__StartWebService: node service: %s",
