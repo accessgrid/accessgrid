@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoService.py,v 1.12 2004-07-16 17:56:56 eolson Exp $
+# RCS-ID:      $Id: VideoService.py,v 1.13 2004-07-23 23:15:59 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -28,14 +28,42 @@ option add Vic.framerate %d startupFile
 option add Vic.quality %d startupFile
 option add Vic.defaultFormat %s startupFile
 option add Vic.inputType %s startupFile
-set device \"%s\"
-set defaultPort($device) %s
-option add Vic.device $device startupFile
-option add Vic.transmitOnStartup %s startupFile
+option add Vic.device \"%s\" startupFile
 option add Vic.defaultTTL 127 startupFile
 option add Vic.rtpName \"%s\" startupFile
 proc user_hook {} {
+    global videoDevice inputPort transmitButton transmitButtonState
+
     update_note 0 \"%s\"
+
+    after 200 {
+        set transmitOnStartup %s
+
+        if { ![winfo exists .menu] } {
+            build.menu
+        }
+
+        if { ![info exists env(VIC_DEVICE)] } {
+            set deviceName \"%s\"
+
+            foreach v $inputDeviceList {
+                if { [string last $deviceName [$v nickname]] != -1 } {
+                    set videoDevice $v
+                    select_device $v
+                    break
+                }
+            }
+        }
+        set inputPort %s
+        grabber port %s
+
+        if { $transmitOnStartup } {
+            if { [$transmitButton cget -state] != \"disabled\" } {
+                set transmitButtonState 1
+                transmit
+            }
+        }
+    }
 }
 """
 
@@ -177,10 +205,12 @@ class VideoService( AGService ):
                                     self.encoding.value,
                                     self.standard.value,
                                     vicDevice,
-                                    portstr,
-                                    OnOff(self.transmitOnStart.value),
                                     "%s(%s)" % (self.profile.name,self.streamname.value),
-                                    self.profile.email ) )
+                                    self.profile.email,
+                                    OnOff(self.transmitOnStart.value),
+                                    vicDevice,
+                                    portstr,
+                                    portstr ) )
             f.close()
 
             # Replace double backslashes in the startupfile name with single
