@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.104 2003-08-28 20:36:13 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.105 2003-09-05 20:54:57 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -140,12 +140,19 @@ class VenueClient( ServiceBase):
                                                      self.privateId))
                 isSuccess = AG_TRUE
             except:
-                log.exception("AccessGrid::VenueClient:Heartbeat: Heartbeat exception is caught, exit venue.")
+                log.exception("VenueClient.Heartbeat: Heartbeat exception is caught, exit venue.")
                 isSuccess = AG_FALSE
 
             # Send whether Heartbeat succeeded or failed to UI.
             for s in self.eventSubscribers:
+                log.debug("VenueClient.Heartbeat: Call heartbeat in subscribers.")
                 s.Heartbeat(isSuccess)
+
+            if len(self.eventSubscribers) == 0:
+                # If we don't have any event subscribers, we still have to stop
+                # the client.
+                log.debug("VenueClient.Heartbeat: We do not have event subsribers, so exit venue.")
+                self.ExitVenue()
             
                                   
     def SetProfile(self, profile):
