@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.167 2003-05-28 18:24:26 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.168 2003-05-28 22:03:18 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1499,6 +1499,16 @@ class VenueClientUI(wxApp, VenueClient):
                     pid = wxExecute(commands['open'])
                 else:
                     StartDetachedProcess(commands['open'])
+
+
+
+    def SetVideoEnabled(self, enableFlag):
+        if self.nodeServiceUri:
+            Client.Handle(self.nodeServiceUri).GetProxy().SetServiceEnabledByMediaType("video",enableFlag)
+
+    def SetAudioEnabled(self, enableFlag):
+        if self.nodeServiceUri:
+            Client.Handle(self.nodeServiceUri).GetProxy().SetServiceEnabledByMediaType("audio",enableFlag)
 
     def RemoveApp(self,app):
         """
