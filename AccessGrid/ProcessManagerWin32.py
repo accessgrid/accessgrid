@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: ProcessManagerWin32.py,v 1.5 2003-04-09 15:40:54 olson Exp $
+# RCS-ID:      $Id: ProcessManagerWin32.py,v 1.6 2003-04-09 15:44:37 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@ import win32process
 
 import logging
 
-log = logging.getHandler("AG.ProcessManagerWin32")
+log = logging.getLogger("AG.ProcessManagerWin32")
 
 class ProcessManagerWin32:
     def __init__(self):
