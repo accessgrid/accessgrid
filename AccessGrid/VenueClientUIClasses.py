@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.306 2004-01-05 19:13:38 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.307 2004-01-06 17:55:05 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.306 2004-01-05 19:13:38 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.307 2004-01-06 17:55:05 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -207,7 +207,7 @@ class VenueClientFrame(wxFrame):
                                 "Add a service to the venue.")
 
      	self.applicationMenu = self.BuildAppMenu(None, "")
-        self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"Add &Application...",
+        self.venue.AppendMenu(self.ID_VENUE_APPLICATION,"Start &Application Session",
                               self.applicationMenu)
 
         self.venue.AppendSeparator()
@@ -1060,8 +1060,8 @@ class VenueClientFrame(wxFrame):
                     
                     areYouSureDialog.Destroy()
                 
-            else:
-                self.__showNoSelectionDialog("Please, select the data you want to delete")
+            #else:
+            #    self.__showNoSelectionDialog("Please, select the data you want to delete")
 
     def RemoveService(self, event):
         idList = self.contentListPanel.tree.GetSelections()
@@ -1078,8 +1078,8 @@ class VenueClientFrame(wxFrame):
                 if(areYouSureDialog.ShowModal() == wxID_OK):
                     self.app.RemoveService(service)
                     
-            else:
-                self.__showNoSelectionDialog("Please, select the service you want to delete")       
+           # else:
+           #     self.__showNoSelectionDialog("Please, select the service you want to delete")       
             
     def __showNoSelectionDialog(self, text):
         MessageDialog(self, text)
@@ -1122,12 +1122,26 @@ class VenueClientFrame(wxFrame):
         *app* The ApplicationDescription of the application we want to start
         """
         log.debug("VenueClientFrame.StartApp: Creating application: %s" % app.name)
-        appDesc = self.app.venueClient.client.CreateApplication( app.name,
-                                                                 app.description,
-                                                                 app.mimeType )
-        # We're not going to run the client now it's less intuitive
-        # self.RunApp(appDesc)
+
+        appDescription = ""
+
+        # Let the user enter name and description
+        dlg = AddAppDialog(self, -1, "Start Application Session", app)
+        if dlg.ShowModal() == wxID_OK:
+            name = dlg.GetName()
+            appDescription = dlg.GetDescription()
+            dlg.Destroy()
+
+        else:
+            # User canceled, application will not be added
+            dlg.Destroy()
+            return
         
+        appName = app.name + ' - ' + name
+        appDesc = self.app.venueClient.client.CreateApplication( appName,
+                                                                 appDescription,
+                                                                 app.mimeType )
+              
     def OpenApp(self, event):
         """
         """
@@ -1169,8 +1183,8 @@ class VenueClientFrame(wxFrame):
                                                    '', wxOK |  wxCANCEL |wxICON_INFORMATION)
                 if(areYouSureDialog.ShowModal() == wxID_OK):
                     self.app.RemoveApp( app )
-            else:
-                self.__showNoSelectionDialog("Please, select the application you want to delete")    
+            #else:
+            #    self.__showNoSelectionDialog("Please, select the application you want to delete")    
             
 
     #
@@ -1666,8 +1680,7 @@ class ContentListPanel(wxPanel):
         
         self.__setImageList()
 	self.__setTree()
-       	self.__setProperties()
-
+       	
         EVT_SIZE(self, self.OnSize)
         EVT_RIGHT_DOWN(self.tree, self.OnRightClick)
         EVT_LEFT_DCLICK(self.tree, self.OnDoubleClick)
@@ -1834,7 +1847,7 @@ class ContentListPanel(wxPanel):
                         #              
                         if(self.tree.GetSelection() == participantId):
                             self.tree.Unselect()
-                            
+
                         self.tree.SelectItem(participantId)
 
                     else:
@@ -1943,7 +1956,7 @@ class ContentListPanel(wxPanel):
 	self.participants = self.tree.AppendItem(self.root, "Participants", index, index)
         self.data = self.tree.AppendItem(self.root, "Data", index, index) 
         self.services = self.tree.AppendItem(self.root, "Services", index, index)
-        self.applications = self.tree.AppendItem(self.root, "Applications", index, index)
+        self.applications = self.tree.AppendItem(self.root, "Application Sessions", index, index)
        
         self.tree.SetItemBold(self.participants)
         self.tree.SetItemBold(self.data)
@@ -1958,14 +1971,7 @@ class ContentListPanel(wxPanel):
 	self.tree.SetItemTextColour(self.applications, colour)
                
         self.tree.Expand(self.participants)
-        #self.tree.Expand(self.data)
-        #self.tree.Expand(self.services)
-                
-        #if isWindows():
-        #    self.tree.Expand(self.root)
-        
-    def __setProperties(self):
-        pass
+       
       
     def UnSelectList(self):
         self.tree.Unselect()
@@ -1995,17 +2001,18 @@ class ContentListPanel(wxPanel):
                         self.parent.RemoveApp(event)
 
     def OnSelect(self, event):
+        pass
         #
         # Due to a bug in wxPython, we need a root item to be able to display
         # twist buttons correctly.  If the root item is selected, the ui looks
         # weird so change selection to the participant heading instead.
         #
-        if isWindows():
-            item = event.GetItem()
-            
-            # Root item
-            if self.tree.GetItemText(item) == "":
-                self.tree.SelectItem(self.participants)
+        #if isWindows():
+        #    item = event.GetItem()
+        #    
+        #    # Root item
+        #    if self.tree.GetItemText(item) == "":
+        #        self.tree.SelectItem(self.participants)
                         
     def OnExpand(self, event):
         treeId = event.GetItem()
@@ -2165,7 +2172,7 @@ class ContentListPanel(wxPanel):
         id = wxNewId()
         menu.Append(id, "Delete", "Delete this data from the venue.")
         EVT_MENU(self, id, lambda event: self.parent.RemoveData(event))
-            
+
         # Do the rest
         if commands != None:
             for key in commands.keys():
@@ -2297,14 +2304,14 @@ class ContentListPanel(wxPanel):
 
         # We always have open
         id = wxNewId()
-        menu.Append(id, "Open", "Open this service.")
+        menu.Append(id, "Join", "Join this session.")
         if commands != None and 'Open' in commands:
             EVT_MENU(self, id, lambda event, cmd='Open':
                      self.StartCmd(appdb.GetCommandLine(item.mimeType,
                                                         'Open'),
                                    item=item, verb='Open'))
         else:
-            text = "You have nothing configured to open this service."
+            text = "You have nothing configured to open this application."
             title = "Notification"
             EVT_MENU(self, id, lambda event, text=text, title=title:
                      MessageDialog(self, text, title,
@@ -2316,7 +2323,7 @@ class ContentListPanel(wxPanel):
         EVT_MENU(self, id, lambda event: self.parent.RemoveApp(event))
 
         # We always have an Application Monitor
-
+        menu.AppendSeparator()
         id = wxNewId()
         menu.Append(id, "Open Monitor...", "View data and participants present in this application session.")
         EVT_MENU(self, id, lambda event: self.parent.OpenAppMonitor(event, item))
@@ -2345,6 +2352,7 @@ class ContentListPanel(wxPanel):
     def LookAtProperties(self, desc):
         """
         """
+              
         if isinstance(desc, DataDescription):
             dataView = DataDialog(self, -1, "Data Properties")
             dataView.SetDescription(desc)
@@ -3279,10 +3287,9 @@ class ServiceDialog(wxDialog):
         self.typeText = wxStaticText(self, -1, "Mime Type:")
         self.typeCtrl = wxTextCtrl(self, -1, "")
         self.descriptionText = wxStaticText(self, -1, "Description:", style=wxALIGN_LEFT)
-        self.descriptionCtrl = wxTextCtrl(self, -1, "")
+        self.descriptionCtrl = wxTextCtrl(self, -1, "", style = wxTE_MULTILINE, size = wxSize(200, 50))
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
-        self.__setProperties()
         self.Layout()
     
     def GetNewProfile(self):
@@ -3302,14 +3309,9 @@ class ServiceDialog(wxDialog):
         self.uriCtrl.SetValue(serviceDescription.uri)
         self.typeCtrl.SetValue(serviceDescription.mimeType)
         self.descriptionCtrl.SetValue(serviceDescription.description)
-        self.SetTitle("Service Properties")
         self.__setEditable(false)
         self.cancelButton.Destroy()
-          
-    def __setProperties(self):
-        self.SetTitle("Please, fill in service information")
-        #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
-
+       
     def __setEditable(self, editable):
         if not editable:
             self.nameCtrl.SetEditable(false)
@@ -3349,6 +3351,93 @@ class ServiceDialog(wxDialog):
         sizer1.Fit(self)
         self.SetAutoLayout(1)
 
+class AddAppDialog(wxDialog):
+    '''
+    Dialog for adding name and description to an application session.
+    '''
+
+    def __init__(self, parent, id, title, appDescription):
+        wxDialog.__init__(self, parent, id, title)
+        self.Centre()
+        self.info = wxStaticText(self, -1, "Give this %s session a name and a short discription, click Ok to start it.  \nOnce the session is started, all participants of the venue will be able to join." %appDescription.name)
+
+        self.nameText = wxStaticText(self, -1, "Name: ")
+        self.nameCtrl = wxTextCtrl(self, -1, "", validator = AddAppDialogValidator())
+        self.descriptionText = wxStaticText(self, -1, "Description:")
+        self.descriptionCtrl = wxTextCtrl(self, -1, "", style = wxTE_MULTILINE, size = wxSize(200, 50), validator = AddAppDialogValidator())
+
+        self.okButton = wxButton(self, wxID_OK, "Ok")
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+
+        self.Layout()
+
+    def GetName(self):
+        return self.nameCtrl.GetValue()
+
+    def GetDescription(self):
+        return self.descriptionCtrl.GetValue()
+
+    def Layout(self):
+        sizer = wxBoxSizer(wxVERTICAL)
+
+        sizer.Add(self.info, 0, wxEXPAND|wxALL, 10)
+        sizer.Add(5,5)
+        
+        gridSizer = wxFlexGridSizer(2, 2, 10, 5)
+        gridSizer.Add(self.nameText)
+        gridSizer.Add(self.nameCtrl, 0, wxEXPAND)
+        gridSizer.Add(self.descriptionText)
+        gridSizer.Add(self.descriptionCtrl, 0, wxEXPAND)
+        gridSizer.AddGrowableCol(1)
+        
+        sizer.Add(gridSizer, 1, wxEXPAND|wxALL, 10)
+
+       
+        sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND|wxALL, 10)
+
+        bsizer = wxBoxSizer(wxHORIZONTAL)
+        bsizer.Add(self.okButton, 0, wxBOTTOM, 10)
+        bsizer.Add(self.cancelButton, 0, wxLEFT|wxBOTTOM, 5)
+
+        sizer.Add(bsizer, 0, wxCENTER)
+
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetAutoLayout(1)
+
+class AddAppDialogValidator(wxPyValidator):
+    def __init__(self):
+        wxPyValidator.__init__(self)
+
+    def Clone(self):
+        return AddAppDialogValidator()
+
+    def Validate(self, win):
+        name = win.GetName()
+        desc = win.GetDescription()
+        
+        if name == "":
+            info = "Please, enter a name for this applicatication session." 
+            dlg = wxMessageDialog(None, info, "Enter Name", style = wxOK | wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return false
+
+        if desc == "":
+            info = "Please, enter a description for this applicatication session." 
+            dlg = wxMessageDialog(None, info, "Enter Description", style = wxOK | wxICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return false
+        
+        return true
+    
+    def TransferToWindow(self):
+        return true # Prevent wxDialog from complaining.
+
+    def TransferFromWindow(self):
+        return true # Prevent wxDialog from complaining.
+        
 class ExitProfileDialog(wxDialog):
     '''
     This dialog is opened when a user right clicks an exit
@@ -3989,13 +4078,11 @@ def ShowNetworkInitWin32(msg, mainApp = None):
             
 
 if __name__ == "__main__":
-   
-    import time
+    pp = wxPySimpleApp()
+    n = AddAppDialog(None, -1, "Start Application Session", ApplicationDescription("test", "test", "test", "test", "test"))
+    if n.ShowModal() == wxID_OK:
+        print n.GetName()
     
-    class TheGrid(wxApp):
-        def OnInit(self, venueClient = None):
-            self.frame = VenueClientFrame(NULL, -1,"The Lobby")
-            self.frame.Show(true)
-            self.frame.SetSize(wxSize(300, 400))
-            self.SetTopWindow(self.frame)
-            self.client = venueClient
+    
+    if n:
+        n.Destroy()
