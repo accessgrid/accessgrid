@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.7 2003-01-24 04:26:52 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.8 2003-01-27 22:32:10 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,6 +14,7 @@
 import ConfigParser
 import string
 
+from AccessGrid.Utilities import LoadConfig, SaveConfig
 class ClientProfile:
     """
     The client profile is used to represent the clients throughout the AG.
@@ -21,19 +22,22 @@ class ClientProfile:
     profile is allowed to modify it.
     """
 
-    _defaultProfile = {
-        'VenueClient.profileType' : 'user',
+    defaultProfile = {
+        'VenueClient.profileType' : ClientProfile.USER,
         'VenueClient.name' : 'John Doe',
         'VenueClient.email' : 'john@mail.com',
         'VenueClient.phoneNumber' : '+1 888 959 5555',
         'VenueClient.icon' : '',
         'VenueClient.publicId' : 'do-de-do',
-        'VenueClient.location' : 'Fargo, North Dakota',
+        'VenueClient.location' : 'Nowhere, Fast',
         'VenueClient.venueClientURL' : '',
         'VenueClient.technicalSupportInformation' : '',
         'VenueClient.homeVenue' : 'http://test.com/Venues/default'
         }
 
+    USER = "user"
+    NODE = "node"
+    
     def __init__(self, profileFile = None):
         """ """
         self.profileFile = profileFile
@@ -52,23 +56,14 @@ class ClientProfile:
         self.capabilities = []
 
         if profileFile != None:
-            self._LoadFromFile(self.profileFile)
+            self.Load(self.profileFile)
 
-
-
-    def _LoadFromFile(self, fileName):
+    def Load(self, fileName):
 	"""
-	Returns a dictionary with keys of the form <section>.<option>
-	and the corresponding values.
-	This is from the python cookbook credit: Dirk Holtwick.
 	"""
         profile = {}
-        self.cp = ConfigParser.ConfigParser()
-        self.cp.read(fileName)
-        for sec in self.cp.sections():
-            for opt in self.cp.options(sec):
-                        val = string.strip(self.cp.get(sec, opt))
-                        profile[sec + "." + opt] = string.strip(self.cp.get(sec, opt))
+        profile = LoadConfig(fileName, defaultProfile)
+        
         self.profileType = profile['VenueClient.profiletype']
         self.name = profile['VenueClient.name']
         self.email = profile['VenueClient.email']
@@ -78,8 +73,6 @@ class ClientProfile:
         self.location = profile['VenueClient.location']
         self.technicalSupportInformation = profile['VenueClient.technicalsupportinformation']
         self.homeVenue = profile['VenueClient.homevenue']
-
-        return profile
 
     def Dump(self):
         """
@@ -93,6 +86,10 @@ class ClientProfile:
         print "Technical Support Information: " + self.technicalSupportInformation
         print "Icon: " + str(self.icon)
         print "Public ID: " + self. publicId
+        
+    def Save(self, fileName):
+        """ """
+        SaveConfig(fileName, self)
         
     def SetProfileType(self, profileType):
         """ """
