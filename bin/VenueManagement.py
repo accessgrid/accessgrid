@@ -221,11 +221,7 @@ class VenueProfilePanel(wxPanel):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
 			 wxDefaultSize, wxNO_BORDER|wxSW_3D, name = "venueProfilePanel")  
 	self.venueProfileBox = wxStaticBox(self, -1, "")
-#	self.description = wxStaticText(self, -1,'', \
-         #                               size = wxSize(10, 30) ,\
-        #                              style = wxTE_MULTILINE | wxTE_READONLY)
-        self.description = wxTextCtrl(self, -1,'', size = wxSize(10, 50), \
-                                      style = wxSIMPLE_BORDER | wxNO_3D | wxTE_MULTILINE )
+        self.description = wxTextCtrl(self, -1,'', style = wxSIMPLE_BORDER | wxNO_3D | wxTE_MULTILINE )
         self.description.SetBackgroundColour(wxColour(0,0,255))
 	self.line = wxStaticLine(self, -1)
         #	self.iconLabel = wxStaticText(self, -1, 'Icon:', size = wxSize(40, 20),\
@@ -234,15 +230,16 @@ class VenueProfilePanel(wxPanel):
 	#bitmap =  wxBitmap('IMAGES/icon.gif', wxBITMAP_TYPE_GIF)
 	#self.icon = wxStaticBitmap(self, -1, bitmap, \
         #				   size = wxSize(bitmap.GetWidth(), bitmap.GetHeight()))
+        self.urlLabel = wxStaticText(self, -1, 'URL:', size = wxSize(50, 20), \
+				       name = "urlLabel", style = wxALIGN_RIGHT)
+	self.url = wxTextCtrl(self, -1, '', name = 'url', style = wxALIGN_LEFT | wxTE_READONLY)
 	self.exitsLabel = wxStaticText(self, -1, 'Exits:', size = wxSize(50, 20), \
 				       name = "exitsLabel", style = wxALIGN_RIGHT)
 	self.exits = wxListBox(self, 10, size = wxSize(250, 100), style = wxTE_READONLY)
-        self.exitsLabel.Hide()
-        self.exits.Hide()
-        self.venueProfileBox.SetLabel("")
-        #self.description.SetLabel("Not connected to server")
         self.description.SetValue("Not connected to server")
-        self.description.SetBackgroundColour(wxColour(215,214,214))
+        self.description.SetBackgroundColour(wxColour(215, 214, 214))
+        self.url.SetBackgroundColour(wxColour(215, 214, 214))
+        self.__hideFields()
 	self.__doLayout()
 
     def EvtListBox(self, event):
@@ -256,19 +253,27 @@ class VenueProfilePanel(wxPanel):
         self.venueProfileBox.SetLabel('')
         self.description.SetLabel('')
         self.exits.Clear()
-       
+
+    def __hideFields(self):
+        self.exitsLabel.Hide()
+        self.exits.Hide()
+        self.urlLabel.Hide()
+        self.url.Hide()
+        self.venueProfileBox.SetLabel("")
+    
     def ChangeCurrentVenue(self, data = None, exitsList = None):
         if data == None:
-            self.venueProfileBox.SetLabel("")
-            #self.description.SetLabel("No venues in server")
+            self.__hideFields
             self.description.SetValue("No venues in server")
-            self.exitsLabel.Hide()
-            self.exits.Hide()
-                                  
+                        
         else:
             self.exitsLabel.Show()
             self.exits.Show()
+            self.url.Show()
+            self.urlLabel.Show()
+            
             self.venueProfileBox.SetLabel(data.name)
+            self.url.SetValue(data.uri)
             self.exits.Clear()
             index = 0
             while index < len(exitsList):
@@ -278,8 +283,8 @@ class VenueProfilePanel(wxPanel):
 
     def __doLayout(self):
         venueListProfileSizer = wxStaticBoxSizer(self.venueProfileBox, wxVERTICAL)
-        venueListProfileSizer.Add(5, 10)
-	venueListProfileSizer.Add(self.description, 0, wxEXPAND|wxALL, 5)
+        venueListProfileSizer.Add(5, 20)
+	venueListProfileSizer.Add(self.description, 4, wxEXPAND|wxLEFT|wxRIGHT, 15)
         venueListProfileSizer.Add(5, 10)
 	venueListProfileSizer.Add(self.line, 0, wxEXPAND)
         
@@ -287,8 +292,10 @@ class VenueProfilePanel(wxPanel):
 	paramGridSizer = wxFlexGridSizer(4, 2, 10, 10)
         #	paramGridSizer.Add(self.iconLabel, 0, wxEXPAND, 0)
 	#paramGridSizer.Add(self.icon, 0, wxALIGN_LEFT, 0)
+        paramGridSizer.Add(self.urlLabel, 0, wxEXPAND, 0)
+        paramGridSizer.Add(self.url, 1, wxALIGN_LEFT | wxEXPAND|wxRIGHT, 15)
 	paramGridSizer.Add(self.exitsLabel, 0, wxEXPAND, 0)
-	paramGridSizer.Add(self.exits, 1, wxEXPAND|wxRIGHT|wxBOTTOM, 15)
+	paramGridSizer.Add(self.exits, 2, wxEXPAND|wxRIGHT|wxBOTTOM, 15)
 	paramGridSizer.AddGrowableCol(1) 
 	paramGridSizer.AddGrowableRow(1) 
 	venueListProfileSizer.Add(paramGridSizer, 10, wxEXPAND|wxTOP, 10)
@@ -721,8 +728,7 @@ class VenueParamFrame(wxDialog):
 	self.descriptionLabel = wxStaticText(self, -1, "Description:")
 	self.description =  wxTextCtrl(self, -1, "",\
 				       size = wxSize(200, 100), style = wxTE_MULTILINE|wxHSCROLL)
-        self.description.SetBackgroundColour('RED')
-	#self.iconLabel = wxStaticText(self, -1, "Icon:")
+      	#self.iconLabel = wxStaticText(self, -1, "Icon:")
 	
 	#self.bitmap =  wxBitmap('IMAGES/icon.gif', wxBITMAP_TYPE_GIF)
 	#self.icon = wxStaticBitmap(self, -1, self.bitmap, \
