@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.228 2003-08-12 19:24:36 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.229 2003-08-13 22:09:23 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -844,7 +844,7 @@ class VenueClientFrame(wxFrame):
         profileDialog.Destroy()
               
     def OpenAboutDialog(self, event):
-        aboutDialog = AboutDialog(self)
+        aboutDialog = AboutDialog(None)
         aboutDialog.ShowModal()
         aboutDialog.Destroy()
         
