@@ -5,17 +5,18 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.47 2004-03-12 05:23:11 judson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.48 2004-03-12 22:20:08 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.47 2004-03-12 05:23:11 judson Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.48 2004-03-12 22:20:08 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import isWindows, isLinux, isOSX
 import string
+import struct
 
 try:
     import _winreg
@@ -454,7 +455,6 @@ class SecureTextCtrl(wxTextCtrl):
         pass
 
     def OnPaste(self, event):
-        print "secure on paste", event
         self.doPaste()
 
     def doPaste(self):
@@ -465,7 +465,6 @@ class SecureTextCtrl(wxTextCtrl):
         txt = str(data.GetText())
         for k in txt:
             ch, = struct.unpack('b', k)
-            print ch
             self.insertChar(ch)
 
     def deleteSelection(self, sel):
@@ -489,7 +488,6 @@ class SecureTextCtrl(wxTextCtrl):
     def OnKeyDown(self, event):
         t = event.GetEventObject()
         k = event.GetKeyCode()
-        print "Keydown ", k
 
         #
         # We only worry about control keys here.
@@ -519,11 +517,9 @@ class SecureTextCtrl(wxTextCtrl):
         t = event.GetEventObject()
         k = event.GetKeyCode()
         kr = event.GetRawKeyCode()
-        print k, kr
 
         if k == WXK_BACK:
             sel = self.GetSelection()
-            print "back, sel=", sel
 
             if sel[0] < sel[1]:
                 self.deleteSelection(sel)
@@ -533,17 +529,14 @@ class SecureTextCtrl(wxTextCtrl):
                     del self.chars[pos - 1 : pos]
                     self.Remove(pos - 1, pos)
         elif k == WXK_RETURN:
-            print "handle return"
             event.Skip()
             return
         elif k == WXK_TAB:
-            print "handle tab"
             event.Skip()
             return
         elif k == WXK_DELETE:
             sel = self.GetSelection()
             pos = self.GetInsertionPoint()
-            print "del sel=", sel, "pos = ", pos
 
             if sel[0] < sel[1]:
                 self.deleteSelection(sel)
@@ -555,12 +548,10 @@ class SecureTextCtrl(wxTextCtrl):
             self.insertChar(k)
                          
         elif k == WXK_LEFT:
-            print "Left"
             pos = self.GetInsertionPoint()
             if pos > 0:
                 self.SetInsertionPoint(pos - 1)
         elif k == WXK_RIGHT:
-            print "Right"
             pos = self.GetInsertionPoint()
             if pos < self.GetLastPosition():
                 self.SetInsertionPoint(pos + 1)
@@ -570,7 +561,6 @@ class SecureTextCtrl(wxTextCtrl):
             #
             self.doPaste()
         else:
-            print "Other chars"
             event.Skip()
 
 class PassphraseDialog(wxDialog):
@@ -614,17 +604,14 @@ class PassphraseDialog(wxDialog):
         self.Fit()
 
     def __del__(self):
-        print "ppdlg del"
         self.FlushChars()
         
     def OnClose(self, event):
-        print "Closing"
         self.FlushChars()
         self.EndModal(wxID_CANCEL)
         self.Destroy()
 
     def OnOK(self, event):
-        print "Got OK"
         self.EndModal(wxID_OK)
 
     def GetChars(self):
