@@ -6,16 +6,21 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.10 2003-01-21 19:37:02 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.11 2003-01-23 14:39:54 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys
+import time
+
 from AccessGrid.hosting.pyGlobus import ServiceBase
 from AccessGrid.Types import Capability, Event
 from AccessGrid.Descriptions import StreamDescription
-from AccessGrid import NetworkLocation
+from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid.GUID import GUID
+from AccessGrid.CoherenceClient import CoherenceClient
+from AccessGrid.Utilities import formatExceptionInfo
+from AccessGrid.scheduler import Scheduler
 
 class Venue(ServiceBase.ServiceBase):
     """
@@ -28,7 +33,8 @@ class Venue(ServiceBase.ServiceBase):
         self.nodes = dict()
         self.data = dict()
         self.services = dict()
-
+        self.clients = dict()
+        
         self.networkServices = []
         self.streams = []
         self.administrators = []
@@ -39,11 +45,24 @@ class Venue(ServiceBase.ServiceBase):
         self.administrators.append(administrator)
         self.coherenceService = coherenceService
         self.coherenceService.start()
+        cl = self.coherenceService.GetLocation()
+        self.coherenceClient = CoherenceClient(cl.GetHost(), cl.GetPort(), 
+                                               self.CoherenceCallback,
+                                               self.uniqueId)
+        self.coherenceClient.start()
         self.multicastAddressAllocator = multicastAddressAllocator
         self.dataStore = dataStore
 
-        self.defaultTtl = 127
+        self.producerCapabilities = []
+        self.consumerCapabilities = []
 
+        self.houseKeeper = Scheduler()
+        self.houseKeeper.AddTask(self.CleanupClients, 45)
+        self.cleanupTime = 30
+        
+        self.nextPrivateId = 1
+
+        self.defaultTtl = 127
 
     # Management methods
     def AddNetworkService(self, connectionInfo, networkServiceDescription):
@@ -205,7 +224,7 @@ class Venue(ServiceBase.ServiceBase):
                 self.coherenceService.distribute( Event( Event.ENTER, clientProfile ) )
 
         except:
-           print "Exception in Enter ", sys.exc_type, sys.exc_value
+           print "Exception in Enter ", formatExceptionInfo()
         
         return ( state, privateId, streamDescriptions )
 
@@ -363,12 +382,36 @@ class Venue(ServiceBase.ServiceBase):
     Ping.soap_export_as = "Ping"
 
     # Internal Methods
+    def CleanupClients(self):
+        print "Cleaning up dead clients."
+        now_sec = time.localtime()[5]
+        for client in self.clients.keys():
+            then_sec = self.clients[client][5]
+            if abs(now_sec - then_sec) > self.cleanupTime:
+                if self.users[client] != None:
+                    clientProfile = self.users[client]
+                else:
+                    clientProfile = self.nodes[client]
+                self.coherenceService.distribute( Event( Event.EXIT,
+                                                         clientProfile ) )
+                del self.clients[client]
+        
+    def CoherenceCallback(self, event):
+        print "Venue Coherence Callback: %s, %s" % (event.eventType,
+                                                    event.data)
+    
+    def Serialize(self):
+        """
+        This method packs up all the relevant data to be stored for persistence.
+        """
+        
     def Shutdown(self):
         """
         This method cleanly shuts down all active threads associated with the
         Virtual Venue. Currently there are a few threads in the Coherence
         Service.
         """
+        self.coherenceClient.stop()
         self.coherenceService.stop()
 
     def NegotiateCapabilities(self, clientProfile):
@@ -421,7 +464,7 @@ class Venue(ServiceBase.ServiceBase):
         """
         This method creates a new Multicast Network Location.
         """
-        return NetworkLocation.MulticastNetworkLocation(
+        return MulticastNetworkLocation(
             self.multicastAddressAllocator.AllocateAddress(),
             self.multicastAddressAllocator.AllocatePort(), 
             self.defaultTtl )
