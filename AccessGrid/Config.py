@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.21 2004-09-07 19:08:13 turam Exp $
+# RCS-ID:      $Id: Config.py,v 1.22 2004-09-07 20:36:51 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.21 2004-09-07 19:08:13 turam Exp $"
+__revision__ = "$Id: Config.py,v 1.22 2004-09-07 20:36:51 turam Exp $"
 
 import os
 import sys
@@ -49,17 +49,17 @@ class AGTkConfig:
         pass
 
     def _repr_(self):
-        str = "Access Grid Toolkit Configuration:\n"
-        str += "Version: %s\n" % self.GetVersion()
-        str += "InstallDir: %s\n" % self.GetInstallDir()
-        str += "DocDir: %s\n" % self.GetDocDir()
-        str += "LogDir: %s\n" % self.GetLogDir()
-        str += "ConfigDir: %s\n" % self.GetConfigDir()
-        str += "SharedAppDir: %s\n" % self.GetSharedAppDir()
-        str += "NodeServicesDir: %s\n" % self.GetNodeServicesDir()
-        str += "ServicesDir: %s\n" % self.GetServicesDir()
+        tmpstr = "Access Grid Toolkit Configuration:\n"
+        tmpstr += "Version: %s\n" % self.GetVersion()
+        tmpstr += "InstallDir: %s\n" % self.GetInstallDir()
+        tmpstr += "DocDir: %s\n" % self.GetDocDir()
+        tmpstr += "LogDir: %s\n" % self.GetLogDir()
+        tmpstr += "ConfigDir: %s\n" % self.GetConfigDir()
+        tmpstr += "SharedAppDir: %s\n" % self.GetSharedAppDir()
+        tmpstr += "NodeServicesDir: %s\n" % self.GetNodeServicesDir()
+        tmpstr += "ServicesDir: %s\n" % self.GetServicesDir()
     
-        return str
+        return tmpstr
 
     def __str__(self):
         return self._repr_()
@@ -129,12 +129,12 @@ class GlobusConfig:
         return self._repr_()
 
     def _repr_(self):
-        str = "Globus Configuration:\n"
-        str += "Location: %s\n" % self.GetLocation()
-        str += "Hostname: %s\n" % self.GetHostname()
-        str += "Proxy Filename: %s\n" % self.GetProxyFileName()
+        tmpstr = "Globus Configuration:\n"
+        tmpstr += "Location: %s\n" % self.GetLocation()
+        tmpstr += "Hostname: %s\n" % self.GetHostname()
+        tmpstr += "Proxy Filename: %s\n" % self.GetProxyFileName()
         
-        return str
+        return tmpstr
 
     # We define our own setenv/unsetenv to prod both the pyGlobus
     # environment and the standard python environment.
@@ -298,15 +298,15 @@ class UserConfig:
         raise Exception, "This should not be called directly, but through a subclass."
 
     def _repr_(self):
-        str = "User Configuration:\n"
-        str += "Profile File: %s\n" % self.GetProfile()
-        str += "Config Dir: %s\n" % self.GetConfigDir()
-        str += "Temp Dir: %s\n" % self.GetTempDir()
-        str += "Log Dir: %s\n" % self.GetLogDir()
-        str += "Shared App Dir: %s\n" % self.GetSharedAppDir()
-        str += "Node Services Dir: %s\n" % self.GetNodeServicesDir()
-        str += "Services Dir: %s\n" % self.GetServicesDir()
-        return str
+        tmpstr = "User Configuration:\n"
+        tmpstr += "Profile File: %s\n" % self.GetProfile()
+        tmpstr += "Config Dir: %s\n" % self.GetConfigDir()
+        tmpstr += "Temp Dir: %s\n" % self.GetTempDir()
+        tmpstr += "Log Dir: %s\n" % self.GetLogDir()
+        tmpstr += "Shared App Dir: %s\n" % self.GetSharedAppDir()
+        tmpstr += "Node Services Dir: %s\n" % self.GetNodeServicesDir()
+        tmpstr += "Services Dir: %s\n" % self.GetServicesDir()
+        return tmpstr
 
     def __str__(self):
         return self._repr_()
