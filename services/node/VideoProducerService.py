@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.1 2003-04-24 22:10:15 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.2 2003-04-28 21:31:54 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -103,7 +103,7 @@ class VideoProducerService( AGService ):
          self.log.info(" executable = %s" % self.executable)
          self.log.info(" options = %s" % options)
          self._Start( options )
-         os.remove(startupfile)
+         #os.remove(startupfile)
       except:
          self.log.exception("Exception in VideoProducerService.Start")
          raise Exception("Failed to start service")
