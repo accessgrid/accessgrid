@@ -41,6 +41,11 @@ StartDir=os.getcwd()
 #    ag-rat, ag-vic, and AccessGrid
 SourceDir = os.environ['AGBUILDROOT']
 
+# Get the version of python used to run this script
+# and use it as the default 
+pyver = sys.version[:3]
+
+
 #
 # Parse command line options
 #
@@ -59,7 +64,7 @@ parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
                   default=0,
                   help="A flag that indicates to build verbosely.")
 parser.add_option("-p", "--pythonversion", dest="pyver",
-                  metavar="PYTHONVERSION", default="2.3",
+                  metavar="PYTHONVERSION", default=pyver,
                   help="Which version of python to build the installer for.")
 parser.add_option("-r", "--rebuild", action="store_true", dest="rebuild",
                   help="Rebuild an installer from a previously used build dir.")
