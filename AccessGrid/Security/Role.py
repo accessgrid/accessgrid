@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.7 2004-03-16 18:07:13 lefvert Exp $
+# RCS-ID:      $Id: Role.py,v 1.8 2004-03-19 16:23:10 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ much more dynamic. We programmatically create, destroy and modify
 roles.
 """
 
-__revision__ = "$Id: Role.py,v 1.7 2004-03-16 18:07:13 lefvert Exp $"
+__revision__ = "$Id: Role.py,v 1.8 2004-03-19 16:23:10 lefvert Exp $"
 
 # external imports
 import xml.dom.minidom
@@ -188,8 +188,8 @@ class Role:
 
         cm = Application.instance().GetCertificateManager()
         di = cm.GetDefaultIdentity()
-
-        if di == subject:
+        
+        if str(di.GetSubject()) == subject.GetName():
             raise DefaultIdentityNotRemovable(subject.name)
         
         if subject not in self.subjects:
