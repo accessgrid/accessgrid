@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.10 2003-02-06 14:44:55 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.11 2003-02-14 20:09:47 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -131,7 +131,7 @@ class StreamDescription( ObjectDescription ):
    def __init__( self, name=None, description=None, 
                  location=MulticastNetworkLocation(), 
                  capability=Capability(),
-                 encryptionKey=None ):
+                 encryptionKey=0 ):
       ObjectDescription.__init__( self, name, description, None, None )
       self.location = location
       self.capability = capability
