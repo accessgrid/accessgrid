@@ -6,24 +6,24 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceService.py,v 1.12 2003-01-22 20:28:52 judson Exp $
+# RCS-ID:      $Id: CoherenceService.py,v 1.13 2003-01-23 14:24:46 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import socket
-from threading import Thread
 import sys
+import pickle
+from threading import Thread
+
 from SocketServer import ThreadingTCPServer
 from SocketServer import ThreadingMixIn, StreamRequestHandler
 
 from pyGlobus.io import GSITCPSocketServer
 
-from NetworkLocation import UnicastNetworkLocation
-
-def auth_callback(arg, handle, identity, context):
-    print "In the Authorization Callback"
-    return 1
+from AccessGrid.NetworkLocation import UnicastNetworkLocation
+from AccessGrid.Events import PickleEventSerializer
+from AccessGrid.Utilities import formatExceptionInfo
 
 # This really should be defined in pyGlobus.io
 class ThreadingGSITCPSocketServer(ThreadingMixIn, GSITCPSocketServer): pass
@@ -36,29 +36,29 @@ class CoherenceRequestHandler(StreamRequestHandler):
     """
     def stop(self):
         self.running = 0
-    
-    def send(self, data):
-        self.request.send(data)
-        
+         
     def handle(self):
+        
         # register setup stuff
-#        print "Saving connection! ", str(self)
         self.server.connections.append(self)
         
         # loop getting data and handing it to the server
         self.running = 1
         while(self.running == 1):
-#            print "Reading data!"
             try:
-                data = self.rfile.readline()
-#                print "Read %s" % data[:-1]
+                # Get the size
+                size = self.rfile.readline()
+                # Get the data
+                pdata = self.rfile.read(int(size))
+                # Unpack the data
+                data = pickle.loads(pdata)
+                # Send it along to the rest
                 self.server.distribute(data)
             except:
-                print "Caught exception trying to read data"
+                print "Caught exception trying to read data", formatExceptionInfo()
                 self.running = 0
                 self.server.connections.remove(self)
                 
-#class CoherenceService(ThreadingTCPServer):
 class CoherenceService(ThreadingGSITCPSocketServer, Thread):
     """
     The CoherenceService provides a secure event layer. This might be more 
@@ -68,9 +68,9 @@ class CoherenceService(ThreadingGSITCPSocketServer, Thread):
     def __init__(self, server_address, 
                  RequestHandlerClass=CoherenceRequestHandler):
         Thread.__init__(self)
+        self.location = server_address
         self.connections = []
         ThreadingGSITCPSocketServer.__init__(self, server_address, RequestHandlerClass)
-#        ThreadingTCPServer.__init__(self, server_address, RequestHandlerClass)
 
     def run(self):
         self.running = 1
@@ -81,10 +81,14 @@ class CoherenceService(ThreadingGSITCPSocketServer, Thread):
         self.running = 0
         
     def distribute(self, data):
+        # This should be more generic
+        pdata = pickle.dumps(data)
         for c in self.connections:
-            c.wfile.write(data)
+            c.wfile.write("%s\n" % len(pdata))
+            c.wfile.write(pdata)
             
-
+    def GetLocation(self):
+        return UnicastNetworkLocation(self.location[0], self.location[1])
             
 if __name__ == "__main__":
   import string
@@ -92,5 +96,4 @@ if __name__ == "__main__":
   port = 6500
   print "Creating new CoherenceService at %s %d." % (host, port)
   coherence = CoherenceService((host, port), CoherenceRequestHandler)
-  coherenceThread = threading.Thread(target=coherence.run)
-  coherenceThread.start()
+  coherence.start()

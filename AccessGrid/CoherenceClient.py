@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceClient.py,v 1.10 2003-01-21 18:37:38 judson Exp $
+# RCS-ID:      $Id: CoherenceClient.py,v 1.11 2003-01-23 14:24:46 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,9 +14,13 @@
 from threading import Thread
 import socket
 import string
+import pickle
 
 from pyGlobus.io import GSITCPSocket,TCPIOAttr,AuthData
 from pyGlobus import ioc
+
+from AccessGrid.Utilities import formatExceptionInfo
+from AccessGrid.Types import Event
 
 class CoherenceClient(Thread):
     """
@@ -27,8 +31,8 @@ class CoherenceClient(Thread):
     rbufsize = -1
     wbufsize = 0
     
-    def __init__(self, id = '', host = 'localhost', port = 6500, 
-                 callback = None):
+    def __init__(self, host = 'localhost', port = 6500, 
+                 callback = None, id = ''):
         """
         The CoherenceClient constructor takes a host, port and a
         callback for coherence data.
@@ -37,6 +41,7 @@ class CoherenceClient(Thread):
         Thread.__init__(self)
         self.host = host
         self.port = port
+        self.id = id
         if callback == None:
             self.callback = self.__TestCallback
         else:
@@ -46,7 +51,7 @@ class CoherenceClient(Thread):
         self.__SetupSocket(host, port)
         
         # Start the heartbeat thread
-        self.heartbeat = Heartbeat(self, 30, id)
+        self.heartbeat = Heartbeat(self, 10)
         self.heartbeat.start()
         
     def __SetupSocket(self, host, port):
@@ -81,20 +86,30 @@ class CoherenceClient(Thread):
         """
         while self.sock != None:
             try:
-                data = self.rfile.readline()
-                self.callback(data)
+                # Read the size
+                size = self.rfile.readline()
+                # Then read the event
+                pdata = self.rfile.read(int(size))
+                # Unpack the data
+                event = pickle.loads(pdata)
+                # Send it on its way
+                self.callback(event)
             except:
-                print "Server closed connection!"
+                print "Server closed connection!", formatExceptionInfo()
                 self.sock.close()
                 self.heartbeat.stop()
-                self.sock = None
 
     def send(self, data):
         """
         This method sends data to the Coherence Service.
         """
         if self.sock != None:
-            self.wfile.write(data)
+            # Pickle the data
+            pdata = pickle.dumps(data)
+            # Send the size on it's own line
+            self.wfile.write("%s\n" % len(pdata))
+            # Then send the pickled data
+            self.wfile.write(pdata)
          
     def __TestCallback(self, data):
         """
@@ -102,14 +117,14 @@ class CoherenceClient(Thread):
         simply prints out Coherence Events received over the CoherenceService.
         This is kept private since it really isn't for general use.
         """
-        print "Got Data from Coherence: " + data[:-1]
+        print "Got Data from Coherence: " + data
     
 class Heartbeat(Thread):
     """
     This class is derived from Thread and provides the CoherenceClient with a
     constant periodic heartbeat sent to the Virtual Venue.
     """
-    def __init__(self, coherenceClient = None, period = 15, id = ''):
+    def __init__(self, coherenceClient = None, period = 15):
         """
         The constructor takes the CoherenceClient and the number of seconds
         between heartbeats. The default period for heartbeats is 15 seconds.
@@ -117,7 +132,6 @@ class Heartbeat(Thread):
         Thread.__init__(self)
         self.client = coherenceClient
         self.period = period
-        self.id = id
         self.running = 0
 
     def run(self):
@@ -128,13 +142,9 @@ class Heartbeat(Thread):
         import time
         self.running = 1
         while self.running:
-            # Data is a string, simply parsable: Heartbeat id time, e.g.
-            # Heartbeat--2003:1:21:0:0:1:1:21:0
-            evt = string.join(('Heartbeat', self.id, 
-                               string.join(map(str, time.localtime()), ':')), 
-                               '-')
-            print "HB Sending: %s" % evt
-            self.client.send(evt + '\n')
+            data = "%s-%s" % (self.client.id,
+                              string.join(map(str, time.localtime()), ':'))
+            self.client.send(Event(Event.HEARTBEAT, data))
             time.sleep(self.period)
             
     def stop(self):
@@ -143,5 +153,5 @@ class Heartbeat(Thread):
         
 if __name__ == "__main__":
     import sys
-    coherenceClient = CoherenceClient(sys.argv[1], sys.argv[2])
+    coherenceClient = CoherenceClient(host = sys.argv[1], id = sys.argv[2])
     coherenceClient.start()
