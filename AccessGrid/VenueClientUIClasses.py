@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.65 2003-03-14 16:21:22 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.66 2003-03-14 19:18:08 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1639,6 +1639,7 @@ class ProfileDialog(wxDialog):
             self.supportCtrl.SetEditable(false)
             self.homeVenueCtrl.SetEditable(false)
             self.profileTypeBox.SetEditable(false)
+            self.dnTextCtrl.SetEditable(false)
         else:
             self.nameCtrl.SetEditable(true)
             self.emailCtrl.SetEditable(true)
@@ -1647,7 +1648,7 @@ class ProfileDialog(wxDialog):
             self.supportCtrl.SetEditable(true)
             self.homeVenueCtrl.SetEditable(true)
             self.profileTypeBox.SetEditable(true)
-
+           
     def __doLayout(self):
         self.sizer1 = wxBoxSizer(wxVERTICAL)
         sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, "Profile"), wxHORIZONTAL)
