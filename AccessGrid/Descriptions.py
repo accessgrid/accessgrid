@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.38 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.39 2004-01-05 19:06:38 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Descriptions.py,v 1.38 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: Descriptions.py,v 1.39 2004-01-05 19:06:38 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -288,7 +288,7 @@ class ApplicationDescription(ObjectDescription):
         # We override the generated id
         self.id = id
         self.mimeType = mimetype   
-    
+                   
     def SetMimeType(self, mimetype):   
         self.mimeType = mimetype   
             
@@ -349,6 +349,8 @@ class StreamDescription( ObjectDescription ):
        string += "capability : %s\n" % self.capability
 
        return string
+
+
    
 class AGServiceManagerDescription:
     def __init__( self, name, uri ):
@@ -369,6 +371,21 @@ class AGServiceDescription:
         self.executable = executable
         self.serviceManagerUri = serviceManagerUri
         self.servicePackageUri = servicePackageUri
+
+
+class AppParticipantDescription:
+    def __init__(self, appId, clientProfile, status):
+        self.appId = appId
+        self.clientProfile = clientProfile
+        self.status = status
+        
+
+class AppDataDescription:
+    def __init__(self, appId, key, value):
+        self.appId = appId
+        self.key = key
+        self.value = value
+
     
 def CreateStreamDescription( streamDescStruct ):
     if streamDescStruct.location.type == MulticastNetworkLocation.TYPE:

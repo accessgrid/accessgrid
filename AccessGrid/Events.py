@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.19 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: Events.py,v 1.20 2004-01-05 19:06:38 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Events.py,v 1.19 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: Events.py,v 1.20 2004-01-05 19:06:38 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -35,6 +35,11 @@ class Event:
     ADD_STREAM = "Add stream"
     MODIFY_STREAM = "Modify stream"
     REMOVE_STREAM = "Remove stream"
+
+    APP_PARTICIPANT_JOIN = 'Join application'
+    APP_PARTICIPANT_LEAVE = 'Leave application'
+    APP_UPDATE_PARTICIPANT = 'Update application participant status'
+    APP_SET_DATA = 'Set application data'
     
     def __init__(self, eventType, venueId, data):
         self.eventType = eventType
