@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.97 2003-05-23 21:39:24 olson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.98 2003-05-23 22:15:01 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -714,6 +714,13 @@ class Venue(ServiceBase.ServiceBase):
                 if description.type == client.publicId:
                     log.debug("RemoveUser: Remove private data %s"
                               % description.name)
+
+                    # Send the event
+                    self.server.eventService.Distribute( self.uniqueId,
+                                                         Event( Event.REMOVE_DATA,
+                                                                self.uniqueId,
+                                                                description) )
+                    
                     del self.data[description.name]
                    
             # Distribute event
