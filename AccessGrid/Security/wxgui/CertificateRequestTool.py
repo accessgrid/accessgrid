@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.9 2004-05-04 20:52:18 eolson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.10 2004-05-04 21:11:08 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -989,34 +989,43 @@ class SubmitReqWindow(TitledPage):
         reqName = certInfo.GetName()
         reqEmail = certInfo.GetEmail()
         
-        
-        self.info =  """Click 'Finish' to submit %s certificate request for %s to Argonne.  A confirmation e-mail will be sent, within 2 business days, to %s.
+        if reqType == "anonymous":
+
+            self.info = """Click 'Finish' to submit the anonymous certificate request to the certificate server at Argonne. The certificate should be available immediately. 
+
+Please contact agdev-ca@mcs.anl.gov if you have questions."""
+
+            self.text.SetValue(self.info)
+
+        else:
+
+            self.info =  """Click 'Finish' to submit %s certificate request for %s to Argonne.  A confirmation e-mail will be sent, within 2 business days, to %s.
 
 Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName, reqEmail)
 
-        self.text.SetValue(self.info)
-        
-        requestStart = 25
-        nameStart = 50 + len(reqType)
-        emailStart = 127 + len(reqType) + len(reqName)
+            self.text.SetValue(self.info)
 
-        self.text.SetInsertionPoint(0)
-        f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
-        textAttr = wxTextAttr(wxNullColour)
-        textAttr.SetFont(f)
-        self.text.SetStyle(nameStart, nameStart+len(reqName), textAttr)
-        self.text.SetInsertionPoint(0)
+            requestStart = 25
+            nameStart = 50 + len(reqType)
+            emailStart = 127 + len(reqType) + len(reqName)
 
-        f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
-        textAttr = wxTextAttr(wxNullColour)
-        textAttr.SetFont(f)
-        self.text.SetStyle(emailStart, emailStart+len(reqEmail), textAttr)
-        self.text.SetInsertionPoint(0)
+            self.text.SetInsertionPoint(0)
+            f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
+            textAttr = wxTextAttr(wxNullColour)
+            textAttr.SetFont(f)
+            self.text.SetStyle(nameStart, nameStart+len(reqName), textAttr)
+            self.text.SetInsertionPoint(0)
 
-        f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
-        textAttr = wxTextAttr(wxNullColour)
-        textAttr.SetFont(f)
-        self.text.SetStyle(requestStart, requestStart+len(reqType), textAttr)
+            f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
+            textAttr = wxTextAttr(wxNullColour)
+            textAttr.SetFont(f)
+            self.text.SetStyle(emailStart, emailStart+len(reqEmail), textAttr)
+            self.text.SetInsertionPoint(0)
+
+            f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
+            textAttr = wxTextAttr(wxNullColour)
+            textAttr.SetFont(f)
+            self.text.SetStyle(requestStart, requestStart+len(reqType), textAttr)
 
         self.text.Refresh()
         
