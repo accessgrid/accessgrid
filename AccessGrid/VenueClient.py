@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.30 2003-03-20 22:37:21 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.31 2003-03-20 22:59:00 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -259,7 +259,7 @@ class VenueClient( ServiceBase):
         """
         print '--------------this person is following me: ', clientProfile.name
         self.followerProfiles[clientProfile.publicId] = clientProfile
-        Lead.soap_export_as = "Lead"
+    Lead.soap_export_as = "Lead"
 
     def Unlead( self, clientProfile):
         """
@@ -269,7 +269,7 @@ class VenueClient( ServiceBase):
         for profile in self.followerProfiles.values():
             if profile.publicId == clientProfile.publicId:
                 del self.followerProfiles[clientProfile.publicId]
-        Unlead.soap_export_as = "Unlead"
+    Unlead.soap_export_as = "Unlead"
 
     def SetNodeServiceUri( self, nodeServiceUri ):
         """
