@@ -663,9 +663,10 @@ class AddPeopleDialog(wxDialog):
         sizer.Add(tempSizer, 1, wxEXPAND)
         
         box.Add(sizer, 3, wxEXPAND|wxLEFT|wxBOTTOM|wxTOP, 5)
-       
+        
         tempSizer = wxBoxSizer(wxVERTICAL)
-        tempSizer.Add(self.selections, 0, wxEXPAND)
+        tempSizer.Add(10,10)
+        tempSizer.Add(self.selections, 0, wxEXPAND|wxBOTTOM, 5)
         tempSizer.Add(self.addList, 1, wxEXPAND)
         tempSizer.Add(self.removeUserButton, 0, wxEXPAND|wxTOP, 5)
         box.Add(tempSizer, 2, wxEXPAND|wxALL, 5)
