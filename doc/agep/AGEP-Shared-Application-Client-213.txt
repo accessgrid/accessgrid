@@ -1,0 +1,106 @@
+===================================
+Shared Application Client for 2.1.3
+===================================
+: version $Revision: 1.1 $
+: author: Susanne Lefvert <lefvert@mcs.anl.gov>
+: status: Draft
+
+Abstract
+========
+
+    This enhancement proposal describes design and implementation of a shared application base class that will simplify development of shared applications. 
+
+
+Overview
+==========
+
+    The AGTk 2.0 currently includes an interface for building shared applications.  After several applications have been created using this interface, it is apparent that application clients share some common code, especially in the initialization phase.  To avoid redundant code, parts of shared applications would be extracted into a shared application base class, the **SharedAppClient**.  The new class will make it possible to re-use existing code and make it easier to develop shared applications.
+
+
+Design
+======
+
+SharedAppClient Specification
+------------------------------
+ 
+  **Atributes:**
+
+  * publicId
+  * privateId
+  * channelId
+  * appProxy
+  * appUrl 
+  * appName 
+   
+  **Methods:**
+  
+  * __Init__(appName)
+  * InitLogging(debugMode = 0, logFile = None)  
+  * Connect(appServiceUrl)
+  * Shutdown()
+  * RegisterEventCallback (name, callback)
+  * SendEvent(event)
+  * GetData(dataKey)
+  * SetData(dataKey, dataValue)
+  * GetPublicId()
+  
+
+Class Overview
+----------------
+    ::
+
+         -----------------
+        | SharedAppService |
+         -----------------
+                 A
+                 | 
+                 |
+         ----------------            -----------
+        | SharedAppClient | ------O | SharedApp |
+         ----------------            -----------
+
+    **Note**: SharedApp *has a* SharedAppClient, 
+              SharedAppClient communicates with SharedAppService via *SOAP* interface
+
+
+Reference Implementation
+=========================
+
+    Sample code of the Shared Browser using the SharedAppClient can be found at [1].
+ 
+Rationale
+========= 
+
+    The aim of this AGEP is to provide a client side interface to application services. By encapsulating details such as eventClient, ID's, and SOAP proxy from the developer, shared applications should be cleaner and more straightforward to implement.  Ideally, a developer should only need to include the SharedAppClient, and in some cases the DataStoreClient, from the  AccessGrid toolkit in order to write shared applications. 
+
+
+Open Issues
+===========
+    Should the SharedAppClient implement all SOAP methods offered by the AppService even though this might just be a one line call to the service?  Or, is it better to return the SOAP proxy in a GetServiceProxy method and avoid the extra interface layer?  For new developers, it would probably be easier to understand one well documented client interface and hide the AppService entirely.
+
+
+Backwards Compatibility
+=======================
+
+    Shared applications currently available will still work without using the SharedAppClient. However, application code can be reduced and readability increased if redesign is implemented. 
+
+
+References
+==========
+
+    .. [1] Reference implementation: http://www-unix.mcs.anl.gov/~lefvert/AGEP/AGEP.html (AGEP Shared Application Client for AGTk 2.0)
+ 
+
+Copyright
+=========
+
+    This document falls under the AGTkPL.
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
