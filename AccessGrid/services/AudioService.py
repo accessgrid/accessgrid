@@ -5,15 +5,16 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.11 2003-04-03 21:16:47 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.12 2003-04-09 06:07:20 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
-import sys
+import sys, os
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
 from AccessGrid.AGService import AGService
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter
+from AccessGrid import Platform
 
 class AudioService( AGService ):
 
@@ -52,6 +53,25 @@ class AudioService( AGService ):
          print "Exception in AudioService.Start", sys.exc_type, sys.exc_value
          raise Exception("Failed to start service")
    Start.soap_export_as = "Start"
+
+
+   def Stop( self ):
+      """Stop the service"""
+      self.started = 0
+      try:
+
+         # kill rat specially on windows
+         if sys.platform == Platform.WIN:
+            installDir = Platform.GetInstallDir()
+            ratKillExe = os.path.join(installDir, "rat-kill.exe")
+            self.processManager.start_process(ratKillExe, [])
+         else:
+            self.processManager.terminate_all_processes()
+
+      except:
+         print "Exception in AGService.Stop ", sys.exc_type, sys.exc_value
+         raise Exception("AGService.Stop failed : ", str( sys.exc_value ) )
+   Stop.soap_export_as = "Stop"
 
 
    def ConfigureStream( self, streamDescription ):
