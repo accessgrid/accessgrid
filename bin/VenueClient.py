@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.102 2003-04-03 18:23:22 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.103 2003-04-03 18:50:48 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -121,16 +121,15 @@ class VenueClientUI(wxApp, VenueClient):
         wxLogInfo("--------- START VenueClient")
 
     def __createHomePath(self):
-        #self.accessGridPath = GetUserConfigDir()
-        #------
-        if sys.platform == "win32":
-            myHomePath = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
-        elif sys.platform == "linux2":
-            myHomePath = os.environ['HOME']
+        self.accessGridPath = GetUserConfigDir()
+        
+        #if sys.platform == "win32":
+        #    myHomePath = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
+        #elif sys.platform == "linux2":
+        #    myHomePath = os.environ['HOME']
 
-        self.accessGridPath = os.path.join(myHomePath, '.AccessGrid')
-        #-------
-
+        #self.accessGridPath = os.path.join(myHomePath, '.AccessGrid')
+        
         self.profileFile = os.path.join(self.accessGridPath, "profile" )
         wxLogDebug("Home path is %s" %self.accessGridPath)
         try:  # does the profile dir exist?
