@@ -1,0 +1,99 @@
+=====================================
+Usage Logging
+=====================================
+ 
+:version: $Revision: 1.1 $
+:author: Eric Olson <eolson@mcs.anl.gov>
+:status: Draft
+
+Abstract
+========
+
+The document describes additions to the Access Grid Toolkit that will enable logging of various usage statistics of Access Grid use.  The statistics will be logged by the VenueServer and should be able to produce results will be similar to web server usage statistics.
+
+Overview
+========
+
+Code will be added to the server to log usage data that can be queried at a later date.  Code walso needs to be added to respond to the queries.
+
+Statistics that will be collected:
+  Enter venue: time, userid, ip.
+  Exit/Disconnect from venue: time, userid, ip.
+  Download and upload filenames, sizes, userid, ip.
+  ? Time taken to complete certain calls (such as EnterVenue)
+  Unsuccessful connections.
+  Certificate failures. 
+  Unauthorized administrative requests.
+  Server start and stop times.
+
+Queries that should be possible, given a start and end time:
+  Number of clients that have connected.
+  What venues have had the most usage time.
+  What platforms have the most usage time.
+  Number of files downloaded.
+  Average amount of time a user is on the server.
+  Usage per country.
+  Usage per time of day.
+  Average Server uptime.
+  Users with most denied authorization requests.
+  
+
+Summary of Modifications
+========================
+
+FILL IN SUMMARY OF MODIFICATIONS
+
+Module Organization
+-------------------
+
+FILL IN MODULE ORGANIZATION
+   
+Specifications
+==============
+
+FILL IN SPECIFICATIONS
+
+Security Issues
+===============
+
+The ability to turn off portions of logging will be needed for those who don't wish to log sensitive meeting usage on their server.
+
+Only server and possibly venue administrators should be able to retreive usage data.
+
+
+Interoperability Issues
+=======================
+
+FILL IN INTEROPERABILITY ISSUES
+
+Related AGEPs
+=============
+
+FILL IN RELATED AGEPS
+
+Implementation
+==============
+
+FILL IN IMPLEMENTATION
+
+References
+==========
+
+FILL IN REFERENCES
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
