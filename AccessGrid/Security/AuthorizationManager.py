@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.26 2004-08-25 16:33:14 turam Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.27 2004-08-26 02:40:15 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.26 2004-08-25 16:33:14 turam Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.27 2004-08-26 02:40:15 turam Exp $"
 
 # External Imports
 import os
@@ -309,7 +309,7 @@ class AuthorizationManager:
 
         if role is None:
             log.error("Couldn't find role: %s", roleName)
-            raise Role.RoleNotFound(roleName)
+            raise RoleNotFound(roleName)
 
         action = self.FindAction(actionName)
             
@@ -445,7 +445,7 @@ class AuthorizationManager:
 
         if role is None:
             log.error("Couldn't find role: %s", roleName)
-            raise Role.RoleNotFound(roleName)
+            raise RoleNotFound(roleName)
         else:
             self.RemoveRole(role)
             
