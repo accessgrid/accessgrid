@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.74 2003-03-21 16:09:19 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.75 2003-03-21 16:14:53 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -243,6 +243,11 @@ class VenueClientUI(wxApp, VenueClient):
         # Make people you lead go to this venue
         print '--------- Get followers'
         self.__getFollowers(URL)
+
+        if self.venueUri != None:
+            self.oldUri = self.venueUri
+        else:
+            self.oldUri = None
 
         # clean up ui from last venue
         if self.oldUri != None:
