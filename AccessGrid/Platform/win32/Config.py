@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.18 2004-04-09 21:58:21 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.19 2004-04-12 19:48:44 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.18 2004-04-09 21:58:21 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.19 2004-04-12 19:48:44 judson Exp $"
 
 import os
 import sys
@@ -781,7 +781,8 @@ class UserConfig(AccessGrid.Config.UserConfig):
             self.tempDir = win32api.GetTempPath()
 
         if not os.access(self.tempDir, os.W_OK):
-            log.error("UserConfig configuration: TempDir %s is not writable", self.tempDir)
+            log.error("UserConfig configuration: TempDir %s is not writable",
+                      self.tempDir)
 
         return self.tempDir
     
@@ -792,11 +793,13 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
         # Check dir and make it if needed.
         if self.initIfNeeded:
-            if self.pkgCacheDir is not None and not os.path.exists(self.pkgCacheDir):
+            if self.pkgCacheDir is not None and \
+                   not os.path.exists(self.pkgCacheDir):
                 os.mkdir(self.pkgCacheDir)
 
         # Check the installation
-        if self.pkgCacheDir is not None and not os.path.exists(self.pkgCacheDir):
+        if self.pkgCacheDir is not None and \
+               not os.path.exists(self.pkgCacheDir):
             raise Exception, "AGTkConfig: pkg cache dir does not exist."            
         return self.pkgCacheDir
 
@@ -823,11 +826,13 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
         # Check dir and create it if needed.
         if self.initIfNeeded:
-            if self.nodeServicesDir is not None and not os.path.exists(self.nodeServicesDir):
+            if self.nodeServicesDir is not None and \
+                   not os.path.exists(self.nodeServicesDir):
                 os.mkdir(self.nodeServicesDir)
 
         # Check the installation
-        if self.nodeServicesDir is not None and not os.path.exists(self.nodeServicesDir):
+        if self.nodeServicesDir is not None and \
+               not os.path.exists(self.nodeServicesDir):
             raise Exception, "AGTkConfig: node service dir does not exist."
 
         # check to make it if needed
@@ -840,11 +845,13 @@ class UserConfig(AccessGrid.Config.UserConfig):
 
         # Check dir and create it if needed.
         if self.initIfNeeded:
-            if self.servicesDir is not None and not os.path.exists(self.servicesDir):
+            if self.servicesDir is not None and \
+                   not os.path.exists(self.servicesDir):
                 os.mkdir(self.servicesDir)
 
         # Check the installation
-        if self.servicesDir is not None and not os.path.exists(self.servicesDir):
+        if self.servicesDir is not None and \
+               not os.path.exists(self.servicesDir):
             raise Exception, "AGTkConfig: services dir does not exist."
 
         return self.servicesDir
