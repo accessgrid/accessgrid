@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.300 2003-10-29 20:42:09 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.301 2003-10-29 20:53:14 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.300 2003-10-29 20:42:09 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.301 2003-10-29 20:53:14 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -32,6 +32,7 @@ import pyGlobus.utilc
 import pyGlobus.sslutilsc
 import re
 
+from time import localtime , strftime
 log = logging.getLogger("AG.VenueClientUIClasses")
 log.setLevel(logging.WARN)
 
@@ -1051,7 +1052,7 @@ class VenueClientFrame(wxFrame):
         
         *app* The ApplicationDescription of the application we want to start
         """
-        log.debug("Creating application: %s" % app.name)
+        log.debug("VenueClientFrame.StartApp: Creating application: %s" % app.name)
         appDesc = self.app.venueClient.client.CreateApplication( app.name,
                                                                  app.description,
                                                                  app.mimeType )
@@ -1106,7 +1107,7 @@ class VenueClientFrame(wxFrame):
         try:
             self.app.UpdateNodeService()
         except NetworkLocationNotFound, e:
-            log.exception("EXCEPTION UPDATING NODE SERVICE")
+            log.exception("VenueClientFrame.UseMulticast: EXCEPTION UPDATING NODE SERVICE")
 
     def UseUnicast(self,event):
 
@@ -1190,9 +1191,9 @@ class VenueClientFrame(wxFrame):
             if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
                     text = "You are not authorized to administrate this venue.\n"
                     MessageDialog(None, text, "Not Authorized", style=wxOK|wxICON_WARNING)
-                    log.info("OpenModifyVenueRolesDialog: Not authorized to administrate roles in this venue %s." % str(venueUri))
+                    log.info("VenueClientFrame.OpenModifyVenueRolesDialog: Not authorized to administrate roles in this venue %s." % str(venueUri))
             else:
-                log.exception("OpenModifyVenueRolesDialog: Error administrating roles in this venue %s." % str(venueUri))
+                log.exception("VenueClientFrame.OpenModifyVenueRolesDialog: Error administrating roles in this venue %s." % str(venueUri))
                 text = "Error administrating roles in this venue " + str(venueUri) + "."
                 ErrorDialog(None, text, "Venue Role Administration Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_CLIENT_LOG)
 
@@ -2405,8 +2406,7 @@ class TextClientPanel(wxPanel):
         self.textOutputId = wxNewId()
         self.app = application
         self.TextOutput = wxTextCtrl(self, self.textOutputId, "",
-                                     style= wxTE_MULTILINE|wxTE_READONLY|wxTE_AUTO_URL|wxTE_RICH)
-        EVT_TEXT_URL(self, self.TextOutput.GetId(), self.OnUrl)
+                                     style= wxTE_MULTILINE|wxTE_READONLY|wxTE_RICH|wxTE_AUTO_URL)
         self.label = wxStaticText(self, -1, "Your message:")
         self.display = wxButton(self, self.ID_BUTTON, "Display", style = wxBU_EXACTFIT)
         self.textInputId = wxNewId()
@@ -2416,14 +2416,56 @@ class TextClientPanel(wxPanel):
         self.__set_properties()
         self.__do_layout()
 
+        EVT_TEXT_URL(self, self.TextOutput.GetId(), self.OnUrl)
         EVT_CHAR(self.TextOutput, self.ChangeTextWindow)
-        #EVT_TEXT_ENTER(self.TextInput, self.textInputId, self.LocalInput)
         EVT_CHAR(self.TextInput, self.TestEnter) 
         EVT_BUTTON(self, self.ID_BUTTON, self.LocalInput)
       
         self.Show(true)
 
+    def OutputText(self, name, message):
+        '''
+        Print received text in text chat.
+        
+        **Arguments**
+        *name* Statement to put in front of message (for example; "You say,").
+        *message* The actual message.
+        '''
+        wxCallAfter(self.__outputText, name, message)
+        
+    def LocalInput(self, event):
+        '''
+        User input
+        '''
+        log.debug("TextClientPanel.LocalInput: User writes: %s"
+                  % self.TextInput.GetValue())
+
+        text = self.TextInput.GetValue()
+     
+        try:
+            self.app.venueClient.textClient.Input(text)
+            self.TextInput.Clear()
+            self.TextInput.SetFocus()
+        except:
+            text = "Could not send text message successfully"
+            title = "Notification"
+            log.exception("TextClientPanel.LocalInput: %s" %text)
+            MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
+        
+    def OnCloseWindow(self):
+        '''
+        Perform necessary cleanup before shutting down the window.
+        '''
+        log.debug("TextClientPanel.LocalInput:: Destroy text client")
+        self.textClient.Stop()
+        self.Destroy()
+
     def TestEnter(self, event):
+        '''
+        Check to see what keys are pressed down when enter button is pressed.
+        If cltl or shift are held down, ignore the event; the enter will then just
+        switch rows in the text input field instead of sending the event.
+        '''
         key = event.GetKeyCode()
         shiftKey = event.ShiftDown()
         ctrlKey = event.ControlDown()
@@ -2443,15 +2485,21 @@ class TextClientPanel(wxPanel):
             return
 
     def OnUrl(self, event):
+        '''
+        If a url is pressed in the text chat, this method is called to
+        bring up correct web site.
+        '''
         start = event.GetURLStart()
         end = event.GetURLEnd()
         url = self.TextOutput.GetRange(start, end)
         self.GetGrandParent().OpenHelpURL(url)
       
     def ChangeTextWindow(self, event):
-        '''Changes focus from text output field to text input field
-        to make it clear for users where to write messages.'''
-       
+        '''
+        If user tries to print in text output field, this method
+        changes focus to text input field to make it clear for
+        users where to write messages.
+        '''
         key = event.GetKeyCode()
         ctrlKey = event.ControlDown()
        
@@ -2466,29 +2514,31 @@ class TextClientPanel(wxPanel):
             self.TextInput.AppendText(chr(key))
 
     def SetRightScroll(self):
-        # Added due to wxPython but. The wxTextCtrl doesn't
+        '''
+        Scrolls to right position in text output field 
+        '''
+        # Added due to wxPython bug. The wxTextCtrl doesn't
         # scroll properly when the wxTE_AUTO_URL flag is set. 
         pos = self.TextOutput.GetInsertionPoint()
         self.TextOutput.ShowPosition(pos - 1)
-                                    
+                                            
     def ClearTextWidgets(self):
-        """
-        """
+        '''
+        Clears text widgets.
+        '''
         self.TextOutput.Clear()
         self.TextInput.Clear()
-
-    def OutputText(self, message):
-        wxCallAfter(self.TextOutput.AppendText, message)
-
-        if isWindows():
-            # Scrolling is not correct on windows when I use
-            # wxTE_AUTO_URL flag in text output window.
-            wxCallAfter(self.SetRightScroll)
         
     def __set_properties(self):
+        '''
+        Sets UI properties.
+        '''
         self.SetSize((375, 225))
         
     def __do_layout(self):
+        '''
+        Handles UI layout.
+        '''
         TextSizer = wxBoxSizer(wxVERTICAL)
         TextSizer.Add(self.TextOutput, 2,
                       wxEXPAND|wxALIGN_CENTER_HORIZONTAL, 0)
@@ -2501,28 +2551,43 @@ class TextClientPanel(wxPanel):
         self.SetAutoLayout(1)
         self.SetSizer(TextSizer)
         self.Layout()
-        
-    def LocalInput(self, event):
-        """ User input """
-        log.debug("TextClientPanel.LocalInput: User writes: %s"
-                  % self.TextInput.GetValue())
 
-        text = self.TextInput.GetValue()
-     
-        try:
-            self.app.venueClient.textClient.Input(text)
-            self.TextInput.Clear()
-            self.TextInput.SetFocus()
-        except:
-            text = "Could not send text message successfully"
-            title = "Notification"
-            log.exception("TextClientPanel.LocalInput: %s" %text)
-            MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
-        
-    def OnCloseWindow(self):
-        log.debug("TextClientPanel.LocalInput:: Destroy text client")
-        self.textClient.Stop()
-        self.Destroy()
+    def __outputText(self, name, message):
+        '''
+        Prints received text in the text chat.
+        **Arguments**
+        *name* Statement to put in front of message (for example; "You say,").
+        *message* The actual message.
+        '''
+       # Event message
+        if name == None:
+            # Add time to event message
+            dateAndTime = strftime("%a, %d %b %Y, %H:%M:%S", localtime() )
+            message = message + " ("+dateAndTime+")" 
+
+            # Events are coloured blue
+            self.TextOutput.SetDefaultStyle(wxTextAttr(wxBLUE))
+            self.TextOutput.AppendText(message+'\n')
+            self.TextOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
+
+        # Someone is writing a message
+        else:
+            # Set names bold
+            f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
+            self.TextOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
+            self.TextOutput.AppendText(name)
+
+            # Set text normal
+            f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxNORMAL)
+            self.TextOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
+            self.TextOutput.AppendText(message+'\n')
+            self.TextOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
+
+        if isWindows():
+            # Scrolling is not correct on windows when I use
+            # wxTE_RICH flag in text output window.
+            self.SetRightScroll()
+               
           
 class SaveFileDialog(wxDialog):
     def __init__(self, parent, id, title, message, doneMessage, fileSize):
