@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.203 2003-05-27 20:40:24 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.204 2003-05-27 22:44:34 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1751,11 +1751,11 @@ class ContentListPanel(wxPanel):
         Programmatically build a menu based on the mime based verb
         list passed in.
         """
-        tfile = os.path.join(GetTempDir(), item.name)
+       
+        # Path where temporary file will exist if opened/used.
+        a_file = os.path.join(GetTempDir(), item.name)
 
-        self.app.SaveFileNoProgress(item, tfile)
-
-        commands = GetMimeCommands(filename = tfile,
+        commands = GetMimeCommands(filename = a_file,
                                    ext = item.name.split('.')[-1])
 
         menu = wxMenu()
@@ -1765,7 +1765,7 @@ class ContentListPanel(wxPanel):
         menu.Append(id, "Open", "Open this data.")
         if commands != None and commands.has_key('open'):
             EVT_MENU(self, id, lambda event,
-                     cmd=commands['open']: self.StartCmd(cmd))
+                     cmd=commands['open'], itm=item: self.StartCmd(cmd, item=itm))
         else:
             text = "You have nothing configured to open this data."
             title = "Notification"
@@ -1792,7 +1792,7 @@ class ContentListPanel(wxPanel):
                     id = wxNewId()
                     menu.Append(id, string.capwords(key))
                     EVT_MENU(self, id, lambda event,
-                             cmd=commands[key]: self.StartCmd(cmd))
+                             cmd=commands[key], itm=item: self.StartCmd(cmd, item=itm))
 
         menu.AppendSeparator()
 
@@ -1866,9 +1866,15 @@ class ContentListPanel(wxPanel):
             serviceView.ShowModal()
             serviceView.Destroy()
                 
-    def StartCmd(self, command):
+    def StartCmd(self, command, item=None):
         """
         """
+
+        # If item is passed in, download the filename specified in it.
+        if(item != None):
+            a_file = os.path.join(GetTempDir(), item.name)
+            self.app.SaveFileNoProgress(item, a_file)
+
         print "Command: %s" % command
         wxExecute(command)
         
