@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.78 2003-06-27 22:02:40 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.79 2003-07-03 21:59:51 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -41,6 +41,14 @@ class EnterVenueException(Exception):
    
 class AuthorizationFailedError(Exception):
     pass
+
+class GetDataStoreInfoError(Exception):
+    pass
+
+class GetDataDescriptionsError(Exception):
+    pass
+
+
         
 log = logging.getLogger("AG.VenueClient")
 
@@ -49,8 +57,7 @@ class VenueClient( ServiceBase):
     This is the client side object that maintains a stateful
     relationship with a Virtual Venue. This object provides the
     programmatic interface to the Access Grid for a Venues User
-    Interface.  The VenueClient can only be in one venue at a
-    time.
+    Interface.  The VenueClient can only be in one venue at a    time.
     """    
 
     def __init__(self, profile=None):
@@ -62,6 +69,7 @@ class VenueClient( ServiceBase):
         self.homeVenue = None
         self.houseKeeper = Scheduler()
         self.heartbeatTask = None
+        # takes time
         self.CreateVenueClientWebService()
         self.__InitVenueData__()
         self.isInVenue = 0
@@ -219,7 +227,11 @@ class VenueClient( ServiceBase):
 
         data = event.data
 
-        self.venueState.AddData(data)
+        try:
+            self.venueState.AddData(data)
+        except:
+            pass
+        
         for s in self.eventSubscribers:
             s.AddDataEvent(event)
 
@@ -241,7 +253,7 @@ class VenueClient( ServiceBase):
         # Venue data (personal data handled in VenueClientUIClasses)
         if data.type == "None" or data.type == None:
             self.venueState.RemoveData(data)
-
+            
         for s in self.eventSubscribers:
             s.RemoveDataEvent(event)
 
@@ -501,7 +513,8 @@ class VenueClient( ServiceBase):
             # Send eventClient to personal dataStore and get personaldatastore information
             #
             self.dataStore.SetEventDistributor(self.eventClient, self.venueState.uniqueId)
-            self.dataStoreUploadUrl,self.dataStoreLocation = Client.Handle( URL ).get_proxy().GetDataStoreInformation()
+            self.dataStoreUploadUrl = self.venueProxy.GetUploadDescriptor()
+            #self.dataStoreUploadUrl,self.dataStoreLocation = Client.Handle( URL ).get_proxy().GetDataStoreInformation()
         
             # 
             # Update the node service with stream descriptions
@@ -741,7 +754,37 @@ class VenueClient( ServiceBase):
         
     GetDataStoreInformation.soap_export_as = "GetDataStoreInformation"
 
+    def RemoveData(self, data, ownerProfile):
+        """
+        This method removes a data from the venue. If the data is personal, this method
+        also removes the data from the personal data storage.
+        
+        **Arguments:**
+        
+        *data* The DataDescription we want to remove from vnue
+        """
+        log.debug("Remove data: %s from venue" %data.name)
 
+        
+        dataList = []
+        dataList.append(data)
+        
+        if data.type == None or data.type == 'None':
+            # Venue data
+            self.venueProxy.RemoveData(data)
+            #Client.Handle(self.venueClient.dataStoreLocation).GetProxy().RemoveFiles(dataList)
+            
+        elif(data.type == self.profile.publicId):
+            # My data
+            self.dataStore.RemoveFiles(dataList)
+            
+        else:
+            # Somebody else's personal data
+                       
+            if ownerProfile != None:
+                uploadDescriptor, dataStoreUrl = Client.Handle(ownerProfile.venueClientURL).get_proxy().GetDataStreInformation()
+                Client.Handle(dataStoreUrl).get_proxy().RemoveFiles(dataList)
+                
     def GetPersonalData(self, clientProfile):
         '''
         Get personal data from client
@@ -753,7 +796,7 @@ class VenueClient( ServiceBase):
         id = clientProfile.publicId
 
         log.debug("bin.VenueClient.GetPersonalData")
-        
+
         #
         # After initial request, personal data will be updated via events.
         #
@@ -771,9 +814,16 @@ class VenueClient( ServiceBase):
                 return self.dataStore.GetDataDescriptions()
             else:
                 log.debug("bin.VenueClient.GetPersonalData: This is somebody else's data")
-                uploadDescriptor, dataStoreUrl = Client.Handle(url).get_proxy().GetDataStoreInformation()
-                dataDescriptionList = Client.Handle(dataStoreUrl).get_proxy().GetDataDescriptions()
-
+                try:
+                    uploadDescriptor, dataStoreUrl = Client.Handle(url).get_proxy().GetDataStoreInformation()
+                except:
+                    raise GetDataStoreInfoError()
+                    
+                try:
+                    dataDescriptionList = Client.Handle(dataStoreUrl).get_proxy().GetDataDescriptions()
+                except:
+                    raise GetDataDescriptionsError()
+                
                 dataList = []
                 
                 for data in dataDescriptionList:
@@ -1017,5 +1067,6 @@ class VenueClient( ServiceBase):
         *url* The string including the new node url address
         """
         log.debug("Set node service url:  %s" %url)
-        self.venueClient.nodeServiceUri = url
+        self.nodeServiceUri = url
 
+   
