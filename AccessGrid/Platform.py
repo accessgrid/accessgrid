@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.18 2003-04-07 22:13:12 olson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.19 2003-04-09 19:44:38 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -36,6 +36,8 @@ AGTkBasePath = "/etc/AccessGrid"
 
 # Mac OS X Defaults
 # They will go here :-)
+
+        
 
 def GPICmdline():
     """
@@ -150,8 +152,12 @@ def GetInstallDir():
         return installDir;
 
     if sys.platform == WIN:
-        AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
-        installDir, type = _winreg.QueryValueEx(AG20,"InstallPath")
+        try:
+            AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
+            installDir, type = _winreg.QueryValueEx(AG20,"InstallPath")
+        except WindowsError:
+            log.exception("Cannot open install directory reg key")
+            installDir = ""
 
     elif sys.platform == LINUX:
         installDir = "/usr/bin"
@@ -244,3 +250,46 @@ def GetFilesystemFreeSpace(path):
 
     return freeBytes
         
+if sys.platform == WIN:
+
+    def FindRegistryEnvironmentVariable(varname):
+        """
+        Find the definition of varname in the registry.
+
+        Returns the tuple (global_value, user_value).
+
+        We can use this to determine if the user has set an environment
+        variable at the commandline if it's causing problems.
+
+        """
+
+        global_reg = None
+        user_reg = None
+
+        #
+        # Read the system registry
+        #
+        k = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE,
+                            r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment")
+        try:
+            (val, type) = _winreg.QueryValueEx(k, varname)
+            global_reg = val
+        except:
+            pass
+        k.Close()
+
+        #
+        # Read the user registry
+        #
+
+        k = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment")
+                            
+        try:
+            (val, type) = _winreg.QueryValueEx(k, varname)
+            user_reg = val
+        except:
+            pass
+        k.Close()
+
+
+        return (global_reg, user_reg)
