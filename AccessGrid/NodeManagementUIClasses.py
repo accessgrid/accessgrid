@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.32 2003-05-28 22:00:42 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.33 2003-08-08 23:28:43 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -194,12 +194,12 @@ class StoreConfigDialog(wxDialog):
         # Get value of textfield and checkbox
         return (self.configText.GetValue(), self.defaultCheckbox.IsChecked())
 
-class ServicePopup(wxPopupTransientWindow):
+class ServicePopup(wxDialog):
     """
     Popup for the service menu
     """
-    def __init__(self, parent, style):
-        wxPopupTransientWindow.__init__(self, parent, style)
+    def __init__(self, parent):
+        wxDialog.__init__(self, parent, -1, "Node Management UI")
         panel = wxPanel(self, -1)
         panel.SetBackgroundColour("#FFB6C1")
         self.m = BuildServiceMenu()

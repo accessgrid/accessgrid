@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.20 2003-08-07 20:59:08 judson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.21 2003-08-08 23:23:44 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -115,11 +115,11 @@ class ErrorDialogWithTraceback:
 #        reportDialog.ShowModal()
 #        reportDialog.Destroy()
 
-class AboutDialog(wxPopupTransientWindow):
-    version = "Agtk 2.0"
+class AboutDialog(wxDialog):
+    version = "AGTk 2.1"
         
-    def __init__(self, parent, style):
-        wxPopupTransientWindow.__init__(self, parent, style)
+    def __init__(self, parent):
+        wxDialog.__init__(self, parent, -1, self.version)
         self.panel = wxPanel(self, -1)
 
         bmp = icons.getAboutBitmap()
