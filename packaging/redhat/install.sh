@@ -41,7 +41,7 @@ AccessGrid-AudioService
 AccessGrid-VideoConsumer
 AccessGrid-VideoProducer
 AccessGrid-BridgeServer"
-export AG_VER="2.1.2-4"
+export AG_VER="2.1.2-5"
 
 
 #################################################################
@@ -158,5 +158,7 @@ done
 echo ""
 echo "Installation finished."
 echo ""
-echo "Important: Log out and back in before using the software, to"
-echo "allow proper initialization of the execution environment"
+echo "Important: "
+echo "- You should log out and back in before using the software, "
+echo "  to allow proper initialization of the execution environment"
+echo "- The AG software should be run by normal users, _not_ root."
