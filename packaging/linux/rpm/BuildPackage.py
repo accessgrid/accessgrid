@@ -93,7 +93,7 @@ os.system(cmd)
 # Copy the install.sh script into the dist dir
 #
 installsh = os.path.join(BuildDir,'packaging','linux','rpm','install.sh')
-os.chmod(installsh,755)
+os.chmod(installsh,0755)
 cmd = "cp %s %s" % (installsh,
                     RpmDir)
 print "cmd = ", cmd
