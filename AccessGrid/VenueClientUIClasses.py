@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.217 2003-06-27 17:07:41 eolson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.218 2003-06-27 18:28:01 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -534,7 +534,7 @@ class VenueClientFrame(wxFrame):
 
         else:
             try:
-                self.app.venuceClient.Follow(personToFollow)
+                self.app.venueClient.Follow(personToFollow)
             except:
                 log.exception("VenueClientUIClasses: Can not follow %s" %personToFollow.name)
                 text = "You can not follow "+name
@@ -732,7 +732,7 @@ class VenueClientFrame(wxFrame):
 
     def AddToMyVenues(self, event):
         id = wxNewId()
-        url = self.app.venuceClient.venueUri
+        url = self.app.venueClient.venueUri
                       
         if url is not None:
             if(url not in self.myVenuesDict.values()):

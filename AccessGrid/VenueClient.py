@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.75 2003-06-27 17:02:51 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.76 2003-06-27 18:28:01 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -865,7 +865,7 @@ class VenueClient( ServiceBase):
         self.pendingLeader = None
 
         for s in self.eventSubscribers:
-            s.LeadReponse(leaderProfile, isAuthorized)
+            s.LeadResponse(leaderProfile, isAuthorized)
 
     LeadResponse.soap_export_as = "LeadResponse"
 
