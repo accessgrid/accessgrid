@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.42 2003-02-24 18:33:26 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.43 2003-02-24 22:54:29 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -22,6 +22,8 @@ from AccessGrid.UIUtilities import AboutDialog, ErrorDialog
 import AccessGrid.ClientProfile
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Descriptions import ServiceDescription
+from AccessGrid.TextClientUI import TextClientUI
+from AccessGrid.Utilities import formatExceptionInfo
 
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 
@@ -43,6 +45,7 @@ class VenueClientFrame(wxFrame):
         self.Centre()
 	self.app = app
         self.parent = parent
+        self.textClient = None
 	self.menubar = wxMenuBar()
 	self.statusbar = self.CreateStatusBar(1)
 	self.dock = wxToolBar(self, 600, pos = wxDefaultPosition, \
@@ -75,6 +78,7 @@ class VenueClientFrame(wxFrame):
         self.ID_VENUE_SERVICE_ADD = NewId()
         self.ID_VENUE_SERVICE_DELETE = NewId()
         self.ID_VENUE_VIRTUAL = NewId()
+        self.ID_VENUE_TEXT = NewId()
         self.ID_VENUE_CLOSE = NewId()
         self.ID_PROFILE = NewId()
         self.ID_PROFILE_EDIT = NewId()
@@ -102,8 +106,10 @@ class VenueClientFrame(wxFrame):
 	self.serviceMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...", "Add service to the venue")
         self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete", "Delete service")
         self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",self.serviceMenu)
+        self.venue.Append(self.ID_VENUE_TEXT,"&Open chat...", "Open text client to chat with others")
 
 	self.menubar.Append(self.venue, "&Venue")
+        
         self.venue.AppendSeparator()
         self.venue.Append(self.ID_VENUE_CLOSE, 'Close', "Exit venue")
 	
@@ -176,13 +182,14 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_VENUE_DATA_DELETE, self.RemoveData)
         EVT_MENU(self, self.ID_VENUE_SERVICE_ADD, self.OpenAddServiceDialog)
         EVT_MENU(self, self.ID_VENUE_SERVICE_DELETE, self.RemoveService)
+        EVT_MENU(self, self.ID_VENUE_TEXT, self.OpenChat)
+        EVT_MENU(self, self.ID_VENUE_CLOSE, self.Exit)
         EVT_MENU(self, self.ID_PROFILE, self.OpenProfileDialog)
         EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialog)
-        EVT_MENU(self, self.ID_VENUE_VIRTUAL, self.OpenConnectToVenueDialog)
         EVT_MENU(self, self.ID_MYNODE_MANAGE, self.OpenNodeMgmtApp)
         EVT_MENU(self, self.ID_MYNODE_URL, self.OpenSetNodeUrlDialog)
         EVT_MENU(self, self.ID_MYVENUE_ADD, self.AddToMyVenues)
-        EVT_MENU(self, self.ID_VENUE_CLOSE, self.Exit)
+       
 
         EVT_MENU(self, self.ID_ME_PROFILE, self.OpenParticipantProfile)
         EVT_MENU(self, self.ID_PARTICIPANT_PROFILE, self.OpenParticipantProfile)
@@ -236,6 +243,19 @@ class VenueClientFrame(wxFrame):
         url = self.menubar.GetLabel(event.GetId())
         self.venueAddressBar.SetAddress(url)
 
+    def OpenChat(self, event = None):
+        try:
+            textLoc = tuple(self.app.venueState.GetTextLocation())
+            id = self.app.venueState.uniqueId
+            self.textClient = TextClientUI(None, -1, "",
+                                           location = textLoc,
+                                           venueId = id)
+            self.textClient.Show(1)
+       
+        except:
+            ErrorDialog(self, "Trying to open text client!")
+            print formatExceptionInfo()
+            
     def OpenParticipantProfile(self, event):
         id = self.contentListPanel.tree.GetSelection()
         participant =  self.contentListPanel.tree.GetItemData(id).GetData()
@@ -454,6 +474,12 @@ class VenueClientFrame(wxFrame):
          noSelectionDialog.Destroy()
 
     def CleanUp(self):
+        try:
+            if(self.textClient != None):
+                self.textClient.Close()
+        except:
+            (name, args, tb) = formatExceptionInfo()
+            
         self.venueListPanel.CleanUp()
         self.contentListPanel.CleanUp()
 
@@ -1360,7 +1386,6 @@ class FileDropTarget(wxFileDropTarget):
             fileNameList = file.split('/')
             fileName = fileNameList[len(fileNameList)-1]
             self.dock.AddSimpleTool(20, icons.getDefaultDataBitmap(), fileName)
-            print file.GetFormat()
         return d
         
 
