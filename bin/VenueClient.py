@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.196 2003-08-14 19:59:48 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.197 2003-08-14 20:34:45 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1095,7 +1095,7 @@ class VenueClientUI(VenueClientEventSubscriber):
 
             else:
                 log.debug("url does not start with https")
-                my_identity = GetDefaultIdentityDN()
+                my_identity = self.app.GetDefaultIdentityDN()
                 DataStore.HTTPDownloadFile(my_identity, url, local_pathname, size,
                                            checksum, progressCB)
         except DataStore.DownloadFailed, e:
@@ -1109,7 +1109,7 @@ class VenueClientUI(VenueClientEventSubscriber):
         """
         log.debug("Upload personal files")
         try:
-            my_identity = GetDefaultIdentityDN()
+            my_identity = self.app.GetDefaultIdentityDN()
             self.venueClient.dataStore.UploadLocalFiles(fileList, my_identity, self.venueClient.profile.publicId)
 
         except DataStore.DuplicateFile, e:
@@ -1190,7 +1190,7 @@ class VenueClientUI(VenueClientEventSubscriber):
                 log.debug("Url starts with https:")
                 DataStore.GSIHTTPUploadFiles(upload_url, file_list, progressCB)
             else:
-                my_identity = GetDefaultIdentityDN()
+                my_identity = self.app.GetDefaultIdentityDN()
                 log.debug("Got identity %s" % my_identity)
                 DataStore.HTTPUploadFiles(my_identity, upload_url,
                 file_list, progressCB)
@@ -1225,7 +1225,7 @@ class VenueClientUI(VenueClientEventSubscriber):
             if upload_url.startswith("https:"):
                 DataStore.GSIHTTPUploadFiles(upload_url, file_list)
             else:
-                my_identity = GetDefaultIdentityDN()
+                my_identity = self.app.GetDefaultIdentityDN()
                 DataStore.HTTPUploadFiles(my_identity, upload_url, file_list)
         except DataStore.FileNotFound, e:
             error_msg = "File not found: %s" % (e[0])
