@@ -6,7 +6,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.38 2003-08-22 21:04:03 turam Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.39 2003-08-22 21:23:07 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -453,6 +453,10 @@ class DataStore(ServiceBase):
             dd.SetChecksum(cp.get(sec, 'checksum'))
             dd.SetOwner(cp.get(sec, 'owner'))
             dd.SetType(cp.get(sec, 'type'))
+            url = self.GetDownloadDescriptor(dd.name)
+            if url != None:
+                dd.SetURI(url)
+
             persistentData.append(dd)
             self.callbackClass.LoadPersistentData(persistentData)
                 
