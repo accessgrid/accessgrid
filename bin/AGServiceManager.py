@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.55 2005-01-06 22:29:36 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.56 2005-01-12 21:30:02 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -102,7 +102,7 @@ def main():
     server.RegisterObject(smi,path="/ServiceManager")
     url = server.FindURLForObject(gServiceManager)
     gServiceManager.SetName('%s:%d' % (hostname,port))
-    gServiceManager.SetUrl(url)
+    gServiceManager.SetUri(url)
 
     if app.GetOption("nodeService") is not None:
         # Create a Node Service
