@@ -5,49 +5,16 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.6 2003-01-17 17:59:30 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.7 2003-01-17 23:10:37 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
-
-from threading import Thread
 
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.CoherenceClient import CoherenceClient
 from AccessGrid.ClientProfile import ClientProfile
 from AccessGrid.Types import Event, VenueState
 
-class VenueClientHeartbeat(Thread):
-    """
-    This class is derived from Thread and provides the VenueClient with a
-    constant periodic heartbeat sent to the Virtual Venue.
-    """
-    def __init__(self, venueClient, period):
-        """
-        The constructor takes the CoherenceClient and the number of seconds
-        between heartbeats.
-        """
-        self.client = venueClient
-        self.period = period
-        self.running = 0
-
-    def run(self):
-        """
-        The run method starts the thread looping sending a heartbeat then
-        sleeping until the next time.
-        """
-        import time
-        self.running = 1
-
-        while self.running:
-            self.client.coherenceClient.send( Event( Event.VENUECLIENT_HEARTBEAT,
-                 self.client.privateId ) )
-            time.sleep(self.period)
-            
-    def stop(self):
-        """ This method stops the VenueClientHeartbeat."""
-        self.running = 0
-        
 class VenueClient:
     """
     This is the client side object that maintains a stateful
