@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.97 2003-08-15 15:07:53 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.98 2003-08-21 20:32:05 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -180,6 +180,9 @@ class VenueClient( ServiceBase):
                 
         if self.personalDataStorePath:
             self.dataStore = DataStore.DataStore(self.personalDataStorePath, self.personalDataStorePrefix)
+
+
+           
             self.transferEngine = DataStore.GSIHTTPTransferServer(('',
                                                                    self.personalDataStorePort))
             self.transferEngine.run()
@@ -228,6 +231,15 @@ class VenueClient( ServiceBase):
             s.RemoveUserEvent(event)
 
         log.debug("Got Remove User Event...done")
+
+        # Remove client from the list of clients who have
+        # been requested for personal data
+
+        try:
+            index = self.requests.index(data.publicId)
+            del self.requests[index]
+        except:
+            pass
         
     def ModifyUserEvent(self, event):
         log.debug("Got Modify User Event")
@@ -240,7 +252,7 @@ class VenueClient( ServiceBase):
 
     def AddDataEvent(self, event):
         log.debug("Got Add Data Event")
-
+     
         data = event.data
 
         try:
@@ -264,7 +276,6 @@ class VenueClient( ServiceBase):
 
     def RemoveDataEvent(self, event):
         log.debug("Got Remove Data Event")
-
         data = event.data
         # Venue data (personal data handled in VenueClientUIClasses)
         if data.type == "None" or data.type == None:
@@ -448,7 +459,6 @@ class VenueClient( ServiceBase):
             log.debug("Invoke venue enter")
             (venueState, self.privateId, self.streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
 
-
             #
             # construct a venue state that consists of real objects
             # instead of the structs we get back from the SOAP call
@@ -551,12 +561,11 @@ class VenueClient( ServiceBase):
                 }
         
             h, p = self.venueState.eventLocation
-        
             self.eventClient = EventClient(self.privateId,
                                            self.venueState.eventLocation,
                                            self.venueState.uniqueId)
-
-       
+            
+            
             for e in coherenceCallbacks.keys():
                 self.eventClient.RegisterCallback(e, coherenceCallbacks[e])
             
@@ -852,7 +861,6 @@ class VenueClient( ServiceBase):
         """
         log.debug("Remove data: %s from venue" %data.name)
 
-        
         dataList = []
         dataList.append(data)
         
@@ -867,7 +875,6 @@ class VenueClient( ServiceBase):
             
         else:
             # Somebody else's personal data
-                       
             if ownerProfile != None:
                 uploadDescriptor, dataStoreUrl = Client.Handle(ownerProfile.venueClientURL).get_proxy().GetDataStreInformation()
                 Client.Handle(dataStoreUrl).get_proxy().RemoveFiles(dataList)
