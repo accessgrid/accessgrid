@@ -3,7 +3,7 @@
 # Name:        NodeManagement.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: NodeManagement.py,v 1.27 2004-09-07 19:49:17 turam Exp $
+# RCS-ID:      $Id: NodeManagement.py,v 1.28 2005-01-06 22:26:39 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -22,15 +22,15 @@ class MyApp(wxApp):
     global log
     global app
 
-    defNSUrl = "https://localhost:11000/NodeService"
+    defNSUrl = "http://localhost:11000/NodeService"
 
     def OnInit(self):
         frame = NodeManagementClientFrame(NULL, -1,
                                           "Access Grid Node Management")
 
-        if not app.certificateManager.HaveValidProxy():
-            app.certificateManager.CreateProxy()
-            return false
+#         if not app.certificateManager.HaveValidProxy():
+#             app.certificateManager.CreateProxy()
+#             return false
         
         try:
             frame.AttachToNode(self.defNSUrl)
