@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.66 2003-03-13 23:43:26 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.67 2003-03-14 21:08:13 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -134,6 +134,23 @@ class VenueClientUI(wxApp, VenueClient):
         self.frame.Show(true)
         wxLogDebug("start wxApp main loop/thread")
         self.MainLoop()
+
+    def AddUserEvent(self, user):
+        if(user.profileType == 'user'):
+            wxCallAfter(self.frame.contentListPanel.AddParticipant, user)
+            wxCallAfter(wxLogDebug, "   %s" %(user.name))
+        else:
+            wxCallAfter(self.frame.contentListPanel.AddNode, user)
+            wxCallAfter(wxLogDebug, "   %s" %(user.name))
+
+    def RemoveUserEvent(self, user):
+        if(user.profileType == 'user'):
+            wxCallAfter(self.frame.contentListPanel.RemoveParticipant, user)
+            wxCallAfter(wxLogDebug, "   %s" %(user.name))
+        else:
+            wxCallAfter(self.frame.contentListPanel.RemoveNode, user)
+            wxCallAfter(wxLogDebug, "   %s" %(user.name)
+        
               
     def ModifyUserEvent(self, data):
         """
@@ -232,8 +249,6 @@ class VenueClientUI(wxApp, VenueClient):
         users = venueState.users.values()
         wxCallAfter(wxLogDebug, "Add participants")
         for user in users:
-            print '--------------------------DDDDDDDDDDNNNNNNNNNN'
-            print user.distinguishedName
             if(user.profileType == 'user'):
                 wxCallAfter(self.frame.contentListPanel.AddParticipant, user)
                 wxCallAfter(wxLogDebug, "   %s" %(user.name))
@@ -680,7 +695,7 @@ class VenueClientUI(wxApp, VenueClient):
             self.client.AddService(service)
             
         except:
-            wxLogError("Error  occured when trying to add service")
+            wxLogError("Error occured when trying to add service")
             wxLog_GetActiveTarget().Flush()
         
     def RemoveData(self, data):
