@@ -1,0 +1,11 @@
+--- AccessGrid/Platform/unix/Config.py.orig	2004-06-24 08:45:51.000000000 -0500
++++ AccessGrid/Platform/unix/Config.py	2004-07-26 10:39:19.944003320 -0500
+@@ -156,7 +156,7 @@
+ 
+     def GetDocDir(self):
+         self.docDir = os.path.join(self.GetInstallDir(), "share", "doc",
+-                                       "AccessGrid", "Documentation")
++                                       "agtk-2.3_beta1", "Documentation")
+ 
+         # Check dir and make it if needed.
+         if self.initIfNeeded:
