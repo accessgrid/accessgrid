@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.50 2004-04-23 14:03:36 judson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.51 2004-04-23 14:04:59 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.50 2004-04-23 14:03:36 judson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.51 2004-04-23 14:04:59 judson Exp $"
 
 # Standard imports
 import os
@@ -85,7 +85,7 @@ class AppBase:
        self.log = Log.GetLogger(Log.Toolkit)
        levelHandler = Log.HandleLoggers(self.mlh, Log.GetDefaultLoggers())
        self.log.info("Initializing AG Toolkit version %s", GetVersion())
-       self.log.info("System Configuration: \n%s", self.systemConfig)
+       self.log.info("%s", self.systemConfig)
 
     # This method implements the initialization strategy outlined
     # in AGEP-0112
