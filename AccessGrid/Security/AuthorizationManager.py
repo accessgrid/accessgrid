@@ -5,24 +5,28 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.4 2004-02-26 14:52:26 judson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.5 2004-03-02 19:07:12 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 Authorization Manager, as described in AGEP-0105.txt.
+
+The authorization manager is the coordinating object for most of the
+authorization implementation. It manages authorization policies and
+provides external interfaces for managing and using the role based
+authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.4 2004-02-26 14:52:26 judson Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: AuthorizationManager.py,v 1.5 2004-03-02 19:07:12 judson Exp $"
 
-import sys
+# External Imports
 import xml.dom.minidom
-#from xml.dom.ext import PrettyPrint
 
-from AccessGrid.hosting.SOAPInterface import SOAPInterface
-from AccessGrid.hosting import Decorate, Reconstitute, Client, IWrapper
+# AGTk Imports
+from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
+from AccessGrid.hosting import Decorate, Reconstitute, Client
 from AccessGrid.GUID import GUID
 from AccessGrid.Security.Role import RoleNotFound, RoleAlreadyPresent
 from AccessGrid.Security.Role import Everybody, Role
@@ -44,8 +48,14 @@ class CircularReferenceWithParent(Exception):
 
 class AuthorizationManager:
     """
+    The Authorization Manager class is the object that is added to
+    objects that want to enable authorization. This provides the
+    encapsulation of the authorization implementation.
     """
     def __init__(self):
+        """
+        The constructor, initializes itself.
+        """
         self.id = str(GUID())
         self.roles = list()
         self.actions = list()
@@ -54,15 +64,38 @@ class AuthorizationManager:
         self.parent = None
 
     def _repr_(self):
+        """
+        This method converts the object to XML.
+        """
         return self.ToXML()
 
     def __str__(self):
+        """
+        This method converts the object to a string.
+
+        @return: string
+        """
         return self._repr_()
     
     def ExportPolicy(self):
+        """
+        This method creates a string representation of the
+        Authorization Policy this object implements.
+
+        @return: a string (XML Formatted) representing the policy.
+        """
         return self.ToXML()
 
     def ImportPolicy(self, policy):
+        """
+        This method takes a string that is an XML representation of an
+        authorization policy. This policy is parsed and this object is
+        configured to enforce the specified policy.
+
+        @param policy: the policy as a string
+        @type policy: an XML formatted string
+        """
+        # Internal function to create a role
         def unpackRole(node):
             sl = list()
             for s in node.childNodes:
@@ -75,7 +108,8 @@ class AuthorizationManager:
                 return (r, 1)
             else:
                 return(r, 0)
-        
+
+        # Internal function to create an action
         def unpackAction(node):
             a = MethodAction(node.attributes["name"].value)
             for rn in node.childNodes:
@@ -104,15 +138,10 @@ class AuthorizationManager:
 
     def ToXML(self):
         """
-        We're going to try a new serialization process.
-        The policy is:
-        id = GUID
-        roles = list of roles
-        default roles = list of roles
-        actions = list of actions
+        We're going to try a new serialization process, using XML. We
+        create this by creating a document then serializing it.
 
-        role = name, list of subjects
-        action = name, list of roles
+        @return: an XML formatted string
         """
         domImpl = xml.dom.minidom.getDOMImplementation()
         authDoc = domImpl.createDocument(xml.dom.minidom.EMPTY_NAMESPACE,
@@ -135,6 +164,17 @@ class AuthorizationManager:
         return rval
     
     def IsAuthorized(self, subject, action):
+        """
+        This is the real workhorse of authorization, checking to see
+        if a given subject is authorized for a given action.
+
+        @param subject: the subject we're curious about
+        @param action: the action to check the subject against.
+        @type subject: an AccessGrid.Security.Subject
+        @type action: an AccessGrid.Security.Action
+
+        @returns: 0 if not authorized, 1 if authorized.
+        """
         # By default no authorization happens
         auth = 0
 
@@ -154,22 +194,55 @@ class AuthorizationManager:
         return auth
 
     def AddAction(self, action):
+        """
+        Adds an action to this authorization manager.
+
+        @param action: the action to add
+        @type action: an AccessGrid.Security.Action object
+
+        @raise ActionAlreadyPresent: if it's already part of this
+        authorization manager.
+        """
         if not self.FindAction(action.GetName()):
             self.actions.append(action)
         else:
             raise ActionAlreadyPresent
 
     def AddActions(self, actionList):
+        """
+        Add a list of actions, uses AddAction internally.
+
+        @param actionList: a list of actions to add
+        @type actionList: a list of AccessGrid.Security.Action objects.
+        """
         for a in actionList:
             self.AddAction(a)
         
     def RemoveAction(self, action):
+        """
+        Remove an action from this authorization manager.
+
+        @param action: the action to remove
+        @type action: an AccessGrid.Security.Action object.
+
+        @raise ActionNotFound: if the specified action is not found.
+        """
         if action in self.actions:
             self.actions.remove(action)
         else:
             raise ActionNotFound
 
     def GetActions(self, subject=None, role=None):
+        """
+        Get a list of actions, perhaps for a subject or a role.
+
+        @param subject: a subject to get the actions for
+        @param role: a role to get actions for
+        @type subject: AccessGrid.Security.Subject
+        @type role: AccessGrid.Security.Role
+
+        @returns: a list of AccessGrid.Security.Action objects
+        """
         if subject == None and role == None:
             # Just return the list of actions
             actionlist = self.actions
@@ -193,11 +266,29 @@ class AuthorizationManager:
         return actionlist
 
     def FindAction(self, name):
+        """
+        Find an action by name.
+
+        @param name: the name of the action to find
+        @type name: string
+        @return: a matching AccessGrid.Security.Action object or None
+        """
         for a in self.actions:
             if a.GetName() == name:
                 return a
-            
+        return None
+    
     def AddRole(self, role, default = 0):
+        """
+        Add a role to this authorization manager.
+
+        @param role: the role to add
+        @param default: a flag indicating if the role is a default role
+        @type role: AccessGrid.Security.Role object
+        @type default: integer flag
+        @return: nothing
+        @raise RoleAlreadyPresent: if the role is already known.
+        """
         if default:
             r = self.defaultRoles
         else:
@@ -209,29 +300,67 @@ class AuthorizationManager:
             raise RoleAlreadyPresent
 
     def RemoveRole(self, role):
+        """
+        Remove a Role from this authorization manager.
+
+        @param role: the role to remove
+        @type role: AccessGrid.Security.Role object
+        @return: nothing
+        @raise RoleNotFound: if the role isn't found
+        """
         if role in self.roles:
             self.roles.remove(role)
         else:
             raise RoleNotFound
 
     def AddRoles(self, roleList):
+        """
+        Add multiple roles to the authorization manager.
+        This calls AddRole for each role in the list.
+        
+        @param roleList: the list of roles to add
+        @type roleList: list of AccessGrid.Security.Role objects.
+        @return: nothing
+        """
         for r in roleList:
             self.AddRole(r)
         
     def GetRoles(self, action=None):
+        """
+        Get the list of Roles, optionally the roles associated with an action.
+
+        @param action: an Action to retrieve roles for
+        @type action: AccessGrid.Security.Action object.
+        @return: list of AccessGrid.Security.Role objects
+        """
         if action == None:
             rolelist = self.roles
         else:
-            rolelist = self.GetAction(action).GetRoles()
+            rolelist = self.FindAction(action.GetName()).GetRoles()
 
         return rolelist
 
     def FindRole(self, name):
+        """
+        Find a role in this authorization manager.
+
+        @param name: the name of the role to find
+        @type name: string
+        @return: the AccessGrid.Security.Role object or None
+        """
         for r in self.roles:
             if r.GetName() == name:
                 return r
-
+        return None
+    
     def GetRolesForSubject(self, subject):
+        """
+        Get all the roles the specified subject is part of.
+
+        @param subject: the subject that the roles must contain
+        @type subject: AccessGrid.Security.Subject
+        @return: list of AccessGrid.Security.Role objects
+        """
         rolelist = list()
 
         for r in self.roles:
@@ -241,6 +370,14 @@ class AuthorizationManager:
         return rolelist
     
     def GetSubjects(self, role=None):
+        """
+        Get the subjects known by this authorization manager, possibly for the
+        specified role.
+
+        @param role: the role to retrieve subjects for
+        @type role: AccessGrid.Security.Role object
+        @return: a list of AccessGrid.Security.Subject objects
+        """
         subjectlist = list()
 
         if role == None:
@@ -252,12 +389,36 @@ class AuthorizationManager:
         return subjectlist
 
     def GetParent(self):
+        """
+        Get the parent object.
+
+        The parent authorization manager is used to provide a
+        hierarchy of authorization. Currently, there is only one level
+        allowed, ie, every authorization manager can have a parent,
+        but when traversed (looking for authorization information) the
+        tree is only ascended one level.
+        """
 	return self.parent
 
     def GetDefaultRoles(self):
+        """
+        Return the list of default roles for this authorization manager.
+
+        @return: list of AccessGrid.Security.Role objects.
+        """
 	return self.defaultRoles
 
     def SetRoles(self, action, roles):
+        """
+        Sets the roles for the specified action.
+
+        @param action: the action to set roles for
+        @param roles: the list of roles to set the action with
+        @type action: AccessGrid.Security.Action object
+        @type roles: a list of AccessGrid.Security.Role objects
+
+        @raise ActionNotFound: when the specified action is not found
+        """
         a = self.FindAction(action)
         if a != None:
             a.SetRoles(roles)
@@ -265,16 +426,38 @@ class AuthorizationManager:
             raise ActionNotFound
 
     def SetSubjects(self, role, subjects):
+        """
+        Set the subjects for the specified role.
+
+        @param role: the role to set subjects for
+        @param subjects: the list of subjects for the role
+        @type role: AccessGrid.Security.Role object
+        @type subjects: a list of AccessGrid.Security.Subject objects
+
+        @raise RoleNotFound: when the specified role is not found
+        """
 	r = self.FindRole(role)
         if r != None:
             r.SetSubjects(subjects)
         else:
             raise RoleNotFound
         
-    def SetParent(authMgr):
+    def SetParent(self, authMgr):
+        """
+        Set the parent authorization manager of this authorization manager.
+
+        @param authMgr: the parent authorization manager
+        @type authMgr: AccessGrid.Security.AuthorizationManager object
+        """
         self.parent = authMgr
 
     def SetDefaultRoles(self, roles=[]):
+        """
+        Set the default roles for this authorization manager.
+
+        @param roles: the list of roles that should be default
+        @type roles: a list of AccessGrid.Security.Role objects
+        """
         self.defaultRoles=roles
 
 class AuthorizationManagerI(SOAPInterface):
@@ -282,55 +465,106 @@ class AuthorizationManagerI(SOAPInterface):
     Authorization manager network interface.
     """
     def __init__(self, impl):
+        """
+        The server side interface object. This gets an implementation
+        to initialize itself with.
+
+        @param impl: the implementation object this interface represents
+        @type impl: AccessGrid.Security.AuthorizationManager
+        """
         SOAPInterface.__init__(self, impl)
 
-    def TestImportExport(self, p):
-        self.impl.ImportPolicy(p)
+    def TestImportExport(self, policy):
+        """
+        A test call that verifies the policy can be imported and
+        exported without modification.
+
+        @param policy: an authorization policy
+        @type policy: a string containing an XML formatted policy.
+        """
+        self.impl.ImportPolicy(policy)
         
     def GetPolicy(self):
+        """
+        Retrieve the policy.
+
+        @return: a string containing an XML formatted authorization policy.
+        """
         return self.impl.ToXML()
     
     def AddRole(self, name):
         """
+        Add a role to the authorization manager.
+
+        @param name: the name of the role to add.
+        @type name: string
         """
         role = Role(name)
         self.impl.AddRole(role)
 
     def RemoveRole(self, name):
         """
+        Remove a role from the authorization manager.
+
+        @param name: the name of the role to remove.
+        @type name: string
         """
         r = self.impl.FindRole(name)
         self.impl.RemoveRole(r)
 
     def ListRoles(self):
         """
-        Return a list of role names.
+        Retrieve the entire list of Roles.
+
+        This involves marshalling data across the wire.
+
+        @return: a list of AccessGrid.Security.Role objects
         """
         roles = self.impl.GetRoles()
         dr = Decorate(roles)
         return dr
 
-    def AddAction(self, name):
+    def AddAction(self, action):
         """
+        Add an action to the authorization manager.
+
+        @param name: the name of the action to add
+        @type name: string
         """
-        a = Action(name)
+        a = Reconstitute(action)
         self.impl.AddAction(a)
 
     def RemoveAction(self, name):
         """
+        Remove an action from the authorization manager.
+
+        @param name: the name of the action to remove
+        @type name: string.
         """
-        a = self.impl.FindAction(actionName)
-        self.imple.RemoveAction(a)
+        a = self.impl.FindAction(name)
+        self.impl.RemoveAction(a)
 
     def ListActions(self):
         """
+        List the actions known by this authorization manager.
+
+        WARNING: this has to marshall data.
+        
+        @return: a list of AccessGrid.Security.Action objects.
         """
         alist = self.impl.GetActions()
-        al = Decoreate(alist)
+        al = Decorate(alist)
         return al
     
     def ListSubjectsInRole(self, role):
         """
+        List subjects that are in a specific role.
+
+        WARNING: this has to marshall data.
+
+        @param role: the role to list the subjects of.
+        @type role: an AccessGrid.Security.Role object
+        @return: a list of AccessGrid.Security.Subject objects
         """
         r = Reconstitute(role)
         roleR = self.impl.FindRole(r)
@@ -340,23 +574,48 @@ class AuthorizationManagerI(SOAPInterface):
 
     def ListRolesInAction(self, action):
         """
+        List the roles associated with a specific action.
+
+        WARNING: this has to marshall data.
+
+        @param action: the action to list roles for.
+        @type action: AccessGrid.Security.Action
+
+        @return: list of AccessGrid.Security.Role objects
         """
-        a = self.impl.FindAction(actionName)
+        a = self.impl.FindAction(action)
         rl = a.GetRoles()
         r = Decorate(rl)
         return r
     
     def AddSubjectsToRole(self, role, subjectList):
         """
+        Add a subject to a particular role.
+        This uses AddSubjectsToRole internally.
+        
+        WARNING: this has to marshall data.
+
+        @param subj: the subject to add
+        @param role: the role to add the subject to
+        @type subj: AccessGrid.Security.Subject object
+        @type role: AccessGrid.Security.Role object
         """
         r = Reconstitute(role)
-        role = self.impl.FindRole(role.name)
+        role = self.impl.FindRole(r.GetName())
         sl = Reconstitute(subjectList)
         for s in sl:
             role.AddSubject(s)
 
     def AddRoleToAction(self, action, role):
         """
+        Add a role to the specified action.
+
+        WARNING: this has to marshall data.
+
+        @param role: the role to add to the action
+        @param action: the action that gets the role added
+        @type role: AccessGrid.Security.Role object
+        @type action: AccessGrid.Security.Action object
         """
         an = Reconstitute(action)
         a = self.impl.FindAction(an.name)
@@ -365,6 +624,14 @@ class AuthorizationManagerI(SOAPInterface):
 
     def AddRolesToAction(self, action, roleList):
         """
+        Add multiple roles to an action.
+        
+        WARNING: this has to marshall data.
+
+        @param roleList: the list of roles to add to the action.
+        @param action: the action that gets the roles added to it
+        @type roleList: a list of AccessGrid.Security.Role objects
+        @type action: an AccessGrid.Security.Action object
         """
         rl = Reconstitute(roleList)
         an = Reconstitute(action)
@@ -374,6 +641,14 @@ class AuthorizationManagerI(SOAPInterface):
             
     def RemoveSubjectsFromRole(self, role, subjectList):
         """
+        Remove multiple subjects from the role.
+        
+        WARNING: this has to marshall data.
+
+        @param subjList: the list of subjects to remove
+        @param role: the role to remove the subject from
+        @type subjList: a list of AccessGrid.Security.Subject objects
+        @type role: AccessGrid.Security.Role object
         """
         rn = Reconstitute(role)
         r = self.impl.FindRole(rn.name)
@@ -383,6 +658,14 @@ class AuthorizationManagerI(SOAPInterface):
             
     def RemoveRoleFromAction(self, action, role):
         """
+        Remove a Role from the action.
+        
+        WARNING: this has to marshall data.
+
+        @param role: the role to remove from the action
+        @param action: the action to remove the role from
+        @type role: AccessGrid.Security.Role object
+        @type action: AccessGrid.Security.Action object
         """
         an = Reconstitute(action)
         rn = Reconstitute(role)
@@ -393,8 +676,14 @@ class AuthorizationManagerI(SOAPInterface):
 
     def GetRolesForSubject(self, subject):
         """
-        By default you should only be able to get roles for yourself,
-        unless you are an administrator.
+        Get the list of roles the subject is a part of.
+
+        WARNING: this has to marshall data.
+
+        @param subject: the subject the roles are for
+        @type subject: AccessGrid.Security.Subject object
+
+        @returns: list of AccessGrid.Security.Role objects
         """
         s = Reconstitute(subject)
 
@@ -404,32 +693,81 @@ class AuthorizationManagerI(SOAPInterface):
 
         return r
 
-class AuthorizationManagerIW(IWrapper):
+    def IsAuthorized(self, subject, action):
+        """
+        Check to see if the subject authorized for the action.
+        
+        WARNING: this has to marshall data.
+
+        @param subject: the subject being verified.
+        @param action: the action the subject is being verified for.
+        @type subject: AccessGrid.Security.Subject object
+        @type action: AccessGrid.Security.Action object.
+        """
+        s = Reconstitute(subject)
+        a = Reconstitute(action)
+
+        return self.impl.IsAuthorized(s, a)
+
+class AuthorizationManagerIW(SOAPIWrapper):
     """
     This object is designed to provide a simple interface that hides
-    the network plumbing between clients and servers.
+    the network plumbing between clients and servers. The client side
+    of this is just a functional interface through this object.
     """
     def __init__(self, url=None):
-        IWrapper.__init__(self, url)
+        """
+        Create the client side object for the authorization service
+        specified by the url.
 
-    def TestImportExport(self, p):
-        self.proxy.TestImportExport(p)
+        @param url: url to the authorization service
+        @type url: a string containing the url
+        """
+        SOAPIWrapper.__init__(self, url)
+
+    def TestImportExport(self, policy):
+        """
+        A test call that verifies the policy can be imported and
+        exported without modification.
+
+        @param policy: an authorization policy
+        @type policy: a string containing an XML formatted policy.
+        """
+        self.proxy.TestImportExport(policy)
         
     def GetPolicy(self):
+        """
+        Retrieve the policy.
+
+        @return: a string containing an XML formatted authorization policy.
+        """
         return self.proxy.GetPolicy()
     
     def AddRole(self, name):
         """
+        Add a role to the authorization manager.
+
+        @param name: the name of the role to add.
+        @type name: string
         """
-        return self.proxy.AddRole(name)
+        self.proxy.AddRole(name)
 
     def RemoveRole(self, name):
         """
+        Remove a role from the authorization manager.
+
+        @param name: the name of the role to remove.
+        @type name: string
         """
-        return self.proxy.RemoveRole(name)
+        self.proxy.RemoveRole(name)
 
     def ListRoles(self):
         """
+        Retrieve the entire list of Roles.
+
+        This involves marshalling data across the wire.
+
+        @return: a list of AccessGrid.Security.Role objects
         """
         rs = self.proxy.ListRoles()
         rs2 = Reconstitute(rs)
@@ -437,21 +775,43 @@ class AuthorizationManagerIW(IWrapper):
 
     def AddAction(self, name):
         """
+        Add an action to the authorization manager.
+
+        @param name: the name of the action to add
+        @type name: string
         """
-        return self.proxy.AddAction(name)
+        self.proxy.AddAction(name)
 
     def RemoveAction(self, name):
         """
+        Remove an action from the authorization manager.
+
+        @param name: the name of the action to remove
+        @type name: string.
         """
-        return self.proxy.RemoveAction(name)
+        self.proxy.RemoveAction(name)
 
     def ListActions(self):
         """
+        List the actions known by this authorization manager.
+
+        WARNING: this has to marshall data.
+        
+        @return: a list of AccessGrid.Security.Action objects.
         """
-        return self.proxy.ListActions()
+        al = self.proxy.ListActions()
+        alr = Reconstitute(al)
+        return alr
 
     def ListSubjectsInRole(self, role):
         """
+        List subjects that are in a specific role.
+
+        WARNING: this has to marshall data.
+
+        @param role: the role to list the subjects of.
+        @type role: an AccessGrid.Security.Role object
+        @return: a list of AccessGrid.Security.Subject objects
         """
         r = Decorate(role)
         sl = self.proxy.ListSubjectsInRole(r) 
@@ -460,6 +820,14 @@ class AuthorizationManagerIW(IWrapper):
 
     def ListRolesInAction(self, action):
         """
+        List the roles associated with a specific action.
+
+        WARNING: this has to marshall data.
+
+        @param action: the action to list roles for.
+        @type action: AccessGrid.Security.Action
+
+        @return: list of AccessGrid.Security.Role objects
         """
         r = self.proxy.ListRolesInAction(action)
         rl = Reconstitute(r)
@@ -467,14 +835,31 @@ class AuthorizationManagerIW(IWrapper):
 
     def AddSubjectToRole(self, subj, role):
         """
+        Add a subject to a particular role.
+        This uses AddSubjectsToRole internally.
+        
+        WARNING: this has to marshall data.
+
+        @param subj: the subject to add
+        @param role: the role to add the subject to
+        @type subj: AccessGrid.Security.Subject object
+        @type role: AccessGrid.Security.Role object
         """
         subjList = [subj,]
         r = Decorate(role)
         s = Decorate(subjList)
-        return self.proxy.AddSubjectsToRole(r, s)
+        self.proxy.AddSubjectsToRole(r, s)
 
     def AddSubjectsToRole(self, subjList, role):
         """
+        Add a list of subjects to a  particular role.
+        
+        WARNING: this has to marshall data.
+
+        @param subjList: a list of subjects
+        @param role: the role to add the subjects to
+        @type subjList: a list of AccessGrid.Security.Subject objects
+        @type role: AccessGrid.Security.Role object
         """
         r = Decorate(role)
         sl = Decorate(subjList)
@@ -483,6 +868,14 @@ class AuthorizationManagerIW(IWrapper):
         
     def AddRoleToAction(self, role, action):
         """
+        Add a role to the specified action.
+
+        WARNING: this has to marshall data.
+
+        @param role: the role to add to the action
+        @param action: the action that gets the role added
+        @type role: AccessGrid.Security.Role object
+        @type action: AccessGrid.Security.Action object
         """
         r = Decorate(role)
         a = Decorate(action)
@@ -491,6 +884,14 @@ class AuthorizationManagerIW(IWrapper):
         
     def AddRolesToAction(self, roleList, action):
         """
+        Add multiple roles to an action.
+        
+        WARNING: this has to marshall data.
+
+        @param roleList: the list of roles to add to the action.
+        @param action: the action that gets the roles added to it
+        @type roleList: a list of AccessGrid.Security.Role objects
+        @type action: an AccessGrid.Security.Action object
         """
         rl = Decorate(roleList)
         a = Decorate(action)
@@ -499,15 +900,31 @@ class AuthorizationManagerIW(IWrapper):
 
     def RemoveSubjectFromRole(self, subj, role):
         """
+        Remove the subject from the role.
+        
+        WARNING: this has to marshall data.
+
+        @param subj: the subject to remove
+        @param role: the role to remove the subject from
+        @type subj: AccessGrid.Security.Subject object
+        @type role: AccessGrid.Security.Role object
         """
         subjList = [subj,]
         sl = Decorate(subjList)
-        r = Decoreate(role)
+        r = Decorate(role)
 
         self.proxy.RemoveSubjectsFromRole(r, sl)
 
     def RemoveSubjectsFromRole(self, subjList, role):
         """
+        Remove multiple subjects from the role.
+        
+        WARNING: this has to marshall data.
+
+        @param subjList: the list of subjects to remove
+        @param role: the role to remove the subject from
+        @type subjList: a list of AccessGrid.Security.Subject objects
+        @type role: AccessGrid.Security.Role object
         """
         sl = Decorate(subjList)
         r = Decorate(role)
@@ -516,14 +933,49 @@ class AuthorizationManagerIW(IWrapper):
 
     def RemoveRoleFromAction(self, role, action):
         """
+        Remove a Role from the action.
+        
+        WARNING: this has to marshall data.
+
+        @param role: the role to remove from the action
+        @param action: the action to remove the role from
+        @type role: AccessGrid.Security.Role object
+        @type action: AccessGrid.Security.Action object        
         """
         r = Decorate(role)
         a = Decorate(action)
 
         self.proxy.RemoveRoleFromAction(a, r)
 
+    def GetRolesForSubject(self, subject):
+        """
+        Get the list of roles the subject is a part of.
+
+        WARNING: this has to marshall data.
+
+        @param subject: the subject the roles are for
+        @type subject: AccessGrid.Security.Subject object
+
+        @returns: list of AccessGrid.Security.Role objects
+        """
+        s = Decorate(subject)
+
+        rl = self.proxy.GetRolesForSubject(s)
+
+        r = Reconstitute(rl)
+
+        return r
+
     def IsAuthorized(self, subject, action):
         """
+        Check to see if the subject authorized for the action.
+        
+        WARNING: this has to marshall data.
+
+        @param subject: the subject being verified.
+        @param action: the action the subject is being verified for.
+        @type subject: AccessGrid.Security.Subject object
+        @type action: AccessGrid.Security.Action object.
         """
         s = Decorate(subject)
         a = Decorate(action)
@@ -535,28 +987,61 @@ class AuthorizationMixIn(AuthorizationManager):
    This allows object to inherit Authorization.
    """
    def __init__(self):
+       """
+       Normal constructor stuff, it initializes itself.
+       """
        self.authManager = AuthorizationManager()
        self.rolesRequired = list()
        
    def GetAuthorizationManager(self):
+       """
+       Get the URL for the Authorization Manager.
+
+       @return: a string containt the url to the authorization service.
+       """
        return self.hostingEnvironment.GetURLForObject(self.authManager)
 
-   def GetRoles(self):
+   def GetRequiredRoles(self):
+       """
+       Return a list of roles required by this implementation for
+       authorization to work.
+
+       @return: a list of AccessGrid.Security.Role objects.
+       """
        return self.rolesRequired
 
-   def AddRole(self, role):
+   def AddRequiredRole(self, role):
+       """
+       Add a role to the list of required roles for this implementation.
+
+       @param role: the role to add
+       @type role: AccessGrid.Security.Role object
+       """
        self.rolesRequired.append(role)
   
 class AuthorizationIMixIn(AuthorizationManagerI):
     """
+    A MixIn class to provide the server side authorization infrastructure.
     """
     def GetAuthorizationManager(self):
+        """
+        Accessor to retrieve the authorization manager from the mixin.
+
+        @returns: string containing the URL to the authorization interface.
+        """
         return self.impl.GetAuthorizationManager()
 
 class AuthorizationIWMixIn(AuthorizationManagerIW):
+    """
+    A MixIn class for the client side authorization support.
+    """
     def GetAuthorizationManager(self):
         """
+        This method retrieves the URL, then creates a client object using it.
+
         This is the cool part, we've built it so this is a real object.
+
+        @return: AccessGrid.Security.AuthorizationManager.AuthoriationMangerIW
         """
         url = self.proxy.GetAuthorizationManager()
         amiw = AuthorizationManagerIW(url=url)

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CRSClient.py,v 1.2 2004-02-24 21:33:07 judson Exp $
+# RCS-ID:      $Id: CRSClient.py,v 1.3 2004-03-02 19:07:12 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,8 +24,7 @@ proxy = xmlrpclib.ServerProxy(url, transport = transport, verbose=1)
 
 """
 
-__revision__ = "$Id: CRSClient.py,v 1.2 2004-02-24 21:33:07 judson Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: CRSClient.py,v 1.3 2004-03-02 19:07:12 judson Exp $"
 
 import xmlrpclib
 import logging
@@ -61,13 +60,17 @@ class CRSClient:
 
     def RequestCertificate(self, emailAddress, certReq):
         """
-        certificateToken = CRSClient.RequestCertificate(certificateRequest)
+        Request a certificate from this service.
+        
+        @param emailAddress: the email address of the submitter
+        @type emailAddress: string
+        @param certReq: is the PEM-formatted certificate request.
+        @type certReq: string containing PEM data
 
-            certificateRequest is the PEM-formatted certificate request.
-
-            certificateToken is a unique token used to retrieve the certificate
-                when it's ready.
-
+        @raise IOError: if the proxy fails for some reason
+        @raise StandardError if the xmlrpc part fails
+        @return: a unique token used to retrieve the certificate when
+        it's ready.
         """
 
         log.debug("request certificate")
@@ -89,10 +92,14 @@ class CRSClient:
 
     def RetrieveCertificate(self, token):
         """
-        certificate = CRSClient.RetrieveCertificate(certificateToken)
-            certificateToken is a unique token used to retrieve the certificate
-                when it's ready.
-            certificate is the actual signed certificate from the CA
+        Retrieve an issued certificate from this service.
+
+        @param token: the token used to know the requestor should get a specific certificate.
+        @type token: string
+
+        @raise CRSClientConnectionFailed: if the service can't get the certificate.
+        @raise StandardError: if the retrieve fails
+        @return: the certificate in a string
         """
 
         log.debug("retrieve certificate for token %s", token)

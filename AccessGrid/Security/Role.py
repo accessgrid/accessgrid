@@ -5,74 +5,108 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.3 2004-02-25 18:33:04 eolson Exp $
+# RCS-ID:      $Id: Role.py,v 1.4 2004-03-02 19:07:12 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
-Roles
+Roles, as described in AGEP-0105.txt.
+
+Roles are analagous to groups, although in our implementation they are
+much more dynamic. We programmatically create, destroy and modify
+roles.
 """
 
-__revision__ = "$Id: Role.py,v 1.3 2004-02-25 18:33:04 eolson Exp $"
-__docformat__ = "restructuredtext en"
+__revision__ = "$Id: Role.py,v 1.4 2004-03-02 19:07:12 judson Exp $"
 
+# external imports
 import xml.dom.minidom
-#from xml.dom.ext import PrettyPrint
 
+# AGTk imports
 from AccessGrid.Security.Subject import Subject, InvalidSubject
 from AccessGrid.Toolkit import GetApplication
 
 class RoleNotFound(Exception):
     """
-    This role was not found.
+    This exception is raised when the role is not found.
     """
     pass
 
 class RoleAlreadyPresent(Exception):
     """
-    This role already has been created.
+    This exception is raised when the role is already known by the software.
     """
     pass
 
 class DefaultIdentityNotRemovable(Exception):
     """
-    This role was not found.
-    """
-    pass
-
-class LastSubjectNotRemovable(Exception):
-    """
-    This role was not found.
+    This exception is raised when an attempt to remove the identity of
+    the user running the process (the Default Identity). It's a bad
+    idea to allow the removal of this subject without very careful
+    consideration of what's going to happen. In all cases we currently
+    don't allow this removal and raise this exception instead.
     """
     pass
 
 class Role:
     """
-    A Role instance represents a list of Subjects (users).
+
+    A Role instance represents a group of Subjects (users). The group
+    probably has some contextual meaning, such as "Users found in the
+    Venue" or "Users who can modify my data".
     
-    It is used to represent all the users belonging to specific 
-    permission sets or "roles."
     For example, if a Role is called "AllowedEntry", it is most
     likely a list of users users are allowed to enter something.
+
+    @cvar TYPE: the type of role, used in doing Role Arithematic.
+    @type TYPE: string
     """
 
     TYPE = "Invalid"
 
     def __init__(self, role_name, subjects=list()):
+        """
+        @param role_name: the name of the role to create
+        @param subjects: a list of subjects to initialize this role with.
+        @type role_name: string
+        @type subjects: a list of AccessGrid.Security.Subject objects
+        """
         self.name = role_name
         self.subjects = subjects
 
     def _repr_(self):
+        """
+        This method creates a DOM document that represents the role.
+
+        @return: a string formatted as XML.
+        """
         domImpl = xml.dom.minidom.getDOMImplementation()
         doc = domImpl.createDocument(xml.dom.minidom.EMPTY_NAMESPACE,
                                      "Role", '')
-        return self.ToXML(doc).toxml()
+        # create the child node, then attach it to the document
+        c = self.ToXML(doc)
+        doc.appendChild(c)
+        
+        return doc.toxml()
 
     def __str__(self):
+        """
+        This method provides a string reprsentation of the Role.
+
+        @return: string
+        """
         return self._repr_()
     
     def ToXML(self, doc):
+        """
+        This method creates the XML specific to the Role class.
+
+        @param doc: a DOM document to create the Role XML from.
+        @type doc: xml.dom.minidom document
+
+        @return: a dom document node.
+        """
         rx = doc.createElement("Role")
         rx.setAttribute("name", self.name)
         for s in self.subjects:
@@ -80,19 +114,38 @@ class Role:
 
         return rx
         
-    def __str__(self):
-        return self._repr_()
-        
     def GetName(self):
+        """
+        An accessor for the Role name attribute.
+
+        @returns: string form of the name
+        """
         return self.name
 
     def GetSubjects(self):
+        """
+        An accessor for the list of subjects that are in this Role.
+
+        @return: a list of AccessGrid.Security.Subject objects.
+        """
         return self.subjects
 
     def SetSubjects(self, sl):
+        """
+        An accessor to set the list of subjects associated with this Role.
+        This replaces any previously existing list.
+
+        @param sl: a list of subjects to set this Role with.
+        @type sl: a list of AccessGrid.Security.Subject objects.
+        """
         self.subject = sl
         
     def GetSubjectListAsStrings(self):
+        """
+        This method returns the subject list as strings.
+
+        @return: a list of strings of subjects.
+        """
         l = map(lambda x: "%s" % x, self.subjects)
         return l
     
@@ -100,16 +153,30 @@ class Role:
         """
         This new AddSubject is more strict than the old one. It only
         works with subject objects.
+
+        @param subject: the subject to add to this role
+        @type subject: AccessGrid.Security.Subject object
+
+        @raises InvalidSubject: when the subject specified is not a
+        subclass of the AccessGrid.Security.Subject base class.
         """
         if not isinstance(subject, Subject):
-            return InvalidSubject
+            raise InvalidSubject
 
-        print "Adding Subject to Role (%s) : %s\n"  % (self.name, subject)
         self.subjects.append(subject)
 
     def RemoveSubject(self, subject):
+        """
+        This method removes the specified subject from the role.
+
+        @param subject: the subject to be removed.
+        @type subject: AccessGrid.Security.Subject object
+
+        @raises InvalidSubject: when the subject passed in not a
+        subclass of the AccessGrid.Security.Subject base class.
+        """
         if not isinstance(subject, Subject):
-            return InvalidSubject
+            raise InvalidSubject
 
         di = GetApplication().GetCertificateManager().GetDefaultIdentity()
 
@@ -119,11 +186,28 @@ class Role:
         self.subjects.remove(subject)
 
     def FindSubject(self, subjectName):
+        """
+        This method retrieves the subject for the specified name.
+
+        @param subjectName: a string representing the subject.
+        @type subjectName: string
+
+        @returns: an AccessGrid.Security.Subject object or None.
+        """
         for s in self.subjects:
             if s.GetName() == subjectName:
                 return s
-            
+        return None
+    
     def HasSubject(self, subject):
+        """
+        Thie method verifies that a subject is in this Role.
+
+        @param subject: the subject to be verified.
+        @type subject: an AccessGrid.Security.Subject object.
+
+        @return: 0 if not in this Role, 1 if in this Role.
+        """
         if issubclass(subject, Subject):
             return InvalidSubject
 
@@ -132,112 +216,27 @@ class Role:
         else:
             return 0
 
-    """
-    Methods from previous implementation that try to do alot of type
-    interpretation.
-    """
-    
-    def AddSubjectOld(self, subject):
-        """
-        Accepts strings, Subjects, or X509Name.
-        Converts X509Names to Subjects before adding.
-        """
-        if type(subject) == type(""):
-            if len(subject) == 0:
-                return # don't append zero length strings
-
-        subject_to_add = subject
-        # Convert X509Name to Subject
-        if type(subject) == X509NameType:
-            subject_to_add = Subject(str(subject), AUTH_X509)
-
-        for s in self.subjects:
-            if isinstance(s, Subject):
-                if s.IsUser(subject_to_add):
-                    return
-            elif isinstance(subject_to_add, Subject):
-                if subject_to_add.IsUser(s):
-                    return
-            # If they are both strings
-            elif type(s) == type(subject_to_add):
-                if s == subject_to_add:
-                    return 
-            else:
-                # Soap gives errors when sending the type of a variable
-                #  as a string so strip out punctuation characters.
-                strng = ""
-                for a in str(type(subject_to_add)):
-                    if not a in string.punctuation or a == "_":
-                        strng += a
-                raise InvalidSubjectTypeError(strng)
-               
-        self.subjects.append(subject_to_add)
-
-    def RemoveSubjectOld(self, subject):
-        subject_to_remove = subject
-        # Convert X509Name to Subject
-        if type(subject) == X509NameType:
-            subject_to_remove = Subject(str(subject), AUTH_X509)
-
-        for i in range(len(self.subjects)-1, -1, -1):
-            if isinstance(self.subjects[i], Subject):
-                if self.subjects[i].IsUser(subject_to_remove):
-                    del self.subjects[i]
-            elif self.subjects[i] == subject_to_remove:
-                del self.subjects[i]
-
-    def HasSubjectOld(self, subject):
-        test_subject = subject
-        # Convert X509Name to Subject
-        if type(subject) == X509NameType:
-            test_subject = Subject(str(subject), AUTH_X509)
-
-        for s in self.subjects:
-            if isinstance(s, Subject):
-                if s.IsUser(test_subject):
-                    return 1
-            if isinstance(test_subject, Subject):
-                if test_subject.IsUser(s):
-                    return 1
-            elif s == test_subject:
-                    return 1
-        return 0
-
-    def GetSubjectListAsStringsOld(self):
-        """
-        Return a subject list in a more readable and parasable
-        version.
-        """
-        subjectStringList = []
-        for subj in self.GetSubjectList():
-            if type(subj) == type(""):
-                # print "Match on string ", subj
-                subjectStringList.append(subj)
-            elif type(subj) == type(()): 
-            # print "Match on tuple ", self.GetSubject()
-                subjectStringList.append(subj[1])
-            elif isinstance(subj, Subject):
-                # print "match on obj ", self.GetSubject()
-                subjectStringList.append(subj.GetName())
-            # X509Name shouldn't be found here, but just in case.
-            elif type(subj) == X509NameType:
-                subjectStringList.append(str(subj))
-                log.warn("AccessGrid.hosting.AccessControl.Role.GetSubjectListAsStrings() found X509NameType")
-            else:
-                # Soap errors when sending the type of a variable
-                #  as a string so strip out not alpha characters.
-                strng = ""
-                for a in str(type(subj)):
-                    if not a in string.punctuation or a == "_":
-                        strng += a
-                raise InvalidSubjectTypeError(strng)
-        return subjectStringList
-
 class AllowRole(Role):
+    """
+    The AllowRole is used to create allowable roles.
+
+    Example: UsersAllowedInVenue
+
+    @cvar TYPE: the type of role this is.
+    @type TYPE: string
+    """
     TYPE = "Allow"
     pass
 
 class DenyRole(Role):
+    """
+    The DenyRole class is used to create denial roles.
+
+    Example: UsersNotAllowedInVenue
+
+    @cvar TYPE: the type of role this is.
+    @type TYPE: string
+    """
     TYPE = "Deny"
     pass
 
