@@ -11,17 +11,8 @@
 # Also need to modify setup.py to change the version there to match
 # this snapshot version.
 #
-import sys
-import os
-import time
-import getopt
-import shutil
-import win32api
-import _winreg
-import logging
+import sys, os, time
 from optparse import OptionParser
-
-from win32com.shell import shell, shellcon
 
 # Source Directory
 #  We assume the following software is in this directory:
@@ -57,8 +48,6 @@ parser.add_option("-m", "--meta", dest="metainfo", metavar="METAINFO",
 parser.add_option("--no-checkout", action="store_true", dest="nocheckout",
                   default=0,
                   help="A flag that indicates the snapshot should be built from a previously exported source directory.")
-parser.add_option("-i", "--innopath", dest="innopath", metavar="INNOPATH",
-                  default="", help="The path to the isxtool.")
 parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
                   default=0,
                   help="A flag that indicates to build verbosely.")
@@ -144,65 +133,17 @@ os.system("%s install --prefix=%s --no-compile" % (cmd, DestDir))
 os.chdir(s)
 
 #
-# PLATFORM DEPENDENT CODE BELOW HERE
+# Build packages according to the command line
 #
 
-# Run precompile scripts
+pkg_script = "build_package.py"
+NextDir = os.path.join(RunDir, options.bdir)
+os.chdir(NextDir)
+os.system("%s %s -s %s -b %s -d %s -p %s -m %s -v %s" % (sys.executable,
+                                                         pkg_script, SourceDir,
+                                                         BuildDir, DestDir,
+                                                         options.pyver,
+                                                         metainfo,
+                                                         version))
 
-for cmd in [
-    "BuildVic.cmd",
-    "BuildRat.cmd",
-    # I have decided we'll assume these are built *outside* of our build
-    # process, so we don't build globus in either packaging anymore.
-    #"BuildGlobus.cmd",
-    "BuildPythonModules.cmd"
-    ]:
-    cmd = "%s %s %s %s %s" % (cmd, SourceDir, BuildDir, DestDir, options.pyver)
-    if options.verbose:
-        print "BUILD: Running: %s" % cmd
-
-    os.system(cmd)
-
-# Grab innosetup from the environment
-try:
-    ipreg = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
-                            "Software\\Bjornar Henden\\ISTool4\\Prefs")
-    innopath, type = _winreg.QueryValueEx(ipreg, "InnoFolder")
-    ip = os.path.join(innopath, "iscc.exe")
-    inno_compiler = win32api.GetShortPathName(ip)
-except WindowsError:
-    print "BUILD: Couldn't find iscc from registry key." 
-    
-    # If still not found, try default path:
-    innopath = r"\Program Files\ISTool 4"
-    inno_compiler = os.path.join(innopath, "iscc.exe")
-
-# Innosoft config file names
-iss_orig = "agtk.iss"
-
-# Location of the Inno compiler
-if options.innopath != "":
-    # It was set on the command line
-    inno_compiler = os.path.join(options.innopath, "iscc.exe")
-    if options.verbose:
-        if os.path.exists(inno_compiler):
-            print "BUILD: Found ISXTool in default path:", inno_compiler
-        else:
-            print "BUILD: Couldn't find ISXTool!"
-            print "BUILD:   Make sure My Inno Setup Extentions are installed."
-            print "BUILD:   If necessary, specify the location of iscc.exe "
-            print "BUILD:   with command-line option -i."
-            sys.exit()
-
-# Add quotes around command.
-iscc_cmd = "%s %s /dAppVersion=\"%s\" /dVersionInformation=\"%s\" \
-            /dSourceDir=\"%s\" /dBuildDir=\"%s\" /dPythonVersion=\"%s\"" % \
-            (inno_compiler, iss_orig, version, metainfo.replace(' ', '_'), \
-             SourceDir, DestDir, options.pyver)
-
-if options.verbose:
-    print "BUILD: Executing:", iscc_cmd
-
-# Compile the installer
-os.system(iscc_cmd)
 
