@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.49 2004-03-18 14:09:04 turam Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.50 2004-03-19 20:44:10 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.49 2004-03-18 14:09:04 turam Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.50 2004-03-19 20:44:10 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import isWindows, isLinux, isOSX
@@ -32,7 +32,7 @@ from AccessGrid import icons
 from AccessGrid.Utilities import SubmitBug, VENUE_CLIENT_LOG
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Version import GetVersion
-from AccessGrid.Platform.Config import UserConfig
+from AccessGrid.Platform.Config import UserConfig, AGTkConfig
 
 class MessageDialog:
     def __init__(self, frame, text, text2 = "", style = wxOK|wxICON_INFORMATION):
@@ -207,7 +207,8 @@ class AboutDialog(wxDialog):
         '''
         Read COPYING.txt file from shared document directory.
         '''
-        path = os.path.join(GetSharedDocDir(), '../COPYING.txt')
+        config = AGTkConfig.instance()
+        path = os.path.join(config.GetDocDir(), '../COPYING.txt')
         licenseFile = file(os.path.normpath(path))
         self.licenseText = licenseFile.read() 
         licenseFile.close()
