@@ -6,19 +6,20 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: AuthorizationUI.py,v 1.22 2004-07-27 22:15:50 eolson Exp $ 
+# RCS_ID:      $Id: AuthorizationUI.py,v 1.23 2004-07-28 23:05:01 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: AuthorizationUI.py,v 1.22 2004-07-27 22:15:50 eolson Exp $"
+__revision__ = "$Id: AuthorizationUI.py,v 1.23 2004-07-28 23:05:01 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
 import copy
 import xml.dom.minidom
 
+from wx import VERSION as WXVERSION
 from wxPython.wx import *
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from wxPython.wizard import *
@@ -224,7 +225,11 @@ class AuthorizationUIPanel(wxPanel):
         if self.tree.GetChildrenCount(self.root)> 0:
             self.tree.SortChildren(self.root)
 
-        firstItem, cookie = self.tree.GetFirstChild(self.root)
+        cookie = 0
+        if WXVERSION[0] <= 2 and WXVERSION[1] <= 4:
+            firstItem, cookie = self.tree.GetFirstChild(self.root, cookie)
+        else:
+            firstItem, cookie = self.tree.GetFirstChild(self.root)
         self.tree.SelectItem(firstItem)
 
         currentItem = self.tree.GetSelection()
