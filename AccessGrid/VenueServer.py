@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.6 2003-01-14 18:44:12 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.7 2003-01-14 19:39:25 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -198,6 +198,12 @@ class VenueServer(ServiceBase.ServiceBase):
         
     RemoveAdminstrator.pass_connection_info = 1
     RemoveAdminstrator.soap_export_as = "RemoveAdminstrator"
+    
+    def GetAdminstrators(self, connectionInfo):
+        """ """
+        return self.administrators
+    GetAdminstrators.pass_connection_info = 1
+    GetAdminstrators.soap_export_as = "GetAdminstrators"
     
     def AddService(self, connectionInfo, serviceDescription):
         """ """
