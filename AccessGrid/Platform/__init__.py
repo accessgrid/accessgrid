@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.4 2004-03-12 05:23:12 judson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.5 2004-03-24 21:25:08 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 Platform sub modules.
 """
-__revision__ = "$Id: __init__.py,v 1.4 2004-03-12 05:23:12 judson Exp $"
+__revision__ = "$Id: __init__.py,v 1.5 2004-03-24 21:25:08 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # mechanisms to support multiple hosting environments and to set defaults
@@ -53,14 +53,10 @@ if isWindows():
     from AccessGrid.Platform.win32 import Config as Config
     from AccessGrid.Platform.win32 import PersonalNode as PersonalNode
     from AccessGrid.Platform.win32 import ProcessManager as ProcessManager
-elif isLinux():
-    from AccessGrid.Platform.linux2 import Config as Config
-    from AccessGrid.Platform.linux2 import PersonalNode as PersonalNode
-    from AccessGrid.Platform.linux2 import ProcessManager as ProcessManager
-elif isOSX():
-    from AccessGrid.Platform.darwin import Config as Config
-    from AccessGrid.Platform.darwin import PersonalNode as PersonalNode
-    from AccessGrid.Platform.darwin import ProcessManager as ProcessManager
+elif isLinux() or isOSX():
+    from AccessGrid.Platform.unix import Config as Config
+    from AccessGrid.Platform.unix import PersonalNode as PersonalNode
+    from AccessGrid.Platform.unix import ProcessManager as ProcessManager
 else:
     log.warn("Platform doesn't have a platform-specific module for %s",
              sys.platform)
