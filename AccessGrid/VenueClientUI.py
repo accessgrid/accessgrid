@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.18 2004-03-16 22:46:57 eolson Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.19 2004-03-16 23:31:01 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.18 2004-03-16 22:46:57 eolson Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.19 2004-03-16 23:31:01 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -2409,9 +2409,7 @@ class VenueList(wxScrolledWindow):
             item.Show()
         self.SetScrollRate(1, 1)
         
-    def GoToNewVenue(self, event):
-        id = event.GetId()
-
+    def GoToNewVenue(self, event, id):
         if(self.exitsDict.has_key(id)):
             description = self.exitsDict[id]
             self.app.EnterVenueCB(description.uri)
@@ -2472,7 +2470,7 @@ class ExitPanel(wxPanel):
         '''
         Move client to a new venue
         '''
-        self.parent.GoToNewVenue(event)
+        self.parent.GoToNewVenue(event, self.GetButtonId())
 
     def OnRightClick(self, event):
         '''
@@ -3400,15 +3398,24 @@ class TextClientPanel(wxPanel):
         # Someone is writing a message
         else:
             # Set names bold
-            f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
-            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
+            if isOSX():  # Work around osx font bug.
+                self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
+            else:
+                f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxBOLD)
+                self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
             self.textOutput.AppendText(name)
 
             # Set text normal
-            f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxNORMAL)
-            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
+            if isOSX():  # Work around osx font bug.
+                self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
+            else:
+                f = wxFont(wxDEFAULT, wxNORMAL, wxNORMAL, wxNORMAL)
+                self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
             self.textOutput.AppendText(message+'\n')
-            self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
+            if isOSX():  # Work around osx font bug.
+                self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK))
+            else:
+                self.textOutput.SetDefaultStyle(wxTextAttr(wxBLACK, font = f))
 
         if isWindows():
             # Scrolling is not correct on windows when I use
