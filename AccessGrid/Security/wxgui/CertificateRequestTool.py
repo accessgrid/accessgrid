@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.5 2004-04-16 20:33:21 olson Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.6 2004-04-21 21:39:08 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -228,7 +228,8 @@ class CertificateRequestTool(wxWizard):
                         
                     next.SetText(certInfo, password)
                     next.SetPrev(page)
-                next.OnPageShow()
+                if next:
+                    next.OnPageShow()
                 
         elif dir == backward:
             self.log.debug("ChangingPage: Go back from %s to %s"
