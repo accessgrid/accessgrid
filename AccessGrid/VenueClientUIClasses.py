@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.96 2003-03-24 20:26:12 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.97 2003-03-24 20:28:06 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -27,7 +27,6 @@ from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import MyLog 
-#from AccessGrid.TextClientUI import TextClientPanel
 
 # for TextClientPanel
 from AccessGrid.TextClient import SimpleTextProcessor
