@@ -69,8 +69,11 @@ Source: Scripts\VenueClient.py; DestDir: {app}; Components: Venue_Client
 Source: Scripts\VenueManagement.py; DestDir: {app}; Components: Venue_Server
 Source: Scripts\VenueServer.py; DestDir: {app}; Components: Venue_Server
 Source: Scripts\VenuesServerRegistry.py; DestDir: {app}; Components: Venue_Server
+Source: ..\AG-vic-Build\bin\*.*; DestDir: {app}; Components: Video_Consumer Video_Producer
+Source: ..\rat-4.2.22-Build\*.*; DestDir: {app}; Components: Audio_Service
 Source: doc\*.*; DestDir: {app}\Documentation
 Source: ..\AccessGrid\packaging\windows\Postinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
+Source: ..\AccessGrid\packaging\windows\AGNodeServicePostinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
 
 [Icons]
 Name: {group}\Venue Client; Filename: {app}\VenueClient.py; WorkingDir: {app}; IconFilename: {app}\VenueClient.py; Components: Venue_Client
@@ -87,7 +90,7 @@ Name: {group}\Documentation\License; Filename: {app}\COPYING.txt
 [Registry]
 Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}; Flags: uninsdeletekey
 Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: ConfigPath; ValueData: {app}\config; Flags: uninsdeletekey
-Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: UserConfigPath; ValueData: %USERPROFILE%\Application Data\AccessGridToolkit\config; Flags: uninsdeletekey
+Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: UserConfigPath; ValueData: %USERPROFILE%\Application Data\Access Grid Toolkit\config; Flags: uninsdeletekey
 
 [Types]
 
@@ -101,7 +104,8 @@ WelcomeLabel2=This will install the [name/ver] on your computer.%n%nIt is strong
 
 [Run]
 Filename: {app}\config\Postinstall.py; Flags: shellexec
-Filename: {app}\SetupVideo.py; WorkingDir: {app}; Description: Setup what video devices will produce video streams; Components: Video_Producer; Flags: postinstall unchecked
+Filename: {app}\SetupVideo.py; WorkingDir: {app}; Description: Setup what video devices will produce video streams; Components: Video_Producer; Flags: postinstall unchecked shellexec
+Filename: {app}\config\AGNodeServicePostinstall.py; Flags: shellexec; Components: Venue_Client
 
 [UninstallDelete]
 Name: {reg:HKLM\Software\Python\PythonCore\2.2\PythonPath\win32com,|C:\Python22\Lib\site-packages}\AccessGrid; Type: filesandordirs
