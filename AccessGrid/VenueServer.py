@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.102 2003-09-23 15:44:40 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.103 2003-09-23 16:39:34 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.102 2003-09-23 15:44:40 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.103 2003-09-23 16:39:34 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -496,7 +496,7 @@ class VenueServer(ServiceBase.ServiceBase):
                                 value = cp.get(id, o)
                                 appImpl.app_data[o] = value
                 else:
-                    log.debug("No data to load for Venue %s", sec)
+                    log.debug("No applications to load for Venue %s", sec)
 
                 # Deal with services if there are any
                 try:
