@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.81 2004-09-07 18:58:30 turam Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.82 2004-09-07 19:51:45 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.81 2004-09-07 18:58:30 turam Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.82 2004-09-07 19:51:45 turam Exp $"
 
 # Standard imports
 import os
@@ -399,7 +399,7 @@ class Application(AppBase):
            cpath = os.path.join(self.globusConfig.GetDistCACertDir(), ca_cert)
            try:
                repo.ImportCertificatePEM(cpath)
-           except CertificateRepository.RepoInvalidCertificate, e:
+           except CertificateRepository.RepoInvalidCertificate:
                self.log.warn("Not importing cert %s", cpath)
            except:
                self.log.exception("Error during ca initialization.")
@@ -566,9 +566,9 @@ class Service(AppBase):
             return
 
         # Success! we can install the cert.
-        hash = md5.new(certText).hexdigest()
+        certhash = md5.new(certText).hexdigest()
         tempfile = os.path.join(UserConfig.instance().GetTempDir(), 
-				"%s.pem" % (hash))
+				"%s.pem" % (certhash))
 
         try:
             try:

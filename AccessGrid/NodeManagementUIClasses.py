@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.69 2004-08-11 20:35:20 lefvert Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.70 2004-09-07 19:49:05 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.69 2004-08-11 20:35:20 lefvert Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.70 2004-09-07 19:49:05 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -658,7 +658,7 @@ class NodeManagementClientFrame(wxFrame):
                 
                 # Handle error cases
                 if len( configName ) == 0:
-                    self.Error( "Invalid config name specified (%s)", configName )
+                    self.Error( "Invalid config name specified (%s)" % (configName,) )
                     return
 
                 # Confirm overwrite
@@ -1091,7 +1091,6 @@ class NodeManagementClientFrame(wxFrame):
             for index in indices:
                 self.services = AGServiceManagerIW( self.serviceManagers[index].uri ).GetServices()
                 for svc in self.services:
-                    svccfg = AGServiceIW(svc.uri).GetConfiguration()
                     itemindex = self.serviceList.InsertStringItem( i, svc.name )
                     self.serviceList.SetItemImage( itemindex, 0, 0 )
                     
@@ -1133,9 +1132,6 @@ class NodeManagementClientFrame(wxFrame):
         """
         Popup the service menu
         """
-        list = evt.GetEventObject()
-        # This does not work, bug?
-        # pos = list.ClientToScreen( evt.GetPoint() )
         pos = evt.GetPoint() + wxPoint(240, 20)
         self.PopupMenu(self.serviceMenu, pos)
 
@@ -1143,11 +1139,6 @@ class NodeManagementClientFrame(wxFrame):
         """
         Popup the service manager menu
         """
-        # Place the menu next to the mouse position.
-        list = evt.GetEventObject()
-        
-        # This does not work, bug?
-        #pos = list.ClientToScreen( evt.GetPoint() )
         pos = evt.GetPoint() + wxPoint(20, 20)
         self.PopupMenu(self.serviceManagersMenu, pos)
 
