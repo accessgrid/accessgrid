@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.125 2003-08-21 21:02:53 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.126 2003-08-21 23:01:40 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1015,7 +1015,8 @@ class Venue(ServiceBase.ServiceBase):
             
         elif self.netServices.has_key(priv):
             log.debug("Private id is in netservices list, authorizing")
-            self.netServices[priv].SetConnection(connObj)
+            netService = self.netServices[priv][0]
+            netService.SetConnection(connObj)
             authorized = 1
         else:
             log.debug("Private id is not client list, denying")
