@@ -5,13 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.14 2003-04-01 20:04:36 eolson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.15 2003-04-03 16:36:43 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 
 import os
 import sys
+import getpass
 
 import logging
 
@@ -148,6 +149,29 @@ def GetInstallDir():
         installDir = "/usr/bin"
 
     return installDir
+
+def GetTempDir():
+    """
+    Return a directory in which temporary files may be written.
+    """
+
+    if sys.platform == WIN:
+        return win32api.GetTempPath()
+    else:
+        return "/tmp"
+
+def GetUsername():
+
+    if sys.platform == WIN:
+        try:
+            user = win32api.GetUserName()
+            user.replace(" ", "")
+            return user
+        except:
+            pass
+
+    return getpass.getuser()
+
 
 def GetFilesystemFreeSpace(path):
     """
