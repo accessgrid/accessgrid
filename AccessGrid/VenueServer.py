@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.58 2003-04-03 22:05:39 olson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.59 2003-04-04 21:44:39 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -243,21 +243,6 @@ class VenueServer(ServiceBase.ServiceBase):
                         sd = StreamDescription(name, desc, l, c)
                         v.AddStream(sd)
 
-                for d in string.split(cp.get(sec, 'data'), ':'):
-                    if len(d) != 0:
-                        DataDesc = DataDescription(cp.get(d, 'name'))
-                        DataDesc.SetStatus(cp.get(d, 'status'))
-                        DataDesc.SetSize(int(cp.get(d, 'size')))
-                        DataDesc.SetChecksum(cp.get(d, 'checksum'))
-                        DataDesc.SetOwner(cp.get(d, 'owner'))
-                        # This needs to be updated dynamically so we don't
-                        # Store a reference that's invalid later.
-                        # This might get trivial when we just ask the data
-                        # store to update itself per venue.
-                        DataDesc.uri = cp.get(d, 'uri')
-                        
-                        v.AddData(DataDesc)
-                    
     def _authorize(self):
         """
         """
