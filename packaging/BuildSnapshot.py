@@ -189,7 +189,8 @@ if sys.platform != 'darwin':
     os.system(cmd)
 
 if sys.platform == 'win32':
-    cmd = os.path.join(BuildDir, "tools", "MakeVfwScan.bat", DestDir)
+    cmd = "%s %s" % (os.path.join(BuildDir, "tools", "MakeVfwScan.bat"),
+                     DestDir)
     os.system(cmd)
      
 # Build the other python modules
