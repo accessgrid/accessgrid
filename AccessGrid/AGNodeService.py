@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.69 2004-05-12 17:14:18 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.70 2004-05-12 21:03:14 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.69 2004-05-12 17:14:18 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.70 2004-05-12 21:03:14 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -378,7 +378,6 @@ class AGNodeService:
             def __init__(self):
                 self.packageName = None
                 self.resource = None
-                self.executable = None
                 self.parameters = None
 
         # Read config file
