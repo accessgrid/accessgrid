@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.35 2003-09-16 07:20:17 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.36 2003-10-13 21:33:31 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.35 2003-09-16 07:20:17 judson Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.36 2003-10-13 21:33:31 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -48,7 +48,6 @@ class AGServiceManager( ServiceBase ):
         # note: services dict is keyed on pid
         self.services = dict()
         self.authManager = AuthorizationManager()
-        self.executable = None
         self.processManager = ProcessManager()
 
         self.servicesDir = os.path.join(Platform.GetUserConfigDir(),"local_services")
