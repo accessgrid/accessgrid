@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.290 2003-09-24 18:50:24 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.291 2003-09-25 20:28:19 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.290 2003-09-24 18:50:24 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.291 2003-09-25 20:28:19 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1153,10 +1153,10 @@ class VenueClientFrame(wxFrame):
             if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
                     text = "You are not authorized to administrate this venue.\n"
                     MessageDialog(None, text, "Not Authorized", style=wxOK|wxICON_WARNING)
-                    log.info("OpenModifyVenueRolesDialog: Not authorized to administrate roles in this venue %s." % venueUri)
+                    log.info("OpenModifyVenueRolesDialog: Not authorized to administrate roles in this venue %s." % str(venueUri))
             else:
-                log.exception("OpenModifyVenueRolesDialog: Error administrating roles in this venue %s." % venueUri)
-                text = "Error administrating roles in this venue " + venueUri + "."
+                log.exception("OpenModifyVenueRolesDialog: Error administrating roles in this venue %s." % str(venueUri))
+                text = "Error administrating roles in this venue " + str(venueUri) + "."
                 ErrorDialog(None, text, "Venue Role Administration Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_CLIENT_LOG)
 
     def CleanUp(self):
