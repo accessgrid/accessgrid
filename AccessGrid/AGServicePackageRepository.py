@@ -3,7 +3,7 @@
 # Purpose:     
 #
 # Created:     2004/03/30
-# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.9 2004-05-04 18:57:49 turam Exp $
+# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.10 2004-05-06 17:52:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -120,11 +120,14 @@ class AGServicePackageRepository:
                 try:
                     servicePkg = AGServicePackage(os.path.join(self.servicesDir,file))
                     
-                    # Minimal test to validate service package
-                    servicePkg.GetServiceDescription()
+                    # Set the service package url in the service description
+                    sd = servicePkg.GetServiceDescription()
+                    sd.servicePackageUri = self.GetPackageUrl(file)
+                    servicePkg.SetServiceDescription(sd)
                     
                     servicePackages.append(servicePkg)
                 except:
+                    log.exception("Invalid service package: %s", file)
                     invalidServicePackages += 1
                     
         if invalidServicePackages:
