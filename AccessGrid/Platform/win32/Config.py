@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.32 2004-04-21 21:37:24 olson Exp $
+# RCS-ID:      $Id: Config.py,v 1.33 2004-04-23 16:48:14 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.32 2004-04-21 21:37:24 olson Exp $"
+__revision__ = "$Id: Config.py,v 1.33 2004-04-23 16:48:14 eolson Exp $"
 
 import os
 import sys
@@ -818,7 +818,7 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
             
         return proxies
 
-    def FileSystemFreeSpace(self, path):
+    def GetFileSystemFreeSpace(self, path):
         """
         Retrieve the amount of free space on the file system the path is
         housed on.

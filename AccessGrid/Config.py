@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.11 2004-04-23 15:28:54 olson Exp $
+# RCS-ID:      $Id: Config.py,v 1.12 2004-04-23 16:48:14 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.11 2004-04-23 15:28:54 olson Exp $"
+__revision__ = "$Id: Config.py,v 1.12 2004-04-23 16:48:14 eolson Exp $"
 
 import os
 import sys
@@ -370,7 +370,7 @@ class SystemConfig:
         str = "System Configuration:\n"
         str += "Temp Dir: %s\n" % self.GetTempDir()
         str += "HTTP Proxy Settings: %s\n" % self.GetProxySettings()
-        str += "F/S Free Space(/): %s\n" % self.FileSystemFreeSpace("/")
+        str += "F/S Free Space(/): %s\n" % self.GetFileSystemFreeSpace("/")
         str += "Username: %s\n" % self.GetUsername()
         str += "Local IP Address: %s\n" % self.GetLocalIPAddress()
         str += "Local Network Interfaces:\n"
@@ -408,7 +408,7 @@ class SystemConfig:
         err_str = "This should not be called directly, but through a subclass."
         raise Exception(err_str)
 
-    def FileSystemFreeSpace(self, path):
+    def GetFileSystemFreeSpace(self, path):
         """
         Retrieve the amount of free space on the file system the path is
         housed on.
