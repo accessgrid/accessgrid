@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.40 2003-09-16 07:20:17 judson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.41 2003-09-17 21:53:39 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.40 2003-09-16 07:20:17 judson Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.41 2003-09-17 21:53:39 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -712,7 +712,8 @@ class AGNodeService( ServiceBase ):
         """
         from AccessGrid.Utilities import SaveConfig
 
-        configFile = os.path.join(self.configDir, AGNodeService.NodeConfigFile)
+        configDir = Platform.GetUserConfigDir()
+        configFile = os.path.join(configDir, AGNodeService.NodeConfigFile)
 
         log.info("Writing node service config file: %s" % configFile)
 
