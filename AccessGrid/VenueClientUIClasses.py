@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.115 2003-03-27 21:34:48 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.116 2003-03-31 21:46:55 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,7 +15,6 @@ import os.path
 import logging, logging.handlers
 import cPickle
 import threading
-#https://vv2.mcs.anl.gov:8880/Venues/000000f42ad619f1008c00dd000b0037fdf
 from wxPython.wx import *
 
 from AccessGrid import icons
@@ -28,13 +27,10 @@ from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.NodeManagementUIClasses import NodeManagementClientFrame
 from AccessGrid.UIUtilities import MyLog 
 
-# for TextClientPanel
 from AccessGrid.TextClient import SimpleTextProcessor
 from pyGlobus.io import GSITCPSocket
 from AccessGrid.hosting.pyGlobus.Utilities import CreateTCPAttrAlwaysAuth
 from AccessGrid.Events import ConnectEvent, TextEvent, DisconnectEvent
-
-#https://vv2.mcs.anl.gov:8880/Venues/000000f42b3dd2fc008c00dd000b0037a34
 
 class VenueClientFrame(wxFrame):
     
@@ -245,7 +241,7 @@ class VenueClientFrame(wxFrame):
         #self.serviceMenu.Enable(self.ID_VENUE_SERVICE_DELETE, false)
         self.applicationMenu.Enable(self.ID_VENUE_APPLICATION_ADD, false)
         self.applicationMenu.Enable(self.ID_VENUE_APPLICATION_DELETE, false)
-        self.meMenu.Enable(self.ID_ME_DATA, false)
+        #self.meMenu.Enable(self.ID_ME_DATA, false)
         
       
     def HideMenu(self):
@@ -582,7 +578,6 @@ class VenueClientFrame(wxFrame):
         '''
         Called when the window is closed using the built in close button
         '''
-        print '------------------ exit'
         self.app.OnExit()
                      	      
     def UpdateLayout(self):
@@ -1180,13 +1175,11 @@ class ContentListPanel(wxPanel):
                 self.AddParticipant(description)
         
     def AddData(self, profile):
-        # ----------------- CHANGE HERE
-        #storageLocation = profile.dataLocation
-        storageLocation = 'venue'
-        # ----------------- 
-        
+        wxLogDebug("profile.type = %s" %profile.type)
+                
         #if venue data
-        if(storageLocation == 'venue'):
+        if(profile.type == 'None' or profile.type == None):
+            wxLogDebug("This is venue data")
             dataId = self.tree.AppendItem(self.data, profile.name, \
                                         self.defaultDataId, self.defaultDataId)
             self.tree.SetItemData(dataId, wxTreeItemData(profile)) 
@@ -1194,8 +1187,9 @@ class ContentListPanel(wxPanel):
             self.tree.Expand(self.data)
 
         #if personal data
-        else: 
-            id = storageLocation
+        else:
+            wxLogDebug("This is personal data")
+            id = profile.type
             if(self.participantDict.has_key(id)):
                 participantId = self.participantDict[id]
                 dataId = self.tree.AppendItem(participantId, profile.name, \
@@ -1204,16 +1198,23 @@ class ContentListPanel(wxPanel):
                 self.personalDataDict[profile.name] = dataId
        
     def UpdateData(self, profile):
+        id = None
+        
         #if venue data
+
         if(self.dataDict.has_key(profile.name)):
+            wxLogDebug("VenueManagementUIClasses::DataDict has data")
             id = self.dataDict[profile.name]
             
         #if personal data
         elif (self.personalDataDict.has_key(profile.name)):
+            wxLogDebug("VenueManagementUIClasses::Personal DataDict has data")
             id = self.personalDataDict[profile.name]
             
         if(id != None):
             self.tree.SetItemData(id, wxTreeItemData(profile))
+        else:
+            wxLogDebug("Id is none - that is not good")
                           
     def RemoveData(self, profile):
         #if venue data
