@@ -4,16 +4,18 @@
 # 
 # Author:      Susanne Lefvert 
 # 
-# Created:     $Date: 2005-01-06 23:20:45 $ 
-# RCS-ID:      $Id: Voyager.py,v 1.5 2005-01-06 23:20:45 lefvert Exp $ 
+# Created:     $Date: 2005-01-13 23:04:24 $ 
+# RCS-ID:      $Id: Voyager.py,v 1.6 2005-01-13 23:04:24 lefvert Exp $ 
 # Copyright:   (c) 2002 
 # Licence:     See COPYING.TXT 
 #----------------------------------------------------------------------------- 
- 
+
 import getopt 
 import sys 
 import time 
-import os 
+import os
+import string
+import zipfile
  
 from wxPython.wx import * 
 from ObserverPattern import Observer, Model 
@@ -24,6 +26,7 @@ from AccessGrid.Venue import VenueIW
 from AccessGrid.Platform.ProcessManager import ProcessManager 
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.Platform import IsWindows, IsLinux
+from AccessGrid.GUID import GUID
 
 class Recording: 
     ''' 
@@ -37,14 +40,19 @@ class Recording:
         ''' 
         self.__name = name 
         self.__description = description
-
-        # Always set start time since that is the key for
-        # recordings
-        self.__startTime = int(time.mktime(time.localtime()))
+        self.__id = str(GUID()) # unique key for a recording
+        self.__startTime = time.mktime(time.localtime())
         self.__stopTime = None 
         self.__venueUrl = venueUrl
        
     def Save(self, path):
+        '''
+        Write the recording config to file.
+
+        **Arguments**
+        
+        *path* path to the recording file (string)
+        '''
         # Write config file to path
         config = {}
         config['Recording.name'] = self.__name
@@ -52,21 +60,69 @@ class Recording:
         config['Recording.startTime'] = self.__startTime
         config['Recording.stopTime'] = self.__stopTime
         config['Recording.venueUrl'] = self.__venueUrl
+        config['Recording.id']= self.__id
         
         SaveConfig(path, config)
 
     def LoadRecording(path):
+        '''
+        Static method to load a recording from file.
+        
+        **Arguments**
+
+        *path* path where recording config file is located (string)
+
+        **Returns**
+
+        *recording* the loaded recording (Recording)
+        '''
         config = LoadConfig(path)
         r = Recording(config["Recording.name"],
                       config["Recording.description"],
                       config["Recording.venueUrl"])
-        r.SetStartTime(int(config["Recording.startTime"]))
-        r.SetStopTime(int(config["Recording.stopTime"]))
+        r.SetStartTime(config["Recording.startTime"])
+        r.SetStopTime(config["Recording.stopTime"])
+        r.SetId(config["Recording.id"])
         return r
 
     # Makes it possible to access the method without an instance.
     LoadRecording = staticmethod(LoadRecording)
+
+    def ExportToZipFile(self, path, archivePath):
+        '''
+        Export recording to zip file.
+
+        **Arguments**
         
+        *path* path where recording is located. (string)
+        *archivePath* path to the zip archive to export to. (string)
+        '''
+        log.debug("VoyagerModel.ExportToZipFile: write %s to archive %s"%(self.__name, archivePath))
+
+        # Get recorded files
+        dir = self.GetId()
+        recordingPath = os.path.join(path, str(dir))
+        
+        # open the zip file for writing
+        if os.path.isdir(recordingPath):
+            file = zipfile.ZipFile(archivePath, "w")
+
+            files = os.listdir(recordingPath)
+            for f in files:
+                path = os.path.join(recordingPath, f)
+                        
+                # Write recorded files to zip archive
+                if os.path.isfile(path):
+                    file.write(str(path), str(f))
+                else:
+                    log.error("Recording.WriteToZipFile: This is not a file"
+                              %path)
+                    
+            file.close()
+        else:
+            log.error("Recording.WriteToZipFile: This is not a directory"
+                      %recordingPath)
+                  
     # Set methods 
  
     def SetName(self, name): 
@@ -74,31 +130,29 @@ class Recording:
 
     def SetDescription(self, desc):
         self.__description = desc
-
+   
     def SetStartTime(self, startTime = None):
-        # Be careful not to change the start time
-        # on a recording since this is the unique
-        # key.  The start time is automatically set
-        # when a recording is created so you should
-        # not have to set this parameter.
-
         if startTime != None:
-            self.__startTime = int(startTime)
+            self.__startTime = float(startTime)
         else:
-            # Convert to int so we can use this value as key in the ui.
-            self.__startTime = int(time.mktime(time.localtime()))
+            self.__startTime = time.mktime(time.localtime())
                      
     def SetStopTime(self, stopTime = None):
         if stopTime:
-            self.__stopTime = int(stopTime)
+            self.__stopTime = float(stopTime)
         else:
-            # Convert to int so we can use this value as key in the ui.
-            self.__stopTime = int(time.mktime(time.localtime()))
+            self.__stopTime = time.mktime(time.localtime())
+
+    def SetId(self, id):
+        self.__id = id
  
     # Get methods 
  
     def GetVenueUrl(self): 
         return self.__venueUrl 
+
+    def GetId(self):
+        return self.__id
          
     def GetStartTime(self):
         return self.__startTime 
@@ -142,25 +196,29 @@ class VoyagerModel(Model):
         self.__currentRecording = None 
         self.__recordings = {}
         self.__playbackVenueUrl = None
+
         homePath = None
+        name = None
         
         if IsWindows():
             from win32com.shell import shell, shellcon
             homePath = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
+            name = "Voyager"
 
         elif IsLinux():
             homePath = os.environ['HOME']
+            name = ".Voyager"
              
         else:
-            log.debug("VoyagerModel.__init__: Voyager only supports windows and linux for now.")
+            self.__log.debug("VoyagerModel.__init__: Voyager only supports windows and linux for now.")
             sys.exit(-1)
             
         if not homePath:
-            log.debug("VoyagerModel.__init__: Home path not found")
+            self.__log.debug("VoyagerModel.__init__: Home path not found")
             sys.exit(-1)
        
         self.__path = os.path.join(homePath, 
-                                   "Voyager") 
+                                   name) 
         self.__processManager = ProcessManager() 
  
         if not os.path.exists(self.__path): 
@@ -168,26 +226,167 @@ class VoyagerModel(Model):
  
         self.__log.debug("VoyagerModel.__init__: Persistence path: %s"
                          %(self.__path)) 
-
         self.__LoadRecordings()
                
     def __LoadRecordings(self): 
         ''' 
         Load recordings from file. 
         '''
-
         # For each directory in the voyager path
         # load description config file and create a
         # recording.
-        
+
+        if not os.path.exists(self.__path):
+            self.__log.error("VoyagerModel.__LoadRecordings: home path does not exist %s"%(self.__path))
+                      
         dirs = os.listdir(self.__path)
         for dir in dirs:
             path = os.path.join(self.__path, dir)
             if os.path.isdir(path):
-                rFile = os.path.join(path, "Recording")
+                rFile = os.path.join(path, dir +".txt")
                 if os.path.isfile(rFile):
                     recording = Recording.LoadRecording(rFile)
-                    self.__recordings[recording.GetStartTime()] = recording
+                    self.__recordings[recording.GetId()] = recording
+                else:
+                    self.__log.error("VoyagerModel.__LoadRecordings: This is not a file %s"%rFile)
+            else:
+                self.__log.error("VoyagerModel.__LoadRecordings: This is not a directory %s"%path)
+
+    def GetRecordingFromZipFile(self, archivePath):
+        '''
+        Get a recording instance from a zip file.
+
+        **Arguments**
+
+        *archivePath* Path to the archive to examine (string)
+        '''
+        # Open zip file
+        dirName = None
+        try:
+            self.__log.debug("VoyagerModel.ImportFromZipFile: open zipfile %s"%archivePath)
+            file = zipfile.ZipFile(archivePath, "r")
+        except:  
+            self.__log.error("VoyagerModel.ImportFromZipFile: bad zip file %s"%archivePath)
+            raise Exception, "VoyagerModel.ImportFromZipFile: failed to import zip archive"
+            
+        # Read files
+        for name in file.namelist():
+            self.__log.debug("VoyagerModel.ImportFromZipFile: examine %s in %s"%(name, archivePath))
+            if name.endswith(".txt"): 
+                # The description file is named after the
+                # unique id of the recording.
+                dirName = name.split(".")[0]
+
+        file.close()
+
+        if dirName:
+            path = os.path.join(self.__path, dirName, dirName+".txt")
+            if os.path.exists(path):
+                recording = Recording.LoadRecording(path)
+                return recording
+            else:
+                return None
+        else:
+            self.__log.error("Could not get id from zip file %s"%archivePath)
+            raise Exception, "Could not get id from zip file %s"%archivePath
+                    
+
+    def ExportToZipFile(self, recordings, archivePath):
+        '''
+        Export a recording to a zip file.
+
+        **Arguments**
+        
+        *recordings* list of recording instances to export (Recording)
+
+        *archivePath* path to the zip archive (string)
+        '''
+        for recording in recordings:
+            recording.ExportToZipFile(self.__path, archivePath)
+
+    def ImportFromZipFile(self, archivePath):
+        '''
+        Import a recording from a zip file.
+
+        **Arguments**
+        
+        *archivePath* Path to the zip archive to import. (string)
+        '''
+        self.__log.debug("VoyagerModel.ImportFromZipFile: Import from zip archive %s"%(archivePath))
+
+        # Open zip file
+        self.__log.debug("VoyagerModel.ImportFromZipFile: open zipfile %s"%archivePath)
+        file = zipfile.ZipFile(archivePath, "r")
+            
+        # Read files
+        for name in file.namelist():
+            self.__log.debug("VoyagerModel.ImportFromZipFile: examine %s in %s"%(name, archivePath))
+            if name.endswith(".txt"): 
+                # The description file is named after the
+                # unique id of the recording.
+                dirName = name.split(".")[0]
+                descFileName = name
+                descFile = file.read(name)
+                
+            elif name.endswith("video.rtp"):
+                videoFileName = name
+                videoFile = file.read(name)
+                
+            elif name.endswith("audio.rtp"):
+                audioFileName = name
+                audioFile = file.read(name)
+                                    
+            else:
+                self.__log.error("VoyagerModel.ImportFromZipFile: Wrong file format for voyager %s"%name)
+                
+        file.close()
+
+        if not dirName:
+            self.__log("there is no description file %s present in this zip file, import failed."%(dirName))
+            return
+
+        # Save files in voyager directory named after
+        # unique id of recording.
+        newDir = os.path.join(self.__path, dirName)
+        self.__log.debug("VoyagerModel.ImportFromZipFile: Import files to %s"%self.__path)
+      
+        if not os.path.exists(newDir):
+            os.mkdir(newDir)
+              
+        # Try to write the files
+        descFilePath = os.path.join(newDir, descFileName)
+        f = open(descFilePath, "w" )
+        f.write(str(descFile))
+        f.close()
+        
+        videoFilePath = os.path.join(newDir, videoFileName)
+        f = open(videoFilePath, "w")
+        f.write(str(videoFile))
+        f.close()
+
+        audioFilePath = os.path.join(newDir, audioFileName)
+        f = open(audioFilePath, "w")
+        f.write(str(audioFile))
+        f.close()
+        
+        # Create  a recording object
+        recording = Recording.LoadRecording(descFilePath)
+        self.__recordings[recording.GetId()] = recording
+        self.NotifyObservers()
+
+    def UpdateRecording(self, recording):
+        '''
+        Update data for a recording
+
+        **Arguments**
+        
+        *recording* The new recording instance (Recording)
+        '''
+        # Unique ID remains the same.
+        self.__recordings[recording.GetId()] = recording
+        self.SaveRecording(recording)
+
+        self.NotifyObservers()
 
     def SaveRecording(self, recording): 
         ''' 
@@ -198,8 +397,9 @@ class VoyagerModel(Model):
         *recording* recording instance to save (Recording) 
         '''
         recordingPath = os.path.join(self.__path,
-                                     str(recording.GetStartTime())) 
-        descFile = os.path.join(recordingPath, "Recording")
+                                     str(recording.GetId()))
+        name = str(recording.GetId())+".txt"
+        descFile = os.path.join(recordingPath, name)
         recording.Save(descFile)
  
     def PlayInVenue(self, recording, venueUrl): 
@@ -213,10 +413,9 @@ class VoyagerModel(Model):
          
         *recording* the recording instance to play (Recording) 
         *venueUrl* venue address where we want to play the recording (string) 
-        ''' 
+        '''
         # Create a venue proxy and send video and audio to 
         # this venue's multicast addresses. 
-
         self.__playbackVenueUrl = venueUrl
         venueProxy = VenueIW(venueUrl) 
         streams = venueProxy.GetStreams() 
@@ -233,7 +432,7 @@ class VoyagerModel(Model):
  
         # Use rtpplay to transmit video and audio 
         recordingPath = os.path.join(self.__path,
-                                     str(recording.GetStartTime())) 
+                                     str(recording.GetId())) 
         
         #Usage:  rtpplay -T -f file host/port 
         rtpplay = "rtpplay" 
@@ -250,11 +449,10 @@ class VoyagerModel(Model):
                 "-f", aFile, 
                 l.host+"/"+str(port), 
             ]
-
             self.__log.debug("Starting process: %s %s"%(rtpplay, str(args))) 
             self.__processManager.StartProcess(rtpplay,args) 
  
-        else: 
+        else:
             self.__log.info("VoyagerModel.PlayInVenue: No audio stream present in %s"%(venueUrl)) 
            
         # Send video 
@@ -272,7 +470,7 @@ class VoyagerModel(Model):
             self.__log.debug("Starting process: %s %s"%(rtpplay, str(args))) 
             self.__processManager.StartProcess(rtpplay,args) 
                         
-        else: 
+        else:
             self.__log.info("VoyagerModel.PlayInVenue: No video stream present in %s"%(venueUrl)) 
  
         # Set state 
@@ -305,19 +503,19 @@ class VoyagerModel(Model):
         for s in streams: 
             c = s.capability 
             if c.role == "producer": 
-                if c.type == "audio": 
+                if c.type == "audio":
                     audioStream = s 
                 elif c.type == "video": 
                     videoStream = s 
  
         # Use rtpdump to record video and audio 
         recordingPath = os.path.join(self.__path,
-                                     str(recording.GetStartTime())) 
+                                     str(recording.GetId())) 
          
         # Create recording directory if it does not exist. 
         if not os.path.exists(recordingPath): 
             os.mkdir(recordingPath) 
- 
+
         # Record video. 
         if videoStream: 
             l = videoStream.location 
@@ -337,7 +535,7 @@ class VoyagerModel(Model):
             self.__log.debug("Starting process: %s %s"%(rtpdump, str(args))) 
             self.__processManager.StartProcess(rtpdump,args) 
  
-        else: 
+        else:
             self.__log.info("VoyagerModel.Record: No video stream present in %s"%(recording.GetVenueUrl())) 
           
         # Record audio 
@@ -354,10 +552,9 @@ class VoyagerModel(Model):
                 "-o", aFile, 
                 l.host+"/"+str(port), 
             ]
-
             self.__log.debug("Starting process: %s %s"%(rtpdump, str(args))) 
             self.__processManager.StartProcess(rtpdump,args) 
-        else: 
+        else:
             self.__log.info("VoyagerModel.Record: No audio stream present in %s"%(recording.GetVenueUrl())) 
             
         # Set state 
@@ -365,7 +562,7 @@ class VoyagerModel(Model):
         recording.SetDescription("Recording from %s"%(venueName))
         self.__status = self.RECORDING 
         self.__currentRecording = recording
-        self.__recordings[recording.GetStartTime()] = recording 
+        self.__recordings[recording.GetId()] = recording 
  
         # Update user interface 
         self.NotifyObservers() 
@@ -378,21 +575,20 @@ class VoyagerModel(Model):
  
         *recording* recording instance to remove (Recording) 
         '''
-
-        dir = os.path.join(self.__path, str(recording.GetStartTime()))
+        dir = os.path.join(self.__path, str(recording.GetId()))
        
         files = os.listdir(dir)
         for file in files:
             os.remove(os.path.join(dir, file))
                       
         os.rmdir(dir)
-        del self.__recordings[recording.GetStartTime()]
+        del self.__recordings[recording.GetId()]
         self.NotifyObservers() 
                         
     def Stop(self): 
         ''' 
         Stop either playback or a recording. 
-        ''' 
+        '''
         if self.__status == self.RECORDING: 
             self.__currentRecording.SetStopTime() 
             self.SaveRecording(self.__currentRecording) 
@@ -412,7 +608,7 @@ class VoyagerModel(Model):
  
         **Returns** 
         *recording* current recording (Recording) 
-        ''' 
+        '''
         return self.__currentRecording 
           
     def GetRecordings(self): 
@@ -432,11 +628,28 @@ class VoyagerModel(Model):
          
         *status* current status (VoyagerModel.PLAYING| 
         VoyagerModel.STOPPED| VoyagerModel.RECORDING) 
-        ''' 
+        '''        
         return self.__status 
 
     def GetPlaybackVenueUrl(self):
+        '''
+        Get the venue we are playing back in.
+
+        **Returns**
+        
+        *venueUrl* a venue url (string)
+        '''
         return self.__playbackVenueUrl
+
+    def GetPath(self):
+        '''
+        Returns base path for voyager.
+
+        **Returns**
+        
+        *path* voyager base path (string)
+        '''
+        return self.__path
                               
 class VoyagerUI(wxApp): 
     ''' 
@@ -473,21 +686,25 @@ class VoyagerUI(wxApp):
                  
 class VoyagerView(wxFrame, Observer): 
     ''' 
-    View for the moderator showing all sent and received questions. 
+    View for voyager containing ui components.
     '''
     RECORDING_MENU_REMOVE = wxNewId()
-    #RECORDING_MENU_PROPERTIES = wxNewId()
+    RECORDING_MENU_EXPORT = wxNewId()
+    RECORDING_MENU_EXPORT_ALL = wxNewId()
+    RECORDING_MENU_IMPORT = wxNewId()
+    RECORDING_MENU_PROPERTIES = wxNewId()
     
     def __init__(self, parent, voyagerModel, log): 
         ''' 
         Create ui components. 
         ''' 
-        wxFrame.__init__(self, NULL, -1, "Voyager", size = wxSize(420, 500)) 
+        wxFrame.__init__(self, NULL, -1, "Personal AG Recorder", size = wxSize(420, 500)) 
         Observer.__init__(self) 
  
         self.log = log 
         self.voyagerModel = voyagerModel 
-
+        self.intToGuid = {}
+        
         self.SetIcon(icons.getAGIconIcon()) 
         self.panel = wxPanel(self, -1)
         self.stopButton = wxButton(self.panel, wxNewId(), "Stop",
@@ -500,8 +717,8 @@ class VoyagerView(wxFrame, Observer):
                                       style= wxTE_MULTILINE | wxTE_READONLY | 
                                       wxTE_RICH, size = wxSize(-1, 32)) 
  
-        # Recordings are displayed in a list. They are keyed on the start time of the 
-        # recording which is also set as item data used for sorting. 
+        # Recordings are displayed in a list. They are keyed on the
+        # unique id returned from recording.GetId()
         self.recordingList = wxListCtrl(self.panel, wxNewId(),
                                         size = wxSize(150, 150), 
                                         style=wxLC_REPORT) 
@@ -516,12 +733,18 @@ class VoyagerView(wxFrame, Observer):
         self.recordingMenu = wxMenu()
         self.recordingMenu.Append(self.RECORDING_MENU_REMOVE, "Remove",
                                   "Remove this recording.")
-        #self.recordingMenu.Append(self.RECORDING_MENU_PROPERTIES, "Properties", "View recording details.")
-      
+        self.recordingMenu.AppendSeparator()
+        self.recordingMenu.Append(self.RECORDING_MENU_IMPORT, "Import",
+                                  "Load recordings")
+        self.recordingMenu.Append(self.RECORDING_MENU_EXPORT, "Export",
+                                  "Save this recording to file")
+        self.recordingMenu.AppendSeparator()
+        self.recordingMenu.Append(self.RECORDING_MENU_PROPERTIES, "Properties", "View recording details.")
+
         self.__Layout() 
         self.__SetEvents() 
-        self.Update() 
- 
+        self.Update()
+     
     def __SetEvents(self): 
         ''' 
         Set UI event callbacks 
@@ -529,68 +752,243 @@ class VoyagerView(wxFrame, Observer):
         EVT_BUTTON(self, self.playButton.GetId(), self.PlayCB) 
         EVT_BUTTON(self, self.recordButton.GetId(), self.RecordCB) 
         EVT_BUTTON(self, self.stopButton.GetId(), self.StopCB) 
-        EVT_RIGHT_DOWN(self.recordingList, self.OnRightClick) 
+        EVT_RIGHT_DOWN(self.recordingList, self.OnRightClickCB) 
         EVT_MENU(self, self.RECORDING_MENU_REMOVE, self.RemoveRecordingCB)
-        #EVT_MENU(self, self.RECORDING_MENU_PROPERTIES, self.PropertiesCB)
+        EVT_MENU(self, self.RECORDING_MENU_EXPORT, self.ExportRecordingCB)
+        EVT_MENU(self, self.RECORDING_MENU_EXPORT_ALL,
+                 self.ExportRecordingAllCB)
+        EVT_MENU(self, self.RECORDING_MENU_IMPORT, self.ImportRecordingCB)
+        EVT_MENU(self, self.RECORDING_MENU_PROPERTIES, self.PropertiesCB)
 
-    def OnRightClick(self, event):
+    def ShowMessage(self, parent, text, title, style):
+        '''
+        Show a message dialog.
+        '''
+        dlg = wxMessageDialog(parent, text,
+                              title, 
+                              style) 
+        val = dlg.ShowModal() 
+        dlg.Destroy()
+        return val
+
+    def OnRightClickCB(self, event):
+        '''
+        Invoked when a user right clicks on the recording list.
+        '''
         self.x = event.GetX() + self.recordingList.GetPosition().x
         self.y = event.GetY() + self.recordingList.GetPosition().y
         self.PopupMenu(self.recordingMenu, wxPoint(self.x, self.y))
 
-    #def PropertiesCB(self, event):
-    #    print 'show properties'
-      
-    def RemoveRecordingCB(self, event):
+    def PropertiesCB(self, event):
+        '''
+        Invoked when a user selects the properties menu item for
+        a recording.
+        '''
+        # Get selected recording
+        id = self.recordingList.GetFirstSelected()
+        
+        if id < 0:
+            val = self.ShowMessage(self.panel, "Select a recording.",
+                                  "Properties", 
+                                  style = wxICON_INFORMATION)
+            return
+
+        uniqueId = self.intToGuid[id]
+        recording = self.voyagerModel.GetRecordings()[uniqueId]
+
+        # Open a UI to display properties 
+        dlg = PropertiesDialog(self, -1,
+                               recording,
+                               self.voyagerModel)
+        if dlg.ShowModal() == wxID_OK:
+            r = dlg.GetRecording()
+            # Only update if recording properties changed
+            if r:
+                self.voyagerModel.UpdateRecording(r)
+              
+    def ImportRecordingCB(self, event):
+        '''
+        Invoked when a user selects the import menu item for a recording.
+        '''
+        wildcard = "AG Recordings |*.agrcd|" \
+                   "All Files |*.*"
+        
+        # Get path from user.
+        dlg = wxFileDialog(self, "Choose file(s):",
+                           wildcard = wildcard,
+                           style = wxOPEN)
+        if dlg.ShowModal() == wxID_OK:
+            fileName = dlg.GetPath()
+            
+            dlg.Destroy()
+
+        else:
+            return
+
+        recording = None
+        try:
+            recording = self.voyagerModel.GetRecordingFromZipFile(fileName)
+        except:
+            self.log.exception("VoyagerView.ImportRecordingCB: Get recording from zip file failed %s "%(fileName))
+
+            val = self.ShowMessage(self.panel,
+                                   "Failed to import %s."
+                                   %(fileName),
+                                   "Error", 
+                                   style = wxICON_ERROR) 
+            return
+            
+        if recording:
+            val = self.ShowMessage(self.panel, "The recording already exists with name %s, do you want to overwrite it?."%(recording.GetName()),
+                                   "Export", 
+                                   style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT) 
+            if not val == wxID_YES:
+                return
+        try:
+            self.voyagerModel.ImportFromZipFile(fileName)
+        except:
+            val = self.ShowMessage(self.panel,
+                                   "Failed to import %s."
+                                   %(fileName),
+                                   "Error", 
+                                   style = wxICON_ERROR) 
+               
+    def ExportRecordingCB(self, event):
+        '''
+        Invoked when a user selects the export menu item of a recording.
+        '''
+        # Get selected recording
         id = self.recordingList.GetFirstSelected()
 
         if id < 0:
-            dlg = wxMessageDialog(self.panel, "Select recording to remove.",
-                                  "Play", 
-                                  style = wxICON_INFORMATION) 
-            val = dlg.ShowModal() 
-            dlg.Destroy() 
+            val = self.ShowMessage(self.panel, "Select recording to export.",
+                                   "Export", 
+                                   style = wxICON_INFORMATION) 
+            return
+        
+        uniqueId = self.intToGuid[id]
+        recording = self.voyagerModel.GetRecordings()[uniqueId]
+
+        # Set default name
+        noSpacesName = string.replace(recording.GetName(), " ", "_")
+        startTime = time.strftime("%m_%d_%Y",
+                                  time.localtime(recording.GetStartTime())) 
+
+        name = noSpacesName+'--'+startTime+".agrcd"
+      
+        # Get path from user.
+        wildcard = "AG Recordings |*.agrcd|" \
+                   "All Files |*.*"
+
+
+        notOverwrite = 1
+        while notOverwrite:
+          
+            dlg = wxFileDialog(self, "Choose file(s):",
+                               wildcard = wildcard, 
+                               defaultFile = name,
+                               style = wxSAVE)
+            if dlg.ShowModal() == wxID_OK:
+                fileName = dlg.GetPath()
+                
+                dlg.Destroy()
+                
+            else:
+                return
+
+            # Check to see if we have this already and if user wants to
+            # overwrite the archive.
+        
+            if os.path.exists(fileName):
+                val = self.ShowMessage(self.panel, 
+                                       "The archive %s already exists, do you want to overwrite?" %(fileName),
+                                       "Overwrite?",
+                                       style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT) 
+                if val == wxID_YES:
+                    notOverwrite = 0
+                    try:
+                        self.voyagerModel.ExportToZipFile([recording], fileName)
+                    except:
+                        self.log.exception("VoyagerModel.ExportRecordingCB: Export to zip file failed. %s"%(fileName))
+
+                        val = self.ShowMessage(self.panel,
+                                               "Export recording failed.",
+                                               "Export", 
+                                               style = wxICON_ERROR)               
+            else:
+                notOverwrite = 0
+                self.voyagerModel.ExportToZipFile([recording], fileName)
+               
+    def ExportRecordingAllCB(self, event):
+        defaultName = os.path.join(os.getcwd(), "RecordingList.agrcd)") 
+        # Get path from user.
+        dlg = wxFileDialog(self, "Choose file(s):",
+                           defaultFile = defaultName,
+                           style = wxSAVE)
+        if dlg.ShowModal() == wxID_OK:
+            fileName = dlg.GetPath()
+            dlg.Destroy()
+
+        else:
             return
 
+        self.voyagerModel.ExportAllToZipFile(fileName)
+      
+    def RemoveRecordingCB(self, event):
+        '''
+        Invoked when a user selects remove from the recording menu.
+        '''
+        id = self.recordingList.GetFirstSelected()
 
-        # Make sure we are not currently playing or recording to this
-        # recording.
+        if id < 0:
+            val = self.ShowMessage(self.panel, "Select recording to remove.",
+                                   "Remove", 
+                                   style = wxICON_INFORMATION) 
+            return
 
         status = self.voyagerModel.GetStatus()
         currentRecording = self.voyagerModel.GetCurrentRecording()
-        selectedRecordingId = self.recordingList.GetItemData(id)
+        selectedRecordingId = self.intToGuid[id]
         selectedRecording = self.voyagerModel.GetRecordings()[selectedRecordingId]
         val = None
-        
+
+        # Maker sure user really wants to remove the recording.
+        val = self.ShowMessage(self.panel, "Are you sure you want to remove %s."%(selectedRecording.GetName()),
+                               "Remove", 
+                               style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT) 
+        # Make sure we are not currently playing or recording to this
+        # recording.
         if (status == self.voyagerModel.RECORDING and
             currentRecording == selectedRecording):
-            dlg = wxMessageDialog(self.panel, "Stop recording %s ?."
-                                  %(selectedRecording.GetName()), "Remove", 
-                                  style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT) 
-            val = dlg.ShowModal() 
-            dlg.Destroy()
-                                  
+            val = self.ShowMessage(self.panel, "Stop recording %s ?."
+                             %(selectedRecording.GetName()), "Remove", 
+                             style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT)                                   
         elif (status == self.voyagerModel.PLAYING and
               currentRecording == selectedRecording):
-            dlg = wxMessageDialog(self.panel, "Stop playing %s ?."
-                                  %(selectedRecording.GetName()), "Remove", 
-                                  style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT) 
-            val = dlg.ShowModal() 
-            dlg.Destroy()
-                     
+            val = self.ShowMessage(self.panel, "Stop playing %s ?."
+                                   %(selectedRecording.GetName()), "Remove", 
+                                   style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT) 
+                               
         if val == wxID_NO:
             return
         elif val == wxID_YES:
-            self.voyagerModel.Stop()
-        
-        self.voyagerModel.Remove(selectedRecording)
-        
+            try:
+                self.voyagerModel.Stop()
+            except:
+                self.log.exception("VoyagerView.RemoveRecordingCB: failed to stop player.")
+        try:
+            self.voyagerModel.Remove(selectedRecording)
+        except:
+            val = self.ShowMessage(self.panel, "Error when removing.",
+                                   "Error", 
+                                   style = wxICON_ERROR) 
+
     def PlayCB(self, event): 
         ''' 
-        Method used when the play button is clicked.  
+        Invoked when the play button is clicked.  
         ''' 
         # Check if user want to stop current state 
-        # (are we playing or recording?) 
+        # (are we playing or recording already?) 
         if not self.__TestStop(): 
             return 
  
@@ -598,26 +996,25 @@ class VoyagerView(wxFrame, Observer):
         selectedItem = self.recordingList.GetFirstSelected()
 
         if selectedItem < 0:
-            dlg = wxMessageDialog(self.panel, "Select recording to play.",
-                                  "Play", 
-                                  style = wxICON_INFORMATION) 
-            val = dlg.ShowModal() 
-            dlg.Destroy() 
+            val = self.ShowMessage(self.panel, "Select recording to play.",
+                                   "Play", 
+                                   style = wxICON_INFORMATION) 
             return 
  
         # Get recording instance from model. Unique id is start time. 
-        startTime = self.recordingList.GetItemData(selectedItem) 
+        id = self.intToGuid[selectedItem]
+        name = self.recordingList.GetItemText(selectedItem)
+               
         recordings = self.voyagerModel.GetRecordings() 
  
         # Check if recording exists. 
-        if recordings.has_key(startTime): 
-            r = recordings[startTime] 
+        if recordings.has_key(id): 
+            r = recordings[id] 
         else:
-            dlg = wxMessageDialog(self.panel, 
-                                  "Error when playing; %s was not found"
-                                  %(self.voyagerModel.GetSelectedRecording().GetName()), 
-                                  "Play", style = wxICON_ERROR) 
-            dlg.ShowModal() 
+            val = self.ShowMessage(self.panel, 
+                                   "Error when playing; %s was not found"
+                                   %(self.voyagerModel.GetSelectedRecording().GetName()), 
+                                   "Play", style = wxICON_ERROR) 
             return 
                      
         # Open a UI where you can enter the venue url 
@@ -636,14 +1033,13 @@ class VoyagerView(wxFrame, Observer):
         try: 
             # Start to play the recording in venue entered by user. 
             self.voyagerModel.PlayInVenue(r, venueUrl) 
-        except: 
-            dlg = wxMessageDialog(self.panel, 
-                                  "Error when playing", 
-                                  "Play", style = wxICON_ERROR) 
-            dlg.ShowModal() 
+        except:
+            val = self.ShowMessage(self.panel, 
+                                   "Error when playing", 
+                                   "Play", style = wxICON_ERROR) 
             self.log.exception("VoyagerView.PlayCB: Failed to play recording %s in venue %s" 
                                %(r.GetName(), venueUrl)) 
-             
+            
         wxEndBusyCursor() 
          
     def __TestStop(self): 
@@ -660,7 +1056,7 @@ class VoyagerView(wxFrame, Observer):
                                   style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT) 
  
         if status == self.voyagerModel.RECORDING and current: 
-            dlg =  wxMessageDialog(self.panel, "Stop recording %s, %s?"
+            dlg =  wxMessageDialog(self.panel, "Stop recording %s ?"
                                    %(current.GetName()), "Record", 
                                    style = wxICON_INFORMATION | wxYES_NO | wxNO_DEFAULT) 
  
@@ -678,7 +1074,7 @@ class VoyagerView(wxFrame, Observer):
  
     def RecordCB(self, event): 
         ''' 
-        Method used when record button is clicked.  
+        Invoked when the record button is clicked.  
         ''' 
         # Check to see if we need to stop a recording or playback 
         # before recording. 
@@ -707,31 +1103,35 @@ class VoyagerView(wxFrame, Observer):
         except: 
             self.log.exception("VoyagerView.RecordCB: Failed to record %s from %s" 
                           %(r.GetName(), r.GetVenueUrl())) 
-            dlg = wxMessageDialog(self.panel, 
-                                  "Error when recording", 
-                                  "Record", style = wxICON_ERROR) 
-            dlg.ShowModal() 
-                           
+
+            val = self.ShowMessage(self.panel, 
+                                   "Error when recording", 
+                                   "Record", style = wxICON_ERROR) 
+                                       
         wxEndBusyCursor() 
          
     def StopCB(self, event): 
         ''' 
-        Method used when stop button is clicked. 
+        Invoked when the stop button is clicked. 
         ''' 
         try: 
             self.voyagerModel.Stop() 
         except: 
-            self.log.exception("VoyagerView.StopCB: Failed to stop") 
-            dlg = wxMessageDialog(self.panel, 
-                                  "Error when stopping", 
-                                  "Stop", style = wxICON_ERROR) 
-            dlg.ShowModal() 
-         
+            self.log.exception("VoyagerView.StopCB: Failed to stop")
+            val = self.ShowMessage(self.panel, 
+                                   "Error when stopping", 
+                                   "Stop", style = wxICON_ERROR) 
+                    
     def Update(self): 
         ''' 
-        Invoked when shared question tool model changes state. 
+        Invoked when the voyager model changes state. This
+        methods updates the ui based on current state of the model
+        based on the Model-View-Controller pattern.
         ''' 
-         
+        # match up a GUID with an integer since
+        # only integers are allowed as data in wxListCtrl.
+        self.intToGuidDict = {}
+
         status = self.voyagerModel.GetStatus() 
         currentRecording = self.voyagerModel.GetCurrentRecording() 
         recordings = self.voyagerModel.GetRecordings() 
@@ -751,17 +1151,18 @@ class VoyagerView(wxFrame, Observer):
         self.statusField.SetValue(statusText) 
         j = 0 
         self.recordingList.DeleteAllItems() 
-        for startTime in recordings.keys():
-            recording = recordings[startTime] 
+        for id in recordings.keys():
+            recording = recordings[id] 
+            
             item = self.recordingList.InsertStringItem(j, 'item')
-            self.recordingList.SetItemData(item, recording.GetStartTime())
             self.recordingList.SetStringItem(j, 0, recording.GetName()) 
+            self.intToGuid[item] = recording.GetId()
  
-            stopTime = "... " +  time.strftime("%B %d, %Y",
+            stopTime = "... " +  time.strftime("%b %d, %Y",
                                                time.localtime(recording.GetStartTime())) 
  
             if recording.GetStopTime(): 
-                stopTime = time.strftime("%I:%M %p %B %d, %Y",
+                stopTime = time.strftime("%I:%M %p %b %d, %Y",
                                          time.localtime(recording.GetStopTime())) 
             desc = (time.strftime("%I:%M %p",
                                   time.localtime(recording.GetStartTime())) +" - "+ stopTime) 
@@ -773,17 +1174,18 @@ class VoyagerView(wxFrame, Observer):
  
     def SortCB(self, item1, item2): 
         ''' 
-        return 0 if the items are equal, negative value if the second
-        item is less than the second one and positive value if the
-        second one is greater than the second one 
+        return 0 if the items are equal, positive value if first 
+        item is greater than the second one and negative value if the
+        second one is greater than the first one. Used to sort the
+        list.
         ''' 
         # We want last recording added to be first in the list. 
          
         if item1 == item2: 
             return 0 
-        elif item1 < item2: 
-            return 1 
         elif item1 > item2: 
+            return 1 
+        elif item1 < item2: 
             return -1 
           
     def __Layout(self): 
@@ -838,7 +1240,10 @@ class VenueUrlDialog(wxDialog):
         ''' 
         return self.venueUrlCtrl.GetValue() 
  
-    def __Layout(self): 
+    def __Layout(self):
+        '''
+        Layout of UI components.
+        '''
         sizer = wxBoxSizer(wxVERTICAL) 
         sizer.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20) 
  
@@ -856,16 +1261,161 @@ class VenueUrlDialog(wxDialog):
         sizer.Add(sizer3, 0, wxALIGN_CENTER) 
         self.SetSizer(sizer) 
         sizer.Fit(self) 
+        self.SetAutoLayout(1)
+
+class PropertiesDialog(wxDialog): 
+    ''' 
+    Dialog for displaying recording properties. 
+    ''' 
+    def __init__(self, parent, id, recording, voyagerModel): 
+        wxDialog.__init__(self, parent, id, "Recording Properties")
+        self.recording = recording
+        self.voyagerModel = voyagerModel
+        
+        start = time.strftime("%I:%M:%S %p, %b-%d-%Y",
+                              time.localtime(recording.GetStartTime())) 
+        stop = time.strftime("%I:%M:%S %p, %b-%d-%Y",
+                             time.localtime(recording.GetStopTime()))
+
+        duration = recording.GetStopTime()-recording.GetStartTime()# Seconds
+
+        # Calculate audio and video file sizes in bytes
+        video = os.path.join(self.voyagerModel.GetPath(),
+                             str(recording.GetId()), "video.rtp")
+        audio = os.path.join(self.voyagerModel.GetPath(),
+                             str(recording.GetId()), "audio.rtp")
+        videoSize = str(os.path.getsize(video))
+        audioSize = str(os.path.getsize(audio))
+        # Must be a library somewhere that does this...
+
+        # Calculate duration.
+
+        # hours
+        durationText = ""
+        hours = int(duration / 3600.0)
+
+        if hours >= 1:
+            duration - (hours*3600.0)
+            durationText = str(hours)+" hours "
+            
+        # minutes
+        minutes = int(duration/60.0)
+        
+        if minutes >= 1:
+            duration = duration - (minutes*60.0)
+            durationText = durationText + str(minutes) + " min. "
+            
+        # seconds
+        durationText = durationText + str(duration) + " sec."
+                           
+        self.nameText = wxStaticText(self, -1, "Name: ") 
+        self.nameCtrl = wxTextCtrl(self, -1, 
+                                   recording.GetName())
+        self.descText = wxStaticText(self, -1, "Description: ") 
+        self.descCtrl = wxTextCtrl(self, -1, recording.GetDescription(), 
+                                   style = wxTE_MULTILINE, 
+                                   size = wxSize(300, 50))
+        self.startText = wxStaticText(self, -1, "Start Time:  ") 
+        self.startCtrl = wxTextCtrl(self, -1, 
+                                    start,
+                                    style = wxTE_READONLY)
+        self.stopText = wxStaticText(self, -1, "Stop Time: ") 
+        self.stopCtrl = wxTextCtrl(self, -1, 
+                                   stop,
+                                   style = wxTE_READONLY)
+        self.durationText = wxStaticText(self, -1, "Duration: ") 
+        self.durationCtrl = wxTextCtrl(self, -1, 
+                                       durationText,
+                                       style = wxTE_READONLY)
+        self.audioSizeText = wxStaticText(self, -1, "Audio Size: ") 
+        self.audioSizeCtrl = wxTextCtrl(self, -1, 
+                                        audioSize+" bytes",
+                                        style = wxTE_READONLY,
+                                        size = wxSize(70, -1))
+        self.videoSizeText = wxStaticText(self, -1, "Video Size: ") 
+        self.videoSizeCtrl = wxTextCtrl(self, -1, 
+                                        videoSize+" bytes",
+                                        style = wxTE_READONLY,
+                                        size = wxSize(70, -1)) 
+        self.okButton = wxButton(self, wxID_OK, "Ok") 
+        self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel") 
+        
+        self.okButton.SetFocus()
+        self.__Layout()
+ 
+    def GetRecording(self): 
+        ''' 
+        Returns the url entered by the user. 
+        '''
+        oldName = self.recording.GetName()
+        newName = self.nameCtrl.GetValue()
+        oldDesc = self.recording.GetDescription()
+        newDesc = self.descCtrl.GetValue()
+        changed = 0
+        
+        if oldName != newName:
+            self.recording.SetName(newName)
+            changed = 1
+        if oldDesc != newDesc:
+            self.recording.SetDescription(newDesc)
+            changed = 1
+
+        if changed:
+            return self.recording
+        else:
+            return None
+ 
+    def __Layout(self):
+        '''
+        Layout of UI components.
+        '''
+        sizer = wxBoxSizer(wxVERTICAL) 
+        
+        s2 =  wxFlexGridSizer(0, 2, 5, 5)
+        s2.Add(self.nameText, 0) 
+        s2.Add(self.nameCtrl, 1, wxEXPAND)
+        s2.Add(self.descText, 0)
+        s2.Add(self.descCtrl, 1, wxEXPAND)
+        s2.AddGrowableCol(1)
+        sizer.Add(s2, 0, wxEXPAND | wxALL, 10) 
+
+        s4 = wxFlexGridSizer(3, 4, 5, 5)
+        s4.Add(self.startText)
+        s4.Add(self.startCtrl, 1, wxEXPAND|wxRIGHT, 5)
+        s4.Add(self.audioSizeText)
+        s4.Add(self.audioSizeCtrl, 1, wxEXPAND)
+        s4.Add(self.stopText)
+        s4.Add(self.stopCtrl, 1, wxEXPAND|wxRIGHT, 5)
+        s4.Add(self.videoSizeText)
+        s4.Add(self.videoSizeCtrl, 1, wxEXPAND)
+        s4.Add(self.durationText)
+        s4.Add(self.durationCtrl, 1, wxEXPAND|wxRIGHT, 5)
+        s4.AddGrowableCol(1)
+        sizer.Add(s4, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10)
+        
+        sizer.Add(wxStaticLine(self, -1), 0, wxEXPAND, 5) 
+ 
+        sizer3 =  wxBoxSizer(wxHORIZONTAL) 
+        sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10) 
+        sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10) 
+ 
+        sizer.Add(sizer3, 0, wxALIGN_CENTER) 
+        self.SetSizer(sizer) 
+        sizer.Fit(self) 
         self.SetAutoLayout(1) 
  
          
 if __name__ == "__main__":
-    wxapp = wxPySimpleApp()
-    app = WXGUIApplication() 
-    init_args = ["--debug"] 
 
-    # Initialize AG environment 
-      
+    # We need the simple wx app for when the
+    # app.HaveValidProxy() call opens a
+    # passphrase dialog.
+    wxapp = wxPySimpleApp()
+    
+    # Initialize AG environment
+    app = WXGUIApplication() 
+    init_args = ["--debug"]
+    
     try:
         app.Initialize("Voyager", args = init_args)
     except Exception, e:
@@ -878,9 +1428,9 @@ if __name__ == "__main__":
 
     # Create model and view 
     v = VoyagerModel(app.GetLog())
-
+    log = app.GetLog()
     uiApp = VoyagerUI(v, app.GetLog()) 
-    # Start application main thread
 
+    # Start application main thread
     uiApp.MainLoop()
    
