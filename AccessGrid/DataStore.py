@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.15 2003-04-01 16:54:31 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.16 2003-04-01 23:19:44 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -68,9 +68,10 @@ class DataStore:
         """
 
         self.callbackClass = callbackClass
-        log.debug("----------------Datastore path is %s" %pathname)
+        log.debug("Datastore path is %s" %pathname)
         
         if not os.path.exists(pathname):
+            log.exception("DataStore::init: Datastore path %s does not exist" % (pathname))
             raise Exception("Datastore path %s does not exist" % (pathname))
 
         self.pathname = pathname
@@ -92,20 +93,18 @@ class DataStore:
         for filename in fileList:
             try:
                 # Transfer file from local path to local data store path
-                log.debug("Add file %s to local datastore" %filename)
+                log.debug("DataStore::AddFile: Add file %s to local datastore" %filename)
                 input = open(filename, 'r')
                 fileString = input.read()
 
                 path, name = os.path.split(filename)
-                log.debug("this is the file name %s"%name)
-                dir = os.path.join(self.pathname, self.prefix)
-                                
-                if not os.path.exists(dir):
-                    log.debug("Personal data storage directory does not exist, create it")
-                    os.mkdir(dir)
+                                               
+                if not os.path.exists(self.pathname):
+                    log.debug("DataStore::AddFile: Personal data storage directory does not exist, create it")
+                    os.mkdir(self.pathname)
                     
-                dataStorePath = os.path.join(dir, name)
-                log.debug("Personal datastorage is located at %s"%dataStorePath)
+                dataStorePath = os.path.join(self.pathname, name)
+                log.debug("DataStore::AddFile: Personal datastorage is located at %s"%dataStorePath)
                 output = open(dataStorePath, 'w')
                 output.write(fileString)
                 input.close()
@@ -113,12 +112,12 @@ class DataStore:
             
                 # Create DataDescription
                 size = os.path.getsize(dataStorePath)
-                log.debug("Size of file %s" %size)
+                log.debug("DataStore::AddFile: Size of file %s" %size)
                 
                 # This should be done in a loop in case
                 # the file is big
                 checksum = md5.new(fileString).hexdigest()
-                log.debug("Checksum %s" %checksum)
+                log.debug("DataStore::AddFile: Checksum %s" %checksum)
                 
                 desc = DataDescription(name)
                 desc.SetOwner(dn)
@@ -127,11 +126,11 @@ class DataStore:
                 desc.SetSize(int(size))
                 desc.SetStatus(DataDescription.STATUS_PRESENT)
                 desc.SetURI(self.transfer_engine.GetDownloadDescriptor(self.prefix, name))
-                log.debug("CompleteUpload: updating with %s %s", desc, desc.__dict__)
+                log.debug("DataStore::AddFile: updating with %s %s", desc, desc.__dict__)
                 self.callbackClass.AddData(desc)
 
             except:
-                log.error("DataStore::AddFile: Error when trying to add local data to datastorage")
+                log.exception("DataStore::AddFile: Error when trying to add local data to datastorage")
                 raise UploadFailed("Error when trying to add local data to datastorage")
            
     def GetUploadDescriptor(self):
@@ -139,7 +138,6 @@ class DataStore:
         Return the upload descriptor for this datastore.
 
         """
-
         return self.transfer_engine.GetUploadDescriptor(self.prefix)
 
     def GetDownloadDescriptor(self, filename):
@@ -156,7 +154,6 @@ class DataStore:
             return None
         
         return self.transfer_engine.GetDownloadDescriptor(self.prefix, filename)
-    
 
     def GetDownloadFilename(self, id_token, url_path):
         """
@@ -169,16 +166,19 @@ class DataStore:
         raise a FileNotFound exception.
 
         """
-
         # print "OpenFile: dn=%s filename=%s" % (dn, filename)
 
         #
         # Authorization check for dn goes here
         #
 
+        
         path = os.path.join(self.pathname, url_path)
-
+        
+        log.debug("DataStore::GetDownloadFilename: path %s, pathname: %s, url_path: %s"
+            %(path, self.pathname, url_path))
         if not os.path.isfile(path):
+            log.debug("DataStore::GetDownloadFilename: File is not found")
             raise FileNotFound
 
         return path
@@ -225,11 +225,11 @@ class DataStore:
         desc = self.callbackClass.GetData(filename)
         
         if desc is None:
-            log.debug("Venue data for %s not present", filename)
+            log.debug("Datastore::GetUploadFilenameVenue: data for %s not present", filename)
             return None
 
         if desc.GetStatus() != DataDescription.STATUS_PENDING:
-            log.debug("Invalid status in GetUploadFileHandle()")
+            log.debug("Datastore::GetUploadFilenameVenue: Invalid status in GetUploadFileHandle()")
             return None
 
         #
@@ -250,13 +250,13 @@ class DataStore:
         """
 
         desc = self.callbackClass.GetData(file_info['name'])
-        log.debug("CompleteUpload: got desc %s %s", desc, desc.__dict__)
+        log.debug("Datastore::CompleteUpload: got desc %s %s", desc, desc.__dict__)
         desc.SetChecksum(file_info['checksum'])
         desc.SetSize(int(file_info['size']))
         desc.SetStatus(DataDescription.STATUS_PRESENT)
         desc.SetOwner(dn)
         desc.SetURI(self.GetDownloadDescriptor(file_info['name']))
-        log.debug("CompleteUpload: updating with %s %s", desc, desc.__dict__)
+        log.debug("Datastore::CompleteUpload: updating with %s %s", desc, desc.__dict__)
         self.callbackClass.UpdateData(desc)
 
     def DeleteFile(self, filename):
@@ -264,7 +264,7 @@ class DataStore:
         Delete filename from the datastore.
 
         """
-        log.debug("DeleteFile: %s", filename)
+        log.debug("Datastore::DeleteFile: %s", filename)
         path = os.path.join(self.pathname, filename)
         if not os.path.exists(path):
             raise FileNotFound(filename)
@@ -272,7 +272,7 @@ class DataStore:
         try:
             os.remove(path)
         except OSError, e:
-            log.exception("DeleteFile raised error ")
+            log.exception("DataStore::DeleteFile: raised error ")
 
     def AddPendingUpload(self, dn, filename):
         """
@@ -308,15 +308,18 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         #
 
         identityToken = self.server.GetIdentityToken(self)
-        log.debug("GET identity token %s", identityToken)
+        log.debug("HTTPTransferHandler::do_GET: GET identity token %s", identityToken)
         
         try:
+            log.debug("HTTPTransferHandler::do_GET: ProcessGet")
             self.ProcessGet(identityToken)
 
         except FileNotFound:
+            log.exception("HTTPTransferHandler::do_GET: File not found")
             self.send_error(404, "File not found")
 
         except NotAuthorized:
+            log.exception("HTTPTransferHandler::do_GET: Not authorized")
             self.send_error(403, "Not authorized")
 
     def do_POST(self):
@@ -329,7 +332,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         #
 
         identityToken = self.server.GetIdentityToken(self)
-        log.debug("POST identity token %s", identityToken)
+        log.debug("HTTPTransferHandler::do_POST: POST identity token %s", identityToken)
         
         #
         # Split path into components, and verify
@@ -337,10 +340,11 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         # empty if that is the case).
         #
 
-        log.debug("doPOST path=%s", self.path)
+        log.debug("HTTPTransferHandler::do_POST: path=%s", self.path)
 
         path_parts = self.path.split('/')
         if path_parts[0] != '':
+            log.debug("HTTPTransferHandler::do_POST: File not found")
             self.send_error(404, "File not found")
             return None
 
@@ -414,6 +418,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         #
         transfer_handler = self.server.LookupPrefix(prefix)
         if transfer_handler is None:
+            log.debug("HTTPTransferHandler::ProcessFileUpload: Error, Path not found")
             self.send_error(404, "Path not found")
             return None
 
@@ -422,7 +427,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         #
 
         file_info = self.server.LookupUploadInformation(transfer_key, file_num)
-        log.debug("Got this for %s: %s", file_num, file_info)
+        log.debug("HTTPTransferHandler::ProcessFileUpload: Got this for %s: %s", file_num, file_info)
 
         #
         # Verify the filesize is what we expect
@@ -431,6 +436,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         size = int(file_info['size'])
         content_len = int(self.headers['Content-Length'])
         if size != content_len:
+            log.debug("HTTPTransferHandler::ProcessFileUpload: Error, Size in manifest != size in Content-Length")
             self.send_error(405, "Size in manifest != size in Content-Length")
             return None
 
@@ -441,6 +447,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         upload_file_path = transfer_handler.GetUploadFilename(identityToken, file_info)
         if upload_file_path is None:
+            log.debug("HTTPTransferHandler::ProcessFileUpload: Error, Upload file not found")
             self.send_error(404, "Upload file not found")
             return None
 
@@ -454,21 +461,19 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             bytesFree = Platform.GetFilesystemFreeSpace(upload_dir)
             # bytesFree = 10
             if bytesFree is None:
-                log.debug("Cannot determine free space for %s", upload_Dir)
+                log.debug("HTTPTransferHandler::ProcessFileUpload: Cannot determine free space for %s", upload_Dir)
             else:
                 if size > (0.95 * bytesFree):
-                    log.info("Upload failing: not enough disk space. Free=%d needed=%d",
+                    log.info("HTTPTransferHandler::ProcessFileUpload: Upload failing: not enough disk space. Free=%d needed=%d",
                              bytesFree, size)
                     self.send_error(405, "Not enough disk space for upload")
                     return None
                 else:
-                    log.debug("Allowing upload. Free spae=%d needed=%d",
+                    log.debug("HTTPTransferHandler::ProcessFileUpload: Allowing upload. Free spae=%d needed=%d",
                              bytesFree, size)
         except:
             log.exception("Platform.GetFilesystemFreeSpace threw exception")
             
-        
-
         #
         # Open up destination file and initialize digest.
         #
@@ -477,10 +482,10 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         fp = None
 
         try:
-            log.debug("opening upload file %s", upload_file_path)
+            log.debug("HTTPTransferHandler::ProcessFileUpload: opening upload file %s", upload_file_path)
             fp = open(upload_file_path, "wb")
         except EnvironmentError:
-            log.exception("Cannot open output file")
+            log.exception("HTTPTransferHandler::ProcessFileUpload: Cannot open output file")
             self.send_error(405, "Cannot open output file")
             return None
 
@@ -489,7 +494,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             # Wups, something bad happened.
             #
 
-            log.debug("Could not get upload filehandle for %s", filename)
+            log.debug("HTTPTransferHandler::ProcessFileUpload: Could not get upload filehandle for %s", filename)
             self.send_error(400, "Could not get upload filehandle for %s"
                             % filename)
             return None
@@ -525,7 +530,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             fp.close()
             
         except EnvironmentError, e:
-            log.debug("Hm, got an exception on upload")
+            log.exception("HTTPTransferHandler::ProcessFileUpload: Error on upload: %s" % (str(e)))
             self.send_error(400, "Error on upload: %s" % (str(e)))
             fp.close()
             return None
@@ -647,12 +652,12 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 
         except ValueError, e:
-            log.exception("ConfigParser error.")
+            log.exception("HTTPTransferHandler::ProcessManifest: ConfigParser error.")
             self.send_error(400, "ConfigParser error: " + str(e))
             return None
 
         except ConfigParser.Error, e:
-            log.exception("ConfigParser error.")
+            log.exception("HTTPTransferHandler::ProcessManifest: ConfigParser error.")
             self.send_error(400, "ConfigParser error: " + str(e))
             return None
 
@@ -709,11 +714,13 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         return a python file handle to it. This method can return FileNotFound
         and NotAuthorized exceptions; return an appropriate error code for each.
         """
-
+        
         path = urllib.unquote(self.path)
+        log.debug("HTTPTransferHandler::ProcessGet: has path: %s" %str(path))
 
         components = path.split('/')
 
+        log.debug("HTTPTransferHandler::ProcessGet: After split component 0: %s, component 1: %s"%(components[0], components[1]))
         #
         # This is always empty, so nuke it.
         #
@@ -726,7 +733,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         prefix = components[0]
         path = components[1]
 
-        log.info("Have path '%s', prefix='%s'", path, prefix)
+        log.info("HTTPTransferHandler::ProcessGet: Have path '%s', prefix='%s'", path, prefix)
 
         #
         # First get the transfer handler for this prefix.
@@ -734,13 +741,18 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         transfer_handler = self.server.LookupPrefix(prefix)
         if transfer_handler is None:
+            log.debug("HTTPTransferHandler::ProcessGet: has no transfer handler")
             self.send_error(404, "Path not found")
             return None
 
         fp = None
         try:
+            # THIS IS WHERE WE GET AN ERROR!!!
+            log.debug("HTTPTransferHandler::ProcessGet: identitytoken: %s, path: %s" %(identityToken, path))
             ds_path = transfer_handler.GetDownloadFilename(identityToken, path)
+            log.debug("HTTPTransferHandler::ProcessGet: Datastore path is %s" %ds_path)
             if ds_path is None:
+                log.debug("HTTPTransferHandler::ProcessGet: Datastore path is none")
                 raise FileNotFound(path)
             fp = open(ds_path, "rb")
         except FileNotFound, e:
@@ -766,7 +778,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.end_headers()
             # print "Start copy to output"
             shutil.copyfileobj(fp, self.wfile)
-            log.debug("Done copying")
+            log.debug("HTTPTransferHandler::ProcessGet: Done copying")
             fp.close()
 
 class TransferServer:
@@ -844,8 +856,10 @@ class TransferServer:
 
     def LookupPrefix(self, prefix):
         if self.prefix_registry.has_key(prefix):
+            log.debug("prefix registry has key = %s "% str(prefix))
             return self.prefix_registry[prefix]
         else:
+            log.debug("prefix registry does not have key = %s "% str(prefix))
             return None
         
     def GetUploadDescriptor(self, prefix):
@@ -955,6 +969,8 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer, TransferServer):
             dn = transferHandler.headers.getheader("X-Client-DN")
         except KeyError:
              dn = None
+
+        wxLogDebug("GetIdentityToken returns dn = %s" %dn)
 
         return HTTPIdentityToken(dn)
         
@@ -1156,6 +1172,7 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
     url_info = urlparse.urlparse(download_url)
     host = url_info[1]
     path = url_info[2]
+    log.debug("Host %s, path %s", host, path)
 
     log.debug("Connect to %s", host)
     conn = connectionClass(host)
@@ -1170,7 +1187,9 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
 
     try:
         conn.strict = 1
+        log.debug("before connect reqest path %s, headers %s" %(path, str(headers)))
         conn.request("GET", path, headers = headers)
+        log.debug("after connect reqest")
 
         log.debug("request sent to %s", conn)
 
@@ -1179,7 +1198,11 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
         log.debug("response is %s", resp)
         log.debug("Request got status %s", resp.status)
     except httplib.BadStatusLine:
+        log.exception("DataStore::HTTPFamilyDownloadFile: bad status from http (server type mismatch?)")
         raise DownloadFailed("bad status from http (server type mismatch?)")
+    except:
+        log.exception("DataStore::HTTPFamilyDownloadFile: Unknown reason")
+        raise DownloadFailed("Unknown reason")
 
     if int(resp.status) != 200:
         raise DownloadFailed(resp.status, resp.reason)
@@ -1191,6 +1214,8 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
         hdr_size = int(hdr)
     except (TypeError, KeyError):
         raise DownloadFailed("server must provide a valid content length")
+    except:
+        raise DownloadFailed("Unknown reason")
 
     #
     # See if the file size is what we expect, only if
@@ -1270,7 +1295,7 @@ def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
             raise DownloadFailed("Checksum mismatch on download: download was %s, metadata was %s"
                                  % (download_digest, checksum))
         else:
-            log.debug("DOwnload success! %s", download_digest)
+            log.debug("Download success! %s", download_digest)
 
 def HTTPUploadFiles(identity, upload_url, file_list, progressCB):
     """
