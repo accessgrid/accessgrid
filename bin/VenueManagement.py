@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.44 2003-03-12 17:39:42 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.45 2003-03-12 23:13:10 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -400,8 +400,8 @@ class VenueProfilePanel(wxPanel):
                          wxDefaultSize, wxNO_BORDER|wxSW_3D, name = "venueProfilePanel")
         self.application = application
         self.venueProfileBox = wxStaticBox(self, -1, "")
-        self.description = wxTextCtrl(self, -1,'', style = wxSIMPLE_BORDER
-                                      | wxNO_3D | wxTE_MULTILINE )
+        self.description = wxTextCtrl(self, -1,'', size = wxSize(20,50),style = wxSIMPLE_BORDER
+                                      | wxNO_3D | wxTE_MULTILINE | wxTE_RICH2 | wxTE_READONLY)
         self.line = wxStaticLine(self, -1)
         self.urlLabel = wxStaticText(self, -1, 'URL:', size = wxSize(50, 20),
                                      name = "urlLabel", style = wxALIGN_RIGHT)
@@ -412,9 +412,9 @@ class VenueProfilePanel(wxPanel):
         self.exits = wxListBox(self, 10, size = wxSize(250, 100),
                                style = wxTE_READONLY | wxLB_SORT)
         self.description.SetValue("Not connected to server")
-        self.description.SetBackgroundColour(wxColour(215, 214, 214))
-        self.url.SetBackgroundColour(wxColour(215, 214, 214))
-
+        self.description.SetBackgroundColour(self.GetBackgroundColour())
+        self.url.SetBackgroundColour(self.GetBackgroundColour())
+        self.description.Enable(true)
         self.__hideFields()
         self.__doLayout()
 
@@ -556,30 +556,36 @@ class VenueListPanel(wxPanel):
             index = self.venuesList.GetSelection()
             venueToDelete = self.venuesList.GetClientData(index)
 
-            try:
-                wxLogInfo("Delete venue")
-                self.application.DeleteVenue(venueToDelete)
+            text =  "Are you sure you want to delete " +venueToDelete.name
+            text2 = "Delete venue"
+            message = wxMessageDialog(self, text, text2, style = wxOK|wxCANCEL|wxICON_INFORMATION)
+            
+            if(message.ShowModal()==wxID_OK):
 
-            except:
-                wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
-                wxLog_GetActiveTarget().Flush()
+                try:
+                    wxLogInfo("Delete venue")
+                    self.application.DeleteVenue(venueToDelete)
 
-            else:
-                self.venuesList.Delete(index)
+                except:
+                    wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                    wxLog_GetActiveTarget().Flush()
 
-                if self.venuesList.Number() > 0:
-                    self.venuesList.SetSelection(0)
-                    venue = self.venuesList.GetClientData(0)
-
-                    try:
-                        wxLogInfo("Change current venue")
-                        self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
-
-                    except:
-                        wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
-                        wxLog_GetActiveTarget().Flush()
                 else:
-                    self.parent.venueProfilePanel.ChangeCurrentVenue()
+                    self.venuesList.Delete(index)
+
+                    if self.venuesList.Number() > 0:
+                        self.venuesList.SetSelection(0)
+                        venue = self.venuesList.GetClientData(0)
+
+                        try:
+                            wxLogInfo("Change current venue")
+                            self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
+
+                        except:
+                            wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                            wxLog_GetActiveTarget().Flush()
+                    else:
+                        self.parent.venueProfilePanel.ChangeCurrentVenue()
 
     def InsertVenue(self, data, exitsList):
         newUri = self.application.AddVenue(data, exitsList)
@@ -710,18 +716,24 @@ class AdministratorsListPanel(wxPanel):
         index = self.administratorsList.GetSelection()
         if (index != -1):
             adminToDelete = self.administratorsList.GetClientData(index)
-            try:
-                wxLogInfo("Delete administrator")
-                self.application.DeleteAdministrator(adminToDelete)
+            text =  "Are you sure you want to delete " + adminToDelete
+            text2 = "Delete administrator"
+            message = wxMessageDialog(self, text, text2, style = wxOK|wxCANCEL|wxICON_INFORMATION)
+            
+            if(message.ShowModal()==wxID_OK):
 
-            except:
-                wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
-                wxLog_GetActiveTarget().Flush()
+                try:
+                    wxLogInfo("Delete administrator")
+                    self.application.DeleteAdministrator(adminToDelete)
 
-            else:
-                self.administratorsList.Delete(index)
-                if self.administratorsList.Number > 1 :
-                    self.administratorsList.SetSelection(0)
+                except:
+                    wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+                    wxLog_GetActiveTarget().Flush()
+
+                else:
+                    self.administratorsList.Delete(index)
+                    if self.administratorsList.Number > 1 :
+                        self.administratorsList.SetSelection(0)
 
     def OpenAddAdministratorDialog(self, title):
         addAdministratorDialog = AddAdministratorFrame(self, -1,
@@ -795,7 +807,7 @@ class DetailPanel(wxPanel):
         self.encryptionBox = wxStaticBox(self, -1, "Encryption",
                                          size = wxSize(500, 50), name = 'encryptionBox')
         self.randomButton = wxRadioButton(self, self.ID_RANDOM, "Standard Range")
-        self.intervalButton = wxRadioButton(self, self.ID_INTERVAL, "Custom Range:")
+        self.intervalButton = wxRadioButton(self, self.ID_INTERVAL, "Custom Range: ")
         self.ipAddress = wxStaticText(self, -1, "111.111.111.111/24", style = wxALIGN_LEFT)
         self.changeButton = wxButton(self, self.ID_CHANGE, "Change")
         self.storageLocation = wxStaticText(self, -1, "/home/lefvert/cool_files/")
@@ -894,7 +906,7 @@ class DetailPanel(wxPanel):
         multicastBoxSizer.Add(self.randomButton, 0, wxALL, 5)
         flexSizer = wxFlexGridSizer(0, 3, 1, 1)
         flexSizer.Add(self.intervalButton, 0)
-        flexSizer.Add(self.ipAddress, 0, wxCENTER|wxEXPAND|wxALIGN_CENTER|wxTOP, 5)
+        flexSizer.Add(self.ipAddress, 0, wxCENTER|wxEXPAND|wxALIGN_CENTER|wxTOP)
         multicastBoxSizer.Add(flexSizer, 0, wxEXPAND | wxALL, 5)
         multicastBoxSizer.Add(self.changeButton, 0, wxBOTTOM|wxALIGN_CENTER, 5)
 
