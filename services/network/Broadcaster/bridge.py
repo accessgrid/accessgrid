@@ -102,6 +102,7 @@ class BaseClient(threading.Thread):
         dst_addr = (self.host, self.port)
         while self.is_active():
             data, src_addr = self.socket.recvfrom(self.MSGSIZE)
+            #print "received data from ", src_addr
             self.time = time.time()
             k = "%s:%s" % (src_addr[0], src_addr[1])
             self.queue.put((data, src_addr, dst_addr))
@@ -161,8 +162,8 @@ class Client(BaseClient):
         Send data to this client, the client checks to make sure they
         don't send data to themselves.
         """
-        #print "***key, src=", self.key, src
         if self.key != src and self.to_host != "":
+            #print "sending data to ", self.host, port_override
             self.socket.sendto(data, (self.host, port_override))
 
 class MulticastClient(Client):
@@ -178,6 +179,7 @@ class MulticastClient(Client):
         we want to garbage collect silent clients.
         """
         super(MulticastClient, self).__init__(src_host,src_port,"",0,time,queue)
+        self.socket = openmcastsock(src_host,src_port)
         
 
     def create_sock(self, host, port):
@@ -190,6 +192,7 @@ class MulticastClient(Client):
         while self.is_active():
             if self.allowed:
                 data, src_addr = self.socket.recvfrom(self.MSGSIZE)
+                #print "Received data from",src_addr
                 k = "%s:%s" % (src_addr[0], src_addr[1])
                 self.queue.put((data, src_addr, dst_addr))
 
@@ -200,7 +203,7 @@ class MulticastClient(Client):
         """
         if self.key != src:
             #print "sending data to ", self.host, port_override
-            self.socket.sendto(data, (self.host, port_override))
+            self.socket.sendto(data, (self.host, self.port))
 
 class Receiver(threading.Thread):
     """
@@ -324,8 +327,8 @@ class RTPReceiver(threading.Thread):
             ctrlClient = MulticastClient(addr,port+1,time.time(),self.ctrl.queue)
         else:
             if debug: print "Adding ucast client", addr, port
-            dataClient = Client(addr,port,time.time(),self.data.queue)
-            ctrlClient = Client(addr,port+1,time.time(),self.ctrl.queue)
+            dataClient = Client(addr,port,self.host,self.port,time.time(),self.data.queue)
+            ctrlClient = Client(addr,port+1,self.host,self.port+1,time.time(),self.ctrl.queue)
         self.data.add_client(dataClient)
         self.ctrl.add_client(ctrlClient)
                                     
