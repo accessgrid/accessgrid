@@ -6,7 +6,7 @@
 #
 #
 # Created:     2003/08/07
-# RCS_ID:      $Id: RoleAuthorization.py,v 1.8 2003-08-18 15:42:12 lefvert Exp $ 
+# RCS_ID:      $Id: RoleAuthorization.py,v 1.9 2003-08-18 16:05:12 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -481,10 +481,13 @@ class AddPeopleDialog(wxDialog):
         self.addButton2 = wxButton(self, wxNewId(), "Add >>",
                                    style = wxBU_EXACTFIT)
         self.groupList = wxListCtrl(self, wxNewId(),
-                                    style = wxLC_REPORT | wxLC_SORT_ASCENDING | wxSUNKEN_BORDER|wxLC_NO_HEADER)
+                                    style = wxLC_REPORT | wxLC_SORT_ASCENDING |
+                                    wxSUNKEN_BORDER|wxHSCROLL|wxLC_NO_HEADER)
         self.groupList.InsertColumn(0, "Groups:")
 
-        self.addList = wxListCtrl(self, wxNewId(),  style = wxLC_REPORT | wxLC_SORT_ASCENDING |wxSUNKEN_BORDER|wxLC_NO_HEADER)
+        self.addList = wxListCtrl(self, wxNewId(),
+                                 style = wxLC_REPORT | wxLC_SORT_ASCENDING |
+                                  wxHSCROLL |wxSUNKEN_BORDER |wxLC_NO_HEADER)
         self.addList.InsertColumn(0, "")
         self.addButton3 = wxButton(self, wxNewId(), "Add >>",
                                    style = wxBU_EXACTFIT)
@@ -521,6 +524,8 @@ class AddPeopleDialog(wxDialog):
             print '--------- insert item to addlist ', item
             self.addList.InsertStringItem(0, item)
 
+        self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
+       
     def __setEvents(self):
         EVT_BUTTON(self.addButton1, self.addButton1.GetId(),
                    self.AddDistinguished)
@@ -554,6 +559,7 @@ class AddPeopleDialog(wxDialog):
             list.append(item)
             self.infoDict[self.selections.GetValue()] = list
             self.addList.InsertStringItem(0, item)
+            self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
             return true
 
         return false
@@ -601,6 +607,8 @@ class AddPeopleDialog(wxDialog):
                
         for item in  self.infoDict[selectedRole]:
             self.addList.InsertStringItem(0, item)
+
+        self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
 
     def RemoveSelectedUsersFromList(self, event):
         role = event.GetEventObject()
@@ -692,8 +700,9 @@ class AddPeopleDialog(wxDialog):
         self.list.SetColumnWidth(0, wxLIST_AUTOSIZE)
         #self.groupList.SetColumnWidth(0, self.groupList.GetSize().GetWidth()-4)
         self.groupList.SetColumnWidth(0, wxLIST_AUTOSIZE)
-        self.addList.SetColumnWidth(0, self.addList.GetSize().GetWidth()-4)
-        #self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
+        #self.addList.SetColumnWidth(0, self.addList.GetSize().GetWidth()-4)
+        print '--------- auto rezize add list'
+        self.addList.SetColumnWidth(0, wxLIST_AUTOSIZE)
 
 class RoleAuthorizationFrame(wxFrame):
     def __init__(self, parent, id, title):
