@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.50 2003-04-17 20:09:07 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.51 2003-04-18 17:40:31 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -193,6 +193,8 @@ class VenueClient( ServiceBase):
         self.venueUri = URL
         self.venueId = self.venueState.GetUniqueId()
         self.venueProxy = Client.Handle( URL ).get_proxy()
+
+        host, port = venueState.eventLocation
         
         #
         # Create the event client
@@ -237,17 +239,27 @@ class VenueClient( ServiceBase):
         #
         # Update venue clients being led with stream descriptions
         #
-        for profile in self.followerProfiles.values():
-            try:
-                Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue( URL )
-            except:
-                log.exception("AccessGrid.VenueClient::Exception while leading follower")
+        #for profile in self.followerProfiles.values():
+        #    try:
+        #        Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue( URL )
+        #    except:
+        #        log.exception("AccessGrid.VenueClient::Exception while leading follower")
             
         # Finally, set the venue uri now that we have successfully
         # entered the venue
         self.venueUri = URL
 
     EnterVenue.soap_export_as = "EnterVenue"
+
+    def LeadFollowers(self):
+        #
+        # Update venue clients being led with stream descriptions
+        #
+        for profile in self.followerProfiles.values():
+            try:
+                Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue(self.venueUri)
+            except:
+                log.exception("AccessGrid.VenueClient::Exception while leading follower")
 
     def ExitVenue( self ):
         """
