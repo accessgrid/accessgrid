@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.242 2003-08-22 19:39:17 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.243 2003-08-22 19:50:07 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -2182,7 +2182,8 @@ class ContentListPanel(wxPanel):
             
         print "CMD: <%s>" % realCommand
 
-        self.app.venueClient.processManager.start_process(realCommand, [])
+        aList = realCommand.split(' ')
+        self.app.venueClient.processManager.start_process(aList[0], aList[1:])
         
     def CleanUp(self):
         for index in self.participantDict.values():
