@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.26 2003-05-30 22:05:30 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.27 2003-05-30 22:26:03 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -191,7 +191,7 @@ def GetSharedDocDir():
             sharedDocDir = ""
 
     elif sys.platform == LINUX:
-        sharedDocDir = "/usr/share/AccessGrid/Documentation"
+        sharedDocDir = "/usr/share/doc/AccessGrid/Documentation"
 
     return sharedDocDir
 
