@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.45 2004-03-04 23:04:47 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.46 2004-03-04 23:18:08 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.45 2004-03-04 23:04:47 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.46 2004-03-04 23:18:08 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -30,7 +30,6 @@ from AccessGrid import Platform
 from AccessGrid.Descriptions import AGServiceDescription
 from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid.Types import ServiceConfiguration, AGResource
-from AccessGrid.AuthorizationManager import AuthorizationManager
 from AccessGrid.Utilities import LoadConfig
 from AccessGrid.AGParameter import ValueParameter
 
@@ -51,8 +50,6 @@ class AGNodeService:
 
     def __init__( self ):
         self.serviceManagers = dict()
-        self.authManager = AuthorizationManager()
-        self.__ReadAuthFile()
         self.config = None
         self.defaultConfig = None
         self.configDir = os.path.join(Platform.GetUserConfigDir(),"nodeConfig")
@@ -115,30 +112,6 @@ class AGNodeService:
         self.servicePackageRepository.Stop()
 
     ####################
-    ## AUTHORIZATION methods
-    ####################
-
-    def AddAuthorizedUser( self, authorizedUser ):
-        """Add user to list of authorized users"""
-        try:
-            self.authManager.AddAuthorizedUser( authorizedUser )
-            self.__PushAuthorizedUserList()
-        except:
-            log.exception("Exception in AGNodeService.AddAuthorizedUser.")
-            raise Exception("Failed to add user authorization: " + authorizedUser )
-
-
-    def RemoveAuthorizedUser( self, authorizedUser ):
-        """Remove user from list of authorized users"""
-        try:
-            self.authManager.RemoveAuthorizedUser( authorizedUser )
-            self.__PushAuthorizedUserList()
-        except:
-            log.exception("Exception in AGNodeService.RemoveAuthorizedUser.")
-            raise Exception("Failed to remove user authorization: " + authorizedUser )
-
-
-    ####################
     ## SERVICE MANAGER methods
     ####################
 
@@ -163,14 +136,6 @@ class AGNodeService:
         #
         self.serviceManagers[serviceManager.uri] = serviceManager
 
-        try:
-            Client.Handle( serviceManager.uri ).get_proxy().SetAuthorizedUsers( 
-                           self.authManager.GetAuthorizedUsers() )
-        except:
-            log.exception("Failed to set Service Manager user authorization:" + 
-                            serviceManager.uri )
-            raise Exception("Failed to set Service Manager user authorization:" + 
-                            serviceManager.uri )
 
     def RemoveServiceManager( self, serviceManagerToRemove ):
         """Remove a service manager"""
@@ -625,39 +590,6 @@ class AGNodeService:
     ## INTERNAL methods
     ####################
 
-    def __ReadAuthFile( self ):
-        """
-        Read the node service authorization file.  A user whose DN appears in
-        the file is authorized to control the node, including authorizing 
-        other users
-        """
-
-        # if config file exists
-        nodeAuthFile = "nodeauth.cfg"
-        if os.path.exists( nodeAuthFile ):
-            # read it
-            f = open( nodeAuthFile )
-            lines = f.readlines()
-            f.close()
-
-            # add users therein to authorization manager
-            for line in lines:
-                line = string.strip(line)
-                self.authManager.AddAuthorizedUser( line )
-
-            # push authorization to service managers
-            self.__PushAuthorizedUserList()
-
-
-    def __PushAuthorizedUserList( self ):
-        """
-        Push the list of authorized users to service managers
-        """
-        try:
-            for serviceManager in self.serviceManagers.values():
-                Client.Handle( serviceManager.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
-        except:
-            log.exception("Exception in AGNodeService.RemoveAuthorizedUser.")
 
     def __ReadConfigFile( self ):
         """
@@ -828,20 +760,6 @@ class AGNodeServiceI(SOAPInterface):
     def __init__(self,impl):
 
         SOAPInterface.__init__(self, impl)
-
-    def AddAuthorizedUser(self, authorizedUser):
-        """
-        Interface to add authorized users
-        """
-
-        self.impl.AddAuthorizedUser(authorizedUser)
-
-    def RemoveAuthorizedUser( self, authorizedUser ):
-        """
-        Interface to remove authorized user
-        """
-
-        self.impl.RemoveAuthorizedUser(authorizedUser)
 
     def AddServiceManager( self, serviceManager ):
         """

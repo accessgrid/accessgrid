@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.39 2004-03-04 23:03:45 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.40 2004-03-04 23:18:08 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.39 2004-03-04 23:03:45 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.40 2004-03-04 23:18:08 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -26,7 +26,6 @@ from AccessGrid.NetUtilities import GetHostname
 from AccessGrid import Platform
 from AccessGrid.ProcessManager import ProcessManager
 from AccessGrid.Types import AGServicePackage
-from AccessGrid.AuthorizationManager import AuthorizationManager
 from AccessGrid.DataStore import GSIHTTPDownloadFile
 from AccessGrid import Utilities
 from AccessGrid.Platform import GetConfigFilePath, GetSystemConfigDir, GetInstallDir
@@ -46,7 +45,6 @@ class AGServiceManager:
         self.resources = []
         # note: services dict is keyed on pid
         self.services = dict()
-        self.authManager = AuthorizationManager()
         self.processManager = ProcessManager()
 
         self.servicesDir = os.path.join(Platform.GetUserConfigDir(),"local_services")
@@ -69,26 +67,6 @@ class AGServiceManager:
         self.RemoveServices()
         log.info("Stop network interface")
         self.server.Stop()
-
-    ####################
-    ## AUTHORIZATION methods
-    ####################
-
-    def SetAuthorizedUsers( self, authorizedUsers ):
-        """
-        Set the authorizedUsers list; this is usually pushed from a NodeService,
-        thus this wholesale Set of the authorized user list.  Also, push this
-        list to known services
-        """
-
-        try:
-            self.authManager.SetAuthorizedUsers( authorizedUsers )
-            self.__PushAuthorizedUserList()
-        except:
-            log.exception("AGServiceManager.SetAuthorizedUsers.")
-            raise Exception("AGServiceManager.SetAuthorizedUsers failed: " + str( sys.exc_value ))
-        
-
 
     ####################
     ## RESOURCE methods
@@ -217,9 +195,6 @@ class AGServiceManager:
             serviceDescription.uri = serviceUrl
             self.services[pid] = serviceDescription
 
-            # Push authorized user list
-            Client.Handle( serviceDescription.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
-
             # Assign resource to the service
             #
             if serviceDescription.resource and serviceDescription.resource != "None":
@@ -337,12 +312,6 @@ class AGServiceManager:
     ## INTERNAL methods
     ####################
 
-    def __PushAuthorizedUserList( self ):
-        """Push the list of authorized users to service managers"""
-        for service in self.services.values():
-            Client.Handle( service.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
-
-
     def __RetrieveServicePackage( self, servicePackageUrl ):
         """Internal : Retrieve a service implementation"""
         log.info("Retrieving Service Package: %s", servicePackageUrl)
@@ -417,16 +386,6 @@ class AGServiceManagerI(SOAPInterface):
         **Returns:**
         """
         self.impl.Shutdown()
-
-    def SetAuthorizedUsers(self, authorizedUsers):
-        """
-        Interface to set the list of users authorized to 
-
-        **Arguments:**
-        **Raises:**
-        **Returns:**
-        """
-        self.impl.SetAuthorizedUsers()
 
     def GetResources(self):
         """
