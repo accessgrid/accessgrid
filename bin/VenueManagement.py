@@ -6,19 +6,20 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.109 2003-10-21 18:55:49 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.110 2003-10-30 22:18:18 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.109 2003-10-21 18:55:49 eolson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.110 2003-10-30 22:18:18 lefvert Exp $"
 
 import webbrowser
 import string
 import time
 import re
 import logging, logging.handlers
+import getopt
 
 from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
@@ -57,12 +58,11 @@ class VenueManagementClient(wxApp):
     ID_SERVER_SHUTDOWN = wxNewId()
     ID_HELP_ABOUT = wxNewId()
     ID_HELP_MANUAL =  wxNewId()
-
+        
     def OnInit(self):
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
-
-        #self.manual_url = "http://www-unix.mcs.anl.gov/fl/research/accessgrid/documentation/VENUE_MANAGEMENT_MANUAL_HTML/VenueManagementManualHTML.htm"
+      
         self.manual_url = os.path.join(GetSharedDocDir(), "VenueManagementManual", "VenueManagementManualHTML.htm")
         self.server = None
         self.serverUrl = None
@@ -72,7 +72,7 @@ class VenueManagementClient(wxApp):
         self.administrators = {}
         self.venueList = []
         self.help_open = 0
-    
+          
         self.frame = wxFrame(NULL, -1, "Venue Management" )
         self.address = VenueServerAddress(self.frame, self)
         self.tabs = VenueManagementTabs(self.frame, -1, self)
@@ -86,8 +86,6 @@ class VenueManagementClient(wxApp):
         self.app = Toolkit.WXGUIApplication()
         self.app.Initialize()
         self.app.InitGlobusEnvironment()
-
-        self.__setLogger()
 
         return true
 
@@ -124,18 +122,17 @@ class VenueManagementClient(wxApp):
         
         self.menubar.Append(self.helpMenu, "&Help")
 
-    def __setLogger(self):
+    def SetLogger(self, debugMode):
         log.setLevel(logging.DEBUG)
         hdlr = logging.FileHandler(os.path.join(GetUserConfigDir(), "VenueManagement.log"))
         fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s",
                                 "%x %X")
+        if debugMode:
+            hdlr = logging.StreamHandler()
+
         hdlr.setFormatter(fmt)
         log.addHandler(hdlr)
-        # 
-        # Uncomment this for debug output to console.
-        #
-        # logging.root.addHandler(logging.StreamHandler())
-
+               
     def __setProperties(self):
         self.frame.SetIcon(icons.getAGIconIcon())
         self.frame.SetSize(wxSize(540, 405))
@@ -158,7 +155,6 @@ class VenueManagementClient(wxApp):
             self.browser = webbrowser.get()
             
         self.browser.open(url, needNewWindow)
-
 
     def OpenAboutDialog(self, event):
         aboutDialog = AboutDialog(self.frame)
@@ -665,6 +661,9 @@ class VenueListPanel(wxPanel):
 
                 try:
                     self.application.DeleteVenue(venueToDelete)
+                    if defaultVenueUrl == venueToDelete.uri:
+                        # We just deleted default venue
+                        self.defaultVenue = None
 
                 except Exception, e:
                     if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
@@ -701,7 +700,6 @@ class VenueListPanel(wxPanel):
     def AddVenue(self, venue):
         # ICKY ICKY ICKY
         venue.connections = venue.connections.values()
-
         #
         # Check to see if a venue with the same name is already added.
         # The string can either be venue's name or venue's name and a default indicator.
@@ -742,23 +740,28 @@ class VenueListPanel(wxPanel):
         # called during initialization of the application and default venue
         # is already set in the server.
         #
-       
-        
-        if not init and venue.uri != self.defaultVenue.uri:
+
+        # If the venue list is empty
+        if not self.defaultVenue:
+            self.application.server.SetDefaultVenue(venue.uri)
+                        
+        elif not init and venue.uri != self.defaultVenue.uri:
             "remove default text from old default"
             # Remove default text from old default venue
-            id = self.venuesList.FindString(self.defaultVenue.name +self.DEFAULT_STRING)
-            self.venuesList.SetString(id, self.defaultVenue.name)
-
+            if self.defaultVenue:
+                id = self.venuesList.FindString(self.defaultVenue.name +self.DEFAULT_STRING)
+                self.venuesList.SetString(id, self.defaultVenue.name)
+            
             # Set default venue for this server
             self.application.server.SetDefaultVenue(venue.uri)
             
         self.defaultVenue = venue
+        
         id = self.venuesList.FindString(venue.name)
         
         if id != wxNOT_FOUND:
             self.venuesList.SetString(id, venue.name+self.DEFAULT_STRING)
-
+                       
     def ModifyVenue(self, venue):
         item = self.venuesList.GetSelection()
         index = self.venuesList.FindString(venue.name)
@@ -2135,7 +2138,50 @@ class IpAddressConverter:
         self.ipString = str(ip1)+'.'+str(ip2)+'.'+str(ip3)+'.'+str(ip4)
         return self.ipString
 
+class ArgumentManager:
+    def __init__(self):
+        self.debugMode = 0
+
+    def GetDebugMode(self):
+        return self.debugMode
+        
+    def Usage(self):
+        """
+        How to use the program.
+        """
+        print "%s:" % (sys.argv[0])
+        print "  -h|--help: print usage"
+        print "  -d|--debug: print debug output"
+        
+    def ProcessArgs(self):
+        """
+        Handle any arguments we're interested in.
+        """
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], "hdl:",
+                                       ["debug", "help"])
+
+        except getopt.GetoptError:
+            self.Usage()
+            sys.exit(2)
+            
+        for opt, arg in opts:
+            if opt in ('-h', '--help'):
+                self.Usage()
+                sys.exit(0)
+            
+            elif opt in ('--debug', '-d'):
+                self.debugMode = 1
+               
+
+
 if __name__ == "__main__":
     wxInitAllImageHandlers()
+    argManager = ArgumentManager()
+    argManager.ProcessArgs()
+    debugMode = argManager.GetDebugMode()
+    del argManager
+
     app = VenueManagementClient()
+    app.SetLogger(debugMode)
     app.MainLoop()
