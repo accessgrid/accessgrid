@@ -3,20 +3,23 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.49 2004-08-06 16:27:43 eolson Exp $
+# RCS-ID:      $Id: Config.py,v 1.50 2004-08-17 16:36:44 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.49 2004-08-06 16:27:43 eolson Exp $"
+__revision__ = "$Id: Config.py,v 1.50 2004-08-17 16:36:44 eolson Exp $"
 
 import os
 import mimetypes
 import mailcap
 import socket
+import fcntl
 import getpass
+import glob
 import shutil
+import struct
 import resource
 
 from pyGlobus import security
@@ -638,55 +641,98 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
         return None
         
     def GetResources(self):
-    
+        # V4L video_capability struct defined in linux/videodev.h :
+        #   struct video_capability {
+        #     char name[32];
+        #     int type;
+        #     int channels;   # Num channels
+        #     int audios;     # Num audio devices
+        #     int maxwidth;   # Supported width
+        #     int maxheight;  # and height
+        #     int minwidth;   # Supported width
+        #     int minheight;  # and height
+        #   };
+        VIDIOCGCAP_FMT = "32siiiiiii"   # video_capability struct format string
+        VIDIOCGCAP     = -2143521279    # 0x803C7601
+
+        # V4L video_channel struct defined in linux/videodev.h :
+        #   struct video_channel {
+        #     int channel;
+        #     char name[32];
+        #     int tuners;
+        #     __u32 flags;
+        #     __u16 type;
+        #     __u16 norm;
+        #   };
+        VIDIOCGCHAN_FMT = "i32siIHH"   # video_channel struct format string
+        VIDIOCGCHAN     = -1070565886  # 0xC0307602
+
+        VID_TYPE_CAPTURE = 0x1 # V4L device can capture capability flag
+
+        # Determine ports for devices
         deviceList = dict()
-        
-        videodevpath = '/proc/video/dev'
+        for device in glob.glob("/dev/video[0-9]*"):
+            if os.path.isdir(device):
+                continue
 
-        if os.path.exists('/sys/class/video4linux'):
-            videodevpath = '/sys/class/video4linux'
+            fd = None
+            try:
+                fd = os.open(device, os.O_RDWR)
+            except Exception, e:
+                log.info("open: %s", e)
+                continue
 
-        v4lctlexe = '/usr/bin/v4lctl'
-        
-        if os.path.exists(videodevpath):
-            # Get list of devices
-            cmd = "ls " + videodevpath + "/" + " | grep video"
-            fh = os.popen(cmd,'r')
-            for line in fh.readlines():
-                device = os.path.join('/dev',line.strip())
-                deviceList[device] = ""  # empty portString
-            fh.close()
+            desc = ""; capType = 0; numPorts = 0
+            try:
+                cap = struct.pack(VIDIOCGCAP_FMT, "", 0, 0, 0, 0, 0, 0, 0);
+                r = fcntl.ioctl(fd, VIDIOCGCAP, cap)
+                (desc, capType, numPorts, x, x, x, x, x) = struct.unpack(VIDIOCGCAP_FMT, r)
+                desc.replace("\x00", "")
+            except Exception, e:
+                log.info("ioctl %s VIDIOCGCAP: %s", device, e)
+                os.close(fd)
+                continue
 
-            # Determine ports for devices
-            if os.path.exists(v4lctlexe):
-                portString = ""
-                for d in deviceList.keys():
-                    cmd = "v4lctl list -c %s" % d
-                    fh = os.popen(cmd)
-                    for line in fh.readlines():
-                        if line.startswith('input'):
-                            portString = line.split('|')[-1]
-                            deviceList[d] = portString.strip()
-                            break
+            log.info("V4L %s description: %s", device, desc)
+
+            if not (capType & VID_TYPE_CAPTURE):
+                os.close(fd)
+                log.info("V4L %s: device can not capture", device)
+                continue
+
+            portList = []
+            for i in range(numPorts):
+                port = ""
+                try:
+                    chan = struct.pack(VIDIOCGCHAN_FMT, i, "", 0, 0, 0, 0);
+                    r = fcntl.ioctl(fd, VIDIOCGCHAN, chan)
+                    port = struct.unpack(VIDIOCGCHAN_FMT, r)[1]
+                except Exception, e:
+                    log.info("ioctl %s VIDIOCGCHAN: %s", device, e)
+                    os.close(fd)
+                    continue
+                portList.append(port.replace("\x00", ""))
+
+            os.close(fd)
+
+            if len(portList) > 0:
+                deviceList[device] = portList
+                log.info("V4L %s has ports: %s", device, portList)
             else:
-                log.info("%s not found; can't get ports", v4lctlexe)
-        else:
-            log.info("%s does not exist; no video devices detected",
-                     videodevpath)
-        
+                log.info("V4L %s: no suitable input ports found", device)
+
 
         # Force x11 onto the list
-        deviceList['x11'] = 'x11'
+        deviceList['x11'] = ['x11']
 
         # Create resource objects
         resourceList = list()
-        for device,portString in deviceList.items():
+        for device,portList in deviceList.items():
             try:
-                r = AGVideoResource('video', device, 'producer',
-                                portString.split())
+                r = AGVideoResource('video', device, 'producer', portList)
                 resourceList.append(r)
             except Exception, e:
-                log.exception("Unable to add video resource to list. device: " + device + "  portString: " + portString)
+                log.exception("Unable to add video resource to list. device: " + device + "  portlist: " + portList)
         
         return resourceList
 
