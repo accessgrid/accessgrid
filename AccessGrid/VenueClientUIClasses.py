@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.260 2003-09-16 07:20:18 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.261 2003-09-16 16:06:03 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.260 2003-09-16 07:20:18 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.261 2003-09-16 16:06:03 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2463,6 +2463,7 @@ class TextClientPanel(wxPanel):
         try:
             self.app.venueClient.textClient.Input(text)
             self.TextInput.Clear()
+            self.TextInput.SetFocus()
         except:
             text = "Could not send text message successfully"
             title = "Notification"
