@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/13/12
-# RCS-ID:      $Id: NetworkLocation.py,v 1.12 2003-08-09 23:56:33 turam Exp $
+# RCS-ID:      $Id: NetworkLocation.py,v 1.13 2003-08-12 15:47:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -58,6 +58,7 @@ class NetworkLocation:
 
     def __repr__(self):
         string = "%s %d" % (self.host, self.port)
+        return string
 
 class UnicastNetworkLocation(NetworkLocation):
     """
