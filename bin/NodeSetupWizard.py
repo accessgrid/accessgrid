@@ -3,7 +3,7 @@
 # Name:        NodeSetupWizard.py
 # Purpose:     Wizard for setup and test a room based node configuration
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.44 2004-09-07 20:00:08 turam Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.45 2004-09-08 21:08:51 turam Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -234,7 +234,7 @@ class VideoCaptureWindow(TitledPage):
         self.PORT_ID =  wxNewId()
         self.BUTTON_ID = wxNewId()
         self.machineCtrl = wxTextCtrl(self, self.MACHINE_ID)
-        self.portCtrl = wxTextCtrl(self, self.PORT_ID, "12000")
+        self.portCtrl = wxTextCtrl(self, self.PORT_ID, "11000")
         self.CHECK_ID = wxNewId()
         self.checkBox = wxCheckBox(self, self.CHECK_ID, "I do not want to use a video capture machine (you will not be able to send video).")
         
@@ -469,7 +469,7 @@ class VideoDisplayWindow(TitledPage):
         self.PORT_ID =  wxNewId()
         self.CHECK_ID = wxNewId()
         self.machineCtrl = wxTextCtrl(self, self.MACHINE_ID)
-        self.portCtrl = wxTextCtrl(self, self.PORT_ID, "12000")
+        self.portCtrl = wxTextCtrl(self, self.PORT_ID, "11000")
         self.checkBox = wxCheckBox(self, self.CHECK_ID,
                                    "I do not want to use a video display machine (you will not be able to see video).")
         
@@ -578,7 +578,7 @@ class AudioWindow(TitledPage):
         self.PORT_ID =  wxNewId()
         self.CHECK_ID = wxNewId()
         self.machineCtrl = wxTextCtrl(self, self.MACHINE_ID)
-        self.portCtrl = wxTextCtrl(self, self.PORT_ID, "12000")
+        self.portCtrl = wxTextCtrl(self, self.PORT_ID, "11000")
         self.checkBox = wxCheckBox(self, self.CHECK_ID,
                                    "I do not want to use an audio machine (you will not be able to hear or send audio).")
         self.canConnect = None
