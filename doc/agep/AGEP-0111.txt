@@ -2,7 +2,7 @@
 Shared Application Client
 ==========================
 
-:version: $Revision: 1.2 $
+:version: $Revision: 1.3 $
 :author: Susanne Lefvert <lefvert@mcs.anl.gov>
 :status: Draft
 :contact: ag-tech@mcs.anl.gov
@@ -10,14 +10,22 @@ Shared Application Client
 Abstract
 ========
 
-    This enhancement proposal describes design and implementation of a shared application base class that will simplify development of shared applications. 
+    This enhancement proposal describes design and implementation of a shared application client that will simplify development of shared applications. 
 
 
 Overview
 ==========
 
-    The AGTk 2.0 currently includes an interface for building shared applications.  After several applications have been created using this interface, it is apparent that application clients share some common code, especially in the initialization phase.  To avoid redundant code, parts of shared applications would be extracted into a shared application base class, the **SharedAppClient**.  The new class will make it possible to re-use existing code and make it easier to develop shared applications.
+    The AGTk 2.0 currently includes an interface for building shared applications.  After several applications have been created using this interface, it is apparent that application clients share some common code, especially in the initialization phase.  To avoid redundant code, parts of shared applications would be extracted into a shared application class, the **SharedAppClient**.  The new class will make it possible to re-use existing code and make it easier to develop shared applications.  It will also enable caching of application data that will reduce the amount of SOAP calls made between clients and the service.  Furthermore, SOAP exceptions can be made transparent to the application developer and converted into python exceptions in the new client class. 
 
+Summary of Modifications
+=========================
+
+* Implement a shared application client class that provides an application developer with all methods available in the AppObject interface.
+* Convert SOAP exceptions, in the new client class, to python exceptions.
+* Cache application data in the client.
+* Implement a callback table for events so more than one callback can be registered for each event. 
+ 
 
 Design
 ======
@@ -25,7 +33,7 @@ Design
 SharedAppClient Specification
 ------------------------------
  
-  **Atributes:**
+  **Attributes:**
 
   * publicId
   * privateId
@@ -45,7 +53,8 @@ SharedAppClient Specification
   * GetData(dataKey)
   * SetData(dataKey, dataValue)
   * GetPublicId()
-  
+  * GetApplicationId()
+  * GetComponents()
 
 Class Overview
 ----------------
@@ -69,16 +78,16 @@ Reference Implementation
 =========================
 
     Sample code of the Shared Browser using the SharedAppClient can be found at [1].
- 
+
+    **Note:** This reference implementation does not include a callback table, caching of data, or SOAP exception conversions.
+
+
 Rationale
 ========= 
 
     The aim of this AGEP is to provide a client side interface to application services. By encapsulating details such as eventClient, ID's, and SOAP proxy from the developer, shared applications should be cleaner and more straightforward to implement.  Ideally, a developer should only need to include the SharedAppClient, and in some cases the DataStoreClient, from the  AccessGrid toolkit in order to write shared applications. 
 
-
-Open Issues
-===========
-    Should the SharedAppClient implement all SOAP methods offered by the AppService even though this might just be a one line call to the service?  Or, is it better to return the SOAP proxy in a GetServiceProxy method and avoid the extra interface layer?  For new developers, it would probably be easier to understand one well documented client interface and hide the AppService entirely.
+    The client will implement all methods found in the application service interface to entirely hide the SOAP layer from application developers.  SOAP exceptions can then be handled transparent to the application developer and converted to python exceptions in the client.  Additionally, the client should cache application data, thus reducing the number of SOAP calls made to the service. Finally, by implementing a callback table in the client, several callbacks can be registered for each event.
 
 
 Interoperability Issues
@@ -92,11 +101,13 @@ References
 
     .. [1] Reference implementation: http://www-unix.mcs.anl.gov/~lefvert/AGEP/AGEP.html (AGEP Shared Application Client for AGTk 2.0)
  
-Comments
-=========
+Open Issues
+===========
+
+    Do we need GetApplicationId() and GetComponents()?
     
-    * Cache data in shared app client - change based on events
-    * Create callback table in shared app client
+    GetApplicationId() would call GetId() in the AppObjectImpl class.
+
 
 Copyright
 =========
