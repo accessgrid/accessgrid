@@ -6,13 +6,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceClient.py,v 1.5 2003-01-13 18:24:32 turam Exp $
+# RCS-ID:      $Id: CoherenceClient.py,v 1.6 2003-01-15 22:03:40 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 from threading import Thread
 import socket
+import pickle
 
 class CoherenceClient(Thread):
     """
@@ -32,12 +33,18 @@ class CoherenceClient(Thread):
         self.callback = callback
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((host, port))
+        self.callbacks = dict()
         
     def run(self):
         while self.sock != None:
-            data = self.sock.recv(1024)
-            print "Received coherence event !"
-            self.callback(data)   
+            pickledData = self.sock.recv(10000)
+            print "pickled data ", pickledData
+            event = pickle.loads( pickledData )
+            callback = self.callbacks[event.eventType]
+            callback( event.data )
+
+    def add_callback( self, eventType, callback ):
+        self.callbacks[eventType] = callback
 
     def test_serve(self, label):
         import time
