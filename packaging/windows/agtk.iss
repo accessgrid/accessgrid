@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.4 2003-04-24 20:45:59 turam Exp $
+; RCS-ID: $Id: agtk.iss,v 1.5 2003-04-24 22:16:19 turam Exp $
 ;
 
 #define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
@@ -22,7 +22,7 @@ LogFileAppend=false
 ; parameter to prebuild. Ti and I have chatted about this, it's on the
 ; to do list :-)
 ;
-Name: python; Parameters: C:\AccessGridBuild\AccessGrid\packaging\makeServicePackages.py C:\AccessGridBuild\AccessGrid\AccessGrid\services; Flags: abortonerror
+Name: python; Parameters: C:\AccessGridBuild\AccessGrid\packaging\makeServicePackages.py C:\AccessGridBuild\AccessGrid\services\node; Flags: abortonerror
 Name: C:\AccessGridBuild\AccessGrid\packaging\windows\Prebuild.cmd; Parameters: C:\AccessGridBuild\AccessGrid; Flags: abortonerror
 Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\AccessGridBuild\ag-vic C:\AccessGridBuild\AccessGrid\Release\bin; Flags: abortonerror
 Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildRat.cmd; Parameters: C:\AccessGridBuild\ag-rat C:\AccessGridBuild\AccessGrid\Release\bin; Flags: abortonerror

@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.21 2003-04-22 17:35:58 judson Exp $
+# RCS-ID:      $Id: setup.py,v 1.22 2003-04-24 22:17:54 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -64,12 +64,12 @@ setup(
                     ]
                    ),
                   ('var/lib/ag/local_services',
-                   [r"AccessGrid/services/AudioService.py",
-                    r"AccessGrid/services/AudioService.svc",
-                    r"AccessGrid/services/VideoConsumerService.py",
-                    r"AccessGrid/services/VideoConsumerService.svc",
-                    r"AccessGrid/services/VideoProducerService.py",
-                    r"AccessGrid/services/VideoProducerService.svc"
+                   [r"services/node/AudioService.py",
+                    r"services/node/AudioService.svc",
+                    r"services/node/VideoConsumerService.py",
+                    r"services/node/VideoConsumerService.svc",
+                    r"services/node/VideoProducerService.py",
+                    r"services/node/VideoProducerService.svc"
                     ]
                    ),
                   ('share/AccessGrid',
@@ -78,9 +78,9 @@ setup(
                     ]
                    ),
                   ('share/AccessGrid/services',
-                   [r"AccessGrid/services/AudioService.zip",
-                    r"AccessGrid/services/VideoConsumerService.zip",
-                    r"AccessGrid/services/VideoProducerService.zip"
+                   [r"services/node/AudioService.zip",
+                    r"services/node/VideoConsumerService.zip",
+                    r"services/node/VideoProducerService.zip"
                     ]
                    ),
                   ('share/AccessGrid/packaging/windows',
