@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.70 2004-04-26 16:17:43 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.71 2004-04-27 01:51:11 judson Exp $
 ;
 
 ; Set externally
@@ -165,11 +165,11 @@ Name: {app}\bin\*.dat; Type: files
 Name: {app}\bin\*.cfg; Type: files
 
 [Dirs]
-Name: {app}\bin
 Name: {app}\config\nodeConfig
 Name: {app}\Logs
 Name: {app}\PackageCache
 Name: {app}\SharedApplications
+Name: {app}\Services
 Name: {app}\NodeServices
 
 [INI]
