@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.109 2003-04-08 16:39:18 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.110 2003-04-09 19:46:34 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,6 +29,7 @@ from AccessGrid.VenueClient import VenueClient
 from AccessGrid.DataStore import DataStore, GSIHTTPTransferServer
 from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
 from AccessGrid.VenueClientUIClasses import SaveFileDialog, UploadFilesDialog
+from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid.Utilities import HaveValidProxy
 from AccessGrid.UIUtilities import MyLog 
@@ -84,6 +85,9 @@ class VenueClientUI(wxApp, VenueClient):
         self.__processArgs()
         
         self.__setLogger()
+
+        VerifyExecutionEnvironment()
+
         self.__createHomePath()
         self.__createPersonalDataStore()
 
