@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.325 2004-02-23 16:56:44 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.326 2004-02-23 22:54:27 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.325 2004-02-23 16:56:44 olson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.326 2004-02-23 22:54:27 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -3520,6 +3520,8 @@ class DataDialog(wxDialog):
         self.ownerCtrl = wxTextCtrl(self, -1, "")
         self.sizeText = wxStaticText(self, -1, "Size:")
         self.sizeCtrl = wxTextCtrl(self, -1, "")
+        self.lastModText = wxStaticText(self, -1, "Last modified:")
+        self.lastModCtrl = wxTextCtrl(self, -1, "")
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
         self.__setProperties()
@@ -3534,6 +3536,7 @@ class DataDialog(wxDialog):
         self.nameCtrl.SetValue(dataDescription.name)
         self.ownerCtrl.SetValue(str(dataDescription.owner))
         self.sizeCtrl.SetValue(str(dataDescription.size))
+        self.lastModCtrl.SetValue(str(dataDescription.lastModified))
         self.SetTitle("Data Properties")
         self.__setEditable(false)
         self.cancelButton.Destroy()
@@ -3555,11 +3558,13 @@ class DataDialog(wxDialog):
 
             self.ownerCtrl.SetEditable(false)
             self.sizeCtrl.SetEditable(false)
+            self.lastModCtrl.SetEditable(false)
                      
         else:
             self.nameCtrl.SetEditable(true)
             self.ownerCtrl.SetEditable(true)
             self.sizeCtrl.SetEditable(true)
+            self.lastModCtrl.SetEditable(true)
                                        
     def Layout(self):
         sizer1 = wxBoxSizer(wxVERTICAL)
@@ -3571,6 +3576,8 @@ class DataDialog(wxDialog):
         gridSizer.Add(self.ownerCtrl, 2, wxEXPAND, 0)
         gridSizer.Add(self.sizeText, 0, wxALIGN_LEFT, 0)
         gridSizer.Add(self.sizeCtrl, 0, wxEXPAND, 0)
+        gridSizer.Add(self.lastModText, 0, wxALIGN_LEFT, 0)
+        gridSizer.Add(self.lastModCtrl, 0, wxEXPAND, 0)
         sizer2.Add(gridSizer, 1, wxALL, 10)
 
         sizer1.Add(sizer2, 1, wxALL|wxEXPAND, 10)
