@@ -14,7 +14,7 @@ from AccessGrid.hosting import SecureServer as Server
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
 from AccessGrid.Platform.Config import SystemConfig
 from AccessGrid.GUID import GUID
-from AccessGrid.AGService import AGService, RunService
+from AccessGrid.AGService import AGService, AGServiceI, AGServiceIW, RunService
 
 class DebugService(AGService):
    """
@@ -49,17 +49,14 @@ class DebugService(AGService):
       if self.level > 0:
          print profile
          
-class DebugServiceI(SOAPInterface):
+class DebugServiceI(AGServiceI):
    """
    Interface wrapper for the Debug Service implementation, so you can for
    example turn the verbosity up and down, or perhaps in the future redirect
    logging to someplace interesting.
    """
    def __init__(self, impl):
-      SOAPInterface.__init__(self, impl)
-
-   def _authorize(self, *args, **kw):
-      return 1
+      AGServiceI.__init__(self, impl)
 
    def GetLevel(self):
       return self.impl.GetLevel()
@@ -83,9 +80,9 @@ class DebugServiceI(SOAPInterface):
       # lucky we aren't using this yet
       return self.impl.SetIdentity(profile)
 
-class DebugServiceIW(SOAPIWrapper):
+class DebugServiceIW(AGServiceIW):
    def __init__(self, url):
-      SOAPIWrapper.__init__(self, url)
+      AGServiceIW.__init__(self, url)
 
    def GetLevel(self):
       return self.proxy.GetLevel()
