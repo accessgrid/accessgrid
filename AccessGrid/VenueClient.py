@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.83 2003-07-14 21:08:43 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.84 2003-07-15 20:19:38 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -137,10 +137,10 @@ class VenueClient( ServiceBase):
         from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
         port = MulticastAddressAllocator().AllocatePort()
 
-        server = Server.Server(port, auth_callback=AuthCallback)
-        self.service = server.CreateServiceObject("VenueClient")
+        self.server = Server.Server(port, auth_callback=AuthCallback)
+        self.service = self.server.CreateServiceObject("VenueClient")
         self._bind_to_service( self.service )
-        server.run_in_thread()
+        self.server.run_in_thread()
         
         if(self.profile != None):
             self.profile.venueClientURL = self.service.get_handle()
@@ -1073,4 +1073,17 @@ class VenueClient( ServiceBase):
         log.debug("Set node service url:  %s" %url)
         self.nodeServiceUri = url
 
-   
+    def Shutdown(self):
+
+        #
+        # stop personal data server
+        #  
+        if self.transferEngine:
+            self.transferEngine.stop()
+
+        if self.server:
+            self.server.Stop()
+
+        if self.dataStore:
+            self.dataStore.Shutdown()
+

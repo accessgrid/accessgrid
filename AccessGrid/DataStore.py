@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.29 2003-07-11 21:12:33 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.30 2003-07-15 20:19:38 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -305,10 +305,10 @@ class DataStore(ServiceBase):
         from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
         port = MulticastAddressAllocator().AllocatePort()
 
-        server = Server.Server(port, auth_callback=AuthCallback)
-        self.service = server.CreateServiceObject("DataStore")
+        self.server = Server.Server(port, auth_callback=AuthCallback)
+        self.service = self.server.CreateServiceObject("DataStore")
         self._bind_to_service( self.service )
-        server.run_in_thread()
+        self.server.run_in_thread()
 
     def SetEventDistributor(self, eventDistributor, channelId):
         '''
@@ -673,6 +673,10 @@ class DataStore(ServiceBase):
         self.cbLock.release()
         
         return desc
+
+    def Shutdown(self):
+        if self.server:
+            self.server.Stop()
 
 import BaseHTTPServer
 
