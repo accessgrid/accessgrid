@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.119 2004-03-04 15:33:05 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.120 2004-03-05 21:43:06 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.119 2004-03-04 15:33:05 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.120 2004-03-05 21:43:06 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -25,8 +25,6 @@ from threading import Thread, Lock, Condition
 import logging
 import time
 import ConfigParser
-
-from AccessGrid.hosting import GetSOAPContext
 
 from AccessGrid import Toolkit
 from AccessGrid.hosting import Server
@@ -128,7 +126,7 @@ class VenueServer(AuthorizationMixIn):
             "VenueServer.addressMask" : MulticastAddressAllocator.SDR_MASK_SIZE
             }
 
-    defaultVenueDesc = VenueDescription("Venue Server Lobby", """ This is the lobby of the Venue Server, it has been created because there are no venues yet. Please configure your Venue Server! For more information see http://www.accessgrid.org/ and http://www.mcs.anl.gov/fl/research/accessgrid.""")
+    defaultVenueDesc = VenueDescription("Venue Server Lobby", """This is the lobby of the Venue Server, it has been created because there are no venues yet. Please configure your Venue Server! For more information see http://www.accessgrid.org/ and http://www.mcs.anl.gov/fl/research/accessgrid.""")
 
     def __init__(self, hostEnvironment = None, configFile=None):
         """
@@ -249,7 +247,8 @@ class VenueServer(AuthorizationMixIn):
             self.SetDefaultVenue(self.defaultVenue)
         else:
             log.debug("Creating default venue")
-            self.AddVenue(self.defaultVenueDesc)
+            uri = self.AddVenue(self.defaultVenueDesc)
+            v = self.hostingEnvironment.FindObjectForURL(uri)
         # End of Loading of Venues from persistence
         
         # The houseKeeper is a task that is doing garbage collection and
@@ -310,7 +309,7 @@ class VenueServer(AuthorizationMixIn):
                 desc = re.sub("<LF>", "\n", desc)
 
                 name = cp.get(sec, 'name')
-                id = sec
+                oid = sec
                 encryptMedia = cp.getint(sec, 'encryptMedia')
                 if encryptMedia:
                     encryptKey = cp.get(sec, 'encryptionKey')
@@ -325,7 +324,6 @@ class VenueServer(AuthorizationMixIn):
                 except ConfigParser.NoOptionError:
                     connections = ""
 
-                print "conns: ", connections
                 for c in string.split(connections, ':'):
                     if c:
                         uri = self.MakeVenueURL(self.IdFromURL(cp.get(c,
@@ -345,7 +343,6 @@ class VenueServer(AuthorizationMixIn):
 
                 for s in string.split(streams, ':'):
                     if s:
-                        print "Stream: ",s
                         name = cp.get(s, 'name')
                         encryptionFlag = cp.getint(s, 'encryptionFlag')
                     
@@ -385,7 +382,7 @@ class VenueServer(AuthorizationMixIn):
 
                 # do the real work
                 vd = VenueDescription(name, desc, (encryptMedia, encryptKey),
-                                      cl, sl, id)
+                                      cl, sl, oid)
                 uri = self.AddVenue(vd)
                 v = self.hostingEnvironment.FindObjectForURL(uri)
                 v.cleanupTime = cleanupTime
@@ -397,19 +394,19 @@ class VenueServer(AuthorizationMixIn):
                     appList = ""
 
                 if len(appList) != 0:
-                    for id in string.split(appList, ':'):
-                        name = cp.get(id, 'name')
-                        description = cp.get(id, 'description')
-                        mimeType = cp.get(id, 'mimeType')
+                    for oid in string.split(appList, ':'):
+                        name = cp.get(oid, 'name')
+                        description = cp.get(oid, 'description')
+                        mimeType = cp.get(oid, 'mimeType')
 
                         appDesc = v.CreateApplication(name, description,
-                                                      mimeType, id)
+                                                      mimeType, oid)
                         appImpl = v.applications[appDesc.id]
 
-                        for o in cp.options(id):
+                        for o in cp.options(oid):
                             if o != 'name' and o != 'description' and \
                                o != 'id' and o != 'uri' and o != mimeType:
-                                value = cp.get(id, o)
+                                value = cp.get(oid, o)
                                 appImpl.app_data[o] = value
                 else:
                     log.debug("No applications to load for Venue %s", sec)
@@ -420,12 +417,12 @@ class VenueServer(AuthorizationMixIn):
                 except ConfigParser.NoOptionError:
                     serviceList = ""
 
-                for id in serviceList.split(':'):
-                    if id:
-                        name = cp.get(id, 'name')
-                        description = cp.get(id, 'description')
-                        mimeType = cp.get(id, 'mimeType')
-                        uri = cp.get(id, 'uri')
+                for oid in serviceList.split(':'):
+                    if oid:
+                        name = cp.get(oid, 'name')
+                        description = cp.get(oid, 'description')
+                        mimeType = cp.get(oid, 'mimeType')
+                        uri = cp.get(oid, 'uri')
                     
                         v.AddService(ServiceDescription(name, description, uri,
                                                         mimeType))
@@ -583,9 +580,8 @@ class VenueServer(AuthorizationMixIn):
         # Create a new Venue object pass it the server
         # Usually the venueDesc will not have Role information 
         #   and defaults will be used.
-
         venue = Venue(self, venueDesc.name, venueDesc.description,
-                      self.dataStorageLocation, id = venueDesc.id )
+                      self.dataStorageLocation, venueDesc.id )
 
         # Make sure new venue knows about server's external role manager.
         venue.SetEncryptMedia(venueDesc.encryptMedia, venueDesc.encryptionKey)
@@ -603,8 +599,8 @@ class VenueServer(AuthorizationMixIn):
         self.simpleLock.acquire()
 
         # Add the venue to the list of venues
-        id = self.IdFromURL(venue.uri)
-        self.venues[id] = venue
+        oid = venue.GetId()
+        self.venues[oid] = venue
 
         # Create an interface
         vi = VenueI(venue)
@@ -615,7 +611,6 @@ class VenueServer(AuthorizationMixIn):
         
         # We have to register this venue as a new service.
         if(self.hostingEnvironment != None):
-            print venue.uri, PathFromURL(venue.uri)
             self.hostingEnvironment.RegisterObject(vi,
                                                    path=PathFromURL(venue.uri))
             self.hostingEnvironment.RegisterObject(AuthorizationManagerI(venue.authManager),
@@ -626,16 +621,16 @@ class VenueServer(AuthorizationMixIn):
         
         # If this is the first venue, set it as the default venue
         if len(self.venues) == 1 and self.defaultVenue == '':
-            self.SetDefaultVenue(id)
+            self.SetDefaultVenue(oid)
 
         # return the URL to the new venue
         return venue.uri
 
-    def ModifyVenue(self, id, venueDesc):   
+    def ModifyVenue(self, oid, venueDesc):   
         """   
         ModifyVenue updates a Venue Description.   
         """
-        venue = self.venues[id]
+        venue = self.venues[oid]
 
         # BEGIN Critical Section
         self.simpleLock.acquire()
@@ -657,12 +652,12 @@ class VenueServer(AuthorizationMixIn):
             sd.encryptionKey = venue.encryptionKey
             venue.AddStream(sd)
 
-        self.venues[id] = venue
+        self.venues[oid] = venue
         
         # END Critical Section
         self.simpleLock.release()
         
-    def RemoveVenue(self, id):
+    def RemoveVenue(self, oid):
         """
         RemoveVenue removes a venue from the VenueServer.
 
@@ -680,11 +675,11 @@ class VenueServer(AuthorizationMixIn):
 
         """
 
-        log.debug("RemoveVenue: id = %s", id)
+        log.debug("RemoveVenue: id = %s", oid)
 
         # Get the venue object
         try:
-            venue = self.venues[id]
+            venue = self.venues[oid]
         except KeyError:
             log.exception("RemoveVenue: Venue not found.")
             raise VenueNotFound
@@ -703,7 +698,7 @@ class VenueServer(AuthorizationMixIn):
         venue.Shutdown()
 
         # Clean it out of the venueserver
-        del self.venues[id]
+        del self.venues[oid]
 
         # Checkpoint so we don't save it again
         self.Checkpoint()
@@ -740,14 +735,14 @@ class VenueServer(AuthorizationMixIn):
         """
         return self.MakeVenueURL(self.defaultVenue)
 
-    def SetDefaultVenue(self, id):
+    def SetDefaultVenue(self, oid):
         """
         SetDefaultVenue sets which Venue is the default venue for the
         VenueServer.
         """
         defaultPath = "/Venues/default"
         defaultAuthPath = defaultPath+"/Authorization"
-        self.defaultVenue = id
+        self.defaultVenue = oid
 
         # BEGIN Critical Section
         self.simpleLock.acquire()
@@ -762,19 +757,15 @@ class VenueServer(AuthorizationMixIn):
             self.hostingEnvironment.UnregisterObject(ovia)
             
         # Setup the new default venue
-        self.config["VenueServer.defaultVenue"] = id
-        u,vi = self.hostingEnvironment.FindObject(self.venues[id])
-        vaurl = self.MakeVenueURL(id)+"/Authorization"
+        self.config["VenueServer.defaultVenue"] = oid
+        u,vi = self.hostingEnvironment.FindObject(self.venues[oid])
+        vaurl = self.MakeVenueURL(oid)+"/Authorization"
         vai = self.hostingEnvironment.FindObjectForURL(vaurl)
         self.hostingEnvironment.RegisterObject(vi, path=defaultPath)
         self.hostingEnvironment.RegisterObject(vai, path=defaultAuthPath)
 
         # END Critical Section
         self.simpleLock.release()
-
-        print "Registered %s:\n\t%s\n\t%s (%s)" % (id, defaultPath,
-                                                   defaultAuthPath,
-                                                   vaurl)
 
     def SetStorageLocation(self,  dataStorageLocation):
         """
@@ -916,24 +907,15 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         The authorization callback. We should be able to implement this
         just once and remove a bunch of the older code.
         """
-        soap_ctx = GetSOAPContext()
-        method = soap_ctx.soapaction
-
-        try:
-            security_ctx = soap_ctx.connection.get_security_context()
-        except:
-            raise
-
-        # Recreate the actual subject
-        subject = CreateSubjectFromGSIContext(security_ctx)
+        subject, action = self._GetContext()
         
-        log.info("Authorizing method: %s for %s", method, subject.name)
+        log.info("Authorizing action: %s for subject %s", action.name,
+                 subject.name)
 
         # Need to do this: (once authorization stuff is finished)
         authManager = self.impl.authManager
         
-        # return authManager.IsAuthorized(subject, method)
-
+        # return authManager.IsAuthorized(subject, action)
         return 1
 
     def Shutdown(self, secondsFromNow):
@@ -986,6 +968,9 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         # Deserialize
         venueDesc = CreateVenueDescription(venueDescStruct)
 
+        # The id should be server assigned.
+        venueDesc.id = None
+
         # do the call
         try:
             venueUri = self.impl.AddVenue(venueDesc)
@@ -1016,7 +1001,7 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
             raise InvalidVenueURL
 
         # pull info out of the url
-        id = self.impl.IdFromURL(URL)
+        oid = self.impl.IdFromURL(URL)
 
         # Create a venue description
         vd = CreateVenueDescription(venueDescStruct)
@@ -1027,7 +1012,7 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
 
         # Lock and do the call
         try:
-            self.impl.ModifyVenue(id, vd)
+            self.impl.ModifyVenue(oid, vd)
         except:
             log.exception("ModifyVenue: exception")
             raise
@@ -1039,10 +1024,10 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         **Arguments:**
             *URL* The url to the venue to be removed.
         """
-        id = self.impl.IdFromURL(URL)
+        oid = self.impl.IdFromURL(URL)
 
         try:
-            self.impl.RemoveVenue(id)
+            self.impl.RemoveVenue(oid)
         except:
             log.exception("RemoveVenue: exception")
             raise
@@ -1085,8 +1070,8 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
             *URL* the url of the default venue upon success.
         """
         try:
-            id = self.impl.IdFromURL(URL)
-            self.impl.SetDefaultVenue(id)
+            oid = self.impl.IdFromURL(URL)
+            self.impl.SetDefaultVenue(oid)
 
             return URL
         except:
@@ -1398,7 +1383,9 @@ class VenueServerIW(SOAPIWrapper, AuthorizationIWMixIn):
         vl = self.proxy.GetVenues()
         rl = list()
         for v in vl:
-            rl.append(CreateVenueDescription(v))
+            vd = CreateVenueDescription(v)
+            vd.SetURI(v.uri)
+            rl.append(vd)
         return rl
 
     def GetDefaultVenue(self):
