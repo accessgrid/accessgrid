@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.5 2004-02-03 21:29:37 eolson Exp $
+# RCS-ID:      $Id: agpm.py,v 1.6 2004-03-02 22:30:01 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 This program is used to register applications with the users AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.5 2004-02-03 21:29:37 eolson Exp $"
+__revision__ = "$Id: agpm.py,v 1.6 2004-03-02 22:30:01 judson Exp $"
 
 import os
 import re
@@ -22,10 +22,13 @@ from types import StringType
 import sys
 import getopt
 import zipfile
+import tempfile
 
 from AccessGrid.Toolkit import CmdlineApplication
 from AccessGrid.Utilities import LoadConfig
 from AccessGrid.Platform import GetTempDir
+
+tempfile.tmpdir = GetTempDir()
 
 def Usage():
     """
@@ -54,7 +57,7 @@ def UnpackZip(filename):
     """
     zipArchive = zipfile.ZipFile(filename)
     # We have to unpack things some where we can use them
-    workingDir = os.path.join(GetTempDir(), os.path.basename(os.tmpnam()))
+    workingDir = tempfile.mktemp()
     os.mkdir(workingDir)
     for filename in zipArchive.namelist():
         parts = filename.split('.')
