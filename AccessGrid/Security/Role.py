@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     
-# RCS-ID:      $Id: Role.py,v 1.15 2004-04-08 20:52:10 eolson Exp $
+# RCS-ID:      $Id: Role.py,v 1.16 2004-04-15 20:52:55 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,14 +18,14 @@ much more dynamic. We programmatically create, destroy and modify
 roles.
 """
 
-__revision__ = "$Id: Role.py,v 1.15 2004-04-08 20:52:10 eolson Exp $"
+__revision__ = "$Id: Role.py,v 1.16 2004-04-15 20:52:55 eolson Exp $"
 
 # external imports
 import xml.dom.minidom
 
 # AGTk imports
 from AccessGrid.Security.Subject import Subject, InvalidSubject
-from AccessGrid.Toolkit import Application
+from AccessGrid.Toolkit import Application, Service
 from AccessGrid.Security.Subject import SubjectAlreadyPresent
 
 class RoleNotFound(Exception):
@@ -212,7 +212,7 @@ class Role:
         if not isinstance(subject, Subject):
             raise InvalidSubject
 
-        if Application.instance().GetDefaultSubject() == subject and self.requireDefaultId:
+        if Service.instance().GetDefaultSubject() == subject and self.requireDefaultId:
             raise DefaultIdentityNotRemovable(subject)
         
         if subject not in self.subjects:
