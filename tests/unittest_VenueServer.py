@@ -102,9 +102,7 @@ class VenueServerTestCase(unittest.TestCase):
         # initialize toolkit and environment
         app = Toolkit.Service()
         #
-        sys.argv = sys.argv[:1]
-        
-        app.Initialize("VenueServer_test")
+        app.Initialize("VenueServer_test", sys.argv[:1])
         # server
         venueServer = VenueServer()
         venueServer.SetStorageLocation("testData")

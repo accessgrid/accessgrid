@@ -25,7 +25,7 @@ for each test.
 """
 
 import unittest
-import signal, time, os
+import signal, time, os, sys
 import logging, logging.handlers
 from AccessGrid.AGServiceManager import AGServiceManager, AGServiceManagerI
 from AccessGrid.AGNodeService import AGNodeService, AGNodeServiceI
@@ -56,7 +56,7 @@ class AGServiceManagerTestCase(unittest.TestCase):
 
         # initialize toolkit and environment
         app = Toolkit.Service()
-        app.Initialize("ServiceManager_test")
+        app.Initialize("ServiceManager_test", sys.argv[:1])
         log = app.GetLog()
 
         # Startup serviceManager to test

@@ -62,7 +62,7 @@ class AGNodeServiceTestCase(unittest.TestCase):
 
         # initialize toolkit and environment
         app = Toolkit.Service()
-        app.Initialize("NodeService_test")
+        app.Initialize("NodeService_test", sys.argv[:1])
         log = app.GetLog()
         
         # Create a Node Service
