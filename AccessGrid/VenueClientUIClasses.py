@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.101 2003-03-25 19:46:16 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.102 2003-03-25 20:06:33 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -225,11 +225,10 @@ class VenueClientFrame(wxFrame):
         self.nodeMenu.Append(self.ID_NODE_LEAD,"Lead",\
                                            "Lead this node")
         # until implemented
-        #self.nodeMenu.Enable(self.ID_NODE_LEAD, false)
+        self.nodeMenu.Enable(self.ID_NODE_LEAD, false)
         #self.nodeMenu.Enable(self.ID_NODE_FOLLOW, false)
-        #self.nodeMenu.Enable(self.ID_NODE_MANAGE, false)
-        #self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
-        #self.participantMenu.Enable(self.ID_PARTICIPANT_FOLLOW, true)
+        self.nodeMenu.Enable(self.ID_NODE_MANAGE, false)
+        self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
         self.serviceMenu.Enable(self.ID_VENUE_SERVICE_ADD, false)
         self.serviceMenu.Enable(self.ID_VENUE_SERVICE_DELETE, false)
         self.applicationMenu.Enable(self.ID_VENUE_APPLICATION_ADD, false)
@@ -274,6 +273,7 @@ class VenueClientFrame(wxFrame):
         EVT_MENU(self, self.ID_PARTICIPANT_PROFILE, self.OpenParticipantProfile)
         EVT_MENU(self, self.ID_NODE_PROFILE, self.OpenParticipantProfile)
         EVT_MENU(self, self.ID_PARTICIPANT_FOLLOW, self.Follow)
+        EVT_MENU(self, self.ID_NODE_FOLLOW, self.Follow)
         
     def __setDock(self):
         """
