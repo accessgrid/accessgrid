@@ -46,7 +46,7 @@ class AGServiceManagerBasicTest(unittest.TestCase):
     def testInit(self):
         """Test initialization"""
         app = Toolkit.Service.instance()
-        app.Initialize("unittest_AGServiceManager")
+        app.Initialize("unittest_AGServiceManager", sys.argv[:1])
         self.serviceManager = AGServiceManager(Server(('localhost',5000)))
         self.serviceManager.Shutdown()
         time.sleep(1)

@@ -165,7 +165,7 @@ class EventService:
 if __name__ == "__main__":
   from AccessGrid import Toolkit
 
-  Toolkit.CmdlineApplication().Initialize()
+  Toolkit.CmdlineApplication().Initialize("Asynch_test", sys.argv[:1]) 
 
   port = 6500
   print "Creating new EventService at %d." % port

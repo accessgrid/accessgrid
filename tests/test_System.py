@@ -25,7 +25,7 @@ class SystemTest:
         self.app = WXGUIApplication()
         
         # Try to initialize
-        args = self.app.Initialize("VenueClient")
+        args = self.app.Initialize("VenueClient", sys.argv[:1])
 
         # Handle command line options
         self.__buildOptions()
