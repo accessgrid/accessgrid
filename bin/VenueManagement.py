@@ -6,12 +6,24 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.98 2003-09-11 21:08:25 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.99 2003-09-17 13:57:55 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
+"""
+"""
+__revision__ = "$Id: VenueManagement.py,v 1.99 2003-09-17 13:57:55 judson Exp $"
+
+import webbrowser
+import string
+import time
+import re
+import logging, logging.handlers
+
 from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
+
+from pyGlobus.io import GSITCPSocketException
 
 from AccessGrid.hosting.pyGlobus import Client
 
@@ -30,15 +42,6 @@ from AccessGrid.hosting.AccessControl import RoleManager
 from AccessGrid.Venue import RegisterDefaultVenueRoles
 from AccessGrid.RoleAuthorization import AddPeopleDialog, RoleClient
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
-
-import webbrowser
-import logging, logging.handlers
-log = logging.getLogger("AG.VenueManagement")
-
-import string
-import time
-
-from pyGlobus.io import GSITCPSocketException
 
 log = logging.getLogger("AG.VenueManagement")
 
@@ -502,17 +505,6 @@ class VenueProfilePanel(wxPanel):
         self.description.Enable(true)
         self.__hideFields()
         self.__doLayout()
-
-    #def EvtListBox(self, event):
-    #    list = event.GetEventObject()
-    #    data = list.GetClientData(list.GetSelection())
-    #    if data is not None:
-    #        try:
-    #            #CLIENT
-    #            exits = Client.Handle(data.uri).get_proxy().GetConnections()
-    #            venueProfilePanel.ChangeCurrentVenue(data, exits)
-    #        except:
-    #            ErrorDialog(self, 'An error has occured!', "Error dialog", logFile = VENUE_MANAGEMENT_LOG)
 
     def ClearAllFields(self):
         self.venueProfileBox.SetLabel('')
@@ -2236,7 +2228,8 @@ class TextValidator(wxPyValidator):
         if len(val) < 1:
             MessageDialog(None, "Please, fill in your name and description", "Notification")
             return false
-        return true
+        else:
+            return true
 
     def TransferToWindow(self):
         return true # Prevent wxDialog from complaining.
