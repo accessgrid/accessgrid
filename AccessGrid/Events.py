@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.17 2003-08-21 20:26:44 lefvert Exp $
+# RCS-ID:      $Id: Events.py,v 1.18 2003-08-21 20:58:05 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -59,7 +59,7 @@ class AddDataEvent(Event):
     ADD_DATA = "Add data"
     
     def __init__(self, venueId, d):
-        Event.__init__(self, AddDataEvent.ADD_PERSONAL_DATA , venueId, d)
+        Event.__init__(self, AddDataEvent.ADD_DATA , venueId, d)
 
 class RemoveDataEvent(Event):
     '''
@@ -68,7 +68,7 @@ class RemoveDataEvent(Event):
     REMOVE_DATA = "Remove data"
     
     def __init__(self, venueId, d):
-        Event.__init__(self, RemoveDataEvent.REMOVE_PERSONAL_DATA , venueId, d)
+        Event.__init__(self, RemoveDataEvent.REMOVE_DATA , venueId, d)
   
 class UpdateDataEvent(Event):
     '''
@@ -78,7 +78,7 @@ class UpdateDataEvent(Event):
     UPDATE_DATA = "Update data"
     
     def __init__(self, venueId, d):
-        Event.__init__(self, UpdateDataEvent.UPDATE_PERSONAL_DATA , venueId, d)
+        Event.__init__(self, UpdateDataEvent.UPDATE_DATA , venueId, d)
         
 
 
