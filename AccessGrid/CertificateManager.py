@@ -715,7 +715,10 @@ def FindGlobusCertsUnix():
         if os.path.isdir(path):
             vals['x509_cert_dir'] = path
         else:
-            env = os.environ['X509_CERT_DIR']
+            env = None
+            if os.environ.has_key('X509_CERT_DIR'):
+                env = os.environ['X509_CERT_DIR']
+                
             if env is not None and env != "":
                 vals['x509_cert_dir'] = env
             else:
@@ -892,9 +895,11 @@ class Certificate:
         fh.close()
 
         if self.keyPath is not None:
-            fh = open(certPath + ".key", "w")
+            nkpath = certPath + ".key"
+            fh = open(nkpath, "w")
             fh.write(self.keyText)
             fh.close()
+            os.chmod(0600, nkpath)
 
         if self.policyPath is not None:
             fh = open(os.path.join(repoPath, "%s.signing_policy" % (hash)), "w")
