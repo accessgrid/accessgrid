@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.31 2003-02-10 21:53:59 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.32 2003-02-11 22:53:09 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -40,7 +40,7 @@ class VenueServer(ServiceBase.ServiceBase):
     configFile : string
     config : dictionary of Key/Value pairs that holds configuration parameters.
     adminstrators : list of strings (each is a DN of a adminsitrative user)
-    dataStorage : string
+    dataStorageLocation : string
     defaultVenue : VenueURL
     hostingEnvironment : AccessGrid.hosting.pyGlobus.Server
     multicastAddressAllocator : AccessGrid.MulticastAddressAllocator
@@ -56,7 +56,7 @@ class VenueServer(ServiceBase.ServiceBase):
             "VenueServer.houseKeeperFrequency" : 30,
             "VenueServer.persistenceFilename" : 'VenueData',
             "VenueServer.venuePathPrefix" : 'Venues',
-            "VenueServer.dataStorePath" : 'Data'
+            "VenueServer.dataStorageLocation" : 'Data'
             }
 
     defaultVenueDescription = VenueDescription("Venue Server Lobby", 
@@ -342,6 +342,7 @@ class VenueServer(ServiceBase.ServiceBase):
         Set the path for data storage
         """
         self.dataStorageLocation = dataStorageLocation
+        self.cofnig["VenueServer.dataStorageLocation"] = dataStorageLocation
     SetStorageLocation.pass_connection_info = 1
     SetStorageLocation.soap_export_as = "SetStorageLocation"
 
