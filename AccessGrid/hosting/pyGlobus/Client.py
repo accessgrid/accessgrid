@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Client.py,v 1.10 2003-04-03 20:51:42 turam Exp $
+# RCS-ID:      $Id: Client.py,v 1.11 2003-05-23 20:59:54 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -27,6 +27,9 @@ log = logging.getLogger("AG.hosting.pyGlobus.Client")
 log.setLevel(logging.WARN)
 
 class AuthCallbackException(Exception):
+    pass
+
+class InvalidHandleException(Exception):
     pass
 
 class Handle:
@@ -77,7 +80,8 @@ class Handle:
             return ret
         except Exception, e:
             # print "Attempt at calling isvalid fails: ", e
-            return 0
+            # return 0
+            raise InvalidHandleException
 
     def Implements(self, method):
         """
