@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.32 2003-04-19 16:36:22 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.33 2003-05-22 04:47:07 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -68,8 +68,8 @@ class VenueState:
     def AddUser( self, userProfile ):
         self.clients[userProfile.publicId] = userProfile
     def RemoveUser( self, userProfile ):
-        print "removing user", userProfile.name, userProfile.publicId
-        print "clients = ", self.clients.items()
+#        print "removing user", userProfile.name, userProfile.publicId
+#        print "clients = ", self.clients.items()
         del self.clients[userProfile.publicId]
     def ModifyUser( self, userProfile ):
         if userProfile.publicId in self.clients.keys():
