@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.141 2003-05-13 21:50:39 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.142 2003-05-15 20:01:42 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -32,7 +32,7 @@ from AccessGrid import DataStore
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
 from AccessGrid.Utilities import HaveValidProxy, formatExceptionInfo
 from AccessGrid.Utilities import StartDetachedProcess
-from AccessGrid.UIUtilities import MyLog, MessageDialog, InitMimeTypes
+from AccessGrid.UIUtilities import  MessageDialog, InitMimeTypes
 from AccessGrid.UIUtilities import GetMimeCommands, ErrorDialog, ErrorDialogWithTraceback
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 from AccessGrid.GUID import GUID
@@ -54,11 +54,10 @@ class VenueClientUI(wxApp, VenueClient):
     """
     history = []
     client = None
-    #gotClient = false
     clientHandle = None
     venueUri = None
     personalDataStorePrefix = "personalDataStore"
-    personalDataStorePort = 9998
+    personalDataStorePort = 9999
     personalDataDict = {}
     accessGridPath = GetUserConfigDir()
     profileFile = os.path.join(accessGridPath, "profile" )
@@ -66,13 +65,14 @@ class VenueClientUI(wxApp, VenueClient):
     personalDataFile = os.path.join(personalDataStorePath, "myData.txt" )
     isPersonalNode = 0
     debugMode = 0
+    transferEngine = None
 
     def __init__(self):
         if not os.path.exists(self.accessGridPath):
             try:
                 os.mkdir(self.accessGridPath)
             except OSError, e:
-                wxLogError("Could not create base path")
+                log.exception("Could not create base path")
 
         wxApp.__init__(self, false)
         VenueClient.__init__(self)
@@ -114,25 +114,35 @@ class VenueClientUI(wxApp, VenueClient):
             ErrorDialogWithTraceback(None, "Application initialization failed. Attempting to continue",
                         "Initialization failed")
         
+        #
+        # Create and load personal files
+        #
         self.__createPersonalDataStore()
-        
+
+        #
+        # Initiate user interface components
+        #
         self.frame = VenueClientFrame(NULL, -1,"", self)
         self.frame.SetSize(wxSize(500, 400))
         self.SetTopWindow(self.frame)
 
+        #
         # Tell the UI about installed applications
+        #
         self.frame.SetInstalledApps( self.GetInstalledApps() )
         self.frame.EnableAppMenu( false )
 
+        #
         # Load user mailcap from AG Config Dir
+        #
         mailcap = os.path.join(GetUserConfigDir(), "mailcap")
         InitMimeTypes(mailcap)
 
-        log.debug("OnInit: ispersonal=%s", self.isPersonalNode)
+        log.debug("bin.VenueClient::OnInit: ispersonal=%s", self.isPersonalNode)
 
         if self.isPersonalNode:
             def setSvcCallback(svcUrl, self = self):
-                log.debug("setting node service URI to %s from PersonalNode", svcUrl)
+                log.debug("bin.VenueClient::OnInit: setting node service URI to %s from PersonalNode", svcUrl)
                 self.nodeServiceUri = svcUrl
 
             self.personalNode = PersonalNode.PersonalNodeManager(setSvcCallback, self.debugMode)
@@ -150,8 +160,16 @@ class VenueClientUI(wxApp, VenueClient):
 
         if (profileDialog.ShowModal() == wxID_OK):
             self.profile = profileDialog.GetNewProfile()
+            
+            #
+            # Change profile based on values filled in to the profile dialog
+            #
             self.ChangeProfile(self.profile)
             profileDialog.Destroy()
+
+            #
+            # Start the main wxPython thread
+            #
             self.__startMainLoop(self.profile)
 
         else:
@@ -167,7 +185,7 @@ class VenueClientUI(wxApp, VenueClient):
         self.SetProfile(profile)
         self.frame.venueAddressBar.SetAddress(self.profile.homeVenue)
         self.frame.Show(true)
-        wxLogDebug("start wxApp main loop/thread")
+        log.debug("bin.VenueClient::__startMainLoop: start wxApp main loop/thread")
         self.MainLoop()
 
     def __Usage(self):
@@ -203,41 +221,46 @@ class VenueClientUI(wxApp, VenueClient):
 
     def __createPersonalDataStore(self):
         """
-        Creates the personal data storage and loads saved personal data.
+        Creates the personal data storage and loads personal data
+        from file to a dictionary of DataDescriptions. If the file is removed
+        from local path, the description is not added to the list.
         """
-        wxLogDebug('------------------- %s' %self.personalDataStorePath)
+
+        log.debug("bin.VenueClient::__createPersonalDataStore: Creating personal datastore at %s using prefix %s and port %s" %(self.personalDataStorePath, self.personalDataStorePrefix,self.personalDataStorePort))
+
         if not os.path.exists(self.personalDataStorePath):
             try:
                 os.mkdir(self.personalDataStorePath)
             except OSError, e:
-                wxLogError("Could not create personal data storage path")
+                log.exception("bin.VenueClient::__createPersonalDataStore: Could not create personal data storage path")
                 self.personalDataStorePath = None
+               
+        if self.personalDataStorePath:
+                self.dataStore = DataStore.DataStore(self, self.personalDataStorePath,
+                                                     self.personalDataStorePrefix)
+                self.transferEngine = DataStore.GSIHTTPTransferServer(('',
+                                                                       self.personalDataStorePort))
+                self.transferEngine.run()
+                self.transferEngine.RegisterPrefix(self.personalDataStorePrefix, self)
+                self.dataStore.SetTransferEngine(self.transferEngine)
 
-        self.dataStore = DataStore.DataStore(self, self.personalDataStorePath,
-        self.personalDataStorePrefix)
-        self.transferEngine = DataStore.GSIHTTPTransferServer(('',
-                                                               self.personalDataStorePort))
-        self.transferEngine.run()
-        self.transferEngine.RegisterPrefix(self.personalDataStorePrefix, self)
-        self.dataStore.SetTransferEngine(self.transferEngine)
-
-        wxLogDebug("Creating personal datastore at %s using prefix %s and port %s" %(self.personalDataStorePath,
-        self.personalDataStorePrefix, self.personalDataStorePort))
-        # load personal data
-        if os.path.exists(self.personalDataFile):
-            file = open(self.personalDataFile, 'r')
-            self.personalDataDict = cPickle.load(file)
-            wxLogDebug("This is my personal data %s" %str(self.personalDataDict))
-            file.close()
-
-            wxLogDebug("check for validity")
-            for file, desc in self.personalDataDict.items():
-                wxLogDebug("Checking file %s for validity"%file)
-                url = self.transferEngine.GetDownloadDescriptor(self.personalDataStorePrefix, file)
-                wxLogDebug("File url is %s"%url)
-
-                if url is None:
-                    del self.personalDataDict[file]
+                #
+                # load personal data from file
+                #
+                
+                log.debug("bin.VenueClient::__createPersonalDataStore: Load personal data from file")
+                if os.path.exists(self.personalDataFile):
+                    file = open(self.personalDataFile, 'r')
+                    self.personalDataDict = cPickle.load(file)
+                    log.debug("bin.VenueClient::__createPersonalDataStore: Personal data dict: %s" %self.personalDataDict)
+                    file.close()
+                    
+                    for file, desc in self.personalDataDict.items():
+                        url = self.transferEngine.GetDownloadDescriptor(self.personalDataStorePrefix, file)
+                        
+                        if url is None:
+                            log.debug("bin.VenueClient::__createPersonalDataStore: Personal file %s is not valid, remove it"%file)
+                            del self.personalDataDict[file]
 
     def __setLogger(self):
         """
@@ -253,12 +276,7 @@ class VenueClientUI(wxApp, VenueClient):
 
         if self.debugMode:
             log.addHandler(logging.StreamHandler())
-
-        wxLog_SetActiveTarget(wxLogGui())
-        wxLog_SetActiveTarget(wxLogChain(MyLog(log)))
-        wxLogInfo(" ")
-        wxLogInfo("--------- START VenueClient")
-
+       
     def ConnectToVenue(self):
         """
         This method is called during program startup. If this is the first time
@@ -270,7 +288,7 @@ class VenueClientUI(wxApp, VenueClient):
         self.profile = ClientProfile(self.profileFile)
 
         if self.profile.IsDefault():  # not your profile
-            wxLogDebug("the profile is the default profile - open profile dialog")
+            log.debug("the profile is the default profile - open profile dialog")
             self.__openProfileDialog()
         else:
             self.__startMainLoop(self.profile)
@@ -340,13 +358,8 @@ class VenueClientUI(wxApp, VenueClient):
 
         VenueClient.AddUserEvent(self, profile)
 
-        #if(profile.profileType == 'user'):
         wxCallAfter(self.frame.contentListPanel.AddParticipant, profile)
-        wxCallAfter(wxLogDebug, "  add user: %s" %(profile.name))
-
-        #else:
-        #    wxCallAfter(self.frame.contentListPanel.AddNode, profile)
-        #    wxCallAfter(wxLogDebug, "  add node: %s" %(profile.name))
+        log.debug("  add user: %s" %(profile.name))
 
     def RemoveUserEvent(self, user):
         """
@@ -356,13 +369,8 @@ class VenueClientUI(wxApp, VenueClient):
         """
         VenueClient.RemoveUserEvent(self, user)
 
-        #if(user.profileType == 'user'):
         wxCallAfter(self.frame.contentListPanel.RemoveParticipant, user)
-        wxCallAfter(wxLogDebug,"  remove user: %s" %(user.name))
-        #else:
-        #    wxCallAfter(self.frame.contentListPanel.RemoveNode, user)
-        #    wxCallAfter(wxLogDebug,"  remove node: %s" %(user.name))
-
+        log.debug("  remove user: %s" %(user.name))
 
     def ModifyUserEvent(self, data):
         """
@@ -372,7 +380,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
         
         VenueClient.ModifyUserEvent(self, data)
-        wxCallAfter(wxLogDebug, "EVENT - Modify participant: %s" %(data.name))
+        log.debug("EVENT - Modify participant: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.ModifyParticipant, data)
 
     def AddDataEvent(self, data):
@@ -382,9 +390,8 @@ class VenueClientUI(wxApp, VenueClient):
         Appropriate gui updates are made in client.
         """
         VenueClient.AddDataEvent(self, data)
-        wxCallAfter(wxLogDebug, "EVENT - Add data: %s" %(data.name))
+        log.debug( "EVENT - Add data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.AddData, data)
-
 
     def UpdateDataEvent(self, data):
         """
@@ -392,9 +399,8 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called when a data item has been updated in the venue.
         Appropriate gui updates are made in client.
         """
-
         VenueClient.UpdateDataEvent(self, data)
-        wxCallAfter(wxLogDebug, "EVENT - Update data: %s" %(data.name))
+        log.debug("EVENT - Update data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.UpdateData, data)
 
     def RemoveDataEvent(self, data):
@@ -404,7 +410,7 @@ class VenueClientUI(wxApp, VenueClient):
         Appropriate gui updates are made in client.
         """
         VenueClient.RemoveDataEvent(self, data)
-        wxCallAfter(wxLogDebug, "EVENT - Remove data: %s" %(data.name))
+        log.debug("EVENT - Remove data: %s" %(data.name))
         wxCallAfter(self.frame.contentListPanel.RemoveData, data)
 
     def AddApplicationEvent(self, app):
@@ -413,8 +419,7 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time a new application is added to the venue.
         Appropriate gui updates are made in client.
         """
-        wxCallAfter(wxLogDebug, "EVENT - Add application: %s" %(app.name))
-        wxCallAfter(wxLogDebug, "EVENT - Add application: %s" %(app.mimeType))
+        log.debug("EVENT - Add application: %s, Mime Type: %s" %(app.name, app.mimeType))
         wxCallAfter(self.frame.contentListPanel.AddApplication, app)
 
     def RemoveApplicationEvent(self, app):
@@ -423,9 +428,8 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time an application is removed from the venue.
         Appropriate gui updates are made in client.
         """
-        wxCallAfter(wxLogDebug, "EVENT - Remove application: %s" %(app.name))
+        log.debug("EVENT - Remove application: %s" %(app.name))
         wxCallAfter(self.frame.contentListPanel.RemoveApplication, app)
-
 
     def AddServiceEvent(self, service):
         """
@@ -433,14 +437,9 @@ class VenueClientUI(wxApp, VenueClient):
         This method is called every time new service is added to the venue.
         Appropriate gui updates are made in client.
         """
-
-        # Convert the struct type to a ServiceDescription so we can use isinstance...
-        s = ServiceDescription(service.name, service.description, service.uri,
-                               service.mimeType)
-        
-        VenueClient.AddServiceEvent(self, s)
-        wxCallAfter(wxLogDebug, "EVENT - Add service: %s" %(s.name))
-        wxCallAfter(self.frame.contentListPanel.AddService, s)
+        VenueClient.AddServiceEvent(self, service)
+        log.debug("EVENT - Add service: %s" %(service.name))
+        wxCallAfter(self.frame.contentListPanel.AddService, service)
 
     def RemoveServiceEvent(self, service):
         """
@@ -449,9 +448,8 @@ class VenueClientUI(wxApp, VenueClient):
         Appropriate gui updates are made in client.
         """
         VenueClient.RemoveServiceEvent(self, service)
-        wxCallAfter(wxLogDebug, "EVENT - Remove service: %s" %(service.name))
+        log.debug("EVENT - Remove service: %s" %(service.name))
         wxCallAfter(self.frame.contentListPanel.RemoveService, service)
-
 
     def AddConnectionEvent(self, data):
         """
@@ -461,7 +459,7 @@ class VenueClientUI(wxApp, VenueClient):
         """
                 
         VenueClient.AddConnectionEvent(self, data)
-        wxCallAfter(wxLogDebug, "EVENT - Add connection: %s" %(data.name))
+        log.debug("EVENT - Add connection: %s" %(data.name))
         wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, data)
 
     def SetConnectionsEvent(self, data):
@@ -471,134 +469,214 @@ class VenueClientUI(wxApp, VenueClient):
         Appropriate gui updates are made in client.
         """
         VenueClient.SetConnectionsEvent(self, data)
-        wxCallAfter(wxLogDebug, "EVENT - Set connections")
+        log.debug("EVENT - Set connections")
         wxCallAfter(self.frame.venueListPanel.CleanUp)
 
         for connection in data:
-            wxCallAfter(wxLogDebug, "EVENT - Add connection: %s" %(connection.name))
+            log.debug("EVENT - Add connection: %s" %(connection.name))
             wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, connection)
 
-    def EnterVenue(self, URL):
+    def EnterVenue(self, URL, back = false):
         """
         Note: Overridden from VenueClient
         This method calls the venue client method and then
         performs its own operations when the client enters a venue.
+        URL - the venue address we want to connect to
+        back - if the back is true if the back button was pressed, else false
         """
-        wxCallAfter(wxLogDebug, "EVENT- Enter venue with url: %s" %(URL))
+        log.debug("bin.VenueClient::EnterVenue: Enter venue with url: %s" %(URL))
 
-        # clean up ui from current venue
-        if self.venueUri != None:
-            wxCallAfter(wxLogDebug, "clean up frame and exit")
-            wxCallAfter(self.frame.CleanUp)
+        #
+        # Check to see if we have a valid grid proxy
+        # If not, run grid proxy init
+        #
+        if not HaveValidProxy():
+            log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
+            GPI()
+        #   
+        # Add current uri to the history if the go button is pressed
+        #
+        self.__setHistory(self.venueUri, back)
 
-        self.clientHandle = Client.Handle(URL)
+       
+        #
+        # If the url parameter is a server address, get default venue
+        # else assume the url is a venue address.
+        #
+        try: 
+            self.venueUri = Client.Handle(URL).get_proxy().GetDefaultVenue()
+            log.debug("bin.VenueClient::EnterVenue: server url: %s" %self.venueUri)
 
+        except:
+            self.venueUri = URL
+            log.debug("bin.VenueClient::EnterVenue: venue url: %s" %self.venueUri)
+        
+        self.clientHandle = Client.Handle(self.venueUri)
+
+        #
         # if this venue url has a valid web service then enter venue
+        #
         if(self.clientHandle.IsValid()):
             self.client = self.clientHandle.get_proxy()
 
+            #
             # Tell super class to enter venue
+            #
             try:
-                VenueClient.EnterVenue( self, URL )
-            except:
-                text = "You have not entered the venue, an error occured"
+                warningString = VenueClient.EnterVenue( self, URL )
+            #
+            # Catch all fatal exceptions that will result in an enter venue failure.
+            #
+            except Exception, e:
+                log.exception("bin.VenueClient::EnterVenue failed")
+                text = "You have not entered the venue, an error occured.  Please, try again.\n\nNote: Read VenueClient.log for more detailed information"
                 wxCallAfter(MessageDialog, self.frame, text, "Enter Venue Error",
                             wxOK  | wxICON_ERROR)
-                
             else:
+                #
+                # clean up ui from current venue before entering a new venue
+                #
+                if self.venueUri != None:
+                    log.debug("clean up frame")
+                    wxCallAfter(self.frame.CleanUp)
+                #
+                # Get current state of the venue
+                #
                 venueState = self.venueState
-                #wxCallAfter(self.frame.SetLabel, venueState.name)
                 wxCallAfter(self.frame.venueAddressBar.SetTitle, venueState.name, venueState.description) 
-                
-                # --- Load clients
+
+                #
+                # Load clients
+                #
                 clients = venueState.clients.values()
-                wxCallAfter(wxLogDebug, "Add participants")
+                log.debug("Add participants")
 
                 for client in clients:
-                    # Participants
-                    #if(client.profileType == 'user'):
                     wxCallAfter(self.frame.contentListPanel.AddParticipant, client)
-                    wxCallAfter(wxLogDebug, "   %s" %(client.name))
-                    
-                    # Nodes
-                    #else:
-                    #    wxCallAfter(self.frame.contentListPanel.AddNode, client)
-                    #    wxCallAfter(wxLogDebug, "   %s" %(client.name))
-
-                # --- Load data
+                    log.debug("   %s" %(client.name))
+                #    
+                # Load data
+                #
                 data = venueState.data.values()
-                wxCallAfter(wxLogDebug, "Add data")
+                log.debug("Add data")
                 for d in data:
                     wxCallAfter(self.frame.contentListPanel.AddData, d)
-                    wxCallAfter(wxLogDebug, "   %s" %(d.name))
-                    wxCallAfter(wxLogDebug, "   ------------- data type %s" %(d.type))
-                    wxCallAfter(wxLogDebug, "   ------------- my public id %s" %(self.profile.publicId))
-
-                # --- Load services
+                    log.debug("   %s" %(d.name))
+                 
+                #
+                # Load services
+                #
                 services = venueState.services.values()
-                wxCallAfter(wxLogDebug, "Add service")
+                log.debug("Add service")
                 for s in services:
                     wxCallAfter(self.frame.contentListPanel.AddService, s)
-                    wxCallAfter(wxLogDebug, "   %s" %(s.name))
-                    
-                # --- Load applications
+                    log.debug("   %s" %(s.name))
+
+                #
+                # Load applications
+                #
                 applications = venueState.applications.values()
-                wxCallAfter(wxLogDebug, "Add application")
+                log.debug("Add application")
                 for a in applications:
                     wxCallAfter(self.frame.contentListPanel.AddApplication, a)
-                    wxCallAfter(wxLogDebug, "   %s" %(a.name))
+                    log.debug("   %s" %(a.name))
 
-                # Enable the application menu that is displayed over
-                # the Applications items in the list (this is not the app menu above)
-                self.frame.EnableAppMenu(true)
-
-                # --- Load exits
-                wxCallAfter(wxLogDebug, "Add exits")
+                #
+                #  Load exits
+                #
+                log.debug("Add exits")
                 exits = venueState.connections.values()
                 for exit in exits:
                     wxCallAfter(self.frame.venueListPanel.list.AddVenueDoor, exit)
-                    wxCallAfter(wxLogDebug, "   %s" %(exit.name))
+                    log.debug("   %s" %(exit.name))
 
-                # Start text location
-                wxCallAfter(wxLogDebug, "Set text location and address bar")
+                #
+                # Tell the text client which location it should listen to
+                #
+                log.debug("Set text location and address bar")
                 wxCallAfter(self.frame.SetTextLocation)
                 wxCallAfter(self.frame.FillInAddress, None, URL)
                 self.venueUri = URL
 
+                #
                 # Venue data storage location
+                #
                 self.upload_url = self.client.GetUploadDescriptor()
-                wxCallAfter(wxLogDebug, "Get upload url %s" %self.upload_url)
+                log.debug("Get upload url %s" %self.upload_url)
 
+                #
                 # Add your personal data descriptions to venue
-                wxCallAfter(wxLogDebug, "Add your personal data descriptions to venue")
-                self.__AddPersonalDataToVenue()
-                
-                # This should be done last for UI update reasons
-                wxCallAfter(wxLogDebug, "Lead followers")
+                #
+                log.debug("Add your personal data descriptions to venue")
+                personalDataWarning = self.__addPersonalDataToVenue()
+                warningString = warningString + personalDataWarning
+                #
+                # Enable menus
+                #
+                wxCallAfter(self.frame.ShowMenu)
+
+                #
+                # Enable the application menu that is displayed over
+                # the Applications items in the list (this is not the app menu above)
+                #
+                wxCallAfter(self.frame.EnableAppMenu, true)
+
+                #
+                # Call EnterVenue on users that are following you.
+                # This should be done last for UI update reasons.
+                #
+                log.debug("Lead followers")
                 self.LeadFollowers()
                 
-                wxCallAfter(wxLogDebug, "Entered venue")
+                log.debug("Entered venue")
+
+                #
+                # Display all non fatal warnings to the user
+                #
+
+                if warningString is not '': 
+                    message = "Following non fatal problems have occured when you entered the venue:\n" + warningString
+                    MessageDialog(None, message, "Notification")
+                   
+        else:
+            log.debug("VenueClient::EnterVenue: Handler is not valid")
+            if not HaveValidProxy():
+                text = 'You do not have a valid proxy.' +\
+                       '\nPlease, run "grid-proxy-init" on the command line"'
+                text2 = 'Invalid proxy'
+                
+            else:
+                text = 'The venue URL you specified is not valid'
+                text2 = 'Invalid URL'
+
+            MessageDialog(None, text, text2)
 
     EnterVenue.soap_export_as = "EnterVenue"
 
-    def __AddPersonalDataToVenue(self):
+    def __addPersonalDataToVenue(self):
         '''
         Adds all personal data, stored in local file directory as a dictionary, to the venue.
+        Returns a warning string containing information about data that could not be added.
         '''
-
+        #
         # Add personal data to venue
+        #
         duplicateData = []
         for data in self.personalDataDict.values():
-            wxLogDebug("Add personal file %s to venue" %data.name)
+            log.debug("Add personal file %s to venue" %data.name)
 
             url = self.dataStore.GetDownloadDescriptor(data.name)
 
+            #
             # Is the file still present?
+            #
             if url is None:
-                wxLogDebug("Personal file %s has vanished" %data.name)
+                log.debug("Personal file %s has vanished" %data.name)
                 del self.personalDataDict[data.name]
 
-                # Is there a file in the venue with the same name?
+            #
+            # Is there a file in the venue with the same name?
+            #
             elif(self.venueState.data.has_key(data.name)):
                 duplicateData.append(data.name)
 
@@ -606,130 +684,82 @@ class VenueClientUI(wxApp, VenueClient):
                 try:
                     self.client.AddData(data)
                 except Exception, e:
-                    wxCallAfter(wxLogError, "Personal data, %s,  could not be added to the venue" %data.name)
-                    wxCallAfter(wxLog_GetActiveTarget().Flush)
-
+                    duplicateData.append(data.name)
+        #
         # Notify user of what files already exist in the venue
-        if(len(duplicateData) >0):
+        #
+        if(len(duplicateData)>0):
             files = ''
             for file in duplicateData:
                 files = files + ' ' +file + ','
 
-            wxCallAfter(wxLogMessage, "Personal data, %s \nalready exists in the venue and could not be added"
-            %files)
-            wxCallAfter(wxLog_GetActiveTarget().Flush)
+            return "\n\nPersonal data, %s \nalready exists in the venue and could not be added" %files
 
+        else:
+            return ''
+                
     def ExitVenue(self):
         """
         Note: Overridden from VenueClient
         This method calls the venue client method and then
         performs its own operations when the client exits a venue.
         """
-        wxCallAfter(wxLogDebug, "Cleanup frame, save data, and exit venue")
+        log.debug("exit venue")
         VenueClient.ExitVenue(self)
 
     def __setHistory(self, uri, back):
         """
         This method sets the history list, which stores visited
-        venue urls used by the back button.
+        venue urls used by the back button.  A venue URL does not get
+        saved if the back (<<) button is clicked.
         """
-        wxCallAfter(wxLogDebug, "Set history url: %s " %uri)
+        log.debug("Set history url: %s " %uri)
         length = len(self.history)
         last = length -1
 
         if(length>0):
-            if not back:           # clicked go button
+            
+            #
+            # Clicked the "Go" button
+            #
+            if not back:
+                #
+                # Just add the url once even if we press "Go" several times
+                #
                 if(self.history[last] != uri):
                     self.history.append(uri)
+            #
+            # Clicked the "<<" button
+            #
             else:
                 del self.history[last] # clicked back button
 
         elif(uri is not None):
+            #
+            # If this is the first time connecting to a venue, just add the url
+            #
             self.history.append(uri)
-
+            
     def GoBack(self):
         """
-        GoBack() is called when the user wants to go back to last visited venue
+        This method is called when the user wants to go back to last visited venue
         """
-        wxCallAfter(wxLogDebug,"Go back")
+        log.debug("Go back")
 
         l = len(self.history)
         if(l>0):
+            #
+            # Go to last venue in the history list
+            #
             uri = self.history[l - 1]
-            self.GoToNewVenue(uri, true)
-
-    def GoToNewVenue(self, uri, back = false):
-        """
-        GoToNewVenue(url, back) transports the user to a new venue
-        with same url as the input parameter.  If the url is a server
-        address, we will instead enter the default venue on the
-        server.  If the url is invalid, the user re-enters the venue
-        he or she just left.
-        """
-        wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: Go to new venue %s" %uri)
-        self.oldUri = None
-
-        certMgr = self.app.GetCertificateManager()
-        if not certMgr.HaveValidProxy():
-            wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: You don't have a valid proxy")
-            certMgr.ConfigureProxy()
-
-        if self.venueUri != None:
-            self.oldUri = self.venueUri
-
-        try: # is this a server
-            wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: Is this a server")
-            venueUri = Client.Handle(uri).get_proxy().GetDefaultVenue()
-            wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: server url: %s" %venueUri)
-
-        except: # no, it is a venue
-            venueUri = uri
-            wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: venue url: %s" %venueUri)
-
-        self.clientHandle = Client.Handle(venueUri)
-        if(self.clientHandle.IsValid()):
-            wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: the handler is valid")
-
-            #try:
-            #self.client = self.clientHandle.get_proxy()
-            #self.gotClient = true
-            self.EnterVenue(venueUri)
-            wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: after enter venue %s" %venueUri)
-            self.__setHistory(self.oldUri, back)
-            wxCallAfter(self.frame.ShowMenu)
-
-            #except:
-            #    wxCallAfter(wxLogError, "Error while trying to enter venue")
-            #    wxCallAfter(wxLog_GetActiveTarget().Flush)
-            #if self.oldUri != None:
-            #    wxCallAfter(wxLogDebug,"Go back to old venue")
-            # go back to venue where we came from
-            #    self.EnterVenue(self.oldUri)
-        else:
-            wxCallAfter(wxLogDebug, "VenueClient::GoToNewVenue: Handler is not valid")
-            if not certMgr.HaveValidProxy():
-                text = 'You do not have a valid proxy.' +\
-                       '\nPlease, run "grid-proxy-init" on the command line"'
-                text2 = 'Invalid proxy'
-
-            else:
-                #if self.oldUri is None:
-                #    wxCallAfter(self.frame.FillInAddress, None, self.profile.homeVenue)
-                #else:
-                #wxCallAfter(self.frame.FillInAddress, None, venueUri)
-
-                text = 'The venue URL you specified is not valid'
-                text2 = 'Invalid URL'
-
-            wxCallAfter(wxLogMessage, text)
-            wxCallAfter(wxLog_GetActiveTarget().Flush)
+            self.EnterVenue(uri, true)
 
     def OnExit(self):
         """
         This method performs all processing which needs to be
         done as the application is about to exit.
         """
-        wxLogInfo("--------- END VenueClient")
+        log.info("--------- END VenueClient")
 
         #
         # If we're running as a personal node, terminate the services.
@@ -739,16 +769,26 @@ class VenueClientUI(wxApp, VenueClient):
             log.debug("Terminating services")
             self.personalNode.Stop()
 
+        #
+        # If we are connected to a venue, exit the venue
+        #
+
         if self.venueUri != None:
             self.ExitVenue()
-
+        #
         # save personal data
+        #
+        
         file = open(self.personalDataFile, 'w')
         cPickle.dump(self.personalDataDict, file)
         file.close()
 
+        #
         # stop personal data server
-        self.transferEngine.stop()
+        #  
+        if self.transferEngine:
+            self.transferEngine.stop()
+
         os._exit(0)
 
 
@@ -766,40 +806,46 @@ class VenueClientUI(wxApp, VenueClient):
         and to perhaps allow multiple simultaneous transfers.
 
         """
-        wxCallAfter(wxLogDebug, "Save file descriptor: %s, path: %s"%(data_descriptor, local_pathname))
+        log.debug("Save file descriptor: %s, path: %s"%(data_descriptor, local_pathname))
 
         failure_reason = None
         try:
 
+            #
             # Retrieve details from the descriptor
+            #
             size = data_descriptor.size
             checksum = data_descriptor.checksum
             url = data_descriptor.uri
 
+            #
             # Make sure this data item is valid
-            wxCallAfter(wxLogDebug, "data descriptor is %s" %data_descriptor.__class__)
+            #
+            log.debug("data descriptor is %s" %data_descriptor.__class__)
 
             if data_descriptor.status != DataDescription.STATUS_PRESENT:
-                wxCallAfter(wxLogMessage, "File %s is not downloadable - it has status %s"
-                % (data_descriptor.name, data_descriptor.status))
-                wxCallAfter(wxLog_GetActiveTarget().Flush)
-
+                MessageDialog(none, "File %s is not downloadable - it has status %s"
+                % (data_descriptor.name, data_descriptor.status), "Notification")
                 return
-
+            #
             # Create the dialog for the download.
+            #
             dlg = SaveFileDialog(self.frame, -1, "Saving file",
             "Saving file to %s ...     " % (local_pathname),
             "Saving file to %s ... done" % (local_pathname),
             size)
 
-            wxCallAfter(wxLogDebug, "Downloading: size=%s checksum=%s url=%s" % (size, checksum, url))
+            log.debug("Downloading: size=%s checksum=%s url=%s" % (size, checksum, url))
             dlg.Show(1)
 
+            #
             # Plumbing for getting progress callbacks to the dialog
+            #
             def progressCB(progress, done, dialog = dlg):
                 wxCallAfter(dialog.SetProgress, progress, done)
                 return dialog.IsCancelled()
 
+            #
             # Create the thread to run the download.
             #
             # Some more plumbing with the locla function to get the identity
@@ -808,26 +854,35 @@ class VenueClientUI(wxApp, VenueClient):
             # We use get_ident_and_download as the body of the thread.
 
             # Arguments to pass to get_ident_and_download
+            #
             dl_args = (url, local_pathname, size, checksum, progressCB)
 
             download_thread = threading.Thread(target = self.get_ident_and_download,
             args = dl_args)
 
+            #
             # Use wxCallAfter so we get the dialog filled in properly.
+            #
             wxCallAfter(download_thread.start)
 
+            #
             # Fire up dialog as a modal.
+            #
             dlg.ShowModal()
 
-
+            #
             # The dialog has returned. This is either because the download
             # finished and the user clicked OK, or because the user clicked
             # Cancel to abort the download. In either event the
             # call to HTTPDownloadFile should return, and the thread quit.
             #
             # Wait for the thread to finish (if it doesn't it's a bug).
+            #
             download_thread.join()
+
+            #
             # Clean up.
+            #
             dlg.Destroy()
 
         except DataStore.DownloadFailed, e:
@@ -843,36 +898,41 @@ class VenueClientUI(wxApp, VenueClient):
 
 
     def get_ident_and_download(self, url, local_pathname, size, checksum, progressCB):
-        wxLogDebug("Get ident and download")
+        log.debug("Get ident and download")
         try:
             if url.startswith("https"):
-                wxLogDebug("url=%s, local path =%s, size = %s, checksum = %s"%(url, local_pathname, size, checksum))
+                log.debug("url=%s, local path =%s, size = %s, checksum = %s"%(url, local_pathname, size, checksum))
                 DataStore.GSIHTTPDownloadFile(url, local_pathname, size,
                 checksum, progressCB)
-                wxLogDebug("finished GSIHTTPDownload")
+                log.debug("finished GSIHTTPDownload")
 
             else:
-                wxLogDebug("url does not start with https")
+                log.debug("url does not start with https")
                 my_identity = GetDefaultIdentityDN()
                 DataStore.HTTPDownloadFile(my_identity, url, local_pathname, size,
                 checksum, progressCB)
         except DataStore.DownloadFailed, e:
-            wxCallAfter(wxLogError, "Got exception on download")
+            log.exception("Got exception on download")
 
     def UploadPersonalFiles(self, fileList):
         """
         Upload the given personal files to the venue.
 
         """
-        wxLogDebug("Upload personal files")
+        log.debug("Upload personal files")
         try:
             self.dataStore.AddFile(fileList, self.profile.distinguishedName, self.profile.publicId)
 
+        except DataStore.DuplicateFile, e:
+            title = "Add Personal Data Error"
+            MessageDialog(self.frame, e, title, style = wxOK|wxICON_ERROR)
+
         except Exception, e:
-            wxLogMessage(e[0])
-            wxLog_GetActiveTarget().Flush()
-
-
+            print Exception
+            title = "Add Personal Data Error"
+            text = "The file could not be added, error occured."
+            MessageDialog(self.frame, text, title, style = wxOK|wxICON_ERROR)
+         
     def UploadVenueFiles(self, file_list):
         """
         Upload the given files to the venue.
@@ -885,57 +945,65 @@ class VenueClientUI(wxApp, VenueClient):
         url = self.upload_url
         method = self.get_ident_and_upload
 
+        #
         # Create the dialog for the download.
+        #
         dlg = UploadFilesDialog(self.frame, -1, "Uploading files")
 
         dlg.Show(1)
 
+        #
         # Plumbing for getting progress callbacks to the dialog
+        #
         def progressCB(filename, sent, total, file_done, xfer_done,
             dialog = dlg):
             wxCallAfter(dialog.SetProgress, filename, sent, total,
             file_done, xfer_done)
             return dialog.IsCancelled()
 
+        #
         # Create the thread to run the upload.
         #
         # Some more plumbing with the local function to get the identity
         # retrieval in the thread, as it can take a bit the first time.
         # We use get_ident_and_upload as the body of the thread.
 
+        #
         # Arguments to pass to get_ident_and_upload
+        #
         ul_args = (url, file_list, progressCB)
 
-        wxCallAfter(wxLogDebug,
-        "Have args, creating thread, url: %s, files: %s" %
+        log.debug("Have args, creating thread, url: %s, files: %s" %
         (url, file_list))
 
         upload_thread = threading.Thread(target = method, args = ul_args)
 
         wxCallAfter(upload_thread.start)
-        wxCallAfter(wxLogDebug, "Started thread")
+        log.debug("Started thread")
         dlg.ShowModal()
 
+        #
         # The dialog has returned. This is either because the upload
         # finished and the user clicked OK, or because the user clicked
         # Cancel to abort the upload. In either event the
         # call to HTTPUploadFiles should return, and the thread quit.
         #
         # Wait for the thread to finish (if it doesn't it's a bug).
+        #
         upload_thread.join()
         dlg.Destroy()
 
     def get_ident_and_upload(self, upload_url, file_list, progressCB):
-        wxCallAfter(wxLogDebug, "Upload: getting identity")
+        log.debug("Upload: getting identity")
 
         error_msg = None
         try:
             if upload_url.startswith("https:"):
-                wxCallAfter(wxLogDebug, "Url starts with https:")
+                log.debug("Url starts with https:")
                 DataStore.GSIHTTPUploadFiles(upload_url, file_list, progressCB)
             else:
                 my_identity = GetDefaultIdentityDN()
-                wxCallAfter(wxLogDebug, "Got identity %s" % my_identity)
+                log.debug("Got identity %s" % my_identity)
                 DataStore.HTTPUploadFiles(my_identity, upload_url,
                 file_list, progressCB)
 
@@ -947,10 +1015,9 @@ class VenueClientUI(wxApp, VenueClient):
             error_msg = "Upload failed: %s" % (e)
 
         if error_msg is not None:
-            wxCallAfter(wxLogMessage, error_msg)
-            wxCallAfter(wxLog_GetActiveTarget().Flush)
-    # wxCallAfter(MessageDialog, NULL, error_msg)
-
+            log.error("Upload data error")
+            MessageDialog(None, error_msg, "Upload Files Error")
+               
     def UploadFilesNoDialog(self, file_list):
         """
         Upload the given files to the venue.
@@ -958,9 +1025,9 @@ class VenueClientUI(wxApp, VenueClient):
         This uses the DataStore HTTP upload engine code.
         """
 
-        wxCallAfter(wxLogDebug, "Upload files - no dialog")
+        log.debug("Upload files - no dialog")
         upload_url = self.upload_url
-        wxCallAfter(wxLogDebug, "Have identity=%s upload_url=%s" %
+        log.debug("Have identity=%s upload_url=%s" %
         (my_identity, upload_url))
 
         error_msg = None
@@ -978,28 +1045,27 @@ class VenueClientUI(wxApp, VenueClient):
             error_msg = "Upload failed: %s" % (e)
 
         if error_msg is not None:
-            wxCallAfter(wxLogMessage, error_msg)
-            wxCallAfter(wxLog_GetActiveTarget().Flush)
-
+            log.error("Upload files failed")
+            MessageDialog(None, error_msg, "Upload Files Error")
+           
     def AddData(self, data):
         """
         This method adds local data to the venue
         """
-        wxLogDebug("Adding data: %s to venue" %data.name)
-        wxLogDebug("Adding data: %s to venue" %data.type)
+        log.debug("Adding data: %s to venue" %data.name)
+        
         try:
             self.client.AddData(data)
             self.personalDataDict[data.name] = data
-
+            
         except:
-            wxLogError("Error occured when trying to add data")
-            wxLog_GetActiveTarget().Flush()
-
+            log.error("Error occured when trying to add data")
+           
     def RemoveData(self, data):
         """
         This method removes a data from the venue
         """
-        wxLogDebug("Remove data: %s from venue" %data.name)
+        log.debug("Remove data: %s from venue" %data.name)
         try:
             self.client.RemoveData(data)
             if(data.type == self.profile.publicId and self.personalDataDict.has_key(data.name)):
@@ -1007,37 +1073,34 @@ class VenueClientUI(wxApp, VenueClient):
                 self.dataStore.DeleteFile(data.name)
 
         except:
-            wxLogError("Error occured when trying to remove data")
-            wxLog_GetActiveTarget().Flush()
-
-
+            log.error("Error occured when trying to remove data")
+          
     def AddService(self, service):
         """
         This method adds a service to the venue
         """
-        wxLogDebug("Adding service: %s to venue" %service.name)
+        log.debug("Adding service: %s to venue" %service.name)
         try:
             self.client.AddService(service)
 
         except:
-            wxLogError("Error occured when trying to add service")
-            wxLog_GetActiveTarget().Flush()
-
+            log.error("Error occured when trying to add service")
+          
     def OpenService(self, service):
         """
         open the specified service
         """
-        wxLogDebug("Opening service: %s / %s" % (service.name,
+        log.debug("Opening service: %s / %s" % (service.name,
                                                  service.mimeType))
         commands = GetMimeCommands(filename=service.uri, type=service.mimeType)
 
         if commands == None:
             message = "No client registered for the selected application\n(mime type = %s)" % service.mimeType
             dlg = MessageDialog(self.frame, message )
-            wxLogDebug(message)
+            log.debug(message)
         else:
             if commands.has_key('open'):
-                wxLogDebug("executing cmd: %s" % commands['open'])
+                log.debug("executing cmd: %s" % commands['open'])
                 if commands['open'][0:6] == "WX_DDE":
                     pid = wxExecute(commands['open'])
                 else:
@@ -1047,45 +1110,42 @@ class VenueClientUI(wxApp, VenueClient):
         """
         This method removes a service from the venue
         """
-        wxLogDebug("Remove service: %s from venue" %service.name)
+        log.debug("Remove service: %s from venue" %service.name)
         try:
             self.client.RemoveService(service)
 
         except:
-            wxLogError("Error occured when trying to remove service")
-            wxLog_GetActiveTarget().Flush()
-
-
+            log.error("Error occured when trying to remove service")
+           
     def ChangeProfile(self, profile):
         """
         This method changes this participants profile
         """
         self.profile = profile
         self.profile.Save(self.profileFile)
-        wxLogDebug("Save profile")
+        log.debug("Save profile")
 
         # use profile from path
         self.profile = ClientProfile(self.profileFile)
         self.SetProfile(self.profile)
 
         if(self.venueUri != None):
-            wxLogDebug("Update client profile in venue")
+            log.debug("Update client profile in venue")
 
             try:
                 self.client.UpdateClientProfile(profile)
 
             except:
-                wxLogError("Error occured when trying to update profile")
-                wxLog_GetActiveTarget().Flush()
-
+                log.error("Error occured when trying to update profile")
+              
         else:
-            wxLogDebug("Can not update client profile in venue - not connected")
+            log.debug("Can not update client profile in venue - not connected")
 
     def SetNodeUrl(self, url):
         """
         This method sets the node service url
         """
-        wxLogDebug("Set node service url:  %s" %url)
+        log.debug("Set node service url:  %s" %url)
         self.nodeServiceUri = url
 
     #
@@ -1097,12 +1157,12 @@ class VenueClientUI(wxApp, VenueClient):
         DataDescription from the VenueClient.  If the file is not present
         GetData returns None
         '''
-        wxLogDebug("Get private data description: %s" %filename)
+        log.debug("Get private data description: %s" %filename)
         if self.personalDataDict.has_key(filename):
             d = self.personalDataDict[filename]
 
         else:
-            wxLogDebug("The private file does not exist")
+            log.debug("The private file does not exist")
             d = None
         return d
 
@@ -1112,12 +1172,12 @@ class VenueClientUI(wxApp, VenueClient):
         DataDescription present in the venue.  If the file is not present
         GetData returns None
         '''
-        wxLogDebug("Get venue data description: %s" %filename)
-        wxLogDebug("Venue state: %s" %str(self.venueState.data))
+        log.debug("Get venue data description: %s" %filename)
+        log.debug("Venue state: %s" %str(self.venueState.data))
         if self.venueState.data.has_key(filename):
             d = self.venueState.data[filename]
         else:
-            wxLogDebug("The venue file does not exist")
+            log.debug("The venue file does not exist")
             d = None
         return d
 
@@ -1128,7 +1188,7 @@ class VenueClientUI(wxApp, VenueClient):
         '''
         self.personalDataDict[desc.GetName()] = desc
         self.client.UpdateData(desc)
-        wxLogDebug("UpdateData: %s" %desc)
+        log.debug("UpdateData: %s" %desc)
 
     #
     # Application Integration code
@@ -1138,7 +1198,7 @@ class VenueClientUI(wxApp, VenueClient):
         Start the specified application.  This method creates the application
         in the venue, and then joins it by starting the appropriate client
         """
-        wxLogDebug("Creating application: %s" % app.name)
+        log.debug("Creating application: %s" % app.name)
         app.uri = self.client.CreateApplication( app.name, app.description, app.mimeType )
         self.JoinApp(app)
 
@@ -1146,16 +1206,16 @@ class VenueClientUI(wxApp, VenueClient):
         """
         Join the specified application
         """
-        wxLogDebug("Joining application: %s / %s" % (app.name, app.mimeType))
+        log.debug("Joining application: %s / %s" % (app.name, app.mimeType))
         commands = GetMimeCommands(filename=app.uri, type=app.mimeType)
 
         if commands == None:
             message = "No client registered for the selected application\n(mime type = %s)" % app.mimeType
             dlg = MessageDialog(self.frame, message )
-            wxLogDebug(message)
+            log.debug(message)
         else:
             if commands.has_key('open'):
-                wxLogDebug("executing cmd: %s" % commands['open'])
+                log.debug("executing cmd: %s" % commands['open'])
                 if commands['open'][0:6] == "WX_DDE":
                     pid = wxExecute(commands['open'])
                 else:
@@ -1166,7 +1226,7 @@ class VenueClientUI(wxApp, VenueClient):
         Delete the specified application from the venue
         """
         self.client.DestroyApplication( app.id )
-        wxLogDebug("Destroying application: %s" % app.name)
+        log.debug("Destroying application: %s" % app.name)
 
 if __name__ == "__main__":
 
