@@ -7,7 +7,7 @@
 #
 #
 # Created:     2003/08/12
-# RCS_ID:      $Id: NodeSetupWizard.py,v 1.17 2003-09-24 15:26:36 lefvert Exp $ 
+# RCS_ID:      $Id: NodeSetupWizard.py,v 1.18 2003-10-21 20:09:05 lefvert Exp $ 
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -978,7 +978,7 @@ class NodeClient:
                     try:
                         # In try statement before all service managers have GetInstallDir()
                         installDir = Client.Handle(serviceManagerUrl).GetProxy().GetInstallDir()
-                        conf.executable = os.plath.join(installDir, conf.executable)
+                        conf.executable = os.path.join(installDir, conf.executable)
                     except:
                         pass
                     
