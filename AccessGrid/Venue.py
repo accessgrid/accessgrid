@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.215 2004-07-23 18:16:08 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.216 2004-07-26 16:54:38 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.215 2004-07-23 18:16:08 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.216 2004-07-26 16:54:38 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -47,6 +47,7 @@ from AccessGrid.Descriptions import CreateConnectionDescription
 from AccessGrid.Descriptions import CreateDataDescription
 from AccessGrid.Descriptions import CreateServiceDescription
 from AccessGrid.Descriptions import CreateApplicationDescription
+from AccessGrid.Descriptions import CreateAGNetworkServiceDescription
 from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.Descriptions import CreateNetworkLocation
 from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
@@ -64,6 +65,8 @@ from AccessGrid.Utilities import AllocateEncryptionKey, ServerLock
 from AccessGrid.hosting import PathFromURL
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.ClientProfile import ClientProfileCache, InvalidProfileException
+from AccessGrid.ServiceCapability import ServiceCapability
+from AccessGrid.NetworkServicesManager import NetworkServicesManager
 
 log = Log.GetLogger(Log.VenueServer)
 
@@ -403,7 +406,8 @@ class Venue(AuthorizationMixIn):
         self.streamList = StreamDescriptionList()
         self.clients = dict()
         self.netServices = dict()
-
+        self.networkServicesManager = NetworkServicesManager()
+        
         #
         # Dictionary keyed on client private id; value
         # true if a remove is in process on this client.
@@ -824,7 +828,7 @@ class Venue(AuthorizationMixIn):
         # to the stream descriptions, and an event is emitted to alert
         # current participants about the new stream
         #
-
+                
         for clientCapability in clientProfile.capabilities:
             if clientCapability.role == Capability.PRODUCER:
                 matchesExistingStream = 0
@@ -841,9 +845,15 @@ class Venue(AuthorizationMixIn):
 
                 # add user as producer of new stream
                 if not matchesExistingStream:
+                   
                     capability = Capability( clientCapability.role,
                     clientCapability.type )
                     capability.parms = clientCapability.parms
+
+                    # Add new capability as xml document.
+                    if hasattr(clientCapability, 'xml') and clientCapability.xml:
+                        n = ServiceCapability.CreateServiceCapability(clientCapability.xml)
+                        capability.xml = n.ToXML()
 
                     addr = self.AllocateMulticastLocation()
                     streamDesc = StreamDescription( self.name,
@@ -861,23 +871,76 @@ class Venue(AuthorizationMixIn):
                     Event( Event.ADD_STREAM,
                     self.uniqueId,
                     streamDesc ) )
-
-
-
+                    
         #
         # Compare user's consumer capabilities with existing stream
         # description capabilities. The user will receive a list of
         # compatible stream descriptions
         #
+
         clientConsumerCapTypes = []
+        newCapabilities = []
+        mismatchedStreams = []
+              
         for capability in clientProfile.capabilities:
             if capability.role == Capability.CONSUMER:
                 clientConsumerCapTypes.append( capability.type )
+
+                # Store new capabilities to check with new streams
+                if hasattr(capability, 'xml') and capability.xml:
+                    newCapabilities.append(capability)
+                                            
         for stream in self.streamList.GetStreams():
             if stream.capability.type in clientConsumerCapTypes:
                 streamDescriptions.append( stream )
+                       
+        # Additional Check!
+        # Find mismatches in new capabilities. The streams might already
+        # be added to the streamDescriptions list, so remove them from the list
+        # and send them to the network service manager for resolution.
+               
+        for s in self.streamList.GetStreams():
+            match = 0
+            # If stream has new capability
+            if hasattr(s.capability, 'xml') and s.capability.xml:
+                # Check for matches for new consumer capabilities
+                sCap = ServiceCapability.CreateServiceCapability(s.capability.xml)
+                for c in newCapabilities:
+                    cCap = ServiceCapability.CreateServiceCapability(c.xml)
+                    
+                    if sCap.Matches(cCap):
+                        match = 1
+                                                                                       
+                if not match:
+                    # Append to the list of mismatched streams.
+                    mismatchedStreams.append(s)
 
+                    # The stream does not match so remove it from
+                    # the list of stream descriptions.
+                    for stream in streamDescriptions:
+                        if s.id == stream.id:
+                            streamDescriptions.remove(stream)
+                      
+        # Use network services to resolve mismatches.
+        if len(mismatchedStreams)>0:
+            matchingStreams = self.networkServicesManager.ResolveMismatch(mismatchedStreams,
+                                                                          clientProfile.capabilities)
+            
+            # Add new streams that got created by network services during matching.
+            streamIds = map(lambda x: x.id, self.streamList.GetStreams())
+                                  
+            for s in matchingStreams:
+                c = ServiceCapability.CreateServiceCapability(s.capability.xml)
+                
+                if not self.streamList.FindStreamByDescription(s):
+                    # Make new stream available for other clients.
+                    self.streamList.AddStream(s)
+
+            # Return new streams to the client.
+            streamDescriptions.extend(matchingStreams)
+        
         return streamDescriptions
+    
 
     def AllocateMulticastLocation(self):
         """
@@ -1201,6 +1264,46 @@ class Venue(AuthorizationMixIn):
         except InvalidProfileException:
             log.warn("UpdateProfileCache: InvalidProfile when storing a venue user's profile in the cache.")
 
+    def RegisterNetworkService(self, networkServiceDescription):
+        """
+        Registers a network service with the venue.
+        
+        @Param networkServiceDescription: A network service description.
+        """
+        nsd = CreateAGNetworkServiceDescription(networkServiceDescription)
+        try:
+            self.networkServicesManager.RegisterService(nsd)
+        except:
+            log.exception('Venue.RegisterNetworkService: Failed')
+            raise 'Venue.RegisterNetworkService: Failed'
+           
+    def UnRegisterNetworkService(self, networkServiceDescription):
+        """
+        Removes a network service from the venue
+        
+        @Param networkServiceDescription: A network service description.*
+        """
+        nsd = CreateAGNetworkServiceDescription(networkServiceDescription)
+        try:
+            self.networkServicesManager.UnRegisterService(nsd)
+        except:
+            log.exception('Venue.UnRegisterNetworkService: Failed')
+            raise 'Venue.UnRegisterNetworkService: Failed'
+
+    def GetNetworkServices(self):
+        """
+        GetNetworkServices returns a list of all the network services
+        in this venue.
+        
+        @returns: A list of NetworkServiceDescriptions.
+        """
+        try:
+            s = self.networkServicesManager.GetServices()
+        except:
+            log.exception('Venue.GetNetworkServices: Failed')
+            raise 'Venue.GetNetworkServices: Failed.'
+        return s
+        
     def AddNetworkService(self, clientType, privateId):
         """
         AddNetworkService adds a net service to those in the venue
@@ -1239,15 +1342,7 @@ class Venue(AuthorizationMixIn):
         # Remove the netservice from the netservice list
         del self.netServices[privateId]
 
-    def GetNetworkServices(self):
-        """
-        GetNetworkServices returns a list of all the network services
-        in this venue.
-
-        *self.netServices* A list of connection descriptions.
-        """
-        #This can't really do anything until we have something to give back
-        pass
+   
 
     def GetCachedProfiles(self):
         """
@@ -2238,6 +2333,38 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         except:
             log.exception("VenueI.GetClients: exception")
             raise
+        
+    def RegisterNetworkService(self, networkServiceDescription):
+        """
+        Register a network service with the venue.
+        """
+        
+        # Lock and do the call
+
+        nsd = CreateAGNetworkServiceDescription(networkServiceDescription)
+        try:
+            retval = self.impl.RegisterNetworkService(nsd)
+            return retval
+        except:
+            log.exception("VenueI.RegisterNetworkService: exception")
+            raise
+               
+
+    def UnRegisterNetworkService(self, networkServiceDescription):
+        """
+        UnregisterNetworkService removes a netservice from those in the venue
+        """
+
+        # Lock and do the call
+        nsd = CreateAGNetworkServiceDescription(networkServiceDescription)
+        
+        try:
+            self.impl.UnRegisterNetworkService(nsd)
+        except:
+            log.exception("VenueI.RemoveNetworkService: exception")
+            raise
+
+        
 
     def AddNetworkService(self, clientType, privateId=None):
         """
@@ -2275,7 +2402,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         Return data on the existing network services.
         """
         # This can't do anything until we have something to return
-        return None
+        return self.impl.GetNetworkServices()
 
     def GetCachedProfiles(self):
         """
@@ -3185,6 +3312,12 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
     def UpdateClientProfile(self, profile):
         return self.proxy.UpdateClientProfile(profile)
 
+    def RegisterNetworkService(self, networkServiceDescription):
+        return self.proxy.RegisterNetworkService(networkServiceDescription)
+
+    def UnRegisterNetworkService(self, networkServiceDescription):
+        return self.proxy.UnRegisterNetworkService(networkServiceDescription)
+
     def AddNetworkService(self, type, privateID):
         return self.proxy.AddNetworkService(type, privateID)
 
@@ -3192,7 +3325,10 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
         return self.proxy.RemoveNetworkService(nid)
 
     def GetNetworkServices(self):
-        return None
+        services = []
+        for s in self.proxy.GetNetworkServices():
+            services.append(CreateAGNetworkServiceDescription(s))
+        return services
     
     def AddService(self, serviceDesc):
         return self.proxy.AddService(serviceDesc)
