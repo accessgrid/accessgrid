@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.40 2003-02-21 21:40:25 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.41 2003-02-21 22:00:55 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -625,7 +625,7 @@ class VenueList(wxScrolledWindow):
         #self.EnableScrolling(true, false)
         #self.SetScrollRate(0, 20)
         self.box.SetVirtualSizeHints(self)
-        self.SetScrollRate(10, 10)
+        self.SetScrollRate(1, 1)
         
         self.box.Add(self.column, 1, wxEXPAND)
         self.SetSizer(self.box)
@@ -1375,42 +1375,4 @@ if __name__ == "__main__":
             self.frame.SetSize(wxSize(300, 400))
             self.SetTopWindow(self.frame)
             self.client = venueClient
-            return true
-        
-        def AddParticipant(self, profile):
-            self.frame.contentListPanel.AddParticipant(profile)
-     
-        def RemoveParticipant(self):
-            self.frame.contentListPanel.RemoveParticipant()
-
-        def AddData(self, profile):
-            self.frame.contentListPanel.AddData(profile)
-
-        def RemovData(self):
-            self.frame.contentListPanel.RemoveData()
-
-        def AddService(self, profile):
-            self.frame.contentListPanel.AddService(profile)
-
-        def RemoveService(self):
-            self.frame.contentListPanel.RemoveService()
-
-        def AddNode(self, profile):
-            self.frame.contentListPanel.AddNode(profile)
-
-        def RemoveNode(self):
-            self.frame.contentListPanel.RemoveNode()
-
-        def ExpandTree(self):
-            self.frame.contentListPanel.ExpandTree()
-
-        def AddExit(self, profile):
-            self.frame.venueListPanel.list.AddVenueDoor(profile.name, " ", \
-                                                        icons.getDoorClosedBitmap(), \
-                                                        icons.getDoorOpenBitmap()) 
-            
-        def RemoveExit(self):
-            print 'remove exit'
-
-    app = TheGrid()
-    app.MainLoop()
+            re
