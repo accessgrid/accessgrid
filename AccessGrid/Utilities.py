@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.12 2003-02-10 14:57:00 judson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.13 2003-02-10 16:27:37 leggett Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -153,7 +153,12 @@ def SubmitBug():
     bugzilla_login = 'client-ui-bugzilla-user@mcs.anl.gov'
     bugzilla_password = '8977f68349f93fead279e5d4cdf9c3a3'
 
-    args['Bugzilla_login'] = bugzilla_login args['Bugzilla_password'] = bugzilla_password args['product'] = "Virtual Venues Client Software" args['version'] = "2.0" args['component'] = "Client UI" args['rep_platform'] = "Other"
+    args['Bugzilla_login'] = bugzilla_login
+    args['Bugzilla_password'] = bugzilla_password
+    args['product'] = "Virtual Venues Client Software"
+    args['version'] = "2.0"
+    args['component'] = "Client UI"
+    args['rep_platform'] = "Other"
     
     #
     # This detection can get beefed up a lot; I say
