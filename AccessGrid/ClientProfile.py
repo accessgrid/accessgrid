@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.5 2003-01-16 20:24:17 turam Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.6 2003-01-21 19:27:35 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -44,7 +44,7 @@ class ClientProfile:
         self.icon = None
         self.publicId = ''
         self.location = ''
-        self.venueClientURL = ''
+        self.venueClientUri = ''
         self.technicalSupportInformation = ''
         self.homeVenue = ''
         self.privateId = None
