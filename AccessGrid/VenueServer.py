@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.138 2004-04-08 20:52:10 eolson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.139 2004-04-09 18:37:50 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.138 2004-04-08 20:52:10 eolson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.139 2004-04-09 18:37:50 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -41,8 +41,8 @@ from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
 
 from AccessGrid.Platform.Config import SystemConfig
 
-from AccessGrid.Utilities import formatExceptionInfo, LoadConfig, SaveConfig
-from AccessGrid.Utilities import PathFromURL
+from AccessGrid.Utilities import LoadConfig, SaveConfig
+from AccessGrid.hosting import PathFromURL, IdFromURL
 from AccessGrid.GUID import GUID
 from AccessGrid.Venue import Venue, VenueI
 from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
@@ -362,8 +362,7 @@ class VenueServer(AuthorizationMixIn):
 
                 for c in string.split(connections, ':'):
                     if c:
-                        uri = self.MakeVenueURL(self.IdFromURL(cp.get(c,
-                                                                      'uri')))
+                        uri = self.MakeVenueURL(IdFromURL(cp.get(c, 'uri')))
                         cd = ConnectionDescription(cp.get(c, 'name'),
                                                    cp.get(c, 'description'),
                                                    uri)
@@ -503,12 +502,6 @@ class VenueServer(AuthorizationMixIn):
                                     
             else:
                 setattr(self, option, config[k])
-
-    def IdFromURL(self, URL):
-        """
-        """
-        path = PathFromURL(URL)
-        return path.split('/')[-1]
 
     def MakeVenueURL(self, uniqueId):
         """
@@ -1095,7 +1088,7 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
             raise InvalidVenueURL
 
         # pull info out of the url
-        oid = self.impl.IdFromURL(URL)
+        oid = IdFromURL(URL)
 
         # Create a venue description
         vd = CreateVenueDescription(venueDescStruct)
@@ -1118,7 +1111,7 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         **Arguments:**
             *URL* The url to the venue to be removed.
         """
-        oid = self.impl.IdFromURL(URL)
+        oid = IdFromURL(URL)
 
         try:
             self.impl.RemoveVenue(oid)
@@ -1164,7 +1157,7 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
             *URL* the url of the default venue upon success.
         """
         try:
-            oid = self.impl.IdFromURL(URL)
+            oid = IdFromURL(URL)
             self.impl.SetDefaultVenue(oid)
 
             return URL

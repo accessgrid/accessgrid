@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.181 2004-04-09 17:16:18 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.182 2004-04-09 18:38:05 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.181 2004-04-09 17:16:18 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.182 2004-04-09 18:38:05 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -62,8 +62,8 @@ from AccessGrid.scheduler import Scheduler
 from AccessGrid.Events import Event, HeartbeatEvent, DisconnectEvent
 from AccessGrid.Events import ClientExitingEvent
 from AccessGrid.Events import MarshalledEvent
-from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
-from AccessGrid.Utilities import ServerLock, PathFromURL
+from AccessGrid.Utilities import AllocateEncryptionKey, ServerLock
+from AccessGrid.hosting import PathFromURL
 from AccessGrid.Platform.Config import UserConfig, SystemConfig
 from AccessGrid.ClientProfile import ClientProfileCache, InvalidProfileException
 
