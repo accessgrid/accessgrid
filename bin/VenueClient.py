@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.75 2003-03-21 16:14:53 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.76 2003-03-21 17:12:22 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -241,7 +241,6 @@ class VenueClientUI(wxApp, VenueClient):
         wxCallAfter(wxLogDebug, "EVENT- Enter venue with url: %s" %(URL))
 
         # Make people you lead go to this venue
-        print '--------- Get followers'
         self.__getFollowers(URL)
 
         if self.venueUri != None:
