@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.8 2003-02-12 22:03:43 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.9 2003-02-12 23:16:12 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -422,7 +422,7 @@ class NodeManagementClientFrame(wxFrame):
 
         dlg = wxTextEntryDialog( self, "Enter uri of running host (e.g., https://myhost:8200/ServiceManager )", \
                  "Add Host Dialog" )
-        dlg.Show()
+        dlg.ShowModal()
         str = dlg.GetValue()
         if str != None and len(str)>0:
             uri = str
