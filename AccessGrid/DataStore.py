@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.3 2003-02-14 20:41:08 olson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.4 2003-02-21 17:37:13 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,11 +24,15 @@ import md5
 import os
 import ConfigParser
 import cStringIO
+import threading
+import Queue
 
 import AccessGrid.GUID
 from AccessGrid.Utilities import GetHostname
 from AccessGrid.Descriptions import DataDescription
 
+#import logging
+#log = logging.getLogger("AG.DataStore")
 
 class NotAPlainFile(Exception):
     pass
@@ -54,11 +58,12 @@ class DataStore:
     
     """
     
-    def __init__(self, venue, pathname):
+    def __init__(self, venue, pathname, prefix):
         """
         Create the datastore.
 
-        Files will be stored in the directory named by pathname.
+        Files will be stored in the directory named by <pathname>.
+        The URL prefix for this data store is <prefix>.
 
         """
 
@@ -68,6 +73,7 @@ class DataStore:
             raise Exception("Datastore path %s does not exist" % (pathname))
 
         self.pathname = pathname
+        self.prefix = prefix
 
     def SetTransferEngine(self, engine):
         """
@@ -76,6 +82,7 @@ class DataStore:
         """
 
         self.transfer_engine = engine
+        engine.RegisterPrefix(self.prefix, self)
 
     def GetUploadDescriptor(self):
         """
@@ -83,7 +90,7 @@ class DataStore:
 
         """
 
-        return self.transfer_engine.GetUploadDescriptor()
+        return self.transfer_engine.GetUploadDescriptor(self.prefix)
 
     def GetDownloadDescriptor(self, filename):
         """
@@ -98,10 +105,10 @@ class DataStore:
         if not os.path.exists(path):
             return None
         
-        return self.transfer_engine.GetDownloadDescriptor(filename)
+        return self.transfer_engine.GetDownloadDescriptor(self.prefix, filename)
     
 
-    def GetFilePath(self, dn, filename):
+    def GetDownloadFilename(self, id_token, url_path):
         """
         Return the full path of the given filename in this datastore.
 
@@ -119,29 +126,27 @@ class DataStore:
         # Authorization check for dn goes here
         #
 
-        if re.search("bad", dn):
-            raise NotAuthorized
-
-        path = os.path.join(self.pathname, filename)
+        path = os.path.join(self.pathname, url_path)
 
         if not os.path.isfile(path):
             raise FileNotFound
 
         return path
 
-    def CanUploadFile(self, dn, filename):
+    def CanUploadFile(self, dn, file_info):
         """
         Used by the transfer engine to determine if a client is able to
         upload a new file.
 
         Arguments:
          - dn is the distinguished name of the client
-         - filename is the file name client is attempting to upload
+         - file_info is a file information dict for hte file the client is trying to upload
 
         Current test is just to see if the file exists.
         Need to test to see if the client is currently logged into the venue.
         """
 
+        filename = file_info['name']
         desc = self.venue.GetData(filename)
 
         if desc is not None:
@@ -149,10 +154,11 @@ class DataStore:
 
         return 1
 
-    def GetUploadFileHandle(self, dn, filename):
+    def GetUploadFilename(self, dn, file_info):
         """
-        Return a filehandle appropriate for writing into a
-        new upload of filename.
+        Return the filename for a file to be uploaded.
+
+        file_info is a file information dictionary.
 
         The client is running with identity "dn".
 
@@ -165,6 +171,7 @@ class DataStore:
         # First verify that we have a state=pending description in the venue.
         #
 
+        filename = file_info['name']
         desc = self.venue.GetData(filename)
         
         if desc is None:
@@ -182,9 +189,8 @@ class DataStore:
         #
 
         path = os.path.join(self.pathname, filename)
-        fp = file(path, "wb")
 
-        return fp
+        return path
 
     def CompleteUpload(self, dn, file_info):
         """
@@ -219,7 +225,7 @@ class DataStore:
         except OSError, e:
             print "DeleteFile raised error ", e
 
-    def AddPendingFile(self, dn, filename):
+    def AddPendingUpload(self, dn, filename):
         """
         Create a data description for filename with a state of "pending" and
         add to the venue.
@@ -239,52 +245,46 @@ import BaseHTTPServer
 class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_GET(self):
-        # print "GET ", self.path
-        # print "have datastore ", self.server.datastore
-        # print "headers are ", self.headers
 
         #
-        # We require an X-Client-DN header as a token of
-        # authentication. It's a bad token, but this is
-        # mostly a sample code.
+        # Retrieve an identity token from the TransferServer. 
+        # We pass the transfer handler through so that the
+        # protocol-specific code in TransferServer can have access
+        # to the connection-specific information in the handler
+        # instance.
         #
 
-        if self.headers.has_key("X-Client-DN"):
-            dn = self.headers["X-Client-DN"]
+        identityToken = self.server.GetIdentityToken(self)
+        print "GET identity token ", identityToken
+        
+        try:
+            self.ProcessGet(identityToken)
 
-            try:
-                self.ProcessGet(dn)
+        except FileNotFound:
+            self.send_error(404, "File not found")
 
-            except FileNotFound:
-                self.send_error(404, "File not found")
-            except NotAuthorized:
-                self.send_error(403, "Not authorized")
-                
-        else:
+        except NotAuthorized:
             self.send_error(403, "Not authorized")
 
     def do_POST(self):
-        # print "POST ", self.path
-        # print "have datastore ", self.server.datastore
-        # print "headers are ", self.headers
-
         #
-        # We require an X-Client-DN header as a token of
-        # authentication. It's a bad token, but this is
-        # mostly a sample code.
+        # Retrieve an identity token from the TransferServer. 
+        # We pass the transfer handler through so that the
+        # protocol-specific code in TransferServer can have access
+        # to the connection-specific information in the handler
+        # instance.
         #
 
-        if not self.headers.has_key("X-Client-DN"):
-            self.send_error(403, "Not authorized")
-            return None
+        identityToken = self.server.GetIdentityToken(self)
+        # log.debug("POST identity token %s", identityToken)
         
-        dn = self.headers["X-Client-DN"]
-
         #
         # Split path into components, and verify
         # that it started with /. (path_parts[0] is
         # empty if that is the case).
         #
+
+        # log.debug("doPOST path=%s", self.path)
 
         path_parts = self.path.split('/')
         if path_parts[0] != '':
@@ -298,18 +298,19 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         del path_parts[0]
 
         #
-        # Check for /manifest
+        # Check for /<prefix>/manifest
         #
-        if len(path_parts) == 1 and path_parts[0] == "manifest":
-            return self.ProcessManifest(dn)
+        if len(path_parts) == 2 and path_parts[1] == "manifest":
+            return self.ProcessManifest(path_parts[0], identityToken)
 
         #
-        # Check for /<transfer_key>/<file_num>, designating a file upload.
+        # Check for /<prefix>/<transfer_key>/<file_num>, designating a file upload.
         #
 
-        if len(path_parts) == 2:
-            transfer_key = path_parts[0]
-            file_num = path_parts[1]
+        if len(path_parts) == 3:
+            prefix = path_parts[0]
+            transfer_key = path_parts[1]
+            file_num = path_parts[2]
 
             #
             # Ensure file_num is numeric
@@ -324,7 +325,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             # to the method that handles the details of
             # file uploads.
             
-            return self.ProcessFileUpload(dn, transfer_key, file_num)
+            return self.ProcessFileUpload(identityToken, prefix, transfer_key, file_num)
             
         #
         # Default.
@@ -332,9 +333,11 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_error(404, "File not found")
         return None
 
-    def ProcessFileUpload(self, dn, transfer_key, file_num):
+    def ProcessFileUpload(self, identityToken, prefix, transfer_key, file_num):
         """
         Process a possible file upload.
+
+        Look up the prefix to get the handler for that prefix.
 
         Look up the transfer key in the server to get the
         manifest.
@@ -352,6 +355,19 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         Verify the checksum, and nuke the file if it's wrong.
         """
 
+
+        #
+        # Find the transfer handler for this prefix.
+        #
+        transfer_handler = self.server.LookupPrefix(prefix)
+        if transfer_handler is None:
+            self.send_error(404, "Path not found")
+            return None
+
+        #
+        # Find the manifest information for this file.
+        #
+
         file_info = self.server.LookupUploadInformation(transfer_key, file_num)
         print "Got this for %s: %s" % (file_num, file_info)
 
@@ -366,11 +382,34 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             return None
 
         #
+        # Here, we might want to check for available disk space
+        #
+
+        #
+        # Query the handler for the pathname we shoudl use
+        # to upload the file.
+        #
+
+        upload_file_path = transfer_handler.GetUploadFilename(identityToken, file_info)
+        if upload_file_path is None:
+            self.send_error(404, "Upload file not found")
+            return None
+            
+
+        #
         # Open up destination file and initialize digest.
         #
 
         filename = file_info['name']
-        fp = self.server.datastore.GetUploadFileHandle(dn, filename)
+        fp = None
+
+        try:
+            # log.debug("opening upload file %s", upload_file_path)
+            fp = open(upload_file_path, "wb")
+        except EnvironmentError:
+            # log.exception("Cannot open output file")
+            self.send_error(405, "Cannot open output file")
+            return None
 
         if fp is None:
             #
@@ -391,7 +430,7 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
             left = int(size)
             bufsize = 4096
-            while 1:
+            while left > 0:
                 if left < 4096:
                     n = left
                 else:
@@ -447,15 +486,12 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             
         #
         # OKAY, we handled the upload properly.
+        # Let the transfer handler know things are cool.
         #
-        # Grab the data description for this file from the venue, fix it
-        # up with the right info, and update. Or, rather, have the datastore
-        # do it.
-        #
+        
+        transfer_handler.CompleteUpload(identityToken, file_info)
 
-        self.server.datastore.CompleteUpload(dn, file_info)
-
-    def ProcessManifest(self, dn):
+    def ProcessManifest(self, prefix, identityToken):
         """
         Read the manifest from the input.
 
@@ -467,13 +503,22 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         """
 
         #
+        # First get the transfer handler for this prefix.
+        #
+
+        transfer_handler = self.server.LookupPrefix(prefix)
+        if transfer_handler is None:
+            self.send_error(404, "Path not found")
+            return None
+
+        #
         # Woo, the int cast is important, as the header comes back
         # as a string and self.rfile.read() complains bitterly if it
         # gets a string as an argument.
         #
         
-        len = int(self.headers['Content-Length'])
-        buf = self.rfile.read(len)
+        read_len = int(self.headers['Content-Length'])
+        buf = self.rfile.read(read_len)
 
         #
         # Construct the StringIO and read the manifest from it.
@@ -503,9 +548,9 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         #
         try:
             manifest.readfp(io)
-            # print "have manifest"
-            # print manifest.sections()
-            # manifest.write(sys.stdout)
+            print "have manifest"
+            print manifest.sections()
+            manifest.write(sys.stdout)
 
             #
             # Go through the potential files to be uploaded and ensure
@@ -513,9 +558,15 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             #
 
             num_files = manifest.getint("manifest", "num_files")
+
             for file_num in range(0, num_files):
-                name = manifest.get(str(file_num), "name")
-                if not self.server.datastore.CanUploadFile(dn, name):
+
+                info = {}
+                for opt in manifest.options(str(file_num)):
+                    info[opt] = manifest.get(str(file_num), opt)
+                
+                name = info['name']
+                if not transfer_handler.CanUploadFile(identityToken, info):
                     upload_okay = 0
                     upload_error_list.append("Upload error for file " + name)
                 file_list.append(name)
@@ -538,7 +589,6 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         self.send_response(200)
         self.send_header("Content-type", "text/plain")
-        self.end_headers()
 
         #
         # If all files can be transferred, go ahead and register
@@ -546,28 +596,39 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         # datastore (they'll get marked as "pending").
         #
         
+        #
+        # Collect the response  into a string so we can
+        # issue a Content-length header. The GSIHTTP code
+        # appears to be happier with that, and it's good
+        # practice anyway.
+        #
+        output = ""
+        
         if upload_okay:
             transfer_key = self.server.RegisterManifest(manifest)
 
             for file in file_list:
-                desc = self.server.datastore.AddPendingFile(dn, file)
+                transfer_handler.AddPendingUpload(identityToken, file)
 
-            self.wfile.write("return_code: 0\n")
-            self.wfile.write("transfer_key: %s\n" % (transfer_key))
+            output += "return_code: 0\n"
+            output += "transfer_key: %s\n" % (transfer_key)
 
         else:
-            self.wfile.write("return_code: 1\n")
+            output += "return_code: 1\n"
             for err in upload_error_list:
-                self.wfile.write("error_reason: %s\n" % (err))
+                output += "error_reason: %s\n" % (err)
 
+        self.send_header("Content-length", str(len(output)))
+        self.end_headers()
+        self.wfile.write(output)
         return None
 
-    def ProcessGet(self, dn):
+    def ProcessGet(self, identityToken):
         """
         Handle an HTTP GET.
 
         Extract the name of the file from the path; the path should be
-        of the format /<filename>. Any other path is incorrect and
+        of the format /<prefix>/<filename>. Any other path is incorrect and
         will cause a FileNotFound exception to be raised.
 
         Call the datastore's OpenFile method to open the file and
@@ -576,18 +637,37 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         """
 
         path = urllib.unquote(self.path)
-        match = re.search("^/([^/?#]+)$", path)
 
-        if not match:
-            raise FileNotFound
+        components = path.split('/')
+
+        #
+        # This is always empty, so nuke it.
+        #
+
+        del components[0]
         
-        path = match.group(1)
+        if len(components) != 2:
+            raise FileNotFound
 
-        # print "Have path '%s'" % ( path)
+        prefix = components[0]
+        path = components[1]
+
+        # log.info("Have path '%s', prefix='%s'", path, prefix)
+
+        #
+        # First get the transfer handler for this prefix.
+        #
+
+        transfer_handler = self.server.LookupPrefix(prefix)
+        if transfer_handler is None:
+            self.send_error(404, "Path not found")
+            return None
 
         fp = None
         try:
-            ds_path = self.server.datastore.GetFilePath(dn, path)
+            ds_path = transfer_handler.GetDownloadFilename(identityToken, path)
+            if ds_path is None:
+                raise FileNotFound(path)
             fp = open(ds_path, "rb")
         except FileNotFound, e:
             raise e
@@ -610,24 +690,61 @@ class HTTPTransferHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_header("Content-type", "application/octet-stream")
             self.send_header("Content-Length", stat.st_size)
             self.end_headers()
-            print "Start copy to output"
+            # print "Start copy to output"
             shutil.copyfileobj(fp, self.wfile)
             print "Done copying"
             fp.close()
 
-class HTTPTransferServer(BaseHTTPServer.HTTPServer):
+class TransferServer:
     """
-    An HTTPTransferServer provides upload and download services via HTTP.
+    A TransferServer provides file upload and download services.
 
-    This is mostly an easier-to-understand example than the GASS-based transfer
-    server. We fake authentication by passing along the DN of the requesting
-    client in the X-Client-DN HTTP header.
+    It is intended to be subclassed to produce a protocol-specific
+    transfer engine. This class handles the connection to the data store itself,
+    and the manipulation of manifests.
+
+    The transfer server provides services based on URL prefixes. That is,
+    a client (um, a client in the same process as this object that is using
+    its services to provide file upload and download capabilities) of the
+    transfer server will register its interest in upload and downloads for some
+    URL prefix. Access to files under that prefix is gated through the
+    registered object.
+
+    A local client registers a callback handler with the TransferServer. This handler
+    will be invoked in the following situations:
+
+    When a HTTP GET request occurs to initiate a file download, the handler's
+    GetDownloadFilename(id_token, url_path) is invoked, and expects to be returned a
+    pathname to the file on the local filesystem. The url_path does not include the
+    client's transfer prefix. id_token is an identifier token representing the
+    identity of the downloading client.
+
+    When a HTTP POST request occurs with a transfer manifest, the manifest is
+    parsed. For each file, the handler's CanUpload(id_token, file_info) 
+    callback is invoked.  The callback is to determine whether it can accept the upload
+    of the file and return 1 if the server will accept the file, 0 otherwise. id_token is an
+    identifier token representing the identity of the uploading client.
+
+    file_info is a dictionary with the following keys:
+    
+    	name		Desired name of the file
+        size		Size of the file in bytes
+        checksum	MD5 checksum of the file
+
+    If the manifest processing indicates that the file upload can continue,
+    the transfer handler's AddPendingUpload(id_token, filename) method is invoked.
+
+    When a HTTP POST request occurs with an actual file upload, the handler's
+    GetUploadFilename(id_token, file_info) method is invoked. The handler validates
+    the request and returns the pathname to which the file should be uploaded. id_token is an
+    identifier token representing the identity of the uploading client.
+
+    When the file upload is completed, the handler's CompleteUpload(id_token, file_info)
+    method is invoked.  
+
     """
 
-    def __init__(self, datastore, address = ('', 0)):
-        print "datastore=%s address=%s" % (datastore, address)
-        self.datastore = datastore
-        BaseHTTPServer.HTTPServer.__init__(self, address, HTTPTransferHandler)
+    def __init__(self):
 
         #
         # upload_manifests is a dictionary mapping from transfer key
@@ -635,22 +752,43 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer):
         #
         self.upload_manifests = {}
 
-    def GetUploadDescriptor(self):
-        return urlparse.urlunparse(("http",
-                                 "%s:%d" % (GetHostname(), self.socket.getsockname()[1]),
-                                 "",    # Path
-                                 "", "", ""))
+        #
+        # The prefix_registry maps from a transfer prefix to
+        # the handler for that prefix.
+        #
+        
+        self.prefix_registry = {}
+
+    def RegisterPrefix(self, prefix, handler):
+        self.prefix_registry[prefix] = handler
+
+    def LookupPrefix(self, prefix):
+        if self.prefix_registry.has_key(prefix):
+            return self.prefix_registry[prefix]
+        else:
+            return None
+        
+    def GetUploadDescriptor(self, prefix):
+        """
+        Return the upload descriptor for this transfer server.
+
+        Must be implemented by the protocol-specific subclass.
+        """
+        
+        raise NotImplementedError
                                  
-    def GetDownloadDescriptor(self, path):
-        return urlparse.urlunparse(("http",
-                                    "%s:%d" % (GetHostname(), self.socket.getsockname()[1]),
-                                    urllib.quote(path),
-                                    "", "", ""))
-                                 
+    def GetDownloadDescriptor(self, prefix, path):
+        """
+        Return the download descriptor for this transfer server.
+
+        Must be implemented by the protocol-specific subclass.
+        """
+        
+        raise NotImplementedError
 
     def RegisterManifest(self, manifest):
         """
-        A client has sent a POST to /manifest to initiate an upload.
+        A client has sent a POST to /<prefix>/manifest to initiate an upload.
         Manifest is the manifest that was transferred.
 
         Allocate a transfer key for this upload, save the manifest under
@@ -700,7 +838,59 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer):
         for opt in  manifest.options(file_num):
             info[opt] = manifest.get(file_num, opt)
         return info
+
+class IdentityToken:
+    def __init__(self, dn):
+        self.dn = dn
+
+    def __repr__(self):
+        cname = self.__class__.__name__
+        return "%s(dn=%s)" % (cname, self.dn)
+
+class HTTPIdentityToken(IdentityToken):
+    pass
+
+class GSIHTTPIdentityToken(IdentityToken):
+    pass
+
+class HTTPTransferServer(BaseHTTPServer.HTTPServer, TransferServer):
+    """
+    A HTTPTransferServer is a HTTP-based implementation of a TransferServer.
+
+    Note that most of the work is done in HTTPTransferHandler.
+    """
+
+    def __init__(self, address = ('', 0)):
+        TransferServer.__init__(self)
+        BaseHTTPServer.HTTPServer.__init__(self, address, HTTPTransferHandler)
+
+    def GetIdentityToken(self, transferHandler):
+        """
+        Create an identity token for this HTTP-based transfer.
+
+        The token will contain the X-Client-DN header if there is one.
+        """
+
+        try:
+            dn = transferHandler.headers.getheader("X-Client-DN")
+        except KeyError:
+             dn = None
+
+        return HTTPIdentityToken(dn)
         
+
+    def GetUploadDescriptor(self, prefix):
+        return urlparse.urlunparse(("http",
+                                 "%s:%d" % (GetHostname(), self.socket.getsockname()[1]),
+                                 prefix,    # Path
+                                 "", "", ""))
+                                 
+    def GetDownloadDescriptor(self, prefix, path):
+        return urlparse.urlunparse(("http",
+                                    "%s:%d" % (GetHostname(), self.socket.getsockname()[1]),
+                                    "%s/%s" % (prefix, urllib.quote(path)),
+                                    "", "", ""))
+                                 
     def run(self):
         self.done = 0
         self.server_thread = threading.Thread(target = self.thread_run)
@@ -717,8 +907,149 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer):
         while not self.done:
             self.handle_request()
 
+from pyGlobus import io
+from AccessGrid.hosting.pyGlobus import Utilities
+
+class GSIHTTPTransferServer(io.GSITCPSocketServer, TransferServer):
+    """
+    A GSIHTTPTransferServer is a Globus-enabled HTTP-based implementation of a TransferServer.
+n
+    Note that most of the work is done in HTTPTransferHandler.
+
+    This implementation uses a pool of worker threads to handle the requests.
+    We could just use SocketServer.ThreadingMixIn, but I worry about 
+    an unbounded number of incoming request overloading the server.
+
+    self.requestQueue is a Queue object. Each worker thread runs __WorkerRun(),
+    which blocks on a get on teh request queue.
+
+    Incoming requests are just placed on the queue.
+    """
+
+    def __init__(self, address = ('', 0), numThreads = 5):
+        TransferServer.__init__(self)
+
+        self.done = 0
+        
+        self.numThreads = numThreads
+        self.requestQueue = Queue.Queue()
+        self._CreateWorkers()
+
+        #
+        # For now, allow all connections.
+        #
+
+        def auth_cb(server, g_handle, remote_user, context):
+            # print "Got remote ", remote_user
+            return 1
+        # tcpAttr = Utilities.CreateTCPAttrAlwaysAuth()
+        tcpAttr = Utilities.CreateTCPAttrCallbackAuth(auth_cb)
+        io.GSITCPSocketServer.__init__(self, address, HTTPTransferHandler,
+                                    None, None, tcpAttr = tcpAttr)
+
+    def _CreateWorkers(self):
+        self.workerThread = {}
+        for workerNum in range(self.numThreads):
+            self.workerThread[workerNum] = threading.Thread(target = self.__WorkerRun,
+                                                            args = (workerNum,))
+            self.workerThread[workerNum].start()
+
+    def __WorkerRun(self, workerNum):
+        # log.debug("Worker %d starting", workerNum)
+
+        while not self.done:
+            cmd = self.requestQueue.get(1)
+            # log.debug("Worker %d gets cmd %s", workerNum, cmd)
+            cmdType = cmd[0]
+            if cmdType == "quit":
+                break
+            elif cmdType == "request":
+                request = cmd[1]
+                client_address = cmd[2]
+
+                try:
+                    self.finish_request(request, client_address)
+                    self.close_request(request)
+                except:
+                    info.exception("Worker %d: Request handling threw exception", workerNum)
+        # log.debug("Worker %d exiting", workerNum)
+            
+
+    def process_request(self, request, client_address):
+        # log.debug("process_request: request=%s client_address=%s", request, client_address)
+        self.requestQueue.put(("request", request, client_address))
+
+    def GetIdentityToken(self, transferHandler):
+        """
+        Create an identity token for this GSIHTTP-based transfer.
+
+        It contains the DN from the connection's security context.
+        """
+
+        context = transferHandler.connection.get_security_context()
+        initiator, acceptor, valid_time, mechanism_oid, flags, local_flag, open_flag = context.inquire()
+        dn = initiator.display()
+
+        return GSIHTTPIdentityToken(dn)
+        
+    def _GetListenPort(self):
+        return self.port
+
+    def GetUploadDescriptor(self, prefix):
+        return urlparse.urlunparse(("https",
+                                 "%s:%d" % (GetHostname(), self._GetListenPort()),
+                                 prefix,
+                                 "", "", ""))
+                                 
+    def GetDownloadDescriptor(self, prefix, path):
+        return urlparse.urlunparse(("https",
+                                    "%s:%d" % (GetHostname(), self._GetListenPort()),
+                                    "%s/%s" % (prefix, urllib.quote(path)),
+                                    "", "", ""))
+                                 
+    def run(self):
+        self.done = 0
+        self.server_thread = threading.Thread(target = self.thread_run)
+        self.server_thread.start()
+
+    def stop(self):
+        self.done = 1
+        for workerNum in range(self.numThreads):
+            self.requestQueue.put("quit",)
+
+    def thread_run(self):
+        """
+        thread_run is the server thread's main function.
+        """
+
+        while not self.done:
+            self.handle_request()
+
 def HTTPDownloadFile(identity, download_url, destination, size, checksum,
                      progressCB = None):
+    return HTTPFamilyDownloadFile(download_url, destination, size, checksum,
+                                  identity, progressCB)
+
+def GSIHTTPDownloadFile(download_url, destination, size, checksum,
+                        progressCB = None):
+    """
+    Download a file with GSI HTTP.
+
+    Define a local connection class so we can poke about at the
+    tcp attributes here.
+    """
+    
+    def GSIConnectionClass(host):
+        tcpAttr = Utilities.CreateTCPAttrAlwaysAuth()
+        return io.GSIHTTPConnection(host, tcpAttr = tcpAttr)
+
+    return HTTPFamilyDownloadFile(download_url, destination, size, checksum,
+                                  None, progressCB, GSIConnectionClass)
+                                  
+def HTTPFamilyDownloadFile(download_url, destination, size, checksum,
+                           identity = None,
+                           progressCB = None,
+                           connectionClass = httplib.HTTPConnection):
     """
     Download the given url, as user identified by identity,
     and place the new file in destination. 
@@ -735,50 +1066,71 @@ def HTTPDownloadFile(identity, download_url, destination, size, checksum,
 
     dest_fp = open(destination, "wb")
 
-    headers = {"X-Client-DN": identity}
+    headers = {}
+    if identity is not None:
+        headers["X-Client-DN"] = identity
 
     url_info = urlparse.urlparse(download_url)
     host = url_info[1]
     path = url_info[2]
 
     print "Connect to ", host
-    conn = httplib.HTTPConnection(host)
+    conn = connectionClass(host)
 
     print "Downloading %s into %s" % (download_url, destination)
 
-    conn.request("GET", path, headers = headers)
+    #
+    # We want strict enabled here, otherwise the empty
+    # result we get when querying a gsihttp server with an http
+    # client results in a valid response, when it should have failed.
+    #
 
-    print "request sent"
+    try:
+        conn.strict = 1
+        conn.request("GET", path, headers = headers)
 
-    resp = conn.getresponse()
+        print "request sent to ", conn
 
-    print "Request got status ", resp.status
+        resp = conn.getresponse()
+
+        print "response is ", resp
+        print "Request got status ", resp.status
+    except httplib.BadStatusLine:
+        raise DownloadFailed("bad status from http (server type mismatch?)")
+
+    if int(resp.status) != 200:
+        raise DownloadFailed(resp.status, resp.reason)
+
+    try:
+        hdr = resp.getheader("Content-Length")
+        print "Got hdr ", hdr
+        print resp.msg.headers
+        hdr_size = int(hdr)
+    except (TypeError, KeyError):
+        raise DownloadFailed("server must provide a valid content length")
 
     #
-    # See if the file size is what we expect
+    # See if the file size is what we expect, only if
+    # the user has passed in a size.
     #
-    size = int(size)
-    hdr_size = resp.getheader("Content-Length")
+    if size is not None:
+        size = int(size)
 
-    if hdr_size is not None:
-        try:
-            hdr_size = int(hdr_size)
-            print "got size ", hdr_size
-            
-            if hdr_size != size:
-                raise DownloadFailed("Size mismatch: server says %d, metadata says %d" %
-                                     (hdr_size, size))
-        except TypeError:
-            print "HMM, Content-Length='%s' is not numeric" % (hdr_size)
-    else:
-        print "HMM, no content-length header"
+        print "got size ", hdr_size
+
+        if hdr_size != size:
+            raise DownloadFailed("Size mismatch: server says %d, metadata says %d" %
+                                 (hdr_size, size))
 
     #
     # Set up for download
     #
 
-    digest = md5.new()
-    bytes_left = size
+    if checksum is not None:
+        digest = md5.new()
+    else:
+        digest = None
+    bytes_left = hdr_size
     buf_size = 4096
 
     #
@@ -798,8 +1150,9 @@ def HTTPDownloadFile(identity, download_url, destination, size, checksum,
             print "FILE TOO SHORT in download"
             dest_fp.close()
             raise DownloadFailed("End of file before %d bytes read" % (size))
-        
-        digest.update(buf)
+
+        if digest is not None:
+            digest.update(buf)
         #
         # Send a callback if we have a valid callback reference.
         # Handle a cancellation of the transfer.
@@ -824,16 +1177,17 @@ def HTTPDownloadFile(identity, download_url, destination, size, checksum,
 
     dest_fp.close()
 
-    download_digest = digest.hexdigest()
 
     if progressCB is not None:
         progressCB(size, 1)
 
-    if download_digest != checksum:
-        raise DownloadFailed("Checksum mismatch on download: download was %s, metadata was %s"
-                             % (download_digest, checksum))
-    else:
-        print "DOwnload success! ", download_digest
+    if checksum is not None:
+        download_digest = digest.hexdigest()
+        if download_digest != checksum:
+            raise DownloadFailed("Checksum mismatch on download: download was %s, metadata was %s"
+                                 % (download_digest, checksum))
+        else:
+            print "DOwnload success! ", download_digest
 
 def HTTPUploadFiles(identity, upload_url, file_list, progressCB):
     """
@@ -857,15 +1211,43 @@ def HTTPUploadFiles(identity, upload_url, file_list, progressCB):
     uploader = HTTPUploadEngine(identity, upload_url, progressCB)
     uploader.UploadFiles(file_list)
 
+def GSIHTTPUploadFiles(upload_url, file_list, progressCB):
+    """
+    Upload the given list of files to the server using HTTP.
+
+    progressCB is a callback that will be invoked this way:
+
+       progressCB(filename, bytes_sent, total_bytes, file_done, transfer_done)
+
+    filename is the file to which the progress update applies
+    bytes_sent and total_bytes denote the file's progress
+    file_done is set when the given file upload is complete
+    transfer_done is set when the entire transfer is complete
+
+    If progressCB returns true, the transfer is to be cancelled.
+
+    """
+
+    def GSIConnectionClass(host):
+        tcpAttr = Utilities.CreateTCPAttrAlwaysAuth()
+        return io.GSIHTTPConnection(host, tcpAttr = tcpAttr)
+
+    uploader = HTTPUploadEngine(None, upload_url, progressCB,
+                                GSIConnectionClass)
+    uploader.UploadFiles(file_list)
+
 class HTTPUploadEngine:
     """
     An HTTPUploadEngine bundles up the functionality need to implement
     HTTPUploadFiles.
     """
     
-    def __init__(self, identity, upload_url, progressCB):
+    def __init__(self, identity, upload_url, progressCB,
+                 connectionClass = httplib.HTTPConnection):
         self.identity = identity
         self.upload_url = upload_url
+
+        self.connectionClass = connectionClass
 
         if progressCB is not None:
             if not callable(progressCB):
@@ -896,18 +1278,26 @@ class HTTPUploadEngine:
         try:
             parsed = urlparse.urlparse(self.upload_url)
             host = parsed[1]
-            # print "Connecting to ", host
+            base_path = parsed[2]
 
-            print "Upload mainfest to ", host
+            # log.debug("upload mainfest: host='%s' base_path='%s'", host, base_path)
 
-            conn = httplib.HTTPConnection(host)
-            transfer_key = self.uploadManifest(conn, manifest)
+            #
+            # We want strict enabled here, otherwise the empty
+            # result we get when querying a gsihttp server with an http
+            # client results in a valid response, when it should have failed.
+            #
+            conn = self.connectionClass(host)
+            conn.strict = 1
             
-            print "Manifest upload returns '%s'" % ( transfer_key)
+            transfer_key = self.uploadManifest(conn, base_path, manifest)
+            
+            # log.debug("Manifest upload returns '%s'", transfer_key)
         
             for idx, file, basename in file_info:
-                conn = httplib.HTTPConnection(host)
-                url_path = string.join(["", transfer_key, str(idx)], "/")
+                conn = self.connectionClass(host)
+                conn.strict = 1
+                url_path = string.join([base_path, transfer_key, str(idx)], "/")
                 self.uploadFile(conn, file, url_path)
 
             if self.progressCB is not None:
@@ -952,6 +1342,8 @@ class HTTPUploadEngine:
         # Fire up the connection and send headers
         #
 
+        print "Send headers"
+
         conn.connect()
         conn.putrequest("POST", url_path)
         conn.putheader("X-Client-DN", self.identity)
@@ -968,8 +1360,11 @@ class HTTPUploadEngine:
 
         n_sent = 0
 
+        print "sending file"
+
         try:
-            while 1:
+            left = 0
+            while size - n_sent > 0:
                 buf = fp.read(4096)
                 if buf == "":
                     break
@@ -996,7 +1391,7 @@ class HTTPUploadEngine:
 
         conn.close()
         
-    def uploadManifest(self, conn, manifest):
+    def uploadManifest(self, conn, base_path, manifest):
         """
         Upload the manifest to the upload server.
 
@@ -1005,9 +1400,15 @@ class HTTPUploadEngine:
 
         """
 
+        # conn.debuglevel = 10
         headers = {"X-Client-DN": self.identity}
-        conn.request("POST", "/manifest", manifest, headers)
+
+        upload_url = string.join([base_path, "manifest"], "/")
+        
+        conn.request("POST", upload_url, manifest, headers)
         resp = conn.getresponse()
+
+        print "post returns ", resp
 
         if resp.status != 200:
             raise UploadFailed((resp.status, resp.reason))
@@ -1015,6 +1416,7 @@ class HTTPUploadEngine:
         transfer_key = None
         error_reasons = []
 
+        print "Reading response, headers are ", resp.msg.headers
         result = resp.read()
         
         for tline in result.split("\n"):
@@ -1123,6 +1525,10 @@ class HTTPUploadEngine:
 
 if __name__ == "__main__":
 
+    logger = logging.getLogger("AG")
+    logger.addHandler(logging.StreamHandler())
+    logger.setLevel(logging.DEBUG)
+
     import time
     import os
 
@@ -1150,18 +1556,40 @@ if __name__ == "__main__":
 
     v = TestVenue()
     ds = DataStore(v, "/temp")
-    s = HTTPTransferServer(ds, ('', 9011))
+    s = GSIHTTPTransferServer(('', 9011))
+
+    class Handler:
+        def GetDownloadFilename(self, id_token, url_path):
+            print "Get download: id='%s' path='%s'" % (id_token, url_path)
+            return r"c:\temp\junoSetup.exe"
+
+        def GetUploadFilename(self, id_token, file_info):
+            print "Get upload filename for %s %s" % (id_token, file_info)
+            return os.path.join("c:\\", "temp", "uploads", file_info['name'])
+
+        def CanUploadFile(self, id_token, file_info):
+            print "CanUpload: id=%s file_info=%s" % (id_token, file_info)
+            return 1
+
+        def AddPendingUpload(self, id_token, filename):
+            print "AddPendingUpload: %s %s" % (id_token, filename)
+
+        def CompleteUpload(self, id_token, file_info):
+            print "CompleteUpload %s %s" % (id_token, file_info)
 
     ds.SetTransferEngine(s)
 
-    print s.GetDownloadDescriptor("JunoSetup.exe")
-    print s.GetUploadDescriptor()
+    prefix = "test"
+    s.RegisterPrefix(prefix, Handler())
+
+    print s.GetDownloadDescriptor(prefix, "JunoSetup.exe")
+    print s.GetUploadDescriptor(prefix)
 
     s.run()
 
     try:
         while 1:
-            time.sleep(1)
+            time.sleep(.1)
 
     except:
         os._exit(0)
