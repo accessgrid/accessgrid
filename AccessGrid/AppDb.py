@@ -5,16 +5,17 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.4 2003-08-28 18:45:54 judson Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.5 2003-09-15 15:01:03 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 import os
 import sys
+import shutil
 
 from AccessGrid.Utilities import LoadConfig, SaveConfig
-from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.Platform import GetUserConfigDir, GetUserAppPath
 from AccessGrid.Descriptions import ApplicationDescription
 
 """
@@ -46,7 +47,7 @@ commandLine = GetCommandLine(mimeType, cmdName, vars=None)
 (int, string) = AddCommand(mimeType, cmdName, cmdString)
 (int, string) = RemoveCommand(mimeType, cmdName)
 
-int = RegisterApplication(name, mimeType, extension, commandDictionary)
+int = RegisterApplication(name, mimeType, extension, commandDictionary, fileList)
 int = UnregisterApplication(name = None, mimeType = None, extension = None)
 """
 
@@ -235,7 +236,7 @@ class AppDb:
     
         return (1, cmdName)
 
-    def RegisterApplication(self, name, mimeType, extension, commandDict):
+    def RegisterApplication(self, name, mimeType, extension, commandDict, fileList, srcPath):
         """
         Encapsulate all the actions required to register a new application.
         returns 0 on failure, 1 on success
@@ -249,6 +250,24 @@ class AppDb:
                 (result, resultString) = self.AddCommand(mimeType, cmdName, cmdStr)
                 if not result:
                     return 0
+
+            noSpaceName = ''.join(name.split(' '))
+
+            dstPath = os.path.join(GetUserAppPath(), noSpaceName)
+
+            if not os.path.exists(dstPath):
+                try:
+                    os.mkdir(dstPath)
+                except:
+                    print "Couldn't make app directory (%s)." % dstPath
+                    
+            for appFile in fileList:
+                try:
+                    shutil.copyfile(os.path.join(srcPath, appFile),
+                                    os.path.join(dstPath, appFile))
+                except IOError:
+                    print "Couldn't copy file into place."
+                                
         else:
             return 0
 
