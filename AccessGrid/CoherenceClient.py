@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceClient.py,v 1.15 2003-01-28 17:05:07 turam Exp $
+# RCS-ID:      $Id: CoherenceClient.py,v 1.16 2003-01-29 23:19:01 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -92,8 +92,9 @@ class CoherenceClient(Thread):
                 pdata = self.rfile.read(int(size))
                 # Unpack the data
                 event = pickle.loads(pdata)
-                # Send it on its way
-                self.callback(event)
+                if self.running:
+                    # Send it on its way
+                    self.callback(event)
 
             except:
                 print "Server closed connection!", formatExceptionInfo()
