@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.54 2003-10-14 13:34:46 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.55 2003-10-17 13:41:52 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 The Platform Module is to isolate OS specific interfaces.
 """
-__revision__ = "$Id: Platform.py,v 1.54 2003-10-14 13:34:46 judson Exp $"
+__revision__ = "$Id: Platform.py,v 1.55 2003-10-17 13:41:52 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -570,6 +570,8 @@ def Win32InitUserEnv():
         except WindowsError:
             log.exception("Couldn't setup GLOBUS_LOCATION.")
             return 0
+
+    # After globus location comes the all important x509_*
     try:
         # I really want these each in their own try block to figure out
         # which ones are broken.
@@ -613,6 +615,13 @@ def Win32InitUserEnv():
             log.exception("Couldn't initialize globus environment.")
             return 0
 
+    # Register application installer mime type
+    # Win32RegisterMimeType(sharedAppPkgType, sharedAppPkgExt,
+    #                       sharedAppPktDesc, sharedAppPkgCmds)
+    
+    # Invoke windows magic to get settings to be recognized by the
+    # system. After this incantation all new things know about the
+    # settings.
     Win32SendSettingChange()
     
     return 1
