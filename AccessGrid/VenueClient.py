@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.119 2003-09-26 15:20:55 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.120 2003-09-26 20:10:22 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.119 2003-09-26 15:20:55 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.120 2003-09-26 20:10:22 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -46,6 +46,7 @@ from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.ProcessManager import ProcessManager
 import pyGlobus.io
+from AccessGrid.Descriptions import CreateDataDescription
 
 class EnterVenueException(Exception):
     pass
@@ -520,13 +521,7 @@ class VenueClient( ServiceBase):
 
             dataList = []
             for data in venueState.data:
-                dataDesc = DataDescription( data.name )
-                dataDesc.status = data.status
-                dataDesc.size = data.size
-                dataDesc.checksum = data.checksum
-                dataDesc.owner = data.owner
-                dataDesc.type = data.type
-                dataDesc.uri = data.uri
+                dataDesc = CreateDataDescription(data)
                 dataList.append( dataDesc )
 
             applicationList = []
@@ -792,6 +787,7 @@ class VenueClient( ServiceBase):
         # Stop the event client
         log.info(" Stopping event client")
         try:
+          
           if self.eventClient:
             log.debug("  send client exiting event")
             self.eventClient.Send(ClientExitingEvent(self.venueState.uniqueId,
@@ -800,6 +796,7 @@ class VenueClient( ServiceBase):
             self.eventClient.Stop()
             log.debug("  remove reference")
             self.eventClient = None
+       
         except:
             # An exception is always thrown for some reason when I exit
             # the event client
@@ -814,11 +811,14 @@ class VenueClient( ServiceBase):
                                        self.privateId)
             log.debug("   remove reference")
             self.textClient = None
+          
         except:
+          
             log.exception("on text client exiting")
         
-        try:        
+        try:
             self.venueProxy.Exit( self.privateId )
+            
         except Exception, e:
             log.exception("AccessGrid.VenueClient::ExitVenue exception")
 
@@ -831,6 +831,7 @@ class VenueClient( ServiceBase):
                 log.info(" Stopping node services")
                 nodeHandle.GetProxy().StopServices()
                 nodeHandle.GetProxy().SetStreams([])
+
             except Exception, e:
                 log.info("don't have a node service")
 
@@ -843,13 +844,13 @@ class VenueClient( ServiceBase):
         #    file = open(self.personalDataFile, 'w')
         #    cPickle.dump(self.dataStore.GetDataDescriptions(), file)
         #    file.close()
-
+        
         self.__InitVenueData__()
         self.isInVenue = 0
         self.exitingLock.acquire()
         self.exiting = 0
         self.exitingLock.release()
-
+     
     def GetVenue( self ):
         """
         GetVenue gets the venue the client is currently in.
@@ -984,14 +985,7 @@ class VenueClient( ServiceBase):
                 dataList = []
                 
                 for data in dataDescriptionList:
-                    dataDesc = DataDescription( data.name )
-                    dataDesc.status = data.status
-                    dataDesc.size = data.size
-                    dataDesc.checksum = data.checksum
-                    dataDesc.owner = data.owner
-                    dataDesc.type = data.type
-                    dataDesc.uri = data.uri
-                    dataDesc.id = data.id
+                    dataDesc = CreateDataDescription(data)
                     dataList.append( dataDesc )
                     
                 return dataList
@@ -1029,7 +1023,7 @@ class VenueClient( ServiceBase):
         """
         RequestLead accepts requests from other clients who wish to be lead
         """
-
+     
         log.debug("AccessGrid.VenueClient::Received request to lead %s %s" %
                  (followerProfile.name, followerProfile.venueClientURL))
 
@@ -1048,6 +1042,7 @@ class VenueClient( ServiceBase):
         Subclasses should override this method to perform their specific 
         authorization, calling SendLeadResponse thereafter.
         """
+     
         response = 1
 
         # For now, the base VenueClient authorizes every Lead request
@@ -1058,7 +1053,7 @@ class VenueClient( ServiceBase):
         """
         SendLeadResponse responds to requests to lead other venue clients.
         """
-        
+
         # remove profile from list of pending followers
         if clientProfile.publicId in self.pendingFollowers.keys():
             del self.pendingFollowers[clientProfile.publicId]
@@ -1127,6 +1122,7 @@ class VenueClient( ServiceBase):
         Subclasses should override this method to perform their specific 
         notification
         """
+              
         pass
 
     #
@@ -1136,6 +1132,7 @@ class VenueClient( ServiceBase):
         """
         Lead encapsulates the call to tell another client to follow this client
         """
+               
         # request that another client (or clients) follow this client
         # (response will come in via the FollowResponse method)
         for followerProfile in followerProfileList:
@@ -1148,7 +1145,6 @@ class VenueClient( ServiceBase):
         """
         RequestFollow accepts requests for other clients to lead this client
         """
-
         log.debug("Received request to follow: %s", leaderProfile.name)
 
         # Store profile of leader making request
@@ -1196,7 +1192,7 @@ class VenueClient( ServiceBase):
         follow requests sent by this client.  A UI client would override
         this method to give the user visual feedback to the Follow request.
         """
-
+        
         # Detect responses from clients not in pending followers list
         if followerProfile.publicId not in self.pendingFollowers.keys():
             log.debug("Follow response received from client not in pending followers list")
