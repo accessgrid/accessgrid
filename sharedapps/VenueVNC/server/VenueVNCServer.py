@@ -31,6 +31,8 @@ from AccessGrid.Platform.ProcessManager import ProcessManager
 
 from AccessGrid.ClientProfile import ClientProfile
 
+log = None
+
 # Generic exception to indicate failure.  More precision should come later.
 class VNCServerException(Exception):
     pass
@@ -46,7 +48,7 @@ class vncServer:
 
         # Initialize the contact string, construct it from the hostname and the
         # display ID
-        hostname=SystemConfig.instance().GetHostname()
+        hostname=Toolkit.CmdlineApplication.instance().GetHostname()
         if IsWindows():
             self.contactString="%s"%(hostname,)
         elif IsOSX():
@@ -68,16 +70,14 @@ class vncServer:
         # Initialize other random bits, mostly path/file names
         self.guid=str(GUID())
         self.passwdFilename=os.path.join(UserConfig.instance().GetTempDir(),"passwd-%s.vnc"%(self.guid))
-        self.logFilename=os.path.join(UserConfig.instance().GetTempDir(),"Xvnc-%s.log"%(self.guid))
         self.lockFilename=os.path.join(UserConfig.instance().GetTempDir(),"Xvnc-%s.lock"%(self.guid))
         
-        # No child process running...
-        self.pid_set=0
-
         # Initialize the password file.
         self.genPassword()
         
         self.processManager = ProcessManager()
+        
+        self.running = 0
         
     def genPassword(self):
         import random
@@ -86,7 +86,6 @@ class vncServer:
         for i in range(8):
             self.password += '%x' % random.randint(0,256)
 
-        print "password = ", self.password
         f = file(self.passwdFilename,'wb')
         f.write(self.password)
         f.close()
@@ -104,20 +103,8 @@ class vncServer:
         return "%d"%(self.depth)
 
     def isRunning(self):
-        try:
-            if self.pid_set:
-                if os.access(self.lockFilename,os.O_RDONLY):
-                    return 1
-                else:
-                    os.waitpid(self.pid_set,os.WNOHANG)
-                    self.pid_set=0
-                    return 0
-            else:
-                return 0
-        except:
-            print "Exception ", sys.exc_type, sys.exc_value
-            
-        
+        return self.running
+                        
     def start(self):
         if self.isRunning():
             raise VNCServerException("Start attempted while already running")
@@ -127,16 +114,18 @@ class vncServer:
                         'Password='+self.password,
                         'AlwaysShared=1',
                         ]
-                print "starting vnc server: %s %s" % (self.vncserverexe,args)
+
+                log.info("starting vnc server: %s %s" % (self.vncserverexe,args))
                 p = self.processManager.StartProcess(self.vncserverexe,args)
-                print "p = ", p
+                log.debug("  pid = %s" % (p,))
             elif IsOSX():
                 args = [
                         '-rfbauth='+self.passwdFilename,
+                        '-alwaysshared',
                         ]
-                print "starting vnc server: %s %s" % (self.vncserverexe,args)
+                log.info("starting vnc server: %s %s" % (self.vncserverexe,args))
                 p = self.processManager.StartProcess(self.vncserverexe,args)
-                print "p = ", p
+                log.debug("  pid = %s" % (p,))
 
             elif IsLinux():
                 args = [
@@ -144,12 +133,12 @@ class vncServer:
                         '-geometry', '%dx%d' % (self.geometry['Width'],self.geometry['Height']),
                         '-depth', self.depth,
                         '-rfbauth', self.passwdFilename,
+                        '-alwaysshared'
                         ]
                 self.processManager.StartProcess(self.vncserverexe,args)
                 
-                print "sleeping...",
+                # Wait, then run xstartup
                 time.sleep(2)
-                print "done"
                 # set paths to find config files
                 venuevnc_path = os.path.join(os.environ["HOME"], ".venuevnc")
                 xstartup = os.path.join(venuevnc_path, "xstartup")
@@ -166,45 +155,34 @@ class vncServer:
                         "mwm &\n"
                     f.write(defaultStartup)
                     f.close()
-                    #print "chmod %s 755" % xstartup
                     os.chmod(xstartup,0755)
 
                 os.environ["DISPLAY"] = self.displayID
                 if os.path.exists(xstartup):
-                    print "Running", xstartup
+                    log.info("Running x startup script %s" % ( xstartup,))
                     self.processManager.StartProcess(xstartup,[])
                 else:
-                    print "Running MWM..."
+                    log.info("Running MWM")
                     self.processManager.StartProcess('mwm',[])
         except:
-            print "Exception ", sys.exc_type, sys.exc_value
+            log.exception("::start failed")
 
     def stop(self):
-        if self.pid_set:
-            if os.access(self.lockFilename,os.O_RDONLY):
-                self.processManager.TerminateAllProcesses()
-                os.unlink(self.lockFilename)
-                self.pid_set=0
-                return 0
-            else:
-                #posix.waitpid(self.pid_set,posix.WNOHANG)
-                self.pid_set=0
-                return 0
-        else:
-            return 0
+        if os.access(self.lockFilename,os.O_RDONLY):
+            self.processManager.TerminateAllProcesses()
+            os.unlink(self.lockFilename)
+        self.running=0
 
     def destroy(self):
         self.stop()
         try:
             os.unlink(self.passwdFilename)
-            #os.unlink(self.logFilename)
         except:
-            print "Exception ", sys.exc_type, sys.exc_value
+            log.exception("::stop failed")
 
 class VNCServerAppObject:
     def __init__(self,venueUrl,vncserverexe,displayID,geometry,depth,name):
         self.running = 0
-        print venueUrl
         # Attach to venue server
         self.venueProxy=Client.SecureHandle(venueUrl).GetProxy()
         # Create VNC server
@@ -219,7 +197,7 @@ class VNCServerAppObject:
         # Attach to it
         self.appProxy=Client.SecureHandle(self.appDescription.uri).GetProxy()
 
-        print "App URL = %s"%(self.appDescription.uri)
+        log.info("App URL = %s"%(self.appDescription.uri))
 
         # Join the App Object
         (self.publicID,self.privateID)=self.appProxy.Join()
@@ -269,23 +247,28 @@ if __name__ == "__main__":
 
     app.AddCmdLineOption( Option("--display", type="string", dest="display",
                         default=":9", metavar="DISPLAY",
-                        help="Set the display the VNC server should run on. (non-Windows only)") )
+                        help="Set the display the VNC server should run on. (linux only)") )
     app.AddCmdLineOption( Option("-g", "--geometry", type="string", dest="geometry",
                         default="1024x768", metavar="GEOMETRY",
-                        help="Set the geometry of the VNC server. (non-Windows only)") )
+                        help="Set the geometry of the VNC server. (linux only)") )
     app.AddCmdLineOption( Option("--depth", type="int", dest="depth",
                         default=24, metavar="DEPTH",
-                        help="Set the bit depth to use for the server. (non-Windows only)") )
+                        help="Set the bit depth to use for the server. (linux only)") )
 
     app.Initialize("VenueVNCServer")
+    
+    log = app.GetLog()
     
     # Use the vnc executable specified on the command line, or...
     vncserverexe = app.GetOption('vncserverexe')
     if vncserverexe and not os.path.exists(vncserverexe):
-        print "Couldn't find vnc server executable %s ; exiting." % (vncserverexe,)
+        msg = "Couldn't find vnc server executable %s ; exiting." % (vncserverexe,)
+        print msg
+        log.info(msg)
         sys.exit(1)
         
-    # search for it in the current dir, the expected install dir, and the user's path
+    # ...search for it in the current dir, the expected install dir, 
+    # and the user's path
     if not vncserverexe:
         # Find vnc server executable in user's path
         if IsWindows():
@@ -305,11 +288,12 @@ if __name__ == "__main__":
             if os.path.exists(f):
                 vncserverexe = f
                 break
-        print "found vncserverexe = ", vncserverexe
-        sys.exit(1)
+        log.debug("found vncserverexe = %s", vncserverexe)
 
     if not vncserverexe or not os.path.exists(vncserverexe):
-        print "Couldn't find %s executable; exiting." % (exe,)
+        msg = "Couldn't find vnc server executable %s ; exiting." % (vncserverexe,)
+        print msg
+        log.info(msg)
         sys.exit(1)
 
     if not app.GetOption('name'):
@@ -327,6 +311,7 @@ if __name__ == "__main__":
         try:
             appObj.shutdown()
         except Exception, e:
+            log.exception("Error in shutdown")
             print "Exiting, but exception was caught when shutting down.", e
             os._exit(1)
 
