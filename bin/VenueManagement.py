@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.133 2004-05-27 23:21:54 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.134 2004-05-28 16:52:12 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.133 2004-05-27 23:21:54 turam Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.134 2004-05-28 16:52:12 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -1889,6 +1889,7 @@ class AddVenueFrame(VenueParamFrame):
         self.SetLabel('Add Venue')
         self.application.SetCurrentVenue(None)
         self.generalPanel.LoadLocalVenues()
+        self.encryptionPanel.genKeyButton.Hide()
         self.encryptionPanel.ClickEncryptionButton(None,
                                                    self.application.encrypt)
         EVT_BUTTON (self.okButton, wxID_OK, self.OnOK)
