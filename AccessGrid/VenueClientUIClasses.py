@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.158 2003-04-24 22:07:44 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.159 2003-04-25 07:31:51 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -2335,14 +2335,14 @@ class DataDialog(wxDialog):
         This method is called if you only want to view the dialog.
         '''
         self.nameCtrl.SetValue(dataDescription.name)
-        self.ownerCtrl.SetValue(str(dataDescription.owner))
+        self.ownerCtrl.SetValue(str(dataDescription.owner.dn))
         self.sizeCtrl.SetValue(str(dataDescription.size))
         self.SetTitle("Data Properties")
         self.__setEditable(false)
         self.cancelButton.Destroy()
           
     def __setProperties(self):
-        self.SetTitle("Please, fill in service information")
+        self.SetTitle("Please, fill in data information")
         #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
 
     def __setEditable(self, editable):
