@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.20 2003-04-17 20:12:07 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.21 2003-04-18 17:18:35 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -30,6 +30,7 @@ import AccessGrid.GUID
 from AccessGrid.Utilities import GetHostname
 from AccessGrid.Descriptions import DataDescription
 from AccessGrid import Platform
+from pyGlobus.io import GSITCPSocketException
 
 import logging
 log = logging.getLogger("AG.DataStore")
@@ -1126,6 +1127,7 @@ n
         self.done = 1
         for workerNum in range(self.numThreads):
             self.requestQueue.put("quit",)
+        self.server_close()
 
     def thread_run(self):
         """
@@ -1133,7 +1135,11 @@ n
         """
 
         while not self.done:
-            self.handle_request()
+            try:
+                self.handle_request()
+            except GSITCPSocketException:
+                log.info("GSIHTTPTransferServer: GSITCPSocket, interrupted I/O operation, most likely shutting down. ")
+                
 
 def HTTPDownloadFile(identity, download_url, destination, size, checksum,
                      progressCB = None):

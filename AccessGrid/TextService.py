@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextService.py,v 1.12 2003-03-24 20:26:12 judson Exp $
+# RCS-ID:      $Id: TextService.py,v 1.13 2003-04-18 17:18:35 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ from threading import Thread
 import logging
 
 from SocketServer import ThreadingMixIn, StreamRequestHandler
-from pyGlobus.io import GSITCPSocketServer, GSIRequestHandler
+from pyGlobus.io import GSITCPSocketServer, GSIRequestHandler, GSITCPSocketException
 
 # This really should be defined in pyGlobus.io
 class ThreadingGSITCPSocketServer(ThreadingMixIn, GSITCPSocketServer): pass
@@ -100,7 +100,10 @@ class TextService(ThreadingGSITCPSocketServer, Thread):
         """
         self.running = 1
         while(self.running):
-            self.handle_request()
+            try:
+                self.handle_request()
+            except GSITCPSocketException:
+                log.info("TextService: GSITCPSocket, interrupted I/O operation, most likely shutting down. ")
 
     def Stop(self):
         """
@@ -111,6 +114,7 @@ class TextService(ThreadingGSITCPSocketServer, Thread):
                 c.stop()
             
         self.running = 0
+        self.server_close()
             
     def GetLocation(self):
         """

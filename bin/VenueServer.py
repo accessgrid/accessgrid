@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.16 2003-04-01 23:26:03 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.17 2003-04-18 17:18:35 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -116,5 +116,4 @@ for t in threading.enumerate():
     print "Thread ", t
     
 # Exit cleanly
-#sys.exit(0)
-os._exit(0)
+

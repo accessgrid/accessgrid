@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.13 2003-04-01 15:40:34 turam Exp $
+# RCS-ID:      $Id: EventService.py,v 1.14 2003-04-18 17:18:35 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ from threading import Thread
 import logging
 
 from SocketServer import ThreadingMixIn, StreamRequestHandler
-from pyGlobus.io import GSITCPSocketServer
+from pyGlobus.io import GSITCPSocketServer, GSITCPSocketException
 
 # This really should be defined in pyGlobus.io
 class ThreadingGSITCPSocketServer(ThreadingMixIn, GSITCPSocketServer): pass
@@ -117,7 +117,11 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
         """
         self.running = 1
         while(self.running):
-            self.handle_request()
+            try:
+                self.handle_request()
+            except GSITCPSocketException:
+                log.info("EventService: GSITCPSocket, interrupted I/O operation, most likely shutting down. ")
+                pass
 
     def Stop(self):
         """
@@ -129,6 +133,7 @@ class EventService(ThreadingGSITCPSocketServer, Thread):
                 c.stop()
             
         self.running = 0
+        self.server_close()
         
     def DefaultCallback(self, event):
         log.info("EventService: Got callback for %s event!", event.eventType)
