@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.232 2003-08-21 19:08:00 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.233 2003-08-21 20:36:43 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -107,12 +107,6 @@ class VenueClientFrame(wxFrame):
     ID_ME_PROFILE = wxNewId()
     ID_ME_DATA = wxNewId()
     ID_ME_UNFOLLOW = wxNewId()
-
-    textClientPanel = None
-    textClientStandAlone = None
-    myVenuesDict = {}
-    myVenuesMenuIds = []
-    personToFollow = None
          
     def __init__(self, parent, id, title, app = None):
         wxFrame.__init__(self, parent, id, title)
@@ -120,6 +114,11 @@ class VenueClientFrame(wxFrame):
         sys.stderr = sys.__stderr__
         self.Centre()
         self.help_open = 0
+        self.textClientPanel = None
+        self.textClientStandAlone = None
+        self.myVenuesDict = {}
+        self.myVenuesMenuIds = []
+        self.personToFollow = None
         self.manual_url = os.path.join(GetSharedDocDir(), "VenueClientManual",
                                        "VenueClientManualHTML.htm")
         self.agdp_url = "http://www.accessgrid.org/agdp"
@@ -138,9 +137,9 @@ class VenueClientFrame(wxFrame):
         self.textClientPanel = TextClientPanel(self.TextWindow, -1, app)
         self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT, app)
         self.contentListPanel = ContentListPanel(self, app)
-      
         dataDropTarget = DataDropTarget(self.app)
         self.contentListPanel.tree.SetDropTarget(dataDropTarget)
+
         self.__setStatusbar()
 	self.__setMenubar()
         self.__setProperties()
@@ -208,7 +207,7 @@ class VenueClientFrame(wxFrame):
             gui = mgr.GetUserInterface()
 
         except:
-            log.exception("Cannot retrieve certificate mgr user interface, continuing")
+            log.exception("VenueClientFrame.__setMenubar: Cannot retrieve certificate mgr user interface, continuing")
 
         if gui is not None:
             certMenu = gui.GetMenu(self)
@@ -465,12 +464,12 @@ class VenueClientFrame(wxFrame):
             self.help_open = 1
             self.browser = webbrowser.get()
 
-        log.debug("OpenHelpURL: Opening: %s", url)
+        log.debug("VenueClientFrame.OpenHelpURL: Opening: %s", url)
         self.browser.open(url, needNewWindow)
 
     def UnFollow(self, event):
 
-        log.debug("VenueClientUIClasses: In UnFollow we are being lead by %s" %self.app.venueClient.leaderProfile.name)
+        log.debug("VenueClientFrame.Unfollow: In UnFollow we are being lead by %s" %self.app.venueClient.leaderProfile.name)
         if self.app.venueClient.leaderProfile != None :
            
             try:
@@ -479,18 +478,17 @@ class VenueClientFrame(wxFrame):
                 self.meMenu.Remove(self.ID_ME_UNFOLLOW)
             except:
                
-                log.exception("VenueClientUIClasses: Can not stop following %s" %self.app.venueClient.leaderProfile.name)
+                log.exception("VenueClientFrame.Unfollow: Can not stop following %s" %self.app.venueClient.leaderProfile.name)
 
         else:
-            log.debug("You are trying to stop following somebody you are not following")
+            log.debug("VenueClientFrame.Unfollow: You are trying to stop following somebody you are not following")
         
     def Follow(self, event):
-        log.debug("VenueClientUIClasses: In Follow")
         id = self.contentListPanel.tree.GetSelection()
         personToFollow = self.contentListPanel.tree.GetItemData(id).GetData()
         url = personToFollow.venueClientURL
         name = personToFollow.name
-        log.debug("VenueClientUIClasses: You are trying to follow :%s url:%s " %(name, url))
+        log.debug("VenueClientFrame.Follow: You are trying to follow :%s url:%s " %(name, url))
 
         if(self.app.venueClient.leaderProfile == personToFollow):
             text = "You are already following "+name
@@ -508,7 +506,7 @@ class VenueClientFrame(wxFrame):
             try:
                 self.app.venueClient.Follow(personToFollow)
             except:
-                log.exception("VenueClientUIClasses: Can not follow %s" %personToFollow.name)
+                log.exception("VenueClientFrame.Follow: Can not follow %s" %personToFollow.name)
                 text = "You can not follow "+name
                 title = "Notification"
                 MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
@@ -602,13 +600,13 @@ class VenueClientFrame(wxFrame):
         # then there isn't a data upload service available.
         #
 
-        log.debug("Trying to upload personal data")
+        log.debug("VenueClientFrame.OpenAddPersonalDataDialog:Trying to upload personal data")
                 
         dlg = wxFileDialog(self, "Choose a file:", style = wxOPEN | wxMULTIPLE)
 
         if dlg.ShowModal() == wxID_OK:
             files = dlg.GetPaths()
-            log.debug("Got files:%s " %str(files))
+            log.debug("VenueClientFrame.OpenAddPersonalDataDialog:%s " %str(files))
 
             # upload!
             self.app.UploadPersonalFiles(files)
@@ -660,7 +658,7 @@ class VenueClientFrame(wxFrame):
         
         if(participant != None and isinstance(participant, ClientProfile)):
             profileView = ProfileDialog(self, -1, "Profile")
-            log.debug("open profile view with this participant: %s" %participant.name)
+            log.debug("VenueClientFrame.OpenParticipantProfile: open profile view with this participant: %s" %participant.name)
             profileView.SetDescription(participant)
             profileView.ShowModal()
             profileView.Destroy()
@@ -761,7 +759,7 @@ class VenueClientFrame(wxFrame):
         # then there isn't a data upload service available.
         #
 
-        log.debug("Trying to upload to '%s'" % (self.app.venueClient.dataStoreUploadUrl))
+        log.debug("VenueClientFrame.OpenAddDataDialog: Trying to upload to '%s'" % (self.app.venueClient.dataStoreUploadUrl))
         if self.app.venueClient.dataStoreUploadUrl is None or self.app.venueClient.dataStoreUploadUrl == "":
         
             MessageDialog(self,
@@ -773,7 +771,7 @@ class VenueClientFrame(wxFrame):
 
         if dlg.ShowModal() == wxID_OK:
             files = dlg.GetPaths()
-            log.debug("Got files:%s " %str(files))
+            log.debug("VenueClientFrame.OpenAddDataDialog: Got files:%s " %str(files))
 
             # upload!
 
@@ -789,7 +787,7 @@ class VenueClientFrame(wxFrame):
         if (profileDialog.ShowModal() == wxID_OK):
             profile = profileDialog.GetNewProfile()
             self.app.ChangeProfile(profile)
-            log.debug("change profile: %s" %profile.name)
+            log.debug("VenueClientFrame.OpenMyProfileDialog: change profile: %s" %profile.name)
 
         profileDialog.Destroy()
 
@@ -805,7 +803,7 @@ class VenueClientFrame(wxFrame):
 
     def OpenNodeMgmtApp(self, event):
         frame = NodeManagementClientFrame(self, -1, "Access Grid Node Management")
-        log.debug("open node management")
+        log.debug("VenueClientFrame.OpenNodeMgmtApp: open node management")
         frame.AttachToNode( self.app.venueClient.nodeServiceUri )
         if frame.Connected(): # Right node service uri
             frame.UpdateUI()
@@ -857,7 +855,7 @@ class VenueClientFrame(wxFrame):
         aboutDialog.Destroy()
         
     def SaveData(self, event):
-        log.debug("Save data")
+        log.debug("VenueClientFrame.SaveData: Save data")
         id = self.contentListPanel.tree.GetSelection()
         data =  self.contentListPanel.tree.GetItemData(id).GetData()
 
@@ -869,7 +867,7 @@ class VenueClientFrame(wxFrame):
                                style = wxSAVE | wxOVERWRITE_PROMPT)
             if dlg.ShowModal() == wxID_OK:
                 path = dlg.GetPath()
-                log.debug("Saving file as %s" %path)
+                log.debug("VenueClientFrame.SaveData: Saving file as %s" %path)
 
                 dlg.Destroy()
 
@@ -897,11 +895,11 @@ class VenueClientFrame(wxFrame):
             if commands == None:
                 message = ("No client registered for the selected data")
                 dlg = MessageDialog(self, message)
-                log.debug(message)
+                log.debug("VenueClientFrame.OpenData: %s"%message)
             else:
                 try:
                     if commands.has_key('open'):
-                        log.debug("executing cmd: %s" % commands['open'])
+                        log.debug("VenueClientFrame.OpenData: executing cmd: %s" % commands['open'])
                         if commands['open'][0:6] == "WX_DDE":
                             pid = wxExecute(commands['open'])
                         else:
@@ -1449,20 +1447,21 @@ class ContentListPanel(wxPanel):
     the user.
     
     '''
-    participantDict = {}
-    dataDict = {}
-    serviceDict = {}
-    applicationDict = {}
-    personalDataDict = {}
-    temporaryDataDict = {}
+   
     
     def __init__(self, parent, app):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, 
 			 wxDefaultSize)
-     	id = wxNewId()
-       
+        id = wxNewId()
+        self.participantDict = {}
+        self.dataDict = {}
+        self.serviceDict = {}
+        self.applicationDict = {}
+        self.personalDataDict = {}
+        self.temporaryDataDict = {}
         self.parent = parent
 	self.app = app
+
         if isWindows():
             self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
                                    wxDefaultSize, style = wxTR_HAS_BUTTONS |
@@ -1498,15 +1497,15 @@ class ContentListPanel(wxPanel):
                    
     def AddParticipant(self, profile, dataList = []):
         imageId = None
-        
+                
         if profile.profileType == "user":
             imageId =  self.participantId
         elif profile.profileType == "node":
             imageId = self.nodeId
         else:
-            log.exception("The user type is not a user nor a node, something is wrong")
+            log.exception("ContentListPanel.AddParticipant: The user type is not a user nor a node, something is wrong")
 
-        log.debug("UI: AddParticipant %s (called from %s)", profile.name,
+        log.debug("ContentListPanel.AddParticipant:: AddParticipant %s (called from %s)", profile.name,
                   (traceback.extract_stack())[-2])
         
         participant = self.tree.AppendItem(self.participants, profile.name, 
@@ -1535,29 +1534,38 @@ class ContentListPanel(wxPanel):
 
         self.tree.SortChildren(participant)
             
-    def RemoveParticipantData(self, dataTreeId):
+    def RemoveParticipantData(self, treeId):
         #
         # This is weird, does it work?
         #
-        del self.personalDataDict[id]
-        self.tree.Delete(id)
+        dataList = self.__GetPersonalDataFromItem(treeId)
+                
+        for data in dataList:
+            data.name
+
+            dataTreeId = self.personalDataDict[data.id]
+            del self.personalDataDict[data.id]
+            self.tree.Delete(dataTreeId)
                           
     def RemoveParticipant(self, description):
-        log.debug("Remove participant")
+        log.debug("ContentListPanel.RemoveParticipant: Remove participant")
         if description!=None :
             if(self.participantDict.has_key(description.publicId)):
-                log.debug("Found participant in tree")
+                log.debug("ContentListPanel.RemoveParticipant: Found participant in tree")
                 id = self.participantDict[description.publicId]
 
+                log.debug("ContentListPanel.RemoveParticipant: Remove participants data")
+                self.RemoveParticipantData(id)
+                
                 if id!=None:
-                    log.debug("Removed participant from tree")
+                    log.debug("ContentListPanel.RemoveParticipant: Removed participant from tree")
                     self.tree.Delete(id)
 
-                log.debug("Delete participant from dictionary")
+                log.debug("ContentListPanel.RemoveParticipant: Delete participant from dictionary")
                 del self.participantDict[description.publicId]
                           
     def ModifyParticipant(self, description):
-        log.debug('Modify participant')
+        log.debug('ContentListPanel.ModifyParticipant: Modify participant')
         if self.participantDict.has_key(description.publicId):
             id = self.participantDict[description.publicId]
             personalData = self.__GetPersonalDataFromItem(id)
@@ -1575,20 +1583,20 @@ class ContentListPanel(wxPanel):
             d = self.tree.GetPyData(id)
             if d:
                 dataList.append(d)
-                log.debug("First child's name = %s " %(d.name))
+                log.debug("ContentListPanel.__GetPersonalDataFromItem: First child's name = %s " %(d.name))
                 for nr in range(self.tree.GetChildrenCount(treeId)-1):
                     id, cookie = self.tree.GetNextChild(treeId, cookie)
                     dataList.append(self.tree.GetPyData(id))
-                    log.debug("Next child's name = %s " %self.tree.GetPyData(id).name)
+                    log.debug("ContentListPanel.__GetPersonalDataFromItem: Next child's name = %s " %self.tree.GetPyData(id).name)
                     
         return dataList
             
     def AddData(self, profile):
-        log.debug("profile.type = %s" %profile.type)
+        log.debug("ContentListPanel.AddData: profile.type = %s" %profile.type)
 
         #if venue data
         if(profile.type == 'None' or profile.type == None):
-            log.debug("This is venue data")
+            log.debug("ContentListPanel.AddData: This is venue data")
             dataId = self.tree.AppendItem(self.data, profile.name,
                                       self.defaultDataId, self.defaultDataId)
             self.tree.SetItemData(dataId, wxTreeItemData(profile)) 
@@ -1598,38 +1606,33 @@ class ContentListPanel(wxPanel):
             
         #if personal data
         else:
-            log.debug("This is personal data")
+            log.debug("ContentListPanel.AddData: This is personal data")
             id = profile.type
                         
             if(self.participantDict.has_key(id)):
-                log.debug("Data belongs to a participant")
+                log.debug("ContentListPanel.AddData: Data belongs to a participant")
                 participantId = self.participantDict[id]
-                log.debug("Before try participantId")
-
+              
                 if participantId:
-                    log.debug("participantId ok")
                     ownerProfile = self.tree.GetItemData(participantId).GetData()
                     #
                     # Test if personal data is already added
                     #
                                         
                     if not self.personalDataDict.has_key(profile.id):
-                        log.debug("after statusbar")
                         # Remove the temporary text "No personal data available"
                         if self.temporaryDataDict.has_key(id):
                             tempText = self.temporaryDataDict[id]
                             if tempText:
                                 self.tree.Delete(tempText)
                                 del self.temporaryDataDict[id]
-                            
-                        log.debug("after remove temp data")
-                        
+                                                                        
                         dataId = self.tree.AppendItem(participantId, profile.name, \
                                                       self.defaultDataId, self.defaultDataId)
                         self.tree.SetItemData(dataId, wxTreeItemData(profile))
                         self.personalDataDict[profile.id] = dataId
                         self.tree.SortChildren(participantId)
-                        log.debug("down below")
+                      
                         #
                         # I select the participant to ensure the twist button is
                         # visible when first data item is added. I have to do
@@ -1641,26 +1644,26 @@ class ContentListPanel(wxPanel):
                         self.tree.SelectItem(participantId)
                                                     
             else:
-                log.info("Owner of data does not exist")
-        
+                log.info("ContentListPanel.AddData: Owner of data does not exist")
+
        
     def UpdateData(self, profile):
         id = None
 
         #if venue data
         if(self.dataDict.has_key(profile.id)):
-            log.debug("VenueManagementUIClasses::DataDict has data")
+            log.debug("ContentListPanel.UpdateData: DataDict has data")
             id = self.dataDict[profile.id]
             
         #if personal data
         elif (self.personalDataDict.has_key(profile.id)):
-            log.debug("VenueManagementUIClasses::Personal DataDict has data")
+            log.debug("ContentListPanel.UpdateData: Personal DataDict has data")
             id = self.personalDataDict[profile.id]
             
         if(id != None):
             self.tree.SetItemData(id, wxTreeItemData(profile))
         else:
-            log.debug("Id is none - that is not good")
+            log.info("ContentListPanel.UpdateData: Id is none - that is not good")
                           
     def RemoveData(self, profile):
         #if venue data
@@ -1668,22 +1671,25 @@ class ContentListPanel(wxPanel):
         ownerId = None
         
         if(self.dataDict.has_key(profile.id)):
-            log.debug("Remove venue data")
+            log.debug("ContentListPanel.RemoveData: Remove venue data")
             id = self.dataDict[profile.id]
             del self.dataDict[profile.id]
             
         #if personal data
+               
         elif (self.personalDataDict.has_key(profile.id)):
             id = self.personalDataDict[profile.id]
             ownerId = self.tree.GetItemParent(id)
             ownerProfile = self.tree.GetItemData(ownerId).GetData()
             self.parent.statusbar.SetStatusText("%s just removed personal file '%s'"%(ownerProfile.name, profile.name))
-            log.debug("Remove personal data")
+            log.debug("ContentListPanel.RemoveData: Remove personal data")
             id = self.personalDataDict[profile.id]
             del self.personalDataDict[profile.id]
-            
+
+        else:
+            log.info("ContentListPanel.RemoveData: No key matches, can not remove data")
+           
         if(id != None):
-            log.debug("Delete id")
             self.tree.Delete(id)
 
         if(ownerId and self.tree.GetChildrenCount(ownerId) == 0):
@@ -1880,14 +1886,14 @@ class ContentListPanel(wxPanel):
                 parent = self.tree.GetItemParent(treeId)
                 
             elif isinstance(item,ClientProfile):
-                log.debug("Is this me? public is = %s, my id = %s "
+                log.debug("ContentListPanel.OnRightClick: Is this me? public is = %s, my id = %s "
                           % (item.publicId, self.app.venueClient.profile.publicId))
                 if(item.publicId == self.app.venueClient.profile.publicId):
-                    log.debug("This is me")
+                    log.debug("ContentListPanel.OnRightClick: This is me")
                     self.PopupMenu(self.parent.meMenu, wxPoint(self.x, self.y))
          
                 else:
-                    log.debug("This is a user")
+                    log.debug("ContentListPanel.OnRightClick: This is a user")
                     self.PopupMenu(self.parent.participantMenu,
                                    wxPoint(self.x, self.y))
 
@@ -2124,7 +2130,7 @@ class TextClientPanel(wxPanel):
         
     def LocalInput(self, event):
         """ User input """
-        log.debug("VenueClientUIClasses.py: User writes: %s"
+        log.debug("TextClientPanel.LocalInput: User writes: %s"
                   % self.TextInput.GetValue())
 
         text = self.TextInput.GetValue()
@@ -2134,11 +2140,11 @@ class TextClientPanel(wxPanel):
         except:
             text = "Could not send text message successfully"
             title = "Notification"
-            log.exception(text)
+            log.exception("TextClientPanel.LocalInput: %s" %text)
             MessageDialog(self, text, title, style = wxOK|wxICON_INFORMATION)
         
     def OnCloseWindow(self):
-        log.debug("VenueClientUIClasses.py: Destroy text client")
+        log.debug("TextClientPanel.LocalInput:: Destroy text client")
         self.textClient.Stop()
         self.Destroy()
           
@@ -2152,10 +2158,10 @@ class SaveFileDialog(wxDialog):
         try:
             self.fileSize = int(fileSize)
         except TypeError:
-            log.debug("Received invalid file size: '%s'" % (fileSize))
+            log.debug("SaveFileDialog.__init__:Received invalid file size: '%s'" % (fileSize))
             fileSize = 1
             
-        log.debug("created, size=%d " %fileSize)
+        log.debug("SaveFileDialog.__init__: created, size=%d " %fileSize)
         
         self.button = wxButton(self, wxNewId(), "Cancel")
         self.text = wxStaticText(self, -1, message)
@@ -2267,7 +2273,7 @@ class UploadFilesDialog(wxDialog):
         if self.transferDone:
             self.EndModal(wxID_OK)
         else:
-            log.debug("UploadFiles.OnButton: Cancelling transfer!")
+            log.debug("UploadFilesDialog.OnButton: Cancelling transfer!")
             self.EndModal(wxID_CANCEL)
             self.cancelFlag = 1
 
@@ -2358,7 +2364,7 @@ class EditMyVenuesDialog(wxDialog):
 
             self.myVenuesList.SetItemText(self.currentIndex, name)
         else:
-            log.info("VenueClientUIClasses:Rename: The venue is not present in the dictionary")
+            log.info("EditMyVenuesDialog:Rename: The venue is not present in the dictionary")
                
     def OnItemSelected(self, event):
         self.currentIndex = event.m_itemIndex
@@ -2514,7 +2520,6 @@ class UrlDialog(wxDialog):
 class ProfileDialog(wxDialog):
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title)
-        log.debug("VenueClientUIClasses.py: Create profile dialog")
         self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
         self.nameCtrl = wxTextCtrl(self, -1, "", size = (400,20),
@@ -2538,10 +2543,8 @@ class ProfileDialog(wxDialog):
         self.profile = None
         #self.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
         self.__doLayout()
-        log.debug("VenueClientUIClasses.py: Created profile dialog")
-
+        
     def GetNewProfile(self):
-        log.debug("VenueClientUIClasses.py: Get profile information from dialog")
         if(self.profile != None):
             self.profile.SetName(self.nameCtrl.GetValue())
             self.profile.SetEmail(self.emailCtrl.GetValue())
@@ -2556,11 +2559,10 @@ class ProfileDialog(wxDialog):
             else:
                 self.profile.SetProfileType('node')
                 
-        log.debug("VenueClientUIClasses.py: Got profile information from dialog")
+        log.debug("ProfileDialog.GetNewProfile: Got profile information from dialog")
         return self.profile
 
     def SetProfile(self, profile):
-        log.debug("VenueClientUIClasses.py: Set profile information in dialog")
         self.profile = profile
         self.profileTypeBox = wxComboBox(self, -1, choices =['user', 'node'], style = wxCB_DROPDOWN|wxCB_READONLY)
         self.gridSizer.Add(self.profileTypeBox, 0, wxEXPAND, 0)
@@ -2576,10 +2578,10 @@ class ProfileDialog(wxDialog):
         else:
             self.profileTypeBox.SetSelection(1)
         self.__setEditable(true)
-        log.debug("VenueClientUIClasses.py: Set profile information successfully in dialog")
+        log.debug("ProfileDialog.SetProfile: Set profile information successfully in dialog")
 
     def SetDescription(self, item):
-        log.debug("VenueClientUIClasses.py: Set description in dialog name:%s, email:%s, phone:%s, location:%s support:%s, home:%s, dn:%s"
+        log.debug("ProfileDialog.SetDescription: Set description in dialog name:%s, email:%s, phone:%s, location:%s support:%s, home:%s, dn:%s"
                    %(item.name, item.email,item.phoneNumber,item.location,item.techSupportInfo, item.homeVenue, item.distinguishedName))
         self.profileTypeBox = wxTextCtrl(self, -1, item.profileType)
         #self.profileTypeBox.SetFont(wxFont(12, wxSWISS, wxNORMAL, wxNORMAL, 0, "verdana"))
@@ -2606,10 +2608,8 @@ class ProfileDialog(wxDialog):
             
         self.__setEditable(false)
         self.cancelButton.Destroy()
-        log.debug("VenueClientUIClasses.py: Set description successfully in dialog")
-
+       
     def __setEditable(self, editable):
-        log.debug("VenueClientUIClasses.py: Set editable in dialog")
         if not editable:
             self.nameCtrl.SetEditable(false)
             self.emailCtrl.SetEditable(false)
@@ -2630,7 +2630,6 @@ class ProfileDialog(wxDialog):
         log.debug("VenueClientUIClasses.py: Set editable in successfully dialog")
            
     def __doLayout(self):
-        log.debug("VenueClientUIClasses.py: Do layout")
         self.sizer1 = wxBoxSizer(wxVERTICAL)
         sizer2 = wxStaticBoxSizer(wxStaticBox(self, -1, "Profile"), wxHORIZONTAL)
         self.gridSizer = wxFlexGridSizer(9, 2, 5, 5)
@@ -2661,7 +2660,7 @@ class ProfileDialog(wxDialog):
         self.SetSizer(self.sizer1)
         self.sizer1.Fit(self)
         self.SetAutoLayout(1)
-        log.debug("VenueClientUIClasses.py: Did layout")
+       
                 
 class TextValidator(wxPyValidator):
     def __init__(self):
@@ -3001,7 +3000,7 @@ def VerifyExecutionEnvironment():
     #
 
     if not os.environ.has_key("GLOBUS_LOCATION"):
-        log.critical("The GLOBUS_LOCATION environment must be set, check your Globus installation")
+        log.critical("VerifyExecutionEnvironment: The GLOBUS_LOCATION environment must be set, check your Globus installation")
         dlg = wxMessageDialog(None, "The GLOBUS_LOCATION environment variable is not set.\n" + 
                               "Check your Globus installation.",
                               "Globus configuration problem", wxOK)
@@ -3014,7 +3013,7 @@ def VerifyExecutionEnvironment():
     #
         
     myhost = Utilities.GetHostname()
-    log.debug("My hostname is %s", myhost)
+    log.debug("VerifyExecutionEnvironment: My hostname is %s", myhost)
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -3022,7 +3021,7 @@ def VerifyExecutionEnvironment():
         log.debug("VerifyExecutionEnvironment: bind to local hostname of %s succeeds", myhost)
     except socket.error:
         log.critical("VerifyExecutionEnvironment: bind to local hostname of %s fails", myhost)
-        log.critical("This may be due to the hostname being set to something different than the name to which the IP address of this computer maps, or to the the hostname not being fully qualified with the full domain.")
+        log.critical("VerifyExecutionEnvironment: This may be due to the hostname being set to something different than the name to which the IP address of this computer maps, or to the the hostname not being fully qualified with the full domain.")
         #
         # Test to see if the environment variable GLOBUS_HOSTNAME has a different
         # value than the registry. If that is the case, then teh user
@@ -3062,7 +3061,7 @@ def VerifyExecutionEnvironment():
     svcMgr = os.path.join(GetInstallDir(), "AGServiceManager.py")
 
     if not os.access(svcMgr, os.R_OK):
-        log.critical("AGServiceManager.py not found")
+        log.critical("VerifyExecutionEnvironment: AGServiceManager.py not found")
         dlg = wxMessageDialog(None, "The application was unable to determine the location of\n" +
                               "its AGServiceManager component. If you installed using a Windows\n" +
                               "installer, this is due to a bug in the installer. If you are running\n" +
