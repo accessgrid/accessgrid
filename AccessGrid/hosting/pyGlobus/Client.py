@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Client.py,v 1.4 2003-02-10 14:48:06 judson Exp $
+# RCS-ID:      $Id: Client.py,v 1.5 2003-02-11 10:16:43 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,8 +15,7 @@ This module provides a helper class Client that wraps
 the creation of the SOAP server proxy.
 """
 
-
-from AGGSISOAP import SOAPProxy, Config
+from AGGSISOAP import SOAPProxy, Config, debugHeader, debugFooter, __version__
 import AGGSISOAP
 import urllib
 import string
