@@ -2,7 +2,7 @@
 Authorization Refactoring for 213
 =================================
  
-:version: $Revision: 1.1 $
+:version: $Revision: 1.2 $
 :author: Ivan R. Judson <judson@mcs.anl.gov>, Thomas D. Uram <turam@mcs.anl.gov>, Eric Olson <eolson@mcs.anl.gov>
 :status: Draft
 
@@ -65,6 +65,8 @@ Module Organization
   - Security
 
     - Subject.py
+    
+    - X509Subject.py
 
     - Role.py
 
@@ -72,7 +74,17 @@ Module Organization
 
     - Action.py
     
-    - pyGlobus.py
+    - CRCClient.py
+
+    - CertificateRequestService.py
+    
+    - pyGlobus
+      
+      - ProxyGenExceptions.py
+
+      - ProxyGenGPI.py
+      
+      - ProxyGenProgrammatic.py
 
 Deprecated Packages
 -------------------
@@ -113,9 +125,28 @@ Specifications
           - IsUser(self, user : string)
           - __cmp__(self, other)
 
+    - X509Subject.py
+
+      - X509Subject
+
+        - *Class Data*
+
+          - AUTH_TYPE : "x509"
+          - AUTH_ANON : "anonymous"
+
+        - *Methods*
+
+          - __init__(self, name, auth_data = None)
+      
+      - CreateSubjectFromString(subjectString)
+
     - Role.py
+
+      - RoleNotFound(Exception)
     
       - RoleAlreadyPresent(Exception)
+
+      - DefaultIdentityNotRemovable(Exception)
 
       - Role
 
@@ -127,12 +158,18 @@ Specifications
 
         - *Methods*
 
-          - GetName()
-          - GetSubjectList()
-          - AddSubject(subject)
-          - RemoveSubject(subject)
-          - HasSubject(subject)
-          - GetSubjectListAsStrings()
+          - __init__(self, role_name, subjects=list())
+          - _repr_(self)
+          - __str__(self)
+          - ToXML(self, doc)
+          - GetName(self)
+          - GetSubjects(self)
+          - SetSubjects(self, sl)
+          - GetSubjectListAsStrings(self)
+          - AddSubject(self, subject)
+          - RemoveSubject(self, subject)
+          - FindSubject(self, subjectName)
+          - HasSubject(self, subject)
 
       - AllowRole
 
@@ -147,8 +184,14 @@ Specifications
           - type : "Deny"
 
     - Action.py
+      
+      - ActionNotFound(Exception)
+      
+      - ActionAlreadyPresent(Exception)
 
       - Action
+
+        - TYPE = "Invalid"
 
         - *Data*
 
@@ -156,19 +199,25 @@ Specifications
           - roles : list of Roles
 
         - *Methods*
-
-          - GetName()
-          - GetRoleList()
-          - AddRole(role)
-          - RemoveRole(role)
+          - __init__(self, name, roles=[])
+          - _repr_(self)
+          - __str__(self)
+          - ToXML(self, doc)
+          - GetName(self)
+          - SetName(self, name)
+          - FindRole(self, roleName)
+          - GetRoles(self)
+          - SetRoles(self, roles)
+          - AddRole(self, role)
+          - RemoveRole(self, role)
           - HasRole(role)
-          - GetRoleListAsStrings()
+          - GetRoleListAsStrings(self)
 
       - MethodAction    
 
         - *Class Data*
 
-          - type : "Method"
+          - TYPE : "Method"
 
     - AuthorizationManager.py
     
@@ -186,23 +235,86 @@ Specifications
 
         - *Methods*
 
-          - ExportPolicy() => policy
-          - ImportPolicy(policy)
-          - IsAuthorized(subject, action) => 1|0
-          - GetActions(subject=None, role=None) => list of Actions
-          - GetRoles(action=None) => list of Roles
-          - GetRoles(subject) => list of Roles
-          - GetSubjects(role) => list of Subjects
-          - GetParent() => Authorization Manager
-          - GetDefaultRoles() => list of Roles
-          - SetRoles(action, roles : list of Roles) => list of Roles
-          - SetSubjects(role, subjects : list of Subjects) => list of Subjects
-          - SetParent(authMgr) => AuthorizationManager
-          - SetDefaultRoles(roles) => list of Roles
-          - AddAction(action) => Action
-          - RemoveAction(action) => Action
-          - AddRole(role) => Role
-          - RemoveRole(role) => Role
+          - __init__(self)
+          - _repr_(self)
+          - __str__(self)
+          - ExportPolicy(self)
+          - ImportPolicy(self, policy)
+          - ToXML(self)
+          - IsAuthorized(self, subject, action)
+          - AddAction(self, action)
+          - AddActions(self, actionList)
+          - RemoveAction(action)
+          - GetActions(subject=None, role=None)
+          - AddRole(self, role, default = 0)
+          - AddRoles(self, roleList)
+          - RemoveRole(self, role)
+          - GetRoles(self, action=None)
+          - GetRolesForSubject(self, subject)
+          - GetSubjects(self, role=None)
+          - GetParent(self)
+          - GetDefaultRoles(self)
+          - SetRoles(self, action, roles)
+          - SetSubjects(self, role, subjects)
+          - SetParent(self, authMgr)
+          - SetDefaultRoles(self, roles=[])
+
+        - AuthorizationManagerI(SOAPInterface)
+
+          - __init__(self, impl)
+          - TestImportExport(self, p)
+          - GetPolicy(self)
+          - AddRole(self, name)
+          - RemoveRole(self, name)
+          - ListRoles(self)
+          - AddAction(self, action)
+          - RemoveAction(self, name)
+          - ListActions(self)
+          - ListSubjectsInRole(self, role)
+          - ListRolesInAction(self, action)
+          - AddSubjectsToRole(self, role, subjectList)
+          - AddRoleToAction(self, action, role)
+          - AddRolesToAction(self, action, roleList)
+          - RemoveSubjectsFromRole(self, role, subjectList)
+          - RemoveRoleFromAction(self, action, role)
+          - GetRolesForSubject(self, subject)
+          - IsAuthorized(self, subject, action)
+
+        - AuthorizationManagerIW(SOAPIWrapper)
+
+          - __init__(self, url=None)
+          - TestImportExport(self, p)
+          - GetPolicy(self)
+          - AddRole(self, name)
+          - RemoveRole(self, name)
+          - ListRoles(self)
+          - AddAction(self, name)
+          - RemoveAction(self, name)
+          - ListActions(self)
+          - ListSubjectsInRole(self, role)
+          - ListRolesInAction(self, action)
+          - AddSubjectToRole(self, subj, role)
+          - AddSubjectsToRole(self, subjList, role)
+          - AddRoleToAction(self, role, action)
+          - AddRolesToAction(self, roleList, action)
+          - RemoveSubjectFromRole(self, subj, role)
+          - RemoveSubjectsFromRole(self, subjList, role)
+          - RemoveRoleFromAction(self, role, action)
+          - GetRolesForSubject(self, subject)
+          - IsAuthorized(self, subject, action)
+
+        - AuthorizationMixIn(AuthorizationManager)
+
+          - __init__(self)
+          - GetAuthorizationManager(self)
+          - GetRequiredRoles(self)
+          - AddRequiredRole(self, role)
+          - GetAuthorizationManager(self)
+          - GetAuthorizationManager(self)
+
+        - AuthorizationIMixIn(AuthorizationManagerI)
+
+        - AuthorizationIWMixIn(AuthorizationManagerIW)
    
 Security Issues
 ===============
