@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.6 2003-02-12 18:44:15 leggett Exp $
+# RCS-ID:      $Id: setup.py,v 1.7 2003-02-21 15:28:01 leggett Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -51,10 +51,6 @@ setup(
     data_files = [('share/AccessGrid/local_services',
                    [r"AccessGrid/services/AudioService.py",
                     r"AccessGrid/services/AudioService.svc",
-                    r"AccessGrid/services/PyTextService.py",
-                    r"AccessGrid/services/PyTextService.svc",
-                    r"AccessGrid/services/TextService.py",
-                    r"AccessGrid/services/TextService.svc",
                     r"AccessGrid/services/VideoConsumerService.py",
                     r"AccessGrid/services/VideoConsumerService.svc",
                     r"AccessGrid/services/VideoProducerService.py",
@@ -63,8 +59,6 @@ setup(
                    ),
                   ('share/AccessGrid/services',
                    [r"AccessGrid/services/AudioService.zip",
-                    r"AccessGrid/services/PyTextService.zip",
-                    r"AccessGrid/services/TextService.zip",
                     r"AccessGrid/services/VideoConsumerService.zip",
                     r"AccessGrid/services/VideoProducerService.zip"
                     ]
