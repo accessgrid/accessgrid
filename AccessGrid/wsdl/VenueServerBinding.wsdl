@@ -11,9 +11,8 @@
   <import namespace="http://www.accessgrid.org/v3.0" 
           location="VenueServerInterface.wsdl"/>
 
-  <binding name="SOAPBinding" type="agtk:VenueServer">
-    <soap:binding style="document" 
-                  transport="http://schemas.xmlsoap.org/soap/http"/>
+  <binding name="VenueServer" type="agtk:VenueServer">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="Checkpoint">
 	    <soap:operation soapAction="urn:#Checkpoint"/>
 	    <input>
@@ -77,7 +76,7 @@
     </binding>
 
     <service name="VenueServer">
-        <port name="VenueServerSOAP" binding="agtk:SOAPBinding">
+        <port name="VenueServer" binding="agtk:VenueServer">
 	    <soap:address location="http://localhost:7000"/>
 	</port>
     </service>

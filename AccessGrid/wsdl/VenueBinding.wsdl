@@ -11,9 +11,8 @@
   <import namespace="http://www.accessgrid.org/v3.0" 
           location="VenueInterface.wsdl"/>
 
-  <binding name="SOAPBinding" type="agtk:Venue">
-    <soap:binding style="document" 
-                  transport="http://schemas.xmlsoap.org/soap/http"/>
+  <binding name="Venue" type="agtk:Venue">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="Enter">
 	    <soap:operation soapAction="urn:#Enter"/>
 	    <input>
@@ -125,7 +124,7 @@
     </binding>
 
     <service name="Venue">
-        <port name="VenueSOAP" binding="agtk:SOAPBinding">
+        <port name="Venue" binding="agtk:Venue">
 	    <soap:address location="http://localhost:7000"/>
 	</port>
     </service>
