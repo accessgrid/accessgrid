@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.5 2004-03-12 05:23:12 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.6 2004-03-12 15:43:09 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.5 2004-03-12 05:23:12 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.6 2004-03-12 15:43:09 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -421,12 +421,12 @@ class CertificateManager(object):
             for f in possibleCertFiles:
 
                 path = os.path.join(caDir, f);
-                print "%s might be a cert" % (path)
+                # print "%s might be a cert" % (path)
 
                 try:
                     desc = self.ImportCACertificatePEM(repo, path)
                     
-                    print "Imported ", desc.GetSubject()
+                    # print "Imported ", desc.GetSubject()
 
                     #
                     # See if there's a signing policy file. It'll be named
@@ -437,12 +437,13 @@ class CertificateManager(object):
                                                "%s.signing_policy" %
                                                (desc.GetSubject().get_hash()))
                     if os.path.isfile(signingPath):
-                        print "Copying signing policy ", signingPath
+                        # print "Copying signing policy ", signingPath
                         shutil.copyfile(signingPath,
                                         desc.GetFilePath("signing_policy"))
                     
                 except:
-                    print "Failure to import ", path
+                    # print "Failure to import ", path
+                    log.exception("failure importing %s", path)
 
     def ImportRequestedCertificate(self, userCert):
         repo = self.GetCertificateRepository()
@@ -517,7 +518,7 @@ class CertificateManager(object):
         checked = {}
         while 1:
             subj = str(c.GetSubject())
-            print "Check ", subj
+            #print "Check ", subj
             if c.GetSubject().get_der() == c.GetIssuer().get_der():
                 good = 1
                 break
@@ -993,6 +994,9 @@ class CertificateManager(object):
 
         This only affects the cert repository; a followup call to InitEnvironment
         is necessary to effect the change in the environment.
+
+        @param certDesc: certificate which is to be the default.
+        @type certDesc: CertificateDescriptor
         """
 
         #
