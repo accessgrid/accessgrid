@@ -1,14 +1,3 @@
-#-----------------------------------------------------------------------------
-# Name:        access_control.py
-# Purpose:     
-#
-# Author:      Robert D. Olson
-#
-# Created:     2003/08/02
-# RCS-ID:      $Id: access_control.py,v 1.2 2003-02-10 14:47:50 judson Exp $
-# Copyright:   (c) 2003
-# Licence:     See COPYING.txt
-#-----------------------------------------------------------------------------
 """
 Access Control mechanisms for the AG system.
 
@@ -22,7 +11,7 @@ Access Control mechanisms for the AG system.
 # ServiceObject.
 #
 
-from AccessGrid.hosting.pyGlobus.utilities import SecureConnectionInfo
+from AccessGrid.hosting.pyGlobus.Utilities import SecureConnectionInfo
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import MethodSig, faultType
 
 #
