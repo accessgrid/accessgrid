@@ -84,7 +84,6 @@ DataStoreClient = "DataStoreClient"
 DataStore = "DataStore"
 DataService = "DataService"
 EventService = "EventService"
-PersonalNode = "PersonalNode"
 Platform = "Platform"
 ProcessManager = "ProcessManager"
 NodeManagementUIClasses = "NodeManagementUIClasses"
@@ -206,7 +205,7 @@ def GetUsageFormatter():
 # Does NOT Need to include all components and can be empty.
 # Will optimize if needed.
 
-#_componentNames=[AGService, AppMonitor, AuthorizationUI, BridgeServer , CertificateManager , CertificateRepository , CertificateManagerWXGUI , CertificateRequestTool , CertReqService , CRSClient , DataStoreClient , DataStore , DataService , EventService , PersonalNode , ProcessManager , NodeManagementUIClasses , NodeSetupWizard , NodeService , Security , ProxyGen , pyGlobus , ServiceManager , SharedApplication , TextClient , SimpleTextProcessor , TextConnection , TextService , Toolkit , Types , Utilities , VenueManagement , VenueClient , VenueClientController , VenueClientUIClasses , VenueClientUI , VenueServer , EventClient , Logging, Usage]
+#_componentNames=[AGService, AppMonitor, AuthorizationUI, BridgeServer , CertificateManager , CertificateRepository , CertificateManagerWXGUI , CertificateRequestTool , CertReqService , CRSClient , DataStoreClient , DataStore , DataService , EventService , ProcessManager , NodeManagementUIClasses , NodeSetupWizard , NodeService , Security , ProxyGen , pyGlobus , ServiceManager , SharedApplication , TextClient , SimpleTextProcessor , TextConnection , TextService , Toolkit , Types , Utilities , VenueManagement , VenueClient , VenueClientController , VenueClientUIClasses , VenueClientUI , VenueServer , EventClient , Logging, Usage]
 _componentNames=[]
 
 # Create defaultLoggers
