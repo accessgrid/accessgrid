@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.170 2003-06-26 20:06:17 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.171 2003-06-27 16:09:42 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1160,7 +1160,7 @@ class VenueClientUI(wxApp, VenueClient):
             log.exception("bin.VenueClient::UploadFilesNoDialog: Upload files failed")
             ErrorDialog(None, error_msg, "Upload Files Error", style = wxOK|wxICON_ERROR)
            
-    def RemoveData(self, data):
+    def RemoveData(self, data, ownerProfile):
         """
         This method removes a data from the venue. If the data is personal, this method
         also removes the data from the personal data storage.
@@ -1175,14 +1175,21 @@ class VenueClientUI(wxApp, VenueClient):
             #
             dataList = []
             dataList.append(data)
-          
-            if(data.type == self.profile.publicId):
-                # Personal data
-                self.dataStore.RemoveFiles(dataList)
-            else:
+
+            if data.type == None or data.type == 'None':
                 # Venue data
                 Client.Handle(self.dataStoreLocation).GetProxy().RemoveFiles(dataList)
+                
+            elif(data.type == self.profile.publicId):
+                # My data
+                self.dataStore.RemoveFiles(dataList)
 
+            else:
+                # Somebody else's personal data
+                if ownerProfile != None:
+                    uploadDescriptor, dataStoreUrl = Client.Handle(ownerProfile.venueClientURL).get_proxy().GetDataStoreInformation()
+                    Client.Handle(dataStoreUrl).get_proxy().RemoveFiles(dataList)
+               
         except:
             log.exception("bin.VenueClient::RemoveData: Error occured when trying to remove data")
             ErrorDialog(None, "The file could not be removed", "Remove Personal Files Error", style = wxOK | wxICON_ERROR)
