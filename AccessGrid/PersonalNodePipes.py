@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003/05/05
-# RCS-ID:      $Id: PersonalNodePipes.py,v 1.1 2003-05-05 18:24:46 olson Exp $
+# RCS-ID:      $Id: PersonalNodePipes.py,v 1.2 2003-08-28 17:27:03 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -53,7 +53,6 @@ import signal
 import threading
 import urlparse
 import re
-import tempfile
 import errno
 import struct
 import string
