@@ -72,10 +72,11 @@ elif sys.platform == 'linux2':
 else:
     print "Couldn't build pyGlobus; unsupported platform :", sys.platform
     sys.exit(1)
-    
+
 os.chdir(os.path.join(SOURCE,'pyGlobus'))
+
 os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','clean',
-          '--all')
+          '--all', '--flavor=%s'%(flavor,))
 if sys.platform == 'win32':
     os.spawnl(os.P_WAIT,sys.executable,sys.executable,'setup.py','build',
               '--flavor=%s' % (flavor,))
