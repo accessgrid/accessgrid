@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.31 2004-07-23 23:15:58 eolson Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.32 2004-09-03 21:48:58 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -31,6 +31,7 @@ option add Vic.inputType %s startupFile
 option add Vic.device \"%s\" startupFile
 option add Vic.defaultTTL 127 startupFile
 option add Vic.rtpName \"%s\" startupFile
+option add Vic.rtpEmail \"%s\" startupFile
 proc user_hook {} {
     global videoDevice inputPort transmitButton transmitButtonState
 
@@ -132,15 +133,15 @@ class VideoProducerService( AGService ):
 
                 # Vic reads these values (with '*')
                 _winreg.SetValueEx(k, "*rtpName", 0,
-                                   _winreg.REG_SZ, self.profile.name)
+                                   _winreg.REG_SZ, profile.name)
                 _winreg.SetValueEx(k, "*rtpEmail", 0,
-                                   _winreg.REG_SZ, self.profile.email)
+                                   _winreg.REG_SZ, profile.email)
                 _winreg.SetValueEx(k, "*rtpPhone", 0,
-                                   _winreg.REG_SZ, self.profile.phoneNumber)
+                                   _winreg.REG_SZ, profile.phoneNumber)
                 _winreg.SetValueEx(k, "*rtpLoc", 0,
-                                   _winreg.REG_SZ, self.profile.location)
+                                   _winreg.REG_SZ, profile.location)
                 _winreg.SetValueEx(k, "*rtpNote", 0,
-                                   _winreg.REG_SZ, str(self.profile.publicId) )
+                                   _winreg.REG_SZ, str(profile.publicId) )
                 _winreg.CloseKey(k)
             except:
                 self.log.exception("Error writing RTP defaults to registry")
@@ -179,6 +180,7 @@ class VideoProducerService( AGService ):
                                     self.standard.value,
                                     vicDevice,
                                     "%s(%s)" % (self.profile.name,self.streamname.value),
+                                    self.profile.email,
                                     self.profile.email,
                                     vicDevice,
                                     portstr,
@@ -289,6 +291,7 @@ class VideoProducerService( AGService ):
         """
         Set the identity of the user driving the node
         """
+        log.info("SetIdentity: %s %s", profile.name, profile.email)
         self.profile = profile
         self.__SetRTPDefaults(profile)
     SetIdentity.soap_export_as = "SetIdentity"
