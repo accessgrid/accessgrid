@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/11/12
-# RCS-ID:      $Id: Descriptions.py,v 1.21 2003-04-03 21:48:29 judson Exp $
+# RCS-ID:      $Id: Descriptions.py,v 1.22 2003-04-10 18:08:11 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -245,7 +245,7 @@ class StreamDescription( ObjectDescription ):
       self.location = location
       self.capability = capability
       self.encryptionKey = encryptionKey
-      self.static = 0
+      self.static = static
 
    def AsINIBlock(self):
        string = ObjectDescription.AsINIBlock(self)
