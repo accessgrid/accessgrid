@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.174 2003-05-07 20:33:13 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.175 2003-05-07 20:35:24 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1587,7 +1587,9 @@ class ContentListPanel(wxPanel):
         self.tree.Expand(self.data)
         self.tree.Expand(self.services)
         #self.tree.Expand(self.nodes)
-        self.tree.Expand(self.root)
+        
+        if sys.platform == "win32":
+            self.tree.Expand(self.root)
         
     def __setProperties(self):
         pass
