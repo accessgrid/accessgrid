@@ -1,5 +1,5 @@
 ;
-; RCS-ID: $Id: agtk.iss,v 1.48 2004-04-07 03:25:40 judson Exp $
+; RCS-ID: $Id: agtk.iss,v 1.49 2004-04-07 03:35:06 judson Exp $
 ;
 
 ; Set externally
@@ -208,7 +208,7 @@ var
 
 function GetPythonDir(): String;
 begin
-  DefaultVersion := {#PythonVersion};
+  DefaultVersion := ExpandConstant('{#PythonVersion}');
 
   if not RegQueryStringValue(HKLM, 'Software\Python\PythonCore\2.2\InstallPath', '', PythonPath) then
 	begin
@@ -216,4 +216,3 @@ begin
     end;
     return PythonPath;
 end;
-
