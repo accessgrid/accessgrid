@@ -259,7 +259,7 @@ if bdir is not None:
                                                                  BuildDir,
                                                                  DestDir,
                                                                  options.pyver,
-                                                                 metainfo.replace(' ', '_'),
+                                                                 metainfo.replace(' ', '-'),
                                                                  version)
         print "cmd = ", cmd
         os.system(cmd)
