@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.5 2003-04-30 02:33:23 eolson Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.6 2003-05-05 21:05:34 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -73,7 +73,9 @@ class VideoProducerService( AGService ):
          #
          # Write vic startup file
          #
-         startupfile = 'VideoProducerService_%d.vic' % ( os.getpid(), )
+         startupfile = os.path.join(Platform.GetTempDir(),
+            'VideoProducerService_%d.vic' % ( os.getpid() ) )
+         
          f = open(startupfile,"w")
          f.write( vicstartup % (self.configuration["bandwidth"].value, 
                                     self.configuration["framerate"].value, 
@@ -82,6 +84,10 @@ class VideoProducerService( AGService ):
                                     self.configuration["port"].value  ) )
          f.close()
 
+         # Replace double backslashes in the startupfile name with single
+         #  forward slashes (vic will crash otherwise)
+         if sys.platform == Platform.WIN:
+            startupfile = startupfile.replace("\\","/")
 
          # 
          # Start the service; in this case, store command line args in a list and let
