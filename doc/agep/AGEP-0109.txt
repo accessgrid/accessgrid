@@ -43,7 +43,7 @@ server interfaces includes:
 ================  ===============
 Service		  Default Port(s)
 ================  ===============
-Venue Server	  TCP: 8000, 8002, 8004, 8006
+Venue Server	  UDP: 8000, 8002, 8004, 8006
 Beacon Server	  UDP: (233.4.200.21:10002,10004) 
                   TCP: beacon.dast.nlanr.net:10004
 ================  ===============
@@ -115,32 +115,32 @@ server are all running on the same machine, *host.domain*.
 Meeting Room Venue
 ''''''''''''''''''
 
-============ ===================== ================
-Media        Multicast Groups	   TCP Bridge Ports
-============ ===================== ================
+============ ===================== ========================
+Media        Multicast Groups	   Unicast UDP Bridge Ports
+============ ===================== ========================
 static video 224.1.2.3/1234,1235   9000,9001
 static audio 224.1.2.3/1236,1237   9002,9003
-============ ===================== ================
+============ ===================== ========================
 
 Laboratory #1 Venue
 '''''''''''''''''''
 
-============ ===================== ================
-Media        Multicast Groups	   TCP Bridge Ports
-============ ===================== ================
+============ ===================== ========================
+Media        Multicast Groups	   Unicast UDP Bridge Ports
+============ ===================== ========================
 static video 224.1.2.4/1234,1235   9004,9005
 static audio 224.1.2.4/1236,1237   9006,9007
-============ ===================== ================
+============ ===================== ========================
 
 Laboratory #2 Venue
 '''''''''''''''''''
 
-============ ===================== ================
-Media        Multicast Groups	   TCP Bridge Ports
-============ ===================== ================
+============ ===================== ========================
+Media        Multicast Groups	   Unicast UDP Bridge Ports
+============ ===================== ========================
 static video 224.1.2.5/1234,1235   9008,9009
 static audio 224.1.2.5/1236,1237   9010,9011
-============ ===================== ================
+============ ===================== ========================
 
 Beacon Service
 ''''''''''''''
@@ -154,7 +154,8 @@ Summary Configuration
 
 Incoming **to host.domain** from outside the firewall:
 
-- TCP Ports: 8000, 8002, 8004, 8006, 9000-9011
+- TCP Ports: 8000, 8002, 8004, 8006
+- UDP Ports: 9000-9011
 
 Multicast Groups (All hosts on the local network should be able to send and 
 receive traffic via these multicast groups):
