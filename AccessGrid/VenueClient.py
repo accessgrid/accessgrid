@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.32 2003-03-20 23:25:02 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.33 2003-03-21 16:22:23 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -59,13 +59,13 @@ class VenueClient( ServiceBase):
 
     def Heartbeat(self):
         if self.eventClient != None:
-            #            print "Sending heartbeat!"
             self.eventClient.Send(HeartbeatEvent(self.venueId, self.privateId))
             
     def SetProfile(self, profile):
         self.profile = profile
         if(self.profile != None):
             self.profile.venueClientURL = self.service.get_handle()
+            self.followLeadClient = Client.Handle(self.profile.venueClientURL).get_proxy()
         
     def DoNothing(self, data):
         pass
@@ -75,9 +75,11 @@ class VenueClient( ServiceBase):
         self.service = server.CreateServiceObject("VenueClient")
         self._bind_to_service( self.service )
         server.run_in_thread()
-
+        
+        
         if(self.profile != None):
             self.profile.venueClientURL = self.service.get_handle()
+            self.followLeadClient = Client.Handle(self.profile.venueClientURL).get_proxy()
       
     #
     # Event Handlers
@@ -120,7 +122,7 @@ class VenueClient( ServiceBase):
         """
         EnterVenue puts this client into the specified venue.
         """
-        
+        print '----------------- NEW ENTER'
         
         haveValidNodeService = 0
         if self.nodeServiceUri != None:
@@ -209,15 +211,17 @@ class VenueClient( ServiceBase):
         except:
             print "Exception in EnterVenue : ", sys.exc_type, sys.exc_value
             raise EnterVenueException("Enter Failed!")
-
+    
     EnterVenue.soap_export_as = "EnterVenue"
-        
+    
+
     def ExitVenue( self ):
         """
         ExitVenue removes this client from the specified venue.
         """
         self.heartbeatTask.stop()
         self.eventClient.Stop()
+        #self.followLeadClient.Stop()
         self.venueProxy.Exit( self.privateId )
         self.__InitVenueData__()
 
@@ -239,19 +243,25 @@ class VenueClient( ServiceBase):
         """
         self.homeVenue = venueURL
         
-    def Follow( self, venueClientUri ):
+    def Follow( self, venueClientUrl):
         """
         Follow tells this venue client to follow the node
         specified.
         """
-        print '------------follow url: ', venueClientUri 
-        Client.Handle( venueClientUri ).get_proxy().Lead( self.profile )
-
+        # first unfollow the person you followed last...
+        if(self.urlToFollow!=None):
+            self.Unfollow(self.urlToFollow)
+       
+        print '------------follow url: ', venueClientUrl
+        Client.Handle( venueClientUrl ).get_proxy().Lead( self.profile )
+        self.urlToFollow = venueClientUrl
+        
     def Unfollow( self, venueClientUri ):
         """
         Unfollow tells this venue client to stop following
         the node specified.
         """
+        print '------------unfollow: '
         Client.Handle( venueClientUri ).get_proxy().Unlead( self.profile )
 
     def Lead( self, clientProfile):
@@ -268,8 +278,10 @@ class VenueClient( ServiceBase):
         Unlead tells this venue client to stop dragging the specified
         node with it.
         """
+      
         for profile in self.followerProfiles.values():
             if profile.publicId == clientProfile.publicId:
+                print '-------------- I am unleading this person', clientProfile.name
                 del self.followerProfiles[clientProfile.publicId]
     Unlead.soap_export_as = "Unlead"
 
