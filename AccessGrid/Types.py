@@ -3,13 +3,13 @@
 # Purpose:     
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.46 2004-04-30 20:34:04 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.47 2004-05-04 05:06:24 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.46 2004-04-30 20:34:04 turam Exp $"
+__revision__ = "$Id: Types.py,v 1.47 2004-05-04 05:06:24 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -98,9 +98,7 @@ class AGServicePackage:
         self.descriptionFile = None
 
         try:
-            #
             # examine service package content
-            #
             zf = zipfile.ZipFile( self.file, "r" )
             files = zf.namelist()
             zf.close()
@@ -207,15 +205,13 @@ class AGServicePackage:
                     f = open( destfilename, "wb" )
                     f.write( filecontent )
                     f.close()
-                    
-                    print "setting permissions on file", destfilename
+                    #print "setting permissions on file", destfilename
                     
                     # Mark the file executable (indiscriminately)
                     os.chmod(destfilename,0755)
                     
                     s = os.stat(destfilename)
-                    print "%s mode %d", destfilename, s[0]
-                    
+                    #print "%s mode %d", destfilename, s[0]
                 except:
                     log.exception("Error extracting file %s", filename)
 
