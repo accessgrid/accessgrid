@@ -16,6 +16,14 @@ LogFileAppend=false
 Name: python; Parameters: C:\AccessGridBuild\AccessGrid\packaging\makeServicePackages.py C:\AccessGridBuild\AccessGrid\AccessGrid\services; Flags: abortonerror
 Name: C:\AccessGridBuild\AccessGrid\packaging\windows\Prebuild.cmd; Parameters: C:\AccessGridBuild\AccessGrid; Flags: abortonerror
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;
+;; YOU SHOULDN'T NEED TO MODIFY ANYTHING BELOW HERE
+;;
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ; This section sets the standard variables needed for the installer
 
 [Setup]
@@ -166,6 +174,7 @@ Name: {reg:HKLM\Software\Python\PythonCore\2.2\PythonPath\win32com,|C:\Python22\
 
 [Dirs]
 Name: {app}\config; Components: Venue_Client
+Name: {commonappdata}\AccessGrid; Components: Venue_Client
 
 [INI]
 Filename: {app}\config\defaultWindows; Section: node; Key: servicemanagers; String: servicemanager0
