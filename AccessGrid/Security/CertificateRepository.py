@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.6 2004-03-16 21:37:40 eolson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.7 2004-03-19 22:45:21 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.6 2004-03-16 21:37:40 eolson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.7 2004-03-19 22:45:21 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -1104,6 +1104,12 @@ class CertificateDescriptor:
     def IsExpired(self):
         return self.cert.IsExpired()
 
+    def IsServiceCert(self):
+        return self.cert.IsServiceCert()
+
+    def IsHostCert(self):
+        return self.cert.IsHostCert()
+
 class CertificateRequestDescriptor:
     def __init__(self, req, repo):
         self.req = req
@@ -1144,6 +1150,8 @@ class CertificateRequestDescriptor:
         return crypto.dump_certificate_request(crypto.FILETYPE_PEM, self.req)
 
 class Certificate:
+    hostCertRE = re.compile(r"^[^\s./]+(\.[^\s./]+)+$")
+    serviceCertRE = re.compile(r"^([^/]*)/([^/]*)$")
     def __init__(self,  path, keyPath = None, repo = None):
         """
         Create a certificate object.
@@ -1251,6 +1259,46 @@ class Certificate:
 
     def IsExpired(self):
         return self.cert.is_expired()
+
+    def IsServiceCert(self):
+        """
+        A service cert has a CN of the form servicename/hostname.
+
+        @return: If a service cert, (servicename, hostname). Otherwise, None.
+
+        """
+
+        cnlist = map(lambda a: a[1], filter(lambda a: a[0] == "CN", self.GetSubject().get_name_components()))
+        if len(cnlist) != 1:
+            return None
+
+        print cnlist[0]
+        m = self.serviceCertRE.search(cnlist[0])
+
+        if m and len(m.groups()) == 2:
+            return m.group(1), m.group(2)
+        else:
+            return None
+
+    def IsHostCert(self):
+        """
+        A host cert has a CN of the form "hostname".
+
+        @return: If a service cert, hostname. Otherwise, None.
+
+        """
+
+        cnlist = map(lambda a: a[1], filter(lambda a: a[0] == "CN", self.GetSubject().get_name_components()))
+        if len(cnlist) != 1:
+            return None
+
+
+        m = self.hostCertRE.search(cnlist[0])
+
+        if m:
+            return cnlist[0]
+        else:
+            return None
 
     def IsGlobusProxy(self):
         #
