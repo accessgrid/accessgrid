@@ -3,7 +3,7 @@
 # spec file. If you see %{variable_name} this is where it's assigned
 #
 %define	name		AccessGrid
-%define version		2.0
+%define version		2.1
 %define release		1
 %define	prefix		/usr
 %define sysconfdir	/etc/%{name}
@@ -140,6 +140,22 @@ The Access Grid Toolkit provides the necessary components for users to participa
 This module provides the components needed to run the Audio service. This service is responsible for capturing and transmitting your Access Grid Node's audio as well as receiving remote Access Grid Nodes' audio.
 
 #
+# The following defines the AccessGrid-BridgeServer rpm
+# Requires: AccessGrid
+#
+%package BridgeServer
+Summary:	The Access Grid Toolkit Bridge Server
+Version:	%{version}
+Release:	%{release}
+Group:		Utilities/System
+Requires:	AccessGrid = %{version}-%{release}
+
+%description BridgeServer
+The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
+
+This module provides the components needed to run the Bridge Server.  This server is responsible for providing unicast connectivity to venue participants.
+
+#
 # The following untars the source tarball and removes any previous build
 # attempts
 #
@@ -157,6 +173,8 @@ This module provides the components needed to run the Audio service. This servic
 %build
 python2.2 packaging/makeServicePackages.py services/node
 python2.2 setup.py build
+(cd services/network/QuickBridge; gcc -o QuickBridge QuickBridge.c)
+
 
 #
 # The following installs the package in the buildroot,
@@ -216,6 +234,7 @@ mkdir -p %{buildroot}/tmp/local_services
 %{prefix}/bin/AGNodeService.py
 %{prefix}/bin/VenueClient.py
 %{prefix}/bin/NodeManagement.py
+%{prefix}/bin/NodeSetupWizard.py
 %{sharedir}/doc/AccessGrid
 /etc/init.d/agns
 %defattr(0644,root,root)
@@ -280,6 +299,16 @@ mkdir -p %{buildroot}/tmp/local_services
 %files AudioService
 %defattr(0664,ag,ag)
 %{aghome}/local_services/AudioService.*
+
+#
+# Define the files that are to go into the AccessGrid-AudioService package
+# - Install the local service file and make them owned by user ag
+#
+
+%files BridgeServer
+%defattr(0664,ag,ag)
+%{prefix}/bin/BridgeServer.py
+%{prefix}/bin/QuickBridge
 
 #
 # AccessGrid package preinstall commands
