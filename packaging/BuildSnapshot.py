@@ -160,9 +160,6 @@ cmd = "%s %s %s %s %s" % (sys.executable, "BuildPythonModules.py", SourceDir,
                           BuildDir, DestDir)
 os.system(cmd)
 
-# Do automatic testing
-os.chdir(os.path.join(BuildDir, "tests"))
-
 # save the old path
 if os.environ.has_key('PYTHONPATH'):
     oldpath = os.environ['PYTHONPATH']
@@ -181,6 +178,7 @@ else:
 os.environ['PYTHONPATH'] = nppath
 
 # run the tests
+os.chdir(os.path.join(BuildDir, "tests"))
 testfile = "%s-test.html" % DestDir
 os.system("%s test_dist.py --html -o %s -t %s" % (sys.executable,
                                             "%s-test.html" % DestDir,
