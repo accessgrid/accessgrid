@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.285 2003-09-23 22:35:50 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.286 2003-09-24 00:22:17 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.285 2003-09-23 22:35:50 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.286 2003-09-24 00:22:17 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2362,8 +2362,15 @@ class TextClientPanel(wxPanel):
         wxPanel.__init__(self, parent, id)
         self.textOutputId = wxNewId()
         self.app = application
-        self.TextOutput = wxTextCtrl(self, self.textOutputId, "",
-                                     style= wxTE_MULTILINE|wxTE_READONLY)
+        if isWindows():
+            self.TextOutput = wxTextCtrl(self, self.textOutputId, "",
+                                         style= wxTE_MULTILINE|wxTE_READONLY|wxTE_AUTO_URL)
+            EVT_TEXT_URL(self, self.TextOutput.GetId(), self.OnUrl)
+            
+        else:
+            self.TextOutput = wxTextCtrl(self, self.textOutputId, "",
+                                         style= wxTE_MULTILINE|wxTE_READONLY)
+        
         self.label = wxStaticText(self, -1, "Your message:")
         self.display = wxButton(self, self.ID_BUTTON, "Display", style = wxBU_EXACTFIT)
         self.textInputId = wxNewId()
@@ -2376,8 +2383,15 @@ class TextClientPanel(wxPanel):
         EVT_CHAR(self.TextOutput, self.ChangeTextWindow)
         EVT_TEXT_ENTER(self, self.textInputId, self.LocalInput)
         EVT_BUTTON(self, self.ID_BUTTON, self.LocalInput)
+      
         self.Show(true)
 
+    def OnUrl(self, event):
+        start = event.GetURLStart()
+        end = event.GetURLEnd()
+        url = self.TextOutput.GetRange(start, end)
+        self.GetGrandParent().OpenHelpURL(url)
+      
     def ChangeTextWindow(self, event):
         '''Changes focus from text output field to text input field
         to make it clear for users where to write messages.'''
@@ -2394,6 +2408,12 @@ class TextClientPanel(wxPanel):
         self.TextInput.SetFocus()
         if(44 < key < 255) and not ctrlKey:
             self.TextInput.AppendText(chr(key))
+
+    def SetRightScroll(self):
+        # Added due to wxPython but. The wxTextCtrl doesn't
+        # scroll properly when the wxTE_AUTO_URL flag is set. 
+        pos = self.TextOutput.GetInsertionPoint()
+        self.TextOutput.ShowPosition(pos - 1)
                                     
     def ClearTextWidgets(self):
         """
@@ -2402,7 +2422,11 @@ class TextClientPanel(wxPanel):
         self.TextInput.Clear()
 
     def OutputText(self, message):
-        wxCallAfter( self.TextOutput.AppendText, message)
+        wxCallAfter(self.TextOutput.AppendText, message)
+
+        if isWindows():
+            wxCallAfter(self.SetRightScroll)
+                      
 
     def __set_properties(self):
         self.SetSize((375, 225))
