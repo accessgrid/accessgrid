@@ -1,0 +1,28 @@
+Prerequisites
+=============
+The Access Grid Toolkit requires python verson 2.2 or greater, the Globus
+Toolkit version 2.0, python Globus, and wxWindows python bindings version
+2.4.0 or greater. For information about where to get these applications,
+please see the "Links" section below. Special dependencies for specific
+platforms are listed in their respective install instructions.
+
+Reporting Bugs and Feature Requests
+===================================
+If you have found a bug either in the packaging of or the running of the
+AccessGrid Toolkit, please go to http://bugzilla.mcs.anl.gov/accessgrid
+to report them.
+
+Windows 2000/XP Install
+=======================
+Download and install the following packages in the following order.
+
+ActiveState Python 2.2 (which includes the Win32 Extensions)
+wxPython-2.4.0
+winglobus
+accessgrid
+
+Links
+=====
+All of the needed packages can be found from the Access Grid research page
+at: http://www.mcs.anl.gov/fl/research/ag/status/software.html
+

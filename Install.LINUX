@@ -1,0 +1,58 @@
+Prerequisites
+=============
+The Access Grid Toolkit requires python verson 2.2 or greater, the Globus
+Toolkit version 2.0, python Globus, and wxWindows python bindings version
+2.4.0 or greater. For information about where to get these applications,
+please see the "Links" section below. Special dependencies for specific
+platforms are listed in their respective install instructions.
+
+Reporting Bugs and Feature Requests
+===================================
+If you have found a bug either in the packaging of or the running of the
+AccessGrid Toolkit, please go to http://bugzilla.mcs.anl.gov/accessgrid
+to report them.
+
+RedHat 7.3 Binary Install
+=========================
+All of the RPMs have been tested and known to work with RedHat 7.3. Your
+mileage may vary for other versions of RedHat or othe RPM based
+distributions.
+
+Download the appropriate RPMs from the Access Grid research page (see
+"Links" section below). Certain filenames are assumed but do not necessarily
+reflect the current versions. Make reasonble replacements where necessary.
+Special notes are reflected after the command in "[]"s.
+
+% rpm -Uvh gpt-1.0-2.i386.rpm
+% rpm -Uvh globus-data-management-gcc32pthr-2.0-2.i386.rpm [1]
+% rpm -Uvh pyGlobus-cvs-2.i386.rpm
+% /usr/lib/globus/setup/globus/setup-gsi [2]
+% /usr/lib/globus/setup/globus_simple_ca_45cc9e80_setup/setup-gsi -default [2]
+% rpm -Uvh AccessGrid-2.0-2.i386.rpm
+% rpm -Uvh AccessGrid-VideoProducer-2.0-2.i386.rpm [3]
+...
+
+[1] : You might get several messages and/or warning messages during install.
+      These should be safe to ignore.
+[2] : Accept the default options of "yes", and "save, configure the GSI and
+      quit"
+[3] : Anything after the AccessGrid package is optional
+
+RedHat 7.3 Source Install
+=========================
+Download the source RPMs (SRPMs) from the AccessGrid research page (see "Links"
+section below).
+
+% rpm --rebuild gpt-1.0-2.src.rpm
+% rpm -Uvh /usr/src/redhat/RPMS/i386/gpt-1.0-2.i386.rpm [1]
+% rpm --rebuild globus-data-management-gcc32pthr-2.0-2.src.rpm
+% rpm -Uvh /usr/src/redhat/RPMS/i386/globus-data-management-gcc32pthr-2.0-2.i386.rpm
+% rpm --rebuild pyGlobus-cvs-2.src.rpm
+% rpm -Uvh /usr/src/redhat/RPMS/i386/pyGlobus-cvs-2.i386.rpm
+% rpm --rebuild AccessGrid-2.0-2.src.rpm
+
+Links
+=====
+All of the needed packages can be found from the Access Grid research page
+at: http://www.mcs.anl.gov/fl/research/ag/status/software.html
+
