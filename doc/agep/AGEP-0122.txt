@@ -1,0 +1,151 @@
+=====================================
+Service Certificate Integration
+=====================================
+ 
+:version: $Revision: 1.1 $
+:author: Thomas Uram <turam@mcs.anl.gov>
+:status: Draft
+:contact: ag-tech@mcs.anl.gov
+
+Abstract
+========
+
+This document proposes a scheme for integrating service certificates into the toolkit.  The goal is to enable users to configure services to run with a particular service certificate, possibly at boot.
+
+Overview
+========
+
+The toolkit currently supports identity certificates.  For the average user running the venue client, an identity certificate often suffices.  However, users of the service-oriented portions of the toolkit--VenueServer, NodeService, ServiceManager, and BridgeServer--want to be able to use no-password service certificates to avoid proxy timeouts, and to enable the services to be run at boot without needing to generate a proxy.
+
+User scenario
+-------------
+
+Certificate Request
+'''''''''''''''''''
+The user will need a service certificate.  This will happen through the existing ceritificate request mechanism:
+
+- Request service certificate
+- Retrieve service certificate
+
+Service Configuration
+'''''''''''''''''''''
+
+- Select a service and service certificate
+- Run at boot? Become root to create startup scripts
+- Run now? Launch service with new profile
+- Run from command line? Specify profile on command line
+
+
+Summary of Modifications
+========================
+
+Certificate Management
+''''''''''''''''''''''
+
+- Modify certificate management to tag service certificates in repository
+  by type
+  
+- The CertMgmt UI should allow users to view service 
+  certificates in a separate panel, and not mix them with identity
+  certs
+
+Install
+'''''''
+
+- Create directory for storing service profiles
+    UserConfigDir/ServiceProfiles
+
+Service Configuration Tool
+''''''''''''''''''''''''''
+
+- Define Service Profile format
+
+    [ServiceProfile]
+    service = VenueServer|AGNodeService|AGServiceManager|BridgeServer
+    credential = Cred
+    
+    [Cred]
+    type = x509
+    cert = ?
+    
+    How to specify the credential in the service profile?  Ideally, this
+    would be simple enough that the user could construct the service
+    profile independently.
+    
+    - cert/key file locations
+    - hash into cert repository (ick)
+    - DN (requires search across repository)
+    
+- Create Service Configuration UI
+
+    - Allow user to select a service and certificate
+        - Tool should require matching of service to service
+          certificate (VenueServers should use VenueServer certs)
+    - [Optional] Integrate cert req tool to enable service cert 
+      requests from within tool (either at implementation or 
+      system call level)
+    - Write service profile to ServiceProfiles directory
+
+- Create startup scripts
+
+    - Support becoming administrator to install service
+    - Command-line option for profile name accepts argument 
+      that matches file in the ServiceProfiles directory
+      
+- Tool could accept a '--profile' argument to modify an existing
+  service profile
+
+Toolkit.Service
+'''''''''''''''
+
+- Add command-line argument to specify profile (--profile)
+
+Deprecated Packages
+-------------------
+
+None
+
+Specifications
+==============
+
+Security Issues
+===============
+
+None
+
+Interoperability Issues
+=======================
+
+None
+
+Related AGEPs
+=============
+
+None
+
+Implementation
+==============
+
+None yet
+
+References
+==========
+
+None
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
