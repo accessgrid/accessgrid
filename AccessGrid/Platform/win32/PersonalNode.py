@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: PersonalNode.py,v 1.2 2004-03-10 23:17:08 eolson Exp $
+# RCS-ID:      $Id: PersonalNode.py,v 1.3 2004-03-11 23:07:37 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ of a Personal Node.
 
 """
 
-__revision__ = "$Id: PersonalNode.py,v 1.2 2004-03-10 23:17:08 eolson Exp $"
+__revision__ = "$Id: PersonalNode.py,v 1.3 2004-03-11 23:07:37 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -34,7 +34,7 @@ from AccessGrid import Log
 from AccessGrid.Platform import Platform
 
 log = Log.GetLogger(Log.PersonalNode)
-Log.SetDefaultLevel(Log.WARN, Log.PersonalNode)
+Log.SetDefaultLevel(Log.PersonalNode, Log.WARN)
 
 NodeServiceURIKey = "NodeServiceURI"
 ServiceManagerURIKey = "ServiceManagerURI"
