@@ -95,7 +95,7 @@ class CertificateRepository:
             os.mkdir(os.path.join(self.dir, "user_files"))
             os.mkdir(os.path.join(self.dir, "privatekeys"))
             os.mkdir(os.path.join(self.dir, "requests"))
-            os.mkdir(os.path.join(self.dir, "certificatess"))
+            os.mkdir(os.path.join(self.dir, "certificates"))
             #
             # Create the dbhash too.
             #
@@ -107,9 +107,40 @@ class CertificateRepository:
             # add more checks that the repo dir actually does contain
             # a valid repository.
             #
+            
             if not os.path.isdir(self.dir):
                 raise RepoDoesNotExist
-            self.db = bsddb.hashopen(self.dbPath, 'w')
+
+            #
+            # Look for other stuff too
+            #
+
+            invalidRepo = 0
+
+            for mustExist in ('user_files', 'privatekeys', 'requests', 'certificates'):
+                if not os.path.isdir(os.path.join(self.dir, mustExist)):
+                    invalidRepo = 1
+
+            if not os.path.isfile(self.dbPath):
+                invalidRepo = 1
+
+            try:
+                self.db = bsddb.hashopen(self.dbPath, 'w')
+            except bsddb.error:
+                log.exception("exception opening hash %s", self.dbPath)
+                invalidRepo = 1
+
+            if invalidRepo:
+                #
+                # The repository is corrupted somehow.
+                #
+                # Rename it, log an error, and raise an exception.#
+                #
+
+                newname = "%s.corrupt.%s" % (self.dir, int(time.time()))
+                os.rename(self.dir, newname)
+                log.error("Detected corrupted repository, renaming to %s", newname)
+                raise RepoDoesNotExist
 
     def ImportCertificatePEM(self, certFile, keyFile = None,
                              passphraseCB = None):
