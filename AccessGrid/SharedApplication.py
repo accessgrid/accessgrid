@@ -3,7 +3,7 @@
 # Purpose:     Supports venue-coordinated applications.
 #
 # Created:     2003/02/27
-# RCS-ID:      $Id: SharedApplication.py,v 1.16 2004-05-25 22:47:04 eolson Exp $
+# RCS-ID:      $Id: SharedApplication.py,v 1.17 2004-06-14 17:20:19 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ This module defines classes for the Shared Application implementation,
 interface, and interface wrapper.
 """
 
-__revision__ = "$Id: SharedApplication.py,v 1.16 2004-05-25 22:47:04 eolson Exp $"
+__revision__ = "$Id: SharedApplication.py,v 1.17 2004-06-14 17:20:19 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid import Log
@@ -316,9 +316,13 @@ class SharedApplication(AuthorizationMixIn):
         if not self.components.has_key(private_token):
             raise InvalidPrivateToken
 
-        # Get rid of endlines so server can store the data.
-        codedData = value.replace("_", "__")   # escape underscores
-        codedData = value.replace("\n", "z_z") # replace endlines using single underscores
+        # Only strings are encoded.
+        if type(value) == type(""):
+            # Get rid of endlines so server can store the data.
+            codedData = value.replace("_", "__")   # escape underscores
+            codedData = value.replace("\n", "z_z") # replace endlines using single underscores
+        else:
+            codedData = value
 
         self.app_data[key] = codedData
 
@@ -338,8 +342,12 @@ class SharedApplication(AuthorizationMixIn):
             raise InvalidPrivateToken
 
         if self.app_data.has_key(key):
-            decodedData = self.app_data[key].replace("z_z","\n") # restore endlines
-            decodedData = decodedData.replace("__", "_")
+            # Only strings are encoded.
+            if type("") == type(self.app_data[key]):
+                decodedData = self.app_data[key].replace("z_z","\n") # restore endlines
+                decodedData = decodedData.replace("__", "_")
+            else:
+                decodedData = self.app_data[key]
             return decodedData
         else:
             return ""
