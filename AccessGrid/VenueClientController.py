@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.29 2004-06-01 19:25:54 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.30 2004-06-02 02:06:42 turam Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.29 2004-06-01 19:25:54 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.30 2004-06-02 02:06:42 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 # standard imports
@@ -1249,10 +1249,16 @@ class VenueClientController:
         if IsWindows():
             shell = os.environ['ComSpec']
             realCommand = "%s %s %s" % (shell, "/c", realCommand)
-            
-        aList = realCommand.split(' ')
-        log.info("StartCmd starting command: %s", realCommand)
-        processManager.StartProcess(aList[0], aList[1:])
+            log.info("StartCmd starting command: %s", realCommand)
+            cmd = realCommand
+            argList = []
+        else:
+            log.info("StartCmd starting command: %s", realCommand)
+            aList = realCommand.split(' ')
+            cmd = aList[0]
+            argList = aList[1:]
+        
+        processManager.StartProcess(cmd,argList)
         
     def StopApplications(self):
         self.appProcessManager.TerminateAllProcesses()
