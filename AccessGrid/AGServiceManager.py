@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.73 2004-05-24 16:42:11 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.74 2004-05-27 20:58:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.73 2004-05-24 16:42:11 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.74 2004-05-27 20:58:23 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -107,6 +107,10 @@ class AGServiceManager:
         log.info("AddService: %s v %f u %s", serviceDescription.name, 
                   serviceDescription.version,
                   serviceDescription.servicePackageUri)
+        if resourceToAssign:
+            log.info("resourceToAssign: %s", resourceToAssign.resource)
+        else:
+            log.info("resourceToAssign: %s", str(resourceToAssign))
         
         # Get the service manager url (first time only)
         if not self.url:
@@ -196,14 +200,15 @@ class AGServiceManager:
                     # Extract the package
                     servicePackageToInstall.ExtractPackage(servicePath)
 
-                    # Get the (new) service description and set the resource
+                    # Get the (new) service description
                     serviceDescription = servicePackageToInstall.GetServiceDescription()
-                    serviceDescription.resource = resource
 
                 except:
                     log.exception("Service Manager failed to extract service implementation")
                     raise Exception("Service Manager failed to extract service implementation")
 
+            # Set the resource in the service description
+            serviceDescription.resource = resource
 
         except:
             log.exception("Service Manager failed to retrieve service implementation for %s", 
