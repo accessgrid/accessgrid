@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.74 2004-08-04 21:22:48 eolson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.75 2004-08-18 21:12:40 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.74 2004-08-04 21:22:48 eolson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.75 2004-08-18 21:12:40 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -119,7 +119,7 @@ def AllocateEncryptionKey():
     for i in range(1, 8):
         intKey = intKey ^ rg.randrange(1, sys.maxint)
 
-    return "%x" % intKey
+    return "Rijndael/%x" % intKey
 
 def GetLogText(maxSize, logFileName):
     '''
