@@ -6,7 +6,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.22 2003-07-11 21:12:33 eolson Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.23 2003-08-01 21:28:42 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -135,6 +135,10 @@ else:
 
 # Create a Node Service
 nodeService = AGNodeService()
+
+# Load default configuration if --personal node option is set
+if pnode:
+    nodeService.LoadDefaultConfig()
 
 # Create a hosting environment
 server = Server( port , auth_callback=AuthCallback )
