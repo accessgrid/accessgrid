@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.15 2003-10-16 23:53:18 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.16 2003-10-21 19:25:56 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ from AccessGrid.AGService import AGService
 from AccessGrid import Platform
 from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
-
+from AccessGrid.Platform import isWindows, GetInstallDir
 
 vicstartup="""option add Vic.disable_autoplace true startupFile
 option add Vic.muteNewSources true startupFile
@@ -49,7 +49,11 @@ class VideoProducerService( AGService ):
       AGService.__init__( self, server )
 
       self.capabilities = [ Capability( Capability.PRODUCER, Capability.VIDEO ) ]
-      self.executable = "vic"
+
+      if isWindows():
+         self.executable = os.path.join(GetInstallDir(), "vic.exe")
+      else:
+         self.executable = "vic"
 
       #
       # Set configuration parameters
