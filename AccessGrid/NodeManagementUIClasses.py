@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.17 2003-02-28 17:20:43 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.18 2003-02-28 18:00:01 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -360,9 +360,8 @@ class NodeManagementClientFrame(wxFrame):
                 self.Error( "No selection made" )
                 return
 
-            try:
-                self.AttachToNode( uri )
-            except:
+            self.AttachToNode( uri )
+            if not self.Connected():
                 self.Error( "Could not attach to AGNodeService at " + uri  )
                 return
 
@@ -374,10 +373,13 @@ class NodeManagementClientFrame(wxFrame):
 
         CheckCredentials()
 
-        vcProxy = Client.Handle( nodeServiceUri ).get_proxy()
-        vcProxy.Ping()
-        self.vc = vcProxy
-        self.SetTitle( "Access Grid Node Management - Connected" )
+        try:
+            vcProxy = Client.Handle( nodeServiceUri ).get_proxy()
+            vcProxy.Ping()
+            self.vc = vcProxy
+            self.SetTitle( "Access Grid Node Management - Connected" )
+        except:
+            print "Exception connecting to node service:", sys.exc_type, sys.exc_value
 
     def LoadConfiguration( self, event ):
 
