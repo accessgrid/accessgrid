@@ -5,19 +5,21 @@ import Queue
 import threading
 import getopt
 
-from AccessGrid.EventClient import EventClient
+from pyGlobus.io import IOBaseException
+
+from AccessGrid import NetService
+from AccessGrid import Toolkit
+from AccessGrid import Utilities
 from AccessGrid.hosting.pyGlobus import Client
+from AccessGrid.Events import Event, ConnectEvent, HeartbeatEvent
+from AccessGrid.EventClient import EventClient, EventClientWriteDataException
+from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.ProcessManagerUnix import ProcessManagerUnix as ProcessManager
-from AccessGrid import Utilities
-from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-from AccessGrid.Events import Event, ConnectEvent, HeartbeatEvent
-from AccessGrid import Toolkit
 
 
 quickBridgeExec = None
 logFile = 'BridgeServer.log'
-
 
 class BridgeServer:
     def __init__(self, debug=0):
@@ -79,7 +81,9 @@ class BridgeServer:
         - Clear the running flag
         """
         self.log.debug("Method BridgeServer.Shutdown called")
+
         # Remove venues
+        self.log.debug("- Removing venues")
         self.RemoveVenues()
 
         # Clear the running state
@@ -105,6 +109,11 @@ class BridgeServer:
 
 
 class Venue:
+
+    EVT_ADDBRIDGE="AddBridge"
+    EVT_REMOVEBRIDGE="RemoveBridge"
+    EVT_QUIT="Quit"
+
     def __init__(self, venueUrl):
 
         # Init data
@@ -113,19 +122,17 @@ class Venue:
         self.bridges = dict()
         self.queue = Queue.Queue()
         self.running = 1
+        self.sendHeartbeats = 1
 
         self.log = logging.getLogger("AG.BridgeServer")
 
         # Register with the venue
-        self.privateId = self.venueProxy.AddNetService("bridge")
+        self.privateId = self.venueProxy.AddNetService(NetService.BridgeNetService.TYPE)
 
         # Create bridges for the venue streams
         streamList = self.venueProxy.GetStreams()
         for stream in streamList:
-
-            # Create the bridge
-            bridge = self.AddBridge(stream)
-
+            self.AddBridge(stream)
 
         # Get the event service location and event channel id
         (eventServiceLocation, self.channelId) = self.venueProxy.GetEventServiceLocation()
@@ -139,8 +146,10 @@ class Venue:
         self.eventClient.RegisterCallback(Event.ADD_STREAM, self.EventReceivedCB)
         self.eventClient.RegisterCallback(Event.REMOVE_STREAM, self.EventReceivedCB)
         
-        threading.Thread(target=self.RunQueueThread).start()
-        threading.Thread(target=self.HeartbeatThread).start()
+        t1 = threading.Thread(target=self.RunQueueThread)
+        t2 = threading.Thread(target=self.HeartbeatThread)
+        t1.start()
+        t2.start()
 
 
     def EventReceivedCB(self, event):
@@ -150,9 +159,31 @@ class Venue:
         by the queue processing thread.
         """
         self.log.debug("Method Venue.EventReceivedCB called")
-        self.queue.put(event)
+        if event.eventType == Event.ADD_STREAM:
+            strDesc = event.data
+            self.AddBridge(strDesc)
+        elif event.eventType == Event.REMOVE_STREAM:
+            strDesc = event.data
+            self.__RemoveBridge(strDesc.id)
+
 
     def AddBridge(self, streamDesc):
+        """
+        AddBridge puts an ADDBRIDGE event in the queue.
+        The bridge will actually be added when the 
+        queue processing thread gets the event.
+        """
+        self.queue.put( [Venue.EVT_ADDBRIDGE,streamDesc] )
+
+    def RemoveBridge(self,id):
+        """
+        RemoveBridge puts a REMOVEBRIDGE event in the queue.
+        The bridge will actually be removed when the
+        queue processing thread gets the event.
+        """
+        self.queue.put( [Venue.EVT_REMOVEBRIDGE,id] )
+
+    def __AddBridge(self, streamDesc):
         """
         AddBridge adds a bridge with the specified parameters
         """
@@ -162,7 +193,7 @@ class Venue:
         # Allocate a port for the bridge
         uaddr = Utilities.GetHostname()
         uport = MulticastAddressAllocator().AllocatePort()
- 
+
         # Create the bridge and start it
         bridge = Bridge(streamDesc.id, 
                         streamDesc.location.host, 
@@ -179,15 +210,19 @@ class Venue:
                                                    networkLocation)
         return bridge
         
-    def RemoveBridge(self, id):
+    def __RemoveBridge(self, id):
         """
         RemoveBridge removes the bridge with the specified id
         """
         self.log.debug("Method Venue.RemoveBridge called")
         self.log.debug("  id = %s", id)
         if self.bridges.has_key(id):
+            self.log.debug("  removed")
             self.bridges[id].Stop()
             del self.bridges[id]
+        else:  
+            self.log.debug("  not found")
+        
             
     def RunQueueThread(self):
         """
@@ -200,14 +235,15 @@ class Venue:
     
         while self.running:
             event = self.queue.get(1)
-            if event == "quit":
+            if event[0]==Venue.EVT_QUIT:
                 break
-            if event.eventType == Event.ADD_STREAM:
-                strDesc = event.data
-                self.AddBridge(strDesc)
-            if event.eventType == Event.REMOVE_STREAM:
-                strDesc = event.data
-                self.RemoveBridge(strDesc.id)
+            if event[0]==Venue.EVT_ADDBRIDGE:
+                self.__AddBridge(event[1])
+                continue
+            if event[0]==Venue.EVT_REMOVEBRIDGE:
+                self.__RemoveBridge(event[1])
+                continue
+             
         self.log.debug("RunQueueThread exiting")
 
     def HeartbeatThread(self):
@@ -216,12 +252,14 @@ class Venue:
         to keep the connection with the Venue open
         """
         import time
-        while self.running:
+        while self.sendHeartbeats:
             try:
                 self.eventClient.Send(HeartbeatEvent(self.channelId, self.privateId))
+            except EventClientWriteDataException:
+                self.Shutdown()
+                break
             except:
                 self.log.exception("BridgeServer:Heartbeat: Heartbeat exception is caught.")
-                pass
             time.sleep(10)
         self.log.debug("Heartbeat thread exiting")
 
@@ -235,21 +273,39 @@ class Venue:
         - Clear the running flag
         """
         self.log.debug("Method Venue.Shutdown called")
+
+        # Stop sending heartbeats
+        self.sendHeartbeats = 0
+
         # Delete bridges
-        self.log.debug(" - Stopping bridges")
-        while len(self.bridges) > 0:
-            self.RemoveBridge(self.bridges.keys()[0])
+        self.log.debug("- Send stop message to bridges")
+        for id in self.bridges.keys():
+            self.RemoveBridge(id)
 
         # Shut down the event client
-        self.log.debug(" - Stopping event client")
-        self.eventClient.Stop()
+        self.log.debug("- Stopping event client")
+        try:
+
+            if self.eventClient:
+                self.eventClient.Stop()
+                self.eventClient = None
+        except IOBaseException:
+            self.log.exception("Exception caught stopping event client; probably negligible")
 
         # Put an event on the queue
-        #self.queue.put(Event(Event.EXIT,self.channelId,None))
+        self.log.debug("- Wait for bridges to shutdown")
+        import time
+        while len(self.bridges) > 0:
+            time.sleep(1)
+
+        # Send stop message to queue thread
+        self.log.debug("- Send stop message to queue processor")
         self.queue.put("quit")
 
         # Clear the running flag
         self.running = 0
+
+        self.log.debug("Shutdown exiting")
 
 class Bridge:
     def __init__(self, id, maddr, mport, mttl, uaddr, uport):
@@ -295,18 +351,22 @@ class Bridge:
 
 
 
-def usage():
-    print """
-Usage: BridgeServer.py <<-vs venueServerUrl>|<-f|--file venueUrlFile>|<-v|--venue venueUrl>
-                       <-qbexec quickbridgeExecutable>
-                       [-h|--help]
-                       [-d|--debug]
-"""
 
 def main():
    
 
     bridgeServer = None
+
+
+    def usage():
+        print """
+Usage: BridgeServer.py <<--venueServer venueServerUrl>|<[-f|--file] venueUrlFile>|<[-v|--venue] venueUrl>>
+                       <--qbexec quickbridgeExecutable>
+                       [--cert certpath]
+                       [--key keypath]
+                       [-h|--help]
+                       [-d|--debug]
+"""
 
 
     # Signal handler to catch signals and shutdown
@@ -329,13 +389,16 @@ def main():
     identityCert = None
     identityKey = None
 
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hdlv:f:",
                                    [
                                    "venueServer=", 
                                    "venue=",
                                    "file=",
-                                   "qbexec="
+                                   "qbexec=",
+                                   "cert=",
+                                   "key="
                                    ])
 
     except getopt.GetoptError:
@@ -364,10 +427,10 @@ def main():
         elif opt in ('--logfile', '-l'):
             global logFile
             logFile = arg
-        elif o == "--key":
-            identityKey = a
-        elif o == "--cert":
-            identityCert = a
+        elif opt == "--key":
+            identityKey = arg
+        elif opt == "--cert":
+            identityCert = arg
 
     # catch bad arguments
     if numExclusiveArgs > 1:
@@ -392,7 +455,6 @@ def main():
     else:
         # Init toolkit with standard environment.
         app = Toolkit.CmdlineApplication()
-
     app.Initialize()
 
 
@@ -408,10 +470,12 @@ def main():
         f = open(venueFile,"r")
         venueList = f.readlines()
         f.close()
-        print "done"
     elif venueUrl:
         venueList = [ venueUrl ]
 
+
+    # Register a signal handler so we can shut down cleanly
+    signal.signal(signal.SIGINT, SignalHandler)
 
     # Create the bridge server
     bridgeServer = BridgeServer(debugMode)
@@ -419,17 +483,12 @@ def main():
     # Bridge those venues !
     for venueUrl in venueList:
         venueUrl = venueUrl.strip()
-        print "bridging venue ", venueUrl
         if len(venueUrl):
             bridgeServer.AddVenue(venueUrl)
-
-    # Register a signal handler so we can shut down cleanly
-    signal.signal(signal.SIGINT, SignalHandler)
 
     # Loop main thread
     while bridgeServer.IsRunning():
         time.sleep(1)
-        
 
 if __name__ == "__main__":
     main()
