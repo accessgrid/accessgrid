@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.95 2003-09-10 20:36:54 turam Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.96 2003-09-10 21:04:58 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -916,6 +916,16 @@ class AdministratorsListPanel(wxPanel):
                 try:
                     self.application.DeleteAdministrator(adminToDelete)
 
+                except Exception, e:
+                    if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+                            text = "You are not a server administrator and are not authorized to delete administrators.\n"
+                            MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+                            log.info("AdministratorsListPanel.DeleteAdministrator: Not authorized to delete administrators from server.")
+                    else:
+                        log.exception("AdministratorsListPanel.DeleteAdministrator: Could not delete administrator")
+                        text = "The administrator %s could not be deleted" %adminToDelete
+                        ErrorDialog(None, text, "Delete Administrator Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
+
                 except:
                     log.exception("AdministratorsListPanel.DeleteAdministrator: Could not delete administrator")
                     text = "The administrator %s could not be deleted" %adminToDelete
@@ -943,6 +953,15 @@ class AdministratorsListPanel(wxPanel):
     def InsertAdministrator(self, data):
         try:
             self.application.AddAdministrator(data)
+        except Exception, e:
+            if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+                    text = "You are not a server administrator and are not authorized to add an administrator.\n"
+                    MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+                    log.info("AdministratorsListPanel.InsertAdministrator: Not authorized to add administrator to server.")
+            else:
+                log.exception("AdministratorsListPanel.InsertAdministrator: Can not insert administrator")
+                text = "The administrator %s could not be added" %data
+                ErrorDialog(None, text, "Add Administrator Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
         except:
             log.exception("AdministratorsListPanel.InsertAdministrator: Can not insert administrator")
             text = "The administrator %s could not be added" %data
@@ -959,6 +978,16 @@ class AdministratorsListPanel(wxPanel):
             log.debug("AdministratorsListPanel.Modify administrator")
             index = self.administratorsList.GetSelection()
             self.application.ModifyAdministrator(oldName, newName)
+
+        except Exception, e:
+            if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
+                    text = "You are not a server administrator and are not authorized to modify an administrator.\n"
+                    MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
+                    log.info("AdministratorsListPanel.ModifyAdministrator: Not authorized to modify administrator to server.")
+            else:
+                log.exception("AdministratorsListPanel.Modify administrator: Could not modify administrator")
+                text = "The administrator %s could not be modified" %oldName
+                ErrorDialog(None, text, "Modify Administrator Error", style = wxOK  | wxICON_ERROR, logFile = VENUE_MANAGEMENT_LOG)
 
         except:
             log.exception("AdministratorsListPanel.Modify administrator: Could not modify administrator")
@@ -1792,8 +1821,7 @@ class AddVenueFrame(VenueParamFrame):
                     log.debug("AddVenueFrame.OnOk: Add venue.")
                     self.parent.AddVenue(self.venue)
                 except Exception, e:
-                    if isinstance(e, faultType):
-                        if str(e.faultstring) == "NotAuthorized":
+                    if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
                             text = "You are not a server administrator and are not authorized to add venues to this server.\n"
                             MessageDialog(None, text, "Authorization Error", wxOK|wxICON_WARNING)
                             log.info("AddVenueFrame.OnOK: Not authorized to add venue to server.")
@@ -1855,8 +1883,7 @@ class ModifyVenueFrame(VenueParamFrame):
                         log.exception("ModifyVenueFrame.OnOk: Can not set roles for venue")
 
                 except Exception, e:
-                    if isinstance(e, faultType):
-                        if str(e.faultstring) == "NotAuthorized":
+                    if isinstance(e, faultType) and str(e.faultstring) == "NotAuthorized":
                             text = "You are not authorized to modify this venue.\n"
                             MessageDialog(None, text, "Authorization Error", style=wxOK|wxICON_WARNING)
                             log.info("ModifyVenueFrame.OnOK: Not authorized to modify venue.")
