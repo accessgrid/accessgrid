@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.219 2003-06-27 21:43:46 eolson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.220 2003-06-27 22:12:43 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1542,13 +1542,14 @@ class ContentListPanel(wxPanel):
         if(self.tree.GetChildrenCount(treeId)>0):
             id, cookie = self.tree.GetFirstChild(treeId, cookie)
             d = self.tree.GetPyData(id)
-            dataList.append(d)
-            log.debug("First child's name = %s " %(d.name))
-            for nr in range(self.tree.GetChildrenCount(treeId)-1):
-                id, cookie = self.tree.GetNextChild(treeId, cookie)
-                dataList.append(self.tree.GetPyData(id))
-                log.debug("Next child's name = %s " %self.tree.GetPyData(id).name)
-                
+            if d:
+                dataList.append(d)
+                log.debug("First child's name = %s " %(d.name))
+                for nr in range(self.tree.GetChildrenCount(treeId)-1):
+                    id, cookie = self.tree.GetNextChild(treeId, cookie)
+                    dataList.append(self.tree.GetPyData(id))
+                    log.debug("Next child's name = %s " %self.tree.GetPyData(id).name)
+                    
         return dataList
             
     def AddData(self, profile):
