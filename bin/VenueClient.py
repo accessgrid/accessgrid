@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.99 2003-04-03 15:38:52 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.100 2003-04-03 15:56:38 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -74,6 +74,13 @@ class VenueClientUI(wxApp, VenueClient):
     def __createPersonalDataStore(self):
         self.personalDataStorePath = os.path.join(self.accessGridPath, self.personalDataStorePrefix)
         self.personalDataFile = os.path.join(self.personalDataStorePath, "myData.txt" )
+
+        try:
+            os.mkdir(self.personalDataStorePath)
+        except OSError, e:
+            log.exception("Could not create venueStoragePath.")
+            self.personalDataStorePath = None
+                
         self.dataStore = DataStore.DataStore(self, self.personalDataStorePath,
                                    self.personalDataStorePrefix)
         self.transferEngine = GSIHTTPTransferServer(('', self.personalDataStorePort))
@@ -792,6 +799,7 @@ class VenueClientUI(wxApp, VenueClient):
             wxLogError("Error occured when trying to remove service")
             wxLog_GetActiveTarget().Flush()
 
+              
     def ChangeProfile(self, profile):
         """
         This method changes this participants profile
