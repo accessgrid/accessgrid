@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.29 2003-03-20 22:28:45 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.30 2003-03-20 22:37:21 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -209,7 +209,6 @@ class VenueClient( ServiceBase):
             raise EnterVenueException("Enter Failed!")
 
     EnterVenue.soap_export_as = "EnterVenue"
-       
         
     def ExitVenue( self ):
         """
