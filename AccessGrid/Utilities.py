@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.25 2003-04-24 19:55:37 eolson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.26 2003-04-25 03:55:24 olson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,6 +19,10 @@ from random import Random
 import sha
 import urllib
 import mailcap
+
+import logging
+log = logging.getLogger("AG.Utilities")
+
 
 try:
     import _winreg
@@ -331,3 +335,21 @@ def GetMimeCommands(filename = None, type = None, ext = None):
         cdict = None
 
     return cdict
+
+def StartDetachedProcess(cmd):
+    """
+    Start cmd as a detached process.
+
+    We start the process using a command processor (cmd on windows,
+    sh on linux).
+    """
+
+    if sys.platform == "win32":
+        shell = os.environ['ComSpec']
+        shcmd = [shell, "/c", cmd]
+        os.spawnv(os.P_NOWAIT, shell, shcmd)
+    else:
+        shell = "sh"
+        shcmd = [shell, "-c", cmd]
+        os.spawnvp(os.P_NOWAIT, shell, shcmd)
+
