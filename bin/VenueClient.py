@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.120 2003-04-18 23:03:27 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.121 2003-04-19 16:36:59 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -459,6 +459,13 @@ class VenueClientUI(wxApp, VenueClient):
             for s in services:
                 wxCallAfter(self.frame.contentListPanel.AddService, s)
                 wxCallAfter(wxLogDebug, "   %s" %(s.name))
+                
+            # --- Load applications
+            applications = venueState.applications.values()
+            wxCallAfter(wxLogDebug, "Add application")
+            for a in applications:
+                wxCallAfter(self.frame.contentListPanel.AddApplication, a)
+                wxCallAfter(wxLogDebug, "   %s" %(a.name))
                 
             # --- Load exits
             wxCallAfter(wxLogDebug, "Add exits")
