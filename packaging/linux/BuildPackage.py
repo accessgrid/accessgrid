@@ -28,9 +28,6 @@ parser.add_option("-p", "--pythonversion", dest="pyver",
 parser.add_option("--dist", dest="dist",
                   metavar="DISTRIBUTION", default="rpm",
                   help="Which distribution to build")
-parser.add_option("-n", dest="buildnum",
-                  metavar="BUILDNUMBER", default=None,
-                  help="Build (or release) number")
 options, args = parser.parse_args()
 
 SourceDir = options.sourcedir
@@ -38,7 +35,6 @@ BuildDir = options.builddir
 DestDir = options.destdir
 metainfo = options.metainfo
 version = options.version
-buildnum = options.buildnum
 
 StartDir = os.getcwd()
 
@@ -54,6 +50,7 @@ distDirs = [agsourcedir,
             "pyGlobus",
             "pyOpenSSL",
             "gt3.0.2-source-installer/globus-data-management-client-2.4.3-src_bundle.tar.gz",
+            "gt3.0.2-source-installer/gpt-3.0.1-src.tar.gz",
             ]
 if float(options.pyver) < 2.3:
     distDirs.append("logging-0.4.7")
@@ -64,7 +61,7 @@ distDirStr = " ".join(distDirs)
 # Create the targz from the source dir
 #
 os.chdir(StartDir)
-targz = os.path.join(SourceDir,"AccessGrid-%s-%s.src.tar.gz" % (version,buildnum))
+targz = os.path.join(SourceDir,"AccessGrid-%s-%s.src.tar.gz" % (version,metainfo))
 cmd = "tar cvzhf %s --directory %s %s" % (targz,SourceDir,distDirStr)
 print "cmd = ", cmd
 os.system(cmd)
@@ -78,15 +75,14 @@ pkg_script = "BuildPackage.py"
 DistDir = os.path.join(StartDir,options.dist)
 if os.path.exists(DistDir):
     os.chdir(DistDir)
-    cmd = "%s %s --verbose -s %s -b %s -d %s -p %s -m %s -v %s -n %s" % (sys.executable,
+    cmd = "%s %s --verbose -s %s -b %s -d %s -p %s -m %s -v %s" % (sys.executable,
                                                              pkg_script,
                                                              SourceDir,
                                                              BuildDir,
                                                              DestDir,
                                                              options.pyver,
                                                              metainfo.replace(' ', '_'),
-                                                             version,
-                                                             buildnum)
+                                                             version)
     print "cmd = ", cmd
     os.system(cmd)
 else:
