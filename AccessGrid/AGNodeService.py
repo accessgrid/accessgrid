@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.34 2003-08-22 16:31:21 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.35 2003-08-27 20:32:21 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -22,15 +22,15 @@ from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus.Utilities import GetHostname
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 
-from AccessGrid.Descriptions import AGServiceDescription, AGServiceManagerDescription
+from AccessGrid.Descriptions import AGServiceDescription
+from AccessGrid.Descriptions import AGServiceManagerDescription
 from AccessGrid.Types import ServiceConfiguration, AGResource
 from AccessGrid.AuthorizationManager import AuthorizationManager
 from AccessGrid.Platform import GetConfigFilePath
-
+from AccessGrid.Utilities import LoadConfig
 from AccessGrid.AGParameter import ValueParameter
 
 log = logging.getLogger("AG.NodeService")
-
 
 class SetStreamException(Exception): pass
 
@@ -656,8 +656,6 @@ class AGNodeService( ServiceBase ):
         """
         Read the node service configuration file
         """
-
-        from AccessGrid.Utilities import LoadConfig
 
         configFile = GetConfigFilePath("AGNodeService.cfg")
         if configFile and os.path.exists(configFile):
