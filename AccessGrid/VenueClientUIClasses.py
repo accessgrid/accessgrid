@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.234 2003-08-21 23:27:11 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.235 2003-08-22 04:24:47 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -855,8 +855,7 @@ class VenueClientFrame(wxFrame):
         data = self.contentListPanel.tree.GetItemData(id).GetData()
         if(data != None and isinstance(data, DataDescription)):
             name = data.name
-            commands = GetMimeCommands(filename = data.name,
-                                       ext = name.split('.')[-1])
+            commands = GetMimeCommands(ext = name.split('.')[-1])
             if commands == None:
                 message = ("No client registered for the selected data")
                 dlg = MessageDialog(self, message)
@@ -1818,9 +1817,10 @@ class ContentListPanel(wxPanel):
 
             else:
                 openCmd = None
-                if isinstance(item, DataDescription):
+                if isinstance(item, DataDescription) or isinstance(item, ServiceDescription):
                     ext = item.name.split('.')[-1]
-                    commands = GetMimeCommands(filename = item.name, ext = ext)
+                    commands = GetMimeCommands(mimeType = item.mimeType,
+                                               ext = ext)
                     openCmd = commands['Open']
                 else:
                     appdb = Toolkit.GetApplication().GetAppDatabase()
@@ -1890,7 +1890,7 @@ class ContentListPanel(wxPanel):
         a_file = os.path.join(GetTempDir(), item.name)
         ext = item.name.split('.')[-1]
         
-        commands = GetMimeCommands(filename = a_file, ext = ext)
+        commands = GetMimeCommands(ext = ext)
 
         menu = wxMenu()
 
@@ -1965,8 +1965,7 @@ class ContentListPanel(wxPanel):
         a_file = os.path.join(GetTempDir(), item.name)
         ext = item.name.split('.')[-1]
         
-        commands = GetMimeCommands(filename = a_file,
-                                   mimeType = item.mimeType, ext = ext)
+        commands = GetMimeCommands(mimeType = item.mimeType, ext = ext)
 
         menu = wxMenu()
 
@@ -2084,22 +2083,23 @@ class ContentListPanel(wxPanel):
         """
         """
         localFilePath = None
-
+        mimeType = None
         if namedVars == None:
             namedVars = dict()
 
-        if item != None:
+        # If item is passed in, download the filename specified in it.
+        if item != None and isinstance(item, DataDescription):
             ext = item.name.split('.')[-1]
             appdb = Toolkit.GetApplication().GetAppDatabase()
             mimeType = appdb.GetMimeType(extension = ext)
-
-        # If item is passed in, download the filename specified in it.
-        if item != None and isinstance(item, DataDescription):
+            if mimeType == None:
+                mimeType == Platform.GetMimeType(extension = ext)
+                
             localFilePath = os.path.join(GetTempDir(), item.name)
             self.app.SaveFileNoProgress(item, localFilePath)
 
             # Fix odd commands
-            if command.find("%1") == -1:
+            if command.find("%1") != -1:
                 command = command.replace("%1", "%(localFilePath)s")
             elif command.find("%(localFilePath)s") == -1:
                 command += " \"%(localFilePath)s\""
@@ -2108,6 +2108,7 @@ class ContentListPanel(wxPanel):
                 command = command.replace("%1", "%(appUrl)s")
             elif command.find("%(appUrl)s") == -1:
                 command += " \"%(appUrl)s\""
+            mimeType = item.mimeType
             
         namedVars['appName'] = item.name
         namedVars['appDesc'] = item.description
@@ -2130,6 +2131,9 @@ class ContentListPanel(wxPanel):
         # environment variable
         prog = re.compile("\%[a-zA-Z0-9\_]*\%")
         result = prog.match(command)
+
+        print "CMD: <%s>" % command
+
         if result != None:
             subStr = result.group()
 
