@@ -1,8 +1,8 @@
 #define SourceDir "C:\AccessGridBuild\AccessGrid\Release"
 #define OutputDir "C:\AccessGridBuild\AccessGrid-Build"
 #define AppName "Access Grid Toolkit"
-#define AppVersionLong "2.0 beta 2"
-#define AppVersionShort "2.0b2"
+#define AppVersionLong "2.0 Release Candidate 1"
+#define AppVersionShort "2.0rc1"
 
 [_ISTool]
 EnableISX=true
@@ -46,7 +46,7 @@ DefaultDirName={pf}\{#AppName}
 UsePreviousAppDir=false
 UserInfoPage=false
 WindowVisible=false
-UninstallDisplayIcon={app}\VenueClient.py
+
 UninstallDisplayName={#AppName}
 DisableStartupPrompt=false
 WindowResizable=false
@@ -63,7 +63,7 @@ WizardImageFile=compiler:wizmodernimage.bmp
 WizardSmallImageFile=compiler:wizmodernsmallimage.bmp
 UninstallFilesDir={app}\uninst
 InfoBeforeFile=..\Install.WINDOWS
-ShowTasksTreeLines=false
+ShowTasksTreeLines=true
 PrivilegesRequired=admin
 
 [Components]
@@ -90,59 +90,55 @@ Source: var\lib\ag\local_services\VideoProducerService.svc; DestDir: {app}\local
 
 ; Programs for the user to run
 Source: Scripts\RunMe.py; DestDir: {app}; Components: Venue_Client
-Source: Scripts\RunMe.py; DestDir: {app}; DestName: RunMe.pyw; Components: Venue_Client
 Source: Scripts\VenueClient.py; DestDir: {app}; Components: Venue_Client
-Source: Scripts\VenueClient.py; DestDir: {app}; DestName: VenueClient.pyw; Components: Venue_Client
 Source: Scripts\NodeManagement.py; DestDir: {app}; Components: Venue_Client
-Source: Scripts\NodeManagement.py; DestDir: {app}; DestName: NodeManagement.pyw; Components: Venue_Client
 Source: Scripts\AGNodeService.py; DestDir: {app}; Components: Venue_Client
-Source: Scripts\AGNodeService.py; DestDir: {app}; DestName: AGNodeService.pyw; Components: Venue_Client
 Source: Scripts\AGServiceManager.py; DestDir: {app}
-Source: Scripts\AGServiceManager.py; DestDir: {app}; DestName: AGServiceManager.pyw
 Source: Scripts\SetupVideo.py; DestDir: {app}; Components: Video_Producer
-Source: Scripts\SetupVideo.py; DestDir: {app}; DestName: SetupVideo.pyw; Components: Video_Producer
 Source: Scripts\VenueManagement.py; DestDir: {app}; Components: Venue_Server
-Source: Scripts\VenueManagement.py; DestDir: {app}; DestName: VenueManagement.pyw; Components: Venue_Server
 Source: Scripts\VenueServer.py; DestDir: {app}; Components: Venue_Server
-Source: Scripts\VenueServer.py; DestDir: {app}; DestName: VenueServer.pyw; Components: Venue_Server
 Source: Scripts\VenuesServerRegistry.py; DestDir: {app}; Components: Venue_Server
-Source: Scripts\VenuesServerRegistry.py; DestDir: {app}; DestName: VenueServer.pyw; Components: Venue_Server
 
 ; Default node configuration
 Source: share\AccessGrid\nodeConfig\defaultWindows; DestDir: {app}\config; Flags: confirmoverwrite
 
 ; AG Icon for programs and stuff
-Source: share\AccessGrid\AG.ico; DestDir: {app}\config
 
 ; Documentation
 Source: share\doc\AccessGrid\*.*; DestDir: {app}\Documentation
 
 ; Post install scripts
 Source: share\AccessGrid\packaging\windows\Postinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
-Source: share\AccessGrid\packaging\windows\AGNodeServicePostinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
-Source: share\AccessGrid\packaging\windows\AGServiceManagerPostinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
+;Source: share\AccessGrid\packaging\windows\AGNodeServicePostinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
+;Source: share\AccessGrid\packaging\windows\AGServiceManagerPostinstall.py; DestDir: {app}\config; Flags: deleteafterinstall
 
 ; Vic Video Tool
-Source: ..\..\ag-vic\vic\Release\vic.exe; DestDir: {app}; Components: Video_Consumer Video_Producer
+Source: ..\..\ag-vic\vic\vic___win32_ddraw_release\vic.exe; DestDir: {app}; Components: Video_Consumer Video_Producer
 
 ; Rat Audio Tool
 Source: ..\..\ag-rat\rat\Release\rat.exe; DestDir: {app}; Components: Audio_Service
 Source: ..\..\ag-rat\rat\Release\ratmedia.exe; DestDir: {app}; Components: Audio_Service
 Source: ..\..\ag-rat\rat\Release\ratui.exe; DestDir: {app}; Components: Audio_Service
+Source: ..\..\..\..\..\Documents and Settings\leggett\My Documents\Visual Studio Projects\agicons.exe; DestDir: {app}\config
 
 
 [Icons]
-Name: {group}\Venue Client; Filename: {app}\RunMe.pyw; IconFilename: {app}\config\AG.ico; WorkingDir: {app}; Components: Venue_Client
 Name: {group}\Uninstall the AGTk; Filename: {uninstallexe}
-Name: {group}\Node Manager; IconFilename: {app}\config\AG.ico; Filename: {app}\NodeManagement.pyw; WorkingDir: {app}; Components: Venue_Client
-Name: {group}\Setup Video; IconFilename: {app}\config\AG.ico; Filename: {app}\SetupVideo.pyw; WorkingDir: {app}; Components: Video_Producer
-Name: {group}\Venue Server; IconFilename: {app}\config\AG.ico; Filename: {app}\VenueServer.pyw; WorkingDir: {app}; Components: Venue_Server
-Name: {group}\Venue Management; IconFilename: {app}\config\AG.ico; Filename: {app}\VenueManagement.pyw; WorkingDir: {app}; Components: Venue_Server
-Name: {commondesktop}\Access Grid Venue Client; Filename: {app}\RunMe.pyw; IconFilename: {app}\config\AG.ico; WorkingDir: {app}; Tasks: desktopicon; Components: Venue_Client
-Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Access Grid Venue Client; IconFilename: {app}\config\AG.ico; Filename: {app}\RunMe.py; Tasks: quicklaunchicon; Components: Venue_Client
-Name: {group}\Documentation\README; IconFilename: {app}\config\AG.ico; Filename: {app}\Documentation\README
+Name: {group}\Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py; IconFilename: {app}\config\agicons.exe; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
+Name: {group}\Node Manager; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: NodeManagement.py; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
+Name: {group}\Setup Video; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: SetupVideo.py; WorkingDir: {app}; Components: Video_Producer; IconIndex: 0
+Name: {group}\Venue Server; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueServer.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
+Name: {group}\Venue Management; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueManagement.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
+Name: {group}\Debug\Venue Client; Filename: VenueClient.py; IconFilename: {app}\config\agicons.exe; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
+Name: {group}\Debug\Node Manager; IconFilename: {app}\config\agicons.exe; Filename: NodeManagement.py; WorkingDir: {app}; Components: Venue_Client; IconIndex: 0
+Name: {group}\Debug\Setup Video; IconFilename: {app}\config\agicons.exe; Filename: SetupVideo.py; WorkingDir: {app}; Components: Video_Producer; IconIndex: 0
+Name: {group}\Debug\Venue Server; IconFilename: {app}\config\agicons.exe; Filename: VenueServer.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
+Name: {group}\Debug\Venue Management; IconFilename: {app}\config\agicons.exe; Filename: VenueManagement.py; WorkingDir: {app}; Components: Venue_Server; IconIndex: 0
+Name: {commondesktop}\Access Grid Venue Client; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py; IconFilename: {app}\config\agicons.exe; WorkingDir: {app}; Tasks: desktopicon; Components: Venue_Client; IconIndex: 0
+Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Access Grid Venue Client; IconFilename: {app}\config\agicons.exe; Filename: {reg:HKLM\Software\Python\PythonCore\2.2\InstallPath,|C:\Python22\Lib\site-packages}\pythonw.exe; Parameters: VenueClient.py; WorkingDir: {app}; Tasks: quicklaunchicon; Components: Venue_Client; IconIndex: 0
+Name: {group}\Documentation\README; Filename: {app}\Documentation\README
 ;Name: {group}\Documentation\Developers Documentation; Filename: {app}\Documentation\index.html
-Name: {group}\Documentation\License; IconFilename: {app}\config\AG.ico; Filename: {app}\COPYING.txt
+Name: {group}\Documentation\License; IconFilename: {app}\config\ag.ico; Filename: {app}\COPYING.txt
 
 [Registry]
 Root: HKLM; Subkey: SOFTWARE\Access Grid Toolkit\2.0; ValueType: expandsz; ValueName: InstallPath; ValueData: {app}; Flags: uninsdeletekey
@@ -161,9 +157,9 @@ WelcomeLabel2=This will install the [name/ver] on your computer.%n%nIt is strong
 
 [Run]
 Filename: {app}\config\Postinstall.py; Flags: shellexec runminimized
-Filename: {app}\SetupVideo.pyw; WorkingDir: {app}; Description: Setup what video devices will produce video streams; Components: Video_Producer; Flags: postinstall unchecked shellexec
-Filename: {app}\config\AGNodeServicePostinstall.py; Flags: shellexec runminimized; Components: Venue_Client
-Filename: {app}\config\AGServiceManagerPostinstall.py; Flags: shellexec runminimized; Components: Venue_Client
+Filename: {app}\SetupVideo.py; WorkingDir: {app}; Description: Setup what video devices will produce video streams; Components: Video_Producer; Flags: postinstall unchecked shellexec
+;Filename: {app}\config\AGNodeServicePostinstall.py; Flags: shellexec runminimized; Components: Venue_Client
+;Filename: {app}\config\AGServiceManagerPostinstall.py; Flags: shellexec runminimized; Components: Venue_Client
 
 [UninstallDelete]
 Name: {reg:HKLM\Software\Python\PythonCore\2.2\PythonPath\win32com,|C:\Python22\Lib\site-packages}\AccessGrid; Type: filesandordirs
@@ -171,3 +167,24 @@ Name: {reg:HKLM\Software\Python\PythonCore\2.2\PythonPath\win32com,|C:\Python22\
 [Dirs]
 Name: {app}\config; Components: Venue_Client
 
+[INI]
+Filename: {app}\config\defaultWindows; Section: node; Key: servicemanagers; String: servicemanager0
+Filename: {app}\config\defaultWindows; Section: service1; Key: packagename; String: VideoConsumerService.zip
+Filename: {app}\config\defaultWindows; Section: service1; Key: resource; String: None
+Filename: {app}\config\defaultWindows; Section: service1; Key: executable; String: {app}\vic.exe
+Filename: {app}\config\defaultWindows; Section: service1; Key: serviceconfig; String: serviceconfig1
+Filename: {app}\config\defaultWindows; Section: service0; Key: packagename; String: AudioService.zip
+Filename: {app}\config\defaultWindows; Section: service0; Key: resource; String: None
+Filename: {app}\config\defaultWindows; Section: service0; Key: executable; String: {app}\rat.exe
+Filename: {app}\config\defaultWindows; Section: service0; Key: serviceconfig; String: serviceconfig0
+Filename: {app}\config\defaultWindows; Section: servicemanager0; Key: url; String: https://localhost:12000/ServiceManager
+Filename: {app}\config\defaultWindows; Section: servicemanager0; Key: services; String: service0 service1
+Filename: {app}\config\defaultWindows; Section: servicemanager0; Key: name; String: localhost:12000
+Filename: {app}\config\defaultWindows; Section: serviceconfig1
+Filename: {app}\config\defaultWindows; Section: serviceconfig0
+
+Filename: {app}\config\AGNodeService.cfg; Section: Node Configuration; Key: servicesDirectory; String: {app}\services
+Filename: {app}\config\AGNodeService.cfg; Section: Node Configuration; Key: configDirectory; String: {app}\config
+Filename: {app}\config\AGNodeService.cfg; Section: Node Configuration; Key: defaultNodeConfiguration; String: defaultWindows
+
+Filename: {app}\config\AGServiceManager.cfg; Section: Service Manager; Key: servicesDirectory; String: {app}\local_services
