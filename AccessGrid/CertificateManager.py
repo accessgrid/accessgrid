@@ -40,10 +40,10 @@ try:
     import _winreg
     import win32api
 
-    HaveWin32Registry = True
+    HaveWin32Registry = 0
 
 except:
-    HaveWin32Registry = False
+    HaveWin32Registry = 1
 
 from OpenSSL import crypto
 
@@ -549,7 +549,7 @@ class CertificateManager:
         self.userCertRepo = CertificateRepository(self.userCertPath)
         self.trustedCARepo = CertificateRepository(self.systemCACertDir)
 
-    def loadConfiguration(self, isConfigReloadRetry = False):
+    def loadConfiguration(self, isConfigReloadRetry = 0):
         """
         Load the certificate manager configuration information.
 
@@ -597,7 +597,7 @@ class CertificateManager:
                 raise Exception, "Configuration file did not load properly, even after reloading defaults"
             log.info("Configuration file is invalid, reloading from defaults")
             self.setupInitialConfig()
-            self.loadConfiguration(True)
+            self.loadConfiguration(1)
 
     def writeConfiguration(self):
         """
@@ -681,7 +681,7 @@ class CertificateManager:
         if 'x509_cert_dir' in gcerts:
             self.systemCACertDir = gcerts['x509_cert_dir']
 
-        self.useSystemCADir = True
+        self.useSystemCADir = 1
 
         #
         # We haven't defined how the anonymous certs are done yet,
@@ -956,7 +956,7 @@ class Certificate:
         hash = self.cert.get_subject().get_hash()
 
         suffix = 0
-        while True:
+        while 1:
             certPath = os.path.join(repoPath, "%s.%d" % (hash, suffix))
             if not os.access(certPath, os.R_OK):
                 break
