@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.152 2004-03-22 19:53:45 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.153 2004-03-23 17:56:40 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.152 2004-03-22 19:53:45 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.153 2004-03-23 17:56:40 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -629,7 +629,12 @@ class VenueClient:
             self.venueId = self.venueState.GetUniqueId()
 
             host, port = venueState.eventLocation
-        
+
+            #
+            # Retreive stream descriptions
+            #
+            self.streamDescList = self.__venueProxy.GetStreams()
+                    
             #
             # Create the event client
             #
@@ -1288,6 +1293,9 @@ class VenueClient:
     
     def GetVenueState(self):
         return self.venueState
+
+    def GetVenueStreams(self):
+        return self.streamDescList
         
     def GetEventChannelId(self):
         return self.venueState.GetUniqueId()
