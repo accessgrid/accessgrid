@@ -81,6 +81,17 @@ The Access Grid Toolkit provides the necessary components for users to participa
 
 This module provides the components needed to create an Access Grid Venue and an Access Grid Venue Server.
 
+#
+# The following defines the AccessGrid-BridgeServer rpm
+# Requires: AccessGrid
+#
+%package BridgeServer
+Summary:	The Access Grid Toolkit Bridge Server
+Version:	%{version}
+Release:	%{release}
+Group:		Utilities/System
+Requires:	AccessGrid = %{version}-%{release}
+
 %description BridgeServer
 The Access Grid Toolkit provides the necessary components for users to participate in Access Grid based collaborations, and also for developers to work on network services, applications services and node services to extend the functionality of the Access Grid.
 
