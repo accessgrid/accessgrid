@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.137 2004-07-22 18:17:41 judson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.138 2004-07-26 17:35:01 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.137 2004-07-22 18:17:41 judson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.138 2004-07-26 17:35:01 lefvert Exp $"
 
 # Standard imports
 import sys
@@ -491,6 +491,8 @@ class VenueManagementClient(wxApp):
             if self.address.addressText.FindString(self.serverUrl) == wxNOT_FOUND:
                 log.debug("VenueManagementClient.ConnectToServer: Set address: %s" %self.serverUrl)
                 self.address.addressText.Append(self.serverUrl)
+
+            self.address.addressText.SetValue(self.serverUrl)
 
             # fill in encryption
             key = self.server.GetEncryptAllMedia()
