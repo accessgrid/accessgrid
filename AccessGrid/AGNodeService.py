@@ -5,13 +5,12 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.32 2003-08-11 04:18:20 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.33 2003-08-12 15:14:18 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 import os
 import sys
-import pickle
 import string
 import thread
 import string
