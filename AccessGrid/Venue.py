@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.184 2004-04-13 03:53:27 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.185 2004-04-15 23:29:59 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.184 2004-04-13 03:53:27 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.185 2004-04-15 23:29:59 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -964,10 +964,14 @@ class Venue(AuthorizationMixIn):
             self.DistributeEvent(Event( Event.EXIT,
                                         self.uniqueId,
                                         clientProfile ) )
-
-            del self.clients[privateId]
         except:
             log.exception("Venue.RemoveUser: Body of method threw exception")
+
+        try:
+            if privateId in self.clients:
+                del self.clients[privateId]
+        except:
+            log.exception("Venue.RemoveUser: Error deleting client.")
 
         self.clientsBeingRemovedLock.acquire()
         del self.clientsBeingRemoved[privateId]
