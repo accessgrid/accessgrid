@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.16 2003-04-03 16:51:47 olson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.17 2003-04-03 21:30:03 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -92,8 +92,8 @@ def GetSystemConfigDir():
     if "" == configDir:
 
         if sys.platform == WIN:
-            AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
-            configDir, type = _winreg.QueryValueEx(AG20,"ConfigPath")
+            base = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA, 0, 0)
+            configDir = os.path.join(base, "AccessGrid")
 
         elif sys.platform == LINUX:
             configDir = AGTkBasePath
@@ -114,9 +114,8 @@ def GetUserConfigDir():
     if "" == configDir:
 
         if sys.platform == WIN:
-            AG20 = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, AGTkRegBaseKey)
-            configDir, type = _winreg.QueryValueEx(AG20,"UserConfigPath")
-
+            base = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
+            configDir = os.path.join(base, "AccessGrid")
         elif sys.platform == LINUX:
             configDir = os.path.join(os.environ["HOME"],".AccessGrid")
 
@@ -237,4 +236,3 @@ def GetFilesystemFreeSpace(path):
 
     return freeBytes
         
-            
