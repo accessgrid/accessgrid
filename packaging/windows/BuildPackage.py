@@ -23,7 +23,7 @@ parser.add_option("--verbose", action="store_true", dest="verbose",
                   default=0,
                   help="A flag that indicates to build verbosely.")
 parser.add_option("-p", "--pythonversion", dest="pyver",
-                  metavar="PYTHONVERSION", default="2.2",
+                  metavar="PYTHONVERSION", default="2.3",
                   help="Which version of python to build the installer for.")
 
 options, args = parser.parse_args()
