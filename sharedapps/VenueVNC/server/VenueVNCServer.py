@@ -167,7 +167,7 @@ class vncServer:
             print "Exception ", sys.exc_type, sys.exc_value
 
 class VNCServerAppObject:
-    def __init__(self,venueUrl,displayID=":9",geometry="1024x768",depth=24):
+    def __init__(self,venueUrl,displayID=":9",geometry="1024x768",depth=24,name="VenueVNC"):
         self.running = 0
         print venueUrl
         # Attach to venue server
@@ -177,7 +177,7 @@ class VNCServerAppObject:
         self.vncServer.start();
 
         # Create the App object
-        self.appDescription=self.venueProxy.CreateApplication("VNC",
+        self.appDescription=self.venueProxy.CreateApplication(name,
                                                       "VNC Server at %s"%(self.vncServer.getContactString()),
                                                       "application/x-ag-venuevnc");
 
@@ -223,26 +223,32 @@ class VNCServerAppObject:
 if __name__ == "__main__":
 
     if len(sys.argv) < 3:
-        print "USAGE: %s <Venue URL> <Display ID> [Geometry [Depth]]"%(sys.argv[0]);
+        print "USAGE: %s <Venue URL> <Display ID> [Name [Geometry [Depth]]]"%(sys.argv[0]);
         sys.exit(0);
 
     venueURL=sys.argv[1];
     displayID=sys.argv[2];
 
     if len(sys.argv) > 3:
-        geometry=sys.argv[3];
+        name = sys.argv[3];
+    else:
+        timestamp = time.strftime("%I:%M:%S %p %B %d, %Y")
+        name = "VenueVNC - %s" % (timestamp)
+
+    if len(sys.argv) > 4:
+        geometry=sys.argv[4];
     else:
         geometry = '1024x768';
 
-    if len(sys.argv) > 4:
-        depth = eval(sys.argv[4]);
+    if len(sys.argv) > 5:
+        depth = eval(sys.argv[5]);
     else:
         depth = 24;
 
     app = CmdlineApplication().instance()
     app.Initialize("VncServer")
 
-    appObj=VNCServerAppObject(venueURL,displayID,geometry,depth);
+    appObj=VNCServerAppObject(venueURL,displayID,geometry,depth,name=name);
 
     def SignalHandler(signum, frame):
         print "Caught Signal", signum, ".  Shutting down and removing VNC service from venue."
