@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.18 2004-05-18 20:24:03 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.19 2004-07-17 02:35:38 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.18 2004-05-18 20:24:03 olson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.19 2004-07-17 02:35:38 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -1545,6 +1545,9 @@ class Certificate:
         # Key path is based on the modulus.
         #
 
+        if self.keyPath is not None:
+            return self.keyPath
+        
         if not self.repo:
            return None
 
