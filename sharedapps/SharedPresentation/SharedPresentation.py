@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.11 2003-11-05 00:35:39 eolson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.12 2003-11-05 18:51:01 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -1286,10 +1286,22 @@ class SharedPresentation:
             # Retrieve the current slide
             self.slideNum = self.appProxy.GetData(self.privateId,
                                                   SharedPresKey.SLIDENUM)
+            # If it's a string, convert it to an integer
+            if type(self.slideNum) == type(""):
+                if len(self.slideNum) < 1:
+                    self.slideNum = 1
+                else:
+                    self.slideNum = int(self.slideNum)
 
             # Retrieve the current step number
             self.stepNum = self.appProxy.GetData(self.privateId,
                                              SharedPresKey.STEPNUM)
+            # If it's a string, convert it to an integer
+            if type(self.stepNum) == type(""):
+                if len(self.stepNum) < 1:
+                    self.stepNum = 0
+                else:
+                    self.stepNum = int(self.stepNum)
 
             # Retrieve the master
             self.masterId = self.appProxy.GetData(self.privateId,
