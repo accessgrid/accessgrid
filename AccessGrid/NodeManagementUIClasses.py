@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.70 2004-09-07 19:49:05 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.71 2004-09-08 20:57:34 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.70 2004-09-07 19:49:05 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.71 2004-09-08 20:57:34 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -35,6 +35,7 @@ from AccessGrid.AGNodeService import AGNodeServiceIW
 from AccessGrid.AGServiceManager import AGServiceManagerIW
 from AccessGrid.AGService import AGServiceIW
 from AccessGrid.Types import AGResource
+from AccessGrid import Version
 
 # imports for Debug menu; can be removed if Debug menu is removed
 from AccessGrid.Descriptions import StreamDescription
@@ -629,6 +630,20 @@ class NodeManagementClientFrame(wxFrame):
             if len( conf ) == 0:
                 self.Error( "No selection made" )
                 return
+                
+
+            try:
+                if self.nodeServiceHandle.NeedMigrateNodeConfig(conf):
+                    text ="%s should be migrated to %s; do you want to do this now?" % (conf,Version.GetVersion())
+                    dlg = wxMessageDialog(self, text, "Confirm",
+                                          style = wxICON_INFORMATION | wxOK | wxCANCEL)
+                    ret = dlg.ShowModal()
+                    dlg.Destroy()
+                    if ret == wxID_OK:
+                        self.nodeServiceHandle.MigrateNodeConfig(conf)
+            except:
+                log.exception("Exception migrating node config")
+                    
 
             try:
                 self.nodeServiceHandle.LoadConfiguration( conf )
