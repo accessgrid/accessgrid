@@ -3,7 +3,7 @@
 # Name:        certmgr.py
 # Purpose:     Command line certificate management tool.
 # Created:     9/10/2003
-# RCS-ID:      $Id: certmgr.py,v 1.8 2004-04-05 18:05:51 olson Exp $
+# RCS-ID:      $Id: certmgr.py,v 1.9 2004-04-05 18:34:24 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This tool is used on the command line to interact with the users certificate
 environment.
 """
-__revision__ = "$Id: certmgr.py,v 1.8 2004-04-05 18:05:51 olson Exp $"
+__revision__ = "$Id: certmgr.py,v 1.9 2004-04-05 18:34:24 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import string
@@ -27,6 +27,8 @@ from optparse import Option
 from OpenSSL_AG import crypto
 
 from AccessGrid.Toolkit import CmdlineApplication
+from AccessGrid.Security import CertificateManager
+from AccessGrid.Platform.Config import SystemConfig
 
 class CertMgrCmdProcessor(cmd.Cmd):
     """
@@ -165,7 +167,7 @@ class CertMgrCmdProcessor(cmd.Cmd):
 
         Show detailed information about certificate <certnum>.
         """
-        args = line.split()
+        args = split_quoted(line)
         if len(args) != 1:
             print "Usage: show <certnum>"
             return 0
@@ -190,7 +192,7 @@ class CertMgrCmdProcessor(cmd.Cmd):
 
         Delete certificate <certnum>.
         """
-        args = line.split()
+        args = split_quoted(line)
         if len(args) != 1:
             print "Usage: delete <certnum>"
             return 0
@@ -363,7 +365,7 @@ class CertMgrCmdProcessor(cmd.Cmd):
             print "Must be in identity mode to set default certficate."
             return 0
 
-        args = line.split()
+        args = split_quoted(line)
         if len(args) != 1:
             print "Usage: default <certnum>"
             return 0
@@ -381,6 +383,31 @@ class CertMgrCmdProcessor(cmd.Cmd):
 
         self.loadCerts()
 
+    def do_request_service(self, line):
+        """
+        Usage:
+
+        request_service <servicename> <email>
+
+        Generate and submit a certificate request for <servicename> on
+        this host. <email> is the confirmation email address.
+        
+        """
+        args = split_quoted(line)
+        if len(args) != 2:
+            print "Usage: request_service <servicename> <email>"
+            return 0
+
+        serviceName, email = args
+
+        host = SystemConfig.instance().GetHostname()
+
+        reqInfo = CertificateManager.ServiceCertificateRequestInfo(serviceName,
+                                                                    host,
+                                                                    email)
+
+        self.certMgr.GetUserInterface().RequestCertificate(reqInfo, None, 0, None, None)
+        
     def help_import(self):
         """
         Help message for the import command.
