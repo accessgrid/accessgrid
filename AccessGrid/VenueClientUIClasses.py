@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.264 2003-09-16 21:41:24 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.265 2003-09-16 21:53:19 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.264 2003-09-16 21:41:24 turam Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.265 2003-09-16 21:53:19 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1941,7 +1941,6 @@ class ContentListPanel(wxPanel):
                             wildcard = "Python Source (*.py)|*.py|"\
                                        "Compiled Python (*.pyc)|*.pyc|"\
                                        "Executable (*.exe)|*.exe|"\
-                                       "Batch File (*.bat)|*.bat|"\
                                        "All Files (*.*)|*.*"
                             
                             dlg = wxFileDialog(None, "Choose the program", "",
@@ -1953,7 +1952,7 @@ class ContentListPanel(wxPanel):
                             # then register the app
                             
                             # Then execute it
-                            cmd = program + " %(localFilePath)s"
+                            cmd = program + " %1"
                             self.StartCmd(cmd, item)
                             
                         return None
@@ -1989,7 +1988,7 @@ class ContentListPanel(wxPanel):
                             # then register the app
                             
                             # Then execute it
-                            cmd = program + " %(localFilePath)s"
+                            cmd = program + " %1"
                             self.StartCmd(cmd, item)
                             
                         return None
@@ -2180,7 +2179,6 @@ class ContentListPanel(wxPanel):
             wildcard = "Python Source (*.py)|*.py|"\
                        "Compiled Python (*.pyc)|*.pyc|"\
                        "Executable (*.exe)|*.exe|"\
-                       "Batch File (*.bat)|*.bat|"\
                        "All Files (*.*)|*.*"
             
             dlg = wxFileDialog(None, "Choose the program", "",
@@ -2192,7 +2190,7 @@ class ContentListPanel(wxPanel):
                 # then register the app
                 
                 # Then execute it
-                cmd = program + " %(localFilePath)s"
+                cmd = program + " %1"
                 self.StartCmd(cmd, item)
                 
     def BuildAppMenu(self, event, item):
@@ -2272,19 +2270,18 @@ class ContentListPanel(wxPanel):
         """
         """
         localFilePath = None
-        mimeType = None
         name = None
         if namedVars == None:
             namedVars = dict()
 
-        # If item is passed in, download the filename specified in it.
-        if item != None and isinstance(item, DataDescription):
-            ext = item.name.split('.')[-1]
-            appdb = Toolkit.GetApplication().GetAppDatabase()
-            mimeType = appdb.GetMimeType(extension = ext)
-            if mimeType == None:
-                mimeType == GetMimeType(extension = ext)
-            
+        if item == None:
+            return
+
+        print "CMD: <%s>" % command
+        
+        # If item is data, download the filename specified in it.
+        if isinstance(item, DataDescription):
+            print "DATA"
             localFilePath = os.path.join(GetTempDir(), item.name)
             self.app.SaveFileNoProgress(item, localFilePath)
 
@@ -2300,18 +2297,26 @@ class ContentListPanel(wxPanel):
                 elif command.find("%(localFilePath)s") == -1:
                     command += " \"%(localFilePath)s\""
         else:
-            mimeType = item.mimeType
             # Get the app dir and run
-            appdb = Toolkit.GetApplication().GetAppDatabase()
-            name = appdb.GetNameForMimeType(mimeType)
-            appName = ''.join(name.split(' '))
-            appDir = os.path.join(GetUserAppPath(), appName)
-            try:
-                os.chdir(appDir)
-            except:
-                log.warn("Couldn't Change dir to app directory")
-                return
-        
+            print "APP|SERVICE"
+            if isinstance(item, ApplicationDescription):
+                print "APP"
+                appdb = Toolkit.GetApplication().GetAppDatabase()
+                name = appdb.GetNameForMimeType(item.mimeType)
+                if name != None:
+                    appName = ''.join(name.split(' '))
+                    appDir = os.path.join(GetUserAppPath(), appName)
+                    try:
+                        os.chdir(appDir)
+                    except:
+                        log.warn("Couldn't Change dir to app directory")
+                        return
+                else:
+                    MessageDialog(None, "You have no client for this Shared Application.", "Notification", style = wxOK|wxICON_INFORMATION)
+                    
+
+            print "CMD: <%s>" % command
+            
             if isWindows():
                 if command.find("%1") != -1:
                     command = command.replace("%1", "%(appUrl)s")
@@ -2319,17 +2324,18 @@ class ContentListPanel(wxPanel):
                     command += " \"%(appUrl)s\""
             else:
                 if command.find("%s") != -1:
-                    command = command.replace("%s", "%(localFilePath)s")
-                elif command.find("%(localFilePath)s") == -1:
-                    command += " \"%(localFilePath)s\""
+                    command = command.replace("%s", "%(appUrl)s")
+                elif command.find("%(appUrl)s") == -1:
+                    command += " \"%(appUrl)s\""
 
+        print "CMD: <%s>" % command
             
         namedVars['appName'] = item.name
         namedVars['appDesc'] = item.description
-        namedVars['appMimeType'] = mimeType
-        namedVars['venueDataUrl'] = item.uri
-        namedVars['localFilePath'] = localFilePath
+        # This is on every description, so we're not using it yet
+        # namedVars['appMimeType'] = item.mimeType
         namedVars['appUrl'] = item.uri
+        namedVars['localFilePath'] = localFilePath
         namedVars['venueUrl'] = self.app.venueClient.GetVenue()
         
         # Gross KLUDGE for open shared
@@ -2358,6 +2364,8 @@ class ContentListPanel(wxPanel):
                 realCommand = "%s %s %s" % (shell, "/c", realCommand)
         else:
             realCommand = command % namedVars
+
+        print "CMD: <%s>" % realCommand
             
         aList = realCommand.split(' ')
         self.app.venueClient.processManager.start_process(aList[0], aList[1:])
