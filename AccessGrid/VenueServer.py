@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.46 2003-03-14 17:29:06 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.47 2003-03-19 02:57:26 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -161,7 +161,7 @@ class VenueServer(ServiceBase.ServiceBase):
         # Reinitialize the default venue
         #
         if len(self.defaultVenue) != 0 and self.defaultVenue in self.venues:
-            self.SetDefaultVenue(self.defaultVenue)
+            self.SetDefaultVenue(self.MakeVenueURI(self.defaultVenue))
         else:
             self.AddVenue(self.defaultVenueDescription)
 
