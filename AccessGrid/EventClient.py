@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventClient.py,v 1.10 2003-03-30 02:46:44 turam Exp $
+# RCS-ID:      $Id: EventClient.py,v 1.11 2003-03-30 13:24:23 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -152,7 +152,7 @@ if __name__ == "__main__":
         eventClient = EventClient((sys.argv[1], int(sys.argv[2])),
                                   sys.argv[3])
     else:
-        eventClient = EventClient()
+        eventClient = EventClient(('', 6500))
 
     eventClient.Start()
     

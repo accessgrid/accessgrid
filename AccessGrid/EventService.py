@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.11 2003-03-25 21:38:46 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.12 2003-03-30 13:24:04 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -192,9 +192,8 @@ if __name__ == "__main__":
   log.addHandler(logging.StreamHandler())
   log.setLevel(logging.DEBUG)
     
-  host = string.lower(socket.getfqdn())
   port = 6500
-  print "Creating new EventService at %s %d." % (host, port)
-  eventService = EventService((host, port))
+  print "Creating new EventService at %d." % port
+  eventService = EventService(('', port))
   eventService.AddChannel('Test')
   eventService.start()
