@@ -16,94 +16,169 @@
 # Also need to modify setup.py to change the version there to match
 # this snapshot version.
 #
-# Arguments:
-#   -o outputdir
-#   --shortname <short version name>
-#   --longname  <long version name>
-#
-
 import sys
 import os
 import os.path
 import time
 import re
 import win32api
+import win32con
 import getopt
+import _winreg
+from win32com.shell import shell, shellcon
 
 def usage():
-    print """
+    print "%s:" % sys.argv[0]
+    print "    -h|--help : print usage"
+    print "    -s|--sourcedir <directory> : source directory"
+    print "    -d|--destdir <directory> : destination directory"
+    print "    -t|--tempdir <directory> : temporary directory"
+    print "    -i|--innopath <directory> : path to isxtool"
+    print "    -l|--longname <name> : long name of the release"
+    print "    -n|--shortname <name> : short name of the release"
+    print "    -c|--checkoutcvs : get a fresh copy from cvs"
+    print "    -v|--verbose : be noisy"
 
- build_snapshot [-l] <longname> [-s] <shortname>
+def del_dir(path):
+    for file in os.listdir(path):
+        file_or_dir = os.path.join(path,file)
+        if os.path.isdir(file_or_dir) and not os.path.islink(file_or_dir):
+            #it's a directory reucursive call to function again
+            del_dir(file_or_dir) 
+        else:
+            try:
+                #it's a file, delete it
+                os.remove(file_or_dir) 
+            except:
+                #probably failed because it is not a normal file
+                win32api.SetFileAttributes(file_or_dir,
+                                           win32con.FILE_ATTRIBUTE_NORMAL)
+                #it's a file, delete it
+                os.remove(file_or_dir)
+        #delete the directory here
+        os.rmdir(path) 
 
- -l        set the long name of the package, i.e. "2.0 Beta 3" 
- -s        set the short name of the package, i.e. "2.0b3" 
-
-"""
-
+# Names for the software
 long_version_name = ""
 short_version_name = ""
 
+# Source Directory
+#  We assume the following software is in this directory:
+#    ag-rat, ag-vic, and AccessGrid
+SourceDir = r"C:\Software"
+
+# Temporary Directory
+#  This is where interim cruft is kept, it should be cleaned out every time
+TempDir = win32api.GetTempPath()
+
+#print "TempDir is: ", TempDir
+
+# Destination Directory
+#  This is where the installer is left at the end
+DestDir = r"C:\xfer"
+
+# Build Name
+#  This is the default name we use for the installer
+BuildTime = time.strftime("%Y-%m%d-%H%M%S")
+BuildName = BuildTime
+
+# Innosoft config file names
+iss_orig = "agtk.iss"
+iss_new  = "build_snap.iss"
+
+# CVS Flag
+checkoutnew = 0
+
+# Verbosity flag
+verbose = 0
+
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "l:s:" )
+    opts, args = getopt.getopt(sys.argv[1:], "n:s:d:t:i:l:n:chv",
+                               ["buildname", "sourcedir", "destdir",
+                                "tempdir", "innopath", "longname",
+                                "shortname", "checkoutcvs", "help",
+                                "verbose"])
 except:
-    # print help information and exit
     usage()
     sys.exit(2)
 
 for o, a in opts:
-    if o in ("-l", "--longname"):
+    if o in ("-n", "--buildname"):
+        BuildName = a
+    elif o in ("-s", "--sourcedir"):
+        SourceDir = a
+    elif o in ("-d", "--destdir"):
+        DestDir = a
+    elif o in ("-t", "--tempdir"):
+        TempDir = a
+    elif o in ("-i", "--innopath"):
+        innopath = a
+    elif o in ("-l", "--longname"):
         long_version_name = a
-        print "Long Name set to: ",long_version_name
-    if o in ("-s", "--shortname"):
+    elif o in ("-n", "--shortname"):
         short_version_name = a
-        print "Short name set to: ",short_version_name
+    elif o in ("-c", "--checkoutcvs"):
+        checkoutnew = 1
+    elif o in ("-h", "--help"):
+        usage()
+        sys.exit(0)
+    elif o in ("-v", "--verbose"):
+        verbose = 1
+    else:
+        usage()
+        sys.exit(0)
 
 # Obvious variables we can use are SYSTEMDRIVE and HOMEDRIVE.
-INSTDRIVE = os.getenv("HOMEDRIVE")
-
-build_base = INSTDRIVE + r"\temp\snap"
-
-build_tag = time.strftime("%Y-%m%d-%H%M")
-
-build_dir = os.path.join(build_base, build_tag)
+build_dir = os.path.join(TempDir, BuildTime)
 
 #
 # We keep a rat and vic directory around as these don't change much
 #
 
-rat_dir = INSTDRIVE + r"\AccessGridBuild\ag-rat"
-vic_dir = INSTDRIVE + r"\AccessGridBuild\ag-vic"
+rat_dir = os.path.join(SourceDir, "ag-rat")
+vic_dir = os.path.join(SourceDir, "ag-vic")
 
 #
 # Location of the Inno compiler
 #
 
-inno_compiler = INSTDRIVE + r"\Program Files\My Inno Setup Extensions 3\ISCC.exe"
+try:
+    ipreg = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+                               "Software\\Bjornar Henden\\ISTool\\Prefs")
+    innopath, type = _winreg.QueryValueEx(ipreg, "ExtFolder")
+    ip = os.path.join(innopath, "iscc.exe")
+    inno_compiler = win32api.GetShortPathName(ip)
+except WindowsError:
+    print "Cound't find ISXTool!"
 
-#
-# Mangle it to remove spaces; this also ensures it is present.
-#
+if verbose:
+    print "ISXTool is: ", inno_compiler
 
-inno_compiler = win32api.GetShortPathName(inno_compiler)
-print "compiler is ", inno_compiler
-
-print "builddir ", build_dir
 os.mkdir(build_dir)
 os.chdir(build_dir)
 
-cvsroot = ":pserver:anonymous@fl-cvs.mcs.anl.gov:/cvsroot"
+bd = build_dir
+build_dir = win32api.GetShortPathName(bd)
 
-os.environ['CVSROOT'] = cvsroot
+if verbose:
+    print "builddir ", build_dir
 
-if 1:
+if checkoutnew:
+    # Either we check out a copy
+    cvsroot = ":pserver:anonymous@fl-cvs.mcs.anl.gov:/cvsroot"
+
+    os.environ['CVSROOT'] = cvsroot
+
     cmd = '"cvs login"'
-    print "cmd=", cmd
+    if verbose:
+        print "cmd=", cmd
     (wr, rd) = os.popen4(cmd)
     wr.write("\n")
 
     while 1:
         l = rd.readline()
-        print "read ", l,
+        if verbose:
+            print "read ", l,
         if l == '':
             break
 
@@ -111,26 +186,35 @@ if 1:
     rd.close()
 
     os.system("cvs -z6 export -D now AccessGrid")
-
-#
-# Okay, we've got our code checked out. Go to the packaging
+    
+# Okay, we've got our code. Go to the packaging
 # directory and fix up the paths in the iss file
-#
+os.chdir(os.path.join(SourceDir, r"AccessGrid\packaging\windows"))
 
-os.chdir("AccessGrid\\packaging\\windows")
+# Open new (and old) innosoft setup files
+file = open(iss_orig)
+new_file = open(iss_new, "w")
 
-fp = open("ag-2.0beta.iss", "r")
-new_fp = open("build_snap.iss", "w")
+# build a bunch of regular expressions
+fix_srcdir_src = re.escape(r'C:\AccessGridBuild')
+fix_srcdir_dst = SourceDir.replace('\\', r'\\')
+if verbose:
+    print "S SRC:",  fix_srcdir_src, " S DST: ", fix_srcdir_dst
 
-fix_dir_src = re.escape(r'C:\AccessGridBuild')
-fix_dir_dst = build_dir.replace('\\', r'\\')
-print fix_dir_src, fix_dir_dst
+fix_dstdir_src = re.escape(r'C:\Software\AccessGrid-Build')
+fix_dstdir_dst = DestDir.replace('\\', r'\\')
+if verbose:
+    print "D SRC: ", fix_dstdir_src, " D DST: ", fix_dstdir_dst
 
 fix_vic_src = re.escape(r'C:\AccessGridBuild\ag-vic')
 fix_vic_dst = vic_dir.replace('\\', r'\\')
+if verbose:
+    print "V SRC: ", fix_vic_src, " V DST: ", fix_vic_dst
 
 fix_rat_src = re.escape(r'C:\AccessGridBuild\ag-rat')
 fix_rat_dst = rat_dir.replace('\\', r'\\')
+if verbose:
+    print "R SRC: ", fix_rat_src, " R DST: ", fix_rat_dst
 
 section_re = re.compile(r"\[\s*(\S+)\s*\]")
 prebuild_re = re.compile(r"^Name:\s+([^;]+);\s+Parameters:\s+([^;]+)")
@@ -138,58 +222,52 @@ prebuild_re = re.compile(r"^Name:\s+([^;]+);\s+Parameters:\s+([^;]+)")
 commands = []
 section = ""
 
-# Use this to help us replace C: with whatever drive we're using.
-drive_replace = re.compile('C:|c:')
+for line in file:
 
-for l in fp:
+    # Fix up vic, rat, source, and destination paths
+    line = re.sub(fix_vic_src, fix_vic_dst, line)
+    line = re.sub(fix_rat_src, fix_rat_dst, line)
+    line = re.sub(fix_srcdir_src, fix_srcdir_dst, line)
+    line = re.sub(fix_dstdir_src, fix_dstdir_dst, line)
 
-    l = re.sub(fix_vic_src, fix_vic_dst, l)
-    l = re.sub(fix_rat_src, fix_rat_dst, l)
-
-    l = re.sub(fix_dir_src, fix_dir_dst, l)
-
-    if l.startswith("#define AppVersionLong"):
+    # Fix up application version strings
+    if line.startswith("#define AppVersionLong"):
         if long_version_name != "":
-            l = '#define AppVersionLong "%s"\n' % (long_version_name)
+            line = '#define AppVersionLong "%s"\n' % (long_version_name)
         else:
-            l = '#define AppVersionLong "2.0 Snapshot %s"\n' % (build_tag)
-    elif l.startswith("#define AppVersionShort"):
+            line = '#define AppVersionLong "Snapshot %s"\n' % (BuildTime)
+    if line.startswith("#define AppVersionShort"):
         if short_version_name != "":
-            l = '#define AppVersionShort "%s"\n' % (short_version_name)
+            line = '#define AppVersionShort "%s"\n' % (short_version_name)
         else:
-            l = '#define AppVersionShort "2.0-%s"\n' % (build_tag)
+            line = '#define AppVersionShort "%s"\n' % (BuildTime)
 
-    # Replace a few specific occurences of C: with INSTDRIVE
-    if l.startswith("#define SourceDir") or l.startswith("#define OutputDir") or l.startswith("LogFile"):
-        l = drive_replace.sub(INSTDRIVE,l)
+    m = section_re.search(line)
 
-    m = section_re.search(l)
     if m:
         section = m.group(1)
-
+        
     if section == "_ISToolPreCompile":
-        m = prebuild_re.search(l)
+        m = prebuild_re.search(line)
         if m:
             cmd = m.group(1)
-            cmd = drive_replace.sub(INSTDRIVE,cmd)
             args = m.group(2)
-            args = drive_replace.sub(INSTDRIVE,args)
-            print "Have cmd='%s' args='%s'" % (cmd, args)
             commands.append((cmd, args))
-    new_fp.write(l)
+    new_file.write(line)
 
-fp.close()
-new_fp.close()
-
-#
-# We've created the new ISS file now.
-#
+# Close the new (and old) Innosoft setup files
+file.close()
+new_file.close()
 
 #
 # Run the stuff that is precompile section
 #
 
+print commands
+
 for cmd, args in commands:
+    if verbose:
+        print "Executing command: %s %s" % (cmd, args)
     rc = os.system(cmd + " " + args)
     if rc != 0:
         print "Command failed: %s %s" % (cmd, args)
@@ -199,4 +277,14 @@ for cmd, args in commands:
 # Now we can compile
 #
 
-os.system(inno_compiler + " " + "build_snap.iss")
+os.system(inno_compiler + " " + iss_new)
+
+#
+# Now we clean up
+#
+
+#os.remove(iss_new)
+
+del_dir(build_dir)
+del_dir(os.path.join(SourceDir, "AccessGrid\Release"))
+del_dir(os.path.join(SourceDir, "AccessGrid\build"))
