@@ -3,7 +3,7 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.54 2004-12-08 16:48:20 judson Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.55 2005-01-06 22:29:36 turam Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -74,16 +74,16 @@ def main():
     log = app.GetLog()
     Log.SetDefaultLevel(Log.ServiceManager, Log.DEBUG)
 
-    if not app.certificateManager.GetDefaultIdentity():
-        log.error('No default identity, check your certificates.')
-        print 'No default identity, check your certificates.'
-        sys.exit(-1)
-        
-    if not app.certificateManager.HaveValidProxy():
-        msg = 'No valid proxy; exiting.'
-        log.error(msg)
-        print msg
-        sys.exit(-1)
+#     if not app.certificateManager.GetDefaultIdentity():
+#         log.error('No default identity, check your certificates.')
+#         print 'No default identity, check your certificates.'
+#         sys.exit(-1)
+#         
+#     if not app.certificateManager.HaveValidProxy():
+#         msg = 'No valid proxy; exiting.'
+#         log.error(msg)
+#         print msg
+#         sys.exit(-1)
 
     port = app.GetOption("port")
         
@@ -101,6 +101,8 @@ def main():
     smi = AGServiceManagerI(gServiceManager)
     server.RegisterObject(smi,path="/ServiceManager")
     url = server.FindURLForObject(gServiceManager)
+    gServiceManager.SetName('%s:%d' % (hostname,port))
+    gServiceManager.SetUrl(url)
 
     if app.GetOption("nodeService") is not None:
         # Create a Node Service
@@ -136,11 +138,14 @@ def main():
             print "Failed to load default node config", e
 
     # Advertise the service
-    sp = ServiceDiscovery.Publisher(hostname,AGServiceManager.ServiceType,
-                                    url,port=port)
-    if app.GetOption('nodeService'):
-        ServiceDiscovery.Publisher(hostname,AGNodeService.ServiceType,
-                                   nsurl,port=port)
+    try:
+        sp = ServiceDiscovery.Publisher(hostname,AGServiceManager.ServiceType,
+                                        url,port=port)
+        if app.GetOption('nodeService'):
+            ServiceDiscovery.Publisher(hostname,AGNodeService.ServiceType,
+                                       nsurl,port=port)
+    except:
+        log.exception("Failure advertising service")
     
     # Keep the main thread busy so we can catch signals
     running = 1
