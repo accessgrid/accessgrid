@@ -2,14 +2,14 @@
 # Name:        AGServiceManager.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGServiceManager.py,v 1.52 2004-04-26 15:38:51 turam Exp $
+# RCS-ID:      $Id: AGServiceManager.py,v 1.53 2004-04-27 17:13:58 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGServiceManager.py,v 1.52 2004-04-26 15:38:51 turam Exp $"
+__revision__ = "$Id: AGServiceManager.py,v 1.53 2004-04-27 17:13:58 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -97,16 +97,15 @@ class AGServiceManager:
         """
         Add a service package to the service manager.  
         """
-        log.debug("AddService: %s v%f", serviceDescription.name, 
-                  serviceDescription.version)
+        log.debug("AddService: %s v %f u %s", serviceDescription.name, 
+                  serviceDescription.version,
+                  serviceDescription.servicePackageUri)
         
         # Get the service manager url (first time only)
         if not self.url:
             self.url = self.server.FindURLForObject(self)
 
-        #
         # Determine resource to assign to service
-        #
         resource = None
         if resourceToAssign != None and resourceToAssign != "None":
             foundResource = 0
@@ -117,6 +116,7 @@ class AGServiceManager:
                                   res.resource)
                     # should error out here later; for now,
                     # services aren't using the resources anyway
+                    log.warn("XXX Resource not found, but continuing anyway.")
                     foundResource = 1
                     break
 
