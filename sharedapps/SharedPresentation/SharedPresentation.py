@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Tom Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.30 2004-08-17 17:00:31 lefvert Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.31 2004-08-17 18:51:36 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -413,6 +413,7 @@ class SharedPresentationFrame(wxFrame):
             try:
                 self.loadCallback(slidesUrl)
             except:
+                self.log.exception('SharedPresentation.OpenCB: Can not load presentation %s'%(slidesUrl))
                 wxCallAfter(self.ShowMessage,"Can not load presentation %s"%slidesUrl, "Notification")
 
     def SyncCB(self,event):
@@ -678,6 +679,7 @@ class SharedPresentation:
         # Initialize state in the shared presentation
         self.url = url
         self.venueUrl = venueUrl
+       
         self.eventQueue = Queue.Queue(5)
         self.running = 0
         self.masterId = None
@@ -714,6 +716,11 @@ class SharedPresentation:
 
         # Connect to shared application service. 
         self.sharedAppClient.Join(self.url, clientProfile)
+
+        # Set venue url.
+        if not self.venueUrl:
+            self.venueUrl = self.sharedAppClient.GetVenueURL()
+               
 
         # Register callbacks with the Data Channel to handle incoming
         # events.
@@ -1115,6 +1122,7 @@ class SharedPresentation:
         self.log.debug("Method LoadPresentation called; url=(%s)", data[1])
 
         slidesUrl = data[1]
+        
         # If the slides URL begins with https, retrieve the slides
         # from the venue data store
        
@@ -1154,7 +1162,7 @@ class SharedPresentation:
         self.stepNum = 0
         
     def stripDatastorePrefix(self, url):
-        vproxy = Client.SecureHandle(venueURL).GetProxy()
+        vproxy = Client.SecureHandle(self.venueUrl).GetProxy()
         ds = vproxy.GetDataStoreInformation()
         ds_prefix = str(ds[0])
         url_beginning = url[:len(ds_prefix)]
@@ -1377,8 +1385,9 @@ class SharedPresentation:
             try:
                 DataStore.GSIHTTPDownloadFile(slidesUrl, tmpFile, None, None )
                 self.viewer.LoadPresentation(tmpFile)
+               
             except:
-                self.log.exception("#Can not load presentation %s"%slidesUrl)
+                self.log.exception("Can not load presentation %s"%slidesUrl)
                 wxCallAfter(self.controller.ShowMessage,
                             "Can not load presentation %s." %slidesUrl,
                             "Notification")
@@ -1399,7 +1408,7 @@ class SharedPresentation:
                
                 
             wxCallAfter(self.controller.SetSlides, slidesUrl)
-                      
+
         self.slideNum = 1
         self.stepNum = 0
         wxCallAfter(self.controller.SetSlideNum, self.slideNum)
@@ -1490,6 +1499,7 @@ class SharedPresentation:
                     self.Next()
 
             else:
+                self.log.error("SharedPresentation.LocalLoadVenue: Can not load presentation %s"%(self.presentation))
                 wxCallAfter(self.controller.ShowMessage,
                             "Can not load presentation %s." %self.presentation, "Notification")
                 self.slideNum = ''
