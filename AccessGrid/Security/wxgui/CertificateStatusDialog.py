@@ -1,5 +1,9 @@
 from wxPython.wx import *
 
+from AccessGrid import Toolkit
+import CertificateRequestTool
+import time
+
 class CertificateStatusDialog(wxDialog):
     '''
     Dialog showing submitted certificate requests.  It allows users to check status
@@ -24,7 +28,7 @@ class CertificateStatusDialog(wxDialog):
         self.getStatusButton = wxButton(self, -1, "Update Status")
         self.closeButton = wxButton(self, wxID_CLOSE, "Close")
 
-        self.proxyPanel = HTTPProxyConfigPanel(self)
+        self.proxyPanel = CertificateRequestTool.HTTPProxyConfigPanel(self)
         
         self.newRequestButton = wxButton(self, wxNewId(), "New Request")
 
@@ -117,7 +121,7 @@ class CertificateStatusDialog(wxDialog):
             return
 
         try:
-            certMgr = Toolkit.GetApplication().GetCertificateManager()
+            certMgr = Toolkit.Application.instance().GetCertificateManager()
             req = self.reqList[self.selectedItem][0]
             log.debug("Removing request %s", req.GetSubject())
             certMgr.GetCertificateRepository().RemoveCertificateRequest(req)
@@ -150,7 +154,7 @@ class CertificateStatusDialog(wxDialog):
                 fh.write(cert)
                 fh.close()
 
-                certMgr = Toolkit.GetApplication().GetCertificateManager()
+                certMgr = Toolkit.Application.instance().GetCertificateManager()
                 impCert = certMgr.ImportRequestedCertificate(tempfile)
 
                 MessageDialog(self,
@@ -187,7 +191,7 @@ class CertificateStatusDialog(wxDialog):
                                   
     def AddCertificates(self):
 
-        certMgr = Toolkit.GetApplication().GetCertificateManager()
+        certMgr = Toolkit.Application.instance().GetCertificateManager()
 
         #
         # reqList is a list of tuples (requestDescriptor, token, server, creationTime)
@@ -243,7 +247,7 @@ class CertificateStatusDialog(wxDialog):
 
         """
 
-        certMgr = Toolkit.GetApplication().GetCertificateManager()
+        certMgr = Toolkit.Application.instance().GetCertificateManager()
 
         proxyEnabled, proxyHost, proxyPort = self.proxyPanel.GetInfo()
         print "Check got pinfo ", proxyEnabled, proxyHost, proxyPort
