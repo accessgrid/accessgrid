@@ -36,7 +36,6 @@ class ImpressViewer:
 
     self.desktop -- Open Office desktop.  Files are loaded from here.
     self.doc -- the current presentation document.
-    self.controller -- the current presentation controller.
     """
     def __init__(self):
         """
@@ -156,7 +155,6 @@ class ImpressViewer:
         if not self.doc:
             self.doc = self.desktop.loadComponentFromURL("private:factory/simpress","_blank", 0, ()  )
 
-        self.controller = self.doc.getCurrentController()
         self.numPages = self.doc.getDrawPages().getCount()
         self.openFile = file
 
@@ -170,28 +168,28 @@ class ImpressViewer:
         This method moves to the next slide.
         """
         # Move to the next slide
-        current_page = self.controller.getCurrentPage()
+        current_page = self.doc.getCurrentController().getCurrentPage()
         current_page_number = current_page.getPropertyValue("Number")
         print "next:", current_page_number, self.numPages
         if current_page_number + 1 <= self.numPages:
             pages = self.doc.getDrawPages()
             # getByIndex is zero based, so adding one and subtracting one = add 0
             new_page_index = current_page_number
-            self.controller.setCurrentPage(pages.getByIndex(new_page_index))
+            self.doc.getCurrentController().setCurrentPage(pages.getByIndex(new_page_index))
 
     def Previous(self):
         """
         This method moves to the previous slide.
         """
         # Move to the previous slide
-        current_page = self.controller.getCurrentPage()
+        current_page = self.doc.getCurrentController().getCurrentPage()
         current_page_number = current_page.getPropertyValue("Number")
         if current_page_number - 1 >= 1:
             pages = self.doc.getDrawPages()
             new_page_number = current_page_number - 1
             # getByIndex is zero based, so subtract another 1
             new_page_index = new_page_number - 1
-            self.controller.setCurrentPage(pages.getByIndex(new_page_index))
+            self.doc.getCurrentController().setCurrentPage(pages.getByIndex(new_page_index))
 
     def GoToSlide(self, slide):
         """
@@ -202,7 +200,7 @@ class ImpressViewer:
             pages = self.doc.getDrawPages()
             # getByIndex is zero based, so subtract another 1
             goto_page_number = int(slide) - 1
-            self.controller.setCurrentPage(pages.getByIndex(goto_page_number))
+            self.doc.getCurrentController().setCurrentPage(pages.getByIndex(goto_page_number))
 
     def EndShow(self):
         """
@@ -227,7 +225,7 @@ class ImpressViewer:
         """
         This method returns the index of the current slide
         """
-        current_page = self.controller.getCurrentPage()
+        current_page = self.doc.getCurrentController().getCurrentPage()
         return int(current_page.getPropertyValue("Number"))
 
     def GetStepNum(self):
