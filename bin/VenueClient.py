@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.25 2003-02-06 14:44:55 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.26 2003-02-06 15:15:44 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -242,7 +242,8 @@ class VenueClientUI(wxApp, VenueClient):
             self.frame.venueListPanel.list.AddVenueDoor(exit)
 
         # Start text client
-        self.textClient = 
+#        self.textClient =
+
     def ExitVenue(self ):
         """
         Note: Overloaded from VenueClient
