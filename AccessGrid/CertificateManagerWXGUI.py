@@ -10,7 +10,7 @@ exit on Linux if the DISPLAY environment variable is not set.
 import time
 import string
 
-from OpenSSL import crypto
+from OpenSSL_AG import crypto
 from wxPython.wx import *
 
 from CertificateManager import CertificateManagerUserInterface, utc2tuple

@@ -45,7 +45,7 @@ try:
 except:
     HaveWin32Registry = 0
 
-from OpenSSL import crypto
+from OpenSSL_AG import crypto
 
 log = logging.getLogger("AG.CertificateManager")
 
