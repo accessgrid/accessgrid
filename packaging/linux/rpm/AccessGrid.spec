@@ -105,7 +105,6 @@ This module provides the components needed to run the Bridge Server.  This serve
 
 %prep
 %setup -n AccessGrid-2.2 -c
-[ -n "%{buildroot}" -a "%{buildroot}" != / ] && rm -rf %{buildroot}
 
 #
 # The following builds the package using setup.py
@@ -113,7 +112,7 @@ This module provides the components needed to run the Bridge Server.  This serve
 # then builds the package
 #
 
-#%build
+%build
 
 #
 # The following installs the package in the buildroot,
