@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.128 2004-02-20 20:15:14 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.129 2004-02-24 17:22:38 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.128 2004-02-20 20:15:14 lefvert Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.129 2004-02-24 17:22:38 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting.pyGlobus import Client
@@ -25,6 +25,8 @@ import cPickle
 import time
 
 import logging, logging.handlers
+
+from pyGlobus.io import GSITCPSocketException
 
 from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
@@ -46,7 +48,8 @@ from AccessGrid import DataStore
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 from AccessGrid.ProcessManager import ProcessManager
-import pyGlobus.io
+from AccessGrid import Toolkit
+from AccessGrid.VenueClientObserver import VenueClientObserver
 from AccessGrid.Descriptions import CreateDataDescription, CreateServiceDescription
 from AccessGrid.Descriptions import CreateApplicationDescription
 
@@ -71,7 +74,9 @@ class NetworkLocationNotFound(Exception):
 log = logging.getLogger("AG.VenueClient")
 log.setLevel(logging.WARN)
 
-class VenueClient( ServiceBase):
+
+
+class VenueClient(ServiceBase):
     """
     This is the client side object that maintains a stateful
     relationship with a Virtual Venue. This object provides the
@@ -84,7 +89,13 @@ class VenueClient( ServiceBase):
         """
         This client class is used on shared and personal nodes.
         """
-        self.profile = profile
+        if profile:
+            self.profile = profile
+        else:
+            self.profileFile = os.path.join(GetUserConfigDir(), "profile" )
+            self.profile = ClientProfile(self.profileFile)
+        
+        
         self.nodeServiceUri = self.defaultNodeServiceUri
         self.homeVenue = None
         self.houseKeeper = Scheduler()
@@ -95,7 +106,7 @@ class VenueClient( ServiceBase):
         self.state = None
 
         # takes time
-        self.CreateVenueClientWebService()
+        self.__CreateVenueClientWebService()
         self.__InitVenueData__()
         self.isInVenue = 0
         self.isIdentitySet = 0
@@ -109,7 +120,7 @@ class VenueClient( ServiceBase):
         self.pendingFollowers = dict()
         self.followerProfiles = dict()
         self.urlToFollow = None
-        self.eventSubscribers = []
+        self.observers = []
                
         # attributes for personal data store
         self.personalDataStorePrefix = "personalDataStore"
@@ -123,15 +134,14 @@ class VenueClient( ServiceBase):
         self.requests = [] 
 
         # Create personal data store
-        self.__createPersonalDataStore()
+        self.__CreatePersonalDataStore()
 
         # Manage the currently-exiting state
         self.exiting = 0
         self.exitingLock = threading.Lock()
 
-        self.client = None
-        self.clientHandle = None
         self.venueUri = None
+        self.venueProxy = None
 
         # Cache profiles in case we need to look at them later.
         # specifically, the cache makes it easier to add roles when
@@ -143,6 +153,10 @@ class VenueClient( ServiceBase):
 
         self.processManager = ProcessManager()
         
+    ###########################################################################################
+    #
+    # Private Methods
+
     def __InitVenueData__( self ):
         self.eventClient = None
         self.textClient = None
@@ -151,53 +165,7 @@ class VenueClient( ServiceBase):
         self.venueProxy = None
         self.privateId = None
 
-    def Heartbeat(self):
-        if self.eventClient != None:
-            isSuccess = 1
-            try:
-                self.eventClient.Send(HeartbeatEvent(self.venueId,
-                                                     self.privateId))
-                isSuccess = 1
-            except:
-                log.exception("Heartbeat: Heartbeat exception is caught, exit venue.")
-                isSuccess = 0
-
-            # Send whether Heartbeat succeeded or failed to UI.
-            for s in self.eventSubscribers:
-                log.debug("Heartbeat: Call heartbeat in subscribers.")
-                s.Heartbeat(isSuccess)
-
-            if len(self.eventSubscribers) == 0:
-                # If we don't have any event subscribers, we still have to stop
-                # the client.
-                log.debug("Heartbeat: We do not have event subsribers, so exit venue.")
-                self.ExitVenue()
-
-    def SetProfile(self, profile):
-        self.profile = profile
-        if(self.profile != None):
-           self.profile.venueClientURL = self.service.get_handle()
-                
-    def CreateVenueClientWebService(self):
-
-        # Authorization callback for the server
-        def AuthCallback(server, g_handle, remote_user, context):
-            return 1
-        
-        from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
-        port = MulticastAddressAllocator().AllocatePort()
-
-        self.server = Server.Server(port, auth_callback=AuthCallback)
-        self.service = self.server.CreateServiceObject("VenueClient")
-        self._bind_to_service( self.service )
-        self.server.run_in_thread()
-        
-        if(self.profile != None):
-            self.profile.venueClientURL = self.service.get_handle()
-            log.debug("CreateVenueClientWebService: venue client serving : %s"
-                      % self.profile.venueClientURL)
-
-    def __createPersonalDataStore(self):
+    def __CreatePersonalDataStore(self):
         """
         Creates the personal data storage and loads personal data
         from file to a dictionary of DataDescriptions. If the file is removed
@@ -236,32 +204,113 @@ class VenueClient( ServiceBase):
                 except:
                     log.exception("__createPersonalDataStore: Personal data could not be added")
 
-    # General EventHandler
-    # handler should have functions, AddUser, RemoveUser, etc.
-    def AddEventSubscriber(self, handler):
-        if handler != None:
-            self.eventSubscribers.append(handler)
-                    
+    def __CheckForInvalidClock(self):
+        """
+        Check to see if the local clock is out of synch, a common reason for a
+        failed authentication.
+
+        This routine only currently sets self.warningString, and should only be
+        invoked from the GSITCPSocketException-handling code in EnterVenue.
+
+        """
+
+        timeserver = "ntp-1.accessgrid.org"
+        timeout = 0.3
+        maxOffset = 10
+
+        try:
+            serverTime = GetSNTPTime(timeserver, timeout)
+        except:
+            log.exception("__CheckForValideClock: Connection to sntp server at %s failed", timeserver)
+            serverTime = None
+
+        if serverTime is not None:
+
+            diff = int(time.time() - serverTime)
+            absdiff = abs(diff)
+
+            if absdiff > maxOffset:
+
+                if diff > 0:
+                    direction = "fast"
+                else:
+                    direction = "slow"
+
+                self.warningString = ("Authorization failure connecting to server. \n" + \
+                                     "This may be due to the clock being incorrect on\n" + \
+                                     "your computer: it is %s seconds %s with respect\n" + \
+                                     "to the time server at %s.") % \
+                                     (absdiff, direction, timeserver)
+            else:
+                #
+                # Time is okay.
+                #
+                log.exception("__CheckForValideClock: failed; time is okay (offset=%s", diff)
+
+                self.warningString = "Authorization failure connecting to server."
+        else:
+            self.warningString = "Authorization failure connecting to server. \n" + \
+                                 "Please check the time on your computer; an incorrect\n" + \
+                                 "local clock can cause authorization to fail."
+
+
+    def __CreateVenueClientWebService(self):
+
+        # Authorization callback for the server
+        def AuthCallback(server, g_handle, remote_user, context):
+            return 1
+        
+        from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
+        port = MulticastAddressAllocator().AllocatePort()
+
+        self.server = Server.Server(port, auth_callback=AuthCallback)
+        self.service = self.server.CreateServiceObject("VenueClient")
+        self._bind_to_service( self.service )
+        self.server.run_in_thread()
+        
+        if(self.profile != None):
+            self.profile.venueClientURL = self.service.get_handle()
+            log.debug("__CreateVenueClientWebService: venue client serving : %s"
+                      % self.profile.venueClientURL)
+
+    def __Heartbeat(self):
+        if self.eventClient != None:
+            isSuccess = 1
+            try:
+                self.eventClient.Send(HeartbeatEvent(self.venueId,
+                                                     self.privateId))
+                isSuccess = 1
+            except:
+                log.exception("Heartbeat: Heartbeat exception is caught, exit venue.")
+                isSuccess = 0
+                self.ExitVenue()
+
+
+    # end Private Methods
+    #
+    ###########################################################################################
+
+    ###########################################################################################
     #
     # Event Handlers
-    #
+
     def AddUserEvent(self, event):
         log.debug("AddUserEvent: Got Add User Event")
 
-        data = event.data
+        profile = event.data
         
-        self.venueState.AddUser(data)
-        for s in self.eventSubscribers:
-            s.AddUserEvent(event)
+        self.venueState.AddUser(profile)
+        for s in self.observers:
+            s.AddUser(profile)
 
     def RemoveUserEvent(self, event):
         log.debug("RemoveUserEvent: Got Remove User Event")
 
-        data = event.data
+        profile = event.data
 
-        self.venueState.RemoveUser(data)
-        for s in self.eventSubscribers:
-            s.RemoveUserEvent(event)
+        self.venueState.RemoveUser(profile)
+        for s in self.observers:
+            s.RemoveUser(profile)
 
         log.debug("RemoveUserEvent: Got Remove User Event...done")
 
@@ -277,11 +326,11 @@ class VenueClient( ServiceBase):
     def ModifyUserEvent(self, event):
         log.debug("ModifyUserEvent: Got Modify User Event")
 
-        data = event.data
+        profile = event.data
 
-        self.venueState.ModifyUser(data)
-        for s in self.eventSubscribers:
-            s.ModifyUserEvent(event)
+        self.venueState.ModifyUser(profile)
+        for s in self.observers:
+            s.ModifyUser(profile)
 
     def AddDataEvent(self, event):
         log.debug("AddDataEvent: Got Add Data Event")
@@ -298,8 +347,8 @@ class VenueClient( ServiceBase):
             # persons data, don't react on events.
             return
 
-        for s in self.eventSubscribers:
-            s.AddDataEvent(event)
+        for s in self.observers:
+            s.AddData(data)
 
     def UpdateDataEvent(self, event):
         log.debug("UpdateDataEvent: Got Update Data Event")
@@ -315,8 +364,8 @@ class VenueClient( ServiceBase):
             # persons data, don't react on events.
             return
 
-        for s in self.eventSubscribers:
-               s.UpdateDataEvent(event)
+        for s in self.observers:
+            s.UpdateData(data)
 
     def RemoveDataEvent(self, event):
         log.debug("RemoveDataEvent: Got Remove Data Event")
@@ -331,16 +380,16 @@ class VenueClient( ServiceBase):
             # persons data, don't react on events.
             return
 
-        for s in self.eventSubscribers:
-            s.RemoveDataEvent(event)
+        for s in self.observers:
+            s.RemoveData(data)
                 
     def AddServiceEvent(self, event):
         log.debug("AddServiceEvent: Got Add Service Event")
 
-        data = event.data
-        self.venueState.AddService(data)
-        for s in self.eventSubscribers:
-            s.AddServiceEvent(event)
+        service = event.data
+        self.venueState.AddService(service)
+        for s in self.observers:
+            s.AddService(service)
 
     def UpdateServiceEvent(self, event):
         log.debug("UpdateServiceEvent: Got Update Service Event")
@@ -353,18 +402,18 @@ class VenueClient( ServiceBase):
     def RemoveServiceEvent(self, event):
         log.debug("RemoveServiceEvent: Got Remove Service Event")
 
-        data = event.data
-        self.venueState.RemoveService(data)
-        for s in self.eventSubscribers:
-            s.RemoveServiceEvent(event)
+        service = event.data
+        self.venueState.RemoveService(service)
+        for s in self.observers:
+            s.RemoveService(service)
 
     def AddApplicationEvent(self, event):
         log.debug("AddApplicationEvent: Got Add Application Event")
-              
-        data = event.data
-        self.venueState.AddApplication(data)
-        for s in self.eventSubscribers:
-            s.AddApplicationEvent(event)
+
+        app = event.data
+        self.venueState.AddApplication(app)
+        for s in self.observers:
+            s.AddApplication(app)
 
     def UpdateApplicationEvent(self, event):
         log.debug("UpdateApplicationEvent: Got Update Application Event")
@@ -375,35 +424,35 @@ class VenueClient( ServiceBase):
 
     def RemoveApplicationEvent(self, event):
         log.debug("RemoveApplicationEvent: Got Remove Application Event")
-              
-        data = event.data
-        self.venueState.RemoveApplication(data)
-        for s in self.eventSubscribers:
-            s.RemoveApplicationEvent(event)
+
+        app = event.data
+        self.venueState.RemoveApplication(app)
+        for s in self.observers:
+            s.RemoveApplication(app)
 
     def AddConnectionEvent(self, event):
         log.debug("AddConnectionEvent: Got Add Connection Event")
 
-        data = event.data
-        self.venueState.AddConnection(data)
-        for s in self.eventSubscribers:
-            s.AddConnectionEvent(event)
+        connection = event.data
+        self.venueState.AddConnection(connection)
+        for s in self.observers:
+            s.AddConnection(connection)
 
     def RemoveConnectionEvent(self, event):
         log.debug("RemoveConnectionEvent: Got Remove Connection Event")
 
-        data = event.data
-        self.venueState.RemoveConnection(data)
-        for s in self.eventSubscribers:
-            s.RemoveConnectionEvent(event)
+        connection = event.data
+        self.venueState.RemoveConnection(connection)
+        for s in self.observers:
+            s.RemoveConnection(connection)
 
     def SetConnectionsEvent(self, event):
         log.debug("SetConnectionEvent: Got Set Connections Event")
 
-        data = event.data
-        self.venueState.SetConnections(data)
-        for s in self.eventSubscribers:
-            s.SetConnectionsEvent(event)
+        connectionList = event.data
+        self.venueState.SetConnections(connectionList)
+        for s in self.observers:
+            s.SetConnections(connectionList)
 
     def AddStreamEvent(self, event):
         log.debug("AddStreamEvent: Got Add Stream Event")
@@ -414,8 +463,8 @@ class VenueClient( ServiceBase):
 
         if self.nodeServiceUri != None:
             Client.Handle(self.nodeServiceUri).GetProxy().AddStream(data)
-        for s in self.eventSubscribers:
-            s.AddStreamEvent(event)
+        for s in self.observers:
+            s.AddStream(event)
     
     def ModifyStreamEvent(self, event):
         log.debug("ModifyStreamEvent: Got Modify Stream Event")
@@ -427,8 +476,8 @@ class VenueClient( ServiceBase):
                 self.streamDescList[i] = data
 
         # Update event subscribers (the UI)
-        for s in self.eventSubscribers:
-            s.ModifyStreamEvent(event)
+        for s in self.observers:
+            s.ModifyStream(event)
         
     
     def RemoveStreamEvent(self, event):
@@ -443,9 +492,39 @@ class VenueClient( ServiceBase):
         if self.nodeServiceUri != None:
             Client.Handle(self.nodeServiceUri).GetProxy().RemoveStream(data)
 
-        for s in self.eventSubscribers:
-            s.RemoveStreamEvent(event)
+        for s in self.observers:
+            s.RemoveStream(event)
+            
+    def AddTextEvent(self,name, text):
+        log.debug("TextEvent: Got Text Event")
         
+        for s in self.observers:
+            s.AddText(name,text)
+            
+        
+            
+    # end Event Handlers
+    #
+    ###########################################################################################
+
+    ###########################################################################################
+    #
+    # Basic Implementation
+    
+        
+    def AddObserver(self, observer):
+        if not observer:
+            raise ValueError, "Attempt to add null Observer"
+
+        if not isinstance(observer,VenueClientObserver):
+            raise ValueError, "Attempt to add non-Observer"
+        
+        self.observers.append(observer)
+        
+    #
+    # Enter/Exit
+    #
+                    
     # Back argument is true if going to a previous venue (used in UI).
     def EnterVenue(self, URL, back=0):
         """
@@ -454,16 +533,15 @@ class VenueClient( ServiceBase):
         # Initialize a string of warnings that can be displayed to the user.
         self.warningString = ''
        
-        for s in self.eventSubscribers:
-            s.PreEnterVenue(URL, back)
+        app = Toolkit.GetApplication()
+        if not app.certificateManager.HaveValidProxy():
+            log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
+            app.certificateManager.CreateProxy()
+
 
         enterSuccess = 1
         try:
             # if this venue url has a valid web service then enter venue
-            self.venueUri = URL
-            
-            self.clientHandle = Client.Handle(self.venueUri)
-            self.client = self.clientHandle.GetProxy()
 
             # catch unauthorized SOAP calls to EnterVenue
             securityManager = AccessControl.GetSecurityManager()
@@ -474,7 +552,7 @@ class VenueClient( ServiceBase):
 
             try:
                 Client.Handle( URL ).IsValid()
-            except pyGlobus.io.GSITCPSocketException, e:
+            except GSITCPSocketException, e:
                 if e.args[0] == 'an authentication operation failed':
                     self.__CheckForInvalidClock()
 
@@ -508,9 +586,11 @@ class VenueClient( ServiceBase):
             #
             # Enter the venue
             #
+            self.venueUri = URL
+            self.venueProxy = Client.Handle( URL ).get_proxy()
 
             log.debug("EnterVenue: Invoke venue enter")
-            (venueState, self.privateId, self.streamDescList ) = Client.Handle( URL ).get_proxy().Enter( self.profile )
+            (venueState, self.privateId, self.streamDescList ) = self.venueProxy.Enter( self.profile )
 
 
             #
@@ -580,7 +660,6 @@ class VenueClient( ServiceBase):
                                           bs)
             self.venueUri = URL
             self.venueId = self.venueState.GetUniqueId()
-            self.venueProxy = Client.Handle( URL ).get_proxy()
 
             host, port = venueState.eventLocation
         
@@ -622,7 +701,7 @@ class VenueClient( ServiceBase):
             self.eventClient.Send(ConnectEvent(self.venueState.uniqueId,
                                                self.privateId))
                                
-            self.heartbeatTask = self.houseKeeper.AddTask(self.Heartbeat, 5)
+            self.heartbeatTask = self.houseKeeper.AddTask(self.__Heartbeat, 5)
             self.heartbeatTask.start()
 
             #
@@ -631,11 +710,12 @@ class VenueClient( ServiceBase):
             self.dataStoreUploadUrl = self.venueProxy.GetUploadDescriptor()
         
             #
-            # Connect the venueclient to the text stuff, hook into UI later
+            # Connect the venueclient to the text client
             #
             self.textClient = TextClient(self.profile,
                                          self.venueState.textLocation)
             self.textClient.Connect(self.venueState.uniqueId, self.privateId)
+            self.textClient.RegisterOutputCallback(self.AddTextEvent)
             
             # 
             # Update the node service with stream descriptions
@@ -653,7 +733,7 @@ class VenueClient( ServiceBase):
             # Cache profiles from venue.
             for client in self.venueState.clients.values():
                 self.UpdateProfileCache(client)
-
+                
             # Finally, set the flag that we are in a venue
             self.isInVenue = 1
 
@@ -664,7 +744,7 @@ class VenueClient( ServiceBase):
             if errorInNode:
                 self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences-My Node" from the main menu'
 
-        except pyGlobus.io.GSITCPSocketException, e:
+        except GSITCPSocketException, e:
             enterSuccess = 0
 
             log.error("EnterVenue: globus tcp exception: %s", e.args)
@@ -689,70 +769,21 @@ class VenueClient( ServiceBase):
             if isinstance(e, faultType):
                 self.warningString = str(e.faultstring)
 
-        for s in self.eventSubscribers:
+        for s in self.observers:
             # back is true if user just hit the back button.
             # enterSuccess is true if we entered.
-            s.EnterVenue(URL, back, self.warningString, enterSuccess)
+            s.EnterVenue(URL, self.warningString, enterSuccess)
+
+        try:
+            self.LeadFollowers()
+        except:
+            log.exception("Error leading followers")
+            self.warningString += '\nError leading followers'
+
 
         return self.warningString
         
     EnterVenue.soap_export_as = "EnterVenue"
-
-    def GetEventChannelId(self):
-        return self.venueState.GetUniqueId()
-
-    def SendEvent(self,event):
-        self.eventClient.Send(event)
-
-    def __CheckForInvalidClock(self):
-        """
-        Check to see if the local clock is out of synch, a common reason for a
-        failed authentication.
-
-        This routine only currently sets self.warningString, and should only be
-        invoked from the GSITCPSocketException-handling code in EnterVenue.
-
-        """
-
-        timeserver = "ntp-1.accessgrid.org"
-        timeout = 0.3
-        maxOffset = 10
-
-        try:
-            serverTime = GetSNTPTime(timeserver, timeout)
-        except:
-            log.exception("__CheckForValideClock: Connection to sntp server at %s failed", timeserver)
-            serverTime = None
-
-        if serverTime is not None:
-
-            diff = int(time.time() - serverTime)
-            absdiff = abs(diff)
-
-            if absdiff > maxOffset:
-
-                if diff > 0:
-                    direction = "fast"
-                else:
-                    direction = "slow"
-
-                self.warningString = ("Authorization failure connecting to server. \n" + \
-                                     "This may be due to the clock being incorrect on\n" + \
-                                     "your computer: it is %s seconds %s with respect\n" + \
-                                     "to the time server at %s.") % \
-                                     (absdiff, direction, timeserver)
-            else:
-                #
-                # Time is okay.
-                #
-                log.exception("__CheckForValideClock: failed; time is okay (offset=%s", diff)
-
-                self.warningString = "Authorization failure connecting to server."
-        else:
-            self.warningString = "Authorization failure connecting to server. \n" + \
-                                 "Please check the time on your computer; an incorrect\n" + \
-                                 "local clock can cause authorization to fail."
-
 
     def LeadFollowers(self):
         #
@@ -762,7 +793,7 @@ class VenueClient( ServiceBase):
             try:
                 Client.Handle( profile.venueClientURL ).get_proxy().EnterVenue(self.venueUri, 0)
             except:
-                log.exception("LeadFollowers::Exception while leading follower")
+                raise Exception("LeadFollowers::Exception while leading follower")
 
     def ExitVenue( self ):
         """
@@ -782,7 +813,7 @@ class VenueClient( ServiceBase):
         self.exitingLock.release()
 
         # Tell UI and others that we are exiting.
-        for s in self.eventSubscribers:
+        for s in self.observers:
             s.ExitVenue()
 
         # Stop sending heartbeats
@@ -880,163 +911,7 @@ class VenueClient( ServiceBase):
         self.exitingLock.acquire()
         self.exiting = 0
         self.exitingLock.release()
-     
-    def GetVenue( self ):
-        """
-        GetVenue gets the venue the client is currently in.
-        """
-        return self.venueUri
-        
-    def GetHomeVenue( self ):
-        """
-        GetHomeVenue returns the default venue for this venue client.
-        """
-        return self.homeVenue
-        
-    def SetHomeVenue( self, venueURL):
-        """
-        SetHomeVenue sets the default venue for this venue client.
-        """
-        self.homeVenue = venueURL
 
-    def SetNodeServiceUri( self, nodeServiceUri ):
-        """
-        Bind the given node service to this venue client
-        """
-        self.nodeServiceUri = nodeServiceUri
-
-        # assume that when the node service uri changes, the node service
-        # needs identity info
-        self.isIdentitySet = 0
-
-    #
-    # Method support for personal data
-    #
-
-    def GetDataStoreInformation(self):
-        """
-        Retrieve an upload descriptor and a URL to personal DataStore 
-        
-        **Returns:**
-        
-        *(upload description, url)* the upload descriptor to the DataStore
-        and the url to the DataStore SOAP service.
-        
-        """
-               
-        if self.dataStore is None:
-            return ""
-        else:
-            return self.dataStore.GetUploadDescriptor(), self.dataStore.GetLocation()
-        
-    GetDataStoreInformation.soap_export_as = "GetDataStoreInformation"
-
-    def GetDataDescriptions(self):
-        '''
-        Retreive data in the DataStore as a list of DataDescriptions.
-        
-        **Returns**
-            *dataDescriptionList* A list of DataDescriptions representing data currently in the DataStore
-        '''
-        dataDescriptionList = self.dataStore.GetDataDescriptions()
-        
-        return dataDescriptionList
-
-    GetDataDescriptions.soap_export_as = "GetDataDescriptions"
-
-    def RemoveData(self, data, ownerProfile):
-        """
-        This method removes a data from the venue. If the data is personal, this method
-        also removes the data from the personal data storage.
-        
-        **Arguments:**
-        
-        *data* The DataDescription we want to remove from vnue
-        """
-        log.debug("Remove data: %s from venue" %data.name)
-
-        dataList = []
-        dataList.append(data)
-    
-        if data.type == None or data.type == 'None':
-            # Venue data
-            self.venueProxy.RemoveData(data)
-            
-        elif(data.type == self.profile.publicId):
-            # My data
-            self.dataStore.RemoveFiles(dataList)
-            self.eventClient.Send(RemoveDataEvent(self.GetEventChannelId(), data))
-            
-        else:
-            # Ignore this until we have authorization in place.
-            raise NotAuthorizedError
-            
-            # Somebody else's personal data
-
-            #if ownerProfile != None:
-            #    uploadDescriptor, dataStoreUrl = Client.Handle(ownerProfile.venueClientURL).get_proxy().GetDataStoreInformation()
-            #    Client.Handle(dataStoreUrl).get_proxy().RemoveFiles(dataList)
-
-    def ModifyData(self, data):
-        log.debug("Modify data: %s from venue" %data.name)
-        
-        if data.type == None or data.type == 'None':
-            # Venue data
-            self.venueProxy.ModifyData(data)
-            
-        elif(data.type == self.profile.publicId):
-            # My data
-            self.dataStore.ModifyData(data)
-            self.eventClient.Send(UpdateDataEvent(self.GetEventChannelId(), data))
-            
-        else:
-            # Ignore this until we have authorization in place.
-            raise NotAuthorizedError
-                        
-    def GetPersonalData(self, clientProfile):
-        '''
-        Get personal data from client
-        
-        **Arguements**
-            *clientProfile* of the person we want to get data from
-        '''
-        url = clientProfile.venueClientURL
-        id = clientProfile.publicId
-
-        #
-        # After initial request, personal data will be updated via events.
-        #
-
-        if not id in self.requests:
-            log.debug("GetPersonalData: The client has NOT been queried for personal data yet %s", clientProfile.name)
-            self.requests.append(id)
-                    
-            #
-            # If this is my data, ignore remote SOAP call
-            #
-                       
-            if url == self.profile.venueClientURL:
-                log.debug('GetPersonalData: I am trying to get my own data')
-                return self.dataStore.GetDataDescriptions()
-            else:
-                log.debug("GetPersonalData: This is somebody else's data")
-                try:
-                    dataDescriptionList = Client.Handle(url).get_proxy().GetDataDescriptions()
-                except:
-                    log.exception("GetPersonalData: GetDataDescriptions call failed")
-                    raise GetDataDescriptionsError()
-                
-                dataList = []
-                
-                for data in dataDescriptionList:
-                    dataDesc = CreateDataDescription(data)
-                    dataList.append( dataDesc )
-                    
-                return dataList
-        
-        else:
-            log.debug("GetPersonalData: The client has been queried for personal %s" %clientProfile.name)
-                        
          
     #
     # Method support for FOLLOW
@@ -1089,7 +964,7 @@ class VenueClient( ServiceBase):
      
         response = 1
 
-        # For now, the base VenueClient authorizes every Lead request
+        # For now, the VenueClient authorizes every Lead request
             
         self.SendLeadResponse(clientProfile,response)
 
@@ -1116,8 +991,7 @@ class VenueClient( ServiceBase):
     def LeadResponse(self, leaderProfile, isAuthorized):
         """
         LeadResponse is called by other venue clients to respond to 
-        lead requests sent by this client.  A UI client would override
-        this method to give the user visual feedback to the Lead request.
+        lead requests sent by this client.  
         """
 
         # Detect responses from clients other than the pending leader
@@ -1136,7 +1010,7 @@ class VenueClient( ServiceBase):
             log.debug("LeadResponse: Leader has rejected request to lead you: %s", leaderProfile.name)
         self.pendingLeader = None
 
-        for s in self.eventSubscribers:
+        for s in self.observers:
             s.LeadResponse(leaderProfile, isAuthorized)
 
     LeadResponse.soap_export_as = "LeadResponse"
@@ -1172,6 +1046,7 @@ class VenueClient( ServiceBase):
     #
     # Method support for LEAD
     #
+    
     def Lead( self, followerProfileList ):
         """
         Lead encapsulates the call to tell another client to follow this client
@@ -1208,7 +1083,7 @@ class VenueClient( ServiceBase):
         """
         response = 1
 
-        # For now, the base VenueClient authorizes every Lead request
+        # For now, the VenueClient authorizes every Lead request
         self.SendFollowResponse(leaderProfile,response)
 
     def SendFollowResponse(self, leaderProfile, response):
@@ -1256,6 +1131,9 @@ class VenueClient( ServiceBase):
 
     FollowResponse.soap_export_as = "FollowResponse"
     
+    #
+    # NodeService-related calls
+    #
 
     def UpdateNodeService(self):
         """
@@ -1313,6 +1191,295 @@ class VenueClient( ServiceBase):
             raise NetworkLocationNotFound("transport=%s; provider=%s %s" % 
                                           (self.transport, self.provider.name, self.provider.location))
     
+    def SendEvent(self,event):
+        self.eventClient.Send(event)
+        
+        
+
+    def Shutdown(self):
+
+        #
+        # stop personal data server
+        #  
+        if self.transferEngine:
+            self.transferEngine.stop()
+
+        if self.server:
+            self.server.Stop()
+
+        if self.dataStore:
+            self.dataStore.Shutdown()
+
+    def UpdateProfileCache(self, profile):
+        try:
+            self.cache.updateProfile(profile)
+        except InvalidProfileException:
+            log.info("UpdateProfileCache: InvalidProfile when storing a venue user's profile in the cache.")
+            
+
+    #
+    # Venue calls
+    #
+
+    def UpdateClientProfile(self,profile):
+        self.venueProxy.UpdateClientProfile(profile)
+        
+    def CreateApplication(self, appName, appDescription, appMimeType):
+        self.venueProxy.CreateApplication(appName,appDescription,appMimeType)
+
+    def DestroyApplication(self,appId):
+        self.venueProxy.DestroyApplication(appId)
+        
+    def AddService(self,serviceDescription):
+        self.venueProxy.AddService(serviceDescription)
+            
+            
+        
+    def RemoveService(self,serviceDescription):
+        self.venueProxy.RemoveService(serviceDescription)
+        
+    def RemoveData(self, data):
+        """
+        This method removes a data from the venue. If the data is personal, this method
+        also removes the data from the personal data storage.
+        
+        **Arguments:**
+        
+        *data* The DataDescription we want to remove from vnue
+        """
+        log.debug("Remove data: %s from venue" %data.name)
+
+        dataList = []
+        dataList.append(data)
+    
+        if data.type == None or data.type == 'None':
+            # Venue data
+            self.venueProxy.RemoveData(data)
+            
+        elif(data.type == self.profile.publicId):
+            # My data
+            self.dataStore.RemoveFiles(dataList)
+            self.eventClient.Send(RemoveDataEvent(self.GetEventChannelId(), data))
+            
+        else:
+            # Ignore this until we have authorization in place.
+            raise NotAuthorizedError
+
+    def ModifyData(self, data):
+        log.debug("Modify data: %s from venue" %data.name)
+        
+        if data.type == None or data.type == 'None':
+            # Venue data
+            self.venueProxy.ModifyData(data)
+            
+        elif(data.type == self.profile.publicId):
+            # My data
+            self.dataStore.ModifyData(data)
+            self.eventClient.Send(UpdateDataEvent(self.GetEventChannelId(), data))
+            
+        else:
+            # Ignore this until we have authorization in place.
+            raise NotAuthorizedError
+                        
+            
+    #
+    # Process startup
+    #
+        
+    def StartProcess(self,command,argList):
+        pid = self.processManager.start_process(command,argList)
+        
+    #
+    # TextClient wrapping
+    #
+        
+    def SendText(self,text):
+        self.textClient.Input(text)
+        
+    # end Basic Implementation
+    #
+    ###########################################################################################
+
+    ###########################################################################################
+    #
+    # Accessors
+    
+
+    #
+    # Venue State
+    #
+    
+    def GetVenueState(self):
+        return self.venueState
+        
+    def GetEventChannelId(self):
+        return self.venueState.GetUniqueId()
+
+    def GetVenueDataDescriptions(self):
+        return self.venueState.data.values()
+
+    def GetVenue( self ):
+        """
+        GetVenue gets the venue the client is currently in.
+        """
+        return self.venueUri
+        
+    def GetVenueName(self):
+        return self.venueState.name
+        
+    def GetDataStoreUploadUrl(self):
+        return self.dataStoreUploadUrl
+        
+    #
+    # Personal Data
+    #
+
+    def GetDataStoreInformation(self):
+        """
+        Retrieve an upload descriptor and a URL to personal DataStore 
+        
+        **Returns:**
+        
+        *(upload description, url)* the upload descriptor to the DataStore
+        and the url to the DataStore SOAP service.
+        
+        """
+               
+        if self.dataStore is None:
+            return ""
+        else:
+            return self.dataStore.GetUploadDescriptor(), self.dataStore.GetLocation()
+        
+    GetDataStoreInformation.soap_export_as = "GetDataStoreInformation"
+
+    def GetDataDescriptions(self):
+        '''
+        Retreive data in the DataStore as a list of DataDescriptions.
+        
+        **Returns**
+            *dataDescriptionList* A list of DataDescriptions representing data currently in the DataStore
+        '''
+        dataDescriptionList = self.dataStore.GetDataDescriptions()
+        
+        return dataDescriptionList
+
+    GetDataDescriptions.soap_export_as = "GetDataDescriptions"
+
+    def GetPersonalData(self, clientProfile):
+        '''
+        Get personal data from client
+        
+        **Arguements**
+            *clientProfile* of the person we want to get data from
+        '''
+        url = clientProfile.venueClientURL
+        id = clientProfile.publicId
+
+        #
+        # After initial request, personal data will be updated via events.
+        #
+
+        if not id in self.requests:
+            log.debug("GetPersonalData: The client has NOT been queried for personal data yet %s", clientProfile.name)
+            self.requests.append(id)
+                    
+            #
+            # If this is my data, ignore remote SOAP call
+            #
+                       
+            if url == self.profile.venueClientURL:
+                log.debug('GetPersonalData: I am trying to get my own data')
+                return self.dataStore.GetDataDescriptions()
+            else:
+                log.debug("GetPersonalData: This is somebody else's data")
+                try:
+                    dataDescriptionList = Client.Handle(url).get_proxy().GetDataDescriptions()
+                except:
+                    log.exception("GetPersonalData: GetDataDescriptions call failed")
+                    raise GetDataDescriptionsError()
+                
+                dataList = []
+                
+                for data in dataDescriptionList:
+                    dataDesc = CreateDataDescription(data)
+                    dataList.append( dataDesc )
+                    
+                return dataList
+        
+        else:
+            log.debug("GetPersonalData: The client has been queried for personal %s" %clientProfile.name)
+            
+    def GetSubjectRoles(self):
+        return self.venueProxy.DetermineSubjectRoles()    
+        
+                         
+    #
+    # NodeService Info
+    #
+        
+    def SetNodeUrl(self, url):
+        """
+        This method sets the node service url
+
+        **Arguments:**
+        
+        *url* The string including the new node url address
+        """
+        log.debug("SerNodeUrl: Set node service url:  %s" %url)
+        self.nodeServiceUri = url
+
+        # assume that when the node service uri changes, the node service
+        # needs identity info
+        self.isIdentitySet = 0
+        
+    def GetNodeServiceUri(self):
+        return self.nodeServiceUri
+
+    def SetVideoEnabled(self,enableFlag):
+        Client.Handle(self.nodeServiceUri).GetProxy().SetServiceEnabledByMediaType("video",enableFlag)
+        
+    def SetAudioEnabled(self,enableFlag):
+        Client.Handle(self.nodeServiceUri).GetProxy().SetServiceEnabledByMediaType("audio",enableFlag)
+
+    #
+    # User Info
+    #
+
+    def SetProfile(self, profile):
+        self.profile = profile
+        if(self.profile != None):
+           self.profile.venueClientURL = self.service.get_handle()
+
+    def GetProfile(self):
+        return self.profile
+        
+    def SaveProfile(self):
+        self.profile.Save(self.profileFile)
+        
+    #
+    # Bridging Info
+    #
+        
+    def GetNetworkLocationProviders(self):
+        """
+        GetNetworkLocationProviders returns a list of entities providing
+        network locations to the current venue.
+
+        Note:  To do this, it looks for providers in the first stream.
+               For now, this assumption is safe.
+        """
+
+        transport = 'unicast'
+
+        providerList = []
+        if self.streamDescList and self.streamDescList[0].__dict__.has_key('networkLocations'):
+            networkLocations = self.streamDescList[0].networkLocations
+            for netLoc in networkLocations:
+                if netLoc.type == transport:
+                    providerList.append(netLoc.profile)
+
+        return providerList
+                    
     def SetProvider(self,provider):
         self.provider = provider
 
@@ -1334,56 +1501,35 @@ class VenueClient( ServiceBase):
                 for netloc in stream.networkLocations:
                     transportDict[netloc.type] = 1
         return transportDict.keys()
-            
 
-    def SetNodeUrl(self, url):
-        """
-        This method sets the node service url
-
-        **Arguments:**
+    #
+    # Other
+    #
+    
+    def IsInVenue(self):
+        return self.isInVenue
         
-        *url* The string including the new node url address
-        """
-        log.debug("SerNodeUrl: Set node service url:  %s" %url)
-        self.nodeServiceUri = url
-
-    def Shutdown(self):
-
-        #
-        # stop personal data server
-        #  
-        if self.transferEngine:
-            self.transferEngine.stop()
-
-        if self.server:
-            self.server.Stop()
-
-        if self.dataStore:
-            self.dataStore.Shutdown()
-
-    def GetNetworkLocationProviders(self):
-        """
-        GetNetworkLocationProviders returns a list of entities providing
-        network locations to the current venue.
-
-        Note:  To do this, it looks for providers in the first stream.
-               For now, this assumption is safe.
-        """
-
-        transport = 'unicast'
-
-        providerList = []
-        if self.streamDescList and self.streamDescList[0].__dict__.has_key('networkLocations'):
-            networkLocations = self.streamDescList[0].networkLocations
-            for netLoc in networkLocations:
-                if netLoc.type == transport:
-                    providerList.append(netLoc.profile)
-
-        return providerList
-                    
-    def UpdateProfileCache(self, profile):
+    def IsVenueAdministrator(self):
+        # Determine if we are an administrator so we can add
+        # administrator features to UI.
+        isVenueAdministrator = 0
         try:
-            self.cache.updateProfile(profile)
-        except InvalidProfileException:
-            log.info("UpdateProfileCache: InvalidProfile when storing a venue user's profile in the cache.")
-            
+            if "Venue.Administrators" in self.GetSubjectRoles():
+                isVenueAdministrator = 1
+            else:
+                isVenueAdministrator = 0
+        except Exception, e:
+            log.exception(e)
+            isVenueAdministrator = 0
+            if e.faultstring == "No method DetermineSubjectRoles found":
+                log.info("Server has no method DetermineSubjectRoles.  Probably 2.0 server.")
+            else:
+                log.exception(e)
+                
+        return isVenueAdministrator
+
+    def GetInstalledApps(self):
+        app = Toolkit.GetApplication()
+        appdb = app.GetAppDatabase()
+        appDescList = appdb.ListAppsAsAppDescriptions()
+        return appDescList
