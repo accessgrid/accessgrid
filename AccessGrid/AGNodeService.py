@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.83 2004-09-09 22:12:12 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.84 2004-09-10 22:12:37 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.83 2004-09-09 22:12:12 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.84 2004-09-10 22:12:37 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -892,19 +892,6 @@ class AGNodeServiceI(SOAPInterface):
         return self.impl.AddService(serviceDescription, serviceManagerUri, 
                     resource, serviceConfig )
 
-    def GetAvailableServices(self):
-        """
-        Interface to get a list of available services
-
-        **Arguments:**
-        **Raises:**
-
-        **Returns:**
-            a list of AGServiceDescriptions
-        """
-
-        return self.impl.GetAvailableServices()
-
     def GetServices(self):
         """
         Interface to get a list of services
@@ -1134,16 +1121,6 @@ class AGNodeServiceIW(SOAPIWrapper):
                     resourceToAssign, serviceConfig )
         serviceDescription = CreateAGServiceDescription(serviceDescStruct)
         return serviceDescription
-
-    def GetAvailableServices(self):
-        svcList = list()
-
-        services = self.proxy.GetAvailableServices()
-
-        for s in services:
-            svcList.append(CreateAGServiceDescription(s))
-        
-        return svcList
 
     def GetServices(self):
         svcList = list()
