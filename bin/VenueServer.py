@@ -4,7 +4,7 @@
 # Purpose:     This serves Venues.
 # Author:      Ivan R. Judson
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.20 2003-05-08 22:04:15 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.21 2003-05-09 20:47:21 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -20,12 +20,16 @@ from AccessGrid.hosting.pyGlobus import Server, ServiceBase
 from AccessGrid.VenueServer import VenueServer
 from AccessGrid.Utilities import HaveValidProxy
 from AccessGrid.Platform import GPI
+from AccessGrid import Toolkit
 
 # defaults
 running = 0
 port = 8000
 configFile = None
 logFile = "VenueServer.log"
+identityCert = None
+identityKey = None
+
 
 # Signal Handler for clean shutdown
 def SignalHandler(signum, frame):
@@ -50,11 +54,12 @@ def Usage():
     print "    -p|--port <int> : <port number to listen on>"
     print "    -l|--logFile <filename> : log file name"
     print "    -c|--configFile <filename> : config file name"
-    
+    print "    --cert <filename>: identity certificate"
+    print "    --key <filename>: identity certificate's private key"
 # Parse command line options
 try:
     opts, args = getopt.getopt(sys.argv[1:], "p:l:c:hd",
-                               ["port", "logfile", "configfile", "help", "debug"])
+                               ["port=", "logfile=", "configfile=", "help", "debug", "key=", "cert="])
 except getopt.GetoptError:
     Usage()
     sys.exit(2)
@@ -70,6 +75,10 @@ for o, a in opts:
         logFile = a
     elif o in ("-c", "--configFile"):
         configFile = a
+    elif o == "--key":
+        identityKey = a
+    elif o == "--cert":
+        identityCert = a
     elif o in ("-h", "--help"):
         Usage()
         sys.exit(0)
@@ -87,9 +96,46 @@ if debugMode:
     hdlr.setFormatter(fmt)
     log.addHandler(hdlr)
 
+if identityCert is not None or identityKey is not None:
+    #
+    # Sanity check on identity cert stuff
+    #
+
+    if identityCert is None or identityKey is None:
+        log.critical("Both a certificate and key must be provided")
+        print "Both a certificate and key must be provided"
+        sys.exit(0)
+        
+    #
+    # Init toolkit with explicit identity.
+    #
+
+    app = Toolkit.ServiceApplicationWithIdentity(identityCert, identityKey)
+
+else:
+    #
+    # Init toolkit with standard environment.
+    #
+
+    app = Toolkit.CmdlineApplication()
+
+app.Initialize()
+
 # Real first thing we do is get a sane environment
-if not HaveValidProxy():
-    GPI()
+# if not HaveValidProxy():
+#     GPI()
+
+#
+# Verify: Try to get our identity
+#
+
+from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
+try:
+    me = GetDefaultIdentityDN()
+    log.debug("VenueServer running as %s", me)
+except:
+    log.exception("Could not get identity: execution environment is not correct")
+    sys.exit(1)
 
 # Second thing we do is create a hosting environment
 hostingEnvironment = Server.Server(port, auth_callback=AuthCallback)
