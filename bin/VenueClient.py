@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.237 2003-10-21 20:56:45 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.238 2003-10-21 21:04:41 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -861,6 +861,9 @@ class VenueClientUI(VenueClientEventSubscriber):
 
     def ExitVenue(self):
         wxCallAfter(self.frame.venueListPanel.CleanUp)
+
+        # Disable menus
+        wxCallAfter(self.frame.HideMenu)
 
     def __setHistory(self, uri, back):
         """
