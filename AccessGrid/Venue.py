@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.64 2003-03-30 02:49:26 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.65 2003-03-31 21:48:22 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -62,6 +62,7 @@ class Venue(ServiceBase.ServiceBase):
         should use for storing its files.
 
         """
+        log.debug("------------ STARTING VENUE")
         self.server = server
         self.name = name
         self.description = description
@@ -82,6 +83,8 @@ class Venue(ServiceBase.ServiceBase):
         #
         # Create the directory to hold the venue's data.
         #
+
+        log.debug("------------ data store location: %s"%dataStoreLocation)
         
         if dataStoreLocation is None or not os.path.exists(dataStoreLocation):
             log.warn("Creating venue: Data storage location %s not valid",
@@ -92,7 +95,7 @@ class Venue(ServiceBase.ServiceBase):
             try:
                 os.mkdir(self.dataStorePath)
             except OSError, e:
-                log.exception("Could not create venueStoragePath.")
+                log.exception("++++++++++++++ Could not create venueStoragePath.")
                 self.dataStorePath = None
                 
         if self.encryptMedia == 1:
@@ -208,7 +211,7 @@ class Venue(ServiceBase.ServiceBase):
         GetDownloadDescriptor will return None if the file doesn't
         exist in the local data store.
         """
-
+        
         if self.dataStorePath is None or not os.path.isdir(self.dataStorePath):
             log.warn("Not starting datastore for venue: %s does not exist %s",
                       self.uniqueId, self.dataStorePath)
@@ -221,7 +224,7 @@ class Venue(ServiceBase.ServiceBase):
         self.dataStore.SetTransferEngine(self.server.dataTransferServer)
 
         log.info("Have upload url: %s", self.dataStore.GetUploadDescriptor())
-
+        
         for file, desc in self.data.items():
             log.debug("Checking file %s for validity", file)
             url = self.dataStore.GetDownloadDescriptor(file)
@@ -511,7 +514,7 @@ class Venue(ServiceBase.ServiceBase):
 
     GetNetworkServices.soap_export_as = "GetNetworkServices"
 
-    def RemoveNetworkService(self, networkServiceDescription):
+    def RemoveNetworkService(selfnetworkServiceDescription):
         """
         RemoveNetworkService removes a network service from a venue, making
         it unavailable to users of the venue.
@@ -558,7 +561,7 @@ class Venue(ServiceBase.ServiceBase):
             raise NotAuthorized
         try:
             del self.connections[ connectionDescription.uri ]
-            self.server.eventService.Distribute( self.uniqueId,
+            self.eventService.Distribute( self.uniqueId,
                                           Event( Event.REMOVE_CONNECTION,
                                                  self.uniqueId,
                                                  connectionDescription ) )
@@ -778,6 +781,11 @@ class Venue(ServiceBase.ServiceBase):
                                              Event( Event.EXIT,
                                                     self.uniqueId,
                                                     clientProfile ) )
+        # Remove users private data
+        for description in self.data.values():
+            if description.type == self.users[privateId].publicId:
+                log.debug("Remove private data %s" %description.name)
+                del self.data[description.name]
 
         # Remove user from venue
         if clientProfile.profileType == "user":
@@ -896,7 +904,9 @@ class Venue(ServiceBase.ServiceBase):
             # data description -- I guess that's later :-)
             if dataDescription.name in self.data:
                 del self.data[ dataDescription.name ]
-                self.dataStore.DeleteFile(dataDescription.name)
+
+                if(dataDescription.type == None):
+                    self.dataStore.DeleteFile(dataDescription.name)
                 self.server.eventService.Distribute( self.uniqueId,
                                                      Event( Event.REMOVE_DATA,
                                                             self.uniqueId,
@@ -976,9 +986,9 @@ class Venue(ServiceBase.ServiceBase):
         """
 
         for appImpl in self.applications.values():
-            appImpl.Awaken(self.server.eventService)
+            appImpl.Awaken(self.eventService)
             app = AppService.AppObject(appImpl)
-            hostObj = self.server.hostingEnvironment.create_service_object()
+            hostObj = self.hostingEnvironment.create_service_object()
             app._bind_to_service(hostObj)
             appHandle = hostObj.GetHandle()
             appImpl.SetHandle(appHandle)
