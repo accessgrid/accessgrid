@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.214 2003-06-27 16:08:25 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.215 2003-06-27 16:11:07 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -941,13 +941,22 @@ class VenueClientFrame(wxFrame):
         id = self.contentListPanel.tree.GetSelection()
         data = self.contentListPanel.tree.GetItemData(id).GetData()
         
+        ownerId = self.contentListPanel.tree.GetItemParent(id)
+        text = self.contentListPanel.tree.GetItemText(ownerId)
+
+        if text != 'Data':
+            ownerProfile = self.contentListPanel.tree.GetItemData(ownerId).GetData()
+        else:
+            # Venue data
+            ownerProfile = None
+        
         if(data != None and isinstance(data, DataDescription)):
             text ="Are you sure you want to delete "+ data.name
             areYouSureDialog = wxMessageDialog(self, text, 
                                                '', wxOK |
                                                wxCANCEL |wxICON_INFORMATION)
             if(areYouSureDialog.ShowModal() == wxID_OK):
-                self.app.RemoveData(data)
+                self.app.RemoveData(data, ownerProfile)
                                     
             areYouSureDialog.Destroy()
                 
