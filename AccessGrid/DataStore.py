@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.31 2003-08-07 16:11:52 lefvert Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.32 2003-08-15 20:35:54 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -73,11 +73,11 @@ class DataDescriptionContainer:
     A DataDescriptionContainer includes all DataDescription representations of
     data in the DataStore. The DataStore calls this class to manage the Descriptions.
     """
-    data = dict()
 
     def __init__(self):
         self.channelId = None 
         self.eventDistributor = None
+        self.data = dict()
 
     def SetEventDistributor(self, eventDistributor, channelId):
         '''
