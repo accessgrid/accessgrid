@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.182 2004-07-16 22:07:31 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.183 2004-07-23 18:46:20 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.182 2004-07-16 22:07:31 eolson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.183 2004-07-23 18:46:20 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -377,7 +377,10 @@ class VenueClient:
         self.isInVenue = 0
         
         # Exit the venue (internally)
-        self.__ExitVenue()
+        try:
+            self.__ExitVenue()
+        except Exception, e:
+            log.info("Exception exiting from venue before reconnect -- not critical")
 
         # Try to enter the venue
         while not self.isInVenue and numTries < self.maxReconnects:
@@ -753,6 +756,18 @@ class VenueClient:
             # Finally, set the flag that we are in a venue
             self.isInVenue = 1
 
+            # 
+            # Update the node service with stream descriptions
+            #
+            try:
+                self.UpdateNodeService()
+            except NetworkLocationNotFound, e:
+                self.warningString += '\nError connecting media tools'
+            except Exception, e:
+                # This is a non fatal error, users should be notified
+                # but still enter the venue
+                log.warn("EnterVenue: Error updating node service")
+                errorInNode = 1
     
                     
     # Back argument is true if going to a previous venue (used in UI).
@@ -790,19 +805,6 @@ class VenueClient:
 
             # Enter the venue
             self.__EnterVenue(URL)
-
-            # 
-            # Update the node service with stream descriptions
-            #
-            try:
-                self.UpdateNodeService()
-            except NetworkLocationNotFound, e:
-                self.warningString += '\nError connecting media tools'
-            except Exception, e:
-                # This is a non fatal error, users should be notified
-                # but still enter the venue
-                log.warn("EnterVenue: Error updating node service")
-                errorInNode = 1
 
             # Cache profiles from venue.
             log.debug("Updating client profile cache.")
