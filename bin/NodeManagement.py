@@ -3,7 +3,7 @@ import copy
 import time, thread
 import pprint
 
-# AG2 Alpha imports
+# AG2 imports
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.Types import *
 from AccessGrid.AGParameter import *
@@ -270,10 +270,6 @@ class NodeManagementClientFrame(wxFrame):
 
 
 
-      # sz.Add( self.hostList, -1, wxEXPAND )
-
-       #sz.Add( self.serviceList,-1, wxEXPAND )
-
        #
        # Create Hosts panel
        #
@@ -303,17 +299,6 @@ class NodeManagementClientFrame(wxFrame):
        EVT_LIST_ITEM_ACTIVATED( self, self.serviceList.GetId(), self.GetServiceConfiguration )
 
        mainsz.Add( sz, -1, wxEXPAND )
-
-       """
-       sz2 = wxBoxSizer( wxHORIZONTAL )
-       mainsz.Add( sz2, -1, wxEXPAND )
-
-       self.panel = wxPanel( self, 2 )
-       sz2.Add( self.panel, 1, wxEXPAND )
-
-       self.serviceConfigPanel = ServiceConfigurationPanel( self.panel, -1 )
-       self.serviceConfigPanel.SetCallback( self.SetConfiguration )
-       """
 
        EVT_MENU(self, ID_DUM                    ,  self.Dum )
        EVT_MENU(self, ID_FILE_ATTACH            ,  self.Attach )
@@ -539,7 +524,7 @@ class NodeManagementClientFrame(wxFrame):
          index = -1
          for i in range( self.serviceList.GetSelectedItemCount() ):
             index = self.serviceList.GetNextItem( index, state = wxLIST_STATE_SELECTED )
-            print "** Starting service "
+            print "** Starting service ", index
             ret = Client.Handle( self.services[index].uri ).get_proxy().Start()
             print "return value = ", ret, ret.__class__
             print "** Called Start ! !! ! "
@@ -613,15 +598,6 @@ class NodeManagementClientFrame(wxFrame):
 
    def LayoutConfiguration( self ):
       
-      """
-      panelSizer = wxBoxSizer( wxVERTICAL )
-      self.panel.SetSizer( panelSizer )
-      self.serviceConfigPanel.SetConfiguration( self.config )
-      panelSizer.Add( self.serviceConfigPanel, -1, wxEXPAND )
-
-      self.panel.Layout()
-      """
-
       dlg = wxDialog( self, -1, "Service Configuration Dialog", 
                       style = wxRESIZE_BORDER|wxCAPTION|wxSYSTEM_MENU,
                       size = (300,300) )
@@ -651,6 +627,9 @@ class NodeManagementClientFrame(wxFrame):
 
       serviceConfig = self.serviceConfigPanel.GetConfiguration()
       index = self.serviceList.GetNextItem( -1, state = wxLIST_STATE_SELECTED )
+
+      for s in self.services:
+         print "smuri  = ", s.name, s.uri, s.serviceManagerUri
 
 
       print " ---SetConfiguration ", serviceConfig.__class__
@@ -683,6 +662,8 @@ class NodeManagementClientFrame(wxFrame):
           print "index = ", index, " len sermgr = ", len(self.serviceManagers)
           print "------ ", self.serviceManagers[index]
           services = Client.Handle( self.serviceManagers[index].uri ).get_proxy().GetServices()
+#FIXME - temporary
+          self.services = services
           print "services = ", services, services.__dict__
           for svc in services:
             print "   ", svc.uri
@@ -697,9 +678,6 @@ class NodeManagementClientFrame(wxFrame):
                print "Exception wxapp.UpdateServiceList ", sys.exc_type, sys.exc_value
             self.serviceList.SetStringItem( i,2, svc.uri )
             i = i + 1
-
-
-       #self.serviceConfigPanel.Clear( )
 
 
    ############################
