@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.114 2003-08-08 21:35:34 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.115 2003-08-08 22:19:43 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -2491,7 +2491,7 @@ class Venue(ServiceBase.ServiceBase):
         for erm_name in erm_names:
             erm = rm.GetExternalRoleManager(erm_name)
             for role_name in erm.GetRoleList():
-                group_roles.append(role_name)
+                group_roles.append("Role." + role_name)
         return group_roles
 
     wsGetAvailableGroupRoles.soap_export_as = "GetAvailableGroupRoles"
@@ -2513,10 +2513,6 @@ def RegisterDefaultVenueRoles(role_manager):
         rm.RegisterRole("Venue.VenueUsers")
     if "Venue.Administrators" not in rm.validRoles:
         rm.RegisterRole("Venue.Administrators")
-
-    if "Role.VenueServer.Administrators" not in rm.validRoles: 
-        rm.RegisterRole("Role.VenueServer.Administrators")
-
 
 
 class StreamDescriptionList:
