@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.5 2003-02-18 19:35:45 turam Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.6 2003-02-26 23:15:01 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -119,7 +119,8 @@ class VideoProducerService( AGService ):
       """Set the resource used by this service"""
       print " * ** * inside VideoProducerService.SetResource"
       self.resource = resource
-      self.configuration["Port"] = OptionSetParameter( "Port", self.resource.portTypes[0], self.resource.portTypes )
+      if "portTypes" in self.resource.__dict__.keys():
+          self.configuration["Port"] = OptionSetParameter( "Port", self.resource.portTypes[0], 
       
    SetResource.soap_export_as = "SetResource"
 
