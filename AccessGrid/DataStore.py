@@ -6,7 +6,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.42 2003-09-02 22:13:18 eolson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.43 2003-09-03 20:40:13 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -503,8 +503,10 @@ class DataStore(ServiceBase):
                 break
             except Exception:
                 log.exception("Unable to send datastore heartbeat")
-                
-            time.sleep(10)
+            
+            for i in range(10):
+                if self.sendHeartBeats:
+                    time.sleep(1)
         log.debug("DataStore Heartbeat thread exiting")
 
 
