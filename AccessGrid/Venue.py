@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.109 2003-08-04 23:42:14 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.110 2003-08-05 15:54:12 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -2232,7 +2232,7 @@ class Venue(ServiceBase.ServiceBase):
         try: 
             sm = AccessControl.GetSecurityManager()
             rm = self.GetRoleManager()
-            if sm.ValidateRole([role_string]):
+            if sm.ValidateRole([role_string], self.GetRoleManager()):
                 if rm.validRoles[role_string]:
                     rm.validRoles[role_string].AddSubject(subject)
                     if rm.validRoles[role_string].HasSubject(subject):
@@ -2241,9 +2241,9 @@ class Venue(ServiceBase.ServiceBase):
                     log.warn("Role " + role_string + " exists in security manager, but not in venue ")
             else:
                 log.exception("Role " + role_string + " is not known to security manager.")
-            return 0
         except:
             log.exception("wsAddSubjectToRole: exception")
+        return 0
 
     wsAddSubjectToRole.soap_export_as = "AddSubjectToRole"
 
@@ -2257,7 +2257,7 @@ class Venue(ServiceBase.ServiceBase):
         try: 
             sm = AccessControl.GetSecurityManager()
             rm = self.GetRoleManager()
-            if sm.ValidateRole([role_string]):
+            if sm.ValidateRole([role_string], self.GetRoleManager()):
                 subject = sm.GetSubject()
 
                 if rm.validRoles[role_string]:
@@ -2281,7 +2281,7 @@ class Venue(ServiceBase.ServiceBase):
 
         sm = AccessControl.GetSecurityManager()
         rm = self.GetRoleManager()
-        if sm.ValidateRole([role_string]):
+        if sm.ValidateRole([role_string], self.GetRoleManager()):
             log.info("Role ", role_string, " already registered in security manager.")
         else:
             rm.RegisterRole(role_string)
