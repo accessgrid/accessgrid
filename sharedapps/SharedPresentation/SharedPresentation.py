@@ -7,7 +7,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.1 2003-05-19 16:29:38 judson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.2 2003-05-29 19:09:24 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -452,7 +452,7 @@ class SharedPresentation:
                                     (self.publicId)
                                     ))
 
-    def RecvNext(self, data):
+    def RecvNext(self, event):
         """
         This is a callback that puts the next event from the network on
         the event queue.
@@ -461,11 +461,11 @@ class SharedPresentation:
 
         # We put the passed in event on the event queue
         try:
-            self.eventQueue.put(["next", data])
+            self.eventQueue.put(["next", event.data])
         except Full:
             self.log.debug("Dropping event, event Queue full!")
 
-    def RecvPrev(self, data):
+    def RecvPrev(self, event):
         """
         This is a callback that puts the previous event from the network on
         the event queue.
@@ -474,11 +474,11 @@ class SharedPresentation:
 
         # We put the passed in event on the event queue
         try:
-            self.eventQueue.put(["prev", data])
+            self.eventQueue.put(["prev", event.data])
         except Full:
             self.log.debug("Dropping event, event Queue full!")
         
-    def RecvGoto(self, data):
+    def RecvGoto(self, event):
         """
         This is a callback that puts the goto slide event from the network on
         the event queue.
@@ -487,11 +487,11 @@ class SharedPresentation:
 
         # We put the passed in event on the event queue
         try:
-            self.eventQueue.put(["goto", data])
+            self.eventQueue.put(["goto", event.data])
         except Full:
             self.log.debug("Dropping event, event Queue full!")
         
-    def RecvLoad(self, data):
+    def RecvLoad(self, event):
         """
         This is a callback that puts the load presentation event from
         the network on the event queue.
@@ -500,11 +500,11 @@ class SharedPresentation:
 
         # We put the passed in event on the event queue
         try:
-            self.eventQueue.put(["load", data])
+            self.eventQueue.put(["load", event.data])
         except Full:
             self.log.debug("Dropping event, event Queue full!")
         
-    def RecvQuit(self, data):
+    def RecvQuit(self, event):
         """
         This is a callback that puts the quit event from the network on
         the event queue.
@@ -513,7 +513,7 @@ class SharedPresentation:
 
         # We put the passed in event on the event queue
         try:
-            self.eventQueue.put(["quit", data])
+            self.eventQueue.put(["quit", event.data])
         except Full:
             self.log.debug("Dropping event, event Queue full!")
         
