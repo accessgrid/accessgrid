@@ -672,8 +672,85 @@ class CertificateManager:
 
         """
 
+        gcerts = None
+        configChanged = 0
+
+        #
+        # Check to ensure that our certificate directories haven't vanished
+        # somehow.
+        #
+
+        if not os.path.isdir(self.userCertPath):
+            #
+            # Hm, user must have deleted his certificate directory.
+            # 
+            # Load up the globus info and recopy the certificate, if possible.
+            #
+
+            try:
+                os.makedirs(self.userCertPath)
+            except os.error, e:
+                log.exception("Error creating user certificate path %s", self.userCertPath)
+                raise e
+
+            gcerts = FindGlobusCerts()
+
+            if 'x509_user_cert' in gcerts and 'x509_user_key' in gcerts:
+                #
+                # We have a user cert and key.
+                #
+                # Initialize a certificate object with them, and import to the
+                # user certificate repository.
+                #
+
+                log.debug("Reloading user identity repository from globus default cert")
+
+                cert = Certificate(gcerts['x509_user_cert'],
+                                   keyPath = gcerts['x509_user_key'])
+
+                #
+                # Write the cert out to the newly-created user certificate directory
+                #
+
+                cert.WriteToRepoDir(self.userCertPath)
+
+                #
+                # Set the default identity to this cert's DN.
+                #
+                # TODO: this needs to actually use the hash of the DN,
+                # in the event that we have multiple certs with the same DN.
+                # (perhaps in the case where there's an expired cert and a new cert..)
+                #
+
+                self.defaultIdentityDN = cert.GetSubject()
+                log.debug("Loaded initial cert %s", cert.GetSubject())
+                configChanged = 1
+
+        #
+        # Check to see that the CA cert dir is still there.
+        # It might have gotten moved with a reinstallation of the Globus software.
+        #
+        if not os.path.isdir(self.systemCACertDir):
+            if gcerts is None:
+                gcerts = FindGlobusCerts()
+
+            if 'x509_cert_dir' in gcerts:
+                self.systemCACertDir = gcerts['x509_cert_dir']
+                log.debug("set new system CA cert dir %s", self.systemCACertDir)
+            configChanged = 1
+
+        if configChanged:
+            self.writeConfiguration()
+
         self.userCertRepo = CertificateRepository(self.userCertPath)
-        self.trustedCARepo = CertificateRepository(self.systemCACertDir)
+
+        if os.path.isdir(self.systemCACertDir):
+            self.trustedCARepo = CertificateRepository(self.systemCACertDir)
+        else:
+            self.trustedCARepo = None
+            log.error("Cannot find system CA certificate directory %s",
+                      self.systemCACertDir)
+
 
     def loadConfiguration(self, isConfigReloadRetry = 0):
         """
@@ -730,9 +807,17 @@ class CertificateManager:
         Write out the current state of the configuration object.
         """
 
+        cp = ConfigParser.ConfigParser()
+        options = ConfigParserSection(cp, self.CONFIG_FILE_SECTION)
+
+        options['defaultIdentityDN'] = self.defaultIdentityDN
+        options['systemCACertDir'] = self.systemCACertDir
+        options['useSystemCADir'] = self.useSystemCADir
+        options['proxyCertPath'] = self.proxyCertPath
         fp = open(self.configFile, "w")
-        self.configParser.write(fp)
+        cp.write(fp)
         fp.close()
+
 
     def setupInitialConfig(self):
         """
@@ -830,17 +915,8 @@ class CertificateManager:
         # Write out the config file
         #
 
-        cp = ConfigParser.ConfigParser()
-        options = ConfigParserSection(cp, self.CONFIG_FILE_SECTION)
-
-        options['defaultIdentityDN'] = self.defaultIdentityDN
-        options['systemCACertDir'] = self.systemCACertDir
-        options['useSystemCADir'] = self.useSystemCADir
-        options['proxyCertPath'] = self.proxyCertPath
-        fp = open(self.configFile, "w")
-        cp.write(fp)
-        fp.close()
-
+        self.writeConfiguration()
+        
     def CheckConfiguration(self):
         """
         Perform a sanity check on the security execution environment
