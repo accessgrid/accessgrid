@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.86 2003-08-04 22:07:53 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.87 2003-08-06 20:18:02 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.hosting.pyGlobus import Client
 from AccessGrid.EventClient import EventClient
-from AccessGrid.ClientProfile import ClientProfile
+from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache
 from AccessGrid.Types import *
 from AccessGrid.Events import Event, HeartbeatEvent, ConnectEvent
 from AccessGrid.Events import DisconnectEvent, ClientExitingEvent
@@ -103,6 +103,12 @@ class VenueClient( ServiceBase):
         self.client = None
         self.clientHandle = None
         self.venueUri = None
+
+        # Cache profiles in case we need to look at them later.
+        # specifically, the cache makes it easier to add roles when managing venues.
+        self.profileCachePrefix = "profileCache"
+        self.profileCachePath = os.path.join(GetUserConfigDir(), self.profileCachePrefix)
+        self.cache = ClientProfileCache(self.profileCachePath)
                           
     def __InitVenueData__( self ):
         self.eventClient = None
@@ -540,6 +546,10 @@ class VenueClient( ServiceBase):
                 #
                 log.exception("AccessGrid.VenueClient::Exception configuring node service streams")
                 errorInNode = 1
+
+            # Cache profiles from venue.
+            for client in self.venueState.clients.values():
+                self.cache.updateProfile(client)
 
             self.dataStore.SetEventDistributor(self.eventClient, self.venueState.uniqueId)
                  

@@ -6,16 +6,21 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.22 2003-05-09 22:59:58 eolson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.23 2003-08-06 20:18:02 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
+import os
 import ConfigParser
 import string
+import md5
+import base64
 
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.GUID import GUID
+from AccessGrid.Platform import GetUserConfigDir
+from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
 
 class InvalidProfileException(Exception):
     """
@@ -42,7 +47,8 @@ class ClientProfile:
         'location',
         'venueclienturl',
         'techsupportinfo',
-        'home']
+        'home',
+        'distinguishedname']
         
     defaultProfile = {
         'ClientProfile.type' : "user",
@@ -83,8 +89,10 @@ class ClientProfile:
             self.profile = ClientProfile.defaultProfile.copy()
             self.profile['ClientProfile.id'] = GUID()
 
-    def Load(self, fileName):
+    def Load(self, fileName, loadDnDetails=AG_FALSE):
 	"""
+        loadDnDetails is used by the cache to include the reading
+          of a DN when reading from the stored profile.
 	"""
         profile = ClientProfile.defaultProfile.copy()
         profile['ClientProfile.id'] = GUID()
@@ -101,6 +109,9 @@ class ClientProfile:
             self.venueClientURL = self.profile['ClientProfile.venueclienturl']
             self.techSupportInfo = self.profile['ClientProfile.techsupportinfo']
             self.homeVenue = self.profile['ClientProfile.home']
+            if loadDnDetails:
+                if 'ClientProfile.distinguishedname' in self.profile:
+                    self.distinguishedName = self.profile['ClientProfile.distinguishedname']
         else:
             raise InvalidProfileException
         
@@ -120,8 +131,11 @@ class ClientProfile:
         print "Public ID: " + str(self.publicId)
         print "Home Venue: " + self.homeVenue
         
-    def Save(self, fileName):
-        """ """
+    def Save(self, fileName, saveDnDetails=AG_FALSE):
+        """
+        saveDnDetails is used by the cache to include the DN
+          in the stored profile.
+        """
         config = {}
         config['ClientProfile.type'] = self.GetProfileType()
         config['ClientProfile.name'] = self.GetName()
@@ -132,6 +146,8 @@ class ClientProfile:
         config['ClientProfile.techsupportinfo'] = self.GetTechSupportInfo()
         config['ClientProfile.id'] = self.GetPublicId()
         config['ClientProfile.home'] = self.GetHomeVenue()
+        if saveDnDetails:
+            config['ClientProfile.distinguishedname'] = self.GetDistinguishedName()
         
         SaveConfig(fileName, config)
 
@@ -236,7 +252,40 @@ class ClientProfile:
     def GetHomeVenue(self):
         return self.homeVenue
 
-
+    def InformationMatches(self, obj):
+        """
+        return true (1) if profile information is equivalent
+          return false (0) otherwise.
+        This was written mostly for the ClientProfileCache to use, so
+          if modifying this function keep that purpose in mind.
+          Specifically, a profile should be equivalent to its cached 
+          profile if the user hasn't changed his/her profile.  This means
+          things such as VenueClientURL are not tested below since it can
+          change after the venue client reconnects.
+        """
+        if not isinstance(obj, ClientProfile):
+            return 0
+        isSame = 0
+        try:
+            # members not tested for equality 
+            #  self.fileType == obj.fileType
+            #  self.publicId == obj.publicId
+            #  self.privateId == obj.privateId
+            #  self.capabilities == obj.capabilites 
+            #  self.distinguishedName == obj.distinguishedName 
+            #  self.venueClientURL == obj.venueClientURL and \
+            if self.profileType == obj.profileType and \
+               self.name == obj.name and \
+               self.email == obj.email and \
+               self.phoneNumber == obj.phoneNumber and \
+               self.icon == obj.icon and \
+               self.location == obj.location and \
+               self.techSupportInfo == obj.techSupportInfo and \
+               self.homeVenue == obj.homeVenue :
+                isSame = 1
+        except:
+            pass
+        return isSame
 
 def CreateClientProfile( clientProfileStruct ):
     """
@@ -267,3 +316,58 @@ def CreateClientProfile( clientProfileStruct ):
 
 
     return clientProfile
+
+class ClientProfileCache:
+    """
+    Class for caching profiles.
+    """
+    def __init__(self, cachePath=""):
+        if len(cachePath):
+            self.cachePath = cachePath
+        else:
+            self.cachePath = os.path.join(GetUserConfigDir(), "profileCache")
+        if not os.path.exists( self.cachePath ):
+            os.mkdir (self.cachePath)
+
+    def updateProfile(self, profile):
+        if not profile.GetDistinguishedName():
+            log.exception("InvalidProfile")
+            return
+
+        # Create a filename to store profile in the cache.
+        # Hash is almost always unique.  If there ever is 
+        #   a filename collision, it's not the end of the 
+        #   world, only the most recent profile gets cached.
+        hash = md5.new(profile.GetDistinguishedName())
+        short_filename = base64.encodestring(hash.digest())
+        filename = os.path.join(self.cachePath, short_filename)
+
+        # If profile in cache, load it and see if it's different
+        if os.path.exists( filename ):
+            old_profile = ClientProfile(filename)
+            if not profile.InformationMatches(old_profile):
+                # Save profile if it is different than cached profile.
+                profile.Save(filename, saveDnDetails=AG_TRUE)
+        else:
+            profile.Save(filename, saveDnDetails=AG_TRUE)
+
+    def loadProfileFromDN(self, distinguished_name):
+        hash = md5.new(distinguished_name)
+        short_filename = base64.encodestring(hash.digest())
+        filename = os.path.join(self.cachePath, short_filename)
+        profile = ClientProfile()
+        profile.Load(filename, loadDnDetails=AG_TRUE)
+        return profile
+
+    def loadAllProfiles(self):
+        profiles = []
+        files = os.listdir(self.cachePath)
+        for file in files:
+            long_filename = os.path.join(self.cachePath, file)
+            profile = ClientProfile()
+            profile.Load(long_filename, loadDnDetails=AG_TRUE)
+            if profile:
+                profiles.append(profile)
+        return profiles
+
+
