@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.3 2003-02-06 22:01:55 judson Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.4 2003-02-08 20:10:28 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -89,7 +89,7 @@ class HostListCtrl( wxListCtrl ):
     def __init__(self, parent, ID, pos=wxDefaultPosition,
                   size=wxDefaultSize, style=0):
         listId = wxNewId()
-        wxListCtrl.__init__(self, parent, listId, pos, size, style)
+        wxListCtrl.__init__(self, parent, listId, pos, size, style=wxLC_REPORT)
 
         self.InsertColumn( 0, "Service Managers", width=wxLIST_AUTOSIZE )
 
@@ -98,7 +98,7 @@ class ServiceListCtrl( wxListCtrl ):
     def __init__(self, parent, ID, pos=wxDefaultPosition,
                   size=wxDefaultSize, style=0):
         listId = wxNewId()
-        wxListCtrl.__init__(self, parent, listId, pos, size, style)
+        wxListCtrl.__init__(self, parent, listId, pos, size, style=wxLC_REPORT)
 
 
         self.InsertColumn( 0, "Service Name", width=wxLIST_AUTOSIZE )
