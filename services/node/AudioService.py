@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.13 2004-03-31 21:08:25 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.14 2004-04-09 20:41:09 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -160,8 +160,11 @@ class AudioService( AGService ):
             ratKillExe = os.path.join(installDir, rk)
 
             if os.access(ratKillExe, os.X_OK):
+                self.log.info("Executing rat-kill")
                 self.processManager.StartProcess(ratKillExe, [])
                 time.sleep(0.2)
+            else:
+                self.log.info("rat-kill not found; rat may not die completely")
 
             self.processManager.TerminateAllProcesses()
 
