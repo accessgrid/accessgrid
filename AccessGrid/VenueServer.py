@@ -2,13 +2,13 @@
 # Name:        VenueServer.py
 # Purpose:     This serves Venues.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.154 2004-07-23 20:58:10 turam Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.155 2004-07-27 19:06:51 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueServer.py,v 1.154 2004-07-23 20:58:10 turam Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.155 2004-07-27 19:06:51 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -20,7 +20,12 @@ import string
 import threading
 import time
 import ConfigParser
-import csv
+try:
+   # Needed for performance reporting thread.
+   # First available in python 2.3
+   import csv
+except:
+   pass
 
 from AccessGrid.Toolkit import Service
 from AccessGrid import Log
