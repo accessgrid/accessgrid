@@ -1,3 +1,4 @@
+import logging
 import time
 import os
 from AccessGrid.hosting import AccessControl
@@ -12,7 +13,7 @@ class C(ServiceBase.ServiceBase):
 
         print "Executing as subject name: ", sm.GetSubject()
 
-        raise Exception("foo")
+        x = y
 
 #        ident = "/O=Grid/OU=Access Grid/OU=mcs.anl.gov/CN=Bob Olson"
 #        if not sm.ValidateUser(ident):
@@ -29,6 +30,9 @@ def cb(server, g_handle, remote_user, context):
     return 1
 
 if __name__ == "__main__":
+
+    logging.root.setLevel(logging.DEBUG)
+    logging.root.addHandler(logging.StreamHandler())
 
     server = Server.Server(8000, auth_callback = cb)
 

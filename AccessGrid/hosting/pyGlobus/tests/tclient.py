@@ -24,7 +24,7 @@ except Client.FaultType, f:
     print "call raised fault ", f
     print "faultcode='%s'" % (f.faultcode)
     print "string='%s'" % ( f.faultstring)
-    print "detail=%s" % (f.detail)
+    print "detail='%s'" % (f.detail)
 
 else:
     t2 = gt()
