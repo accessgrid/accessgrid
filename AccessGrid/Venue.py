@@ -6,14 +6,14 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.131 2003-09-17 20:01:58 olson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.132 2003-09-17 20:05:28 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Venue.py,v 1.131 2003-09-17 20:01:58 olson Exp $"
+__revision__ = "$Id: Venue.py,v 1.132 2003-09-17 20:05:28 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1722,6 +1722,18 @@ class Venue(ServiceBase.ServiceBase):
         GetDescription returns the description for the virtual venue.
         **Arguments:**
         """
+        # You can only get the description if you are allowed to enter or administrate the venue.
+        # (need to shorten this up if possible)
+        if not self._IsInRole("Venue.Administrators"):
+            # Special Case: if all users are DisallowedEntry, then specific users are allowed.
+            if "ALL_USERS" in rm.validRoles["Venue.DisallowedEntry"].GetSubjectList():
+                if not self._IsInRole("Venue.AllowedEntry"):
+                    raise NotAuthorized
+            # Normal operation when all users are not DisallowedEntry by default.
+            else:
+                if self._IsInRole("Venue.DisallowedEntry") or not self._IsInRole("Venue.AllowedEntry"):
+                    raise NotAuthorized
+
         return self.description
     
     GetDescription.soap_export_as = "GetDescription"
