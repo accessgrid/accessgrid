@@ -5,13 +5,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.25 2003-09-29 20:52:12 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.26 2003-10-13 16:53:32 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextClient.py,v 1.25 2003-09-29 20:52:12 judson Exp $"
+__revision__ = "$Id: TextClient.py,v 1.26 2003-10-13 16:53:32 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pickle
@@ -35,6 +35,7 @@ class SimpleTextProcessor:
         self.textConnection = textConnection
         self.outputCallback = outputCallback
         self.log = logging.getLogger("AG.TextClient.SimpleTextProcessor")
+        self.log.setLevel(logging.WARN)
         
     def SetProfile(self, profile):
         """
@@ -115,6 +116,7 @@ class TextConnection:
         self.host, self.port = textServiceLocation
         self.processor = processor
         self.log = logging.getLogger("AG.TextClient.TextConnection")
+        self.log.setLevel(logging.WARN)
         
         # Initialize connection
         self.bufsize = 4096
@@ -259,6 +261,7 @@ class TextClient:
         self.profile = profile
         self.textProcessor = SimpleTextProcessor(myProfile=profile)
         self.log = logging.getLogger("AG.TextClient")
+        self.log.setLevel(logging.WARN)
         
         if self.textServiceLocation != None:
             self.textConnection = TextConnection(self.textServiceLocation,
@@ -270,6 +273,17 @@ class TextClient:
         """
         self.venueId = venueId
         self.privateId = privateId
+        self.textProcessor.Input(ConnectEvent(venueId, privateId))
+
+    def Reconnect(self):
+        """
+        This method is being added so that if we detect a failure to
+        send text we can invoke a reconnect and try again.
+        """
+        self.textConnection.Stop()
+        self.textConnection = TextConnection(self.textServiceLocation,
+                                             self.textProcessor)
+        self.textProcessor.SetTextConnection(self.textConnection)
         self.textProcessor.Input(ConnectEvent(venueId, privateId))
         
     def Disconnect(self, venueId, privateId):

@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.295 2003-09-29 15:58:00 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.296 2003-10-13 16:53:32 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.295 2003-09-29 15:58:00 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.296 2003-10-13 16:53:32 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -33,6 +33,7 @@ import pyGlobus.sslutilsc
 import re
 
 log = logging.getLogger("AG.VenueClientUIClasses")
+log.setLevel(logging.WARN)
 
 from AccessGrid import icons
 from AccessGrid import Toolkit
@@ -346,6 +347,10 @@ class VenueClientFrame(wxFrame):
 
         # Do not enable menus until connected
         self.HideMenu()
+
+        # Don't allow a choice of unicast until in a venue (then we might not
+        # have it anyhow)
+        self.preferences.Enable(self.ID_USE_UNICAST, false)
         
         # until implemented
         self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
