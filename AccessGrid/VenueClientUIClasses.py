@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.85 2003-03-20 21:18:50 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.86 2003-03-20 21:27:41 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -314,25 +314,21 @@ class VenueClientFrame(wxFrame):
 
     def Follow(self, event):
         #unfollow everybody else!!!
-        wxLogDebug("In Follow")
+        wxLogDebug("VenueClientUIClasses: In Follow")
         id = self.contentListPanel.tree.GetSelection()
         personToFollow = self.contentListPanel.tree.GetItemData(id).GetData()
         url = personToFollow.venueClientURL
-        wxLogDebug("Follow name:%s url:%s " %(personToFollow.name, url))
+        wxLogDebug("VenueClientUIClasses: Follow name:%s url:%s " %(personToFollow.name, url))
 
         
-        #call his lead method with my profile
-        followHandle = Client.Handle(url)
-        if(followHandle.IsValid()):
-            wxLogDebug("the follow handler is valid")
-            try:
-                personToFollowProxy = self.clientHandle.get_proxy()
-                personToFollowProxy.Lead(self.profile)
-                wxLogDebug("You are following %s" %personToFollow.name)
-                
-            except:
-                wxLogError("Can not follow %s" %personToFollow.name)
-                
+        #call his lead method with my profiley
+        try:
+            self.app.Follow(personToFollow)
+            
+        except:
+                wxLogError("VenueClientUIClasses: Can not follow %s" %personToFollow.name)
+
+        
     def __fillTempHelp(self, x):
         if x == '\\':
             x = '/'
