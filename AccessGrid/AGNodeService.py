@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.8 2003-02-10 22:03:43 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.9 2003-02-12 20:08:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -20,6 +20,7 @@ from AccessGrid.hosting.pyGlobus.ServiceBase import ServiceBase
 from AccessGrid.Types import AGServiceImplementationRepository, AGServiceDescription, ServiceConfiguration, AGServiceManagerDescription
 from AccessGrid.AuthorizationManager import AuthorizationManager
 from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
+from AccessGrid.Platform import GetConfigFilePath
 
 class AGNodeService( ServiceBase ):
     """
@@ -33,10 +34,22 @@ class AGNodeService( ServiceBase ):
         self.description = None
         self.httpBaseUri = None
         self.serviceManagers = []
-        self.serviceImplRepository = AGServiceImplementationRepository()
-        self.configDir = "config/"
         self.authManager = AuthorizationManager()
         self.__ReadAuthFile()
+        self.defaultConfig = None
+        self.configDir = "config"
+        self.servicesDir = "services"
+
+        configFile = GetConfigFilePath("AGNodeService.cfg")
+        if configFile:
+            print "loading config file = ", configFile
+            self.__ReadConfigFile( configFile )
+
+        if self.defaultConfig:
+            print "loading default config = ", self.defaultConfig
+            self.LoadConfiguration( None, self.defaultConfig ) # dummy arg for conn_info
+
+        self.serviceImplRepository = AGServiceImplementationRepository( 0, self.servicesDir )
 
 
     ####################
@@ -213,7 +226,7 @@ class AGNodeService( ServiceBase ):
         """Load named node configuration"""
 
         # Check authorization
-        if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
+        #if not self.authManager.Authorize( connInfo.get_remote_name() ):  raise faultType("Authorization failed")
 
         print "In load configuration "
         hadServiceException = 0
@@ -242,7 +255,7 @@ class AGNodeService( ServiceBase ):
         # Load configuration file
         #
         print "Loading configuration file"
-        inp = open( self.configDir+configName, "r")
+        inp = open( self.configDir + os.sep + configName, "r")
         print "read"
         while inp:
             try:
@@ -338,7 +351,7 @@ class AGNodeService( ServiceBase ):
 
         print "in StoreConfiguration"
         try:
-            out = open( self.configDir+configName, "w")
+            out = open( self.configDir + os.sep + configName, "w")
             print "in StoreConfiguration"
             print "in StoreConfiguration"
             for serviceManager in self.serviceManagers:
@@ -365,7 +378,7 @@ class AGNodeService( ServiceBase ):
                     pickle.dump( cfg, out )
             out.close()
 
-            inp = open( self.configDir+configName, "r")
+            inp = open( self.configDir + os.sep + configName, "r")
             while inp:
                 try:
                     o = pickle.load(inp)
@@ -457,3 +470,19 @@ class AGNodeService( ServiceBase ):
                 Client.Handle( serviceManager.uri ).get_proxy().SetAuthorizedUsers( self.authManager.GetAuthorizedUsers() )
         except:
             print "Exception in AGNodeService.RemoveAuthorizedUser ", sys.exc_type, sys.exc_value
+
+    def __ReadConfigFile( self, configFile ):
+
+        defaultNodeConfigurationOption = "NodeConfiguration.defaultNodeConfiguration"
+        configDirOption = "NodeConfiguration.configDir"
+        servicesDirOption = "NodeConfiguration.servicesDir"
+
+        from AccessGrid.Utilities import LoadConfig
+        config = LoadConfig( configFile )
+        if defaultNodeConfigurationOption in config.keys():
+            self.defaultConfig = config[defaultNodeConfigurationOption]
+        if configDirOption in config.keys():
+            self.configDir = config[configDirOption]
+        if servicesDirOption in config.keys():
+            self.servicesDir = config[servicesDirOption]
+

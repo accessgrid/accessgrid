@@ -5,7 +5,7 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.17 2003-02-10 14:47:37 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.18 2003-02-12 20:08:23 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -233,25 +233,26 @@ from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 
 class AGServiceImplementationRepository:
 
-    def __init__( self, port=MulticastAddressAllocator().AllocatePort()):
+    def __init__( self, port, servicesDir="services"):
+
+        # if port is 0, find a free port
+        if port == 0:
+            port = MulticastAddressAllocator().AllocatePort()
+
         self.httpd_port = port
+        self.servicesDir = servicesDir
         self.__ReadServiceImplementations()
         thread.start_new_thread( self.__StartWebServer, () )
 
     def __ReadServiceImplementations( self ):
         self.serviceImplementations = []
 
-        servicesDir = "services"
-
-# FIXME - location of services should be configurable by clients
-        if os.path.exists(servicesDir):
-            files = os.listdir(servicesDir)
+        if os.path.exists(self.servicesDir):
+            files = os.listdir(self.servicesDir)
             for file in files:
                 if file.endswith(".zip"):
-                    self.serviceImplementations.append( 'http://%s:%d/services/%s' %
-                       ( socket.gethostname(), self.httpd_port, file ) )
-        else:
-            os.mkdir(servicesDir)
+                    self.serviceImplementations.append( 'http://%s:%d/%s/%s' %
+                       ( socket.gethostname(), self.httpd_port, self.servicesDir, file ) )
 
 
     def GetServiceImplementations( self ):
