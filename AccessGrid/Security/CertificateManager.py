@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.23 2004-04-23 15:28:54 olson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.24 2004-04-23 17:07:01 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.23 2004-04-23 15:28:54 olson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.24 2004-04-23 17:07:01 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -1408,12 +1408,16 @@ class CertificateManagerUserInterface:
             except NoProxyFound:
                 print ""
                 print "No globus proxy found, creating.."
-                self.CreateProxy()
+                success, retry = self.CreateProxy()
+                if not retry:
+                    break
 
             except ProxyExpired:
                 print ""
                 print "No globus proxy found, creating.."
-                self.CreateProxy()
+                success, retry = self.CreateProxy()
+                if not retry:
+                    break
 
             except Exception, e:
                 print "Uncaught exception ", e.__class__
@@ -1429,6 +1433,10 @@ class CertificateManagerUserInterface:
         Command-line interface for creating a Globus proxy.
 
         Collect the passphrase, lifetime in hours, and key-size from user.
+
+        Returns a tuple (success, retry). If success is true, the
+        proxy was created. If false, there was some error. If retry is true, the
+        caller shoudl attempt to retry the proxy creation.
         """
 
         lifetime = "12"
@@ -1442,7 +1450,7 @@ class CertificateManagerUserInterface:
 
             if passphrase == "":
                 print "Empty passphrase received; aborting."
-                return
+                return (0, 0)
             
             print "Lifetime in hours [%s]: " % (lifetime,),
             inp_lifetime = sys.stdin.readline()
@@ -1475,12 +1483,22 @@ class CertificateManagerUserInterface:
             try:
                 self.certificateManager.CreateProxyCertificate(passphrase, bits, lifetime)
                 print "Proxy created"
+                ret = (1, 0)
                 break
+            except ProxyGen.GridProxyInitError, e:
+                log.exception("create proxy raised excpetion")
+                print ""
+                print "Proxy initialization error: ", e
+                ret = (0, 0)
+                break
+            
             except:
                 log.exception("create proxy raised excpetion")
                 print ""
                 print "Invalid passphrase."
                 continue
+
+        return ret
 
     def RequestCertificate(self, reqInfo, password,
                            proxyEnabled, proxyHost, proxyPort):
