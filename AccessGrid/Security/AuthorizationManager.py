@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     
-# RCS-ID:      $Id: AuthorizationManager.py,v 1.11 2004-03-12 05:23:12 judson Exp $
+# RCS-ID:      $Id: AuthorizationManager.py,v 1.12 2004-03-15 20:12:19 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ provides external interfaces for managing and using the role based
 authorization layer.
 """
 
-__revision__ = "$Id: AuthorizationManager.py,v 1.11 2004-03-12 05:23:12 judson Exp $"
+__revision__ = "$Id: AuthorizationManager.py,v 1.12 2004-03-15 20:12:19 lefvert Exp $"
 
 # External Imports
 import os
@@ -116,7 +116,7 @@ class AuthorizationManager:
                 if sl.count(s) == 0:
                     sl.append(s)
             r = Role(node.attributes["name"].value, sl)
-            if node.attributes.has_key("default"):    
+            if "default" in node.attributes.keys():    
                 return (r, 1)
             else:
                 return(r, 0)
@@ -129,6 +129,10 @@ class AuthorizationManager:
                 a.AddRole(r)
 
             return a
+
+        # Reset current configuration
+        self.roles = []
+        self.actions = []
         
         domP = xml.dom.minidom.parseString(policy)
         
@@ -510,6 +514,15 @@ class AuthorizationManagerI(SOAPInterface):
         @type policy: a string containing an XML formatted policy.
         """
         self.impl.ImportPolicy(policy)
+
+    def ImportPolicy(self, policy):
+        """
+        Import policy.
+
+        @param policy: an authorization policy
+        @type policy: a string containing an XML formatted policy.
+        """
+        self.impl.ImportPolicy(policy)
         
     def GetPolicy(self):
         """
@@ -816,6 +829,16 @@ class AuthorizationManagerIW(SOAPIWrapper):
         @type policy: a string containing an XML formatted policy.
         """
         self.proxy.TestImportExport(policy)
+
+    def ImportPolicy(self, policy):
+        """
+        Imports a policy.
+
+        @param policy: an authorization policy
+        @type policy: a string containing an XML formatted policy.
+        """
+        self.proxy.ImportPolicy(policy)
+    
         
     def GetPolicy(self):
         """
