@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.213 2003-06-26 20:34:40 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.214 2003-06-27 16:08:25 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1483,9 +1483,16 @@ class ContentListPanel(wxPanel):
             self.tree.SetItemData(participantData, wxTreeItemData(data))
 
         if(self.tree.GetChildrenCount(participant) == 0):
+            index = -1
+
+            # To solve wx bug
+            if sys.platform == "win32":
+                index = -2
+                
             # Add this text to force a + in front of empty participant
-            tempId = self.tree.AppendItem(participant, "No personal data available")
+            tempId = self.tree.AppendItem(participant, "No personal data available", index, index)
             self.temporaryDataDict[profile.publicId] = tempId
+
         self.tree.SortChildren(participant)
             
     def RemoveParticipantData(self, dataTreeId):
@@ -1567,7 +1574,6 @@ class ContentListPanel(wxPanel):
                     #
                                         
                     if not self.personalDataDict.has_key(profile.id):
-                        self.parent.statusbar.SetStatusText("%s just added personal file '%s'"%(ownerProfile.name, profile.name))
                         log.debug("after statusbar")
                         # Remove the temporary text "No personal data available"
                         if self.temporaryDataDict.has_key(id):
@@ -1619,6 +1625,7 @@ class ContentListPanel(wxPanel):
     def RemoveData(self, profile):
         #if venue data
         id = None
+        ownerId = None
         
         if(self.dataDict.has_key(profile.id)):
             log.debug("Remove venue data")
@@ -1638,6 +1645,17 @@ class ContentListPanel(wxPanel):
         if(id != None):
             log.debug("Delete id")
             self.tree.Delete(id)
+
+        if(ownerId and self.tree.GetChildrenCount(ownerId) == 0):
+            index = -1
+            
+            # To solve wx bug
+            if sys.platform == "win32":
+                index = -2
+                
+            # Add this text to force a + in front of empty participant
+            tempId = self.tree.AppendItem(ownerId, "No personal data available", index, index)
+            self.temporaryDataDict[ownerProfile.publicId] = tempId
                           
     def AddService(self, profile):
         service = self.tree.AppendItem(self.services, profile.name,
@@ -1748,11 +1766,15 @@ class ContentListPanel(wxPanel):
         item = self.tree.GetItemData(treeId).GetData()
 
         if item:
-            dataDescriptionList = self.app.GetPersonalData(item)
-            if dataDescriptionList:
-                for data in dataDescriptionList:
-                    self.AddData(data)
-                          
+            try:
+                dataDescriptionList = self.app.GetPersonalData(item)
+                if dataDescriptionList:
+                    for data in dataDescriptionList:
+                        self.AddData(data)
+            except:
+                ErrorDialog(None, text, "%s's data could not be retrieved."%item.name ,
+                            style = wxOK  | wxICON_ERROR)
+                
     def OnDoubleClick(self, event):
         self.x = event.GetX()
         self.y = event.GetY()
