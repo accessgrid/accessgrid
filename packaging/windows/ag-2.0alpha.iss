@@ -20,7 +20,7 @@ AppCopyright=Copyright © 2003 University of Chicago. All Rights Reserved.
 
 AppName=Access Grid Toolkit
 
-AppVerName=Access Grid Toolkit 2.0 alpha 4
+AppVerName=Access Grid Toolkit 2.0 beta 1
 
 LicenseFile=COPYING.txt
 
@@ -234,5 +234,5 @@ Name: {app}\config; Components: Venue_Client
 ; It would be a good idea to figure out how to pass the SourceDir as a 
 ; parameter to prebuild. Ti and I have chatted about this, it's on the 
 ; to do list :-)
-;Name: C:\AccessGridBuild\AccessGrid\packaging\windows\Prebuild.cmd; Flags: abortonerror
+Name: C:\AccessGridBuild\AccessGrid\packaging\windows\Prebuild.cmd; Flags: abortonerror
 Name: packaging\windows\makeServicePackages.py; Parameters: " ""{}"" ""{}"" "; Flags: abortonerror
