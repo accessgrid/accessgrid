@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: EventService.py,v 1.20 2003-05-16 04:17:26 judson Exp $
+# RCS-ID:      $Id: EventService.py,v 1.21 2003-06-26 20:53:48 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,6 +27,7 @@ class ThreadingGSITCPSocketServer(ThreadingMixIn, GSITCPSocketServer): pass
 
 from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Events import ConnectEvent, DisconnectEvent
+from AccessGrid.Events import AddPersonalDataEvent, RemovePersonalDataEvent, UpdatePersonalDataEvent
 
 log = logging.getLogger("AG.VenueServer")
 log.setLevel(logging.INFO)
@@ -53,6 +54,7 @@ class ConnectionHandler(StreamRequestHandler):
         self.running = 1
         while(self.running):
             event = None
+           
             try:
                 # This is hardwired to 4 byte size for now
                 data = self.rfile.read(4)
@@ -98,8 +100,9 @@ class ConnectionHandler(StreamRequestHandler):
             # Pass this event to the callback registered for this
             # event.eventType
             log.debug("EventConnection: Received event %s", event)
-            
+                    
             if event.eventType == ConnectEvent.CONNECT:
+               
                 log.debug("EventConnection: Adding client %s to venue %s",
                           event.data, event.venue)
                 self.channel = event.venue
@@ -113,7 +116,35 @@ class ConnectionHandler(StreamRequestHandler):
                 if self.channel != None:
                     self.server.connections[self.channel].remove(self)
                     self.running = 0
-            
+
+            if event.eventType == AddPersonalDataEvent.ADD_PERSONAL_DATA:
+                log.debug("EventService:ConnectionHandlet: ADD_PERSONAL_DATA, venue id: %s, data: %s",
+                          event.venue, event.data)
+                if self.channel != None:
+                    self.server.eventService.Distribute(event.venue,
+                                                        Event( Event.ADD_DATA,
+                                                               event.venue,
+                                                               event.data))
+
+            if event.eventType == RemovePersonalDataEvent.REMOVE_PERSONAL_DATA:
+                log.debug("EventService:ConnectionHandlet: REMOVE_PERSONAL_DATA, venue id: %s, data: %s",
+                          event.venue, event.data)
+                
+                if self.channel != None:
+                    self.server.eventService.Distribute(event.venue,
+                                                        Event( Event.REMOVE_DATA,
+                                                               event.venue,
+                                                               event,data))
+
+            if event.eventType == UpdatePersonalDataEvent.UPDATE_PERSONAL_DATA:
+                log.debug("EventService:ConnectionHandlet: UPDATE_PERSONAL_DATA, venue id: %s, data: %s",
+                          event.venue, event.data)
+                
+                if self.channel != None:
+                    self.server.eventService.Distribute(event.venue,
+                                                        Event( Event.UPDATE_DATA,
+                                                               event.venue,
+                                                               event.data))
             # Pass this event to the callback registered for this
             # event.eventType
             if self.server.callbacks.has_key((event.venue,
