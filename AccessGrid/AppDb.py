@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.9 2003-09-29 13:11:33 judson Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.10 2003-09-29 20:59:21 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ used by client software that wants to keep track of what AG specific
 tools are appropriate for specific data types. It also keeps track of
 how to invoke those tools.
 """
-__revision__ = "$Id: AppDb.py,v 1.9 2003-09-29 13:11:33 judson Exp $"
+__revision__ = "$Id: AppDb.py,v 1.10 2003-09-29 20:59:21 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -319,7 +319,10 @@ class AppDb:
             return cmdStr
 
         pCmd = self._GetPrivVerb(cmdName, mimeType)
-        key = self.defaultSeparator.join([mimeType, pCmd])
+        if pCmd != None:
+            key = self.defaultSeparator.join([mimeType, pCmd])
+        else:
+            return cmdStr
 
         try:
             cmdStr = self.AppDb[key]
