@@ -36,21 +36,10 @@ cvsroot = ":pserver:anonymous@fl-cvs.mcs.anl.gov:/cvsroot"
 
 os.environ['CVSROOT'] = cvsroot
 
-if 1:
-    cmd = 'cvs login'
-    print "cmd=", cmd
-    (wr, rd) = os.popen4(cmd)
-    wr.write("\n")
-    wr.close()
-    while 1:
-        l = rd.readline()
-        print "read ", l,
-        if l == '':
-            break
-
-    rd.close()
-
-    os.system("cvs export -D now AccessGrid")
+rc = os.system("cvs export -D now AccessGrid")
+if rc != 0:
+    print "cvs failed"
+    sys.exit(1)
 
 #
 # Okay, we've got our code checked out. Create
