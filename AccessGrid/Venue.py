@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.186 2004-04-16 16:52:02 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.187 2004-04-16 20:10:54 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.186 2004-04-16 16:52:02 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.187 2004-04-16 20:10:54 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -2091,10 +2091,12 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
             log.exception("VenueI.GetClients: exception")
             raise
 
-    def AddNetworkService(self, clientType, privateId=str(GUID())):
+    def AddNetworkService(self, clientType, privateId=None):
         """
         AddNetworkService adds a net service to those in the venue
         """
+        if privateId == None:
+            privateId = str(GUID())
 
         # Lock and do the call
         try:
