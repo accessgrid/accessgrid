@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.1 2003-04-24 22:10:15 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.2 2003-05-05 20:29:23 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -42,8 +42,11 @@ class AudioService( AGService ):
          # Start the service; in this case, store command line args in a list and let
          # the superclass _Start the service
          options = []
-         #options.append( "-name" )
-         #options.append( self.streamDescription.name )
+         if self.streamDescription.name and len(self.streamDescription.name.strip()) > 0:
+            options.append( "-C" )
+            options.append( self.streamDescription.name )
+         options.append( "-f" )
+         options.append( "L16-16K-Mono" )
          options.append( "-t" )
          options.append( '%d' % (self.streamDescription.location.ttl ) )
          if self.streamDescription.encryptionFlag != 0:
