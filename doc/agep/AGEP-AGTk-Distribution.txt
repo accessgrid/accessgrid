@@ -1,0 +1,84 @@
+=====================================
+AGTk-Distribution
+=====================================
+ 
+:version: $Revision: 1.1 $
+:author: Eric Olson <eolson@mcs.anl.gov>
+:status: Draft
+
+Abstract
+========
+
+This document specifies the strategy for providing the various distributions of the Access Grid Toolkit.  In the past, it has only been possible for the core developers to package and test for a set number of platforms due to the amount of time and equipment this requires.  This document specifies which platforms the core developers are responsible for packaging and testing.  It also outlines the help to be provided to those desiring to package the AGTk for other platforms or distributions.  
+
+Overview
+========
+
+Core Developer AGTk Distributions
+
+The core developers create at least the following AGTk packages:
+  Windows
+  Linux -- at least one distribution
+    currently - Redhat 7.3
+    future platform to be determined
+  Mac OSX -- in the future
+  Source Tarball
+
+The core developers also test these packages with a combination of programmatic and manual tests outlined in AGEP-### Testing Strategy.
+
+
+Additional AGTk Distributions
+
+The AGEP-#### Porting Guide will provide help with details involved with porting the AGTk to new platforms and distributions.
+
+With the help of AGTk documentation and platform configuration abstractions within the code, others can create packages for additional platforms and OS distributions.  These packages are then accepted by the AG Team and posted on the main website for download.  The code to create these packages is encouraged to be submitted for inclusion into the AGTk source.  This will allow others to build AGTk for those platforms and possibly return improvements to the code as well.  
+
+To help others create packages for additional platforms, the document ToolkitConfigurationAndInitialization.doc (currently available with the source code in cvs) describes platform dependencies such as platform specific paths.  The modifications from AGEP-#### Abstracting Platform Configuration will provide an abstraction for platform specific paths so they are easy to reconfigure.
+
+Anyone who creates a package should also run the tests outlined in AGEP-#### Testing Strategy or enlist the help of others to complete the tests.
+
+Module Organization
+-------------------
+
+AccessGrid
+  packaging
+    linux
+    mac
+    windows
+   
+Security Issues
+===============
+
+For those that require exceptionally high levels of security, the following extra precautions can be taken.
+
+  Using one of the distributions packaged by the core AG Team ensures that they are built from the published code without additional mischevious code.
+  If another platform or OS distribution is used, measures can be taken to ensure it was built by someone that is trusted or built by the person or group requiring the security.  To allow this, the code to package other distributions will be available with the source code after it is received (in cvs and future source tarballs).  
+
+Related AGEPs
+=============
+
+AGEP-#### Porting Guide
+AGEP-#### Test Strategy
+AGEP-#### Abstracting Platform Configuration
+
+References
+==========
+
+ToolkitAndConfiguration.doc (available with source code through cvs)
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
