@@ -6,13 +6,13 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.101 2003-09-17 19:36:03 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.102 2003-09-17 20:15:53 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: VenueManagement.py,v 1.101 2003-09-17 19:36:03 eolson Exp $"
+__revision__ = "$Id: VenueManagement.py,v 1.102 2003-09-17 20:15:53 lefvert Exp $"
 
 import webbrowser
 import string
@@ -760,8 +760,10 @@ class VenueListPanel(wxPanel):
         # called during initialization of the application and default venue
         # is already set in the server.
         #
+       
         
-        if not init and venue.name != self.defaultVenue.name:
+        if not init and venue.uri != self.defaultVenue.uri:
+            "remove default text from old default"
             # Remove default text from old default venue
             id = self.venuesList.FindString(self.defaultVenue.name +self.DEFAULT_STRING)
             self.venuesList.SetString(id, self.defaultVenue.name)
@@ -771,7 +773,7 @@ class VenueListPanel(wxPanel):
             
         self.defaultVenue = venue
         id = self.venuesList.FindString(venue.name)
-               
+        
         if id != wxNOT_FOUND:
             self.venuesList.SetString(id, venue.name+self.DEFAULT_STRING)
 
@@ -797,6 +799,13 @@ class VenueListPanel(wxPanel):
                 self.venuesList.SetString(item, venue.name)
                 venue.connections = connectionDict
                 self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
+
+                # Set default venue
+                             
+                if venue.uri == self.defaultVenue.uri:
+                    self.SetDefaultVenue(venue)
+                    
+                
      
     def SetEncryption(self, value, key):
         item = self.venuesList.GetSelection()
