@@ -26,14 +26,27 @@ class Event:
         self.data = data
 
 class VenueState:
-    def __init__( self ):
-        self.description = None
+    def __init__( self, description, connections, users,
+                  nodes, data, services, coherenceLocation ):
+        self.description = description
+        self.coherenceLocation = coherenceLocation
+
         self.connections = dict()
         self.users = dict()
-        self.nodes = []
+        self.nodes = dict()
         self.data = dict()
         self.services = dict()
-        self.coherenceLocation = None
+
+        for connection in connections:
+            self.connections[connection.uri] = connection
+        for user in users:
+            self.users[user.publicId] = user
+        for node in nodes:
+            self.nodes[node.publicId] = node
+        for datum in data:
+            self.data[datum.name] = datum
+        for service in services:
+            self.services[service.uri] = service
 
     def SetDescription( self, description ):
         self.description = description
@@ -44,6 +57,8 @@ class VenueState:
         self.users[userProfile.publicId] = userProfile
     def RemoveUser( self, userProfile ):
         del self.users[userProfile.publicId]
+    def GetUsers( self ):
+        return self.users.values()
 
     def AddNode( self, nodeProfile ):
         self.nodes[nodeProfile.publicId] = nodeProfile
