@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.138 2004-03-04 15:57:24 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.139 2004-03-04 22:41:19 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.138 2004-03-04 15:57:24 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.139 2004-03-04 22:41:19 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -802,8 +802,9 @@ class VenueClient:
                 log.info("ExitVenue: Don't have a node service")
 
             log.info("ExitVenue: Stopping node services")
-            self.nodeService.StopServices()
-            self.nodeService.SetStreams([])
+            if self.nodeService:
+                self.nodeService.StopServices()
+                self.nodeService.SetStreams([])
 
         #
         # Save personal data
