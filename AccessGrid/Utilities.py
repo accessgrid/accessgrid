@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Utilities.py,v 1.67 2004-05-10 19:07:59 lefvert Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.68 2004-05-11 04:08:06 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: Utilities.py,v 1.67 2004-05-10 19:07:59 lefvert Exp $"
+__revision__ = "$Id: Utilities.py,v 1.68 2004-05-11 04:08:06 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -318,6 +318,15 @@ def SubmitBug(comment, profile, email, userConfig, logFile = VENUE_CLIENT_LOG):
                                  os.path.join(logDir, "ServiceManager.log"))\
              +"\n\n--- AGService.log INFORMATION ---\n\n"+GetLogText(20000,
                                  os.path.join(logDir, "AGService.log"))
+
+        # Append other service logs, too
+        otherServiceLogs = os.listdir(logDir)
+        for serviceLog in otherServiceLogs:
+            if serviceLog.endswith('Service.log'):
+                commentAndLog = commentAndLog \
+                     +"\n\n--- %s INFORMATION ---\n\n" % (serviceLog,)    \
+                     +GetLogText(20000,os.path.join(logDir, serviceLog))
+
 
     # If we've got a logToSearch, look at it to find a GSI exception
     # at the end.  If it has one, mark the component as Certificate
