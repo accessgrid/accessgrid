@@ -2,12 +2,12 @@
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.22 2004-05-03 22:18:34 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.23 2004-05-10 17:02:05 lefvert Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.22 2004-05-03 22:18:34 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.23 2004-05-10 17:02:05 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 # standard imports
@@ -743,6 +743,7 @@ class VenueClientController:
         # Plumbing for getting progress callbacks to the dialog
         #
         def progressCB(filename, sent, total, file_done, xfer_done):
+                       
             if not self.gui.UploadFilesDialogCancelled():
                 self.gui.UpdateUploadFilesDialog(filename, sent, total,file_done, 
                                                  xfer_done)
@@ -865,7 +866,7 @@ class VenueClientController:
             #
             def progressCB(progress, done):
                 if not self.gui.SaveFileDialogCancelled():
-                    self.gui.UpdateSaveFileDialog(progress,done)
+                    self.gui.UpdateSaveFileDialog(dataDescription.name, progress,done)
                 return self.gui.SaveFileDialogCancelled()
 
             #
