@@ -41,13 +41,13 @@ class AGVersionTestCase(unittest.TestCase):
        assert a > b
        assert not a < b
        assert a <> b
-       assert str(a) == "2.1.0"
-       assert str(b) == "2.0.0"
+       assert str(a) == "2.1"
+       assert str(b) == "2.0"
        assert a.AsTuple3() == (2,1,0)
        assert b.AsTuple3() == (2,0,0)
 
     def testC(self):
-       a = CreateVersionFromString("2.1.0")
+       a = CreateVersionFromString("2.1")
        b = CreateVersionFromString("2.1.1")
        assert not a == b
        assert not a >= b
@@ -55,7 +55,7 @@ class AGVersionTestCase(unittest.TestCase):
        assert not a > b
        assert a < b
        assert a <> b
-       assert str(a) == "2.1.0"
+       assert str(a) == "2.1"
        assert str(b) == "2.1.1"
        assert a.AsTuple3() == (2,1,0)
        assert b.AsTuple3() == (2,1,1)
@@ -112,7 +112,7 @@ class AGVersionTestCase(unittest.TestCase):
        assert a > b
        assert a <> b
        assert str(a) == "2.1.1"
-       assert str(b) == "2.1.0"
+       assert str(b) == "2.1"
        assert a.AsTuple3() == (2,1,1)
        assert b.AsTuple3() == (2,1,0)
 
@@ -125,7 +125,7 @@ class AGVersionTestCase(unittest.TestCase):
        assert a < b
        assert not a > b
        assert a <> b
-       assert str(a) == "2.1.0"
+       assert str(a) == "2.1"
        assert str(b) == "2.1.1"
        assert a.AsTuple3() == (2,1,0)
        assert b.AsTuple3() == (2,1,1)
