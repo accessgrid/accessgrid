@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: ClientProfile.py,v 1.12 2003-01-28 17:34:18 judson Exp $
+# RCS-ID:      $Id: ClientProfile.py,v 1.13 2003-01-28 20:14:21 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,6 +15,7 @@ import ConfigParser
 import string
 
 from AccessGrid.Utilities import LoadConfig, SaveConfig
+from AccessGrid.GUID import GUID
 
 class InvalidProfileException(Exception):
     """
@@ -49,7 +50,7 @@ class ClientProfile:
         'ClientProfile.email' : 'john@mail.com',
         'ClientProfile.phone' : '+1 888 959 5555',
         'ClientProfile.icon' : '',
-        'ClientProfile.id' : 'do-de-do',
+        'ClientProfile.id' : '',
         'ClientProfile.location' : 'Nowhere, Fast',
         'ClientProfile.venueclienturl' : '',
         'ClientProfile.techsupportinfo' : '',
@@ -82,6 +83,8 @@ class ClientProfile:
     def Load(self, fileName):
 	"""
 	"""
+        profile = ClientProfile.defaultProfile.copy()
+        profile['ClientProfile.id'] = GUID()
         self.profile = LoadConfig(fileName, ClientProfile.defaultProfile)
 
         if self.CheckProfile():
@@ -101,6 +104,9 @@ class ClientProfile:
     def Dump(self):
         """
         """
+        print "Profile: "
+        for k in self.profile.keys():
+            print "Key: %s Value: %s" % (k, self.profile[k])
         print "Profile Type: " + self.profileType
         print "Name: " + self.name
         print "Email: " + self.email
@@ -129,7 +135,10 @@ class ClientProfile:
         SaveConfig(fileName, config)
 
     def IsDefault(self):
-        if self.profile == ClientProfile.defaultProfile:
+        sc = self.profile.copy()
+        sc['ClientProfile.id'] = ''
+        
+        if sc == ClientProfile.defaultProfile:
             return 1
         else:
             return 0
@@ -200,7 +209,7 @@ class ClientProfile:
     def SetVenuClientURL(self, venueClientURL):
         """ """
         self.venueClientURL = venueClientURL
-        self.profile[ClientProfile.configSection + '.venueclienturl'] = venueclienturl
+        self.profile[ClientProfile.configSection + '.venueclienturl'] = venueClientURL
     
     def GetVenueClientURL(self):
         """ """
@@ -209,7 +218,7 @@ class ClientProfile:
     def SetTechSupportInfo(self, techSupportInfo):
         """ """
         self.techSupportInfo = techSupportInfo
-        self.profile[ClientProfile.configSection + '.techsupportinfo'] = techsupportinfo
+        self.profile[ClientProfile.configSection + '.techsupportinfo'] = techSupportInfo
         
     def GetTechSupportInfo(self):
         """ """
