@@ -5,13 +5,13 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.60 2004-05-07 20:15:57 turam Exp $
+# RCS-ID:      $Id: NodeManagementUIClasses.py,v 1.61 2004-05-09 03:02:50 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: NodeManagementUIClasses.py,v 1.60 2004-05-07 20:15:57 turam Exp $"
+__revision__ = "$Id: NodeManagementUIClasses.py,v 1.61 2004-05-09 03:02:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 import sys
 
@@ -70,13 +70,6 @@ ID_SERVICE_ENABLE_ONE = 405
 ID_SERVICE_DISABLE = 406
 ID_SERVICE_DISABLE_ONE = 407
 
-ID_VENUE_ARGONNE = 500
-ID_VENUE_LOBBY = 501
-ID_VENUE_LOCAL = 502
-ID_VENUE_TESTROOM = 503
-
-ID_DUM = 600
-
 ID_HELP_ABOUT = 701
 
 
@@ -85,8 +78,8 @@ def BuildServiceManagerMenu( ):
     Used in the pulldown and popup menus to display the service manager menu
     """
     menu = wxMenu()
-    menu.Append(ID_HOST_ADD, "Add...", "Add Service Manager")
-    menu.Append(ID_HOST_REMOVE, "Remove", "Remove Service Manager")
+    menu.Append(ID_HOST_ADD, "Add...", "Add a ServiceManager")
+    menu.Append(ID_HOST_REMOVE, "Remove", "Remove a ServiceManager")
     return menu
 
 def BuildServiceMenu( ):
@@ -94,13 +87,13 @@ def BuildServiceMenu( ):
     Used in the pulldown and popup menus to display the service menu
     """
     svcmenu = wxMenu()
-    svcmenu.Append(ID_SERVICE_ADD_SERVICE, "Add...", "Add Service")
-    svcmenu.Append(ID_SERVICE_REMOVE, "Remove", "Remove Service")
+    svcmenu.Append(ID_SERVICE_ADD_SERVICE, "Add...", "Add a Service")
+    svcmenu.Append(ID_SERVICE_REMOVE, "Remove", "Remove the selected Service")
     svcmenu.AppendSeparator()
-    svcmenu.Append(ID_SERVICE_ENABLE_ONE, "Enable", "Enable Service")
-    svcmenu.Append(ID_SERVICE_DISABLE_ONE, "Disable", "Disable Service")
+    svcmenu.Append(ID_SERVICE_ENABLE_ONE, "Enable", "Enable the selected Service")
+    svcmenu.Append(ID_SERVICE_DISABLE_ONE, "Disable", "Disable the selected Service")
     svcmenu.AppendSeparator()
-    svcmenu.Append(ID_SERVICE_GET_CONFIG, "Configure...", "Configure")
+    svcmenu.Append(ID_SERVICE_GET_CONFIG, "Configure...", "Configure the selected Service")
     return svcmenu
 
 
@@ -235,8 +228,9 @@ class ServiceListCtrl( wxListCtrl ):
                   size=wxDefaultSize, style=wxLC_REPORT):
         listId = wxNewId()
         wxListCtrl.__init__(self, parent, listId, pos, size, style=style)
-        self.InsertColumn( 0, "Service Name", width=wxLIST_AUTOSIZE )
-        self.InsertColumn( 1, "Status", width=wxLIST_AUTOSIZE )
+        self.InsertColumn( 0, "Service Name", width=100 )
+        self.InsertColumn( 1, "Resource", width=wxLIST_AUTOSIZE )
+        self.InsertColumn( 2, "Status", width=wxLIST_AUTOSIZE )
 
         bmap = icons.getDefaultServiceBitmap()
         imageList = wxImageList( bmap.GetWidth(), bmap.GetHeight() )
@@ -254,8 +248,9 @@ class ServiceListCtrl( wxListCtrl ):
         Sets correct column widths.
         """
         w,h = self.GetClientSizeTuple()
-        self.SetColumnWidth(0, w*(0.70) )
-        self.SetColumnWidth(1, w*(0.30) )
+        self.SetColumnWidth(0, 100 )
+        self.SetColumnWidth(1, 40 )
+        self.SetColumnWidth(2, 40 )
               
 class ServiceConfigurationPanel( wxPanel ):
     """
@@ -386,11 +381,8 @@ class NodeManagementClientFrame(wxFrame):
         wxFrame.__init__(self, parent, ID, title,
                          wxDefaultPosition, wxSize(450, 300))
 
-#FIXME - decide whether to use status bar
-        """
-        self.CreateStatusBar()
-        self.SetStatusText("This is the statusbar")
-        """
+        self.CreateStatusBar(2)
+        self.SetStatusText("This is the statusbar",1)
 
         self.SetTitle(title)
         self.SetIcon(icons.getAGIconIcon())
@@ -404,49 +396,38 @@ class NodeManagementClientFrame(wxFrame):
 
         ## FILE menu
 
-        menu = wxMenu()
-        menu.Append(ID_FILE_ATTACH, "Attach to Node...", "Attach")
-        menu.AppendSeparator()
-        menu.Append(ID_FILE_LOAD_CONFIG, "Load Configuration...", "Load Configuration")
-        menu.Append(ID_FILE_STORE_CONFIG, "Store Configuration...", "Store Configuration")
-        menu.AppendSeparator()
-        menu.Append(ID_FILE_EXIT, "E&xit", "Terminate the program")
-        menuBar.Append(menu, "&File");
+        self.fileMenu = wxMenu()
+        self.fileMenu.Append(ID_FILE_ATTACH, "Attach to Node...", 
+                             "Connect to a NodeService")
+        self.fileMenu.AppendSeparator()
+        self.fileMenu.Append(ID_FILE_LOAD_CONFIG, "Load Configuration...", 
+                             "Load a NodeService Configuration")
+        self.fileMenu.Append(ID_FILE_STORE_CONFIG, "Store Configuration...", 
+                             "Store a NodeService Configuration")
+        self.fileMenu.AppendSeparator()
+        self.fileMenu.Append(ID_FILE_EXIT, "E&xit", "Terminate the program")
+        menuBar.Append(self.fileMenu, "&File");
 
         ## VIEW menu
 
-        viewmenu = wxMenu()
-        viewmenu.Append(ID_VIEW_REFRESH, "Update", "Update")
-        menuBar.Append(viewmenu, "&View");
+        self.viewMenu = wxMenu()
+        self.viewMenu.Append(ID_VIEW_REFRESH, "Update", "Synch to the current NodeService state")
+        menuBar.Append(self.viewMenu, "&View");
 
         ## HOST menu
-        menu = BuildServiceManagerMenu()
-        menuBar.Append(menu, "&ServiceManager");
-        self.hostMenu = menu
+        self.serviceManagersMenu = BuildServiceManagerMenu()
+        menuBar.Append(self.serviceManagersMenu, "&ServiceManager");
         
         ## SERVICE menu
 
-        menu = BuildServiceMenu()
-        menuBar.Append(menu, "&Service");
-        self.serviceMenu = menu
+        self.serviceMenu = BuildServiceMenu()
+        menuBar.Append(self.serviceMenu, "&Service");
         
-        ## DEBUG menu
-        """
-        debugMenu = wxMenu()
-        debugMenu.Append(ID_VENUE_TESTROOM, "Go to Test Room", "Dum")
-        debugMenu.Append(ID_VENUE_ARGONNE, "Go to Argonne", "Dum")
-        debugMenu.Append(ID_VENUE_LOBBY, "Goto Lobby", "")
-        debugMenu.Append(ID_VENUE_LOCAL, "Goto Local", "")
-        debugMenu.AppendSeparator()
-        debugMenu.Append(ID_DUM, "Kill Services", "")
-        menuBar.Append(debugMenu, "&Debug");
-        """
-
         ## HELP menu
-        helpMenu = wxMenu()
-        helpMenu.Append(ID_HELP_ABOUT, "&About",
+        self.helpMenu = wxMenu()
+        self.helpMenu.Append(ID_HELP_ABOUT, "&About",
                     "More information about this program")
-        menuBar.Append(helpMenu, "&Help");
+        menuBar.Append(self.helpMenu, "&Help");
 
         self.SetMenuBar(menuBar)
 
@@ -503,11 +484,11 @@ class NodeManagementClientFrame(wxFrame):
         EVT_MENU(self, ID_SERVICE_ENABLE_ONE     ,  self.EnableService )
         EVT_MENU(self, ID_SERVICE_DISABLE        ,  self.DisableServices )
         EVT_MENU(self, ID_SERVICE_DISABLE_ONE    ,  self.DisableService )
-        EVT_MENU(self, ID_VENUE_ARGONNE          ,  self.GotoArgonne )
-        EVT_MENU(self, ID_VENUE_LOBBY            ,  self.GotoLobby )
-        EVT_MENU(self, ID_VENUE_LOCAL            ,  self.GotoLocal )
-        EVT_MENU(self, ID_VENUE_TESTROOM         ,  self.GotoTestRoom )
         EVT_MENU(self, ID_VIEW_REFRESH           ,  self.UpdateUI )
+        
+        self.menuBar = menuBar
+        
+        self.EnableMenus(false)
 
     def Connected(self):
         try:
@@ -516,7 +497,15 @@ class NodeManagementClientFrame(wxFrame):
         except:
             return 0
 
-   
+
+    def EnableMenus(self, flag):
+        self.fileMenu.Enable(ID_FILE_LOAD_CONFIG,flag)
+        self.fileMenu.Enable(ID_FILE_STORE_CONFIG,flag)
+        self.menuBar.EnableTop(1,flag)
+        self.menuBar.EnableTop(2,flag)
+        self.menuBar.EnableTop(3,flag)
+        
+    
 
     ############################
     ## FILE menu
@@ -527,7 +516,7 @@ class NodeManagementClientFrame(wxFrame):
         Attach to a node service
         """
 
-        # Prompt for service manager location
+        # Prompt for node service location
         names = { "Hostname" : "", "Port":"" }
         dlg = MultiTextFieldDialog( self, -1, \
             "Node Attach Dialog", names )
@@ -557,7 +546,7 @@ class NodeManagementClientFrame(wxFrame):
             # Update the servicemanager and service lists
             self.UpdateHostList()
             self.UpdateServiceList()
-
+            
     def AttachToNode( self, nodeServiceUri ):
         """
         This method does the real work of attaching to a node service
@@ -569,9 +558,11 @@ class NodeManagementClientFrame(wxFrame):
         try:
             self.nodeServiceHandle = AGNodeServiceIW( nodeServiceUri )
             self.nodeServiceHandle.IsValid()
-            self.SetTitle( "Access Grid Node Management - Connected" )
+            self.SetStatusText("Connected",1)
+            self.EnableMenus(true)
         except:
-            self.SetTitle( "Access Grid Node Management" )
+            self.SetStatusText("Not Connected",1)
+            self.EnableMenus(false)
             self.ClearUI()
             log.exception("NodeManagementClientFrame.AttachToNode: Invalid Node Service URI: %s" % nodeServiceUri)
 
@@ -598,7 +589,7 @@ class NodeManagementClientFrame(wxFrame):
                 self.Error(e.string)
 
             self.UpdateHostList()
-            self.UpdateServiceList()
+            #self.UpdateServiceList()
 
     def StoreConfiguration( self, event ):
         """
@@ -847,19 +838,17 @@ class NodeManagementClientFrame(wxFrame):
             resources = AGServiceManagerIW( serviceManager.uri ).GetResources()
             if len(resources) > 0:
 
-                applicableResources1 = []
-                serviceCapabilityTypes = map( lambda cap: cap.type, serviceToAdd.capabilities )
-                for resource in resources:
-                    if resource.type in serviceCapabilityTypes:
-                        applicableResources1.append( resource )
-
+                # Find resources applicable to this service
                 applicableResources = []
-                for resource in applicableResources1:
+                for resource in resources:
                     for cap in serviceToAdd.capabilities:
-                        if resource.role == cap.role:
+                        if resource.role == cap.role and resource.type == cap.type:
                             applicableResources.append( resource )
+                            print "app res = ", resource.resource
+                            print "cap role = ", cap.role
 
                 if len(applicableResources) > 0:
+                    log.info("%d resources found; prompt", len(applicableResources))
                     choices = map( lambda res: res.resource, applicableResources )
                     dlg = wxSingleChoiceDialog( self, "Select resource for service", "Add Service: Select Resource",
                            choices )
@@ -877,6 +866,8 @@ class NodeManagementClientFrame(wxFrame):
                         if selectedResource == resource.resource:
                             resourceToAssign = resource
                             break
+                else:
+                    log.info("No applicable resources found")
 
 
             try:
@@ -1010,10 +1001,13 @@ class NodeManagementClientFrame(wxFrame):
         # Get configuration
         config = AGServiceIW( self.services[index].uri ).GetConfiguration()
 
-        # Display the service configuration panel
-        parameters = map( lambda parm: CreateParameter( parm ), config.parameters )
-        self.config = ServiceConfiguration( config.resource, config.executable, parameters )
-        self.LayoutConfiguration()
+        if len(config.parameters) == 0 and not config.resource.resource:
+            self.Error("Service has no configurable options")
+        else:
+            # Display the service configuration panel
+            parameters = map( lambda parm: CreateParameter( parm ), config.parameters )
+            self.config = ServiceConfiguration( config.resource, config.executable, parameters )
+            self.LayoutConfiguration()
 
     def LayoutConfiguration( self ):
         """
@@ -1059,13 +1053,18 @@ class NodeManagementClientFrame(wxFrame):
             for index in indices:
                 self.services = AGServiceManagerIW( self.serviceManagers[index].uri ).GetServices()
                 for svc in self.services:
+                    svccfg = AGServiceIW(svc.uri).GetConfiguration()
                     itemindex = self.serviceList.InsertStringItem( i, svc.name )
                     self.serviceList.SetItemImage( itemindex, 0, 0 )
+                    if svccfg.resource and svccfg.resource != "None" and svccfg.resource != None:
+                        self.serviceList.SetStringItem( i,1, svccfg.resource.resource )
+                    else:
+                        self.serviceList.SetStringItem( i,1, "" )
                     try:
                         if AGServiceIW( svc.uri ).GetEnabled() == 1:
-                            self.serviceList.SetStringItem( i,1, "Enabled" )
+                            self.serviceList.SetStringItem( i,2, "Enabled" )
                         else:
-                            self.serviceList.SetStringItem( i,1, "Disabled" )
+                            self.serviceList.SetStringItem( i,2, "Disabled" )
                     except:
                         log.exception("NodeManagementClientFrame.UpdateServiceList")
                     i = i + 1
@@ -1087,61 +1086,6 @@ class NodeManagementClientFrame(wxFrame):
     ############################
     ## UTILITY methods
     ############################
-    def GotoTestRoom( self, event=None ):
-        streamDs = []
-        streamDs.append( StreamDescription( "Test Room",
-                             MulticastNetworkLocation( "233.2.171.39", 42000, 127 ),
-                             Capability( Capability.CONSUMER, Capability.AUDIO ) ,
-                             0, None, 0 ))
-        streamDs.append( StreamDescription( "Test Room",
-                             MulticastNetworkLocation( "233.2.171.38", 42002, 127 ),
-                             Capability( Capability.CONSUMER, Capability.VIDEO ),
-                             0, None, 0 ) )
-        try:
-            self.nodeServiceHandle.SetStreams( streamDs )
-        except SOAPException, e:
-            log.exception("NodeManagementClientFrame.GotoTestRoom.")
-            self.Error(e.string)
-
-        self.UpdateServiceList()
-
-    def GotoArgonne( self, event=None ):
-        streamDs = []
-        streamDs.append( StreamDescription( "ANL",
-                             MulticastNetworkLocation( "233.2.171.251", 59988, 127 ),
-                             Capability( Capability.CONSUMER, Capability.AUDIO ),
-                             0, None, 0 ) )
-        streamDs.append( StreamDescription( "ANL",
-                             MulticastNetworkLocation( "233.2.171.251", 59986, 127 ),
-                             Capability( Capability.CONSUMER, Capability.VIDEO ),
-                             0, None, 0 ) )
-        self.nodeServiceHandle.SetStreams( streamDs )
-
-        self.UpdateServiceList()
-
-    def GotoLobby( self, event=None ):
-        streamDs = []
-        streamDs.append( StreamDescription( "Lobby",
-                             MulticastNetworkLocation( "224.2.177.155", 55524, 127 ),
-                             Capability( Capability.CONSUMER, Capability.VIDEO ),
-                             0, None, 0 ) )
-        streamDs.append( StreamDescription( "Lobby",
-                             MulticastNetworkLocation( "224.2.211.167", 16964, 127 ),
-                             Capability( Capability.CONSUMER, Capability.AUDIO ),
-                             0, None, 0 ) )
-        self.nodeServiceHandle.SetStreams( streamDs )
-        self.UpdateServiceList()
-
-    def GotoLocal( self, event=None ):
-        streamDs = []
-        streamDs.append( StreamDescription( "",
-                             MulticastNetworkLocation( "localhost", 55524, 127 ),
-                             Capability( Capability.CONSUMER, Capability.VIDEO ),
-                             0, None, 0 ) )
-        self.nodeServiceHandle.SetStreams( streamDs )
-
-        self.UpdateServiceList()
-
     def Error( self, message ):
         wxMessageDialog( self, message, style = wxOK | wxICON_INFORMATION ).ShowModal()
         
@@ -1165,7 +1109,7 @@ class NodeManagementClientFrame(wxFrame):
         # This does not work, bug?
         #pos = list.ClientToScreen( evt.GetPoint() )
         pos = evt.GetPoint() + wxPoint(20, 20)
-        self.PopupMenu(self.hostMenu, pos)
+        self.PopupMenu(self.serviceManagersMenu, pos)
 
     def CheckCredentials(self):
         """
