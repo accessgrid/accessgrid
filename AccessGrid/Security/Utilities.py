@@ -5,7 +5,7 @@
 # Author:      Robert D. Olson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: Utilities.py,v 1.2 2004-03-04 21:22:35 olson Exp $
+# RCS-ID:      $Id: Utilities.py,v 1.3 2004-03-10 23:06:53 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@
 pyGlobus hosting environment utility classes and functions.
 """
 
-__revision__ = "$Id: Utilities.py,v 1.2 2004-03-04 21:22:35 olson Exp $"
+__revision__ = "$Id: Utilities.py,v 1.3 2004-03-10 23:06:53 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 import pyGlobus.io
@@ -219,3 +219,18 @@ try:
 
 except:
     pass
+
+def GetCNFromX509Subject(subject):
+    """
+    Return a short form of the CN in an X509Subject object.
+
+    @param subject:  Name to extract CN from
+    @type subject: X509Subject
+    """
+    
+    cn = []
+    for what, val in subject.get_name_components():
+        if what == "CN":
+           cn.append(val)
+    return ", ".join(cn)
+
