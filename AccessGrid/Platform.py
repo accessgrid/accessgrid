@@ -5,14 +5,14 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.52 2003-09-29 19:29:17 turam Exp $
+# RCS-ID:      $Id: Platform.py,v 1.53 2003-10-14 04:28:49 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 The Platform Module is to isolate OS specific interfaces.
 """
-__revision__ = "$Id: Platform.py,v 1.52 2003-09-29 19:29:17 turam Exp $"
+__revision__ = "$Id: Platform.py,v 1.53 2003-10-14 04:28:49 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -91,7 +91,8 @@ def GetSystemConfigDir():
     if "" == configDir:
 
         if isWindows():
-            base = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA, 0, 0)
+            base = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA, 0,
+                                         0)
             configDir = os.path.join(base, "AccessGrid")
 
         elif isLinux() or isOSX():
@@ -521,6 +522,105 @@ def Win32GetMimeType(extension = None):
 
     return mimeType
 
+def Win32InitUserEnv():
+    """
+    This is a placeholder for doing per user initialization that should
+    happen the first time the user runs any toolkit application. For now,
+    I'm putting globus registry crud in here, later there might be other
+    stuff.
+
+    right now we just want to check and see if registry settings are in
+    place for:
+
+    HKCU\Software\Globus
+    HKCU\Software\Globus\GSI
+    HKCU\Software\Globus\GSI\x509_user_proxy = {%TEMP%|{win}\temp}\proxy
+    HKCU\Software\Globus\GSI\x509_user_key = {userappdata}\globus\userkey.pem
+    HKCU\Software\Globus\GSI\x509_user_cert = {userappdata}\globus\usercert.pem
+    HKCU\Software\Globus\GSI\x509_cert_dir = {commonappdata}\AccessGrid\certificates
+    HKCU\Environment\GLOBUS_LOCATION = {commonappdata}\AccessGrid
+    """
+    # First try to setup GLOBUS_LOCATION, if it's not already set
+    try:
+        key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment")
+        _winreg.QueryValueEx(key, "GLOBUS_LOCATION")
+    except WindowsError:
+        log.info("GLOBUS_LOCATION not set, setting...")
+        # Set Globus Location
+        try:
+            key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Environment", 0,
+                                  _winreg.KEY_ALL_ACCESS)
+            base = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA, 0,
+                                         0)
+            gl = os.path.join(base, "AccessGrid")
+            _winreg.SetValueEx(key, "GLOBUS_LOCATION", 0,
+                               _winreg.REG_EXPAND_SZ, gl)
+        except WindowsError:
+            log.exception("Couldn't setup GLOBUS_LOCATION.")
+            return 0
+    try:
+        # I really want these each in their own try block to figure out
+        # which ones are broken.
+        gkey = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\Globus")
+        gsikey = _winreg.OpenKey(gkey, "GSI")
+        (val, type) = _winreg.QueryValueEx(gsikey, "x509_user_proxy")
+        (val, type) = _winreg.QueryValueEx(gsikey, "x509_user_key")
+        (val, type) = _winreg.QueryValueEx(gsikey, "x509_user_cert")
+        (val, type) = _winreg.QueryValueEx(gsikey, "x509_cert_dir")
+    except WindowsError:
+        log.info("Globus not initialized, doing that now...")
+        try:
+            # Now we initialize everything to the default locations
+
+            # First, get the paths to stuff we need
+            uappdata = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
+            cappdata = shell.SHGetFolderPath(0, shellcon.CSIDL_COMMON_APPDATA,
+                                             0, 0)
+            
+            # second, create the values
+            ukey = os.path.join(uappdata, "globus", "userkey.pem")
+            ucert = os.path.join(uappdata, "globus", "usercert.pem")
+            uproxy = os.path.join(win32api.GetTempPath(), "proxy")
+            certdir = os.path.join(cappdata, "AccessGrid", "certificates")
+            
+            # third, Create the keys
+            gkey = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER,
+                                     "Software\Globus")
+            gsikey = _winreg.CreateKey(gkey, "GSI")
+            
+            # Set the values
+            _winreg.SetValueEx(gsikey, "x509_user_proxy", 0,
+                               _winreg.REG_EXPAND_SZ, uproxy)
+            _winreg.SetValueEx(gsikey, "x509_user_key", 0,
+                               _winreg.REG_EXPAND_SZ, ukey)
+            _winreg.SetValueEx(gsikey, "x509_user_cert", 0,
+                               _winreg.REG_EXPAND_SZ, ucert)
+            _winreg.SetValueEx(gsikey, "x509_cert_dir", 0,
+                               _winreg.REG_EXPAND_SZ, certdir)
+        except WindowsError:
+            log.exception("Couldn't initialize globus environment.")
+            return 0
+
+    return 1
+    
+def Win32SendSettingChange():
+    """
+    This updates all windows with registry changes to the HKCU\Environment key.
+    """
+    import win32gui, win32con
+    
+    ret = win32gui.SendMessageTimeout(win32con.HWND_BROADCAST,
+                                      win32con.WM_SETTINGCHANGE, 0,
+                                      "Environment", win32con.SMTO_NORMAL,
+                                      1000)
+    return ret
+
+def LinuxInitUserEnv():
+    """
+    This is the place for user initialization code to go.
+    """
+    pass
+
 def LinuxGetMimeType(extension = None):
     """
     """
@@ -628,6 +728,7 @@ if isWindows():
     RegisterMimeType = Win32RegisterMimeType
     GetMimeCommands = Win32GetMimeCommands
     GetMimeType = Win32GetMimeType
+    InitUserEnv = Win32InitUserEnv
 else:
     SetRtpDefaults = SetRtpDefaultsUnix
     # We do need this on linux
@@ -635,4 +736,5 @@ else:
     GetMimeCommands = LinuxGetMimeCommands
     GetMimeType = LinuxGetMimeType
     Daemonize = LinuxDaemonize
+    InitUserEnv = LinuxInitUserEnv
 
