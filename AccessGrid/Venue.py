@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.191 2004-04-29 19:25:20 turam Exp $
+# RCS-ID:      $Id: Venue.py,v 1.192 2004-05-04 15:43:34 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.191 2004-04-29 19:25:20 turam Exp $"
+__revision__ = "$Id: Venue.py,v 1.192 2004-05-04 15:43:34 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -432,6 +432,7 @@ class Venue(AuthorizationMixIn):
         userConfig = UserConfig.instance()
         self.profileCachePath = os.path.join(userConfig.GetConfigDir(),
                                              self.profileCachePrefix)
+
         self.cache = ClientProfileCache(self.profileCachePath)
 
     #self.StartApplications()
@@ -1013,10 +1014,10 @@ class Venue(AuthorizationMixIn):
 
         mEvent = MarshalledEvent()
         mEvent.SetEvent(event)
-
+        
         for c in self.clients.values():
             c.SendEvent(mEvent)
-
+        
     def channelAuthCallback(self, event, connObj):
         """
         Authorization callback to gate the connection of new clients
@@ -1172,6 +1173,20 @@ class Venue(AuthorizationMixIn):
         #This can't really do anything until we have something to give back
         pass
 
+    def GetCachedProfiles(self):
+        """
+        This method returns a list of client profiles that have been registered
+        for this venue.
+
+        **Returns:**
+
+        *cachedProfiles* A list of ClientProfiles.
+        """
+        
+        cachedProfiles = self.cache.loadAllProfiles()
+
+        return cachedProfiles
+    
     def Shutdown(self):
         """
         This method cleanly shuts down all active threads associated with the
@@ -1536,6 +1551,7 @@ class Venue(AuthorizationMixIn):
 
         **Raises:**
         """
+               
         log.debug("Called UpdateClientProfile on %s " %clientProfile.name)
 
         for privateId in self.clients.keys():
@@ -1548,7 +1564,7 @@ class Venue(AuthorizationMixIn):
 
         self.DistributeEvent(Event(Event.MODIFY_USER, self.uniqueId,
                                    clientProfile))
-
+      
     def AddData(self, dataDescription ):
         """
         LEGACY: This is just left here not to change the interface for
@@ -1742,7 +1758,7 @@ class Venue(AuthorizationMixIn):
         self.server.hostingEnvironment.RegisterObject(
                                   AuthorizationManagerI(app.authManager),
                                   path=path+'/Authorization')
-
+        
         # pull the url back out and put it in the app object
         appURL = self.server.hostingEnvironment.FindURLForObject(app)
         app.SetHandle(appURL)
@@ -1828,7 +1844,7 @@ class Venue(AuthorizationMixIn):
 
         # Remove the interface
         self.server.hostingEnvironment.UnregisterObject(app)
-        
+                
         # Create the application description
         appDesc = appImpl.AsApplicationDescription()
 
@@ -2129,6 +2145,23 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         # This can't do anything until we have something to return
         return None
 
+    def GetCachedProfiles(self):
+        """
+        This method returns a list of client profiles that have been registered
+        for this venue.
+        
+        **Returns:**
+        
+        *cachedProfiles* A list of ClientProfiles.
+        """
+
+        try:
+            return self.impl.GetCachedProfiles()
+
+        except:
+            log.exception("VenueI.GetCachedProfiles: exception")
+            raise
+            
     def Shutdown(self):
         """
         This method cleanly shuts down all active threads associated with the
@@ -3095,6 +3128,9 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
     
     def AllocateMulticastLocation(self):
         return self.proxy.AllocateMulticastLocation()
+
+    def GetCachedProfiles(self):
+        return self.proxy.GetCachedProfiles()
 
 class StreamDescriptionList:
     """
