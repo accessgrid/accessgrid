@@ -2,14 +2,14 @@
 # Name:        VenueClient.py
 # Purpose:     This is the client side object of the Virtual Venues Services.
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.187 2004-09-03 13:45:05 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.188 2004-09-03 18:19:51 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 
 """
 """
-__revision__ = "$Id: VenueClient.py,v 1.187 2004-09-03 13:45:05 turam Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.188 2004-09-03 18:19:51 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -806,63 +806,67 @@ class VenueClient:
         
         # Initialize a string of warnings that can be displayed to the user.
         self.warningString = ''
+        enterSuccess = 1
        
         #
-        # Turn this block off when fatulHandler support gets finished.
+        # Turn this block off when faultHandler support gets finished.
         #
         if not self.app.certificateManager.HaveValidProxy():
             log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
-            self.app.certificateManager.CreateProxy()
+            ret = self.app.certificateManager.CreateProxy()
+            if not ret:
+                log.info("Proxy not created")
+                self.warningString = "You don't have a valid proxy."
+                enterSuccess = 0
 
-
-        enterSuccess = 1
-        try:
-            # Get capabilities from your node
-            errorInNode = 0
-
+        if self.app.certificateManager.HaveValidProxy():
             try:
-                self.profile.capabilities = self.nodeService.GetCapabilities()
-            except:
-                # This is a non fatal error, users should be notified
-                # but still enter the venue
-                log.info("EnterVenue: Error getting node capabilities")
-                errorInNode = 1
+                # Get capabilities from your node
+                errorInNode = 0
 
-            # Enter the venue
-            self.__EnterVenue(URL)
+                try:
+                    self.profile.capabilities = self.nodeService.GetCapabilities()
+                except:
+                    # This is a non fatal error, users should be notified
+                    # but still enter the venue
+                    log.info("EnterVenue: Error getting node capabilities")
+                    errorInNode = 1
 
-            # Cache profiles from venue.
-            log.debug("Updating client profile cache.")
-            for client in self.venueState.clients.values():
-                self.UpdateProfileCache(client)
+                # Enter the venue
+                self.__EnterVenue(URL)
 
-            #
-            # Return a string of warnings that can be displayed to the user 
-            #
+                # Cache profiles from venue.
+                log.debug("Updating client profile cache.")
+                for client in self.venueState.clients.values():
+                    self.UpdateProfileCache(client)
 
-            if errorInNode:
-                self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences->Manage My Node..." from the main menu'
+                #
+                # Return a string of warnings that can be displayed to the user 
+                #
 
-        except GSITCPSocketException, e:
-            enterSuccess = 0
+                if errorInNode:
+                    self.warningSting = self.warningString + '\n\nA connection to your node could not be established, which means your media tools might not start properly.  If this is a problem, try changing your node configuration by selecting "Preferences->Manage My Node..." from the main menu'
 
-            log.error("EnterVenue: globus tcp exception: %s", e.args)
+            except GSITCPSocketException, e:
+                enterSuccess = 0
 
-            
-            if e.args[0] == 'an authentication operation failed':
-                self.__CheckForInvalidClock()
+                log.error("EnterVenue: globus tcp exception: %s", e.args)
 
-            else:
+
+                if e.args[0] == 'an authentication operation failed':
+                    self.__CheckForInvalidClock()
+
+                else:
+                    log.exception("EnterVenue: failed")
+                    # pass a flag to UI if we fail to enter.
+                    enterSuccess = 0
+
+            except Exception, e:
                 log.exception("EnterVenue: failed")
                 # pass a flag to UI if we fail to enter.
                 enterSuccess = 0
-                
-        except Exception, e:
-            log.exception("EnterVenue: failed")
-            # pass a flag to UI if we fail to enter.
-            enterSuccess = 0
-            # put error in warningString, in redesign will be raised to UI as exception.
-            #self.warningString = str(e.faultstring)
+                # put error in warningString, in redesign will be raised to UI as exception.
+                #self.warningString = str(e.faultstring)
 
         for s in self.observers:
             try:
