@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: AppDb.py,v 1.18 2004-03-23 20:09:14 eolson Exp $
+# RCS-ID:      $Id: AppDb.py,v 1.19 2004-03-24 16:33:15 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ used by client software that wants to keep track of what AG specific
 tools are appropriate for specific data types. It also keeps track of
 how to invoke those tools.
 """
-__revision__ = "$Id: AppDb.py,v 1.18 2004-03-23 20:09:14 eolson Exp $"
+__revision__ = "$Id: AppDb.py,v 1.19 2004-03-24 16:33:15 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -100,27 +100,30 @@ class AppDb:
             
         try:
             self.AppDb = LoadConfig(fileName, separator=self.defaultSeparator)
+
+            # update the file modification time
+            self._UpdateModTime()
         except:
             print sys.exc_info()
             print "Couldn't open application database: %s" % fileName
             
-        # update the file modification time
-        self._UpdateModTime()
 
     def _Synch(self):
         """
         Synch the in-memory app db with the file, if necessary
         """
-        fileLastModified = os.stat(self.fileName)[stat.ST_MTIME]
-        if fileLastModified > self.fileLastModified:
-            self.Load()
+        if os.access(self.fileName,os.R_OK):
+            fileLastModified = os.stat(self.fileName)[stat.ST_MTIME]
+            if fileLastModified > self.fileLastModified:
+                self.Load()
             
     def _UpdateModTime(self):
         """
         Update the last modified time of the appdb file
         """
-        # store the file modification time
-        self.fileLastModified = os.stat(self.fileName)[stat.ST_MTIME]
+        if os.access(self.fileName,os.R_OK):
+            # store the file modification time
+            self.fileLastModified = os.stat(self.fileName)[stat.ST_MTIME]
 
     def _Flush(self):
         """
