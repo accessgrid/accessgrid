@@ -2,14 +2,14 @@
 # Name:        AGNodeService.py
 # Purpose:     
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGNodeService.py,v 1.78 2004-08-30 18:10:38 turam Exp $
+# RCS-ID:      $Id: AGNodeService.py,v 1.79 2004-09-03 13:22:50 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGNodeService.py,v 1.78 2004-08-30 18:10:38 turam Exp $"
+__revision__ = "$Id: AGNodeService.py,v 1.79 2004-09-03 13:22:50 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -135,12 +135,12 @@ class AGNodeService:
             if e.args[0].endswith('could not be resolved'):
                 parts = urlparse.urlparse(serviceManager.uri)
                 host,port = parts[1].split(':')
-                raise Exception('Host name %s could not be resolved',
+                raise Exception('Host name %s could not be resolved'%
                                 host)
             elif e.args[0].endswith('(Connection refused)'):
                 parts = urlparse.urlparse(serviceManager.uri)
                 host,port = parts[1].split(':')
-                raise Exception('Connection refused on port %s',
+                raise Exception('Connection refused on port %s' %
                                 port)
             else:
                 log.exception("Failed to add service manager %s", serviceManager.uri)
