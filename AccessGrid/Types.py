@@ -5,13 +5,13 @@
 # Author:      Thomas Uram
 #
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.41 2004-02-27 19:10:53 judson Exp $
+# RCS-ID:      $Id: Types.py,v 1.42 2004-03-04 15:31:48 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.41 2004-02-27 19:10:53 judson Exp $"
+__revision__ = "$Id: Types.py,v 1.42 2004-03-04 15:31:48 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -22,116 +22,6 @@ import logging
 log = logging.getLogger("AG.Types")
 
 from AccessGrid.AGParameter import ValueParameter, RangeParameter, OptionSetParameter, CreateParameter
-
-class VenueState:
-    def __init__( self, uniqueId, name, description, uri, connections,
-                  clients, data, eventLocation, textLocation, applications,
-                  services, backupServer=None ):
-        self.uniqueId = uniqueId
-        self.name = name
-        self.description = description
-        self.uri = uri
-        self.eventLocation = eventLocation
-        self.textLocation = textLocation
-        self.services = services
-        self.backupServer = backupServer
-        
-        self.connections = dict()
-        self.clients = dict()
-        self.data = dict()
-        self.clients = dict()
-        self.applications = dict()
-        self.services = dict()
-        
-        for connection in connections:
-            self.connections[connection.uri] = connection
-        for client in clients:
-            self.clients[client.publicId] = client
-        for datum in data:
-            self.data[datum.id] = datum
-        for app in applications:
-            self.applications[app.uri] = app
-        for service in services:
-            self.services[service.id] = service
-
-    def SetUniqueId(self, uniqueId):
-        self.uniqueId = uniqueId
-    def GetUniqueId(self):
-        return self.uniqueId
-
-    def SetDescription( self, description ):
-        self.description = description
-    def GetDescription( self ):
-        return self.description
-
-    def SetName( self, name ):
-        self.name = name
-    def GetName( self ):
-        return self.name
-
-    def SetUri( self, uri ):
-        self.uri = uri
-    def GetUri( self ):
-        return self.uri
-
-    def AddUser( self, userProfile ):
-        self.clients[userProfile.publicId] = userProfile
-    def RemoveUser( self, userProfile ):
-        log.debug("removing user name=%s publicId=%s",
-                  userProfile.name, userProfile.publicId)
-        log.debug("clients = %s", self.clients.items())
-        del self.clients[userProfile.publicId]
-        log.debug("RemoveUser complete")
-    def ModifyUser( self, userProfile ):
-        if userProfile.publicId in self.clients.keys():
-            self.clients[userProfile.publicId] = userProfile
-    def GetUsers( self ):
-        return self.clients.values()
-
-    def AddConnection( self, connectionDescription ):
-        self.connections[connectionDescription.uri] = connectionDescription
-    def RemoveConnection( self, connectionDescription ):
-        del self.connections[connectionDescription.uri]
-    def SetConnections( self, connectionList ):
-        for connection in connectionList:
-            self.connections[connection.uri] = connection
-
-    def AddData( self, dataDescription ):
-        self.data[dataDescription.id] = dataDescription
-        
-    def UpdateData( self, dataDescription ):
-        self.data[dataDescription.id] = dataDescription
-        
-    def RemoveData( self, dataDescription ):
-        del self.data[dataDescription.id]
-
-    def AddService( self, serviceDescription ):
-        self.services[serviceDescription.id] = serviceDescription
-
-    def UpdateService(self, serviceDescription):
-        self.services[serviceDescription.id] = serviceDescription
-        
-    def RemoveService( self, serviceDescription ):
-        del self.services[serviceDescription.id]  
-
-    def AddApplication( self, applicationDescription ):
-        self.applications[applicationDescription.uri] = applicationDescription
-
-    def UpdateApplication(self, applicationDescription):
-        self.applications[applicationDescription.uri] = applicationDescription
-        
-    def RemoveApplication( self, applicationDescription ):
-        self.applications[applicationDescription.uri] = applicationDescription
-
-    def SetEventLocation( self, eventLocation ):
-        self.eventLocation = eventLocation
-    def GetEventLocation( self ):
-        return self.eventLocation
-
-    def SetTextLocation( self, textLocation ):
-        self.textLocation = textLocation
-    def GetTextLocation( self ):
-        return self.textLocation
 
 class AGResource:
     def __init__( self, type=None, resource=None, role="" ):
