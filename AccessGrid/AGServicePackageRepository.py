@@ -3,7 +3,7 @@
 # Purpose:     
 #
 # Created:     2004/03/30
-# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.6 2004-04-27 17:14:31 judson Exp $
+# RCS-ID:      $Id: AGServicePackageRepository.py,v 1.7 2004-04-28 22:19:09 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -49,7 +49,7 @@ class AGServicePackageRepository:
         # Start the transfer server
         self.s = DataStore.GSIHTTPTransferServer((hn, self.port)) 
         self.s.RegisterPrefix(self.prefix, self)
-        threading.Thread( target=self.s.run, name="PackageRepo TransferServer" )
+        threading.Thread( target=self.s.run, name="PackageRepo TransferServer" ).start()
         self.running = 1
         log.debug("Started AGServicePackageRepository Transfer Server at: %s",
                   self.baseUrl)
@@ -63,13 +63,13 @@ class AGServicePackageRepository:
         """
         Return the path to the file specified by the given url path
         """
-        file = os.path.join(self.servicesDir, url_path)
+        filename = os.path.join(self.servicesDir, url_path)
 
         # Catch request for non-existent file
-        if not os.access(file,os.R_OK):
-            log.info("Attempt to download non-existent file: %s" % (file) )
-            raise DataStore.FileNotFound(file)
-        return file
+        if not os.access(filename,os.R_OK):
+            log.info("Attempt to download non-existent file: %s" % (filename) )
+            raise DataStore.FileNotFound(filename)
+        return filename
 
     def GetPackageUrl( self, file ):
         return self.baseUrl + file
