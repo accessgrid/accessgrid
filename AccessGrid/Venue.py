@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.68 2003-04-03 15:35:48 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.69 2003-04-04 00:33:09 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -142,8 +142,11 @@ class Venue(ServiceBase.ServiceBase):
         clist = ":".join(map( lambda conn: conn.GetId(),
                               self.connections.values() ))
         string += "connections : %s\n" % clist
-        dlist = ":".join(map( lambda data: self.server.IdFromURL(data.GetId()),
-                              self.data.values() ))
+        # Data is persisted entirely within the datastore
+        # I should figure out the call to get a list of data descriptions
+        # dlist = ":".join(map( lambda data: self.server.IdFromURL(data.GetId()),
+        # self.data.values() ))
+        
         string += "data : %s\n" % dlist
         slist = ":".join(map( lambda stream: stream.GetId(),
                               self.streamList.GetStaticStreams() ))
@@ -152,8 +155,9 @@ class Venue(ServiceBase.ServiceBase):
         
         string += "\n".join(map(lambda conn: conn.AsINIBlock(),
                                 self.connections.values() ))
-        string += "\n".join(map(lambda data: data.AsINIBlock(),
-                                self.data.values() ))
+        # This is data descriptions again, see above
+        # string += "\n".join(map(lambda data: data.AsINIBlock(),
+        #                         self.data.values() ))
         string += "\n".join(map(lambda stream: stream.AsINIBlock(),
                        self.streamList.GetStaticStreams()))
 
