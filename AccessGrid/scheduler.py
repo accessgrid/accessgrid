@@ -1,13 +1,13 @@
 import time
-import threading
+from threading import Thread
 
-class Task( threading.Thread ):
+class Task( Thread ):
     def __init__( self, action, loopdelay, initdelay ):
         self._action = action
         self._loopdelay = loopdelay
         self._initdelay = initdelay
         self._running = 1
-        threading.Thread.__init__( self )
+        Thread.__init__( self )
 
     def __repr__( self ):
         return '%s %s %s' % (
@@ -25,26 +25,26 @@ class Task( threading.Thread ):
 
     def stop( self ):
         self._running = 0
-   
+
 class Scheduler:
     def __init__( self ):
         self._tasks = []
-       
+
     def __repr__( self ):
         rep = ''
         for task in self._tasks:
             rep += '%s\n' % `task`
         return rep
-       
+
     def AddTask( self, action, loopdelay, initdelay = 0 ):
         task = Task( action, loopdelay, initdelay )
         self._tasks.append( task )
         return task
-   
+
     def StartAllTasks( self ):
         for task in self._tasks:
             task.start()
-   
+
     def StopAllTasks( self ):
         for task in self._tasks:
             print 'Stopping task', task
@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     def timestamp( s ):
         print '%.2f : %s' % ( time.time(), s )
-   
+
     def Task1():
         timestamp( 'Task1' )
 
@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     def Task3():
         timestamp( '\t\tTask3' )
-   
+
     s = Scheduler()
 
     #           task    loopdelay   initdelay
