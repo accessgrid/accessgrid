@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/17/01
-# RCS-ID:      $Id: setup.py,v 1.32 2003-09-10 14:50:31 turam Exp $
+# RCS-ID:      $Id: setup.py,v 1.33 2003-09-10 18:46:47 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -62,25 +62,16 @@ setup(
                    [r"packaging/config/AGNodeService.cfg",
                     ]
                    ),
-                  ('share/AccessGrid/nodeConfig',
+                  ('etc/AccessGrid/nodeConfig',
                    [r"packaging/config/defaultLinux",
                     r"packaging/config/defaultWindows"
-                    ]
-                   ),
-                  ('var/lib/ag/local_services',
-                   [r"services/node/AudioService.py",
-                    r"services/node/AudioService.svc",
-                    r"services/node/VideoConsumerService.py",
-                    r"services/node/VideoConsumerService.svc",
-                    r"services/node/VideoProducerService.py",
-                    r"services/node/VideoProducerService.svc"
                     ]
                    ),
                   ('share/AccessGrid',
                    [r"packaging/ag.ico"
                     ]
                    ),
-                  ('share/AccessGrid/services',
+                  ('etc/AccessGrid/services',
                    [r"services/node/AudioService.zip",
                     r"services/node/VideoConsumerService.zip",
                     r"services/node/VideoProducerService.zip"
