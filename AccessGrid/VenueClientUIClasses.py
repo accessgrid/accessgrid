@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.28 2003-02-14 21:13:52 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.29 2003-02-17 21:00:21 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -40,18 +40,20 @@ class VenueClientFrame(wxFrame):
     '''	
     def __init__(self, parent, id, title, app = None):
         wxFrame.__init__(self, parent, id, title)
+        self.Centre()
 	self.app = app
         self.parent = parent
 	self.menubar = wxMenuBar()
 	self.statusbar = self.CreateStatusBar(1)
 	self.toolbar = wxToolBar(self, 600,wxDefaultPosition,wxDefaultSize, wxTB_TEXT| \
 		  wxTB_HORIZONTAL| wxTB_FLAT)
-	self.venueListPanel = VenueListPanel(self, app) 
+       	self.venueListPanel = VenueListPanel(self, app) 
 	self.contentListPanel = ContentListPanel(self, app)
         self.myVenuesList = []
         self.myVenuesFile = os.path.join(self.app.accessGridPath, "myVenues.txt" )
         self.__setStatusbar()
 	self.__setMenubar()
+        self.venueAddressBar = VenueAddressBar(self, app,self.myVenuesList, 'default venue')
 	self.__setToolbar()
 	self.__setProperties()
         self.__doLayout()
@@ -95,8 +97,8 @@ class VenueClientFrame(wxFrame):
         #self.serviceMenu.Append(233,"Profile")
 	self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",self.serviceMenu)
 	self.menubar.Append(self.venue, "&Venue")
-        self.venue.AppendSeparator()
-        self.venue.Append(self.ID_VENUE_VIRTUAL,"Open virtual venue...",  "Go to new venue")
+        #self.venue.AppendSeparator()
+        #self.venue.Append(self.ID_VENUE_VIRTUAL,"Open virtual venue...",  "Go to new venue")
         self.venue.AppendSeparator()
         self.venue.Append(self.ID_VENUE_CLOSE, 'Close', "Exit venue")
 	
@@ -115,8 +117,7 @@ class VenueClientFrame(wxFrame):
         self.__loadMyVenues()
         self.menubar.Append(self.myVenues, "My &Venues")
         
-      
-	self.help = wxMenu()
+      	self.help = wxMenu()
 	#self.help.Append(301, "Manual")
 	self.help.Append(self.ID_HELP_ABOUT, "About", "Information about the application")
         self.menubar.Append(self.help, "&Help")
@@ -157,6 +158,7 @@ class VenueClientFrame(wxFrame):
 		
     def __doLayout(self):
         self.venueClientSizer = wxBoxSizer(wxVERTICAL)
+        self.venueClientSizer.Add(self.venueAddressBar, 0, wxEXPAND)
         self.venueContentSizer = wxBoxSizer(wxHORIZONTAL)
 	self.venueContentSizer.Add(self.venueListPanel, 0, wxEXPAND)
 	self.venueContentSizer.Add(self.contentListPanel, 2, wxEXPAND)
@@ -222,11 +224,12 @@ class VenueClientFrame(wxFrame):
 
     def OpenSetNodeUrlDialog(self, event = None):
 
-        setNodeUrlDialog = UrlDialog(self, -1, "Please, specify node service URL", self.app.nodeServiceUri)
+        setNodeUrlDialog = UrlDialog(self, -1, "Set node service URL", \
+                                     self.app.nodeServiceUri, "Please, specify node service URL")
 
         if setNodeUrlDialog.ShowModal() == wxID_OK:
             self.app.SetNodeUrl(setNodeUrlDialog.address.GetValue())
-
+       
         setNodeUrlDialog.Destroy()
                 
     def OpenAddDataDialog(self, event = None):
@@ -272,10 +275,32 @@ class VenueClientFrame(wxFrame):
     def OpenNodeMgmtApp(self, event):
         frame = NodeManagementClientFrame(self, -1, "Access Grid Node Management")
         frame.AttachToNode( self.app.nodeServiceUri )
-        if frame.Connected():
+        if frame.Connected(): # Right node service uri
             frame.Update()
             frame.Show(true)
+
+        else: # Not right node service uri
+            setNodeUrlDialog = UrlDialog(self, -1, "Set node service URL", \
+                                         self.app.nodeServiceUri, "Please, specify node service URL")
+            
+            if setNodeUrlDialog.ShowModal() == wxID_OK:
+                self.app.SetNodeUrl(setNodeUrlDialog.address.GetValue())
+                frame.AttachToNode( self.app.nodeServiceUri )
                 
+                if frame.Connected(): # try again
+                    frame.Update()
+                    frame.Show(true)
+
+                else: # wrong url
+                    msgDialog = wxMessageDialog(self, \
+                                                'Can not open node service management\nbased on the URL you specified', \
+                                                'Node Management Error', wxOK | wxICON_INFORMATION)
+                    msgDialog.ShowModal()
+                    msgDialog.Destroy() 
+
+        setNodeUrlDialog.Destroy()
+                
+                          
     def OpenDataProfileDialog(self, event):
         self.contentList.tree.GetSelection()
         profileDialog = ProfileDialog(NULL, -1, 'Profile', self.app.profile)
@@ -348,8 +373,54 @@ class VenueClientFrame(wxFrame):
     def CleanUp(self):
         self.venueListPanel.CleanUp()
         self.contentListPanel.CleanUp()
-        
 
+class VenueAddressBar(wxPanel):
+     def __init__(self, parent, application, venuesList, defaultVenue):     
+         wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
+			 wxDefaultSize, wxRAISED_BORDER)
+         self.application = application
+         # self.addressLabel =  wxStaticText(self, -1,'Address:')
+         self.address = wxComboBox(self, 42, defaultVenue,\
+                        choices = venuesList, style = wxCB_DROPDOWN)
+
+         self.goButton = wxButton(self, 43, "Go", wxDefaultPosition, wxSize(20, 10))
+         #self.description = wxTextCtrl(self, -1, "Please, connect to a venue",\
+         #                              size =  wxSize(40, 40), style = wxTE_MULTILINE)
+         self.__doLayout()
+         self.__addEvents()
+        
+     def __addEvents(self):
+         EVT_BUTTON(self, 43, self.callAddress)
+
+     def SetAddress(self, url):
+         self.address.SetValue(url)
+
+     def AddChoice(self, url):
+         self.address.Append(url)
+
+     def RemoveChoice(self, url):
+         print 'remove', url
+         #self.address.Remove(url)
+
+     def callAddress(self, event):
+         venueUri = self.address.GetValue()
+         self.application.GoToNewVenue(venueUri)
+                         
+     def __doLayout(self):
+         venueServerAddressBox = wxBoxSizer(wxVERTICAL)  
+         box = wxBoxSizer(wxHORIZONTAL)
+         # box.Add(self.addressLabel, 0, wxEXPAND|wxRIGHT|wxLEFT|wxTOP, 5)
+	 box.Add(self.address, 1, wxEXPAND|wxRIGHT|wxTOP, 5)
+         box.Add(self.goButton, 0, wxEXPAND|wxRIGHT|wxTOP, 5)
+	 venueServerAddressBox.Add(box, 0, wxEXPAND|wxBOTTOM, 5)
+         
+         #descriptionBox = wxBoxSizer(wxHORIZONTAL)
+         #descriptionBox.Add(self.description, 1, wxEXPAND|wxBOTTOM, 5)
+         #venueServerAddressBox.Add(descriptionBox, 0, wxEXPAND)
+         self.SetSizer(venueServerAddressBox)
+	 venueServerAddressBox.Fit(self)
+	 self.SetAutoLayout(1)
+       
 class VenueListPanel(wxPanel):
     '''VenueListPanel. 
     
@@ -908,52 +979,19 @@ class UploadFilesDialog(wxDialog):
         value = int(100 * int(bytes_sent) / int(bytes_total))
         self.progress.SetValue(value)
 
-#class ConnectToServerDialog(wxDialog):
-#   def __init__(self, parent, id, title):
- #       wxDialog.__init__(self, parent, id, title)
- #       self.okButton = wxButton(self, wxID_OK, "Ok")
- #       self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
- #       info = "Please, enter server URL address.\nYou will open default venue on the server."
- #       self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
- #       self.addressText = wxStaticText(self, -1, "Address: ", style=wxALIGN_LEFT)
- #       self.address = wxTextCtrl(self, -1, "", size = wxSize(300,20))
- #       self.__doLayout()
-
-  #  def __doLayout(self):
-  #      sizer = wxBoxSizer(wxVERTICAL)
-  #      sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
-  #      sizer1.Add(self.text, 0, wxLEFT|wxRIGHT|wxTOP, 20)
-
-    #    sizer2 = wxBoxSizer(wxHORIZONTAL)
-    #    sizer2.Add(self.addressText, 0)
-    #    sizer2.Add(self.address, 1, wxEXPAND)
-
-   #     sizer1.Add(sizer2, 0, wxEXPAND | wxALL, 20)
-
-   #     sizer3 =  wxBoxSizer(wxHORIZONTAL)
-   #     sizer3.Add(self.okButton, 0, wxALIGN_CENTER | wxALL, 10)
-   #     sizer3.Add(self.cancelButton, 0, wxALIGN_CENTER | wxALL, 10)
-
-  #      sizer.Add(sizer1, 0, wxALIGN_CENTER | wxALL, 10)
-  #      sizer.Add(sizer3, 0, wxALIGN_CENTER)
-  #      self.SetSizer(sizer)
-  #      sizer.Fit(self)
-  #      self.SetAutoLayout(1)
-
 class MainUrlDialog(wxDialog):
     def __init__(self, parent, id, title, address = "", text = None):
         wxDialog.__init__(self, parent, id, title)
         self.okButton = wxButton(self, wxID_OK, "Ok")
         self.cancelButton = wxButton(self, wxID_CANCEL, "Cancel")
+        self.Centre()
         if text == None:
             info = "Please, enter venue URL address"
         else:
             info = text
         self.text = wxStaticText(self, -1, info, style=wxALIGN_LEFT)
         self.addressText = wxStaticText(self, -1, "Address: ", style=wxALIGN_LEFT)
-        #self.address = wxTextCtrl(self, -1, address, size = wxSize(300,20))
-        #self.__doLayout()
-
+       
     def DoLayout(self):
         sizer = wxBoxSizer(wxVERTICAL)
         sizer1 = wxStaticBoxSizer(wxStaticBox(self, -1, ""), wxVERTICAL)
@@ -990,6 +1028,7 @@ class UrlDialog(MainUrlDialog):
 class WelcomeDialog(wxDialog):
     def __init__(self, parent, id, title, name, venueTitle, description):
         wxDialog.__init__(self, parent, id, title)
+        self.Centre()
         self.okButton = wxButton(self, wxID_OK, "Ok")
         text1 = "Welcome, "+name+", to "+venueTitle
         self.text = wxStaticText(self, -1, text1, style=wxALIGN_LEFT)
@@ -1015,6 +1054,7 @@ class WelcomeDialog(wxDialog):
 class ProfileDialog(wxDialog):
     def __init__(self, parent, id, title, profile):
         wxDialog.__init__(self, parent, id, title)
+        self.Centre()
         self.profile = profile
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
         self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,20), validator = TextValidator())
@@ -1116,6 +1156,7 @@ class TextValidator(wxPyValidator):
 class AddServiceDialog(wxDialog):
     def __init__(self, parent, id, title):
         wxDialog.__init__(self, parent, id, title)
+        self.Centre()
         self.nameText = wxStaticText(self, -1, "Name:", style=wxALIGN_LEFT)
         self.nameCtrl = wxTextCtrl(self, -1, "", size = (300,20))
         self.descriptionText = wxStaticText(self, -1, "Description:", style=wxALIGN_LEFT)
