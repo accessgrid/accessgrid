@@ -5,21 +5,20 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: __init__.py,v 1.7 2004-04-05 18:30:57 judson Exp $
+# RCS-ID:      $Id: __init__.py,v 1.8 2004-04-09 13:38:57 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 Platform sub modules.
 """
-__revision__ = "$Id: __init__.py,v 1.7 2004-04-05 18:30:57 judson Exp $"
+__revision__ = "$Id: __init__.py,v 1.8 2004-04-09 13:38:57 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # mechanisms to support multiple hosting environments and to set defaults
 import sys
 
 # Global env var
-AGTK = 'AGTK'
 AGTK_LOCATION = 'AGTK_LOCATION'
 AGTK_USER = 'AGTK_USER'
 AGTK_INSTALL = 'AGTK_INSTALL'
