@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.234 2003-10-14 20:51:42 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.235 2003-10-14 21:03:32 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -163,22 +163,37 @@ class VenueClientUI(VenueClientEventSubscriber):
         # Initialize globus runtime stuff.
         self.startupDialog.UpdateOneStep("Verifying globus environment.")
         self.app.InitGlobusEnvironment()
-       
+
+        # Figure out if there are any credentials we can use
+        # since if there are not, we can't successfully startup a
+        # personal node.
+        identity = self.app.GetDefaultIdentityDN()
+        
         self.startupDialog.UpdateOneStep("Starting personal node services.")
         log.debug("bin.VenueClient::OnInit: ispersonal=%s",
                   self.isPersonalNode)
-        if self.isPersonalNode:
+        if self.isPersonalNode and identity != None:
             def setSvcCallback(svcUrl, self = self):
-                log.debug("bin.VenueClient::OnInit: setting node service URI to %s from PersonalNode", svcUrl)
+                log.debug("bin.VenueClient::OnInit: setting node service \
+                           URI to %s from PersonalNode", svcUrl)
                 self.venueClient.nodeServiceUri = svcUrl
-
 
             self.personalNode = PersonalNode.PersonalNodeManager(
                                             setSvcCallback,
                                             self.debugMode,
                                             self.startupDialog.UpdateOneStep)
             self.personalNode.Run()
-
+        elif identity == None:
+            self.isPersonalNode = 0
+            log.debug("Can't start personal node without an identity.")
+            title = "Venue Client startup error."
+            message = "You do not have a valid identity. \nThe Venue Client cannot start personal node services \nwithout a valid identity."
+            dlg = wxMessageDialog(None, message, title, style = wxICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+            self.OnExit()
+            sys.exit(1)
+            
         #
         # Check if profile is created then open venue client
         #
