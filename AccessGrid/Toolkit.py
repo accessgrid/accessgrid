@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.61 2004-05-20 22:56:44 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.62 2004-05-21 22:34:29 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.61 2004-05-20 22:56:44 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.62 2004-05-21 22:34:29 eolson Exp $"
 
 # Standard imports
 import os
@@ -73,19 +73,9 @@ class AppBase:
        self.globusConfig = None
        self.systemConfig = SystemConfig.instance()
        self.log = None
-       self.defLogHandler = Log.StreamHandler()
-       self.defLogHandler.setFormatter(Log.GetFormatter())
-       
-       # 0. Initialize logging, storing in log data memory
-       self.mlh = Log.handlers.MemoryHandler(16384, flushLevel=Log.ERROR,
-                                        target=self.defLogHandler)
-
-       self.mlh.setFormatter(Log.GetFormatter())
        
        # This initializes logging
        self.log = Log.GetLogger(Log.Toolkit)
-       memLevels = Log.HandleLoggers(self.mlh, Log.GetDefaultLoggers())
-       memLevels.SetLevel(Log.DEBUG)
        self.log.debug("Initializing AG Toolkit version %s", GetVersion())
 
     # This method implements the initialization strategy outlined
@@ -117,7 +107,7 @@ class AppBase:
        # 4. Redirect logging to files in the user's directory,
        #    purging memory to file
 
-       fh = self.defLogHandler
+       fh = Log.defLogHandler
 
        if self.options.logfilename is not None:
            if not self.options.logfilename.endswith(".log"):
@@ -137,11 +127,11 @@ class AppBase:
        
        # Send the log in memory to stream (debug) or file handler.
        if self.options.debug:
-           self.mlh.setTarget(self.defLogHandler)
+           Log.mlh.setTarget(Log.defLogHandler)
        else:
-           self.mlh.setTarget(fh)
-       self.mlh.close()
-       del self.mlh
+           Log.mlh.setTarget(fh)
+       Log.mlh.close()
+       del Log.mlh
        
        return argvResult
 
@@ -161,7 +151,7 @@ class AppBase:
            sys.exit(0)
            
        if self.options.debug:
-           self.streamLoggerLevels = Log.HandleLoggers(self.defLogHandler,
+           self.streamLoggerLevels = Log.HandleLoggers(Log.defLogHandler,
                                            Log.GetDefaultLoggers())
            self.streamLoggerLevels.SetLevel(Log.DEBUG)
            # When in debug mode, we'll make the stream the primary handler.

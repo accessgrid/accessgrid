@@ -408,3 +408,14 @@ class LevelHandler(logging.handlers.BufferingHandler):
             if handler.level > level: # closer to zero means more detail
                 handler.setLevel(level)
 
+
+
+# 0. Initialize logging, storing in log data memory
+defLogHandler = StreamHandler()
+defLogHandler.setFormatter(GetFormatter())
+mlh = handlers.MemoryHandler(16384, flushLevel=ERROR, target=defLogHandler)
+mlh.setFormatter(GetFormatter())
+memLevels = HandleLoggers(mlh, GetDefaultLoggers())
+memLevels.SetLevel(DEBUG)
+                                                                                
+
