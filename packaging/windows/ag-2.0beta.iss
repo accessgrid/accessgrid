@@ -13,6 +13,12 @@ LogFileAppend=false
 ; It would be a good idea to figure out how to pass the SourceDir as a
 ; parameter to prebuild. Ti and I have chatted about this, it's on the
 ; to do list :-)
+;
+; NOTE on snapshot builds: we don't parse this in build_snapshot.py, 
+; as it's easier to just reconstruct the commands.
+; Hence, if changes are made here they must also be made in build_snapshot.py
+; for that script to work properly.
+;
 Name: python; Parameters: C:\AccessGridBuild\AccessGrid\packaging\makeServicePackages.py C:\AccessGridBuild\AccessGrid\AccessGrid\services; Flags: abortonerror
 Name: C:\AccessGridBuild\AccessGrid\packaging\windows\Prebuild.cmd; Parameters: C:\AccessGridBuild\AccessGrid; Flags: abortonerror
 Name: C:\AccessGridBuild\AccessGrid\packaging\windows\BuildVic.cmd; Parameters: C:\AccessGridBuild\ag-vic C:\AccessGridBuild\AccessGrid\Release\bin; Flags: abortonerror

@@ -2,8 +2,6 @@
 # Build a windows installer snapshot.
 #
 
-
-
 #
 # Basic plan:
 #
@@ -25,9 +23,16 @@ import re
 
 build_base = r"c:\temp\snap"
 
-build_tag = time.strftime("%Y-%m%d-%H%M%S")
+build_tag = time.strftime("%Y-%m%d-%H%M")
 
 build_dir = os.path.join(build_base, build_tag)
+
+#
+# We keep a rat and vic directory around as these don't change much
+#
+
+rat_dir = r"c:\AccessGridBuild\ag-rat"
+vic_dir = r"c:\AccessGridBuild\ag-vic"
 
 print "builddir ", build_dir
 os.mkdir(build_dir)
@@ -38,7 +43,7 @@ cvsroot = ":pserver:anonymous@fl-cvs.mcs.anl.gov:/cvsroot"
 os.environ['CVSROOT'] = cvsroot
 
 if 1:
-    cmd = '"cvs  login"'
+    cmd = '"cvs login"'
     print "cmd=", cmd
     (wr, rd) = os.popen4(cmd)
     wr.write("\n")
@@ -52,7 +57,7 @@ if 1:
     wr.close()
     rd.close()
 
-    os.system("cvs  -z9 co AccessGrid ag-vic ag-rat")
+    os.system("cvs co AccessGrid")
 
 #
 # Okay, we've got our code checked out. Go to the packaging
@@ -67,15 +72,24 @@ new_fp = open("build_snap.iss", "w")
 fix_dir_src = re.escape(r'C:\AccessGridBuild')
 fix_dir_dst = build_dir.replace('\\', r'\\')
 print fix_dir_src, fix_dir_dst
+
+fix_vic_src = re.escape(r'C:\AccessGridBuild\ag-vic')
+fix_vic_dst = vic_dir.replace('\\', r'\\')
+
+fix_rat_src = re.escape(r'C:\AccessGridBuild\ag-rat')
+fix_rat_dst = rat_dir.replace('\\', r'\\')
+
 for l in fp:
+
+    l = re.sub(fix_vic_src, fix_vic_dst, l)
+    l = re.sub(fix_rat_src, fix_rat_dst, l)
+
     l = re.sub(fix_dir_src, fix_dir_dst, l)
 
     if l.startswith("#define AppVersionLong"):
         l = '#define AppVersionLong "2.0 Snapshot %s"\n' % (build_tag)
     elif l.startswith("#define AppVersionShort"):
         l = '#define AppVersionShort "2.0-%s"\n' % (build_tag)
-
-    
 
     new_fp.write(l)
 
