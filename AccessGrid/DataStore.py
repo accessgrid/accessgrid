@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.5 2003-02-25 22:21:17 olson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.6 2003-02-28 16:17:15 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -150,10 +150,10 @@ class DataStore:
         filename = file_info['name']
         desc = self.venue.GetData(filename)
 
-        if desc is not None:
-            return 0
+        if desc is  None or desc == ""
+            return 1
 
-        return 1
+        return 0
 
     def GetUploadFilename(self, dn, file_info):
         """
