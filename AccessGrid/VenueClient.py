@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.46 2003-03-26 17:03:26 lefvert Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.47 2003-03-26 18:37:34 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -291,7 +291,6 @@ class VenueClient( ServiceBase):
         self.pendingLeader = leaderProfile
 
         # request permission to follow the leader
-        # (response will come in via the LeadResponse method)
         log.debug('AccessGrid.VenueClient::Requesting permission to follow this leader: %s' %leaderProfile.name)
         Client.Handle( leaderProfile.venueClientURL ).get_proxy().Lead( self.profile )
 
@@ -345,6 +344,7 @@ class VenueClient( ServiceBase):
             # send the response
             Client.Handle( clientProfile.venueClientURL ).get_proxy().LeadResponse(self.profile, 1)
         else:
+            Client.Handle( clientProfile.venueClientURL ).get_proxy().LeadResponse(self.profile, 0)
             log.debug("AccessGrid.VenueClient::Rejecting lead request for %s" %clientProfile.name)
 
     def LeadResponse(self, leaderProfile, isAuthorized):
