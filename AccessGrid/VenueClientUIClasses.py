@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.113 2003-03-26 21:18:15 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.114 2003-03-27 17:21:58 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -462,16 +462,30 @@ class VenueClientFrame(wxFrame):
 
                
     def OpenAddPersonalDataDialog(self, event):
+        #
+        # Verify that we have a valid upload URL. If we don't have one,
+        # then there isn't a data upload service available.
+        #
+
+        wxLogDebug("Trying to upload personal data")
+        #if self.app.upload_url is None or self.app.upload_url == "":
+        
+        #MessageDialog(self,
+        #              "Cannot add data: Venue does not have an operational\ndata storage server.",
+        #              "Cannot upload")
+        #return
+        
         dlg = wxFileDialog(self, "Choose a file:", style = wxOPEN | wxMULTIPLE)
 
         if dlg.ShowModal() == wxID_OK:
             files = dlg.GetPaths()
+            wxLogDebug("Got files:%s " %str(files))
 
-        print '----------------add personal files'
-        #self.app.uploadPersonalFiles(files)
-
+            # upload!
+            self.app.UploadPersonalFiles(files)
+                                     
         dlg.Destroy()
-                    
+
     def OpenParticipantProfile(self, event):
         id = self.contentListPanel.tree.GetSelection()
         participant =  self.contentListPanel.tree.GetItemData(id).GetData()
@@ -604,7 +618,7 @@ class VenueClientFrame(wxFrame):
 
             # upload!
 
-            self.app.UploadFiles(files)
+            self.app.UploadVenueFiles(files)
                           
         dlg.Destroy()
 
@@ -1416,11 +1430,15 @@ class TextClientPanel(wxPanel):
                    %(self.host,self.port, self.venueId, str(self.attr), str(self.socket)))
         
         self.Processor = SimpleTextProcessor(self.socket, self.venueId,
-                                             self.TextOutput.AppendText)
+                                             self.OutputText)
+                                            # self.TextOutput.AppendText)
         
         self.Processor.Input(ConnectEvent(self.venueId))
         self.TextOutput.Clear()
-        self.TextInput.Clear() 
+        self.TextInput.Clear()
+
+    def OutputText(self, text):
+        wxCallAfter( self.TextOutput.AppendText, text)
 
     def __set_properties(self):
         self.SetSize((375, 225))
@@ -2115,7 +2133,7 @@ class DataDropTarget(wxFileDropTarget):
             return
 
         else:
-            self.app.UploadFiles(files)
+            self.app.UploadVenueFiles(files)
              
 class FileDropTarget(wxFileDropTarget):
     def __init__(self, dock):
