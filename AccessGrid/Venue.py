@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.153 2004-03-02 22:43:58 judson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.154 2004-03-04 15:32:33 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.153 2004-03-02 22:43:58 judson Exp $"
+__revision__ = "$Id: Venue.py,v 1.154 2004-03-04 15:32:33 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -29,7 +29,7 @@ import logging
 from threading import Condition, Lock
 
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
-from AccessGrid.hosting import Decorate, Reconstitute, GetSOAPContext
+from AccessGrid.hosting import GetSOAPContext
 from AccessGrid.Security.Utilities import CreateSubjectFromGSIContext
 
 from AccessGrid.Security.AuthorizationManager import AuthorizationManager
@@ -41,11 +41,16 @@ from AccessGrid.Security import X509Subject, Role
 from AccessGrid import AppService
 from AccessGrid import DataStore
 from AccessGrid import NetService
-from AccessGrid.Types import Capability, VenueState
-from AccessGrid.Descriptions import StreamDescription, CreateStreamDescription
+from AccessGrid.Types import Capability
+from AccessGrid.Descriptions import CreateClientProfile
+from AccessGrid.Descriptions import CreateStreamDescription
+from AccessGrid.Descriptions import CreateDataDescription
+from AccessGrid.Descriptions import CreateServiceDescription
+from AccessGrid.Descriptions import CreateApplicationDescription
+from AccessGrid.Descriptions import StreamDescription
 from AccessGrid.Descriptions import ConnectionDescription, VenueDescription
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
-from AccessGrid.Descriptions import CreateDataDescription, DataDescription
+from AccessGrid.Descriptions import DataDescription, VenueState
 from AccessGrid.Descriptions import BadDataDescription, BadServiceDescription
 from AccessGrid.Descriptions import BadApplicationDescription
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
@@ -58,12 +63,7 @@ from AccessGrid.Utilities import formatExceptionInfo, AllocateEncryptionKey
 from AccessGrid.Utilities import ServerLock, PathFromURL
 from AccessGrid.NetUtilities import GetHostname
 from AccessGrid.Platform import GetUserConfigDir
-
-# these imports are for dealing with SOAP structs, which we won't have to 
-# do when we have WSDL; at that time, these imports and the corresponding calls
-# should be removed
-from AccessGrid.ClientProfile import CreateClientProfile, ClientProfileCache
-from AccessGrid.Descriptions import CreateServiceDescription, CreateApplicationDescription
+from AccessGrid.ClientProfile import ClientProfileCache
 
 log = logging.getLogger("AG.VenueServer")
 
@@ -1217,7 +1217,6 @@ class Venue(AuthorizationMixIn):
 
         *self.connections* A list of connection descriptions.
         """
-        cl = Decorate(self.connections)
         return cl
 
     def SetEncryptMedia(self, value, key=None):
@@ -1798,7 +1797,8 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         log.debug("Interface Enter: Called.")
 
         # Rebuild the profile
-        clientProfile = Reconstitute(clientProfileStruct)
+        
+        clientProfile = CreateClientProfile(clientProfileStruct)
 
         # Assign the DN into the profile
         # so users can't lie
@@ -1820,9 +1820,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
             log.exception("VenueI.Enter: exception")
             raise
 
-        retval = Decorate(r)
-        
-        return retval
+        return r
 
     def AddNetService(self, clientType, privateId=str(GUID())):
         """
@@ -1885,7 +1883,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         """
         log.debug("VenueI.AddService")
 
-        serviceDescription = Reconstitute(servDescStruct)
+        serviceDescription = CreateServiceDescription(servDescStruct)
 
         try:
             returnValue = self.impl.AddService(serviceDescription)
@@ -1916,7 +1914,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         """
         log.debug("VenueI.RemoveService")
 
-        serviceDescription = Reconstitute(servDescStruct)
+        serviceDescription = CreateServiceDescription(servDescStruct)
 
         try:
             returnValue = self.impl.RemoveService(serviceDescription)
@@ -1943,8 +1941,8 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         description.
         """
         try:
-            clist = Reconstitute(connDescStructList)
-            for c in clist:
+            for c in connDescStructList:
+                c = CreateConnectionDescription(c)
                 self.impl.AddConnection(c)
         except:
             log.exception("VenueI.SetConnections: exception")
@@ -1968,7 +1966,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         description struct is not successfully converted to a
         connection description.
         """
-        c = Reconstitute(connectionDescStruct)
+        c = CreateConnectionDescription(connectionDescStruct)
 
         try:
             self.impl.AddConnection(c)
@@ -1997,7 +1995,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         description struct is not successfully converted to a
         connection description.
         """
-        c = Reconstitute(connectionDescription)
+        c = CreateConnectionDescription(connectionDescription)
         try:
             self.impl.RemoveConnection(c)
         except:
@@ -2017,8 +2015,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
 
         try:
             cls = self.impl.GetConnections()
-            cl = Reconstitute(cls)
-            return cl
+            return cls
         except:
             log.exception("VenueI.GetConnections.")
             raise
@@ -2136,7 +2133,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         passed in cannot be successfully converted to a real
         Stream Description.
         """
-        streamDescription = Reconstitite(inStreamDescription)
+        streamDescription = CreateStreamDescription(inStreamDescription)
         
         try:
             self.impl.AddStream(streamDescription)
@@ -2162,7 +2159,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         passed in cannot be successfully converted to a real
         Stream Description.
         """
-        streamDescription = Reconstitute(inStreamDescription)
+        streamDescription = CreateStreamDescription(inStreamDescription)
         try:
             self.impl.RemoveStream(streamDescription)
         except:
@@ -2175,8 +2172,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         """
         try:
             sl = self.impl.GetStreams()
-            rsl = Decorate(sl)
-            return rsl
+            return sl
         except:
             log.exception("VenueI.GetStreams.")
             raise
@@ -2188,8 +2184,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         """
         try:
             sl = self.impl.GetStaticStreams()
-            rsl = Decorate(sl)
-            return rsl
+            return sl
         except:
             log.exception("VenueI.GetStreams.")
             raise
@@ -2233,7 +2228,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         profile struct cannot be converted to a real client
         profile.
         """
-        clientProfile = Reconstitute(clientProfileStruct)
+        clientProfile = CreateClientProfile(clientProfileStruct)
 
         try:
             self.impl.UpdateClientProfile(clientProfile)
@@ -2262,7 +2257,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
 
         *dataDescription* A data description is returned on success.
         """
-        dataDescription = Reconstitute(dataDescriptionStruct)
+        dataDescription = CreateDataDescription(dataDescriptionStruct)
 
         try:
            self.impl.AddData(dataDescription)
@@ -2289,7 +2284,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
 
         *dataDescription* A data description is returned on success.
         """
-        dataDescription = Reconstitute(dataDescriptionStruct)
+        dataDescription = CreateDataDescription(dataDescriptionStruct)
         
         try:
             returnValue = self.impl.RemoveData(dataDescription)
@@ -2304,7 +2299,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         Replace the current description for dataDescription.name with
         this one.
         """
-        dataDescription = Reconstitute(dataDescriptionStruct)
+        dataDescription = CreateDataDescription(dataDescriptionStruct)
 
         try:
             returnValue = self.impl.UpdateData(dataDescription)
@@ -2339,8 +2334,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         """
         try:
             ddl = self.impl.GetDataDescriptions()
-            retval = Decorate(ddl)
-            return retval
+            return ddl
         except:
             log.exception("VenueI.GetDataDescriptions.")
             raise
@@ -2387,8 +2381,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         """
         try:
             as = self.impl.GetApplication(id)
-            retval = Decorate(as)
-            return retval
+            return as
         except:
             log.exception("VenueI.GetApplication.")
             raise
@@ -2498,9 +2491,9 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
         network location
 
         """
-        nl = Reconstitute(networkLocation)
         try:
-            retval = self.impl.AddNetworkLocationToStream(privateId, streamId, nl)
+            retval = self.impl.AddNetworkLocationToStream(privateId, streamId,
+                                                          networkLocation)
             return retval
         except:
             log.exception("VenueI.AddNetworkLocationToStream.")
@@ -2520,8 +2513,7 @@ class VenueI(SOAPInterface, AuthorizationIMixIn):
     def GetEventServiceLocation(self):
         try:
             esl = self.impl.GetEventServiceLocation()
-            retval = Decorate(esl)
-            return retval
+            return esl
         except:
             log.exception("VenueI.GetEventServiceLocation.")
             raise
@@ -2600,12 +2592,10 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
         return self.proxy.GetName()
 
     def SetConnections(self, connectionList):
-        cl = Decorate(connectionList)
-        return self.proxy.SetConnections(cl)
+        return self.proxy.SetConnections(connectionList)
 
     def AddConnection(self, connection):
-        c = Decorate(Connection)
-        return self.proxy.AddConnection(c)
+        return self.proxy.AddConnection(connection)
 
     def RemoveConnection(self, id):
         return self.proxy.RemoveConnection(id)
@@ -2614,8 +2604,7 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
         return self.proxy.GetConnections()
 
     def AddStream(self, streamDesc):
-        s = Decorate(streamDesc)
-        return self.proxy.AddStream(s)
+        return self.proxy.AddStream(streamDesc)
 
     def RemoveStream(self, id):
         return self.proxy.RemoveStream(id)
@@ -2630,22 +2619,14 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
         return self.proxy.Shutdown()
 
     def Enter(self, profile):
-        delattr(profile, "profile")
-        p = Decorate(profile)
-
-        (r1, r2, r3) = self.proxy.Enter(p)
-
-        r1v = Reconstitute(r1)
-        r3v = Reconstitute(r3)
-        
-        return (r1v, r2, r3v)
+        (r1, r2, r3) = self.proxy.Enter(profile)
+        return (r1, r2, r3)
 
     def Exit(self, id):
         return self.proxy.Exit(id)
 
     def UpdateClientProfile(self, profile):
-        p = Decorate(profile)
-        return self.proxy.UpdateClientProfile(p)
+        return self.proxy.UpdateClientProfile(profile)
 
     def AddNetService(self, type, privateID):
         return self.proxy.AddNetService(type, privateID)
@@ -2654,22 +2635,19 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
         return self.proxy.RemoveNetService(id)
 
     def AddService(self, serviceDesc):
-        s = Decorate(serviceDesc)
-        return self.proxy.AddService(s)
+        return self.proxy.AddService(serviceDesc)
 
     def RemoveService(self, id):
         return self.proxy.RemoveService(id)
 
     def AddData(self, dataDescription):
-        d = Decorate(dataDescription)
-        return self.proxy.AddData(d)
+        return self.proxy.AddData(dataDescription)
 
     def RemoveData(self, id):
         return self.proxy.RemoveData(id)
 
     def UpdateData(self, dataDescription):
-        d = Decorate(dataDescription)
-        return self.proxy.UpdateData(d)
+        return self.proxy.UpdateData(dataDescription)
 
     def GetDataDescriptions(self):
         return self.proxy.GetDataDescriptions()
@@ -2684,16 +2662,14 @@ class VenueIW(SOAPIWrapper, AuthorizationIWMixIn):
         return self.proxy.GetApplication(id)
 
     def CreateApplication(self, appDescription):
-        a = Decorate(appDescription)
-#    def CreateApplication(name, description, mimeType, id = None):
-        return self.proxy.CreateApplication(a)
+        return self.proxy.CreateApplication(appDescription)
 
     def DestroyApplication(self, id):
         return self.proxy.DestroyApplication(id)
 
     def AddNetworkLocationToStream(self, privId, streamId, networkLocation):
-        n = Decorate(networkLocation)
-        return self.proxy.AddNetworkLocationToStream(privId, streamId, n)
+        return self.proxy.AddNetworkLocationToStream(privId, streamId,
+                                                     networkLocation)
 
     def RemoveNetworkLocationFromStream(self, privId, streamId, networkId):
         return self.proxy.RemoveNetworkLocationFromStream(privId, streamId,

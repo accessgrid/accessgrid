@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.136 2004-03-02 21:37:44 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.137 2004-03-04 15:32:49 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 """
 """
 
-__revision__ = "$Id: VenueClient.py,v 1.136 2004-03-02 21:37:44 judson Exp $"
+__revision__ = "$Id: VenueClient.py,v 1.137 2004-03-04 15:32:49 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.hosting import Client
@@ -34,7 +34,7 @@ from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.Platform import ProcessManager
 from AccessGrid.Venue import VenueIW
 from AccessGrid.hosting.SOAPInterface import SOAPInterface, SOAPIWrapper
-from AccessGrid.hosting import Decorate, Reconstitute, Server
+from AccessGrid.hosting import Server
 from AccessGrid.Utilities import LoadConfig
 from AccessGrid.NetUtilities import GetSNTPTime
 from AccessGrid.VenueClientObserver import VenueClientObserver
@@ -48,7 +48,8 @@ from AccessGrid.Events import RemoveDataEvent, UpdateDataEvent
 from AccessGrid.ClientProfile import ClientProfile, ClientProfileCache
 from AccessGrid.Descriptions import ApplicationDescription, ServiceDescription
 from AccessGrid.Descriptions import DataDescription, ConnectionDescription
-from AccessGrid.Descriptions import CreateDataDescription, CreateServiceDescription
+from AccessGrid.Descriptions import CreateDataDescription, CreateVenueState
+from AccessGrid.Descriptions import CreateServiceDescription
 from AccessGrid.Descriptions import CreateApplicationDescription
 from AccessGrid.Venue import VenueIW
 
@@ -541,31 +542,6 @@ class VenueClient:
 
         enterSuccess = 1
         try:
-            # if this venue url has a valid web service then enter venue
-
-            # catch unauthorized SOAP calls to EnterVenue
-#             securityManager = AccessControl.GetSecurityManager()
-#             if securityManager != None:
-#                 callerDN = securityManager.GetSubject().GetName()
-#                 if callerDN != None and callerDN != self.leaderProfile.distinguishedName:
-#                     raise AuthorizationFailedError("Unauthorized leader tried to lead venue client")
-
-            try:
-                VenueIW( URL ).IsValid()
-            except GSITCPSocketException, e:
-                if e.args[0] == 'an authentication operation failed':
-                    self.__CheckForInvalidClock()
-
-                else:
-                    log.exception("EnterVenue: failed")
-
-                raise EnterVenueException("No reachable venue at given venue URL")
-            
-            except:
-                log.exception("EnterVenue: No reachable venue at given venue URL")
-                raise EnterVenueException("No reachable venue at given venue URL")
-
-
             # Exit the venue you are currently in before entering a new venue
             if self.isInVenue:
                 self.ExitVenue()
@@ -592,72 +568,8 @@ class VenueClient:
             log.debug("EnterVenue: Invoke venue enter")
             (venueState, self.privateId, self.streamDescList ) = self.venueProxy.Enter( self.profile )
 
-
-            #
-            # construct a venue state that consists of real objects
-            # instead of the structs we get back from the SOAP call
-            # (this code can be removed when SOAP returns real objects)
-            #
-            connectionList = []
-            for conn in venueState.connections:
-                connectionList.append( ConnectionDescription( conn.name, conn.description, conn.uri ) )
-
-            clientList = []
-            for client in venueState.clients:
-                profile = ClientProfile()
-                profile.profileFile = client.profileFile
-                profile.profileType = client.profileType
-                profile.name = client.name
-                profile.email = client.email
-                profile.phoneNumber = client.phoneNumber
-                profile.icon = client.icon
-                profile.publicId = client.publicId
-                profile.location = client.location
-                profile.venueClientURL = client.venueClientURL
-                profile.techSupportInfo = client.techSupportInfo
-                profile.homeVenue = client.homeVenue
-                profile.privateId = client.privateId
-                profile.distinguishedName = client.distinguishedName
-
-                # should also objectify the capabilities, but not doing it 
-                # for now (until it's a problem ;-)
-                profile.capabilities = client.capabilities
-
-                clientList.append( profile )
-
-            dataList = []
-            for data in venueState.data:
-                dataDesc = CreateDataDescription(data)
-                dataList.append( dataDesc )
-                
-            applicationList = []
-            for application in venueState.applications:
-                appDesc = CreateApplicationDescription(application)
-                applicationList.append(appDesc)
-
-            serviceList = []
-            for service in venueState.services:
-                serviceDesc = CreateServiceDescription(service)
-                serviceList.append(serviceDesc)
-
-            # I hate retrofitted code.
-            if hasattr(venueState, 'backupServer'):
-                bs = venueState.backupServer
-            else:
-                bs = None
-                
-            self.venueState = VenueState( venueState.uniqueId,
-                                          venueState.name,
-                                          venueState.description,
-                                          venueState.uri,
-                                          connectionList, 
-                                          clientList,
-                                          dataList,
-                                          venueState.eventLocation,
-                                          venueState.textLocation,
-                                          applicationList,
-                                          serviceList,
-                                          bs)
+            self.venueState = CreateVenueState(venueState)
+            
             self.venueUri = URL
             self.venueId = self.venueState.GetUniqueId()
 
@@ -731,9 +643,11 @@ class VenueClient:
                 errorInNode = 1
 
             # Cache profiles from venue.
+            log.debug("Updating client profile cache.")
             for client in self.venueState.clients.values():
                 self.UpdateProfileCache(client)
-                
+
+            log.debug("Setting isInVenue flag.")
             # Finally, set the flag that we are in a venue
             self.isInVenue = 1
 
@@ -1551,34 +1465,32 @@ class VenueClientI(SOAPInterface):
         return self.impl.EnterVenue(url)
 
     def RequestLead(self, followerProfile):
-        p = Reconstitute(followerProfile)
+        p = CreateClientProfile(followProfile)
         self.impl.RequestLead(p)
         
     def LeadResponse(self, leaderProfile, isAuthorized):
-        p = Reconstitute(leaderProfile)
+        p = CreateClientProfile(leaderProfile)
         self.impl.LeadResponse(p, isAuthorized)
 
     def Unlead(self, clientProfile):
-        p = Reconstitute(clientProfile)
+        p = CreateClientProfile(clientProfile)
         self.impl.Unlead(p)
 
     def RequestFollow(self, leaderProfile):
-        p = Reconstitute(leaderProfile)
+        p = CreateClientProfile(leaderProfile)
         self.impl.RequestFollow(p)
         
     def FollowResponse(self, followerProfile, isAuthorized):
-        p = Reconstitute(followerProfile)
+        p = CreateClientProfile(followProfile)
         self.impl.FollowResponse(p, isAuthorized)
 
     def GetDataStoreInformation(self):
         r = self.impl.GetDataStoreInformation()
-        retval = Decorate(r)
-        return(retval)
+        return r
 
     def GetDataDescriptions(self):
         dl = self.impl.GetDataDescriptions()
-        retval = Decorate(dl)
-        return retval
+        return dl
 
 class VenueClientIW(SOAPIWrapper):
     def __init__(self, url=None):
@@ -1588,32 +1500,25 @@ class VenueClientIW(SOAPIWrapper):
         return self.proxy.EnterVenue(url)
 
     def RequestLead(self, followerProfile):
-        p = Decorate(followerProfile)
-        self.proxy.RequestLead(p)
+        self.proxy.RequestLead(followerProfile)
 
     def LeadResponse(self, leaderProfile, isAuthorized):
-        p = Decorate(leaderProfile)
-        self.proxy.LeadResponse(p, isAuthorized)
+        self.proxy.LeadResponse(leaderProfile, isAuthorized)
 
     def Unlead(self, clientProfile):
-        p = Decorate(clientProfile)
-        self.proxy.Unlead(p)
+        self.proxy.Unlead(clientProfile)
 
     def RequestFollow(self, leaderProfile):
-        p = Decorate(leaderProfile)
-        self.proxy.RequestFollow(p)
+        self.proxy.RequestFollow(leaderProfile)
         
     def FollowResponse(self, followerProfile, isAuthorized):
-        p = Decorate(followerProfile)
-        self.proxy.FollowResponse(p, isAuthorized)
+        self.proxy.FollowResponse(followerProfile, isAuthorized)
 
     def GetDataStoreInformation(self):
         r = self.proxy.GetDataStoreInformation()
-        retval = Reconstitute(r)
-        reutrn(retval)
+        return r
 
     def GetDataDescriptions(self):
         dl = self.proxy.GetDataDescriptions()
-        retval = Reconstitute(dl)
-        return retval
+        return dl
 

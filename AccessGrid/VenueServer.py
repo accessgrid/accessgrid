@@ -5,14 +5,14 @@
 # Author:      Everyone
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueServer.py,v 1.118 2004-03-02 22:43:58 judson Exp $
+# RCS-ID:      $Id: VenueServer.py,v 1.119 2004-03-04 15:33:05 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueServer.py,v 1.118 2004-03-02 22:43:58 judson Exp $"
+__revision__ = "$Id: VenueServer.py,v 1.119 2004-03-04 15:33:05 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 # Standard stuff
@@ -26,7 +26,7 @@ import logging
 import time
 import ConfigParser
 
-from AccessGrid.hosting import Decorate, Reconstitute, GetSOAPContext
+from AccessGrid.hosting import GetSOAPContext
 
 from AccessGrid import Toolkit
 from AccessGrid.hosting import Server
@@ -984,7 +984,7 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
             *Venue URI* Upon success a uri to the new venue is returned.
         """
         # Deserialize
-        venueDesc = Reconstitute(venueDescStruct)
+        venueDesc = CreateVenueDescription(venueDescStruct)
 
         # do the call
         try:
@@ -1056,8 +1056,7 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         """
         try:
             vdl = self.impl.GetVenues()
-            vdld = Decorate(vdl)
-            return vdld
+            return vdl
         except:
             log.exception("GetVenues: exception")
             raise
@@ -1152,10 +1151,7 @@ class VenueServerI(SOAPInterface, AuthorizationIMixIn):
         try:
             adminRole = self.impl.authManager.FindRole("Administrators")
             subjs = self.impl.authManager.GetSubjects(role=adminRole)
-            print subjs
-            ls = Decorate(subjs)
-            print ls
-            return ls
+            return subjs
         except:
             log.exception("GetAdministrators: exception")
             raise
@@ -1384,8 +1380,7 @@ class VenueServerIW(SOAPIWrapper, AuthorizationIWMixIn):
         return self.proxy.Checkpoint()
 
     def AddVenue(self, venueDescription):
-        vd = Decorate(venueDescription)
-        return self.proxy.AddVenue(vd)
+        return self.proxy.AddVenue(venueDescription)
 
     def ModifyVenue(self, url, venueDescription):
         if url == None:
@@ -1401,8 +1396,10 @@ class VenueServerIW(SOAPIWrapper, AuthorizationIWMixIn):
 
     def GetVenues(self):
         vl = self.proxy.GetVenues()
-        vlr = Reconstitute(vl)
-        return vlr
+        rl = list()
+        for v in vl:
+            rl.append(CreateVenueDescription(v))
+        return rl
 
     def GetDefaultVenue(self):
         return self.proxy.GetDefaultVenue()
