@@ -12,7 +12,7 @@
 """
 """
 
-__revision__ = "$Id: CertificateRequestTool.py,v 1.15 2004-08-02 21:12:54 binns Exp $"
+__revision__ = "$Id: CertificateRequestTool.py,v 1.16 2004-08-26 14:37:00 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 from wxPython.wx import *
@@ -392,9 +392,9 @@ class IdentityCertWindow(TitledPage):
 names may be rejected. The e-mail address will be used for verification; please make sure it is valid.
 
 The domain represents the institution you belong to; it will default to the hostname part
-of your email address;
+of your email address.  The domain will be used for verification; please make sure it is valid.
 
-The passphrase will be used to access your generated certificate after it is created.You will need to
+The passphrase will be used to access your generated certificate after it is created.  You will need to
 remember it: it is not possible to determine the passphrase from the certificate, and it cannot be reset.""")
 
         self.firstNameId = wxNewId()
