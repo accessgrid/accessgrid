@@ -6,13 +6,13 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: TextServiceAsynch.py,v 1.14 2003-09-28 23:16:15 judson Exp $
+# RCS-ID:      $Id: TextServiceAsynch.py,v 1.15 2003-10-13 19:22:21 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: TextServiceAsynch.py,v 1.14 2003-09-28 23:16:15 judson Exp $"
+__revision__ = "$Id: TextServiceAsynch.py,v 1.15 2003-10-13 19:22:21 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import socket
@@ -70,6 +70,9 @@ class ConnectionHandler:
         self.buffer= Buffer(self.bufsize)
         self.waitingLen = 0
 
+        # New to try and make shutdown sane
+        self.closing = 0
+        
     def __del__(self):
         log.debug("TextServiceAsynch: ConnectionHandler delete")
 
@@ -106,8 +109,11 @@ class ConnectionHandler:
             log.exception("acceptCallback failed")
 
     def registerForRead(self):
-        self.cbHandle = self.socket.register_read(self.buffer, self.bufsize, 1,
-                                                  self.readCallbackWrap, None)
+        if not self.closing:
+            self.cbHandle = self.socket.register_read(self.buffer,
+                                                      self.bufsize, 1,
+                                                      self.readCallbackWrap,
+                                                      None)
 
     def readCallbackWrap(self, arg, handle, result, buf, n):
         """
@@ -119,7 +125,8 @@ class ConnectionHandler:
         
         try:
             self.socket.free_callback(self.cbHandle)
-            return self.readCallback(arg, handle, result, buf, n)
+            self.readCallback(arg, handle, result, buf, n)
+            self.registerForRead()
         except:
             log.exception("readcallback failed")
             self.stop()
@@ -180,8 +187,6 @@ class ConnectionHandler:
 
             self.waitingLen = 0
 
-        self.registerForRead()
-        
     def stop(self):
         try:
             self.socket.close()
@@ -307,7 +312,8 @@ class TextChannel:
         if self.authCallback is not None:
             try:
                 authorized = self.authCallback(event, connObj)
-                log.debug("TextServiceAsynch: Auth callback %s returns %s", self.authCallback,
+                log.debug("TextServiceAsynch: Auth callback %s returns %s",
+                          self.authCallback,
                           authorized)
             except:
                 log.info("TextServiceAsynch: Authorization callback failed")
@@ -323,12 +329,13 @@ class TextChannel:
         """
 
         if event.eventType == DisconnectEvent.DISCONNECT:
-
-            log.debug("TextServiceAsynch: EventConnection: Removing client connection to %s",
-                      event.venue)
+            connObj.closing = 1
+            log.debug("TextServiceAsynch: EventConnection: Removing client \
+                       connection to %s", event.venue)
             self.RemoveConnection(connObj)
             self.server.CloseConnection(connObj)
-
+            return
+            
         # Pass this event to the callback registered for this
         # event.eventType
         if self.typedHandlers.has_key(event.eventType):
@@ -367,9 +374,10 @@ class TextChannel:
         me = MarshalledEvent()
         me.SetEvent(data)
         for c in connections:
-            success = c.writeMarshalledEvent(me)
-            if not success:
-                removeList.append(c)
+            if not c.closing:
+                success = c.writeMarshalledEvent(me)
+                if not success:
+                    removeList.append(c)
         
         #
         # These guys failed. Bag 'em.
@@ -499,10 +507,10 @@ class TextService:
         log.debug("TextServiceAsynch: Removing connection %s", cid)
         connObj.stop()
 
-        channel = self.findConnectionChannel(cid)
-        if channel is not None:
-            log.debug("TextServiceAsynch: Removing connection %s from channel %s", cid, channel.GetId())
-            channel.RemoveConnection(connObj)
+#         channel = self.findConnectionChannel(cid)
+#         if channel is not None:
+#             log.debug("TextServiceAsynch: Removing connection %s from channel %s", cid, channel.GetId())
+#             channel.RemoveConnection(connObj)
         try:
             self.allConnections.remove(connObj)
         except ValueError:
