@@ -1,12 +1,15 @@
+import os
 import sys
 import logging
 
 from wxPython.wx import *
 from wxPython.iewin import *
 
+from AccessGrid.hosting.pyGlobus import Client
+
 from AccessGrid import Events
-from AccessGrid.SharedApplication import SharedApplication
 from AccessGrid.ClientProfile import ClientProfile
+from AccessGrid import EventClient
 
 
 log = logging.getLogger("SharedBrowser")
@@ -31,11 +34,8 @@ class WebBrowser(wxPanel):
 
         wxPanel.__init__(self, parent, id)
 
-        self.current = "http://www.accessgrid.org/"
+        self.current = None
         self.populate()
-
-        self.ie.Navigate(self.current)
-        self.location.Append(self.current)
 
         self.navigation_callbacks = []
 
@@ -105,8 +105,8 @@ class WebBrowser(wxPanel):
         self.SetAutoLayout(1)
         self.Layout()
 
-    def OnBeforeNavigate2(self, evt):
-        url = evt.GetText1()
+    def OnBeforeNavigate2(self, event):
+        url = event.GetText1()
 
         if self.just_received_navigate:
             self.just_received_navigate = 0
@@ -114,24 +114,24 @@ class WebBrowser(wxPanel):
             print "Before navigate ", url
             map(lambda a: a(url), self.navigation_callbacks)
 
-    def OnNewWindow2(self, evt):
-        print "On new window: ", evt.GetText1()
-        evt.Veto() # don't allow it
+    def OnNewWindow2(self, event):
+        print "On new window: ", event.GetText1()
+        event.Veto() # don't allow it
 
-    def OnDocumentComplete(self, evt):
-        print "OnDocumentComplete: ", evt.GetText1()
-        self.current = evt.GetText1()
+    def OnDocumentComplete(self, event):
+        print "OnDocumentComplete: ", event.GetText1()
+        self.current = event.GetText1()
         self.location.SetValue(self.current)
 
-    def OnTitleChange(self, evt):
-        print "titlechange: ", evt.GetText1()
+    def OnTitleChange(self, event):
+        print "titlechange: ", event.GetText1()
         if self.frame:
-            self.frame.SetTitle(self.title_base + ' -- ' + evt.GetText1())
+            self.frame.SetTitle(self.title_base + ' -- ' + event.GetText1())
 
-    def OnStatusTextChange(self, evt):
-        #print "status: ", evt.GetText1()
+    def OnStatusTextChange(self, event):
+        #print "status: ", event.GetText1()
         if self.frame:
-            self.frame.SetStatusText(evt.GetText1())
+            self.frame.SetStatusText(event.GetText1())
 
     def OnBack(self, event):
         self.ie.GoBack()
@@ -153,30 +153,58 @@ class WebBrowser(wxPanel):
         self.just_received_navigate = 1
         self.ie.Navigate(url)
 
-    def OnLocationSelect(self, evt):
+    def OnLocationSelect(self, event):
         url = self.location.GetStringSelection()
         self.ie.Navigate(url)
 
-    def OnLocationKey(self, evt):
-        if evt.KeyCode() == WXK_RETURN:
+    def OnLocationKey(self, event):
+        if event.KeyCode() == WXK_RETURN:
             URL = self.location.GetValue()
             self.location.Append(URL)
             self.ie.Navigate(URL)
         else:
-            evt.Skip()
+            event.Skip()
 
-    def IgnoreReturn(self, evt):
-        if evt.GetKeyCode() != WXK_RETURN:
-            evt.Skip()
+    def IgnoreReturn(self, event):
+        if event.GetKeyCode() != WXK_RETURN:
+            event.Skip()
 
 
-class SharedBrowser( SharedApplication ):
+class SharedBrowser( wxApp ):
     """
     SharedBrowser combines a SharedApplication and a WebBrowser
     to provide shared web browsing to venue users
     """
+    def OnInit(self):
+        return 1
+
+    def OnExit(self):
+        self.eventClient.Stop()
+        os._exit(1)
+
     def __init__( self, venueUrl, profile ):
-        SharedApplication.__init__(self, "Shared Browser", venueUrl, profile)
+
+        wxApp.__init__(self, False)
+        
+        self.venueUrl = venueUrl
+        self.profile = profile
+
+        self.venueProxy = Client.Handle(venueUrl).GetProxy()
+
+        # Join the application
+        self.privateId = self.venueProxy.Join(profile)
+
+        #
+        # Retrieve the channel id
+        #
+        (self.channelId, eventServiceLocation ) = self.venueProxy.GetDataChannel(self.privateId)
+
+        # 
+        # Subscribe to the event channel
+        #
+        self.eventClient = EventClient.EventClient(eventServiceLocation, self.channelId)
+        self.eventClient.start()
+        self.eventClient.Send(Events.ConnectEvent(self.channelId))
 
         #
         # Register browse event callback
@@ -190,49 +218,52 @@ class SharedBrowser( SharedApplication ):
         self.frame = wxFrame(None, -1, "Browser")
         self.browser = WebBrowser(self.frame, -1, self.frame)
 
-        #
         # Add callback for local browsing
         self.browser.add_navigation_callback( self.IBrowsedCallback )
-        
-    def Show(self,showFlag):
-        self.frame.Show(showFlag)
+
+        # Browse to the current url, if exists
+        currentUrl = self.venueProxy.GetData(self.privateId, "url")
+        if len(currentUrl) > 0:
+            self.browser.navigate(currentUrl)
+
+        self.frame.Show(1)
+        self.SetTopWindow(self.frame)
 
     def IBrowsedCallback(self,data):
         #
         # Send out the event, including our public ID in the message.
         #
-        self.eventClient.Send(Events.Event("browse", self.channelId, ( self.publicId, data ) ))
+        self.eventClient.Send(Events.Event("browse", self.channelId, ( self.profile.publicId, data ) ))
+
+        # Store the URL in the app object in the venue
+        self.venueProxy.SetData(self.privateId, "url", data)
 
     def BrowseCallback(self, data):
         """
         Callback invoked when incoming browse events arrive.  Events
-        can include this client's browse events, so these need to be
+        can include this component's browse events, so these need to be
         filtered out.
         """
 
-        # Determine if the sender of the event is this application or not.
+        # Determine if the sender of the event is this component or not.
         (senderId, url) = data
-        if senderId == self.publicId:
+        if senderId == self.profile.publicId:
             print "Ignoring %s from myself" % (url)
         else:
             print "Browse to ", url
             self.browser.navigate(url)
 
-
         
 if __name__ == "__main__":
     init_logging("watcher")
-    venueUri = 'https://localhost:8000/Venues/default'
-    if len(sys.argv) > 1:
-        venueUri = sys.argv[1]
 
+    if len(sys.argv) < 3:
+        print "Usage: %s <appObjectUrl> <profileFile>" % sys.argv[0]
+        sys.exit(1)
 
-    app = wxPySimpleApp()
-    profile = ClientProfile('userProfile')
-    sb = SharedBrowser( venueUri, profile )
-    sb.Show(1)
-    app.MainLoop()
+    venueUrl = sys.argv[1]
+    profileFile = sys.argv[2]
 
-
-    print "Exiting"
-    sb.clientObj.ExitVenue()
+    profile = ClientProfile(profileFile)
+    sb = SharedBrowser( venueUrl, profile )
+    sb.MainLoop()
