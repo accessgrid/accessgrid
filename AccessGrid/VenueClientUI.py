@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.54 2004-05-10 18:49:39 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.55 2004-05-10 18:56:05 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.54 2004-05-10 18:49:39 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.55 2004-05-10 18:56:05 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -4450,7 +4450,7 @@ class VenuePropertiesDialog(wxDialog):
             if stream.static:
                 self.list.SetStringItem(j, 4, 'static')
             else:
-                self.list.SetStringItem(j, 4, 'not static')
+                self.list.SetStringItem(j, 4, 'dynamic')
                 
             j = j + 1
                 
