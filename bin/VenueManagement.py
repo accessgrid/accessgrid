@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.64 2003-05-12 21:59:07 lefvert Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.65 2003-05-15 20:31:43 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ from AccessGrid.MulticastAddressAllocator import MulticastAddressAllocator
 from AccessGrid.Utilities import formatExceptionInfo, HaveValidProxy
 from AccessGrid import icons
 from AccessGrid.Platform import GPI
-from AccessGrid.UIUtilities import MyLog, AboutDialog
+from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid import Toolkit
 
 import logging, logging.handlers
@@ -31,6 +31,8 @@ import string
 import time
 
 from pyGlobus.io import GSITCPSocketException
+
+log = logging.getLogger("AG.VenueManagement")
 
 class VenueManagementClient(wxApp):
     """
@@ -86,18 +88,12 @@ class VenueManagementClient(wxApp):
         self.menubar.Append(self.helpMenu, "&Help")
 
     def __setLogger(self):
-        log = logging.getLogger("AG.VenueManagement")
         log.setLevel(logging.DEBUG)
         hdlr = logging.FileHandler("VenueManagement.log")
         fmt = logging.Formatter("%(asctime)s %(levelname)-5s %(message)s",
                                 "%x %X")
         hdlr.setFormatter(fmt)
         log.addHandler(hdlr)
-
-        wxLog_SetActiveTarget(wxLogGui())
-        wxLog_SetActiveTarget(wxLogChain(MyLog(log)))
-        wxLogInfo(" ")
-        wxLogDebug("--------- START VenueManagement")
 
     def __setProperties(self):
         self.frame.SetIcon(icons.getAGIconIcon())
@@ -122,24 +118,24 @@ class VenueManagementClient(wxApp):
         self.frame.Destroy()
      
     def ConnectToServer(self, URL):
-        wxLogDebug("Connect to server %s" %URL)
+        log.debug("Connect to server %s" %URL)
 
         handle = Client.Handle(URL)
 
         if not HaveValidProxy():
-            wxLogDebug("You do not have a valid proxy run Platform.GPI()")
+            log.debug("You do not have a valid proxy run Platform.GPI()")
             # GPI()
 
             app = Toolkit.GetApplication()
             app.GetCertificateManager().ConfigureProxy()
 
         if(handle.IsValid()):
-            wxLogDebug("You have a valid proxy")
+            log.debug("You have a valid proxy")
             try:
                 wxBeginBusyCursor()
-                wxLogDebug("Connect to server")
+                log.debug("Connect to server")
                 self.server = handle.get_proxy()
-                wxLogDebug("Get venues from server")
+                log.debug("Get venues from server")
                 self.venueList = {}
                 vl = self.server.GetVenues()
                 for v in vl:
@@ -158,14 +154,14 @@ class VenueManagementClient(wxApp):
                 self.tabs.Enable(true)
                 if len(self.venueList) != 0 :
                     for venue in self.venueList.values():
-                        wxLogDebug("Add venue: %s" % venue.name)
+                        log.debug("Add venue: %s" % venue.name)
                         vlp.venuesList.Append(venue.name, venue)
                     currentVenue = vlp.venuesList.GetClientData(0)
                     vp.venueProfilePanel.ChangeCurrentVenue(currentVenue)
                     vlp.venuesList.SetSelection(0)
 
                 else:
-                    wxLogDebug("No venues in server")
+                    log.debug("No venues in server")
                     vp.venueProfilePanel.ChangeCurrentVenue(None)
 
                 # fill in administrators
@@ -174,7 +170,7 @@ class VenueManagementClient(wxApp):
                 for admin in administratorList:
                     s = s+" "+admin
 
-                wxLogDebug("Add administrators %s"  %s)
+                log.debug("Add administrators %s"  %s)
                 alp = self.tabs.configurationPanel.administratorsListPanel
                 alp.administratorsList.Clear()
                 if len(administratorList) != 0 :
@@ -192,45 +188,44 @@ class VenueManagementClient(wxApp):
                 dp.ipAddress.SetLabel(ip+'/'+mask)
 
                 if method == MulticastAddressAllocator.RANDOM:
-                    wxLogDebug("Set multicast address to: RANDOM")
+                    log.debug("Set multicast address to: RANDOM")
                     dp.ipAddress.Enable(false)
                     dp.changeButton.Enable(false)
                     dp.randomButton.SetValue(true)
                 else:
-                    wxLogDebug("Set multicast address to: INTERVAL, ip: %s, mask: %s" %(ip, mask))
+                    log.debug("Set multicast address to: INTERVAL, ip: %s, mask: %s" %(ip, mask))
                     dp.ipAddress.Enable(true)
                     dp.changeButton.Enable(true)
                     dp.intervalButton.SetValue(true)
 
                 # fill in storage location
                 storageLocation = self.server.GetStorageLocation()
-                wxLogDebug("Set storage location: %s" %storageLocation)
+                log.debug("Set storage location: %s" %storageLocation)
                 dp.storageLocation.SetLabel(storageLocation)
 
                 # fill in address
                 if self.address.addressText.FindString(self.serverUrl) == wxNOT_FOUND:
-                    wxLogDebug("Set address: %s" %self.serverUrl)
+                    log.debug("Set address: %s" %self.serverUrl)
                     self.address.addressText.Append(self.serverUrl)
 
                 # fill in encryption
                 key = self.server.GetEncryptAllMedia()
-                wxLogDebug("Set server encryption key: %s" % key)
+                log.debug("Set server encryption key: %s" % key)
                 dp.encryptionButton.SetValue(key)
                 self.encrypt = key
                 wxEndBusyCursor()
 
             except:
                 wxEndBusyCursor()
-                wxLogError("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
+                log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
                                                        str(sys.exc_value)))
-                wxLog_GetActiveTarget().Flush()
-
+               
         else:
             if not HaveValidProxy():
                 text = 'You do not have a valid proxy.' +\
                        '\nPlease, run "grid-proxy-init" on the command line"'
                 text2 = 'Invalid proxy'
-                wxLogDebug(text)
+                log.debug(text)
 
             else:
                 text = 'The venue URL you specified is not valid'
@@ -244,7 +239,7 @@ class VenueManagementClient(wxApp):
             dlg = wxMessageDialog(self.frame, text, text2, style = wxOK|wxICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
-            wxLogDebug(text)
+            log.debug(text)
 
     def GetCName(self, distinguishedName):
         index = distinguishedName.find("CN=")
@@ -258,12 +253,12 @@ class VenueManagementClient(wxApp):
         """
         """
         if venue == None:
-            wxLogDebug("Set current venue to none")
+            log.debug("Set current venue to none")
             self.currentVenue = None
             self.currentVenueClient = None
 
         elif self.currentVenue == None or self.currentVenue.uri != venue.uri:
-            wxLogDebug("Set current venue to: %s, %s" % (str(venue.name),
+            log.debug("Set current venue to: %s, %s" % (str(venue.name),
                                                          str(venue.uri)))
             self.currentVenue = venue
             self.currentVenueClient = Client.Handle(venue.uri).get_proxy()
@@ -271,10 +266,10 @@ class VenueManagementClient(wxApp):
     def DisableStaticStreams(self, venue):
         self.SetCurrentVenue(venue)
         streamList = self.currentVenueClient.GetStaticStreams()
-        wxLogDebug("Disable static streams for venue: %s" %str(venue.uri))
+        log.debug("Disable static streams for venue: %s" %str(venue.uri))
         for stream in streamList:
             l = stream.location
-            wxLogDebug("Remove stream - type:%s host:%s port:%s ttl:%s"
+            log.debug("Remove stream - type:%s host:%s port:%s ttl:%s"
                        % (stream.capability.type, l.host, l.port, l.ttl))
             self.currentVenueClient.RemoveStream(stream)
 
@@ -285,7 +280,7 @@ class VenueManagementClient(wxApp):
         videoStreamDescription = StreamDescription( "", location,
                                                     capability, 0, None, 1)
         self.SetCurrentVenue(venue)
-        wxLogDebug("Enable static video: %s addr: %s, port: %s, ttl %s" 
+        log.debug("Enable static video: %s addr: %s, port: %s, ttl %s" 
                      % (str(venue.uri), str(videoAddress),
                         str(videoPort), str(videoTtl)))
         self.currentVenueClient.AddStream(videoStreamDescription)
@@ -296,7 +291,7 @@ class VenueManagementClient(wxApp):
         capability = Capability( Capability.PRODUCER, Capability.AUDIO)
         audioStreamDescription = StreamDescription( "", location,
                                                     capability, 0, None, 1)
-        wxLogDebug("Enable static audio: %s addr: %s, port: %s, ttl %s"
+        log.debug("Enable static audio: %s addr: %s, port: %s, ttl %s"
                    % (str(venue.uri), str(audioAddress), str(audioPort),
                       str(audioTtl)))
         self.SetCurrentVenue(venue)
@@ -304,18 +299,18 @@ class VenueManagementClient(wxApp):
 
     def SetVenueEncryption(self, venue, value = 0, key = ''):
         self.SetCurrentVenue(venue)
-        wxLogDebug("Set venue encryption: %s using key: %s for venue: %s" 
+        log.debug("Set venue encryption: %s using key: %s for venue: %s" 
                      % (str(value), str(key), str(venue.uri)))
         self.currentVenueClient.SetEncryptMedia(int(value), str(key))
 
     def DeleteVenue(self, venue):
-        wxLogDebug("Delete venue: %s" %str(venue.uri))
+        log.debug("Delete venue: %s" %str(venue.uri))
         self.server.RemoveVenue(venue.uri)
         if self.venueList.has_key(venue.uri):
             del self.venueList[venue.uri]
 
     def ConvertVenuesToConnections(self, list):
-        wxLogDebug("Convert venue to connections %s" %str(list))
+        log.debug("Convert venue to connections %s" %str(list))
 
         connectionsList = []
         for venue in list:
@@ -326,37 +321,37 @@ class VenueManagementClient(wxApp):
         return connectionsList
 
     def AddAdministrator(self, dnName):
-        wxLogDebug("Add administrator: %s" %dnName)
+        log.debug("Add administrator: %s" %dnName)
         self.server.AddAdministrator(dnName)
 
     def DeleteAdministrator(self, dnName):
-        wxLogDebug("Delete administrator: %s" %dnName)
+        log.debug("Delete administrator: %s" %dnName)
         self.server.RemoveAdministrator(dnName)
 
     def ModifyAdministrator(self, oldName, dnName):
-        wxLogDebug("Modify administrator: %s with new dnName: %s" %
+        log.debug("Modify administrator: %s with new dnName: %s" %
                    (oldName,dnName))
         if(dnName != oldName):
             self.server.AddAdministrator(dnName)
             self.server.RemoveAdministrator(oldName)
 
     def SetRandom(self):
-        wxLogDebug("Set random address allocation method")
+        log.debug("Set random address allocation method")
         self.server.SetAddressAllocationMethod(MulticastAddressAllocator.RANDOM)
 
     def SetInterval(self, address, mask):
-        wxLogDebug("Set interval address allocation method with address: %s, mask: %s" %(str(address), mask))
+        log.debug("Set interval address allocation method with address: %s, mask: %s" %(str(address), mask))
         self.server.SetBaseAddress(address)
         self.server.SetAddressMask(mask)
         self.server.SetAddressAllocationMethod(MulticastAddressAllocator.INTERVAL)
 
     def SetEncryption(self, value):
-        wxLogDebug("Set encryption: %s" %str(value))
+        log.debug("Set encryption: %s" %str(value))
         self.server.SetEncryptAllMedia(int(value))
         self.encrypt = int(value)
 
     def SetStorageLocation(self, location):
-        wxLogDebug("Set storage location: %s" %location)
+        log.debug("Set storage location: %s" %location)
         self.server.SetStorageLocation(location)
 
 class VenueServerAddress(wxPanel):
@@ -620,14 +615,13 @@ class VenueListPanel(wxPanel):
         data = list.GetClientData(list.GetSelection())
         if data is not None:
             try:
-                wxLogInfo("Change current venue")
+                log.info("Change current venue")
                 self.parent.venueProfilePanel.ChangeCurrentVenue(data)
 
             except:
-                wxLogError("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
+                log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
                                                        str(sys.exc_value)))
-                wxLog_GetActiveTarget().Flush()
-
+           
     def OpenAddVenueDialog(self, event):
         addVenueDialog = AddVenueFrame(self, -1, "", self.venuesList,
                                        self.application)
@@ -654,14 +648,13 @@ class VenueListPanel(wxPanel):
             if(message.ShowModal()==wxID_OK):
 
                 try:
-                    wxLogInfo("Delete venue")
+                    log.info("Delete venue")
                     self.application.DeleteVenue(venueToDelete)
 
                 except:
-                    wxLogError("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
+                    log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
                                                           str(sys.exc_value)))
-                    wxLog_GetActiveTarget().Flush()
-
+                 
                 else:
                     self.venuesList.Delete(index)
 
@@ -670,13 +663,13 @@ class VenueListPanel(wxPanel):
                         venue = self.venuesList.GetClientData(0)
 
                         try:
-                            wxLogInfo("Change current venue")
+                            log.info("Change current venue")
                             self.parent.venueProfilePanel.ChangeCurrentVenue(venue)
 
                         except:
-                            wxLogError("\ntype: %s \nvalue: %s" %
+                            log.error("\ntype: %s \nvalue: %s" %
                                        (str(sys.exc_type), str(sys.exc_value)))
-                            wxLog_GetActiveTarget().Flush()
+                          
                     else:
                         self.parent.venueProfilePanel.ChangeCurrentVenue()
 
@@ -733,7 +726,7 @@ class VenueListPanel(wxPanel):
     def SetEncryption(self, value, key):
         item = self.venuesList.GetSelection()
         venue =  self.venuesList.GetClientData(item)
-        wxLogDebug("Set encryption value:%s key:%s"%(value,key))
+        log.debug("Set encryption value:%s key:%s"%(value,key))
         self.application.SetVenueEncryption(venue, value, key)
 
     def SetStaticVideo(self, videoAddress, videoPort, videoTtl):
@@ -867,14 +860,13 @@ class AdministratorsListPanel(wxPanel):
             if(message.ShowModal()==wxID_OK):
 
                 try:
-                    wxLogInfo("Delete administrator")
+                    log.info("Delete administrator")
                     self.application.DeleteAdministrator(adminToDelete)
 
                 except:
-                    wxLogError("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
+                    log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
                                                            str(sys.exc_value)))
-                    wxLog_GetActiveTarget().Flush()
-
+                  
                 else:
                     self.administratorsList.Delete(index)
                     if self.administratorsList.Number > 1 :
@@ -895,13 +887,12 @@ class AdministratorsListPanel(wxPanel):
 
     def InsertAdministrator(self, data):
         try:
-            wxLogInfo("Add administrator")
+            log.info("Add administrator")
             self.application.AddAdministrator(data)
         except:
-            wxLogError("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
+            log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
                                                    str(sys.exc_value)))
-            wxLog_GetActiveTarget().Flush()
-
+           
         else:
             self.administratorsList.Append(self.application.GetCName(data),
                                            data)
@@ -909,15 +900,14 @@ class AdministratorsListPanel(wxPanel):
 
     def ModifyAdministrator(self, oldName, newName):
         try:
-            wxLogInfo("Modify administrator")
+            log.info("Modify administrator")
             index = self.administratorsList.GetSelection()
             self.application.ModifyAdministrator(oldName, newName)
 
         except:
-            wxLogError("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
+            log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
                                                    str(sys.exc_value)))
-            wxLog_GetActiveTarget().Flush()
-
+         
         else:
             self.administratorsList.Delete(index)
             self.administratorsList.Append(self.application.GetCName(newName),
@@ -991,50 +981,47 @@ class DetailPanel(wxPanel):
 
     def ClickedOnEncrypt(self, event):
         try:
-            wxLogInfo("Set encryption")
+            log.info("Set encryption")
             self.application.SetEncryption(event.Checked())
         except:
             self.encryptionButton.SetValue(not event.Checked())
-            wxLogError("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
+            log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
                                                    str(sys.exc_value)))
-            wxLog_GetActiveTarget().Flush()
-
+          
     def ClickedOnRandom(self, event):
         self.ipAddress.Enable(false)
         self.changeButton.Enable(false)
         try:
-            wxLogInfo("Set multicast address to random")
+            log.info("Set multicast address to random")
             self.application.SetRandom()
         except:
             self.ipAddress.Enable(true)
             self.changeButton.Enable(true)
             self.intervalButton.SetValue(true)
-            wxLogError("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
+            log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
                                                    str(sys.exc_value)))
-            wxLog_GetActiveTarget().Flush()
-
+         
     def ClickedOnInterval(self, event):
         self.ipAddress.Enable(true)
         self.changeButton .Enable(true)
         maskInt = int(self.maskString)
 
         try:
-            wxLogInfo("Set multicast address to interval")
+            log.info("Set multicast address to interval")
             self.application.SetInterval(self.ipString, maskInt)
 
         except:
             self.ipAddress.Enable(false)
             self.changeButton.Enable(false)
             self.randomButton.SetValue(true)
-            wxLogError("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
+            log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
                                                    str(sys.exc_value)))
-            wxLog_GetActiveTarget().Flush()
-
+        
     def SetAddress(self, ipAddress, mask):
         oldIpAddress = self.ipAddress.GetLabel()
 
         try:
-            wxLogInfo("Set static addressing")
+            log.info("Set static addressing")
             self.ipAddress.SetLabel(ipAddress+'/'+mask)
             self.ipString = ipAddress
             self.maskString = mask
@@ -1043,21 +1030,18 @@ class DetailPanel(wxPanel):
 
         except:
             self.ipAddress.SetLabel(oldIpAddress)
-            wxLogError("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
+            log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
                                                    str(sys.exc_value)))
-            wxLog_GetActiveTarget().Flush()
-
+         
     def OpenEditPathDialog(self, event):
         dlg = EditPathDialog(self, -1, "Edit path")
         if dlg.ShowModal() == wxID_OK:
             try:
-                wxLogInfo("Set storage location")
+                log.info("Set storage location")
                 self.application.SetStorageLocation(dlg.GetPath())
             except:
-                wxLogError("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
+                log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
                                                        str(sys.exc_value)))
-                wxLog_GetActiveTarget().Flush()
-
             else:
                 self.storageLocation.SetLabel(dlg.GetPath())
 
@@ -1067,13 +1051,12 @@ class DetailPanel(wxPanel):
         dlg = wxDirDialog(self, "Choose a directory:")
         if dlg.ShowModal() == wxID_OK:
             try:
-                wxLogInfo("Set storage location")
+                log.info("Set storage location")
                 self.application.SetStorageLocation(dlg.GetPath())
             except:
-                wxLogError("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
+                log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
                                                        str(sys.exc_value)))
-                wxLog_GetActiveTarget().Flush()
-
+            
             else:
                 self.storageLocation.SetLabel(dlg.GetPath())
 
@@ -1323,7 +1306,7 @@ class VenueParamFrame(wxDialog):
         URL = self.address.GetValue()
         self.__loadVenues(URL)
         if self.address.FindString(URL) == wxNOT_FOUND:
-            wxLogDebug("Append address to combobox: %s " % URL)
+            log.debug("Append address to combobox: %s " % URL)
             self.address.Append(URL)
 
     def LoadLocalVenues(self):
@@ -1341,7 +1324,7 @@ class VenueParamFrame(wxDialog):
 
         try:
             wxBeginBusyCursor()
-            wxLogDebug("Load venues from: %s " % URL)
+            log.debug("Load venues from: %s " % URL)
             server = Client.Handle(URL)
             if(server.IsValid()):
                 venueList = []
@@ -1349,7 +1332,7 @@ class VenueParamFrame(wxDialog):
                 for v in vl:
                     venueList.append(CreateVenueDescription(v))
                 
-                wxLogDebug("Got venues from server")
+                log.debug("Got venues from server")
                 validVenue = true
                 self.venues.Clear()
 
@@ -1364,28 +1347,15 @@ class VenueParamFrame(wxDialog):
                 self.address.SetValue(URL)
 
             else:
-                wxLogMessage("Could not connect to venue\nat: %s " % URL)
-                wxLog_GetActiveTarget().Flush()
+                Message(None, "Could not connect to venue\nat: %s " % URL, Error)
                 self.address.SetValue(self.currentVenueUrl)
 
             wxEndBusyCursor()
 
         except:
             wxEndBusyCursor()
-            wxLogError("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
-            wxLog_GetActiveTarget().Flush()                                              
-
-    #def BrowseForImage(self, event):
-    #    initial_dir = '/'
-    #   imageDialog = ImageDialog(self, initial_dir)
-    #   imageDialog.Show()
-    #   if (imageDialog.ShowModal() == wxID_OK):
-    #       file = imageDialog.GetFile()
-    #       self.bitmap =  wxBitmap(file, wxBITMAP_TYPE_GIF)
-    #       self.icon.SetBitmap(self.bitmap)
-    #       self.Layout()
-    #   imageDialog.Destroy()
-
+            log.error("\ntype: %s \nvalue: %s" %(str(sys.exc_type) ,str(sys.exc_value)))
+    
     def AddExit(self, event):
         index = self.venues.GetSelection()
         if index != -1:
@@ -1498,7 +1468,7 @@ class EncryptionPanel(wxPanel):
         else:
             id =  event.Checked()
         message = "Set encrypt media, value is: "+str(id)
-        wxLogDebug(message)
+        log.debug(message)
         self.keyText.Enable(id)
         self.keyCtrl.Enable(id)
 
@@ -1712,7 +1682,7 @@ class AddVenueFrame(VenueParamFrame):
             if(self.staticAddressingPanel.Validate()):
                 self.Ok()
                 try:
-                    wxLogInfo("Add venue")
+                    log.info("Add venue")
                     self.parent.AddVenue(self.venue)
                     # from super class
                     self.SetStaticAddressing() 
@@ -1720,10 +1690,9 @@ class AddVenueFrame(VenueParamFrame):
                     self.SetEncryption() 
 
                 except:
-                    wxLogError("\ntype: %s \nvalue: %s" % (str(sys.exc_type) ,
+                    log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type) ,
                                                            str(sys.exc_value)))
-                    wxLog_GetActiveTarget().Flush()
-
+                  
                 self.Hide()
         wxEndBusyCursor()
 
@@ -1751,17 +1720,16 @@ class ModifyVenueFrame(VenueParamFrame):
                 self.Ok()
                 self.venue.uri = venueUri
                 try:
-                    wxLogInfo("Modify venue")
+                    log.info("Modify venue")
                     self.parent.ModifyVenue(self.venue)
                     # from super class
                     self.SetStaticAddressing() 
                     # from super class
                     self.SetEncryption()
                 except:
-                    wxLogError("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
+                    log.error("\ntype: %s \nvalue: %s" % (str(sys.exc_type),
                                                            str(sys.exc_value)))
-                    wxLog_GetActiveTarget().Flush()
-
+                 
                 self.Hide()
 
         wxEndBusyCursor()
@@ -1773,29 +1741,29 @@ class ModifyVenueFrame(VenueParamFrame):
         self.title.AppendText(self.venue.name)
         self.description.AppendText(self.venue.description)
 
-        wxLogDebug("Get venue information")
+        log.debug("Get venue information")
         self.application.SetCurrentVenue(self.venue)
         venueC = self.application.currentVenueClient
 
         if(self.venue.encryptMedia):
-            wxLogDebug("We have a key %s" % self.venue.encryptionKey)
+            log.debug("We have a key %s" % self.venue.encryptionKey)
             self.encryptionPanel.ClickEncryptionButton(None, true)
             self.encryptionPanel.keyCtrl.SetValue(self.venue.encryptionKey)
         else:
-            wxLogDebug("Key is None")
+            log.debug("Key is None")
             self.encryptionPanel.ClickEncryptionButton(None, false)
 
         for e in self.venue.connections.values():
             self.exits.Append(e.name, e)
-            wxLogDebug("    %s" % e.name)
+            log.debug("    %s" % e.name)
 
         if(len(self.venue.streams)==0):
-            wxLogDebug("No static streams to load")
+            log.debug("No static streams to load")
             self.staticAddressingPanel.panel.Enable(false)
             self.staticAddressingPanel.staticAddressingButton.SetValue(false)
         elif(len(self.venue.streams)>2):
-            wxLogError("Venue returned more than 2 static streams")
-            wxLog_GetActiveTarget().Flush()
+            log.error("Venue returned more than 2 static streams")
+          
         else:
             self.staticAddressingPanel.panel.Enable(true)
             self.staticAddressingPanel.staticAddressingButton.SetValue(true)
@@ -1809,9 +1777,7 @@ class ModifyVenueFrame(VenueParamFrame):
                     self.staticAddressingPanel.SetStaticAudio(sl.host, sl.port,
                                                               sl.ttl)
 
-        wxLog_GetActiveTarget().Flush()
-
-
+        
 class AdministratorParamFrame(wxDialog):
     def __init__(self, *args):
         wxDialog.__init__(self, *args)
@@ -1963,50 +1929,41 @@ class DigitValidator(wxPyValidator):
         for x in val:
             index = index+1
             if x not in string.digits:
-                wxLogMessage("Add venue")("Please, use digits for the mask!")
-                wxLog_GetActiveTarget().Flush()
+                MessageDialog(None, "Please, use digits for the mask!", "Notification")
                 return false
         if (self.flag == IP or self.flag == IP_1) and index == 0:
-            wxLogMessage("Please, fill in all IP Address fields!")
-            wxLog_GetActiveTarget().Flush()
+            MessageDialog(None,"Please, fill in all IP Address fields!", "Notification")
             return false
 
         elif (self.flag == PORT) and index == 0:
-            wxLogMessage("Please, fill in port for static addressing!")
-            wxLog_GetActiveTarget().Flush()
+            MessageDialog(None,"Please, fill in port for static addressing!", "Notification")
             return false
 
         elif (self.flag == TTL) and index == 0:
-            wxLogMessage("Please, fill in time to live (ttl) for static addressing!")
-            wxLog_GetActiveTarget().Flush()
+            MessageDialog(None, "Please, fill in time to live (ttl) for static addressing!", "Notification")
             return false
 
         elif self.flag == PORT:
             return true
 
         elif self.flag == TTL and (int(val)<0 or int(val)>127):
-            wxLogMessage("Time to live should be a value between 0 - 127")
-            wxLog_GetActiveTarget().Flush()
+            MessageDialog(None, "Time to live should be a value between 0 - 127", "Notification")
             return false
 
         elif self.flag == IP and (int(val)<0 or int(val)>255):
-            wxLogMessage("Allowed values for IP Address are between 224.0.0.0 - 239.225.225.225")
-            wxLog_GetActiveTarget().Flush()
+            MessageDialog(None, "Allowed values for IP Address are between 224.0.0.0 - 239.225.225.225", "Notification")
             return false
 
         elif self.flag == IP_1 and (int(val)<224 or int(val)>239):
-            wxLogMessage("Allowed values for IP Address are between 224.0.0.0 - 239.225.225.225")
-            wxLog_GetActiveTarget().Flush()
+            MessageDialog(None, "Allowed values for IP Address are between 224.0.0.0 - 239.225.225.225", "Notification")
             return false
 
         elif index == 0 and self.flag == MASK:
-            wxLogMessage("Please, fill in mask!")
-            wxLog_GetActiveTarget().Flush()
+            MessageDialog(None, "Please, fill in mask!", "Notification")
             return false
 
         elif self.flag == MASK and (int(val)>24 or int(val)<0):
-            wxLogMessage("Allowed values for mask are between 0 - 24")
-            wxLog_GetActiveTarget().Flush()
+            MessageDialog(None, "Allowed values for mask are between 0 - 24", "Notification")
             return false
 
         return true
@@ -2046,8 +2003,7 @@ class TextValidator(wxPyValidator):
         val = tc.GetValue()
 
         if len(val) < 1:
-            wxLogMessage("Please, fill in your name and description")
-            wxLog_GetActiveTarget().Flush()
+            MessageDialog(None, "Please, fill in your name and description", "Notification")
             return false
         return true
 
