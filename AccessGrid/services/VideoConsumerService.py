@@ -5,14 +5,11 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerService.py,v 1.15 2003-04-23 19:29:50 olson Exp $
+# RCS-ID:      $Id: VideoConsumerService.py,v 1.16 2003-04-24 17:01:32 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys
-
-import logging
-log = logging.getLogger("AG.VideoConsumerService")
 
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
@@ -52,16 +49,19 @@ class VideoConsumerService( AGService ):
          options.append( '%d' % ( self.streamDescription.location.ttl ) )
          options.append( '%s/%d' % ( self.streamDescription.location.host, 
                                      self.streamDescription.location.port ) )
-         print "starting with options:", options
+         self.log.info("Starting VideoConsumerService")
+         self.log.info(" executable = %s" % self.executable)
+         self.log.info(" options = %s" % options)
          self._Start( options )
       except:
-         print "Exception in VideoConsumerService.Start", sys.exc_type, sys.exc_value
+         self.log.exception("Exception in VideoConsumerService.Start")
          raise Exception("Failed to start service")
    Start.soap_export_as = "Start"
 
 
    def ConfigureStream( self, streamDescription ):
       """Configure the Service according to the StreamDescription, and stop and start app"""
+
       ret = AGService.ConfigureStream( self, streamDescription )
       if ret:
         return
@@ -81,10 +81,6 @@ def AuthCallback(server, g_handle, remote_user, context):
 if __name__ == '__main__':
    from AccessGrid.hosting.pyGlobus import Client
    import thread
-
-   top = logging.getLogger("AG")
-   top.setLevel(logging.DEBUG)
-   top.addHandler(logging.StreamHandler())
 
    server = Server( int(sys.argv[1]), auth_callback=AuthCallback )
    

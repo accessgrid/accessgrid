@@ -5,15 +5,12 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.17 2003-04-23 19:29:50 olson Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.18 2003-04-24 17:01:32 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys, os
 import time
-
-import logging
-log = logging.getLogger("AG.AudioService")
 
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
@@ -53,9 +50,12 @@ class AudioService( AGService ):
             options.append( "-crypt" )
             options.append( self.streamDescription.encryptionKey )
          options.append( '%s/%d' % ( self.streamDescription.location.host, self.streamDescription.location.port ) )
+         self.log.info("Starting AudioService")
+         self.log.info(" executable = %s" % self.executable)
+         self.log.info(" options = %s" % options)
          self._Start( options )
       except:
-         print "Exception in AudioService.Start", sys.exc_type, sys.exc_value
+         self.log.exception("Exception in AudioService.Start")
          raise Exception("Failed to start service")
    Start.soap_export_as = "Start"
 
@@ -63,9 +63,8 @@ class AudioService( AGService ):
    def Stop( self ):
       """Stop the service"""
       self.started = 0
-      self.server.stop()
-      print "Stopping audio service"
       try:
+         self.log.info("Stop service")
 
          #
          # See if we have rat-kill.
@@ -86,16 +85,15 @@ class AudioService( AGService ):
          self.processManager.terminate_all_processes()
 
       except:
-         print "Exception in AGService.Stop ", sys.exc_type, sys.exc_value
+         self.log.exception("Exception in AGService.Stop ")
          raise Exception("AGService.Stop failed : ", str( sys.exc_value ) )
-
-      print "audio service Stop returning"
       
    Stop.soap_export_as = "Stop"
 
 
    def ConfigureStream( self, streamDescription ):
       """Configure the Service according to the StreamDescription, and stop and start rat"""
+
       ret = AGService.ConfigureStream( self, streamDescription )
       if ret:
          return
@@ -115,10 +113,6 @@ def AuthCallback(server, g_handle, remote_user, context):
 if __name__ == '__main__':
    from AccessGrid.hosting.pyGlobus import Client
    import thread
-
-   top = logging.getLogger("AG")
-   top.setLevel(logging.DEBUG)
-   top.addHandler(logging.StreamHandler())
 
    server = Server( int(sys.argv[1]), auth_callback=AuthCallback )
 

@@ -5,16 +5,12 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoProducerService.py,v 1.16 2003-04-23 19:29:50 olson Exp $
+# RCS-ID:      $Id: VideoProducerService.py,v 1.17 2003-04-24 17:01:32 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys
 import os
-
-import logging
-log = logging.getLogger("AG.VideoProducerService")
-
 
 from AccessGrid.hosting.pyGlobus.Server import Server
 from AccessGrid.Types import Capability
@@ -45,7 +41,6 @@ class VideoProducerService( AGService ):
    encodings = [ "h261" ]
 
    def __init__( self, server ):
-      print self.__class__, ".init"
       AGService.__init__( self, server )
 
       self.capabilities = [ Capability( Capability.PRODUCER, Capability.VIDEO ) ]
@@ -104,10 +99,13 @@ class VideoProducerService( AGService ):
          options.append( '%d' % (self.streamDescription.location.ttl) )
          options.append( '%s/%d' % ( self.streamDescription.location.host, 
                                         self.streamDescription.location.port) )
+         self.log.info("Starting VideoProducerService")
+         self.log.info(" executable = %s" % self.executable)
+         self.log.info(" options = %s" % options)
          self._Start( options )
          os.remove(startupfile)
       except:
-         print "Exception in VideoProducerService.Start", sys.exc_type, sys.exc_value
+         self.log.exception("Exception in VideoProducerService.Start")
          raise Exception("Failed to start service")
    Start.soap_export_as = "Start"
 
@@ -129,6 +127,7 @@ class VideoProducerService( AGService ):
    def SetResource( self, resource ):
       """Set the resource used by this service"""
 
+      self.log.info("VideoProducerService.SetResource : %s" % resource.resource )
       self.resource = resource
       if "portTypes" in self.resource.__dict__.keys():
           self.configuration["port"] = OptionSetParameter( "port", self.resource.portTypes[0], 
@@ -142,10 +141,6 @@ def AuthCallback(server, g_handle, remote_user, context):
 if __name__ == '__main__':
    from AccessGrid.hosting.pyGlobus import Client
    import thread
-
-   top = logging.getLogger("AG")
-   top.setLevel(logging.DEBUG)
-   top.addHandler(logging.StreamHandler())
 
    server = Server( int(sys.argv[1]), auth_callback=AuthCallback )
    
