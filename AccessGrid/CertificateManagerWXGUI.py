@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.24 2003-09-11 21:10:57 olson Exp $
+# RCS-ID:      $Id: CertificateManagerWXGUI.py,v 1.25 2003-09-11 21:43:05 lefvert Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -336,7 +336,8 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
     
     def RunCertificateStatusTool(self, win = None):
         statTool = CertificateStatusDialog(win, -1,
-                                           "View certificate status")
+                                           "View certificate status",
+                                           createIdentityCertCB = self.CreateCertificateRequestCB)
         statTool.ShowModal()
         statTool.Destroy()
 
@@ -576,6 +577,7 @@ class PassphraseDialog(wxDialog):
 
         b = wxButton(self, -1, "OK")
         h.Add(b, 0, wxALL, 4)
+        b.SetDefault()
         EVT_BUTTON(self, b.GetId(), self.OnOK)
 
         b = wxButton(self, -1, "Cancel")
