@@ -1,0 +1,81 @@
+=====================================
+VenueClient SOAP Interface
+=====================================
+ 
+:version: $Revision: 1.1 $
+:author: Thomas Uram <turam@mcs.anl.gov>
+:status: Draft
+:contact: ag-tech@mcs.anl.gov
+
+Abstract
+========
+
+This document proposes SOAP interfaces on the venue client for callers to query information about the current state.
+
+Overview
+========
+
+Shared applications, service clients, and other software that runs alongside the venue client may have a dependency on the venue client state.  Since the venue client holds this state, it can be made available to other applications through a SOAP interface.  
+
+Specifications
+==============
+
+The current venue client SOAP interface includes the following methods:
+
+    EnterVenue(URL, back=0) : string (warningString)
+    GetDataStoreInformation() : (uploadDescriptor,dataStoreUrl)
+    GetDataDescriptions() : DataDescription list
+    
+    Methods to support lead/follow:
+    
+    RequestLead(followerProfile) : 
+    LeadResponse(leaderProfile, isAuthorized) : 
+    UnLead(followerProfile) : 
+    RequestFollow(leaderProfile) : 
+    FollowResponse(followerProfile, isAuthorized) : 
+
+The following accessors will be added to retrieve the state:
+
+    GetUsers() : ClientProfile list
+    GetServices() : ServiceDescription list
+    GetApplications() : ApplicationDescription list
+    GetConnections() : ConnectionDescription list
+    GetVenueURL() : string
+    GetClientProfile() : ClientProfile
+    GetNodeServiceURL() : string
+    
+No interfaces will be added to mutate the venue client state.
+
+
+Security Issues
+===============
+
+* The VenueClient SOAP Server is used to support personal data stores (and follow/lead).  These additional interfaces will make much of the venue client state available to callers, too.
+
+Interoperability Issues
+=======================
+
+The proposed changes are incremental, so will not affect the venue client interoperability.
+
+Related AGEPs
+=============
+
+AGEP-VenueClient-Refactoring-213
+
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
