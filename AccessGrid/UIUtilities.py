@@ -5,7 +5,7 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.4 2003-02-10 14:47:37 judson Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.5 2003-02-10 22:12:45 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -54,3 +54,7 @@ class AboutDialog(wxPopupTransientWindow):
         self.SetBackgroundColour('BLACK')
         self.SetSize(wxSize(panelWidth + 2, panelHeight + 2))
         self.SetPosition(winPos + wxPoint(diffWidth, diffHeight))
+        
+    def ProcessLeftDown(self, evt):
+        self.Hide()
+        return false
