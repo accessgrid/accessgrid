@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: AudioService.py,v 1.3 2003-05-12 16:29:16 turam Exp $
+# RCS-ID:      $Id: AudioService.py,v 1.4 2003-05-12 16:52:31 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -125,9 +125,23 @@ class AudioService( AGService ):
 def AuthCallback(server, g_handle, remote_user, context):
     return 1
 
+# Signal handler to shut down cleanly
+def SignalHandler(signum, frame):
+    """
+    SignalHandler catches signals and shuts down the service.
+    Then it stops the hostingEnvironment.
+    """
+    global agService
+    global running
+    agService.Stop()
+    running = 0
+
+
 if __name__ == '__main__':
    from AccessGrid.hosting.pyGlobus import Client
    import thread
+   import signal
+   import time
 
    server = Server( int(sys.argv[1]), auth_callback=AuthCallback )
 
@@ -136,5 +150,17 @@ if __name__ == '__main__':
    service = server.create_service_object("Service")
    agService._bind_to_service( service )
 
+   # Register the signal handler so we can shut down cleanly
+   signal.signal(signal.SIGINT, SignalHandler)
+
    print "Starting server at", agService.get_handle()
-   server.run()
+   server.run_in_thread()
+
+   # Keep the main thread busy so we can catch signals
+   running = 1
+   while running:
+      time.sleep(1)
+
+   # Exit cleanly
+   server.Stop()
+
