@@ -1,5 +1,6 @@
 from wxPython.wx import *
 from wxPython.lib.imagebrowser import *
+from AccessGrid.hosting.pyGlobus import Client
 
 '''VenueManagementClient. 
 
@@ -8,9 +9,11 @@ the VenueManagementTabs and statusbar.
 
 '''
 class VenueManagementClient(wxApp):
+    client = None
+    
     def OnInit(self):
         self.frame = wxFrame(NULL, -1, "Venue Management" )
-	self.address = VenueServerAddress(self.frame)
+	self.address = VenueServerAddress(self.frame, self.connectToServer)
 	self.tabs = VenueManagementTabs(self.frame, -1)
 	self.__doLayout()
 	self.frame.Show() 
@@ -27,15 +30,28 @@ class VenueManagementClient(wxApp):
 	box.Fit(self.frame)
 	self.frame.SetAutoLayout(1)  
 
+    def connectToServer(self, URL):
+        self.client = Client.Handle(URL).get_proxy()
+        vl = self.client.GetVenues()
+        self.tabs.venuesPanel.venuesListPanel.venuesList.Clear()
+        for v in vl:
+            print v
+            self.tabs.venuesPanel.venuesListPanel.venuesList.Append(v)
+        
 class VenueServerAddress(wxPanel):
-     def __init__(self, parent):
+     def __init__(self, parent, callback):     
          wxPanel.__init__(self, parent, -1, wxDefaultPosition, \
-			 wxDefaultSize, wxNO_BORDER|wxSW_3D)
+			 wxDefaultSize, wxNO_BORDER)
+         self.callback = callback
 	 self.addressLabel =  wxStaticText(self, -1,'Venue Server Address:')
-	 self.addressText = wxTextCtrl(self, -1)
+	 self.addressText = wxTextCtrl(self, 42, style=wxPROCESS_ENTER)
 	 self.line = wxStaticLine(self, -1)
 	 self.__doLayout()
-  
+         EVT_TEXT_ENTER(self, 42, self.evtText)
+
+     def evtText(self, event):
+         self.callback(event.GetString())
+         
      def __doLayout(self):
          venueServerAddressBox = wxBoxSizer(wxVERTICAL)  
 	
