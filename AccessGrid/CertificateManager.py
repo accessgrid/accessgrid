@@ -98,7 +98,7 @@ class CertificateManager:
     We also support a mechanism for determining if the
     existing proxy will expire soon, and provide a way
     to as the user for a renewal of it.
-       
+
     """
 
     CONFIG_FILE = "certmgr.cfg"
@@ -111,7 +111,7 @@ class CertificateManager:
         CertificateManager constructor.
 
         userProfileDir - directory in which this user's profile information is
-        kept. The CM uses this directory to store the user's identity certificates, 
+        kept. The CM uses this directory to store the user's identity certificates,
         the user-specific CA certs (if present), and the certificate management
         configuration ifle.
 
@@ -122,7 +122,7 @@ class CertificateManager:
         with the user are managed.
 
         """
-        
+
         self.userInterface = userInterface
         self.userProfileDir = userProfileDir
         self.userCertPath = os.path.join(userProfileDir, self.USER_CERT_DIR)
@@ -166,7 +166,7 @@ class CertificateManager:
         # However, the local environment variables have not been set up
         # yet. We leave it for the user to invoke the InitEnvironment()
         # method at a time of his choosing.
-        # 
+        #
 
     def GetUserInterface(self):
         return self.userInterface
@@ -180,8 +180,8 @@ class CertificateManager:
 
         If we need to create a new proxy, invoke the user interface's
         QueryForPrivateKeyPassphrase() method, passing along the
-        certificate from which we will 
-        
+        certificate from which we will
+
         """
 
         #
@@ -261,7 +261,7 @@ class CertificateManager:
             exe = "grid-proxy-init.exe"
         else:
             exe = "grid-proxy-init"
-            
+
         gpiPath = os.path.join(os.environ['GLOBUS_LOCATION'], "bin", exe)
 
         if not os.access(gpiPath, os.X_OK):
@@ -300,12 +300,12 @@ class CertificateManager:
         rd.close()
         wr.close()
 
-        # 
+        #
         # TODO: doublecheck that the newly-generated proxy is indeed
         # correct. Also to parse the grid-proxy-init output for errors and
         # status.
         #
-        
+
 
     def InitEnvironment(self):
         """
@@ -388,7 +388,7 @@ class CertificateManager:
 
         if not os.access(self.configFile, os.W_OK):
             log.warn("Configuration file %s may not be writable", self.configFile)
-            
+
         cp = self.configParser = ConfigParser.ConfigParser()
         cp.read(self.configFile)
 
@@ -444,7 +444,7 @@ class CertificateManager:
         #
         # Determine where Globus thinks the user certs are
         #
-        
+
         gcerts = FindGlobusCerts()
 
         if 'x509_user_cert' in gcerts and 'x509_user_key' in gcerts:
@@ -516,7 +516,7 @@ class CertificateManager:
         fp = open(self.configFile, "w")
         cp.write(fp)
         fp.close()
-            
+
 class CertificateManagerUserInterface:
     """
     Superclass for the UI interface to a CertificateManager.
@@ -577,7 +577,7 @@ class CertificateManagerWXGUI(CertificateManagerUserInterface):
 
         i = wxNewId()
         certMenu.Append(i, "View &Trusted CA Certificates...")
-        EVT_MENU(win, i, 
+        EVT_MENU(win, i,
                  lambda event, win=win, self=self: self.OpenTrustedCertDialog(event, win))
 
         i = wxNewId()
@@ -592,18 +592,18 @@ class CertificateManagerWXGUI(CertificateManagerUserInterface):
                                 self.certificateManager.trustedCARepo)
         dlg.ShowModal()
         dlg.Destroy
-        
+
     def OpenIdentityCertDialog(self, event, win):
         dlg = TrustedCertDialog(win, -1, "View user identity certificates",
                                 self.certificateManager.userCertRepo)
         dlg.ShowModal()
         dlg.Destroy
-        
+
 class PassphraseDialog(wxDialog):
     def __init__(self, parent, id, title, cert):
 
         self.cert = cert
-        
+
         wxDialog.__init__(self, parent, id, title)
 
         sizer = wxBoxSizer(wxVERTICAL)
@@ -632,7 +632,7 @@ class PassphraseDialog(wxDialog):
 
         t = wxStaticText(self, -1, "Proxy lifetime (hours):")
         grid.Add(t, 0, wxALL, 4)
-        
+
         self.lifetimeText = wxTextCtrl(self, -1, "8")
         grid.Add(self.lifetimeText, 0, wxEXPAND | wxALL, 4)
 
@@ -661,10 +661,10 @@ class PassphraseDialog(wxDialog):
 
     def OnOK(self, event):
         self.EndModal(wxID_OK)
-         
+
     def OnCancel(self, event):
         self.EndModal(wxID_CANCEL)
-         
+
 
 def FindGlobusCertsWin32():
 
@@ -718,7 +718,7 @@ def FindGlobusCertsUnix():
             env = None
             if os.environ.has_key('X509_CERT_DIR'):
                 env = os.environ['X509_CERT_DIR']
-                
+
             if env is not None and env != "":
                 vals['x509_cert_dir'] = env
             else:
@@ -746,9 +746,9 @@ class CertificateRepository:
         dir - directory in which to store certificates.
 
         """
-        
+
         self.dir = dir
-        
+
         self.__scanDir()
 
     def GetCertificates(self):
@@ -793,7 +793,7 @@ class CertificateRepository:
         default mechanism provided here.
 
         """
-        
+
         key_path = path +  ".key"
         if not os.path.exists(key_path):
             key_path = None
@@ -842,7 +842,7 @@ class Certificate:
         self.cert = crypto.load_certificate(crypto.FILETYPE_PEM, self.certText)
         log.debug("Loaded certificate for %s", self.cert.get_subject())
         fh.close()
-        
+
         #
         # We don't load the privatekey with the load_privatekey method,
         # as that requires the passphrase for the key.
@@ -991,12 +991,12 @@ class RepositoryBrowser(wxPanel):
         EVT_BUTTON(self, b.GetId(), self.OnImport)
         vboxTop.Add(b, 0, wxEXPAND)
         b.Enable(False)
-        
+
         b = wxButton(self, -1, "Export...")
         EVT_BUTTON(self, b.GetId(), self.OnExport)
         vboxTop.Add(b, 0, wxEXPAND)
         b.Enable(False)
-        
+
         b = wxButton(self, -1, "Delete")
         EVT_BUTTON(self, b.GetId(), self.OnDelete)
         vboxTop.Add(b, 0, wxEXPAND)
@@ -1021,7 +1021,7 @@ class RepositoryBrowser(wxPanel):
 
         self.issuerText = wxTextCtrl(self, -1, style = wxTE_MULTILINE | wxTE_READONLY)
         vboxMidR.Add(self.issuerText, 1, wxEXPAND)
-        
+
         #
         # Bottom row
         #
@@ -1073,7 +1073,7 @@ class RepositoryBrowser(wxPanel):
         fmt += "%s Fingerprint: %s\n"  % (type,
                                           string.join(map(lambda a: "%02X" % (a), fp), ":"))
         return fmt
-                                
+
 
     def OnImport(self, event):
         print "Import"
@@ -1207,6 +1207,3 @@ if __name__ == "__main__":
     fr.Show(1)
 
     app.MainLoop()
-    
-        
-
