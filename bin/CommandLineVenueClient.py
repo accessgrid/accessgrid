@@ -5,7 +5,7 @@
 # Author:      Eric Olson
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: CommandLineVenueClient.py,v 1.5 2003-09-11 20:45:33 judson Exp $
+# RCS-ID:      $Id: CommandLineVenueClient.py,v 1.6 2003-10-29 20:45:50 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -21,7 +21,7 @@ from AccessGrid.Platform import GetUserConfigDir
 log = logging.getLogger("AG.VenueClient")
 
 from AccessGrid.VenueClient import VenueClient
-from AccessGrid.Toolkit import CmdlineApplication
+from AccessGrid.Toolkit import CmdlineApplication, GetApplication
 from AccessGrid.VenueClientEventSubscriber import VenueClientEventSubscriber
 from AccessGrid.hosting.AccessControl import Subject
 
@@ -47,12 +47,15 @@ class CommandLineVenueClient(VenueClientEventSubscriber):
     transferEngine = None
 
     def __init__(self):
+        self.app = None
         self.__setLogger()
 
-        try:
-            self.app = CmdlineApplication()
-        except Exception, e:
-            log.exception("bin.CommandLineVenueClient__init__ Toolkit.CmdlineApplication creation failed")
+        self.app = GetApplication()
+        if self.app == None:
+            try:
+                self.app = CmdlineApplication()
+            except Exception, e:
+                log.exception("bin.CommandLineVenueClient__init__ Toolkit.CmdlineApplication creation failed")
 
         try:
             self.app.InitGlobusEnvironment()
