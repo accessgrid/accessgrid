@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.310 2004-01-09 23:30:04 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.311 2004-01-14 20:10:45 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.310 2004-01-09 23:30:04 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.311 2004-01-14 20:10:45 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2302,14 +2302,25 @@ class ContentListPanel(wxPanel):
         
         menu = wxMenu()
 
-        # We always have open
-        id = wxNewId()
-        menu.Append(id, "Join", "Join this session.")
+        # We always have join (or open for old apps)
+        
+        # Old shared apps used open
         if commands != None and 'Open' in commands:
+            id = wxNewId()
+            menu.Append(id, "Open", "Join this session.")
             EVT_MENU(self, id, lambda event, cmd='Open':
                      self.StartCmd(appdb.GetCommandLine(item.mimeType,
                                                         'Open'),
                                    item=item, verb='Open'))
+        # New shared apps uses join
+        elif commands != None and 'Join' in commands:
+            id = wxNewId()
+            menu.Append(id, "Join", "Join this session.")
+            EVT_MENU(self, id, lambda event, cmd='Join':
+                     self.StartCmd(appdb.GetCommandLine(item.mimeType,
+                                                        'Join'),
+                                   item=item, verb='Join'))
+
         else:
             text = "You have nothing configured to open this application."
             title = "Notification"
@@ -2322,16 +2333,12 @@ class ContentListPanel(wxPanel):
         menu.Append(id, "Delete", "Delete this service.")
         EVT_MENU(self, id, lambda event: self.parent.RemoveApp(event))
 
-        # We always have an Application Monitor
         menu.AppendSeparator()
-        id = wxNewId()
-        menu.Append(id, "Open Monitor...", "View data and participants present in this application session.")
-        EVT_MENU(self, id, lambda event: self.parent.OpenAppMonitor(event, item))
             
         # Do the rest
         if commands != None:
             for key in commands:
-                if key != 'Open':
+                if key != 'Open' and key != 'Join':
                     id = wxNewId()
                     menu.Append(id, string.capwords(key))
                     EVT_MENU(self, id, lambda event, cmd=key, itm=item:
@@ -2340,6 +2347,11 @@ class ContentListPanel(wxPanel):
                                            item=itm, verb=cmd))
 
         menu.AppendSeparator()
+
+        # Add Application Monitor
+        id = wxNewId()
+        menu.Append(id, "Open Monitor...", "View data and participants present in this application session.")
+        EVT_MENU(self, id, lambda event: self.parent.OpenAppMonitor(event, item))
 
         # Add properties
         id = wxNewId()
