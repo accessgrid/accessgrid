@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: DataStore.py,v 1.7 2003-02-28 17:38:56 judson Exp $
+# RCS-ID:      $Id: DataStore.py,v 1.8 2003-03-12 08:43:33 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -24,7 +24,6 @@ import md5
 import os
 import ConfigParser
 import cStringIO
-import threading
 import Queue
 
 import AccessGrid.GUID
@@ -914,7 +913,8 @@ class HTTPTransferServer(BaseHTTPServer.HTTPServer, TransferServer):
                                  
     def run(self):
         self.done = 0
-        self.server_thread = threading.Thread(target = self.thread_run)
+        self.server_thread = threading.Thread(target = self.thread_run,
+                                              name = 'TransferServer')
         self.server_thread.start()
 
     def stop(self):
@@ -972,6 +972,7 @@ n
         self.workerThread = {}
         for workerNum in range(self.numThreads):
             self.workerThread[workerNum] = threading.Thread(target = self.__WorkerRun,
+                                                            name = 'TransferWorker',
                                                             args = (workerNum,))
             self.workerThread[workerNum].start()
 
@@ -1030,7 +1031,8 @@ n
                                  
     def run(self):
         self.done = 0
-        self.server_thread = threading.Thread(target = self.thread_run)
+        self.server_thread = threading.Thread(target = self.thread_run,
+                                              name = 'TransferServer')
         self.server_thread.start()
 
     def stop(self):
