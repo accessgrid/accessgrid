@@ -1,1 +1,79 @@
+=====================================
+TITLE
+=====================================
+ 
+:version: $Revision: 1.2 $
+:author: NAME <EMAIL>
+:status: Draft
+
+Abstract
+========
+
+FILL IN ABSTRACT
+
+Overview
+========
+
+FILL IN OVERVIEW
+
+Summary of Modifications
+========================
+
+FILL IN SUMMARY OF MODIFICATIONS
+
+Module Organization
+-------------------
+
+FILL IN MODULE ORGANIZATION
+   
+Deprecated Packages
+-------------------
+
+FILL IN DEPRECATED PACKAGES
+
+Specifications
+==============
+
+FILL IN SPECIFICATIONS
+
+Security Issues
+===============
+
+FILL IN SECURITY ISSUES
+
+Interoperability Issues
+=======================
+
+FILL IN INTEROPERABILITY ISSUES
+
+Related AGEPs
+=============
+
+FILL IN RELATED AGEPS
+
+Implementation
+==============
+
+FILL IN IMPLEMENTATION
+
+References
+==========
+
+FILL IN REFERENCES
+
+Copyright
+=========
+
+This document is Copyright 2003, The University of Chicago/Argonne
+National Laboratory.
+
+
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
 
