@@ -3,6 +3,6 @@
 Encoding=UTF-8
 Name=Venue Client (Debug)
 Type=Application
-Exec=VenueClient.py -d
+Exec=VenueClient.py --personalNode -d
 Icon=/usr/share/AccessGrid/ag.ico
 Terminal=1
