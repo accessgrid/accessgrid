@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.215 2003-09-17 13:21:17 judson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.216 2003-09-17 21:05:45 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -58,7 +58,7 @@ from AccessGrid.VenueClientUIClasses import SaveFileDialog, UploadFilesDialog
 from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
 from AccessGrid.GUID import GUID
-from AccessGrid.VenueClient import VenueClient
+from AccessGrid.VenueClient import VenueClient, NotAuthorizedError
 from AccessGrid.VenueClientEventSubscriber import VenueClientEventSubscriber
 from AccessGrid.Platform import GetUserConfigDir
 
@@ -1249,9 +1249,15 @@ class VenueClientUI(VenueClientEventSubscriber):
         
         try:
             self.venueClient.RemoveData(data, ownerProfile)
+
+        except NotAuthorizedError:
+            log.info("bin.VenueClient::RemoveData: Not authorized to  remove data")
+            MessageDialog(None, "You are not authorized to remove the file", "Remove Personal Files")        
         except:
             log.exception("bin.VenueClient::RemoveData: Error occured when trying to remove data")
             ErrorDialog(None, "The file could not be removed", "Remove Personal Files Error", style = wxOK | wxICON_ERROR)
+
+
           
     def AddService(self, service):
         """
