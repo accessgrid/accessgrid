@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.163 2003-05-23 21:39:24 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.164 2003-05-27 18:30:46 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -409,10 +409,6 @@ class VenueClientUI(wxApp, VenueClient):
             wxCallAfter(self.HandleServerConnectionFailure)
                                         
     def HandleServerConnectionFailure(self):
-        MessageDialog(None,
-                      "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.",
-                      "Lost Connection")
-            
         if self.venueUri != None:
             log.debug("call exit venue")
             self.frame.CleanUp()
@@ -420,6 +416,8 @@ class VenueClientUI(wxApp, VenueClient):
                                                 'Click "Go" to connect to the venue, which address is displayed in the address bar') 
             self.ExitVenue()
 
+        MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nPlease, try to connect again.", "Lost Connection")
+        
     def RemoveUserEvent(self, user):
         """
         Note: Overridden from VenueClient
