@@ -121,6 +121,12 @@
 		<soap:body use="literal"/> 
 	    </input>
 	</operation>
+	<operation name="UpdateLifetime">
+	    <soap:operation soapAction="urn:#UpdateLifetime"/>
+	    <input>
+		<soap:body use="literal"/> 
+	    </input>
+	</operation>
     </binding>
 
     <service name="Venue">
