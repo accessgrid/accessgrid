@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.29 2004-04-13 18:49:57 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.30 2004-04-13 20:41:46 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.29 2004-04-13 18:49:57 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.30 2004-04-13 20:41:46 judson Exp $"
 
 import os
 import sys
@@ -354,7 +354,7 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         self.location = AGTkConfig.instance().GetInstallDir()
         self.proxyFileName = os.path.join(UserConfig.instance().GetTempDir(),
                                           "proxy")
-        self.caCertDir = os.path.join(agtkdata, "Config", "CAcertificates")
+        self.caCertDir = os.path.join(agtkdata, "CAcertificates")
         self.certFileName = os.path.join(uappdata, "globus", "usercert.pem")
         self.keyFileName = os.path.join(uappdata, "globus", "userkey.pem")
 
@@ -607,7 +607,8 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
     def GetCACertDir(self):
         if self.caCertDir is not None and not os.path.exists(self.caCertDir):
             log.exception("GlobusConfig: CA Certificate dir does not exist.")
-            raise Exception, "GlobusConfig: CA Certificate dir does not exist."
+            print "CAD: ", self.caCertDir
+            raise IOError("GlobusConfig: CA Certificate dir does not exist.")
 
         return self.caCertDir
     
@@ -616,7 +617,6 @@ class GlobusConfig(AccessGrid.Config.GlobusConfig):
         if gkey is None:
             log.error("No Globus configuration, can't set ca cert dir.")
             return -1
-        
         try:
             _winreg.SetValueEx(gkey, "x509_cert_dir", 0,
                                _winreg.REG_EXPAND_SZ, cacertdir)
@@ -1530,6 +1530,12 @@ class MimeConfig(AccessGrid.Config.MimeConfig):
 # are working
 
 if __name__ == "__main__":
+    from AccessGrid.Toolkit import CmdlineApplication
+
+    app = CmdlineApplication.instance()
+
+    app.Initialize("ConfigTest")
+    
     try:
         tkConf = AGTkConfig.instance()
     except Exception, e:
@@ -1538,14 +1544,6 @@ if __name__ == "__main__":
     else:
         print tkConf
 
-    try:
-        globusConf = GlobusConfig.instance(0)
-    except Exception, e:
-        print "Error retrieving Globus Configuration:\n", e
-        globusConf = None
-    else:
-        print globusConf
-        
     try:
         sysConf = SystemConfig.instance()
     except Exception, e:
@@ -1561,3 +1559,12 @@ if __name__ == "__main__":
         userConf = None
     else:
         print userConf
+
+    try:
+        globusConf = GlobusConfig.instance(0)
+    except Exception, e:
+        print "Error retrieving Globus Configuration:\n", e
+        globusConf = None
+    else:
+        print globusConf
+        
