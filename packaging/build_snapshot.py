@@ -112,9 +112,9 @@ if not options.nocheckout:
 
 if not options.nocheckout:
     if sys.platform == 'win32':
-        RunDir = os.path.join(BuildDir, "packaging", "windows")
+        RunDir = os.path.join(BuildDir, "packaging")
     else:
-        RunDir = os.path.join(BuildDir, "packaging", "linux")
+        RunDir = os.path.join(BuildDir, "packaging")
 
     if options.verbose:
         print "BUILD: Changing to directory: %s" % RunDir
