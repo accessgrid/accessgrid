@@ -5,14 +5,14 @@
 # Author:      Thomas D. Uram
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: AGService.py,v 1.28 2004-03-12 05:23:11 judson Exp $
+# RCS-ID:      $Id: AGService.py,v 1.29 2004-03-16 07:13:29 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: AGService.py,v 1.28 2004-03-12 05:23:11 judson Exp $"
+__revision__ = "$Id: AGService.py,v 1.29 2004-03-16 07:13:29 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -23,11 +23,15 @@ from AccessGrid import Log
 
 from AccessGrid.Types import *
 from AccessGrid.AGParameter import *
-from AccessGrid.Descriptions import StreamDescription
-from AccessGrid.Security.AuthorizationManager import AuthorizationManager
 from AccessGrid.Platform import isWindows, isLinux
 from AccessGrid.Platform.Config import UserConfig
-from AccessGrid.ProcessManager import ProcessManager
+from AccessGrid.Platform.ProcessManager import ProcessManager
+from AccessGrid.Descriptions import StreamDescription
+from AccessGrid.Descriptions import CreateResource
+from AccessGrid.Descriptions import CreateStreamDescription
+from AccessGrid.Descriptions import CreateServiceConfiguration
+from AccessGrid.Descriptions import CreateCapability
+from AccessGrid.Descriptions import CreateClientProfile
 
 def GetLog():
     """
@@ -47,17 +51,14 @@ class AGService:
     """
     AGService : Base class for developing services for the AG
     """
-    def __init__( self, server ):
+    def __init__( self ):
         if self.__class__ == AGService:
             raise Exception("Can't instantiate abstract class AGService")
 
-        self.server = server
-        
         self.resource = AGResource()
         self.executable = None
 
         self.capabilities = []
-        self.authManager = AuthorizationManager()
         self.started = 1
         self.enabled = 1
         self.configuration = []
@@ -65,6 +66,8 @@ class AGService:
         self.processManager = ProcessManager()
 
         self.log = GetLog()
+        
+        self.running = 1
 
 
     def Start( self ):
@@ -81,7 +84,7 @@ class AGService:
         if self.started == 1:
            self.Stop()
 
-        self.processManager.start_process( self.executable, options )
+        self.processManager.StartProcess( self.executable, options )
         self.started = 1
 
 
@@ -89,7 +92,7 @@ class AGService:
         """Stop the service"""
         try:
             self.started = 0
-            self.processManager.terminate_all_processes()
+            self.processManager.TerminateAllProcesses()
 
         except Exception, e:
             self.log.exception("Exception in AGService.Stop")
@@ -105,20 +108,7 @@ class AGService:
         elif isLinux():
            # linux : kill vic, instead of terminating
            self.started = 0
-           self.processManager.kill_all_processes()
-
-    def SetAuthorizedUsers( self, authorizedUsers ):
-        """
-        Set the authorizedUsers list; this is usually pushed from a ServiceManager,
-        thus this wholesale Set of the authorized user list
-        """
-
-        try:
-           self.authManager.SetAuthorizedUsers( authorizedUsers )
-        except:
-           self.log.exception("Exception in AGService.SetAuthorizedUsers")
-           raise Exception("AGService.SetAuthorizedUsers failed : " + str(sys.exc_value) )
-
+           self.processManager.KillAllProcesses()
 
     def GetCapabilities( self ):
         """Get capabilities"""
@@ -230,12 +220,14 @@ class AGService:
        """
        self.log.info("Shut service down")
        self.Stop()
-       self.server.stop()
+       self.running = 0
+       
+    def IsRunning(self):
+        return self.running
 
 
     def SetIdentity(self, profile):
         self.profile = profile
-
 
 
 
@@ -256,16 +248,14 @@ class AGServiceI(SOAPInterface):
     def Stop(self):
         self.impl.Stop()
         
-    def SetAuthorizedUsers( self, authorizedUsers ):
-        self.impl.SetAuthorizedUsers(authorizedUsers )
-
     def GetCapabilities( self ):
         return self.impl.GetCapabilities()
 
     def GetResource( self ):
         return self.impl.GetResource()
 
-    def SetResource( self, resource ):
+    def SetResource( self, resourceStruct ):
+        resource = CreateResource(resourceStruct)
         self.impl.SetResource(resource )
 
     def GetExecutable( self ):
@@ -274,14 +264,16 @@ class AGServiceI(SOAPInterface):
     def SetExecutable( self, executable ):
         self.impl.SetExecutable( self, executable )
 
-    def SetConfiguration(configuration ):
-        self.impl.SetConfiguration(configuration )
+    def SetConfiguration(self,serviceConfigStruct ):
+        serviceConfig = CreateServiceConfiguration(serviceConfigStruct)
+        self.impl.SetConfiguration(serviceConfig )
 
     def GetConfiguration( self ):
         return self.impl.GetConfiguration()
 
-    def ConfigureStream( self, streamDescription ):
-        self.impl.ConfigureStream(streamDescription )
+    def ConfigureStream( self, streamDescStruct ):
+        streamDesc = CreateStreamDescription(streamDescStruct)
+        self.impl.ConfigureStream(streamDesc )
 
     def IsStarted( self ):
         return self.impl.IsStarted()
@@ -295,7 +287,8 @@ class AGServiceI(SOAPInterface):
     def Shutdown(self):
         self.impl.Shutdown()
 
-    def SetIdentity(self, profile):
+    def SetIdentity(self, profileStruct):
+        profile = CreateClientProfile(profileStruct)
         self.impl.SetIdentity(profile)
 
     
@@ -316,10 +309,20 @@ class AGServiceIW(SOAPIWrapper):
         self.proxy.Stop()
         
     def GetCapabilities( self ):
-        return self.proxy.GetCapabilities()
+    
+        capStructList = self.proxy.GetCapabilities()
+        
+        capList = map( lambda capStruct:
+                       CreateCapability(capStruct),
+                       capStructList)
+        return capList
+
 
     def GetResource( self ):
-        return self.proxy.GetResource()
+        resourceStruct = self.proxy.GetResource()
+        
+        resource = CreateResource(resourceStruct)
+        return resource
 
     def SetResource( self, resource ):
         self.proxy.SetResource(resource )
@@ -330,11 +333,16 @@ class AGServiceIW(SOAPIWrapper):
     def SetExecutable( self, executable ):
         self.proxy.SetExecutable( self, executable )
 
-    def SetConfiguration(configuration ):
+    def SetConfiguration(self,configuration ):
         self.proxy.SetConfiguration(configuration )
 
     def GetConfiguration( self ):
-        return self.proxy.GetConfiguration()
+        configStruct = self.proxy.GetConfiguration()
+        
+        config = ServiceConfiguration(CreateResource(configStruct.resource),
+                                      configStruct.executable,
+                                      configStruct.parameters)
+        return config
 
     def ConfigureStream( self, streamDescription ):
         self.proxy.ConfigureStream(streamDescription )
@@ -355,6 +363,53 @@ class AGServiceIW(SOAPIWrapper):
         self.proxy.SetIdentity(profile)
 
     
+
+#
+# Utility routines to simplify service startup
+# (these are full-service convenience routines that
+# guarantee required behavior (signal handling, 
+# service path); services that want to do something
+# different need not use them)
+#
+
+
+# Signal handler to shut down cleanly
+def SignalHandler(signum, frame, service):
+    """
+    SignalHandler catches signals and shuts down the service.
+    Then it stops the hostingEnvironment.
+    """
+    service.Shutdown()
+
+def RunService(service,serviceInterface,port):
+    import signal, time
+    from AccessGrid.hosting import Server
+    from AccessGrid.Platform.Config import SystemConfig
+
+    # Create the server
+    hostname = SystemConfig.instance().GetHostname()
+    server = Server( (hostname, port) )
     
+    # Register the service interface with the server
+    server.RegisterObject(serviceInterface, path = "/Service")
     
+    # Start the server
+    server.RunInThread()
+    
+    # Register the signal handler so we can shut down cleanly
+    # lambda is used to pass the service instance to the 
+    # signal handler
+    signal.signal(signal.SIGINT, 
+                  lambda signum,frame,service=service:
+                  SignalHandler(signum,frame,service))
+   
+    # Loop main thread to catch signals
+    while service.IsRunning():
+       time.sleep(1)
+       
+    # Shutdown the server
+    server.Stop()
+
+
+
     
