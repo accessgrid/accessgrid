@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.205 2003-05-28 13:25:45 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.206 2003-05-28 16:49:12 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1779,7 +1779,7 @@ class ContentListPanel(wxPanel):
 #            EVT_MENU(self, id, lambda event, item=item:
 #                     self.MakeAssociation(event, item))
 
-        # We alwyas have save for data
+        # We always have save for data
         id = wxNewId()
         menu.Append(id, "Save", "Save this item locally.")
         EVT_MENU(self, id, lambda event: self.parent.SaveData(event))
