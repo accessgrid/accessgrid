@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.309 2004-01-09 23:20:15 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.310 2004-01-09 23:30:04 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.309 2004-01-09 23:20:15 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.310 2004-01-09 23:30:04 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1663,7 +1663,7 @@ class ContentListPanel(wxPanel):
     '''
     def __init__(self, parent, app):
         wxPanel.__init__(self, parent, -1, wxDefaultPosition, 
-			 wxDefaultSize)
+			 wxDefaultSize, style = wxSUNKEN_BORDER)
         id = wxNewId()
         self.participantDict = {}
         self.dataDict = {}
