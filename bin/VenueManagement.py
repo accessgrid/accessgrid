@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueManagement.py,v 1.77 2003-08-13 20:06:02 eolson Exp $
+# RCS-ID:      $Id: VenueManagement.py,v 1.78 2003-08-13 22:31:24 eolson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ from AccessGrid.UIUtilities import AboutDialog, MessageDialog
 from AccessGrid import Toolkit
 from AccessGrid.hosting.AccessControl import RoleManager
 from AccessGrid.Venue import RegisterDefaultVenueRoles
-from AccessGrid.RoleAuthorization import AddPeopleDialog
+from AccessGrid.RoleAuthorization import AddPeopleDialog, RoleClient
 
 import webbrowser
 import logging, logging.handlers
@@ -1176,6 +1176,7 @@ class VenueParamFrame(wxDialog):
         self.Centre()
         self.SetSize(wxSize(400, 350))
         self.application = application
+        self.rolesDict = None
         self.informationBox = wxStaticBox(self, -1, "Information")
         self.exitsBox = wxStaticBox(self, -1, "Exits")
         self.titleLabel =  wxStaticText(self, -1, "Title:")
@@ -1325,9 +1326,12 @@ class VenueParamFrame(wxDialog):
         """
 
     def OpenRoleAuthorizationDialog(self, event = None):
-        roleAuthorization = AddPeopleDialog(self, -1, "Modify Roles", self.venue.uri)
-        roleAuthorization.ShowModal()
-        roleAuthorization.Destroy()
+        self.rolesDict = None
+        addPeopleDialog = AddPeopleDialog(self, -1, "Modify Roles", self.venue.uri)
+        if addPeopleDialog.ShowModal() == wxID_OK:
+            # Get new role configuration
+            self.rolesDict = addPeopleDialog.GetInfo()
+        addPeopleDialog.Destroy()
 
     def __loadVenues(self, URL):
         validVenue = false
@@ -1720,6 +1724,10 @@ class ModifyVenueFrame(VenueParamFrame):
                 try:
                     log.info("Modify venue")
                     self.parent.ModifyVenue(self.venue)
+                    # Set roles
+                    if self.rolesDict:
+                        RoleClient(venueUri).SetVenueRoles(self.rolesDict)
+                        self.rolesDict = None
                     # from super class
                     self.SetEncryption()
                 except:
