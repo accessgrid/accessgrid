@@ -5,13 +5,13 @@
 # Author:      Everyone
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: UIUtilities.py,v 1.45 2004-01-28 21:02:40 lefvert Exp $
+# RCS-ID:      $Id: UIUtilities.py,v 1.46 2004-03-10 23:04:07 olson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: UIUtilities.py,v 1.45 2004-01-28 21:02:40 lefvert Exp $"
+__revision__ = "$Id: UIUtilities.py,v 1.46 2004-03-10 23:04:07 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 from AccessGrid.Platform import isWindows, isLinux, isOSX
@@ -314,6 +314,454 @@ def AboutDialogTest():
     dlg.ShowModal()
     dlg.Destroy()
        
+
+class FileLocationWidget(wxPanel):
+    """
+    A FileLocationWidget has a label, text field, and browse button.
+
+    It is configured with a list of tuples (wildcard description, wildcard) which
+    will be used to configure the file browser dialog.
+
+    The selected path is available via the GetPath() method.
+    """
+
+    def __init__(self, parent, title, label, wildcardDesc, fileSelectCB):
+        wxPanel.__init__(self, parent, -1, style = 0)
+
+        self.title = title
+        self.fileSelectCB = fileSelectCB
+        self.wildcardDesc = wildcardDesc
+        self.path = ""
+        self.lastFilterIndex = 0
+        
+        sizer = self.sizer = wxBoxSizer(wxHORIZONTAL)
+        t = wxStaticText(self, -1, label)
+        sizer.Add(t, 0, wxALIGN_CENTER_VERTICAL)
+        
+        self.text = wxTextCtrl(self, -1, style = wxTE_PROCESS_ENTER)
+        sizer.Add(self.text, 1, wxALIGN_CENTER_VERTICAL)
+        EVT_TEXT_ENTER(self, self.text.GetId(), self.OnTextEnter)
+        EVT_KILL_FOCUS(self.text, self.OnTextLoseFocus)
+        
+        b = wxButton(self, -1, "Browse")
+        sizer.Add(b, 0)
+        EVT_BUTTON(self, b.GetId(), self.OnBrowse)
+
+        self.SetSizer(sizer)
+        self.SetAutoLayout(1)
+        self.Fit()
+
+    def GetPath(self):
+        return self.path
+
+    def OnTextEnter(self, event):
+        self.path = self.text.GetValue()
+        if self.fileSelectCB is not None:
+            self.fileSelectCB(self, self.path)
+
+    def OnTextLoseFocus(self, event):
+        self.path = self.text.GetValue()
+        if self.fileSelectCB is not None:
+            self.fileSelectCB(self, self.path)
+
+    def OnBrowse(self, event):
+        path = self.path
+        dir = file = ""
+        
+        if path != "":
+            if os.path.isdir(path):
+                dir = path
+            elif os.path.isfile(path):
+                dir, file = os.path.split(path)
+            else:
+                #
+                # User entered an invalid file; point the browser
+                # at the directory containing that file.
+                #
+                dir, file = os.path.split(path)
+                file = ""
+
+        wildcard = "|".join(map(lambda a: "|".join(a), self.wildcardDesc))
+        dlg = wxFileDialog(self, self.title,
+                           defaultDir = dir,
+                           defaultFile = file,
+                           wildcard = wildcard,
+                           style = wxOPEN)
+        dlg.SetFilterIndex(self.lastFilterIndex)
+
+        rc = dlg.ShowModal()
+
+        if rc != wxID_OK:
+            dlg.Destroy()
+            return
+
+        self.lastFilterIndex = dlg.GetFilterIndex()
+
+        self.path = path = dlg.GetPath()
+        self.text.SetValue(path)
+        self.text.SetInsertionPointEnd()
+
+        if self.fileSelectCB is not None:
+            self.fileSelectCB(self, self.path)
+
+class SecureTextCtrl(wxTextCtrl):
+    """
+    Securely read passwords.
+
+    "Securely" means that the password is never present
+    as a python string, since once creatd, strings hang around in memory
+    even after being garbage collected.
+
+    Instead, maintain the text as a list of character codes.
+
+    """
+    
+    def __init__(self, parent, id, size = wxDefaultSize):
+
+        wxTextCtrl.__init__(self, parent, id,
+                            style = wxTE_RICH2,
+                            size = size)
+
+        EVT_TEXT_ENTER(self, self.GetId(), self.OnEnter)
+        EVT_CHAR(self, self.OnChar)
+        EVT_KEY_DOWN(self, self.OnKeyDown)
+
+        self.chars = []
+
+    def GetChars(self):
+        """
+        Return the current value of the text.
+
+        """
+        
+        return self.chars[:]
+
+    def FlushChars(self):
+        """
+        Clear the control and erase the stored password.
+        """
+        
+        for i in range(len(self.chars)):
+            self.chars[i] = 0
+
+        del self.chars
+        self.chars = []
+        self.Clear()
+
+    def CanPaste(self):
+        return 0
+
+    def OnEnter(self, event):
+        pass
+
+    def OnPaste(self, event):
+        print "secure on paste", event
+        self.doPaste()
+
+    def doPaste(self):
+        wxTheClipboard.Open()
+        data = wxTextDataObject()
+        wxTheClipboard.GetData(data)
+        wxTheClipboard.Close()
+        txt = str(data.GetText())
+        for k in txt:
+            ch, = struct.unpack('b', k)
+            print ch
+            self.insertChar(ch)
+
+    def deleteSelection(self, sel):
+        del self.chars[sel[0]: sel[1]]
+        self.Remove(sel[0], sel[1])
+        
+    def insertChar(self, k):
+        sel = self.GetSelection()
+        pos = self.GetInsertionPoint()
+
+        if sel[0] < sel[1]:
+            self.deleteSelection(sel)
+            
+        # ch = k ^ 0x80
+        ch = struct.pack('b', k)
+
+        self.Replace(pos, pos, "*")
+        self.chars.insert(pos, ch)
+        self.SetInsertionPoint(pos + 1)
+    
+    def OnKeyDown(self, event):
+        t = event.GetEventObject()
+        k = event.GetKeyCode()
+        print "Keydown ", k
+
+        #
+        # We only worry about control keys here.
+        #
+        if not event.ControlDown():
+            event.Skip()
+            return
+        
+        if k == ord('V'):
+            #
+            # Ctl-V
+            #
+            self.doPaste()
+
+        elif k == ord('C'):
+            #
+            # Ctl-C
+            #
+            # Don't do anything - disallow copying password.
+            #
+            pass
+
+        else:
+            event.Skip()
+
+    def OnChar(self, event):
+        t = event.GetEventObject()
+        k = event.GetKeyCode()
+        kr = event.GetRawKeyCode()
+        print k, kr
+
+        if k == WXK_BACK:
+            sel = self.GetSelection()
+            print "back, sel=", sel
+
+            if sel[0] < sel[1]:
+                self.deleteSelection(sel)
+            else:
+                pos = self.GetInsertionPoint()
+                if pos > 0:
+                    del self.chars[pos - 1 : pos]
+                    self.Remove(pos - 1, pos)
+        elif k == WXK_RETURN:
+            print "handle return"
+            event.Skip()
+            return
+        elif k == WXK_TAB:
+            print "handle tab"
+            event.Skip()
+            return
+        elif k == WXK_DELETE:
+            sel = self.GetSelection()
+            pos = self.GetInsertionPoint()
+            print "del sel=", sel, "pos = ", pos
+
+            if sel[0] < sel[1]:
+                self.deleteSelection(sel)
+            else:
+                if pos < self.GetLastPosition():
+                    del self.chars[pos : pos + 1]
+                    self.Remove(pos , pos + 1)
+        elif k < 127 and k >= 32:
+            self.insertChar(k)
+                         
+        elif k == WXK_LEFT:
+            print "Left"
+            pos = self.GetInsertionPoint()
+            if pos > 0:
+                self.SetInsertionPoint(pos - 1)
+        elif k == WXK_RIGHT:
+            print "Right"
+            pos = self.GetInsertionPoint()
+            if pos < self.GetLastPosition():
+                self.SetInsertionPoint(pos + 1)
+        elif k == ord('V') - 64:
+            #
+            # Ctl-V
+            #
+            self.doPaste()
+        else:
+            print "Other chars"
+            event.Skip()
+
+class PassphraseDialog(wxDialog):
+    """
+    Dialog to retrieve a passphrase from  the user.
+
+    Uses SecureTextCtrl so the returned passphrase is a list of integers.
+    """
+    
+    def __init__(self, parent, message, caption, size = wxSize(400,400)):
+        """
+        Create passphrase dialog.
+
+        @param parent: parent widget
+        @param message: message to show on the dialog.
+        @param caption: string to show in window title.
+        """
+
+        wxDialog.__init__(self, parent, -1, caption,
+                          style = wxDEFAULT_DIALOG_STYLE,
+                          size = size)
+
+        topsizer = wxBoxSizer(wxVERTICAL)
+
+        ts = self.CreateTextSizer(message)
+        topsizer.Add(ts, 0, wxALL, 10)
+
+        self.text = SecureTextCtrl(self, -1, size = wxSize(300, -1))
+        topsizer.Add(self.text, 0, wxEXPAND | wxLEFT | wxRIGHT, 15)
+
+        buttons = self.CreateButtonSizer(wxOK | wxCANCEL)
+        topsizer.Add(buttons, 0, wxCENTRE | wxALL, 10)
+
+        EVT_BUTTON(self, wxID_OK, self.OnOK)
+        EVT_CLOSE(self, self.OnClose)
+        
+        self.text.SetFocus()
+        
+        self.SetSizer(topsizer)
+        self.SetAutoLayout(1)
+        self.Fit()
+
+    def __del__(self):
+        print "ppdlg del"
+        self.FlushChars()
+        
+    def OnClose(self, event):
+        print "Closing"
+        self.FlushChars()
+        self.EndModal(wxID_CANCEL)
+        self.Destroy()
+
+    def OnOK(self, event):
+        print "Got OK"
+        self.EndModal(wxID_OK)
+
+    def GetChars(self):
+        return self.text.GetChars()
+
+    def FlushChars(self):
+        return self.text.FlushChars()
+
+class PassphraseVerifyDialog(wxDialog):
+    """
+    Dialog to retrieve a passphrase from user. It requires the
+    user to type the passphrase twice to verify it.
+
+    Uses SecureTextCtrl so the returned passphrase is a list of integers.
+    """
+    
+    def __init__(self, parent, message1, message2, caption,
+                 size = wxSize(400,400)):
+        """
+        Create passphrase dialog.
+
+        @param parent: parent widget
+        @param message1: message to show on the dialog before the first text input field.
+        @param message2: message to show on the dialog before the second text input field.
+        @param caption: string to show in window title.
+        """
+
+        wxDialog.__init__(self, parent, -1, caption,
+                          size = size,
+                          style = wxDEFAULT_DIALOG_STYLE)
+
+        #
+        # Need to create a panel so that tab traversal works properly.
+        # Should be fixed in wx 2.5.
+        #
+        # http://lists.wxwidgets.org/cgi-bin/ezmlm-cgi?11:mss:26416:200403:laipomedjcjdlbblliki
+        #
+        
+        panel = wxPanel(self, -1, style = wxTAB_TRAVERSAL)
+        topsizer = wxBoxSizer(wxVERTICAL)
+
+        #
+        # can't do this with the intervening panel 
+        #ts = self.CreateTextSizer(message1)
+        #topsizer.Add(ts, 0, wxALL, 10)
+
+        txt = wxStaticText(panel, -1, message1)
+        topsizer.Add(txt, 0, wxALL, 10)
+
+        self.text1 = SecureTextCtrl(panel, -1, size = wxSize(300, -1))
+        topsizer.Add(self.text1, 0, wxEXPAND | wxLEFT | wxRIGHT, 15)
+
+        #ts = self.CreateTextSizer(message2)
+        #topsizer.Add(ts, 0, wxALL, 10)
+
+        txt = wxStaticText(panel, -1, message2)
+        topsizer.Add(txt, 0, wxALL, 10)
+
+        self.text2 = SecureTextCtrl(panel, -1, size = wxSize(300, -1))
+
+        topsizer.Add(self.text2, 0, wxEXPAND | wxLEFT | wxRIGHT, 15)
+
+        # buttons = self.CreateButtonSizer(wxOK | wxCANCEL)
+        # topsizer.Add(buttons, 0, wxCENTRE | wxALL, 10)
+
+        b = wxButton(panel, wxID_OK, "OK")
+        topsizer.Add(b, 0, wxALIGN_RIGHT | wxALL, 10)
+
+        EVT_BUTTON(self, wxID_OK, self.OnOK)
+        EVT_CLOSE(self, self.OnClose)
+        
+        self.text1.SetFocus()
+        
+        panel.SetSizer(topsizer)
+        panel.SetAutoLayout(1)
+        panel.Fit()
+        self.SetAutoLayout(1)
+        self.Fit()
+
+    def __del__(self):
+        self.FlushChars()
+        
+    def OnClose(self, event):
+        self.FlushChars()
+        self.EndModal(wxID_CANCEL)
+        self.Destroy()
+
+    def OnOK(self, event):
+
+        #
+        # Doublecheck to see if the passphrases match.
+        #
+        
+        if self.text1.GetChars() != self.text2.GetChars():
+            dlg = wxMessageDialog(self,
+                                  "Entered passphrases do not match.",
+                                  "Verification error.",
+                                  style = wxOK)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+        self.EndModal(wxID_OK)
+
+    def GetChars(self):
+        return self.text1.GetChars()
+
+    def FlushChars(self):
+        self.text1.FlushChars()
+        self.text2.FlushChars()
+
+def PassphraseDialogTest():
+    
+    a = wxPySimpleApp()
+
+    d = PassphraseDialog(None, "Message", "Caption")
+
+    print d.ShowModal()
+    chars = d.GetChars()
+    d.FlushChars()
+    d.Destroy()
+
+    print chars
+        
+def PassphraseVerifyDialogTest():
+    
+    a = wxPySimpleApp()
+
+    d = PassphraseVerifyDialog(None, "Message", "And again", "Caption")
+
+    print d.ShowModal()
+    chars = d.GetChars()
+    d.FlushChars()
+    d.Destroy()
+
+    print chars
+        
 if __name__ == "__main__":
     app = wxPySimpleApp()
 
