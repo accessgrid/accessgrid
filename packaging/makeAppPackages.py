@@ -75,5 +75,6 @@ for thing in things:
 
     zf.close()
 
-    # Copy to destination name
-    shutil.copyfile(long_zipFile, log_zipFile.replace("zip", "agpkg"))
+    # Copy to app package file name
+    shutil.copyfile(long_zipFile, long_zipFile.replace("zip", "agpkg"))
+
