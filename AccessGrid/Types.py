@@ -2,16 +2,14 @@
 # Name:        Types.py
 # Purpose:     
 #
-# Author:      Thomas Uram
-#
 # Created:     2003/23/01
-# RCS-ID:      $Id: Types.py,v 1.44 2004-03-15 23:37:12 turam Exp $
+# RCS-ID:      $Id: Types.py,v 1.45 2004-03-31 21:59:47 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Types.py,v 1.44 2004-03-15 23:37:12 turam Exp $"
+__revision__ = "$Id: Types.py,v 1.45 2004-03-31 21:59:47 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -132,7 +130,7 @@ class AGServicePackage:
         from AccessGrid.Descriptions import AGServiceDescription
 
         serviceDescription = None
-
+        
         try:
             #
             # extract description file content from zip
@@ -145,7 +143,7 @@ class AGServicePackage:
 
         # set up string io from description file content
         sp = StringIO.StringIO(descfilecontent)
-
+        
         try:
             # read config from string io
             c = ConfigParser.ConfigParser()
@@ -160,6 +158,9 @@ class AGServicePackage:
             for section in capabilitySections:
                 cap = Capability( c.get( section, "role" ), c.get( section, "type" ) )
                 capabilities.append( cap )
+            version = 0
+            if c.has_option("ServiceDescription","version"):
+                version = c.getfloat("ServiceDescription","version")
             serviceDescription = AGServiceDescription( c.get( "ServiceDescription", "name" ),
                                                      c.get( "ServiceDescription", "description" ),
                                                      None,
@@ -167,11 +168,12 @@ class AGServicePackage:
                                                      None,
                                                      c.get( "ServiceDescription", "executable" ),
                                                      None,
-                                                     None )
+                                                     None,
+                                                     version )
 
         except:
             raise InvalidServiceDescription(sys.exc_value)
-
+            
         return serviceDescription
 
     def ExtractExecutable( self, path ):
