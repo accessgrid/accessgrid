@@ -3,7 +3,7 @@
 # Name:        RegisterApp.py
 # Purpose:     This registers an application with the users venue client.
 # Created:     2002/12/12
-# RCS-ID:      $Id: agpm.py,v 1.24 2004-10-05 09:40:02 douglask Exp $
+# RCS-ID:      $Id: agpm.py,v 1.25 2004-12-23 02:54:23 willing Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 This program is used to register applications with the user or system AGTk
 installation.
 """
-__revision__ = "$Id: agpm.py,v 1.24 2004-10-05 09:40:02 douglask Exp $"
+__revision__ = "$Id: agpm.py,v 1.25 2004-12-23 02:54:23 willing Exp $"
 
 import os
 import re
@@ -129,6 +129,9 @@ def UnpackPkg(filename):
         out = file(os.path.join(workingDir, filename), "wb")
         out.write(bytes)
         out.close()
+        zinfo = zipArchive.getinfo(filename)
+        if zinfo.external_attr == 2179792896:
+            os.chmod(outpath, 0755)
 
     if appFile == None:
         raise Exception, "Invalid Shared Application Package."
