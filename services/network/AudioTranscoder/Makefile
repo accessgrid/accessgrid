@@ -1,0 +1,55 @@
+LIVE_DIR = /home/lefvert/SOFTWARE/LIVE/live
+INCLUDES = -I$(LIVE_DIR)/UsageEnvironment/include -I$(LIVE_DIR)/groupsock/include -I$(LIVE_DIR)/liveMedia/include -I$(LIVE_DIR)/BasicUsageEnvironment/include
+##### Change the following for your environment: 
+COMPILE_OPTS =		$(INCLUDES) -I. -O -DSOCKLEN_T=socklen_t
+C =			c
+C_COMPILER =		cc
+C_FLAGS =		$(COMPILE_OPTS)
+CPP =			cpp
+CPLUSPLUS_COMPILER =	c++
+CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall -DBSD=1
+OBJ =			o
+LINK =			c++ -o
+LINK_OPTS =		-L.
+CONSOLE_LINK_OPTS =	$(LINK_OPTS)
+LIBRARY_LINK =		ld -o
+LIBRARY_LINK_OPTS =	$(LINK_OPTS) -r -Bstatic
+LIB_SUFFIX =			a
+LIBS_FOR_CONSOLE_APPLICATION =
+LIBS_FOR_GUI_APPLICATION =
+EXE =
+##### End of variables to change
+
+MULTICAST_RECEIVER_APPS = L16ToPCMUTranscoder$(EXE)
+MULTICAST_APPS = $(MULTICAST_STREAMER_APPS) $(MULTICAST_RECEIVER_APPS)
+
+ALL = $(MULTICAST_APPS)
+all: $(ALL)
+
+.$(C).$(OBJ):
+	$(C_COMPILER) -c $(C_FLAGS) $<       
+
+.$(CPP).$(OBJ):
+	$(CPLUSPLUS_COMPILER) -c $(CPLUSPLUS_FLAGS) $<
+
+AUDIO_RECEIVER_OBJS = L16ToPCMUTranscoder.$(OBJ)
+
+USAGE_ENVIRONMENT_DIR = $(LIVE_DIR)/UsageEnvironment
+USAGE_ENVIRONMENT_LIB = $(USAGE_ENVIRONMENT_DIR)/libUsageEnvironment.$(LIB_SUFFIX)
+BASIC_USAGE_ENVIRONMENT_DIR = $(LIVE_DIR)/BasicUsageEnvironment
+BASIC_USAGE_ENVIRONMENT_LIB = $(BASIC_USAGE_ENVIRONMENT_DIR)/libBasicUsageEnvironment.$(LIB_SUFFIX)
+LIVEMEDIA_DIR = $(LIVE_DIR)/liveMedia
+LIVEMEDIA_LIB = $(LIVEMEDIA_DIR)/libliveMedia.$(LIB_SUFFIX)
+GROUPSOCK_DIR = $(LIVE_DIR)/groupsock
+GROUPSOCK_LIB = $(GROUPSOCK_DIR)/libgroupsock.$(LIB_SUFFIX)
+LOCAL_LIBS =	$(LIVEMEDIA_LIB) $(GROUPSOCK_LIB) \
+		$(USAGE_ENVIRONMENT_LIB) $(BASIC_USAGE_ENVIRONMENT_LIB)
+LIBS =		$(LOCAL_LIBS) $(LIBS_FOR_CONSOLE_APPLICATION)
+
+L16ToPCMUTranscoder$(EXE):	$(AUDIO_RECEIVER_OBJS) $(LOCAL_LIBS)
+	$(LINK)$@ $(CONSOLE_LINK_OPTS) $(AUDIO_RECEIVER_OBJS) $(LIBS)
+
+clean:
+	-rm -rf *.$(OBJ) $(ALL) core *.core *~ include/*~
+
+##### Any additional, platform-specific rules come here:
