@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateRepository.py,v 1.17 2004-05-17 21:15:45 olson Exp $
+# RCS-ID:      $Id: CertificateRepository.py,v 1.18 2004-05-18 20:24:03 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ The on-disk repository looks like this:
 
 """
 
-__revision__ = "$Id: CertificateRepository.py,v 1.17 2004-05-17 21:15:45 olson Exp $"
+__revision__ = "$Id: CertificateRepository.py,v 1.18 2004-05-18 20:24:03 olson Exp $"
 __docformat__ = "restructuredtext en"
 
 
@@ -177,7 +177,6 @@ def ParseSigningPolicy(policyFH):
             continue;
 
         key, v1, v2 = l.split(None, 2)
-        print "Parse: ", key, v1, v2
 
         if key == "access_id_CA":
             if v1 != "X509":
@@ -252,6 +251,13 @@ class CertificateRepository:
         self.dir = repoDir
         self.dbPath = os.path.join(self.dir, "metadata.db")
         self.metadataLocked = 0
+
+        #
+        # We maintain a list of observers that may be interested in
+        # updates to the state of the repo (certificates deleted or imported).
+        #
+
+        self.observers = []
 
         if create:
             if os.path.isdir(self.dir):
@@ -353,7 +359,11 @@ class CertificateRepository:
                 # Attempt to recover from the files making up the repo.
                 #
 
-                recovered = self.RecoverFromDirectory()
+                try:
+                    recovered = self.RecoverFromDirectory()
+                except:
+                    log.exception("Recovery failed")
+                    recovered = 0
 
                 if recovered:
                     #
@@ -384,13 +394,6 @@ class CertificateRepository:
                     log.exception("Error in attempt to move aside corrupted repository")
                     
                     raise Exception("Cannot open repository, and cannot initialize new repository")
-
-        #
-        # We maintain a list of observers that may be interested in
-        # updates to the state of the repo (certificates deleted or imported).
-        #
-
-        self.observers = []
 
     def RecoverFromDirectory(self):
         """
@@ -455,7 +458,11 @@ class CertificateRepository:
             m = re.match("(.*).pem", f)
             if m:
                 p = os.path.join(self.dir, "privatekeys", f)
-                hash = m.group(1)
+                #
+                # Ugh. m.group(1) is returning unicode, and forcing more stuff
+                # later to unicode, and breaking the bsddb.
+                #
+                hash = str(m.group(1))
                 privatekeys[hash] = p
                 log.info("Found private key %s", hash)
                 self.RecoverPrivateKey(hash, p)
@@ -1350,11 +1357,12 @@ class CertificateRepository:
             return
         
         try:
-            self.db[key] = value
+            self.db[str(key)] = value
         finally:
             self.db.sync()
     
     def GetMetadata(self, key):
+        key = str(key)
         if self.db.has_key(key):
             return self.db[key]
         else:
