@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.210 2003-09-12 14:36:08 turam Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.211 2003-09-12 16:36:25 lefvert Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -107,7 +107,7 @@ class VenueClientUI(VenueClientEventSubscriber):
         # globus environment.
         self.startupDialog.UpdateOneStep()
         
-        VerifyExecutionEnvironment()
+        VerifyExecutionEnvironment(self)
        
         try:
             self.startupDialog.UpdateOneStep()
@@ -875,7 +875,7 @@ class VenueClientUI(VenueClientEventSubscriber):
         This method performs all processing which needs to be
         done as the application is about to exit.
         """
-
+       
         # Ensure things are not shut down twice.
         if not self.onExitCalled:
             self.onExitCalled = true
