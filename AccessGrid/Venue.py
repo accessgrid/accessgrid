@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.218 2004-07-27 19:21:20 eolson Exp $
+# RCS-ID:      $Id: Venue.py,v 1.219 2004-07-28 22:03:03 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -15,7 +15,7 @@ The Venue provides the interaction scoping in the Access Grid. This module
 defines what the venue is.
 """
 
-__revision__ = "$Id: Venue.py,v 1.218 2004-07-27 19:21:20 eolson Exp $"
+__revision__ = "$Id: Venue.py,v 1.219 2004-07-28 22:03:03 eolson Exp $"
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -1021,64 +1021,85 @@ class Venue(AuthorizationMixIn):
         self.simpleLock.acquire()
 
         try:
-            # Remove user as stream producer
-            log.debug("Called RemoveUser on %s", privateId)
-            self.streamList.RemoveProducer(privateId)
+            try:
+                # Remove user as stream producer
+                log.debug("Called RemoveUser on %s", privateId)
+                self.streamList.RemoveProducer(privateId)
+            except:
+                log.exception("Error removing Producers")
 
-            # Remove clients from venue
-            if not self.clients.has_key(privateId):
-                log.warn("RemoveUser: Tried to remove a client that doesn't exist")
-                self.simpleLock.release()
-                usage_log.info("\"RemoveUser\",\"%s\",\"%s\",\"%s\"", "DN Unavailable", self.name, self.uniqueId)
-                return
-            else:
-                usage_log.info("\"RemoveUser\",\"%s\",\"%s\",\"%s\"", 
+            try:
+                # Remove clients from venue
+                if not self.clients.has_key(privateId):
+                    log.warn("RemoveUser: Tried to remove a client that doesn't exist")
+                    self.simpleLock.release()
+                    usage_log.info("\"RemoveUser\",\"%s\",\"%s\",\"%s\"", "DN Unavailable", self.name, self.uniqueId)
+                    return
+                else:
+                    usage_log.info("\"RemoveUser\",\"%s\",\"%s\",\"%s\"", 
                                self.clients[privateId].GetClientProfile().GetDistinguishedName(), 
                                self.name, self.uniqueId)
+            except:
+                log.exception("Error starting to remove client from venue")
 
-            # Remove the user from the venue users role
-            # - get the subject of the user to remove
-            dn = self.clients[privateId].GetClientProfile().GetDistinguishedName()
-            subject = X509Subject.CreateSubjectFromString(dn)
+            try:
+                # Remove the user from the venue users role
+                # - get the subject of the user to remove
+                dn = self.clients[privateId].GetClientProfile().GetDistinguishedName()
+                subject = X509Subject.CreateSubjectFromString(dn)
             
-            # - check for other occurrences of this subject
-            foundSubj = 0
-            for cl in self.clients.values():
-                tmp_dn = cl.GetClientProfile().GetDistinguishedName()
-                if subject == X509Subject.CreateSubjectFromString(tmp_dn):
-                    foundSubj += 1
+                # - check for other occurrences of this subject
+                foundSubj = 0
+                for cl in self.clients.values():
+                    tmp_dn = cl.GetClientProfile().GetDistinguishedName()
+                    if subject == X509Subject.CreateSubjectFromString(tmp_dn):
+                        foundSubj += 1
                     
-                    # early out
-                    if foundSubj > 1:
-                        break
+                        # early out
+                        if foundSubj > 1:
+                            break
 
-            # - remove the subject only if it occurs singly
-            if foundSubj == 1:
-                log.debug("Removing single instance of user")
-                role = self.authManager.FindRole("VenueUsers")
-                if subject in role.GetSubjects():
-                    role.RemoveSubject(subject)
-            else:
-                log.debug("Multiple instances, not removing %s", foundSubj)
+                # - remove the subject only if it occurs singly
+                if foundSubj == 1:
+                    log.debug("Removing single instance of user")
+                    role = self.authManager.FindRole("VenueUsers")
+                    if subject in role.GetSubjects():
+                        role.RemoveSubject(subject)
+                else:
+                    log.debug("Multiple instances, not removing %s", foundSubj)
+
+            except:
+                log.exception("Error removing client from venue users role")
                     
 
-            vclient = self.clients[privateId]
-            clientProfile = vclient.GetClientProfile()
+            try:
+                vclient = self.clients[privateId]
+                clientProfile = vclient.GetClientProfile()
+            except:
+                log.exception("Error getting VenueClientState and profile to remove")
 
             #
             # Shut down the client's connection to the event service.
             #
 
-            vclient.CloseEventChannel()
-	    vclient.CloseTextChannel()
+            try:
+                vclient.CloseEventChannel()
+            except:
+                log.exception("Error closing VenueClient's EventChannel")
 
-            log.debug("RemoveUser: Distribute EXIT event")
+            # Shut down the client's connection to the text channel.
+            try:
+	        vclient.CloseTextChannel()
+            except:
+                log.exception("Error closing VenueClient's TextChannel")
 
             try:
                 if privateId in self.clients:
                     del self.clients[privateId]
             except:
                 log.exception("Venue.RemoveUser: Error deleting client.")
+
+            log.debug("RemoveUser: Distribute EXIT event")
 
             self.DistributeEvent(Event( Event.EXIT,
                                         self.uniqueId,
