@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/13/12
-# RCS-ID:      $Id: NetworkLocation.py,v 1.10 2003-05-23 15:25:16 turam Exp $
+# RCS-ID:      $Id: NetworkLocation.py,v 1.11 2003-08-04 18:11:18 turam Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -28,6 +28,8 @@ class NetworkLocation:
         else:
             self.port = port
         self.type = self.TYPE
+        self.id = None
+        self.privateId = None
 
     def SetHost(self, host):
         self.host = host
