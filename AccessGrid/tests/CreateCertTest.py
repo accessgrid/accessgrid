@@ -1,6 +1,6 @@
-from AccessGrid import cr
+from AccessGrid import CertificateRepository 
 
-repo = cr.CertificateRepository('repo')
+repo = CertificateRepository.CertificateRepository('repo')
 
 name = [("O", "test"),
         ("OU", "here"),
