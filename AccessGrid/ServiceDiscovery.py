@@ -13,6 +13,8 @@ import threading
 import select
 import time
 import socket
+import struct
+import sys
 
 from AccessGrid import Log
 
@@ -54,15 +56,12 @@ try:
                 raise PublisherError('Service registered with invalid port %d' % (port,))
 
             self.serviceRef = None
-
             self.registerFlag = threading.Event()
 
-            # Allocate a text record
-            txtRecord = rendezvous.AllocateTXTRecordRef()
-            rendezvous.pyTXTRecordCreate(txtRecord)
-            rendezvous.pyTXTRecordSetValue(txtRecord,"url",url)
-            txtRecordLen = rendezvous.pyTXTRecordGetLength(txtRecord)
-            txtRecordBytes = rendezvous.pyTXTRecordGetBytesPtr(txtRecord)
+            # Create a text record
+            txtRecordTxt = 'url=' + url
+            txtRecord = chr(len(txtRecordTxt)) + txtRecordTxt
+            txtRecordLen = len(txtRecord)
 
             # Allocate a service discovery reference and register the specified service
             self.serviceRef = rendezvous.AllocateDNSServiceRef()
@@ -75,7 +74,7 @@ try:
                                           socket.gethostbyname(socket.gethostname()),           
                                           port,               
                                           txtRecordLen,       
-                                          txtRecordBytes,     
+                                          txtRecord,     
                                           self.__RegisterCallback,   
                                           None)
 
@@ -158,10 +157,14 @@ try:
         def __ResolveCallback(self,sdRef,flags,interfaceIndex,
                             errorCode,fullname,hosttarget,
                             port,txtLen,txtRecord,userdata):
-
+			    
             # Get service info and add to list
             serviceName = userdata
-            url = rendezvous.pyTXTRecordGetValue(txtLen,txtRecord,"url")
+	    sys.stderr.write( "txt = %d %s\n" % (txtLen,txtRecord))
+	    parts = struct.unpack('%ds' % (txtLen,),txtRecord)
+	    txtlen = ord(parts[0][0])
+	    txt = parts[0][1:txtlen+1]
+	    url = txt
 
             self.lock.acquire()
             self.serviceUrls[serviceName] = url
