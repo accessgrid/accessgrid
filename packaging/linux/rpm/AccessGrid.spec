@@ -99,7 +99,6 @@ mv bin usr/bin
 #   for rpm
 # - Install the default node configuration, make it owned by ag, and tag it
 #   as a config file for rpm
-# - Install the GNOME and KDE menu items
 %defattr(0755,root,root)
 %{prefix}/bin/AGNodeService.py
 %{prefix}/bin/VenueClient.py
@@ -111,14 +110,6 @@ mv bin usr/bin
 %{prefix}/bin/SetupVideo.py
 %{sharedir}/doc/AccessGrid
 %defattr(-,root,root)
-%{gnomedir}/%{name}/.desktop
-%{gnomedir}/%{name}/VenueClient.desktop
-%{gnomedir}/%{name}/VenueClient-PersonalNode.desktop
-%{gnomedir}/%{name}/NodeManagement.desktop
-%{kdedir}/%{name}/.desktop
-%{kdedir}/%{name}/VenueClient.desktop
-%{kdedir}/%{name}/VenueClient-PersonalNode.desktop
-%{kdedir}/%{name}/NodeManagement.desktop
 #
 # - Install VenueManagement.py and VenueServer.py
 #   with executable permissions
@@ -126,9 +117,6 @@ mv bin usr/bin
 %defattr(0755,root,root)
 %{prefix}/bin/VenueManagement.py
 %{prefix}/bin/VenueServer.py
-%defattr(-,root,root)
-%{gnomedir}/%{name}/VenueManagement.desktop
-%{kdedir}/%{name}/VenueManagement.desktop
 #
 # - Install the python BridgeServer implementation
 # - Install the QuickBridge executable
@@ -136,6 +124,9 @@ mv bin usr/bin
 %defattr(0755,root,root)
 %{prefix}/bin/BridgeServer.py
 %{prefix}/bin/QuickBridge
+# - Install the GNOME and KDE menu items
+%{gnomedir}/%{name}
+%{kdedir}/%{name}
 
 # Temporarily include vic to support SetupVideo.py
 #%{prefix}/bin/vic
