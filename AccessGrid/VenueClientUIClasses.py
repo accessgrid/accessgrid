@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.181 2003-05-12 21:11:26 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.182 2003-05-12 22:05:41 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -955,7 +955,7 @@ class VenueAddressBar(wxSashLayoutWindow):
         self.addressPanel = wxPanel(self.panel, -1, style = wxRAISED_BORDER)
         self.titlePanel =  wxPanel(self.panel, -1, size = wxSize(1000, 40), style = wxRAISED_BORDER)
         self.title = wxStaticText(self.titlePanel, wxNewId(), 'You are not in a venue', style = wxALIGN_CENTER)
-        font = wxFont(18, wxSWISS, wxNORMAL, wxNORMAL, false)
+        font = wxFont(16, wxSWISS, wxNORMAL, wxNORMAL, false)
         self.title.SetFont(font)
         self.address = wxComboBox(self.addressPanel, self.ID_ADDRESS, defaultVenue,
                                   choices = venuesList.keys(),
@@ -1312,8 +1312,8 @@ class ContentListPanel(wxPanel):
 	#imageList = wxImageList(32,19)
         imageList = wxImageList(19,18)
 
-        #self.line = imageList.Add(icons.getHeadingLineBitmap())
-        self.line = imageList.Add(icons.getBulletBitmap())
+        self.line = imageList.Add(icons.getHeadingLineBitmap())
+        #self.line = imageList.Add(icons.getBulletBitmap())
         self.participantId = imageList.Add(icons.getDefaultParticipantBitmap())
         self.defaultDataId = imageList.Add(icons.getDefaultDataBitmap())
 	self.serviceId = imageList.Add(icons.getDefaultServiceBitmap())
