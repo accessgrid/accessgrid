@@ -1,0 +1,15 @@
+--- SOAPpy/Server.py.orig       2004-08-06 16:14:14.203398216 -0500
++++ SOAPpy/Server.py    2004-08-06 16:14:14.202398368 -0500
+@@ -334,8 +334,10 @@
+                 try:
+                     resp = buildSOAP(faultType("%s:Client" % NS.ENV_T,
+                                                "Method Not Found",
+-                                               "%s : %s %s" % (nsmethod,
+-                                                                 info[0:2])),
++                                               "%s : %s %s %s" % (nsmethod,
++                                                                  info[0],
++                                                                  info[1],
++                                                                  info[2])),
+                                      encoding = self.server.encoding,
+                                      config = self.server.config)
+                 finally:

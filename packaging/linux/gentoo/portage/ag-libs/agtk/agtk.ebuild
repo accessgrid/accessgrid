@@ -1,6 +1,6 @@
 # Copyright 1999-2004 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /cvs/fl/AccessGrid/packaging/linux/gentoo/agtk.ebuild,v 1.1 2004-08-18 20:03:14 turam Exp $
+# $Header: /cvs/fl/AccessGrid/packaging/linux/gentoo/portage/ag-libs/agtk/agtk.ebuild,v 1.1 2004-09-14 14:08:22 turam Exp $
 
 inherit eutils distutils
 
