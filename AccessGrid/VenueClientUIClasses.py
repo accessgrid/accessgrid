@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.123 2003-04-03 21:26:09 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.124 2003-04-03 21:33:53 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -1050,7 +1050,6 @@ class ExitPanel(wxPanel):
         return self.label.GetLabel()
 
     def GetButtonId(self):
-        '------------- get button id: ', self.id
         return self.id
 
     def AdjustText(self):
@@ -1124,13 +1123,19 @@ class ContentListPanel(wxPanel):
         #self.nodeLeadId = imageList.Add(icons.getNodeLeadBitmap())
         self.tree.AssignImageList(imageList)
 
-    def AddParticipant(self, profile):
+    def AddParticipant(self, profile, dataList = []):
         participant = self.tree.AppendItem(self.participants, profile.name, \
                                            self.participantId, self.participantId)
         self.tree.SetItemData(participant, wxTreeItemData(profile)) 
         self.participantDict[profile.publicId] = participant
         self.tree.Expand(self.participants)
 
+        for data in dataList:
+            participantData = self.tree.AppendItem(participant, data.name, \
+                                                   self.defaultDataId, self.defaultDataId)
+            self.personalDataDict[data.name] = participantData  # data gets new tree id
+            self.tree.SetItemData(participantData, wxTreeItemData(data)) 
+            
     def RemoveParticipantData(self, dataTreeId):
         del self.personalDataDict[id]
         self.tree.Delete(id)
@@ -1158,8 +1163,7 @@ class ContentListPanel(wxPanel):
                     self.tree.Delete(id)
 
                 del self.nodeDict[profile.publicId]
-        
-        
+                
     def ModifyParticipant(self, description):
         wxLogDebug('Modify participant')
         type =  description.profileType
@@ -1178,11 +1182,10 @@ class ContentListPanel(wxPanel):
                 treeId = self.participantDict[description.publicId]
                 profile = self.tree.GetItemData(treeId).GetData()
                 self.tree.SetItemText(treeId, description.name)
-                wxLogDebug('------------ this is the name we are changing to %s'%description.name)
+                wxLogDebug('this is the name we are changing to %s'%description.name)
                 profile = description
                 self.tree.SetItemData(treeId, wxTreeItemData(description))
                
-
             else:
                 treeId = self.nodeDict[description.publicId]
                 profile = self.tree.GetItemData(treeId).GetData()
@@ -1191,19 +1194,42 @@ class ContentListPanel(wxPanel):
                 self.tree.SetItemData(treeId, wxTreeItemData(description))
 
         elif(oldType != None): # move to new category type
-            
+
             if type == 'node':
                 wxLogDebug('Change to node')
-                treeId = self.participantDict[description.publicId]
-                self.RemoveParticipant(description)
-                self.AddNode(description)
+                if(self.participantDict.has_key(description.publicId)):
+                    participantId = self.participantDict[description.publicId]
+                    dataList = self.__GetPersonalDataFromItem(participantId)
+                    self.RemoveParticipant(description)
+                    self.AddNode(description, dataList)
                 
             else:
                 wxLogDebug('Change to user')
-                treeId = self.nodeDict[description.publicId]
-                self.RemoveNode(description)
-                self.AddParticipant(description)
+                if (self.nodeDict.has_key(description.publicId)):
+                    nodeId = self.nodeDict[description.publicId]
+                    dataList = self.__GetPersonalDataFromItem(nodeId)
+                    self.RemoveNode(description)
+                    self.AddParticipant(description, dataList)
+
+    def __GetPersonalDataFromItem(self, treeId):
+        # Get data for this id
+        dataList = []
+        cookie = 0
         
+        if(self.tree.GetChildrenCount(treeId)>0):
+            id, cookie = self.tree.GetFirstChild(treeId, cookie)
+            wxLogDebug("Got first child")
+            d = self.tree.GetPyData(id)
+            dataList.append(d)
+            wxLogDebug("First child's name = %s " %(d.name))
+            wxLogDebug("Nr of children %s"%self.tree.GetChildrenCount(treeId))
+            for nr in range(self.tree.GetChildrenCount(treeId)-1):
+                id, cookie = self.tree.GetNextChild(treeId, cookie)
+                dataList.append(self.tree.GetPyData(id))
+                wxLogDebug("Next child's name = %s " %self.tree.GetPyData(id).name)
+                
+        return dataList
+            
     def AddData(self, profile):
         wxLogDebug("profile.type = %s" %profile.type)
                 
@@ -1256,15 +1282,18 @@ class ContentListPanel(wxPanel):
     def RemoveData(self, profile):
         #if venue data
         if(self.dataDict.has_key(profile.name)):
+            wxLogDebug("Remove venue data")
             id = self.dataDict[profile.name]
             del self.dataDict[profile.name]
             
         #if personal data
         elif (self.personalDataDict.has_key(profile.name)):
+            wxLogDebug("Remove personal data")
             id = self.personalDataDict[profile.name]
             del self.personalDataDict[profile.name]
-        
+            
         if(id != None):
+            wxLogDebug("Delete id")
             self.tree.Delete(id)
                           
     def AddService(self, profile):
@@ -1288,12 +1317,18 @@ class ContentListPanel(wxPanel):
         self.applicationDict[profile.name] = application
         self.tree.Expand(self.applications)
       
-    def AddNode(self, profile):
+    def AddNode(self, profile, dataList = []):
         node = self.tree.AppendItem(self.nodes, profile.name, \
                                        self.nodeId, self.nodeId)
         self.tree.SetItemData(node, wxTreeItemData(profile)) 
         self.nodeDict[profile.publicId] = node
         self.tree.Expand(self.nodes)
+        
+        for data in dataList:
+            nodeData = self.tree.AppendItem(node, data.name, \
+                                            self.defaultDataId, self.defaultDataId)
+            self.tree.SetItemData(nodeData, wxTreeItemData(data))
+            self.personalDataDict[data.name] = nodeData   # data gets new tree id
 
     def __setTree(self):
         #temporary fix for wxPython bug
@@ -1330,7 +1365,8 @@ class ContentListPanel(wxPanel):
         self.tree.Expand(self.nodes)
         
     def __setProperties(self):
-        self.tree.SetToolTipString("Contents of this venue")
+        pass
+        # self.tree.SetToolTipString("Contents of this venue")
 
     def UnSelectList(self):
         self.tree.Unselect()
@@ -1964,8 +2000,6 @@ class ProfileDialog(wxDialog):
         wxLogDebug("VenueClientUIClasses.py: Get profile information from dialog")
         if(self.profile != None):
             self.profile.SetName(self.nameCtrl.GetValue())
-            wxLogDebug("--------in dialog set name:%s "%self.nameCtrl.GetValue())
-            wxLogDebug("--------in dialog set name:%s "%self.profile.name)
             self.profile.SetEmail(self.emailCtrl.GetValue())
             self.profile.SetPhoneNumber(self.phoneNumberCtrl.GetValue())
             self.profile.SetTechSupportInfo(self.supportCtrl.GetValue())
