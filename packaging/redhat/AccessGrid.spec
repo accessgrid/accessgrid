@@ -1,3 +1,7 @@
+#
+# The following are variables that are used throughout the rest of the
+# spec file. If you see %{variable_name} this is where it's assigned
+#
 %define	name		AccessGrid
 %define	version		2.0beta
 %define	release		2
@@ -8,6 +12,14 @@
 %define kdedir		%{sharedir}/applnk
 %define aghome		/var/lib/ag
 %define buildroot	/var/tmp/%{name}-%{version}
+
+#
+# The following defines the AccessGrid rpm
+# Required: /usr/lib/python2.2
+# Required: pyGlobus rpm installed
+# Required: logging rpm installed
+# Obsoletes: AccessGrid-2.0alpha
+#
 
 Summary:	The Access Grid Toolkit
 Name:		%{name}
@@ -29,6 +41,11 @@ The Access Grid Toolkit provides the necessary components for users to participa
 
 This module provides the core components to start participating in the Access Grid.
 
+#
+# The following defines the AccessGrid-VenueClient rpm
+# Requires: AccessGrid
+# Obsoletes: AccessGrid-VenueClient-2.0alpha
+#
 %package VenueClient
 Summary:	The Access Grid Toolkit Venue Client
 Version:	%{version}
@@ -42,6 +59,11 @@ The Access Grid Toolkit provides the necessary components for users to participa
 
 This module provides the components needed to connect to an Access Grid Venue.
 
+#
+# The following defines the AccessGrid-VenueServer rpm
+# Requires: AccessGrid
+# Obsoletes: AccessGrid-VenueServer-2.0alpha
+#
 %package VenueServer
 Summary:	The Access Grid Toolkit Venue Server
 Version:	%{version}
@@ -55,6 +77,12 @@ The Access Grid Toolkit provides the necessary components for users to participa
 
 This module provides the components needed to create an Access Grid Venue and an Access Grid Venue Server.
 
+#
+# The following defines the AccessGrid-VideoProducer rpm
+# Requires: AccessGrid
+# Requires: AccessGrid-vic
+# Obsoletes: AccessGrid-VideoProducer-2.0alpha
+#
 %package VideoProducer
 Summary:	The Access Grid Toolkit Video Producer Service
 Version:	%{version}
@@ -68,6 +96,11 @@ The Access Grid Toolkit provides the necessary components for users to participa
 
 This module provides the components needed to run the Video Producer service. This service is responsible for capturing and transmitting an Access Grid Node's video.
 
+#
+# The following defines the AccessGrid-VideoConsumer rpm
+# Requires: AccessGrid
+# Obsoletes: AccessGrid-VideoConsumer-2.0alpha
+#
 %package VideoConsumer
 Summary:	The Access Grid Toolkit Video Consumer Service
 Version:	%{version}
@@ -81,6 +114,12 @@ The Access Grid Toolkit provides the necessary components for users to participa
 
 This module provides the components needed to run the Video Consumer service. This service is responsible for receiving remote Access Grid Nodes' video.
 
+#
+# The following defines the AccessGrid-AudioService rpm
+# Requires: AccessGrid
+# Requires: AccessGrid-rat
+# Obsoletes: AccessGrid-AudioService-2.0alpha
+#
 %package AudioService
 Summary:	The Access Grid Toolkit Audio Service
 Version:	%{version}
@@ -94,18 +133,48 @@ The Access Grid Toolkit provides the necessary components for users to participa
 
 This module provides the components needed to run the Audio service. This service is responsible for capturing and transmitting your Access Grid Node's audio as well as receiving remote Access Grid Nodes' audio.
 
+#
+# The following untars the source tarball and removes any previous build
+# attempts
+#
+
 %prep
 %setup
 [ -n "%{buildroot}" -a "%{buildroot}" != / ] && rm -rf %{buildroot}
 
+#
+# The following builds the package using setup.py
+#
+
 %build
 python2.2 setup.py build
+
+#
+# The following installs the package in the buildroot,
+# moves the etc directory to the "root" directory,
+# moves the var directory to the "root" directory,
+# makes a /tmp/local_services directory (this is for a temporary workaround
+# until services are starting at boot)
+#
 
 %install
 python2.2 setup.py install --prefix=%{buildroot}%{prefix} --no-compile
 mv %{buildroot}%{prefix}/etc %{buildroot}
 mv %{buildroot}%{prefix}/var %{buildroot}
 mkdir -p %{buildroot}/tmp/local_services
+
+#
+# Define the files that are to go into the AccessGrid package
+# - Mark documents as documents for rpm
+# - Install python modules with default permissions
+# - Install AGServiceManager.py and agsm service with executable permissions
+# - Make a directory in the ag user's home (this should be done by whatever
+#   is trying to write to that directory really)
+# - Make the temporary local_services fix directory and make it world
+#   readable and writeable
+# - Install the AGServiceManager config file and tag it as a config file
+#   for rpm
+#
 
 %files
 %doc %{sharedir}/doc/
@@ -121,13 +190,28 @@ mkdir -p %{buildroot}/tmp/local_services
 %defattr(0644,root,root)
 %config %{sysconfdir}/AGServiceManager.cfg
 
+#
+# Define the files that are to go into the AccessGrid-VenueClient package
+# - Install AGNodeService.py, VenueClient.py, and NodeManagement.py with
+#   executable permissions
+# - Install the AGNodeService config file and tag it as a config file
+#   for rpm
+# - Install the default node configuration, make it owned by ag, and tag it
+#   as a config file for rpm
+# - Install the GNOME and KDE menu items
+#
+
 %files VenueClient
-%defattr(-,root,root)
+%defattr(0755,root,root)
 %{prefix}/bin/AGNodeService.py
 %{prefix}/bin/VenueClient.py
 %{prefix}/bin/NodeManagement.py
-%config %{sysconfdir}/AGNodeService.cfg
 /etc/init.d/agns
+%defattr(0644,root,root)
+%config %{sysconfdir}/AGNodeService.cfg
+%defattr(0644,ag,ag)
+%config %{sharedir}/%{name}/nodeConfig/defaultLinux
+%defattr(-,root,root)
 %{sharedir}/%{name}/services/
 %{gnomedir}/%{name}/.desktop
 %{gnomedir}/%{name}/VenueClient.desktop
@@ -135,39 +219,73 @@ mkdir -p %{buildroot}/tmp/local_services
 %{kdedir}/%{name}/.desktop
 %{kdedir}/%{name}/VenueClient.desktop
 %{kdedir}/%{name}/NodeManagement.desktop
-%defattr(0644,ag,ag)
-%config %{sharedir}/%{name}/nodeConfig/defaultLinux
 
+#
+# Define the files that are to go into the AccessGrid-VenueServer package
+# - Install VenueManagement.py, VenueServer.py, and VenueServerRegistry.py
+#   with executable permissions
+# - Install the GNOME and KDE menu items
+#
 
 %files VenueServer
-%defattr(-,root,root)
+%defattr(0755,root,root)
 %{prefix}/bin/VenueManagement.py
 %{prefix}/bin/VenueServer.py
 %{prefix}/bin/VenuesServerRegistry.py
+%defattr(-,root,root)
 %{gnomedir}/%{name}/.desktop
 %{gnomedir}/%{name}/VenueManagement.desktop
 %{kdedir}/%{name}/.desktop
 %{kdedir}/%{name}/VenueManagement.desktop
 
+#
+# Define the files that are to go into the AccessGrid-VideoProducer package
+# - Install SetupVideo.py with executable permissions
+# - Install the local service file and make them owned by user ag
+#
+
 %files VideoProducer
-%defattr(-,root,root)
+%defattr(0755,root,root)
 %{prefix}/bin/SetupVideo.py
 %defattr(0664,ag,ag)
 %{aghome}/local_services/VideoProducerService.*
+
+#
+# Define the files that are to go into the AccessGrid-VideoConsumer package
+# - Install the local service file and make them owned by user ag
+#
 
 %files VideoConsumer
 %defattr(0664,ag,ag)
 %{aghome}/local_services/VideoConsumerService.*
 
+#
+# Define the files that are to go into the AccessGrid-AudioService package
+# - Install the local service file and make them owned by user ag
+#
+
 %files AudioService
 %defattr(0664,ag,ag)
 %{aghome}/local_services/AudioService.*
+
+#
+# AccessGrid package preinstall commands
+# If there is no ag user's home directory then there must not be an ag
+# user and group so create them
+#
 
 %pre
 if [ ! -d %{aghome} ]; then
 	/usr/sbin/groupadd -r ag
 	/usr/sbin/useradd -r -m -d %{aghome} -g ag -c "Access Grid User" ag
 fi
+
+#
+# AccessGrid package postinstall commands
+# - Make a file, /tmp/AccessGrid-Postinstall.py, run it, then delete.
+#   This script will compile all the AccessGrid python modules
+# - Add the agsm service to chkconfig
+#
 
 %post
 cat <<EOF > /tmp/AccessGrid-Postinstall.py
@@ -198,8 +316,19 @@ chmod +x /tmp/AccessGrid-Postinstall.py
 rm -f /tmp/AccessGrid-Postinstall.py
 /sbin/chkconfig --add agsm
 
+#
+# AccessGrid-VenueClient package postinstall
+# - Add the agns service to chkconfig
+#
+
 %post VenueClient
 /sbin/chkconfig --add agns
+
+#
+# AccessGrid package pre-uninstall
+# - Remove the agsm service from chkconfig
+# - Create a file, /tmp/AccessGrid-Preuninstall.py, run it, then delete it.
+#   This script will remove those compiled AccessGrid python modules
 
 %preun
 /sbin/chkconfig --del agsm
@@ -225,14 +354,35 @@ delcompiled(AccessGrid)
 EOF
 chmod +x /tmp/AccessGrid-Preuninstall.py
 /tmp/AccessGrid-Preuninstall.py
+rm -f /tmp/AccessGrid-Preuninstall.py
+
+#
+# AccessGrid-VenueClient pre-uninstall
+# - Remove the agns service from chkconfig
+#
 
 %preun VenueClient
 /sbin/chkconfig --del agns
 
+#
+# After the RPMs have been successfully built remove the temporary build
+# space
+#
+
 %clean
 [ -n "%{buildroot}" -a "%{buildroot}" != / ] && rm -rf %{buildroot}
 
+#
+# This is the ChangeLog. You should add to this if you do anything to this
+# spec file
+#
+
 %changelog
+
+* Wed Mar 26 2003 Ti Leggett <leggett@mcs.anl.gov>
+- Added a plethora of comments
+- Fixed a few permissions for some install files
+- Now removes the AccessGrid pre-uninstall script after it's run
 
 * Thu Mar 13 2003 Ti Leggett <leggett@mcs.anl.gov>
 - Added user and group creation in preinstall
