@@ -5,7 +5,7 @@
 # Author:      Robert Olson
 #
 # Created:     2003
-# RCS-ID:      $Id: CertificateManager.py,v 1.34 2004-09-03 14:22:50 judson Exp $
+# RCS-ID:      $Id: CertificateManager.py,v 1.35 2004-09-03 18:11:57 turam Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Globus toolkit. This file is stored in <name-hash>.signing_policy.
 
 """
 
-__revision__ = "$Id: CertificateManager.py,v 1.34 2004-09-03 14:22:50 judson Exp $"
+__revision__ = "$Id: CertificateManager.py,v 1.35 2004-09-03 18:11:57 turam Exp $"
 __docformat__ = "restructuredtext en"
 
 import re
@@ -593,7 +593,7 @@ class CertificateManager(object):
         return self.certRepo
 
     def CreateProxy(self):
-        self.GetUserInterface().CreateProxy()
+        return self.GetUserInterface().CreateProxy()
 
     def CreateProxyCertificate(self, passphrase, bits, hours):
         """
@@ -1486,7 +1486,7 @@ class CertificateManagerUserInterface:
         proxy was created. If false, there was some error. If retry is true, the
         caller shoudl attempt to retry the proxy creation.
         """
-
+        ret = (0,0)
         lifetime = "12"
         bits = "1024"
         ident = self.certificateManager.GetDefaultIdentity()
