@@ -137,7 +137,7 @@ class VenueListPanel(wxPanel):
 	
     def __insertItems(self):
         wxInitAllImageHandlers()
-        doorOpen = wxBitmap('doorOpen.gif', wxBITMAP_TYPE_GIF)
+        doorOpen = wxBitmap('IMAGES/doorOpen.gif', wxBITMAP_TYPE_GIF)
 	self.SetToolTipString("Connected Venues")
 	self.iconId =  self.imageList.Add( doorOpen )
 	#self.list.AssignImageList(self.imageList, wxIMAGE_LIST_NORMAL)
