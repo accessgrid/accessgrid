@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: VenueClient.py,v 1.94 2003-08-12 21:06:04 eolson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.95 2003-08-14 19:22:01 eolson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -36,6 +36,7 @@ from AccessGrid.Utilities import LoadConfig
 from AccessGrid import DataStore
 from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.Toolkit import AG_TRUE, AG_FALSE
+from AccessGrid.hosting.pyGlobus.AGGSISOAP import faultType
 
 class EnterVenueException(Exception):
     pass
@@ -616,6 +617,9 @@ class VenueClient( ServiceBase):
             log.exception("AccessGrid.VenueClient::EnterVenue failed")
             # pass a flag to UI if we fail to enter.
             enterSuccess = AG_FALSE
+            # put error in warningString, in redesign will be raised to UI as exception.
+            if isinstance(e, faultType):
+                self.warningString = str(e.faultstring)
 
         for s in self.eventSubscribers:
             # back is true if user just hit the back button.
