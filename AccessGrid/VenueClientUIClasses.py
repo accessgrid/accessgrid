@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.315 2004-01-28 21:02:40 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.316 2004-01-28 22:48:43 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.315 2004-01-28 21:02:40 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.316 2004-01-28 22:48:43 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -147,9 +147,9 @@ class VenueClientFrame(wxFrame):
                                                   wxSize(200, 35))
         self.textOutputWindow = wxSashLayoutWindow(self, self.ID_WINDOW_BOTTOM, wxDefaultPosition,
                                                    wxSize(200, 35))
-        textOutput = wxTextCtrl(self.textOutputWindow, wxNewId(), "",
+        self.textOutput = wxTextCtrl(self.textOutputWindow, wxNewId(), "",
                                 style= wxTE_MULTILINE|wxTE_READONLY|wxTE_RICH|wxTE_AUTO_URL)
-        self.textClientPanel = TextClientPanel(self.textInputWindow, -1, app, textOutput)
+        self.textClientPanel = TextClientPanel(self.textInputWindow, -1, app, self.textOutput)
                
         self.venueListPanel = VenueListPanel(self, self.ID_WINDOW_LEFT, app)
         self.contentListPanel = ContentListPanel(self, app)
@@ -182,7 +182,7 @@ class VenueClientFrame(wxFrame):
         elif eID == self.ID_WINDOW_BOTTOM:
             height = event.GetDragRect().height
             self.textOutputWindow.SetDefaultSize(wxSize(1000, height))
-
+           
         elif eID == self.ID_WINDOW_BOTTOM2:
             outputMinSize = 40
             inputMinSize = 30
@@ -209,10 +209,10 @@ class VenueClientFrame(wxFrame):
             self.textOutputWindow.SetDefaultSize(wxSize(1000, newOutputHeight))
 
         wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
-    
+                
     def OnSize(self, event = None):
         wxLayoutAlgorithm().LayoutWindow(self, self.contentListPanel)
-
+       
     def __setStatusbar(self):
         self.statusbar.SetToolTipString("Statusbar")   
     
@@ -2252,25 +2252,16 @@ class ContentListPanel(wxPanel):
         
         menu = wxMenu()
 
-        # We always have join (or open for old apps)
-        
-        # Old shared apps used open
+        # We always have open
+            
         if commands != None and 'Open' in commands:
             id = wxNewId()
-            menu.Append(id, "Open", "Join this session.")
+            menu.Append(id, "Open", "Open application and join the session.")
             EVT_MENU(self, id, lambda event, cmd='Open':
                      self.StartCmd(appdb.GetCommandLine(item.mimeType,
                                                         'Open'),
                                    item=item, verb='Open'))
-        # New shared apps uses join
-        elif commands != None and 'Join' in commands:
-            id = wxNewId()
-            menu.Append(id, "Join", "Join this session.")
-            EVT_MENU(self, id, lambda event, cmd='Join':
-                     self.StartCmd(appdb.GetCommandLine(item.mimeType,
-                                                        'Join'),
-                                   item=item, verb='Join'))
-
+      
         else:
             text = "You have nothing configured to open this application."
             title = "Notification"
@@ -2290,7 +2281,7 @@ class ContentListPanel(wxPanel):
         
         if commands != None:
             for key in commands:
-                if key != 'Open' and key != 'Join':
+                if key != 'Open':
                     othercmds = 1
                     id = wxNewId()
                     menu.Append(id, string.capwords(key))
