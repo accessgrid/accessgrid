@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/09/02
-# RCS-ID:      $Id: Platform.py,v 1.34 2003-08-21 23:44:49 judson Exp $
+# RCS-ID:      $Id: Platform.py,v 1.35 2003-08-22 04:24:06 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -13,6 +13,7 @@
 import os
 import sys
 import getpass
+import mimetypes
 
 import logging
 
@@ -440,7 +441,7 @@ def Win32RegisterMimeType(mimeType, extension, fileType, description, cmds):
     except EnvironmentError, e:
         log.debug("Couldn't open registry for mime registration!")
 
-def Win32GetMimeCommands(filename = None, mimeType = None, ext = None):
+def Win32GetMimeCommands(mimeType = None, ext = None):
     """
     This gets the mime commands from one of the three types of specifiers
     windows knows about. Depending on which is passed in the following
@@ -532,13 +533,42 @@ def Win32GetMimeType(extension = None):
             return mimeType
         
     return mimeType
+
+def LinuxGetMimeType(extension = None):
+    """
+    """
+    fauxFn = ".".join(["Faux", extension])
+    mimetypes.init()
+    
+    mimeType = mimetypes.guess_type(fauxFn)
+    return mimeType
+
+def LinuxGetMimeCommands(mimeType = None, ext = None):
+    """
+    """
+    cdict = dict()
+    view = 'view'
+    
+    if mimeType == None:
+        mimeType = LinuxGetMimeType(extension = ext)
+
+    # We only care about mapping view to Open
+    caps = mailcap.getcaps()
+    
+    # This always returns a tuple, so this should be safe
+    match = mailcap.findmatch(caps, mimeType, view)[1]
+
+    if match != None:
+        cdict['Open'] = match[view]
+
+    return cdict
     
 if isWindows():
     GetMimeCommands = Win32GetMimeCommands
     GetMimeType = Win32GetMimeType
 else:
-    GetMimeCommands = lambda filename=None, ext=None: None
-    GetMimeType = lambda extension=None: None
+    GetMimeCommands = LinuxGetMimeCommands
+    GetMimeType = LinuxGetMimeType
 
 #
 # Unix Daemonize, this is not appropriate for Win32
