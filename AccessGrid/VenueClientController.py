@@ -1,16 +1,14 @@
-#!/usr/bin/python2
 #-----------------------------------------------------------------------------
 # Name:        VenueClientController.py
 # Purpose:     This is the controller module for the venue client
 # Created:     2004/02/20
-# RCS-ID:      $Id: VenueClientController.py,v 1.19 2004-04-23 18:16:40 lefvert Exp $
+# RCS-ID:      $Id: VenueClientController.py,v 1.20 2004-04-27 17:22:51 judson Exp $
 # Copyright:   (c) 2002-2004
 # Licence:     See COPYING.TXT
 #---------------------------------------------------------------------------
 
-__revision__ = "$Id: VenueClientController.py,v 1.19 2004-04-23 18:16:40 lefvert Exp $"
+__revision__ = "$Id: VenueClientController.py,v 1.20 2004-04-27 17:22:51 judson Exp $"
 __docformat__ = "restructuredtext en"
-
 
 # standard imports
 import cPickle
@@ -18,7 +16,6 @@ import os
 import re
 import threading
 import time
-
 
 # Access Grid imports
 from AccessGrid.Toolkit import Application
@@ -38,8 +35,6 @@ log = Log.GetLogger(Log.VenueClientController)
 
 class NotAuthorizedError(Exception):
     pass
-    
-
 
 class VenueClientController:
 
@@ -1143,7 +1138,6 @@ class VenueClientController:
             
             if len(command) > 1:
                 if command.find("%") == -1:
-                    #command = "\""+command+" \"%(localFilePath)s\"\""
                     command = command+" %(localFilePath)s"
             else:
                 command = "\"%(localFilePath)s\""
@@ -1165,7 +1159,6 @@ class VenueClientController:
             
             if len(command) > 1:
                 if command.find("%") == -1:
-                    #command = "\""+command+"\" \"%(appUrl)s\""
                     command = command+" %(appUrl)s"
             else:
                 command = "\"%(appUrl)s\""
@@ -1296,9 +1289,8 @@ class VenueClientApp:
         self.history = []
         
         # Application Databases
-        self.userAppDatabase = AppDb()
+        self.userAppDatabase = AppDb(path=UserConfig.instance().GetConfigDir())
         self.systemAppDatabase = AppDb(path=AGTkConfig.instance().GetConfigDir())
-
         # Mime Config
         self.mimeConfig = Config.MimeConfig.instance()
         
