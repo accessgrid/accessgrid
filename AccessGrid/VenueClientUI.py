@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert, Thomas D. Uram
 #
 # Created:     2004/02/02
-# RCS-ID:      $Id: VenueClientUI.py,v 1.52 2004-05-10 17:01:10 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUI.py,v 1.53 2004-05-10 17:18:31 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUI.py,v 1.52 2004-05-10 17:01:10 lefvert Exp $"
+__revision__ = "$Id: VenueClientUI.py,v 1.53 2004-05-10 17:18:31 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import copy
@@ -1329,18 +1329,16 @@ class VenueClientUI(VenueClientObserver, wxFrame):
             self.Notify( "Please, select the application you want to delete", "Delete Application")
 
     def StartApplicationCB(self, app):
-    
-        dlg = AddAppDialog(self, -1, "Start Application Session", app)
-        if dlg.ShowModal() == wxID_OK:
-            name = dlg.GetName()
-            app.description = dlg.GetDescription()
-            try:
-                self.controller.StartApplicationCB(name,app)
-            except:
-                self.Error("Error adding application","Add Application Error")
+        timestamp = time.strftime("%I:%M:%S %p %B %d, %Y")
+        id = self.venueClient.GetProfile().GetName()
+        name = "%s" % (timestamp)
+        app.description = "Started by %s at %s" % (id, timestamp)
+        
+        try:
+            self.controller.StartApplicationCB(name,app)
+        except:
+            self.Error("Error adding application","Add Application Error")
                 
-        dlg.Destroy()
-              
     def MonitorAppCB(self, application):
         """
         Open monitor for the application.
