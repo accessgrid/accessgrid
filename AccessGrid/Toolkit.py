@@ -2,13 +2,13 @@
 # Name:        Toolkit.py
 # Purpose:     Toolkit-wide initialization and state management.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Toolkit.py,v 1.64 2004-06-01 15:22:45 eolson Exp $
+# RCS-ID:      $Id: Toolkit.py,v 1.65 2004-06-01 23:36:48 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Toolkit.py,v 1.64 2004-06-01 15:22:45 eolson Exp $"
+__revision__ = "$Id: Toolkit.py,v 1.65 2004-06-01 23:36:48 judson Exp $"
 
 # Standard imports
 import os
@@ -394,20 +394,27 @@ class WXGUIApplication(Application):
         self.certMgrUI = CertificateManagerWXGUI.CertificateManagerWXGUI()
 
         # Register .agpkg mime type
-        agpmFile = os.path.join(AGTkConfig.instance().GetBinDir(), "agpm.py")
-        if IsWindows():
-            agpmCmd = sys.executable + " \"" + agpmFile + "\" --wait-for-input --package \"%1\""
-        else:
+        if not IsWindows():
+            agpmFile = os.path.join(AGTkConfig.instance().GetBinDir(),
+                                    "agpm.py")
             agpmCmd = agpmFile + " --wait-for-input --package %f"
-        MimeConfig.instance().RegisterMimeType("application/x-ag-pkg", ".agpkg", "agpkg file", "Access Grid Package", [ ("agpm.py", agpmCmd, "open") ] )
+            MimeConfig.instance().RegisterMimeType(
+                "application/x-ag-pkg",
+                ".agpkg", "agpkg file",
+                "Access Grid Package",
+                [ ("agpm.py", agpmCmd, "open") ] )
 
         # Register .vv2d
-        vcFile = os.path.join(AGTkConfig.instance().GetBinDir(), "GoToVenue.py")
-        if IsWindows():
-            vcCmd = sys.executable + " \"" + vcFile + "\" --file \"%1\""
-        else:
+        if not IsWindows():
+            vcFile = os.path.join(AGTkConfig.instance().GetBinDir(),
+                                  "GoToVenue.py")
             vcCmd = vcFile + " --file %f"
-        MimeConfig.instance().RegisterMimeType("application/x-ag-venueclient", ".vv2d", "AG Virtual Venues File", "Access Grid Virtual Venue Description", [ ("GoToVenue.py", vcCmd, "Open") ] )
+            MimeConfig.instance().RegisterMimeType(
+                "application/x-ag-venueclient",
+                ".vv2d",
+                "AG Virtual Venues File",
+                "Access Grid Virtual Venue Description",
+                [ ("GoToVenue.py", vcCmd, "Open") ] )
 
 
 class Service(AppBase):
