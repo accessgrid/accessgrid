@@ -2,7 +2,7 @@
 Audio Analysis Service
 =====================================
  
-:version: $Revision: 1.1 $
+:version: $Revision: 1.2 $
 :author: Robert Olson <olson@mcs.anl.gov>
 :status: Draft
 :contact: ag-tech@mcs.anl.gov
@@ -20,6 +20,74 @@ administrators of Access Grid nodes to improve audio quality.
 Overview
 ========
 
+A critical requirement of an effective Access Grid meeting is the
+clear and effort-free sharing of audio between network-connected AG
+nodes. The fulfillment of this requirement requires a carefully
+engineered interconnection of microphones, computer audio I/O
+hardware, speakers, and everything in between. With careful attention
+to detail, one can manually configure a system to perform very
+well. However, the creation of such configurations can be quite time
+consuming; without upkeep, the quality can degrade over time due to
+changes in room layouts or continued minor adjustment of the system
+due to incidental changes, etc. 
+
+Many of the tools required to aid in automated assistance in such
+configuration endeavours are already present in a standard Access Grid
+node - microphones, audio capture hardware, and high-end computing
+devices. This document describes a software architecture intended to
+provide a basis on which tools for measurement, analysis, and
+eventually adjustment and configuration of the audio hardware in a
+node can be built.
+
+There are a number of analysis-based tools that one could envision
+enabling with the use of the audio analysis architecture.
+
+The rat audio tool includes a level meter which indicates the incoming
+and outgoing audio levels. However, in a multipoint conference, one
+can reasonably desire to monitor the levels of the each network audio
+source independently, in order to, for instance, determine the
+identity of a distorted or otherwise badly-configured source. Such a
+network level meter could easily be built using the analysis
+infrastructure described here.
+
+If the network level meter has sufficiently fast response, one can
+with care visually detect the presence of echo between sources. With
+the analysis infrastructure, one could also determine the presence of
+echo automatically by computing correlations between active streams.
+
+With awareness of the individual senders in a multipoint conference,
+the analysis infrastructure can perform notification of other local
+applications as to the comings and goings of senders, the relative
+activity of these senders, and so on. 
+
+Given this background, we can describe the overall architecture of this
+system. 
+
+Architecture
+============
+
+Audio incoming to an Access Grid originates as a set of RTP-encoded
+streams transported in UDP packets from either a multicast group or
+from a multicast to unicast bridge. The RTP specification refers to
+this group of streams as an "RTP session"; we will use this
+terminology here.
+
+Each participant in an RTP session is identified by a unique SSRC
+(synchronization source) identifier. The RTP protocol ensures this
+uniqueness by defining a protocol to be executed if a SSRC collision
+is detected.
+
+The core of the analysis infrastructure is a stateful stream
+management engine that tracks set of participants in the RTP
+session. Clients of the analysis engine may register for notifications
+of change in the membership. 
+
+A client may also register to receive the raw audio data streams from
+the engine, or a stream of processed data. Initial processing we
+envision includes per-packet audio energy levels and per-packet max/min
+sample values. In future it may be reasonable to add centralized
+computation of parameters such as per-packet spectral energy.
+
 
 Summary of Modifications
 ========================
@@ -36,6 +104,162 @@ Deprecated Packages
 Specifications
 ==============
 
+The core analysis infrastructure is exposed as a C++ library. We
+define the following classes. For namespace sanity, they live within
+some C++ namespace that'll be appropriate.
+
+RTPSession: Maintains the state for a given RTP session. Main
+interface to the analysis code.
+
+MembershipCallback: A client defines a class conforming to the
+MembershipCallback interface. This is the interface by which the
+analysis infrastructure notifies the client of changes in the RTP
+session's membership.
+
+DataCallback
+[working here]
+
+Requirements thoughts
+=====================
+
+Libcommon does a good job of keeping state about the session; we don't
+necessarily have to replicate / mirror that state here. In some sense
+we're putting together a light wrapper around libcommon that provides
+
+ o High level C++ interafce
+
+ o Buffer management
+      
+ o Thread management - to enable multiple clients to use the same
+   processing power.
+
+What should an application look like?
+
+The network level meter needs the following:
+
+1. Notification of new sources
+2. Ability to query sources for metadata (name, cname, etc)
+3. Notification of changes  to source metadata 
+4. Notification of live data on a source. The level meter cares only
+about per-packet levels and an indication of clipping.
+
+This implies that the analysis engine is providing a number of
+predetermined analyses, including 
+
+ o audio level
+ o clipping indication
+ o presence of audio at all
+
+How to handle registering for analysis
+--------------------------------------
+
+We don't actually register for "data" at this level; we need to
+register for a particular sort of analyzed audio stream. 
+
+This registration request could include a qualifier for which stream
+the request applies to; if so, can the request be modified as streams
+come and go? (AnalysisStreamSet object ??
+
+How to handle analysis-specific data in a way that takes advantage of
+buffer-sharing and future use of buffers between processes? This is a
+fairly low-level toolkit: we can require an analysis module to define
+the "wire-format" of the generated packets as a C struct. At the start
+we can discard endianness issues since we'll never pass data between
+machines. 
+
+Let's discuss some analyses and the data that it would provide.
+
+Raw rtp packets:
+
+The data here would be a bare struct rtp_packet from libcommon.  This
+brings us to the issue of data vs notification information. The
+notification would carry information about the notification, in this
+case that it's an RTP packet, and a pointer to the actual data. We
+would likely do reference-counting on the data in order to save on
+memory allocation overheads. 
+
+Registration:
+
+RTPSession *session;
+AnalysisModule * mod =  session->FindAnalysisModule("RawRTP")
+// Returns a RawRTPAnalysisModule ptr
+
+rtpmod = dynamic_cast<RawRTPAnalysisModule *>(mod);
+rtpmod->RegisterCallback(mycb)
+
+where:
+
+class AnalysisModule
+{
+    AnalysisModule(String name);
+
+    String name_;
+}
+
+template<class T>
+class ManagedBuffer<T>
+{
+    ManagedBuffer(T *data);
+    int refcount;
+    <refcounting mechanism>
+}
+
+typedef ManagedBuffer<struct rtp_packet *> rtp_buffer;
+
+class RawRTPAnalysisCallback
+{
+    virtual void callback(rtp_buffer *buf) = 0;
+};
+
+class RawRTPAnalysisModule: public AnalysisModule
+{
+    RegisterCallback(RawRTPAnalysisCallback *cb);
+};
+
+Other notes
+-----------
+
+libcommon uses xmalloc to allocate packet buffers, handing the data to
+the callback. 
+
+we can stash that pointer in a refcounted object that is handed to the
+clients. When refcount goes to zero, buffer is deleted.
+
+We don't need to write custom memory allocators; standard library
+allocators should do what we'd do by hand, reusing buffers that are
+the same size as those originally allocated. And even if not, if we
+were really worried, we can redefine operator new() to use
+xmalloc()/xfree(). 
+
+Signal/slot implementation
+--------------------------
+
+Prototyped a signal/slot binding for RTP session and handlers.
+
+RTPSession provides the signals:
+
+   sig_member_add: void handler(RTPParticipantPtr)
+   sig_member_remove: void handler(RTPParticipantPtr)
+
+RTPParticipant provides the signals:
+
+   sig_rtp: void handler(RTPPacketBufferPtr)
+   sig_rr: void handler(RTPPacketBufferPtr)
+   sig_sr: void handler(RTPPacketBufferPtr)
+   sig_timeout: void handler(RTPPacketBufferPtr)
+[etc]
+
+Note that we don't pass the participant down in the hadnler calls on a
+participant; it's up to the application  to keep track of that itself.
+
+This is a general mechanism that, along with reference-counted data
+buffers (via shared_ptr), should serve us well in providing a flexible
+toolkit of analysis modules while retaining good performance.
+
+How to handle interprocess communication via shared memory is another
+issue; however, I suspect that it may make the most sense to write an
+interprocess bridge that binds analysis modules using signal/slot on
+each end, and some custom protocol in the middle.
 
 Security Issues
 ===============
@@ -55,6 +279,8 @@ Implementation
 References
 ==========
 
+[1] Schulzrinne, H., Casner, S., Frederick, R. and V. Jacobson, "RTP:  A
+Transport Protocol for Real-Time Applications", RFC 3550, July 2003.
 
 Copyright
 =========
