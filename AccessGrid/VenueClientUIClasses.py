@@ -5,7 +5,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.196 2003-05-22 20:15:47 olson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.197 2003-05-23 16:33:46 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
@@ -164,34 +164,35 @@ class VenueClientFrame(wxFrame):
 
         # ---- menus for main menu bar
         self.venue = wxMenu()
-	self.dataMenu = wxMenu()
-        self.dataMenu.Append(self.ID_VENUE_DATA_ADD,"Add data to venue...",
-                             "Add data to the venue")
-        self.dataMenu.Append(self.ID_VENUE_PERSONAL_DATA_ADD,"Add personal data...",
-                             "Add personal data")
-        self.dataMenu.AppendSeparator()
-        self.dataMenu.Append(self.ID_VENUE_DATA_OPEN,"Open",
-                             "Open selected data")
-	self.dataMenu.Append(self.ID_VENUE_DATA_SAVE,"Save...",
-                             "Save selected data to local disk")
-	self.dataMenu.Append(self.ID_VENUE_DATA_DELETE,"Delete", "Remove selected data")
-        self.dataMenu.AppendSeparator()
-	self.dataMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties...",
-                             "View information about the selected data")
-        self.venue.AppendMenu(self.ID_VENUE_DATA,"&Data", self.dataMenu)
+#	self.dataMenu = wxMenu()
+        self.venue.Append(self.ID_VENUE_DATA_ADD,"Add Data",
+                             "Add data to the venue.")
+#        self.dataMenu.Append(self.ID_VENUE_PERSONAL_DATA_ADD,"Add personal data...",
+#                             "Add personal data")
+#         self.dataMenu.AppendSeparator()
+#         self.dataMenu.Append(self.ID_VENUE_DATA_OPEN,"Open",
+#                              "Open selected data")
+# 	self.dataMenu.Append(self.ID_VENUE_DATA_SAVE,"Save...",
+#                              "Save selected data to local disk")
+# 	self.dataMenu.Append(self.ID_VENUE_DATA_DELETE,"Delete", "Remove selected data")
+#         self.dataMenu.AppendSeparator()
+# 	self.dataMenu.Append(self.ID_VENUE_DATA_PROPERTIES,"Properties...",
+#                              "View information about the selected data")
 
-	self.serviceMenu = wxMenu()
-	self.serviceMenu.Append(self.ID_VENUE_SERVICE_ADD,"Add...",
-                                "Add service to the venue")
-        self.serviceMenu.Append(self.ID_VENUE_SERVICE_OPEN,
-                                     "Open",  "Launch service client")
-        self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete",
-                                "Remove selected service")
-        self.serviceMenu.AppendSeparator()
-        self.serviceMenu.Append(self.ID_VENUE_SERVICE_PROPERTIES,"Properties...",
-                                     "View information about the selected service")
-        self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",
-                              self.serviceMenu)
+#        self.venue.AppendMenu(self.ID_VENUE_DATA,"&Data", self.dataMenu)
+
+#	self.serviceMenu = wxMenu()
+	self.venue.Append(self.ID_VENUE_SERVICE_ADD,"Add Service",
+                                "Add a service to the venue.")
+#         self.serviceMenu.Append(self.ID_VENUE_SERVICE_OPEN,
+#                                      "Open",  "Launch service client")
+#         self.serviceMenu.Append(self.ID_VENUE_SERVICE_DELETE,"Delete",
+#                                 "Remove selected service")
+#         self.serviceMenu.AppendSeparator()
+#         self.serviceMenu.Append(self.ID_VENUE_SERVICE_PROPERTIES,"Properties...",
+#                                      "View information about the selected service")
+#        self.venue.AppendMenu(self.ID_VENUE_SERVICE,"&Services",
+#                              self.serviceMenu)
 
      	self.applicationMenu = wxMenu()
       
@@ -204,17 +205,6 @@ class VenueClientFrame(wxFrame):
       	
         self.preferences = wxMenu()
         self.preferences.Append(self.ID_PROFILE,"&Profile...\t", "Change your personal information")
-        self.preferences.AppendSeparator()
-        self.preferences.Append(self.ID_MYNODE_MANAGE, "&Manage My Node...\t", "Configure your node")
-        self.preferences.Append(self.ID_MYNODE_URL, "&Set Node URL...\t", "Specify URL address to node service")
-        self.menubar.Append(self.preferences, "&Preferences")
-        self.myVenues = wxMenu()
-        self.myVenues.Append(self.ID_MYVENUE_ADD, "Add &Current Venue...\t", "Add this venue to your list of venues")
-        self.myVenues.Append(self.ID_MYVENUE_EDIT, "Edit My &Venues...\t", "Edit your venues")
-        self.myVenues.AppendSeparator()
-
-        self.menubar.Append(self.myVenues, "My Ven&ues")
-
         #
         # Retrieve the cert mgr GUI from the application.
         #
@@ -229,7 +219,19 @@ class VenueClientFrame(wxFrame):
 
         if gui is not None:
             certMenu = gui.GetMenu(self)
-            self.menubar.Append(certMenu, "&Certificates")
+            self.preferences.AppendMenu(self.ID_CERTIFICATE_MANAGE,
+                                    "&Certificates...", certMenu)
+        self.preferences.AppendSeparator()
+        self.preferences.Append(self.ID_MYNODE_MANAGE, "&Manage My Node...\t", "Configure your node")
+        self.preferences.Append(self.ID_MYNODE_URL, "&Set Node URL...\t", "Specify URL address to node service")
+        self.menubar.Append(self.preferences, "&Preferences")
+        self.myVenues = wxMenu()
+        self.myVenues.Append(self.ID_MYVENUE_ADD, "Add &Current Venue...\t", "Add this venue to your list of venues")
+        self.myVenues.Append(self.ID_MYVENUE_EDIT, "Edit My &Venues...\t", "Edit your venues")
+        self.myVenues.AppendSeparator()
+
+        self.menubar.Append(self.myVenues, "My Ven&ues")
+
               
       	self.help = wxMenu()
         self.help.Append(self.ID_HELP_ABOUT, "&About\t", "Information about the application")
@@ -313,16 +315,16 @@ class VenueClientFrame(wxFrame):
         self.participantMenu.Enable(self.ID_PARTICIPANT_LEAD, false)
 
     def HideMenu(self):
-        self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
-        self.menubar.Enable(self.ID_VENUE_PERSONAL_DATA_ADD, false)
-        self.menubar.Enable(self.ID_VENUE_DATA_SAVE, false)
-        self.menubar.Enable(self.ID_VENUE_DATA_OPEN, false)
-        self.menubar.Enable(self.ID_VENUE_DATA_DELETE, false)
-        self.menubar.Enable(self.ID_VENUE_DATA_PROPERTIES, false)
-        self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
-        self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, false)
-        self.menubar.Enable(self.ID_VENUE_SERVICE_OPEN, false)
-        self.menubar.Enable(self.ID_VENUE_SERVICE_PROPERTIES, false)
+#        self.menubar.Enable(self.ID_VENUE_DATA_ADD, false)
+#        self.menubar.Enable(self.ID_VENUE_PERSONAL_DATA_ADD, false)
+#        self.menubar.Enable(self.ID_VENUE_DATA_SAVE, false)
+#        self.menubar.Enable(self.ID_VENUE_DATA_OPEN, false)
+#        self.menubar.Enable(self.ID_VENUE_DATA_DELETE, false)
+#        self.menubar.Enable(self.ID_VENUE_DATA_PROPERTIES, false)
+#        self.menubar.Enable(self.ID_VENUE_SERVICE_ADD, false)
+#        self.menubar.Enable(self.ID_VENUE_SERVICE_DELETE, false)
+#        self.menubar.Enable(self.ID_VENUE_SERVICE_OPEN, false)
+#        self.menubar.Enable(self.ID_VENUE_SERVICE_PROPERTIES, false)
         self.menubar.Enable(self.ID_MYVENUE_ADD, false)
 
         self.dataHeadingMenu.Enable(self.ID_VENUE_DATA_ADD, false)

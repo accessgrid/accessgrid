@@ -6,7 +6,7 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/06/02
-# RCS-ID:      $Id: VenueClient.py,v 1.158 2003-05-22 20:39:12 olson Exp $
+# RCS-ID:      $Id: VenueClient.py,v 1.159 2003-05-23 16:34:06 judson Exp $
 # Copyright:   (c) 2002-2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -29,16 +29,17 @@ import AccessGrid.Types
 import AccessGrid.ClientProfile
 from AccessGrid import DataStore
 
+from AccessGrid.CertificateManager import CertificateManager
 from AccessGrid.Descriptions import DataDescription, ServiceDescription
-from AccessGrid.Utilities import HaveValidProxy, formatExceptionInfo
+from AccessGrid.Utilities import formatExceptionInfo
 from AccessGrid.Utilities import StartDetachedProcess
-from AccessGrid.UIUtilities import  MessageDialog, InitMimeTypes
+from AccessGrid.UIUtilities import MessageDialog, InitMimeTypes
 from AccessGrid.UIUtilities import GetMimeCommands, ErrorDialog, ErrorDialogWithTraceback
 from AccessGrid.hosting.pyGlobus.Utilities import GetDefaultIdentityDN
 from AccessGrid.GUID import GUID
 from AccessGrid.hosting.pyGlobus import Server
 from AccessGrid.VenueClient import VenueClient
-from AccessGrid.Platform import GPI, GetUserConfigDir
+from AccessGrid.Platform import GetUserConfigDir
 from AccessGrid.VenueClientUIClasses import SaveFileDialog, UploadFilesDialog
 from AccessGrid.VenueClientUIClasses import VerifyExecutionEnvironment
 from AccessGrid.VenueClientUIClasses import VenueClientFrame, ProfileDialog
@@ -591,9 +592,10 @@ class VenueClientUI(wxApp, VenueClient):
         # Check to see if we have a valid grid proxy
         # If not, run grid proxy init
         #
-        if not HaveValidProxy():
+        if not self.app.certificateManager.HaveValidProxy():
             log.debug("VenueClient::EnterVenue: You don't have a valid proxy")
-            GPI()
+            self.app.certificateManager.CreateProxy()
+
         #   
         # Add current uri to the history if the go button is pressed
         #
