@@ -5,7 +5,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2003/01/02
-# RCS-ID:      $Id: TextClient.py,v 1.10 2003-04-28 19:19:40 judson Exp $
+# RCS-ID:      $Id: TextClient.py,v 1.11 2003-05-07 20:12:09 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -77,12 +77,13 @@ class SimpleTextProcessor:
             name = text.sender
             stuff = name.split('/')
             for s in stuff[1:]:
-                (k,v) = s.split('=')
-                if k == 'CN':
-                    name = v
-            string = "%s says, \"%s\"\n" % (name, data)
-        else:
-            string = "Someone says, \"%s\"\n" % (data)
+                if '=' in s:
+                    (k,v) = s.split('=')
+                    if k == 'CN':
+                        name = v
+                    string = "%s says, \"%s\"\n" % (name, data)
+                else:
+                    string = "Someone says, \"%s\"\n" % (data)
 
         self.textOutCallback(string)
 
