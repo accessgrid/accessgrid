@@ -7,7 +7,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: SharedPresentation.py,v 1.1 2003-04-17 17:59:29 judson Exp $
+# RCS-ID:      $Id: SharedPresentation.py,v 1.2 2003-04-18 23:05:32 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -299,7 +299,6 @@ class SharedPresentation:
         """
         # Initialize state in the shared presentation
         self.url = url
-        self.publicId = str(GUID())
         self.eventQueue = Queue(5)
         self.log = log
 
@@ -317,7 +316,7 @@ class SharedPresentation:
 
         # Join the application object, get a private ID in response
         self.log.debug("Joining application.")
-        self.privateId = self.appProxy.Join(self.publicId)
+        (self.publicId, self.privateId) = self.appProxy.Join()
 
         # Get the information about our Data Channel
         self.log.debug("Retrieving data channel information.")
