@@ -3,13 +3,13 @@
 # Purpose:     Configuration objects for applications using the toolkit.
 #              there are config objects for various sub-parts of the system.
 # Created:     2003/05/06
-# RCS-ID:      $Id: Config.py,v 1.43 2004-07-12 18:47:59 judson Exp $
+# RCS-ID:      $Id: Config.py,v 1.44 2004-07-22 23:24:11 eolson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 """
 """
-__revision__ = "$Id: Config.py,v 1.43 2004-07-12 18:47:59 judson Exp $"
+__revision__ = "$Id: Config.py,v 1.44 2004-07-22 23:24:11 eolson Exp $"
 
 import os
 import mimetypes
@@ -642,11 +642,15 @@ class SystemConfig(AccessGrid.Config.SystemConfig):
         deviceList = dict()
         
         videodevpath = '/proc/video/dev'
+
+        if os.path.exists('/sys/class/video4linux'):
+            videodevpath = '/sys/class/video4linux'
+
         v4lctlexe = '/usr/bin/v4lctl'
         
         if os.path.exists(videodevpath):
             # Get list of devices
-            cmd = "ls /proc/video/dev | grep video"
+            cmd = "ls " + videodevpath + "/" + " | grep video"
             fh = os.popen(cmd,'r')
             for line in fh.readlines():
                 device = os.path.join('/dev',line.strip())
