@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.286 2003-09-24 00:22:17 lefvert Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.287 2003-09-24 14:02:54 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.286 2003-09-24 00:22:17 lefvert Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.287 2003-09-24 14:02:54 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -2362,15 +2362,9 @@ class TextClientPanel(wxPanel):
         wxPanel.__init__(self, parent, id)
         self.textOutputId = wxNewId()
         self.app = application
-        if isWindows():
-            self.TextOutput = wxTextCtrl(self, self.textOutputId, "",
-                                         style= wxTE_MULTILINE|wxTE_READONLY|wxTE_AUTO_URL)
-            EVT_TEXT_URL(self, self.TextOutput.GetId(), self.OnUrl)
-            
-        else:
-            self.TextOutput = wxTextCtrl(self, self.textOutputId, "",
-                                         style= wxTE_MULTILINE|wxTE_READONLY)
-        
+        self.TextOutput = wxTextCtrl(self, self.textOutputId, "",
+                                     style= wxTE_MULTILINE|wxTE_READONLY|wxTE_AUTO_URL|wxTE_RICH)
+        EVT_TEXT_URL(self, self.TextOutput.GetId(), self.OnUrl)
         self.label = wxStaticText(self, -1, "Your message:")
         self.display = wxButton(self, self.ID_BUTTON, "Display", style = wxBU_EXACTFIT)
         self.textInputId = wxNewId()
@@ -2425,9 +2419,10 @@ class TextClientPanel(wxPanel):
         wxCallAfter(self.TextOutput.AppendText, message)
 
         if isWindows():
+            # Scrolling is not correct on windows when I use
+            # wxTE_AUTO_URL flag in text output window.
             wxCallAfter(self.SetRightScroll)
-                      
-
+        
     def __set_properties(self):
         self.SetSize((375, 225))
         
