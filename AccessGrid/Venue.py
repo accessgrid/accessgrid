@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson, Thomas D. Uram
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: Venue.py,v 1.102 2003-06-26 20:58:40 lefvert Exp $
+# RCS-ID:      $Id: Venue.py,v 1.103 2003-07-03 21:55:45 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -136,12 +136,12 @@ class NotAuthorized(Exception):
 #    """
 #    pass
 
-#class DataNotFound(Exception):
-#    """
-#    The exception raised when a data description is not found in
-#    the venue.
-#    """
-#    pass
+class DataNotFound(Exception):
+    """
+    The exception raised when a data description is not found in
+    the venue.
+    """
+    pass
 
 class StreamAlreadyPresent(Exception):
     """
@@ -1674,14 +1674,142 @@ class Venue(ServiceBase.ServiceBase):
         
     GetDataStoreInformation.soap_export_as = "GetDataStoreInformation"
 
+    def wsAddData(self, dataDescriptionStruct ):
+        """
+        Interface to Add data to the Venue.
+        
+        **Arguments:**
+        
+        *dataDescriptionStruct* The Data Description that's now an
+        anonymous struct that is being added to the venue.
+        
+         **Raises:**
+         
+         *BadDataDescription* This is raised if the data
+         description struct cannot be converted to a real data
+         description.
+         
+         **Returns:**
+ 
+         *dataDescription* A data description is returned on success.
+         """        
+        log.debug("wsAddData")
+ 
+        # if not self._Authorize():
+        #    raise NotAuthorized
+        
+        try:
+            dataDescription = CreateDataDescription(dataDescriptionStruct)
+        except:
+            log.exception("wsAddData: Bad Data Description.")
+            raise BadDataDescription
+        
+        try:
+            self.simpleLock.acquire()
+            
+            returnValue = self.AddData(dataDescription)
+ 
+            self.simpleLock.release()
+            
+            return returnValue
+        except:
+            self.simpleLock.release()
+            log.exception("wsAddData: exception")
+            raise
+        
+    wsAddData.soap_export_as = "AddData"
+
+
+    def AddData(self, dataDescription ):
+        """
+        This is just left here not to change the interface for AG2.0 clients. (personal data)
+        """
+        self.server.eventService.Distribute( self.uniqueId,
+                                             Event( Event.ADD_DATA,
+                                                    self.uniqueId,
+                                                    dataDescription ) )
+
+
+    def wsRemoveData(self, dataDescriptionStruct ):
+        """
+        Interface for removing data.
+        
+        **Arguments:**
+        
+        *dataDescriptionStruct* The Data Description that's now an
+        anonymous struct that is being added to the venue.
+        
+        **Raises:**
+        
+        *BadDataDescription* This is raised if the data
+        description struct cannot be converted to a real data
+        description.
+        
+        **Returns:**
+        
+        *dataDescription* A data description is returned on success.
+        """
+        log.debug("wsRemoveData")
+        
+        # if not self._Authorize():
+        #     raise NotAuthorized
+        
+        try:
+            dataDescription = CreateDataDescription(dataDescriptionStruct)
+        except:
+            log.exception("wsRemoveData: Bad Data Description.")
+            raise BadDataDescription
+         
+        try:
+            self.simpleLock.acquire()
+            
+            returnValue = self.RemoveData(dataDescription)
+            
+            self.simpleLock.release()
+            
+            return returnValue
+        except:
+            self.simpleLock.release()
+            log.exception("wsRemoveData: exception")
+            raise
+        
+    wsRemoveData.soap_export_as = "RemoveData"
+
+
+    def RemoveData(self, dataDescription):
+        """
+        RemoveData removes persistent data from the Virtual Venue.
+        **Arguments:**
+        
+        *dataDescription* A real data description.
+             
+        **Raises:**
+        
+        *DataNotFound* Raised when the data is not found in the Venue.
+        
+        **Returns:**
+        
+        *dataDescription* Upon successfully removing the data.
+        """
+        name = dataDescription.name
+                         
+        # This is venue resident so delete the file
+        if(dataDescription.type is None or dataDescription.type == "None"):
+            list = []
+            list.append(dataDescription)
+            self.dataStore.RemoveFiles(list)
+            
+        return dataDescription
+
+
     def GetUploadDescriptor(self):
         """
         Retrieve the upload descriptor from the Venue's datastore.
-    
-        **Arguments:**
-    
-        **Raises:**
         
+        **Arguments:**
+        
+        **Raises:**
+    
         **Returns:**
     
             *upload description* the upload descriptor for the data store.
