@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.293 2003-09-26 15:20:01 turam Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.294 2003-09-28 23:15:02 judson Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.293 2003-09-26 15:20:01 turam Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.294 2003-09-28 23:15:02 judson Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1023,11 +1023,13 @@ class VenueClientFrame(wxFrame):
         
         # Add applications in the appList to the menu
         for app in appdb.ListAppsAsAppDescriptions():
-            menuEntryLabel = prefix + app.name
-            appId = wxNewId()
-            menu.Append(appId,menuEntryLabel,menuEntryLabel)
-            callback = lambda event,theApp=app: self.StartApp(theApp, event)
-            EVT_MENU(self, appId, callback)
+            if app != None and app.name != None:
+                menuEntryLabel = prefix + app.name
+                appId = wxNewId()
+                menu.Append(appId,menuEntryLabel,menuEntryLabel)
+                callback = lambda event,theApp=app: self.StartApp(theApp,
+                                                                  event)
+                EVT_MENU(self, appId, callback)
 
         return menu
     
@@ -2254,20 +2256,19 @@ class ContentListPanel(wxPanel):
             if isWindows():
                 if command.find("%1") != -1:
                     command = command.replace("%1", "\"%(localFilePath)s\"")
-                elif len(split_quoted(command)) == 1:
-                    command += " \"%(localFilePath)s\""
             else:
                 if command.find("%s") != -1:
                     command = command.replace("%s", "%(localFilePath)s")
-                elif len(split_quoted(command)) == 1:
-                    command += " %(localFilePath)s"
+
+            if command.find("%") == -1:
+                command += " %(localFilePath)s"
         else:
             # Get the app dir and run
             if isinstance(item, ApplicationDescription):
                 appdb = Toolkit.GetApplication().GetAppDatabase()
                 name = appdb.GetNameForMimeType(item.mimeType)
                 if name != None:
-                    appName = ''.join(name.split(' '))
+                    appName = '_'.join(name.split(' '))
                     appDir = os.path.join(GetUserAppPath(), appName)
                     try:
                         os.chdir(appDir)
@@ -2280,14 +2281,13 @@ class ContentListPanel(wxPanel):
             if isWindows():
                 if command.find("%1") != -1:
                     command = command.replace("%1", "\"%(appUrl)s\"")
-                elif len(split_quoted(command)) == 1:
-                    command += " \"%(appUrl)s\""
             else:
                 if command.find("%s") != -1:
                     command = command.replace("%s", "%(appUrl)s")
-                elif len(split_quoted(command)) == 1:
-                    command += " %(appUrl)s"
 
+            if command.find("%") == -1:
+                command += " %(appUrl)s"
+                
         if verb != None:
             namedVars['appCmd'] = verb
         namedVars['appName'] = item.name.replace(" ", "_")
@@ -2354,16 +2354,6 @@ class TextClientPanel(wxPanel):
 
     def __init__(self, parent, id, application):
         wxPanel.__init__(self, parent, id)
-
-        # Not used anymore
-        
-        #self.aboutText = """PyText 1.0 -- a simple text client in wxPython and pyGlobus.
-        #This has been developed as part of the Access Grid project."""
-        #self.bufferSize = 128
-        #self.venueId = None
-        #self.location = None
-        #self.Processor = None
-        #self.textMessage = ''
 
         self.textOutputId = wxNewId()
         self.app = application
