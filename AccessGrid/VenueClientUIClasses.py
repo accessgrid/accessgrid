@@ -5,14 +5,14 @@
 # Author:      Susanne Lefvert
 #
 # Created:     2003/08/02
-# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.303 2003-10-30 15:37:40 judson Exp $
+# RCS-ID:      $Id: VenueClientUIClasses.py,v 1.304 2003-11-10 17:18:07 lefvert Exp $
 # Copyright:   (c) 2003
 # Licence:     See COPYING.txt
 #-----------------------------------------------------------------------------
 """
 """
 
-__revision__ = "$Id: VenueClientUIClasses.py,v 1.303 2003-10-30 15:37:40 judson Exp $"
+__revision__ = "$Id: VenueClientUIClasses.py,v 1.304 2003-11-10 17:18:07 lefvert Exp $"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -1013,45 +1013,51 @@ class VenueClientFrame(wxFrame):
             self.__showNoSelectionDialog("Please, select the data you want to open")     
     
     def RemoveData(self, event):
-        id = self.contentListPanel.tree.GetSelection()
-        data = self.contentListPanel.tree.GetItemData(id).GetData()
         
-        ownerId = self.contentListPanel.tree.GetItemParent(id)
-        text = self.contentListPanel.tree.GetItemText(ownerId)
+        idList = self.contentListPanel.tree.GetSelections()
 
-        if text != 'Data':
-            ownerProfile = self.contentListPanel.tree.GetItemData(ownerId).GetData()
-        else:
-            # Venue data
-            ownerProfile = None
-        
-        if(data != None and isinstance(data, DataDescription)):
-            text ="Are you sure you want to delete "+ data.name + "?"
-            areYouSureDialog = wxMessageDialog(self, text, 
-                                               '', wxOK |
-                                               wxCANCEL |wxICON_INFORMATION)
-            if(areYouSureDialog.ShowModal() == wxID_OK):
-                self.app.RemoveData(data, ownerProfile)
-                                    
-            areYouSureDialog.Destroy()
+        for id in idList:
+            data = self.contentListPanel.tree.GetItemData(id).GetData()
+            
+            ownerId = self.contentListPanel.tree.GetItemParent(id)
+            text = self.contentListPanel.tree.GetItemText(ownerId)
+            
+            if text != 'Data':
+                ownerProfile = self.contentListPanel.tree.GetItemData(ownerId).GetData()
+            else:
+                # Venue data
+                ownerProfile = None
                 
-        else:
-            self.__showNoSelectionDialog("Please, select the data you want to delete")
+            if(data != None and isinstance(data, DataDescription)):
+                text ="Are you sure you want to delete "+ data.name + "?"
+                areYouSureDialog = wxMessageDialog(self, text, 
+                                                   '', wxOK |
+                                                   wxCANCEL |wxICON_INFORMATION)
+                if(areYouSureDialog.ShowModal() == wxID_OK):
+                    self.app.RemoveData(data, ownerProfile)
+                    
+                    areYouSureDialog.Destroy()
+                
+            else:
+                self.__showNoSelectionDialog("Please, select the data you want to delete")
 
     def RemoveService(self, event):
-        id = self.contentListPanel.tree.GetSelection()
-        service =  self.contentListPanel.tree.GetItemData(id).GetData()
-        
-        if(service != None and isinstance(service, ServiceDescription)):
-            text ="Are you sure you want to delete "+ service.name + "?"
-            areYouSureDialog = wxMessageDialog(self, text, \
-                                               '', wxOK |  wxCANCEL
-                                               |wxICON_INFORMATION)
-            if(areYouSureDialog.ShowModal() == wxID_OK):
-                self.app.RemoveService(service)
-            
-        else:
-            self.__showNoSelectionDialog("Please, select the service you want to delete")       
+        idList = self.contentListPanel.tree.GetSelections()
+
+        for id in idList:
+            service =  self.contentListPanel.tree.GetItemData(id).GetData()
+
+                       
+            if(service != None and isinstance(service, ServiceDescription)):
+                text ="Are you sure you want to delete "+ service.name + "?"
+                areYouSureDialog = wxMessageDialog(self, text, \
+                                                   '', wxOK |  wxCANCEL
+                                                   |wxICON_INFORMATION)
+                if(areYouSureDialog.ShowModal() == wxID_OK):
+                    self.app.RemoveService(service)
+                    
+            else:
+                self.__showNoSelectionDialog("Please, select the service you want to delete")       
             
     def __showNoSelectionDialog(self, text):
         MessageDialog(self, text)
@@ -1119,25 +1125,30 @@ class VenueClientFrame(wxFrame):
         
     def OpenService(self,event):
         id = self.contentListPanel.tree.GetSelection()
-        service =  self.contentListPanel.tree.GetItemData(id).GetData()
+        self.tree.SelectItem(id)
 
+        service =  self.contentListPanel.tree.GetItemData(id).GetData()
+        
         if(service != None and isinstance(service, ServiceDescription)):
             self.app.OpenService( service )
         else:
             self.__showNoSelectionDialog("Please, select the service you want to open")       
     
     def RemoveApp(self,event):
-        id = self.contentListPanel.tree.GetSelection()
-        app =  self.contentListPanel.tree.GetItemData(id).GetData()
+        idList = self.contentListPanel.tree.GetSelections()
 
-        if(app != None and isinstance(app, ApplicationDescription)):
-            text ="Are you sure you want to delete "+ app.name + "?"
-            areYouSureDialog = wxMessageDialog(self, text, \
-                                               '', wxOK |  wxCANCEL |wxICON_INFORMATION)
-            if(areYouSureDialog.ShowModal() == wxID_OK):
-                self.app.RemoveApp( app )
-        else:
-            self.__showNoSelectionDialog("Please, select the application you want to delete")    
+        for id in idList:
+       
+            app =  self.contentListPanel.tree.GetItemData(id).GetData()
+
+            if(app != None and isinstance(app, ApplicationDescription)):
+                text ="Are you sure you want to delete "+ app.name + "?"
+                areYouSureDialog = wxMessageDialog(self, text, \
+                                                   '', wxOK |  wxCANCEL |wxICON_INFORMATION)
+                if(areYouSureDialog.ShowModal() == wxID_OK):
+                    self.app.RemoveApp( app )
+            else:
+                self.__showNoSelectionDialog("Please, select the application you want to delete")    
             
 
     #
@@ -1629,7 +1640,7 @@ class ContentListPanel(wxPanel):
 
         self.tree = wxTreeCtrl(self, id, wxDefaultPosition, 
                                wxDefaultSize, style = wxTR_HAS_BUTTONS |
-                               wxTR_LINES_AT_ROOT | wxTR_HIDE_ROOT)
+                               wxTR_LINES_AT_ROOT | wxTR_HIDE_ROOT | wxTR_MULTIPLE)
         
         self.__setImageList()
 	self.__setTree()
@@ -1945,19 +1956,21 @@ class ContentListPanel(wxPanel):
         key = event.GetKeyCode()
       
         if key == WXK_DELETE:
-            treeId = self.tree.GetSelection()
-            item = self.tree.GetItemData(treeId).GetData()
+            treeIdList = self.tree.GetSelections()
 
-            if item:
-                if isinstance(item,DataDescription):
-                    # data
-                    self.parent.RemoveData(event)
-                elif isinstance(item,ServiceDescription):
-                    # service
-                    self.parent.RemoveService(event)
-                elif isinstance(item,ApplicationDescription):
-                    # application
-                    self.parent.RemoveApp(event)
+            for treeId in treeIdList:
+                item = self.tree.GetItemData(treeId).GetData()
+                
+                if item:
+                    if isinstance(item,DataDescription):
+                        # data
+                        self.parent.RemoveData(event)
+                    elif isinstance(item,ServiceDescription):
+                        # service
+                        self.parent.RemoveService(event)
+                    elif isinstance(item,ApplicationDescription):
+                        # application
+                        self.parent.RemoveApp(event)
 
     def OnSelect(self, event):
         #
@@ -2043,7 +2056,12 @@ class ContentListPanel(wxPanel):
         treeId, flag = self.tree.HitTest(wxPoint(self.x,self.y))
       
         if(treeId.IsOk()):
-            self.tree.SelectItem(treeId)
+
+            if len(self.tree.GetSelections()) <= 1:
+                # Keep selection if more than one item is selected to
+                # enable multiple deletions.
+                self.tree.SelectItem(treeId)
+                
             item = self.tree.GetItemData(treeId).GetData()
             text = self.tree.GetItemText(treeId)
                         
