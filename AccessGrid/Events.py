@@ -5,7 +5,7 @@
 # Author:      Thomas D. Uram, Ivan R. Judson
 #
 # Created:     2003/31/01
-# RCS-ID:      $Id: Events.py,v 1.3 2003-02-10 22:07:55 turam Exp $
+# RCS-ID:      $Id: Events.py,v 1.4 2003-02-14 20:43:53 olson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -14,6 +14,7 @@ class Event:
     EXIT = "Exit"
     MODIFY_USER = "Modify user"
     ADD_DATA = "Add data"
+    UPDATE_DATA = "Update data"
     REMOVE_DATA = "Remove data"
     ADD_SERVICE = "Add service"
     REMOVE_SERVICE = "Remove service"
