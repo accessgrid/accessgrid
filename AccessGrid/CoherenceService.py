@@ -6,7 +6,7 @@
 # Author:      Ivan R. Judson
 #
 # Created:     2002/12/12
-# RCS-ID:      $Id: CoherenceService.py,v 1.14 2003-01-23 14:59:07 judson Exp $
+# RCS-ID:      $Id: CoherenceService.py,v 1.15 2003-01-24 12:47:15 judson Exp $
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
@@ -16,16 +16,16 @@ import sys
 import pickle
 from threading import Thread
 
-from SocketServer import ThreadingTCPServer
 from SocketServer import ThreadingMixIn, StreamRequestHandler
-
 from pyGlobus.io import GSITCPSocketServer
+
+# This really should be defined in pyGlobus.io
+class ThreadingGSITCPSocketServer(ThreadingMixIn, GSITCPSocketServer): pass
 
 from AccessGrid.NetworkLocation import UnicastNetworkLocation
 from AccessGrid.Utilities import formatExceptionInfo
 
-# This really should be defined in pyGlobus.io
-class ThreadingGSITCPSocketServer(ThreadingMixIn, GSITCPSocketServer): pass
+
 
 class CoherenceRequestHandler(StreamRequestHandler):
     """
